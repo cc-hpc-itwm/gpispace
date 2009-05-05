@@ -28,6 +28,7 @@ link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
 # Reflect the package structure
 add_subdirectory(sdpa)
+enable_testing()
 add_subdirectory(tests)
 
 # add some files to the installation target
