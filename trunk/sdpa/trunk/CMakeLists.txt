@@ -26,6 +26,8 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
+include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+
 # Reflect the package structure
 add_subdirectory(sdpa)
 enable_testing()
