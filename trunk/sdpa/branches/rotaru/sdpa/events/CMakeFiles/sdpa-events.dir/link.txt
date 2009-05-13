@@ -1,2 +1,0 @@
-/usr/bin/ar cr libsdpa-events.a  CMakeFiles/sdpa-events.dir/ErrorEvent.cpp.o 
-/usr/bin/ranlib libsdpa-events.a 
