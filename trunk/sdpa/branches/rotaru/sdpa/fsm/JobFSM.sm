@@ -1,0 +1,131 @@
+%{
+  // Finite state machine of the SDPA protocol
+  //
+%}
+
+%package sdpa::fsm
+%class JobFSM
+%header JobFSM.hpp
+
+%start SMC_JobFSM::Pending
+%map SMC_JobFSM
+
+%%
+Pending
+{
+    RunJob(event: sdpa::events::RunJobEvent&)
+        Running
+        {
+        	GetNextActiveSubJobsListFromWFE(event.GetJobID());  //assign unique global IDs!
+            ScheduleJobs();
+        }
+
+    CancelJob(event: sdpa::events::CancelJobEvent&)
+        Cancelled
+        {
+            DoCancelJob(event.GetJobID());
+            PostCancelJobAckEventForMaster(event);
+        }
+
+    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Pending
+        {
+            PostJobStatusAnswerEventForMaster(event);
+        }
+}
+
+Running
+{
+    JobFinished(event: sdpa::events::JobFinishedEvent&)
+      	[ ctxt.IsSubJob(event.GetJobID())]
+      	Running
+        {
+        	GetNextActiveSubJobsListFromWFE(event.GetJobID()); //assign unique global IDs!
+            ScheduleJobs();  //if the list is empty, trigger JobFinishedEvent for self!
+        }
+      
+    JobFinished(event: sdpa::events::JobFinishedEvent&)
+    	Finished
+        {
+            PostJobFinishedEventForMaster(event); //for the upper level
+        }
+
+  	JobFailed(event: sdpa::events::JobFailedEvent&)
+  	    [ ctxt.IsSubJob(event.GetJobID())]
+    	Failed
+        {
+            InformWFEJobFailed(event.GetJobID()); //either re-schedule it or ask WFE what to do, or declare the parent job failed
+        }
+        
+    JobFailed(event: sdpa::events::JobFailedEvent&)
+    	Failed
+        {
+            HandleJobFailure(event.GetJobID());
+            PostJobFailedEventForMaster(event);  
+        }
+
+    CancelJob(event: sdpa::events::CancelJobEvent&)
+        Cancelling
+        {
+            DoCancelSubJobs(event.GetJobID());
+            // Attention!: some SubJobs may already have finished, other subjobs running or not assigned!
+        }
+
+    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Running
+        {
+            PostJobStatusAnswerEventForMaster(event);
+        }
+}
+
+Cancelling
+{
+    CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
+    [ctxt.IsSubJob(event.GetJobID()) && ctxt.IncGetCancelAckCounter() && ctxt.GetCancelAckCounter()<ctxt.GetNumberSubJobs() ]
+    	Cancelling
+    	{}
+    	
+    CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
+    [ctxt.IsSubJob(event.GetJobID()) && ctxt.GetCancelAckCounter() == ctxt.GetNumberSubJobs() ]
+    // Attention!: some of SubJobs may already have finished! Consider only the jobs scheduled 
+    //Ignore those that are finished or failed
+    	Cancelled
+    	{
+    		 PostCancelJobAckEventForMaster(event);
+    	}
+    
+	QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Cancelling
+        {
+        	PostJobStatusAnswerEventForMaster(event); 
+        }
+}
+
+Finished
+{
+    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Finished
+        {
+        	PostJobStatusAnswerEventForMaster(event); 
+        }
+}
+
+Failed
+{
+    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Failed
+        {
+        	PostJobStatusAnswerEventForMaster(event); 
+        }
+}
+
+Cancelled
+{
+    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+        Cancelled
+        {
+        	PostJobStatusAnswerEventForMaster(event); 
+        }
+}
+
+%%

@@ -53,7 +53,7 @@ CMAKE_BINARY_DIR = /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/ro
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -63,19 +63,19 @@ edit_cache/fast: edit_cache
 # Special rule for the target install
 install: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -P cmake_install.cmake
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -P cmake_install.cmake
 .PHONY : install
 
 # Special rule for the target install
 install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -P cmake_install.cmake
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local
 
 # Special rule for the target install/local
@@ -85,7 +85,7 @@ install/local/fast: install/local
 # Special rule for the target install/strip
 install/strip: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip
 
 # Special rule for the target install/strip
@@ -104,7 +104,7 @@ list_install_components/fast: list_install_components
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -114,7 +114,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target test
 test:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
-	/amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/ctest --force-new-ctest-process $(ARGS)
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm && /amd/nfs/root/gpfs/p/hpc/b24/usr/local/cmake-2.6.0-Linux-i386/bin/ctest --force-new-ctest-process $(ARGS)
 .PHONY : test
 
 # Special rule for the target test
@@ -123,14 +123,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/CMakeFiles /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/CMakeFiles/progress.make
-	$(MAKE) -f CMakeFiles/Makefile2 all
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(CMAKE_COMMAND) -E cmake_progress_start /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/CMakeFiles /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/sdpa/fsm/CMakeFiles/progress.make
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f CMakeFiles/Makefile2 sdpa/fsm/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f CMakeFiles/Makefile2 sdpa/fsm/clean
 .PHONY : clean
 
 # The main clean target
@@ -139,83 +139,80 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f CMakeFiles/Makefile2 sdpa/fsm/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f CMakeFiles/Makefile2 sdpa/fsm/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named doc
+# Convenience name for target.
+sdpa/fsm/CMakeFiles/sdpa-fsm.dir/rule:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f CMakeFiles/Makefile2 sdpa/fsm/CMakeFiles/sdpa-fsm.dir/rule
+.PHONY : sdpa/fsm/CMakeFiles/sdpa-fsm.dir/rule
 
-# Build rule for target.
-doc: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 doc
-.PHONY : doc
-
-# fast build rule for target.
-doc/fast:
-	$(MAKE) -f CMakeFiles/doc.dir/build.make CMakeFiles/doc.dir/build
-.PHONY : doc/fast
-
-#=============================================================================
-# Target rules for targets named sdpa
-
-# Build rule for target.
-sdpa: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 sdpa
-.PHONY : sdpa
-
-# fast build rule for target.
-sdpa/fast:
-	$(MAKE) -f sdpa/CMakeFiles/sdpa.dir/build.make sdpa/CMakeFiles/sdpa.dir/build
-.PHONY : sdpa/fast
-
-#=============================================================================
-# Target rules for targets named sdpa-events
-
-# Build rule for target.
-sdpa-events: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 sdpa-events
-.PHONY : sdpa-events
-
-# fast build rule for target.
-sdpa-events/fast:
-	$(MAKE) -f sdpa/events/CMakeFiles/sdpa-events.dir/build.make sdpa/events/CMakeFiles/sdpa-events.dir/build
-.PHONY : sdpa-events/fast
-
-#=============================================================================
-# Target rules for targets named sdpa-fsm
-
-# Build rule for target.
-sdpa-fsm: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 sdpa-fsm
+# Convenience name for target.
+sdpa-fsm: sdpa/fsm/CMakeFiles/sdpa-fsm.dir/rule
 .PHONY : sdpa-fsm
 
 # fast build rule for target.
 sdpa-fsm/fast:
-	$(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build
 .PHONY : sdpa-fsm/fast
 
-#=============================================================================
-# Target rules for targets named sdpa_test_tool
+JobFSM.o: JobFSM.cpp.o
+.PHONY : JobFSM.o
 
-# Build rule for target.
-sdpa_test_tool: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 sdpa_test_tool
-.PHONY : sdpa_test_tool
+# target to build an object file
+JobFSM.cpp.o:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM.cpp.o
+.PHONY : JobFSM.cpp.o
 
-# fast build rule for target.
-sdpa_test_tool/fast:
-	$(MAKE) -f tests/sdpa/CMakeFiles/sdpa_test_tool.dir/build.make tests/sdpa/CMakeFiles/sdpa_test_tool.dir/build
-.PHONY : sdpa_test_tool/fast
+JobFSM.i: JobFSM.cpp.i
+.PHONY : JobFSM.i
+
+# target to preprocess a source file
+JobFSM.cpp.i:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM.cpp.i
+.PHONY : JobFSM.cpp.i
+
+JobFSM.s: JobFSM.cpp.s
+.PHONY : JobFSM.s
+
+# target to generate assembly for a file
+JobFSM.cpp.s:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM.cpp.s
+.PHONY : JobFSM.cpp.s
+
+JobFSM_sm.o: JobFSM_sm.cpp.o
+.PHONY : JobFSM_sm.o
+
+# target to build an object file
+JobFSM_sm.cpp.o:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM_sm.cpp.o
+.PHONY : JobFSM_sm.cpp.o
+
+JobFSM_sm.i: JobFSM_sm.cpp.i
+.PHONY : JobFSM_sm.i
+
+# target to preprocess a source file
+JobFSM_sm.cpp.i:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM_sm.cpp.i
+.PHONY : JobFSM_sm.cpp.i
+
+JobFSM_sm.s: JobFSM_sm.cpp.s
+.PHONY : JobFSM_sm.s
+
+# target to generate assembly for a file
+JobFSM_sm.cpp.s:
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(MAKE) -f sdpa/fsm/CMakeFiles/sdpa-fsm.dir/build.make sdpa/fsm/CMakeFiles/sdpa-fsm.dir/JobFSM_sm.cpp.s
+.PHONY : JobFSM_sm.cpp.s
 
 # Help Target
 help:
@@ -223,18 +220,20 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... doc"
 	@echo "... edit_cache"
 	@echo "... install"
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... test"
-	@echo "... sdpa"
-	@echo "... sdpa-events"
 	@echo "... sdpa-fsm"
-	@echo "... sdpa_test_tool"
+	@echo "... test"
+	@echo "... JobFSM.o"
+	@echo "... JobFSM.i"
+	@echo "... JobFSM.s"
+	@echo "... JobFSM_sm.o"
+	@echo "... JobFSM_sm.i"
+	@echo "... JobFSM_sm.s"
 .PHONY : help
 
 
@@ -246,6 +245,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /amd/fs5/root/home/u/rotaru/projectsc++/sdpa/sdpa/branches/rotaru && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

@@ -1,0 +1,2 @@
+/usr/bin/ar cr libsdpa-fsm.a  CMakeFiles/sdpa-fsm.dir/JobFSM.cpp.o CMakeFiles/sdpa-fsm.dir/JobFSM_sm.cpp.o 
+/usr/bin/ranlib libsdpa-fsm.a 
