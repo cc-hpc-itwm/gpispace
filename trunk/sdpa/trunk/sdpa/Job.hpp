@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <tr1/memory>
+
+#include <sdpa/memory.hpp>
 
 namespace sdpa {
     /**
@@ -13,7 +14,7 @@ namespace sdpa {
      */
     class Job {
     public:
-        typedef std::tr1::shared_ptr<Job> ptr_t;
+        typedef sdpa::shared_ptr<Job> ptr_t;
 
         typedef std::string job_id_t;
         typedef std::string job_desc_t;
