@@ -20,6 +20,12 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
+# find seda
+include(FindSEDA)
+if (SEDA_FOUND)
+    include_directories(${SEDA_INCLUDE_DIR})
+    link_directories(${SEDA_LIBRARY})
+endif(SEDA_FOUND)
 # google protocol buffers
 include(FindProtocolBuffers)
 if (PB_FOUND)
@@ -35,7 +41,7 @@ if (ENABLE_LOGGING)
         include_directories(${LOG4CPP_INCLUDE_DIR})
         link_directories(${LOG4CPP_LIBRARY})
     else(LOG4CPP_FOUND)
-        message(FATAL "Logging was enabled but log4cpp could not be found!")
+        message(FATAL_ERROR "Logging was enabled but log4cpp could not be found!")
     endif(LOG4CPP_FOUND)
 endif (ENABLE_LOGGING)
 

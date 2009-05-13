@@ -6,6 +6,7 @@
 
 FIND_PATH(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
   ${CMAKE_INCLUDE_PATH}
+  $ENV{LOG4CPP_HOME}/include
   /usr/local/include
   /usr/include
 )
@@ -13,7 +14,7 @@ FIND_PATH(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
 SET(LOG4CPP_LIBRARY_NAMES ${LOG4CPP_LIBRARY_NAMES} liblog4cpp.a)
 FIND_LIBRARY(LOG4CPP_LIBRARY
   NAMES ${LOG4CPP_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} /usr/lib /usr/local/lib
+  PATHS ${CMAKE_LIBRARY_PATH} $ENV{LOG4CPP_HOME}/lib /usr/lib /usr/local/lib
 )
 
 
