@@ -20,12 +20,34 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
-# find seda
-include(FindSEDA)
+## PkgConfig is helpful
+include(FindPkgConfig)
+if ( PKG_CONFIG_FOUND )
+   pkg_check_modules (CPPUNIT REQUIRED cppunit>=1.12)
+   message(STATUS "CPPUnit: -I${CPPUNIT_INCLUDE_DIRS} -L${CPPUNIT_LIBRARY_DIRS} -l${CPPUNIT_LIBRARIES}")
+
+   pkg_check_modules (SEDA REQUIRED libseda>=0.1)
+   message(STATUS "SEDA: -I${SEDA_INCLUDE_DIRS} -L${SEDA_LIBRARY_DIRS} -l${SEDA_LIBRARIES} f=${SEDA_FOUND}")
+
+   pkg_check_modules (LOG4CPP REQUIRED log4cpp>=1.0)
+else  ( PKG_CONFIG_FOUND )
+  message(FATAL "No PKGCONFIG found - hoping for the best.")
+    # search packages by hand
+    # CPPunit
+    ##include(FindCppUnit)
+    # find seda
+    include(FindSEDA)
+    # log4cpp
+    include(FindLogging)
+    ##include(FindLog4CPP)
+endif ( PKG_CONFIG_FOUND )
+
+# check for seda
 if (SEDA_FOUND)
-    include_directories(${SEDA_INCLUDE_DIR})
-    link_directories(${SEDA_LIBRARY})
+    include_directories(${SEDA_INCLUDE_DIRS})
+    link_directories(${SEDA_LIBRARY_DIRS})
 endif(SEDA_FOUND)
+
 # google protocol buffers
 include(FindProtocolBuffers)
 if (PB_FOUND)
@@ -35,7 +57,6 @@ include(PBMacros)
 
 # logging
 if (ENABLE_LOGGING)
-    include(FindLogging)
     if (LOG4CPP_FOUND)
         set(HAVE_LOG4CPP 1)
         include_directories(${LOG4CPP_INCLUDE_DIR})
