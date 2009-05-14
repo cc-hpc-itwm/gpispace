@@ -179,6 +179,19 @@ sdpa/fast:
 .PHONY : sdpa/fast
 
 #=============================================================================
+# Target rules for targets named sdpa-messages
+
+# Build rule for target.
+sdpa-messages: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 sdpa-messages
+.PHONY : sdpa-messages
+
+# fast build rule for target.
+sdpa-messages/fast:
+	$(MAKE) -f sdpa/messages/CMakeFiles/sdpa-messages.dir/build.make sdpa/messages/CMakeFiles/sdpa-messages.dir/build
+.PHONY : sdpa-messages/fast
+
+#=============================================================================
 # Target rules for targets named sdpa-events
 
 # Build rule for target.
@@ -232,6 +245,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... sdpa"
+	@echo "... sdpa-messages"
 	@echo "... sdpa-events"
 	@echo "... sdpa-fsm"
 	@echo "... sdpa_test_tool"

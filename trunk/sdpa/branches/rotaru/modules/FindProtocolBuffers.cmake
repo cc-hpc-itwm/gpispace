@@ -28,7 +28,7 @@ FIND_PATH(PB_INCLUDE_DIR google/protobuf/message.h
 SET(PB_LIBRARY_NAMES ${PB_LIBRARY_NAMES} libprotobuf.a)
 FIND_LIBRARY(PB_LIBRARY
   NAMES ${PB_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} /usr/lib /usr/local/lib
+  PATHS ${CMAKE_LIBRARY_PATH} $ENV{PROTOC_HOME}/lib /usr/lib /usr/local/lib
 )
 
 
