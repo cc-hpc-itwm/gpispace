@@ -55,7 +55,7 @@ ENDIF(WIN32)
 
 FIND_LIBRARY(PB_LIBRARY
   NAMES ${PB_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} ${PB_ROOT}/lib /usr/lib /usr/local/lib
+  PATHS ${CMAKE_LIBRARY_PATH} $ENV{PROTOC_HOME}/lib ${PB_ROOT}/lib /usr/lib /usr/local/lib
 )
 
 
