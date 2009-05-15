@@ -4,7 +4,7 @@
           xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_1_1.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_1_1.xsd"
           ID="No_ID">
 
-    <!-- $Id: gworkflowdl-psp-grd.xml 683 2008-05-28 16:43:28Z hoheisel $ -->
+    <!-- $Id$ -->
     
     <description>Pre-Stack Time Migration</description>
 
