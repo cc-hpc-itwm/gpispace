@@ -8,10 +8,13 @@ CFsmTest::CFsmTest()
     : SDPA_INIT_LOGGER("sdpa.tests.fsmTest")
 {}
 
-void CFsmTest::setUp() {
+CFsmTest::~CFsmTest()
+{}
+
+void CFsmTest::setUp() { //initialize and start the finite state machine
 }
 
-void CFsmTest::tearDown() {
+void CFsmTest::tearDown() { //stop the finite state machine
 }
 
 void CFsmTest::testFSM() {

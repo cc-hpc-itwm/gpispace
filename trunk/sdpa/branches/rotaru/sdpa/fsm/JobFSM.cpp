@@ -2,13 +2,8 @@
 
 using namespace sdpa::fsm;
 
-JobFSM::JobFSM(const std::string &name, const std::string &nextStage ) :
-	 seda::ForwardStrategy(name, nextStage),
-	 m_fsmContext(*this),
-	 m_nNumberSubJobs(0),
-	 m_nCancelAckCounter(0)
-{}
-
+JobFSM::JobFSM() : m_fsmContext(*this), m_nNumberSubJobs(0), m_nCancelAckCounter(0){}
+JobFSM::~JobFSM(){}
 
 bool JobFSM::IsSubJob(sdpa::Job::job_id_t JobID) { return true; }
 int JobFSM::IncGetCancelAckCounter() { return ++m_nCancelAckCounter; }
@@ -24,7 +19,6 @@ int JobFSM::PostJobStatusAnswerEventForMaster( sdpa::events::QueryJobStatusEvent
 int JobFSM::PostJobFinishedEventForMaster( sdpa::events::JobFinishedEvent& event ){ return 0; }
 int JobFSM::PostJobFailedEventForMaster( sdpa::events::JobFailedEvent& event){ return 0; }
 int JobFSM::PostCancelJobAckEventForMaster( sdpa::events::CancelJobAckEvent& event ) { return 0; }
-
 
 int JobFSM::HandleJobFailure( sdpa::Job::job_id_t JobID ){ return 0; }
 int JobFSM::DoCancelSubJobs( sdpa::Job::job_id_t JobID ){ return 0; }// Attention!: some of SubJobs may already have finished!

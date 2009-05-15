@@ -3,7 +3,6 @@
 
 //#include <boost/thread.hpp>
 
-#include <seda/ForwardStrategy.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -19,13 +18,12 @@
 
 namespace sdpa {
 	namespace fsm {
-		class JobFSM : public seda::ForwardStrategy {
+		class JobFSM {
 			public:
 				typedef std::tr1::shared_ptr<JobFSM> Ptr;
 
-				JobFSM(const std::string &name, const std::string &nextStage );
-
-				virtual void perform(const seda::IEvent::Ptr &e);
+				JobFSM();
+				virtual ~JobFSM();
 
 				int InformWFEJobFailed( sdpa::Job::job_id_t JobID );
 				int GetNextActiveSubJobsListFromWFE( sdpa::Job::job_id_t JobID );  //assign unique global IDs!

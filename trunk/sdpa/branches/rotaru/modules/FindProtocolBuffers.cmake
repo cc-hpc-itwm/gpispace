@@ -6,6 +6,25 @@
 # portable) 
 # * PB_PROTOC_CMD the protoc executable
 
+IF( NOT PB_ROOT )
+  SET(PB_ROOT "")
+ENDIF(NOT PB_ROOT)
+
+IF(WIN32)
+FIND_FILE(PB_PROTOC_CMD
+  NAMES
+    protoc.exe
+  PATHS
+    "[HKEY_CURRENT_USER\\smc\\bin]"
+    /usr/local/bin
+    /usr/bin
+    $ENV{PROTOC_HOME}/bin
+    ${PB_ROOT}/bin
+    PATH_SUFFIXES
+    bin
+  DOC "Location of the protoc file"
+)
+ELSE(WIN32)
 FIND_FILE(PB_PROTOC_CMD
   NAMES
     protoc
@@ -18,17 +37,25 @@ FIND_FILE(PB_PROTOC_CMD
     bin
   DOC "Location of the protoc file"
 )
+ENDIF(WIN32)
 
 FIND_PATH(PB_INCLUDE_DIR google/protobuf/message.h
   ${CMAKE_INCLUDE_PATH}
+  $ENV{PB_HOME}/include
+  ${PB_ROOT}/include
   /usr/local/include
   /usr/include
 )
 
-SET(PB_LIBRARY_NAMES ${PB_LIBRARY_NAMES} libprotobuf.a)
+IF(WIN32)
+  SET(PB_LIBRARY_NAMES ${PB_LIBRARY_NAMES} libprotobuf.lib)
+ELSE(WIN32)
+  SET(PB_LIBRARY_NAMES ${PB_LIBRARY_NAMES} libprotobuf.a)
+ENDIF(WIN32)
+
 FIND_LIBRARY(PB_LIBRARY
   NAMES ${PB_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} $ENV{PROTOC_HOME}/lib /usr/lib /usr/local/lib
+  PATHS ${CMAKE_LIBRARY_PATH} $ENV{PROTOC_HOME}/lib ${PB_ROOT}/lib /usr/lib /usr/local/lib
 )
 
 
@@ -42,3 +69,4 @@ MARK_AS_ADVANCED(
   PB_LIBRARY
   PB_INCLUDE_DIR
 )
+

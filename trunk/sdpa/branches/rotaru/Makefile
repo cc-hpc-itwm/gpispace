@@ -230,6 +230,19 @@ sdpa_test_tool/fast:
 	$(MAKE) -f tests/sdpa/CMakeFiles/sdpa_test_tool.dir/build.make tests/sdpa/CMakeFiles/sdpa_test_tool.dir/build
 .PHONY : sdpa_test_tool/fast
 
+#=============================================================================
+# Target rules for targets named fsm_test
+
+# Build rule for target.
+fsm_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 fsm_test
+.PHONY : fsm_test
+
+# fast build rule for target.
+fsm_test/fast:
+	$(MAKE) -f tests/sdpa/fsm/CMakeFiles/fsm_test.dir/build.make tests/sdpa/fsm/CMakeFiles/fsm_test.dir/build
+.PHONY : fsm_test/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -249,6 +262,7 @@ help:
 	@echo "... sdpa-events"
 	@echo "... sdpa-fsm"
 	@echo "... sdpa_test_tool"
+	@echo "... fsm_test"
 .PHONY : help
 
 
