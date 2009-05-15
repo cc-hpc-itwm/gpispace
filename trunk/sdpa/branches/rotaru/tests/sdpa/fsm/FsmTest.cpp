@@ -12,9 +12,11 @@ CFsmTest::~CFsmTest()
 {}
 
 void CFsmTest::setUp() { //initialize and start the finite state machine
+	SDPA_LOG_DEBUG("setUP");
 }
 
 void CFsmTest::tearDown() { //stop the finite state machine
+	SDPA_LOG_DEBUG("tearDown");
 }
 
 void CFsmTest::testFSM() {

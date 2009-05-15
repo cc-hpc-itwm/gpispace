@@ -18,6 +18,11 @@
 #include <cppunit/SourceLine.h>
 #include <cppunit/Exception.h>
 #include <cppunit/Message.h>
+#include "sdpa/logging.hpp"
+
+#include <log4cpp/BasicConfigurator.hh>
+#include <log4cpp/Category.hh>
+
 
 int main( int argc, char **argv )
 {

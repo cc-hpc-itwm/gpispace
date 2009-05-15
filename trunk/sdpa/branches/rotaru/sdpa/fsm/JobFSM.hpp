@@ -13,6 +13,7 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/fsm/JobFSM_sm.h>
+#include <sdpa/logging.hpp>
 
 #include <list>
 
@@ -44,7 +45,7 @@ namespace sdpa {
 				int GetNumberSubJobs();
 
 			private:
-
+				SDPA_DECLARE_LOGGER();
 				sdpa::fsm::JobFSMContext m_fsmContext;
 
 				int m_nNumberSubJobs;
