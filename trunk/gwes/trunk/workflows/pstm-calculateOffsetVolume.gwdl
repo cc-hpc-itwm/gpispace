@@ -1,0 +1,78 @@
+<workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass"
+          xmlns="http://www.gridworkflow.org/gworkflowdl"
+          xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_1_1.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_1_1.xsd"
+          ID="No_ID">
+
+    <!-- $Id: gworkflowdl-psp-grd.xml 683 2008-05-28 16:43:28Z hoheisel $ -->
+    
+    <description>Pre-Stack Time Migration - calculate offset volume for one offset class</description>
+
+    <!-- workflow input places (will be filled with tokens by parent pstm-1 workflow) -->
+    <place ID="OffsetClass"/>
+
+    <place ID="NumberPoints"/>
+
+    <!-- intermediate places -->
+    <place ID="Traces"/>
+
+    <place ID="ContinueLoop">
+        <token><control>true</control></token>
+    </place>
+
+    <!-- workflow output places -->
+    <place ID="OffsetVolume"/>
+
+    <!-- transitions -->
+    <transition ID="createVolume">
+        <description>Creates an empty offset volume</description>
+        <inputPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <outputPlace placeID="OffsetVolume" edgeExpression="Volume"/>
+        <operation>
+            <oc:operationClass name="createVolume">
+                <oc:sdpaOperation operationName="createVolume" resourceName="orchestrator1/aggregator5/NRE2" selected="true"/> 
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="getNextTrace">
+        <description>get next trace for given offset class</description>
+        <readPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <inputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+        <outputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+        <outputPlace placeID="Traces" edgeExpression="Trace"/>
+        <condition>$hasNext=true</condition>
+ 		<operation>
+      		<oc:operationClass name="getNextTrace">
+        		<oc:sdpaOperation operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE1"/>
+                <oc:sdpaOperation operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE2"/>
+                <oc:sdpaOperation operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE3"/>
+                <oc:sdpaOperation operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE4"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="endLoop">
+        <inputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+        <condition>$hasNext=false</condition>
+    </transition>
+
+    <transition ID="addTraceContribution">
+        <description>Adds the contribution of one trace to the offset volume</description>
+        <readPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <inputPlace placeID="Traces" edgeExpression="Trace"/>
+        <writePlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <operation>
+            <oc:operationClass name="addTraceContribution">
+                <!-- direct execution as sdpa operation -->
+                <oc:sdpaOperation operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE1"/>
+                <oc:sdpaOperation operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE2"/>
+                <oc:sdpaOperation operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE3"/>
+                <oc:sdpaOperation operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE4"/>
+                <!-- alternative execution via sub workflow -->
+                <oc:subWorkflow operationName="pstm-addTraceContribution.gwdl" resourceName="orchestrator1/aggregator5"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+</workflow>

@@ -1,0 +1,79 @@
+<workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass"
+          xmlns="http://www.gridworkflow.org/gworkflowdl"
+          xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_1_1.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_1_1.xsd"
+          ID="No_ID">
+
+    <!-- $Id: gworkflowdl-psp-grd.xml 683 2008-05-28 16:43:28Z hoheisel $ -->
+    
+    <description>Pre-Stack Time Migration</description>
+
+	<!-- workflow input places -->
+    <place ID="NumberOffsetClasses">
+        <token><data><numberOffsetClasses>10</numberOffsetClasses></data></token>
+    </place>
+
+    <place ID="OffsetClasses">
+        <token><data><offset>fvm://survey5/offsetClass00</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass01</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass02</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass03</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass04</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass05</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass06</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass07</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass08</offset></data></token>
+        <token><data><offset>fvm://survey5/offsetClass09</offset></data></token>
+    </place>
+
+    <place ID="NumberPoints">
+        <token><data><numberPoints>1000x800x400</numberPoints></data></token>
+    </place>
+
+    <!-- intermediate places -->
+    <place ID="OffsetVolume"/>
+    <place ID="OffsetClass"/>
+
+    <!-- workflow output places -->
+    <place ID="OutputGather"/>
+
+    <!-- transitions -->
+    <transition ID="createOutputGather">
+        <description>Create empty output gather</description>
+        <readPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <inputPlace placeID="NumberOffsetClasses" edgeExpression="NumberOffsetClasses"/>
+        <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
+ 		<operation>
+      		<oc:operationClass name="createOutputGather">
+        		<oc:sdpaOperation operationName="createOutputGather" resourceName="orchestrator1/aggregator5/NRE3" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="calculateOffsetVolume">
+        <description>Calculate the offset volume for a given offset class</description>
+        <readPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <inputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
+        <outputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <outputPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <operation>
+            <oc:operationClass name="calculateOffsetVolume">
+                <oc:subWorkflow operationName="pstm-calculateOffsetVolume.gwdl" resourceName="orchestrator1/aggregator5" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="store">
+        <description>Store the offset volume in the output gather</description>
+        <readPlace placeID="OutputGather" edgeExpression="OutputGather"/>
+        <inputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <inputPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <writePlace placeID="OutputGather" edgeExpression="OutputGather"/>
+        <operation>
+            <oc:operationClass name="store">
+                <oc:sdpaOperation operationName="store" resourceName="orchestrator1/aggregator5" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+</workflow>
