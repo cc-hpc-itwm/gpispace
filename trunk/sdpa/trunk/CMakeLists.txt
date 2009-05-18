@@ -25,7 +25,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
     set(HAVE_PTHREAD_H 1)
-    link_libraries(pthread)
+    link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
 ## PkgConfig is helpful
