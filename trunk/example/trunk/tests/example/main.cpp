@@ -76,6 +76,10 @@ int main(
   //CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cout);
   xmloutputter.write ();
 
+  std::ofstream outStream2("out2.xml");
+  CPPUNIT_NS::XmlOutputter xmloutputter2 (&collectedresults, outStream2);
+  xmloutputter2.write ();
+
   // text mode
   //CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
   //compileroutputter.write ();
