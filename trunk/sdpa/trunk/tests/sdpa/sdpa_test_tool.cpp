@@ -1,11 +1,20 @@
 #include <sdpa/Job.hpp>
 #include <sdpa/JobImpl.hpp>
-#include <sdpa/logging.hpp>
+#include <sdpa/LoggingConfigurator.hpp>
 
 #include <iostream>
 
+struct LogConfig {
+    void operator()() {
+        sdpa::logging::DefaultConfiguration()();
+        std::clog << "private config stuff here." << std::endl;
+    }
+};
+
 int main(int argc, char **argv) {
     using namespace sdpa;
+    sdpa::logging::Configurator::configure(LogConfig());
+
     SDPA_DEFINE_LOGGER("tests.test-tool");
 
     SDPA_LOG_ERROR("test");
