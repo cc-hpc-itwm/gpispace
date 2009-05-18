@@ -6,20 +6,21 @@
 # portable) 
 # * PB_PROTOC_CMD the protoc executable
 
-IF( NOT PB_ROOT )
-  SET(PB_ROOT "")
-ENDIF(NOT PB_ROOT)
+if( not $ENV{PB_HOME} )
+    set (PB_HOME "/usr/local")
+else(not $ENV{PB_HOME})
+    set (PB_HOME $ENV{PB_HOME})
+endif(not $ENV{PB_HOME})
 
 IF(WIN32)
 FIND_FILE(PB_PROTOC_CMD
   NAMES
     protoc.exe
   PATHS
-    "[HKEY_CURRENT_USER\\smc\\bin]"
+    ${PB_HOME}/bin
+    "[HKEY_CURRENT_USER\\protobuf\\bin]"
     /usr/local/bin
     /usr/bin
-    $ENV{PROTOC_HOME}/bin
-    ${PB_ROOT}/bin
     PATH_SUFFIXES
     bin
   DOC "Location of the protoc file"
@@ -29,10 +30,9 @@ FIND_FILE(PB_PROTOC_CMD
   NAMES
     protoc
   PATHS
-    "[HKEY_CURRENT_USER\\smc\\bin]"
+    ${PB_HOME}/bin
     /usr/local/bin
     /usr/bin
-    $ENV{PROTOC_HOME}/bin
     PATH_SUFFIXES
     bin
   DOC "Location of the protoc file"
@@ -40,9 +40,8 @@ FIND_FILE(PB_PROTOC_CMD
 ENDIF(WIN32)
 
 FIND_PATH(PB_INCLUDE_DIR google/protobuf/message.h
+  ${PB_HOME}/include
   ${CMAKE_INCLUDE_PATH}
-  $ENV{PB_HOME}/include
-  ${PB_ROOT}/include
   /usr/local/include
   /usr/include
 )
@@ -55,9 +54,8 @@ ENDIF(WIN32)
 
 FIND_LIBRARY(PB_LIBRARY
   NAMES ${PB_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} $ENV{PROTOC_HOME}/lib ${PB_ROOT}/lib /usr/lib /usr/local/lib
+  PATHS ${PB_HOME}/lib ${CMAKE_LIBRARY_PATH} /usr/lib /usr/local/lib
 )
-
 
 # if the include and the program are found then we have it
 IF(PB_PROTOC_CMD AND PB_LIBRARY) 
@@ -65,6 +63,7 @@ IF(PB_PROTOC_CMD AND PB_LIBRARY)
 ENDIF(PB_PROTOC_CMD AND PB_LIBRARY)
 
 MARK_AS_ADVANCED(
+  PB_HOME
   PB_PROTOC_CMD
   PB_LIBRARY
   PB_INCLUDE_DIR

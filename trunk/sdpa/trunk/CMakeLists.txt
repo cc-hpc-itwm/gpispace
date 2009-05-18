@@ -20,6 +20,13 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
+# threads
+include(FindThreads)
+if(CMAKE_USE_PTHREADS_INIT)
+    set(HAVE_PTHREAD_H 1)
+    link_libraries(pthread)
+endif(CMAKE_USE_PTHREAD_INIT)
+
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
@@ -44,26 +51,33 @@ endif ( PKG_CONFIG_FOUND )
 
 # check for seda
 if (SEDA_FOUND)
-    include_directories(${SEDA_INCLUDE_DIRS})
-    link_directories(${SEDA_LIBRARY_DIRS})
+    include_directories(${SEDA_INCLUDE_DIR})
+    link_libraries(${SEDA_LIBRARY})
 endif(SEDA_FOUND)
 
 # google protocol buffers
 include(FindProtocolBuffers)
 if (PB_FOUND)
-    message(STATUS "Found Protocol Buffers: ${PB_PROTOC_CMD}")
+    message(STATUS "Found Protocol Buffers: ${PB_PROTOC_CMD}, Inc:${PB_INCLUDE_DIR} Lib:${PB_LIBRARY}")
+    include_directories(${PB_INCLUDE_DIR})
+    link_libraries(${PB_LIBRARY})
 endif (PB_FOUND)
 include(PBMacros)
 
 # logging
 if (ENABLE_LOGGING)
+    set(ENABLE_LOGGING 1)
+    include(FindLogging)
+
     if (LOG4CPP_FOUND)
         set(HAVE_LOG4CPP 1)
         include_directories(${LOG4CPP_INCLUDE_DIR})
-        link_directories(${LOG4CPP_LIBRARY})
+        link_libraries(${LOG4CPP_LIBRARY})
     else(LOG4CPP_FOUND)
         message(FATAL_ERROR "Logging was enabled but log4cpp could not be found!")
     endif(LOG4CPP_FOUND)
+else (ENABLE_LOGGING)
+    set(ENABLE_LOGGING 0)
 endif (ENABLE_LOGGING)
 
 ## check for boost
@@ -82,6 +96,9 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in    ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+add_definitions(-DHAVE_CONFIG_H)
+
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
@@ -99,6 +116,7 @@ add_subdirectory(sdpa)
 add_subdirectory(daemons)
 enable_testing()
 add_subdirectory(tests)
+
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
