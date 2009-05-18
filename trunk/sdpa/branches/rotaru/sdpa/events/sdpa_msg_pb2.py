@@ -199,7 +199,7 @@ _ERROR = descriptor.Descriptor(
     descriptor.FieldDescriptor(
       name='error_description', full_name='sdpa.messages.Error.error_description', index=1,
       number=2, type=9, cpp_type=9, label=2,
-      default_value="",
+      default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -308,7 +308,7 @@ _CANCELJOB = descriptor.Descriptor(
     descriptor.FieldDescriptor(
       name='reason', full_name='sdpa.messages.CancelJob.reason', index=1,
       number=2, type=9, cpp_type=9, label=1,
-      default_value="",
+      default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),

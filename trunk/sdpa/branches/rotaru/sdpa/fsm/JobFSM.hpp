@@ -44,6 +44,7 @@ namespace sdpa {
 				int GetCancelAckCounter();
 				int GetNumberSubJobs();
 
+				sdpa::fsm::JobFSMContext& GetContext() { return m_fsmContext; }
 			private:
 				SDPA_DECLARE_LOGGER();
 				sdpa::fsm::JobFSMContext m_fsmContext;
