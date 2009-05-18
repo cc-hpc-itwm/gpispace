@@ -1,7 +1,7 @@
 file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
 
-add_subdirectory(messages)
+add_subdirectory(events)
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
 

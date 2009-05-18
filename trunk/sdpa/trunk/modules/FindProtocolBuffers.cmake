@@ -6,11 +6,11 @@
 # portable) 
 # * PB_PROTOC_CMD the protoc executable
 
-if( not $ENV{PB_HOME} )
+if(PB_HOME)
+    set (PB_HOME ${PB_HOME})
+else(PB_HOME)
     set (PB_HOME "/usr/local")
-else(not $ENV{PB_HOME})
-    set (PB_HOME $ENV{PB_HOME})
-endif(not $ENV{PB_HOME})
+endif(PB_HOME)
 
 IF(WIN32)
 FIND_FILE(PB_PROTOC_CMD

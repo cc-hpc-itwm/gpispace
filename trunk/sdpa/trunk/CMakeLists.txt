@@ -26,7 +26,7 @@ include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
     set(HAVE_PTHREAD_H 1)
     link_libraries(pthread)
-endif(CMAKE_USE_PTHREAD_INIT)
+endif(CMAKE_USE_PTHREADS_INIT)
 
 ## PkgConfig is helpful
 include(FindPkgConfig)

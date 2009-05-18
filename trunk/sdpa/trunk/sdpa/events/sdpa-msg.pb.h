@@ -23,7 +23,7 @@
 #include <google/protobuf/extension_set.h>
 
 namespace sdpa {
-namespace messages {
+namespace events {
 
 // Internal implementation detail -- do not call these.
 void  protobuf_BuildDesc_sdpa_2dmsg_2eproto();
@@ -122,108 +122,108 @@ class SDPAMessage : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // optional .sdpa.messages.Error error = 1;
+  // optional .sdpa.events.Error error = 1;
   inline bool has_error() const;
   inline void clear_error();
-  inline const ::sdpa::messages::Error& error() const;
-  inline ::sdpa::messages::Error* mutable_error();
+  inline const ::sdpa::events::Error& error() const;
+  inline ::sdpa::events::Error* mutable_error();
   
-  // optional .sdpa.messages.SubmitJob submit_job = 2;
+  // optional .sdpa.events.SubmitJob submit_job = 2;
   inline bool has_submit_job() const;
   inline void clear_submit_job();
-  inline const ::sdpa::messages::SubmitJob& submit_job() const;
-  inline ::sdpa::messages::SubmitJob* mutable_submit_job();
+  inline const ::sdpa::events::SubmitJob& submit_job() const;
+  inline ::sdpa::events::SubmitJob* mutable_submit_job();
   
-  // optional .sdpa.messages.SubmitJobAck submit_job_ack = 3;
+  // optional .sdpa.events.SubmitJobAck submit_job_ack = 3;
   inline bool has_submit_job_ack() const;
   inline void clear_submit_job_ack();
-  inline const ::sdpa::messages::SubmitJobAck& submit_job_ack() const;
-  inline ::sdpa::messages::SubmitJobAck* mutable_submit_job_ack();
+  inline const ::sdpa::events::SubmitJobAck& submit_job_ack() const;
+  inline ::sdpa::events::SubmitJobAck* mutable_submit_job_ack();
   
-  // optional .sdpa.messages.CancelJob cancel_job = 4;
+  // optional .sdpa.events.CancelJob cancel_job = 4;
   inline bool has_cancel_job() const;
   inline void clear_cancel_job();
-  inline const ::sdpa::messages::CancelJob& cancel_job() const;
-  inline ::sdpa::messages::CancelJob* mutable_cancel_job();
+  inline const ::sdpa::events::CancelJob& cancel_job() const;
+  inline ::sdpa::events::CancelJob* mutable_cancel_job();
   
-  // optional .sdpa.messages.CancelJobAck cancel_job_ack = 5;
+  // optional .sdpa.events.CancelJobAck cancel_job_ack = 5;
   inline bool has_cancel_job_ack() const;
   inline void clear_cancel_job_ack();
-  inline const ::sdpa::messages::CancelJobAck& cancel_job_ack() const;
-  inline ::sdpa::messages::CancelJobAck* mutable_cancel_job_ack();
+  inline const ::sdpa::events::CancelJobAck& cancel_job_ack() const;
+  inline ::sdpa::events::CancelJobAck* mutable_cancel_job_ack();
   
-  // optional .sdpa.messages.JobStatusRequest job_status_request = 6;
+  // optional .sdpa.events.JobStatusRequest job_status_request = 6;
   inline bool has_job_status_request() const;
   inline void clear_job_status_request();
-  inline const ::sdpa::messages::JobStatusRequest& job_status_request() const;
-  inline ::sdpa::messages::JobStatusRequest* mutable_job_status_request();
+  inline const ::sdpa::events::JobStatusRequest& job_status_request() const;
+  inline ::sdpa::events::JobStatusRequest* mutable_job_status_request();
   
-  // optional .sdpa.messages.JobStatusReply job_status = 7;
+  // optional .sdpa.events.JobStatusReply job_status = 7;
   inline bool has_job_status() const;
   inline void clear_job_status();
-  inline const ::sdpa::messages::JobStatusReply& job_status() const;
-  inline ::sdpa::messages::JobStatusReply* mutable_job_status();
+  inline const ::sdpa::events::JobStatusReply& job_status() const;
+  inline ::sdpa::events::JobStatusReply* mutable_job_status();
   
-  // optional .sdpa.messages.JobFinished job_finished = 8;
+  // optional .sdpa.events.JobFinished job_finished = 8;
   inline bool has_job_finished() const;
   inline void clear_job_finished();
-  inline const ::sdpa::messages::JobFinished& job_finished() const;
-  inline ::sdpa::messages::JobFinished* mutable_job_finished();
+  inline const ::sdpa::events::JobFinished& job_finished() const;
+  inline ::sdpa::events::JobFinished* mutable_job_finished();
   
-  // optional .sdpa.messages.JobFinishedAck job_finished_ack = 9;
+  // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
   inline bool has_job_finished_ack() const;
   inline void clear_job_finished_ack();
-  inline const ::sdpa::messages::JobFinishedAck& job_finished_ack() const;
-  inline ::sdpa::messages::JobFinishedAck* mutable_job_finished_ack();
+  inline const ::sdpa::events::JobFinishedAck& job_finished_ack() const;
+  inline ::sdpa::events::JobFinishedAck* mutable_job_finished_ack();
   
-  // optional .sdpa.messages.JobFailed job_failed = 10;
+  // optional .sdpa.events.JobFailed job_failed = 10;
   inline bool has_job_failed() const;
   inline void clear_job_failed();
-  inline const ::sdpa::messages::JobFailed& job_failed() const;
-  inline ::sdpa::messages::JobFailed* mutable_job_failed();
+  inline const ::sdpa::events::JobFailed& job_failed() const;
+  inline ::sdpa::events::JobFailed* mutable_job_failed();
   
-  // optional .sdpa.messages.JobFailedAck job_failed_ack = 11;
+  // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
   inline bool has_job_failed_ack() const;
   inline void clear_job_failed_ack();
-  inline const ::sdpa::messages::JobFailedAck& job_failed_ack() const;
-  inline ::sdpa::messages::JobFailedAck* mutable_job_failed_ack();
+  inline const ::sdpa::events::JobFailedAck& job_failed_ack() const;
+  inline ::sdpa::events::JobFailedAck* mutable_job_failed_ack();
   
-  // optional .sdpa.messages.LifeSignal life_signal = 12;
+  // optional .sdpa.events.LifeSignal life_signal = 12;
   inline bool has_life_signal() const;
   inline void clear_life_signal();
-  inline const ::sdpa::messages::LifeSignal& life_signal() const;
-  inline ::sdpa::messages::LifeSignal* mutable_life_signal();
+  inline const ::sdpa::events::LifeSignal& life_signal() const;
+  inline ::sdpa::events::LifeSignal* mutable_life_signal();
   
-  // optional .sdpa.messages.ConfigRequest config_request = 13;
+  // optional .sdpa.events.ConfigRequest config_request = 13;
   inline bool has_config_request() const;
   inline void clear_config_request();
-  inline const ::sdpa::messages::ConfigRequest& config_request() const;
-  inline ::sdpa::messages::ConfigRequest* mutable_config_request();
+  inline const ::sdpa::events::ConfigRequest& config_request() const;
+  inline ::sdpa::events::ConfigRequest* mutable_config_request();
   
-  // optional .sdpa.messages.ConfigReply config_reply = 14;
+  // optional .sdpa.events.ConfigReply config_reply = 14;
   inline bool has_config_reply() const;
   inline void clear_config_reply();
-  inline const ::sdpa::messages::ConfigReply& config_reply() const;
-  inline ::sdpa::messages::ConfigReply* mutable_config_reply();
+  inline const ::sdpa::events::ConfigReply& config_reply() const;
+  inline ::sdpa::events::ConfigReply* mutable_config_reply();
   
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::sdpa::messages::Error* error_;
-  ::sdpa::messages::SubmitJob* submit_job_;
-  ::sdpa::messages::SubmitJobAck* submit_job_ack_;
-  ::sdpa::messages::CancelJob* cancel_job_;
-  ::sdpa::messages::CancelJobAck* cancel_job_ack_;
-  ::sdpa::messages::JobStatusRequest* job_status_request_;
-  ::sdpa::messages::JobStatusReply* job_status_;
-  ::sdpa::messages::JobFinished* job_finished_;
-  ::sdpa::messages::JobFinishedAck* job_finished_ack_;
-  ::sdpa::messages::JobFailed* job_failed_;
-  ::sdpa::messages::JobFailedAck* job_failed_ack_;
-  ::sdpa::messages::LifeSignal* life_signal_;
-  ::sdpa::messages::ConfigRequest* config_request_;
-  ::sdpa::messages::ConfigReply* config_reply_;
+  ::sdpa::events::Error* error_;
+  ::sdpa::events::SubmitJob* submit_job_;
+  ::sdpa::events::SubmitJobAck* submit_job_ack_;
+  ::sdpa::events::CancelJob* cancel_job_;
+  ::sdpa::events::CancelJobAck* cancel_job_ack_;
+  ::sdpa::events::JobStatusRequest* job_status_request_;
+  ::sdpa::events::JobStatusReply* job_status_;
+  ::sdpa::events::JobFinished* job_finished_;
+  ::sdpa::events::JobFinishedAck* job_finished_ack_;
+  ::sdpa::events::JobFailed* job_failed_;
+  ::sdpa::events::JobFailedAck* job_failed_ack_;
+  ::sdpa::events::LifeSignal* life_signal_;
+  ::sdpa::events::ConfigRequest* config_request_;
+  ::sdpa::events::ConfigReply* config_reply_;
   friend void protobuf_BuildDesc_sdpa_2dmsg_2eproto_AssignGlobalDescriptors(
       const ::google::protobuf::FileDescriptor* file);
   ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
@@ -295,11 +295,11 @@ class Error : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required .sdpa.messages.ErrorCode error_code = 1;
+  // required .sdpa.events.ErrorCode error_code = 1;
   inline bool has_error_code() const;
   inline void clear_error_code();
-  inline sdpa::messages::ErrorCode error_code() const;
-  inline void set_error_code(sdpa::messages::ErrorCode value);
+  inline sdpa::events::ErrorCode error_code() const;
+  inline void set_error_code(sdpa::events::ErrorCode value);
   
   // required string error_description = 2;
   inline bool has_error_description() const;
@@ -493,14 +493,14 @@ class SubmitJob : public ::google::protobuf::Message {
   inline void set_workflow(const void* value, size_t size);
   inline ::std::string* mutable_workflow();
   
-  // repeated .sdpa.messages.Token input = 2;
+  // repeated .sdpa.events.Token input = 2;
   inline int input_size() const;
   inline void clear_input();
-  inline const ::google::protobuf::RepeatedPtrField< ::sdpa::messages::Token >& input() const;
-  inline ::google::protobuf::RepeatedPtrField< ::sdpa::messages::Token >* mutable_input();
-  inline const ::sdpa::messages::Token& input(int index) const;
-  inline ::sdpa::messages::Token* mutable_input(int index);
-  inline ::sdpa::messages::Token* add_input();
+  inline const ::google::protobuf::RepeatedPtrField< ::sdpa::events::Token >& input() const;
+  inline ::google::protobuf::RepeatedPtrField< ::sdpa::events::Token >* mutable_input();
+  inline const ::sdpa::events::Token& input(int index) const;
+  inline ::sdpa::events::Token* mutable_input(int index);
+  inline ::sdpa::events::Token* add_input();
   
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -508,7 +508,7 @@ class SubmitJob : public ::google::protobuf::Message {
   
   ::std::string* workflow_;
   static const ::std::string _default_workflow_;
-  ::google::protobuf::RepeatedPtrField< ::sdpa::messages::Token > input_;
+  ::google::protobuf::RepeatedPtrField< ::sdpa::events::Token > input_;
   friend void protobuf_BuildDesc_sdpa_2dmsg_2eproto_AssignGlobalDescriptors(
       const ::google::protobuf::FileDescriptor* file);
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -943,11 +943,11 @@ class JobStatusReply : public ::google::protobuf::Message {
   inline void set_job_id(const void* value, size_t size);
   inline ::std::string* mutable_job_id();
   
-  // required .sdpa.messages.JobState state = 2;
+  // required .sdpa.events.JobState state = 2;
   inline bool has_state() const;
   inline void clear_state();
-  inline sdpa::messages::JobState state() const;
-  inline void set_state(sdpa::messages::JobState value);
+  inline sdpa::events::JobState state() const;
+  inline void set_state(sdpa::events::JobState value);
   
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -1593,241 +1593,241 @@ class ConfigReply : public ::google::protobuf::Message {
 
 // SDPAMessage
 
-// optional .sdpa.messages.Error error = 1;
+// optional .sdpa.events.Error error = 1;
 inline bool SDPAMessage::has_error() const {
   return _has_bit(0);
 }
 inline void SDPAMessage::clear_error() {
-  if (error_ != NULL) error_->::sdpa::messages::Error::Clear();
+  if (error_ != NULL) error_->::sdpa::events::Error::Clear();
   _clear_bit(0);
 }
-inline const ::sdpa::messages::Error& SDPAMessage::error() const {
+inline const ::sdpa::events::Error& SDPAMessage::error() const {
   return error_ != NULL ? *error_ : *default_instance_->error_;
 }
-inline ::sdpa::messages::Error* SDPAMessage::mutable_error() {
+inline ::sdpa::events::Error* SDPAMessage::mutable_error() {
   _set_bit(0);
-  if (error_ == NULL) error_ = new ::sdpa::messages::Error;
+  if (error_ == NULL) error_ = new ::sdpa::events::Error;
   return error_;
 }
 
-// optional .sdpa.messages.SubmitJob submit_job = 2;
+// optional .sdpa.events.SubmitJob submit_job = 2;
 inline bool SDPAMessage::has_submit_job() const {
   return _has_bit(1);
 }
 inline void SDPAMessage::clear_submit_job() {
-  if (submit_job_ != NULL) submit_job_->::sdpa::messages::SubmitJob::Clear();
+  if (submit_job_ != NULL) submit_job_->::sdpa::events::SubmitJob::Clear();
   _clear_bit(1);
 }
-inline const ::sdpa::messages::SubmitJob& SDPAMessage::submit_job() const {
+inline const ::sdpa::events::SubmitJob& SDPAMessage::submit_job() const {
   return submit_job_ != NULL ? *submit_job_ : *default_instance_->submit_job_;
 }
-inline ::sdpa::messages::SubmitJob* SDPAMessage::mutable_submit_job() {
+inline ::sdpa::events::SubmitJob* SDPAMessage::mutable_submit_job() {
   _set_bit(1);
-  if (submit_job_ == NULL) submit_job_ = new ::sdpa::messages::SubmitJob;
+  if (submit_job_ == NULL) submit_job_ = new ::sdpa::events::SubmitJob;
   return submit_job_;
 }
 
-// optional .sdpa.messages.SubmitJobAck submit_job_ack = 3;
+// optional .sdpa.events.SubmitJobAck submit_job_ack = 3;
 inline bool SDPAMessage::has_submit_job_ack() const {
   return _has_bit(2);
 }
 inline void SDPAMessage::clear_submit_job_ack() {
-  if (submit_job_ack_ != NULL) submit_job_ack_->::sdpa::messages::SubmitJobAck::Clear();
+  if (submit_job_ack_ != NULL) submit_job_ack_->::sdpa::events::SubmitJobAck::Clear();
   _clear_bit(2);
 }
-inline const ::sdpa::messages::SubmitJobAck& SDPAMessage::submit_job_ack() const {
+inline const ::sdpa::events::SubmitJobAck& SDPAMessage::submit_job_ack() const {
   return submit_job_ack_ != NULL ? *submit_job_ack_ : *default_instance_->submit_job_ack_;
 }
-inline ::sdpa::messages::SubmitJobAck* SDPAMessage::mutable_submit_job_ack() {
+inline ::sdpa::events::SubmitJobAck* SDPAMessage::mutable_submit_job_ack() {
   _set_bit(2);
-  if (submit_job_ack_ == NULL) submit_job_ack_ = new ::sdpa::messages::SubmitJobAck;
+  if (submit_job_ack_ == NULL) submit_job_ack_ = new ::sdpa::events::SubmitJobAck;
   return submit_job_ack_;
 }
 
-// optional .sdpa.messages.CancelJob cancel_job = 4;
+// optional .sdpa.events.CancelJob cancel_job = 4;
 inline bool SDPAMessage::has_cancel_job() const {
   return _has_bit(3);
 }
 inline void SDPAMessage::clear_cancel_job() {
-  if (cancel_job_ != NULL) cancel_job_->::sdpa::messages::CancelJob::Clear();
+  if (cancel_job_ != NULL) cancel_job_->::sdpa::events::CancelJob::Clear();
   _clear_bit(3);
 }
-inline const ::sdpa::messages::CancelJob& SDPAMessage::cancel_job() const {
+inline const ::sdpa::events::CancelJob& SDPAMessage::cancel_job() const {
   return cancel_job_ != NULL ? *cancel_job_ : *default_instance_->cancel_job_;
 }
-inline ::sdpa::messages::CancelJob* SDPAMessage::mutable_cancel_job() {
+inline ::sdpa::events::CancelJob* SDPAMessage::mutable_cancel_job() {
   _set_bit(3);
-  if (cancel_job_ == NULL) cancel_job_ = new ::sdpa::messages::CancelJob;
+  if (cancel_job_ == NULL) cancel_job_ = new ::sdpa::events::CancelJob;
   return cancel_job_;
 }
 
-// optional .sdpa.messages.CancelJobAck cancel_job_ack = 5;
+// optional .sdpa.events.CancelJobAck cancel_job_ack = 5;
 inline bool SDPAMessage::has_cancel_job_ack() const {
   return _has_bit(4);
 }
 inline void SDPAMessage::clear_cancel_job_ack() {
-  if (cancel_job_ack_ != NULL) cancel_job_ack_->::sdpa::messages::CancelJobAck::Clear();
+  if (cancel_job_ack_ != NULL) cancel_job_ack_->::sdpa::events::CancelJobAck::Clear();
   _clear_bit(4);
 }
-inline const ::sdpa::messages::CancelJobAck& SDPAMessage::cancel_job_ack() const {
+inline const ::sdpa::events::CancelJobAck& SDPAMessage::cancel_job_ack() const {
   return cancel_job_ack_ != NULL ? *cancel_job_ack_ : *default_instance_->cancel_job_ack_;
 }
-inline ::sdpa::messages::CancelJobAck* SDPAMessage::mutable_cancel_job_ack() {
+inline ::sdpa::events::CancelJobAck* SDPAMessage::mutable_cancel_job_ack() {
   _set_bit(4);
-  if (cancel_job_ack_ == NULL) cancel_job_ack_ = new ::sdpa::messages::CancelJobAck;
+  if (cancel_job_ack_ == NULL) cancel_job_ack_ = new ::sdpa::events::CancelJobAck;
   return cancel_job_ack_;
 }
 
-// optional .sdpa.messages.JobStatusRequest job_status_request = 6;
+// optional .sdpa.events.JobStatusRequest job_status_request = 6;
 inline bool SDPAMessage::has_job_status_request() const {
   return _has_bit(5);
 }
 inline void SDPAMessage::clear_job_status_request() {
-  if (job_status_request_ != NULL) job_status_request_->::sdpa::messages::JobStatusRequest::Clear();
+  if (job_status_request_ != NULL) job_status_request_->::sdpa::events::JobStatusRequest::Clear();
   _clear_bit(5);
 }
-inline const ::sdpa::messages::JobStatusRequest& SDPAMessage::job_status_request() const {
+inline const ::sdpa::events::JobStatusRequest& SDPAMessage::job_status_request() const {
   return job_status_request_ != NULL ? *job_status_request_ : *default_instance_->job_status_request_;
 }
-inline ::sdpa::messages::JobStatusRequest* SDPAMessage::mutable_job_status_request() {
+inline ::sdpa::events::JobStatusRequest* SDPAMessage::mutable_job_status_request() {
   _set_bit(5);
-  if (job_status_request_ == NULL) job_status_request_ = new ::sdpa::messages::JobStatusRequest;
+  if (job_status_request_ == NULL) job_status_request_ = new ::sdpa::events::JobStatusRequest;
   return job_status_request_;
 }
 
-// optional .sdpa.messages.JobStatusReply job_status = 7;
+// optional .sdpa.events.JobStatusReply job_status = 7;
 inline bool SDPAMessage::has_job_status() const {
   return _has_bit(6);
 }
 inline void SDPAMessage::clear_job_status() {
-  if (job_status_ != NULL) job_status_->::sdpa::messages::JobStatusReply::Clear();
+  if (job_status_ != NULL) job_status_->::sdpa::events::JobStatusReply::Clear();
   _clear_bit(6);
 }
-inline const ::sdpa::messages::JobStatusReply& SDPAMessage::job_status() const {
+inline const ::sdpa::events::JobStatusReply& SDPAMessage::job_status() const {
   return job_status_ != NULL ? *job_status_ : *default_instance_->job_status_;
 }
-inline ::sdpa::messages::JobStatusReply* SDPAMessage::mutable_job_status() {
+inline ::sdpa::events::JobStatusReply* SDPAMessage::mutable_job_status() {
   _set_bit(6);
-  if (job_status_ == NULL) job_status_ = new ::sdpa::messages::JobStatusReply;
+  if (job_status_ == NULL) job_status_ = new ::sdpa::events::JobStatusReply;
   return job_status_;
 }
 
-// optional .sdpa.messages.JobFinished job_finished = 8;
+// optional .sdpa.events.JobFinished job_finished = 8;
 inline bool SDPAMessage::has_job_finished() const {
   return _has_bit(7);
 }
 inline void SDPAMessage::clear_job_finished() {
-  if (job_finished_ != NULL) job_finished_->::sdpa::messages::JobFinished::Clear();
+  if (job_finished_ != NULL) job_finished_->::sdpa::events::JobFinished::Clear();
   _clear_bit(7);
 }
-inline const ::sdpa::messages::JobFinished& SDPAMessage::job_finished() const {
+inline const ::sdpa::events::JobFinished& SDPAMessage::job_finished() const {
   return job_finished_ != NULL ? *job_finished_ : *default_instance_->job_finished_;
 }
-inline ::sdpa::messages::JobFinished* SDPAMessage::mutable_job_finished() {
+inline ::sdpa::events::JobFinished* SDPAMessage::mutable_job_finished() {
   _set_bit(7);
-  if (job_finished_ == NULL) job_finished_ = new ::sdpa::messages::JobFinished;
+  if (job_finished_ == NULL) job_finished_ = new ::sdpa::events::JobFinished;
   return job_finished_;
 }
 
-// optional .sdpa.messages.JobFinishedAck job_finished_ack = 9;
+// optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
 inline bool SDPAMessage::has_job_finished_ack() const {
   return _has_bit(8);
 }
 inline void SDPAMessage::clear_job_finished_ack() {
-  if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::messages::JobFinishedAck::Clear();
+  if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::events::JobFinishedAck::Clear();
   _clear_bit(8);
 }
-inline const ::sdpa::messages::JobFinishedAck& SDPAMessage::job_finished_ack() const {
+inline const ::sdpa::events::JobFinishedAck& SDPAMessage::job_finished_ack() const {
   return job_finished_ack_ != NULL ? *job_finished_ack_ : *default_instance_->job_finished_ack_;
 }
-inline ::sdpa::messages::JobFinishedAck* SDPAMessage::mutable_job_finished_ack() {
+inline ::sdpa::events::JobFinishedAck* SDPAMessage::mutable_job_finished_ack() {
   _set_bit(8);
-  if (job_finished_ack_ == NULL) job_finished_ack_ = new ::sdpa::messages::JobFinishedAck;
+  if (job_finished_ack_ == NULL) job_finished_ack_ = new ::sdpa::events::JobFinishedAck;
   return job_finished_ack_;
 }
 
-// optional .sdpa.messages.JobFailed job_failed = 10;
+// optional .sdpa.events.JobFailed job_failed = 10;
 inline bool SDPAMessage::has_job_failed() const {
   return _has_bit(9);
 }
 inline void SDPAMessage::clear_job_failed() {
-  if (job_failed_ != NULL) job_failed_->::sdpa::messages::JobFailed::Clear();
+  if (job_failed_ != NULL) job_failed_->::sdpa::events::JobFailed::Clear();
   _clear_bit(9);
 }
-inline const ::sdpa::messages::JobFailed& SDPAMessage::job_failed() const {
+inline const ::sdpa::events::JobFailed& SDPAMessage::job_failed() const {
   return job_failed_ != NULL ? *job_failed_ : *default_instance_->job_failed_;
 }
-inline ::sdpa::messages::JobFailed* SDPAMessage::mutable_job_failed() {
+inline ::sdpa::events::JobFailed* SDPAMessage::mutable_job_failed() {
   _set_bit(9);
-  if (job_failed_ == NULL) job_failed_ = new ::sdpa::messages::JobFailed;
+  if (job_failed_ == NULL) job_failed_ = new ::sdpa::events::JobFailed;
   return job_failed_;
 }
 
-// optional .sdpa.messages.JobFailedAck job_failed_ack = 11;
+// optional .sdpa.events.JobFailedAck job_failed_ack = 11;
 inline bool SDPAMessage::has_job_failed_ack() const {
   return _has_bit(10);
 }
 inline void SDPAMessage::clear_job_failed_ack() {
-  if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::messages::JobFailedAck::Clear();
+  if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::events::JobFailedAck::Clear();
   _clear_bit(10);
 }
-inline const ::sdpa::messages::JobFailedAck& SDPAMessage::job_failed_ack() const {
+inline const ::sdpa::events::JobFailedAck& SDPAMessage::job_failed_ack() const {
   return job_failed_ack_ != NULL ? *job_failed_ack_ : *default_instance_->job_failed_ack_;
 }
-inline ::sdpa::messages::JobFailedAck* SDPAMessage::mutable_job_failed_ack() {
+inline ::sdpa::events::JobFailedAck* SDPAMessage::mutable_job_failed_ack() {
   _set_bit(10);
-  if (job_failed_ack_ == NULL) job_failed_ack_ = new ::sdpa::messages::JobFailedAck;
+  if (job_failed_ack_ == NULL) job_failed_ack_ = new ::sdpa::events::JobFailedAck;
   return job_failed_ack_;
 }
 
-// optional .sdpa.messages.LifeSignal life_signal = 12;
+// optional .sdpa.events.LifeSignal life_signal = 12;
 inline bool SDPAMessage::has_life_signal() const {
   return _has_bit(11);
 }
 inline void SDPAMessage::clear_life_signal() {
-  if (life_signal_ != NULL) life_signal_->::sdpa::messages::LifeSignal::Clear();
+  if (life_signal_ != NULL) life_signal_->::sdpa::events::LifeSignal::Clear();
   _clear_bit(11);
 }
-inline const ::sdpa::messages::LifeSignal& SDPAMessage::life_signal() const {
+inline const ::sdpa::events::LifeSignal& SDPAMessage::life_signal() const {
   return life_signal_ != NULL ? *life_signal_ : *default_instance_->life_signal_;
 }
-inline ::sdpa::messages::LifeSignal* SDPAMessage::mutable_life_signal() {
+inline ::sdpa::events::LifeSignal* SDPAMessage::mutable_life_signal() {
   _set_bit(11);
-  if (life_signal_ == NULL) life_signal_ = new ::sdpa::messages::LifeSignal;
+  if (life_signal_ == NULL) life_signal_ = new ::sdpa::events::LifeSignal;
   return life_signal_;
 }
 
-// optional .sdpa.messages.ConfigRequest config_request = 13;
+// optional .sdpa.events.ConfigRequest config_request = 13;
 inline bool SDPAMessage::has_config_request() const {
   return _has_bit(12);
 }
 inline void SDPAMessage::clear_config_request() {
-  if (config_request_ != NULL) config_request_->::sdpa::messages::ConfigRequest::Clear();
+  if (config_request_ != NULL) config_request_->::sdpa::events::ConfigRequest::Clear();
   _clear_bit(12);
 }
-inline const ::sdpa::messages::ConfigRequest& SDPAMessage::config_request() const {
+inline const ::sdpa::events::ConfigRequest& SDPAMessage::config_request() const {
   return config_request_ != NULL ? *config_request_ : *default_instance_->config_request_;
 }
-inline ::sdpa::messages::ConfigRequest* SDPAMessage::mutable_config_request() {
+inline ::sdpa::events::ConfigRequest* SDPAMessage::mutable_config_request() {
   _set_bit(12);
-  if (config_request_ == NULL) config_request_ = new ::sdpa::messages::ConfigRequest;
+  if (config_request_ == NULL) config_request_ = new ::sdpa::events::ConfigRequest;
   return config_request_;
 }
 
-// optional .sdpa.messages.ConfigReply config_reply = 14;
+// optional .sdpa.events.ConfigReply config_reply = 14;
 inline bool SDPAMessage::has_config_reply() const {
   return _has_bit(13);
 }
 inline void SDPAMessage::clear_config_reply() {
-  if (config_reply_ != NULL) config_reply_->::sdpa::messages::ConfigReply::Clear();
+  if (config_reply_ != NULL) config_reply_->::sdpa::events::ConfigReply::Clear();
   _clear_bit(13);
 }
-inline const ::sdpa::messages::ConfigReply& SDPAMessage::config_reply() const {
+inline const ::sdpa::events::ConfigReply& SDPAMessage::config_reply() const {
   return config_reply_ != NULL ? *config_reply_ : *default_instance_->config_reply_;
 }
-inline ::sdpa::messages::ConfigReply* SDPAMessage::mutable_config_reply() {
+inline ::sdpa::events::ConfigReply* SDPAMessage::mutable_config_reply() {
   _set_bit(13);
-  if (config_reply_ == NULL) config_reply_ = new ::sdpa::messages::ConfigReply;
+  if (config_reply_ == NULL) config_reply_ = new ::sdpa::events::ConfigReply;
   return config_reply_;
 }
 
@@ -1835,7 +1835,7 @@ inline ::sdpa::messages::ConfigReply* SDPAMessage::mutable_config_reply() {
 
 // Error
 
-// required .sdpa.messages.ErrorCode error_code = 1;
+// required .sdpa.events.ErrorCode error_code = 1;
 inline bool Error::has_error_code() const {
   return _has_bit(0);
 }
@@ -1843,11 +1843,11 @@ inline void Error::clear_error_code() {
   error_code_ = 0;
   _clear_bit(0);
 }
-inline sdpa::messages::ErrorCode Error::error_code() const {
-  return static_cast< sdpa::messages::ErrorCode >(error_code_);
+inline sdpa::events::ErrorCode Error::error_code() const {
+  return static_cast< sdpa::events::ErrorCode >(error_code_);
 }
-inline void Error::set_error_code(sdpa::messages::ErrorCode value) {
-  GOOGLE_DCHECK(sdpa::messages::ErrorCode_IsValid(value));
+inline void Error::set_error_code(sdpa::events::ErrorCode value) {
+  GOOGLE_DCHECK(sdpa::events::ErrorCode_IsValid(value));
   _set_bit(0);
   error_code_ = value;
 }
@@ -2021,28 +2021,28 @@ inline ::std::string* SubmitJob::mutable_workflow() {
   return workflow_;
 }
 
-// repeated .sdpa.messages.Token input = 2;
+// repeated .sdpa.events.Token input = 2;
 inline int SubmitJob::input_size() const {
   return input_.size();
 }
 inline void SubmitJob::clear_input() {
   input_.Clear();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::sdpa::messages::Token >&
+inline const ::google::protobuf::RepeatedPtrField< ::sdpa::events::Token >&
 SubmitJob::input() const {
   return input_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::sdpa::messages::Token >*
+inline ::google::protobuf::RepeatedPtrField< ::sdpa::events::Token >*
 SubmitJob::mutable_input() {
   return &input_;
 }
-inline const ::sdpa::messages::Token& SubmitJob::input(int index) const {
+inline const ::sdpa::events::Token& SubmitJob::input(int index) const {
   return input_.Get(index);
 }
-inline ::sdpa::messages::Token* SubmitJob::mutable_input(int index) {
+inline ::sdpa::events::Token* SubmitJob::mutable_input(int index) {
   return input_.Mutable(index);
 }
-inline ::sdpa::messages::Token* SubmitJob::add_input() {
+inline ::sdpa::events::Token* SubmitJob::add_input() {
   return input_.Add();
 }
 
@@ -2311,7 +2311,7 @@ inline ::std::string* JobStatusReply::mutable_job_id() {
   return job_id_;
 }
 
-// required .sdpa.messages.JobState state = 2;
+// required .sdpa.events.JobState state = 2;
 inline bool JobStatusReply::has_state() const {
   return _has_bit(1);
 }
@@ -2319,11 +2319,11 @@ inline void JobStatusReply::clear_state() {
   state_ = 0;
   _clear_bit(1);
 }
-inline sdpa::messages::JobState JobStatusReply::state() const {
-  return static_cast< sdpa::messages::JobState >(state_);
+inline sdpa::events::JobState JobStatusReply::state() const {
+  return static_cast< sdpa::events::JobState >(state_);
 }
-inline void JobStatusReply::set_state(sdpa::messages::JobState value) {
-  GOOGLE_DCHECK(sdpa::messages::JobState_IsValid(value));
+inline void JobStatusReply::set_state(sdpa::events::JobState value) {
+  GOOGLE_DCHECK(sdpa::events::JobState_IsValid(value));
   _set_bit(1);
   state_ = value;
 }
@@ -2667,6 +2667,6 @@ inline ::std::string* ConfigReply::mutable_component_id() {
 }
 
 
-}  // namespace messages
+}  // namespace events
 }  // namespace sdpa
 #endif  // PROTOBUF_sdpa_2dmsg_2eproto__INCLUDED

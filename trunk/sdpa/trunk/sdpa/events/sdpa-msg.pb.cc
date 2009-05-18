@@ -7,7 +7,7 @@
 #include <google/protobuf/wire_format_inl.h>
 
 namespace sdpa {
-namespace messages {
+namespace events {
 
 namespace {
 
@@ -386,45 +386,44 @@ void protobuf_BuildDesc_sdpa_2dmsg_2eproto() {
     ::google::protobuf::DescriptorPool::internal_generated_pool();
 
   pool->InternalBuildGeneratedFile(
-    "\n\016sdpa-msg.proto\022\rsdpa.messages\"\316\005\n\013SDPA"
-    "Message\022#\n\005error\030\001 \001(\0132\024.sdpa.messages.E"
-    "rror\022,\n\nsubmit_job\030\002 \001(\0132\030.sdpa.messages"
-    ".SubmitJob\0223\n\016submit_job_ack\030\003 \001(\0132\033.sdp"
-    "a.messages.SubmitJobAck\022,\n\ncancel_job\030\004 "
-    "\001(\0132\030.sdpa.messages.CancelJob\0223\n\016cancel_"
-    "job_ack\030\005 \001(\0132\033.sdpa.messages.CancelJobA"
-    "ck\022;\n\022job_status_request\030\006 \001(\0132\037.sdpa.me"
-    "ssages.JobStatusRequest\0221\n\njob_status\030\007 "
-    "\001(\0132\035.sdpa.messages.JobStatusReply\0220\n\014jo"
-    "b_finished\030\010 \001(\0132\032.sdpa.messages.JobFini"
-    "shed\0227\n\020job_finished_ack\030\t \001(\0132\035.sdpa.me"
-    "ssages.JobFinishedAck\022,\n\njob_failed\030\n \001("
-    "\0132\030.sdpa.messages.JobFailed\0223\n\016job_faile"
-    "d_ack\030\013 \001(\0132\033.sdpa.messages.JobFailedAck"
-    "\022.\n\013life_signal\030\014 \001(\0132\031.sdpa.messages.Li"
-    "feSignal\0224\n\016config_request\030\r \001(\0132\034.sdpa."
-    "messages.ConfigRequest\0220\n\014config_reply\030\016"
-    " \001(\0132\032.sdpa.messages.ConfigReply\"P\n\005Erro"
-    "r\022,\n\nerror_code\030\001 \002(\0162\030.sdpa.messages.Er"
-    "rorCode\022\031\n\021error_description\030\002 \002(\t\"%\n\005To"
-    "ken\022\r\n\005place\030\001 \002(\014\022\r\n\005token\030\002 \002(\014\"B\n\tSub"
-    "mitJob\022\020\n\010workflow\030\001 \002(\014\022#\n\005input\030\002 \003(\0132"
-    "\024.sdpa.messages.Token\"\036\n\014SubmitJobAck\022\016\n"
-    "\006job_id\030\001 \002(\014\"+\n\tCancelJob\022\016\n\006job_id\030\001 \002"
-    "(\014\022\016\n\006reason\030\002 \001(\t\"\036\n\014CancelJobAck\022\016\n\006jo"
-    "b_id\030\001 \002(\014\"\"\n\020JobStatusRequest\022\016\n\006job_id"
-    "\030\001 \002(\014\"H\n\016JobStatusReply\022\016\n\006job_id\030\001 \002(\014"
-    "\022&\n\005state\030\002 \002(\0162\027.sdpa.messages.JobState"
-    "\"\035\n\013JobFinished\022\016\n\006job_id\030\001 \002(\014\" \n\016JobFi"
-    "nishedAck\022\016\n\006job_id\030\001 \002(\014\"\033\n\tJobFailed\022\016"
-    "\n\006job_id\030\001 \002(\014\"\036\n\014JobFailedAck\022\016\n\006job_id"
-    "\030\001 \002(\014\"5\n\nLifeSignal\022\021\n\ttimestamp\030\001 \002(\006\022"
-    "\024\n\014component_id\030\002 \002(\014\"%\n\rConfigRequest\022\024"
-    "\n\014component_id\030\001 \002(\014\"#\n\013ConfigReply\022\024\n\014c"
-    "omponent_id\030\001 \002(\014*\023\n\tErrorCode\022\006\n\002OK\020\000*j"
-    "\n\010JobState\022\013\n\007UNKNOWN\020\000\022\013\n\007PENDING\020\001\022\013\n\007"
-    "RUNNING\020\002\022\014\n\010FINISHED\020\003\022\n\n\006FAILED\020\004\022\r\n\tC"
-    "ANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 1550,
+    "\n\016sdpa-msg.proto\022\013sdpa.events\"\262\005\n\013SDPAMe"
+    "ssage\022!\n\005error\030\001 \001(\0132\022.sdpa.events.Error"
+    "\022*\n\nsubmit_job\030\002 \001(\0132\026.sdpa.events.Submi"
+    "tJob\0221\n\016submit_job_ack\030\003 \001(\0132\031.sdpa.even"
+    "ts.SubmitJobAck\022*\n\ncancel_job\030\004 \001(\0132\026.sd"
+    "pa.events.CancelJob\0221\n\016cancel_job_ack\030\005 "
+    "\001(\0132\031.sdpa.events.CancelJobAck\0229\n\022job_st"
+    "atus_request\030\006 \001(\0132\035.sdpa.events.JobStat"
+    "usRequest\022/\n\njob_status\030\007 \001(\0132\033.sdpa.eve"
+    "nts.JobStatusReply\022.\n\014job_finished\030\010 \001(\013"
+    "2\030.sdpa.events.JobFinished\0225\n\020job_finish"
+    "ed_ack\030\t \001(\0132\033.sdpa.events.JobFinishedAc"
+    "k\022*\n\njob_failed\030\n \001(\0132\026.sdpa.events.JobF"
+    "ailed\0221\n\016job_failed_ack\030\013 \001(\0132\031.sdpa.eve"
+    "nts.JobFailedAck\022,\n\013life_signal\030\014 \001(\0132\027."
+    "sdpa.events.LifeSignal\0222\n\016config_request"
+    "\030\r \001(\0132\032.sdpa.events.ConfigRequest\022.\n\014co"
+    "nfig_reply\030\016 \001(\0132\030.sdpa.events.ConfigRep"
+    "ly\"N\n\005Error\022*\n\nerror_code\030\001 \002(\0162\026.sdpa.e"
+    "vents.ErrorCode\022\031\n\021error_description\030\002 \002"
+    "(\t\"%\n\005Token\022\r\n\005place\030\001 \002(\014\022\r\n\005token\030\002 \002("
+    "\014\"@\n\tSubmitJob\022\020\n\010workflow\030\001 \002(\014\022!\n\005inpu"
+    "t\030\002 \003(\0132\022.sdpa.events.Token\"\036\n\014SubmitJob"
+    "Ack\022\016\n\006job_id\030\001 \002(\014\"+\n\tCancelJob\022\016\n\006job_"
+    "id\030\001 \002(\014\022\016\n\006reason\030\002 \001(\t\"\036\n\014CancelJobAck"
+    "\022\016\n\006job_id\030\001 \002(\014\"\"\n\020JobStatusRequest\022\016\n\006"
+    "job_id\030\001 \002(\014\"F\n\016JobStatusReply\022\016\n\006job_id"
+    "\030\001 \002(\014\022$\n\005state\030\002 \002(\0162\025.sdpa.events.JobS"
+    "tate\"\035\n\013JobFinished\022\016\n\006job_id\030\001 \002(\014\" \n\016J"
+    "obFinishedAck\022\016\n\006job_id\030\001 \002(\014\"\033\n\tJobFail"
+    "ed\022\016\n\006job_id\030\001 \002(\014\"\036\n\014JobFailedAck\022\016\n\006jo"
+    "b_id\030\001 \002(\014\"5\n\nLifeSignal\022\021\n\ttimestamp\030\001 "
+    "\002(\006\022\024\n\014component_id\030\002 \002(\014\"%\n\rConfigReque"
+    "st\022\024\n\014component_id\030\001 \002(\014\"#\n\013ConfigReply\022"
+    "\024\n\014component_id\030\001 \002(\014*\023\n\tErrorCode\022\006\n\002OK"
+    "\020\000*j\n\010JobState\022\013\n\007UNKNOWN\020\000\022\013\n\007PENDING\020\001"
+    "\022\013\n\007RUNNING\020\002\022\014\n\010FINISHED\020\003\022\n\n\006FAILED\020\004\022"
+    "\r\n\tCANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 1514,
   &protobuf_BuildDesc_sdpa_2dmsg_2eproto_AssignGlobalDescriptors);
 }
 
@@ -504,20 +503,20 @@ SDPAMessage::SDPAMessage()
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-void SDPAMessage::InitAsDefaultInstance() {  error_ = const_cast< ::sdpa::messages::Error*>(&::sdpa::messages::Error::default_instance());
-  submit_job_ = const_cast< ::sdpa::messages::SubmitJob*>(&::sdpa::messages::SubmitJob::default_instance());
-  submit_job_ack_ = const_cast< ::sdpa::messages::SubmitJobAck*>(&::sdpa::messages::SubmitJobAck::default_instance());
-  cancel_job_ = const_cast< ::sdpa::messages::CancelJob*>(&::sdpa::messages::CancelJob::default_instance());
-  cancel_job_ack_ = const_cast< ::sdpa::messages::CancelJobAck*>(&::sdpa::messages::CancelJobAck::default_instance());
-  job_status_request_ = const_cast< ::sdpa::messages::JobStatusRequest*>(&::sdpa::messages::JobStatusRequest::default_instance());
-  job_status_ = const_cast< ::sdpa::messages::JobStatusReply*>(&::sdpa::messages::JobStatusReply::default_instance());
-  job_finished_ = const_cast< ::sdpa::messages::JobFinished*>(&::sdpa::messages::JobFinished::default_instance());
-  job_finished_ack_ = const_cast< ::sdpa::messages::JobFinishedAck*>(&::sdpa::messages::JobFinishedAck::default_instance());
-  job_failed_ = const_cast< ::sdpa::messages::JobFailed*>(&::sdpa::messages::JobFailed::default_instance());
-  job_failed_ack_ = const_cast< ::sdpa::messages::JobFailedAck*>(&::sdpa::messages::JobFailedAck::default_instance());
-  life_signal_ = const_cast< ::sdpa::messages::LifeSignal*>(&::sdpa::messages::LifeSignal::default_instance());
-  config_request_ = const_cast< ::sdpa::messages::ConfigRequest*>(&::sdpa::messages::ConfigRequest::default_instance());
-  config_reply_ = const_cast< ::sdpa::messages::ConfigReply*>(&::sdpa::messages::ConfigReply::default_instance());
+void SDPAMessage::InitAsDefaultInstance() {  error_ = const_cast< ::sdpa::events::Error*>(&::sdpa::events::Error::default_instance());
+  submit_job_ = const_cast< ::sdpa::events::SubmitJob*>(&::sdpa::events::SubmitJob::default_instance());
+  submit_job_ack_ = const_cast< ::sdpa::events::SubmitJobAck*>(&::sdpa::events::SubmitJobAck::default_instance());
+  cancel_job_ = const_cast< ::sdpa::events::CancelJob*>(&::sdpa::events::CancelJob::default_instance());
+  cancel_job_ack_ = const_cast< ::sdpa::events::CancelJobAck*>(&::sdpa::events::CancelJobAck::default_instance());
+  job_status_request_ = const_cast< ::sdpa::events::JobStatusRequest*>(&::sdpa::events::JobStatusRequest::default_instance());
+  job_status_ = const_cast< ::sdpa::events::JobStatusReply*>(&::sdpa::events::JobStatusReply::default_instance());
+  job_finished_ = const_cast< ::sdpa::events::JobFinished*>(&::sdpa::events::JobFinished::default_instance());
+  job_finished_ack_ = const_cast< ::sdpa::events::JobFinishedAck*>(&::sdpa::events::JobFinishedAck::default_instance());
+  job_failed_ = const_cast< ::sdpa::events::JobFailed*>(&::sdpa::events::JobFailed::default_instance());
+  job_failed_ack_ = const_cast< ::sdpa::events::JobFailedAck*>(&::sdpa::events::JobFailedAck::default_instance());
+  life_signal_ = const_cast< ::sdpa::events::LifeSignal*>(&::sdpa::events::LifeSignal::default_instance());
+  config_request_ = const_cast< ::sdpa::events::ConfigRequest*>(&::sdpa::events::ConfigRequest::default_instance());
+  config_reply_ = const_cast< ::sdpa::events::ConfigReply*>(&::sdpa::events::ConfigReply::default_instance());
 }
 
 SDPAMessage::SDPAMessage(const SDPAMessage& from)
@@ -579,48 +578,48 @@ SDPAMessage* SDPAMessage::New() const {
 void SDPAMessage::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (error_ != NULL) error_->::sdpa::messages::Error::Clear();
+      if (error_ != NULL) error_->::sdpa::events::Error::Clear();
     }
     if (_has_bit(1)) {
-      if (submit_job_ != NULL) submit_job_->::sdpa::messages::SubmitJob::Clear();
+      if (submit_job_ != NULL) submit_job_->::sdpa::events::SubmitJob::Clear();
     }
     if (_has_bit(2)) {
-      if (submit_job_ack_ != NULL) submit_job_ack_->::sdpa::messages::SubmitJobAck::Clear();
+      if (submit_job_ack_ != NULL) submit_job_ack_->::sdpa::events::SubmitJobAck::Clear();
     }
     if (_has_bit(3)) {
-      if (cancel_job_ != NULL) cancel_job_->::sdpa::messages::CancelJob::Clear();
+      if (cancel_job_ != NULL) cancel_job_->::sdpa::events::CancelJob::Clear();
     }
     if (_has_bit(4)) {
-      if (cancel_job_ack_ != NULL) cancel_job_ack_->::sdpa::messages::CancelJobAck::Clear();
+      if (cancel_job_ack_ != NULL) cancel_job_ack_->::sdpa::events::CancelJobAck::Clear();
     }
     if (_has_bit(5)) {
-      if (job_status_request_ != NULL) job_status_request_->::sdpa::messages::JobStatusRequest::Clear();
+      if (job_status_request_ != NULL) job_status_request_->::sdpa::events::JobStatusRequest::Clear();
     }
     if (_has_bit(6)) {
-      if (job_status_ != NULL) job_status_->::sdpa::messages::JobStatusReply::Clear();
+      if (job_status_ != NULL) job_status_->::sdpa::events::JobStatusReply::Clear();
     }
     if (_has_bit(7)) {
-      if (job_finished_ != NULL) job_finished_->::sdpa::messages::JobFinished::Clear();
+      if (job_finished_ != NULL) job_finished_->::sdpa::events::JobFinished::Clear();
     }
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (_has_bit(8)) {
-      if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::messages::JobFinishedAck::Clear();
+      if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::events::JobFinishedAck::Clear();
     }
     if (_has_bit(9)) {
-      if (job_failed_ != NULL) job_failed_->::sdpa::messages::JobFailed::Clear();
+      if (job_failed_ != NULL) job_failed_->::sdpa::events::JobFailed::Clear();
     }
     if (_has_bit(10)) {
-      if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::messages::JobFailedAck::Clear();
+      if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::events::JobFailedAck::Clear();
     }
     if (_has_bit(11)) {
-      if (life_signal_ != NULL) life_signal_->::sdpa::messages::LifeSignal::Clear();
+      if (life_signal_ != NULL) life_signal_->::sdpa::events::LifeSignal::Clear();
     }
     if (_has_bit(12)) {
-      if (config_request_ != NULL) config_request_->::sdpa::messages::ConfigRequest::Clear();
+      if (config_request_ != NULL) config_request_->::sdpa::events::ConfigRequest::Clear();
     }
     if (_has_bit(13)) {
-      if (config_reply_ != NULL) config_reply_->::sdpa::messages::ConfigReply::Clear();
+      if (config_reply_ != NULL) config_reply_->::sdpa::events::ConfigReply::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -633,7 +632,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // optional .sdpa.messages.Error error = 1;
+      // optional .sdpa.events.Error error = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -645,7 +644,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.SubmitJob submit_job = 2;
+      // optional .sdpa.events.SubmitJob submit_job = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -658,7 +657,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.SubmitJobAck submit_job_ack = 3;
+      // optional .sdpa.events.SubmitJobAck submit_job_ack = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -671,7 +670,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.CancelJob cancel_job = 4;
+      // optional .sdpa.events.CancelJob cancel_job = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -684,7 +683,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.CancelJobAck cancel_job_ack = 5;
+      // optional .sdpa.events.CancelJobAck cancel_job_ack = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -697,7 +696,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobStatusRequest job_status_request = 6;
+      // optional .sdpa.events.JobStatusRequest job_status_request = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -710,7 +709,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobStatusReply job_status = 7;
+      // optional .sdpa.events.JobStatusReply job_status = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -723,7 +722,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobFinished job_finished = 8;
+      // optional .sdpa.events.JobFinished job_finished = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -736,7 +735,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobFinishedAck job_finished_ack = 9;
+      // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
       case 9: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -749,7 +748,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobFailed job_failed = 10;
+      // optional .sdpa.events.JobFailed job_failed = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -762,7 +761,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.JobFailedAck job_failed_ack = 11;
+      // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
       case 11: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -775,7 +774,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.LifeSignal life_signal = 12;
+      // optional .sdpa.events.LifeSignal life_signal = 12;
       case 12: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -788,7 +787,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.ConfigRequest config_request = 13;
+      // optional .sdpa.events.ConfigRequest config_request = 13;
       case 13: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -801,7 +800,7 @@ bool SDPAMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional .sdpa.messages.ConfigReply config_reply = 14;
+      // optional .sdpa.events.ConfigReply config_reply = 14;
       case 14: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -833,72 +832,72 @@ bool SDPAMessage::MergePartialFromCodedStream(
 bool SDPAMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // optional .sdpa.messages.Error error = 1;
+  // optional .sdpa.events.Error error = 1;
   if (_has_bit(0)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(1, this->error(), output));
   }
   
-  // optional .sdpa.messages.SubmitJob submit_job = 2;
+  // optional .sdpa.events.SubmitJob submit_job = 2;
   if (_has_bit(1)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->submit_job(), output));
   }
   
-  // optional .sdpa.messages.SubmitJobAck submit_job_ack = 3;
+  // optional .sdpa.events.SubmitJobAck submit_job_ack = 3;
   if (_has_bit(2)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->submit_job_ack(), output));
   }
   
-  // optional .sdpa.messages.CancelJob cancel_job = 4;
+  // optional .sdpa.events.CancelJob cancel_job = 4;
   if (_has_bit(3)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(4, this->cancel_job(), output));
   }
   
-  // optional .sdpa.messages.CancelJobAck cancel_job_ack = 5;
+  // optional .sdpa.events.CancelJobAck cancel_job_ack = 5;
   if (_has_bit(4)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(5, this->cancel_job_ack(), output));
   }
   
-  // optional .sdpa.messages.JobStatusRequest job_status_request = 6;
+  // optional .sdpa.events.JobStatusRequest job_status_request = 6;
   if (_has_bit(5)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(6, this->job_status_request(), output));
   }
   
-  // optional .sdpa.messages.JobStatusReply job_status = 7;
+  // optional .sdpa.events.JobStatusReply job_status = 7;
   if (_has_bit(6)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(7, this->job_status(), output));
   }
   
-  // optional .sdpa.messages.JobFinished job_finished = 8;
+  // optional .sdpa.events.JobFinished job_finished = 8;
   if (_has_bit(7)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(8, this->job_finished(), output));
   }
   
-  // optional .sdpa.messages.JobFinishedAck job_finished_ack = 9;
+  // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
   if (_has_bit(8)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(9, this->job_finished_ack(), output));
   }
   
-  // optional .sdpa.messages.JobFailed job_failed = 10;
+  // optional .sdpa.events.JobFailed job_failed = 10;
   if (_has_bit(9)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(10, this->job_failed(), output));
   }
   
-  // optional .sdpa.messages.JobFailedAck job_failed_ack = 11;
+  // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
   if (_has_bit(10)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(11, this->job_failed_ack(), output));
   }
   
-  // optional .sdpa.messages.LifeSignal life_signal = 12;
+  // optional .sdpa.events.LifeSignal life_signal = 12;
   if (_has_bit(11)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(12, this->life_signal(), output));
   }
   
-  // optional .sdpa.messages.ConfigRequest config_request = 13;
+  // optional .sdpa.events.ConfigRequest config_request = 13;
   if (_has_bit(12)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(13, this->config_request(), output));
   }
   
-  // optional .sdpa.messages.ConfigReply config_reply = 14;
+  // optional .sdpa.events.ConfigReply config_reply = 14;
   if (_has_bit(13)) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(14, this->config_reply(), output));
   }
@@ -915,56 +914,56 @@ int SDPAMessage::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional .sdpa.messages.Error error = 1;
+    // optional .sdpa.events.Error error = 1;
     if (has_error()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->error());
     }
     
-    // optional .sdpa.messages.SubmitJob submit_job = 2;
+    // optional .sdpa.events.SubmitJob submit_job = 2;
     if (has_submit_job()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->submit_job());
     }
     
-    // optional .sdpa.messages.SubmitJobAck submit_job_ack = 3;
+    // optional .sdpa.events.SubmitJobAck submit_job_ack = 3;
     if (has_submit_job_ack()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->submit_job_ack());
     }
     
-    // optional .sdpa.messages.CancelJob cancel_job = 4;
+    // optional .sdpa.events.CancelJob cancel_job = 4;
     if (has_cancel_job()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->cancel_job());
     }
     
-    // optional .sdpa.messages.CancelJobAck cancel_job_ack = 5;
+    // optional .sdpa.events.CancelJobAck cancel_job_ack = 5;
     if (has_cancel_job_ack()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->cancel_job_ack());
     }
     
-    // optional .sdpa.messages.JobStatusRequest job_status_request = 6;
+    // optional .sdpa.events.JobStatusRequest job_status_request = 6;
     if (has_job_status_request()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_status_request());
     }
     
-    // optional .sdpa.messages.JobStatusReply job_status = 7;
+    // optional .sdpa.events.JobStatusReply job_status = 7;
     if (has_job_status()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_status());
     }
     
-    // optional .sdpa.messages.JobFinished job_finished = 8;
+    // optional .sdpa.events.JobFinished job_finished = 8;
     if (has_job_finished()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
@@ -973,42 +972,42 @@ int SDPAMessage::ByteSize() const {
     
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional .sdpa.messages.JobFinishedAck job_finished_ack = 9;
+    // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
     if (has_job_finished_ack()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_finished_ack());
     }
     
-    // optional .sdpa.messages.JobFailed job_failed = 10;
+    // optional .sdpa.events.JobFailed job_failed = 10;
     if (has_job_failed()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_failed());
     }
     
-    // optional .sdpa.messages.JobFailedAck job_failed_ack = 11;
+    // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
     if (has_job_failed_ack()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_failed_ack());
     }
     
-    // optional .sdpa.messages.LifeSignal life_signal = 12;
+    // optional .sdpa.events.LifeSignal life_signal = 12;
     if (has_life_signal()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->life_signal());
     }
     
-    // optional .sdpa.messages.ConfigRequest config_request = 13;
+    // optional .sdpa.events.ConfigRequest config_request = 13;
     if (has_config_request()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->config_request());
     }
     
-    // optional .sdpa.messages.ConfigReply config_reply = 14;
+    // optional .sdpa.events.ConfigReply config_reply = 14;
     if (has_config_reply()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
@@ -1041,48 +1040,48 @@ void SDPAMessage::MergeFrom(const SDPAMessage& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      mutable_error()->::sdpa::messages::Error::MergeFrom(from.error());
+      mutable_error()->::sdpa::events::Error::MergeFrom(from.error());
     }
     if (from._has_bit(1)) {
-      mutable_submit_job()->::sdpa::messages::SubmitJob::MergeFrom(from.submit_job());
+      mutable_submit_job()->::sdpa::events::SubmitJob::MergeFrom(from.submit_job());
     }
     if (from._has_bit(2)) {
-      mutable_submit_job_ack()->::sdpa::messages::SubmitJobAck::MergeFrom(from.submit_job_ack());
+      mutable_submit_job_ack()->::sdpa::events::SubmitJobAck::MergeFrom(from.submit_job_ack());
     }
     if (from._has_bit(3)) {
-      mutable_cancel_job()->::sdpa::messages::CancelJob::MergeFrom(from.cancel_job());
+      mutable_cancel_job()->::sdpa::events::CancelJob::MergeFrom(from.cancel_job());
     }
     if (from._has_bit(4)) {
-      mutable_cancel_job_ack()->::sdpa::messages::CancelJobAck::MergeFrom(from.cancel_job_ack());
+      mutable_cancel_job_ack()->::sdpa::events::CancelJobAck::MergeFrom(from.cancel_job_ack());
     }
     if (from._has_bit(5)) {
-      mutable_job_status_request()->::sdpa::messages::JobStatusRequest::MergeFrom(from.job_status_request());
+      mutable_job_status_request()->::sdpa::events::JobStatusRequest::MergeFrom(from.job_status_request());
     }
     if (from._has_bit(6)) {
-      mutable_job_status()->::sdpa::messages::JobStatusReply::MergeFrom(from.job_status());
+      mutable_job_status()->::sdpa::events::JobStatusReply::MergeFrom(from.job_status());
     }
     if (from._has_bit(7)) {
-      mutable_job_finished()->::sdpa::messages::JobFinished::MergeFrom(from.job_finished());
+      mutable_job_finished()->::sdpa::events::JobFinished::MergeFrom(from.job_finished());
     }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from._has_bit(8)) {
-      mutable_job_finished_ack()->::sdpa::messages::JobFinishedAck::MergeFrom(from.job_finished_ack());
+      mutable_job_finished_ack()->::sdpa::events::JobFinishedAck::MergeFrom(from.job_finished_ack());
     }
     if (from._has_bit(9)) {
-      mutable_job_failed()->::sdpa::messages::JobFailed::MergeFrom(from.job_failed());
+      mutable_job_failed()->::sdpa::events::JobFailed::MergeFrom(from.job_failed());
     }
     if (from._has_bit(10)) {
-      mutable_job_failed_ack()->::sdpa::messages::JobFailedAck::MergeFrom(from.job_failed_ack());
+      mutable_job_failed_ack()->::sdpa::events::JobFailedAck::MergeFrom(from.job_failed_ack());
     }
     if (from._has_bit(11)) {
-      mutable_life_signal()->::sdpa::messages::LifeSignal::MergeFrom(from.life_signal());
+      mutable_life_signal()->::sdpa::events::LifeSignal::MergeFrom(from.life_signal());
     }
     if (from._has_bit(12)) {
-      mutable_config_request()->::sdpa::messages::ConfigRequest::MergeFrom(from.config_request());
+      mutable_config_request()->::sdpa::events::ConfigRequest::MergeFrom(from.config_request());
     }
     if (from._has_bit(13)) {
-      mutable_config_reply()->::sdpa::messages::ConfigReply::MergeFrom(from.config_reply());
+      mutable_config_reply()->::sdpa::events::ConfigReply::MergeFrom(from.config_reply());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1244,7 +1243,7 @@ bool Error::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required .sdpa.messages.ErrorCode error_code = 1;
+      // required .sdpa.events.ErrorCode error_code = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
@@ -1252,8 +1251,8 @@ bool Error::MergePartialFromCodedStream(
         }
         int value;
         DO_(::google::protobuf::internal::WireFormat::ReadEnum(input, &value));
-        if (sdpa::messages::ErrorCode_IsValid(value)) {
-          set_error_code(static_cast< sdpa::messages::ErrorCode >(value));
+        if (sdpa::events::ErrorCode_IsValid(value)) {
+          set_error_code(static_cast< sdpa::events::ErrorCode >(value));
         } else {
           mutable_unknown_fields()->AddField(1)->add_varint(value);
         }
@@ -1292,7 +1291,7 @@ bool Error::MergePartialFromCodedStream(
 bool Error::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required .sdpa.messages.ErrorCode error_code = 1;
+  // required .sdpa.events.ErrorCode error_code = 1;
   if (_has_bit(0)) {
     DO_(::google::protobuf::internal::WireFormat::WriteEnum(1, this->error_code(), output));
   }
@@ -1314,7 +1313,7 @@ int Error::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required .sdpa.messages.ErrorCode error_code = 1;
+    // required .sdpa.events.ErrorCode error_code = 1;
     if (has_error_code()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::EnumSize(this->error_code());
@@ -1694,7 +1693,7 @@ bool SubmitJob::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated .sdpa.messages.Token input = 2;
+      // repeated .sdpa.events.Token input = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
@@ -1732,7 +1731,7 @@ bool SubmitJob::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->workflow(), output));
   }
   
-  // repeated .sdpa.messages.Token input = 2;
+  // repeated .sdpa.events.Token input = 2;
   for (int i = 0; i < input_.size(); i++) {
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->input(i), output));
   }
@@ -1756,7 +1755,7 @@ int SubmitJob::ByteSize() const {
     }
     
   }
-  // repeated .sdpa.messages.Token input = 2;
+  // repeated .sdpa.events.Token input = 2;
   total_size += 1 * input_size();
   for (int i = 0; i < input_size(); i++) {
     total_size +=
@@ -2683,7 +2682,7 @@ bool JobStatusReply::MergePartialFromCodedStream(
         break;
       }
       
-      // required .sdpa.messages.JobState state = 2;
+      // required .sdpa.events.JobState state = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
@@ -2692,8 +2691,8 @@ bool JobStatusReply::MergePartialFromCodedStream(
        parse_state:
         int value;
         DO_(::google::protobuf::internal::WireFormat::ReadEnum(input, &value));
-        if (sdpa::messages::JobState_IsValid(value)) {
-          set_state(static_cast< sdpa::messages::JobState >(value));
+        if (sdpa::events::JobState_IsValid(value)) {
+          set_state(static_cast< sdpa::events::JobState >(value));
         } else {
           mutable_unknown_fields()->AddField(2)->add_varint(value);
         }
@@ -2725,7 +2724,7 @@ bool JobStatusReply::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
   }
   
-  // required .sdpa.messages.JobState state = 2;
+  // required .sdpa.events.JobState state = 2;
   if (_has_bit(1)) {
     DO_(::google::protobuf::internal::WireFormat::WriteEnum(2, this->state(), output));
   }
@@ -2748,7 +2747,7 @@ int JobStatusReply::ByteSize() const {
         ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
     }
     
-    // required .sdpa.messages.JobState state = 2;
+    // required .sdpa.events.JobState state = 2;
     if (has_state()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::EnumSize(this->state());
@@ -4139,5 +4138,5 @@ const ::google::protobuf::Reflection* ConfigReply::GetReflection() const {
   return ConfigReply_reflection_;
 }
 
-}  // namespace messages
+}  // namespace events
 }  // namespace sdpa
