@@ -5,3 +5,4 @@ link_directories(${CPPUNIT_LIBRARY_DIRS})
 link_libraries(${CPPUNIT_LIBRARIES})
 
 add_subdirectory(example)
+add_subdirectory(example2)
