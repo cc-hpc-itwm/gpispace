@@ -1,4 +1,4 @@
-package sdpa.messages;
+package sdpa.events;
 option optimize_for = SPEED;
 
 message SDPAMessage {

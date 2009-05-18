@@ -7,6 +7,7 @@
 #include <sdpa/memory.hpp>
 
 namespace sdpa {
+namespace events {
     class SDPAEvent : public seda::IEvent {
     public:
         typedef sdpa::shared_ptr<SDPAEvent> Ptr;
@@ -22,6 +23,6 @@ namespace sdpa {
         address_t from_;
         address_t to_;
     };
-}
+}}
 
 #endif // SDPA_EVENT_HPP

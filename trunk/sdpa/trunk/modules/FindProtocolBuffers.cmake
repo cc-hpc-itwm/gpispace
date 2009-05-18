@@ -18,6 +18,7 @@ FIND_FILE(PB_PROTOC_CMD
     protoc.exe
   PATHS
     ${PB_HOME}/bin
+    ${CMAKE_BINARY_PATH}
     "[HKEY_CURRENT_USER\\protobuf\\bin]"
     /usr/local/bin
     /usr/bin
@@ -31,6 +32,7 @@ FIND_FILE(PB_PROTOC_CMD
     protoc
   PATHS
     ${PB_HOME}/bin
+    ${CMAKE_BINARY_PATH}
     /usr/local/bin
     /usr/bin
     PATH_SUFFIXES
@@ -60,6 +62,8 @@ FIND_LIBRARY(PB_LIBRARY
 # if the include and the program are found then we have it
 IF(PB_PROTOC_CMD AND PB_LIBRARY) 
   SET(PB_FOUND "YES")
+else(PB_PROTOC_CMD AND PB_LIBRARY) 
+  message(STATUS "ProtocolBuffers could not be found, try setting PB_HOME.")
 ENDIF(PB_PROTOC_CMD AND PB_LIBRARY)
 
 MARK_AS_ADVANCED(
