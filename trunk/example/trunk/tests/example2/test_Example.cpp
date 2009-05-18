@@ -37,4 +37,5 @@ void ExampleTest2::tearDown() {
 
 void ExampleTest2::testExampleBase() {
   CPPUNIT_ASSERT_EQUAL(1,1);
+  CPPUNIT_ASSERT_EQUAL_MESSAGE("Force failure",0,1);
 }
