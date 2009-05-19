@@ -12,6 +12,8 @@ else(PB_HOME)
     set (PB_HOME "/usr/local")
 endif(PB_HOME)
 
+message(STATUS "PB_HOME=${PB_HOME}")
+
 IF(WIN32)
 FIND_FILE(PB_PROTOC_CMD
   NAMES
