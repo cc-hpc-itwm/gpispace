@@ -1,6 +1,6 @@
-file(GLOB example_src "t*.cpp")
+file(GLOB example_src ${CMAKE_SOURCE_DIR}/tests//main.cpp "*.cpp")
 
-add_executable(example_test_tool2 main.cpp ${example_src})
+add_executable(example_test_tool2 ${example_src})
 
 link_libraries(-Wl,-Bdynamic  -ldl)
 

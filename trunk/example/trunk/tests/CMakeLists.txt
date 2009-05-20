@@ -1,4 +1,4 @@
-file(GLOB srcs "*/t*.cpp")
+file(GLOB srcs "*/*.cpp")
 
 # add the CPPUNIT stuff
 include_directories(${CPPUNIT_INCLUDE_DIRS})
