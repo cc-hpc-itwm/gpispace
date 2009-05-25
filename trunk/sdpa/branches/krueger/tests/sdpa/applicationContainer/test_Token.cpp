@@ -42,7 +42,7 @@ void TokenTest::testTokenBase() {
 
   DataToken<int> intToken(42); // creation of a Token
 
-  Token  tok(intToken); // we got a generic Token reference from someone
+  Token  &tok = intToken; // we got a generic Token reference from someone
 
   //int value = t.as<int>(); // we want to use it as an integer (DANGER, we loose any type safety here)
 

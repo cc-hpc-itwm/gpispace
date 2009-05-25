@@ -66,7 +66,6 @@ int main(
 
   std::cout << "running testsuite  done" << std::endl;
   // print and save results
-  return collectedresults.wasSuccessful () ? 0 : 1;
   std::ofstream outStream("out.xml");
   CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
   xmloutputter.write ();

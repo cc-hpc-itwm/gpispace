@@ -19,6 +19,7 @@
  *
  *---------------------------------------------------------------------*/
 #include <assert.h>
+#include <string.h> // memcpy
 
 /*---------------------------------------------------------------------*
  * Local headers
@@ -44,11 +45,11 @@ namespace sdpa {
   namespace appcontainer {
     class Token {
     public:
-      typedef char data_t;
+      typedef void* data_t;
       typedef std::size_t length_t;
 
       Token() : data_(0), length_(0), initialized_(false) {}
-      Token(data_t *data, length_t len) : data_(data), length_(len), initialized_(true) {}
+      Token(data_t data, length_t len) : data_(data), length_(len), initialized_(true) {}
 
       // is there a way to avoid "virtual" for this function?
       // i.e. is it possible to somehow overwrite the implemenation in a subclass depending on the template parameter
@@ -57,7 +58,7 @@ namespace sdpa {
          return initialized_;
       };
 
-      void initialize(data_t *data, length_t len) {
+      void initialize(data_t data, length_t len) {
          assert(! initialized_);
          data_ = data; length_ = len;
       }
@@ -69,11 +70,11 @@ namespace sdpa {
 
       template<typename T> void store(const T &val) {
          assert(sizeof(T) == length_);
-         memcopy(data_, &val, sizeof(T));
+         memcpy(data_, &val, sizeof(T));
       }
 
     private:
-      data_t *data_;
+      data_t data_;
       std::size_t length_;
       bool initialized_;
     };

@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-file(GLOB srcs "*/t*.cpp */*/*cpp")
+file(GLOB srcs "*/t*.cpp" "*/*/*cpp")
 
 # add the CPPUNIT stuff
 include_directories(${CPPUNIT_INCLUDE_DIRS})
@@ -9,6 +9,7 @@ link_libraries(${CPPUNIT_LIBRARIES})
 
 
 #### Big test for bitten
+message(STATUS "linking sdpa-test with srcs=\"${srcs}\"")
 add_executable(sdpa_test main.cpp ${srcs})
 
 link_libraries(-Wl,-Bdynamic  -ldl)
