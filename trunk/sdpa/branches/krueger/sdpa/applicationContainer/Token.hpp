@@ -48,19 +48,27 @@ namespace sdpa {
       typedef void* data_t;
       typedef std::size_t length_t;
 
-      Token() : data_(0), length_(0), initialized_(false) {}
-      Token(data_t data, length_t len) : data_(data), length_(len), initialized_(true) {}
-
       // is there a way to avoid "virtual" for this function?
       // i.e. is it possible to somehow overwrite the implemenation in a subclass depending on the template parameter
       // regular data tokens just return initialized_, control token return their boolean value
-      bool operator!() {
+      inline bool operator!() const {
          return initialized_;
       };
 
       void initialize(data_t data, length_t len) {
          assert(! initialized_);
          data_ = data; length_ = len;
+      }
+
+      inline bool initialized() const {
+        return initialized_;
+      }
+
+      const data_t data() const {
+        return data_;
+      }
+      const length_t length() const {
+        return length_;
       }
 
       template<typename T> const  T & as() {
@@ -72,6 +80,10 @@ namespace sdpa {
          assert(sizeof(T) == length_);
          memcpy(data_, &val, sizeof(T));
       }
+
+    protected:
+      Token() : data_(0), length_(0), initialized_(false) {}
+      Token(data_t data, length_t len) : data_(data), length_(len), initialized_(true) {}
 
     private:
       data_t data_;

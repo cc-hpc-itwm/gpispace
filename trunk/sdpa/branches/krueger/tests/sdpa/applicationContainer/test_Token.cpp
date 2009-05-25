@@ -14,6 +14,8 @@
  **/
 /*---------------------------------------------------------------------*/
 
+#include <iostream>
+
 #include "test_Token.hpp"
 #include <sdpa/applicationContainer/Token.hpp>
 
@@ -41,10 +43,16 @@ void TokenTest::testTokenBase() {
   CPPUNIT_ASSERT_EQUAL(1,1);
 
   DataToken<int> intToken(42); // creation of a Token
+  Token  &tok(intToken); // we got a generic Token reference from someone
 
-  Token  &tok = intToken; // we got a generic Token reference from someone
+  int value = tok.as<int>(); // we want to use it as an integer (DANGER, we loose any type safety here)
 
-  //int value = t.as<int>(); // we want to use it as an integer (DANGER, we loose any type safety here)
+  try {
+    char  f = tok.as<char>(); // assert should crash
+    std::cout << f << std::endl;
+  } catch (...) {
+    std::cout << "blah" << std::endl;
+  }
 
   //if (t) {
      // t has been initialized?
