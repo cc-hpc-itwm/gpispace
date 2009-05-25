@@ -43,7 +43,7 @@ int JobFSM::InformWFEJobFailed( sdpa::Job::job_id_t sJobID )
 
 int JobFSM::GetNextActiveSubJobsListFromWFE( sdpa::Job::job_id_t JobID )
 {
-	SDPA_LOG_DEBUG("Querx WFE for the list of next active jobs");
+	SDPA_LOG_DEBUG("Query WFE for the list of next active jobs");
 	SDPA_LOG_DEBUG("Don't forget to assign unique JobIDs");
 	return 0;
 }  //assign unique global IDs!

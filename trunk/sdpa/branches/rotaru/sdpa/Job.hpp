@@ -36,6 +36,9 @@ namespace sdpa {
 
         virtual void add_subjob(const ptr_t & job) = 0;
         virtual ptr_t get_subjob(const job_id_t & id) = 0;
+
+
+
     };
 }
 

@@ -68,7 +68,8 @@ Running
         Cancelling
         {
             DoCancelSubJobs(event.GetJobID());
-            // Attention!: some SubJobs may already have finished, other subjobs running or not assigned!
+            // Attention!: some SubJobs may already have finished, 
+            // while other subjobs are still running or even not assigned!
         }
 
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)

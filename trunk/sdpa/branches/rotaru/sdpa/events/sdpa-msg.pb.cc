@@ -12,372 +12,28 @@ namespace events {
 namespace {
 
 const ::google::protobuf::Descriptor* SDPAMessage_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SDPAMessage_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Error_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  Error_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Token_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  Token_reflection_ = NULL;
 const ::google::protobuf::Descriptor* SubmitJob_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SubmitJob_reflection_ = NULL;
 const ::google::protobuf::Descriptor* SubmitJobAck_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SubmitJobAck_reflection_ = NULL;
 const ::google::protobuf::Descriptor* CancelJob_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  CancelJob_reflection_ = NULL;
 const ::google::protobuf::Descriptor* CancelJobAck_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  CancelJobAck_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobStatusRequest_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobStatusRequest_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobStatusReply_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobStatusReply_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobFinished_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobFinished_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobFinishedAck_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobFinishedAck_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobFailed_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobFailed_reflection_ = NULL;
 const ::google::protobuf::Descriptor* JobFailedAck_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  JobFailedAck_reflection_ = NULL;
 const ::google::protobuf::Descriptor* LifeSignal_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  LifeSignal_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ConfigRequest_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ConfigRequest_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ConfigReply_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ConfigReply_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* ErrorCode_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* JobState_descriptor_ = NULL;
 
 }  // namespace
 
 
-void protobuf_BuildDesc_sdpa_2dmsg_2eproto_AssignGlobalDescriptors(const ::google::protobuf::FileDescriptor* file) {
-  SDPAMessage_descriptor_ = file->message_type(0);
-  SDPAMessage::default_instance_ = new SDPAMessage();
-  static const int SDPAMessage_offsets_[14] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, error_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_ack_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_ack_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_request_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_ack_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_failed_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_failed_ack_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, life_signal_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, config_request_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, config_reply_),
-  };
-  SDPAMessage_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SDPAMessage_descriptor_,
-      SDPAMessage::default_instance_,
-      SDPAMessage_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(SDPAMessage));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SDPAMessage_descriptor_, SDPAMessage::default_instance_);
-  Error_descriptor_ = file->message_type(1);
-  Error::default_instance_ = new Error();
-  static const int Error_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, error_code_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, error_description_),
-  };
-  Error_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      Error_descriptor_,
-      Error::default_instance_,
-      Error_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(Error));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Error_descriptor_, Error::default_instance_);
-  Token_descriptor_ = file->message_type(2);
-  Token::default_instance_ = new Token();
-  static const int Token_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, place_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, token_),
-  };
-  Token_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      Token_descriptor_,
-      Token::default_instance_,
-      Token_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(Token));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Token_descriptor_, Token::default_instance_);
-  SubmitJob_descriptor_ = file->message_type(3);
-  SubmitJob::default_instance_ = new SubmitJob();
-  static const int SubmitJob_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, workflow_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, input_),
-  };
-  SubmitJob_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SubmitJob_descriptor_,
-      SubmitJob::default_instance_,
-      SubmitJob_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(SubmitJob));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SubmitJob_descriptor_, SubmitJob::default_instance_);
-  SubmitJobAck_descriptor_ = file->message_type(4);
-  SubmitJobAck::default_instance_ = new SubmitJobAck();
-  static const int SubmitJobAck_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, job_id_),
-  };
-  SubmitJobAck_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SubmitJobAck_descriptor_,
-      SubmitJobAck::default_instance_,
-      SubmitJobAck_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(SubmitJobAck));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SubmitJobAck_descriptor_, SubmitJobAck::default_instance_);
-  CancelJob_descriptor_ = file->message_type(5);
-  CancelJob::default_instance_ = new CancelJob();
-  static const int CancelJob_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, job_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, reason_),
-  };
-  CancelJob_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      CancelJob_descriptor_,
-      CancelJob::default_instance_,
-      CancelJob_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(CancelJob));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    CancelJob_descriptor_, CancelJob::default_instance_);
-  CancelJobAck_descriptor_ = file->message_type(6);
-  CancelJobAck::default_instance_ = new CancelJobAck();
-  static const int CancelJobAck_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, job_id_),
-  };
-  CancelJobAck_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      CancelJobAck_descriptor_,
-      CancelJobAck::default_instance_,
-      CancelJobAck_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(CancelJobAck));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    CancelJobAck_descriptor_, CancelJobAck::default_instance_);
-  JobStatusRequest_descriptor_ = file->message_type(7);
-  JobStatusRequest::default_instance_ = new JobStatusRequest();
-  static const int JobStatusRequest_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusRequest, job_id_),
-  };
-  JobStatusRequest_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobStatusRequest_descriptor_,
-      JobStatusRequest::default_instance_,
-      JobStatusRequest_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusRequest, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusRequest, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobStatusRequest));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobStatusRequest_descriptor_, JobStatusRequest::default_instance_);
-  JobStatusReply_descriptor_ = file->message_type(8);
-  JobStatusReply::default_instance_ = new JobStatusReply();
-  static const int JobStatusReply_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, job_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, state_),
-  };
-  JobStatusReply_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobStatusReply_descriptor_,
-      JobStatusReply::default_instance_,
-      JobStatusReply_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobStatusReply));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobStatusReply_descriptor_, JobStatusReply::default_instance_);
-  JobFinished_descriptor_ = file->message_type(9);
-  JobFinished::default_instance_ = new JobFinished();
-  static const int JobFinished_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, job_id_),
-  };
-  JobFinished_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobFinished_descriptor_,
-      JobFinished::default_instance_,
-      JobFinished_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobFinished));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobFinished_descriptor_, JobFinished::default_instance_);
-  JobFinishedAck_descriptor_ = file->message_type(10);
-  JobFinishedAck::default_instance_ = new JobFinishedAck();
-  static const int JobFinishedAck_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, job_id_),
-  };
-  JobFinishedAck_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobFinishedAck_descriptor_,
-      JobFinishedAck::default_instance_,
-      JobFinishedAck_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobFinishedAck));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobFinishedAck_descriptor_, JobFinishedAck::default_instance_);
-  JobFailed_descriptor_ = file->message_type(11);
-  JobFailed::default_instance_ = new JobFailed();
-  static const int JobFailed_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, job_id_),
-  };
-  JobFailed_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobFailed_descriptor_,
-      JobFailed::default_instance_,
-      JobFailed_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobFailed));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobFailed_descriptor_, JobFailed::default_instance_);
-  JobFailedAck_descriptor_ = file->message_type(12);
-  JobFailedAck::default_instance_ = new JobFailedAck();
-  static const int JobFailedAck_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, job_id_),
-  };
-  JobFailedAck_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      JobFailedAck_descriptor_,
-      JobFailedAck::default_instance_,
-      JobFailedAck_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(JobFailedAck));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobFailedAck_descriptor_, JobFailedAck::default_instance_);
-  LifeSignal_descriptor_ = file->message_type(13);
-  LifeSignal::default_instance_ = new LifeSignal();
-  static const int LifeSignal_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, timestamp_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, component_id_),
-  };
-  LifeSignal_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      LifeSignal_descriptor_,
-      LifeSignal::default_instance_,
-      LifeSignal_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(LifeSignal));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    LifeSignal_descriptor_, LifeSignal::default_instance_);
-  ConfigRequest_descriptor_ = file->message_type(14);
-  ConfigRequest::default_instance_ = new ConfigRequest();
-  static const int ConfigRequest_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigRequest, component_id_),
-  };
-  ConfigRequest_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      ConfigRequest_descriptor_,
-      ConfigRequest::default_instance_,
-      ConfigRequest_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigRequest, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigRequest, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(ConfigRequest));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ConfigRequest_descriptor_, ConfigRequest::default_instance_);
-  ConfigReply_descriptor_ = file->message_type(15);
-  ConfigReply::default_instance_ = new ConfigReply();
-  static const int ConfigReply_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, component_id_),
-  };
-  ConfigReply_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      ConfigReply_descriptor_,
-      ConfigReply::default_instance_,
-      ConfigReply_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      sizeof(ConfigReply));
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ConfigReply_descriptor_, ConfigReply::default_instance_);
-  ErrorCode_descriptor_ = file->enum_type(0);
-  JobState_descriptor_ = file->enum_type(1);
-  SDPAMessage::default_instance_->InitAsDefaultInstance();
-  Error::default_instance_->InitAsDefaultInstance();
-  Token::default_instance_->InitAsDefaultInstance();
-  SubmitJob::default_instance_->InitAsDefaultInstance();
-  SubmitJobAck::default_instance_->InitAsDefaultInstance();
-  CancelJob::default_instance_->InitAsDefaultInstance();
-  CancelJobAck::default_instance_->InitAsDefaultInstance();
-  JobStatusRequest::default_instance_->InitAsDefaultInstance();
-  JobStatusReply::default_instance_->InitAsDefaultInstance();
-  JobFinished::default_instance_->InitAsDefaultInstance();
-  JobFinishedAck::default_instance_->InitAsDefaultInstance();
-  JobFailed::default_instance_->InitAsDefaultInstance();
-  JobFailedAck::default_instance_->InitAsDefaultInstance();
-  LifeSignal::default_instance_->InitAsDefaultInstance();
-  ConfigRequest::default_instance_->InitAsDefaultInstance();
-  ConfigReply::default_instance_->InitAsDefaultInstance();
-}
-
-void protobuf_BuildDesc_sdpa_2dmsg_2eproto() {
+void proto_BuildDescriptors_sdpa_2dmsg_2eproto() {
   static bool already_here = false;
   if (already_here) return;
   already_here = true;
@@ -385,7 +41,7 @@ void protobuf_BuildDesc_sdpa_2dmsg_2eproto() {
   ::google::protobuf::DescriptorPool* pool =
     ::google::protobuf::DescriptorPool::internal_generated_pool();
 
-  pool->InternalBuildGeneratedFile(
+  const ::google::protobuf::FileDescriptor* file = pool->InternalBuildGeneratedFile(
     "\n\016sdpa-msg.proto\022\013sdpa.events\"\262\005\n\013SDPAMe"
     "ssage\022!\n\005error\030\001 \001(\0132\022.sdpa.events.Error"
     "\022*\n\nsubmit_job\030\002 \001(\0132\026.sdpa.events.Submi"
@@ -423,19 +79,68 @@ void protobuf_BuildDesc_sdpa_2dmsg_2eproto() {
     "\024\n\014component_id\030\001 \002(\014*\023\n\tErrorCode\022\006\n\002OK"
     "\020\000*j\n\010JobState\022\013\n\007UNKNOWN\020\000\022\013\n\007PENDING\020\001"
     "\022\013\n\007RUNNING\020\002\022\014\n\010FINISHED\020\003\022\n\n\006FAILED\020\004\022"
-    "\r\n\tCANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 1514,
-  &protobuf_BuildDesc_sdpa_2dmsg_2eproto_AssignGlobalDescriptors);
+    "\r\n\tCANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 1514);
+  SDPAMessage_descriptor_ = file->message_type(0);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    SDPAMessage_descriptor_, &SDPAMessage::default_instance());
+  Error_descriptor_ = file->message_type(1);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Error_descriptor_, &Error::default_instance());
+  Token_descriptor_ = file->message_type(2);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Token_descriptor_, &Token::default_instance());
+  SubmitJob_descriptor_ = file->message_type(3);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    SubmitJob_descriptor_, &SubmitJob::default_instance());
+  SubmitJobAck_descriptor_ = file->message_type(4);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    SubmitJobAck_descriptor_, &SubmitJobAck::default_instance());
+  CancelJob_descriptor_ = file->message_type(5);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    CancelJob_descriptor_, &CancelJob::default_instance());
+  CancelJobAck_descriptor_ = file->message_type(6);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    CancelJobAck_descriptor_, &CancelJobAck::default_instance());
+  JobStatusRequest_descriptor_ = file->message_type(7);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobStatusRequest_descriptor_, &JobStatusRequest::default_instance());
+  JobStatusReply_descriptor_ = file->message_type(8);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobStatusReply_descriptor_, &JobStatusReply::default_instance());
+  JobFinished_descriptor_ = file->message_type(9);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobFinished_descriptor_, &JobFinished::default_instance());
+  JobFinishedAck_descriptor_ = file->message_type(10);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobFinishedAck_descriptor_, &JobFinishedAck::default_instance());
+  JobFailed_descriptor_ = file->message_type(11);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobFailed_descriptor_, &JobFailed::default_instance());
+  JobFailedAck_descriptor_ = file->message_type(12);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    JobFailedAck_descriptor_, &JobFailedAck::default_instance());
+  LifeSignal_descriptor_ = file->message_type(13);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    LifeSignal_descriptor_, &LifeSignal::default_instance());
+  ConfigRequest_descriptor_ = file->message_type(14);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ConfigRequest_descriptor_, &ConfigRequest::default_instance());
+  ConfigReply_descriptor_ = file->message_type(15);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ConfigReply_descriptor_, &ConfigReply::default_instance());
+  ErrorCode_descriptor_ = file->enum_type(0);
+  JobState_descriptor_ = file->enum_type(1);
 }
 
 // Force BuildDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_sdpa_2dmsg_2eproto {
   StaticDescriptorInitializer_sdpa_2dmsg_2eproto() {
-    protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+    proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   }
 } static_descriptor_initializer_sdpa_2dmsg_2eproto_;
 
 const ::google::protobuf::EnumDescriptor* ErrorCode_descriptor() {
-  if (ErrorCode_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (ErrorCode_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return ErrorCode_descriptor_;
 }
 bool ErrorCode_IsValid(int value) {
@@ -448,7 +153,7 @@ bool ErrorCode_IsValid(int value) {
 }
 
 const ::google::protobuf::EnumDescriptor* JobState_descriptor() {
-  if (JobState_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobState_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobState_descriptor_;
 }
 bool JobState_IsValid(int value) {
@@ -469,6 +174,7 @@ bool JobState_IsValid(int value) {
 
 // ===================================================================
 
+const SDPAMessage SDPAMessage::default_instance_;
 
 
 
@@ -482,9 +188,29 @@ bool JobState_IsValid(int value) {
 
 
 
+
+
+const int SDPAMessage::_offsets_[14] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, error_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_ack_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_ack_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_request_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_ack_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_failed_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_failed_ack_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, life_signal_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, config_request_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, config_reply_),
+};
 
 SDPAMessage::SDPAMessage()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     error_(NULL),
     submit_job_(NULL),
@@ -501,26 +227,28 @@ SDPAMessage::SDPAMessage()
     config_request_(NULL),
     config_reply_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-void SDPAMessage::InitAsDefaultInstance() {  error_ = const_cast< ::sdpa::events::Error*>(&::sdpa::events::Error::default_instance());
-  submit_job_ = const_cast< ::sdpa::events::SubmitJob*>(&::sdpa::events::SubmitJob::default_instance());
-  submit_job_ack_ = const_cast< ::sdpa::events::SubmitJobAck*>(&::sdpa::events::SubmitJobAck::default_instance());
-  cancel_job_ = const_cast< ::sdpa::events::CancelJob*>(&::sdpa::events::CancelJob::default_instance());
-  cancel_job_ack_ = const_cast< ::sdpa::events::CancelJobAck*>(&::sdpa::events::CancelJobAck::default_instance());
-  job_status_request_ = const_cast< ::sdpa::events::JobStatusRequest*>(&::sdpa::events::JobStatusRequest::default_instance());
-  job_status_ = const_cast< ::sdpa::events::JobStatusReply*>(&::sdpa::events::JobStatusReply::default_instance());
-  job_finished_ = const_cast< ::sdpa::events::JobFinished*>(&::sdpa::events::JobFinished::default_instance());
-  job_finished_ack_ = const_cast< ::sdpa::events::JobFinishedAck*>(&::sdpa::events::JobFinishedAck::default_instance());
-  job_failed_ = const_cast< ::sdpa::events::JobFailed*>(&::sdpa::events::JobFailed::default_instance());
-  job_failed_ack_ = const_cast< ::sdpa::events::JobFailedAck*>(&::sdpa::events::JobFailedAck::default_instance());
-  life_signal_ = const_cast< ::sdpa::events::LifeSignal*>(&::sdpa::events::LifeSignal::default_instance());
-  config_request_ = const_cast< ::sdpa::events::ConfigRequest*>(&::sdpa::events::ConfigRequest::default_instance());
-  config_reply_ = const_cast< ::sdpa::events::ConfigReply*>(&::sdpa::events::ConfigReply::default_instance());
+  if (this == &default_instance_) {
+    error_ = const_cast< ::sdpa::events::Error*>(&::sdpa::events::Error::default_instance());
+    submit_job_ = const_cast< ::sdpa::events::SubmitJob*>(&::sdpa::events::SubmitJob::default_instance());
+    submit_job_ack_ = const_cast< ::sdpa::events::SubmitJobAck*>(&::sdpa::events::SubmitJobAck::default_instance());
+    cancel_job_ = const_cast< ::sdpa::events::CancelJob*>(&::sdpa::events::CancelJob::default_instance());
+    cancel_job_ack_ = const_cast< ::sdpa::events::CancelJobAck*>(&::sdpa::events::CancelJobAck::default_instance());
+    job_status_request_ = const_cast< ::sdpa::events::JobStatusRequest*>(&::sdpa::events::JobStatusRequest::default_instance());
+    job_status_ = const_cast< ::sdpa::events::JobStatusReply*>(&::sdpa::events::JobStatusReply::default_instance());
+    job_finished_ = const_cast< ::sdpa::events::JobFinished*>(&::sdpa::events::JobFinished::default_instance());
+    job_finished_ack_ = const_cast< ::sdpa::events::JobFinishedAck*>(&::sdpa::events::JobFinishedAck::default_instance());
+    job_failed_ = const_cast< ::sdpa::events::JobFailed*>(&::sdpa::events::JobFailed::default_instance());
+    job_failed_ack_ = const_cast< ::sdpa::events::JobFailedAck*>(&::sdpa::events::JobFailedAck::default_instance());
+    life_signal_ = const_cast< ::sdpa::events::LifeSignal*>(&::sdpa::events::LifeSignal::default_instance());
+    config_request_ = const_cast< ::sdpa::events::ConfigRequest*>(&::sdpa::events::ConfigRequest::default_instance());
+    config_reply_ = const_cast< ::sdpa::events::ConfigReply*>(&::sdpa::events::ConfigReply::default_instance());
+  }
 }
 
 SDPAMessage::SDPAMessage(const SDPAMessage& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     error_(NULL),
     submit_job_(NULL),
@@ -541,7 +269,7 @@ SDPAMessage::SDPAMessage(const SDPAMessage& from)
 }
 
 SDPAMessage::~SDPAMessage() {
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
     delete error_;
     delete submit_job_;
     delete submit_job_ack_;
@@ -560,16 +288,9 @@ SDPAMessage::~SDPAMessage() {
 }
 
 const ::google::protobuf::Descriptor* SDPAMessage::descriptor() {
-  if (SDPAMessage_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (SDPAMessage_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return SDPAMessage_descriptor_;
 }
-
-const SDPAMessage& SDPAMessage::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-SDPAMessage* SDPAMessage::default_instance_ = NULL;
 
 SDPAMessage* SDPAMessage::New() const {
   return new SDPAMessage;
@@ -1030,7 +751,8 @@ void SDPAMessage::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const SDPAMessage*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -1099,28 +821,6 @@ void SDPAMessage::CopyFrom(const SDPAMessage& from) {
   MergeFrom(from);
 }
 
-void SDPAMessage::Swap(SDPAMessage* other) {
-  if (other != this) {
-    std::swap(error_, other->error_);
-    std::swap(submit_job_, other->submit_job_);
-    std::swap(submit_job_ack_, other->submit_job_ack_);
-    std::swap(cancel_job_, other->cancel_job_);
-    std::swap(cancel_job_ack_, other->cancel_job_ack_);
-    std::swap(job_status_request_, other->job_status_request_);
-    std::swap(job_status_, other->job_status_);
-    std::swap(job_finished_, other->job_finished_);
-    std::swap(job_finished_ack_, other->job_finished_ack_);
-    std::swap(job_failed_, other->job_failed_);
-    std::swap(job_failed_ack_, other->job_failed_ack_);
-    std::swap(life_signal_, other->life_signal_);
-    std::swap(config_request_, other->config_request_);
-    std::swap(config_reply_, other->config_reply_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool SDPAMessage::IsInitialized() const {
   
   if (has_error()) {
@@ -1172,27 +872,42 @@ const ::google::protobuf::Descriptor* SDPAMessage::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* SDPAMessage::GetReflection() const {
-  if (SDPAMessage_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return SDPAMessage_reflection_;
+const ::google::protobuf::Message::Reflection*
+SDPAMessage::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* SDPAMessage::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const Error Error::default_instance_;
+
 
 const ::std::string Error::_default_error_description_;
+const int Error::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, error_code_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Error, error_description_),
+};
+
 Error::Error()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     error_code_(0),
     error_description_(const_cast< ::std::string*>(&_default_error_description_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void Error::InitAsDefaultInstance() {}
-
 Error::Error(const Error& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     error_code_(0),
     error_description_(const_cast< ::std::string*>(&_default_error_description_)) {
@@ -1204,21 +919,14 @@ Error::~Error() {
   if (error_description_ != &_default_error_description_) {
     delete error_description_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* Error::descriptor() {
-  if (Error_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (Error_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return Error_descriptor_;
 }
-
-const Error& Error::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-Error* Error::default_instance_ = NULL;
 
 Error* Error::New() const {
   return new Error;
@@ -1341,7 +1049,8 @@ void Error::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const Error*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -1372,16 +1081,6 @@ void Error::CopyFrom(const Error& from) {
   MergeFrom(from);
 }
 
-void Error::Swap(Error* other) {
-  if (other != this) {
-    std::swap(error_code_, other->error_code_);
-    std::swap(error_description_, other->error_description_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool Error::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
@@ -1392,27 +1091,42 @@ const ::google::protobuf::Descriptor* Error::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* Error::GetReflection() const {
-  if (Error_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return Error_reflection_;
+const ::google::protobuf::Message::Reflection*
+Error::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Error::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const Token Token::default_instance_;
+
 const ::std::string Token::_default_place_;
 const ::std::string Token::_default_token_;
+const int Token::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, place_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Token, token_),
+};
+
 Token::Token()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     place_(const_cast< ::std::string*>(&_default_place_)),
     token_(const_cast< ::std::string*>(&_default_token_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void Token::InitAsDefaultInstance() {}
-
 Token::Token(const Token& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     place_(const_cast< ::std::string*>(&_default_place_)),
     token_(const_cast< ::std::string*>(&_default_token_)) {
@@ -1427,21 +1141,14 @@ Token::~Token() {
   if (token_ != &_default_token_) {
     delete token_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* Token::descriptor() {
-  if (Token_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (Token_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return Token_descriptor_;
 }
-
-const Token& Token::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-Token* Token::default_instance_ = NULL;
 
 Token* Token::New() const {
   return new Token;
@@ -1562,7 +1269,8 @@ void Token::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const Token*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -1593,16 +1301,6 @@ void Token::CopyFrom(const Token& from) {
   MergeFrom(from);
 }
 
-void Token::Swap(Token* other) {
-  if (other != this) {
-    std::swap(place_, other->place_);
-    std::swap(token_, other->token_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool Token::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
@@ -1613,26 +1311,41 @@ const ::google::protobuf::Descriptor* Token::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* Token::GetReflection() const {
-  if (Token_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return Token_reflection_;
+const ::google::protobuf::Message::Reflection*
+Token::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Token::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const SubmitJob SubmitJob::default_instance_;
+
 const ::std::string SubmitJob::_default_workflow_;
 
+const int SubmitJob::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, workflow_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJob, input_),
+};
+
 SubmitJob::SubmitJob()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     workflow_(const_cast< ::std::string*>(&_default_workflow_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void SubmitJob::InitAsDefaultInstance() {}
-
 SubmitJob::SubmitJob(const SubmitJob& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     workflow_(const_cast< ::std::string*>(&_default_workflow_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1643,21 +1356,14 @@ SubmitJob::~SubmitJob() {
   if (workflow_ != &_default_workflow_) {
     delete workflow_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* SubmitJob::descriptor() {
-  if (SubmitJob_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (SubmitJob_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return SubmitJob_descriptor_;
 }
-
-const SubmitJob& SubmitJob::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-SubmitJob* SubmitJob::default_instance_ = NULL;
 
 SubmitJob* SubmitJob::New() const {
   return new SubmitJob;
@@ -1778,7 +1484,8 @@ void SubmitJob::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const SubmitJob*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -1807,16 +1514,6 @@ void SubmitJob::CopyFrom(const SubmitJob& from) {
   MergeFrom(from);
 }
 
-void SubmitJob::Swap(SubmitJob* other) {
-  if (other != this) {
-    std::swap(workflow_, other->workflow_);
-    input_.Swap(&other->input_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool SubmitJob::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -1830,25 +1527,39 @@ const ::google::protobuf::Descriptor* SubmitJob::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* SubmitJob::GetReflection() const {
-  if (SubmitJob_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return SubmitJob_reflection_;
+const ::google::protobuf::Message::Reflection*
+SubmitJob::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* SubmitJob::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const SubmitJobAck SubmitJobAck::default_instance_;
+
 const ::std::string SubmitJobAck::_default_job_id_;
+const int SubmitJobAck::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, job_id_),
+};
+
 SubmitJobAck::SubmitJobAck()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void SubmitJobAck::InitAsDefaultInstance() {}
-
 SubmitJobAck::SubmitJobAck(const SubmitJobAck& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1859,21 +1570,14 @@ SubmitJobAck::~SubmitJobAck() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* SubmitJobAck::descriptor() {
-  if (SubmitJobAck_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (SubmitJobAck_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return SubmitJobAck_descriptor_;
 }
-
-const SubmitJobAck& SubmitJobAck::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-SubmitJobAck* SubmitJobAck::default_instance_ = NULL;
 
 SubmitJobAck* SubmitJobAck::New() const {
   return new SubmitJobAck;
@@ -1966,7 +1670,8 @@ void SubmitJobAck::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const SubmitJobAck*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -1994,15 +1699,6 @@ void SubmitJobAck::CopyFrom(const SubmitJobAck& from) {
   MergeFrom(from);
 }
 
-void SubmitJobAck::Swap(SubmitJobAck* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool SubmitJobAck::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -2013,27 +1709,42 @@ const ::google::protobuf::Descriptor* SubmitJobAck::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* SubmitJobAck::GetReflection() const {
-  if (SubmitJobAck_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return SubmitJobAck_reflection_;
+const ::google::protobuf::Message::Reflection*
+SubmitJobAck::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* SubmitJobAck::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const CancelJob CancelJob::default_instance_;
+
 const ::std::string CancelJob::_default_job_id_;
 const ::std::string CancelJob::_default_reason_;
+const int CancelJob::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, reason_),
+};
+
 CancelJob::CancelJob()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)),
     reason_(const_cast< ::std::string*>(&_default_reason_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void CancelJob::InitAsDefaultInstance() {}
-
 CancelJob::CancelJob(const CancelJob& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)),
     reason_(const_cast< ::std::string*>(&_default_reason_)) {
@@ -2048,21 +1759,14 @@ CancelJob::~CancelJob() {
   if (reason_ != &_default_reason_) {
     delete reason_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* CancelJob::descriptor() {
-  if (CancelJob_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (CancelJob_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return CancelJob_descriptor_;
 }
-
-const CancelJob& CancelJob::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-CancelJob* CancelJob::default_instance_ = NULL;
 
 CancelJob* CancelJob::New() const {
   return new CancelJob;
@@ -2183,7 +1887,8 @@ void CancelJob::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const CancelJob*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -2214,16 +1919,6 @@ void CancelJob::CopyFrom(const CancelJob& from) {
   MergeFrom(from);
 }
 
-void CancelJob::Swap(CancelJob* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(reason_, other->reason_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool CancelJob::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -2234,25 +1929,39 @@ const ::google::protobuf::Descriptor* CancelJob::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* CancelJob::GetReflection() const {
-  if (CancelJob_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return CancelJob_reflection_;
+const ::google::protobuf::Message::Reflection*
+CancelJob::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* CancelJob::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const CancelJobAck CancelJobAck::default_instance_;
+
 const ::std::string CancelJobAck::_default_job_id_;
+const int CancelJobAck::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, job_id_),
+};
+
 CancelJobAck::CancelJobAck()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void CancelJobAck::InitAsDefaultInstance() {}
-
 CancelJobAck::CancelJobAck(const CancelJobAck& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2263,21 +1972,14 @@ CancelJobAck::~CancelJobAck() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* CancelJobAck::descriptor() {
-  if (CancelJobAck_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (CancelJobAck_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return CancelJobAck_descriptor_;
 }
-
-const CancelJobAck& CancelJobAck::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-CancelJobAck* CancelJobAck::default_instance_ = NULL;
 
 CancelJobAck* CancelJobAck::New() const {
   return new CancelJobAck;
@@ -2370,7 +2072,8 @@ void CancelJobAck::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const CancelJobAck*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -2398,15 +2101,6 @@ void CancelJobAck::CopyFrom(const CancelJobAck& from) {
   MergeFrom(from);
 }
 
-void CancelJobAck::Swap(CancelJobAck* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool CancelJobAck::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -2417,25 +2111,39 @@ const ::google::protobuf::Descriptor* CancelJobAck::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* CancelJobAck::GetReflection() const {
-  if (CancelJobAck_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return CancelJobAck_reflection_;
+const ::google::protobuf::Message::Reflection*
+CancelJobAck::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* CancelJobAck::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobStatusRequest JobStatusRequest::default_instance_;
+
 const ::std::string JobStatusRequest::_default_job_id_;
+const int JobStatusRequest::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusRequest, job_id_),
+};
+
 JobStatusRequest::JobStatusRequest()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobStatusRequest::InitAsDefaultInstance() {}
-
 JobStatusRequest::JobStatusRequest(const JobStatusRequest& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2446,21 +2154,14 @@ JobStatusRequest::~JobStatusRequest() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobStatusRequest::descriptor() {
-  if (JobStatusRequest_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobStatusRequest_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobStatusRequest_descriptor_;
 }
-
-const JobStatusRequest& JobStatusRequest::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobStatusRequest* JobStatusRequest::default_instance_ = NULL;
 
 JobStatusRequest* JobStatusRequest::New() const {
   return new JobStatusRequest;
@@ -2553,7 +2254,8 @@ void JobStatusRequest::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobStatusRequest*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -2581,15 +2283,6 @@ void JobStatusRequest::CopyFrom(const JobStatusRequest& from) {
   MergeFrom(from);
 }
 
-void JobStatusRequest::Swap(JobStatusRequest* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobStatusRequest::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -2600,27 +2293,42 @@ const ::google::protobuf::Descriptor* JobStatusRequest::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobStatusRequest::GetReflection() const {
-  if (JobStatusRequest_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobStatusRequest_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobStatusRequest::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobStatusRequest::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobStatusReply JobStatusReply::default_instance_;
+
 const ::std::string JobStatusReply::_default_job_id_;
 
+const int JobStatusReply::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, state_),
+};
+
 JobStatusReply::JobStatusReply()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)),
     state_(0) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobStatusReply::InitAsDefaultInstance() {}
-
 JobStatusReply::JobStatusReply(const JobStatusReply& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)),
     state_(0) {
@@ -2632,21 +2340,14 @@ JobStatusReply::~JobStatusReply() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobStatusReply::descriptor() {
-  if (JobStatusReply_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobStatusReply_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobStatusReply_descriptor_;
 }
-
-const JobStatusReply& JobStatusReply::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobStatusReply* JobStatusReply::default_instance_ = NULL;
 
 JobStatusReply* JobStatusReply::New() const {
   return new JobStatusReply;
@@ -2769,7 +2470,8 @@ void JobStatusReply::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobStatusReply*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -2800,16 +2502,6 @@ void JobStatusReply::CopyFrom(const JobStatusReply& from) {
   MergeFrom(from);
 }
 
-void JobStatusReply::Swap(JobStatusReply* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(state_, other->state_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobStatusReply::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
@@ -2820,25 +2512,39 @@ const ::google::protobuf::Descriptor* JobStatusReply::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobStatusReply::GetReflection() const {
-  if (JobStatusReply_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobStatusReply_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobStatusReply::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobStatusReply::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobFinished JobFinished::default_instance_;
+
 const ::std::string JobFinished::_default_job_id_;
+const int JobFinished::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, job_id_),
+};
+
 JobFinished::JobFinished()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobFinished::InitAsDefaultInstance() {}
-
 JobFinished::JobFinished(const JobFinished& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2849,21 +2555,14 @@ JobFinished::~JobFinished() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobFinished::descriptor() {
-  if (JobFinished_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobFinished_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobFinished_descriptor_;
 }
-
-const JobFinished& JobFinished::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobFinished* JobFinished::default_instance_ = NULL;
 
 JobFinished* JobFinished::New() const {
   return new JobFinished;
@@ -2956,7 +2655,8 @@ void JobFinished::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobFinished*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -2984,15 +2684,6 @@ void JobFinished::CopyFrom(const JobFinished& from) {
   MergeFrom(from);
 }
 
-void JobFinished::Swap(JobFinished* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobFinished::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -3003,25 +2694,39 @@ const ::google::protobuf::Descriptor* JobFinished::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobFinished::GetReflection() const {
-  if (JobFinished_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobFinished_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobFinished::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobFinished::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobFinishedAck JobFinishedAck::default_instance_;
+
 const ::std::string JobFinishedAck::_default_job_id_;
+const int JobFinishedAck::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, job_id_),
+};
+
 JobFinishedAck::JobFinishedAck()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobFinishedAck::InitAsDefaultInstance() {}
-
 JobFinishedAck::JobFinishedAck(const JobFinishedAck& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3032,21 +2737,14 @@ JobFinishedAck::~JobFinishedAck() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobFinishedAck::descriptor() {
-  if (JobFinishedAck_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobFinishedAck_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobFinishedAck_descriptor_;
 }
-
-const JobFinishedAck& JobFinishedAck::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobFinishedAck* JobFinishedAck::default_instance_ = NULL;
 
 JobFinishedAck* JobFinishedAck::New() const {
   return new JobFinishedAck;
@@ -3139,7 +2837,8 @@ void JobFinishedAck::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobFinishedAck*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -3167,15 +2866,6 @@ void JobFinishedAck::CopyFrom(const JobFinishedAck& from) {
   MergeFrom(from);
 }
 
-void JobFinishedAck::Swap(JobFinishedAck* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobFinishedAck::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -3186,25 +2876,39 @@ const ::google::protobuf::Descriptor* JobFinishedAck::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobFinishedAck::GetReflection() const {
-  if (JobFinishedAck_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobFinishedAck_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobFinishedAck::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobFinishedAck::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobFailed JobFailed::default_instance_;
+
 const ::std::string JobFailed::_default_job_id_;
+const int JobFailed::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, job_id_),
+};
+
 JobFailed::JobFailed()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobFailed::InitAsDefaultInstance() {}
-
 JobFailed::JobFailed(const JobFailed& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3215,21 +2919,14 @@ JobFailed::~JobFailed() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobFailed::descriptor() {
-  if (JobFailed_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobFailed_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobFailed_descriptor_;
 }
-
-const JobFailed& JobFailed::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobFailed* JobFailed::default_instance_ = NULL;
 
 JobFailed* JobFailed::New() const {
   return new JobFailed;
@@ -3322,7 +3019,8 @@ void JobFailed::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobFailed*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -3350,15 +3048,6 @@ void JobFailed::CopyFrom(const JobFailed& from) {
   MergeFrom(from);
 }
 
-void JobFailed::Swap(JobFailed* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobFailed::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -3369,25 +3058,39 @@ const ::google::protobuf::Descriptor* JobFailed::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobFailed::GetReflection() const {
-  if (JobFailed_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobFailed_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobFailed::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobFailed::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const JobFailedAck JobFailedAck::default_instance_;
+
 const ::std::string JobFailedAck::_default_job_id_;
+const int JobFailedAck::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, job_id_),
+};
+
 JobFailedAck::JobFailedAck()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void JobFailedAck::InitAsDefaultInstance() {}
-
 JobFailedAck::JobFailedAck(const JobFailedAck& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3398,21 +3101,14 @@ JobFailedAck::~JobFailedAck() {
   if (job_id_ != &_default_job_id_) {
     delete job_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* JobFailedAck::descriptor() {
-  if (JobFailedAck_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (JobFailedAck_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return JobFailedAck_descriptor_;
 }
-
-const JobFailedAck& JobFailedAck::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-JobFailedAck* JobFailedAck::default_instance_ = NULL;
 
 JobFailedAck* JobFailedAck::New() const {
   return new JobFailedAck;
@@ -3505,7 +3201,8 @@ void JobFailedAck::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const JobFailedAck*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -3533,15 +3230,6 @@ void JobFailedAck::CopyFrom(const JobFailedAck& from) {
   MergeFrom(from);
 }
 
-void JobFailedAck::Swap(JobFailedAck* other) {
-  if (other != this) {
-    std::swap(job_id_, other->job_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool JobFailedAck::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -3552,27 +3240,42 @@ const ::google::protobuf::Descriptor* JobFailedAck::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* JobFailedAck::GetReflection() const {
-  if (JobFailedAck_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return JobFailedAck_reflection_;
+const ::google::protobuf::Message::Reflection*
+JobFailedAck::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* JobFailedAck::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const LifeSignal LifeSignal::default_instance_;
+
 
 const ::std::string LifeSignal::_default_component_id_;
+const int LifeSignal::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, timestamp_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LifeSignal, component_id_),
+};
+
 LifeSignal::LifeSignal()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     timestamp_(GOOGLE_ULONGLONG(0)),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void LifeSignal::InitAsDefaultInstance() {}
-
 LifeSignal::LifeSignal(const LifeSignal& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     timestamp_(GOOGLE_ULONGLONG(0)),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
@@ -3584,21 +3287,14 @@ LifeSignal::~LifeSignal() {
   if (component_id_ != &_default_component_id_) {
     delete component_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* LifeSignal::descriptor() {
-  if (LifeSignal_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (LifeSignal_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return LifeSignal_descriptor_;
 }
-
-const LifeSignal& LifeSignal::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-LifeSignal* LifeSignal::default_instance_ = NULL;
 
 LifeSignal* LifeSignal::New() const {
   return new LifeSignal;
@@ -3716,7 +3412,8 @@ void LifeSignal::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const LifeSignal*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -3747,16 +3444,6 @@ void LifeSignal::CopyFrom(const LifeSignal& from) {
   MergeFrom(from);
 }
 
-void LifeSignal::Swap(LifeSignal* other) {
-  if (other != this) {
-    std::swap(timestamp_, other->timestamp_);
-    std::swap(component_id_, other->component_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool LifeSignal::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
@@ -3767,25 +3454,39 @@ const ::google::protobuf::Descriptor* LifeSignal::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* LifeSignal::GetReflection() const {
-  if (LifeSignal_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return LifeSignal_reflection_;
+const ::google::protobuf::Message::Reflection*
+LifeSignal::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* LifeSignal::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const ConfigRequest ConfigRequest::default_instance_;
+
 const ::std::string ConfigRequest::_default_component_id_;
+const int ConfigRequest::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigRequest, component_id_),
+};
+
 ConfigRequest::ConfigRequest()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void ConfigRequest::InitAsDefaultInstance() {}
-
 ConfigRequest::ConfigRequest(const ConfigRequest& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3796,21 +3497,14 @@ ConfigRequest::~ConfigRequest() {
   if (component_id_ != &_default_component_id_) {
     delete component_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* ConfigRequest::descriptor() {
-  if (ConfigRequest_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (ConfigRequest_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return ConfigRequest_descriptor_;
 }
-
-const ConfigRequest& ConfigRequest::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-ConfigRequest* ConfigRequest::default_instance_ = NULL;
 
 ConfigRequest* ConfigRequest::New() const {
   return new ConfigRequest;
@@ -3903,7 +3597,8 @@ void ConfigRequest::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const ConfigRequest*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -3931,15 +3626,6 @@ void ConfigRequest::CopyFrom(const ConfigRequest& from) {
   MergeFrom(from);
 }
 
-void ConfigRequest::Swap(ConfigRequest* other) {
-  if (other != this) {
-    std::swap(component_id_, other->component_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool ConfigRequest::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -3950,25 +3636,39 @@ const ::google::protobuf::Descriptor* ConfigRequest::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* ConfigRequest::GetReflection() const {
-  if (ConfigRequest_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return ConfigRequest_reflection_;
+const ::google::protobuf::Message::Reflection*
+ConfigRequest::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* ConfigRequest::GetReflection() {
+  return &_reflection_;
 }
 
 // ===================================================================
 
+const ConfigReply ConfigReply::default_instance_;
+
 const ::std::string ConfigReply::_default_component_id_;
+const int ConfigReply::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, component_id_),
+};
+
 ConfigReply::ConfigReply()
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
 }
 
-void ConfigReply::InitAsDefaultInstance() {}
-
 ConfigReply::ConfigReply(const ConfigReply& from)
-  : ::google::protobuf::Message(),
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
     _cached_size_(0),
     component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3979,21 +3679,14 @@ ConfigReply::~ConfigReply() {
   if (component_id_ != &_default_component_id_) {
     delete component_id_;
   }
-  if (this != default_instance_) {
+  if (this != &default_instance_) {
   }
 }
 
 const ::google::protobuf::Descriptor* ConfigReply::descriptor() {
-  if (ConfigReply_descriptor_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
+  if (ConfigReply_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
   return ConfigReply_descriptor_;
 }
-
-const ConfigReply& ConfigReply::default_instance() {
-  if (default_instance_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return *default_instance_;
-}
-
-ConfigReply* ConfigReply::default_instance_ = NULL;
 
 ConfigReply* ConfigReply::New() const {
   return new ConfigReply;
@@ -4086,7 +3779,8 @@ void ConfigReply::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::dynamic_cast_if_available<const ConfigReply*>(
       &from);
   if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
   } else {
     MergeFrom(*source);
   }
@@ -4114,15 +3808,6 @@ void ConfigReply::CopyFrom(const ConfigReply& from) {
   MergeFrom(from);
 }
 
-void ConfigReply::Swap(ConfigReply* other) {
-  if (other != this) {
-    std::swap(component_id_, other->component_id_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
 bool ConfigReply::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
@@ -4133,9 +3818,13 @@ const ::google::protobuf::Descriptor* ConfigReply::GetDescriptor() const {
   return descriptor();
 }
 
-const ::google::protobuf::Reflection* ConfigReply::GetReflection() const {
-  if (ConfigReply_reflection_ == NULL) protobuf_BuildDesc_sdpa_2dmsg_2eproto();
-  return ConfigReply_reflection_;
+const ::google::protobuf::Message::Reflection*
+ConfigReply::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* ConfigReply::GetReflection() {
+  return &_reflection_;
 }
 
 }  // namespace events
