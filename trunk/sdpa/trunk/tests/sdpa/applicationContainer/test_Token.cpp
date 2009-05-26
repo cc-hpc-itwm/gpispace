@@ -17,10 +17,10 @@
 #include <iostream>
 
 #include "test_Token.hpp"
-#include <sdpa/applicationContainer/Token.hpp>
+#include <sdpa/Token.hpp>
 
+using namespace sdpa;
 using namespace sdpa::tests;
-using namespace sdpa::appcontainer;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( sdpa::tests::TokenTest );
 

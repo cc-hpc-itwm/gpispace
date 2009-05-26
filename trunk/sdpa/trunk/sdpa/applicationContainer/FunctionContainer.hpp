@@ -26,7 +26,7 @@
  *
  *---------------------------------------------------------------------*/
 #include <sdpa/memory.hpp>
-#include <sdpa/applicationContainer/Token.hpp>
+#include <sdpa/Token.hpp>
 
 /*---------------------------------------------------------------------*
  * Macros
