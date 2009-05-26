@@ -31,40 +31,32 @@ TokenTest::~TokenTest() {
 }
 
 void TokenTest::setUp() {
-  //createFixtureFile(std::string("fixture"), std::string("bar"),
-  //                  std::string("djiowe\ndwejodjweio"));
 }
 
 void TokenTest::tearDown() {
-  //deleteFixtureDirectory(std::string("fixture"));
 }
 
-void TokenTest::testTokenBase() {
-  CPPUNIT_ASSERT_EQUAL(1,1);
+void TokenTest::testTokenDataTypes() {
+  Token token(std::string("foo"));
 
-  DataToken<int> intToken(42); // creation of a Token
-  Token  &tok(intToken); // we got a generic Token reference from someone
-
-  int value = tok.as<int>(); // we want to use it as an integer (DANGER, we loose any type safety here)
+  CPPUNIT_ASSERT_EQUAL(typeid(std::string).name(), token.data().type().name());
 
   try {
-    char  f = tok.as<char>(); // assert should crash
-    std::cout << f << std::endl;
-  } catch (...) {
-    std::cout << "blah" << std::endl;
+    std::string s(token.as<std::string>());
+  } catch (const boost::bad_any_cast &bac) {
+    CPPUNIT_ASSERT_MESSAGE("Token contained a string but could not be interpreted as one!", false);
   }
 
-  //if (t) {
-     // t has been initialized?
-  //}
+  try {
+    int tmp(token.as<int>());
+    CPPUNIT_ASSERT_MESSAGE("Token contained a non-integer string and could be casted to int!", false);
+  } catch (const boost::bad_any_cast &bac) {
+  }
+}
 
-  //ControlToken bToken1(true);
-  //ControlToken bToken2(false);
-  //IntToken nToken(32);
-  
-  //CPPUNIT_ASSERT_EQUAL(nToken.as<int>(), 32);
-  
-  //if(bToken1.as<bool>()) CPPUNIT_ASSERT_EQUAL(1,1);
-  //else CPPUNIT_ASSERT_EQUAL(1,0);
-  
+void TokenTest::testPropertyPut() {
+  Token t;
+  std::string expected("bar");
+  t.put("foo", expected);
+  CPPUNIT_ASSERT_EQUAL(expected, t.get<std::string>("foo"));
 }
