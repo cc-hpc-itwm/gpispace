@@ -69,7 +69,7 @@ FIND_LIBRARY(PB_LIBRARY
 IF(PB_PROTOC_CMD AND PB_LIBRARY) 
   SET(PB_FOUND "YES")
 else(PB_PROTOC_CMD AND PB_LIBRARY) 
-  message(STATUS "ProtocolBuffers could not be found, try setting PB_HOME (value=\"${PB_HOME}\".")
+  message(STATUS "ProtocolBuffers could not be found, try setting PB_HOME (value=\"${PB_HOME}\").")
 ENDIF(PB_PROTOC_CMD AND PB_LIBRARY)
 
 MARK_AS_ADVANCED(
