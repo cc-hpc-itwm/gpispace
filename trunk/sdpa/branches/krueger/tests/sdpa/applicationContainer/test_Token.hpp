@@ -21,6 +21,7 @@ namespace sdpa {
     class TokenTest : public CPPUNIT_NS::TestFixture {
       CPPUNIT_TEST_SUITE( sdpa::tests::TokenTest);
       CPPUNIT_TEST( testTokenBase );
+      CPPUNIT_TEST( testTokenCopy );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -32,6 +33,7 @@ namespace sdpa {
 
     protected:
       void testTokenBase();
+      void testTokenCopy();
     };
   }
 }

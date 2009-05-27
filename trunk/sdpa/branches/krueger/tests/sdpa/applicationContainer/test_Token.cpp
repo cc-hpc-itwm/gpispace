@@ -46,14 +46,19 @@ void TokenTest::testTokenBase() {
   Token  &tok(intToken); // we got a generic Token reference from someone
 
   int value = tok.as<int>(); // we want to use it as an integer (DANGER, we loose any type safety here)
-
+  CPPUNIT_ASSERT_EQUAL(42, value);
+  
   try {
-    char  f = tok.as<char>(); // assert should crash
+    // assert should crash
+    char f = tok.as<char>();
+    //CPPUNIT_ASSERT_THROW((tok.as<char>()), std::Exception);
+    CPPUNIT_FAIL("Did not throw exception");
     std::cout << f << std::endl;
   } catch (...) {
     std::cout << "blah" << std::endl;
   }
-
+  
+  //std::cout << t.as<float>() << std::endl;
   //if (t) {
      // t has been initialized?
   //}
@@ -62,9 +67,28 @@ void TokenTest::testTokenBase() {
   //ControlToken bToken2(false);
   //IntToken nToken(32);
   
-  //CPPUNIT_ASSERT_EQUAL(nToken.as<int>(), 32);
+  CPPUNIT_ASSERT_EQUAL(tok.as<int>(), 42);
   
   //if(bToken1.as<bool>()) CPPUNIT_ASSERT_EQUAL(1,1);
   //else CPPUNIT_ASSERT_EQUAL(1,0);
   
+}
+void TokenTest::testTokenCopy() {
+  DataToken<int> intToken(42); // creation of a Token
+  Token  &tok(intToken); // we got a generic Token reference from someone
+  float fExpected = 123456.0;
+  
+  Token t = tok;
+  {
+    DataToken<int> t1( 0xdeadbeef);
+    DataToken<float> t2(fExpected);
+    DataToken<int>t3(0xdeadbeef);
+    t = t2;
+  }
+  {
+    DataToken<int>t3(0xdeadbeef);
+    DataToken<int> t1( 0xdeadbeef);
+    DataToken<float> t2(120435.0);
+  }      
+  CPPUNIT_ASSERT_EQUAL(fExpected,  t.as<float>());
 }
