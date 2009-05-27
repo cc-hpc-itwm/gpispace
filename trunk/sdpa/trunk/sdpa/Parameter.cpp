@@ -17,27 +17,21 @@ const sdpa::Parameter& sdpa::Parameter::operator=(const sdpa::Parameter &rhs) {
 void sdpa::Parameter::writeTo(std::ostream &os) const {
   switch (edge_type()) {
     case INPUT_EDGE:
-//      os << "o--->|";
       os << "i";
       break;
     case READ_EDGE:
-//      os << "o - >|";
       os << "r";
       break;
     case OUTPUT_EDGE:
-//      os << "|--->o";
       os << "o";
       break;
     case WRITE_EDGE:
-//      os << "| - >o";
       os << "w";
       break;
     case EXCHANGE_EDGE:
-//      os << "|<--->o";
       os << "x";
       break;
     case UPDATE_EDGE:
-//      os << "|< - >o";
       os << "u";
       break;
   }

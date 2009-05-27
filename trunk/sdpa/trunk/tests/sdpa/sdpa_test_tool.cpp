@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     std::clog << "id = " << job->id() << std::endl;
     std::clog << "desc = " << job->description() << std::endl;
 
-    sdpa::Activity activity("activity-1", "test.so", "loopStep");
+    sdpa::Activity activity("activity-1", sdpa::Activity::Method("test.so", "loopStep"));
     activity.add_input(sdpa::Parameter
         (sdpa::Token(0), "i", sdpa::Parameter::INPUT_EDGE)
     );

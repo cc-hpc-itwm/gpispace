@@ -5,8 +5,8 @@
  *
  * $Id:$
  *
- * <short description>
- * <long description>
+ *
+ *
  *
  *  @author Kai Krueger
  *  @date   2009-05-25
@@ -24,27 +24,50 @@
 #include <sdpa/Properties.hpp>
 
 namespace sdpa {
+  /**
+    A class representing a Token.
+
+    A Token just transports arbitrary data through a workflow.
+   */
   class Token : public sdpa::Properties {
     public:
-      typedef boost::any any_t;
+      typedef boost::any any_t; //!< the storage type we use for the transported data
 
+      /**
+        Assigns different data to this token.
+
+        @param [in] the new data
+       */
       void reset(const any_t & data) {
         data_ = data;
         initialized_ = true;
       }
 
+      /**
+        Returns true iff the Token has been initialized.
+      */
       inline bool initialized() const {
         return initialized_;
       }
 
+      /**
+        Retrieve the data of the token.
+        @return the stored data
+      */
       const any_t & data() const {
         return data_;
       }
 
+      /**
+        Try to convert the stored data to the given type.
+        */
       template<typename T> inline T as() const {
         return boost::any_cast<T>(data_);
       }
 
+      /**
+        Store a new value into the storage space.
+      */
       template<typename T> inline void store_data(T val) {
         data_ = val;
       }
