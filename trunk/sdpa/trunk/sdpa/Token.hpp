@@ -1,3 +1,5 @@
+#ifndef SDPA_TOKEN_HPP
+#define SDPA_TOKEN_HPP 1
 /***********************************************************************/
 /** @file Token.hpp
  *
@@ -16,6 +18,7 @@
 
 #include <cassert> // assert
 #include <cstring> // memcpy
+#include <ostream>
 
 #include <boost/any.hpp>
 #include <sdpa/Properties.hpp>
@@ -24,10 +27,6 @@ namespace sdpa {
   class Token : public sdpa::Properties {
     public:
       typedef boost::any any_t;
-
-      inline bool operator!() const {
-        return !data_.empty();
-      }
 
       void reset(const any_t & data) {
         data_ = data;
@@ -70,9 +69,19 @@ namespace sdpa {
         return *this;
       }
 
+      void writeTo(std::ostream &os) const {
+        if (data_.empty()) {
+          os << "<empty>";
+        } else {
+          os << "<replace me with token data>";
+        }
+      }
     private:
       any_t data_;
       bool initialized_;
   };
 }
 
+std::ostream & operator<<(std::ostream & os, const sdpa::Token &t);
+
+#endif // SDPA_TOKEN_HPP

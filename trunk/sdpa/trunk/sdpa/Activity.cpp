@@ -15,15 +15,15 @@ Activity::Activity(const std::string &name, const std::string &module_name, cons
 }
 
 Activity::Activity(const Activity &other)
-  : name_(other.name()), module_name_(other.module_name()), method_name_(other.method_name()), input_(other.const_input()), output_(other.const_output()) {
+  : name_(other.name()), module_name_(other.module_name()), method_name_(other.method_name()), input_(other.input()), output_(other.output()) {
 }
 
 const Activity & Activity::operator=(const Activity &rhs) {
   name_ = rhs.name();
   module_name_ = rhs.module_name();
   method_name_ = rhs.method_name();
-  input_ = rhs.const_input();
-  output_ = rhs.const_output();
+  input_ = rhs.input();
+  output_ = rhs.output();
 }
 
 void Activity::add_input(const Parameter &p) {
@@ -33,3 +33,24 @@ void Activity::add_input(const Parameter &p) {
 void Activity::add_output(const Parameter &p) {
   output_.push_back(p);
 }
+
+void Activity::writeTo(std::ostream &os) const {
+  os << name() << ":" << module_name() << "::" << method_name();
+ 
+  os << "(";
+  for (parameter_list::const_iterator p(input().begin()); p != input().end(); p++) {
+    os << *p;
+  }
+  os << ")->[";
+
+  for (parameter_list::const_iterator p(output().begin()); p != output().end(); p++) {
+    os << *p;
+  }
+  os << "]";
+}
+
+std::ostream & operator<<(std::ostream & os, const sdpa::Activity &a) {
+  a.writeTo(os);
+  return os;
+}
+

@@ -3,6 +3,8 @@
 
 #include <string>
 #include <list>
+#include <ostream>
+
 #include <sdpa/Properties.hpp>
 #include <sdpa/Parameter.hpp>
 
@@ -26,11 +28,13 @@ namespace sdpa {
 
     inline parameter_list & input() { return input_; }
     inline parameter_list & output() { return output_; }
-    inline const parameter_list & const_input() const { return input_; }
-    inline const parameter_list & const_output() const { return output_; }
+    inline const parameter_list & input() const { return input_; }
+    inline const parameter_list & output() const { return output_; }
 
     void add_input(const Parameter &);
     void add_output(const Parameter &);
+
+    void writeTo(std::ostream &) const;
   private:
     std::string name_;
     std::string module_name_;
@@ -39,5 +43,7 @@ namespace sdpa {
     parameter_list output_;
   };
 }
+
+std::ostream & operator<<(std::ostream & os, const sdpa::Activity &a);
 
 #endif

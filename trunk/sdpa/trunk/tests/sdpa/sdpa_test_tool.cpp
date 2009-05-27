@@ -2,6 +2,10 @@
 #include <sdpa/JobImpl.hpp>
 #include <sdpa/LoggingConfigurator.hpp>
 
+#include <sdpa/Token.hpp>
+#include <sdpa/Parameter.hpp>
+#include <sdpa/Activity.hpp>
+
 #include <iostream>
 
 struct LogConfig {
@@ -25,4 +29,13 @@ int main(int argc, char **argv) {
     std::clog << "sdpa_logger = " << sdpa_logger.getName() << std::endl;
     std::clog << "id = " << job->id() << std::endl;
     std::clog << "desc = " << job->description() << std::endl;
+
+    sdpa::Activity activity("activity-1", "test.so", "loopStep");
+    activity.add_input(sdpa::Parameter
+        (sdpa::Token(0), "i", sdpa::Parameter::INPUT_EDGE)
+    );
+    activity.add_output(sdpa::Parameter
+        (sdpa::Token(), "i", sdpa::Parameter::OUTPUT_EDGE)
+    );
+    std::clog << "activity = " << activity << std::endl;
 }
