@@ -63,9 +63,7 @@
     <Errors>0</Errors>
     <Failures>0</Failures>
   </Statistics>
-</TestRun>
 
-<TestRun>
   <FailedTests></FailedTests>
   <SuccessfulTests>
     <Test id="1">
@@ -84,9 +82,8 @@
     <Errors>0</Errors>
     <Failures>0</Failures>
   </Statistics>
-</TestRun>
 
-<TestRun>
+
   <FailedTests></FailedTests>
   <SuccessfulTests>
     <Test id="1">
@@ -102,9 +99,9 @@
     <Errors>0</Errors>
     <Failures>0</Failures>
   </Statistics>
-</TestRun>
 
-<TestRun>
+
+
   <FailedTests>
     <FailedTest id="29">
       <Name>gl::tests::CertificateTest::testVerifyHugeDataSignature</Name>
@@ -264,9 +261,8 @@
     <Errors>0</Errors>
     <Failures>1</Failures>
   </Statistics>
-</TestRun>
 
-<TestRun>
+
   <FailedTests></FailedTests>
   <SuccessfulTests>
     <Test id="1">
@@ -339,9 +335,8 @@
     <Errors>0</Errors>
     <Failures>0</Failures>
   </Statistics>
-</TestRun>
 
-<TestRun>
+
   <FailedTests></FailedTests>
   <SuccessfulTests>
     <Test id="1">
