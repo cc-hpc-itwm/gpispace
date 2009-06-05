@@ -11,7 +11,9 @@
       <Message>assertion failed
 - Expression: result
 </Message>
+    </FailedTest>
 </FailedTests>
+
   <SuccessfulTests>
     <Test id="1">
       <Name>gl::tests::StatemachineNakTest::testLicenseRequest</Name>
