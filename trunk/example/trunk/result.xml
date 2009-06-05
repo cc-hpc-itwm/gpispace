@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding='ISO-8859-1' standalone='yes' ?>
-<Testgltests>
 <TestRun>
   <FailedTests></FailedTests>
   <SuccessfulTests>
@@ -65,7 +64,7 @@
     <Failures>0</Failures>
   </Statistics>
 </TestRun>
-</Testgltests>
+
 <Testlogging>
 <TestRun>
   <FailedTests></FailedTests>
