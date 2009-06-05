@@ -6,12 +6,16 @@
 
     <!-- $Id$ -->
     
-    <description>Pre-Stack Time Migration - calculate offset volume for one offset class</description>
+    <description>Pre-Stack Time Migration - calculate offset volume for one offset class (NRE)</description>
 
     <!-- workflow input places (will be filled with tokens by parent pstm-1 workflow) -->
-    <place ID="OffsetClass"/>
+    <place ID="OffsetClass">
+        <property name="workflowInputPlace"/>
+    </place>
 
-    <place ID="NumberPoints"/>
+    <place ID="NumberPoints">
+        <property name="workflowInputPlace"/>
+    </place>
 
     <!-- intermediate places -->
     <place ID="Traces"/>
@@ -21,7 +25,9 @@
     </place>
 
     <!-- workflow output places -->
-    <place ID="OffsetVolume"/>
+    <place ID="OffsetVolume">
+        <property name="workflowOutputPlace"/>
+    </place>
 
     <!-- transitions -->
     <transition ID="createVolume">
