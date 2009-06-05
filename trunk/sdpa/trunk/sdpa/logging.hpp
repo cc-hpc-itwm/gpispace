@@ -2,20 +2,18 @@
 #define SDPA_LOGGING_HPP 1
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#  include <sdpa/sdpa-config.h>
 #endif
 
-/* Logging */
-#if ENABLE_LOGGING == 1
+#if SDPA_ENABLE_LOGGING == 1
 
-#if HAVE_LOG4CPP
+#if SDPA_HAVE_LOG4CPP == 1
 
 #include <log4cpp/Category.hh>
 #include <log4cpp/Priority.hh>
 #include <log4cpp/convenience.h>
 
-namespace sdpa {
-namespace logging {
+namespace sdpa { namespace logging {
 
 typedef ::log4cpp::Priority::PriorityLevel PriorityLevel;
 
@@ -39,29 +37,32 @@ typedef ::log4cpp::Priority::PriorityLevel PriorityLevel;
 #define SDPA_LOG_ERROR(msg) SDPA_LLOG_ERROR(sdpa_logger, msg)
 #define SDPA_LOG_FATAL(msg) SDPA_LLOG_FATAL(sdpa_logger, msg)
 
+}}
+
 #else
 
 #warn Logging has been enabled, but no usable logging mechanism available, disabling it!
-#undef ENABLE_LOGGING
-#define ENABLE_LOGGING 0
+#undef SDPA_ENABLE_LOGGING
+#define SDPA_ENABLE_LOGGING 0
 
-#endif // HAVE_LOG4CPP
-#endif // ENABLE_LOGGING == 1
 
-#if ENABLE_LOGGING == 0 /* ! ENABLE_LOGGING */
+#endif // SDPA_HAVE_LOG4CPP
+#endif // SDPA_ENABLE_LOGGING == 1
 
-typedef enum {
-    EMERG  = 0,
-    FATAL  = 0,
-    ALERT  = 100,
-    CRIT   = 200,
-    ERROR  = 300,
-    WARN   = 400,
-    NOTICE = 500,
-    INFO   = 600,
-    DEBUG  = 700,
-    NOTSET = 800
-} PriorityLevel;
+#if SDPA_ENABLE_LOGGING == 0 /* ! ENABLE_LOGGING */
+
+//typedef enum {
+//    EMERG  = 0,
+//    FATAL  = 0,
+//    ALERT  = 100,
+//    CRIT   = 200,
+//    ERROR  = 300,
+//    WARN   = 400,
+//    NOTICE = 500,
+//    INFO   = 600,
+//    DEBUG  = 700,
+//    NOTSET = 800
+//} PriorityLevel;
 
 #define SDPA_LDECLARE_LOGGER(logger)   void* __sdpa_unused_##logger
 #define SDPA_LDEFINE_LOGGER(logger, h)
@@ -84,6 +85,5 @@ typedef enum {
 #define SDPA_LOG_FATAL(msg) 
 
 #endif
-}}
 
 #endif // !SDPA_LOGGING_HPP

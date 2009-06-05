@@ -2,7 +2,7 @@
 #define SDPA_MEMORY_HPP 1
 
 #if HAVE_CONFIG_H
-#include <config.h>
+#include <sdpa/sdpa-config.h>
 #endif
 
 #if USE_STL_TR1
