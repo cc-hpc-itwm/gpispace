@@ -1,0 +1,46 @@
+<workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass"
+          xmlns="http://www.gridworkflow.org/gworkflowdl"
+          xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd"
+          ID="No_ID">
+
+    <!-- $Id: pstm-1.gwdl 38 2009-05-15 09:11:51Z SVN_andreas_hohe $ -->
+    
+    <description>Pre-Stack Time Migration (Orchestrator)</description>
+
+	<!-- workflow input places -->
+    <place ID="OffsetParameters">
+        <token>
+            <data>
+                <min>15</min>
+                <max>33</max>
+                <step>1</step>
+            </data>
+        </token>
+    </place>
+
+    <place ID="OutputGatherParameters">
+        <token>
+            <data>
+                <numberPoints>1000x800x400</numberPoints>
+            </data>
+        </token>
+    </place>
+
+    <!-- workflow output places -->
+    <place ID="OutputGather"/>
+
+    <!-- transitions -->
+    <transition ID="preStackTimeMigration">
+        <description>Invokes the Pre-Stack Time Migration Workflow</description>
+        <inputPlace placeID="OffsetParameters" edgeExpression="OffsetParameters"/>
+        <inputPlace placeID="OutputGatherParameters" edgeExpression="OutputGatherParameters"/>
+        <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
+ 		<operation>
+      		<oc:operationClass name="preStackTimeMigration">
+        		<oc:operationCandidate type="workflow" operationName="pstm-1.gwdl" resourceName="./" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+</workflow>
