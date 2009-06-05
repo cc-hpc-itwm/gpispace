@@ -56,16 +56,6 @@
     <Test id="18">
       <Name>gl::tests::StatemachineAckTest::testFullClientLicenseAck</Name>
     </Test>
-  </SuccessfulTests>
-  <Statistics>
-    <Tests>18</Tests>
-    <FailuresTotal>0</FailuresTotal>
-    <Errors>0</Errors>
-    <Failures>0</Failures>
-  </Statistics>
-
-  <FailedTests></FailedTests>
-  <SuccessfulTests>
     <Test id="1">
       <Name>logging::tests::LoggingTest::testLogging</Name>
     </Test>
@@ -76,6 +66,13 @@
       <Name>logging::tests::LoggingTest::testDefaultLogger</Name>
     </Test>
   </SuccessfulTests>
+  <Statistics>
+    <Tests>18</Tests>
+    <FailuresTotal>0</FailuresTotal>
+    <Errors>0</Errors>
+    <Failures>0</Failures>
+  </Statistics>
+
   <Statistics>
     <Tests>3</Tests>
     <FailuresTotal>0</FailuresTotal>
