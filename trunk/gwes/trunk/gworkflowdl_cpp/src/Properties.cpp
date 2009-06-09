@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
+#include <gwdl/Properties.h>
+#include <gwdl/Defines.h>
+#include <gwdl/XMLUtils.h>
+
+#include <iostream>
+#include <xercesc/util/OutOfMemoryException.hpp>
+
+#define X(str) XMLString::transcode((const char*)& str)
+#define XS(strg) XMLString::transcode((const char*) strg.c_str())
+#define S(str) XMLString::transcode(str)
+
+using namespace gwdl;
+
+namespace gwdl
+{
+
+Properties::Properties(DOMNodeList* list)
+{
+  for(unsigned int i=0; i < list->getLength(); ++i)
+  {
+	  DOMNode* node = (DOMNode*) list->item(i);
+	  if (node->getNodeType() == DOMNode::ELEMENT_NODE) {
+		  if (XMLString::equals(node->getNodeName(),X("property"))) {
+			  DOMElement* el = (DOMElement*) node;
+		      insert(pair<string,string>(string(S(el->getAttribute(X("name")))), string(S(el->getTextContent()))));
+		  }
+	  }
+  }
+}
+
+vector<DOMElement*>& Properties::toElements(DOMDocument* doc)
+{
+	dom.clear();
+	
+    // Initialize the XML4C2 system.
+    XMLUtils::Instance();
+  
+    XMLCh* ns = X(SCHEMA_wfSpace);
+    
+    {
+       int errorCode = 0;
+           try
+           {
+               DOMElement* el;      
+               for(ITR_Properties it = begin(); it != end(); ++it)
+               {
+        	     el = doc->createElementNS(ns, X("property"));
+                 el->setAttribute(X("name"), XS(it->first));
+                 el->setTextContent(XS(it->second));
+                 dom.push_back(el);
+               }                 
+           }
+           catch (const OutOfMemoryException&)
+           {
+               XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
+               errorCode = 5;
+           }
+           catch (const DOMException& e)
+           {
+               XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
+               XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+               errorCode = 2;
+           }
+           catch (...)
+           {
+               XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+               errorCode = 3;
+           }
+   }
+
+   return dom;
+}
+
+}
+
+ostream& operator<<(ostream &out, gwdl::Properties &props) 
+{	
+	vector<DOMElement*> elements = props.toElements(XMLUtils::Instance()->createEmptyDocument(true));
+	for (unsigned int i=0; i<elements.size(); i++) 
+	{
+	    XMLUtils::Instance()->serialize(out,elements[i],true);
+	}	
+	return out;
+}
