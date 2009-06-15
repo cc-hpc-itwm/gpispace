@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include <sdpa/memory.hpp>
 #include <sdpa/modules/exceptions.hpp>
 #include <sdpa/modules/Module.hpp>
 
@@ -11,11 +12,12 @@ namespace sdpa {
 namespace modules {
   class ModuleLoader {
   public:
-    static ModuleLoader* create() { return new ModuleLoader(); }
+    typedef sdpa::shared_ptr<ModuleLoader> Ptr;
+
+    static Ptr create() { return Ptr(new ModuleLoader()); }
 
     typedef std::map<std::string, sdpa::modules::Module::Ptr> module_table_t;
 
-    ModuleLoader() {}
     ~ModuleLoader();
 
     const Module& get(const std::string &module) const throw(ModuleNotLoaded);
@@ -24,9 +26,11 @@ namespace modules {
     }
 
     Module& load(const std::string &module, const std::string &file) throw(ModuleLoadFailed);
-  private:
-    void unload_all();
     void unload(const std::string &module);
+  private:
+    ModuleLoader() {}
+    ModuleLoader(const ModuleLoader&);
+    void unload_all();
     void unload(module_table_t::iterator);
 
     module_table_t module_table_;

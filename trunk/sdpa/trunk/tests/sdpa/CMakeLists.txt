@@ -11,4 +11,6 @@ add_executable(sdpa_test_suite ${allsrcs})
 target_link_libraries(sdpa_test_suite sdpa)
 target_link_libraries(sdpa_test_suite sdpa-modules)
 
+# test module
+add_library(example-mod SHARED ExampleModule.cpp)
 #link_libraries(-Wl,-Bdynamic  -ldl)

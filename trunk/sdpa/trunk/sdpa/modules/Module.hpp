@@ -10,6 +10,10 @@
 
 namespace sdpa {
 namespace modules {
+
+#define SDPA_REGISTER_NAMED_FUN(mod_ptr, name, fun) (mod_ptr)->add_function(name, &fun)
+#define SDPA_REGISTER_FUN(mod_ptr, fun) SDPA_REGISTER_NAMED_FUN(mod_ptr, #fun, fun)
+
   /**
     @brief
     This class describes a loaded module, it keeps a mapping of function names
