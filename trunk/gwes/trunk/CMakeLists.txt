@@ -25,6 +25,12 @@ include(FindMscgen)
 Include(FindSMC)
 Include(SMCMacros)
 
+## find xerces-c
+Include(FindXercesC)
+IF(NOT XERCESC_FOUND)
+  message(FATAL_ERROR "No Xerces-c found, cannot continue.")
+ENDIF(NOT XERCESC_FOUND)
+
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
