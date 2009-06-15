@@ -10,6 +10,7 @@ file(GLOB allsrcs ${CMAKE_SOURCE_DIR}/tests/main.cpp ${srcs})
 add_executable(sdpa_test_suite ${allsrcs})
 target_link_libraries(sdpa_test_suite sdpa)
 target_link_libraries(sdpa_test_suite sdpa-modules)
+target_link_libraries(sdpa_test_suite dl)
 
 # test module
 add_library(example-mod SHARED ExampleModule.cpp)
