@@ -79,12 +79,12 @@ void ModuleTest::testModuleLoopingCall() {
   sdpa::modules::Module &mod = loader->get("example-mod");
   sdpa::modules::Module::input_data_t in;
 
-  long long start = sdpa::util::now();
+  sdpa::util::time_type start = sdpa::util::now();
   for (std::size_t i = 0; i < 100000; ++i) {
     sdpa::modules::Module::output_data_t out;
     mod.call("DoNothing", in, out);
   }
-  long long end = sdpa::util::now();
+  sdpa::util::time_type end = sdpa::util::now();
 
   std::cout << "call loop took " << (end - start) << "usec" << std::endl;
 }
