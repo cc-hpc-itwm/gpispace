@@ -93,7 +93,7 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
 
 # Make sure all subdirectories include correctly
@@ -111,6 +111,7 @@ include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 # Reflect the package structure
 add_subdirectory(sdpa)
 add_subdirectory(daemons)
+add_subdirectory(cmdline)
 enable_testing()
 add_subdirectory(tests)
 

@@ -2,7 +2,7 @@
 #define SDPA_LOGGING_HPP 1
 
 #if HAVE_CONFIG_H
-#  include <sdpa/sdpa-config.h>
+#  include <sdpa/sdpa-config.hpp>
 #endif
 
 #if SDPA_ENABLE_LOGGING == 1
