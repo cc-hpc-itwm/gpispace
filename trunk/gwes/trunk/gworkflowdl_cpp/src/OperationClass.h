@@ -9,12 +9,10 @@
 //std
 #include <vector>
 #include <string>
-using namespace std;
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
 //gwdl
-#include <gwdl/OperationCandidate.h>
+#include "OperationCandidate.h"
 
 namespace gwdl
 {
@@ -33,12 +31,12 @@ private:
 	/**
 	 * Candidates for this operation class.
 	 */
-    vector<OperationCandidate*> operationCandidates;
+    std::vector<OperationCandidate*> operationCandidates;
     
     /**
      * Name of this operation class.
      */
-    string name;
+    std::string name;
 	
 public:
 
@@ -50,7 +48,7 @@ public:
 	/**
 	 * Construct operation class from DOMElement.
 	 */
-	OperationClass(DOMElement* element);
+	OperationClass(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Destructor for operation class.
@@ -62,7 +60,7 @@ public:
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
     /**
      * Get level of abstraction.
@@ -75,17 +73,17 @@ public:
 	/**
 	 * Get the name of this operation class.
 	 */
-	string& getName() {return name;}
+	std::string& getName() {return name;}
 
 	/**
 	 * Set the name of this operation class.
 	 */
-	void setName(string _name) {name = _name;}
+	void setName(std::string _name) {name = _name;}
 
 	/**
 	 * Get the candidates of this operation class.
 	 */    
-    vector<OperationCandidate*>& getOperationCandidates();
+    std::vector<OperationCandidate*>& getOperationCandidates();
     
     /**
      * Add an additional concrete operation to the candidates.

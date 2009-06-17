@@ -8,9 +8,9 @@
 #include <ostream>
 #include <assert.h>
 //gwdl
-#include <gwdl/Properties.h>
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Transition.h>
+#include "../gworkflowdl_cpp/src/Properties.h"
+#include "../gworkflowdl_cpp/src/XMLUtils.h"
+#include "../gworkflowdl_cpp/src/Transition.h"
 //tests
 #include "TestToken.h"
 
@@ -18,6 +18,7 @@
 
 using namespace std;
 using namespace gwdl;
+XERCES_CPP_NAMESPACE_USE
 
 void testToken()
 {

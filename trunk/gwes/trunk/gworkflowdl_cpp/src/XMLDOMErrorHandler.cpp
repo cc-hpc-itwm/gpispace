@@ -4,16 +4,17 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-// xerces
+// xerces-c
 #include <xercesc/dom/DOMLocator.hpp>
 // std
 #include <iostream>
 #include <ostream>
 #include <sstream>
 // gwdl
-#include <gwdl/XMLDOMErrorHandler.h>
+#include "XMLDOMErrorHandler.h"
 
 using namespace std;
+XERCES_CPP_NAMESPACE_USE
 
 namespace gwdl
 {

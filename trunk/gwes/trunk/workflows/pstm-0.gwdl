@@ -34,7 +34,7 @@
     <transition ID="preStackTimeMigration">
         <description>Invokes the Pre-Stack Time Migration Workflow</description>
         <inputPlace placeID="OffsetParameters" edgeExpression="OffsetParameters"/>
-        <inputPlace placeID="OutputGatherParameters" edgeExpression="OutputGatherParameters"/>
+        <inputPlace placeID="OutputGatherParameters" edgeExpression="GatherParameters"/>
         <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
  		<operation>
       		<oc:operationClass name="preStackTimeMigration">

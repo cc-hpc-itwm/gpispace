@@ -8,16 +8,13 @@
 #define OPERATIONCANDIDATE_H_
 //std
 #include <string>
-using namespace std;
-
-//xerces-c
 #include <iostream>
-#include <gwdl/XMLUtils.h>
+//xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
-
-#include <gwdl/Defines.h>
+//gwdl
+#include "XMLUtils.h"
+#include "Defines.h"
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define S(str) XMLString::transcode(str)
@@ -39,9 +36,9 @@ private:
 	long id;
 	long generateID() {static long counter = 0; return counter++;}
 	bool selected;
-	string type;
-	string operationName;
-	string resourceName;
+	std::string type;
+	std::string operationName;
+	std::string resourceName;
 	float quality;
 	
 public:
@@ -54,7 +51,7 @@ public:
 	/**
 	 * Constructor for operation candidate to be build from DOMElement.
 	 */
-	OperationCandidate(DOMElement::DOMElement* element); 
+	OperationCandidate(XERCES_CPP_NAMESPACE::DOMElement* element); 
 	
 	/**
 	 * Destructor.
@@ -86,32 +83,32 @@ public:
 	/**
 	 * Set operation type. The supported types depend on the implementation of the workflow handler.
 	 */
-	void setType(string _type) { type = _type; }
+	void setType(std::string _type) { type = _type; }
 	
 	/**
 	 * Get the operation type.
 	 */
-	string& getType() { return type; }
+	std::string& getType() { return type; }
 	
 	/**
 	 * Set operation name.
 	 */
-	void setOperationName(string name) { operationName = name; }
+	void setOperationName(std::string name) { operationName = name; }
 	
 	/**
 	 * Get the operation name.
 	 */
-	string& getOperationName() { return operationName; }
+	std::string& getOperationName() { return operationName; }
 	
 	/**
 	 * Set resource name.
 	 */
-	void setResourceName(string name) {resourceName = name; }
+	void setResourceName(std::string name) {resourceName = name; }
 	
 	/**
 	 * Get resource name.
 	 */
-	string& getResourceName() { return resourceName; }
+	std::string& getResourceName() { return resourceName; }
 	
 	/**
 	 * Set quality of this candidate.
@@ -130,7 +127,7 @@ public:
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
     /**
      * get abstraction degree of operation

@@ -10,16 +10,14 @@
 #include <map>
 #include <vector>
 #include <string>
-using namespace std;
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
 // gwdl
-#include <gwdl/Defines.h>
-#include <gwdl/Place.h>
-#include <gwdl/Transition.h>
-#include <gwdl/Properties.h>
-#include <gwdl/NoSuchWorkflowElement.h>
+#include "Defines.h"
+#include "Place.h"
+#include "Transition.h"
+#include "Properties.h"
+#include "NoSuchWorkflowElement.h"
 
 namespace gwdl
 {
@@ -134,14 +132,14 @@ class Workflow
 {
 
 private:
-    string 					id;
-    string 					description;
-    Properties 				properties;
-    vector<Transition*> 	transitions;
-    vector<Transition*> 	enabledTransitions;
-    map<string, Place*> 	places;
-    vector<string>			placeids;
-    vector<Place*> 			placeList;
+    std::string id;
+    std::string description;
+    Properties properties;
+    std::vector<Transition*> transitions;
+    std::vector<Transition*> enabledTransitions;
+    std::map<std::string, Place*> places;
+    std::vector<std::string> placeids;
+    std::vector<Place*> placeList;
     	
 public:
 
@@ -153,13 +151,13 @@ public:
 	/**
 	 * Construct workflow from DOMElement.
 	 */
-	Workflow(DOMElement* element);
+	Workflow(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Construct workflow from file.
 	 * @param filename The filename of the GWorkflowDL file including its path. 
 	 */
-	Workflow(string filename);
+	Workflow(std::string filename);
 
 	/**
 	 * Destructor.
@@ -170,23 +168,23 @@ public:
 	 * Convert this into a DOMDocument.
 	 * @return A pointer on the DOMDocument.
 	 */
-	DOMDocument* toDocument();
+	XERCES_CPP_NAMESPACE::DOMDocument* toDocument();
 	
 	/**
 	 * Save this workflow to an XML GWorkflowDL file
 	 * @param filename The name of the file. 
 	 */
-	void saveToFile(string filename);
+	void saveToFile(std::string filename);
 	
     /**
      * get workflow id.
      */
-    string& getID() {return id;}
+    std::string& getID() {return id;}
     
     /**
      * set workflow id.
      */
-    void setID(string _id) {id=_id;}
+    void setID(std::string _id) {id=_id;}
 
     /**
      * Appends a place to the registered places.
@@ -194,7 +192,7 @@ public:
      * @param place to add
      */
     void addPlace(Place* place)
-      {places.insert(pair<string, Place*>(place->getID(),place));}
+      {places.insert(std::pair<std::string, Place*>(place->getID(),place));}
     
     /**
      * Get the ith place.
@@ -204,10 +202,10 @@ public:
     /**
      *  get all place ids.
      */
-    vector<string>& getPlaceIDs()
+    std::vector<std::string>& getPlaceIDs()
     {
       placeids.clear();
-      for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+      for(std::map<std::string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
       {
         placeids.push_back(it->first);
       }
@@ -219,14 +217,14 @@ public:
      * @param id place ID
      * @return place  place to find
      */
-    Place* getPlace(string id) throw (NoSuchWorkflowElement);
+    Place* getPlace(std::string id) throw (NoSuchWorkflowElement);
 
     /**
      * Get the index of a specific place.
      * @param id The place ID.
      * @return The place index.
      */
-    unsigned int getPlaceIndex(string id) throw (NoSuchWorkflowElement);
+    unsigned int getPlaceIndex(std::string id) throw (NoSuchWorkflowElement);
 
     /**
      * Remove the i-th place.
@@ -258,9 +256,9 @@ public:
      * Get all transition identifiers.
      * @return vector of all transition identifiers.
      */
-    vector<string>* getTransitionIDs()
+    std::vector<std::string>* getTransitionIDs()
     {
-      vector<string>* v = new vector<string>();
+      std::vector<std::string>* v = new std::vector<std::string>();
       for(unsigned int i=0; i<transitions.size(); ++i)
       {
         v->push_back(transitions[i]->getID());
@@ -273,14 +271,14 @@ public:
      * @param id The transition ID.
      * @return A reference to the transition.
      */
-    Transition* getTransition(string id) throw (NoSuchWorkflowElement);
+    Transition* getTransition(std::string id) throw (NoSuchWorkflowElement);
     
     /**
      * Get the index of a specific transition.
      * @param id The transition ID.
      * @return The transition index.
      */
-    unsigned int getTransitionIndex(string id) throw (NoSuchWorkflowElement);
+    unsigned int getTransitionIndex(std::string id) throw (NoSuchWorkflowElement);
 
 	/**
 	 * Retieve a transition by its index.
@@ -299,13 +297,13 @@ public:
      * Set the workflow description.
      * @param _description Workflow description.
      */
-    void setDescription(string _description) {description = _description;}
+    void setDescription(std::string _description) {description = _description;}
 
     /**
      * Get the workflow description.
      * @return description
      */
-    string& getDescription() {return description;}
+    std::string& getDescription() {return description;}
 
 	/**
 	 * Get the properties of this workflow.
@@ -324,24 +322,24 @@ public:
      * (allocated transition is deleted)
      * @param _transitions Transitions to be set
      */
-    void setTransitions(vector<Transition*> _transitions);
+    void setTransitions(std::vector<Transition*> _transitions);
 
     /**
      * return the transitions of the workflow as a vector.
      * @return Reference to transition vector.
      */
-    vector<Transition*>& getTransitions() {return transitions;}
+    std::vector<Transition*>& getTransitions() {return transitions;}
 
     /**
      * Clear workflow's place container and add the places of the vector.
      * @param _places vector.
      */
-    void setPlaces(vector<Place*>& _places)
+    void setPlaces(std::vector<Place*>& _places)
     {
      places.clear();
      for(unsigned int i=0; i<_places.size(); ++i)
       {
-        places.insert(pair<string, Place*>(_places[i]->getID(),_places[i])); 
+        places.insert(std::pair<std::string, Place*>(_places[i]->getID(),_places[i])); 
       }
     }
 
@@ -350,10 +348,10 @@ public:
      * ()
      * @return place vector.
      */
-    vector<Place*>& getPlaces()
+    std::vector<Place*>& getPlaces()
     {
       placeList.clear();
-      for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+      for(std::map<std::string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
       {
         placeList.push_back(it->second);
       }
@@ -366,10 +364,10 @@ public:
      * return the workflow's enabled transitions as vector.
      * @return vector of enabled transitions.
      */
-    vector<Transition*>& getEnabledTransitions()
+    std::vector<Transition*>& getEnabledTransitions()
     {
       enabledTransitions.clear();
-      for(vector<Transition*>::iterator it=transitions.begin(); it != transitions.end(); ++it)
+      for(std::vector<Transition*>::iterator it=transitions.begin(); it != transitions.end(); ++it)
       {
         if((*it)->isEnabled()) enabledTransitions.push_back(*it);
       }
@@ -379,6 +377,6 @@ public:
 
 }
 
-ostream& operator<< (ostream &out, gwdl::Workflow &wf);
+std::ostream& operator<< (std::ostream &out, gwdl::Workflow &wf);
 
 #endif /*WORKFLOW_H_*/

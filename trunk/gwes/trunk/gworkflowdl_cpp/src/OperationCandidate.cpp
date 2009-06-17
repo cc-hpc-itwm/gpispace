@@ -10,15 +10,17 @@
 //xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
-#include <gwdl/OperationCandidate.h>
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Defines.h>
-#include <gwdl/Operation.h>
+#include "OperationCandidate.h"
+#include "XMLUtils.h"
+#include "Defines.h"
+#include "Operation.h"
+
+XERCES_CPP_NAMESPACE_USE
+using namespace std;
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define XS(strg) XMLString::transcode((const char*) strg.c_str())
 #define S(str) XMLString::transcode(str)
-
 
 namespace gwdl
 {

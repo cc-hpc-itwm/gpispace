@@ -7,13 +7,12 @@
 #ifndef OPERATION_H_
 #define OPERATION_H_
 
+// std
 #include <string>
-using namespace std;
-
+// xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
-
-#include <gwdl/OperationClass.h>
+// gwdl
+#include "OperationClass.h"
 
 namespace gwdl
 {
@@ -120,7 +119,7 @@ public:
 	 * Construct Operation from DOMElement.
 	 * @param element The DOMElement to build the operation from.
 	 */
-	Operation(DOMElement* element);
+	Operation(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Desctructor for operation.
@@ -132,7 +131,7 @@ public:
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 
 	/**
 	 * Set the operation class for this operation.
@@ -159,6 +158,6 @@ public:
 
 }
 
-ostream& operator<< (ostream &out, gwdl::Operation &operation);
+std::ostream& operator<< (std::ostream &out, gwdl::Operation &operation);
 
 #endif /*OPERATION_H_*/

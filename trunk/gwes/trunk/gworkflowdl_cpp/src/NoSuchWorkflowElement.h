@@ -8,7 +8,7 @@
 #define NOSUCHWORKFLOWELEMENT_H_
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 namespace gwdl
 {
@@ -22,8 +22,8 @@ namespace gwdl
 class NoSuchWorkflowElement
 {
 public:
-		string message;
-		NoSuchWorkflowElement(string _message) 
+		std::string message;
+		NoSuchWorkflowElement(std::string _message) 
 		{
 			message = _message;					
 		}

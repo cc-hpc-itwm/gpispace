@@ -9,10 +9,14 @@
 #include <sstream>
 #include <fstream>
 #include <errno.h>
+// xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 //gwdl
-#include <gwdl/Workflow.h>
-#include <gwdl/XMLUtils.h>
+#include "Workflow.h"
+#include "XMLUtils.h"
+
+XERCES_CPP_NAMESPACE_USE
+using namespace std;
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define XS(strg) XMLString::transcode((const char*) strg.c_str())

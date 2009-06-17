@@ -7,7 +7,7 @@
 #ifndef TESTTOKEN_H_
 #define TESTTOKEN_H_
 //gwdl
-#include <gwdl/Token.h>
+#include "../gworkflowdl_cpp/src/Token.h"
 
 void testToken();
 

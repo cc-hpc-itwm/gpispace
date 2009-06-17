@@ -8,12 +8,13 @@
 #include <ostream>
 #include <assert.h>
 //gwdl
-#include <gwdl/XMLUtils.h>
+#include "../gworkflowdl_cpp/src/XMLUtils.h"
 //tests
 #include "TestProperties.h"
 
 using namespace std;
 using namespace gwdl;
+XERCES_CPP_NAMESPACE_USE
 
 void testProperties()
 {

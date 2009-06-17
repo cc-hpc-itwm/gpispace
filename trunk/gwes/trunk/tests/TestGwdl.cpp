@@ -7,7 +7,7 @@
 #include <iostream>
 #include <ostream>
 //gwdl
-#include <gwdl/XMLUtils.h>
+#include "../gworkflowdl_cpp/src/XMLUtils.h"
 // test
 #include "TestData.h"
 #include "TestToken.h"

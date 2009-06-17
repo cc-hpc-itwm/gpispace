@@ -6,9 +6,9 @@
  */
 #ifndef WORKFLOWFORMATEXCEPTION_H_
 #define WORKFLOWFORMATEXCEPTION_H_
-#include <string>
 
-using namespace std;
+//std
+#include <string>
 
 namespace gwdl
 {
@@ -22,8 +22,8 @@ namespace gwdl
 class WorkflowFormatException
 {
 public:
-		string message;
-		WorkflowFormatException(string _message) 
+		std::string message;
+		WorkflowFormatException(std::string _message) 
 		{
 			message = _message;					
 		}

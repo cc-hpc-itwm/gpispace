@@ -4,7 +4,7 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-// xerces
+// xerces-c
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/framework/StdOutFormatTarget.hpp>
@@ -12,13 +12,13 @@
 #include <xercesc/framework/Wrapper4InputSource.hpp>
 #include <iostream>
 // gwdl
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Defines.h>
+#include "XMLUtils.h"
+#include "Defines.h"
+
+XERCES_CPP_NAMESPACE_USE
+using namespace std;
 
 #define X(str) XMLString::transcode((const char*)& str)
-
-using namespace std;
-using namespace gwdl;
 
 namespace gwdl
 {

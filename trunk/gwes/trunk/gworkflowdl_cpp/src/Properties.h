@@ -6,19 +6,17 @@
  */
 #ifndef PROPERTIES_H_
 #define PROPERTIES_H_
+// std
 #include <string>
 #include <map>
 #include <vector>
-
+// xerces-c
 #include <xercesc/dom/DOM.hpp>
-
-using namespace std;
-XERCES_CPP_NAMESPACE_USE
 
 namespace gwdl
 {
 	
-typedef map<string, string>::iterator 	ITR_Properties;
+typedef std::map<std::string, std::string>::iterator ITR_Properties;
 
 /**
  * The Properties class is a map used to store properties of Workflow, Transition, Place, and Token.
@@ -27,10 +25,10 @@ typedef map<string, string>::iterator 	ITR_Properties;
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class Properties : public map<string,string>
+class Properties : public std::map<std::string,std::string>
 {
 private:
-	vector<DOMElement*> dom;
+	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> dom;
 	
 public:
 	/**
@@ -46,14 +44,14 @@ public:
 	/**
 	 * Constructor from XML.
 	 */
-	Properties(DOMNodeList* list);
+	Properties(XERCES_CPP_NAMESPACE::DOMNodeList* list);
 	
 	/**
 	 * Convert this into a DOMElement.
 	 * @param doc The master document this elements should belong to.
 	 * @return The DOMElement.
 	 */
-	vector<DOMElement*>& toElements(DOMDocument* doc);
+	std::vector<XERCES_CPP_NAMESPACE::DOMElement*>& toElements(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
 	/**
 	 * Put new name/value pair into properties.
@@ -61,16 +59,16 @@ public:
 	 * @param name The name of the property.
 	 * @param value The value of the property.
 	 */
-	void put(string name, string value)
+	void put(std::string name, std::string value)
 	{
 		// key not yet in map
 		if (find(name)==end()) {
-		    insert(pair<string,string>(name,value));		
+		    insert(std::pair<std::string,std::string>(name,value));		
 		} 
 		// key already in map, remove old value!
 		else {
 			erase(name);
-		    insert(pair<string,string>(name,value));		
+		    insert(std::pair<std::string,std::string>(name,value));		
 		}
     }
 	 
@@ -78,7 +76,7 @@ public:
 	 * Remove property with specific name from properties.
 	 * @param name The name of the property.
 	 */
-	void remove(string name)
+	void remove(std::string name)
 	{
 	  erase(name);
 	}
@@ -88,7 +86,7 @@ public:
 	 * @param name The name of the property.
 	 * @return empty string "" if property with name not found.
 	 */
-	string get(string name)
+	std::string get(std::string name)
 	{
 	  ITR_Properties it = find(name);
       return it != end() ? it->second : "";
@@ -98,7 +96,7 @@ public:
 	 * Test if the properties contain specific property name.
 	 * @param name The name of the property.
 	 */
-	bool contains(string name) {
+	bool contains(std::string name) {
 	  ITR_Properties it = find(name);
 	  return (it != end());
 	}
@@ -111,6 +109,6 @@ public:
 
 }
 
-ostream& operator<< (ostream &out, gwdl::Properties &props);
+std::ostream& operator<< (std::ostream &out, gwdl::Properties &props);
 
 #endif /*PROPERTIES_H_*/

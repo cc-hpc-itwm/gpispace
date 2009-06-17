@@ -12,11 +12,8 @@
 #include <ostream>
 #include <string>
 // gwdl
-#include <gwdl/WorkflowFormatException.h>
-#include <gwdl/XMLDOMErrorHandler.h>
-
-using namespace std;
-XERCES_CPP_NAMESPACE_USE
+#include "WorkflowFormatException.h"
+#include "XMLDOMErrorHandler.h"
 
 namespace gwdl
 {
@@ -60,7 +57,7 @@ public:
 	 * @param pretty Format pretty print
 	 * @return The output stream. 
 	 */
-	ostream& serialize (ostream& os, const DOMNode* node, bool pretty);
+	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
 	
 	/**
 	 * Serialize the DOMDocument to an ostream.
@@ -69,7 +66,7 @@ public:
 	 * @param pretty Format pretty print
 	 * @return The output stream. 
 	 */
-	ostream& serialize (ostream& os, const DOMDocument* doc, bool pretty);
+	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty);
 
 	/**
 	 * Serialize the DOMNode to a string.
@@ -77,7 +74,7 @@ public:
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
 	 */
-	string* serialize (const DOMNode* node, bool pretty);
+	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
 
 	/**
 	 * Serialize the DOMDocument to a string.
@@ -85,21 +82,21 @@ public:
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
 	 */
-	string* serialize (const DOMDocument* doc, bool pretty); 
+	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty); 
 	
 	/**
 	 * Deserialize the DOMNode from a XML string.
 	 * @param xmlstring The XML string containing a node.
 	 * @return The corresponding DOMNode.
 	 */
-	DOMDocument* deserialize (string& xmlstring, bool validating = false) throw (WorkflowFormatException);
+	XERCES_CPP_NAMESPACE::DOMDocument* deserialize (std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
 
 	/**
 	 * Creates an empty document.
 	 * @param gwdlnamespace Set to <code>true</code> if you want to use the GWorkflowDL namespace.
 	 * @return The document.
 	 */	
-	DOMDocument* createEmptyDocument(bool gwdlnamespace);
+	XERCES_CPP_NAMESPACE::DOMDocument* createEmptyDocument(bool gwdlnamespace);
 
 };
 

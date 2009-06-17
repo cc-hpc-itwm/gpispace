@@ -12,10 +12,7 @@
 // xerces
 #include <xercesc/dom/DOM.hpp>
 // gwdl
-#include <gwdl/WorkflowFormatException.h>
-
-using namespace std;
-XERCES_CPP_NAMESPACE_USE
+#include "WorkflowFormatException.h"
 
 namespace gwdl
 {
@@ -36,9 +33,9 @@ class Data
 {
 private:
 	int _type;
-    DOMElement* data;
-    string* dataText;
-	string& trim(string& s);
+	XERCES_CPP_NAMESPACE::DOMElement* data;
+    std::string* dataText;
+	std::string& trim(std::string& s);
 	void setType();
     
 public:
@@ -100,31 +97,31 @@ public:
 	 * Construct data from DOMElement.
 	 * @param element The DOM representation of this element.
 	 */
-	Data(DOMElement* element);
+	Data(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Construct data from xml string.
 	 * @param xmlstring The xml string representing the data element.
 	 */
-	Data(string xmlstring) throw(WorkflowFormatException);
+	Data(std::string xmlstring) throw(WorkflowFormatException);
 	
 	/**
 	 * Convert this into a DOMElement.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
 	/**
 	 * Returns the text content of the data element and its descendants.
 	 * @return A string containing only the text inside the data XML.
 	 */
-	string* getText();
+	std::string* getText();
 	
 	/** 
 	 * Convert the content of this data object into a xml string.
 	 * @return The XML string.
 	 */
-	string* toString();
+	std::string* toString();
 	
 	/**
 	 * Get the type of the data. Can be
@@ -150,6 +147,6 @@ public:
 
 }
 
-ostream& operator<< (ostream &out, gwdl::Data &data);
+std::ostream& operator<< (std::ostream &out, gwdl::Data &data);
 
 #endif /*DATA_H_*/

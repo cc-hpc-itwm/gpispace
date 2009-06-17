@@ -9,19 +9,17 @@
 //std
 #include <vector>
 #include <string>
-using namespace std;
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
 //gwdl
-#include <gwdl/Edge.h>
-#include <gwdl/Operation.h>
-#include <gwdl/Properties.h>
+#include "Edge.h"
+#include "Operation.h"
+#include "Properties.h"
 
 namespace gwdl
 {
 	
-typedef vector<Edge*>::iterator ITR_Edges;
+typedef std::vector<Edge*>::iterator ITR_Edges;
 
 class Workflow;
 
@@ -113,18 +111,18 @@ public:
 
 private:
 
-	string id;
+	std::string id;
 	TransitionStatus status;
-    string description;
+    std::string description;
     Properties properties;
     Operation* operation;
-    vector<string> conditions;
-    vector<Edge*> readEdges;
-    vector<Edge*> inEdges;
-    vector<Edge*> writeEdges;
-    vector<Edge*> outEdges;
+    std::vector<std::string> conditions;
+    std::vector<Edge*> readEdges;
+    std::vector<Edge*> inEdges;
+    std::vector<Edge*> writeEdges;
+    std::vector<Edge*> outEdges;
 	
-	string generateID();
+	std::string generateID();
 	
 public:
 	
@@ -133,12 +131,12 @@ public:
 	 * Note: The unique identifier can not be changed after creating the transition!
 	 * @param id The unique identifier of this transition. If id is set to "", then an id will be generated automatically. 
 	 */ 
-	Transition(string id);
+	Transition(std::string id);
 	
 	/**
 	 * Construct transition from DOMElement.
 	 */
-	Transition(Workflow* wf, DOMElement* element);
+	Transition(Workflow* wf, XERCES_CPP_NAMESPACE::DOMElement* element);
 
 	/**
 	 * Destructor.
@@ -150,26 +148,26 @@ public:
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
     /**
      * get transition ID.
      * @return transition ID
      */
-    string& getID() {return id;}
+    std::string& getID() {return id;}
 
     /**
      * set transition description.
      * @param _description AnalysisTransition Description
      */
-    void setDescription(string _description){description = _description;}
+    void setDescription(std::string _description){description = _description;}
 
     /**
      * get transition description.
      * before setDescription getDescription returns DEFAULT_DESCRIPTION
      * @return description
      */
-    string& getDescription(){return description;}
+    std::string& getDescription(){return description;}
 
 	/**
 	 * Set all the properties of this transition.
@@ -227,7 +225,7 @@ public:
      * clear read Edges and add array's Edges to read Edges.
      * @param edges array of Edges to set
      */
-    void setReadEdges(vector<Edge*> edges){
+    void setReadEdges(std::vector<Edge*> edges){
     	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) delete *it;
     	readEdges.clear();
     	readEdges.insert(readEdges.end(), edges.begin(), edges.end());}
@@ -236,13 +234,13 @@ public:
      * get array of read Edges.
      * @return read Edges
      */
-    vector<Edge*>& getReadEdges() {return readEdges;}
+    std::vector<Edge*>& getReadEdges() {return readEdges;}
 
     /**
      * clear input Edges and add array's Edges to input Edges.
      * @param edges array of Edges to set
      */
-    void setInEdges(vector<Edge*> edges){
+    void setInEdges(std::vector<Edge*> edges){
     	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) delete *it;
     	inEdges.clear();
     	inEdges.insert(inEdges.end(), edges.begin(), edges.end());}
@@ -251,13 +249,13 @@ public:
      * get array of input Edges.
      * @return input Edges
      */
-    vector<Edge*>& getInEdges() {return inEdges;}
+    std::vector<Edge*>& getInEdges() {return inEdges;}
 
     /**
      * clear write Edges and add array's Edges to write Edges.
      * @param edges array of Edges to set
      */
-    void setWriteEdges(vector<Edge*> edges){
+    void setWriteEdges(std::vector<Edge*> edges){
     	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) delete *it;
     	writeEdges.clear();
     	writeEdges.insert(writeEdges.end(), edges.begin(), edges.end());}
@@ -266,13 +264,13 @@ public:
      * get array of write Edges.
      * @return write Edges
      */
-    vector<Edge*>& getWriteEdges() {return writeEdges;}
+    std::vector<Edge*>& getWriteEdges() {return writeEdges;}
 
     /**
      * clear output Edges and add array's Edges to output Edges.
      * @param edges array of output Edges to be set
      */
-    void setOutEdges(vector<Edge*> edges) {
+    void setOutEdges(std::vector<Edge*> edges) {
     	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) delete *it;
     	outEdges.clear();
     	outEdges.insert(outEdges.end(), edges.begin(), edges.end());}
@@ -281,7 +279,7 @@ public:
      * get array of output Edges.
      * @return output edges
      */
-    vector<Edge*>& getOutEdges() {return outEdges;}
+    std::vector<Edge*>& getOutEdges() {return outEdges;}
 
     /**
      * set transition's Operation.
@@ -301,10 +299,10 @@ public:
      * set transition's condition.
      * @param _conditions condition to be set
      */
-    void setConditions(vector<string> _conditions) {conditions.clear();
+    void setConditions(std::vector<std::string> _conditions) {conditions.clear();
     	conditions.insert(conditions.end(), _conditions.begin(), _conditions.end());}
 
-    void addCondition(string condition) {conditions.push_back(condition);}
+    void addCondition(std::string condition) {conditions.push_back(condition);}
 
     void removeCondition(int i) {conditions.erase(conditions.begin()+i);}
 
@@ -312,7 +310,7 @@ public:
      * get transition's condition.
      * @return condition condition of the transition
      */
-    vector<string>& getConditions() {return conditions;}
+    std::vector<std::string>& getConditions() {return conditions;}
 
     // advanced methods that make life easier
 
@@ -333,7 +331,7 @@ public:
      * remove read edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeReadEdge(string placeID)
+    void removeReadEdge(std::string placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; readEdges.erase(it); break;}
@@ -343,7 +341,7 @@ public:
      * remove input edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeInEdge(string placeID)
+    void removeInEdge(std::string placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; inEdges.erase(it); break;}
@@ -353,7 +351,7 @@ public:
      * remove write edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeWriteEdge(string placeID)
+    void removeWriteEdge(std::string placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; writeEdges.erase(it); break;}
@@ -363,7 +361,7 @@ public:
      * remove output edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeOutEdge(string placeID)
+    void removeOutEdge(std::string placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; outEdges.erase(it); break;}
@@ -375,7 +373,7 @@ public:
      * @param placeID of Edge to get
      * @return read edge
      */
-    Edge* getReadEdge(string placeID)
+    Edge* getReadEdge(std::string placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -388,7 +386,7 @@ public:
      * @param placeID of Edge to get
      * @return input edge
      */
-    Edge* getInEdge(string placeID)
+    Edge* getInEdge(std::string placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -401,7 +399,7 @@ public:
      * @param placeID of Edge to get
      * @return write edge
      */
-    Edge* getWriteEdge(string placeID)
+    Edge* getWriteEdge(std::string placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -414,7 +412,7 @@ public:
      * @param placeID Place identifier
      * @return output edge
      */
-    Edge* getOutEdge(string placeID)
+    Edge* getOutEdge(std::string placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -433,6 +431,6 @@ public:
 
 }
 
-ostream& operator<< (ostream &out, gwdl::Transition &trans);
+std::ostream& operator<< (std::ostream &out, gwdl::Transition &trans);
 
 #endif /*TRANSITION_H_*/

@@ -11,15 +11,14 @@
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 
-XERCES_CPP_NAMESPACE_USE
-
 #include <assert.h>
-#include <gwdl/OperationCandidate.h>
-#include <gwdl/Workflow.h>
-#include <gwdl/XMLUtils.h>
+#include "../gworkflowdl_cpp/src/OperationCandidate.h"
+#include "../gworkflowdl_cpp/src/Workflow.h"
+#include "../gworkflowdl_cpp/src/XMLUtils.h"
 
 using namespace std;
 using namespace gwdl;
+XERCES_CPP_NAMESPACE_USE
 
 void testParser()
 {

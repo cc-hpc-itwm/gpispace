@@ -6,7 +6,7 @@
  */
 #ifndef TESTDATA_H_
 #define TESTDATA_H_
-#include <gwdl/Data.h>
+#include "../gworkflowdl_cpp/src/Data.h"
 
 void testData() ;
 

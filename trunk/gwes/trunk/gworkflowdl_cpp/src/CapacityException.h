@@ -8,8 +8,6 @@
 #define CAPACITYEXCEPTION_H_
 #include <string>
 
-using namespace std;
-
 namespace gwdl
 {
 
@@ -21,8 +19,8 @@ namespace gwdl
 class CapacityException {
 	
 	public:
-		string message;
-		CapacityException(string _message) 
+		std::string message;
+		CapacityException(std::string _message) 
 		{
 			message = _message;					
 		}

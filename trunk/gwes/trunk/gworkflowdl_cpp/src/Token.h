@@ -7,14 +7,13 @@
 #ifndef TOKEN_H_
 #define TOKEN_H_
 
+// std
 #include <string>
-using namespace std;
-
+// xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
-
-#include <gwdl/Properties.h>
-#include <gwdl/Data.h>
+// gwdl
+#include "Properties.h"
+#include "Data.h"
 
 namespace gwdl
 {
@@ -114,14 +113,14 @@ public:
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param element XML content of the data token as DOMElement.
 	 */
-	Token(DOMElement* element);
+	Token(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Convert this token into a DOMElement.
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
 	/**
 	 * Destructor for data token.
@@ -130,7 +129,7 @@ public:
 	virtual ~Token() {
 		try {
 			delete data;
-		} catch (DOMException e) {
+		} catch (XERCES_CPP_NAMESPACE::DOMException e) {
 			///
 		}
 		data = NULL;
@@ -193,6 +192,6 @@ public:
 
 } // end namespace gwdl
 
-ostream& operator<< (ostream &out, gwdl::Token &token);
+std::ostream& operator<< (std::ostream &out, gwdl::Token &token);
 
 #endif /*TOKEN_H_*/

@@ -6,9 +6,9 @@
  */
 #ifndef TESTOPERATION_H_
 #define TESTOPERATION_H_
-#include <gwdl/OperationCandidate.h>
-#include <gwdl/OperationClass.h>
-#include <gwdl/Operation.h>
+#include "../gworkflowdl_cpp/src/OperationCandidate.h"
+#include "../gworkflowdl_cpp/src/OperationClass.h"
+#include "../gworkflowdl_cpp/src/Operation.h"
 
 void testOperation() ;
 

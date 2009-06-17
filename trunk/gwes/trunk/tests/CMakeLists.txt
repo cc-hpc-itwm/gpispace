@@ -10,7 +10,7 @@ file(GLOB srcs "*.cpp")
 
 #### Big test for bitten
 message(STATUS "linking gwdl-test with srcs=\"${srcs}\"")
-add_executable(gwdl_test TestGwdl.cpp ${srcs})
+add_executable(gwdl_test ${srcs})
 target_link_libraries(gwdl_test gworkflowdl_cpp xerces-c)
 
 add_test(gwdl_test ${CMAKE_CURRENT_BINARY_DIR}/gwdl_test)

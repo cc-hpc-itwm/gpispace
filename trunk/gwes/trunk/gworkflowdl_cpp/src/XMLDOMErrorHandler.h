@@ -8,11 +8,8 @@
 #define XMLDOMERRORHANDLER_H_
 //xerces
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
 //std
 #include <string>
-
-using namespace std;
 
 namespace gwdl
 {
@@ -23,15 +20,15 @@ namespace gwdl
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class XMLDOMErrorHandler : public DOMErrorHandler
+class XMLDOMErrorHandler : public XERCES_CPP_NAMESPACE::DOMErrorHandler
 {
 public:
 	XMLDOMErrorHandler();
 	virtual ~XMLDOMErrorHandler();
-	virtual bool handleError(const DOMError &domError);
+	virtual bool handleError(const XERCES_CPP_NAMESPACE::DOMError &domError);
 	bool hasError;
 	short error;
-	string message;
+	std::string message;
 	void reset();
 };
 

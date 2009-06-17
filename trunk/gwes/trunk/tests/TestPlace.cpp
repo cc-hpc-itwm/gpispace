@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 #include <assert.h>
-#include <gwdl/Token.h>
-#include <gwdl/Properties.h>
+#include "../gworkflowdl_cpp/src/Token.h"
+#include "../gworkflowdl_cpp/src/Properties.h"
 #include "TestPlace.h"
 
 using namespace std;

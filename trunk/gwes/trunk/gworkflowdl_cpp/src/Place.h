@@ -6,18 +6,17 @@
  */
 #ifndef PLACE_H_
 #define PLACE_H_
+
 // std
 #include <ostream>
 #include <string>
 #include <vector>
-using namespace std;
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
-XERCES_CPP_NAMESPACE_USE
 //gwdl
-#include <gwdl/Token.h>
-#include <gwdl/Properties.h>
-#include <gwdl/CapacityException.h>
+#include "Token.h"
+#include "Properties.h"
+#include "CapacityException.h"
 
 namespace gwdl
 {
@@ -39,14 +38,14 @@ class Place
 {
 	
 private: 
-	string id;
-	string tokenType;
-	vector<Token*> tokens;
+	std::string id;
+	std::string tokenType;
+	std::vector<Token*> tokens;
     unsigned int capacity;
-    string description;
+    std::string description;
     Properties properties;
     
-    string generateID();
+    std::string generateID();
 	
 public:
 
@@ -55,12 +54,12 @@ public:
 	 * Note: The unique identifier can not be changed after creating the place!
 	 * @param _id The unique identifier of this place. If id is set to "", then an id will be generated automatically. 
 	 */
-	Place(string _id);
+	Place(std::string _id);
 	
 	/**
 	 * Constructor for place to be build from DOMElement.
 	 */
-	Place(DOMElement::DOMElement* element) throw(CapacityException);
+	Place(XERCES_CPP_NAMESPACE::DOMElement* element) throw(CapacityException);
 	
 	/**
 	 * Destructor for place.
@@ -70,17 +69,17 @@ public:
 	/**
 	 * Get the unique identifier of this place.
 	 */
-	string getID();
+	std::string getID();
 	
 	/**
 	 * Set the type of this token.
 	 */
-	void setTokenType(string type);
+	void setTokenType(std::string type);
 	
 	/**
 	 * Get the type of this token.
 	 */
- 	string getTokenType();
+ 	std::string getTokenType();
  	
  	/**
  	 * Check, if the place is empty.
@@ -106,7 +105,7 @@ public:
 	 * Get the vector of tokens.
 	 * @return The return vector contains pointers to the tokens.
 	 */
-	vector<Token*>& getTokens();
+	std::vector<Token*>& getTokens();
 	
 	/**
 	 * Removes a specific token from the vector of tokens.
@@ -137,15 +136,15 @@ public:
 	
 	/**
 	 * Set the human-readable description for this place.
-	 * @param d The description as string.
+	 * @param d The description as std::string.
 	 */ 
-	void setDescription(string d);
+	void setDescription(std::string d);
 	
 	/**
 	 * Get the human-readable descripton of this place.
 	 * @return the description as string.
 	 */
-	string& getDescription();
+	std::string& getDescription();
 	
 	/**
 	 * Set all the properties of this place.
@@ -164,12 +163,12 @@ public:
 	 * @param doc The master document this element should belong to.
 	 * @return The DOMElement.
 	 */
-	DOMElement* toElement(DOMDocument* doc);
+	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
 }; // end class Place
 
 } // end namespace
 
-ostream& operator<< (ostream &out, gwdl::Place &place);
+std::ostream& operator<< (std::ostream &out, gwdl::Place &place);
 
 #endif /*PLACE_H_*/

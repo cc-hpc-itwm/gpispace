@@ -8,9 +8,8 @@
 #define EDGE_H_
 //std
 #include <string>
-using namespace std;
 //gwdl
-#include <gwdl/Place.h>
+#include "Place.h"
 
 namespace gwdl
 {
@@ -33,10 +32,10 @@ private:
     /**
      * expression of edge.
      */
-    string expression;
+    std::string expression;
     
 public:
-	Edge(Place* _place=NULL, string _expression = "") { place = _place; expression = _expression; }
+	Edge(Place* _place=NULL, std::string _expression = "") { place = _place; expression = _expression; }
 	
 	~Edge(){};
 
@@ -54,7 +53,7 @@ public:
      */
     Place* getPlace() { return place; }
 
-    string getPlaceID() { return place != NULL ? place->getID() : "";}
+    std::string getPlaceID() { return place != NULL ? place->getID() : "";}
 
 
     /**
@@ -62,7 +61,7 @@ public:
      *
      * @param ex Edge expression
      */
-    void setExpression(string ex) { expression = ex; }
+    void setExpression(std::string ex) { expression = ex; }
 
 
     /**
@@ -70,7 +69,7 @@ public:
      *
      * @return Edge expression
      */
-    string& getExpression() { return expression; } 
+    std::string& getExpression() { return expression; } 
 	
 };
 

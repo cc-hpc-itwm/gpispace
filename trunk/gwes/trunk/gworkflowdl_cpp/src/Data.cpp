@@ -4,13 +4,15 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Data.h>
 #include <iostream>
 #include <sstream>
+// gwdl
+#include "XMLUtils.h"
+#include "Data.h"
 
 using namespace std;
 using namespace gwdl;
+XERCES_CPP_NAMESPACE_USE
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define S(str) XMLString::transcode(str)

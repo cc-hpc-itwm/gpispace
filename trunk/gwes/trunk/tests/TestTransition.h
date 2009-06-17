@@ -6,7 +6,7 @@
  */
 #ifndef TESTTRANSITION_H_
 #define TESTTRANSITION_H_
-#include <gwdl/Transition.h>
+#include "../gworkflowdl_cpp/src/Transition.h"
 
 void testTransition();
 

@@ -4,18 +4,22 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <gwdl/Properties.h>
-#include <gwdl/Defines.h>
-#include <gwdl/XMLUtils.h>
 
+// std
 #include <iostream>
+// xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
+// gwdl
+#include "Properties.h"
+#include "Defines.h"
+#include "XMLUtils.h"
+
+XERCES_CPP_NAMESPACE_USE
+using namespace std;
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define XS(strg) XMLString::transcode((const char*) strg.c_str())
 #define S(str) XMLString::transcode(str)
-
-using namespace gwdl;
 
 namespace gwdl
 {
@@ -81,10 +85,10 @@ vector<DOMElement*>& Properties::toElements(DOMDocument* doc)
 
 ostream& operator<<(ostream &out, gwdl::Properties &props) 
 {	
-	vector<DOMElement*> elements = props.toElements(XMLUtils::Instance()->createEmptyDocument(true));
+	vector<DOMElement*> elements = props.toElements(gwdl::XMLUtils::Instance()->createEmptyDocument(true));
 	for (unsigned int i=0; i<elements.size(); i++) 
 	{
-	    XMLUtils::Instance()->serialize(out,elements[i],true);
+	    gwdl::XMLUtils::Instance()->serialize(out,elements[i],true);
 	}	
 	return out;
 }
