@@ -16,8 +16,11 @@ distclean:
 	@-rm -rf $(BUILD_DIR)
 	@-find . -name "*~" -delete
 
-doc: config
+doc-api: config
 	make -C build doc
+
+doc:
+	make -C doc
 
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
