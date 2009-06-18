@@ -4,7 +4,7 @@ msc {
   Orch, Sched, Agg;
 
   |||;
-  Orch box Agg [ label = "successful request for a new job" ];
+  Orch box Agg [ label = "request for a new job (submit gets lost)" ];
   |||;
 
   --- [ label = "initial request" ];
@@ -12,6 +12,13 @@ msc {
   Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
   Orch=>Sched [ label="get(worker_id=Agg)" ];
   --- [ label = "the scheduler leaves the job in the pending queue" ];
+  Sched>>Orch [ label="Job(1)" ];
+  Orch->Agg [ label="submitJob(job_id=1)" ];
+  --- [ label = "the submitJob message gets lost" ];
+  ...;
+  Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
+  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  --- [ label = "the job is still at the front of the pending queue" ];
   Sched>>Orch [ label="Job(1)" ];
   Orch->Agg [ label="submitJob(job_id=1)" ];
   Agg->Orch [ label="submitJobAck(job_id=1)" ];
