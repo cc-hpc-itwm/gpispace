@@ -1,2 +1,0 @@
-/usr/bin/ar cr libsdpa-fsm-boost.a  CMakeFiles/sdpa-fsm-boost.dir/FSMActions.cpp.o CMakeFiles/sdpa-fsm-boost.dir/mainFSM.cpp.o CMakeFiles/sdpa-fsm-boost.dir/JobFSM.cpp.o 
-/usr/bin/ranlib libsdpa-fsm-boost.a 
