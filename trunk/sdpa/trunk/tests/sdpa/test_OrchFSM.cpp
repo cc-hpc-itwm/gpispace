@@ -7,6 +7,7 @@
 using namespace std;
 
 using namespace sdpa::tests;
+namespace sc = boost::statechart;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( COrchFSMTest );
 
