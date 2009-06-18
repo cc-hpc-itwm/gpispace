@@ -1,0 +1,34 @@
+msc {
+  hscale = "2.0";
+
+  Orch, Sched, Agg, devnull;
+
+  |||;
+  Orch box Agg [ label = "request for a new job (submitAck gets lost)" ];
+  |||;
+
+  Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
+  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  --- [ label = "the scheduler leaves job-1 in the pending queue" ];
+  Sched>>Orch [ label="Job(1)" ];
+  Orch->Agg [ label="submitJob(job_id=1)" ];
+  Agg->Orch [ label="submitJobAck(job_id=1)" ];
+  --- [ label = "now it is safe to move the job from the pending into the submitted queue" ];
+  Orch=>Sched [ label="acknowledge(worker_id=Agg, job_id=1)" ];
+  ...;
+  --- [ label = "computation can take place but we may already ask for more jobs" ];
+  ...;
+  Agg->Orch [ label="requestJob(last_job_id=\"1\")" ];
+  Orch=>Sched [ label="acknowledge(worker_id=Agg, job_id=1)" ];
+  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  --- [ label = "the scheduler leaves job-2 in the pending queue" ];
+  Sched>>Orch [ label="Job(2)" ];
+  Orch->Agg [ label="submitJob(job_id=2)" ];
+  Agg->devnull [ label="submitJobAck(job_id=2)" ];
+  ...;
+  --- [ label = "the aggregator has already enough jobs, so we don't send more requests, but we still send lifeSigns" ];
+  ...;
+  Agg->Orch [ label="lifeSign(last_job_id=\"2\")" ];
+  --- [ label = "now it is safe to move the job from the pending into the submitted queue" ];
+  Orch=>Sched [ label="acknowledge(worker_id=Agg, job_id=2)" ];
+}
