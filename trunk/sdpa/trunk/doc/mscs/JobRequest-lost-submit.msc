@@ -10,14 +10,14 @@ msc {
   --- [ label = "initial request" ];
 
   Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
-  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
   --- [ label = "the scheduler leaves the job in the pending queue" ];
   Sched>>Orch [ label="Job(1)" ];
   --- [ label = "the submitJob message gets lost" ];
   Orch->devnull [ label="submitJob(job_id=1)" ];
   ...;
   Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
-  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
   --- [ label = "the job is still at the front of the pending queue" ];
   Sched>>Orch [ label="Job(1)" ];
   Orch->Agg [ label="submitJob(job_id=1)" ];

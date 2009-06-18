@@ -8,7 +8,7 @@ msc {
   |||;
 
   Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
-  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
   --- [ label = "the scheduler leaves job-1 in the pending queue" ];
   Sched>>Orch [ label="Job(1)" ];
   Orch->Agg [ label="submitJob(job_id=1)" ];
@@ -19,8 +19,7 @@ msc {
   --- [ label = "computation can take place but we may already ask for more jobs" ];
   ...;
   Agg->Orch [ label="requestJob(last_job_id=\"1\")" ];
-  Orch=>Sched [ label="acknowledge(worker_id=Agg, job_id=1)" ];
-  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id=\"1\")" ];
   --- [ label = "the scheduler leaves job-2 in the pending queue" ];
   Sched>>Orch [ label="Job(2)" ];
   Orch->Agg [ label="submitJob(job_id=2)" ];

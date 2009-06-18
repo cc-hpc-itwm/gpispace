@@ -58,8 +58,8 @@ requestJob(last_job_id="-")
 <line x1="1050" y1="145" x2="1050" y2="170" stroke="black"/>
 <line x1="150" y1="157" x2="450" y2="157" stroke="black"/>
 <polygon fill="black" points="450,157 440,163 440,151"/>
-<text x="256" y="155" textLength="87" font-family="Helvetica" font-size="10" fill="black">
-get(worker_id=Agg)
+<text x="207" y="155" textLength="184" font-family="Helvetica" font-size="10" fill="black">
+get_next_job(worker_id=Agg, last_job_id)
 </text>
 <line x1="150" y1="170" x2="150" y2="195" stroke="black"/>
 <line x1="450" y1="170" x2="450" y2="195" stroke="black"/>
@@ -116,8 +116,8 @@ requestJob(last_job_id="-")
 <line x1="1050" y1="320" x2="1050" y2="345" stroke="black"/>
 <line x1="150" y1="332" x2="450" y2="332" stroke="black"/>
 <polygon fill="black" points="450,332 440,338 440,326"/>
-<text x="256" y="330" textLength="87" font-family="Helvetica" font-size="10" fill="black">
-get(worker_id=Agg)
+<text x="207" y="330" textLength="184" font-family="Helvetica" font-size="10" fill="black">
+get_next_job(worker_id=Agg, last_job_id)
 </text>
 <line x1="150" y1="345" x2="150" y2="370" stroke="black"/>
 <line x1="450" y1="345" x2="450" y2="370" stroke="black"/>

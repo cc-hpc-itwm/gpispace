@@ -10,7 +10,7 @@ msc {
   --- [ label = "initial request" ];
 
   Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
-  Orch=>Sched [ label="get(worker_id=Agg)" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
   --- [ label = "the scheduler leaves the job in the pending queue" ];
   Sched>>Orch [ label="Job(1)" ];
   Orch->Agg [ label="submitJob(job_id=1)" ];
