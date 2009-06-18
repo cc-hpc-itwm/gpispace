@@ -13,7 +13,7 @@ link_libraries(${CPPUNIT_LIBRARIES})
 message(STATUS "linking sdpa-test with srcs=\"${srcs}\"")
 add_executable(sdpa_test main.cpp ${srcs})
 target_link_libraries(sdpa_test sdpa jobFSM orchFSM sdpa-events)
-target_link_libraries(sdpa_test sdpa-modules)
+target_link_libraries(sdpa_test)
 
 add_test(sdpa_test ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test)
 add_subdirectory(sdpa)
