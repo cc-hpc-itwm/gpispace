@@ -13,5 +13,5 @@ target_link_libraries(sdpa_test_suite)
 target_link_libraries(sdpa_test_suite dl)
 
 # test module
-add_library(example-mod SHARED ExampleModule.cpp)
+#add_library(example-mod SHARED ExampleModule.cpp)
 #link_libraries(-Wl,-Bdynamic  -ldl)
