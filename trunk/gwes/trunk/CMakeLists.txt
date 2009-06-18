@@ -61,6 +61,7 @@ include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 # Reflect the package structure
 add_subdirectory(gworkflowdl_cpp/src)
+add_subdirectory(gwes_cpp/src)
 enable_testing()
 add_subdirectory(tests)
 
