@@ -3,152 +3,174 @@
 <svg width="100%" height="100%" version="1.1"
  xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"
  stroke-width="1" text-rendering="geometricPrecision">
-<text x="200" y="14" textLength="21" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
+<text x="150" y="14" textLength="21" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
 Orch
 </text>
-<text x="600" y="14" textLength="28" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
+<text x="450" y="14" textLength="28" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
 Sched
 </text>
-<text x="1000" y="14" textLength="17" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
+<text x="750" y="14" textLength="17" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
 Agg
 </text>
-<line x1="200" y1="20" x2="200" y2="45" stroke="black"/>
-<line x1="600" y1="20" x2="600" y2="45" stroke="black"/>
-<line x1="1000" y1="20" x2="1000" y2="45" stroke="black"/>
-<line x1="200" y1="69" x2="200" y2="70" stroke="black"/>
-<line x1="600" y1="69" x2="600" y2="70" stroke="black"/>
-<line x1="1000" y1="69" x2="1000" y2="70" stroke="black"/>
-<line x1="8" y1="45" x2="1192" y2="45" stroke="black"/>
-<line x1="8" y1="69" x2="1192" y2="69" stroke="black"/>
+<text x="1050" y="14" textLength="31" font-family="Helvetica" font-size="10" fill="black" text-anchor="middle">
+devnull
+</text>
+<line x1="150" y1="20" x2="150" y2="45" stroke="black"/>
+<line x1="450" y1="20" x2="450" y2="45" stroke="black"/>
+<line x1="750" y1="20" x2="750" y2="45" stroke="black"/>
+<line x1="1050" y1="20" x2="1050" y2="45" stroke="black"/>
+<line x1="150" y1="69" x2="150" y2="70" stroke="black"/>
+<line x1="450" y1="69" x2="450" y2="70" stroke="black"/>
+<line x1="750" y1="69" x2="750" y2="70" stroke="black"/>
+<line x1="1050" y1="45" x2="1050" y2="70" stroke="black"/>
+<line x1="8" y1="45" x2="892" y2="45" stroke="black"/>
+<line x1="8" y1="69" x2="892" y2="69" stroke="black"/>
 <line x1="8" y1="45" x2="8" y2="69" stroke="black"/>
-<line x1="1192" y1="45" x2="1192" y2="69" stroke="black"/>
-<text x="513" y="59" textLength="172" font-family="Helvetica" font-size="10" fill="black">
+<line x1="892" y1="45" x2="892" y2="69" stroke="black"/>
+<text x="363" y="59" textLength="172" font-family="Helvetica" font-size="10" fill="black">
 request for a new job (submit gets lost)
 </text>
-<line x1="200" y1="70" x2="200" y2="95" stroke="black"/>
-<line x1="600" y1="70" x2="600" y2="95" stroke="black"/>
-<line x1="1000" y1="70" x2="1000" y2="95" stroke="black"/>
-<line x1="200" y1="95" x2="200" y2="120" stroke="black"/>
-<line x1="600" y1="95" x2="600" y2="120" stroke="black"/>
-<line x1="1000" y1="95" x2="1000" y2="120" stroke="black"/>
+<line x1="150" y1="70" x2="150" y2="95" stroke="black"/>
+<line x1="450" y1="70" x2="450" y2="95" stroke="black"/>
+<line x1="750" y1="70" x2="750" y2="95" stroke="black"/>
+<line x1="1050" y1="70" x2="1050" y2="95" stroke="black"/>
+<line x1="150" y1="95" x2="150" y2="120" stroke="black"/>
+<line x1="450" y1="95" x2="450" y2="120" stroke="black"/>
+<line x1="750" y1="95" x2="750" y2="120" stroke="black"/>
+<line x1="1050" y1="95" x2="1050" y2="120" stroke="black"/>
 <text x="570" y="109" textLength="58" font-family="Helvetica" font-size="10" fill="black">
 initial request
 </text>
-<line x1="100" y1="107" x2="569" y2="107" stroke="black" stroke-dasharray="2,2"/>
-<line x1="631" y1="107" x2="1100" y2="107" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="120" x2="200" y2="145" stroke="black"/>
-<line x1="600" y1="120" x2="600" y2="145" stroke="black"/>
-<line x1="1000" y1="120" x2="1000" y2="145" stroke="black"/>
-<line x1="1000" y1="132" x2="200" y2="132" stroke="black"/>
-<line x1="200" y1="132" x2="210" y2="138" stroke="black"/>
-<text x="539" y="130" textLength="120" font-family="Helvetica" font-size="10" fill="black">
+<line x1="75" y1="107" x2="569" y2="107" stroke="black" stroke-dasharray="2,2"/>
+<line x1="631" y1="107" x2="1125" y2="107" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="120" x2="150" y2="145" stroke="black"/>
+<line x1="450" y1="120" x2="450" y2="145" stroke="black"/>
+<line x1="750" y1="120" x2="750" y2="145" stroke="black"/>
+<line x1="1050" y1="120" x2="1050" y2="145" stroke="black"/>
+<line x1="750" y1="132" x2="150" y2="132" stroke="black"/>
+<line x1="150" y1="132" x2="160" y2="138" stroke="black"/>
+<text x="389" y="130" textLength="120" font-family="Helvetica" font-size="10" fill="black">
 requestJob(last_job_id="-")
 </text>
-<line x1="200" y1="145" x2="200" y2="170" stroke="black"/>
-<line x1="600" y1="145" x2="600" y2="170" stroke="black"/>
-<line x1="1000" y1="145" x2="1000" y2="170" stroke="black"/>
-<line x1="200" y1="157" x2="600" y2="157" stroke="black"/>
-<polygon fill="black" points="600,157 590,163 590,151"/>
-<text x="356" y="155" textLength="87" font-family="Helvetica" font-size="10" fill="black">
+<line x1="150" y1="145" x2="150" y2="170" stroke="black"/>
+<line x1="450" y1="145" x2="450" y2="170" stroke="black"/>
+<line x1="750" y1="145" x2="750" y2="170" stroke="black"/>
+<line x1="1050" y1="145" x2="1050" y2="170" stroke="black"/>
+<line x1="150" y1="157" x2="450" y2="157" stroke="black"/>
+<polygon fill="black" points="450,157 440,163 440,151"/>
+<text x="256" y="155" textLength="87" font-family="Helvetica" font-size="10" fill="black">
 get(worker_id=Agg)
 </text>
-<line x1="200" y1="170" x2="200" y2="195" stroke="black"/>
-<line x1="600" y1="170" x2="600" y2="195" stroke="black"/>
-<line x1="1000" y1="170" x2="1000" y2="195" stroke="black"/>
+<line x1="150" y1="170" x2="150" y2="195" stroke="black"/>
+<line x1="450" y1="170" x2="450" y2="195" stroke="black"/>
+<line x1="750" y1="170" x2="750" y2="195" stroke="black"/>
+<line x1="1050" y1="170" x2="1050" y2="195" stroke="black"/>
 <text x="489" y="184" textLength="220" font-family="Helvetica" font-size="10" fill="black">
 the scheduler leaves the job in the pending queue
 </text>
-<line x1="100" y1="182" x2="488" y2="182" stroke="black" stroke-dasharray="2,2"/>
-<line x1="712" y1="182" x2="1100" y2="182" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="195" x2="200" y2="220" stroke="black"/>
-<line x1="600" y1="195" x2="600" y2="220" stroke="black"/>
-<line x1="1000" y1="195" x2="1000" y2="220" stroke="black"/>
-<line x1="600" y1="207" x2="200" y2="207" stroke="black" stroke-dasharray="2,2"/>
-<polygon fill="black" points="200,207 210,213 210,201"/>
-<text x="385" y="205" textLength="28" font-family="Helvetica" font-size="10" fill="black">
+<line x1="75" y1="182" x2="488" y2="182" stroke="black" stroke-dasharray="2,2"/>
+<line x1="712" y1="182" x2="1125" y2="182" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="195" x2="150" y2="220" stroke="black"/>
+<line x1="450" y1="195" x2="450" y2="220" stroke="black"/>
+<line x1="750" y1="195" x2="750" y2="220" stroke="black"/>
+<line x1="1050" y1="195" x2="1050" y2="220" stroke="black"/>
+<line x1="450" y1="207" x2="150" y2="207" stroke="black" stroke-dasharray="2,2"/>
+<polygon fill="black" points="150,207 160,213 160,201"/>
+<text x="285" y="205" textLength="28" font-family="Helvetica" font-size="10" fill="black">
 Job(1)
 </text>
-<line x1="200" y1="220" x2="200" y2="245" stroke="black"/>
-<line x1="600" y1="220" x2="600" y2="245" stroke="black"/>
-<line x1="1000" y1="220" x2="1000" y2="245" stroke="black"/>
-<line x1="200" y1="232" x2="1000" y2="232" stroke="black"/>
-<line x1="1000" y1="232" x2="990" y2="238" stroke="black"/>
-<text x="554" y="230" textLength="90" font-family="Helvetica" font-size="10" fill="black">
-submitJob(job_id=1)
-</text>
-<line x1="200" y1="245" x2="200" y2="270" stroke="black"/>
-<line x1="600" y1="245" x2="600" y2="270" stroke="black"/>
-<line x1="1000" y1="245" x2="1000" y2="270" stroke="black"/>
-<text x="527" y="259" textLength="145" font-family="Helvetica" font-size="10" fill="black">
+<line x1="150" y1="220" x2="150" y2="245" stroke="black"/>
+<line x1="450" y1="220" x2="450" y2="245" stroke="black"/>
+<line x1="750" y1="220" x2="750" y2="245" stroke="black"/>
+<line x1="1050" y1="220" x2="1050" y2="245" stroke="black"/>
+<text x="527" y="234" textLength="145" font-family="Helvetica" font-size="10" fill="black">
 the submitJob message gets lost
 </text>
-<line x1="100" y1="257" x2="526" y2="257" stroke="black" stroke-dasharray="2,2"/>
-<line x1="675" y1="257" x2="1100" y2="257" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="270" x2="200" y2="295" stroke="black" stroke-dasharray="2,2"/>
-<line x1="600" y1="270" x2="600" y2="295" stroke="black" stroke-dasharray="2,2"/>
-<line x1="1000" y1="270" x2="1000" y2="295" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="295" x2="200" y2="320" stroke="black"/>
-<line x1="600" y1="295" x2="600" y2="320" stroke="black"/>
-<line x1="1000" y1="295" x2="1000" y2="320" stroke="black"/>
-<line x1="1000" y1="307" x2="200" y2="307" stroke="black"/>
-<line x1="200" y1="307" x2="210" y2="313" stroke="black"/>
-<text x="539" y="305" textLength="120" font-family="Helvetica" font-size="10" fill="black">
+<line x1="75" y1="232" x2="526" y2="232" stroke="black" stroke-dasharray="2,2"/>
+<line x1="675" y1="232" x2="1125" y2="232" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="245" x2="150" y2="270" stroke="black"/>
+<line x1="450" y1="245" x2="450" y2="270" stroke="black"/>
+<line x1="750" y1="245" x2="750" y2="270" stroke="black"/>
+<line x1="1050" y1="245" x2="1050" y2="270" stroke="black"/>
+<line x1="150" y1="257" x2="1050" y2="257" stroke="black"/>
+<line x1="1050" y1="257" x2="1040" y2="263" stroke="black"/>
+<text x="554" y="255" textLength="90" font-family="Helvetica" font-size="10" fill="black">
+submitJob(job_id=1)
+</text>
+<line x1="150" y1="270" x2="150" y2="295" stroke="black" stroke-dasharray="2,2"/>
+<line x1="450" y1="270" x2="450" y2="295" stroke="black" stroke-dasharray="2,2"/>
+<line x1="750" y1="270" x2="750" y2="295" stroke="black" stroke-dasharray="2,2"/>
+<line x1="1050" y1="270" x2="1050" y2="295" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="295" x2="150" y2="320" stroke="black"/>
+<line x1="450" y1="295" x2="450" y2="320" stroke="black"/>
+<line x1="750" y1="295" x2="750" y2="320" stroke="black"/>
+<line x1="1050" y1="295" x2="1050" y2="320" stroke="black"/>
+<line x1="750" y1="307" x2="150" y2="307" stroke="black"/>
+<line x1="150" y1="307" x2="160" y2="313" stroke="black"/>
+<text x="389" y="305" textLength="120" font-family="Helvetica" font-size="10" fill="black">
 requestJob(last_job_id="-")
 </text>
-<line x1="200" y1="320" x2="200" y2="345" stroke="black"/>
-<line x1="600" y1="320" x2="600" y2="345" stroke="black"/>
-<line x1="1000" y1="320" x2="1000" y2="345" stroke="black"/>
-<line x1="200" y1="332" x2="600" y2="332" stroke="black"/>
-<polygon fill="black" points="600,332 590,338 590,326"/>
-<text x="356" y="330" textLength="87" font-family="Helvetica" font-size="10" fill="black">
+<line x1="150" y1="320" x2="150" y2="345" stroke="black"/>
+<line x1="450" y1="320" x2="450" y2="345" stroke="black"/>
+<line x1="750" y1="320" x2="750" y2="345" stroke="black"/>
+<line x1="1050" y1="320" x2="1050" y2="345" stroke="black"/>
+<line x1="150" y1="332" x2="450" y2="332" stroke="black"/>
+<polygon fill="black" points="450,332 440,338 440,326"/>
+<text x="256" y="330" textLength="87" font-family="Helvetica" font-size="10" fill="black">
 get(worker_id=Agg)
 </text>
-<line x1="200" y1="345" x2="200" y2="370" stroke="black"/>
-<line x1="600" y1="345" x2="600" y2="370" stroke="black"/>
-<line x1="1000" y1="345" x2="1000" y2="370" stroke="black"/>
+<line x1="150" y1="345" x2="150" y2="370" stroke="black"/>
+<line x1="450" y1="345" x2="450" y2="370" stroke="black"/>
+<line x1="750" y1="345" x2="750" y2="370" stroke="black"/>
+<line x1="1050" y1="345" x2="1050" y2="370" stroke="black"/>
 <text x="497" y="359" textLength="204" font-family="Helvetica" font-size="10" fill="black">
 the job is still at the front of the pending queue
 </text>
-<line x1="100" y1="357" x2="496" y2="357" stroke="black" stroke-dasharray="2,2"/>
-<line x1="704" y1="357" x2="1100" y2="357" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="370" x2="200" y2="395" stroke="black"/>
-<line x1="600" y1="370" x2="600" y2="395" stroke="black"/>
-<line x1="1000" y1="370" x2="1000" y2="395" stroke="black"/>
-<line x1="600" y1="382" x2="200" y2="382" stroke="black" stroke-dasharray="2,2"/>
-<polygon fill="black" points="200,382 210,388 210,376"/>
-<text x="385" y="380" textLength="28" font-family="Helvetica" font-size="10" fill="black">
+<line x1="75" y1="357" x2="496" y2="357" stroke="black" stroke-dasharray="2,2"/>
+<line x1="704" y1="357" x2="1125" y2="357" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="370" x2="150" y2="395" stroke="black"/>
+<line x1="450" y1="370" x2="450" y2="395" stroke="black"/>
+<line x1="750" y1="370" x2="750" y2="395" stroke="black"/>
+<line x1="1050" y1="370" x2="1050" y2="395" stroke="black"/>
+<line x1="450" y1="382" x2="150" y2="382" stroke="black" stroke-dasharray="2,2"/>
+<polygon fill="black" points="150,382 160,388 160,376"/>
+<text x="285" y="380" textLength="28" font-family="Helvetica" font-size="10" fill="black">
 Job(1)
 </text>
-<line x1="200" y1="395" x2="200" y2="420" stroke="black"/>
-<line x1="600" y1="395" x2="600" y2="420" stroke="black"/>
-<line x1="1000" y1="395" x2="1000" y2="420" stroke="black"/>
-<line x1="200" y1="407" x2="1000" y2="407" stroke="black"/>
-<line x1="1000" y1="407" x2="990" y2="413" stroke="black"/>
-<text x="554" y="405" textLength="90" font-family="Helvetica" font-size="10" fill="black">
+<line x1="150" y1="395" x2="150" y2="420" stroke="black"/>
+<line x1="450" y1="395" x2="450" y2="420" stroke="black"/>
+<line x1="750" y1="395" x2="750" y2="420" stroke="black"/>
+<line x1="1050" y1="395" x2="1050" y2="420" stroke="black"/>
+<line x1="150" y1="407" x2="750" y2="407" stroke="black"/>
+<line x1="750" y1="407" x2="740" y2="413" stroke="black"/>
+<text x="404" y="405" textLength="90" font-family="Helvetica" font-size="10" fill="black">
 submitJob(job_id=1)
 </text>
-<line x1="200" y1="420" x2="200" y2="445" stroke="black"/>
-<line x1="600" y1="420" x2="600" y2="445" stroke="black"/>
-<line x1="1000" y1="420" x2="1000" y2="445" stroke="black"/>
-<line x1="1000" y1="432" x2="200" y2="432" stroke="black"/>
-<line x1="200" y1="432" x2="210" y2="438" stroke="black"/>
-<text x="546" y="430" textLength="106" font-family="Helvetica" font-size="10" fill="black">
+<line x1="150" y1="420" x2="150" y2="445" stroke="black"/>
+<line x1="450" y1="420" x2="450" y2="445" stroke="black"/>
+<line x1="750" y1="420" x2="750" y2="445" stroke="black"/>
+<line x1="1050" y1="420" x2="1050" y2="445" stroke="black"/>
+<line x1="750" y1="432" x2="150" y2="432" stroke="black"/>
+<line x1="150" y1="432" x2="160" y2="438" stroke="black"/>
+<text x="396" y="430" textLength="106" font-family="Helvetica" font-size="10" fill="black">
 submitJobAck(job_id=1)
 </text>
-<line x1="200" y1="445" x2="200" y2="470" stroke="black"/>
-<line x1="600" y1="445" x2="600" y2="470" stroke="black"/>
-<line x1="1000" y1="445" x2="1000" y2="470" stroke="black"/>
+<line x1="150" y1="445" x2="150" y2="470" stroke="black"/>
+<line x1="450" y1="445" x2="450" y2="470" stroke="black"/>
+<line x1="750" y1="445" x2="750" y2="470" stroke="black"/>
+<line x1="1050" y1="445" x2="1050" y2="470" stroke="black"/>
 <text x="440" y="459" textLength="319" font-family="Helvetica" font-size="10" fill="black">
 now it is safe to move the job from the pending into the submitted queue
 </text>
-<line x1="100" y1="457" x2="439" y2="457" stroke="black" stroke-dasharray="2,2"/>
-<line x1="762" y1="457" x2="1100" y2="457" stroke="black" stroke-dasharray="2,2"/>
-<line x1="200" y1="470" x2="200" y2="495" stroke="black"/>
-<line x1="600" y1="470" x2="600" y2="495" stroke="black"/>
-<line x1="1000" y1="470" x2="1000" y2="495" stroke="black"/>
-<line x1="200" y1="482" x2="600" y2="482" stroke="black"/>
-<polygon fill="black" points="600,482 590,488 590,476"/>
-<text x="312" y="480" textLength="175" font-family="Helvetica" font-size="10" fill="black">
+<line x1="75" y1="457" x2="439" y2="457" stroke="black" stroke-dasharray="2,2"/>
+<line x1="762" y1="457" x2="1125" y2="457" stroke="black" stroke-dasharray="2,2"/>
+<line x1="150" y1="470" x2="150" y2="495" stroke="black"/>
+<line x1="450" y1="470" x2="450" y2="495" stroke="black"/>
+<line x1="750" y1="470" x2="750" y2="495" stroke="black"/>
+<line x1="1050" y1="470" x2="1050" y2="495" stroke="black"/>
+<line x1="150" y1="482" x2="450" y2="482" stroke="black"/>
+<polygon fill="black" points="450,482 440,488 440,476"/>
+<text x="212" y="480" textLength="175" font-family="Helvetica" font-size="10" fill="black">
 acknowledge(worker_id=Agg, job_id=1)
 </text>
 </svg>
