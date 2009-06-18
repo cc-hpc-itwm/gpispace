@@ -1,3 +1,9 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
 #ifndef NOSUCHACTIVITYEXCEPTION_H_
 #define NOSUCHACTIVITYEXCEPTION_H_
 #include <string>

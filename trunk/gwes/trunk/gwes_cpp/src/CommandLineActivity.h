@@ -1,3 +1,9 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
 #ifndef COMMANDLINEACTIVITY_H_
 #define COMMANDLINEACTIVITY_H_
 // std

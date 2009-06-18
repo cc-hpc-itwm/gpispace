@@ -1,3 +1,9 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
 #ifndef WORKFLOWOBSERVER_H_
 #define WORKFLOWOBSERVER_H_
 
