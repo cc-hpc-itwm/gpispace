@@ -2,7 +2,13 @@ file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
 
 add_subdirectory(events)
-add_subdirectory(fsm)
+#add_subdirectory(fsm)
+add_subdirectory(jobFSM)
+add_subdirectory(orchFSM)
+add_subdirectory(applicationContainer)
+add_subdirectory(orchestrator)	
+add_subdirectory(aggregator)
+add_subdirectory(nre)
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
 

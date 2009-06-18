@@ -1,0 +1,2 @@
+/usr/bin/ar cr liborchFSM.a  CMakeFiles/orchFSM.dir/FSMActions.cpp.o CMakeFiles/orchFSM.dir/mainFSM.cpp.o CMakeFiles/orchFSM.dir/OrchFSM.cpp.o 
+/usr/bin/ranlib liborchFSM.a 

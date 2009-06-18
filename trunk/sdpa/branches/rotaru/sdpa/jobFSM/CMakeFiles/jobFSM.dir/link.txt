@@ -1,0 +1,2 @@
+/usr/bin/ar cr libjobFSM.a  CMakeFiles/jobFSM.dir/FSMActions.cpp.o CMakeFiles/jobFSM.dir/mainFSM.cpp.o CMakeFiles/jobFSM.dir/JobFSM.cpp.o 
+/usr/bin/ranlib libjobFSM.a 
