@@ -1,0 +1,18 @@
+msc {
+  hscale = "1.0";
+
+  User, Orch, Sched, WFE;
+
+  |||;
+  User->Orch [ label="submit(Workflow)" ];
+  Orch=>Orch [ label="check_syntax(Workflow)" ];
+  --- [ label = "if the syntax is ok" ];
+  Orch=>Orch [ label="create and store new job" ];
+  Orch=>Sched [ label="schedule_local(Job)" ];
+  Orch->User [ label="submitAck(job_id)" ];
+  ...;
+  Sched=>WFE [ label="start_job(Workflow)" ];
+  WFE=>Sched [ label="schedule(new subjob)" ];
+  ...;
+  Sched=>Sched [ label="assign job to worker" ];
+}

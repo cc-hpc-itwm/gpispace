@@ -1,5 +1,5 @@
 msc {
-  hscale = "2.0";
+  hscale = "1.0";
 
   Orch, Sched, Agg;
 

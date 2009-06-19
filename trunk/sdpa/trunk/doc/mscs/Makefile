@@ -2,10 +2,12 @@ SRCS=$(wildcard *.msc)
 EPSS=$(SRCS:.msc=.eps)
 SVGS=$(SRCS:.msc=.svg)
 PNGS=$(SRCS:.msc=.png)
+PDFS=$(SRCS:.msc=.pdf)
 
-OBJS=$(EPSS) $(PNGS) $(SVGS)
+OBJS=$(EPSS) $(PNGS) $(SVGS) $(PDFS)
 
 MSCGEN="mscgen"
+EPSTOPDF="epstopdf"
 
 .PHONY: default all clean
 
@@ -22,6 +24,11 @@ default: all
 %.png : %.msc
 	-@echo "\t[PNG] $< -> $@"
 	@$(MSCGEN) -T png -i $< -o $@
+
+%.pdf : %.eps
+	-@echo "\t[PDF] $< -> $@"
+	@$(EPSTOPDF) $<
+
 
 all: $(OBJS)
 
