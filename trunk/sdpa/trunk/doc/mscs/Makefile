@@ -1,14 +1,19 @@
 SRCS=$(wildcard *.msc)
+EPSS=$(SRCS:.msc=.eps)
 SVGS=$(SRCS:.msc=.svg)
 PNGS=$(SRCS:.msc=.png)
 
-OBJS=$(PNGS) $(SVGS)
+OBJS=$(EPSS) $(PNGS) $(SVGS)
 
 MSCGEN="mscgen"
 
 .PHONY: default all clean
 
 default: all
+
+%.eps : %.msc
+	-@echo "\t[EPS] $< -> $@"
+	@$(MSCGEN) -T eps -i $< -o $@
 
 %.svg : %.msc
 	-@echo "\t[SVG] $< -> $@"
