@@ -98,7 +98,6 @@ string getTestWorkflowDirectory() {
 
 	// get GWES_CPP_HOME
 	char* gwesHomeP = getenv("GWES_CPP_HOME");
-	cout << "********** gwesHome... **********" << endl;
 	if (gwesHomeP != NULL) {
 		string gwesHome(gwesHomeP);
 		if ( gwesHome.size() > 0) {
@@ -110,7 +109,6 @@ string getTestWorkflowDirectory() {
 	char pathC[MAXPATHLEN];
 	getcwd(pathC, MAXPATHLEN);
 	string path(pathC);
-	cout << "********* current working directory: " << path << "*************" << endl;
 
 	// if */build/tests
 	string s2("/build/tests");
@@ -124,7 +122,3 @@ string getTestWorkflowDirectory() {
 		return string("tests/gwes");
 	}
 }
-
-
-
-
