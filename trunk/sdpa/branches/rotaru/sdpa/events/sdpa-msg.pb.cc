@@ -13,13 +13,24 @@ namespace {
 
 const ::google::protobuf::Descriptor* SDPAMessage_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* Error_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Task_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* FunctionCall_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Activity_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* Token_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Properties_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Properties_Property_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* SubmitJob_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* SubmitJobAck_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* CancelJob_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* CancelJobAck_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* JobStatusRequest_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* JobStatusReply_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* QueryStatus_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* StatusReply_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* RetrieveResults_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Results_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* DeleteJob_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* DeleteJobAck_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Poll_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* PollReply_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* JobFinished_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* JobFinishedAck_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* JobFailed_descriptor_ = NULL;
@@ -27,6 +38,7 @@ const ::google::protobuf::Descriptor* JobFailedAck_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* LifeSignal_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* ConfigRequest_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* ConfigReply_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* Config_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* ErrorCode_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* JobState_descriptor_ = NULL;
 
@@ -42,92 +54,154 @@ void proto_BuildDescriptors_sdpa_2dmsg_2eproto() {
     ::google::protobuf::DescriptorPool::internal_generated_pool();
 
   const ::google::protobuf::FileDescriptor* file = pool->InternalBuildGeneratedFile(
-    "\n\016sdpa-msg.proto\022\013sdpa.events\"\262\005\n\013SDPAMe"
+    "\n\016sdpa-msg.proto\022\013sdpa.events\"\261\007\n\013SDPAMe"
     "ssage\022!\n\005error\030\001 \001(\0132\022.sdpa.events.Error"
     "\022*\n\nsubmit_job\030\002 \001(\0132\026.sdpa.events.Submi"
     "tJob\0221\n\016submit_job_ack\030\003 \001(\0132\031.sdpa.even"
     "ts.SubmitJobAck\022*\n\ncancel_job\030\004 \001(\0132\026.sd"
     "pa.events.CancelJob\0221\n\016cancel_job_ack\030\005 "
-    "\001(\0132\031.sdpa.events.CancelJobAck\0229\n\022job_st"
-    "atus_request\030\006 \001(\0132\035.sdpa.events.JobStat"
-    "usRequest\022/\n\njob_status\030\007 \001(\0132\033.sdpa.eve"
-    "nts.JobStatusReply\022.\n\014job_finished\030\010 \001(\013"
-    "2\030.sdpa.events.JobFinished\0225\n\020job_finish"
-    "ed_ack\030\t \001(\0132\033.sdpa.events.JobFinishedAc"
-    "k\022*\n\njob_failed\030\n \001(\0132\026.sdpa.events.JobF"
-    "ailed\0221\n\016job_failed_ack\030\013 \001(\0132\031.sdpa.eve"
-    "nts.JobFailedAck\022,\n\013life_signal\030\014 \001(\0132\027."
-    "sdpa.events.LifeSignal\0222\n\016config_request"
-    "\030\r \001(\0132\032.sdpa.events.ConfigRequest\022.\n\014co"
-    "nfig_reply\030\016 \001(\0132\030.sdpa.events.ConfigRep"
-    "ly\"N\n\005Error\022*\n\nerror_code\030\001 \002(\0162\026.sdpa.e"
-    "vents.ErrorCode\022\031\n\021error_description\030\002 \002"
-    "(\t\"%\n\005Token\022\r\n\005place\030\001 \002(\014\022\r\n\005token\030\002 \002("
-    "\014\"@\n\tSubmitJob\022\020\n\010workflow\030\001 \002(\014\022!\n\005inpu"
-    "t\030\002 \003(\0132\022.sdpa.events.Token\"\036\n\014SubmitJob"
-    "Ack\022\016\n\006job_id\030\001 \002(\014\"+\n\tCancelJob\022\016\n\006job_"
-    "id\030\001 \002(\014\022\016\n\006reason\030\002 \001(\t\"\036\n\014CancelJobAck"
-    "\022\016\n\006job_id\030\001 \002(\014\"\"\n\020JobStatusRequest\022\016\n\006"
-    "job_id\030\001 \002(\014\"F\n\016JobStatusReply\022\016\n\006job_id"
-    "\030\001 \002(\014\022$\n\005state\030\002 \002(\0162\025.sdpa.events.JobS"
-    "tate\"\035\n\013JobFinished\022\016\n\006job_id\030\001 \002(\014\" \n\016J"
-    "obFinishedAck\022\016\n\006job_id\030\001 \002(\014\"\033\n\tJobFail"
-    "ed\022\016\n\006job_id\030\001 \002(\014\"\036\n\014JobFailedAck\022\016\n\006jo"
-    "b_id\030\001 \002(\014\"5\n\nLifeSignal\022\021\n\ttimestamp\030\001 "
-    "\002(\006\022\024\n\014component_id\030\002 \002(\014\"%\n\rConfigReque"
-    "st\022\024\n\014component_id\030\001 \002(\014\"#\n\013ConfigReply\022"
-    "\024\n\014component_id\030\001 \002(\014*\023\n\tErrorCode\022\006\n\002OK"
-    "\020\000*j\n\010JobState\022\013\n\007UNKNOWN\020\000\022\013\n\007PENDING\020\001"
+    "\001(\0132\031.sdpa.events.CancelJobAck\022.\n\014query_"
+    "status\030\006 \001(\0132\030.sdpa.events.QueryStatus\022."
+    "\n\014status_reply\030\007 \001(\0132\030.sdpa.events.Statu"
+    "sReply\0226\n\020retrieve_results\030\010 \001(\0132\034.sdpa."
+    "events.RetrieveResults\022%\n\007results\030\t \001(\0132"
+    "\024.sdpa.events.Results\022*\n\ndelete_job\030\n \001("
+    "\0132\026.sdpa.events.DeleteJob\0221\n\016delete_job_"
+    "ack\030\013 \001(\0132\031.sdpa.events.DeleteJobAck\022\037\n\004"
+    "poll\030\014 \001(\0132\021.sdpa.events.Poll\022*\n\npoll_re"
+    "ply\030\r \001(\0132\026.sdpa.events.PollReply\022.\n\014job"
+    "_finished\030\016 \001(\0132\030.sdpa.events.JobFinishe"
+    "d\0225\n\020job_finished_ack\030\017 \001(\0132\033.sdpa.event"
+    "s.JobFinishedAck\022*\n\njob_failed\030\020 \001(\0132\026.s"
+    "dpa.events.JobFailed\0221\n\016job_failed_ack\030\021"
+    " \001(\0132\031.sdpa.events.JobFailedAck\022,\n\013life_"
+    "signal\030\022 \001(\0132\027.sdpa.events.LifeSignal\0222\n"
+    "\016config_request\030\023 \001(\0132\032.sdpa.events.Conf"
+    "igRequest\022.\n\014config_reply\030\024 \001(\0132\030.sdpa.e"
+    "vents.ConfigReply\"N\n\005Error\022*\n\nerror_code"
+    "\030\001 \002(\0162\026.sdpa.events.ErrorCode\022\031\n\021error_"
+    "description\030\002 \002(\t\";\n\004Task\022\020\n\010workflow\030\002 "
+    "\002(\014\022!\n\005input\030\003 \003(\0132\022.sdpa.events.Token\"u"
+    "\n\014FunctionCall\022\016\n\006module\030\001 \002(\t\022\016\n\006method"
+    "\030\002 \002(\t\022!\n\005input\030\003 \003(\0132\022.sdpa.events.Toke"
+    "n\022\"\n\006output\030\004 \003(\0132\022.sdpa.events.Token\"d\n"
+    "\010Activity\022\n\n\002id\030\001 \002(\014\022\037\n\004task\030\002 \001(\0132\021.sd"
+    "pa.events.Task\022+\n\010function\030\003 \001(\0132\031.sdpa."
+    "events.FunctionCall\"%\n\005Token\022\r\n\005place\030\001 "
+    "\002(\014\022\r\n\005token\030\002 \002(\014\"f\n\nProperties\0222\n\010prop"
+    "erty\030\001 \003(\0132 .sdpa.events.Properties.Prop"
+    "erty\032$\n\010Property\022\013\n\003key\030\001 \002(\t\022\013\n\003val\030\002 \002"
+    "(\t\"@\n\tSubmitJob\022\020\n\010workflow\030\001 \002(\014\022!\n\005inp"
+    "ut\030\002 \003(\0132\022.sdpa.events.Token\"\032\n\014SubmitJo"
+    "bAck\022\n\n\002id\030\001 \002(\014\"\'\n\tCancelJob\022\n\n\002id\030\001 \002("
+    "\014\022\016\n\006reason\030\002 \001(\t\"\032\n\014CancelJobAck\022\n\n\002id\030"
+    "\001 \002(\014\"\031\n\013QueryStatus\022\n\n\002id\030\001 \002(\014\"l\n\013Stat"
+    "usReply\022\n\n\002id\030\001 \002(\014\022$\n\005state\030\002 \002(\0162\025.sdp"
+    "a.events.JobState\022+\n\nproperties\030\003 \001(\0132\027."
+    "sdpa.events.Properties\"\035\n\017RetrieveResult"
+    "s\022\n\n\002id\030\001 \002(\014\"R\n\007Results\022\n\n\002id\030\001 \002(\014\022\021\n\t"
+    "exit_code\030\002 \002(\005\022(\n\014output_token\030\003 \003(\0132\022."
+    "sdpa.events.Token\"\027\n\tDeleteJob\022\n\n\002id\030\001 \002"
+    "(\014\"\032\n\014DeleteJobAck\022\n\n\002id\030\001 \002(\014\"\034\n\004Poll\022\024"
+    "\n\014queue_length\030\001 \002(\005\"4\n\tPollReply\022\'\n\010act"
+    "ivity\030\001 \002(\0132\025.sdpa.events.Activity\"=\n\013Jo"
+    "bFinished\022\n\n\002id\030\001 \002(\014\022\"\n\006output\030\002 \003(\0132\022."
+    "sdpa.events.Token\"\034\n\016JobFinishedAck\022\n\n\002i"
+    "d\030\001 \002(\014\"\027\n\tJobFailed\022\n\n\002id\030\001 \002(\014\"\032\n\014JobF"
+    "ailedAck\022\n\n\002id\030\001 \002(\014\"5\n\nLifeSignal\022\021\n\tti"
+    "mestamp\030\001 \002(\006\022\024\n\014component_id\030\002 \002(\014\"%\n\rC"
+    "onfigRequest\022\024\n\014component_id\030\001 \002(\014\"H\n\013Co"
+    "nfigReply\022\024\n\014component_id\030\001 \002(\014\022#\n\006confi"
+    "g\030\002 \002(\0132\023.sdpa.events.Config\"5\n\006Config\022+"
+    "\n\nproperties\030\002 \001(\0132\027.sdpa.events.Propert"
+    "ies*%\n\tErrorCode\022\006\n\002OK\020\000\022\020\n\013NO_ACTIVITY\020"
+    "\364\003*j\n\010JobState\022\013\n\007UNKNOWN\020\000\022\013\n\007PENDING\020\001"
     "\022\013\n\007RUNNING\020\002\022\014\n\010FINISHED\020\003\022\n\n\006FAILED\020\004\022"
-    "\r\n\tCANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 1514);
+    "\r\n\tCANCELLED\020\005\022\016\n\nCANCELLING\020\006B\002H\001", 2554);
   SDPAMessage_descriptor_ = file->message_type(0);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SDPAMessage_descriptor_, &SDPAMessage::default_instance());
   Error_descriptor_ = file->message_type(1);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Error_descriptor_, &Error::default_instance());
-  Token_descriptor_ = file->message_type(2);
+  Task_descriptor_ = file->message_type(2);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Task_descriptor_, &Task::default_instance());
+  FunctionCall_descriptor_ = file->message_type(3);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FunctionCall_descriptor_, &FunctionCall::default_instance());
+  Activity_descriptor_ = file->message_type(4);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Activity_descriptor_, &Activity::default_instance());
+  Token_descriptor_ = file->message_type(5);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Token_descriptor_, &Token::default_instance());
-  SubmitJob_descriptor_ = file->message_type(3);
+  Properties_descriptor_ = file->message_type(6);
+  Properties_Property_descriptor_ = Properties_descriptor_->nested_type(0);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Properties_Property_descriptor_, &Properties_Property::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Properties_descriptor_, &Properties::default_instance());
+  SubmitJob_descriptor_ = file->message_type(7);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SubmitJob_descriptor_, &SubmitJob::default_instance());
-  SubmitJobAck_descriptor_ = file->message_type(4);
+  SubmitJobAck_descriptor_ = file->message_type(8);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SubmitJobAck_descriptor_, &SubmitJobAck::default_instance());
-  CancelJob_descriptor_ = file->message_type(5);
+  CancelJob_descriptor_ = file->message_type(9);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     CancelJob_descriptor_, &CancelJob::default_instance());
-  CancelJobAck_descriptor_ = file->message_type(6);
+  CancelJobAck_descriptor_ = file->message_type(10);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     CancelJobAck_descriptor_, &CancelJobAck::default_instance());
-  JobStatusRequest_descriptor_ = file->message_type(7);
+  QueryStatus_descriptor_ = file->message_type(11);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobStatusRequest_descriptor_, &JobStatusRequest::default_instance());
-  JobStatusReply_descriptor_ = file->message_type(8);
+    QueryStatus_descriptor_, &QueryStatus::default_instance());
+  StatusReply_descriptor_ = file->message_type(12);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    JobStatusReply_descriptor_, &JobStatusReply::default_instance());
-  JobFinished_descriptor_ = file->message_type(9);
+    StatusReply_descriptor_, &StatusReply::default_instance());
+  RetrieveResults_descriptor_ = file->message_type(13);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    RetrieveResults_descriptor_, &RetrieveResults::default_instance());
+  Results_descriptor_ = file->message_type(14);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Results_descriptor_, &Results::default_instance());
+  DeleteJob_descriptor_ = file->message_type(15);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    DeleteJob_descriptor_, &DeleteJob::default_instance());
+  DeleteJobAck_descriptor_ = file->message_type(16);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    DeleteJobAck_descriptor_, &DeleteJobAck::default_instance());
+  Poll_descriptor_ = file->message_type(17);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Poll_descriptor_, &Poll::default_instance());
+  PollReply_descriptor_ = file->message_type(18);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    PollReply_descriptor_, &PollReply::default_instance());
+  JobFinished_descriptor_ = file->message_type(19);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     JobFinished_descriptor_, &JobFinished::default_instance());
-  JobFinishedAck_descriptor_ = file->message_type(10);
+  JobFinishedAck_descriptor_ = file->message_type(20);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     JobFinishedAck_descriptor_, &JobFinishedAck::default_instance());
-  JobFailed_descriptor_ = file->message_type(11);
+  JobFailed_descriptor_ = file->message_type(21);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     JobFailed_descriptor_, &JobFailed::default_instance());
-  JobFailedAck_descriptor_ = file->message_type(12);
+  JobFailedAck_descriptor_ = file->message_type(22);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     JobFailedAck_descriptor_, &JobFailedAck::default_instance());
-  LifeSignal_descriptor_ = file->message_type(13);
+  LifeSignal_descriptor_ = file->message_type(23);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     LifeSignal_descriptor_, &LifeSignal::default_instance());
-  ConfigRequest_descriptor_ = file->message_type(14);
+  ConfigRequest_descriptor_ = file->message_type(24);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ConfigRequest_descriptor_, &ConfigRequest::default_instance());
-  ConfigReply_descriptor_ = file->message_type(15);
+  ConfigReply_descriptor_ = file->message_type(25);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ConfigReply_descriptor_, &ConfigReply::default_instance());
+  Config_descriptor_ = file->message_type(26);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    Config_descriptor_, &Config::default_instance());
   ErrorCode_descriptor_ = file->enum_type(0);
   JobState_descriptor_ = file->enum_type(1);
 }
@@ -146,6 +220,7 @@ const ::google::protobuf::EnumDescriptor* ErrorCode_descriptor() {
 bool ErrorCode_IsValid(int value) {
   switch(value) {
     case 0:
+    case 500:
       return true;
     default:
       return false;
@@ -190,14 +265,26 @@ const SDPAMessage SDPAMessage::default_instance_;
 
 
 
-const int SDPAMessage::_offsets_[14] = {
+
+
+
+
+
+
+const int SDPAMessage::_offsets_[20] = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, error_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, submit_job_ack_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, cancel_job_ack_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_request_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_status_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, query_status_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, status_reply_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, retrieve_results_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, results_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, delete_job_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, delete_job_ack_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, poll_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, poll_reply_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_finished_ack_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SDPAMessage, job_failed_),
@@ -217,8 +304,14 @@ SDPAMessage::SDPAMessage()
     submit_job_ack_(NULL),
     cancel_job_(NULL),
     cancel_job_ack_(NULL),
-    job_status_request_(NULL),
-    job_status_(NULL),
+    query_status_(NULL),
+    status_reply_(NULL),
+    retrieve_results_(NULL),
+    results_(NULL),
+    delete_job_(NULL),
+    delete_job_ack_(NULL),
+    poll_(NULL),
+    poll_reply_(NULL),
     job_finished_(NULL),
     job_finished_ack_(NULL),
     job_failed_(NULL),
@@ -233,8 +326,14 @@ SDPAMessage::SDPAMessage()
     submit_job_ack_ = const_cast< ::sdpa::events::SubmitJobAck*>(&::sdpa::events::SubmitJobAck::default_instance());
     cancel_job_ = const_cast< ::sdpa::events::CancelJob*>(&::sdpa::events::CancelJob::default_instance());
     cancel_job_ack_ = const_cast< ::sdpa::events::CancelJobAck*>(&::sdpa::events::CancelJobAck::default_instance());
-    job_status_request_ = const_cast< ::sdpa::events::JobStatusRequest*>(&::sdpa::events::JobStatusRequest::default_instance());
-    job_status_ = const_cast< ::sdpa::events::JobStatusReply*>(&::sdpa::events::JobStatusReply::default_instance());
+    query_status_ = const_cast< ::sdpa::events::QueryStatus*>(&::sdpa::events::QueryStatus::default_instance());
+    status_reply_ = const_cast< ::sdpa::events::StatusReply*>(&::sdpa::events::StatusReply::default_instance());
+    retrieve_results_ = const_cast< ::sdpa::events::RetrieveResults*>(&::sdpa::events::RetrieveResults::default_instance());
+    results_ = const_cast< ::sdpa::events::Results*>(&::sdpa::events::Results::default_instance());
+    delete_job_ = const_cast< ::sdpa::events::DeleteJob*>(&::sdpa::events::DeleteJob::default_instance());
+    delete_job_ack_ = const_cast< ::sdpa::events::DeleteJobAck*>(&::sdpa::events::DeleteJobAck::default_instance());
+    poll_ = const_cast< ::sdpa::events::Poll*>(&::sdpa::events::Poll::default_instance());
+    poll_reply_ = const_cast< ::sdpa::events::PollReply*>(&::sdpa::events::PollReply::default_instance());
     job_finished_ = const_cast< ::sdpa::events::JobFinished*>(&::sdpa::events::JobFinished::default_instance());
     job_finished_ack_ = const_cast< ::sdpa::events::JobFinishedAck*>(&::sdpa::events::JobFinishedAck::default_instance());
     job_failed_ = const_cast< ::sdpa::events::JobFailed*>(&::sdpa::events::JobFailed::default_instance());
@@ -255,8 +354,14 @@ SDPAMessage::SDPAMessage(const SDPAMessage& from)
     submit_job_ack_(NULL),
     cancel_job_(NULL),
     cancel_job_ack_(NULL),
-    job_status_request_(NULL),
-    job_status_(NULL),
+    query_status_(NULL),
+    status_reply_(NULL),
+    retrieve_results_(NULL),
+    results_(NULL),
+    delete_job_(NULL),
+    delete_job_ack_(NULL),
+    poll_(NULL),
+    poll_reply_(NULL),
     job_finished_(NULL),
     job_finished_ack_(NULL),
     job_failed_(NULL),
@@ -275,8 +380,14 @@ SDPAMessage::~SDPAMessage() {
     delete submit_job_ack_;
     delete cancel_job_;
     delete cancel_job_ack_;
-    delete job_status_request_;
-    delete job_status_;
+    delete query_status_;
+    delete status_reply_;
+    delete retrieve_results_;
+    delete results_;
+    delete delete_job_;
+    delete delete_job_ack_;
+    delete poll_;
+    delete poll_reply_;
     delete job_finished_;
     delete job_finished_ack_;
     delete job_failed_;
@@ -314,32 +425,52 @@ void SDPAMessage::Clear() {
       if (cancel_job_ack_ != NULL) cancel_job_ack_->::sdpa::events::CancelJobAck::Clear();
     }
     if (_has_bit(5)) {
-      if (job_status_request_ != NULL) job_status_request_->::sdpa::events::JobStatusRequest::Clear();
+      if (query_status_ != NULL) query_status_->::sdpa::events::QueryStatus::Clear();
     }
     if (_has_bit(6)) {
-      if (job_status_ != NULL) job_status_->::sdpa::events::JobStatusReply::Clear();
+      if (status_reply_ != NULL) status_reply_->::sdpa::events::StatusReply::Clear();
     }
     if (_has_bit(7)) {
-      if (job_finished_ != NULL) job_finished_->::sdpa::events::JobFinished::Clear();
+      if (retrieve_results_ != NULL) retrieve_results_->::sdpa::events::RetrieveResults::Clear();
     }
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (_has_bit(8)) {
-      if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::events::JobFinishedAck::Clear();
+      if (results_ != NULL) results_->::sdpa::events::Results::Clear();
     }
     if (_has_bit(9)) {
-      if (job_failed_ != NULL) job_failed_->::sdpa::events::JobFailed::Clear();
+      if (delete_job_ != NULL) delete_job_->::sdpa::events::DeleteJob::Clear();
     }
     if (_has_bit(10)) {
-      if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::events::JobFailedAck::Clear();
+      if (delete_job_ack_ != NULL) delete_job_ack_->::sdpa::events::DeleteJobAck::Clear();
     }
     if (_has_bit(11)) {
-      if (life_signal_ != NULL) life_signal_->::sdpa::events::LifeSignal::Clear();
+      if (poll_ != NULL) poll_->::sdpa::events::Poll::Clear();
     }
     if (_has_bit(12)) {
-      if (config_request_ != NULL) config_request_->::sdpa::events::ConfigRequest::Clear();
+      if (poll_reply_ != NULL) poll_reply_->::sdpa::events::PollReply::Clear();
     }
     if (_has_bit(13)) {
+      if (job_finished_ != NULL) job_finished_->::sdpa::events::JobFinished::Clear();
+    }
+    if (_has_bit(14)) {
+      if (job_finished_ack_ != NULL) job_finished_ack_->::sdpa::events::JobFinishedAck::Clear();
+    }
+    if (_has_bit(15)) {
+      if (job_failed_ != NULL) job_failed_->::sdpa::events::JobFailed::Clear();
+    }
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
+    if (_has_bit(16)) {
+      if (job_failed_ack_ != NULL) job_failed_ack_->::sdpa::events::JobFailedAck::Clear();
+    }
+    if (_has_bit(17)) {
+      if (life_signal_ != NULL) life_signal_->::sdpa::events::LifeSignal::Clear();
+    }
+    if (_has_bit(18)) {
+      if (config_request_ != NULL) config_request_->::sdpa::events::ConfigRequest::Clear();
+    }
+    if (_has_bit(19)) {
       if (config_reply_ != NULL) config_reply_->::sdpa::events::ConfigReply::Clear();
     }
   }
@@ -413,38 +544,116 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_cancel_job_ack:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_cancel_job_ack()));
-        if (input->ExpectTag(50)) goto parse_job_status_request;
+        if (input->ExpectTag(50)) goto parse_query_status;
         break;
       }
       
-      // optional .sdpa.events.JobStatusRequest job_status_request = 6;
+      // optional .sdpa.events.QueryStatus query_status = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-       parse_job_status_request:
+       parse_query_status:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
-             input, mutable_job_status_request()));
-        if (input->ExpectTag(58)) goto parse_job_status;
+             input, mutable_query_status()));
+        if (input->ExpectTag(58)) goto parse_status_reply;
         break;
       }
       
-      // optional .sdpa.events.JobStatusReply job_status = 7;
+      // optional .sdpa.events.StatusReply status_reply = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-       parse_job_status:
+       parse_status_reply:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
-             input, mutable_job_status()));
-        if (input->ExpectTag(66)) goto parse_job_finished;
+             input, mutable_status_reply()));
+        if (input->ExpectTag(66)) goto parse_retrieve_results;
         break;
       }
       
-      // optional .sdpa.events.JobFinished job_finished = 8;
+      // optional .sdpa.events.RetrieveResults retrieve_results = 8;
       case 8: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_retrieve_results:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_retrieve_results()));
+        if (input->ExpectTag(74)) goto parse_results;
+        break;
+      }
+      
+      // optional .sdpa.events.Results results = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_results:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_results()));
+        if (input->ExpectTag(82)) goto parse_delete_job;
+        break;
+      }
+      
+      // optional .sdpa.events.DeleteJob delete_job = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_delete_job:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_delete_job()));
+        if (input->ExpectTag(90)) goto parse_delete_job_ack;
+        break;
+      }
+      
+      // optional .sdpa.events.DeleteJobAck delete_job_ack = 11;
+      case 11: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_delete_job_ack:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_delete_job_ack()));
+        if (input->ExpectTag(98)) goto parse_poll;
+        break;
+      }
+      
+      // optional .sdpa.events.Poll poll = 12;
+      case 12: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_poll:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_poll()));
+        if (input->ExpectTag(106)) goto parse_poll_reply;
+        break;
+      }
+      
+      // optional .sdpa.events.PollReply poll_reply = 13;
+      case 13: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_poll_reply:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_poll_reply()));
+        if (input->ExpectTag(114)) goto parse_job_finished;
+        break;
+      }
+      
+      // optional .sdpa.events.JobFinished job_finished = 14;
+      case 14: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -452,12 +661,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_job_finished:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_job_finished()));
-        if (input->ExpectTag(74)) goto parse_job_finished_ack;
+        if (input->ExpectTag(122)) goto parse_job_finished_ack;
         break;
       }
       
-      // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
-      case 9: {
+      // optional .sdpa.events.JobFinishedAck job_finished_ack = 15;
+      case 15: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -465,12 +674,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_job_finished_ack:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_job_finished_ack()));
-        if (input->ExpectTag(82)) goto parse_job_failed;
+        if (input->ExpectTag(130)) goto parse_job_failed;
         break;
       }
       
-      // optional .sdpa.events.JobFailed job_failed = 10;
-      case 10: {
+      // optional .sdpa.events.JobFailed job_failed = 16;
+      case 16: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -478,12 +687,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_job_failed:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_job_failed()));
-        if (input->ExpectTag(90)) goto parse_job_failed_ack;
+        if (input->ExpectTag(138)) goto parse_job_failed_ack;
         break;
       }
       
-      // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
-      case 11: {
+      // optional .sdpa.events.JobFailedAck job_failed_ack = 17;
+      case 17: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -491,12 +700,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_job_failed_ack:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_job_failed_ack()));
-        if (input->ExpectTag(98)) goto parse_life_signal;
+        if (input->ExpectTag(146)) goto parse_life_signal;
         break;
       }
       
-      // optional .sdpa.events.LifeSignal life_signal = 12;
-      case 12: {
+      // optional .sdpa.events.LifeSignal life_signal = 18;
+      case 18: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -504,12 +713,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_life_signal:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_life_signal()));
-        if (input->ExpectTag(106)) goto parse_config_request;
+        if (input->ExpectTag(154)) goto parse_config_request;
         break;
       }
       
-      // optional .sdpa.events.ConfigRequest config_request = 13;
-      case 13: {
+      // optional .sdpa.events.ConfigRequest config_request = 19;
+      case 19: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -517,12 +726,12 @@ bool SDPAMessage::MergePartialFromCodedStream(
        parse_config_request:
         DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
              input, mutable_config_request()));
-        if (input->ExpectTag(114)) goto parse_config_reply;
+        if (input->ExpectTag(162)) goto parse_config_reply;
         break;
       }
       
-      // optional .sdpa.events.ConfigReply config_reply = 14;
-      case 14: {
+      // optional .sdpa.events.ConfigReply config_reply = 20;
+      case 20: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
@@ -578,49 +787,79 @@ bool SDPAMessage::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(5, this->cancel_job_ack(), output));
   }
   
-  // optional .sdpa.events.JobStatusRequest job_status_request = 6;
+  // optional .sdpa.events.QueryStatus query_status = 6;
   if (_has_bit(5)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(6, this->job_status_request(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(6, this->query_status(), output));
   }
   
-  // optional .sdpa.events.JobStatusReply job_status = 7;
+  // optional .sdpa.events.StatusReply status_reply = 7;
   if (_has_bit(6)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(7, this->job_status(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(7, this->status_reply(), output));
   }
   
-  // optional .sdpa.events.JobFinished job_finished = 8;
+  // optional .sdpa.events.RetrieveResults retrieve_results = 8;
   if (_has_bit(7)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(8, this->job_finished(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(8, this->retrieve_results(), output));
   }
   
-  // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
+  // optional .sdpa.events.Results results = 9;
   if (_has_bit(8)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(9, this->job_finished_ack(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(9, this->results(), output));
   }
   
-  // optional .sdpa.events.JobFailed job_failed = 10;
+  // optional .sdpa.events.DeleteJob delete_job = 10;
   if (_has_bit(9)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(10, this->job_failed(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(10, this->delete_job(), output));
   }
   
-  // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
+  // optional .sdpa.events.DeleteJobAck delete_job_ack = 11;
   if (_has_bit(10)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(11, this->job_failed_ack(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(11, this->delete_job_ack(), output));
   }
   
-  // optional .sdpa.events.LifeSignal life_signal = 12;
+  // optional .sdpa.events.Poll poll = 12;
   if (_has_bit(11)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(12, this->life_signal(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(12, this->poll(), output));
   }
   
-  // optional .sdpa.events.ConfigRequest config_request = 13;
+  // optional .sdpa.events.PollReply poll_reply = 13;
   if (_has_bit(12)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(13, this->config_request(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(13, this->poll_reply(), output));
   }
   
-  // optional .sdpa.events.ConfigReply config_reply = 14;
+  // optional .sdpa.events.JobFinished job_finished = 14;
   if (_has_bit(13)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(14, this->config_reply(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(14, this->job_finished(), output));
+  }
+  
+  // optional .sdpa.events.JobFinishedAck job_finished_ack = 15;
+  if (_has_bit(14)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(15, this->job_finished_ack(), output));
+  }
+  
+  // optional .sdpa.events.JobFailed job_failed = 16;
+  if (_has_bit(15)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(16, this->job_failed(), output));
+  }
+  
+  // optional .sdpa.events.JobFailedAck job_failed_ack = 17;
+  if (_has_bit(16)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(17, this->job_failed_ack(), output));
+  }
+  
+  // optional .sdpa.events.LifeSignal life_signal = 18;
+  if (_has_bit(17)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(18, this->life_signal(), output));
+  }
+  
+  // optional .sdpa.events.ConfigRequest config_request = 19;
+  if (_has_bit(18)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(19, this->config_request(), output));
+  }
+  
+  // optional .sdpa.events.ConfigReply config_reply = 20;
+  if (_has_bit(19)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(20, this->config_reply(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -670,67 +909,111 @@ int SDPAMessage::ByteSize() const {
           this->cancel_job_ack());
     }
     
-    // optional .sdpa.events.JobStatusRequest job_status_request = 6;
-    if (has_job_status_request()) {
+    // optional .sdpa.events.QueryStatus query_status = 6;
+    if (has_query_status()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
-          this->job_status_request());
+          this->query_status());
     }
     
-    // optional .sdpa.events.JobStatusReply job_status = 7;
-    if (has_job_status()) {
+    // optional .sdpa.events.StatusReply status_reply = 7;
+    if (has_status_reply()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
-          this->job_status());
+          this->status_reply());
     }
     
-    // optional .sdpa.events.JobFinished job_finished = 8;
+    // optional .sdpa.events.RetrieveResults retrieve_results = 8;
+    if (has_retrieve_results()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->retrieve_results());
+    }
+    
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional .sdpa.events.Results results = 9;
+    if (has_results()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->results());
+    }
+    
+    // optional .sdpa.events.DeleteJob delete_job = 10;
+    if (has_delete_job()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->delete_job());
+    }
+    
+    // optional .sdpa.events.DeleteJobAck delete_job_ack = 11;
+    if (has_delete_job_ack()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->delete_job_ack());
+    }
+    
+    // optional .sdpa.events.Poll poll = 12;
+    if (has_poll()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->poll());
+    }
+    
+    // optional .sdpa.events.PollReply poll_reply = 13;
+    if (has_poll_reply()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->poll_reply());
+    }
+    
+    // optional .sdpa.events.JobFinished job_finished = 14;
     if (has_job_finished()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_finished());
     }
     
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional .sdpa.events.JobFinishedAck job_finished_ack = 9;
+    // optional .sdpa.events.JobFinishedAck job_finished_ack = 15;
     if (has_job_finished_ack()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_finished_ack());
     }
     
-    // optional .sdpa.events.JobFailed job_failed = 10;
+    // optional .sdpa.events.JobFailed job_failed = 16;
     if (has_job_failed()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_failed());
     }
     
-    // optional .sdpa.events.JobFailedAck job_failed_ack = 11;
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
+    // optional .sdpa.events.JobFailedAck job_failed_ack = 17;
     if (has_job_failed_ack()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->job_failed_ack());
     }
     
-    // optional .sdpa.events.LifeSignal life_signal = 12;
+    // optional .sdpa.events.LifeSignal life_signal = 18;
     if (has_life_signal()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->life_signal());
     }
     
-    // optional .sdpa.events.ConfigRequest config_request = 13;
+    // optional .sdpa.events.ConfigRequest config_request = 19;
     if (has_config_request()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->config_request());
     }
     
-    // optional .sdpa.events.ConfigReply config_reply = 14;
+    // optional .sdpa.events.ConfigReply config_reply = 20;
     if (has_config_reply()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
           this->config_reply());
     }
@@ -777,32 +1060,52 @@ void SDPAMessage::MergeFrom(const SDPAMessage& from) {
       mutable_cancel_job_ack()->::sdpa::events::CancelJobAck::MergeFrom(from.cancel_job_ack());
     }
     if (from._has_bit(5)) {
-      mutable_job_status_request()->::sdpa::events::JobStatusRequest::MergeFrom(from.job_status_request());
+      mutable_query_status()->::sdpa::events::QueryStatus::MergeFrom(from.query_status());
     }
     if (from._has_bit(6)) {
-      mutable_job_status()->::sdpa::events::JobStatusReply::MergeFrom(from.job_status());
+      mutable_status_reply()->::sdpa::events::StatusReply::MergeFrom(from.status_reply());
     }
     if (from._has_bit(7)) {
-      mutable_job_finished()->::sdpa::events::JobFinished::MergeFrom(from.job_finished());
+      mutable_retrieve_results()->::sdpa::events::RetrieveResults::MergeFrom(from.retrieve_results());
     }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from._has_bit(8)) {
-      mutable_job_finished_ack()->::sdpa::events::JobFinishedAck::MergeFrom(from.job_finished_ack());
+      mutable_results()->::sdpa::events::Results::MergeFrom(from.results());
     }
     if (from._has_bit(9)) {
-      mutable_job_failed()->::sdpa::events::JobFailed::MergeFrom(from.job_failed());
+      mutable_delete_job()->::sdpa::events::DeleteJob::MergeFrom(from.delete_job());
     }
     if (from._has_bit(10)) {
-      mutable_job_failed_ack()->::sdpa::events::JobFailedAck::MergeFrom(from.job_failed_ack());
+      mutable_delete_job_ack()->::sdpa::events::DeleteJobAck::MergeFrom(from.delete_job_ack());
     }
     if (from._has_bit(11)) {
-      mutable_life_signal()->::sdpa::events::LifeSignal::MergeFrom(from.life_signal());
+      mutable_poll()->::sdpa::events::Poll::MergeFrom(from.poll());
     }
     if (from._has_bit(12)) {
-      mutable_config_request()->::sdpa::events::ConfigRequest::MergeFrom(from.config_request());
+      mutable_poll_reply()->::sdpa::events::PollReply::MergeFrom(from.poll_reply());
     }
     if (from._has_bit(13)) {
+      mutable_job_finished()->::sdpa::events::JobFinished::MergeFrom(from.job_finished());
+    }
+    if (from._has_bit(14)) {
+      mutable_job_finished_ack()->::sdpa::events::JobFinishedAck::MergeFrom(from.job_finished_ack());
+    }
+    if (from._has_bit(15)) {
+      mutable_job_failed()->::sdpa::events::JobFailed::MergeFrom(from.job_failed());
+    }
+  }
+  if (from._has_bits_[16 / 32] & (0xffu << (16 % 32))) {
+    if (from._has_bit(16)) {
+      mutable_job_failed_ack()->::sdpa::events::JobFailedAck::MergeFrom(from.job_failed_ack());
+    }
+    if (from._has_bit(17)) {
+      mutable_life_signal()->::sdpa::events::LifeSignal::MergeFrom(from.life_signal());
+    }
+    if (from._has_bit(18)) {
+      mutable_config_request()->::sdpa::events::ConfigRequest::MergeFrom(from.config_request());
+    }
+    if (from._has_bit(19)) {
       mutable_config_reply()->::sdpa::events::ConfigReply::MergeFrom(from.config_reply());
     }
   }
@@ -838,11 +1141,29 @@ bool SDPAMessage::IsInitialized() const {
   if (has_cancel_job_ack()) {
     if (!this->cancel_job_ack().IsInitialized()) return false;
   }
-  if (has_job_status_request()) {
-    if (!this->job_status_request().IsInitialized()) return false;
+  if (has_query_status()) {
+    if (!this->query_status().IsInitialized()) return false;
   }
-  if (has_job_status()) {
-    if (!this->job_status().IsInitialized()) return false;
+  if (has_status_reply()) {
+    if (!this->status_reply().IsInitialized()) return false;
+  }
+  if (has_retrieve_results()) {
+    if (!this->retrieve_results().IsInitialized()) return false;
+  }
+  if (has_results()) {
+    if (!this->results().IsInitialized()) return false;
+  }
+  if (has_delete_job()) {
+    if (!this->delete_job().IsInitialized()) return false;
+  }
+  if (has_delete_job_ack()) {
+    if (!this->delete_job_ack().IsInitialized()) return false;
+  }
+  if (has_poll()) {
+    if (!this->poll().IsInitialized()) return false;
+  }
+  if (has_poll_reply()) {
+    if (!this->poll_reply().IsInitialized()) return false;
   }
   if (has_job_finished()) {
     if (!this->job_finished().IsInitialized()) return false;
@@ -1102,6 +1423,772 @@ Error::GetReflection() const {
 
 // ===================================================================
 
+const Task Task::default_instance_;
+
+const ::std::string Task::_default_workflow_;
+
+const int Task::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Task, workflow_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Task, input_),
+};
+
+Task::Task()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    workflow_(const_cast< ::std::string*>(&_default_workflow_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+Task::Task(const Task& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    workflow_(const_cast< ::std::string*>(&_default_workflow_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Task::~Task() {
+  if (workflow_ != &_default_workflow_) {
+    delete workflow_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* Task::descriptor() {
+  if (Task_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Task_descriptor_;
+}
+
+Task* Task::New() const {
+  return new Task;
+}
+
+void Task::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (workflow_ != &_default_workflow_) {
+        workflow_->clear();
+      }
+    }
+  }
+  input_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Task::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes workflow = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_workflow()));
+        if (input->ExpectTag(26)) goto parse_input;
+        break;
+      }
+      
+      // repeated .sdpa.events.Token input = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_input:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_input()));
+        if (input->ExpectTag(26)) goto parse_input;
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Task::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes workflow = 2;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(2, this->workflow(), output));
+  }
+  
+  // repeated .sdpa.events.Token input = 3;
+  for (int i = 0; i < input_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->input(i), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Task::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes workflow = 2;
+    if (has_workflow()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->workflow());
+    }
+    
+  }
+  // repeated .sdpa.events.Token input = 3;
+  total_size += 1 * input_size();
+  for (int i = 0; i < input_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->input(i));
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Task::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Task* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Task*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Task::MergeFrom(const Task& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  input_.MergeFrom(from.input_);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_workflow(from.workflow());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Task::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Task::CopyFrom(const Task& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Task::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  for (int i = 0; i < input_size(); i++) {
+    if (!this->input(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Task::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Task::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Task::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const FunctionCall FunctionCall::default_instance_;
+
+const ::std::string FunctionCall::_default_module_;
+const ::std::string FunctionCall::_default_method_;
+
+
+const int FunctionCall::_offsets_[4] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunctionCall, module_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunctionCall, method_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunctionCall, input_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunctionCall, output_),
+};
+
+FunctionCall::FunctionCall()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    module_(const_cast< ::std::string*>(&_default_module_)),
+    method_(const_cast< ::std::string*>(&_default_method_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+FunctionCall::FunctionCall(const FunctionCall& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    module_(const_cast< ::std::string*>(&_default_module_)),
+    method_(const_cast< ::std::string*>(&_default_method_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+FunctionCall::~FunctionCall() {
+  if (module_ != &_default_module_) {
+    delete module_;
+  }
+  if (method_ != &_default_method_) {
+    delete method_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* FunctionCall::descriptor() {
+  if (FunctionCall_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return FunctionCall_descriptor_;
+}
+
+FunctionCall* FunctionCall::New() const {
+  return new FunctionCall;
+}
+
+void FunctionCall::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (module_ != &_default_module_) {
+        module_->clear();
+      }
+    }
+    if (_has_bit(1)) {
+      if (method_ != &_default_method_) {
+        method_->clear();
+      }
+    }
+  }
+  input_.Clear();
+  output_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FunctionCall::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required string module = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_module()));
+        if (input->ExpectTag(18)) goto parse_method;
+        break;
+      }
+      
+      // required string method = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_method:
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_method()));
+        if (input->ExpectTag(26)) goto parse_input;
+        break;
+      }
+      
+      // repeated .sdpa.events.Token input = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_input:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_input()));
+        if (input->ExpectTag(26)) goto parse_input;
+        if (input->ExpectTag(34)) goto parse_output;
+        break;
+      }
+      
+      // repeated .sdpa.events.Token output = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_output:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_output()));
+        if (input->ExpectTag(34)) goto parse_output;
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool FunctionCall::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required string module = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(1, this->module(), output));
+  }
+  
+  // required string method = 2;
+  if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(2, this->method(), output));
+  }
+  
+  // repeated .sdpa.events.Token input = 3;
+  for (int i = 0; i < input_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->input(i), output));
+  }
+  
+  // repeated .sdpa.events.Token output = 4;
+  for (int i = 0; i < output_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(4, this->output(i), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int FunctionCall::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string module = 1;
+    if (has_module()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->module());
+    }
+    
+    // required string method = 2;
+    if (has_method()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->method());
+    }
+    
+  }
+  // repeated .sdpa.events.Token input = 3;
+  total_size += 1 * input_size();
+  for (int i = 0; i < input_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->input(i));
+  }
+  
+  // repeated .sdpa.events.Token output = 4;
+  total_size += 1 * output_size();
+  for (int i = 0; i < output_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->output(i));
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void FunctionCall::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FunctionCall* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FunctionCall*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FunctionCall::MergeFrom(const FunctionCall& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  input_.MergeFrom(from.input_);
+  output_.MergeFrom(from.output_);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_module(from.module());
+    }
+    if (from._has_bit(1)) {
+      set_method(from.method());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FunctionCall::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FunctionCall::CopyFrom(const FunctionCall& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FunctionCall::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  
+  for (int i = 0; i < input_size(); i++) {
+    if (!this->input(i).IsInitialized()) return false;
+  }
+  for (int i = 0; i < output_size(); i++) {
+    if (!this->output(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* FunctionCall::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+FunctionCall::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* FunctionCall::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const Activity Activity::default_instance_;
+
+const ::std::string Activity::_default_id_;
+
+
+const int Activity::_offsets_[3] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Activity, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Activity, task_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Activity, function_),
+};
+
+Activity::Activity()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    task_(NULL),
+    function_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+    task_ = const_cast< ::sdpa::events::Task*>(&::sdpa::events::Task::default_instance());
+    function_ = const_cast< ::sdpa::events::FunctionCall*>(&::sdpa::events::FunctionCall::default_instance());
+  }
+}
+
+Activity::Activity(const Activity& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    task_(NULL),
+    function_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Activity::~Activity() {
+  if (id_ != &_default_id_) {
+    delete id_;
+  }
+  if (this != &default_instance_) {
+    delete task_;
+    delete function_;
+  }
+}
+
+const ::google::protobuf::Descriptor* Activity::descriptor() {
+  if (Activity_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Activity_descriptor_;
+}
+
+Activity* Activity::New() const {
+  return new Activity;
+}
+
+void Activity::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (id_ != &_default_id_) {
+        id_->clear();
+      }
+    }
+    if (_has_bit(1)) {
+      if (task_ != NULL) task_->::sdpa::events::Task::Clear();
+    }
+    if (_has_bit(2)) {
+      if (function_ != NULL) function_->::sdpa::events::FunctionCall::Clear();
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Activity::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes id = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectTag(18)) goto parse_task;
+        break;
+      }
+      
+      // optional .sdpa.events.Task task = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_task:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_task()));
+        if (input->ExpectTag(26)) goto parse_function;
+        break;
+      }
+      
+      // optional .sdpa.events.FunctionCall function = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_function:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_function()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Activity::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes id = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  // optional .sdpa.events.Task task = 2;
+  if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->task(), output));
+  }
+  
+  // optional .sdpa.events.FunctionCall function = 3;
+  if (_has_bit(2)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->function(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Activity::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
+    }
+    
+    // optional .sdpa.events.Task task = 2;
+    if (has_task()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->task());
+    }
+    
+    // optional .sdpa.events.FunctionCall function = 3;
+    if (has_function()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->function());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Activity::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Activity* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Activity*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Activity::MergeFrom(const Activity& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_id(from.id());
+    }
+    if (from._has_bit(1)) {
+      mutable_task()->::sdpa::events::Task::MergeFrom(from.task());
+    }
+    if (from._has_bit(2)) {
+      mutable_function()->::sdpa::events::FunctionCall::MergeFrom(from.function());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Activity::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Activity::CopyFrom(const Activity& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Activity::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  if (has_task()) {
+    if (!this->task().IsInitialized()) return false;
+  }
+  if (has_function()) {
+    if (!this->function().IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Activity::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Activity::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Activity::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
 const Token Token::default_instance_;
 
 const ::std::string Token::_default_place_;
@@ -1317,6 +2404,398 @@ Token::GetReflection() const {
 }
 
 ::google::protobuf::Message::Reflection* Token::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const Properties_Property Properties_Property::default_instance_;
+
+const ::std::string Properties_Property::_default_key_;
+const ::std::string Properties_Property::_default_val_;
+const int Properties_Property::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Properties_Property, key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Properties_Property, val_),
+};
+
+Properties_Property::Properties_Property()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    key_(const_cast< ::std::string*>(&_default_key_)),
+    val_(const_cast< ::std::string*>(&_default_val_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+Properties_Property::Properties_Property(const Properties_Property& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    key_(const_cast< ::std::string*>(&_default_key_)),
+    val_(const_cast< ::std::string*>(&_default_val_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Properties_Property::~Properties_Property() {
+  if (key_ != &_default_key_) {
+    delete key_;
+  }
+  if (val_ != &_default_val_) {
+    delete val_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* Properties_Property::descriptor() {
+  if (Properties_Property_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Properties_Property_descriptor_;
+}
+
+Properties_Property* Properties_Property::New() const {
+  return new Properties_Property;
+}
+
+void Properties_Property::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (key_ != &_default_key_) {
+        key_->clear();
+      }
+    }
+    if (_has_bit(1)) {
+      if (val_ != &_default_val_) {
+        val_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Properties_Property::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required string key = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_key()));
+        if (input->ExpectTag(18)) goto parse_val;
+        break;
+      }
+      
+      // required string val = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_val:
+        DO_(::google::protobuf::internal::WireFormat::ReadString(input, mutable_val()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Properties_Property::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required string key = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(1, this->key(), output));
+  }
+  
+  // required string val = 2;
+  if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteString(2, this->val(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Properties_Property::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string key = 1;
+    if (has_key()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->key());
+    }
+    
+    // required string val = 2;
+    if (has_val()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::StringSize(this->val());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Properties_Property::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Properties_Property* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Properties_Property*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Properties_Property::MergeFrom(const Properties_Property& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_key(from.key());
+    }
+    if (from._has_bit(1)) {
+      set_val(from.val());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Properties_Property::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Properties_Property::CopyFrom(const Properties_Property& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Properties_Property::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Properties_Property::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Properties_Property::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Properties_Property::GetReflection() {
+  return &_reflection_;
+}
+
+// -------------------------------------------------------------------
+
+const Properties Properties::default_instance_;
+
+
+const int Properties::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Properties, property_),
+};
+
+Properties::Properties()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+Properties::Properties(const Properties& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Properties::~Properties() {
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* Properties::descriptor() {
+  if (Properties_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Properties_descriptor_;
+}
+
+Properties* Properties::New() const {
+  return new Properties;
+}
+
+void Properties::Clear() {
+  property_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Properties::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // repeated .sdpa.events.Properties.Property property = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_property:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_property()));
+        if (input->ExpectTag(10)) goto parse_property;
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Properties::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // repeated .sdpa.events.Properties.Property property = 1;
+  for (int i = 0; i < property_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(1, this->property(i), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Properties::ByteSize() const {
+  int total_size = 0;
+  
+  // repeated .sdpa.events.Properties.Property property = 1;
+  total_size += 1 * property_size();
+  for (int i = 0; i < property_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->property(i));
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Properties::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Properties* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Properties*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Properties::MergeFrom(const Properties& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  property_.MergeFrom(from.property_);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Properties::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Properties::CopyFrom(const Properties& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Properties::IsInitialized() const {
+  
+  for (int i = 0; i < property_size(); i++) {
+    if (!this->property(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Properties::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Properties::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Properties::GetReflection() {
   return &_reflection_;
 }
 
@@ -1540,9 +3019,9 @@ SubmitJob::GetReflection() const {
 
 const SubmitJobAck SubmitJobAck::default_instance_;
 
-const ::std::string SubmitJobAck::_default_job_id_;
+const ::std::string SubmitJobAck::_default_id_;
 const int SubmitJobAck::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SubmitJobAck, id_),
 };
 
 SubmitJobAck::SubmitJobAck()
@@ -1550,7 +3029,7 @@ SubmitJobAck::SubmitJobAck()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -1561,14 +3040,14 @@ SubmitJobAck::SubmitJobAck(const SubmitJobAck& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 SubmitJobAck::~SubmitJobAck() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -1586,8 +3065,8 @@ SubmitJobAck* SubmitJobAck::New() const {
 void SubmitJobAck::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -1601,13 +3080,13 @@ bool SubmitJobAck::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1631,9 +3110,9 @@ bool SubmitJobAck::MergePartialFromCodedStream(
 bool SubmitJobAck::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -1648,10 +3127,10 @@ int SubmitJobAck::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -1681,7 +3160,7 @@ void SubmitJobAck::MergeFrom(const SubmitJobAck& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1722,10 +3201,10 @@ SubmitJobAck::GetReflection() const {
 
 const CancelJob CancelJob::default_instance_;
 
-const ::std::string CancelJob::_default_job_id_;
+const ::std::string CancelJob::_default_id_;
 const ::std::string CancelJob::_default_reason_;
 const int CancelJob::_offsets_[2] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJob, reason_),
 };
 
@@ -1734,7 +3213,7 @@ CancelJob::CancelJob()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)),
+    id_(const_cast< ::std::string*>(&_default_id_)),
     reason_(const_cast< ::std::string*>(&_default_reason_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
@@ -1746,15 +3225,15 @@ CancelJob::CancelJob(const CancelJob& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)),
+    id_(const_cast< ::std::string*>(&_default_id_)),
     reason_(const_cast< ::std::string*>(&_default_reason_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 CancelJob::~CancelJob() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (reason_ != &_default_reason_) {
     delete reason_;
@@ -1775,8 +3254,8 @@ CancelJob* CancelJob::New() const {
 void CancelJob::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
     if (_has_bit(1)) {
@@ -1795,13 +3274,13 @@ bool CancelJob::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectTag(18)) goto parse_reason;
         break;
       }
@@ -1837,9 +3316,9 @@ bool CancelJob::MergePartialFromCodedStream(
 bool CancelJob::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   // optional string reason = 2;
@@ -1859,10 +3338,10 @@ int CancelJob::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
     // optional string reason = 2;
@@ -1898,7 +3377,7 @@ void CancelJob::MergeFrom(const CancelJob& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
     if (from._has_bit(1)) {
       set_reason(from.reason());
@@ -1942,9 +3421,9 @@ CancelJob::GetReflection() const {
 
 const CancelJobAck CancelJobAck::default_instance_;
 
-const ::std::string CancelJobAck::_default_job_id_;
+const ::std::string CancelJobAck::_default_id_;
 const int CancelJobAck::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CancelJobAck, id_),
 };
 
 CancelJobAck::CancelJobAck()
@@ -1952,7 +3431,7 @@ CancelJobAck::CancelJobAck()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -1963,14 +3442,14 @@ CancelJobAck::CancelJobAck(const CancelJobAck& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 CancelJobAck::~CancelJobAck() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -1988,8 +3467,8 @@ CancelJobAck* CancelJobAck::New() const {
 void CancelJobAck::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -2003,13 +3482,13 @@ bool CancelJobAck::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2033,9 +3512,9 @@ bool CancelJobAck::MergePartialFromCodedStream(
 bool CancelJobAck::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2050,10 +3529,10 @@ int CancelJobAck::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -2083,7 +3562,7 @@ void CancelJobAck::MergeFrom(const CancelJobAck& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -2122,56 +3601,56 @@ CancelJobAck::GetReflection() const {
 
 // ===================================================================
 
-const JobStatusRequest JobStatusRequest::default_instance_;
+const QueryStatus QueryStatus::default_instance_;
 
-const ::std::string JobStatusRequest::_default_job_id_;
-const int JobStatusRequest::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusRequest, job_id_),
+const ::std::string QueryStatus::_default_id_;
+const int QueryStatus::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(QueryStatus, id_),
 };
 
-JobStatusRequest::JobStatusRequest()
+QueryStatus::QueryStatus()
   : _reflection_(descriptor(),
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
 }
 
-JobStatusRequest::JobStatusRequest(const JobStatusRequest& from)
+QueryStatus::QueryStatus(const QueryStatus& from)
   : _reflection_(descriptor(),
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
-JobStatusRequest::~JobStatusRequest() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+QueryStatus::~QueryStatus() {
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
 }
 
-const ::google::protobuf::Descriptor* JobStatusRequest::descriptor() {
-  if (JobStatusRequest_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
-  return JobStatusRequest_descriptor_;
+const ::google::protobuf::Descriptor* QueryStatus::descriptor() {
+  if (QueryStatus_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return QueryStatus_descriptor_;
 }
 
-JobStatusRequest* JobStatusRequest::New() const {
-  return new JobStatusRequest;
+QueryStatus* QueryStatus::New() const {
+  return new QueryStatus;
 }
 
-void JobStatusRequest::Clear() {
+void QueryStatus::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -2179,19 +3658,19 @@ void JobStatusRequest::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool JobStatusRequest::MergePartialFromCodedStream(
+bool QueryStatus::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2212,12 +3691,12 @@ bool JobStatusRequest::MergePartialFromCodedStream(
 #undef DO_
 }
 
-bool JobStatusRequest::SerializeWithCachedSizes(
+bool QueryStatus::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2228,14 +3707,14 @@ bool JobStatusRequest::SerializeWithCachedSizes(
 #undef DO_
 }
 
-int JobStatusRequest::ByteSize() const {
+int QueryStatus::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -2248,10 +3727,10 @@ int JobStatusRequest::ByteSize() const {
   return total_size;
 }
 
-void JobStatusRequest::MergeFrom(const ::google::protobuf::Message& from) {
+void QueryStatus::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const JobStatusRequest* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const JobStatusRequest*>(
+  const QueryStatus* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const QueryStatus*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(
@@ -2261,124 +3740,133 @@ void JobStatusRequest::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void JobStatusRequest::MergeFrom(const JobStatusRequest& from) {
+void QueryStatus::MergeFrom(const QueryStatus& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void JobStatusRequest::CopyFrom(const ::google::protobuf::Message& from) {
+void QueryStatus::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void JobStatusRequest::CopyFrom(const JobStatusRequest& from) {
+void QueryStatus::CopyFrom(const QueryStatus& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool JobStatusRequest::IsInitialized() const {
+bool QueryStatus::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
   return true;
 }
 
-const ::google::protobuf::Descriptor* JobStatusRequest::GetDescriptor() const {
+const ::google::protobuf::Descriptor* QueryStatus::GetDescriptor() const {
   return descriptor();
 }
 
 const ::google::protobuf::Message::Reflection*
-JobStatusRequest::GetReflection() const {
+QueryStatus::GetReflection() const {
   return &_reflection_;
 }
 
-::google::protobuf::Message::Reflection* JobStatusRequest::GetReflection() {
+::google::protobuf::Message::Reflection* QueryStatus::GetReflection() {
   return &_reflection_;
 }
 
 // ===================================================================
 
-const JobStatusReply JobStatusReply::default_instance_;
+const StatusReply StatusReply::default_instance_;
 
-const ::std::string JobStatusReply::_default_job_id_;
+const ::std::string StatusReply::_default_id_;
 
-const int JobStatusReply::_offsets_[2] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, job_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobStatusReply, state_),
+
+const int StatusReply::_offsets_[3] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusReply, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusReply, state_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StatusReply, properties_),
 };
 
-JobStatusReply::JobStatusReply()
+StatusReply::StatusReply()
   : _reflection_(descriptor(),
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)),
-    state_(0) {
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    state_(0),
+    properties_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
+    properties_ = const_cast< ::sdpa::events::Properties*>(&::sdpa::events::Properties::default_instance());
   }
 }
 
-JobStatusReply::JobStatusReply(const JobStatusReply& from)
+StatusReply::StatusReply(const StatusReply& from)
   : _reflection_(descriptor(),
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)),
-    state_(0) {
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    state_(0),
+    properties_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
-JobStatusReply::~JobStatusReply() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+StatusReply::~StatusReply() {
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
+    delete properties_;
   }
 }
 
-const ::google::protobuf::Descriptor* JobStatusReply::descriptor() {
-  if (JobStatusReply_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
-  return JobStatusReply_descriptor_;
+const ::google::protobuf::Descriptor* StatusReply::descriptor() {
+  if (StatusReply_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return StatusReply_descriptor_;
 }
 
-JobStatusReply* JobStatusReply::New() const {
-  return new JobStatusReply;
+StatusReply* StatusReply::New() const {
+  return new StatusReply;
 }
 
-void JobStatusReply::Clear() {
+void StatusReply::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
     state_ = 0;
+    if (_has_bit(2)) {
+      if (properties_ != NULL) properties_->::sdpa::events::Properties::Clear();
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
 
-bool JobStatusReply::MergePartialFromCodedStream(
+bool StatusReply::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectTag(16)) goto parse_state;
         break;
       }
@@ -2397,6 +3885,19 @@ bool JobStatusReply::MergePartialFromCodedStream(
         } else {
           mutable_unknown_fields()->AddField(2)->add_varint(value);
         }
+        if (input->ExpectTag(26)) goto parse_properties;
+        break;
+      }
+      
+      // optional .sdpa.events.Properties properties = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_properties:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_properties()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2417,17 +3918,22 @@ bool JobStatusReply::MergePartialFromCodedStream(
 #undef DO_
 }
 
-bool JobStatusReply::SerializeWithCachedSizes(
+bool StatusReply::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   // required .sdpa.events.JobState state = 2;
   if (_has_bit(1)) {
     DO_(::google::protobuf::internal::WireFormat::WriteEnum(2, this->state(), output));
+  }
+  
+  // optional .sdpa.events.Properties properties = 3;
+  if (_has_bit(2)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->properties(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2438,20 +3944,27 @@ bool JobStatusReply::SerializeWithCachedSizes(
 #undef DO_
 }
 
-int JobStatusReply::ByteSize() const {
+int StatusReply::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
     // required .sdpa.events.JobState state = 2;
     if (has_state()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::EnumSize(this->state());
+    }
+    
+    // optional .sdpa.events.Properties properties = 3;
+    if (has_properties()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->properties());
     }
     
   }
@@ -2464,10 +3977,10 @@ int JobStatusReply::ByteSize() const {
   return total_size;
 }
 
-void JobStatusReply::MergeFrom(const ::google::protobuf::Message& from) {
+void StatusReply::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const JobStatusReply* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const JobStatusReply*>(
+  const StatusReply* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const StatusReply*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(
@@ -2477,47 +3990,1211 @@ void JobStatusReply::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void JobStatusReply::MergeFrom(const JobStatusReply& from) {
+void StatusReply::MergeFrom(const StatusReply& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
     if (from._has_bit(1)) {
       set_state(from.state());
+    }
+    if (from._has_bit(2)) {
+      mutable_properties()->::sdpa::events::Properties::MergeFrom(from.properties());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void JobStatusReply::CopyFrom(const ::google::protobuf::Message& from) {
+void StatusReply::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void JobStatusReply::CopyFrom(const JobStatusReply& from) {
+void StatusReply::CopyFrom(const StatusReply& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool JobStatusReply::IsInitialized() const {
+bool StatusReply::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
+  if (has_properties()) {
+    if (!this->properties().IsInitialized()) return false;
+  }
   return true;
 }
 
-const ::google::protobuf::Descriptor* JobStatusReply::GetDescriptor() const {
+const ::google::protobuf::Descriptor* StatusReply::GetDescriptor() const {
   return descriptor();
 }
 
 const ::google::protobuf::Message::Reflection*
-JobStatusReply::GetReflection() const {
+StatusReply::GetReflection() const {
   return &_reflection_;
 }
 
-::google::protobuf::Message::Reflection* JobStatusReply::GetReflection() {
+::google::protobuf::Message::Reflection* StatusReply::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const RetrieveResults RetrieveResults::default_instance_;
+
+const ::std::string RetrieveResults::_default_id_;
+const int RetrieveResults::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RetrieveResults, id_),
+};
+
+RetrieveResults::RetrieveResults()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+RetrieveResults::RetrieveResults(const RetrieveResults& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+RetrieveResults::~RetrieveResults() {
+  if (id_ != &_default_id_) {
+    delete id_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* RetrieveResults::descriptor() {
+  if (RetrieveResults_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return RetrieveResults_descriptor_;
+}
+
+RetrieveResults* RetrieveResults::New() const {
+  return new RetrieveResults;
+}
+
+void RetrieveResults::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (id_ != &_default_id_) {
+        id_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool RetrieveResults::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes id = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool RetrieveResults::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes id = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int RetrieveResults::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void RetrieveResults::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const RetrieveResults* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const RetrieveResults*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void RetrieveResults::MergeFrom(const RetrieveResults& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_id(from.id());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void RetrieveResults::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void RetrieveResults::CopyFrom(const RetrieveResults& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool RetrieveResults::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* RetrieveResults::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+RetrieveResults::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* RetrieveResults::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const Results Results::default_instance_;
+
+const ::std::string Results::_default_id_;
+
+
+const int Results::_offsets_[3] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Results, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Results, exit_code_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Results, output_token_),
+};
+
+Results::Results()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    exit_code_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+Results::Results(const Results& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)),
+    exit_code_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Results::~Results() {
+  if (id_ != &_default_id_) {
+    delete id_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* Results::descriptor() {
+  if (Results_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Results_descriptor_;
+}
+
+Results* Results::New() const {
+  return new Results;
+}
+
+void Results::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (id_ != &_default_id_) {
+        id_->clear();
+      }
+    }
+    exit_code_ = 0;
+  }
+  output_token_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Results::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes id = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectTag(16)) goto parse_exit_code;
+        break;
+      }
+      
+      // required int32 exit_code = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+       parse_exit_code:
+        DO_(::google::protobuf::internal::WireFormat::ReadInt32(
+              input, &exit_code_));
+        _set_bit(1);
+        if (input->ExpectTag(26)) goto parse_output_token;
+        break;
+      }
+      
+      // repeated .sdpa.events.Token output_token = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_output_token:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_output_token()));
+        if (input->ExpectTag(26)) goto parse_output_token;
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Results::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes id = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  // required int32 exit_code = 2;
+  if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteInt32(2, this->exit_code(), output));
+  }
+  
+  // repeated .sdpa.events.Token output_token = 3;
+  for (int i = 0; i < output_token_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(3, this->output_token(i), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Results::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
+    }
+    
+    // required int32 exit_code = 2;
+    if (has_exit_code()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::Int32Size(
+          this->exit_code());
+    }
+    
+  }
+  // repeated .sdpa.events.Token output_token = 3;
+  total_size += 1 * output_token_size();
+  for (int i = 0; i < output_token_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->output_token(i));
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Results::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Results* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Results*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Results::MergeFrom(const Results& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  output_token_.MergeFrom(from.output_token_);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_id(from.id());
+    }
+    if (from._has_bit(1)) {
+      set_exit_code(from.exit_code());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Results::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Results::CopyFrom(const Results& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Results::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  
+  for (int i = 0; i < output_token_size(); i++) {
+    if (!this->output_token(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Results::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Results::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Results::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const DeleteJob DeleteJob::default_instance_;
+
+const ::std::string DeleteJob::_default_id_;
+const int DeleteJob::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteJob, id_),
+};
+
+DeleteJob::DeleteJob()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+DeleteJob::DeleteJob(const DeleteJob& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+DeleteJob::~DeleteJob() {
+  if (id_ != &_default_id_) {
+    delete id_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* DeleteJob::descriptor() {
+  if (DeleteJob_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return DeleteJob_descriptor_;
+}
+
+DeleteJob* DeleteJob::New() const {
+  return new DeleteJob;
+}
+
+void DeleteJob::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (id_ != &_default_id_) {
+        id_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool DeleteJob::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes id = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool DeleteJob::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes id = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int DeleteJob::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void DeleteJob::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const DeleteJob* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const DeleteJob*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void DeleteJob::MergeFrom(const DeleteJob& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_id(from.id());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void DeleteJob::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DeleteJob::CopyFrom(const DeleteJob& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DeleteJob::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* DeleteJob::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+DeleteJob::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* DeleteJob::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const DeleteJobAck DeleteJobAck::default_instance_;
+
+const ::std::string DeleteJobAck::_default_id_;
+const int DeleteJobAck::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteJobAck, id_),
+};
+
+DeleteJobAck::DeleteJobAck()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+DeleteJobAck::DeleteJobAck(const DeleteJobAck& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    id_(const_cast< ::std::string*>(&_default_id_)) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+DeleteJobAck::~DeleteJobAck() {
+  if (id_ != &_default_id_) {
+    delete id_;
+  }
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* DeleteJobAck::descriptor() {
+  if (DeleteJobAck_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return DeleteJobAck_descriptor_;
+}
+
+DeleteJobAck* DeleteJobAck::New() const {
+  return new DeleteJobAck;
+}
+
+void DeleteJobAck::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (id_ != &_default_id_) {
+        id_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool DeleteJobAck::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required bytes id = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool DeleteJobAck::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required bytes id = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int DeleteJobAck::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required bytes id = 1;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void DeleteJobAck::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const DeleteJobAck* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const DeleteJobAck*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void DeleteJobAck::MergeFrom(const DeleteJobAck& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_id(from.id());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void DeleteJobAck::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DeleteJobAck::CopyFrom(const DeleteJobAck& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DeleteJobAck::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* DeleteJobAck::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+DeleteJobAck::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* DeleteJobAck::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const Poll Poll::default_instance_;
+
+
+const int Poll::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Poll, queue_length_),
+};
+
+Poll::Poll()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    queue_length_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+  }
+}
+
+Poll::Poll(const Poll& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    queue_length_(0) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Poll::~Poll() {
+  if (this != &default_instance_) {
+  }
+}
+
+const ::google::protobuf::Descriptor* Poll::descriptor() {
+  if (Poll_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Poll_descriptor_;
+}
+
+Poll* Poll::New() const {
+  return new Poll;
+}
+
+void Poll::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    queue_length_ = 0;
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Poll::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required int32 queue_length = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_VARINT) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadInt32(
+              input, &queue_length_));
+        _set_bit(0);
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Poll::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required int32 queue_length = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteInt32(1, this->queue_length(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Poll::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required int32 queue_length = 1;
+    if (has_queue_length()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::Int32Size(
+          this->queue_length());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Poll::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Poll* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Poll*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Poll::MergeFrom(const Poll& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_queue_length(from.queue_length());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Poll::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Poll::CopyFrom(const Poll& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Poll::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Poll::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Poll::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Poll::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const PollReply PollReply::default_instance_;
+
+
+const int PollReply::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PollReply, activity_),
+};
+
+PollReply::PollReply()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    activity_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+    activity_ = const_cast< ::sdpa::events::Activity*>(&::sdpa::events::Activity::default_instance());
+  }
+}
+
+PollReply::PollReply(const PollReply& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    activity_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+PollReply::~PollReply() {
+  if (this != &default_instance_) {
+    delete activity_;
+  }
+}
+
+const ::google::protobuf::Descriptor* PollReply::descriptor() {
+  if (PollReply_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return PollReply_descriptor_;
+}
+
+PollReply* PollReply::New() const {
+  return new PollReply;
+}
+
+void PollReply::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (activity_ != NULL) activity_->::sdpa::events::Activity::Clear();
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool PollReply::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // required .sdpa.events.Activity activity = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_activity()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool PollReply::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // required .sdpa.events.Activity activity = 1;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(1, this->activity(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int PollReply::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required .sdpa.events.Activity activity = 1;
+    if (has_activity()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->activity());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void PollReply::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const PollReply* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const PollReply*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void PollReply::MergeFrom(const PollReply& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      mutable_activity()->::sdpa::events::Activity::MergeFrom(from.activity());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void PollReply::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void PollReply::CopyFrom(const PollReply& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool PollReply::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  if (has_activity()) {
+    if (!this->activity().IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* PollReply::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+PollReply::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* PollReply::GetReflection() {
   return &_reflection_;
 }
 
@@ -2525,9 +5202,11 @@ JobStatusReply::GetReflection() const {
 
 const JobFinished JobFinished::default_instance_;
 
-const ::std::string JobFinished::_default_job_id_;
-const int JobFinished::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, job_id_),
+const ::std::string JobFinished::_default_id_;
+
+const int JobFinished::_offsets_[2] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinished, output_),
 };
 
 JobFinished::JobFinished()
@@ -2535,7 +5214,7 @@ JobFinished::JobFinished()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -2546,14 +5225,14 @@ JobFinished::JobFinished(const JobFinished& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 JobFinished::~JobFinished() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -2571,11 +5250,12 @@ JobFinished* JobFinished::New() const {
 void JobFinished::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
+  output_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -2586,13 +5266,27 @@ bool JobFinished::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
+        if (input->ExpectTag(18)) goto parse_output;
+        break;
+      }
+      
+      // repeated .sdpa.events.Token output = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_output:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, add_output()));
+        if (input->ExpectTag(18)) goto parse_output;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2616,9 +5310,14 @@ bool JobFinished::MergePartialFromCodedStream(
 bool JobFinished::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
+  }
+  
+  // repeated .sdpa.events.Token output = 2;
+  for (int i = 0; i < output_.size(); i++) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->output(i), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2633,13 +5332,21 @@ int JobFinished::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
+  // repeated .sdpa.events.Token output = 2;
+  total_size += 1 * output_size();
+  for (int i = 0; i < output_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+        this->output(i));
+  }
+  
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -2664,9 +5371,10 @@ void JobFinished::MergeFrom(const ::google::protobuf::Message& from) {
 
 void JobFinished::MergeFrom(const JobFinished& from) {
   GOOGLE_CHECK_NE(&from, this);
+  output_.MergeFrom(from.output_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -2687,6 +5395,9 @@ void JobFinished::CopyFrom(const JobFinished& from) {
 bool JobFinished::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
   
+  for (int i = 0; i < output_size(); i++) {
+    if (!this->output(i).IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2707,9 +5418,9 @@ JobFinished::GetReflection() const {
 
 const JobFinishedAck JobFinishedAck::default_instance_;
 
-const ::std::string JobFinishedAck::_default_job_id_;
+const ::std::string JobFinishedAck::_default_id_;
 const int JobFinishedAck::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFinishedAck, id_),
 };
 
 JobFinishedAck::JobFinishedAck()
@@ -2717,7 +5428,7 @@ JobFinishedAck::JobFinishedAck()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -2728,14 +5439,14 @@ JobFinishedAck::JobFinishedAck(const JobFinishedAck& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 JobFinishedAck::~JobFinishedAck() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -2753,8 +5464,8 @@ JobFinishedAck* JobFinishedAck::New() const {
 void JobFinishedAck::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -2768,13 +5479,13 @@ bool JobFinishedAck::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2798,9 +5509,9 @@ bool JobFinishedAck::MergePartialFromCodedStream(
 bool JobFinishedAck::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2815,10 +5526,10 @@ int JobFinishedAck::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -2848,7 +5559,7 @@ void JobFinishedAck::MergeFrom(const JobFinishedAck& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -2889,9 +5600,9 @@ JobFinishedAck::GetReflection() const {
 
 const JobFailed JobFailed::default_instance_;
 
-const ::std::string JobFailed::_default_job_id_;
+const ::std::string JobFailed::_default_id_;
 const int JobFailed::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailed, id_),
 };
 
 JobFailed::JobFailed()
@@ -2899,7 +5610,7 @@ JobFailed::JobFailed()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -2910,14 +5621,14 @@ JobFailed::JobFailed(const JobFailed& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 JobFailed::~JobFailed() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -2935,8 +5646,8 @@ JobFailed* JobFailed::New() const {
 void JobFailed::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -2950,13 +5661,13 @@ bool JobFailed::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2980,9 +5691,9 @@ bool JobFailed::MergePartialFromCodedStream(
 bool JobFailed::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -2997,10 +5708,10 @@ int JobFailed::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -3030,7 +5741,7 @@ void JobFailed::MergeFrom(const JobFailed& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -3071,9 +5782,9 @@ JobFailed::GetReflection() const {
 
 const JobFailedAck JobFailedAck::default_instance_;
 
-const ::std::string JobFailedAck::_default_job_id_;
+const ::std::string JobFailedAck::_default_id_;
 const int JobFailedAck::_offsets_[1] = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, job_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JobFailedAck, id_),
 };
 
 JobFailedAck::JobFailedAck()
@@ -3081,7 +5792,7 @@ JobFailedAck::JobFailedAck()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
   }
@@ -3092,14 +5803,14 @@ JobFailedAck::JobFailedAck(const JobFailedAck& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    job_id_(const_cast< ::std::string*>(&_default_job_id_)) {
+    id_(const_cast< ::std::string*>(&_default_id_)) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
 
 JobFailedAck::~JobFailedAck() {
-  if (job_id_ != &_default_job_id_) {
-    delete job_id_;
+  if (id_ != &_default_id_) {
+    delete id_;
   }
   if (this != &default_instance_) {
   }
@@ -3117,8 +5828,8 @@ JobFailedAck* JobFailedAck::New() const {
 void JobFailedAck::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (_has_bit(0)) {
-      if (job_id_ != &_default_job_id_) {
-        job_id_->clear();
+      if (id_ != &_default_id_) {
+        id_->clear();
       }
     }
   }
@@ -3132,13 +5843,13 @@ bool JobFailedAck::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
-      // required bytes job_id = 1;
+      // required bytes id = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
             ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_job_id()));
+        DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_id()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3162,9 +5873,9 @@ bool JobFailedAck::MergePartialFromCodedStream(
 bool JobFailedAck::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  // required bytes job_id = 1;
+  // required bytes id = 1;
   if (_has_bit(0)) {
-    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->job_id(), output));
+    DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->id(), output));
   }
   
   if (!unknown_fields().empty()) {
@@ -3179,10 +5890,10 @@ int JobFailedAck::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required bytes job_id = 1;
-    if (has_job_id()) {
+    // required bytes id = 1;
+    if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormat::BytesSize(this->job_id());
+        ::google::protobuf::internal::WireFormat::BytesSize(this->id());
     }
     
   }
@@ -3212,7 +5923,7 @@ void JobFailedAck::MergeFrom(const JobFailedAck& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_job_id(from.job_id());
+      set_id(from.id());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -3650,8 +6361,10 @@ ConfigRequest::GetReflection() const {
 const ConfigReply ConfigReply::default_instance_;
 
 const ::std::string ConfigReply::_default_component_id_;
-const int ConfigReply::_offsets_[1] = {
+
+const int ConfigReply::_offsets_[2] = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, component_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigReply, config_),
 };
 
 ConfigReply::ConfigReply()
@@ -3659,9 +6372,11 @@ ConfigReply::ConfigReply()
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
+    component_id_(const_cast< ::std::string*>(&_default_component_id_)),
+    config_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (this == &default_instance_) {
+    config_ = const_cast< ::sdpa::events::Config*>(&::sdpa::events::Config::default_instance());
   }
 }
 
@@ -3670,7 +6385,8 @@ ConfigReply::ConfigReply(const ConfigReply& from)
                  this, &default_instance_,
                  _offsets_, _has_bits_, NULL),
     _cached_size_(0),
-    component_id_(const_cast< ::std::string*>(&_default_component_id_)) {
+    component_id_(const_cast< ::std::string*>(&_default_component_id_)),
+    config_(NULL) {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   MergeFrom(from);
 }
@@ -3680,6 +6396,7 @@ ConfigReply::~ConfigReply() {
     delete component_id_;
   }
   if (this != &default_instance_) {
+    delete config_;
   }
 }
 
@@ -3699,6 +6416,9 @@ void ConfigReply::Clear() {
         component_id_->clear();
       }
     }
+    if (_has_bit(1)) {
+      if (config_ != NULL) config_->::sdpa::events::Config::Clear();
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -3717,6 +6437,19 @@ bool ConfigReply::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         DO_(::google::protobuf::internal::WireFormat::ReadBytes(input, mutable_component_id()));
+        if (input->ExpectTag(18)) goto parse_config;
+        break;
+      }
+      
+      // required .sdpa.events.Config config = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+       parse_config:
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_config()));
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3745,6 +6478,11 @@ bool ConfigReply::SerializeWithCachedSizes(
     DO_(::google::protobuf::internal::WireFormat::WriteBytes(1, this->component_id(), output));
   }
   
+  // required .sdpa.events.Config config = 2;
+  if (_has_bit(1)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->config(), output));
+  }
+  
   if (!unknown_fields().empty()) {
     DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output));
@@ -3761,6 +6499,13 @@ int ConfigReply::ByteSize() const {
     if (has_component_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormat::BytesSize(this->component_id());
+    }
+    
+    // required .sdpa.events.Config config = 2;
+    if (has_config()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->config());
     }
     
   }
@@ -3792,6 +6537,9 @@ void ConfigReply::MergeFrom(const ConfigReply& from) {
     if (from._has_bit(0)) {
       set_component_id(from.component_id());
     }
+    if (from._has_bit(1)) {
+      mutable_config()->::sdpa::events::Config::MergeFrom(from.config());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -3809,8 +6557,11 @@ void ConfigReply::CopyFrom(const ConfigReply& from) {
 }
 
 bool ConfigReply::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
   
+  if (has_config()) {
+    if (!this->config().IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -3824,6 +6575,189 @@ ConfigReply::GetReflection() const {
 }
 
 ::google::protobuf::Message::Reflection* ConfigReply::GetReflection() {
+  return &_reflection_;
+}
+
+// ===================================================================
+
+const Config Config::default_instance_;
+
+
+const int Config::_offsets_[1] = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Config, properties_),
+};
+
+Config::Config()
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    properties_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  if (this == &default_instance_) {
+    properties_ = const_cast< ::sdpa::events::Properties*>(&::sdpa::events::Properties::default_instance());
+  }
+}
+
+Config::Config(const Config& from)
+  : _reflection_(descriptor(),
+                 this, &default_instance_,
+                 _offsets_, _has_bits_, NULL),
+    _cached_size_(0),
+    properties_(NULL) {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  MergeFrom(from);
+}
+
+Config::~Config() {
+  if (this != &default_instance_) {
+    delete properties_;
+  }
+}
+
+const ::google::protobuf::Descriptor* Config::descriptor() {
+  if (Config_descriptor_ == NULL) proto_BuildDescriptors_sdpa_2dmsg_2eproto();
+  return Config_descriptor_;
+}
+
+Config* Config::New() const {
+  return new Config;
+}
+
+void Config::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (properties_ != NULL) properties_->::sdpa::events::Properties::Clear();
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool Config::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormat::GetTagFieldNumber(tag)) {
+      // optional .sdpa.events.Properties properties = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) !=
+            ::google::protobuf::internal::WireFormat::WIRETYPE_LENGTH_DELIMITED) {
+          goto handle_uninterpreted;
+        }
+        DO_(::google::protobuf::internal::WireFormat::ReadMessageNoVirtual(
+             input, mutable_properties()));
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormat::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormat::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+bool Config::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  // optional .sdpa.events.Properties properties = 2;
+  if (_has_bit(0)) {
+    DO_(::google::protobuf::internal::WireFormat::WriteMessageNoVirtual(2, this->properties(), output));
+  }
+  
+  if (!unknown_fields().empty()) {
+    DO_(::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output));
+  }
+  return true;
+#undef DO_
+}
+
+int Config::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional .sdpa.events.Properties properties = 2;
+    if (has_properties()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormat::MessageSizeNoVirtual(
+          this->properties());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  _cached_size_ = total_size;
+  return total_size;
+}
+
+void Config::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const Config* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const Config*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(
+      descriptor(), *from.GetReflection(), &_reflection_);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void Config::MergeFrom(const Config& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      mutable_properties()->::sdpa::events::Properties::MergeFrom(from.properties());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void Config::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Config::CopyFrom(const Config& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Config::IsInitialized() const {
+  
+  if (has_properties()) {
+    if (!this->properties().IsInitialized()) return false;
+  }
+  return true;
+}
+
+const ::google::protobuf::Descriptor* Config::GetDescriptor() const {
+  return descriptor();
+}
+
+const ::google::protobuf::Message::Reflection*
+Config::GetReflection() const {
+  return &_reflection_;
+}
+
+::google::protobuf::Message::Reflection* Config::GetReflection() {
   return &_reflection_;
 }
 

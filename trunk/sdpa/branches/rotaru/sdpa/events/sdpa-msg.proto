@@ -2,96 +2,163 @@ package sdpa.events;
 option optimize_for = SPEED;
 
 message SDPAMessage {
-    optional Error     error = 1;
+  // common message types
+  optional Error     error = 1;
 
-    optional SubmitJob submit_job = 2;
-    optional SubmitJobAck submit_job_ack = 3;
+  optional SubmitJob submit_job = 2;
+  optional SubmitJobAck submit_job_ack = 3;
 
-    optional CancelJob cancel_job = 4;
-    optional CancelJobAck cancel_job_ack = 5;
+  optional CancelJob cancel_job = 4;
+  optional CancelJobAck cancel_job_ack = 5;
 
-    optional JobStatusRequest job_status_request = 6;
-    optional JobStatusReply job_status = 7;
+  optional QueryStatus query_status = 6;
+  optional StatusReply status_reply = 7;
 
-    optional JobFinished job_finished = 8;
-    optional JobFinishedAck job_finished_ack = 9;
-    optional JobFailed   job_failed = 10;
-    optional JobFailedAck job_failed_ack = 11;
+  optional RetrieveResults retrieve_results = 8;
+  optional Results results = 9;
 
-    optional LifeSignal life_signal = 12;
+  optional DeleteJob delete_job = 10;
+  optional DeleteJobAck delete_job_ack = 11;
 
-    optional ConfigRequest config_request = 13;
-    optional ConfigReply   config_reply = 14;
+  optional Poll poll = 12;
+  optional PollReply poll_reply = 13;
+
+  optional JobFinished job_finished = 14;
+  optional JobFinishedAck job_finished_ack = 15;
+  optional JobFailed   job_failed = 16;
+  optional JobFailedAck job_failed_ack = 17;
+
+  optional LifeSignal life_signal = 18;
+
+  optional ConfigRequest config_request = 19;
+  optional ConfigReply   config_reply = 20;
 }
 
 enum ErrorCode {
-    OK = 0;
+  OK = 0;
+  NO_ACTIVITY = 500;
 }
 
 enum JobState {
-    UNKNOWN = 0;
-    PENDING = 1;
-    RUNNING = 2;
-    FINISHED = 3;
-    FAILED = 4;
-    CANCELLED = 5;
-    CANCELLING = 6;
+  UNKNOWN = 0;
+  PENDING = 1;
+  RUNNING = 2;
+  FINISHED = 3;
+  FAILED = 4;
+  CANCELLED = 5;
+  CANCELLING = 6;
 }
 
 message Error {
-    required ErrorCode error_code = 1;
-    required string error_description = 2;
+  required ErrorCode error_code = 1;
+  required string error_description = 2;
+}
+
+message Task {
+  required bytes workflow = 2;
+  repeated Token input = 3;
+}
+
+message FunctionCall {
+  required string module = 1;
+  required string method = 2;
+  repeated Token input = 3;
+  repeated Token output = 4;
+}
+
+message Activity {
+  required bytes id = 1;
+  optional Task task = 2;
+  optional FunctionCall function = 3;
 }
 
 message Token {
-    required bytes place = 1;
-    required bytes token = 2;
+  required bytes place = 1;
+  required bytes token = 2;
+}
+
+message Properties {
+  message Property {
+    required string key = 1;
+    required string val = 2;
+  }
+  repeated Property property = 1;
 }
 
 message SubmitJob {
-    required bytes workflow = 1;
-    repeated Token input = 2;
+  required bytes workflow = 1;
+  repeated Token input = 2;
 }
 message SubmitJobAck {
-    required bytes job_id = 1;
+  required bytes id = 1;
 }
 
 message CancelJob {
-    required bytes job_id = 1;
-    optional string reason = 2;
+  required bytes id = 1;
+  optional string reason = 2;
 }
 message CancelJobAck {
-    required bytes job_id = 1;
+  required bytes id = 1;
 }
 
-message JobStatusRequest {
-    required bytes job_id = 1;
+message QueryStatus {
+  required bytes id = 1;
 }
 
-message JobStatusReply {
-    required bytes job_id = 1;
-    required JobState state = 2;
+message StatusReply {
+  required bytes id = 1;
+  required JobState state = 2;
+  optional Properties properties = 3;
+}
+
+message RetrieveResults {
+  required bytes id = 1;
+}
+message Results {
+  required bytes id = 1;
+  required int32 exit_code = 2;
+  repeated Token output_token = 3;
+}
+
+message DeleteJob {
+  required bytes id = 1;
+}
+message DeleteJobAck {
+  required bytes id = 1;
+}
+
+message Poll {
+  required int32 queue_length = 1;
+}
+message PollReply {
+  required Activity activity = 1;
 }
 
 message JobFinished {
-    required bytes job_id = 1;
+  required bytes id = 1;
+  repeated Token output = 2;
 }
 message JobFinishedAck {
-    required bytes job_id = 1;
+  required bytes id = 1;
 }
 message JobFailed {
-    required bytes job_id = 1;
+  required bytes id = 1;
 }
 message JobFailedAck {
-    required bytes job_id = 1;
+  required bytes id = 1;
 }
 message LifeSignal {
-    required fixed64 timestamp = 1;
-    required bytes component_id = 2;
+  required fixed64 timestamp = 1;
+  required bytes component_id = 2;
 }
+
 message ConfigRequest {
-    required bytes component_id = 1;
+  required bytes component_id = 1;
 }
 message ConfigReply {
-    required bytes component_id = 1;
+  required bytes component_id = 1;
+  required Config config = 2;
+}
+message Config {
+  optional Properties properties = 2;
 }
