@@ -108,7 +108,7 @@ public:
      * 
      * @param workflow The reference of the workflow to start.
      */
-    void execute(gwdl::Workflow& workflow) throw(StateTransitionException);
+    void execute(gwdl::Workflow& workflow) throw(StateTransitionException,gwdl::WorkflowFormatException);
 
     /**
      * Execute the whole workflow.
@@ -116,7 +116,7 @@ public:
      * 
      * @param workflowId The identifier of the workflow.
      */
-    void execute(std::string workflowId) throw(StateTransitionException);
+    void execute(std::string workflowId) throw(StateTransitionException,gwdl::WorkflowFormatException);
 
     /**
      * Suspend a certain workflow.

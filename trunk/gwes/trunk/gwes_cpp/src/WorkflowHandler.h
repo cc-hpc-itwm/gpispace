@@ -17,8 +17,15 @@
 #include "ActivityTable.h"
 #include "StateTransitionException.h"
 #include "Channel.h"
+//#include "GWES.h"
 
 namespace gwes {
+
+/**
+ * Declare class GWES here because of cyclic dependencies of header files.
+ * Real declaration refer to GWES.h!
+ */
+class GWES;
 
 /**
  * This class includes the methods for interpreting and processing workflows. It is used by the GWES class.
@@ -50,6 +57,11 @@ private:
 	 * Pointer to the workflow to handle.
 	 */
 	gwdl::Workflow* _wfP;
+	
+	/**
+	 * Pointer to the parent gwes.
+	 */
+	GWES* _gwesP;
 
 	/**
 	 * The start workflow thread.
@@ -253,7 +265,7 @@ public:
 	/**
 	 * Constructor for workflow handler.
 	 */
-	WorkflowHandler(gwdl::Workflow* workflowP, std::string userId);
+	WorkflowHandler(GWES* gwesP, gwdl::Workflow* workflowP, std::string userId);
 
 	/**
 	 * Destructor. Does NOT delete workflow.
@@ -327,7 +339,7 @@ public:
 	 * It returns after the workflow COMPLETES or TERMINATES.
 	 * Status first switches to RUNNING.
 	 */
-	void executeWorkflow() throw (StateTransitionException);
+	void executeWorkflow() throw (StateTransitionException, gwdl::WorkflowFormatException);
 
 	/**
 	 * Suspend this workflow. Status should switch to SUSPENDED.
@@ -383,6 +395,22 @@ public:
 	 * @return A pointer to the workflow.
 	 */
 	gwdl::Workflow* getWorkflow();
+
+	/**
+	 * Get the parent GWES.
+	 * @return A pointer to the parent GWES.
+	 */
+	GWES* getGWES() {
+		return _gwesP;
+	}
+
+	/**
+	 * Get the user Id of the user who owns this workflow.
+	 * @return A pointer to the parent GWES.
+	 */
+	std::string getUserId() {
+		return _userId;
+	}
 
 };
 

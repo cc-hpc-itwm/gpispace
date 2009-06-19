@@ -47,7 +47,7 @@ Workflow& GWES::initiate(string gworkflowdl, string userId) throw(WorkflowFormat
     DOMElement* element = (XMLUtils::Instance()->deserialize(gworkflowdl))->getDocumentElement();
 	// create new workflow object
 	Workflow *workflow = new Workflow(element);
-	WorkflowHandler* wfhP = new WorkflowHandler(workflow,userId);
+	WorkflowHandler* wfhP = new WorkflowHandler(this,workflow,userId);
 	_wfht.put(wfhP);
 	return *workflow;
 }
@@ -60,7 +60,7 @@ Workflow& GWES::initiate(string gworkflowdl, string userId) throw(WorkflowFormat
 string GWES::initiate(gwdl::Workflow& workflow, string userId) throw(StateTransitionException)
 {
 	cout << "gwes::GWES::initiate() ... " << endl;
-	WorkflowHandler* wfhP = new WorkflowHandler(&workflow,userId);
+	WorkflowHandler* wfhP = new WorkflowHandler(this,&workflow,userId);
 	return _wfht.put(wfhP);
 }
 
@@ -116,7 +116,7 @@ void GWES::start(string workflowId) throw(StateTransitionException,NoSuchWorkflo
  * 
  * @param workflow The reference of the workflow to start.
  */
-void GWES::execute(Workflow& workflow) throw(StateTransitionException) 
+void GWES::execute(Workflow& workflow) throw(StateTransitionException, WorkflowFormatException) 
 {
 	execute(workflow.getID());
 }	
@@ -127,7 +127,7 @@ void GWES::execute(Workflow& workflow) throw(StateTransitionException)
  * 
  * @param workflowId The identifier of the workflow.
  */
-void GWES::execute(string workflowId) throw(StateTransitionException) {
+void GWES::execute(string workflowId) throw(StateTransitionException, WorkflowFormatException) {
 	cout << "gwes::GWES::execute(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->executeWorkflow();

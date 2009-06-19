@@ -38,7 +38,7 @@
         <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
  		<operation>
       		<oc:operationClass name="preStackTimeMigration">
-        		<oc:operationCandidate type="workflow" operationName="pstm-1.gwdl" resourceName="./" selected="true"/>
+        		<oc:operationCandidate type="workflow" operationName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/workflows/pstm-1.gwdl" resourceName="./" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>

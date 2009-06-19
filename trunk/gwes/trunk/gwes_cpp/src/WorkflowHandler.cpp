@@ -13,6 +13,7 @@
 #include "WorkflowHandler.h"
 #include "CommandLineActivity.h"
 #include "PreStackProActivity.h"
+#include "SubWorkflowActivity.h"
 
 using namespace std;
 using namespace gwdl;
@@ -20,7 +21,7 @@ using namespace gwes;
 
 namespace gwes {
 
-WorkflowHandler::WorkflowHandler(Workflow* workflowP, string userId) {
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, string userId) {
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;
@@ -29,6 +30,8 @@ WorkflowHandler::WorkflowHandler(Workflow* workflowP, string userId) {
 	if (workflowP->getID()==WORKFLOW_DEFAULT_ID)
 		_id=generateID();
 	workflowP->setID(_id);
+	// set pointer to parent gwes
+	_gwesP = gwesP;
 	// set pointer to workflow
 	_wfP = workflowP;
 	// set switches
@@ -95,7 +98,7 @@ void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
 /**
  * Execute this workflow. Status should switch to RUNNING.
  */
-void WorkflowHandler::executeWorkflow() throw (StateTransitionException) {
+void WorkflowHandler::executeWorkflow() throw (StateTransitionException, WorkflowFormatException) {
 	//check status
 	if (getStatus() != WorkflowHandler::STATUS_INITIATED) {
 		ostringstream oss;
@@ -422,10 +425,12 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 		activityP = new CommandLineActivity(this, operationP);
 	} else if (operationType == "psp") {
 		activityP = new PreStackProActivity(this, operationP);
+	} else if (operationType == "workflow") {
+		activityP = new SubWorkflowActivity(this, operationP);
 	} else {
 		ostringstream oss;
 		oss << "Transition \"" << tP->getID()
-				<< " is related to an operation of type \"" << operationType
+				<< "\" is related to an operation of type \"" << operationType
 				<< "\" which is not supported." << endl;
 		throw WorkflowFormatException(oss.str());
 	}

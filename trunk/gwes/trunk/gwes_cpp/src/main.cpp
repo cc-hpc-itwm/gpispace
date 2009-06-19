@@ -50,30 +50,36 @@ int main(int argc, char* argv[]) {
 	} else {
 		workflowfn = argv[1];
 	}
-	
-	GWES gwes;
-	cout << "### BEGIN EXECUTION " << workflowfn << endl;
-	Workflow* wfP = new Workflow(workflowfn);
 
-	// initiate workflow
-	cout << "initiating workflow ..." << endl;
-	string workflowId = gwes.initiate(*wfP, getUserName());
+	try {
+		GWES gwes;
+		cout << "### BEGIN EXECUTION " << workflowfn << endl;
+		Workflow* wfP = new Workflow(workflowfn);
 
-	// register channel with source observer
-	WorkflowObserver* observerP = new WorkflowObserver();
-	Channel* channelP = new Channel(observerP);
-	gwes.connect(channelP, workflowId);
+		// initiate workflow
+		cout << "initiating workflow ..." << endl;
+		string workflowId = gwes.initiate(*wfP, getUserName());
 
-	// start workflow
-	gwes.start(workflowId);
+		// register channel with source observer
+		WorkflowObserver* observerP = new WorkflowObserver();
+		Channel* channelP = new Channel(observerP);
+		gwes.connect(channelP, workflowId);
 
-	// wait for workflow to end
-	WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
-	wfhP->waitForStatusChangeToCompletedOrTerminated();
+		// execute workflow
+		gwes.execute(workflowId);
 
-	// print workflow
-	cout << *wfP << endl;
-	cout << "### END EXECUTION " << workflowfn << endl;
+		//	// wait for workflow to end
+		//	WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
+		//	wfhP->waitForStatusChangeToCompletedOrTerminated();
+
+		// print workflow
+		cout << *wfP << endl;
+		cout << "### END EXECUTION " << workflowfn << endl;
+
+	}
+	catch(WorkflowFormatException e) {
+		cerr << "WorkflowFormatException: " << e.message << endl;
+	}
 
 	//	//ToDo: return 0, 1, ...
 }
@@ -89,8 +95,8 @@ string getUserName() {
 	char* userNameP = getenv("USER");
 	if (userNameP != NULL) {
 		string userName(userNameP);
-		if ( userName.size() > 0) {
-			return userName; 
+		if (userName.size() > 0) {
+			return userName;
 		}
 	}
 	return "NN";
