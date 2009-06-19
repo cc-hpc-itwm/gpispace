@@ -4,26 +4,26 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/fsm/JobFSM.hpp"
+#include "sdpa/orchFSM/OrchFSM.hpp"
 
 namespace sdpa {
 		namespace tests {
-			class CFsmTest : public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::CFsmTest );
-			  CPPUNIT_TEST( testFSM );
+			class COrchFSMTest : public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::COrchFSMTest );
+			  CPPUNIT_TEST( testOrchFSM );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-			  CFsmTest();
-			  ~CFsmTest();
+				COrchFSMTest();
+			  ~COrchFSMTest();
 			  void setUp();
 			  void tearDown();
 
 			protected:
-			  void testFSM();
+			  void testOrchFSM();
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::JobFSM m_JobFSM;
+			  OrchFSM m_OrchFSM;
 			};
 		}
 }
