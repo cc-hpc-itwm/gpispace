@@ -1,4 +1,3 @@
-
 file(GLOB jobFSM-src *.cpp *.hpp)
 
 ADD_LIBRARY(jobFSM ${jobFSM-src})

@@ -7,11 +7,17 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
-#include "FSMEvents.hpp"
+//Include the job related events here
+#include <RunJobEvent.hpp>
+#include <JobFailedEvent.hpp>
+#include <QueryJobStatusEvent.hpp>
+#include <JobStatusAnswerEvent.hpp>
+#include <CancelJobEvent.hpp>
+#include <CancelJobAckEvent.hpp>
+#include <JobFinishedEvent.hpp>
+#include <RetriveResultsEvent.hpp>
 
 namespace mpl = boost::mpl;
-
-
 namespace sc = boost::statechart;
 
 using namespace std;

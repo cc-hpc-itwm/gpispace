@@ -7,7 +7,14 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
-#include "FSMEvents.hpp"
+#include <MgmtEvent.hpp>
+#include <StartUpEvent.hpp>
+#include <InterruptEvent.hpp>
+#include <LifeSignEvent.hpp>
+#include <DeleteJobEvent.hpp>
+#include <RequestJobEvent.hpp>
+#include <SubmitAckEvent.hpp>
+#include <ConfigRequestEvent.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;

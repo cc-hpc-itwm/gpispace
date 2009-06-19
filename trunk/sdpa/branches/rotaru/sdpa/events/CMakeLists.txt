@@ -1,18 +1,19 @@
 include_directories(.)
 
-set(hdrs InternalEvent.hpp
+set(hdrs 
 ErrorEvent.hpp
 JobEvent.hpp
 SubmitJobEvent.hpp
 RunJobEvent.hpp
 CancelJobEvent.hpp
 CancelJobAckEvent.hpp
-FailJobEvent.hpp
+JobFailedEvent.hpp
 JobFinishedEvent.hpp
 QueryJobStatusEvent.hpp
 JobStatusAnswerEvent.hpp
 SDPAEvent.hpp
 )
+
 add_protocol_buffers(sdpa-msg)
 
 SET_SOURCE_FILES_PROPERTIES(sdpa-events.pb.h PROPERTIES GENERATED 1)
