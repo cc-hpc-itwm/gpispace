@@ -4,10 +4,10 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#ifndef TESTWORKFLOW_H_
-#define TESTWORKFLOW_H_
-#include "../gworkflowdl_cpp/src/Workflow.h"
+#ifndef TESTTRANSITION_H_
+#define TESTTRANSITION_H_
+#include "../../gworkflowdl_cpp/src/Transition.h"
 
-void testWorkflow();
+void testTransition();
 
-#endif /*TESTWORKFLOW_H_*/
+#endif /*TESTTRANSITION_H_*/

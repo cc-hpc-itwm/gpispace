@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
-#include "../gworkflowdl_cpp/src/OperationCandidate.h"
+#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
 #include "TestTransition.h"
 
 using namespace std;

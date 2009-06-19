@@ -7,7 +7,7 @@
 #include <iostream>
 #include <ostream>
 //gwdl
-#include "../gworkflowdl_cpp/src/XMLUtils.h"
+#include "../../gworkflowdl_cpp/src/XMLUtils.h"
 // test
 #include "TestData.h"
 #include "TestToken.h"
@@ -16,7 +16,6 @@
 #include "TestOperation.h"
 #include "TestTransition.h"
 #include "TestWorkflow.h"
-#include "TestGwdl.h"
 
 using namespace std;
 using namespace gwdl;

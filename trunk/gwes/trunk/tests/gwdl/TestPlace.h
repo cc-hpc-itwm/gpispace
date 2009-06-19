@@ -6,7 +6,7 @@
  */
 #ifndef TESTPLACE_H_
 #define TESTPLACE_H_
-#include "../gworkflowdl_cpp/src/Place.h"
+#include "../../gworkflowdl_cpp/src/Place.h"
 
 void testPlace() ;
 void printTokens(gwdl::Place &place); 

@@ -7,7 +7,7 @@
 #ifndef TESTPROPERTIES_H_
 #define TESTPROPERTIES_H_
 //gwdl
-#include "../gworkflowdl_cpp/src/Properties.h"
+#include "../../gworkflowdl_cpp/src/Properties.h"
 
 void testProperties();
 

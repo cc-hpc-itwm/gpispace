@@ -4,11 +4,10 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#ifndef TESTTOKEN_H_
-#define TESTTOKEN_H_
-//gwdl
-#include "../gworkflowdl_cpp/src/Token.h"
+#ifndef TESTDATA_H_
+#define TESTDATA_H_
+#include "../../gworkflowdl_cpp/src/Data.h"
 
-void testToken();
+void testData() ;
 
-#endif /*TESTTOKEN_H_*/
+#endif /*TESTDATA_H_*/

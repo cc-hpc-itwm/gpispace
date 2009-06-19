@@ -8,9 +8,9 @@
 #include <ostream>
 #include <assert.h>
 //gwdl
-#include "../gworkflowdl_cpp/src/Properties.h"
-#include "../gworkflowdl_cpp/src/XMLUtils.h"
-#include "../gworkflowdl_cpp/src/Transition.h"
+#include "../../gworkflowdl_cpp/src/Properties.h"
+#include "../../gworkflowdl_cpp/src/XMLUtils.h"
+#include "../../gworkflowdl_cpp/src/Transition.h"
 //tests
 #include "TestToken.h"
 

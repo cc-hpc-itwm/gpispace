@@ -1,0 +1,124 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+    <!-- $Id: gworkflowdl-psp-grd.xml 2582 2009-06-05 15:10:12Z andreas.hoheisel@first.fraunhofer.de $ -->
+    
+    <description>load trace headers - calc geo reference data - select project data</description>
+
+	<!-- files -->
+    <place ID="inputFile">
+        <token><data><file>file:///data/wfTest_#pv4dSPRO#</file></data></token>
+    </place>
+    
+    <!-- parameter -->
+    <place ID="selectProjectData_parameter">
+    	<token>
+    		<data>
+    			<parameter>
+					<cdpLen xsi:type="xsd:int">361</cdpLen>
+					<inLen xsi:type="xsd:int">10</inLen>
+					<cdp soapenc:arrayType="xsd:int[361]" xsi:type="soapenc:Array" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item><item>1</item>
+						<item>1</item>
+					</cdp>
+					<in soapenc:arrayType="xsd:int[10]" xsi:type="soapenc:Array" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
+						<item>1</item><item>0</item><item>1</item><item>0</item><item>1</item><item>0</item><item>1</item><item>0</item><item>1</item><item>0</item>
+					</in>
+				</parameter>
+    		</data>
+    	</token>
+    </place>
+    
+    <!-- volumes -->
+    <place ID="THD">
+    	<property name="simulation.memory">5000</property>
+    </place>
+    <place ID="GRD">
+    	<property name="simulation.memory">8000</property>
+    </place>
+    <place ID="FRD">
+    	<property name="simulation.memory">15000</property>
+    </place>
+    
+    <!-- control -->
+    <place ID="traceHeadersLoaded"/>
+    <place ID="referenceDataCalculated"/>
+    <place ID="projectDataSelected"/>
+
+    <!-- transitions -->
+    <transition ID="loadTraceHeaders">
+        <description>Load Trace Headers</description>
+        <inputPlace placeID="inputFile" edgeExpression="file"/>
+        <outputPlace placeID="THD" edgeExpression="thd"/>
+        <outputPlace placeID="traceHeadersLoaded"/>
+ 		<operation>
+      		<oc:operationClass name="loadTraceHeaders" xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass">
+        		<oc:operationCandidate type="psp" operationName="loadTraceHeaders" resourceName="phastgrid" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="calcGeoReferenceData">
+        <description>Calculate Geo Reference Data</description>
+        <readPlace placeID="THD" edgeExpression="thd"/>
+        <inputPlace placeID="traceHeadersLoaded"/>
+        <outputPlace placeID="GRD" edgeExpression="grd"/>
+        <outputPlace placeID="referenceDataCalculated"/>
+ 		<operation>
+      		<oc:operationClass name="calcGeoReferenceData" xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass">
+        		<oc:operationCandidate type="psp" operationName="calcGeoReferenceData" resourceName="phastgrid" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="selectProjectData">
+        <description>Select Project Data</description>
+        <readPlace placeID="GRD" edgeExpression="grd"/>
+        <inputPlace placeID="selectProjectData_parameter" edgeExpression="parameter"/>
+        <inputPlace placeID="referenceDataCalculated"/>
+        <outputPlace placeID="FRD" edgeExpression="frd"/>
+        <outputPlace placeID="projectDataSelected"/>
+ 		<operation>
+      		<oc:operationClass name="selectProjectData" xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass">
+        		<oc:operationCandidate type="psp" operationName="selectProjectData" resourceName="phastgrid" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+</workflow>

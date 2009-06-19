@@ -12,9 +12,9 @@
 #include <xercesc/util/PlatformUtils.hpp>
 
 #include <assert.h>
-#include "../gworkflowdl_cpp/src/OperationCandidate.h"
-#include "../gworkflowdl_cpp/src/Workflow.h"
-#include "../gworkflowdl_cpp/src/XMLUtils.h"
+#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
+#include "../../gworkflowdl_cpp/src/Workflow.h"
+#include "../../gworkflowdl_cpp/src/XMLUtils.h"
 
 using namespace std;
 using namespace gwdl;
