@@ -6,3 +6,8 @@ SDPAEvent::SDPAEvent(const address_t & from, const address_t &to)
     : from_(from), to_(to) {
 
 }
+
+SDPAEvent::SDPAEvent(const SDPAEvent &other)
+    : from_(other.from()), to_(other.to()) {
+}
+

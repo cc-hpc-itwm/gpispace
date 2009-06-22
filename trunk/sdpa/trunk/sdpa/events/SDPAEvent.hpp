@@ -7,22 +7,26 @@
 #include <sdpa/memory.hpp>
 
 namespace sdpa {
-namespace events {
+  namespace events {
     class SDPAEvent : public seda::IEvent {
-    public:
+      public:
         typedef sdpa::shared_ptr<SDPAEvent> Ptr;
 
         typedef std::string address_t;
 
-        SDPAEvent(const address_t &from, const address_t &to);
-        ~SDPAEvent() {}
+        virtual ~SDPAEvent() {}
 
         const address_t & from() const { return from_; }
         const address_t & to() const { return to_; }
-    private:
+
+        virtual std::string str() const = 0;
+      protected:
+        SDPAEvent(const SDPAEvent &other);
+        SDPAEvent(const address_t &from, const address_t &to);
+      private:
         address_t from_;
         address_t to_;
     };
-}}
+  }}
 
 #endif // SDPA_EVENT_HPP
