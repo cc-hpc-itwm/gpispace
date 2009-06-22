@@ -15,7 +15,7 @@ namespace sdpa {
     This class holds all information about an attached node.
 
     On the orchestrator this represents an aggregator and on the aggregator
-    all information attached NREs is held in this class.
+    all information about attached NREs is held in this class.
   */
   class Node {
   public:
@@ -32,7 +32,8 @@ namespace sdpa {
     std::string location_; //! location where to reach the node
     sdpa::util::time_type tstamp_; //! time of last message received
 
-    JobQueue queue_; //! the queue of jobs assigned to this node
+    JobQueue pending_queue_; //! the queue of jobs assigned to this node (not yet confirmed)
+    JobQueue submitted_queue_; //! the queue of jobs assigned to this node (successfully submitted)
   };
 }
 
