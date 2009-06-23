@@ -10,6 +10,7 @@
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/RetriveResultsEvent.hpp>
 #include <sdpa/fsm/JobFSM_sm.h>
 #include <sdpa/logging.hpp>
 
@@ -24,33 +25,23 @@ namespace sdpa {
 				JobFSM();
 				virtual ~JobFSM();
 
-				int InformWFEJobFailed( sdpa::Job::job_id_t JobID );
-				int GetNextActiveSubJobsListFromWFE( sdpa::Job::job_id_t JobID );  //assign unique global IDs!
-				int ScheduleJobs();
-				int DoCancelJob( sdpa::Job::job_id_t JobID );
-				int PostCancelJobAckEventForMaster( sdpa::events::CancelJobEvent& event );
-				int PostJobStatusAnswerEventForMaster( sdpa::events::QueryJobStatusEvent& event );
-				int PostJobFinishedEventForMaster( sdpa::events::JobFinishedEvent& event );
-				int PostJobFailedEventForMaster( sdpa::events::JobFailedEvent& event);
-				int PostCancelJobAckEventForMaster( sdpa::events::CancelJobAckEvent& event );
+				void action_dispatch(const sdpa::events::RunJobEvent& e);
+				void action_cancel(const sdpa::events::CancelJobEvent& e);
+				void action_query_status(const sdpa::events::QueryJobStatusEvent& e);
+				void action_job_failed(const sdpa::events::JobFailedEvent& e);
+				void action_job_finished(const sdpa::events::JobFinishedEvent& e );
+				void action_retrieve_results(const sdpa::events::RetriveResultsEvent& e );
+				void action_cancel_ack(const sdpa::events::CancelJobAckEvent& e);
 
-				int HandleJobFailure( sdpa::Job::job_id_t JobID );
-				int DoCancelSubJobs( sdpa::Job::job_id_t JobID );// Attention!: some of SubJobs may already have finished!
+				void WFE_NotifyNewJob();
+				void WFE_GenListNextActiveSubJobs(); //assign unique global IDs!
+				void WFE_NotifyJobFailed();
 
-				bool IsSubJob( sdpa::Job::job_id_t JobID );
-				int IncGetCancelAckCounter();
-				int GetCancelAckCounter();
-				int GetNumberSubJobs();
 
 				sdpa::fsm::JobFSMContext& GetContext() { return m_fsmContext; }
 			private:
 				SDPA_DECLARE_LOGGER();
 				sdpa::fsm::JobFSMContext m_fsmContext;
-
-				int m_nNumberSubJobs;
-				int m_nCancelAckCounter;
-				std::list<std::string> m_listNextActiveSubJobs;
-				//boost::recursive_mutex _mtx;
 		};
 	}
 }

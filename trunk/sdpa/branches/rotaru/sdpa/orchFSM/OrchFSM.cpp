@@ -23,7 +23,6 @@ sc::result Down::react(const StartUpEvent& e)
 	}*/
 }
 
-
 sc::result Down::react(const sc::exception_thrown & e)
 {
 	try
@@ -39,7 +38,6 @@ sc::result Down::react(const sc::exception_thrown & e)
 	  return forward_event();
 	}
 }
-
 
 sc::result Up::react(const InterruptEvent& e)
 {

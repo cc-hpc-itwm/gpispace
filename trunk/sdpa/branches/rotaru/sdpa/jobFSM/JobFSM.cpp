@@ -25,7 +25,7 @@ sc::result Pending::react(const CancelJobEvent& e)
 
 sc::result Pending::react(const QueryJobStatusEvent& e)
 {
-	return transit<Cancelled>(&JobFSM::action_query_status, e);
+	return transit<Pending>(&JobFSM::action_query_status, e);
 }
 
 sc::result Pending::react(const sc::exception_thrown & e)
@@ -136,7 +136,18 @@ sc::result Terminated::react(const QueryJobStatusEvent& e)
 
 sc::result Terminated::react(const sc::exception_thrown & e)
 {
-
+	try
+	{
+	  throw;
+	}
+	catch ( ... )
+	{
+	  // ... all other exceptions are forwarded to our outer
+	  // state(s). The state machine is terminated and the
+	  // exception rethrown if the outer state(s) can't
+	  // handle it either...
+	  return forward_event();
+	}
 }
 
 //Failed

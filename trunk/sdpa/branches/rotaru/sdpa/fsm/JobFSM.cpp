@@ -3,8 +3,9 @@
 
 using namespace std;
 using namespace sdpa::fsm;
+using namespace sdpa::events;
 
-JobFSM::JobFSM() : SDPA_INIT_LOGGER("sdpa.fsm.JobFSM"), m_fsmContext(*this), m_nNumberSubJobs(0), m_nCancelAckCounter(0)
+JobFSM::JobFSM() : SDPA_INIT_LOGGER("sdpa.fsm.JobFSM"), m_fsmContext(*this)
 {
 	SDPA_LOG_DEBUG("State machine created");
 }
@@ -14,90 +15,46 @@ JobFSM::~JobFSM()
 	SDPA_LOG_DEBUG("State machine destroyed");
 }
 
-bool JobFSM::IsSubJob(sdpa::Job::job_id_t JobID)
+
+void JobFSM::action_dispatch(const RunJobEvent& e)
 {
-	return true;
+	cout <<"Job "<<e.job_id()<<": process action 'action_dispatch'"<< endl;
 }
 
-int JobFSM::IncGetCancelAckCounter()
+void JobFSM::action_cancel(const CancelJobEvent& e)
 {
-	SDPA_LOG_DEBUG("Increment CancelAckCounter");
-	return ++m_nCancelAckCounter;
+	cout <<"Job "<<e.job_id()<<": process action 'action_cancel'" << endl;
 }
 
-int JobFSM::GetCancelAckCounter()
+void JobFSM::action_cancel_ack(const CancelJobAckEvent& e)
 {
-	return m_nCancelAckCounter;
+	cout <<"Job "<<e.job_id()<<": process action 'action_cancel_ack'" << endl;
 }
 
-int JobFSM::GetNumberSubJobs()
+void JobFSM::action_query_status(const QueryJobStatusEvent& e)
 {
-	return m_nNumberSubJobs;
+	cout<<"Job "<<e.job_id()<<": process action 'action_query_status'"<< endl;
+	cout<<"Posted an event of type StatusReplyEvent"<<endl;
 }
 
-int JobFSM::InformWFEJobFailed( sdpa::Job::job_id_t sJobID )
+void JobFSM::action_job_finished(const JobFinishedEvent& e )
 {
-	SDPA_LOG_DEBUG("Inform WFE that the job "<<sJobID<<" failed");
-	return 0;
+	cout <<"Job "<<e.job_id()<<": process action action_job_finished"<< endl;
 }
 
-int JobFSM::GetNextActiveSubJobsListFromWFE( sdpa::Job::job_id_t JobID )
+void JobFSM :: action_job_failed(const JobFailedEvent& e)
 {
-	SDPA_LOG_DEBUG("Query WFE for the list of next active jobs");
-	SDPA_LOG_DEBUG("Don't forget to assign unique JobIDs");
-	return 0;
-}  //assign unique global IDs!
-
-int JobFSM::ScheduleJobs()
-{
-	SDPA_LOG_DEBUG("Schedule job");
-	return 0;
+	cout <<"Job "<<e.job_id()<<": process action 'action_job_failed'"<< endl;
 }
 
-int JobFSM::DoCancelJob( sdpa::Job::job_id_t JobID )
+void  JobFSM ::action_retrieve_results(const RetriveResultsEvent& e )
 {
-	SDPA_LOG_DEBUG("DoCancelJob");
-	return 0;
+	cout <<"Job "<<e.job_id()<<": process action 'action_retrieve_results'"<< endl;
 }
 
-int JobFSM::PostCancelJobAckEventForMaster( sdpa::events::CancelJobEvent& event )
-{
-	SDPA_LOG_DEBUG("PostCancelJobAckEventForMaster");
-	return 0;
-}
+void JobFSM :: WFE_NotifyNewJob(){ cout<<"WFE_NotifyNewJob"<<endl; }
 
-int JobFSM::PostJobStatusAnswerEventForMaster( sdpa::events::QueryJobStatusEvent& event )
-{
-	SDPA_LOG_DEBUG("PostJobStatusAnswerEventForMaster");
-	return 0;
-}
+void JobFSM :: WFE_GenListNextActiveSubJobs(){ cout<<"WFE_GenListNextActiveSubJobs"<<endl; } //assign unique global IDs!
 
-int JobFSM::PostJobFinishedEventForMaster( sdpa::events::JobFinishedEvent& event )
-{
-	SDPA_LOG_DEBUG("PostJobFinishedEventForMaster");
-	return 0;
-}
+void JobFSM :: WFE_NotifyJobFailed(){ cout<<"WFE_NotifyJobFailed"<<endl; }
 
-int JobFSM::PostJobFailedEventForMaster( sdpa::events::JobFailedEvent& event)
-{
-	SDPA_LOG_DEBUG("PostJobFailedEventForMaster");
-	return 0;
-}
-
-int JobFSM::PostCancelJobAckEventForMaster( sdpa::events::CancelJobAckEvent& event )
-{
-	SDPA_LOG_DEBUG("PostCancelJobAckEventForMaster");
-	return 0;
-}
-
-int JobFSM::HandleJobFailure( sdpa::Job::job_id_t JobID )
-{
-	SDPA_LOG_DEBUG("HandleJobFailure");
-	return 0;
-}
-
-int JobFSM::DoCancelSubJobs( sdpa::Job::job_id_t JobID )
-{
-	SDPA_LOG_DEBUG("DoCancelSubJobs");
-	return 0;
-}// Attention!: some of SubJobs may already have finished!
