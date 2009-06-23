@@ -1,4 +1,6 @@
 #include <cppunit/extensions/HelperMacros.h>
+#include <tests/sdpa/PerformanceTestFSMEvent.hpp>
+#include <tests/sdpa/PerformanceTestBSCEvent.hpp>
 
 namespace sdpa {
   namespace tests {
@@ -14,6 +16,10 @@ namespace sdpa {
 
       void setUp();
       void tearDown();
+
+      // FSM callbacks
+      void do_s0_s1(const PerformanceTestFSMEvent &e);
+      void do_s1_s0(const PerformanceTestFSMEvent &e);
 
     protected:
       void testSMCPerformance();

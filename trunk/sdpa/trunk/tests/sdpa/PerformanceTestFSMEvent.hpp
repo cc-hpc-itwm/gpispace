@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace tests { namespace sdpa {
+namespace sdpa { namespace tests {
   class PerformanceTestFSMEvent {
   public:
     explicit

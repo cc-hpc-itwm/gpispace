@@ -11,15 +11,15 @@
 
 using namespace statemap;
 
-namespace tests
+namespace sdpa
 {
-    namespace sdpa
+    namespace tests
     {
         // Static class declarations.
-        PerfFSM_S0 PerfFSM::S0("PerfFSM::S0", 0);
-        PerfFSM_S1 PerfFSM::S1("PerfFSM::S1", 1);
+        PerformanceTest_S0 PerformanceTest::S0("PerformanceTest::S0", 0);
+        PerformanceTest_S1 PerformanceTest::S1("PerformanceTest::S1", 1);
 
-        void FSMPerformanceTestState::T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e)
+        void FSMPerformanceTestState::T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e)
         {
             Default(context);
             return;
@@ -35,7 +35,7 @@ namespace tests
             return;
         }
 
-        void PerfFSM_S0::T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e)
+        void PerformanceTest_S0::T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e)
         {
             FSMPerformanceTest& ctxt(context.getOwner());
 
@@ -44,11 +44,11 @@ namespace tests
             try
             {
                 ctxt.do_s0_s1(e);
-                context.setState(PerfFSM::S1);
+                context.setState(PerformanceTest::S1);
             }
             catch (...)
             {
-                context.setState(PerfFSM::S1);
+                context.setState(PerformanceTest::S1);
                 throw;
             }
             (context.getState()).Entry(context);
@@ -56,7 +56,7 @@ namespace tests
             return;
         }
 
-        void PerfFSM_S1::T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e)
+        void PerformanceTest_S1::T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e)
         {
             FSMPerformanceTest& ctxt(context.getOwner());
 
@@ -65,11 +65,11 @@ namespace tests
             try
             {
                 ctxt.do_s1_s0(e);
-                context.setState(PerfFSM::S0);
+                context.setState(PerformanceTest::S0);
             }
             catch (...)
             {
-                context.setState(PerfFSM::S0);
+                context.setState(PerformanceTest::S0);
                 throw;
             }
             (context.getState()).Entry(context);

@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/statechart/event.hpp>
 
-namespace tests { namespace sdpa {
+namespace sdpa { namespace tests {
   namespace sc = boost::statechart;
 
   struct PerformanceTestBSCEvent : sc::event<PerformanceTestBSCEvent> {

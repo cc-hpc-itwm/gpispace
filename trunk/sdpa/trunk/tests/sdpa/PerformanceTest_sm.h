@@ -13,15 +13,15 @@
 
 #include <statemap.h>
 
-namespace tests
+namespace sdpa
 {
-    namespace sdpa
+    namespace tests
     {
         // Forward declarations.
-        class PerfFSM;
-        class PerfFSM_S0;
-        class PerfFSM_S1;
-        class PerfFSM_Default;
+        class PerformanceTest;
+        class PerformanceTest_S0;
+        class PerformanceTest_S1;
+        class PerformanceTest_Default;
         class FSMPerformanceTestState;
         class FSMPerformanceTestContext;
         class FSMPerformanceTest;
@@ -38,52 +38,52 @@ namespace tests
             virtual void Entry(FSMPerformanceTestContext&) {};
             virtual void Exit(FSMPerformanceTestContext&) {};
 
-            virtual void T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e);
+            virtual void T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e);
 
         protected:
 
             virtual void Default(FSMPerformanceTestContext& context);
         };
 
-        class PerfFSM
+        class PerformanceTest
         {
         public:
 
-            static PerfFSM_S0 S0;
-            static PerfFSM_S1 S1;
+            static PerformanceTest_S0 S0;
+            static PerformanceTest_S1 S1;
         };
 
-        class PerfFSM_Default :
+        class PerformanceTest_Default :
             public FSMPerformanceTestState
         {
         public:
 
-            PerfFSM_Default(const char *name, int stateId)
+            PerformanceTest_Default(const char *name, int stateId)
             : FSMPerformanceTestState(name, stateId)
             {};
 
         };
 
-        class PerfFSM_S0 :
-            public PerfFSM_Default
+        class PerformanceTest_S0 :
+            public PerformanceTest_Default
         {
         public:
-            PerfFSM_S0(const char *name, int stateId)
-            : PerfFSM_Default(name, stateId)
+            PerformanceTest_S0(const char *name, int stateId)
+            : PerformanceTest_Default(name, stateId)
             {};
 
-            void T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e);
+            void T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e);
         };
 
-        class PerfFSM_S1 :
-            public PerfFSM_Default
+        class PerformanceTest_S1 :
+            public PerformanceTest_Default
         {
         public:
-            PerfFSM_S1(const char *name, int stateId)
-            : PerfFSM_Default(name, stateId)
+            PerformanceTest_S1(const char *name, int stateId)
+            : PerformanceTest_Default(name, stateId)
             {};
 
-            void T(FSMPerformanceTestContext& context, const PerformanceTestFSMEvent& e);
+            void T(FSMPerformanceTestContext& context, const ::sdpa::tests::PerformanceTestFSMEvent& e);
         };
 
         class FSMPerformanceTestContext :
@@ -92,7 +92,7 @@ namespace tests
         public:
 
             FSMPerformanceTestContext(FSMPerformanceTest& owner)
-            : FSMContext(PerfFSM::S0),
+            : FSMContext(PerformanceTest::S0),
               _owner(owner)
             {};
 
@@ -122,7 +122,7 @@ namespace tests
                 return (dynamic_cast<FSMPerformanceTestState&>(*_state));
             };
 
-            void T(const PerformanceTestFSMEvent& e)
+            void T(const ::sdpa::tests::PerformanceTestFSMEvent& e)
             {
                 (getState()).T(*this, e);
             };
