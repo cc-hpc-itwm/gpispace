@@ -12,9 +12,12 @@ compile: config
 config: $(BUILD_DIR) CMakeLists.txt
 	cd $(BUILD_DIR) && $(CMAKE) $(top_srcdir)
 
-distclean:
+distclean: clean
 	@-rm -rf $(BUILD_DIR)
 	@-find . -name "*~" -delete
+
+clean:
+	make -C $(BUILD_DIR) clean
 
 doc-api: config
 	make -C build doc
