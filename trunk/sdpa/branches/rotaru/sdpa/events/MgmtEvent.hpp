@@ -15,7 +15,9 @@ namespace events {
         MgmtEvent(const address_t &from, const address_t &to)
           : SDPAEvent(to, from) {}
         ~MgmtEvent() {}
+
+        virtual std::string str() const = 0;
     };
 }}
 
-#endif // SDPA_JOB_EVENT_HPP
+#endif // SDPA_MGMT_EVENT_HPP
