@@ -16,14 +16,14 @@ Pending
     RunJob(event: sdpa::events::RunJobEvent&)
         Running
         {
-        	GetNextActiveSubJobsListFromWFE(event.GetJobID());  //assign unique global IDs!
+        	GetNextActiveSubJobsListFromWFE(event.job_id());  //assign unique global IDs!
             ScheduleJobs();
         }
 
     CancelJob(event: sdpa::events::CancelJobEvent&)
         Cancelled
         {
-            DoCancelJob(event.GetJobID());
+            DoCancelJob(event.job_id());
             PostCancelJobAckEventForMaster(event);
         }
 
@@ -37,10 +37,10 @@ Pending
 Running
 {
     JobFinished(event: sdpa::events::JobFinishedEvent&)
-      	[ ctxt.IsSubJob(event.GetJobID())]
+      	[ ctxt.IsSubJob(event.job_id())]
       	Running
         {
-        	GetNextActiveSubJobsListFromWFE(event.GetJobID()); //assign unique global IDs!
+        	GetNextActiveSubJobsListFromWFE(event.job_id()); //assign unique global IDs!
             ScheduleJobs();  //if the list is empty, trigger JobFinishedEvent for self!
         }
       
@@ -51,23 +51,23 @@ Running
         }
 
   	JobFailed(event: sdpa::events::JobFailedEvent&)
-  	    [ ctxt.IsSubJob(event.GetJobID())]
+  	    [ ctxt.IsSubJob(event.job_id())]
     	Failed
         {
-            InformWFEJobFailed(event.GetJobID()); //either re-schedule it or ask WFE what to do, or declare the parent job failed
+            InformWFEJobFailed(event.job_id()); //either re-schedule it or ask WFE what to do, or declare the parent job failed
         }
         
     JobFailed(event: sdpa::events::JobFailedEvent&)
     	Failed
         {
-            HandleJobFailure(event.GetJobID());
+            HandleJobFailure(event.job_id());
             PostJobFailedEventForMaster(event);  
         }
 
     CancelJob(event: sdpa::events::CancelJobEvent&)
         Cancelling
         {
-            DoCancelSubJobs(event.GetJobID());
+            DoCancelSubJobs(event.job_id());
             // Attention!: some SubJobs may already have finished, 
             // while other subjobs are still running or even not assigned!
         }
@@ -82,12 +82,12 @@ Running
 Cancelling
 {
     CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
-    [ctxt.IsSubJob(event.GetJobID()) && ctxt.IncGetCancelAckCounter() && ctxt.GetCancelAckCounter()<ctxt.GetNumberSubJobs() ]
+    [ctxt.IsSubJob(event.job_id()) && ctxt.IncGetCancelAckCounter() && ctxt.GetCancelAckCounter()<ctxt.GetNumberSubJobs() ]
     	Cancelling
     	{}
     	
     CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
-    [ctxt.IsSubJob(event.GetJobID()) && ctxt.GetCancelAckCounter() == ctxt.GetNumberSubJobs() ]
+    [ctxt.IsSubJob(event.job_id()) && ctxt.GetCancelAckCounter() == ctxt.GetNumberSubJobs() ]
     // Attention!: some of SubJobs may already have finished! Consider only the jobs scheduled 
     //Ignore those that are finished or failed
     	Cancelled

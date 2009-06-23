@@ -10,5 +10,5 @@ void Node::update(const sdpa::events::SDPAEvent &event) {
 }
 
 void Node::dispatch(Job::ptr_t &job) {
-  queue_.push_back(job);
+  pending_queue_.push_back(job);
 }

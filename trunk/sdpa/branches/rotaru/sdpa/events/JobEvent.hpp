@@ -18,6 +18,8 @@ namespace events {
         ~JobEvent() {}
 
         const sdpa::Job::job_id_t & job_id() const { return job_id_; }
+
+        virtual std::string str() const = 0;
     private:
         sdpa::Job::job_id_t job_id_;
     };

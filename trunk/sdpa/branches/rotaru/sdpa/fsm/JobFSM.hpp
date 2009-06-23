@@ -1,9 +1,7 @@
-#ifndef SDPAJobFSM_HPP
-#define SDPAJobFSM_HPP 1
+#ifndef SDPASMCFSM_HPP
+#define SDPASMCFSM_HPP 1
 
-//#include <boost/thread.hpp>
 
-#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
