@@ -1,0 +1,23 @@
+#ifndef TESTS_SDPA_SUITE_HPP
+#define TESTS_SDPA_SUITE_HPP 1
+
+#include <cppunit/TestFixture.h>
+
+#include <tests/sdpa/test_Module.hpp>
+#include <tests/sdpa/test_Token.hpp>
+#include <tests/sdpa/test_FSMPerformance.hpp>
+
+namespace sdpa { namespace tests {
+  class Suite : public CPPUNIT_NS::TestFixture {
+  public:
+    static CPPUNIT_NS::Test *suite() {
+      CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
+      suiteOfTests->addTest( ModuleTest::suite() );
+      suiteOfTests->addTest( TokenTest::suite() );
+      suiteOfTests->addTest( FSMPerformanceTest::suite() );
+      return suiteOfTests;
+    }
+  };
+}}
+
+#endif

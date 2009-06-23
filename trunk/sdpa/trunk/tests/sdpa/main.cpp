@@ -1,24 +1,3 @@
-/***********************************************************************/
-/** @file main.cpp
- *
- * $Id:$
- *
- * <short description>
- * <long description>
- *
- *  @author Kai Krueger
- *  @date   2009-05-14
- *  @email  kai.krueger@itwm.fhg.de
- *
- * (C) Fraunhofer ITWM Kaiserslautern
- **/
-/*---------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------*
- * System headers
- *
- *---------------------------------------------------------------------*/
-
 // cppunit includes
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/CompilerOutputter.h>
@@ -43,24 +22,14 @@
 
 #include <tests/sdpa/Suite.hpp>
 
-/*---------------------------------------------------------------------*
- * Local headers
- *
- *---------------------------------------------------------------------*/
-
-int main(
-  int argc,
-  char **argv
-  )
+int main(int argc, char **argv)
 {
   // Informiert Test-Listener ueber Testresultate
   CPPUNIT_NS::TestResult                   testresult;
   CPPUNIT_NS::TestResultCollector collectedresults;
   testresult.addListener (&collectedresults);
 
-  // Test-Suite ueber die Registry im Test-Runner einfuegen
   CPPUNIT_NS :: TestRunner runner;
-//  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
   runner.addTest ( sdpa::tests::Suite::suite() );
 
   std::cout << "running testsuite" << std::endl;
