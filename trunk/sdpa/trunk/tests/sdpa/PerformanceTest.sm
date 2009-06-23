@@ -1,0 +1,35 @@
+//%{
+//
+// Finite state machine for the Performance test between SMC and boost StateCharts
+//
+//%}
+
+%include <tests/sdpa/PerformanceTestFSMEvent.hpp>
+
+%package tests::sdpa
+%class FSMPerformanceTest
+%header test_FSMPerformance.hpp
+
+%start PerfFSM::S0
+%map PerfFSM
+
+%%
+S0
+{
+  T(e: const PerformanceTestFSMEvent&)
+    S1
+    {
+      do_s0_s1(e);
+    }
+}
+
+S1
+{
+  T(e: const PerformanceTestFSMEvent&)
+    S0
+    {
+      do_s1_s0(e);
+    }
+}
+
+%%
