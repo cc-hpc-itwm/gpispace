@@ -45,6 +45,11 @@
         <outputPlace placeID="HasNext" edgeExpression="HasNext"/>
         <outputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
         <condition>$HasNext = true</condition>
+        <operation>
+            <oc:operationClass name="getNextOffsetClass">
+                <oc:operationCandidate type="cli" operationName="getNextOffsetClass.sh" resourceName="./getNextOffsetClass.sh" selected="true"/>
+            </oc:operationClass>
+        </operation>
     </transition>
 
     <transition ID="checkHasNext">
