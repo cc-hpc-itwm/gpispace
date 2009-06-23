@@ -51,7 +51,7 @@ public:
 	/**
 	 * Constructor for operation candidate to be build from DOMElement.
 	 */
-	OperationCandidate(XERCES_CPP_NAMESPACE::DOMElement* element); 
+	explicit OperationCandidate(XERCES_CPP_NAMESPACE::DOMElement* element); 
 	
 	/**
 	 * Destructor.
@@ -83,7 +83,7 @@ public:
 	/**
 	 * Set operation type. The supported types depend on the implementation of the workflow handler.
 	 */
-	void setType(std::string _type) { type = _type; }
+	void setType(const std::string& _type) { type = _type; }
 	
 	/**
 	 * Get the operation type.
@@ -93,7 +93,7 @@ public:
 	/**
 	 * Set operation name.
 	 */
-	void setOperationName(std::string name) { operationName = name; }
+	void setOperationName(const std::string& name) { operationName = name; }
 	
 	/**
 	 * Get the operation name.
@@ -103,7 +103,7 @@ public:
 	/**
 	 * Set resource name.
 	 */
-	void setResourceName(std::string name) {resourceName = name; }
+	void setResourceName(const std::string& name) {resourceName = name; }
 	
 	/**
 	 * Get resource name.

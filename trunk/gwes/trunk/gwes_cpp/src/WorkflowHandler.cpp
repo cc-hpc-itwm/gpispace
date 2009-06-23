@@ -21,7 +21,7 @@ using namespace gwes;
 
 namespace gwes {
 
-WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, string userId) {
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) {
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;
@@ -327,7 +327,7 @@ void WorkflowHandler::connect(Channel* channel) {
  * Overides gwes::Observer::update().
  * This method is called by the source of the channels connected to this workflow handler.
  */
-void WorkflowHandler::update(Event event) {
+void WorkflowHandler::update(const Event& event) {
 	// logging
 	cout << "gwes::WorkflowHandler::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._dataP!=NULL) {

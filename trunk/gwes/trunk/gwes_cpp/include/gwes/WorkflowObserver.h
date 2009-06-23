@@ -23,7 +23,7 @@ class WorkflowObserver : public gwes::Observer
 public:
 	WorkflowObserver();
 	virtual ~WorkflowObserver();
-	virtual void update(Event event);
+	virtual void update(const Event& event);
 };
 
 }

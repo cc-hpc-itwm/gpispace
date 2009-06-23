@@ -37,7 +37,7 @@ string WorkflowHandlerTable::put(WorkflowHandler* wfhP) {
 	return id;
 }
 
-WorkflowHandler* WorkflowHandlerTable::get(string id) throw (NoSuchWorkflowException) {
+WorkflowHandler* WorkflowHandlerTable::get(const string& id) throw (NoSuchWorkflowException) {
 	iterator iter=find(id); 
 	if (iter==end()) {
 	     // no such workflow
@@ -48,7 +48,7 @@ WorkflowHandler* WorkflowHandlerTable::get(string id) throw (NoSuchWorkflowExcep
 	return iter->second;
 }
 
-void WorkflowHandlerTable::remove(string id) {
+void WorkflowHandlerTable::remove(const string& id) {
 	iterator iter=find(id);
 	if (iter==end()) {
 	     // no such workflow

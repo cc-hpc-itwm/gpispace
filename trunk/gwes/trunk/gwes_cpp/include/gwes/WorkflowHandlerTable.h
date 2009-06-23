@@ -45,13 +45,13 @@ public:
 	 * @param id The id of the workflow handler.
 	 * @return the pointer to the workflow handler.
 	 */
-	WorkflowHandler* get(std::string id) throw (NoSuchWorkflowException);
+	WorkflowHandler* get(const std::string& id) throw (NoSuchWorkflowException);
 	
 	/** 
 	 * Delete the workflow handler and erase it from the table.
 	 * @param id The identifier of the workflow to remove.
 	 */
-	void remove(std::string id);
+	void remove(const std::string& id);
 	
 };
 

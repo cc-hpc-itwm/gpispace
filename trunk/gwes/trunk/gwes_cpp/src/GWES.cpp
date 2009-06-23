@@ -40,7 +40,7 @@ GWES::~GWES()
   * @param userID      The ID of the user who owns the workflow.
   * @return The reference to the workflow.
   */
-Workflow& GWES::initiate(string gworkflowdl, string userId) throw(WorkflowFormatException,StateTransitionException) 
+Workflow& GWES::initiate(const string& gworkflowdl, const string& userId) throw(WorkflowFormatException,StateTransitionException) 
 {
 	cout << "gwes::GWES::initiate() ... " << endl;
 	// deserialize string
@@ -57,7 +57,7 @@ Workflow& GWES::initiate(string gworkflowdl, string userId) throw(WorkflowFormat
  * @param workflow The reference of the workflow.
  * @return The unique workflow ID.
  */
-string GWES::initiate(gwdl::Workflow& workflow, string userId) throw(StateTransitionException)
+string GWES::initiate(gwdl::Workflow& workflow, const string& userId) throw(StateTransitionException)
 {
 	cout << "gwes::GWES::initiate() ... " << endl;
 	WorkflowHandler* wfhP = new WorkflowHandler(this,&workflow,userId);
@@ -80,7 +80,7 @@ void GWES::connect(Channel* channel, gwdl::Workflow& workflow) {
  * @param channel The communication channel containing the source Observer.
  * @param workflowId The identifier of the workflow.
  */ 
-void GWES::connect(Channel* channel, string workflowId) {
+void GWES::connect(Channel* channel, const string& workflowId) {
 	cout << "gwes::GWES::connect(" << workflowId << ") ... " << endl;
 	_wfht.get(workflowId)->connect(channel);
 }
@@ -104,7 +104,7 @@ void GWES::start(gwdl::Workflow& workflow) throw(StateTransitionException,NoSuch
  *
  * @param workflowId The identifier of the workflow.
  */
-void GWES::start(string workflowId) throw(StateTransitionException,NoSuchWorkflowException) {
+void GWES::start(const string& workflowId) throw(StateTransitionException,NoSuchWorkflowException) {
 	cout << "gwes::GWES::start(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->startWorkflow();
@@ -127,7 +127,7 @@ void GWES::execute(Workflow& workflow) throw(StateTransitionException, WorkflowF
  * 
  * @param workflowId The identifier of the workflow.
  */
-void GWES::execute(string workflowId) throw(StateTransitionException, WorkflowFormatException) {
+void GWES::execute(const string& workflowId) throw(StateTransitionException, WorkflowFormatException) {
 	cout << "gwes::GWES::execute(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->executeWorkflow();
@@ -150,7 +150,7 @@ void GWES::suspend(Workflow& workflow) throw(StateTransitionException)
  *
  * @param workflowId The identifier of the workflow.
  */
-void GWES::suspend(string workflowId) throw(StateTransitionException) {
+void GWES::suspend(const string& workflowId) throw(StateTransitionException) {
 	cout << "gwes::GWES::suspend(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->suspendWorkflow();
@@ -171,7 +171,7 @@ void GWES::resume(Workflow& workflow) throw(StateTransitionException)
  *
  * @param workflowId The identifier of the workflow.
  */
-void GWES::resume(string workflowId) throw(StateTransitionException) {
+void GWES::resume(const string& workflowId) throw(StateTransitionException) {
 	cout << "gwes::GWES::resume(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->resumeWorkflow();
@@ -196,7 +196,7 @@ void GWES::abort(Workflow& workflow) throw(StateTransitionException)
  *
  * @param workflowId The identifier of the workflow.
  */
-void GWES::abort(string workflowId) throw(StateTransitionException) {
+void GWES::abort(const string& workflowId) throw(StateTransitionException) {
 	cout << "gwes::GWES::abort(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->abortWorkflow();
@@ -221,7 +221,7 @@ string& GWES::getWorkflowDescription(Workflow& workflow)
  * @param workflowId The identifier of the workflow.
  * @return A reference to the current workflow description as string.
  */
-string& GWES::getWorkflowDescription(string workflowId) {
+string& GWES::getWorkflowDescription(const string& workflowId) {
 	cout << "gwes::GWES::getWorkflowDescription(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	gwdl::Workflow* wfP = wfhP->getWorkflow();
@@ -255,7 +255,7 @@ unsigned int GWES::getStatus(Workflow& workflow)
  * @param workflowId The identifier of the workflow.
  * @return The current state of the workflow.
  */
-unsigned int GWES::getStatus(string workflowId) {
+unsigned int GWES::getStatus(const string& workflowId) {
 	cout << "gwes::GWES::getStatus(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return wfhP->getStatus();
@@ -271,7 +271,7 @@ string GWES::getStatusAsString(gwdl::Workflow& workflow) {
 /**
  * Get the current status string of the workflow specified by its identifier.
  */
-string GWES::getStatusAsString(string workflowId) {
+string GWES::getStatusAsString(const string& workflowId) {
 	cout << "gwes::GWES::getStatusAsString(" << workflowId << ") ... " << endl;
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return wfhP->getStatusAsString();
@@ -309,7 +309,7 @@ void GWES::remove(Workflow& workflow) {
  * This method deletes the workflow handler but not the workflow itself.
  * @param workflowId The identifier of the workflow.
  */
-void GWES::remove(string workflowId) {
+void GWES::remove(const string& workflowId) {
 	cout << "gwes::GWES::remove(" << workflowId << ") ... " << endl;
 	_wfht.remove(workflowId);
 }

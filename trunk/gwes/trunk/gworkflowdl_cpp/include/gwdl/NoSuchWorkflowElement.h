@@ -23,7 +23,7 @@ class NoSuchWorkflowElement
 {
 public:
 		std::string message;
-		NoSuchWorkflowElement(std::string _message) 
+		NoSuchWorkflowElement(const std::string& _message) 
 		{
 			message = _message;					
 		}

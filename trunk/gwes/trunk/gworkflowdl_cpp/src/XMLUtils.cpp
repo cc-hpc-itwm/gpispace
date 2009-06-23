@@ -144,7 +144,7 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
 }
 
 
-DOMDocument* XMLUtils::deserialize (string& xmlstring, bool validating) throw (WorkflowFormatException)
+DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) throw (WorkflowFormatException)
 {
     DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
     DOMBuilder* parser = ((DOMImplementationLS*)impl)->createDOMBuilder(DOMImplementationLS::MODE_SYNCHRONOUS, 0);

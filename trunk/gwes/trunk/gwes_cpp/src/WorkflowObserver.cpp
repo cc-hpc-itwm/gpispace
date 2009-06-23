@@ -23,7 +23,7 @@ WorkflowObserver::~WorkflowObserver()
 {
 }
 
-void WorkflowObserver::update(Event event)
+void WorkflowObserver::update(const Event& event)
 {
 	cout << "gwes::WorkflowObserver::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._dataP!=NULL) {

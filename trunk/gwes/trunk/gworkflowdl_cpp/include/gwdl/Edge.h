@@ -35,7 +35,7 @@ private:
     std::string expression;
     
 public:
-	Edge(Place* _place=NULL, std::string _expression = "") { place = _place; expression = _expression; }
+	explicit Edge(Place* _place=NULL, std::string _expression = "") { place = _place; expression = _expression; }
 	
 	~Edge(){};
 
@@ -61,7 +61,7 @@ public:
      *
      * @param ex Edge expression
      */
-    void setExpression(std::string ex) { expression = ex; }
+    void setExpression(const std::string& ex) { expression = ex; }
 
 
     /**

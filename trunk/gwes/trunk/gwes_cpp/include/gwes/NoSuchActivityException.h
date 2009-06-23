@@ -20,7 +20,7 @@ class NoSuchActivityException {
 	
 	public:
 		std::string message;
-		NoSuchActivityException(std::string _message) 
+		NoSuchActivityException(const std::string& _message) 
 		{
 			message = _message;					
 		}

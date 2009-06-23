@@ -46,13 +46,13 @@ public:
 	 * Get pointer to specific activity.
 	 * @param id The id of the activity.
 	 */
-	Activity* get(std::string id) throw (NoSuchActivityException);
+	Activity* get(const std::string& id) throw (NoSuchActivityException);
 	
 	/** 
 	 * Delete the activity and erase it from the table.
 	 * @param activityID The identifier of the activity to erase.
 	 */
-	void remove(std::string activityID);
+	void remove(const std::string& activityID);
 
 }; // end class ActivityTable
 

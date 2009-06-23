@@ -20,7 +20,7 @@ class CapacityException {
 	
 	public:
 		std::string message;
-		CapacityException(std::string _message) 
+		CapacityException(const std::string& _message) 
 		{
 			message = _message;					
 		}

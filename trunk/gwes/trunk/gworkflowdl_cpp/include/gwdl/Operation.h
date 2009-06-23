@@ -119,7 +119,7 @@ public:
 	 * Construct Operation from DOMElement.
 	 * @param element The DOMElement to build the operation from.
 	 */
-	Operation(XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit Operation(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Desctructor for operation.

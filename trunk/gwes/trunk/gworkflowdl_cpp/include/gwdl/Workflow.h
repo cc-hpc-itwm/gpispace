@@ -151,13 +151,13 @@ public:
 	/**
 	 * Construct workflow from DOMElement.
 	 */
-	Workflow(XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit Workflow(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Construct workflow from file.
 	 * @param filename The filename of the GWorkflowDL file including its path. 
 	 */
-	Workflow(std::string filename);
+	explicit Workflow(const std::string& filename);
 
 	/**
 	 * Destructor.
@@ -174,17 +174,17 @@ public:
 	 * Save this workflow to an XML GWorkflowDL file
 	 * @param filename The name of the file. 
 	 */
-	void saveToFile(std::string filename);
+	void saveToFile(const std::string& filename);
 	
     /**
      * get workflow id.
      */
-    std::string& getID() {return id;}
+    const std::string& getID() {return id;}
     
     /**
      * set workflow id.
      */
-    void setID(std::string _id) {id=_id;}
+    void setID(const std::string& _id) {id=_id;}
 
     /**
      * Appends a place to the registered places.
@@ -217,14 +217,14 @@ public:
      * @param id place ID
      * @return place  place to find
      */
-    Place* getPlace(std::string id) throw (NoSuchWorkflowElement);
+    Place* getPlace(const std::string& id) throw (NoSuchWorkflowElement);
 
     /**
      * Get the index of a specific place.
      * @param id The place ID.
      * @return The place index.
      */
-    unsigned int getPlaceIndex(std::string id) throw (NoSuchWorkflowElement);
+    unsigned int getPlaceIndex(const std::string& id) throw (NoSuchWorkflowElement);
 
     /**
      * Remove the i-th place.
@@ -271,14 +271,14 @@ public:
      * @param id The transition ID.
      * @return A reference to the transition.
      */
-    Transition* getTransition(std::string id) throw (NoSuchWorkflowElement);
+    Transition* getTransition(const std::string& id) throw (NoSuchWorkflowElement);
     
     /**
      * Get the index of a specific transition.
      * @param id The transition ID.
      * @return The transition index.
      */
-    unsigned int getTransitionIndex(std::string id) throw (NoSuchWorkflowElement);
+    unsigned int getTransitionIndex(const std::string& id) throw (NoSuchWorkflowElement);
 
 	/**
 	 * Retieve a transition by its index.
@@ -297,7 +297,7 @@ public:
      * Set the workflow description.
      * @param _description Workflow description.
      */
-    void setDescription(std::string _description) {description = _description;}
+    void setDescription(const std::string& _description) {description = _description;}
 
     /**
      * Get the workflow description.
@@ -315,14 +315,14 @@ public:
 	 * Set all the properties of this workflow.
 	 * @param _properties The workflow properties.
 	 */
-    void setProperties(Properties _properties){properties = _properties;}
+    void setProperties(Properties& _properties){properties = _properties;}
 
     /**
      * clear workflow's transition container and add the transitions of the vector.
      * (allocated transition is deleted)
      * @param _transitions Transitions to be set
      */
-    void setTransitions(std::vector<Transition*> _transitions);
+    void setTransitions(std::vector<Transition*>& _transitions);
 
     /**
      * return the transitions of the workflow as a vector.

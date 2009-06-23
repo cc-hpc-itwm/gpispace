@@ -16,7 +16,7 @@ using namespace std;
 
 namespace gwes {
 
-Activity::Activity(WorkflowHandler* handler, string activityImpl, gwdl::OperationCandidate* operation) {
+Activity::Activity(WorkflowHandler* handler, const string& activityImpl, gwdl::OperationCandidate* operation) {
 	_status=STATUS_UNDEFINED;
 	_wfhP = handler;
 	_activityImpl = activityImpl;
@@ -89,7 +89,7 @@ void Activity::attachObserver(Observer* observerP) {
 }
 
 // notify observers
-void Activity::notifyObservers(int type, string message,map<string,gwdl::Data*>* data) {
+void Activity::notifyObservers(int type, const string& message, map<string,gwdl::Data*>* data) {
 	Event event(_id,type,message,data);
 	for (unsigned int i = 0; i<_observers.size(); i++ ) {
 		_observers[i]->update(event);

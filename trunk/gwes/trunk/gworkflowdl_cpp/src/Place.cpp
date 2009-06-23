@@ -24,7 +24,7 @@ using namespace std;
 namespace gwdl
 {
 	
-Place::Place(string _id) : capacity(INT_MAX)
+Place::Place(const string& _id) : capacity(INT_MAX)
 {
 	if (_id == "") id=generateID();
 	else id = _id;
@@ -136,17 +136,17 @@ DOMElement* Place::toElement(DOMDocument* doc)
 	return el;
 }
 
-string Place::getID() 
+const string& Place::getID() 
 {
 	return id;
 }
 
-void Place::setTokenType(string _type)
+void Place::setTokenType(const string& _type)
 {
 	tokenType = _type;
 }
 
-string Place::getTokenType()
+const string& Place::getTokenType()
 {
 	return tokenType;	
 }
@@ -210,7 +210,7 @@ int Place::getTokenNumber()
 	return tokens.size();
 }
 
-void Place::setDescription(string d) 
+void Place::setDescription(const string& d) 
 {
 	description = d;
 }
@@ -220,7 +220,7 @@ string& Place::getDescription()
 	return description;	
 }
 
-void Place::setProperties(Properties _props) 
+void Place::setProperties(Properties& _props) 
 {
 	properties = _props;
 }

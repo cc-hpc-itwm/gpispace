@@ -20,7 +20,7 @@ PreStackPro::~PreStackPro()
 /**
  * This method is called by the WorkflowHandler each time the workflow or an activity changes.
  */
-void PreStackPro::update(gwes::Event event)
+void PreStackPro::update(const gwes::Event& event)
 {
 	// logging
 	cout << "gwes::PreStackPro::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
@@ -52,7 +52,7 @@ void PreStackPro::setDestinationObserver(Observer* destinationP) {
 /**
  * Execute an algorithm. The inputEvent contains the algorithm name and the input data.
  */ 
-void PreStackPro::execute(Event& inputEvent) {
+void PreStackPro::execute(const Event& inputEvent) {
 	// analyse message (example message="loadTraceHeaders@phastgrid")
 	string algName=inputEvent._message.substr(0,inputEvent._message.find_first_of("@"));
 	string algResource=inputEvent._message.substr(inputEvent._message.find_first_of("@")+1);

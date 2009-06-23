@@ -21,7 +21,7 @@ class ActivityException {
 	
 	public:
 		std::string message;
-		ActivityException(std::string _message) 
+		ActivityException(const std::string& _message) 
 		{
 			message = _message;					
 		}

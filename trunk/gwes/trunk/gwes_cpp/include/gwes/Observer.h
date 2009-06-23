@@ -21,6 +21,7 @@ class Observer
 {
 public:
 	Observer(){}
+	
 	virtual ~Observer(){}
 	
 	/**
@@ -29,7 +30,7 @@ public:
 	 * WorkflowObserver as example.
 	 * @param event the event which encapsulates the notification.
 	 */ 
-	virtual void update(Event event)=0;
+	virtual void update(const Event& event)=0;
 };
 
 }

@@ -23,7 +23,8 @@ class StateTransitionException {
 	
 	public:
 		std::string message;
-		StateTransitionException(std::string _message) 
+		
+		StateTransitionException(const std::string& _message) 
 		{
 			message = _message;					
 		}

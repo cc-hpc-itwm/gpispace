@@ -54,12 +54,12 @@ public:
 	 * Note: The unique identifier can not be changed after creating the place!
 	 * @param _id The unique identifier of this place. If id is set to "", then an id will be generated automatically. 
 	 */
-	Place(std::string _id);
+	explicit Place(const std::string& _id);
 	
 	/**
 	 * Constructor for place to be build from DOMElement.
 	 */
-	Place(XERCES_CPP_NAMESPACE::DOMElement* element) throw(CapacityException);
+	explicit Place(XERCES_CPP_NAMESPACE::DOMElement* element) throw(CapacityException);
 	
 	/**
 	 * Destructor for place.
@@ -69,17 +69,17 @@ public:
 	/**
 	 * Get the unique identifier of this place.
 	 */
-	std::string getID();
+	const std::string& getID();
 	
 	/**
 	 * Set the type of this token.
 	 */
-	void setTokenType(std::string type);
+	void setTokenType(const std::string& type);
 	
 	/**
 	 * Get the type of this token.
 	 */
- 	std::string getTokenType();
+ 	const std::string& getTokenType();
  	
  	/**
  	 * Check, if the place is empty.
@@ -138,7 +138,7 @@ public:
 	 * Set the human-readable description for this place.
 	 * @param d The description as std::string.
 	 */ 
-	void setDescription(std::string d);
+	void setDescription(const std::string& d);
 	
 	/**
 	 * Get the human-readable descripton of this place.
@@ -150,7 +150,7 @@ public:
 	 * Set all the properties of this place.
 	 * @param props The properties object.
 	 */
-	void setProperties(Properties props);
+	void setProperties(Properties& props);
 
 	/**
 	 * Get a reference to the properties of this place.

@@ -23,7 +23,7 @@ class WorkflowFormatException
 {
 public:
 		std::string message;
-		WorkflowFormatException(std::string _message) 
+		WorkflowFormatException(const std::string& _message) 
 		{
 			message = _message;					
 		}

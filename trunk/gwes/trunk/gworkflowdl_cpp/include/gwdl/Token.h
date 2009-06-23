@@ -82,14 +82,14 @@ public:
 	 * Constructor for control token with specified value.
 	 * @param _control Boolean value of the control token.
 	 */ 
-	Token(bool _control){id = generateID(); data=NULL; control = _control; p_lock = NULL;}
+	explicit Token(bool _control){id = generateID(); data=NULL; control = _control; p_lock = NULL;}
 	
 	/**
 	 * Constructor for control token with specified value and properties.
 	 * @param _properties The properties of this token.
 	 * @param _control The control value of this token.
 	 */
-	Token(Properties _properties, bool _control)
+	explicit Token(Properties _properties, bool _control)
 	 {id = generateID(); data=NULL; control = _control; properties = _properties; p_lock = NULL;}
 	
 	/**
@@ -97,7 +97,7 @@ public:
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param _data XML content of the data token as data object.
 	 */  
-	Token(Data* _data);
+	explicit Token(Data* _data);
 	
 	/**
 	 * Constructor for data token with specific properties.
@@ -105,7 +105,7 @@ public:
 	 * @param _properties The properties of this data token.
 	 * @param _data The data of this token.
 	 */
-	Token(Properties _properties, Data* _data)
+	explicit Token(Properties _properties, Data* _data)
 	  {id = generateID(); properties = _properties; data = _data; p_lock = NULL;} 
 	
 	/**
@@ -113,7 +113,7 @@ public:
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param element XML content of the data token as DOMElement.
 	 */
-	Token(XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit Token(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Convert this token into a DOMElement.

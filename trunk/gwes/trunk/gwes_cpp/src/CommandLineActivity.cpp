@@ -165,13 +165,13 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
     (!_abort && _exitCode==0) ? setStatus(STATUS_COMPLETED) : setStatus(STATUS_TERMINATED);
 }
 
-string CommandLineActivity::generateOutputDataURL(string edgeExpression) {
+string CommandLineActivity::generateOutputDataURL(const string& edgeExpression) {
 	ostringstream oss;
 	oss << "file://" << _workingDirectory << "/" << edgeExpression << "." << _id << ".dat";
     return oss.str();
 }
 
-string CommandLineActivity::convertUrlToLocalPath(string url) {
+string CommandLineActivity::convertUrlToLocalPath(const string& url) {
 	string *ret = new string(url);
 	string::size_type loc = ret->find("://",0);
 	if (loc != string::npos) ret->erase(0,loc+3);
@@ -182,7 +182,7 @@ string CommandLineActivity::convertUrlToLocalPath(string url) {
  * Note: execute is NOT thread safe, because of changing the working directory!
  * ToDo: make it thread safe.
  */
-string CommandLineActivity::execute(string commandline) {
+string CommandLineActivity::execute(const string& commandline) {
     cout << "gwes::CommandLineActivity::startActivity(" << _id << ").execute(" << commandline << ")" << endl;
     // notify observers
 	if (_observers.size()>0) {

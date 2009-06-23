@@ -263,7 +263,7 @@ public:
 	/**
 	 * Constructor for workflow handler.
 	 */
-	WorkflowHandler(GWES* gwesP, gwdl::Workflow* workflowP, std::string userId);
+	explicit WorkflowHandler(GWES* gwesP, gwdl::Workflow* workflowP, const std::string& userId);
 
 	/**
 	 * Destructor. Does NOT delete workflow.
@@ -273,7 +273,7 @@ public:
 	/**
 	 * Get the identifier of the workflow handler.
 	 */
-	std::string getID() {
+	const std::string& getID() {
 		return _id;
 	}
 
@@ -386,7 +386,7 @@ public:
 	 * Overides gwes::Observer::update().
 	 * This method is called by the source of the channels connected to this workflow handler.
 	 */
-	virtual void update(Event event);
+	virtual void update(const Event& event);
 	
 	/**
 	 * Get the workflow which is handled by this WorkflowHandler.
@@ -406,7 +406,7 @@ public:
 	 * Get the user Id of the user who owns this workflow.
 	 * @return A pointer to the parent GWES.
 	 */
-	std::string getUserId() {
+	const std::string& getUserId() {
 		return _userId;
 	}
 

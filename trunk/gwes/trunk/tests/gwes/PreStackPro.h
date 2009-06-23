@@ -17,7 +17,7 @@ public:
 	/**
 	 * This method is called by the WorkflowHandler each time the workflow or an activity changes.
 	 */
-	virtual void update(gwes::Event event);
+	virtual void update(const gwes::Event& event);
 	
 	/**
 	 * For the back channel communication.
@@ -27,7 +27,7 @@ public:
 	/**
 	 * Execute an algorithm. The inputEvent contains the algorithm name and the input data.
 	 */ 
-	void execute(gwes::Event& inputEvent);
+	void execute(const gwes::Event& inputEvent);
 	
 	pthread_t _thread;
 	struct thread_data {

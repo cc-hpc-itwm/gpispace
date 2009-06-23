@@ -87,7 +87,7 @@ public:
 	 * @param message The message of the event.
 	 * @param dataP A pointer to a map which contains additional data. 
 	 */
-	Event(std::string sourceId, int eventType, std::string message, std::map<std::string,gwdl::Data*>* dataP = NULL) {
+	explicit Event(const std::string& sourceId, int eventType, const std::string& message, std::map<std::string,gwdl::Data*>* dataP = NULL) {
 		_sourceId = sourceId; 
 		_eventType=eventType; 
 		_message = message; 

@@ -97,13 +97,13 @@ public:
 	 * Construct data from DOMElement.
 	 * @param element The DOM representation of this element.
 	 */
-	Data(XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit Data(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Construct data from xml string.
 	 * @param xmlstring The xml string representing the data element.
 	 */
-	Data(std::string xmlstring) throw(WorkflowFormatException);
+	explicit Data(const std::string& xmlstring) throw(WorkflowFormatException);
 	
 	/**
 	 * Convert this into a DOMElement.

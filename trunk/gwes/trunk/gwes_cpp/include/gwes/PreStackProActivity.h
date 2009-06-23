@@ -25,7 +25,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	explicit PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
 	
 	/**
 	 * Destructor.

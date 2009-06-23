@@ -69,7 +69,7 @@ Workflow::Workflow(DOMElement* element)
   }
 }
 
-Workflow::Workflow(string filename) 
+Workflow::Workflow(const string& filename) 
 {
 	// read file
     ifstream file(filename.c_str());
@@ -177,7 +177,7 @@ DOMDocument* Workflow::toDocument()
     return doc;
 }
 
-void Workflow::saveToFile(string filename) {
+void Workflow::saveToFile(const string& filename) {
 	// write file
     ofstream file(filename.c_str());
     if (file.is_open()) {
@@ -201,7 +201,7 @@ Place* Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement)
      throw NoSuchWorkflowElement(message.str());
 }
 
-Place* Workflow::getPlace(string id) throw (NoSuchWorkflowElement)
+Place* Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement)
 {	
 	map<string,Place*>::iterator iter = places.find(id);
 	if (iter!=places.end()) return (iter->second);
@@ -211,7 +211,7 @@ Place* Workflow::getPlace(string id) throw (NoSuchWorkflowElement)
     throw NoSuchWorkflowElement(message.str());
 }
 
-unsigned int Workflow::getPlaceIndex(string id) throw (NoSuchWorkflowElement)
+unsigned int Workflow::getPlaceIndex(const string& id) throw (NoSuchWorkflowElement)
 {
       int j=0;
       for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
@@ -260,7 +260,7 @@ void Workflow::removeTransition(unsigned int i) throw (NoSuchWorkflowElement)
 	transitions.erase(transitions.begin()+i);
 }
 
-Transition* Workflow::getTransition(string id) throw (NoSuchWorkflowElement)
+Transition* Workflow::getTransition(const string& id) throw (NoSuchWorkflowElement)
 {
      for(unsigned int i=0; i<transitions.size(); ++i)
       {
@@ -272,7 +272,7 @@ Transition* Workflow::getTransition(string id) throw (NoSuchWorkflowElement)
      throw NoSuchWorkflowElement(message.str());
 }
 
-unsigned int Workflow::getTransitionIndex(string id) throw (NoSuchWorkflowElement)
+unsigned int Workflow::getTransitionIndex(const string& id) throw (NoSuchWorkflowElement)
 {
      for(unsigned int i=0; i<transitions.size(); ++i)
       {
@@ -296,7 +296,7 @@ Transition* Workflow::getTransition(unsigned int i) throw (NoSuchWorkflowElement
 	return transitions[i];
 }
 
-void Workflow::setTransitions(vector<Transition*> _transitions)
+void Workflow::setTransitions(vector<Transition*>& _transitions)
 {
 	for(vector<Transition*>::iterator it=transitions.begin(); it!=transitions.end(); ++it) delete *it;
 	transitions.clear();

@@ -25,7 +25,7 @@ using namespace std;
 namespace gwdl
 {
 
-Transition::Transition(string _id)
+Transition::Transition(const string& _id)
 {
 	if (_id == "") id=generateID();
 	else id = _id;

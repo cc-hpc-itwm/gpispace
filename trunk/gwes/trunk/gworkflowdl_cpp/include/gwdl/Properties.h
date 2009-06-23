@@ -44,7 +44,7 @@ public:
 	/**
 	 * Constructor from XML.
 	 */
-	Properties(XERCES_CPP_NAMESPACE::DOMNodeList* list);
+	explicit Properties(XERCES_CPP_NAMESPACE::DOMNodeList* list);
 	
 	/**
 	 * Convert this into a DOMElement.
@@ -59,7 +59,7 @@ public:
 	 * @param name The name of the property.
 	 * @param value The value of the property.
 	 */
-	void put(std::string name, std::string value)
+	void put(const std::string& name, const std::string& value)
 	{
 		// key not yet in map
 		if (find(name)==end()) {
@@ -76,7 +76,7 @@ public:
 	 * Remove property with specific name from properties.
 	 * @param name The name of the property.
 	 */
-	void remove(std::string name)
+	void remove(const std::string& name)
 	{
 	  erase(name);
 	}
@@ -86,7 +86,7 @@ public:
 	 * @param name The name of the property.
 	 * @return empty string "" if property with name not found.
 	 */
-	std::string get(std::string name)
+	std::string get(const std::string& name)
 	{
 	  ITR_Properties it = find(name);
       return it != end() ? it->second : "";
@@ -96,7 +96,7 @@ public:
 	 * Test if the properties contain specific property name.
 	 * @param name The name of the property.
 	 */
-	bool contains(std::string name) {
+	bool contains(const std::string& name) {
 	  ITR_Properties it = find(name);
 	  return (it != end());
 	}

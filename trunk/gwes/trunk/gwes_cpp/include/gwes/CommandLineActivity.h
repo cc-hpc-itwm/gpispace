@@ -35,12 +35,13 @@ private:
 	std::string _stdoutfn;
 	std::string _stderrfn;
 	std::string _exitcodefn;
-	std::string generateOutputDataURL(std::string edgeExpression);
-	std::string convertUrlToLocalPath(std::string url);
-	std::string execute(std::string commandline);
+	std::string generateOutputDataURL(const std::string& edgeExpression);
+	std::string convertUrlToLocalPath(const std::string& url);
+	std::string execute(const std::string& commandline);
 
 public:
-	CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	explicit CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	
 	virtual ~CommandLineActivity();
 
 	/**

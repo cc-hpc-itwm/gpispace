@@ -33,7 +33,7 @@ namespace gwdl
 	  setType();
 	}
 	
-    Data::Data(string xmlstring) throw(WorkflowFormatException)
+	Data::Data(const string& xmlstring) throw(WorkflowFormatException)
     {
     	DOMDocument* doc = XMLUtils::Instance()->deserialize(xmlstring);
     	DOMElement* element = doc->getDocumentElement();

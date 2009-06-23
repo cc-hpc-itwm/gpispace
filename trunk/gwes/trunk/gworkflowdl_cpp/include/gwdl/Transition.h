@@ -131,12 +131,12 @@ public:
 	 * Note: The unique identifier can not be changed after creating the transition!
 	 * @param id The unique identifier of this transition. If id is set to "", then an id will be generated automatically. 
 	 */ 
-	Transition(std::string id);
+	explicit Transition(const std::string& id);
 	
 	/**
 	 * Construct transition from DOMElement.
 	 */
-	Transition(Workflow* wf, XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit Transition(Workflow* wf, XERCES_CPP_NAMESPACE::DOMElement* element);
 
 	/**
 	 * Destructor.
@@ -154,13 +154,13 @@ public:
      * get transition ID.
      * @return transition ID
      */
-    std::string& getID() {return id;}
+    const std::string& getID() {return id;}
 
     /**
      * set transition description.
      * @param _description AnalysisTransition Description
      */
-    void setDescription(std::string _description){description = _description;}
+    void setDescription(const std::string& _description){description = _description;}
 
     /**
      * get transition description.
@@ -173,7 +173,7 @@ public:
 	 * Set all the properties of this transition.
 	 * @param props The properties object.
 	 */
-    void setProperties(Properties _properties) {properties = _properties;}
+    void setProperties(Properties& _properties) {properties = _properties;}
 
 	/**
 	 * Get a reference to the properties of this transition.
@@ -318,20 +318,20 @@ public:
      * set transition's status.
      * @param _status transition status
      */
-    void setStatus(TransitionStatus _status) {status = _status;}
+    void setStatus(const TransitionStatus& _status) {status = _status;}
 
     /**
      * get status of the transition.
      * before setStatus getStatus returns DEFAULT_STATUS
      * @return status of Transition
      */
-    TransitionStatus getStatus() {return status;}
+    TransitionStatus& getStatus() {return status;}
 
     /**
      * remove read edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeReadEdge(std::string placeID)
+    void removeReadEdge(const std::string& placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; readEdges.erase(it); break;}
@@ -341,7 +341,7 @@ public:
      * remove input edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeInEdge(std::string placeID)
+    void removeInEdge(const std::string& placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; inEdges.erase(it); break;}
@@ -351,7 +351,7 @@ public:
      * remove write edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeWriteEdge(std::string placeID)
+    void removeWriteEdge(const std::string& placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; writeEdges.erase(it); break;}
@@ -361,7 +361,7 @@ public:
      * remove output edge by place ID.
      * @param placeID Place ID of Edge to remove
      */
-    void removeOutEdge(std::string placeID)
+    void removeOutEdge(const std::string& placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){delete *it; outEdges.erase(it); break;}
@@ -373,7 +373,7 @@ public:
      * @param placeID of Edge to get
      * @return read edge
      */
-    Edge* getReadEdge(std::string placeID)
+    Edge* getReadEdge(const std::string& placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -386,7 +386,7 @@ public:
      * @param placeID of Edge to get
      * @return input edge
      */
-    Edge* getInEdge(std::string placeID)
+    Edge* getInEdge(const std::string& placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -399,7 +399,7 @@ public:
      * @param placeID of Edge to get
      * @return write edge
      */
-    Edge* getWriteEdge(std::string placeID)
+    Edge* getWriteEdge(const std::string& placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
@@ -412,7 +412,7 @@ public:
      * @param placeID Place identifier
      * @return output edge
      */
-    Edge* getOutEdge(std::string placeID)
+    Edge* getOutEdge(const std::string& placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}

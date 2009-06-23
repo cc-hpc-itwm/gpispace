@@ -54,7 +54,7 @@ public:
      * @param userId      The ID of the user who owns the workflow.
      * @return The reference to the workflow.
      */
-    gwdl::Workflow& initiate(std::string gworkflowdl, std::string userId) throw(gwdl::WorkflowFormatException,StateTransitionException);
+    gwdl::Workflow& initiate(const std::string& gworkflowdl, const std::string& userId) throw(gwdl::WorkflowFormatException,StateTransitionException);
 
 	/**
  	 * Initiates a Grid workflow.
@@ -64,7 +64,7 @@ public:
      * @param userId The ID of the user who owns the workflow.
  	 * @return The unique workflow ID.
  	 */
-    std::string initiate(gwdl::Workflow& workflow, std::string userId) throw(StateTransitionException);
+    std::string initiate(gwdl::Workflow& workflow, const std::string& userId) throw(StateTransitionException);
     
     /**
      * Connect a communication channel to a specific workflow handler of this GWES.
@@ -80,7 +80,7 @@ public:
      * @param channel The communication channel containing the source Observer.
      * @param workflowId The identifier of the workflow.
      */ 
-    void connect(Channel* channel, std::string workflowId);
+    void connect(Channel* channel, const std::string& workflowId);
 
     /**
      * Start a certain workflow. 
@@ -98,7 +98,7 @@ public:
      *
      * @param workflowId The identifier of the workflow.
      */
-    void start(std::string workflowId) throw(StateTransitionException,NoSuchWorkflowException);
+    void start(const std::string& workflowId) throw(StateTransitionException,NoSuchWorkflowException);
     
     /**
      * Execute the whole workflow.
@@ -114,7 +114,7 @@ public:
      * 
      * @param workflowId The identifier of the workflow.
      */
-    void execute(std::string workflowId) throw(StateTransitionException,gwdl::WorkflowFormatException);
+    void execute(const std::string& workflowId) throw(StateTransitionException,gwdl::WorkflowFormatException);
 
     /**
      * Suspend a certain workflow.
@@ -130,7 +130,7 @@ public:
      *
      * @param workflowId The identifier of the workflow.
      */
-    void suspend(std::string workflowId) throw(StateTransitionException);
+    void suspend(const std::string& workflowId) throw(StateTransitionException);
 
     /**
      * Resume a certain workflow that has been suspended before.
@@ -144,7 +144,7 @@ public:
      *
      * @param workflowId The identifier of the workflow.
      */
-    void resume(std::string workflowId) throw(StateTransitionException);
+    void resume(const std::string& workflowId) throw(StateTransitionException);
 
     /**
      * Abort a certain workflow.
@@ -162,7 +162,7 @@ public:
      *
      * @param workflowId The identifier of the workflow.
      */
-    void abort(std::string workflowId) throw(StateTransitionException);
+    void abort(const std::string& workflowId) throw(StateTransitionException);
 
     /**
      * Get the current GWorkflowDL document of the workflow specified by its reference.
@@ -178,7 +178,7 @@ public:
      * @param workflowId The identifier of the workflow.
      * @return A reference to the current workflow description as string.
      */
-    std::string& getWorkflowDescription(std::string workflowId);
+    std::string& getWorkflowDescription(const std::string& workflowId);
 
     /**
      * Get the current status code of the workflow specified by its reference.
@@ -214,7 +214,7 @@ public:
      * @param workflowId The identifier of the workflow.
      * @return The current state of the workflow.
      */
-    unsigned int getStatus(std::string workflowId);
+    unsigned int getStatus(const std::string& workflowId);
 
     /**
      * Get the current status string of the workflow specified by its reference.
@@ -230,7 +230,7 @@ public:
      * @param workflowId The identifier of the workflow.
      * @return The current state of the workflow as string.
      */
-    std::string getStatusAsString(std::string workflowId);
+    std::string getStatusAsString(const std::string& workflowId);
 
     /**
      * Get the identifiers of all the workflows that are handled by this Grid Workflow Execution Service.
@@ -253,7 +253,7 @@ public:
      * Remove a specific workflow from gwes.
      * @param workflowId The identifier of the workflow.
      */
-    void remove(std::string workflowId);
+    void remove(const std::string& workflowId);
 
 };
 

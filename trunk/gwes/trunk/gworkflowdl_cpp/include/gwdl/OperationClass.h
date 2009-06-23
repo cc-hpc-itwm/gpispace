@@ -48,7 +48,7 @@ public:
 	/**
 	 * Construct operation class from DOMElement.
 	 */
-	OperationClass(XERCES_CPP_NAMESPACE::DOMElement* element);
+	explicit OperationClass(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Destructor for operation class.
@@ -78,7 +78,7 @@ public:
 	/**
 	 * Set the name of this operation class.
 	 */
-	void setName(std::string _name) {name = _name;}
+	void setName(const std::string& _name) {name = _name;}
 
 	/**
 	 * Get the candidates of this operation class.

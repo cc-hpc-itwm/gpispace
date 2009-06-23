@@ -89,7 +89,7 @@ public:
 	 * @param xmlstring The XML string containing a node.
 	 * @return The corresponding DOMNode.
 	 */
-	XERCES_CPP_NAMESPACE::DOMDocument* deserialize (std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
+	XERCES_CPP_NAMESPACE::DOMDocument* deserialize (const std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
 
 	/**
 	 * Creates an empty document.

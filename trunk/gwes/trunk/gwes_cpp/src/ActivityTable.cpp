@@ -34,7 +34,7 @@ string ActivityTable::put(Activity* activityP) {
 	return id;
 }
 
-Activity* ActivityTable::get(string id) throw (NoSuchActivityException) {
+Activity* ActivityTable::get(const string& id) throw (NoSuchActivityException) {
 	iterator iter=find(id); 
 	if (iter==end()) {
 	     // no such activity
@@ -45,7 +45,7 @@ Activity* ActivityTable::get(string id) throw (NoSuchActivityException) {
 	return iter->second;
 }
 
-void ActivityTable::remove(string id) {
+void ActivityTable::remove(const string& id) {
 	iterator iter=find(id);
 	if (iter==end()) {
 	     // no such activity

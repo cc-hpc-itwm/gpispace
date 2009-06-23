@@ -26,7 +26,7 @@ public:
 	 * Constructor for Channel.
 	 * @param sourceP The local observer which is called by the destination.
 	 */
-	Channel(Observer* sourceP) {_sourceP = sourceP;}
+	explicit Channel(Observer* sourceP) {_sourceP = sourceP;}
 	
 	/**
 	 * Empty Destructor.

@@ -21,7 +21,7 @@ class NoSuchWorkflowException {
 	
 	public:
 		std::string message;
-		NoSuchWorkflowException(std::string _message) 
+		NoSuchWorkflowException(const std::string& _message) 
 		{
 			message = _message;					
 		}

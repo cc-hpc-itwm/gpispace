@@ -71,7 +71,7 @@ protected:
 		return counter++;
 	}
 	
-	void notifyObservers(int type=Event::EVENT_ACTIVITY, std::string message="", std::map<std::string,gwdl::Data*>* data=NULL);
+	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", std::map<std::string,gwdl::Data*>* data=NULL);
 
 public:
 
@@ -127,7 +127,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	Activity(WorkflowHandler* handler, std::string activityImpl, gwdl::OperationCandidate* operation);
+	explicit Activity(WorkflowHandler* handler, const std::string& activityImpl, gwdl::OperationCandidate* operation);
 	
 	/**
 	 * Destructor.
@@ -137,12 +137,12 @@ public:
 	/**
 	 * Get activity ID.
 	 */
-	std::string getID() { return _id; }
+	const std::string& getID() { return _id; }
 	
 	/**
-	 * Get activity ID.
+	 * Get activity class.
 	 */
-	std::string getActivityClass() { return _activityImpl; }
+	std::string& getActivityClass() { return _activityImpl; }
 	
 	/**
 	 * Set the current status of this activity.
@@ -194,7 +194,7 @@ public:
      /**
       * Set activity inputs.
       */
-     void setInputs(std::map<std::string,gwdl::Data*> inputs) {_inputs = inputs; }
+     void setInputs(const std::map<std::string,gwdl::Data*>& inputs) {_inputs = inputs; }
      
      /**
       * Get activity inputs.
@@ -204,7 +204,7 @@ public:
      /**
       * Set activity outputs.
       */
-     void setOutputs(std::map<std::string,gwdl::Data*> outputs) {_outputs = outputs; }
+     void setOutputs(const std::map<std::string,gwdl::Data*>& outputs) {_outputs = outputs; }
      
      /**
       * Get activity outputs.
@@ -214,7 +214,7 @@ public:
      /**
       * Set the fault message of this activity.
       */
-     void setFaultMessage(std::string message) {_faultMessage = message; }
+     void setFaultMessage(const std::string& message) {_faultMessage = message; }
      
      /**
       * Get the activity fault message.
@@ -226,7 +226,7 @@ public:
       * Attach an observer to this activity.
       * @param observerP A pointer to the observer which should be called if this activity changes.
       */
- 	void attachObserver(Observer* observerP);
+ 	 void attachObserver(Observer* observerP);
      
      /**
       * Initiate this activity. Status should switch to INITIATED. Method should only work if the status was
