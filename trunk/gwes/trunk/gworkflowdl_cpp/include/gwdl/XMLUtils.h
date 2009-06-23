@@ -12,8 +12,8 @@
 #include <ostream>
 #include <string>
 // gwdl
-#include "WorkflowFormatException.h"
-#include "XMLDOMErrorHandler.h"
+#include <gwdl/WorkflowFormatException.h>
+#include <gwdl/XMLDOMErrorHandler.h>
 
 namespace gwdl
 {

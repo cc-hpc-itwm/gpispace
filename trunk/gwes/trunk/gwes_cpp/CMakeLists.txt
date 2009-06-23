@@ -1,9 +1,10 @@
 
-file(GLOB hdrs "*.h")
-file(GLOB srcs "*.cpp")
+file(GLOB hdrs "include/gwdl/*.h")
+file(GLOB srcs "src/*.cpp")
 
 # library gwes_cpp
-ADD_LIBRARY(gwes_cpp ${hdrs} ${srcs})
+#ADD_LIBRARY(gwes_cpp ${hdrs} ${srcs})
+ADD_LIBRARY(gwes_cpp ${srcs})
 
 # executable gwes
 message(STATUS "linking gwes with srcs=\"${srcs}\"")

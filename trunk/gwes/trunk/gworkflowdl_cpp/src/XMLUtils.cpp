@@ -12,8 +12,8 @@
 #include <xercesc/framework/Wrapper4InputSource.hpp>
 #include <iostream>
 // gwdl
-#include "XMLUtils.h"
-#include "Defines.h"
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Defines.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

@@ -10,8 +10,8 @@
 #include <string>
 #include <map>
 //gwes
-#include "WorkflowHandler.h"
-#include "NoSuchWorkflowException.h"
+#include <gwes/WorkflowHandler.h>
+#include <gwes/NoSuchWorkflowException.h>
 
 namespace gwes {
 

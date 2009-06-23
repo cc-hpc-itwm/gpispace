@@ -3,8 +3,6 @@
 #include <ostream>
 #include <unistd.h>
 #include <map>
-// gwdl
-#include "../../gworkflowdl_cpp/src/Data.h"
 // test
 #include "PreStackPro.h"
 

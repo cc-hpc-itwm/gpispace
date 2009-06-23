@@ -12,7 +12,7 @@
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
 //gwdl
-#include "OperationCandidate.h"
+#include <gwdl/OperationCandidate.h>
 
 namespace gwdl
 {

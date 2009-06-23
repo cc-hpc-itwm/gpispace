@@ -5,7 +5,7 @@
 #include <ostream>
 #include <pthread.h>
 // gwes
-#include "../../gwes_cpp/src/Observer.h"
+#include <gwes/Observer.h>
 
 class PreStackPro : public gwes::Observer
 {

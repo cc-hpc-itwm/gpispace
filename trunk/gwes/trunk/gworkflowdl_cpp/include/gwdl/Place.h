@@ -14,9 +14,9 @@
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 //gwdl
-#include "Token.h"
-#include "Properties.h"
-#include "CapacityException.h"
+#include <gwdl/Token.h>
+#include <gwdl/Properties.h>
+#include <gwdl/CapacityException.h>
 
 namespace gwdl
 {

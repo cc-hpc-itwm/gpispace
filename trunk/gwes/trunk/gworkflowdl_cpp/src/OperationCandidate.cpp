@@ -10,10 +10,10 @@
 //xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
-#include "OperationCandidate.h"
-#include "XMLUtils.h"
-#include "Defines.h"
-#include "Operation.h"
+#include <gwdl/OperationCandidate.h>
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Defines.h>
+#include <gwdl/Operation.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

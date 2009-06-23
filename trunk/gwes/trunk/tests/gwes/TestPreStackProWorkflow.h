@@ -2,10 +2,8 @@
 #define TESTPRESTACKPROWORKFLOW_H_
 // std
 #include <string>
-// gwdl
-#include "../../gworkflowdl_cpp/src/Workflow.h"
 // gwes
-#include "../../gwes_cpp/src/GWES.h"
+#include <gwes/GWES.h>
 
 gwdl::Workflow& testPreStackProWorkflow(std::string workflowfn, gwes::GWES &gwes);
 

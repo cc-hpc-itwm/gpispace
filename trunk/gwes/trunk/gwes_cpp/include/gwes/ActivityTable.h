@@ -10,8 +10,8 @@
 #include <string>
 #include <map>
 //gwes
-#include "Activity.h"
-#include "NoSuchActivityException.h"
+#include <gwes/Activity.h>
+#include <gwes/NoSuchActivityException.h>
 
 namespace gwes
 {

@@ -7,14 +7,14 @@
 #include <iostream>
 #include <sstream>
 
+#include <assert.h>
+// xerces-c
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
-
-#include <assert.h>
-#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
-#include "../../gworkflowdl_cpp/src/Workflow.h"
-#include "../../gworkflowdl_cpp/src/XMLUtils.h"
+// gwdl
+#include <gwdl/Workflow.h>
+#include <gwdl/XMLUtils.h>
 
 using namespace std;
 using namespace gwdl;

@@ -7,7 +7,7 @@
 #ifndef OBSERVER_H_
 #define OBSERVER_H_
 // gwes
-#include "Event.h"
+#include <gwes/Event.h>
 
 namespace gwes
 {

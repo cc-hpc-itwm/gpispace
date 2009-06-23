@@ -13,11 +13,11 @@
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 // gwdl
-#include "Defines.h"
-#include "Place.h"
-#include "Transition.h"
-#include "Properties.h"
-#include "NoSuchWorkflowElement.h"
+#include <gwdl/Defines.h>
+#include <gwdl/Place.h>
+#include <gwdl/Transition.h>
+#include <gwdl/Properties.h>
+#include <gwdl/NoSuchWorkflowElement.h>
 
 namespace gwdl
 {

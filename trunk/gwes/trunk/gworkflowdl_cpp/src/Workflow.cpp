@@ -12,8 +12,8 @@
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 //gwdl
-#include "Workflow.h"
-#include "XMLUtils.h"
+#include <gwdl/Workflow.h>
+#include <gwdl/XMLUtils.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

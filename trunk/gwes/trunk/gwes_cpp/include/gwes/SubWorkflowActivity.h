@@ -4,33 +4,38 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#ifndef PRESTACKPROACTIVITY_H_
-#define PRESTACKPROACTIVITY_H_
+#ifndef SUBWORKFLOWACTIVITY_H_
+#define SUBWORKFLOWACTIVITY_H_
+// std
+#include <iostream>
+#include <sstream>
+#include <string>
 // gwdl
-#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
+#include <gwdl/Workflow.h>
 // gwes
-#include "Activity.h"
+#include <gwes/Activity.h>
+#include <gwes/GWES.h>
 
-namespace gwes {
+namespace gwes
+{
 
 /**
- * This class is used in order to invoke workflow activities which are related to Pre-StackPro.
+ * The SubWorkflowActivity is a specific implementation of Activity which invokes sub workflows.
  * @version $Id$
- * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>
- */  
-class PreStackProActivity : public Activity {
+ * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
+ */ 
+class SubWorkflowActivity : public Activity
+{
 	
+private:
+	std::string _subworkflowdl;
+	std::string _subworkflowid;
+	gwdl::Workflow* _swfP;
+	GWES* _gwesP;
+
 public:
-	
-	/**
-	 * Constructor.
-	 */
-	PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
-	
-	/**
-	 * Destructor.
-	 */
-	virtual ~PreStackProActivity();
+	SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	virtual ~SubWorkflowActivity();
 
 	/**
 	 * Initiate this activity. Status should switch to INITIATED. Method should only work if the status was
@@ -62,9 +67,9 @@ public:
 	 * Restart this activity. Status should switch to INITIATED. 
 	 */
 	virtual void restartActivity() throw (ActivityException,StateTransitionException);
-
+	
 };
 
 }
 
-#endif /*PRESTACKPROACTIVITY_H_*/
+#endif /*SUBWORKFLOWACTIVITY_H_*/

@@ -8,7 +8,7 @@
 #include <ostream>
 #include <assert.h>
 //gwdl
-#include "../../gworkflowdl_cpp/src/XMLUtils.h"
+#include <gwdl/XMLUtils.h>
 //tests
 #include "TestProperties.h"
 

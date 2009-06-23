@@ -12,8 +12,8 @@
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 // gwdl
-#include "Properties.h"
-#include "Data.h"
+#include <gwdl/Properties.h>
+#include <gwdl/Data.h>
 
 namespace gwdl
 {

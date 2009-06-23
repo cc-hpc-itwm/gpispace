@@ -8,8 +8,8 @@
 #include <iostream>
 #include <sstream>
 // gwes
-#include "GWES.h"
-#include "WorkflowHandler.h"
+#include <gwes/GWES.h>
+#include <gwes/WorkflowHandler.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

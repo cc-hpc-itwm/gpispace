@@ -12,9 +12,9 @@
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
 //gwdl
-#include "Edge.h"
-#include "Operation.h"
-#include "Properties.h"
+#include <gwdl/Edge.h>
+#include <gwdl/Operation.h>
+#include <gwdl/Properties.h>
 
 namespace gwdl
 {

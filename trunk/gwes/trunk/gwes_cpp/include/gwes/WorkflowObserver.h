@@ -8,7 +8,7 @@
 #define WORKFLOWOBSERVER_H_
 
 // gwes
-#include "Observer.h"
+#include <gwes/Observer.h>
 
 namespace gwes
 {

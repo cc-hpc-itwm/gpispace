@@ -10,14 +10,12 @@
 #include <vector>
 #include <pthread.h>
 //gwdl
-#include "../../gworkflowdl_cpp/src/Workflow.h"
-#include "../../gworkflowdl_cpp/src/WorkflowFormatException.h"
-#include "../../gworkflowdl_cpp/src/Transition.h"
+#include <gwdl/Workflow.h>
+#include <gwdl/WorkflowFormatException.h>
 // gwes
-#include "ActivityTable.h"
-#include "StateTransitionException.h"
-#include "Channel.h"
-//#include "GWES.h"
+#include <gwes/ActivityTable.h>
+#include <gwes/StateTransitionException.h>
+#include <gwes/Channel.h>
 
 namespace gwes {
 

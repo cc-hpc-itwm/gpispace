@@ -4,8 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
-// gwdl
-#include "../../gworkflowdl_cpp/src/Workflow.h"
 // tests
 #include "TestGWES.h"
 

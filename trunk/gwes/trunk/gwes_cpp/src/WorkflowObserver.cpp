@@ -8,7 +8,7 @@
 #include <iostream>
 #include <ostream>
 // gwes
-#include "WorkflowObserver.h"
+#include <gwes/WorkflowObserver.h>
 
 using namespace std;
 

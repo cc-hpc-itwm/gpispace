@@ -3,8 +3,8 @@
 #include <fstream>
 #include <sstream>
 // gwes
-#include "../../gwes_cpp/src/WorkflowObserver.h"
-#include "../../gwes_cpp/src/Channel.h"
+#include <gwes/WorkflowObserver.h>
+#include <gwes/Channel.h>
 // test
 #include "TestWorkflow.h"
 

@@ -1,6 +1,6 @@
 #ifndef TESTGWES_H_
 #define TESTGWES_H_
-#include "../../gwes_cpp/src/GWES.h"
+#include <gwes/GWES.h>
 
 void testGWES(gwes::GWES &gwes) ;
 

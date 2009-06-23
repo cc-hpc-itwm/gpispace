@@ -10,10 +10,9 @@
 #include <map>
 #include <string>
 //gwdl
-#include "../../gworkflowdl_cpp/src/Data.h"
-#include "../../gworkflowdl_cpp/src/Token.h"
+#include <gwdl/Token.h>
 //gwes
-#include "SubWorkflowActivity.h"
+#include <gwes/SubWorkflowActivity.h>
 
 using namespace std;
 

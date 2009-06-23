@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 //gwes
-#include "WorkflowHandlerTable.h"
+#include <gwes/WorkflowHandlerTable.h>
 
 using namespace std;
 

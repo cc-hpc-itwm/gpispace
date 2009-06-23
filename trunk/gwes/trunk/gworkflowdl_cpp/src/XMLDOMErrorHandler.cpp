@@ -11,7 +11,7 @@
 #include <ostream>
 #include <sstream>
 // gwdl
-#include "XMLDOMErrorHandler.h"
+#include <gwdl/XMLDOMErrorHandler.h>
 
 using namespace std;
 XERCES_CPP_NAMESPACE_USE

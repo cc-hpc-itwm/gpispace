@@ -7,7 +7,7 @@
 #ifndef CHANNEL_H_
 #define CHANNEL_H_
 //gwes
-#include "Observer.h"
+#include <gwes/Observer.h>
 
 namespace gwes
 {

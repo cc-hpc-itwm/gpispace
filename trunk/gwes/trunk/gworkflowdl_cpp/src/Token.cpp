@@ -10,9 +10,9 @@
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
-#include "Defines.h"
-#include "XMLUtils.h"
-#include "Token.h"
+#include <gwdl/Defines.h>
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Token.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

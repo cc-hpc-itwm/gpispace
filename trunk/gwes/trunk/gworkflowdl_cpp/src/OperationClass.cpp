@@ -8,11 +8,11 @@
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
-#include "Defines.h"
-#include "OperationClass.h"
-#include "Operation.h"
-#include "XMLUtils.h"
-#include "OperationCandidate.h"
+#include <gwdl/Defines.h>
+#include <gwdl/OperationClass.h>
+#include <gwdl/Operation.h>
+#include <gwdl/XMLUtils.h>
+#include <gwdl/OperationCandidate.h>
 
 using namespace std;
 XERCES_CPP_NAMESPACE_USE

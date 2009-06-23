@@ -6,7 +6,7 @@
  */
 #ifndef TESTWORKFLOW_H_
 #define TESTWORKFLOW_H_
-#include "../../gworkflowdl_cpp/src/Workflow.h"
+#include <gwdl/Workflow.h>
 
 void testWorkflow();
 

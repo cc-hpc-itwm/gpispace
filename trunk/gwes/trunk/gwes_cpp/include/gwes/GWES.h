@@ -10,15 +10,13 @@
 #include <string>
 #include <vector>
 //gworkflowdl
-#include "../../gworkflowdl_cpp/src/Workflow.h"
-#include "../../gworkflowdl_cpp/src/Properties.h"
-#include "../../gworkflowdl_cpp/src/WorkflowFormatException.h"
+#include <gwdl/Workflow.h>
+#include <gwdl/WorkflowFormatException.h>
 //gwes
-#include "StateTransitionException.h"
-#include "NoSuchWorkflowException.h"
-#include "WorkflowHandlerTable.h"
-#include "Observer.h"
-#include "Channel.h"
+#include <gwes/StateTransitionException.h>
+#include <gwes/NoSuchWorkflowException.h>
+#include <gwes/WorkflowHandlerTable.h>
+#include <gwes/Channel.h>
 
 namespace gwes
 {

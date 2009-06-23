@@ -12,9 +12,9 @@
 #include <unistd.h>
 #include <string>
 // gwdl
-#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
+#include <gwdl/OperationCandidate.h>
 // gwes
-#include "Activity.h"
+#include <gwes/Activity.h>
 
 #define GWES_TEMP_DIRECTORY "/tmp/.gwes"
 

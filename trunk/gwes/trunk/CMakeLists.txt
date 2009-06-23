@@ -49,7 +49,8 @@ endif ( PKG_CONFIG_FOUND )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
-#include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/gworkflowdl_cpp/include)
+include_directories(${CMAKE_SOURCE_DIR}/gwes_cpp/include)
 #include_directories(${SMC_INCLUDE_DIR})
 
 link_directories(${CMAKE_LIBRARY_PATH})
@@ -64,8 +65,8 @@ set( ENV{GWES_CPP_HOME} ${PROJECT_SOURCE_DIR})
 message(STATUS "ENV GWES_CPP_HOME=${PROJECT_SOURCE_DIR}")
 
 # Reflect the package structure
-add_subdirectory(gworkflowdl_cpp/src)
-add_subdirectory(gwes_cpp/src)
+add_subdirectory(gworkflowdl_cpp)
+add_subdirectory(gwes_cpp)
 enable_testing()
 add_subdirectory(tests)
 

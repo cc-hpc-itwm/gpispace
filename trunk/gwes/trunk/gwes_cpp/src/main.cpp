@@ -5,9 +5,9 @@
  * All rights reserved. 
  */
 //gwes
-#include "GWES.h"
-#include "WorkflowObserver.h"
-#include "Channel.h"
+#include <gwes/GWES.h>
+#include <gwes/WorkflowObserver.h>
+#include <gwes/Channel.h>
 
 using namespace std;
 using namespace gwdl;

@@ -12,7 +12,7 @@
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 // gwdl
-#include "OperationClass.h"
+#include <gwdl/OperationClass.h>
 
 namespace gwdl
 {

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 // gwes
-#include "../../gwes_cpp/src/Channel.h"
+#include <gwes/Channel.h>
 // test
 #include "PreStackPro.h"
 #include "TestPreStackProWorkflow.h"

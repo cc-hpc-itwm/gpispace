@@ -9,8 +9,8 @@
 #include <sstream>
 #include <unistd.h>
 //gwes
-#include "Activity.h"
-#include "WorkflowHandler.h"
+#include <gwes/Activity.h>
+#include <gwes/WorkflowHandler.h>
 
 using namespace std;
 

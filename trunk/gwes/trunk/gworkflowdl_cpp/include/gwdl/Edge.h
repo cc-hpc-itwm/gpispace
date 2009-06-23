@@ -9,7 +9,7 @@
 //std
 #include <string>
 //gwdl
-#include "Place.h"
+#include <gwdl/Place.h>
 
 namespace gwdl
 {

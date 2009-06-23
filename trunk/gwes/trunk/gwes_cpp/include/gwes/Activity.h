@@ -11,13 +11,13 @@
 #include <map>
 #include <vector>
 //gwdl
-#include "../../gworkflowdl_cpp/src/Data.h"
-#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
+#include <gwdl/Data.h>
+#include <gwdl/OperationCandidate.h>
 //gwes
-#include "ActivityException.h"
-#include "StateTransitionException.h"
-#include "Observer.h"
-#include "Event.h"
+#include <gwes/ActivityException.h>
+#include <gwes/StateTransitionException.h>
+#include <gwes/Observer.h>
+#include <gwes/Event.h>
 
 namespace gwes {
 

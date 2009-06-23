@@ -7,8 +7,8 @@
 #include <iostream>
 #include <sstream>
 // gwdl
-#include "XMLUtils.h"
-#include "Data.h"
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Data.h>
 
 using namespace std;
 using namespace gwdl;

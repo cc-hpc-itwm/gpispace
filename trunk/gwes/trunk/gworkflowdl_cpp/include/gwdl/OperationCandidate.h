@@ -13,8 +13,8 @@
 #include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/dom/DOM.hpp>
 //gwdl
-#include "XMLUtils.h"
-#include "Defines.h"
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Defines.h>
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define S(str) XMLString::transcode(str)

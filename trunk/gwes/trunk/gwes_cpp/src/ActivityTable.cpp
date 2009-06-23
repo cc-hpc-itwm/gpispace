@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 //gwes
-#include "ActivityTable.h"
+#include <gwes/ActivityTable.h>
 
 using namespace std;
 

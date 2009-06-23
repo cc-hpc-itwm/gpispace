@@ -10,10 +10,10 @@
 #include <unistd.h>
 #include <map>
 //gwes
-#include "WorkflowHandler.h"
-#include "CommandLineActivity.h"
-#include "PreStackProActivity.h"
-#include "SubWorkflowActivity.h"
+#include <gwes/WorkflowHandler.h>
+#include <gwes/CommandLineActivity.h>
+#include <gwes/PreStackProActivity.h>
+#include <gwes/SubWorkflowActivity.h>
 
 using namespace std;
 using namespace gwdl;

@@ -12,7 +12,7 @@
 // xerces
 #include <xercesc/dom/DOM.hpp>
 // gwdl
-#include "WorkflowFormatException.h"
+#include <gwdl/WorkflowFormatException.h>
 
 namespace gwdl
 {

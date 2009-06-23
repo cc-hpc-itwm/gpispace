@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
-#include "../../gworkflowdl_cpp/src/OperationCandidate.h"
+// tests
 #include "TestWorkflow.h"
 
 using namespace std;

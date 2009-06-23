@@ -10,7 +10,7 @@
 #include <string>
 #include <map>
 // gwdl
-#include "../../gworkflowdl_cpp/src/Data.h"
+#include <gwdl/Data.h>
 
 namespace gwes
 {
