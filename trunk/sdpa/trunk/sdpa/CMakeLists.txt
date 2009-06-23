@@ -3,6 +3,7 @@ file(GLOB srcs "*.cpp")
 
 add_subdirectory(modules)
 add_subdirectory(events)
+add_subdirectory(daemon)
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
 
