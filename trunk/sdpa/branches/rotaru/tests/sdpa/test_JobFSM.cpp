@@ -3,10 +3,11 @@
 #include "sdpa/jobFSM/JobFSM.hpp"
 #include <string>
 #include <list>
+#include <sdpa/memory.hpp>
 
 using namespace std;
-
 using namespace sdpa::tests;
+using namespace sdpa::events;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CJobFSMTest );
 
@@ -28,22 +29,34 @@ void CJobFSMTest::tearDown() { //stop the finite state machine
 
 void CJobFSMTest::testJobFSM()
 {
-	list<sc::event_base*> listEvents;
+	list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
-	listEvents.push_back( new QueryJobStatusEvent(0));
-	listEvents.push_back( new RunJobEvent(10));
-	listEvents.push_back( new CancelJobEvent(10));
-	listEvents.push_back( new CancelJobAckEvent(10));
-	listEvents.push_back( new JobFinishedEvent(10));
+	string strEmpty("");
+	string strTen("10");
 
-	listEvents.push_back( new QueryJobStatusEvent(10));
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pQueryJobStatusEvent);
+
+	RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pRunJobEvent);
+
+	CancelJobEvent::Ptr pCancelJobEvent(new CancelJobEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pCancelJobEvent);
+
+	CancelJobAckEvent::Ptr pCancelJobAckEvent(new CancelJobAckEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pCancelJobAckEvent);
+
+	JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pJobFinishedEvent);
+
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pQueryJobStatusEvent2);
 
 	while( !listEvents.empty() )
 	{
-		sc::event_base* pEvt = listEvents.front();
+		sdpa::shared_ptr<sc::event_base> pEvt = listEvents.front();
 		m_JobFSM.process_event(*pEvt);
 
 		listEvents.pop_front();
-		delete dynamic_cast<JobEvent*>(pEvt);
 	}
 }

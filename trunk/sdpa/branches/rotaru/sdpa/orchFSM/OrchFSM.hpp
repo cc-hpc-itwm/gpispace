@@ -7,26 +7,28 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
-#include <MgmtEvent.hpp>
-#include <StartUpEvent.hpp>
-#include <InterruptEvent.hpp>
-#include <LifeSignEvent.hpp>
-#include <DeleteJobEvent.hpp>
-#include <RequestJobEvent.hpp>
-#include <SubmitAckEvent.hpp>
-#include <ConfigRequestEvent.hpp>
+#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/StartUpEvent.hpp>
+#include <sdpa/events/InterruptEvent.hpp>
+#include <sdpa/events/LifeSignEvent.hpp>
+#include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/RequestJobEvent.hpp>
+#include <sdpa/events/SubmitAckEvent.hpp>
+#include <sdpa/events/ConfigRequestEvent.hpp>
+//#include <seda/Strategy.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
 
-using namespace std;
+//using namespace std;
+using namespace sdpa::events;
 
 // OrchFSM states (forward declarations)
 struct Down;
 struct Up;
 
 // The FSM
-struct OrchFSM : sc::state_machine<OrchFSM, Down>
+struct OrchFSM : /*public seda::Strategy,*/public sc::state_machine<OrchFSM, Down>
 {
 	void action_startup_ok(const StartUpEvent& e);
 	void action_startup_nok(const StartUpEvent& e);
@@ -40,7 +42,11 @@ struct OrchFSM : sc::state_machine<OrchFSM, Down>
 
 	void printStates();
 
+
 private:
+	// Scheduler::ptr_t scheduler;
+	// something like typedef std::map<string, Job> with synchronization
+	// JobMap job_map; // public accessor functions for the scheduler
 };
 
 struct Down : sc::simple_state<Down, OrchFSM>
@@ -48,8 +54,8 @@ struct Down : sc::simple_state<Down, OrchFSM>
 	typedef mpl::list< sc::custom_reaction<StartUpEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Down() { cout <<" enter state 'Down'" << endl; }
-	~Down() { cout <<" leave state 'Down'" << endl; }
+	Down() { std::cout <<" enter state 'Down'" << std::endl; }
+	~Down() { std::cout <<" leave state 'Down'" << std::endl; }
 
 	sc::result react( const StartUpEvent& );
 	sc::result react( const sc::exception_thrown & e);
@@ -66,8 +72,8 @@ typedef mpl::list< sc::custom_reaction<InterruptEvent>,
                    sc::custom_reaction<ConfigRequestEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Up() { cout << " enter state 'Up'" << endl; }
-	~Up() { cout << " leave state 'Up'" << endl; }
+	Up() { std::cout << " enter state 'Up'" << std::endl; }
+	~Up() { std::cout << " leave state 'Up'" << std::endl; }
 
 	sc::result react( const InterruptEvent& );
 	sc::result react( const LifeSignEvent& );

@@ -5,8 +5,8 @@
 #include <list>
 
 using namespace std;
-
 using namespace sdpa::tests;
+using namespace sdpa::events;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( COrchFSMTest );
 
@@ -30,15 +30,15 @@ void COrchFSMTest::testOrchFSM()
 {
 	list<sc::event_base*> listEvents;
 
-	listEvents.push_back( new StartUpEvent());
-	listEvents.push_back( new LifeSignEvent());
+	string strEmpty("");
 
-	listEvents.push_back( new RequestJobEvent());
-	listEvents.push_back( new SubmitAckEvent());
-	listEvents.push_back( new DeleteJobEvent());
-	listEvents.push_back( new ConfigRequestEvent());
-	listEvents.push_back( new InterruptEvent());
-
+	listEvents.push_back( new StartUpEvent(strEmpty,strEmpty));
+	listEvents.push_back( new LifeSignEvent(strEmpty,strEmpty));
+	listEvents.push_back( new RequestJobEvent(strEmpty,strEmpty));
+	listEvents.push_back( new SubmitAckEvent(strEmpty,strEmpty));
+	listEvents.push_back( new DeleteJobEvent(strEmpty,strEmpty));
+	listEvents.push_back( new ConfigRequestEvent(strEmpty,strEmpty));
+	listEvents.push_back( new InterruptEvent(strEmpty,strEmpty));
 
 	while( !listEvents.empty() )
 	{
@@ -48,5 +48,4 @@ void COrchFSMTest::testOrchFSM()
 		listEvents.pop_front();
 		delete dynamic_cast<MgmtEvent*>(pEvt);
 	}
-
 }

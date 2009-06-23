@@ -1,13 +1,26 @@
-#ifndef JOBEVENT_H
-#define JOBEVENT_H
+#ifndef SDPA_JOB_EVENT_HPP
+#define SDPA_JOB_EVENT_HPP 1
 
-struct JobEvent {
-	JobEvent(int id = -1 ) { m_nJobID = id; }
-	virtual ~JobEvent() {}
-    void SetJobID( int id ) { m_nJobID = id; }
-    int GetJobID() const { return m_nJobID; }
-private:
-	int m_nJobID;
-};
+#include <string>
 
-#endif
+#include <sdpa/memory.hpp>
+#include <sdpa/Job.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
+
+namespace sdpa {
+namespace events {
+    class JobEvent : public sdpa::events::SDPAEvent {
+    public:
+        typedef sdpa::shared_ptr<JobEvent> Ptr;
+
+        JobEvent(const address_t &from, const address_t &to, const sdpa::Job::job_id_t &job_id = sdpa::Job::job_id_t())
+          : SDPAEvent(to, from), job_id_(job_id) {}
+        ~JobEvent() {}
+
+        const sdpa::Job::job_id_t & job_id() const { return job_id_; }
+    private:
+        sdpa::Job::job_id_t job_id_;
+    };
+}}
+
+#endif // SDPA_JOB_EVENT_HPP

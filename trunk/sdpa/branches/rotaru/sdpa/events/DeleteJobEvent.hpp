@@ -1,5 +1,5 @@
-#ifndef DELETEJOBEVENT_HPP
-#define DELETEJOBEVENT_HPP
+#ifndef SDPA_DELETEJOBEVENT_HPP
+#define SDPA_DELETEJOBEVENT_HPP
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -7,10 +7,19 @@
 
 namespace sc = boost::statechart;
 
-struct DeleteJobEvent : MgmtEvent, sc::event<DeleteJobEvent>
-{
-	DeleteJobEvent() : MgmtEvent() { std::cout << "Create event 'DeleteJobEvent'"<< std::endl; }
-	virtual ~DeleteJobEvent() { std::cout << "Delete event 'DeleteJobEvent'"<< std::endl; }
-};
+namespace sdpa {
+namespace events {
+    class DeleteJobEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::DeleteJobEvent> {
+    public:
+        typedef sdpa::shared_ptr<DeleteJobEvent> Ptr;
+
+        DeleteJobEvent(const address_t &from, const address_t &to) : MgmtEvent(from, to) {
+        	std::cout << "Create event 'DeleteJobEvent'"<< std::endl; }
+
+    	virtual ~DeleteJobEvent() { std::cout << "Delete event 'DeleteJobEvent'"<< std::endl; }
+
+    	std::string str() const { std::cout<<from()<<" - DeleteJobEvent -> "<<to()<<std::endl; }
+    };
+}}
 
 #endif

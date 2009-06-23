@@ -116,8 +116,7 @@ include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 # Reflect the package structure
 add_subdirectory(sdpa)
-add_subdirectory(daemons)
-add_subdirectory(cmdline)
+add_subdirectory(apps)
 enable_testing()
 add_subdirectory(tests)
 

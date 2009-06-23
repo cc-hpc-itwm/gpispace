@@ -1,16 +1,26 @@
-#ifndef CANCELJOBEVENT_HPP
-#define CANCELJOBEVENT_HPP
+#ifndef SDPA_CANCELJOBEVENT_HPP
+#define SDPA_CANCELJOBEVENT_HPP
 
-// FSM events
 #include <iostream>
 #include <boost/statechart/event.hpp>
 #include <JobEvent.hpp>
 namespace sc = boost::statechart;
 
-struct CancelJobEvent : JobEvent, sc::event<CancelJobEvent>
-{
-	CancelJobEvent(int JobID) : JobEvent(JobID) { std::cout << "Create event 'CancelJobEvent'"<< std::endl; }
-	virtual ~CancelJobEvent() { std::cout << "Delete event 'CancelJobEvent'"<< std::endl; }
-};
+namespace sdpa {
+namespace events {
+	class CancelJobEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::CancelJobEvent> {
+	public:
+		typedef sdpa::shared_ptr<CancelJobEvent> Ptr;
+
+		CancelJobEvent(const address_t& from, const address_t& to, const sdpa::Job::job_id_t& job_id = sdpa::Job::job_id_t())
+          :  sdpa::events::JobEvent( from, to, job_id ) {
+			std::cout << "Create event 'CancelJobEvent'"<< std::endl; }
+
+		virtual ~CancelJobEvent() {
+			std::cout << "Delete event 'CancelJobEvent'"<< std::endl; }
+
+		std::string str() const { std::cout<<from()<<" - CancelJobEvent -> "<<to()<<std::endl; }
+	};
+}}
 
 #endif

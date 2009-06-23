@@ -1,5 +1,7 @@
 #include "OrchFSM.hpp"
 
+using namespace std;
+
 void  OrchFSM :: action_startup_ok(const StartUpEvent& e){
 	cout <<"process action 'action_startup'"<< endl;
 }
@@ -13,6 +15,8 @@ void  OrchFSM :: action_interrupt(const InterruptEvent& e){
 }
 
 void  OrchFSM :: action_lifesign(const LifeSignEvent& e){
+
+	//lifesign sghould be re-directed to scheduler
 	cout <<"process action 'action_lifesign'"<< endl;
 }
 

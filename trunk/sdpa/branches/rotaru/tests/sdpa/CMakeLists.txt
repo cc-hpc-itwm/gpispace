@@ -9,8 +9,11 @@ file(GLOB testSrc "test_*.cpp")
 file(GLOB allsrcs ${CMAKE_SOURCE_DIR}/tests/main.cpp ${srcs})
 
 add_executable(sdpa_test_suite ${allsrcs})
-target_link_libraries(sdpa_test_suite sdpa jobFSM orchFSM sdpa-events)
-target_link_libraries(sdpa_test_suite)
+target_link_libraries(sdpa_test_suite sdpa)
+target_link_libraries(sdpa_test_suite sdpa-modules)
+target_link_libraries(sdpa_test_suite sdpa-events)
+target_link_libraries(sdpa_test_suite jobFSM)
+target_link_libraries(sdpa_test_suite orchFSM)
 target_link_libraries(sdpa_test_suite dl)
 
 # test module

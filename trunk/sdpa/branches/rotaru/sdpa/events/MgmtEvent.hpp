@@ -1,15 +1,21 @@
-#ifndef MGMTEVENT_HPP
-#define MGMTEVENT_HPP
+#ifndef SDPA_MGMT_EVENT_HPP
+#define SDPA_MGMT_EVENT_HPP 1
 
-#include <iostream>
-#include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
+#include <string>
 
-struct MgmtEvent {
-	MgmtEvent( ) { }
-	virtual ~MgmtEvent() {}
+#include <sdpa/memory.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
 
-private:
-};
+namespace sdpa {
+namespace events {
+    class MgmtEvent : public sdpa::events::SDPAEvent {
+    public:
+        typedef sdpa::shared_ptr<MgmtEvent> Ptr;
 
-#endif
+        MgmtEvent(const address_t &from, const address_t &to)
+          : SDPAEvent(to, from) {}
+        ~MgmtEvent() {}
+    };
+}}
+
+#endif // SDPA_JOB_EVENT_HPP

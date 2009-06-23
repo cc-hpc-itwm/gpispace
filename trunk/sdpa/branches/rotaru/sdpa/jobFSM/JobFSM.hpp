@@ -8,19 +8,20 @@
 #include <boost/statechart/exception_translator.hpp>
 
 //Include the job related events here
-#include <RunJobEvent.hpp>
-#include <JobFailedEvent.hpp>
-#include <QueryJobStatusEvent.hpp>
-#include <JobStatusAnswerEvent.hpp>
-#include <CancelJobEvent.hpp>
-#include <CancelJobAckEvent.hpp>
-#include <JobFinishedEvent.hpp>
-#include <RetriveResultsEvent.hpp>
+#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/QueryJobStatusEvent.hpp>
+#include <sdpa/events/JobStatusAnswerEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/RetriveResultsEvent.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
 
 using namespace std;
+using namespace sdpa::events;
 
 // FSM states (forward declarations)
 struct Pending;

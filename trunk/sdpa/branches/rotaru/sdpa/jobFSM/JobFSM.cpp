@@ -37,7 +37,7 @@ sc::result Pending::react(const sc::exception_thrown & e)
 	catch ( ... )
 	{
 	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
+	  // state(s). The state machine is termi nated and the
 	  // exception rethrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();

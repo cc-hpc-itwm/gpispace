@@ -8,15 +8,19 @@
 void OrchFSM :: printStates()
 {
 	for( state_iterator it = state_begin(); it != state_end(); it++ )
-		cout<<"State "<<typeid(*it).name()<<endl;
+		std::cout<<"State "<<typeid(*it).name()<<std::endl;
 }
 
 sc::result Down::react(const StartUpEvent& e)
 {
-	//if( Successfully configured )
+	//try - catch and use boolean
+
+	//try {
+		//configure(e.config());
 		return transit<Up>(&OrchFSM::action_startup_ok, e); // successfully configured and all services started-up
-	/*else
-		return transit<Down>(&OrchFSM::action_startup_nok, e); // !(successfully configured and all services started-up)*/
+	/*}catch( ... ) {
+		return transit<Down>(&OrchFSM::action_startup_nok, e); // !(successfully configured and all services started-up)
+	}*/
 }
 
 
