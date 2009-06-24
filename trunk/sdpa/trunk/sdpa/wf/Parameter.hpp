@@ -3,9 +3,9 @@
 
 #include <string>
 #include <ostream>
-#include <sdpa/daemon/Token.hpp>
+#include <sdpa/wf/Token.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa { namespace wf {
   /**
     This class describes the parameter to an activity.
 
@@ -65,5 +65,5 @@ namespace sdpa { namespace daemon {
   };
 }}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Parameter &p);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p);
 #endif

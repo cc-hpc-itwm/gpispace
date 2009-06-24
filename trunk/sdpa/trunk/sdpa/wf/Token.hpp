@@ -23,7 +23,7 @@
 #include <boost/any.hpp>
 #include <sdpa/Properties.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa { namespace wf {
   /**
     A class representing a Token.
 
@@ -105,6 +105,6 @@ namespace sdpa { namespace daemon {
   };
 }}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Token &t);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Token &t);
 
 #endif // SDPA_TOKEN_HPP

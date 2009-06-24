@@ -6,9 +6,9 @@
 #include <ostream>
 
 #include <sdpa/Properties.hpp>
-#include <sdpa/daemon/Parameter.hpp>
+#include <sdpa/wf/Parameter.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa { namespace wf {
   /**
     This class describes an abstract activity to be executed.
 
@@ -18,7 +18,7 @@ namespace sdpa { namespace daemon {
     */
   class Activity : public sdpa::Properties {
   public:
-    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::daemon::Parameter
+    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::wf::Parameter
 
     /**
       This class encapsulates a method call to a generic method.
@@ -28,7 +28,7 @@ namespace sdpa { namespace daemon {
       invoked using a generic input parameter list and a generic output
       parameter list.
 
-      @see sdpa::daemon::Parameter
+      @see sdpa::wf::Parameter
      */
     class Method {
       public:
@@ -98,6 +98,6 @@ namespace sdpa { namespace daemon {
   };
 }}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Activity &a);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a);
 
 #endif

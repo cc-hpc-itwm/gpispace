@@ -1,6 +1,6 @@
 #include "Parameter.hpp"
 
-using namespace sdpa::daemon;
+using namespace sdpa::wf;
 
 Parameter::Parameter(const Token &token, const std::string &name, EdgeType edge_type)
   : token_(token), name_(name), edge_type_(edge_type) {
@@ -41,7 +41,7 @@ void Parameter::writeTo(std::ostream &os) const {
   os << name() << "=" << token();
 }
 
-std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Parameter &p) {
+std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p) {
   p.writeTo(os);
   return os;
 }

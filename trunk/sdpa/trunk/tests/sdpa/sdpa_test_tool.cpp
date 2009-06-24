@@ -2,9 +2,9 @@
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/LoggingConfigurator.hpp>
 
-#include <sdpa/daemon/Token.hpp>
-#include <sdpa/daemon/Parameter.hpp>
-#include <sdpa/daemon/Activity.hpp>
+#include <sdpa/wf/Token.hpp>
+#include <sdpa/wf/Parameter.hpp>
+#include <sdpa/wf/Activity.hpp>
 
 #include <iostream>
 
@@ -30,12 +30,12 @@ int main(int argc, char **argv) {
     std::clog << "id = " << job->id() << std::endl;
     std::clog << "desc = " << job->description() << std::endl;
 
-    sdpa::daemon::Activity activity("activity-1", sdpa::daemon::Activity::Method("test.so", "loopStep"));
-    activity.add_input(sdpa::daemon::Parameter
-        (sdpa::daemon::Token(0), "i", sdpa::daemon::Parameter::INPUT_EDGE)
+    sdpa::wf::Activity activity("activity-1", sdpa::wf::Activity::Method("test.so", "loopStep"));
+    activity.add_input(sdpa::wf::Parameter
+        (sdpa::wf::Token(0), "i", sdpa::wf::Parameter::INPUT_EDGE)
     );
-    activity.add_output(sdpa::daemon::Parameter
-        (sdpa::daemon::Token(), "i", sdpa::daemon::Parameter::OUTPUT_EDGE)
+    activity.add_output(sdpa::wf::Parameter
+        (sdpa::wf::Token(), "i", sdpa::wf::Parameter::OUTPUT_EDGE)
     );
     std::clog << "activity = " << activity << std::endl;
 }

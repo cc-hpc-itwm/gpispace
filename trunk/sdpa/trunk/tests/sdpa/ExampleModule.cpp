@@ -5,7 +5,7 @@ using namespace sdpa::modules;
 
 // module function implementations
 void HelloWorld(const sdpa::modules::Module::input_data_t &in, sdpa::modules::Module::output_data_t &out) {
-  out.push_back(sdpa::daemon::Token(std::string("hello world")));
+  out.push_back(sdpa::wf::Token(std::string("hello world")));
 }
 void DoNothing(const sdpa::modules::Module::input_data_t &in, sdpa::modules::Module::output_data_t &out) {
 }

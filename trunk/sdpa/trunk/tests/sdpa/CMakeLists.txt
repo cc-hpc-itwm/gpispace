@@ -16,6 +16,7 @@ add_dependencies(sdpa_test_suite generate_PerformanceTest)
 target_link_libraries(sdpa_test_suite sdpa-test)
 target_link_libraries(sdpa_test_suite sdpa)
 target_link_libraries(sdpa_test_suite sdpa-modules)
+target_link_libraries(sdpa_test_suite sdpa-wf)
 target_link_libraries(sdpa_test_suite sdpa-daemon)
 target_link_libraries(sdpa_test_suite dl)
 
@@ -23,6 +24,6 @@ target_link_libraries(sdpa_test_suite dl)
 add_library(example-mod SHARED ExampleModule.cpp)
 
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
-target_link_libraries(sdpa_test_tool sdpa sdpa-daemon)
+target_link_libraries(sdpa_test_tool sdpa sdpa-wf sdpa-daemon)
 
 add_test(sdpa_test_tool ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_tool)
