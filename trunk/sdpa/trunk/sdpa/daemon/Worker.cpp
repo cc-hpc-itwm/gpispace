@@ -4,7 +4,7 @@
 using namespace sdpa::daemon;
 
 Worker::Worker(const std::string &name, const location_t &location)
-  : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name_),
+  : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
     location_(location),
     tstamp_(sdpa::util::now()) {
@@ -15,7 +15,7 @@ void Worker::update(const sdpa::events::SDPAEvent &event) {
   tstamp_ = sdpa::util::now();
 }
 
-void Worker::dispatch(Job::ptr_t &job) {
+void Worker::dispatch(const Job::ptr_t &job) {
   SDPA_LOG_DEBUG("appending job(" << job->id() << ") to the pending queue");
   pending_.push_back(job);
 }

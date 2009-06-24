@@ -5,6 +5,7 @@
 
 #include <tests/sdpa/test_Module.hpp>
 #include <tests/sdpa/test_Token.hpp>
+#include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_FSMPerformance.hpp>
 
 namespace sdpa { namespace tests {
@@ -14,6 +15,7 @@ namespace sdpa { namespace tests {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
       suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
+      suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       return suiteOfTests;
     }

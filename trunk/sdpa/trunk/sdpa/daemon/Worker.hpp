@@ -43,7 +43,7 @@ namespace sdpa { namespace daemon {
     /**
       Add a new job to the pending queue of this worker.
       */
-    void dispatch(Job::ptr_t &job);
+    void dispatch(const Job::ptr_t &job);
 
     /**
       Time of last received event designated to this worker.
