@@ -26,4 +26,6 @@ add_library(example-mod SHARED ExampleModule.cpp)
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
 target_link_libraries(sdpa_test_tool sdpa sdpa-wf sdpa-daemon)
 
+# adding the tests
+add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(sdpa_test_tool ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_tool)
