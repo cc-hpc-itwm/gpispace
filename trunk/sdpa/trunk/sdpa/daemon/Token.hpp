@@ -23,7 +23,7 @@
 #include <boost/any.hpp>
 #include <sdpa/Properties.hpp>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
   /**
     A class representing a Token.
 
@@ -103,8 +103,8 @@ namespace sdpa {
       any_t data_;
       bool initialized_;
   };
-}
+}}
 
-std::ostream & operator<<(std::ostream & os, const sdpa::Token &t);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Token &t);
 
 #endif // SDPA_TOKEN_HPP

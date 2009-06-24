@@ -1,6 +1,6 @@
 #include "Node.hpp"
 
-using namespace sdpa;
+using namespace sdpa::daemon;
 
 Node::Node(const std::string &name, const std::string &location)
   : name_(name), location_(location), tstamp_(sdpa::util::now()) {}

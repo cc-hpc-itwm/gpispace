@@ -40,10 +40,10 @@ void ModuleTest::testModuleFunctionCall() {
   sdpa::modules::Module::input_data_t in;
   sdpa::modules::Module::output_data_t out;
 
-  in.push_back(sdpa::Token(42));
+  in.push_back(sdpa::daemon::Token(42));
   mod.call("HelloWorld", in, out);
   CPPUNIT_ASSERT_EQUAL((sdpa::modules::Module::output_data_t::size_type)1, out.size());
-  sdpa::Token token(out.front());
+  sdpa::daemon::Token token(out.front());
   CPPUNIT_ASSERT_EQUAL(std::string("hello world"), token.as<std::string>());
 }
 

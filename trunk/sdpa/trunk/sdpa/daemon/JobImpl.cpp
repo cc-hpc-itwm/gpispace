@@ -1,6 +1,6 @@
 #include "JobImpl.hpp"
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
     JobImpl::JobImpl(const Job::job_id_t &id,
                      const Job::job_desc_t &desc,
                      const Job::job_id_t &parent)
@@ -43,5 +43,4 @@ namespace sdpa {
     Job::ptr_t JobImpl::get_subjob(const job_id_t & jid) {
         return subjobs_[jid];
     }
-}
-
+}}

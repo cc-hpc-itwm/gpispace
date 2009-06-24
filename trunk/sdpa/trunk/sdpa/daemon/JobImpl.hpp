@@ -1,11 +1,11 @@
 #ifndef SDPA_JOB_IMPL_HPP
 #define SDPA_JOB_IMPL_HPP 1
 
-#include <sdpa/Job.hpp>
+#include <sdpa/daemon/Job.hpp>
 
 #include <map>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
     class JobImpl : public Job {
     public:
         typedef std::map<Job::job_id_t, Job::ptr_t> job_list_t;
@@ -39,6 +39,6 @@ namespace sdpa {
         Job::data_t output_;
         job_list_t subjobs_;
     };
-}
+}}
 
 #endif

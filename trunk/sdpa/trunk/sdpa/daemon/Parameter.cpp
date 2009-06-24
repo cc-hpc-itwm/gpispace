@@ -1,20 +1,22 @@
 #include "Parameter.hpp"
 
-sdpa::Parameter::Parameter(const sdpa::Token &token, const std::string &name, EdgeType edge_type)
+using namespace sdpa::daemon;
+
+Parameter::Parameter(const Token &token, const std::string &name, EdgeType edge_type)
   : token_(token), name_(name), edge_type_(edge_type) {
   }
 
-sdpa::Parameter::Parameter(const sdpa::Parameter &other)
+Parameter::Parameter(const Parameter &other)
   : token_(other.token()), name_(other.name()), edge_type_(other.edge_type()) {
-  }
+}
 
-const sdpa::Parameter& sdpa::Parameter::operator=(const sdpa::Parameter &rhs) {
+const Parameter& Parameter::operator=(const Parameter &rhs) {
   token_ = rhs.token();
   name_ = rhs.name();
   edge_type_ = rhs.edge_type();
 }
 
-void sdpa::Parameter::writeTo(std::ostream &os) const {
+void Parameter::writeTo(std::ostream &os) const {
   switch (edge_type()) {
     case INPUT_EDGE:
       os << "i";
@@ -39,7 +41,7 @@ void sdpa::Parameter::writeTo(std::ostream &os) const {
   os << name() << "=" << token();
 }
 
-std::ostream & operator<<(std::ostream & os, const sdpa::Parameter &p) {
+std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Parameter &p) {
   p.writeTo(os);
   return os;
 }

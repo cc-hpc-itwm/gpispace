@@ -4,10 +4,10 @@
 #include <list>
 #include <string>
 #include <sdpa/util.hpp>
-#include <sdpa/Job.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
   // TODO: to be replaced by a real class (synchronization!)
   typedef std::list<Job::ptr_t> JobQueue;
 
@@ -35,6 +35,6 @@ namespace sdpa {
     JobQueue pending_queue_; //! the queue of jobs assigned to this node (not yet confirmed)
     JobQueue submitted_queue_; //! the queue of jobs assigned to this node (successfully submitted)
   };
-}
+}}
 
 #endif

@@ -1,6 +1,6 @@
 #include "Activity.hpp"
 
-using namespace sdpa;
+using namespace sdpa::daemon;
 
 Activity::Activity(const std::string &name, const Method &method)
   : name_(name), method_(method) {
@@ -48,7 +48,7 @@ void Activity::writeTo(std::ostream &os) const {
   os << "]";
 }
 
-std::ostream & operator<<(std::ostream & os, const sdpa::Activity &a) {
+std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Activity &a) {
   a.writeTo(os);
   return os;
 }

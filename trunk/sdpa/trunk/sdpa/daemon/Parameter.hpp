@@ -3,9 +3,9 @@
 
 #include <string>
 #include <ostream>
-#include <sdpa/Token.hpp>
+#include <sdpa/daemon/Token.hpp>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
   /**
     This class describes the parameter to an activity.
 
@@ -63,7 +63,7 @@ namespace sdpa {
       std::string name_;
       EdgeType edge_type_;
   };
-}
+}}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::Parameter &p);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Parameter &p);
 #endif

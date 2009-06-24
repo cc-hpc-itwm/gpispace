@@ -6,9 +6,9 @@
 #include <ostream>
 
 #include <sdpa/Properties.hpp>
-#include <sdpa/Parameter.hpp>
+#include <sdpa/daemon/Parameter.hpp>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
   /**
     This class describes an abstract activity to be executed.
 
@@ -18,7 +18,7 @@ namespace sdpa {
     */
   class Activity : public sdpa::Properties {
   public:
-    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::Parameter
+    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::daemon::Parameter
 
     /**
       This class encapsulates a method call to a generic method.
@@ -28,7 +28,7 @@ namespace sdpa {
       invoked using a generic input parameter list and a generic output
       parameter list.
 
-      @see sdpa::Parameter
+      @see sdpa::daemon::Parameter
      */
     class Method {
       public:
@@ -96,8 +96,8 @@ namespace sdpa {
     parameter_list input_;
     parameter_list output_;
   };
-}
+}}
 
-std::ostream & operator<<(std::ostream & os, const sdpa::Activity &a);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::daemon::Activity &a);
 
 #endif
