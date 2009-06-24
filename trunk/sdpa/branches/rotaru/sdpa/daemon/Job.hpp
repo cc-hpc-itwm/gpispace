@@ -7,7 +7,7 @@
 
 #include <sdpa/memory.hpp>
 
-namespace sdpa {
+namespace sdpa { namespace daemon {
     /**
      * The interface to the generic job description we keep around in all
      * components.
@@ -23,6 +23,8 @@ namespace sdpa {
         typedef std::pair<place_t, token_t> value_t;
         typedef std::vector<value_t> data_t;
 
+        static const job_id_t &invalid_job_id();
+
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
 
@@ -36,10 +38,7 @@ namespace sdpa {
 
         virtual void add_subjob(const ptr_t & job) = 0;
         virtual ptr_t get_subjob(const job_id_t & id) = 0;
-
-
-
     };
-}
+}}
 
 #endif

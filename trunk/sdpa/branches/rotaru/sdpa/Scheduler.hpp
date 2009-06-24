@@ -1,7 +1,7 @@
 #ifndef SDPA_SCHEDULER_HPP
 #define SDPA_SCHEDULER_HPP 1
 
-#include <sdpa/Job.hpp>
+#include <sdpa/daemon/Job.hpp>
 
 namespace sdpa {
   class Scheduler {

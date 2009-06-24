@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
-#include <JobEvent.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sc = boost::statechart;
 
@@ -13,12 +13,14 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<JobFinishedEvent> Ptr;
 
-		JobFinishedEvent(const address_t& from, const address_t& to, const sdpa::Job::job_id_t& job_id = sdpa::Job::job_id_t())
+		JobFinishedEvent(const address_t& from, const address_t& to, const sdpa::daemon::Job::job_id_t& job_id = sdpa::daemon::Job::job_id_t())
           :  sdpa::events::JobEvent( from, to, job_id ) {
-			std::cout << "Create event 'JobFinishedEvent'"<< std::endl; }
+			//std::cout << "Create event 'JobFinishedEvent'"<< std::endl;
+		}
 
 		virtual ~JobFinishedEvent() {
-			std::cout << "Delete event 'JobFinishedEvent'"<< std::endl; }
+			// std::cout << "Delete event 'JobFinishedEvent'"<< std::endl;
+		}
 
 		std::string str() const { std::cout<<from()<<" - JobFinishedEvent -> "<<to()<<std::endl; }
 	};

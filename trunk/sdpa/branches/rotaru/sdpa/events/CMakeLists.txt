@@ -1,30 +1,13 @@
-include_directories(.)
+file(GLOB all_hdrs "*.hpp")
+file(GLOB all_srcs "*.cpp")
 
-set(hdrs 
-ErrorEvent.hpp
-JobEvent.hpp
-SubmitJobEvent.hpp
-RunJobEvent.hpp
-CancelJobEvent.hpp
-CancelJobAckEvent.hpp
-JobFailedEvent.hpp
-JobFinishedEvent.hpp
-QueryJobStatusEvent.hpp
-JobStatusAnswerEvent.hpp
-SDPAEvent.hpp
-)
+set(hdrs "sdpa-msg.pb.h"  ${all_hdrs})
+set(srcs "sdpa-msg.pb.cc" ${all_srcs})
 
 add_protocol_buffers(sdpa-msg)
 
-SET_SOURCE_FILES_PROPERTIES(sdpa-events.pb.h PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(sdpa-events.pb.cc PROPERTIES GENERATED 1)
-
-file(GLOB hdrs "*.hpp" "sdpa-msg.pb.h")
-file(GLOB srcs "*.cpp" "sdpa-msg.pb.cc")
-
 include_directories(${PB_INCLUDE_DIR})
 ADD_LIBRARY(sdpa-events ${hdrs} ${srcs})
-ADD_DEPENDENCIES(sdpa-events sdpa-msg.pb.h sdpa-msg.pb.cc)
 
 install(FILES ${hdrs} DESTINATION include/sdpa/events)
 install(TARGETS sdpa-events ARCHIVE DESTINATION lib)

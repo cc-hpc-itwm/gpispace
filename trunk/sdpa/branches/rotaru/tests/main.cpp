@@ -41,6 +41,8 @@
 #include <cppunit/Exception.h>
 #include <cppunit/Message.h>
 
+#include <tests/sdpa/Suite.hpp>
+
 /*---------------------------------------------------------------------*
  * Local headers
  *
@@ -58,7 +60,8 @@ int main(
 
   // Test-Suite ueber die Registry im Test-Runner einfuegen
   CPPUNIT_NS :: TestRunner runner;
-  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
+//  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
+  runner.addTest ( sdpa::tests::Suite::suite() );
 
   std::cout << "running testsuite" << std::endl;
 

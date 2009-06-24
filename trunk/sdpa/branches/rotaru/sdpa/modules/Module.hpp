@@ -5,7 +5,7 @@
 #include <list>
 
 #include <sdpa/memory.hpp>
-#include <sdpa/Token.hpp>
+#include <sdpa/wf/Token.hpp>
 #include <sdpa/modules/exceptions.hpp>
 
 namespace sdpa {
@@ -31,7 +31,7 @@ namespace modules {
       typedef void* handle_t;
       typedef void (*InitFunction)(Module*);
 
-      typedef std::list<sdpa::Token> data_t;
+      typedef std::list<sdpa::wf::Token> data_t;
       typedef data_t input_data_t;
       typedef data_t output_data_t;
 

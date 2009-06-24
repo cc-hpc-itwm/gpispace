@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
-#include <MgmtEvent.hpp>
+#include <sdpa/events/MgmtEvent.hpp>
 namespace sc = boost::statechart;
 
 namespace sdpa {

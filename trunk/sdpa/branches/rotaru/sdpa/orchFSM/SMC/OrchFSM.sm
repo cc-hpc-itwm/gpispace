@@ -1,0 +1,77 @@
+%{
+  // Finite state machine of the SDPA protocol
+  //
+%}
+
+%include <string.h>
+%package sdpa::fsm
+%class OrchFSM
+%header OrchFSM.hpp
+
+%start SMC_OrchFSM::Down
+%map SMC_OrchFSM
+
+%%
+Down
+{
+    StartUp(event: sdpa::events::StartUpEvent&)
+        Configurring
+        {
+        	action_configure(event); 
+        }
+}
+
+Configurring
+{
+    StartOk(event: sdpa::events::ConfigOkEvent&)
+        Up
+        {
+        	action_config_ok(event); 
+        }
+        
+	ConfigNok(event: sdpa::events::ConfigNokEvent&)
+        Down
+        {
+        	action_config_nok(event); 
+        }
+}
+
+Up
+{
+	Interrupt(event: sdpa::events::InterruptEvent& )
+	Down
+	{
+		action_interrupt(event);
+	}
+	
+	LifeSign(event: sdpa::events::LifeSignEvent& )
+	nil
+	{
+		action_lifesign(event);
+	}
+	
+	DeleteJob(event: sdpa::events::DeleteJobEvent& )
+	nil
+	{
+		action_delete_job(event);
+	}
+	
+	RequestJob(event: sdpa::events::RequestJobEvent& )
+	nil
+	{
+		action_request_job(event);
+	}
+	
+	SubmitAck(event: sdpa::events::SubmitAckEvent& )
+	nil
+	{
+		action_request_job(event);
+	}
+	
+	ConfigRequest(event: sdpa::events::ConfigRequestEvent& )
+	nil
+	{
+		action_config_request(event);
+	}
+}
+%%

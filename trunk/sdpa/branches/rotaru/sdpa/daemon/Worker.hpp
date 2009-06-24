@@ -1,0 +1,105 @@
+#ifndef SDPA_WORKER_HPP
+#define SDPA_WORKER_HPP 1
+
+#include <list>
+#include <string>
+#include <sdpa/util.hpp>
+#include <sdpa/common.hpp>
+#include <sdpa/daemon/Job.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
+
+namespace sdpa { namespace daemon {
+  /**
+    This class holds all information about an attached worker.
+
+    On the orchestrator this represents an aggregator and on the aggregator
+    all information about attached NREs is held in this class.
+  */
+  class Worker {
+  public:
+    typedef std::string location_t;
+
+    // TODO: to be replaced by a real class (synchronization!)
+    typedef std::list<Job::ptr_t> JobQueue;
+
+    /**
+      A worker has a globally unique name and a location.
+
+      The location can for example represent an ip/port tuple or a queue name etc.
+      IDEA: this information should actually be kept in some kind of a
+            distributed storage space accessible via the worker's name.
+
+      @param name a unique name for the worker
+      @param location how to reach that worker (might be the same as the former)
+      */
+    Worker(const std::string &name, const location_t &location);
+
+    /**
+      Take an event related to that particular worker and update the internal
+      data structures.
+      */
+    void update(const sdpa::events::SDPAEvent &event);
+
+    /**
+      Add a new job to the pending queue of this worker.
+      */
+    void dispatch(const Job::ptr_t &job);
+
+    /**
+      Time of last received event designated to this worker.
+      */
+    sdpa::util::time_type tstamp() const { return tstamp_; }
+
+    /**
+      Return the name of the worker.
+      */
+    const std::string &name() const { return name_; }
+
+    /**
+      Return the location of this worker.
+      */
+    const location_t &location() const { return location_; }
+
+    /**
+      Acknowledge a given job id and move it to the submitted_queue.
+
+      @param job_id the job_id to acknowledge
+      @return true iff a job was moved
+      */
+    bool acknowledge(const Job::job_id_t &job_id);
+
+    /**
+      Return the next pending job or throw an exception.
+
+      @param last_job_id the id of the last sucessfully submitted job
+      */
+    Job::ptr_t get_next_job(const Job::job_id_t &last_job_id);
+
+    /**
+      Provide access to the pending queue.
+
+      We are required to have access to the pending queue of a worker because
+      we might need to reschedule tasks.
+      */
+    JobQueue& pending() { return pending_; }
+
+    /**
+      Provide access to the submitted queue.
+
+      We are required to have access to the submitted queue of a worker because
+      we might need to reschedule tasks.
+      */
+    JobQueue& submitted() { return submitted_; }
+  private:
+    SDPA_DECLARE_LOGGER();
+
+    std::string name_; //! name of the worker
+    location_t location_; //! location where to reach the worker
+    sdpa::util::time_type tstamp_; //! time of last message received
+
+    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet confirmed)
+    JobQueue submitted_; //! the queue of jobs assigned to this worker (successfully submitted)
+  };
+}}
+
+#endif

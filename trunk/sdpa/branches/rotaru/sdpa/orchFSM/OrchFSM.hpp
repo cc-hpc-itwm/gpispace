@@ -61,6 +61,19 @@ struct Down : sc::simple_state<Down, OrchFSM>
 	sc::result react( const sc::exception_thrown & e);
 };
 
+struct Configurring  : sc::simple_state<Configurring, OrchFSM>
+{
+	typedef mpl::list< sc::custom_reaction<ConfigOkEvent>,
+					   sc::custom_reaction<ConfigNokEvent>,
+					   sc::custom_reaction<sc::exception_thrown> > reactions;
+
+	Configurring() { std::cout <<" enter state 'Down'" << std::endl; }
+	~Configurring() { std::cout <<" leave state 'Down'" << std::endl; }
+
+	sc::result react( const ConfigOkEvent& );
+	sc::result react( const ConfigNokEvent& );
+	sc::result react( const sc::exception_thrown & e);
+}
 
 struct Up : sc::simple_state<Up, OrchFSM>
 {

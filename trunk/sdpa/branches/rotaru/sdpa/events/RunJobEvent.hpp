@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
-#include <JobEvent.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sc = boost::statechart;
 
@@ -13,7 +13,7 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<RunJobEvent> Ptr;
 
-		RunJobEvent(const address_t& from, const address_t& to, const sdpa::Job::job_id_t& job_id = sdpa::Job::job_id_t())
+		RunJobEvent(const address_t& from, const address_t& to, const sdpa::daemon::Job::job_id_t& job_id = sdpa::daemon::Job::job_id_t())
           : JobEvent(from, to, job_id) {
 			std::cout << "Create event 'RunJobEvent'"<< std::endl; }
 

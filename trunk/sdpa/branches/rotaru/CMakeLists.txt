@@ -12,6 +12,7 @@ set(V_PATCH 0)
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -59,6 +60,18 @@ if (PB_FOUND)
 endif (PB_FOUND)
 include(PBMacros)
 
+# state machine compiler (only when required)
+if (USE_SMC)
+  include(FindSMC)
+  if (SMC_FOUND)
+    message(STATUS "Found StateMachineCompiler: ${SMC_JAR}")
+    include_directories(${SMC_INCLUDE_DIR})
+  else (SMC_FOUND)
+    message(FATAL_ERROR "SMC could not be found but is required")
+  endif (SMC_FOUND)
+  include (SMCMacros)
+endif (USE_SMC)
+
 # logging
 if (ENABLE_LOGGING)
     set(ENABLE_LOGGING 1)
@@ -96,17 +109,11 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
 
-## find the StateMachineCompiler (SMC)
-Include(FindSMC)
-Include(SMCMacros)
-
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${Boost_INCLUDE_DIRS})
-
-include_directories(sdpa/events)
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
