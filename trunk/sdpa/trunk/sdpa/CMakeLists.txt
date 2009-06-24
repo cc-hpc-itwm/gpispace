@@ -1,6 +1,7 @@
 add_subdirectory(events)
 add_subdirectory(modules)
 add_subdirectory(daemon)
+add_subdirectory(client)
 
 file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
