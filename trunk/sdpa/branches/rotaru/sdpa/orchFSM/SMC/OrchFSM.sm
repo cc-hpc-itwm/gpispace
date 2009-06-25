@@ -23,7 +23,7 @@ Down
 
 Configurring
 {
-    StartOk(event: sdpa::events::ConfigOkEvent&)
+    ConfigOk(event: sdpa::events::ConfigOkEvent&)
         Up
         {
         	action_config_ok(event); 

@@ -1,6 +1,5 @@
-#ifndef SDPASMCFSM_HPP
-#define SDPASMCFSM_HPP 1
-
+#ifndef JOBFSMSMC_HPP
+#define JOBFSMSMC_HPP 1
 
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -37,9 +36,8 @@ namespace sdpa {
 				void WFE_GenListNextActiveSubJobs(); //assign unique global IDs!
 				void WFE_NotifyJobFailed();
 
-
 				sdpa::fsm::JobFSMContext& GetContext() { return m_fsmContext; }
-			//private:
+			private:
 				SDPA_DECLARE_LOGGER();
 				sdpa::fsm::JobFSMContext m_fsmContext;
 		};

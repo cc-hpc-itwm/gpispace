@@ -11,7 +11,8 @@ add_subdirectory(orchFSM)
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
 add_dependencies(sdpa-daemon sdpa-events)
-add_dependencies(sdpa sdpa-events sdpa-modules sdpa-daemon sdpa-jobFSM sdpa-orchFSM sdpa-wf)
+add_dependencies(sdpa sdpa-events sdpa-modules sdpa-daemon sdpa-wf)
+add_dependencies(sdpa sdpa-jobFSM_BSC sdpa-orchFSM_BSC sdpa-jobFSM_SMC sdpa-orchFSM_SMC)
 
 install(FILES ${hdrs} DESTINATION include/sdpa)
 install(TARGETS sdpa ARCHIVE DESTINATION lib)

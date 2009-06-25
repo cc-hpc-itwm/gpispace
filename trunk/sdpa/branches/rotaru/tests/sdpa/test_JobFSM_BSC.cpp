@@ -62,8 +62,5 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 	}
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
-
-	ofstream ofs("test_bsc.txt");
-	ofs<< "bsc: " << delta << "us" << std::endl;
-	ofs.close();
+	std::cout<< "bsc: " << delta << "us" << std::endl;
 }

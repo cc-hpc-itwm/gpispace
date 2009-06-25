@@ -1,5 +1,5 @@
-#ifndef SDPASMCFSM_HPP
-#define SDPASMCFSM_HPP 1
+#ifndef ORCHFSMSMC_HPP
+#define ORCHFSMSMC_HPP 1
 
 #include <sdpa/events/ConfigNokEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
@@ -36,7 +36,7 @@ namespace sdpa {
 				void action_config_request(sdpa::events::ConfigRequestEvent& );
 
 				sdpa::fsm::OrchFSMContext& GetContext() { return m_fsmContext; }
-			//private:
+			private:
 				SDPA_DECLARE_LOGGER();
 				sdpa::fsm::OrchFSMContext m_fsmContext;
 		};
