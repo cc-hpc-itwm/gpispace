@@ -1,7 +1,7 @@
 #ifndef SDPA_SCHEDULER_HPP
 #define SDPA_SCHEDULER_HPP 1
 
-#include <sdpa/daemon/Job.hpp>
+#include <sdpa/Job.hpp>
 
 namespace sdpa {
   class Scheduler {
@@ -20,7 +20,7 @@ namespace sdpa {
       a prior submission to the node failed, we have to send him  the  same  job
       again, if the submission was successful (last_job_id  could  be  found  in
       the  pending  schedule),  we  are  allowed  to  send  him   a   new   job.
-
+      
       Note: synchronization should be done on the worker-node entries, not the scheduler itself.
 
       @param worker_id the identification code of a worker that is requesting a new job
