@@ -20,10 +20,13 @@
 #include <cppunit/Exception.h>
 #include <cppunit/Message.h>
 
+#include <sdpa/LoggingConfigurator.hpp>
 #include <tests/sdpa/Suite.hpp>
 
 int main(int argc, char **argv)
 {
+  sdpa::logging::Configurator::configure();
+
   // Informiert Test-Listener ueber Testresultate
   CPPUNIT_NS::TestResult                   testresult;
   CPPUNIT_NS::TestResultCollector collectedresults;

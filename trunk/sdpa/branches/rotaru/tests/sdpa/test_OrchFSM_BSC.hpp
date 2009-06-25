@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/orchFSM/OrchFSM.hpp"
+#include "sdpa/orchFSM/BSC/OrchFSM.hpp"
 
 namespace sdpa {
 		namespace tests {

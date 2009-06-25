@@ -18,7 +18,6 @@ target_link_libraries(sdpa_test_suite sdpa)
 target_link_libraries(sdpa_test_suite sdpa-modules)
 target_link_libraries(sdpa_test_suite sdpa-wf)
 target_link_libraries(sdpa_test_suite sdpa-daemon)
-
 target_link_libraries(sdpa_test_suite dl)
 
 # test module

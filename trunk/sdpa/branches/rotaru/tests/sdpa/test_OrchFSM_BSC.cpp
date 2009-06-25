@@ -1,6 +1,5 @@
-#include "test_OrchFSM.hpp"
+#include "test_OrchFSM_BSC.hpp"
 #include <iostream>
-#include "sdpa/orchFSM/OrchFSM.hpp"
 #include <string>
 #include <list>
 
@@ -28,7 +27,7 @@ void COrchFSMTest::tearDown() { //stop the finite state machine
 
 void COrchFSMTest::testOrchFSM()
 {
-	list<sc::event_base*> listEvents;
+	/*list<sc::event_base*> listEvents;
 
 	string strEmpty("");
 
@@ -48,4 +47,5 @@ void COrchFSMTest::testOrchFSM()
 		listEvents.pop_front();
 		delete dynamic_cast<MgmtEvent*>(pEvt);
 	}
+	*/
 }

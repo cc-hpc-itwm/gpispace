@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/jobFSM/JobFSM.hpp"
+#include "sdpa/jobFSM/BSC/JobFSM.hpp"
 
 namespace sdpa {
 		namespace tests {
