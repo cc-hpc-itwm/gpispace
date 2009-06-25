@@ -99,6 +99,7 @@ void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
  * Execute this workflow. Status should switch to RUNNING.
  */
 void WorkflowHandler::executeWorkflow() throw (StateTransitionException, WorkflowFormatException) {
+//	cout << "gwes::WorkflowHandler::executeWorkflow(" << getID() << ") ..." << endl;
 	//check status
 	if (getStatus() != WorkflowHandler::STATUS_INITIATED) {
 		ostringstream oss;
@@ -123,9 +124,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	while ((!_abort && enabledTransitions.size()> 0) || _status
 			== WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
-//			cout << "--- step " << step << " (" << getStatusAsString()
-//					<< ") --- " << enabledTransitions.size()
-//					<< " enabled transition(s)" << endl;
+			cout << "--- step " << step << " (" << getStatusAsString()
+					<< ") --- " << enabledTransitions.size()
+					<< " enabled transition(s)" << endl;
 			modification = false;
 		}
 
@@ -133,7 +134,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 
 		//select transition, find enabled transition with true condition. Updates list "enabledTrueTransitions"
 		Transition* selectedTransitionP = selectTransition(enabledTransitions);
-
+		
 		///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
 
 		//suspend if breakpoint has been reached
@@ -162,9 +163,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		//process selected transition.
 		if (!_abort && !_suspend && selectedTransitionP != NULL) {
 			int abstractionLevel = selectedTransitionP->getAbstractionLevel();
-//			cout << "--- step " << step << " --- processing transition \""
-//					<< selectedTransitionP->getID() << "\" (level "
-//					<< abstractionLevel << ") ..." << endl;
+			cout << "--- step " << step << " --- processing transition \""
+					<< selectedTransitionP->getID() << "\" (level "
+					<< abstractionLevel << ") ..." << endl;
 			switch (abstractionLevel) {
 			case (Operation::BLACK): // no operation
 				if (processBlackTransition(selectedTransitionP, step))
@@ -329,7 +330,7 @@ void WorkflowHandler::connect(Channel* channel) {
  */
 void WorkflowHandler::update(const Event& event) {
 	// logging
-	cout << "gwes::WorkflowHandler::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
+	cout << "gwes::WorkflowHandler[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._dataP!=NULL) {
 		cout << ",";
 		map<string,gwdl::Data*>* dP = event._dataP;

@@ -36,7 +36,7 @@ bool XMLDOMErrorHandler::handleError(const DOMError &domError)
 	error = domError.getSeverity();
 	
 	bool ret = true;
-	char* type;
+	string type;
 	switch(error)
 	{
 	case DOMError::DOM_SEVERITY_WARNING:

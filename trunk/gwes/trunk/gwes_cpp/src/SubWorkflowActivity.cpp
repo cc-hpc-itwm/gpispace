@@ -38,12 +38,12 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
 		oss << "Invalid status " << getStatusAsString()
-				<< " for initiating activity \"" << _id << "\"" << endl;
+		<< " for initiating activity \"" << _id << "\"" << endl;
 		throw StateTransitionException(oss.str());
 	}
 	// set workflow file 
 	_subworkflowdl = _operation->getOperationName();
-	cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") ... trying to read file " << _subworkflowdl << endl;
+	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") trying to read file " << _subworkflowdl << endl;
 
 	// parse workflow file
 	_swfP = new gwdl::Workflow(_subworkflowdl);
@@ -59,37 +59,35 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
 		oss << "Invalid status " << getStatusAsString()
-				<< " for starting activity \"" << _id << "\"" << endl;
+		<< " for starting activity \"" << _id << "\"" << endl;
 		throw StateTransitionException(oss.str());
 	}
 	setStatus(STATUS_RUNNING);
-	
-	// copy tokens
+
+	// ToDo: copy tokens
 
 	//generate arguments from input tokens
-//	for (map<string,gwdl::Data*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
-//		string edgeExpression = it->first;
-//		// stdin is reserved edgeExpression which is not treated as normal command line parameter. 
-//		if (edgeExpression != "stdin") {
-//			string text = *(it->second)->getText();
-//			command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
-//		}
-//	}
-	
-	// execute activity
-	_subworkflowid = _gwesP->initiate(*_swfP,_wfhP->getUserId());
-    setStatus(STATUS_ACTIVE);
-    _gwesP->execute(_subworkflowid);
-    setStatus(STATUS_RUNNING);
-    
-	// notify observers
-	if (_observers.size()>0) {
-		ostringstream oss;
-		oss << "subworkflow completed with status " << _gwesP->getStatusAsString(*_swfP);
-		notifyObservers(Event::EVENT_ACTIVITY_END,oss.str(),&_outputs);
-	}
+	//	for (map<string,gwdl::Data*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
+	//		string edgeExpression = it->first;
+	//		// stdin is reserved edgeExpression which is not treated as normal command line parameter. 
+	//		if (edgeExpression != "stdin") {
+	//			string text = *(it->second)->getText();
+	//			command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
+	//		}
+	//	}
 
-	setStatus( _gwesP->getStatus(*_swfP) );
+	// initiate subworklfow
+	_subworkflowid = _gwesP->initiate(*_swfP,_wfhP->getUserId());
+
+	// connect channel for callback 
+	Channel* channelP = new Channel(this);
+	_gwesP->connect(channelP, _subworkflowid);
+
+	// start subworkflow asynchronously. 
+	_gwesP->start(_subworkflowid);
+	setStatus(STATUS_ACTIVE);
+	
+	// Completion of workflow will be notified using callback channel (refer to update()).
 }
 
 /**
@@ -110,7 +108,7 @@ void SubWorkflowActivity::resumeActivity() throw (ActivityException,StateTransit
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
 		oss << "Invalid status " << getStatusAsString()
-				<< " for resuming activity \"" << _id << "\"" << endl;
+		<< " for resuming activity \"" << _id << "\"" << endl;
 		throw StateTransitionException(oss.str());
 	}
 	///ToDo: Implement!
@@ -126,7 +124,7 @@ void SubWorkflowActivity::abortActivity() throw (ActivityException,StateTransiti
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
 		oss << "Invalid status " << getStatusAsString()
-				<< " for aborting activity \"" << _id << "\"" << endl;
+		<< " for aborting activity \"" << _id << "\"" << endl;
 		throw StateTransitionException(oss.str());
 	}
 
@@ -143,5 +141,38 @@ void SubWorkflowActivity::restartActivity() throw (ActivityException,StateTransi
 	///ToDo: Implement!
 	cerr << "gwes::SubWorkflowActivity::restartActivity() not yet implemented!" << endl;
 }
+
+/**
+ * Overides gwes::Observer::update().
+ * This method is called by the workflow handler that invokes the sub workflow.
+ */
+void SubWorkflowActivity::update(const Event& event) {
+	// logging
+	cout << "gwes::SubWorkflowActivity[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
+	if (event._dataP!=NULL) {
+		cout << ",";
+		map<string,gwdl::Data*>* dP = event._dataP;
+		for (map<string,gwdl::Data*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
+			cout << "[" << it->first << "]";
+		}
+	}
+	cout << ")" << endl;
+
+	// parse event
+	if (event._eventType==Event::EVENT_WORKFLOW) {
+		if (event._sourceId.compare(_subworkflowid) == 0) {
+			if (event._message.compare("COMPLETED") == 0) {
+				setStatus(Activity::STATUS_RUNNING);
+				setStatus(Activity::STATUS_COMPLETED);
+				// ToDo: copy output tokens
+			} else if (event._message.compare("TERMINATED") == 0) {
+				// ToDo: generate fault tokens
+				setStatus(Activity::STATUS_TERMINATED);
+			}
+		}
+	}
+}
+
+
 
 } // end namespace gwes

@@ -23,116 +23,115 @@ using namespace std;
 
 namespace gwdl
 {
-	
+
 Place::Place(const string& _id) : capacity(INT_MAX)
 {
 	if (_id == "") id=generateID();
 	else id = _id;
+	capacity = Place_DEFAULT_CAPACITY;
 }
-	
-	
+
+
 Place::Place(DOMElement* element) throw(CapacityException)
 {
-  capacity = INT_MAX;
-  
-  //XMLCh* ns = X(SCHEMA_wfSpace);
-  
-  // ID
-  id = S(element->getAttribute(X("ID")));
+	//XMLCh* ns = X(SCHEMA_wfSpace);
 
-  // capacity
-  const XMLCh* res = element->getAttribute(X("capacity"));
-  capacity = XMLString::stringLen(res) != 0 ? atoi(S(res)) : Place_DEFAULT_CAPACITY;
-  
-  // loop child nodes
-  DOMNodeList* le = element->getChildNodes();
-  if (le->getLength() >0) {
-	  // properties
-	  properties = Properties(le);
-	  // other nodes
-	  for (XMLSize_t i = 0; i<le->getLength(); i++) {
-		  DOMNode* node = le->item(i);
-		  const XMLCh* name = node->getNodeName(); 
-		  if (XMLString::equals(name,X("description"))) {
-			  description = string(XMLString::transcode(node->getTextContent()));
-		  } else if (XMLString::equals(name,X("tokenClass"))) {
-			  tokenType = S(((DOMElement*) node)->getAttribute(X("type")));
-		  } else if (XMLString::equals(name,X("token"))) {
-			  if (tokens.size() >= capacity) {
-				throw CapacityException("Trying to put too many tokens on place"); 
-			  }
-			  tokens.push_back(new Token((DOMElement*) node));
-		  }
-	  }
-  }
+	// ID
+	id = S(element->getAttribute(X("ID")));
+
+	// capacity
+	const XMLCh* res = element->getAttribute(X("capacity"));
+	capacity = XMLString::stringLen(res) != 0 ? atoi(S(res)) : Place_DEFAULT_CAPACITY;
+
+	// loop child nodes
+	DOMNodeList* le = element->getChildNodes();
+	if (le->getLength() >0) {
+		// properties
+		properties = Properties(le);
+		// other nodes
+		for (XMLSize_t i = 0; i<le->getLength(); i++) {
+			DOMNode* node = le->item(i);
+			const XMLCh* name = node->getNodeName(); 
+			if (XMLString::equals(name,X("description"))) {
+				description = string(XMLString::transcode(node->getTextContent()));
+			} else if (XMLString::equals(name,X("tokenClass"))) {
+				tokenType = S(((DOMElement*) node)->getAttribute(X("type")));
+			} else if (XMLString::equals(name,X("token"))) {
+				if (tokens.size() >= capacity) {
+					throw CapacityException("Trying to put too many tokens on place"); 
+				}
+				tokens.push_back(new Token((DOMElement*) node));
+			}
+		}
+	}
 }
 
 Place::~Place()
 {
-  removeAllTokens();
+	removeAllTokens();
 }
 
 DOMElement* Place::toElement(DOMDocument* doc)
 {
 	DOMElement* el = NULL;
-    // Initialize the XML4C2 system.
-    XMLUtils::Instance();
-  
-    XMLCh* ns = X(SCHEMA_wfSpace);
-    
-    try
-    {   
-    	el = doc->createElementNS(ns, X("place"));
-        el->setAttribute(X("ID"), XS(id));
-        if (capacity!=Place_DEFAULT_CAPACITY)
-        {
-        	ostringstream oss;
-           	oss << capacity; 
-            el->setAttribute(X("capacity"), XS(string(oss.str())));
-        }
-                
-        // description
-        if (description.size()>0)
-        {
-        	DOMElement* el1 = doc->createElementNS(ns, X("description"));
-            el1->setTextContent(XS(description));
-            el->appendChild(el1);
-        }
+	// Initialize the XML4C2 system.
+	XMLUtils::Instance();
 
-        // properties
-        vector<DOMElement*> v = properties.toElements(doc);       
-        for (unsigned int i = 0; i < v.size(); i++)
-        {
-        	el->appendChild(v[i]);
-        }
-        
-        // tokenClass
-        if (tokenType.size()>0)
-        {       
-        	DOMElement* el2 = doc->createElementNS(ns, X("tokenClass"));
-        	el2->setAttribute(X("type"), XS(tokenType));
-        	el->appendChild(el2);
-        }
-               
-        for (unsigned int i = 0; i < tokens.size(); i++)
-        {
-        	el->appendChild(tokens[i]->toElement(doc));
-        }                   
-    }
-    catch (const OutOfMemoryException&)
-    {
-    	XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
+	XMLCh* ns = X(SCHEMA_wfSpace);
+
+	try
+	{   
+		el = doc->createElementNS(ns, X("place"));
+		el->setAttribute(X("ID"), XS(id));
+		if (capacity!=Place_DEFAULT_CAPACITY)
+		{
+			ostringstream oss;
+			oss << capacity; 
+			el->setAttribute(X("capacity"), XS(string(oss.str())));
+		}
+
+		// description
+		if (description.size()>0)
+		{
+			DOMElement* el1 = doc->createElementNS(ns, X("description"));
+			el1->setTextContent(XS(description));
+			el->appendChild(el1);
+		}
+
+		// properties
+		vector<DOMElement*> v = properties.toElements(doc);       
+		for (unsigned int i = 0; i < v.size(); i++)
+		{
+			el->appendChild(v[i]);
+		}
+
+		// tokenClass
+		if (tokenType.size()>0)
+		{       
+			DOMElement* el2 = doc->createElementNS(ns, X("tokenClass"));
+			el2->setAttribute(X("type"), XS(tokenType));
+			el->appendChild(el2);
+		}
+
+		for (unsigned int i = 0; i < tokens.size(); i++)
+		{
+			el->appendChild(tokens[i]->toElement(doc));
+		}                   
 	}
-    catch (const DOMException& e)
-    {
-    	XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-        XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+	catch (const OutOfMemoryException&)
+	{
+		XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
 	}
-    catch (...)
-    {
-    	XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+	catch (const DOMException& e)
+	{
+		XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
+		XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
 	}
-	
+	catch (...)
+	{
+		XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+	}
+
 	return el;
 }
 

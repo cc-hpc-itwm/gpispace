@@ -24,7 +24,7 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class SubWorkflowActivity : public Activity
+class SubWorkflowActivity : public Activity, public Observer
 {
 	
 private:
@@ -68,6 +68,12 @@ public:
 	 * Restart this activity. Status should switch to INITIATED. 
 	 */
 	virtual void restartActivity() throw (ActivityException,StateTransitionException);
+	
+	/**
+	 * Overides gwes::Observer::update().
+	 * This method is called by the source of the channels connected to this activity.
+	 */
+	virtual void update(const Event& event);
 	
 };
 

@@ -31,58 +31,62 @@ Operation::Operation()
 
 Operation::~Operation()
 {
-  if(operationClass != NULL)
-  {
-	  delete operationClass;
-	  operationClass = NULL;
-  }
+	if(operationClass != NULL)
+	{
+		delete operationClass;
+		operationClass = NULL;
+	}
 }
 
 Operation::Operation(DOMElement* element)
 {
-  //cout << "in Operation(el)=" << this << " operationClass=" << operationClass << endl;
-  //XMLCh* ns = X(SCHEMA_wf_oc);
-  
-  // loop child nodes
-  DOMNodeList* le = element->getChildNodes();
-  for (XMLSize_t i = 0; i<le->getLength(); i++) {
-	  DOMNode* node = le->item(i);
-	  const XMLCh* name = node->getNodeName(); 
-	  // operationClass
-	  if (XMLString::equals(name,X("oc:operationClass"))) {
+	//cout << "in Operation(el)=" << this << " operationClass=" << operationClass << endl;
+
+	// default values
+	operationClass = NULL;
+
+	//XMLCh* ns = X(SCHEMA_wf_oc);
+
+	// loop child nodes
+	DOMNodeList* le = element->getChildNodes();
+	for (XMLSize_t i = 0; i<le->getLength(); i++) {
+		DOMNode* node = le->item(i);
+		const XMLCh* name = node->getNodeName(); 
+		// operationClass
+		if (XMLString::equals(name,X("oc:operationClass"))) {
 			operationClass = new OperationClass((DOMElement*)node);
-	  }  				 
-  }
+		}  				 
+	}
 }
-	
+
 DOMElement* Operation::toElement(DOMDocument* doc)
 {
 	DOMElement* el = NULL;
-    // Initialize the XML4C2 system.
-    XMLUtils::Instance();
-  
-    XMLCh* ns = X(SCHEMA_wfSpace);
-    
-    try
-    {
+	// Initialize the XML4C2 system.
+	XMLUtils::Instance();
+
+	XMLCh* ns = X(SCHEMA_wfSpace);
+
+	try
+	{
 		el = doc->createElementNS(ns, X("operation"));
 		if(operationClass != NULL)
 		{    
 			el->appendChild(operationClass->toElement(doc));
 		}
-    }
-    catch (const OutOfMemoryException&)
-    {
-    	XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
 	}
-    catch (const DOMException& e)
+	catch (const OutOfMemoryException&)
+	{
+		XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
+	}
+	catch (const DOMException& e)
 	{
 		XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-        XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+		XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
 	}
-    catch (...)
-    {
-    	XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+	catch (...)
+	{
+		XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
 	}
 	return el;
 }

@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 		//	wfhP->waitForStatusChangeToCompletedOrTerminated();
 
 		// print workflow
-		cout << *wfP << endl;
+//		cout << *wfP << endl;
 		cout << "### END EXECUTION " << workflowfn << endl;
 
 	}
