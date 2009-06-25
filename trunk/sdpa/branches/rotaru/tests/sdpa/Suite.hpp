@@ -17,6 +17,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
+      suiteOfTests->addTest( OrchFSMTest_BSC::suite() );
+      suiteOfTests->addTest( JobFSMTest_BSC::suite() );
       return suiteOfTests;
     }
   };

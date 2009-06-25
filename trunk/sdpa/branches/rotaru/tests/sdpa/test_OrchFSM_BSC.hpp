@@ -8,14 +8,14 @@
 
 namespace sdpa {
 		namespace tests {
-			class COrchFSMTest : public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::COrchFSMTest );
-			  CPPUNIT_TEST( testOrchFSM );
+			class OrchFSMTest_BSC : public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::OrchFSMTest_BSC );
+			  CPPUNIT_TEST( testOrchFSM_BSC );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-				COrchFSMTest();
-			  ~COrchFSMTest();
+				OrchFSMTest_BSC();
+			  ~OrchFSMTest_BSC();
 			  void setUp();
 			  void tearDown();
 

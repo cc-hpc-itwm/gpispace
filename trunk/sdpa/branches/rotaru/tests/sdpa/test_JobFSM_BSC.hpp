@@ -8,14 +8,14 @@
 
 namespace sdpa {
 		namespace tests {
-			class CJobFSMTest : public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::CJobFSMTest );
-			  CPPUNIT_TEST( testJobFSM );
+			class JobFSMTest_BSC : public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::JobFSMTest_BSC );
+			  CPPUNIT_TEST( testJobFSM_BSC );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-			  CJobFSMTest();
-			  ~CJobFSMTest();
+			  JobFSMTest_BSC();
+			  ~JobFSMTest_BSC();
 			  void setUp();
 			  void tearDown();
 

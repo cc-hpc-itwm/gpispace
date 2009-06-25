@@ -7,27 +7,27 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( COrchFSMTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( OrchFSMTest_BSC );
 
-COrchFSMTest::COrchFSMTest()
-    : SDPA_INIT_LOGGER("sdpa.tests.fsmTest")
+OrchFSMTest_BSC::OrchFSMTest_BSC()
+    : SDPA_INIT_LOGGER("sdpa.tests.OrchFSMTest_BSC")
 {}
 
-COrchFSMTest::~COrchFSMTest()
+OrchFSMTest_BSC::~OrchFSMTest_BSC()
 {}
 
-void COrchFSMTest::setUp() { //initialize and start the finite state machine
+void OrchFSMTest_BSC::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 	m_OrchFSM.initiate();
 }
 
-void COrchFSMTest::tearDown() { //stop the finite state machine
+void OrchFSMTest_BSC::tearDown() { //stop the finite state machine
 	SDPA_LOG_DEBUG("tearDown");
 }
 
-void COrchFSMTest::testOrchFSM()
+void OrchFSMTest_BSC::testOrchFSM_BSC()
 {
-	/*list<sc::event_base*> listEvents;
+	list<sc::event_base*> listEvents;
 
 	string strEmpty("");
 
@@ -47,5 +47,4 @@ void COrchFSMTest::testOrchFSM()
 		listEvents.pop_front();
 		delete dynamic_cast<MgmtEvent*>(pEvt);
 	}
-	*/
 }

@@ -14,5 +14,4 @@ target_link_libraries(sdpa_test sdpa)
 target_link_libraries(sdpa_test sdpa-modules)
 target_link_libraries(sdpa_test sdpa-events)
 target_link_libraries(sdpa_test sdpa-daemon)
-
 add_test(sdpa_test ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test)

@@ -11,25 +11,25 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( CJobFSMTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( JobFSMTest_BSC );
 
-CJobFSMTest::CJobFSMTest()
-    : SDPA_INIT_LOGGER("sdpa.tests.fsmTest")
+JobFSMTest_BSC::JobFSMTest_BSC()
+    : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_BSC")
 {}
 
-CJobFSMTest::~CJobFSMTest()
+JobFSMTest_BSC::~JobFSMTest_BSC()
 {}
 
-void CJobFSMTest::setUp() { //initialize and start the finite state machine
+void JobFSMTest_BSC::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 	m_JobFSM.initiate();
 }
 
-void CJobFSMTest::tearDown() { //stop the finite state machine
+void JobFSMTest_BSC::tearDown() { //stop the finite state machine
 	SDPA_LOG_DEBUG("tearDown");
 }
 
-void CJobFSMTest::testJobFSM()
+void JobFSMTest_BSC::testJobFSM_BSC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
