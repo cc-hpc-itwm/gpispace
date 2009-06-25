@@ -1,0 +1,77 @@
+digraph 
+JobFSM {
+
+    node
+        [shape=record];
+
+    subgraph cluster_SMC_JobFSM {
+
+        label="SMC_JobFSM";
+
+        //-------------------------------------------------------
+        // States (Nodes)
+        //
+
+        "SMC_JobFSM::Pending"
+            [label="\N"];
+
+        "SMC_JobFSM::Running"
+            [label="\N"];
+
+        "SMC_JobFSM::Cancelling"
+            [label="\N"];
+
+        "SMC_JobFSM::Finished"
+            [label="\N"];
+
+        "SMC_JobFSM::Failed"
+            [label="\N"];
+
+        "SMC_JobFSM::Cancelled"
+            [label="\N"];
+
+        //-------------------------------------------------------
+        // Transitions (Edges)
+        //
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Cancelled"
+            [label="CancelJob/\laction_cancel;\l"];
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Pending"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Running"
+            [label="RunJob/\laction_dispatch;\l"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Cancelling"
+            [label="CancelJob/\laction_cancel;\l"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Failed"
+            [label="JobFailed/\laction_job_failed;\l"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Finished"
+            [label="JobFinished/\laction_job_finished;\l"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Running"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+
+        "SMC_JobFSM::Cancelling" -> "SMC_JobFSM::Cancelled"
+            [label="CancelJobAck/\laction_cancel_ack;\l"];
+
+        "SMC_JobFSM::Cancelling" -> "SMC_JobFSM::Cancelling"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+
+        "SMC_JobFSM::Finished" -> "SMC_JobFSM::Finished"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+
+        "SMC_JobFSM::Finished" -> "SMC_JobFSM::Finished"
+            [label="RetriveResultsEvent/\laction_retrieve_results;\l"];
+
+        "SMC_JobFSM::Failed" -> "SMC_JobFSM::Failed"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+
+        "SMC_JobFSM::Cancelled" -> "SMC_JobFSM::Cancelled"
+            [label="QueryJobStatus/\laction_query_status;\l"];
+    }
+
+}

@@ -1,0 +1,77 @@
+digraph 
+JobFSM {
+
+    node
+        [shape=record];
+
+    subgraph cluster_SMC_JobFSM {
+
+        label="SMC_JobFSM";
+
+        //-------------------------------------------------------
+        // States (Nodes)
+        //
+
+        "SMC_JobFSM::Pending"
+            [label="\N"];
+
+        "SMC_JobFSM::Running"
+            [label="\N"];
+
+        "SMC_JobFSM::Cancelling"
+            [label="\N"];
+
+        "SMC_JobFSM::Finished"
+            [label="\N"];
+
+        "SMC_JobFSM::Failed"
+            [label="\N"];
+
+        "SMC_JobFSM::Cancelled"
+            [label="\N"];
+
+        //-------------------------------------------------------
+        // Transitions (Edges)
+        //
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Cancelled"
+            [label="CancelJob"];
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Pending"
+            [label="QueryJobStatus"];
+
+        "SMC_JobFSM::Pending" -> "SMC_JobFSM::Running"
+            [label="RunJob"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Cancelling"
+            [label="CancelJob"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Failed"
+            [label="JobFailed"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Finished"
+            [label="JobFinished"];
+
+        "SMC_JobFSM::Running" -> "SMC_JobFSM::Running"
+            [label="QueryJobStatus"];
+
+        "SMC_JobFSM::Cancelling" -> "SMC_JobFSM::Cancelled"
+            [label="CancelJobAck"];
+
+        "SMC_JobFSM::Cancelling" -> "SMC_JobFSM::Cancelling"
+            [label="QueryJobStatus"];
+
+        "SMC_JobFSM::Finished" -> "SMC_JobFSM::Finished"
+            [label="QueryJobStatus"];
+
+        "SMC_JobFSM::Finished" -> "SMC_JobFSM::Finished"
+            [label="RetriveResultsEvent"];
+
+        "SMC_JobFSM::Failed" -> "SMC_JobFSM::Failed"
+            [label="QueryJobStatus"];
+
+        "SMC_JobFSM::Cancelled" -> "SMC_JobFSM::Cancelled"
+            [label="QueryJobStatus"];
+    }
+
+}
