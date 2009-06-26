@@ -38,27 +38,24 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 
 	sdpa::util::time_type start(sdpa::util::now());
 
-	for(int k=0;k<1;k++)
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pQueryJobStatusEvent);
+
+	RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pRunJobEvent);
+
+	JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pJobFinishedEvent);
+
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	listEvents.push_back(pQueryJobStatusEvent2);
+
+	while( !listEvents.empty() )
 	{
-		QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
-		listEvents.push_back(pQueryJobStatusEvent);
+		sdpa::shared_ptr<sc::event_base> pEvt = listEvents.front();
+		m_JobFSM.process_event(*pEvt);
 
-		RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strEmpty, strEmpty, strTen));
-		listEvents.push_back(pRunJobEvent);
-
-		JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strEmpty, strEmpty, strTen));
-		listEvents.push_back(pJobFinishedEvent);
-
-		QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
-		listEvents.push_back(pQueryJobStatusEvent2);
-
-		while( !listEvents.empty() )
-		{
-			sdpa::shared_ptr<sc::event_base> pEvt = listEvents.front();
-			m_JobFSM.process_event(*pEvt);
-
-			listEvents.pop_front();
-		}
+		listEvents.pop_front();
 	}
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));

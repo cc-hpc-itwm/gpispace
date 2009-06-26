@@ -5,7 +5,7 @@ add_state_machine(JobFSM)
 file(GLOB job_fsm_smc_src *.cpp *.hpp)
 
 # Make sure the state machine gets incorporated.
-set(fsm_src ${job_fsm_smc_src} JobFSM_sm.h JobFSM_sm.cpp ../JobFSMInterfaceImpl.cpp)
+set(fsm_src ${job_fsm_smc_src} JobFSM_sm.h JobFSM_sm.cpp ../JobFSMInterfaceTestImpl.cpp)
 
 ADD_LIBRARY(sdpa-jobFSM_SMC ${fsm_src})
 
