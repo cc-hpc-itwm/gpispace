@@ -1,10 +1,8 @@
-file(GLOB all_hdrs "*.hpp")
-file(GLOB all_srcs "*.cpp")
-
-set(hdrs "sdpa-msg.pb.h"  ${all_hdrs})
-set(srcs "sdpa-msg.pb.cc" ${all_srcs})
+file(GLOB hdrs "*.hpp")
+file(GLOB srcs "*.cpp")
 
 add_protocol_buffers(sdpa-msg)
+set(hdrs ${hdrs} "sdpa-msg.pb.h")
 
 include_directories(${PB_INCLUDE_DIR})
 ADD_LIBRARY(sdpa-events ${hdrs} ${srcs})
