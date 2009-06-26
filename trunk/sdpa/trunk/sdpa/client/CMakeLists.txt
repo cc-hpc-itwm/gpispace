@@ -1,10 +1,8 @@
 file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
 
-set(hdrs ${hdrs} "ClientFsm_sm.h")
-set(srcs ${srcs} "ClientFsm_sm.cpp")
-
 add_state_machine(ClientFsm)
+set(hdrs ${hdrs} ${ClientFsm_H})
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
