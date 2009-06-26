@@ -4,12 +4,12 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-// std
-#include <iostream>
-#include <sstream>
 // gwes
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
+// std
+#include <iostream>
+#include <sstream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -281,7 +281,7 @@ string GWES::getStatusAsString(const string& workflowId) {
  * Get the identifiers of all the workflows that are handled by this Grid Workflow Execution Service.
  * @return An array of strings with the workflowIDs.
  */
-vector<string>& GWES::getWorkflowIDs()
+const vector<string>& GWES::getWorkflowIDs()
 {
 	_workflowIds.clear();
 	for (WorkflowHandlerTable::iterator it=_wfht.begin(); it!=_wfht.end(); ++it) {

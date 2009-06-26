@@ -7,12 +7,12 @@
 #ifndef OPERATION_H_
 #define OPERATION_H_
 
-// std
-#include <string>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 // gwdl
 #include <gwdl/OperationClass.h>
+// xerces-c
+#include <xercesc/dom/DOM.hpp>
+// std
+#include <string>
 
 namespace gwdl
 {
@@ -153,7 +153,7 @@ public:
      * to GREEN (one candidate is selected).
      * @return  color
      */
-    int getAbstractionLevel();
+    int getAbstractionLevel() const;
 };
 
 }

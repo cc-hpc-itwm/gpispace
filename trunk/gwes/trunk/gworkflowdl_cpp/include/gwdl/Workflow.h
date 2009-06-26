@@ -6,18 +6,18 @@
  */
 #ifndef WORKFLOW_H_
 #define WORKFLOW_H_
-// std
-#include <map>
-#include <vector>
-#include <string>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 // gwdl
 #include <gwdl/Defines.h>
 #include <gwdl/Place.h>
 #include <gwdl/Transition.h>
 #include <gwdl/Properties.h>
 #include <gwdl/NoSuchWorkflowElement.h>
+// xerces-c
+#include <xercesc/dom/DOM.hpp>
+// std
+#include <map>
+#include <vector>
+#include <string>
 
 namespace gwdl
 {
@@ -179,7 +179,7 @@ public:
     /**
      * get workflow id.
      */
-    const std::string& getID() {return id;}
+    const std::string& getID() const {return id;}
     
     /**
      * set workflow id.
@@ -202,7 +202,7 @@ public:
     /**
      *  get all place ids.
      */
-    std::vector<std::string>& getPlaceIDs()
+    const std::vector<std::string>& getPlaceIDs()
     {
       placeids.clear();
       for(std::map<std::string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
@@ -236,7 +236,7 @@ public:
 	 * Get the total number of places.
 	 * @return The number of places as unsigned int.
 	 */
-    unsigned int placeCount() {return places.size();}
+    unsigned int placeCount() const {return places.size();}
 
     /**
      * Add a transition to the workflow.
@@ -256,7 +256,7 @@ public:
      * Get all transition identifiers.
      * @return vector of all transition identifiers.
      */
-    std::vector<std::string>* getTransitionIDs()
+    const std::vector<std::string>* getTransitionIDs() const
     {
       std::vector<std::string>* v = new std::vector<std::string>();
       for(unsigned int i=0; i<transitions.size(); ++i)
@@ -278,7 +278,7 @@ public:
      * @param id The transition ID.
      * @return The transition index.
      */
-    unsigned int getTransitionIndex(const std::string& id) throw (NoSuchWorkflowElement);
+    unsigned int getTransitionIndex(const std::string& id) const throw (NoSuchWorkflowElement);
 
 	/**
 	 * Retieve a transition by its index.
@@ -291,7 +291,7 @@ public:
 	 * Get the total number of transitions within this workflow.
 	 * @return The number of transitions as unsigned int.
 	 */ 
-    unsigned int transitionCount() {return transitions.size();}
+    unsigned int transitionCount() const {return transitions.size();}
 
     /**
      * Set the workflow description.
@@ -303,7 +303,7 @@ public:
      * Get the workflow description.
      * @return description
      */
-    std::string& getDescription() {return description;}
+    const std::string& getDescription() const {return description;}
 
 	/**
 	 * Get the properties of this workflow.

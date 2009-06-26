@@ -5,14 +5,14 @@
  * All rights reserved. 
  */
 
-// std
-#include <iostream>
-// xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Token.h>
+// xerces-c
+#include <xercesc/util/OutOfMemoryException.hpp>
+// std
+#include <iostream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

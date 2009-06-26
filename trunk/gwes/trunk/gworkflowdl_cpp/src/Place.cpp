@@ -4,15 +4,15 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-//std
-#include <iostream>
-#include <sstream>
-//xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
 //gwdl
 #include <gwdl/Place.h>
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
+//xerces-c
+#include <xercesc/util/OutOfMemoryException.hpp>
+//std
+#include <iostream>
+#include <sstream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -135,7 +135,7 @@ DOMElement* Place::toElement(DOMDocument* doc)
 	return el;
 }
 
-const string& Place::getID() 
+const string& Place::getID() const
 {
 	return id;
 }
@@ -145,12 +145,12 @@ void Place::setTokenType(const string& _type)
 	tokenType = _type;
 }
 
-const string& Place::getTokenType()
+const string& Place::getTokenType() const
 {
 	return tokenType;	
 }
 
-bool Place::isEmpty() 
+bool Place::isEmpty() const
 {
 	return (tokens.empty());
 }
@@ -169,7 +169,7 @@ void Place::removeToken(int i)
 	tokens.erase(tokens.begin()+i);
 }
 
-vector<Token*>& Place::getTokens() 
+const vector<Token*>& Place::getTokens() const 
 {
 	return tokens;	
 }
@@ -199,12 +199,12 @@ void Place::setCapacity(unsigned int _capacity) throw(CapacityException)
 	capacity = _capacity;
 }
 
-int Place::getCapacity()
+int Place::getCapacity() const
 {
 	return capacity;
 }
 
-int Place::getTokenNumber()
+int Place::getTokenNumber() const
 {
 	return tokens.size();
 }
@@ -214,7 +214,7 @@ void Place::setDescription(const string& d)
 	description = d;
 }
 
-string& Place::getDescription() 
+const string& Place::getDescription() const 
 {
 	return description;	
 }
@@ -229,7 +229,7 @@ Properties& Place::getProperties()
 	return properties;	
 }
 
-string Place::generateID()
+string Place::generateID() const
 {
 	static long counter = 0; 
 	ostringstream oss; 

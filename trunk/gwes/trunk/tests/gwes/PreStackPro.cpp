@@ -24,10 +24,10 @@ void PreStackPro::update(const gwes::Event& event)
 {
 	// logging
 	cout << "gwes::PreStackPro::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._dataP!=NULL) {
+	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Data*>* dP = event._dataP;
-		for (map<string,gwdl::Data*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
+		map<string,gwdl::Token*>* dP = event._tokensP;
+		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
 			cout << "[" << it->first << "]";
 		}
 	}
@@ -59,54 +59,54 @@ void PreStackPro::execute(const Event& inputEvent) {
 	cout << "algorithm name: " << algName << endl;
 	cout << "algorithm resource: " << algResource << endl;
 	
-	map<string,gwdl::Data*>* inputs = inputEvent._dataP;
-	map<string,gwdl::Data*> outputs;
+	map<string,gwdl::Token*>* inputs = inputEvent._tokensP;
+	map<string,gwdl::Token*> outputs;
 	if (algName=="loadTraceHeaders") {
 		// check input data
-		for (map<string,gwdl::Data*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 			string name = iter->first;
-			gwdl::Data* input = iter->second;
+			gwdl::Token* input = iter->second;
 			assert(input!=NULL);
-			if (name=="file") assert(input->getType()==gwdl::Data::TYPE_FILE);
+			if (name=="file") assert(input->getData()->getType()==gwdl::Data::TYPE_FILE);
 			else assert(false);
 		}
 		// simulate execution
 		usleep(500000);
-		// generate faked output data
-		gwdl::Data* outputData = new gwdl::Data("<data><volume>THD_5</volume></data>");
-		outputs.insert(pair<string,gwdl::Data*>("thd",outputData));
+		// generate faked output token
+		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
+		outputs.insert(pair<string,gwdl::Token*>("thd",outputToken));
 	} 
 
 	else if (algName=="calcGeoReferenceData") {
 		// check input data
-		for (map<string,gwdl::Data*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 			string name = iter->first;
-			gwdl::Data* input = iter->second;
+			gwdl::Token* input = iter->second;
 			assert(input!=NULL);
-			if (name=="thd") assert(input->getType()==gwdl::Data::TYPE_VOLUME);
+			if (name=="thd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
 			else assert(false);
 		}
 		// simulate execution
 		usleep(1000000);
 		// generate faked output data
-		gwdl::Data* outputData = new gwdl::Data("<data><volume>GRD_8</volume></data>");
-		outputs.insert(pair<string,gwdl::Data*>("grd",outputData));
+		gwdl::Token* outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
+		outputs.insert(pair<string,gwdl::Token*>("grd",outputData));
 	} 
 	else if (algName=="selectProjectData") {
 		// check input data
-		for (map<string,gwdl::Data*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 			string name = iter->first;
-			gwdl::Data* input = iter->second;
+			gwdl::Token* input = iter->second;
 			assert(input!=NULL);
-			if (name=="grd") assert(input->getType()==gwdl::Data::TYPE_VOLUME);
-			else if (name=="parameter") assert(input->getType()==gwdl::Data::TYPE_PARAMETER);
+			if (name=="grd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
+			else if (name=="parameter") assert(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
 			else assert(false);
 		}
 		// simulate execution
 		usleep(500000);
 		// generate faked output data
-		gwdl::Data* outputData = new gwdl::Data("<data><volume>FRD_10</volume></data>");
-		outputs.insert(pair<string,gwdl::Data*>("frd",outputData));
+		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
+		outputs.insert(pair<string,gwdl::Token*>("frd",outputToken));
 	} 
 	else {
 		cerr << "WARNING: algorithm " << algName << " is not implemented nor simulated." << endl;

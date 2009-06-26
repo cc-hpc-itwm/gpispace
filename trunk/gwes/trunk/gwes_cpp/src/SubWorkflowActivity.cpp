@@ -4,24 +4,26 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwes
+#include <gwes/SubWorkflowActivity.h>
+//gwdl
+#include <gwdl/Token.h>
 //std
 #include <iostream>
 #include <sstream>
 #include <map>
 #include <string>
-//gwdl
-#include <gwdl/Token.h>
-//gwes
-#include <gwes/SubWorkflowActivity.h>
 
 using namespace std;
+using namespace gwdl;
 
 namespace gwes
 {
 
-SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation) : Activity(handler, "SubWorkflowActivity", operation)
+SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP) : Activity(handler, "SubWorkflowActivity", operationP)
 {
 	_gwesP = handler->getGWES();
+	_subworkflowP = NULL;
 }
 
 SubWorkflowActivity::~SubWorkflowActivity()
@@ -42,18 +44,18 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 		throw StateTransitionException(oss.str());
 	}
 	// set workflow file 
-	_subworkflowdl = _operation->getOperationName();
-	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") trying to read file " << _subworkflowdl << endl;
+	_subworkflowFilename = _operation->getOperationName();
+	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") trying to read file " << _subworkflowFilename << endl;
 
 	// parse workflow file
-	_swfP = new gwdl::Workflow(_subworkflowdl);
+	_subworkflowP = new gwdl::Workflow(_subworkflowFilename);
 	setStatus(STATUS_INITIATED);
 }
 
 /**
  * Start this activity. Status should switch to RUNNING. 
  */
-void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) {
+void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransitionException,WorkflowFormatException) {
 	cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") ... " << endl;
 	//check status
 	if (_status != STATUS_INITIATED) {
@@ -64,29 +66,34 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	}
 	setStatus(STATUS_RUNNING);
 
-	// ToDo: copy tokens
-
-	//generate arguments from input tokens
-	//	for (map<string,gwdl::Data*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
-	//		string edgeExpression = it->first;
-	//		// stdin is reserved edgeExpression which is not treated as normal command line parameter. 
-	//		if (edgeExpression != "stdin") {
-	//			string text = *(it->second)->getText();
-	//			command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
-	//		}
-	//	}
+	// copy input tokens to places in sub workflow regarding the edge expressions of the parent workflow
+	string edgeExpression = "";
+	try {
+		for (map<string,gwdl::Token*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
+			edgeExpression = it->first;
+			// find corresponding place in subworkflow and add token with data on this place
+			cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..." << endl; 
+			Place* placeP = _subworkflowP->getPlace(edgeExpression);
+			placeP->addToken(it->second);
+		}
+	} catch (NoSuchWorkflowElement e) {
+		setStatus(STATUS_TERMINATED);
+		ostringstream message; 
+		message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+		throw WorkflowFormatException(message.str()); 
+	}
 
 	// initiate subworklfow
-	_subworkflowid = _gwesP->initiate(*_swfP,_wfhP->getUserId());
+	_subworkflowId = _gwesP->initiate(*_subworkflowP,_wfhP->getUserId());
 
 	// connect channel for callback 
 	Channel* channelP = new Channel(this);
-	_gwesP->connect(channelP, _subworkflowid);
+	_gwesP->connect(channelP, _subworkflowId);
 
 	// start subworkflow asynchronously. 
-	_gwesP->start(_subworkflowid);
+	_gwesP->start(_subworkflowId);
 	setStatus(STATUS_ACTIVE);
-	
+
 	// Completion of workflow will be notified using callback channel (refer to update()).
 }
 
@@ -149,10 +156,10 @@ void SubWorkflowActivity::restartActivity() throw (ActivityException,StateTransi
 void SubWorkflowActivity::update(const Event& event) {
 	// logging
 	cout << "gwes::SubWorkflowActivity[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._dataP!=NULL) {
+	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Data*>* dP = event._dataP;
-		for (map<string,gwdl::Data*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
+		map<string,gwdl::Token*>* dP = event._tokensP;
+		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
 			cout << "[" << it->first << "]";
 		}
 	}
@@ -160,14 +167,18 @@ void SubWorkflowActivity::update(const Event& event) {
 
 	// parse event
 	if (event._eventType==Event::EVENT_WORKFLOW) {
-		if (event._sourceId.compare(_subworkflowid) == 0) {
+		if (event._sourceId.compare(_subworkflowId) == 0) {
 			if (event._message.compare("COMPLETED") == 0) {
 				setStatus(Activity::STATUS_RUNNING);
 				setStatus(Activity::STATUS_COMPLETED);
+				// remove workflow from GWES and memory
+				_gwesP->remove(_subworkflowId);
 				// ToDo: copy output tokens
 			} else if (event._message.compare("TERMINATED") == 0) {
 				// ToDo: generate fault tokens
 				setStatus(Activity::STATUS_TERMINATED);
+				// remove workflow from GWES and memory
+				_gwesP->remove(_subworkflowId);
 			}
 		}
 	}

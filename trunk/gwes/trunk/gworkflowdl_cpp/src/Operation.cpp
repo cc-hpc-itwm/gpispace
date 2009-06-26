@@ -4,15 +4,15 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-//std
-#include <iostream>
-#include <sstream>
-//xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
 //gwdl
 #include <gwdl/Operation.h>
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
+//xerces-c
+#include <xercesc/util/OutOfMemoryException.hpp>
+//std
+#include <iostream>
+#include <sstream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -91,7 +91,7 @@ DOMElement* Operation::toElement(DOMDocument* doc)
 	return el;
 }
 
-int Operation::getAbstractionLevel()
+int Operation::getAbstractionLevel() const
 {	
 	if(operationClass != NULL) return operationClass->getAbstractionLevel();
 	else return RED;

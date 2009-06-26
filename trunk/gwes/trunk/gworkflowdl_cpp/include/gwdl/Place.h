@@ -6,17 +6,16 @@
  */
 #ifndef PLACE_H_
 #define PLACE_H_
-
-// std
-#include <ostream>
-#include <string>
-#include <vector>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 //gwdl
 #include <gwdl/Token.h>
 #include <gwdl/Properties.h>
 #include <gwdl/CapacityException.h>
+// xerces-c
+#include <xercesc/dom/DOM.hpp>
+// std
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace gwdl
 {
@@ -45,7 +44,7 @@ private:
     std::string description;
     Properties properties;
     
-    std::string generateID();
+    std::string generateID() const;
 	
 public:
 
@@ -69,7 +68,7 @@ public:
 	/**
 	 * Get the unique identifier of this place.
 	 */
-	const std::string& getID();
+	const std::string& getID() const;
 	
 	/**
 	 * Set the type of this token.
@@ -79,13 +78,13 @@ public:
 	/**
 	 * Get the type of this token.
 	 */
- 	const std::string& getTokenType();
+ 	const std::string& getTokenType() const;
  	
  	/**
  	 * Check, if the place is empty.
  	 * @return "true" if there is no token on this place, "false" otherwise.
  	 */
-	bool isEmpty();
+	bool isEmpty() const;
 	
 	/**
 	 * Put an additional token on this place.
@@ -105,7 +104,7 @@ public:
 	 * Get the vector of tokens.
 	 * @return The return vector contains pointers to the tokens.
 	 */
-	std::vector<Token*>& getTokens();
+	const std::vector<Token*>& getTokens() const;
 	
 	/**
 	 * Removes a specific token from the vector of tokens.
@@ -126,13 +125,13 @@ public:
 	/**
 	 * Get the maximum number of tokens that are allowed on this place.
 	 */
-	int getCapacity();
+	int getCapacity() const;
 	
 	/**
 	 * Get the amount of tokens which are located on this place.
 	 * @return the number of tokens.
 	 */
-	int getTokenNumber();
+	int getTokenNumber() const;
 	
 	/**
 	 * Set the human-readable description for this place.
@@ -144,7 +143,7 @@ public:
 	 * Get the human-readable descripton of this place.
 	 * @return the description as string.
 	 */
-	std::string& getDescription();
+	const std::string& getDescription() const;
 	
 	/**
 	 * Set all the properties of this place.

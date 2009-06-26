@@ -4,18 +4,18 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwes
+#include <gwes/PreStackProActivity.h>
 //std
 #include <iostream>
 #include <sstream>
-//gwes
-#include <gwes/PreStackProActivity.h>
 
 using namespace std;
 
 namespace gwes
 {
 
-PreStackProActivity::PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation) : Activity(handler, "PreStackProActivity", operation)
+PreStackProActivity::PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP) : Activity(handler, "PreStackProActivity", operationP)
 {
 	///calls Activity constructor
 }

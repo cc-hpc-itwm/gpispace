@@ -6,13 +6,13 @@
  */
 #ifndef CLASSOPERATION_H_
 #define CLASSOPERATION_H_
+//gwdl
+#include <gwdl/OperationCandidate.h>
+//xerces-c
+#include <xercesc/dom/DOM.hpp>
 //std
 #include <vector>
 #include <string>
-//xerces-c
-#include <xercesc/dom/DOM.hpp>
-//gwdl
-#include <gwdl/OperationCandidate.h>
 
 namespace gwdl
 {
@@ -68,12 +68,12 @@ public:
      * to GREEN (one candidate is selected).
      * @return  color
      */
-    int getAbstractionLevel();
+    int getAbstractionLevel() const;
 
 	/**
 	 * Get the name of this operation class.
 	 */
-	std::string& getName() {return name;}
+	const std::string& getName() const {return name;}
 
 	/**
 	 * Set the name of this operation class.
@@ -83,7 +83,7 @@ public:
 	/**
 	 * Get the candidates of this operation class.
 	 */    
-    std::vector<OperationCandidate*>& getOperationCandidates();
+    const std::vector<OperationCandidate*>& getOperationCandidates() const;
     
     /**
      * Add an additional concrete operation to the candidates.

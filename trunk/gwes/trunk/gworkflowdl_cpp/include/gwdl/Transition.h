@@ -6,15 +6,15 @@
  */
 #ifndef TRANSITION_H_
 #define TRANSITION_H_
-//std
-#include <vector>
-#include <string>
-//xerces-c
-#include <xercesc/dom/DOM.hpp>
 //gwdl
 #include <gwdl/Edge.h>
 #include <gwdl/Operation.h>
 #include <gwdl/Properties.h>
+//xerces-c
+#include <xercesc/dom/DOM.hpp>
+//std
+#include <vector>
+#include <string>
 
 namespace gwdl
 {
@@ -115,14 +115,14 @@ private:
 	TransitionStatus status;
     std::string description;
     Properties properties;
-    Operation* operation;
+    Operation* operationP;
     std::vector<std::string> conditions;
     std::vector<Edge*> readEdges;
     std::vector<Edge*> inEdges;
     std::vector<Edge*> writeEdges;
     std::vector<Edge*> outEdges;
 	
-	std::string generateID();
+	std::string generateID() const;
 	
 public:
 	
@@ -154,7 +154,7 @@ public:
      * get transition ID.
      * @return transition ID
      */
-    const std::string& getID() {return id;}
+    const std::string& getID() const {return id;}
 
     /**
      * set transition description.
@@ -167,7 +167,7 @@ public:
      * before setDescription getDescription returns DEFAULT_DESCRIPTION
      * @return description
      */
-    std::string& getDescription(){return description;}
+    const std::string& getDescription() const {return description;}
 
 	/**
 	 * Set all the properties of this transition.
@@ -234,7 +234,7 @@ public:
      * get array of read Edges.
      * @return read Edges
      */
-    std::vector<Edge*>& getReadEdges() {return readEdges;}
+    const std::vector<Edge*>& getReadEdges() const {return readEdges;}
 
     /**
      * clear input Edges and add array's Edges to input Edges.
@@ -264,7 +264,7 @@ public:
      * get array of write Edges.
      * @return write Edges
      */
-    std::vector<Edge*>& getWriteEdges() {return writeEdges;}
+    const std::vector<Edge*>& getWriteEdges() const {return writeEdges;}
 
     /**
      * clear output Edges and add array's Edges to output Edges.
@@ -279,7 +279,7 @@ public:
      * get array of output Edges.
      * @return output edges
      */
-    std::vector<Edge*>& getOutEdges() {return outEdges;}
+    const std::vector<Edge*>& getOutEdges() const {return outEdges;}
 
     /**
      * set transition's Operation.
@@ -287,13 +287,13 @@ public:
      * @param _operation Operation to be set
      */
     void setOperation(Operation* p_operation)
-    {if(operation != NULL){ delete operation;} operation = p_operation;}
+    {if(operationP != NULL){ delete operationP;} operationP = p_operation;}
 
     /**
      * get Transitions Operation.
      * @return operation Operation of the transition
      */
-    Operation* getOperation() { return operation;}
+    Operation* getOperation() { return operationP;}
 
     /**
      * set transition's condition.
@@ -310,7 +310,7 @@ public:
      * get transition's condition.
      * @return condition condition of the transition
      */
-    std::vector<std::string>& getConditions() {return conditions;}
+    const std::vector<std::string>& getConditions() const {return conditions;}
 
     // advanced methods that make life easier
 
@@ -325,7 +325,7 @@ public:
      * before setStatus getStatus returns DEFAULT_STATUS
      * @return status of Transition
      */
-    TransitionStatus& getStatus() {return status;}
+    const TransitionStatus& getStatus() const {return status;}
 
     /**
      * remove read edge by place ID.
@@ -419,7 +419,7 @@ public:
       return NULL;
     }
 
-    int getAbstractionLevel();
+    int getAbstractionLevel() const;
 
     /**
      * tests wheather transition is isEnabled

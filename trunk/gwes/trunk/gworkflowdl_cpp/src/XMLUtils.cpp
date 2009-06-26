@@ -4,6 +4,9 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+// gwdl
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Defines.h>
 // xerces-c
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -11,9 +14,6 @@
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xercesc/framework/Wrapper4InputSource.hpp>
 #include <iostream>
-// gwdl
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Defines.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

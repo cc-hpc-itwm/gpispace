@@ -6,16 +6,16 @@
  */
 #ifndef WORKFLOWHANDLER_H_
 #define WORKFLOWHANDLER_H_
-//std
-#include <vector>
-#include <pthread.h>
-//gwdl
-#include <gwdl/Workflow.h>
-#include <gwdl/WorkflowFormatException.h>
 // gwes
 #include <gwes/ActivityTable.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/Channel.h>
+//gwdl
+#include <gwdl/Workflow.h>
+#include <gwdl/WorkflowFormatException.h>
+//std
+#include <vector>
+#include <pthread.h>
 
 namespace gwes {
 
@@ -33,7 +33,7 @@ class GWES;
 class WorkflowHandler : public gwes::Observer
 {
 private:
-	
+
 	/**
 	 * Minimum time period in micro seconds for sleeping between two cycles if the workflow was not modified.
 	 * Default is 10000 micro seconds
@@ -55,7 +55,7 @@ private:
 	 * Pointer to the workflow to handle.
 	 */
 	gwdl::Workflow* _wfP;
-	
+
 	/**
 	 * Pointer to the parent gwes.
 	 */
@@ -108,7 +108,7 @@ private:
 	 * Set _suspend to <code>true</code> in order to suspend the execution of the workflow.
 	 */
 	bool _suspend;
-	
+
 	/**
 	 * Vector which contains pointers to the communication channels of this workflow.
 	 */
@@ -123,13 +123,13 @@ private:
 	 * </ul>
 	 * The two parts are connected by a underline (_).
 	 */
-	std::string generateID();
+	std::string generateID() const;
 
 	/**
 	 * Return the data of the first unlocked token from each input place.
 	 * As a side effect this methods puts the tokens into the _activityTokenlistTable. 
 	 */
-	std::map<std::string,gwdl::Data*> retrieveInputDataTokens(
+	std::map<std::string,gwdl::Token*> retrieveInputTokens(
 			gwdl::Transition* transitionP, Activity* activityP)
 			throw (gwdl::WorkflowFormatException);
 
@@ -138,20 +138,20 @@ private:
 	 * @param transitionP
 	 * @return The HashMap contains the edgeExpressions of the output tokens as keys and <code>NULL</code> objects as values.
 	 */
-	std::map<std::string,gwdl::Data*> generateOutputDataTokensTemplate(
+	std::map<std::string,gwdl::Token*> generateOutputTokensTemplate(
 			gwdl::Transition* transitionP);
 
 	/**
 	 * Get a new unique error ID for this workflow.
 	 * @return a string with a unique error ID.
 	 */
-	std::string createNewErrorID();
+	std::string createNewErrorID() const;
 
 	/**
 	 * Get a new unique warn ID for this workflow.
 	 * @return a string with a unique warn ID.
 	 */
-	std::string createNewWarnID();
+	std::string createNewWarnID() const;
 
 	/** 
 	 * Set the status of this workflow handler.
@@ -273,28 +273,28 @@ public:
 	/**
 	 * Get the identifier of the workflow handler.
 	 */
-	const std::string& getID() {
+	const std::string& getID() const {
 		return _id;
 	}
 
 	/**
 	 * Get the current status code of this workflow handler as int.
 	 */
-	int getStatus() {
+	int getStatus() const {
 		return _status;
 	}
 
 	/**
 	 * Get current status as string.
 	 */
-	std::string getStatusAsString() {
+	std::string getStatusAsString() const {
 		return getStatusAsString(_status);
 	}
 
 	/**
 	 * Translate status code to string.
 	 */
-	std::string getStatusAsString(int status) {
+	std::string getStatusAsString(int status) const {
 		switch (status) {
 		case STATUS_UNDEFINED:
 			return std::string("UNDEFINED");
@@ -323,7 +323,7 @@ public:
 	 *
 	 * @return The new activity identifier.
 	 */
-	std::string getNewActivityID();
+	std::string getNewActivityID() const;
 
 	/**
 	 * Start this workflow. This method call is asynchronous (non-blocking)
@@ -372,22 +372,22 @@ public:
 	 */
 	void waitForStatusChangeToCompletedOrTerminated();
 
-	long getSleepTime() {
+	long getSleepTime() const {
 		return _sleepTime;
 	}
-	
+
 	/**
 	 * Connect a communication channel to this workflow handler.
 	 * @param channel The communication channel containing the source Observer.
 	 */ 
 	void connect(Channel* channel);
-	
+
 	/**
 	 * Overides gwes::Observer::update().
 	 * This method is called by the source of the channels connected to this workflow handler.
 	 */
 	virtual void update(const Event& event);
-	
+
 	/**
 	 * Get the workflow which is handled by this WorkflowHandler.
 	 * @return A pointer to the workflow.
@@ -406,7 +406,7 @@ public:
 	 * Get the user Id of the user who owns this workflow.
 	 * @return A pointer to the parent GWES.
 	 */
-	const std::string& getUserId() {
+	const std::string& getUserId() const {
 		return _userId;
 	}
 

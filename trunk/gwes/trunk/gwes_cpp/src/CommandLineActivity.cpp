@@ -4,6 +4,10 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwes
+#include <gwes/CommandLineActivity.h>
+//gwdl
+#include <gwdl/Token.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -16,17 +20,13 @@
 #include <errno.h>
 #include <map>
 #include <string>
-//gwdl
-#include <gwdl/Token.h>
-//gwes
-#include <gwes/CommandLineActivity.h>
 
 using namespace std;
 
 namespace gwes
 {
 
-CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation) : Activity(handler, "CommandLineActivity", operation)
+CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP) : Activity(handler, "CommandLineActivity", operationP)
 {
 }
 
@@ -100,17 +100,20 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	command << _operation->getResourceName();
 
 	//generate arguments from input tokens
-	for (map<string,gwdl::Data*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
+	for (map<string,gwdl::Token*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
 		string edgeExpression = it->first;
 		// stdin is reserved edgeExpression which is not treated as normal command line parameter. 
 		if (edgeExpression != "stdin") {
-			string text = *(it->second)->getText();
-			command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
+			gwdl::Token* tokenP = it->second;
+			if (tokenP->isData()) {
+				string* textP = tokenP->getData()->getText();
+				command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+			}
 		}
 	}
 	
 	//generate arguments from output tokens
-	for (map<string,gwdl::Data*>::iterator it=_outputs.begin(); it != _outputs.end(); ++it) {
+	for (map<string,gwdl::Token*>::iterator it=_outputs.begin(); it != _outputs.end(); ++it) {
 		string edgeExpression = it->first;
 		// if edge expression of input and output place are the same then just copy the token from input to output. ///Where is this done?
 		// if output edge expression is different from input edge expression, then create new data token. 
@@ -118,13 +121,13 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 			string url = generateOutputDataURL(edgeExpression);
 			ostringstream oss;
 			oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
-			gwdl::Data* data = new gwdl::Data(oss.str());
+			gwdl::Token* tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
 			// do not convert edgeExpressions stdout, stderr, exitcode to command line parameters as they are handled differently.
 			if (edgeExpression != "stdout" && edgeExpression != "stderr" && edgeExpression != "exitcode") {
 				command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
 			}
 			_outputs.erase(edgeExpression);
-			_outputs.insert(pair<string,gwdl::Data*>(edgeExpression,data));
+			_outputs.insert(pair<string,gwdl::Token*>(edgeExpression,tokenP));
 		}
 	}
 	

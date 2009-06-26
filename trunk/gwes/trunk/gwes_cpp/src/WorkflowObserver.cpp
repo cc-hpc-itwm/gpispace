@@ -4,11 +4,11 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+// gwes
+#include <gwes/WorkflowObserver.h>
 // std
 #include <iostream>
 #include <ostream>
-// gwes
-#include <gwes/WorkflowObserver.h>
 
 using namespace std;
 
@@ -26,10 +26,10 @@ WorkflowObserver::~WorkflowObserver()
 void WorkflowObserver::update(const Event& event)
 {
 	cout << "gwes::WorkflowObserver::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._dataP!=NULL) {
+	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Data*>* dP = event._dataP;
-		for (map<string,gwdl::Data*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
+		map<string,gwdl::Token*>* dP = event._tokensP;
+		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
 			cout << "[" << it->first << "]";
 		}
 	}

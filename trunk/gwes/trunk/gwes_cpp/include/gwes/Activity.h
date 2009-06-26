@@ -6,18 +6,18 @@
  */
 #ifndef ACTIVITY_H_
 #define ACTIVITY_H_
-//std
-#include <string>
-#include <map>
-#include <vector>
-//gwdl
-#include <gwdl/Data.h>
-#include <gwdl/OperationCandidate.h>
 //gwes
 #include <gwes/ActivityException.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/Observer.h>
 #include <gwes/Event.h>
+//gwdl
+#include <gwdl/Data.h>
+#include <gwdl/OperationCandidate.h>
+//std
+#include <string>
+#include <map>
+#include <vector>
 
 namespace gwes {
 
@@ -47,18 +47,18 @@ protected:
 	std::vector<Observer*> _observers;
 	
 	/**
-	 * Hashmap of input data for this activity.
-     * The key of the hash map is the edge expression related to the data.
-     * The value contains the data of the parameter, e.g. as pointer to the gwdl::Data object.
+	 * Map of input tokens for this activity.
+     * The key of the map is the edge expression related to the token.
+     * The value contains the token of the parameter, as pointer to the gwdl::Token object.
 	 */
-	std::map<std::string,gwdl::Data*> _inputs;
+	std::map<std::string,gwdl::Token*> _inputs;
 	
 	/**
-	 * Hashmap of output data for this activity.
-     * The key of the hash map is the edge expression related to the data.
-     * The value contains the data of the parameter, e.g. as pointer to the gwdl::Data object.
+	 * Map of output tokens for this activity.
+     * The key of the map is the edge expression related to the token.
+     * The value contains the token of the parameter, as pointer to the gwdl::Token object.
 	 */
-	std::map<std::string,gwdl::Data*> _outputs;
+	std::map<std::string,gwdl::Token*> _outputs;
 
 	std::string _faultMessage;
 	int _exitCode;
@@ -71,7 +71,7 @@ protected:
 		return counter++;
 	}
 	
-	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", std::map<std::string,gwdl::Data*>* data=NULL);
+	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", std::map<std::string,gwdl::Token*>* tokensP=NULL);
 
 public:
 
@@ -127,7 +127,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	explicit Activity(WorkflowHandler* handler, const std::string& activityImpl, gwdl::OperationCandidate* operation);
+	explicit Activity(WorkflowHandler* handler, const std::string& activityImpl, gwdl::OperationCandidate* operationP);
 	
 	/**
 	 * Destructor.
@@ -137,7 +137,7 @@ public:
 	/**
 	 * Get activity ID.
 	 */
-	const std::string& getID() { return _id; }
+	const std::string& getID() const { return _id; }
 	
 	/**
 	 * Get activity class.
@@ -153,7 +153,7 @@ public:
 	/**
 	 * Get the current status code of this activity.
 	 */
-	int getStatus() { return _status;}
+	int getStatus() const { return _status;}
 	
     /**
      * Get the current status of the activity as string.
@@ -163,7 +163,7 @@ public:
      * @see #getStatus()
      * @see #getStatusAsString(int)
      */
-    std::string getStatusAsString() { return getStatusAsString(_status); }
+    std::string getStatusAsString() const { return getStatusAsString(_status); }
     
     /**
      * Convert the status of a activity from an integer to a string.
@@ -171,45 +171,45 @@ public:
      * @param status The status code with should be converted into a string.
      * @return string representing the status that corresponds to the status code.
      */
-    std::string getStatusAsString(int status);
+    std::string getStatusAsString(int status) const;
     
     /**
       * Wait for activity to change its status.
       * @param oldStatus The old status
       * @return The new status
       */
-     int waitForStatusChangeFrom(int oldStatus);
+     int waitForStatusChangeFrom(int oldStatus) const;
      
      /**
       * Wait for activity to change its status to a specified status.
       * @param newStatus The new status code to wait for
       */
-     void waitForStatusChangeTo(int newStatus);
+     void waitForStatusChangeTo(int newStatus) const;
 
      /**
       * Wait for activity to change its status to COMPLETED or TERMINATED.
       */
-     void waitForStatusChangeToCompletedOrTerminated();
+     void waitForStatusChangeToCompletedOrTerminated() const;
      
      /**
       * Set activity inputs.
       */
-     void setInputs(const std::map<std::string,gwdl::Data*>& inputs) {_inputs = inputs; }
+     void setInputs(const std::map<std::string,gwdl::Token*>& inputs) {_inputs = inputs; }
      
      /**
       * Get activity inputs.
       */
-     std::map<std::string,gwdl::Data*>& getInputs() { return _inputs; }
+     std::map<std::string,gwdl::Token*>& getInputs() { return _inputs; }
      
      /**
       * Set activity outputs.
       */
-     void setOutputs(const std::map<std::string,gwdl::Data*>& outputs) {_outputs = outputs; }
+     void setOutputs(const std::map<std::string,gwdl::Token*>& outputs) {_outputs = outputs; }
      
      /**
       * Get activity outputs.
       */
-     std::map<std::string,gwdl::Data*>& getOutputs() { return _outputs; }
+     std::map<std::string,gwdl::Token*>& getOutputs() { return _outputs; }
 
      /**
       * Set the fault message of this activity.
@@ -220,7 +220,7 @@ public:
       * Get the activity fault message.
       * @return Returns the fault message as std::string or "" if there is no message.
       */
-     std::string& getFaultMessage() {return _faultMessage;}
+     const std::string& getFaultMessage() const {return _faultMessage;}
      
      /**
       * Attach an observer to this activity.

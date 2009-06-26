@@ -4,24 +4,24 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwes
+#include <gwes/Activity.h>
+#include <gwes/WorkflowHandler.h>
 //std
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
-//gwes
-#include <gwes/Activity.h>
-#include <gwes/WorkflowHandler.h>
 
 using namespace std;
 
 namespace gwes {
 
-Activity::Activity(WorkflowHandler* handler, const string& activityImpl, gwdl::OperationCandidate* operation) {
+Activity::Activity(WorkflowHandler* handler, const string& activityImpl, gwdl::OperationCandidate* operationP) {
 	_status=STATUS_UNDEFINED;
 	_wfhP = handler;
 	_activityImpl = activityImpl;
 	_id = handler->getNewActivityID();
-	_operation = operation;
+	_operation = operationP;
 	_abort = false;
 	_suspend = false;
 }
@@ -46,7 +46,7 @@ void Activity::setStatus(int status) {
 	}
 }
 
-string Activity::getStatusAsString(int status) {
+string Activity::getStatusAsString(int status) const {
 	switch (status) {
 	case (STATUS_UNDEFINED): return "UNDEFINED";
 	case (STATUS_RUNNING): return "RUNNING";
@@ -62,7 +62,7 @@ string Activity::getStatusAsString(int status) {
 	}
 }
 
-int Activity::waitForStatusChangeFrom(int oldStatus) {
+int Activity::waitForStatusChangeFrom(int oldStatus) const {
     while (_status == oldStatus) {
     	// ToDo: replace by monitor waiting.
     	usleep(_wfhP->getSleepTime());
@@ -70,14 +70,14 @@ int Activity::waitForStatusChangeFrom(int oldStatus) {
     return _status;
 }
 
-void Activity::waitForStatusChangeTo(int newStatus) {
+void Activity::waitForStatusChangeTo(int newStatus) const {
     while (_status != newStatus) {
     	// ToDo: replace by monitor waiting.
     	usleep(_wfhP->getSleepTime());
     }
 }
 
-void Activity::waitForStatusChangeToCompletedOrTerminated() {
+void Activity::waitForStatusChangeToCompletedOrTerminated() const {
     while (_status != STATUS_COMPLETED && _status != STATUS_TERMINATED) {
     	// ToDo: replace by monitor waiting.
     	usleep(_wfhP->getSleepTime());
@@ -89,8 +89,8 @@ void Activity::attachObserver(Observer* observerP) {
 }
 
 // notify observers
-void Activity::notifyObservers(int type, const string& message, map<string,gwdl::Data*>* data) {
-	Event event(_id,type,message,data);
+void Activity::notifyObservers(int type, const string& message, map<string,gwdl::Token*>* tokensP) {
+	Event event(_id,type,message,tokensP);
 	for (unsigned int i = 0; i<_observers.size(); i++ ) {
 		_observers[i]->update(event);
 	}

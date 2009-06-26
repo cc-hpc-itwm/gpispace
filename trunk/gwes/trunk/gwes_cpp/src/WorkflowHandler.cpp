@@ -4,16 +4,16 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-//std
-#include <iostream>
-#include <sstream>
-#include <unistd.h>
-#include <map>
 //gwes
 #include <gwes/WorkflowHandler.h>
 #include <gwes/CommandLineActivity.h>
 #include <gwes/PreStackProActivity.h>
 #include <gwes/SubWorkflowActivity.h>
+//std
+#include <iostream>
+#include <sstream>
+#include <unistd.h>
+#include <map>
 
 using namespace std;
 using namespace gwdl;
@@ -71,7 +71,7 @@ void WorkflowHandler::setStatus(int status) {
 	}
 }
 
-string WorkflowHandler::getNewActivityID() {
+string WorkflowHandler::getNewActivityID() const {
 	static long activityCounter = 0;
 	ostringstream oss;
 	///ToDo: leading 000000x for activity counter
@@ -124,7 +124,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	while ((!_abort && enabledTransitions.size()> 0) || _status
 			== WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
-			cout << "--- step " << step << " (" << getStatusAsString()
+			cout << "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 					<< ") --- " << enabledTransitions.size()
 					<< " enabled transition(s)" << endl;
 			modification = false;
@@ -163,7 +163,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		//process selected transition.
 		if (!_abort && !_suspend && selectedTransitionP != NULL) {
 			int abstractionLevel = selectedTransitionP->getAbstractionLevel();
-			cout << "--- step " << step << " --- processing transition \""
+			cout << "--- step " << step << " (" << getID() << ") --- processing transition \""
 					<< selectedTransitionP->getID() << "\" (level "
 					<< abstractionLevel << ") ..." << endl;
 			switch (abstractionLevel) {
@@ -304,7 +304,7 @@ void WorkflowHandler::waitForStatusChangeToCompletedOrTerminated() {
 	}
 }
 
-string WorkflowHandler::generateID() {
+string WorkflowHandler::generateID() const {
 	///ToDo: Implement with UUID.
 	static long counter = 0;
 	ostringstream oss;
@@ -331,10 +331,10 @@ void WorkflowHandler::connect(Channel* channel) {
 void WorkflowHandler::update(const Event& event) {
 	// logging
 	cout << "gwes::WorkflowHandler[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._dataP!=NULL) {
+	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Data*>* dP = event._dataP;
-		for (map<string,gwdl::Data*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
+		map<string,gwdl::Token*>* dP = event._tokensP;
+		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
 			cout << "[" << it->first << "]";
 		}
 	}
@@ -345,8 +345,8 @@ void WorkflowHandler::update(const Event& event) {
 		Activity* activityP = _activityTable.get(event._sourceId);
 		if (activityP!=NULL) {
 			activityP->setStatus(Activity::STATUS_RUNNING);
-			if (event._dataP!=NULL) {
-				activityP->setOutputs(*event._dataP);
+			if (event._tokensP!=NULL) {
+				activityP->setOutputs(*event._tokensP);
 			}
 			activityP->setStatus(Activity::STATUS_COMPLETED);
 		}
@@ -453,8 +453,8 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	activityP->initiateActivity();
 
 	// set inputs and outputs
-	activityP->setInputs(retrieveInputDataTokens(tP, activityP));
-	activityP->setOutputs(generateOutputDataTokensTemplate(tP));
+	activityP->setInputs(retrieveInputTokens(tP, activityP));
+	activityP->setOutputs(generateOutputTokensTemplate(tP));
 
 	// invoke activity
 	activityP->startActivity();
@@ -545,7 +545,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			vector<gwdl::Token*> lockedtokens = _activityTokenlistTable.find(activityID)->second;
 			vector<gwdl::Edge*> inEdges = transitionP->getInEdges();
 			for (unsigned int i=0; i<inEdges.size(); i++) {
-				vector<Token*>& placetokens = inEdges[i]->getPlace()->getTokens();
+				const vector<Token*>& placetokens = inEdges[i]->getPlace()->getTokens();
 				unsigned int il = 0;
 				while (il < lockedtokens.size()) {
 					unsigned int ip = 0;
@@ -579,9 +579,9 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 						// data place with edge expression that is equal to an output parameter of the operation
 						if (tokenP == NULL) {
-							map<string,gwdl::Data*> outputs = activityP->getOutputs();
+							map<string,gwdl::Token*> outputs = activityP->getOutputs();
 							if (outputs.find(edgeExpression)!=outputs.end()) {
-								tokenP = new Token(outputs.find(edgeExpression)->second);
+								tokenP = outputs.find(edgeExpression)->second;
 							} else {
 								///put SOAP Fault if there is no data for edge expression
 								ostringstream fault;
@@ -644,17 +644,17 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 	return modification;
 }
 
-map<string,gwdl::Data*> WorkflowHandler::retrieveInputDataTokens(gwdl::Transition* transitionP, Activity* activityP)
+map<string,gwdl::Token*> WorkflowHandler::retrieveInputTokens(gwdl::Transition* transitionP, Activity* activityP)
 		throw (gwdl::WorkflowFormatException) {
 //	cout << "WorkflowHandler::retrieveInputDataTokens() ..." << endl;
 	// get read edges
-	vector<gwdl::Edge*>& readEdges = transitionP->getReadEdges();
+	const vector<gwdl::Edge*>& readEdges = transitionP->getReadEdges();
 	// get input edges
-	vector<gwdl::Edge*>& inEdges = transitionP->getInEdges();
+	const vector<gwdl::Edge*>& inEdges = transitionP->getInEdges();
 
 	// create empty vector/maps
 	vector<gwdl::Token*> tokenlist;
-	map<string,gwdl::Data*> inputTokens;
+	map<string,gwdl::Token*> inputTokens;
 
 	// process read edges
 	if (readEdges.size()>0) {
@@ -681,11 +681,10 @@ map<string,gwdl::Data*> WorkflowHandler::retrieveInputDataTokens(gwdl::Transitio
 
 			// put data token to input Hash Map
 			string edgeExpression = readEdges[j]->getExpression();
-			if (edgeExpression.size()> 0 && tokenP->isData()) {
+			if (edgeExpression.size()> 0) {
 				///ToDo: Replace all child elements names by edge expression, e.g. edge expression = value1 -->
 				// <data><value1>15</value1></data>
-				inputTokens.insert(pair<string, gwdl::Data*>(edgeExpression,
-						tokenP->getData()));
+				inputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,tokenP));
 			}
 		}
 	}
@@ -717,26 +716,23 @@ map<string,gwdl::Data*> WorkflowHandler::retrieveInputDataTokens(gwdl::Transitio
 
 			// put data token to input Hash Map
 			string edgeExpression = inEdges[j]->getExpression();
-			if (edgeExpression.size()> 0 && tokenP->isData()) {
+			if (edgeExpression.size()> 0) {
 				///ToDo: Replace all child elements names by edge expression, e.g. edge expression = value1 -->
 				// <data><value1>15</value1></data>
-				inputTokens.insert(pair<string, gwdl::Data*>(edgeExpression,
-						tokenP->getData()));
+				inputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,tokenP));
 			}
 
 			// remove token from input place is done after completion or termination of the activity.
 		}
 	}
 
-	_activityTokenlistTable.insert(pair<string, vector<gwdl::Token*> >(
-			activityP->getID(), tokenlist));
+	_activityTokenlistTable.insert(pair<string, vector<gwdl::Token*> >(activityP->getID(), tokenlist));
 	return inputTokens;
 }
 
-map<string,gwdl::Data*> WorkflowHandler::generateOutputDataTokensTemplate(
-		gwdl::Transition* transitionP) {
-	vector<gwdl::Edge*>& outEdges = transitionP->getOutEdges();
-	map<string,gwdl::Data*> outputTokens;
+map<string,gwdl::Token*> WorkflowHandler::generateOutputTokensTemplate(gwdl::Transition* transitionP) {
+	const vector<gwdl::Edge*>& outEdges = transitionP->getOutEdges();
+	map<string,gwdl::Token*> outputTokens;
 	if (outEdges.size()> 0) {
 		// loop through output edges
 		for (unsigned int i=0; i<outEdges.size(); i++) {
@@ -744,22 +740,21 @@ map<string,gwdl::Data*> WorkflowHandler::generateOutputDataTokensTemplate(
 			// put the edgeExpression to the output HashMap
 			if (edgeExpression.size()>0) {
 				// the real result tokens on the output place are constructed asynch
-				outputTokens.insert(pair<string, gwdl::Data*>(edgeExpression,
-						NULL));
+				outputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,NULL));
 			}
 		}
 	}
 	return outputTokens;
 }
 
-string WorkflowHandler::createNewErrorID() {
+string WorkflowHandler::createNewErrorID() const {
 	static long errorCounter = 0;
 	ostringstream oss;
 	oss << "error." << errorCounter++;
 	return oss.str();
 }
 
-string WorkflowHandler::createNewWarnID() {
+string WorkflowHandler::createNewWarnID() const {
 	static long warnCounter = 0;
 	ostringstream oss;
 	oss << "warn." << warnCounter++;

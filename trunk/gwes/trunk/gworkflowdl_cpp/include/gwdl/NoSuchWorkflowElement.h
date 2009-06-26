@@ -6,9 +6,8 @@
  */
 #ifndef NOSUCHWORKFLOWELEMENT_H_
 #define NOSUCHWORKFLOWELEMENT_H_
+// std
 #include <string>
-
-//using namespace std;
 
 namespace gwdl
 {

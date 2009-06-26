@@ -6,12 +6,12 @@
  */
 #ifndef WORKFLOWHANDLERTABLE_H_
 #define WORKFLOWHANDLERTABLE_H_
-//std
-#include <string>
-#include <map>
 //gwes
 #include <gwes/WorkflowHandler.h>
 #include <gwes/NoSuchWorkflowException.h>
+//std
+#include <string>
+#include <map>
 
 namespace gwes {
 

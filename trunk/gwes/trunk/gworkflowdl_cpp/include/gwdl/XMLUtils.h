@@ -6,14 +6,14 @@
  */
 #ifndef XMLUTILS_H_
 #define XMLUTILS_H_
+// gwdl
+#include <gwdl/WorkflowFormatException.h>
+#include <gwdl/XMLDOMErrorHandler.h>
 //xerces
 #include <xercesc/dom/DOM.hpp>
 // std
 #include <ostream>
 #include <string>
-// gwdl
-#include <gwdl/WorkflowFormatException.h>
-#include <gwdl/XMLDOMErrorHandler.h>
 
 namespace gwdl
 {

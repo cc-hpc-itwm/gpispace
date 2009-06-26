@@ -6,12 +6,12 @@
  */
 #ifndef PROPERTIES_H_
 #define PROPERTIES_H_
+// xerces-c
+#include <xercesc/dom/DOM.hpp>
 // std
 #include <string>
 #include <map>
 #include <vector>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 
 namespace gwdl
 {
@@ -96,7 +96,8 @@ public:
 	 * Test if the properties contain specific property name.
 	 * @param name The name of the property.
 	 */
-	bool contains(const std::string& name) {
+	bool contains(const std::string& name) 
+	{
 	  ITR_Properties it = find(name);
 	  return (it != end());
 	}

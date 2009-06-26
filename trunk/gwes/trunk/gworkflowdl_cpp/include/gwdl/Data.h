@@ -6,13 +6,13 @@
  */
 #ifndef DATA_H_
 #define DATA_H_
+// gwdl
+#include <gwdl/WorkflowFormatException.h>
+// xerces
+#include <xercesc/dom/DOM.hpp>
 // std
 #include <ostream>
 #include <string>
-// xerces
-#include <xercesc/dom/DOM.hpp>
-// gwdl
-#include <gwdl/WorkflowFormatException.h>
 
 namespace gwdl
 {
@@ -35,7 +35,7 @@ private:
 	int _type;
 	XERCES_CPP_NAMESPACE::DOMElement* data;
     std::string* dataText;
-	std::string& trim(std::string& s);
+	void trim(std::string& s);
 	void setType();
     
 public:
@@ -121,7 +121,7 @@ public:
 	 * Convert the content of this data object into a xml string.
 	 * @return The XML string.
 	 */
-	std::string* toString();
+	std::string* toString() const;
 	
 	/**
 	 * Get the type of the data. Can be
@@ -134,7 +134,7 @@ public:
 	 * <li>TYPE_PARAMETER = 3</li>
 	 * </ul>
 	 */
-	int getType(){return _type;}
+	int getType() const {return _type;}
 	
 	/**
 	 * Make a deep copy of this Data object and return a pointer to the new Data.

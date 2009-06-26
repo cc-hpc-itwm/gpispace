@@ -6,15 +6,15 @@
  */
 #ifndef SUBWORKFLOWACTIVITY_H_
 #define SUBWORKFLOWACTIVITY_H_
+// gwes
+#include <gwes/Activity.h>
+#include <gwes/GWES.h>
+// gwdl
+#include <gwdl/Workflow.h>
 // std
 #include <iostream>
 #include <sstream>
 #include <string>
-// gwdl
-#include <gwdl/Workflow.h>
-// gwes
-#include <gwes/Activity.h>
-#include <gwes/GWES.h>
 
 namespace gwes
 {
@@ -28,13 +28,13 @@ class SubWorkflowActivity : public Activity, public Observer
 {
 	
 private:
-	std::string _subworkflowdl;
-	std::string _subworkflowid;
-	gwdl::Workflow* _swfP;
+	std::string _subworkflowFilename;
+	std::string _subworkflowId;
+	gwdl::Workflow* _subworkflowP;
 	GWES* _gwesP;
 
 public:
-	explicit SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	explicit SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP);
 	
 	virtual ~SubWorkflowActivity();
 

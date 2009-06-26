@@ -4,9 +4,6 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-// std
-#include <iostream>
-#include <sstream>
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 // gwdl
@@ -14,6 +11,9 @@
 #include <gwdl/Defines.h>
 #include <gwdl/Workflow.h>
 #include <gwdl/XMLUtils.h>
+// std
+#include <iostream>
+#include <sstream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -30,16 +30,16 @@ Transition::Transition(const string& _id)
 	if (_id == "") id=generateID();
 	else id = _id;
 	description = "";
-	operation = NULL; 
+	operationP = NULL; 
 	status = Transition::STATUS_NONE;
 }
 
 Transition::~Transition()
 {
-	if(operation != NULL)
+	if(operationP != NULL)
 	{
-		delete operation;
-		operation = NULL;
+		delete operationP;
+		operationP = NULL;
 	}
 	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) delete *it;
 	readEdges.clear();
@@ -55,7 +55,7 @@ Transition::Transition(Workflow* wf, DOMElement* element)
 {
 	// default values
 	description = "";
-	operation = NULL; 
+	operationP = NULL; 
 	status = Transition::STATUS_NONE;
 
 	//XMLCh* ns = X(SCHEMA_wfSpace);
@@ -114,7 +114,7 @@ Transition::Transition(Workflow* wf, DOMElement* element)
 			}
 			// operation
 			else if (XMLString::equals(name,X("operation"))) {
-				operation = new Operation((DOMElement*)node);
+				operationP = new Operation((DOMElement*)node);
 			}
 		}
 	}
@@ -189,7 +189,7 @@ DOMElement* Transition::toElement(DOMDocument* doc)
 			el->appendChild(el1);
 		}
 		// operation
-		if (operation != NULL) el->appendChild(operation->toElement(doc));
+		if (operationP != NULL) el->appendChild(operationP->toElement(doc));
 
 	}
 	catch (const OutOfMemoryException&)
@@ -246,7 +246,7 @@ bool Transition::isEnabled()
 	return true;
 }
 
-string Transition::generateID()
+string Transition::generateID() const
 {
 	static long counter = 0; 
 	ostringstream oss; 
@@ -254,10 +254,10 @@ string Transition::generateID()
 	return oss.str();
 }
 
-int Transition::getAbstractionLevel() 
+int Transition::getAbstractionLevel() const 
 {	
 //	cout << "gwdl::Transition[" << getID() << "]::getAbstractionLevel()" << endl;
-	if (operation != NULL) return operation->getAbstractionLevel();
+	if (operationP != NULL) return operationP->getAbstractionLevel();
 	else return Operation::BLACK;
 }
 

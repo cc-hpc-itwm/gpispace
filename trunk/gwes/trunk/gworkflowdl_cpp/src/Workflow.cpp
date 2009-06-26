@@ -4,16 +4,16 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwdl
+#include <gwdl/Workflow.h>
+#include <gwdl/XMLUtils.h>
+// xerces-c
+#include <xercesc/util/OutOfMemoryException.hpp>
 //std
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <errno.h>
-// xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
-//gwdl
-#include <gwdl/Workflow.h>
-#include <gwdl/XMLUtils.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -275,7 +275,7 @@ Transition* Workflow::getTransition(const string& id) throw (NoSuchWorkflowEleme
 	throw NoSuchWorkflowElement(message.str());
 }
 
-unsigned int Workflow::getTransitionIndex(const string& id) throw (NoSuchWorkflowElement)
+unsigned int Workflow::getTransitionIndex(const string& id) const throw (NoSuchWorkflowElement)
 {
 	for(unsigned int i=0; i<transitions.size(); ++i)
 	{

@@ -6,9 +6,6 @@
  */
 #ifndef GWES_H_
 #define GWES_H_
-//std
-#include <string>
-#include <vector>
 //gworkflowdl
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
@@ -17,6 +14,9 @@
 #include <gwes/NoSuchWorkflowException.h>
 #include <gwes/WorkflowHandlerTable.h>
 #include <gwes/Channel.h>
+//std
+#include <string>
+#include <vector>
 
 namespace gwes
 {
@@ -236,7 +236,7 @@ public:
      * Get the identifiers of all the workflows that are handled by this Grid Workflow Execution Service.
      * @return An array of strings with the workflowIDs.
      */
-    std::vector<std::string>& getWorkflowIDs();
+    const std::vector<std::string>& getWorkflowIDs();
     
     /**
      * Get a reference to the workflow handler table with contains all workflow handlers of this GWES.

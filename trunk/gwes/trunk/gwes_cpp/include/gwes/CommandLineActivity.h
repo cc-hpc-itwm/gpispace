@@ -6,15 +6,15 @@
  */
 #ifndef COMMANDLINEACTIVITY_H_
 #define COMMANDLINEACTIVITY_H_
+// gwes
+#include <gwes/Activity.h>
+// gwdl
+#include <gwdl/OperationCandidate.h>
 // std
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
 #include <string>
-// gwdl
-#include <gwdl/OperationCandidate.h>
-// gwes
-#include <gwes/Activity.h>
 
 #define GWES_TEMP_DIRECTORY "/tmp/.gwes"
 
@@ -40,7 +40,7 @@ private:
 	std::string execute(const std::string& commandline);
 
 public:
-	explicit CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	explicit CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP);
 	
 	virtual ~CommandLineActivity();
 

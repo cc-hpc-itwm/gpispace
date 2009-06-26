@@ -6,10 +6,10 @@
  */
 #ifndef PRESTACKPROACTIVITY_H_
 #define PRESTACKPROACTIVITY_H_
-// gwdl
-#include <gwdl/OperationCandidate.h>
 // gwes
 #include <gwes/Activity.h>
+// gwdl
+#include <gwdl/OperationCandidate.h>
 
 namespace gwes {
 
@@ -25,7 +25,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	explicit PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operation);
+	explicit PreStackProActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP);
 	
 	/**
 	 * Destructor.

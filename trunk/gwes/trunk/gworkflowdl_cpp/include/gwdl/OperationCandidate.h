@@ -6,15 +6,15 @@
  */
 #ifndef OPERATIONCANDIDATE_H_
 #define OPERATIONCANDIDATE_H_
-//std
-#include <string>
-#include <iostream>
-//xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
-#include <xercesc/dom/DOM.hpp>
 //gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Defines.h>
+//xerces-c
+#include <xercesc/util/OutOfMemoryException.hpp>
+#include <xercesc/dom/DOM.hpp>
+//std
+#include <string>
+#include <iostream>
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define S(str) XMLString::transcode(str)
@@ -61,7 +61,7 @@ public:
 	/**
 	 * get the unique identifier of this operation candidate.
 	 */
-	long getID() { return id; }
+	long getID() const { return id; }
 	
 	/**
 	 * set selection state of this operation candidate.
@@ -78,7 +78,7 @@ public:
 	 * Test if this candidate has been selected.
 	 * @return <code>true</code> if candidate has been selected, <code>false</code> otherwise. 
 	 */
-	bool isSelected() { return selected; }
+	bool isSelected() const { return selected; }
 	
 	/**
 	 * Set operation type. The supported types depend on the implementation of the workflow handler.
@@ -88,7 +88,7 @@ public:
 	/**
 	 * Get the operation type.
 	 */
-	std::string& getType() { return type; }
+	const std::string& getType() const { return type; }
 	
 	/**
 	 * Set operation name.
@@ -98,7 +98,7 @@ public:
 	/**
 	 * Get the operation name.
 	 */
-	std::string& getOperationName() { return operationName; }
+	const std::string& getOperationName() const { return operationName; }
 	
 	/**
 	 * Set resource name.
@@ -108,7 +108,7 @@ public:
 	/**
 	 * Get resource name.
 	 */
-	std::string& getResourceName() { return resourceName; }
+	const std::string& getResourceName() const { return resourceName; }
 	
 	/**
 	 * Set quality of this candidate.
@@ -120,7 +120,7 @@ public:
 	 * Get quality of this candidate.
 	 * @return Quality as float value ranging from 0 to 1.
 	 */
-	float getQuality() { return quality; }
+	float getQuality() const { return quality; }
 	
 	/**
 	 * Convert this into a DOMElement.
@@ -133,7 +133,7 @@ public:
      * get abstraction degree of operation
      * @return  color
      */
-    int getAbstractionLevel();		
+    int getAbstractionLevel() const;		
     
 };
 

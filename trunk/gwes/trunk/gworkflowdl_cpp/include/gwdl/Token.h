@@ -6,14 +6,13 @@
  */
 #ifndef TOKEN_H_
 #define TOKEN_H_
-
-// std
-#include <string>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 // gwdl
 #include <gwdl/Properties.h>
 #include <gwdl/Data.h>
+// xerces-c
+#include <xercesc/dom/DOM.hpp>
+// std
+#include <string>
 
 namespace gwdl
 {
@@ -151,17 +150,17 @@ public:
 	 * Check, whether this token is a control or data token.
 	 * @return <code>true</code> if token is data token, false otherwise.
 	 */
-	bool isData() {return (data!=NULL);}
+	bool isData() const {return (data!=NULL);}
 	
 	/**
 	 * Get the control value of this control token.
 	 */
-	bool getControl() {return control;}
+	bool getControl() const {return control;}
 	
 	/**
 	 * Get internal id of this token.
 	 */
-	long getID() {return id;}
+	long getID() const {return id;}
 	
 	/**
 	 * Lock this token. Locked tokens will not be regarded in the decision whether a transition is enabled or not.
@@ -179,14 +178,14 @@ public:
 	 * Test if this token is locked.
      * @return returns <code>true</code> if the token is locked, <code>false</code> otherwise.
      */
-	bool isLocked() {return p_lock != NULL;}
+	bool isLocked() const {return p_lock != NULL;}
 	
 	/**
      * Test if this token is locked by a specific transition
      * @param p_transition
      * @return returns <code>true</code> if the token has been locked by the specific transition, <code>false</code> otherwise.
      */
-    bool isLockedBy(Transition* p_transition) {return p_lock == p_transition;}
+    bool isLockedBy(Transition* p_transition) const {return p_lock == p_transition;}
 	
 }; // end class Token
 

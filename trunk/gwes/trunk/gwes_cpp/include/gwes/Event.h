@@ -6,11 +6,11 @@
  */
 #ifndef EVENT_H_
 #define EVENT_H_
+// gwdl
+#include <gwdl/Token.h>
 // std
 #include <string>
 #include <map>
-// gwdl
-#include <gwdl/Data.h>
 
 namespace gwes
 {
@@ -69,11 +69,11 @@ public:
 	/**
 	 * Vector that holds pointers to additional data, e.g., used as input parameters for 
 	 * method calls.
-	 * The first value contains the name or identifier of the data, the second value contains a 
-	 * pointer to the Data object.
+	 * The first value contains the name or identifier of the token, the second value contains a 
+	 * pointer to the Token object.
 	 * Default is NULL.
 	 */
-	std::map<std::string,gwdl::Data*>* _dataP;
+	std::map<std::string,gwdl::Token*>* _tokensP;
 	
 	/**
 	 * Constructor for empty event
@@ -85,13 +85,13 @@ public:
 	 * @param sourceId The identifier of the source of this event.
 	 * @param eventType The type of the event (see _eventType).
 	 * @param message The message of the event.
-	 * @param dataP A pointer to a map which contains additional data. 
+	 * @param tokenP A pointer to a map which contains additional data or control tokens. 
 	 */
-	explicit Event(const std::string& sourceId, int eventType, const std::string& message, std::map<std::string,gwdl::Data*>* dataP = NULL) {
+	explicit Event(const std::string& sourceId, int eventType, const std::string& message, std::map<std::string,gwdl::Token*>* tokensP = NULL) {
 		_sourceId = sourceId; 
 		_eventType=eventType; 
 		_message = message; 
-		_dataP = dataP;
+		_tokensP = tokensP;
 	}
 	
 	/**

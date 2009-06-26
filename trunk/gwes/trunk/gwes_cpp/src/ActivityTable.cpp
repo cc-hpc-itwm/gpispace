@@ -4,11 +4,11 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
+//gwes
+#include <gwes/ActivityTable.h>
 // std
 #include <iostream>
 #include <sstream>
-//gwes
-#include <gwes/ActivityTable.h>
 
 using namespace std;
 

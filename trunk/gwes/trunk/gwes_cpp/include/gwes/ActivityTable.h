@@ -6,12 +6,12 @@
  */
 #ifndef ACTIVITYTABLE_H_
 #define ACTIVITYTABLE_H_
-//std
-#include <string>
-#include <map>
 //gwes
 #include <gwes/Activity.h>
 #include <gwes/NoSuchActivityException.h>
+//std
+#include <string>
+#include <map>
 
 namespace gwes
 {

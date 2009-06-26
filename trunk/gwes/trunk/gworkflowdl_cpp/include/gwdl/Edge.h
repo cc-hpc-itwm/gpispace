@@ -6,10 +6,10 @@
  */
 #ifndef EDGE_H_
 #define EDGE_H_
-//std
-#include <string>
 //gwdl
 #include <gwdl/Place.h>
+//std
+#include <string>
 
 namespace gwdl
 {
@@ -53,7 +53,7 @@ public:
      */
     Place* getPlace() { return place; }
 
-    std::string getPlaceID() { return place != NULL ? place->getID() : "";}
+    std::string getPlaceID() const { return place != NULL ? place->getID() : "";}
 
 
     /**
@@ -69,7 +69,7 @@ public:
      *
      * @return Edge expression
      */
-    std::string& getExpression() { return expression; } 
+    const std::string& getExpression() const { return expression; } 
 	
 };
 
