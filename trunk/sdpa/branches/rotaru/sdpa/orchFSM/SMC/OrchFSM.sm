@@ -44,30 +44,42 @@ Up
 		action_interrupt(event);
 	}
 	
-	LifeSign(event: sdpa::events::LifeSignEvent& )
-	nil
-	{
-		action_lifesign(event);
-	}
-	
+	//event sent from the upper level
 	DeleteJob(event: sdpa::events::DeleteJobEvent& )
 	nil
 	{
 		action_delete_job(event);
 	}
 	
+	//event sent from the lower level
+	SubmitJob(event: sdpa::events::SubmitJobEvent& )
+	nil
+	{
+		action_submit_job(event);
+	}
+		
+	//event sent from the lower level
+	LifeSign(event: sdpa::events::LifeSignEvent& )
+	nil
+	{
+		action_lifesign(event);
+	}
+		
+	//event sent from the lower level
 	RequestJob(event: sdpa::events::RequestJobEvent& )
 	nil
 	{
 		action_request_job(event);
 	}
 	
-	SubmitAck(event: sdpa::events::SubmitAckEvent& )
+	//event sent from the lower level
+	SubmitJobAck(event: sdpa::events::SubmitJobAckEvent& )
 	nil
 	{
-		action_request_job(event);
+		action_submit_job_ack(event);
 	}
 	
+	//event sent from the lower level
 	ConfigRequest(event: sdpa::events::ConfigRequestEvent& )
 	nil
 	{

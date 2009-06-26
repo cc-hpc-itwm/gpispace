@@ -31,34 +31,30 @@ void OrchFSMTest_SMC::tearDown() { //stop the finite state machine
 void OrchFSMTest_SMC::testOrchFSM_SMC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
-
 	string strEmpty("");
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	for(int k=0;k<1;k++)
-	{
-		StartUpEvent evtStartUp(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().StartUp(evtStartUp);
+	StartUpEvent evtStartUp(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().StartUp(evtStartUp);
 
-		LifeSignEvent evtLS(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().LifeSign(evtLS);
+	LifeSignEvent evtLS(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().LifeSign(evtLS);
 
-		RequestJobEvent evtReq(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().RequestJob(evtReq);
+	RequestJobEvent evtReq(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().RequestJob(evtReq);
 
-		SubmitAckEvent evtSubmitAck(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().SubmitAck(evtSubmitAck);
+	SubmitJobAckEvent evtSubmitJobAck(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().SubmitJobAck(evtSubmitJobAck);
 
-		DeleteJobEvent evtDelJob(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().DeleteJob(evtDelJob);
+	DeleteJobEvent evtDelJob(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().DeleteJob(evtDelJob);
 
-		ConfigRequestEvent evtCfgReq(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().ConfigRequest(evtCfgReq);
+	ConfigRequestEvent evtCfgReq(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().ConfigRequest(evtCfgReq);
 
-		InterruptEvent evtInt(strEmpty,strEmpty);
-		m_OrchFSM.GetContext().Interrupt(evtInt);
-	}
+	InterruptEvent evtInt(strEmpty,strEmpty);
+	m_OrchFSM.GetContext().Interrupt(evtInt);
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
 	std::cout << "smc: " << delta << "us" << std::endl;

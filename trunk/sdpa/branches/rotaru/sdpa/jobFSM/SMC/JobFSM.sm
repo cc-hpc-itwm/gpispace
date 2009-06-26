@@ -17,19 +17,19 @@ Pending
     RunJob(event: sdpa::events::RunJobEvent&)
         Running
         {
-        	action_dispatch(event); 
+        	action_run_job(event); 
         }
 
     CancelJob(event: sdpa::events::CancelJobEvent&)
         Cancelled
         {
-           action_cancel(event); 
+           action_cancel_job(event); 
         }
 
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Pending
+        nil
         {
-            action_query_status(event);
+            action_query_job_status(event);
         }
 }
 
@@ -50,13 +50,13 @@ Running
     CancelJob(event: sdpa::events::CancelJobEvent&)
         Cancelling
         {
-			action_cancel(event);
+			action_cancel_job(event);
         }
 
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Running
+        nil
         {
-            action_query_status(event);
+            action_query_job_status(event);
         }
 }
 
@@ -65,46 +65,52 @@ Cancelling
     CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
     	Cancelled
     	{
-    		action_cancel_ack(event);
+    		action_cancel_job_ack(event);
     	}
     	
 	QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Cancelling
+        nil
         {
-        	action_query_status(event); 
+        	action_query_job_status(event); 
         }
 }
 
 Finished
 {
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Finished
+        nil
         {
-        	action_query_status(event); 
+        	action_query_job_status(event); 
         }
         
 	RetriveResultsEvent(event: sdpa::events::RetriveResultsEvent&)
-        Finished
+        nil
         {
-        	action_retrieve_results(event); 
+        	action_retrieve_job_results(event); 
         }        
 }
 
 Failed
 {
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Failed
+        nil
         {
-        	action_query_status(event); 
+        	action_query_job_status(event); 
         }
+        
+    RetriveResultsEvent(event: sdpa::events::RetriveResultsEvent&)
+        nil
+        {
+        	action_retrieve_job_results(event); 
+        }       
 }
 
 Cancelled
 {
     QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
-        Cancelled
+        nil
         {
-        	action_query_status(event); 
+        	action_query_job_status(event); 
         }
 }
 

@@ -1,4 +1,4 @@
-file(GLOB jobFSM-src *.cpp *.hpp)
+file(GLOB jobFSM-src *.cpp *.hpp ../JobFSMInterfaceImpl.cpp)
 
 ADD_LIBRARY(sdpa-jobFSM_BSC ${jobFSM-src})
 

@@ -34,7 +34,7 @@ void OrchFSMTest_BSC::testOrchFSM_BSC()
 	listEvents.push_back( new StartUpEvent(strEmpty,strEmpty));
 	listEvents.push_back( new LifeSignEvent(strEmpty,strEmpty));
 	listEvents.push_back( new RequestJobEvent(strEmpty,strEmpty));
-	listEvents.push_back( new SubmitAckEvent(strEmpty,strEmpty));
+	listEvents.push_back( new SubmitJobAckEvent(strEmpty,strEmpty));
 	listEvents.push_back( new DeleteJobEvent(strEmpty,strEmpty));
 	listEvents.push_back( new ConfigRequestEvent(strEmpty,strEmpty));
 	listEvents.push_back( new InterruptEvent(strEmpty,strEmpty));

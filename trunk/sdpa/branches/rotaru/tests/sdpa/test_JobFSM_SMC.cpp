@@ -37,19 +37,16 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	for(int k=0;k<1;k++)
-	{
-		QueryJobStatusEvent evtQuery(strEmpty, strEmpty, strTen);
-		m_JobFSM.GetContext().QueryJobStatus(evtQuery);
+	QueryJobStatusEvent evtQuery(strEmpty, strEmpty, strTen);
+	m_JobFSM.GetContext().QueryJobStatus(evtQuery);
 
-		RunJobEvent evtRun(strEmpty, strEmpty, strTen);
-		m_JobFSM.GetContext().RunJob(evtRun);
+	RunJobEvent evtRun(strEmpty, strEmpty, strTen);
+	m_JobFSM.GetContext().RunJob(evtRun);
 
-		JobFinishedEvent evtFinished(strEmpty, strEmpty, strTen);
-		m_JobFSM.GetContext().JobFinished(evtFinished);
+	JobFinishedEvent evtFinished(strEmpty, strEmpty, strTen);
+	m_JobFSM.GetContext().JobFinished(evtFinished);
 
-		m_JobFSM.GetContext().QueryJobStatus(evtQuery);
-	}
+	m_JobFSM.GetContext().QueryJobStatus(evtQuery);
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
 	std::cout << "smc: " << delta << "us" << std::endl;
