@@ -1,2 +1,6 @@
 # ignore the build directory
 build
+*.pb.cc
+*.pb.h
+*_sm.h
+*_sm.cpp
