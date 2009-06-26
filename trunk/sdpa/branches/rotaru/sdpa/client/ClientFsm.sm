@@ -1,0 +1,64 @@
+//%{
+//
+// Finite state machine for the SDPA client
+//
+//%}
+
+%package sdpa::client
+%class Client
+%header Client.hpp
+
+%start ClientFsm::Unconfigured
+
+%map ClientFsm
+%%
+Unconfigured
+{
+  Start(/* Config cfg*/)
+    Configuring
+    {
+      configure(/* cfg */);
+    }
+
+  Default
+    nil
+    { }
+}
+
+Configuring
+{
+  ConfigOk()
+    Configured
+    {
+      config_ok();
+    }
+
+  ConfigNok()
+    Unconfigured
+    {
+      config_nok(); // exit
+    }
+}
+
+Configured
+{
+  Submit
+    nil
+    {
+      submit();
+    }
+
+  Cancel
+    nil
+    {
+      cancel();
+    }
+
+  Shutdown
+    nil
+    {
+      shutdown();
+    }
+}
+
+%%

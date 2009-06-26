@@ -8,6 +8,9 @@
 # protoc does not like this for the option --cpp_out, so we write . as
 # output directory. Linux needs here the full path
 function(add_protocol_buffers PROTONAME)
+  set(${PROTONAME}_H "${CMAKE_CURRENT_SOURCE_DIR}/${PROTONAME}.pb.h")
+  set(${PROTONAME}_C "${CMAKE_CURRENT_SOURCE_DIR}/${PROTONAME}.pb.cc")
+
   if(PB_FOUND)
     IF(WIN32)
     add_custom_command(

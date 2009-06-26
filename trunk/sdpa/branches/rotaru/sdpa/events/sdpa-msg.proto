@@ -2,36 +2,37 @@ package sdpa.events;
 option optimize_for = SPEED;
 
 message SDPAMessage {
+  required bytes message_id = 1;
+
   // common message types
-  optional Error     error = 1;
+  optional Error     error = 2;
 
-  optional SubmitJob submit_job = 2;
-  optional SubmitJobAck submit_job_ack = 3;
+  optional SubmitJob submit_job = 3;
+  optional SubmitJobAck submit_job_ack = 4;
 
-  optional CancelJob cancel_job = 4;
-  optional CancelJobAck cancel_job_ack = 5;
+  optional CancelJob cancel_job = 5;
+  optional CancelJobAck cancel_job_ack = 6;
 
-  optional QueryStatus query_status = 6;
-  optional StatusReply status_reply = 7;
+  optional QueryStatus query_status = 7;
+  optional StatusReply status_reply = 8;
 
-  optional RetrieveResults retrieve_results = 8;
-  optional Results results = 9;
+  optional RetrieveResults retrieve_results = 9;
+  optional Results results = 10;
 
-  optional DeleteJob delete_job = 10;
-  optional DeleteJobAck delete_job_ack = 11;
+  optional DeleteJob delete_job = 11;
+  optional DeleteJobAck delete_job_ack = 12;
 
-  optional Poll poll = 12;
-  optional PollReply poll_reply = 13;
+  optional Request request = 13;
 
-  optional JobFinished job_finished = 14;
-  optional JobFinishedAck job_finished_ack = 15;
-  optional JobFailed   job_failed = 16;
-  optional JobFailedAck job_failed_ack = 17;
+  optional JobFinished job_finished = 15;
+  optional JobFinishedAck job_finished_ack = 16;
+  optional JobFailed   job_failed = 17;
+  optional JobFailedAck job_failed_ack = 18;
 
-  optional LifeSignal life_signal = 18;
+  optional LifeSignal life_signal = 19;
 
-  optional ConfigRequest config_request = 19;
-  optional ConfigReply   config_reply = 20;
+  optional ConfigRequest config_request = 20;
+  optional ConfigReply   config_reply = 21;
 }
 
 enum ErrorCode {
@@ -127,11 +128,8 @@ message DeleteJobAck {
   required bytes id = 1;
 }
 
-message Poll {
+message Request {
   required int32 queue_length = 1;
-}
-message PollReply {
-  required Activity activity = 1;
 }
 
 message JobFinished {
@@ -150,6 +148,7 @@ message JobFailedAck {
 message LifeSignal {
   required fixed64 timestamp = 1;
   required bytes component_id = 2;
+  required bytes last_job_id = 3;
 }
 
 message ConfigRequest {
