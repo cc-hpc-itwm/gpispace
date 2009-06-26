@@ -1,5 +1,5 @@
 
-file(GLOB orchFSM-src *.cpp *.hpp ../OrchFSMInterfaceTestImpl.cpp)
+file(GLOB orchFSM-src *.cpp *.hpp)
 
 ADD_LIBRARY(sdpa-orchFSM_BSC ${orchFSM-src})
 
