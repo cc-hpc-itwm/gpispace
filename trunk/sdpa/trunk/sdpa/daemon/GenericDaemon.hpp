@@ -11,10 +11,10 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
-
+#include <sdpa/daemon/GenericDaemonActions.hpp>
 
 namespace sdpa { namespace daemon {
-  class GenericDaemon : public seda::Strategy {
+  class GenericDaemon : public seda::Strategy, public sdpa::daemon::GenericDaemonActions {
   public:
     GenericDaemon(const std::string &name, const std::string &outputStage);
     virtual ~GenericDaemon();
