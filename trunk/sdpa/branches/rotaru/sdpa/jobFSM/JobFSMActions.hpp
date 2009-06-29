@@ -13,7 +13,7 @@
 
 namespace sdpa {
 	namespace fsm {
-		class JobFSMInterface
+		class JobFSMActions
 		{
 		public:
 			virtual void action_run_job(const sdpa::events::RunJobEvent& e);
@@ -23,7 +23,6 @@ namespace sdpa {
 			virtual void action_job_failed(const sdpa::events::JobFailedEvent& e);
 			virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e );
 			virtual void action_retrieve_job_results(const sdpa::events::RetriveResultsEvent& e );
-
 			virtual void WFE_NotifyNewJob();
 			virtual void WFE_GenListNextActiveSubJobs(); //assign unique global IDs!
 			virtual void WFE_NotifyJobFailed();
