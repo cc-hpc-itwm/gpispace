@@ -23,8 +23,8 @@ namespace sdpa {
 			  void testJobFSM_SMC();
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::JobFSM m_JobFSM;
+			  sdpa::fsm::smc::JobFSM m_JobFSM;
 			};
 		}
 }
-#endif 
+#endif

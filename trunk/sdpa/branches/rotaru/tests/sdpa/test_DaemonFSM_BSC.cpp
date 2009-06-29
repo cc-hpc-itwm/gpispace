@@ -31,6 +31,7 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	string strEmpty("");
 
 	listEvents.push_back( new StartUpEvent(strEmpty,strEmpty));
+	listEvents.push_back( new ConfigOkEvent(strEmpty,strEmpty));
 	listEvents.push_back( new LifeSignEvent(strEmpty,strEmpty));
 	listEvents.push_back( new RequestJobEvent(strEmpty,strEmpty));
 	listEvents.push_back( new SubmitJobAckEvent(strEmpty,strEmpty));

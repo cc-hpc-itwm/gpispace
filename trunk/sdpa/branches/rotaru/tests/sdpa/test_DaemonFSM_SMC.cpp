@@ -37,6 +37,9 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	StartUpEvent evtStartUp(strEmpty,strEmpty);
 	m_DaemonFSM.GetContext().StartUp(evtStartUp);
 
+	ConfigOkEvent evtConfigOk(strEmpty,strEmpty);
+	m_DaemonFSM.GetContext().ConfigOk(evtConfigOk);
+
 	LifeSignEvent evtLS(strEmpty,strEmpty);
 	m_DaemonFSM.GetContext().LifeSign(evtLS);
 

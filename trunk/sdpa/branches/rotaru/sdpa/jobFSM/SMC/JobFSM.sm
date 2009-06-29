@@ -4,7 +4,7 @@
 %}
 
 %include <string.h>
-%package sdpa::fsm
+%package sdpa::fsm::smc
 %class JobFSM
 %header JobFSM.hpp
 

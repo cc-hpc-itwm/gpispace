@@ -5,6 +5,8 @@
 #include <stdexcept>
 
 using namespace sdpa::events;
+using namespace sdpa::daemon;
+using namespace sdpa::fsm::bsc;
 
 //Pending event reactions
 sc::result Pending::react(const RunJobEvent& e)
