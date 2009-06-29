@@ -18,6 +18,7 @@ namespace sdpa { namespace daemon {
   class Worker {
   public:
     typedef std::string location_t;
+    typedef std::string worker_id_t;
 
     // TODO: to be replaced by a real class (synchronization!)
     typedef std::list<Job::ptr_t> JobQueue;
@@ -32,7 +33,7 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    Worker(const std::string &name, const location_t &location);
+    Worker(const worker_id_t &name, const location_t &location);
 
     /**
       Take an event related to that particular worker and update the internal
@@ -53,7 +54,7 @@ namespace sdpa { namespace daemon {
     /**
       Return the name of the worker.
       */
-    const std::string &name() const { return name_; }
+    const worker_id_t &name() const { return name_; }
 
     /**
       Return the location of this worker.
@@ -93,7 +94,7 @@ namespace sdpa { namespace daemon {
   private:
     SDPA_DECLARE_LOGGER();
 
-    std::string name_; //! name of the worker
+    worker_id_t name_; //! name of the worker
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 

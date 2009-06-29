@@ -9,8 +9,8 @@
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 #include <tests/sdpa/test_JobFSM_BSC.hpp>
-#include <tests/sdpa/test_OrchFSM_SMC.hpp>
-#include <tests/sdpa/test_OrchFSM_BSC.hpp>
+#include <tests/sdpa/test_DaemonFSM_SMC.hpp>
+#include <tests/sdpa/test_DaemonFSM_BSC.hpp>
 
 namespace sdpa { namespace tests {
   class Suite : public CPPUNIT_NS::TestFixture {
@@ -21,7 +21,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
-      suiteOfTests->addTest( OrchFSMTest_BSC::suite() );
+      suiteOfTests->addTest( DaemonFSMTest_BSC::suite() );
+      suiteOfTests->addTest( DaemonFSMTest_SMC::suite() );
       suiteOfTests->addTest( JobFSMTest_BSC::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       return suiteOfTests;

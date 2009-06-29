@@ -16,8 +16,8 @@ target_link_libraries(sdpa_test sdpa-events)
 target_link_libraries(sdpa_test sdpa-daemon)
 
 target_link_libraries(sdpa_test sdpa-events)
-target_link_libraries(sdpa_test sdpa-orchFSM_BSC)
-target_link_libraries(sdpa_test sdpa-orchFSM_SMC)
+target_link_libraries(sdpa_test sdpa-daemonFSM_BSC)
+target_link_libraries(sdpa_test sdpa-daemonFSM_SMC)
 target_link_libraries(sdpa_test sdpa-jobFSM_BSC)
 target_link_libraries(sdpa_test sdpa-jobFSM_SMC)
 

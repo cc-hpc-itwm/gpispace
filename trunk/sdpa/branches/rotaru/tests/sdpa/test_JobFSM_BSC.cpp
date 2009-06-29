@@ -13,8 +13,7 @@ using namespace sdpa::events;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( JobFSMTest_BSC );
 
-JobFSMTest_BSC::JobFSMTest_BSC()
-    : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_BSC")
+JobFSMTest_BSC::JobFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_BSC")
 {}
 
 JobFSMTest_BSC::~JobFSMTest_BSC()

@@ -1,13 +1,13 @@
 #ifndef JOBFSMSMC_HPP
 #define JOBFSMSMC_HPP 1
 
-#include <sdpa/jobFSM/JobFSMInterface.hpp>
+#include <sdpa/jobFSM/JobFSMActions.hpp>
 #include <sdpa/jobFSM/SMC/JobFSM_sm.h>
 #include <sdpa/logging.hpp>
 
 namespace sdpa {
 	namespace fsm {
-		class JobFSM : public JobFSMInterface {
+		class JobFSM : public JobFSMActions {
 			public:
 				typedef std::tr1::shared_ptr<JobFSM> Ptr;
 

@@ -1,7 +1,7 @@
 #ifndef JOBFSMBSC_H
 #define JOBFSMBSC_H
 
-#include <sdpa/jobFSM/JobFSMInterface.hpp>
+#include <sdpa/jobFSM/JobFSMActions.hpp>
 
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/simple_state.hpp>
@@ -25,7 +25,7 @@ struct Finished;
 
 
 // The FSM
-struct JobFSM : public sdpa::fsm::JobFSMInterface, public sc::state_machine<JobFSM, Pending>
+struct JobFSM : public sdpa::fsm::JobFSMActions, public sc::state_machine<JobFSM, Pending>
 {
 };
 
