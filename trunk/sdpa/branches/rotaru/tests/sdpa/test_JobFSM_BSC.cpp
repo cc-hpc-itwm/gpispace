@@ -10,10 +10,11 @@
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
+using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( JobFSMTest_BSC );
 
-JobFSMTest_BSC::JobFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_BSC")
+JobFSMTest_BSC::JobFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_BSC"), m_JobFSM("10", "empty workflow")
 {}
 
 JobFSMTest_BSC::~JobFSMTest_BSC()
@@ -32,21 +33,22 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
-	string strEmpty("");
-	string strTen("10");
+	string strFrom("");
+	string strTo("");
+	string strID = m_JobFSM.id();
 
 	sdpa::util::time_type start(sdpa::util::now());
 
-	QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strFrom, strTo, strID));
 	listEvents.push_back(pQueryJobStatusEvent);
 
-	RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strEmpty, strEmpty, strTen));
+	RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strFrom, strTo, strID));
 	listEvents.push_back(pRunJobEvent);
 
-	JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strEmpty, strEmpty, strTen));
+	JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strFrom, strTo, strID));
 	listEvents.push_back(pJobFinishedEvent);
 
-	QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strEmpty, strEmpty, strTen));
+	QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strFrom, strTo, strID));
 	listEvents.push_back(pQueryJobStatusEvent2);
 
 	while( !listEvents.empty() )

@@ -1,4 +1,6 @@
 #include "JobFSM.hpp"
+#include <sdpa/daemon/JobImpl.hpp>
+
 #include "boost/cast.hpp"
 #include <iostream>
 #include <string>
@@ -7,6 +9,16 @@
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
+
+
+JobFSM::JobFSM(const Job::job_id_t &id, const Job::job_desc_t &desc, const Job::job_id_t &parent)
+				: JobImpl(id, desc, parent), SDPA_INIT_LOGGER("sdpa.fsm.JobFSM")
+{
+	SDPA_LOG_DEBUG("State machine created");
+}
+
+JobFSM::~JobFSM()  throw () { SDPA_LOG_DEBUG("State machine destroyed"); }
+
 
 //Pending event reactions
 sc::result Pending::react(const RunJobEvent& e)

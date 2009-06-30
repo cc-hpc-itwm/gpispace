@@ -6,6 +6,7 @@
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
+using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_BSC );
 
@@ -28,16 +29,17 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 {
 	list<sc::event_base*> listEvents;
 
-	string strEmpty("");
+	string strFrom("");
+	string strTo("");
 
-	listEvents.push_back( new StartUpEvent(strEmpty,strEmpty));
-	listEvents.push_back( new ConfigOkEvent(strEmpty,strEmpty));
-	listEvents.push_back( new LifeSignEvent(strEmpty,strEmpty));
-	listEvents.push_back( new RequestJobEvent(strEmpty,strEmpty));
-	listEvents.push_back( new SubmitJobAckEvent(strEmpty,strEmpty));
-	listEvents.push_back( new DeleteJobEvent(strEmpty,strEmpty));
-	listEvents.push_back( new ConfigRequestEvent(strEmpty,strEmpty));
-	listEvents.push_back( new InterruptEvent(strEmpty,strEmpty));
+	listEvents.push_back( new StartUpEvent(strFrom, strTo));
+	listEvents.push_back( new ConfigOkEvent(strFrom, strTo));
+	listEvents.push_back( new LifeSignEvent(strFrom, strTo));
+	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
+	listEvents.push_back( new SubmitJobAckEvent(strFrom, strTo));
+	listEvents.push_back( new DeleteJobEvent(strFrom, strTo));
+	listEvents.push_back( new ConfigRequestEvent(strFrom, strTo));
+	listEvents.push_back( new InterruptEvent(strFrom, strTo));
 
 	while( !listEvents.empty() )
 	{

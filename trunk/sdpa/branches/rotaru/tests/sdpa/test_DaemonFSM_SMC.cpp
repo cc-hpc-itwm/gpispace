@@ -30,32 +30,33 @@ void DaemonFSMTest_SMC::tearDown() { //stop the finite state machine
 void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
-	string strEmpty("");
+	string strFrom("");
+	string strTo("");
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	StartUpEvent evtStartUp(strEmpty,strEmpty);
+	StartUpEvent evtStartUp(strFrom, strTo);
 	m_DaemonFSM.GetContext().StartUp(evtStartUp);
 
-	ConfigOkEvent evtConfigOk(strEmpty,strEmpty);
+	ConfigOkEvent evtConfigOk(strFrom, strTo);
 	m_DaemonFSM.GetContext().ConfigOk(evtConfigOk);
 
-	LifeSignEvent evtLS(strEmpty,strEmpty);
+	LifeSignEvent evtLS(strFrom, strTo);
 	m_DaemonFSM.GetContext().LifeSign(evtLS);
 
-	RequestJobEvent evtReq(strEmpty,strEmpty);
+	RequestJobEvent evtReq(strFrom, strTo);
 	m_DaemonFSM.GetContext().RequestJob(evtReq);
 
-	SubmitJobAckEvent evtSubmitJobAck(strEmpty,strEmpty);
+	SubmitJobAckEvent evtSubmitJobAck(strFrom, strTo);
 	m_DaemonFSM.GetContext().SubmitJobAck(evtSubmitJobAck);
 
-	DeleteJobEvent evtDelJob(strEmpty,strEmpty);
+	DeleteJobEvent evtDelJob(strFrom, strTo);
 	m_DaemonFSM.GetContext().DeleteJob(evtDelJob);
 
-	ConfigRequestEvent evtCfgReq(strEmpty,strEmpty);
+	ConfigRequestEvent evtCfgReq(strFrom, strTo);
 	m_DaemonFSM.GetContext().ConfigRequest(evtCfgReq);
 
-	InterruptEvent evtInt(strEmpty,strEmpty);
+	InterruptEvent evtInt(strFrom, strTo);
 	m_DaemonFSM.GetContext().Interrupt(evtInt);
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));

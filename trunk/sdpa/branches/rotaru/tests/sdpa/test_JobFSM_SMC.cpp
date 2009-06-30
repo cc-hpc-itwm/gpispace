@@ -13,7 +13,7 @@ using namespace sdpa::events;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( JobFSMTest_SMC );
 
-JobFSMTest_SMC::JobFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_SMC")
+JobFSMTest_SMC::JobFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.JobFSMTest_SMC"), m_JobFSM("10", "empty workflow")
 {}
 
 JobFSMTest_SMC::~JobFSMTest_SMC()
@@ -31,18 +31,19 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
-	string strEmpty("");
-	string strTen("10");
+	string strFrom("");
+	string strTo("");
+	string strJobID = m_JobFSM.id();
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	QueryJobStatusEvent evtQuery(strEmpty, strEmpty, strTen);
+	QueryJobStatusEvent evtQuery(strFrom, strTo, strJobID);
 	m_JobFSM.GetContext().QueryJobStatus(evtQuery);
 
-	RunJobEvent evtRun(strEmpty, strEmpty, strTen);
+	RunJobEvent evtRun(strFrom, strTo, strJobID);
 	m_JobFSM.GetContext().RunJob(evtRun);
 
-	JobFinishedEvent evtFinished(strEmpty, strEmpty, strTen);
+	JobFinishedEvent evtFinished(strFrom, strTo, strJobID);
 	m_JobFSM.GetContext().JobFinished(evtFinished);
 
 	m_JobFSM.GetContext().QueryJobStatus(evtQuery);

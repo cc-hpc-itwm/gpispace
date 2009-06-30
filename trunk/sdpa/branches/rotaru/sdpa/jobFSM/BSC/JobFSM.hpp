@@ -1,13 +1,15 @@
 #ifndef JOBFSMBSC_H
 #define JOBFSMBSC_H
 
-#include <sdpa/jobFSM/JobFSMActions.hpp>
+#include <sdpa/daemon/JobImpl.hpp>
 
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/simple_state.hpp>
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
+
+#include <sdpa/logging.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
@@ -28,8 +30,12 @@ struct Finished;
 
 
 // The FSM
-struct JobFSM : public sdpa::fsm::JobFSMActions, public sc::state_machine<JobFSM, Pending>
+struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, Pending>
 {
+	JobFSM(const Job::job_id_t &id, const Job::job_desc_t &desc, const Job::job_id_t &parent = Job::invalid_job_id());
+	virtual ~JobFSM()  throw ();
+private:
+	SDPA_DECLARE_LOGGER();
 };
 
 struct Pending : sc::simple_state<Pending, JobFSM>
