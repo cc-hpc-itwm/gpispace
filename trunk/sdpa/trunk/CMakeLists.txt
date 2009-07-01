@@ -66,6 +66,8 @@ if (UUID_FOUND)
   message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
   include_directories(${UUID_INCLUDE_DIR})
   link_libraries(${UUID_LIBRARY})
+else(UUID_FOUND)
+  message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
 # state machine compiler (only when required)
