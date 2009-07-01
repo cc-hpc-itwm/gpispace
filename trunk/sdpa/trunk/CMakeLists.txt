@@ -60,6 +60,14 @@ if (PB_FOUND)
 endif (PB_FOUND)
 include(PBMacros)
 
+# uuid library
+include(FindUUID)
+if (UUID_FOUND)
+  message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
+  include_directories(${UUID_INCLUDE_DIR})
+  link_libraries(${UUID_LIBRARY})
+endif(UUID_FOUND)
+
 # state machine compiler (only when required)
 if (USE_SMC)
   include(FindSMC)
