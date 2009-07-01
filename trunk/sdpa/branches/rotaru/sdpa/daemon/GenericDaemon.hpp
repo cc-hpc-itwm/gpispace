@@ -13,36 +13,42 @@
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
 
+#include <sdpa/daemon/exceptions.hpp>
+
 namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions, public seda::Strategy {
   public:
-    GenericDaemon(const std::string &name, const std::string &outputStage);
-    virtual ~GenericDaemon();
+	  typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
 
-    virtual void perform(const seda::IEvent::Ptr &);
+	  GenericDaemon(const std::string &name, const std::string &outputStage);
+	  virtual ~GenericDaemon();
 
-    virtual void onStageStart(const std::string &stageName);
-    virtual void onStageStop(const std::string &stageName);
+	  virtual void perform(const seda::IEvent::Ptr &);
 
-    //actions
-    virtual void action_configure( const sdpa::events::StartUpEvent& );
-	virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
-	virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
-	virtual void action_interrupt( const sdpa::events::InterruptEvent& );
-	virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
-	virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-	virtual void action_request_job( const sdpa::events::RequestJobEvent& );
-	virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-	virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
-	virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
+	  virtual void onStageStart(const std::string &stageName);
+	  virtual void onStageStop(const std::string &stageName);
+
+		//actions
+	  virtual void action_configure( const sdpa::events::StartUpEvent& );
+	  virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
+	  virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
+	  virtual void action_interrupt( const sdpa::events::InterruptEvent& );
+	  virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
+	  virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
+	  virtual void action_request_job( const sdpa::events::RequestJobEvent& );
+	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
+	  virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
+	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
+
+	  virtual Job::ptr_t FindJob(const sdpa::job_id_t& ) throw(JobNotFoundException) ;
+	  virtual job_map_t GetJobList();
 
   protected:
-    // FIXME: implement as a standalone class
-    typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
-    job_map_t job_map_;
-    job_map_t job_map_marked_for_del_;
+	  // FIXME: implement as a standalone class
+	  job_map_t job_map_;
+	  job_map_t job_map_marked_for_del_;
 
-    Scheduler::ptr_t scheduler_;
+	  Scheduler::ptr_t scheduler_;
   };
 
   /*
