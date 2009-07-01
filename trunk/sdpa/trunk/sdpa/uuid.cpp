@@ -33,7 +33,7 @@ const std::string &uuid::str() const {
     std::stringstream sstr;
     sstr << std::hex;
     for (std::size_t i(0); i < sizeof(uuid_t); ++i) {
-      sstr << uuid_[i];
+      sstr << (uuid_[i] & 0xff);
     }
     str_tmp_ = sstr.str();
   }
