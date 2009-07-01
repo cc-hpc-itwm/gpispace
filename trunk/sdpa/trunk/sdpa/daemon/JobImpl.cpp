@@ -1,23 +1,23 @@
 #include "JobImpl.hpp"
 
 namespace sdpa { namespace daemon {
-    JobImpl::JobImpl(const Job::job_id_t &id,
-                     const Job::job_desc_t &desc,
-                     const Job::job_id_t &parent)
+    JobImpl::JobImpl(const sdpa::job_id_t &id,
+                     const sdpa::job_desc_t &desc,
+                     const sdpa::job_id_t &parent)
         : id_(id), desc_(desc), parent_(parent)
     {}
 
     JobImpl::~JobImpl() throw () { }
 
-    const Job::job_id_t & JobImpl::id() const {
+    const sdpa::job_id_t & JobImpl::id() const {
         return id_;
     }
 
-    const Job::job_id_t & JobImpl::parent() const {
+    const sdpa::job_id_t & JobImpl::parent() const {
         return parent_;
     }
 
-    const Job::job_desc_t & JobImpl::description() const {
+    const sdpa::job_desc_t & JobImpl::description() const {
         return desc_;
     }
 

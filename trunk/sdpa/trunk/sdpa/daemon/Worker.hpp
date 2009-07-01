@@ -67,14 +67,14 @@ namespace sdpa { namespace daemon {
       @param job_id the job_id to acknowledge
       @return true iff a job was moved
       */
-    bool acknowledge(const Job::job_id_t &job_id);
+    bool acknowledge(const sdpa::job_id_t &job_id);
 
     /**
       Return the next pending job or throw an exception.
 
       @param last_job_id the id of the last sucessfully submitted job
       */
-    Job::ptr_t get_next_job(const Job::job_id_t &last_job_id);
+    Job::ptr_t get_next_job(const sdpa::job_id_t &last_job_id);
 
     /**
       Provide access to the pending queue.

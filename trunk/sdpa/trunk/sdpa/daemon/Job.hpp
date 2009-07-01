@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <sdpa/memory.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa { namespace daemon {
     /**
@@ -16,8 +17,6 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
-        typedef std::string job_id_t;
-        typedef std::string job_desc_t;
         typedef std::string token_t;
         typedef std::string place_t;
         typedef std::pair<place_t, token_t> value_t;

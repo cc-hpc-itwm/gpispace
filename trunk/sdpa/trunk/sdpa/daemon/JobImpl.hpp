@@ -8,18 +8,18 @@
 namespace sdpa { namespace daemon {
     class JobImpl : public Job {
     public:
-        typedef std::map<Job::job_id_t, Job::ptr_t> job_list_t;
+        typedef std::map<sdpa::job_id_t, Job::ptr_t> job_list_t;
 
-        JobImpl(const Job::job_id_t &id,
-                const Job::job_desc_t &desc,
-                const Job::job_id_t &parent = Job::invalid_job_id());
+        JobImpl(const sdpa::job_id_t &id,
+                const sdpa::job_desc_t &desc,
+                const sdpa::job_id_t &parent = Job::invalid_job_id());
 
         virtual ~JobImpl() throw();
 
-        virtual const Job::job_id_t & id() const;
-        virtual const Job::job_id_t & parent() const;
+        virtual const sdpa::job_id_t & id() const;
+        virtual const sdpa::job_id_t & parent() const;
 
-        virtual const Job::job_desc_t & description() const;
+        virtual const sdpa::job_desc_t & description() const;
 
         virtual const Job::data_t & input() const;
         virtual const Job::data_t & output() const;
@@ -31,9 +31,9 @@ namespace sdpa { namespace daemon {
         virtual Job::ptr_t get_subjob(const job_id_t & id);
 
     private:
-        Job::job_id_t id_;
-        Job::job_desc_t desc_;
-        Job::job_id_t parent_;
+        sdpa::job_id_t id_;
+        sdpa::job_desc_t desc_;
+        sdpa::job_id_t parent_;
 
         Job::data_t input_;
         Job::data_t output_;
