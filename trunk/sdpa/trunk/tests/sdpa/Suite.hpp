@@ -6,6 +6,7 @@
 #include <tests/sdpa/test_Module.hpp>
 #include <tests/sdpa/test_Token.hpp>
 #include <tests/sdpa/test_Worker.hpp>
+#include <tests/sdpa/test_UUID.hpp>
 #include <tests/sdpa/test_FSMPerformance.hpp>
 
 namespace sdpa { namespace tests {
@@ -16,6 +17,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
+      suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       return suiteOfTests;
     }
