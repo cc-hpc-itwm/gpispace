@@ -13,7 +13,7 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<RunJobEvent> Ptr;
 
-		RunJobEvent(const address_t& from, const address_t& to, const sdpa::daemon::Job::job_id_t& job_id = sdpa::daemon::Job::job_id_t())
+		RunJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           : JobEvent(from, to, job_id) {
 			std::cout << "Create event 'RunJobEvent'"<< std::endl; }
 

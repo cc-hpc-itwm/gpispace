@@ -1,5 +1,5 @@
-#ifndef JOBFSMBSC_H
-#define JOBFSMBSC_H
+#ifndef JOB_FSM_BSC_HPP
+#define JOB_FSM_BSC_HPP 1
 
 #include <sdpa/daemon/JobImpl.hpp>
 
@@ -32,8 +32,22 @@ struct Finished;
 // The FSM
 struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, Pending>
 {
-	JobFSM(const Job::job_id_t &id, const Job::job_desc_t &desc, const Job::job_id_t &parent = Job::invalid_job_id());
+	JobFSM(const sdpa::job_id_t &id, const sdpa::job_desc_t &desc, const sdpa::job_id_t &parent = Job::invalid_job_id());
 	virtual ~JobFSM()  throw ();
+	virtual void process_event( const boost::statechart::event_base & e) {
+		 sc::state_machine<JobFSM, Pending>::process_event(e);
+		 std::cout <<":call 'sdpa::fsm::bsc::JobFSM::process_event'"<< std::endl;}
+
+	void CancelJob(const sdpa::events::CancelJobEvent& event){ process_event(event); }
+	void CancelJobAck(const sdpa::events::CancelJobAckEvent& event){ process_event(event); }
+	void DeleteJob(const sdpa::events::DeleteJobEvent& event){ process_event(event); }
+	void JobFailed(const sdpa::events::JobFailedEvent& event){ process_event(event); }
+	void JobFinished(const sdpa::events::JobFinishedEvent& event){ process_event(event); }
+	void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event){ process_event(event); }
+	void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event){ process_event(event); }
+	void RunJob(const sdpa::events::RunJobEvent& event){ process_event(event); }
+
+	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();
 };
@@ -99,39 +113,45 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
 
 struct Terminated : sc::simple_state<Terminated, Cancelled>
 {
-typedef mpl::list< sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
-                   sc::custom_reaction<sc::exception_thrown> > reactions;
+typedef mpl::list< 	sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
+					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
+                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Terminated() { std::cout<< " enter state 'Terminated'" << std::endl; }
 	~Terminated() { std::cout<< " leave state 'Terminated'" << std::endl; }
 
     sc::result react( const sdpa::events::QueryJobStatusEvent& );
+    sc::result react( const sdpa::events::DeleteJobEvent& );
     sc::result react( const sc::exception_thrown & );
 };
 
 struct Failed : sc::simple_state<Failed, JobFSM>
 {
-typedef mpl::list< sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
-                   sc::custom_reaction< sc::exception_thrown > > reactions;
+typedef mpl::list< 	sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
+					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
+					sc::custom_reaction< sc::exception_thrown > > reactions;
 
 	Failed() { std::cout<< " enter state 'Failed'" << std::endl; }
 	~Failed() { std::cout<< " leave state 'Failed'" << std::endl; }
 
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
+	sc::result react( const sdpa::events::DeleteJobEvent& );
 	sc::result react( const sc::exception_thrown & );
 };
 
 struct Finished : sc::simple_state<Finished, JobFSM>
 {
-typedef mpl::list< sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
-				   sc::custom_reaction<sdpa::events::RetriveResultsEvent>,
-                   sc::custom_reaction< sc::exception_thrown > > reactions;
+typedef mpl::list<  sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
+					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
+					sc::custom_reaction<sdpa::events::RetrieveResultsEvent>,
+					sc::custom_reaction< sc::exception_thrown > > reactions;
 
 	Finished() { std::cout<< " enter state 'Finished'" << std::endl; }
 	~Finished() { std::cout<< " leave state 'Finished'" << std::endl; }
 
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
-	sc::result react( const sdpa::events::RetriveResultsEvent& );
+	sc::result react( const sdpa::events::DeleteJobEvent& );
+	sc::result react( const sdpa::events::RetrieveResultsEvent& );
 	sc::result react( const sc::exception_thrown & );
 };
 

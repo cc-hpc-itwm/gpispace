@@ -14,19 +14,19 @@
 %%
 Pending
 {
-    RunJob(event: sdpa::events::RunJobEvent&)
+    RunJob(event: const sdpa::events::RunJobEvent&)
         Running
         {
         	action_run_job(event); 
         }
 
-    CancelJob(event: sdpa::events::CancelJobEvent&)
+    CancelJob(event: const sdpa::events::CancelJobEvent&)
         Cancelled
         {
            action_cancel_job(event); 
         }
 
-    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+    QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
             action_query_job_status(event);
@@ -35,25 +35,25 @@ Pending
 
 Running
 {
-    JobFinished(event: sdpa::events::JobFinishedEvent&)
+    JobFinished(event: const sdpa::events::JobFinishedEvent&)
       	Finished
         {
         	action_job_finished(event);
         }
       
-  	JobFailed(event: sdpa::events::JobFailedEvent&)
+  	JobFailed(event: const sdpa::events::JobFailedEvent&)
     	Failed
         {
             action_job_failed(event);
         }
         
-    CancelJob(event: sdpa::events::CancelJobEvent&)
+    CancelJob(event: const sdpa::events::CancelJobEvent&)
         Cancelling
         {
 			action_cancel_job(event);
         }
 
-    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+    QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
             action_query_job_status(event);
@@ -62,13 +62,13 @@ Running
 
 Cancelling
 {
-    CancelJobAck(event: sdpa::events::CancelJobAckEvent&)
+    CancelJobAck(event: const sdpa::events::CancelJobAckEvent&)
     	Cancelled
     	{
     		action_cancel_job_ack(event);
     	}
     	
-	QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+	QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
         	action_query_job_status(event); 
@@ -77,13 +77,20 @@ Cancelling
 
 Finished
 {
-    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+    QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
         	action_query_job_status(event); 
         }
         
-	RetriveResultsEvent(event: sdpa::events::RetriveResultsEvent&)
+    
+    DeleteJob(event: const sdpa::events::DeleteJobEvent&)
+        nil
+        {
+        	action_delete_job(event); 
+        }
+        
+	RetrieveResults(event: const sdpa::events::RetrieveResultsEvent&)
         nil
         {
         	action_retrieve_job_results(event); 
@@ -92,13 +99,19 @@ Finished
 
 Failed
 {
-    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+    QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
         	action_query_job_status(event); 
         }
         
-    RetriveResultsEvent(event: sdpa::events::RetriveResultsEvent&)
+	DeleteJob(event: const sdpa::events::DeleteJobEvent&)
+        nil
+        {
+        	action_delete_job(event); 
+        }
+                
+    RetrieveResults(event: const sdpa::events::RetrieveResultsEvent&)
         nil
         {
         	action_retrieve_job_results(event); 
@@ -107,7 +120,13 @@ Failed
 
 Cancelled
 {
-    QueryJobStatus(event: sdpa::events::QueryJobStatusEvent&)
+	DeleteJob(event: const sdpa::events::DeleteJobEvent&)
+        nil
+        {
+        	action_delete_job(event); 
+        }
+        
+    QueryJobStatus(event: const sdpa::events::QueryJobStatusEvent&)
         nil
         {
         	action_query_job_status(event); 

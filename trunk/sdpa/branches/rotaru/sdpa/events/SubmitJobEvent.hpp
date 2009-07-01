@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/statechart/event.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/types.hpp>
 
 namespace sc = boost::statechart;
 
@@ -19,6 +20,11 @@ namespace events {
     	virtual ~SubmitJobEvent() { std::cout << "Delete event 'SubmitJobEvent'"<< std::endl; }
 
     	std::string str() const { std::cout<<from()<<" - SubmitJobEvent -> "<<to()<<std::endl; }
+
+    	const sdpa::job_desc_t & description() const {return desc_;}
+
+    private:
+    	sdpa::job_desc_t desc_;
     };
 }}
 

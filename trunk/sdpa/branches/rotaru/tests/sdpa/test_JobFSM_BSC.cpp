@@ -51,6 +51,9 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 	QueryJobStatusEvent::Ptr pQueryJobStatusEvent2(new QueryJobStatusEvent(strFrom, strTo, strID));
 	listEvents.push_back(pQueryJobStatusEvent2);
 
+	DeleteJobEvent::Ptr pDeleteJobEvent(new DeleteJobEvent(strFrom, strTo, strID));
+	listEvents.push_back(pDeleteJobEvent);
+
 	while( !listEvents.empty() )
 	{
 		sdpa::shared_ptr<sc::event_base> pEvt = listEvents.front();

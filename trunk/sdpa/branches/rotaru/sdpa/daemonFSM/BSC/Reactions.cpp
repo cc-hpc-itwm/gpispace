@@ -8,7 +8,7 @@ using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
 
-void DaemonFSM :: printStates()
+void DaemonFSM :: print_states()
 {
 	for( state_iterator it = state_begin(); it != state_end(); it++ )
 		std::cout<<"State "<<typeid(*it).name()<<std::endl;

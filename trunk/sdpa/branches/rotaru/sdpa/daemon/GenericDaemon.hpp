@@ -36,10 +36,14 @@ namespace sdpa { namespace daemon {
 	virtual void action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& );
 	virtual void action_config_request(const sdpa::events::ConfigRequestEvent& );
 
+
+
   protected:
     // FIXME: implement as a standalone class
-    typedef std::map<Job::job_id_t, Job::ptr_t> job_map_t;
+    typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
     job_map_t job_map_;
+    job_map_t job_map_marked_for_del_;
+
     Scheduler::ptr_t scheduler_;
   };
 

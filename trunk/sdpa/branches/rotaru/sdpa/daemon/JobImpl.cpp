@@ -1,23 +1,25 @@
 #include "JobImpl.hpp"
 
+using namespace boost::statechart;
+
 namespace sdpa { namespace daemon {
-    JobImpl::JobImpl(const Job::job_id_t &id,
-                     const Job::job_desc_t &desc,
-                     const Job::job_id_t &parent)
-        : id_(id), desc_(desc), parent_(parent)
+    JobImpl::JobImpl(const sdpa::job_id_t &id,
+                     const sdpa::job_desc_t &desc,
+                     const sdpa::job_id_t &parent)
+        : id_(id), desc_(desc), parent_(parent), b_marked_for_del_(false)
     {}
 
     JobImpl::~JobImpl() throw () { }
 
-    const Job::job_id_t & JobImpl::id() const {
+    const sdpa::job_id_t & JobImpl::id() const {
         return id_;
     }
 
-    const Job::job_id_t & JobImpl::parent() const {
+    const sdpa::job_id_t & JobImpl::parent() const {
         return parent_;
     }
 
-    const Job::job_desc_t & JobImpl::description() const {
+    const sdpa::job_desc_t & JobImpl::description() const {
         return desc_;
     }
 
@@ -44,6 +46,9 @@ namespace sdpa { namespace daemon {
         return subjobs_[jid];
     }
 
+    bool JobImpl::is_marked_for_deletion() {
+    	return b_marked_for_del_;
+    }
 
     void JobImpl::action_run_job(const sdpa::events::RunJobEvent& e)
     {
@@ -58,6 +63,13 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e)
     {
     	std::cout <<"Job "<<e.job_id()<<": process action 'action_cancel_ack'" << std::endl;
+    }
+
+    void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
+    {
+    	std::cout <<"Job "<<e.job_id()<<": process action 'action_delete_job'" << std::endl;
+    	b_marked_for_del_ = true;
+
     }
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
@@ -76,15 +88,45 @@ namespace sdpa { namespace daemon {
     	std::cout <<"Job "<<e.job_id()<<": process action 'action_job_failed'"<< std::endl;
     }
 
-    void  JobImpl ::action_retrieve_job_results(const sdpa::events::RetriveResultsEvent& e )
+    void  JobImpl ::action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e )
     {
     	std::cout <<"Job "<<e.job_id()<<": process action 'action_retrieve_results'"<< std::endl;
     }
 
-    void JobImpl :: WFE_NotifyNewJob(){ std::cout<<"WFE_NotifyNewJob"<<std::endl; }
+	void JobImpl ::process_event( const boost::statechart::event_base & e) {
+		std::cout <<"Called  'JobImpl ::process_event'"<< std::endl;
+	};
 
-    void JobImpl :: WFE_GenListNextActiveSubJobs(){ std::cout<<"WFE_GenListNextActiveSubJobs"<<std::endl; } //assign unique global IDs!
+	void JobImpl ::CancelJob(const sdpa::events::CancelJobEvent& e) {
+		std::cout <<"Job "<<e.job_id()<<": call transition  'CancelJob'"<< std::endl;
+	}
 
-    void JobImpl :: WFE_NotifyJobFailed(){ std::cout<<"WFE_NotifyJobFailed"<<std::endl; }
+	void JobImpl ::CancelJobAck(const sdpa::events::CancelJobAckEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'CancelJobAck'"<< std::endl;
+	}
+
+	void JobImpl :: DeleteJob(const sdpa::events::DeleteJobEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'DeleteJob'"<< std::endl;
+	}
+
+	void JobImpl :: JobFailed(const sdpa::events::JobFailedEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'JobFailed'"<< std::endl;
+	}
+
+	void JobImpl :: JobFinished(const sdpa::events::JobFinishedEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'JobFinished'"<< std::endl;
+	}
+
+	void JobImpl ::QueryJobStatus(const sdpa::events::QueryJobStatusEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'QueryJobStatus'"<< std::endl;
+	}
+
+	void JobImpl :: RetrieveResults(const sdpa::events::RetrieveResultsEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'RetrieveResultsEvent'"<< std::endl;
+	}
+
+	void JobImpl :: RunJob(const sdpa::events::RunJobEvent& e){
+		std::cout <<"Job "<<e.job_id()<<": call transition  'RunJob'"<< std::endl;
+	}
 
 }}

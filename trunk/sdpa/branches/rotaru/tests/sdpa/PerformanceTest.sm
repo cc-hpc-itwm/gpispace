@@ -21,6 +21,11 @@ S0
     {
       do_s0_s1(e);
     }
+  F(e: const ::sdpa::tests::PerformanceTestFSMEvent&)
+    S1
+    {
+      do_throw_exception();
+    }
 }
 
 S1
@@ -29,6 +34,11 @@ S1
     S0
     {
       do_s1_s0(e);
+    }
+  F(e: const ::sdpa::tests::PerformanceTestFSMEvent&)
+    S1
+    {
+      do_throw_exception();
     }
 }
 

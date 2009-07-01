@@ -19,6 +19,8 @@ namespace events {
     	virtual ~SubmitJobAckEvent() { std::cout << "Delete event 'SubmitJobAckEvent'"<< std::endl; }
 
     	std::string str() const { std::cout<<from()<<" - SubmitJobAckEvent -> "<<to()<<std::endl; }
+    private:
+    	sdpa::job_id_t job_id_;
     };
 }}
 

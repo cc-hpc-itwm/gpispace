@@ -43,7 +43,7 @@ void WorkerTest::testGetNextJob() {
 
   Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
   CPPUNIT_ASSERT(! worker.pending().empty()); // still in pending
-  CPPUNIT_ASSERT_EQUAL(Job::job_id_t("1"), job->id());
+  CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
 }
 
 void WorkerTest::testAcknowledge() {
@@ -55,7 +55,7 @@ void WorkerTest::testAcknowledge() {
 
   Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
   CPPUNIT_ASSERT(! worker.pending().empty()); // still in pending
-  CPPUNIT_ASSERT_EQUAL(Job::job_id_t("1"), job->id());
+  CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
 
   bool ackResult = worker.acknowledge(job->id());
   CPPUNIT_ASSERT(ackResult);

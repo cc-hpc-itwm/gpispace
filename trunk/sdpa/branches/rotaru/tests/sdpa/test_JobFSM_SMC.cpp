@@ -48,6 +48,9 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 
 	m_JobFSM.GetContext().QueryJobStatus(evtQuery);
 
+	DeleteJobEvent evtDeleteJob(strFrom, strTo, strJobID);
+	m_JobFSM.GetContext().DeleteJob(evtDeleteJob);
+
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
 	std::cout << "smc: " << delta << "us" << std::endl;
 }

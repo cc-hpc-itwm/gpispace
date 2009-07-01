@@ -20,7 +20,7 @@ void Worker::dispatch(const Job::ptr_t &job) {
   pending_.push_back(job);
 }
 
-bool Worker::acknowledge(const Job::job_id_t &job_id) {
+bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
   // FIXME: lock the jobqueue and the submitted queue!
   for (JobQueue::iterator job(pending_.begin()); job != pending_.end(); job++) {
     if (job_id == (*job)->id()) {
@@ -35,7 +35,7 @@ bool Worker::acknowledge(const Job::job_id_t &job_id) {
   return false;
 }
 
-Job::ptr_t Worker::get_next_job(const Job::job_id_t &last_job_id) {
+Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) {
   acknowledge(last_job_id);
   if (pending_.empty()) {
     throw std::runtime_error("pending queue is empty");

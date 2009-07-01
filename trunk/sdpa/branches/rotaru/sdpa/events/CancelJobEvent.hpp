@@ -12,7 +12,7 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<CancelJobEvent> Ptr;
 
-		CancelJobEvent(const address_t& from, const address_t& to, const sdpa::daemon::Job::job_id_t& job_id = sdpa::daemon::Job::job_id_t())
+		CancelJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent( from, to, job_id ) {
 			std::cout << "Create event 'CancelJobEvent'"<< std::endl; }
 

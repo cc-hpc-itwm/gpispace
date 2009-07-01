@@ -15,7 +15,7 @@ namespace sdpa { namespace daemon {
 
       The acknowledge of a job_id means that the job has been successfully sent to a worker node.
      */
-    virtual void acknowledge(const Job::job_id_t& job_id ) = 0;
+    virtual void acknowledge(const sdpa::job_id_t& job_id ) = 0;
 
     /**
       Retrieve the next available job for the given worker node.
@@ -30,7 +30,7 @@ namespace sdpa { namespace daemon {
       @param worker_id the identification code of a worker that is requesting a new job
       @param last_job_id the most recent received job_id on the worker side
      */
-    virtual Job::ptr_t get_next_job(const Worker::worker_id_t &worker_id, const Job::job_id_t &last_job) = 0;
+    virtual Job::ptr_t get_next_job(const Worker::worker_id_t &worker_id, const sdpa::job_id_t &last_job) = 0;
 
     /**
       Scheduling a job locally means that it will not leave the executing node.

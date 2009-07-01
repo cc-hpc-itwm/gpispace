@@ -11,13 +11,20 @@ using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
 
 
-JobFSM::JobFSM(const Job::job_id_t &id, const Job::job_desc_t &desc, const Job::job_id_t &parent)
-				: JobImpl(id, desc, parent), SDPA_INIT_LOGGER("sdpa.fsm.JobFSM")
+JobFSM::JobFSM(const sdpa::job_id_t &id, const sdpa::job_desc_t &desc, const sdpa::job_id_t &parent)
+				: JobImpl(id, desc, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
 {
 	SDPA_LOG_DEBUG("State machine created");
 }
 
+
 JobFSM::~JobFSM()  throw () { SDPA_LOG_DEBUG("State machine destroyed"); }
+
+void JobFSM :: print_states()
+{
+	for( state_iterator it = state_begin(); it != state_end(); it++ )
+		std::cout<<"State "<<typeid(*it).name()<<std::endl;
+}
 
 
 //Pending event reactions
@@ -143,6 +150,12 @@ sc::result Terminated::react(const QueryJobStatusEvent& e)
 	return transit<Terminated>(&JobFSM::action_query_job_status, e);
 }
 
+//Terminated
+sc::result Terminated::react(const DeleteJobEvent& e)
+{
+	return transit<Terminated>(&JobFSM::action_delete_job, e);
+}
+
 sc::result Terminated::react(const sc::exception_thrown & e)
 {
 	try
@@ -163,6 +176,12 @@ sc::result Terminated::react(const sc::exception_thrown & e)
 sc::result Failed::react(const QueryJobStatusEvent& e)
 {
 	return transit<Failed>(&JobFSM::action_query_job_status, e);
+}
+
+//Terminated
+sc::result Failed::react(const DeleteJobEvent& e)
+{
+	return transit<Failed>(&JobFSM::action_delete_job, e);
 }
 
 sc::result Failed::react(const sc::exception_thrown & e)
@@ -187,8 +206,15 @@ sc::result Finished::react(const QueryJobStatusEvent& e)
 	return transit<Finished>(&JobFSM::action_query_job_status, e);
 }
 
+//Terminated
+sc::result Finished::react(const DeleteJobEvent& e)
+{
+	return transit<Finished>(&JobFSM::action_delete_job, e);
+}
+
+
 //Finished
-sc::result Finished::react(const RetriveResultsEvent& e)
+sc::result Finished::react(const RetrieveResultsEvent& e)
 {
 	return transit<Finished>(&JobFSM::action_retrieve_job_results, e);
 }

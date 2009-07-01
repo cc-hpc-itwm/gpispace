@@ -22,8 +22,12 @@ struct Up;
 // The FSM
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
-	DaemonFSM(const std::string &name, const std::string &outputStage) : GenericDaemon(name, outputStage) {};
-	void printStates();
+	DaemonFSM(const std::string &name, const std::string &outputStage)
+		: SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM"), GenericDaemon(name, outputStage) {};
+
+	void print_states();
+private:
+	SDPA_DECLARE_LOGGER();
 };
 
 struct Down : sc::simple_state<Down, DaemonFSM>

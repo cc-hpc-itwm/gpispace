@@ -47,10 +47,10 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	RequestJobEvent evtReq(strFrom, strTo);
 	m_DaemonFSM.GetContext().RequestJob(evtReq);
 
-	SubmitJobAckEvent evtSubmitJobAck(strFrom, strTo);
-	m_DaemonFSM.GetContext().SubmitJobAck(evtSubmitJobAck);
+	SubmitJobEvent evtSubmitJob(strFrom, strTo);
+	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
 
-	DeleteJobEvent evtDelJob(strFrom, strTo);
+	DeleteJobEvent evtDelJob(strFrom, strTo, "10");
 	m_DaemonFSM.GetContext().DeleteJob(evtDelJob);
 
 	ConfigRequestEvent evtCfgReq(strFrom, strTo);
