@@ -3,7 +3,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/logging.hpp"
-#include "sdpa/daemonFSM/BSC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
 
 namespace sdpa {
 		namespace tests {

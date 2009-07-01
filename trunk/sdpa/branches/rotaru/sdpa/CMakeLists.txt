@@ -2,8 +2,6 @@ file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
 
 add_subdirectory(events)
-add_subdirectory(jobFSM)
-add_subdirectory(daemonFSM)
 add_subdirectory(wf)
 add_subdirectory(modules)
 add_subdirectory(daemon)

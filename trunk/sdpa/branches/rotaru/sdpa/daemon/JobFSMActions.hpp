@@ -14,8 +14,7 @@
 
 namespace sdpa {
 	namespace fsm {
-		class JobFSMActions
-		{
+		class JobFSMActions {
 			public:
 				//actions
 				virtual void action_run_job(const sdpa::events::RunJobEvent& e)=0;
@@ -26,8 +25,8 @@ namespace sdpa {
 				virtual void action_job_failed(const sdpa::events::JobFailedEvent& e)=0;
 				virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e )=0;
 				virtual void action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e )=0;
-			};
-		}
+		};
 	}
+}
 
 #endif

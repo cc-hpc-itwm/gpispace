@@ -25,18 +25,16 @@ namespace sdpa { namespace daemon {
     virtual void onStageStop(const std::string &stageName);
 
     //actions
-    virtual void action_configure(const sdpa::events::StartUpEvent&);
-	virtual void action_config_ok(const sdpa::events::ConfigOkEvent&);
-	virtual void action_config_nok(const sdpa::events::ConfigNokEvent&);
-	virtual void action_interrupt(const sdpa::events::InterruptEvent& );
-	virtual void action_lifesign(const sdpa::events::LifeSignEvent& );
-	virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
-	virtual void action_request_job(const sdpa::events::RequestJobEvent& );
-	virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
-	virtual void action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& );
-	virtual void action_config_request(const sdpa::events::ConfigRequestEvent& );
-
-
+    virtual void action_configure( const sdpa::events::StartUpEvent& );
+	virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
+	virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
+	virtual void action_interrupt( const sdpa::events::InterruptEvent& );
+	virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
+	virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
+	virtual void action_request_job( const sdpa::events::RequestJobEvent& );
+	virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
+	virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
+	virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 
   protected:
     // FIXME: implement as a standalone class

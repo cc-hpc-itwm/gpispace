@@ -2,7 +2,7 @@
 #define DAEMON_FSM_SMC_HPP 1
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemonFSM/SMC/DaemonFSM_sm.h>
+#include <sdpa/daemon/daemonFSM/SMC/DaemonFSM_sm.h>
 #include <sdpa/logging.hpp>
 
 namespace sdpa {

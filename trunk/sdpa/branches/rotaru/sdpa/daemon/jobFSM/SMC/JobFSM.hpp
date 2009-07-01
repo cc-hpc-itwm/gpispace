@@ -2,7 +2,7 @@
 #define JOB_FSM_SMC_HPP 1
 
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/jobFSM/SMC/JobFSM_sm.h>
+#include <sdpa/daemon/jobFSM/SMC/JobFSM_sm.h>
 #include <sdpa/logging.hpp>
 
 namespace sdpa { namespace fsm { namespace smc {
