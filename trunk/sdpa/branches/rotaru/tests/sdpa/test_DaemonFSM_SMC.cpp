@@ -7,6 +7,9 @@
 #include <sdpa/util.hpp>
 #include <fstream>
 
+#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
@@ -50,7 +53,18 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	SubmitJobEvent evtSubmitJob(strFrom, strTo);
 	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
 
-	DeleteJobEvent evtDelJob(strFrom, strTo, "10");
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.GetJobIDList();
+
+	//Attention: delete succeeds only when the job should is in a final state!
+	sdpa::job_id_t job_id = vectorJobIDs[0];
+	RunJobEvent evtRun(strFrom, strTo, job_id);
+	m_DaemonFSM.job_map_[job_id]->RunJob(evtRun);
+
+	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
+	m_DaemonFSM.job_map_[job_id]->JobFinished(evtFinished);
+
+	// now I#m in a final state and the delete must succeed
+	DeleteJobEvent evtDelJob( strFrom, strTo, vectorJobIDs[0] );
 	m_DaemonFSM.GetContext().DeleteJob(evtDelJob);
 
 	ConfigRequestEvent evtCfgReq(strFrom, strTo);

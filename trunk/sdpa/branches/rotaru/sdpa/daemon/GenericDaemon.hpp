@@ -12,8 +12,9 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
-
 #include <sdpa/daemon/exceptions.hpp>
+
+namespace sdpa { namespace tests { class DaemonFSMTest_SMC; }}
 
 namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions, public seda::Strategy {
@@ -41,7 +42,14 @@ namespace sdpa { namespace daemon {
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 
 	  virtual Job::ptr_t FindJob(const sdpa::job_id_t& ) throw(JobNotFoundException) ;
-	  virtual job_map_t GetJobList();
+	  virtual void AddJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
+	  virtual void DeleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
+	  void MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
+
+	  std::vector<sdpa::job_id_t> GetJobIDList();
+
+	  //only for testing purposes!
+	 friend class sdpa::tests::DaemonFSMTest_SMC;
 
   protected:
 	  // FIXME: implement as a standalone class

@@ -22,6 +22,24 @@ namespace daemon {
 			JobNotFoundException( const sdpa::job_id_t& job_id) : JobException("Job not found!", job_id) {}
 		virtual ~JobNotFoundException() throw() {}
 	};
+
+	class JobNotAddedException : public JobException {
+		public:
+			JobNotAddedException( const sdpa::job_id_t& job_id) : JobException("Job not added!", job_id) {}
+		virtual ~JobNotAddedException() throw() {}
+	};
+
+	class JobNotDeletedException : public JobException {
+		public:
+			JobNotDeletedException( const sdpa::job_id_t& job_id) : JobException("Job not deleted!", job_id) {}
+		virtual ~JobNotDeletedException() throw() {}
+	};
+
+	class JobNotMarkedException : public JobException {
+		public:
+			JobNotMarkedException( const sdpa::job_id_t& job_id) : JobException("Job not marked for deletion!", job_id) {}
+		virtual ~JobNotMarkedException() throw() {}
+	};
 }}
 
 #endif
