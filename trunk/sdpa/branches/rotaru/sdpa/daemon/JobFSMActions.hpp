@@ -4,7 +4,7 @@
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/JobStatusAnswerEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>

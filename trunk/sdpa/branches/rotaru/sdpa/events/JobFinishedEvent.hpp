@@ -1,5 +1,5 @@
-#ifndef SDPA_JOBFINISHEDEVENT_HPP
-#define SDPA_JOBFINISHEDEVENT_HPP
+#ifndef SDPA_JOB_FINISHED_EVENT_HPP
+#define SDPA_JOB_FINISHED_EVENT_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -15,14 +15,14 @@ namespace events {
 
 		JobFinishedEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent( from, to, job_id ) {
-			//std::cout << "Create event 'JobFinishedEvent'"<< std::endl;
+			////std::cout << "Create event 'JobFinishedEvent'"<< std::endl;
 		}
 
 		virtual ~JobFinishedEvent() {
-			// std::cout << "Delete event 'JobFinishedEvent'"<< std::endl;
+			// //std::cout << "Delete event 'JobFinishedEvent'"<< std::endl;
 		}
 
-		std::string str() const { std::cout<<from()<<" - JobFinishedEvent -> "<<to()<<std::endl; }
+		std::string str() const { return "JobFinishedEvent"; }
 	};
 }}
 

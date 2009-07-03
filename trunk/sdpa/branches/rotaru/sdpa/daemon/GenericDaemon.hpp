@@ -10,17 +10,19 @@
 #include <seda/Strategy.hpp>
 
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
+#include <sdpa/daemon/ISendEventHandler.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; }}
 
 namespace sdpa { namespace daemon {
-  class GenericDaemon : public sdpa::daemon::GenericDaemonActions, public seda::Strategy {
+  class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
+						public sdpa::daemon::ISendEventHandler,
+						public seda::Strategy {
   public:
-	  typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
-
 	  GenericDaemon(const std::string &name, const std::string &outputStage);
 	  virtual ~GenericDaemon();
 
@@ -48,15 +50,21 @@ namespace sdpa { namespace daemon {
 
 	  std::vector<sdpa::job_id_t> GetJobIDList();
 
+	  virtual void SendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
+
 	  //only for testing purposes!
-	 friend class sdpa::tests::DaemonFSMTest_SMC;
+	  friend class sdpa::tests::DaemonFSMTest_SMC;
 
   protected:
-	  // FIXME: implement as a standalone class
-	  job_map_t job_map_;
-	  job_map_t job_map_marked_for_del_;
 
-	  Scheduler::ptr_t scheduler_;
+    // FIXME: implement as a standalone class
+    typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
+    typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+    job_map_t job_map_;
+    job_map_t job_map_marked_for_del_;
+    worker_map_t worker_map_;
+    Scheduler::ptr_t scheduler_;
+    const std::string output_stage_;
   };
 
   /*

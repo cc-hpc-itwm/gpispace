@@ -10,7 +10,7 @@ using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_BSC );
 
-DaemonFSMTest_BSC::DaemonFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_BSC"), m_DaemonFSM("","")
+DaemonFSMTest_BSC::DaemonFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_BSC"),  m_DaemonFSM("orchestrator","'Output Stage'")
 {}
 
 DaemonFSMTest_BSC::~DaemonFSMTest_BSC()

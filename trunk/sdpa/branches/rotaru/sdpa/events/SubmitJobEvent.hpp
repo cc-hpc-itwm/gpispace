@@ -15,11 +15,14 @@ namespace events {
         typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
 
         SubmitJobEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) {
-			std::cout << "Create event 'SubmitJobEvent'"<< std::endl; }
+			//std::cout << "Create event 'SubmitJobEvent'"<< std::endl;
+        }
 
-    	virtual ~SubmitJobEvent() { std::cout << "Delete event 'SubmitJobEvent'"<< std::endl; }
+    	virtual ~SubmitJobEvent() {
+    		//std::cout << "Delete event 'SubmitJobEvent'"<< std::endl;
+    	}
 
-    	std::string str() const { std::cout<<from()<<" - SubmitJobEvent -> "<<to()<<std::endl; }
+    	std::string str() const { return "SubmitJobEvent"; }
 
     	const sdpa::job_desc_t & description() const {return desc_;}
 

@@ -1,5 +1,5 @@
 #ifndef SDPA_DeleteJobAckEvent_HPP
-#define SDPA_DeleteJobAckEvent_HPP
+#define SDPA_DeleteJobAckEvent_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -14,11 +14,14 @@ namespace events {
         typedef sdpa::shared_ptr<DeleteJobAckEvent> Ptr;
 
         DeleteJobAckEvent(const address_t &from, const address_t &to) : MgmtEvent(from, to) {
-        	std::cout << "Create event 'DeleteJobAckEvent'"<< std::endl; }
+        	//std::cout << "Create event 'DeleteJobAckEvent'"<< std::endl;
+        }
 
-    	virtual ~DeleteJobAckEvent() { std::cout << "Delete event 'DeleteJobAckEvent'"<< std::endl; }
+    	virtual ~DeleteJobAckEvent() {
+				//std::cout << "Delete event 'DeleteJobAckEvent'"<< std::endl;
+    	}
 
-    	std::string str() const { std::cout<<from()<<" - DeleteJobAckEvent -> "<<to()<<std::endl; }
+    	std::string str() const { return "DeleteJobAckEvent"; }
     };
 }}
 

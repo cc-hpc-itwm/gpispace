@@ -10,7 +10,8 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage) : Strategy(name)  {
+GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage)
+	: Strategy(name), output_stage_(outputStage)  {
 
 }
 
@@ -30,6 +31,10 @@ void GenericDaemon::onStageStop(const std::string &stageName){
 
 }
 
+void GenericDaemon::SendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e) {
+	std::cout<<"Send event: " <<e->str()<<" ("<<e->from()<<" -> "<<e->to()<<")"<<" to the stage "<<stageName<<endl;
+}
+
 //helpers
 Job::ptr_t GenericDaemon::FindJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
@@ -40,7 +45,7 @@ Job::ptr_t GenericDaemon::FindJob(const sdpa::job_id_t& job_id ) throw(JobNotFou
 		throw JobNotFoundException( job_id );
 }
 
-void GenericDaemon :: AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
+void GenericDaemon::AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
 	job_map_t::iterator it;
 	bool bsucc = false;
@@ -51,12 +56,12 @@ void GenericDaemon :: AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJo
 	ret_pair =  job_map_.insert(job_pair);
 
 	if(ret_pair.second)
-		std::cout<<"Inserted "<<"Job "<<job_id<<" into the job map"<<std::endl;
+		std::cout<<"Inserted job "<<job_id<<" into the job map"<<std::endl;
 	else
-		 throw JobNotAddedException(job_id);
+		throw JobNotAddedException(job_id);
 }
 
-void GenericDaemon :: MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
+void GenericDaemon::MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
 {
 	job_map_t::iterator it;
 	bool bsucc = false;
@@ -67,18 +72,18 @@ void GenericDaemon :: MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job
 	ret_pair =  job_map_marked_for_del_.insert(job_pair);
 
 	if(ret_pair.second)
-		std::cout<<"Marked "<<"Job "<<job_id<<" for deletion"<<std::endl;
+		std::cout<<"Marked job "<<job_id<<" for deletion"<<std::endl;
 	else
-		 throw JobNotAddedException(job_id);
+		throw JobNotAddedException(job_id);
 }
 
-void GenericDaemon :: DeleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
+void GenericDaemon::DeleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
 	job_map_t::size_type ret = job_map_.erase(job_id);
 	if( !ret )
 		throw JobNotDeletedException(job_id);
 	else
-		std::cout<<"Erased from job map"<<std::endl;
+		std::cout<<"Erased job "<<job_id<<" from job map"<<std::endl;
 }
 
 std::vector<sdpa::job_id_t> GenericDaemon :: GetJobIDList()
@@ -91,27 +96,27 @@ std::vector<sdpa::job_id_t> GenericDaemon :: GetJobIDList()
 }
 
 //actions
-void GenericDaemon :: action_configure(const sdpa::events::StartUpEvent& e)
+void GenericDaemon::action_configure(const sdpa::events::StartUpEvent& e)
 {
 	std::cout <<"perform 'action_configure'"<< std::endl;
 }
 
-void GenericDaemon :: action_config_ok(const sdpa::events::ConfigOkEvent& e)
+void GenericDaemon::action_config_ok(const sdpa::events::ConfigOkEvent& e)
 {
 	std::cout <<"perform 'action_config_ok'"<< std::endl;
 }
 
-void GenericDaemon :: action_config_nok(const sdpa::events::ConfigNokEvent& e)
+void GenericDaemon::action_config_nok(const sdpa::events::ConfigNokEvent& e)
 {
 	std::cout <<"perform 'action_config_nok'"<< std::endl;
 }
 
-void GenericDaemon :: action_interrupt(const sdpa::events::InterruptEvent& e)
+void GenericDaemon::action_interrupt(const sdpa::events::InterruptEvent& e)
 {
 	std::cout <<"perform 'action_interrupt'"<< std::endl;
 }
 
-void GenericDaemon :: action_lifesign(const sdpa::events::LifeSignEvent& e)
+void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
 {
 	std::cout <<"perform 'action_lifesign'"<< std::endl;
     /*
@@ -124,9 +129,10 @@ void GenericDaemon :: action_lifesign(const sdpa::events::LifeSignEvent& e)
      */
 }
 
-void GenericDaemon :: action_delete_job(const sdpa::events::DeleteJobEvent& e )
+void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 {
-	std::cout <<"perform 'GenericDaemon::action_delete_job'"<< std::endl;
+	std::cout <<"received DeleteJobEvent from "<<e.from()<<" addressed to "<<e.to()<<std::endl;
+	std::cout <<"perform 'action_delete_job'"<< std::endl;
 
 	try{
 		Job::ptr_t pJob = FindJob(e.job_id());
@@ -137,8 +143,8 @@ void GenericDaemon :: action_delete_job(const sdpa::events::DeleteJobEvent& e )
 			MarkJobForDeletion(e.job_id(), pJob);
 			DeleteJob(e.job_id());
 
-			//notify/wake-up the garbage collector
-			//post a DeleteJobAckEvent to the user
+			sdpa::events::DeleteJobAckEvent::Ptr pDelAckEvt(new sdpa::events::DeleteJobAckEvent(name(), e.from()));
+			SendEvent(output_stage_, pDelAckEvt);
 		}
 	} catch(sdpa::daemon::JobNotFoundException){
 		std::cout<<"Job "<<e.job_id()<<" not found!"<<std::endl;
@@ -146,13 +152,13 @@ void GenericDaemon :: action_delete_job(const sdpa::events::DeleteJobEvent& e )
 		std::cout<<"Job "<<e.job_id()<<" not marked for deletion!"<<std::endl;
 	}catch(sdpa::daemon::JobNotDeletedException ){
 		std::cout<<"Job "<<e.job_id()<<" not deleted!"<<std::endl;
-	}  catch(...) {
+	} catch(...) {
 		std::cout<<"Unexpected exception. Most probably the job to be deleted was not in a final state!"<<e.job_id()<<"!"<<std::endl;
 	}
 
 }
 
-void GenericDaemon :: action_request_job(const sdpa::events::RequestJobEvent& e)
+void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 {
 	std::cout <<"perform 'action_request_job'"<< std::endl;
 	/*
@@ -164,10 +170,9 @@ void GenericDaemon :: action_request_job(const sdpa::events::RequestJobEvent& e)
 	 */
 }
 
-void GenericDaemon :: action_submit_job(const sdpa::events::SubmitJobEvent& e)
+void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 {
 	std::cout <<"perform 'action_submit_job'"<< std::endl;
-
 	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens
@@ -178,14 +183,13 @@ void GenericDaemon :: action_submit_job(const sdpa::events::SubmitJobEvent& e)
     * create a new Job object and assign a unique job-id
     * put the job into the job-map
     * send a submitJobAck back
-	*/
-
+    */
 	sdpa::uuid id;
 	sdpa::uuidgen gen;
 	gen(id);
 	sdpa::job_id_t job_id = id.str();
 
-	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description() ));
+	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
 
 	try {
 		AddJob(job_id, pJob);
@@ -196,11 +200,13 @@ void GenericDaemon :: action_submit_job(const sdpa::events::SubmitJobEvent& e)
 	}
 }
 
-void GenericDaemon :: action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& e) {
+void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& e) {
 	std::cout <<"perform 'action_submit_job_ack'"<< std::endl;
+
+	//put the job from pending into submitted
 }
 
-void GenericDaemon :: action_config_request(const sdpa::events::ConfigRequestEvent& e) {
+void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent& e) {
 	std::cout <<"perform 'action_configure'"<< std::endl;
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator

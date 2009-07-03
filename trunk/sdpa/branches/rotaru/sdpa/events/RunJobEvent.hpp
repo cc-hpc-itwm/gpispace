@@ -15,12 +15,14 @@ namespace events {
 
 		RunJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           : JobEvent(from, to, job_id) {
-			std::cout << "Create event 'RunJobEvent'"<< std::endl; }
+			//std::cout << "Create event 'RunJobEvent'"<< std::endl;
+		}
 
 		virtual ~RunJobEvent() {
-			std::cout << "Delete event 'RunJobEvent'"<< std::endl; }
+			//std::cout << "Delete event 'RunJobEvent'"<< std::endl;
+		}
 
-		std::string str() const { std::cout<<from()<<" - RunJobEvent -> "<<to()<<std::endl; }
+		std::string str() const { return "RunJobEvent"; }
 	};
 }}
 

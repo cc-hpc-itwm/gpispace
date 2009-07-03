@@ -32,11 +32,15 @@ struct Finished;
 // The FSM
 struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, Pending>
 {
-	JobFSM(const sdpa::job_id_t &id, const sdpa::job_desc_t &desc, const sdpa::job_id_t &parent = Job::invalid_job_id());
+	JobFSM( const sdpa::job_id_t &id,
+			const sdpa::job_desc_t &desc,
+			const sdpa::daemon::ISendEventHandler* pHandler = NULL,
+			const sdpa::job_id_t &parent = Job::invalid_job_id());
+
 	virtual ~JobFSM()  throw ();
 	virtual void process_event( const boost::statechart::event_base & e) {
 		 sc::state_machine<JobFSM, Pending>::process_event(e);
-		 std::cout <<":call 'sdpa::fsm::bsc::JobFSM::process_event'"<< std::endl;}
+    }
 
 	void CancelJob(const sdpa::events::CancelJobEvent& event){ process_event(event); }
 	void CancelJobAck(const sdpa::events::CancelJobAckEvent& event){ process_event(event); }

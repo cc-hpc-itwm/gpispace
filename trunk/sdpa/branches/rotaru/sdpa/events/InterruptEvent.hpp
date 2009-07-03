@@ -1,5 +1,5 @@
 #ifndef SDPA_INTERRUPTEVENT_HPP
-#define SDPA_INTERRUPTEVENT_HPP
+#define SDPA_INTERRUPTEVENT_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -14,11 +14,14 @@ namespace events {
         typedef sdpa::shared_ptr<InterruptEvent> Ptr;
 
         InterruptEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) {
-			std::cout << "Create event 'InterruptEvent'"<< std::endl; }
+			//std::cout << "Create event 'InterruptEvent'"<< std::endl;
+        }
 
-    	virtual ~InterruptEvent() { std::cout << "Delete event 'InterruptEvent'"<< std::endl; }
+    	virtual ~InterruptEvent() {
+    		//std::cout << "Delete event 'InterruptEvent'"<< std::endl;
+    	}
 
-    	std::string str() const { std::cout<<from()<<" - InterruptEvent -> "<<to()<<std::endl; }
+    	std::string str() const { return "InterruptEvent"; }
     };
 }}
 

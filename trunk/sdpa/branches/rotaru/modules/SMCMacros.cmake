@@ -7,8 +7,8 @@
 ##
 
 function(add_state_machine FSM_NAME)
-  set(${FSM_NAME}_H "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.h")
-  set(${FSM_NAME}_C "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp")
+  set(${FSM_NAME}_H "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.h" PARENT_SCOPE)
+  set(${FSM_NAME}_C "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp" PARENT_SCOPE)
 
   if(SMC_FOUND)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.h

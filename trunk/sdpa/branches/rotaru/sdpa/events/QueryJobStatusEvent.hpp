@@ -1,5 +1,5 @@
 #ifndef SDPA_QUERYJOBSTATUSEVENT_HPP
-#define SDPA_QUERYJOBSTATUSEVENT_HPP
+#define SDPA_QUERYJOBSTATUSEVENT_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -15,14 +15,14 @@ namespace events {
 
 		QueryJobStatusEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent(from, to, job_id) {
-			// std::cout << "Create event 'QueryJobStatusEvent'"<< std::endl;
+			// //std::cout << "Create event 'QueryJobStatusEvent'"<< std::endl;
 		}
 
 		virtual ~QueryJobStatusEvent() {
-			// std::cout << "Delete event 'QueryJobStatusEvent'"<< std::endl;
+			// //std::cout << "Delete event 'QueryJobStatusEvent'"<< std::endl;
 		}
 
-		std::string str() const { std::cout<<from()<<" - QueryJobStatusEvent -> "<<to()<<std::endl; }
+		std::string str() const { return "QueryJobStatusEvent"; }
 	};
 }}
 

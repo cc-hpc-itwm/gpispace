@@ -14,12 +14,14 @@ namespace events {
 
 		RetrieveResultsEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent(from, to, job_id) {
-			std::cout << "Create event 'RetrieveResultsEvent'"<< std::endl; }
+			//std::cout << "Create event 'RetrieveResultsEvent'"<< std::endl;
+		}
 
 		virtual ~RetrieveResultsEvent() {
-			std::cout << "Delete event 'RetrieveResultsEvent'"<< std::endl; }
+			//std::cout << "Delete event 'RetrieveResultsEvent'"<< std::endl;
+		}
 
-		std::string str() const { std::cout<<from()<<" - RetrieveResultsEvent -> "<<to()<<std::endl; }
+		std::string str() const { return "RetrieveResultsEvent"; }
 	};
 }}
 

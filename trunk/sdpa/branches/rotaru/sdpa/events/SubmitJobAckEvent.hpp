@@ -14,11 +14,14 @@ namespace events {
         typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
 
         SubmitJobAckEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) {
-			std::cout << "Create event 'SubmitJobAckEvent'"<< std::endl; }
+			//std::cout << "Create event 'SubmitJobAckEvent'"<< std::endl;
+        }
 
-    	virtual ~SubmitJobAckEvent() { std::cout << "Delete event 'SubmitJobAckEvent'"<< std::endl; }
+    	virtual ~SubmitJobAckEvent() {
+    		//std::cout << "Delete event 'SubmitJobAckEvent'"<< std::endl;
+    	}
 
-    	std::string str() const { std::cout<<from()<<" - SubmitJobAckEvent -> "<<to()<<std::endl; }
+    	std::string str() const { return "SubmitJobAckEvent"; }
     private:
     	sdpa::job_id_t job_id_;
     };

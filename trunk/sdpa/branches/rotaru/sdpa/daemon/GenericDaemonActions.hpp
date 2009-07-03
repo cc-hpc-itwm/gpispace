@@ -6,6 +6,7 @@
 #include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/InterruptEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>

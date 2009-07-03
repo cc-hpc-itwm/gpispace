@@ -11,7 +11,7 @@
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/JobStatusAnswerEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
@@ -21,6 +21,8 @@
 
 
 namespace sdpa { namespace daemon {
+
+	class GenericDaemon;
     /**
      * The interface to the generic job description we keep around in all
      * components.
@@ -62,6 +64,7 @@ namespace sdpa { namespace daemon {
 		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event)=0;
 		virtual void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event)=0;
 		virtual void RunJob(const sdpa::events::RunJobEvent& event)=0;
+
     };
 }}
 

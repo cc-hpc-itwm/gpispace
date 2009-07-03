@@ -14,7 +14,7 @@ namespace events {
         typedef sdpa::shared_ptr<JobEvent> Ptr;
 
         JobEvent(const address_t &from, const address_t &to, const sdpa::job_id_t &job_id = sdpa::job_id_t())
-          : SDPAEvent(to, from), job_id_(job_id) {}
+          : SDPAEvent(from, to), job_id_(job_id) {}
         ~JobEvent() {}
 
         const sdpa::job_id_t & job_id() const { return job_id_; }

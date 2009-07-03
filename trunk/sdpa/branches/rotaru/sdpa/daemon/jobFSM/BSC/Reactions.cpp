@@ -11,8 +11,11 @@ using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
 
 
-JobFSM::JobFSM(const sdpa::job_id_t &id, const sdpa::job_desc_t &desc, const sdpa::job_id_t &parent)
-				: JobImpl(id, desc, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
+JobFSM::JobFSM( const sdpa::job_id_t &id,
+				const sdpa::job_desc_t &desc,
+				const sdpa::daemon::ISendEventHandler* pHandler,
+				const sdpa::job_id_t &parent)
+				: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
 {
 	SDPA_LOG_DEBUG("State machine created");
 }

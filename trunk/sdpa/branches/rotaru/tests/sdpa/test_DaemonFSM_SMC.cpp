@@ -16,7 +16,7 @@ using namespace sdpa::events;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 
-DaemonFSMTest_SMC::DaemonFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC"), m_DaemonFSM("","")
+DaemonFSMTest_SMC::DaemonFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC"), m_DaemonFSM("orchestrator","'Output Stage'")
 {}
 
 DaemonFSMTest_SMC::~DaemonFSMTest_SMC()
@@ -33,7 +33,7 @@ void DaemonFSMTest_SMC::tearDown() { //stop the finite state machine
 void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
-	string strFrom("");
+	string strFrom("user");
 	string strTo("");
 
     sdpa::util::time_type start(sdpa::util::now());
