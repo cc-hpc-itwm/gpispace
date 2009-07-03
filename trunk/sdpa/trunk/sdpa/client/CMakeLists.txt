@@ -3,6 +3,7 @@ file(GLOB srcs "*.cpp")
 
 add_state_machine(ClientFsm)
 set(hdrs ${hdrs} ${ClientFsm_H})
+set(srcs ${srcs} ${ClientFsm_C})
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
