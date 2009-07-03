@@ -17,6 +17,8 @@ namespace sdpa { namespace daemon {
   */
   class Worker {
   public:
+    typedef sdpa::shared_ptr<Worker> ptr_t;
+
     typedef std::string location_t;
     typedef std::string worker_id_t;
 
@@ -33,7 +35,8 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    Worker(const worker_id_t &name, const location_t &location);
+    explicit
+    Worker(const worker_id_t &name, const location_t &location = "");
 
     /**
       Take an event related to that particular worker and update the internal
