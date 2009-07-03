@@ -18,7 +18,7 @@ namespace sdpa { namespace logging {
       void operator() () throw() {
 #if SDPA_ENABLE_LOGGING == 1
 #if SDPA_HAVE_LOG4CPP == 1
-        std::clog << "I: performing default logging configuration for log4cpp" << std::endl;
+        std::clog << "D: performing default logging configuration for log4cpp" << std::endl;
         try {
           ::log4cpp::BasicConfigurator::configure();
           const ::log4cpp::AppenderSet appenders(::log4cpp::Category::getRoot().getAllAppenders());
