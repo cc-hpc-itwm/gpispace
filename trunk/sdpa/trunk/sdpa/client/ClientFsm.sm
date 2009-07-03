@@ -8,6 +8,8 @@
 %class Client
 %header Client.hpp
 
+%include <sdpa/types.hpp>
+
 %start ClientFsm::Unconfigured
 
 %map ClientFsm
@@ -17,7 +19,7 @@ Unconfigured
   Start(/* Config cfg*/)
     Configuring
     {
-      configure(/* cfg */);
+      action_configure(/* cfg */);
     }
 
   Default
@@ -30,34 +32,52 @@ Configuring
   ConfigOk()
     Configured
     {
-      config_ok();
+      action_config_ok();
     }
 
   ConfigNok()
     Unconfigured
     {
-      config_nok(); // exit
+      action_config_nok(); // exit
     }
 }
 
 Configured
 {
-  Submit
+  Submit(desc: const job_desc_t &)
     nil
     {
-      submit();
+      action_submit(desc);
     }
 
-  Cancel
+  Cancel(job_id: const job_id_t &)
     nil
     {
-      cancel();
+      action_cancel(job_id);
+    }
+
+  Query(job_id: const job_id_t &)
+    nil
+    {
+      action_query(job_id);
+    }
+
+  Retrieve(job_id: const job_id_t &)
+    nil
+    {
+      action_retrieve(job_id);
+    }
+
+  Delete(job_id: const job_id_t &)
+    nil
+    {
+      action_delete(job_id);
     }
 
   Shutdown
     nil
     {
-      shutdown();
+      action_shutdown();
     }
 }
 
