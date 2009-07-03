@@ -1,3 +1,5 @@
 add_executable(sdpac main.cpp)
+add_dependencies(sdpac sdpa-client)
 target_link_libraries(sdpac sdpa)
 target_link_libraries(sdpac sdpa-events)
+target_link_libraries(sdpac sdpa-client)
