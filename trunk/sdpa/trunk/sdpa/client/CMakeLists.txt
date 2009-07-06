@@ -3,12 +3,11 @@ file(GLOB srcs *.cpp)
 
 add_state_machine(ClientFsm)
 list(FIND srcs ${ClientFsm_C} contains_fsm_c)
-if(${contains_fsm_c})
-  # do nothing, somehow "NOT ${contains_fsm_c}" does not work ;-(
-else(${contains_fsm_c})
+if(${contains_fsm_c} EQUAL -1)
   list(APPEND hdrs ${ClientFsm_H})
   list(APPEND srcs ${ClientFsm_C})
-endif(${contains_fsm_c})
+else(${contains_fsm_c} EQUAL -1)
+endif(${contains_fsm_c} EQUAL -1)
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
