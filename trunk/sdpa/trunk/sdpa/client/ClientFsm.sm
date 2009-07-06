@@ -24,7 +24,8 @@ Unconfigured
 
   Default
     nil
-    { }
+    {
+    }
 }
 
 Configuring
@@ -39,6 +40,11 @@ Configuring
     Unconfigured
     {
       action_config_nok(); // exit
+    }
+
+  Default
+    nil
+    {
     }
 }
 
