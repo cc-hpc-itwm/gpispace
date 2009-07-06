@@ -21,13 +21,13 @@ int main (int argc, char **argv) {
 
 
   sdpa::client::Client::ptr_t api(sdpa::client::Client::create());
-  api->start();
 
+  api->start();
   sdpa::job_id_t jid = api->submitJob("<xml></xml>");
   api->queryJob(jid);
   api->cancelJob(jid);
   api->retrieveResults(jid);
   api->deleteJob(jid);
-
   api->shutdown();
+
 }
