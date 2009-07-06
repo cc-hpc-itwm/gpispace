@@ -57,28 +57,28 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_run_job(const sdpa::events::RunJobEvent& e)
     {
     	ostringstream os;
-    	os<<" process 'action_dispatch'";
+    	os<<"Process 'action_dispatch'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& e)
     {
     	ostringstream os;
-    	os<<" process 'action_cancel'" << std::endl;
+    	os<<"Process 'action_cancel'" ;
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e)
     {
     	ostringstream os;
-    	os<<" process 'action_cancel_ack'" << std::endl;
+    	os<<"Process 'action_cancel_ack'" ;
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
     	ostringstream os;
-    	os<<" process 'action_delete_job'" << std::endl;
+    	os<<"Process 'action_delete_job'" ;
     	b_marked_for_del_ = true;
     	SDPA_LOG_DEBUG(os.str());
     }
@@ -86,7 +86,7 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
     	ostringstream os;
-    	os<<" process 'action_query_status'"<< std::endl;
+    	os<<"Process 'action_query_status'";
     	SDPA_LOG_DEBUG(os.str());
 
     	os.str("");
@@ -97,84 +97,84 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& e )
     {
     	ostringstream os;
-    	os <<" process 'action_job_finished'"<< std::endl;
+    	os <<"Process 'action_job_finished'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& e)
     {
     	ostringstream os;
-    	os <<" process 'action_job_failed'"<< std::endl;
+    	os <<"Process 'action_job_failed'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e )
     {
     	ostringstream os;
-    	os <<" process 'action_retrieve_results'"<< std::endl;
+    	os <<"Process 'action_retrieve_results'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
 	void JobImpl::process_event( const boost::statechart::event_base & e)
 	{
 		ostringstream os;
-		os <<"Called  'JobImpl ::process_event'"<< std::endl;
+		os <<"Called  'JobImpl ::process_event'";
 		SDPA_LOG_DEBUG(os.str());
 	};
 
 	void JobImpl::CancelJob(const sdpa::events::CancelJobEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'CancelJob'"<< std::endl;
+		os <<"Call transition  'CancelJob'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::CancelJobAck(const sdpa::events::CancelJobAckEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'CancelJobAck'"<< std::endl;
+		os <<"Call transition  'CancelJobAck'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl:: DeleteJob(const sdpa::events::DeleteJobEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'DeleteJob'"<< std::endl;
+		os <<"Call transition  'DeleteJob'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::JobFailed(const sdpa::events::JobFailedEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'JobFailed'"<< std::endl;
+		os <<"Call transition  'JobFailed'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::JobFinished(const sdpa::events::JobFinishedEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'JobFinished'"<< std::endl;
+		os <<"Call transition  'JobFinished'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::QueryJobStatus(const sdpa::events::QueryJobStatusEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'QueryJobStatus'"<< std::endl;
+		os <<"Call transition  'QueryJobStatus'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::RetrieveResults(const sdpa::events::RetrieveResultsEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'RetrieveResultsEvent'"<< std::endl;
+		os <<"Call transition  'RetrieveResultsEvent'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 
 	void JobImpl::RunJob(const sdpa::events::RunJobEvent& e)
 	{
 		ostringstream os;
-		os <<" call transition  'RunJob'"<< std::endl;
+		os <<"Call transition  'RunJob'";
 		SDPA_LOG_DEBUG(os.str());
 	}
 

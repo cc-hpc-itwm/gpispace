@@ -20,7 +20,7 @@ GenericDaemon::~GenericDaemon(){
 
 }
 
-void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent){
+void GenericDaemon::perform (const seda::IEvent::Ptr& pEvent){
 
 }
 
@@ -122,35 +122,35 @@ std::vector<sdpa::job_id_t> GenericDaemon :: getJobIDList()
 void GenericDaemon::action_configure(const sdpa::events::StartUpEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_configure'"<< std::endl;
+	os<<"Call 'action_configure'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_config_ok(const sdpa::events::ConfigOkEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_config_ok'"<< std::endl;
+	os<<"Call 'action_config_ok'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_config_nok(const sdpa::events::ConfigNokEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_config_nok'"<< std::endl;
+	os<<"Call 'action_config_nok'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_interrupt(const sdpa::events::InterruptEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_interrupt'"<< std::endl;
+	os<<"Call 'action_interrupt'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_lifesign'"<< std::endl;
+	os<<"Call 'action_lifesign'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
     /*
     o timestamp, load, other probably useful information
@@ -181,7 +181,7 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
 void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 {
 	ostringstream os;
-	os<<"perform 'action_delete_job'"<< std::endl;
+	os<<"Call 'action_delete_job'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
 	os.str("");
@@ -223,7 +223,7 @@ void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_request_job'"<< std::endl;
+	os<<"Call 'action_request_job'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 	/*
 	the slave(aggregator) requests new executable jobs
@@ -257,7 +257,7 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 {
 	ostringstream os;
-	os<<"perform 'action_submit_job'"<< std::endl;
+	os<<"Call 'action_submit_job'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 	/*
 	* job-id (ignored by the orchestrator, see below)
@@ -292,7 +292,7 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 
 void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& e) {
 	ostringstream os;
-	os<<"perform 'action_submit_job_ack'"<< std::endl;
+	os<<"Call 'action_submit_job_ack'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job from pending into submitted
@@ -315,7 +315,7 @@ void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent&
 
 void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent& e) {
 	ostringstream os;
-	os<<"perform 'action_configure'"<< std::endl;
+	os<<"Call 'action_configure'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator

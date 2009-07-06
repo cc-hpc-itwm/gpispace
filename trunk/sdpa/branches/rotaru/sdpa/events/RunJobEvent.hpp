@@ -9,7 +9,8 @@ namespace sc = boost::statechart;
 
 namespace sdpa {
 namespace events {
-	class RunJobEvent : public JobEvent, public sc::event<RunJobEvent> {
+	class RunJobEvent : public sdpa::events::JobEvent, public sc::event<RunJobEvent>
+	{
 	public:
 		typedef sdpa::shared_ptr<RunJobEvent> Ptr;
 
