@@ -4,6 +4,7 @@
 #include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
+#include <sstream>
 #include <map>
 
 
@@ -11,7 +12,7 @@ using namespace std;
 using namespace sdpa::daemon;
 
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage)
-	: Strategy(name), output_stage_(outputStage)  {
+	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name)  {
 
 }
 
@@ -31,12 +32,14 @@ void GenericDaemon::onStageStop(const std::string &stageName){
 
 }
 
-void GenericDaemon::SendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e) {
-	std::cout<<"Send event: " <<e->str()<<" ("<<e->from()<<" -> "<<e->to()<<")"<<" to the stage "<<stageName<<endl;
+void GenericDaemon::sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e) {
+	ostringstream os;
+	os<<"Send event: " <<e->str()<<" ("<<e->from()<<" -> "<<e->to()<<")"<<" to the stage "<<stageName;
+	SDPA_LOG_DEBUG(os.str());
 }
 
 //helpers
-Job::ptr_t GenericDaemon::FindJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
+Job::ptr_t GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
 	job_map_t::iterator it = job_map_.find( job_id );
 	if( it != job_map_.end() )
@@ -45,7 +48,7 @@ Job::ptr_t GenericDaemon::FindJob(const sdpa::job_id_t& job_id ) throw(JobNotFou
 		throw JobNotFoundException( job_id );
 }
 
-Worker::ptr_t GenericDaemon::FindWorker(const Worker::worker_id_t& worker_id )  throw(WorkerNotFoundException){
+Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id )  throw(WorkerNotFoundException){
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
 		return it->second;
@@ -53,8 +56,9 @@ Worker::ptr_t GenericDaemon::FindWorker(const Worker::worker_id_t& worker_id )  
 		throw WorkerNotFoundException(worker_id);
 }
 
-void GenericDaemon::AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
+void GenericDaemon::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
+	ostringstream os;
 	job_map_t::iterator it;
 	bool bsucc = false;
 
@@ -64,13 +68,17 @@ void GenericDaemon::AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob)
 	ret_pair =  job_map_.insert(job_pair);
 
 	if(ret_pair.second)
-		std::cout<<"Inserted job "<<job_id<<" into the job map"<<std::endl;
+	{
+		os<<"Inserted job "<<job_id<<" into the job map"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
+	}
 	else
 		throw JobNotAddedException(job_id);
 }
 
-void GenericDaemon::MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
+void GenericDaemon::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
 {
+	ostringstream os;
 	job_map_t::iterator it;
 	bool bsucc = false;
 
@@ -80,21 +88,28 @@ void GenericDaemon::MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::
 	ret_pair =  job_map_marked_for_del_.insert(job_pair);
 
 	if(ret_pair.second)
-		std::cout<<"Marked job "<<job_id<<" for deletion"<<std::endl;
+	{
+		os<<"Marked job "<<job_id<<" for deletion"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
+	}
 	else
 		throw JobNotAddedException(job_id);
 }
 
-void GenericDaemon::DeleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
+void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
+	ostringstream os;
 	job_map_t::size_type ret = job_map_.erase(job_id);
 	if( !ret )
 		throw JobNotDeletedException(job_id);
 	else
-		std::cout<<"Erased job "<<job_id<<" from job map"<<std::endl;
+	{
+		os<<"Erased job "<<job_id<<" from job map"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
+	}
 }
 
-std::vector<sdpa::job_id_t> GenericDaemon :: GetJobIDList()
+std::vector<sdpa::job_id_t> GenericDaemon :: getJobIDList()
 {
 	std::vector<sdpa::job_id_t> v;
 	for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)
@@ -106,27 +121,37 @@ std::vector<sdpa::job_id_t> GenericDaemon :: GetJobIDList()
 //actions
 void GenericDaemon::action_configure(const sdpa::events::StartUpEvent& e)
 {
-	std::cout <<"perform 'action_configure'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_configure'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_config_ok(const sdpa::events::ConfigOkEvent& e)
 {
-	std::cout <<"perform 'action_config_ok'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_config_ok'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_config_nok(const sdpa::events::ConfigNokEvent& e)
 {
-	std::cout <<"perform 'action_config_nok'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_config_nok'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_interrupt(const sdpa::events::InterruptEvent& e)
 {
-	std::cout <<"perform 'action_interrupt'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_interrupt'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
 {
-	std::cout <<"perform 'action_lifesign'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_lifesign'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
     /*
     o timestamp, load, other probably useful information
     o last_job_id the id of the last received job identification
@@ -137,48 +162,69 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
      */
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = FindWorker(worker_id);
+		Worker::ptr_t pWorker = findWorker(worker_id);
 		pWorker->update(e);
-		std::cout<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
+		os.str("");
+		os<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(sdpa::daemon::WorkerNotFoundException) {
-		std::cout<<"Worker "<<worker_id<<" not found!"<<std::endl;
+		os.str("");
+		os<<"Worker "<<worker_id<<" not found!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(...) {
-		std::cout<<"Unexpected exception occurred!"<<std::endl;
+		os.str("");
+		os<<"Unexpected exception occurred!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}
 }
 
 void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 {
-	std::cout <<"received DeleteJobEvent from "<<e.from()<<" addressed to "<<e.to()<<std::endl;
-	std::cout <<"perform 'action_delete_job'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_delete_job'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
+
+	os.str("");
+	os<<"received DeleteJobEvent from "<<e.from()<<" addressed to "<<e.to()<<std::endl;
+	SDPA_LOG_DEBUG(os.str());
 
 	try{
-		Job::ptr_t pJob = FindJob(e.job_id());
+		Job::ptr_t pJob = findJob(e.job_id());
 		pJob->DeleteJob(e);
 
 		if( pJob->is_marked_for_deletion() )
 		{
-			MarkJobForDeletion(e.job_id(), pJob);
-			DeleteJob(e.job_id());
+			markJobForDeletion(e.job_id(), pJob);
+			deleteJob(e.job_id());
 
 			sdpa::events::DeleteJobAckEvent::Ptr pDelAckEvt(new sdpa::events::DeleteJobAckEvent(name(), e.from()));
-			SendEvent(output_stage_, pDelAckEvt);
+			sendEvent(output_stage_, pDelAckEvt);
 		}
 	} catch(sdpa::daemon::JobNotFoundException){
-		std::cout<<"Job "<<e.job_id()<<" not found!"<<std::endl;
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not found!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(sdpa::daemon::JobNotMarkedException ){
-		std::cout<<"Job "<<e.job_id()<<" not marked for deletion!"<<std::endl;
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not marked for deletion!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}catch(sdpa::daemon::JobNotDeletedException ){
-		std::cout<<"Job "<<e.job_id()<<" not deleted!"<<std::endl;
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not deleted!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(...) {
-		std::cout<<"Unexpected exception. Most probably the job to be deleted was not in a final state!"<<e.job_id()<<"!"<<std::endl;
+		os.str("");
+		os<<"Unexpected exception. Most probably the job to be deleted was not in a final state!"<<e.job_id()<<"!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}
 
 }
 
 void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 {
-	std::cout <<"perform 'action_request_job'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_request_job'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 	/*
 	the slave(aggregator) requests new executable jobs
 	this message is sent in regular frequencies depending on the load of the slave(aggregator)
@@ -190,23 +236,29 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 	//take a job from the workers' queue? and serve it
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = FindWorker(worker_id);
+		Worker::ptr_t pWorker = findWorker(worker_id);
 		pWorker->update(e);
 
 		Job::ptr_t pJob = pWorker->get_next_job(e.last_job_id());
 		//implement last_job_id() in RequestJobEvent !!!
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
-		std::cout<<"Worker "<<worker_id<<" not found!"<<std::endl;
+		os.str("");
+		os<<"Worker "<<worker_id<<" not found!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(...) {
-		std::cout<<"Unexpected exception occurred!"<<std::endl;
+		os.str("");
+		os<<"Unexpected exception occurred!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}
 
 }
 
 void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 {
-	std::cout <<"perform 'action_submit_job'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_submit_job'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens
@@ -226,33 +278,45 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
 
 	try {
-		AddJob(job_id, pJob);
+		addJob(job_id, pJob);
 	}catch(sdpa::daemon::JobNotAddedException) {
-		std::cout<<"Job "<<job_id<<" could not be added!"<<std::endl;
+		os.str("");
+		os<<"Job "<<job_id<<" could not be added!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}catch(...) {
-		std::cout<<"Unexpected exception occured when trying to add the job "<<job_id<<"!"<<std::endl;
+		os.str("");
+		os<<"Unexpected exception occured when trying to add the job "<<job_id<<"!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}
 }
 
 void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& e) {
-	std::cout <<"perform 'action_submit_job_ack'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_submit_job_ack'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 
 	//put the job from pending into submitted
 	//call worker :: acknowledge(const sdpa::job_id_t& job_id ) = 0;
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = FindWorker(worker_id);
+		Worker::ptr_t pWorker = findWorker(worker_id);
 		pWorker->acknowledge(e.job_id());
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
-		std::cout<<"Worker "<<worker_id<<" not found!"<<endl;
+		os.str("");
+		os<<"Worker "<<worker_id<<" not found!"<<endl;
+		SDPA_LOG_DEBUG(os.str());
 	} catch(...) {
-		std::cout<<"Unexpected exception occurred!"<<std::endl;
+		os.str("");
+		os<<"Unexpected exception occurred!"<<std::endl;
+		SDPA_LOG_DEBUG(os.str());
 	}
 }
 
 void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent& e) {
-	std::cout <<"perform 'action_configure'"<< std::endl;
+	ostringstream os;
+	os<<"perform 'action_configure'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator
 	 * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator

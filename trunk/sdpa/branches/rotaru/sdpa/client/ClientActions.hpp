@@ -4,13 +4,16 @@
 namespace sdpa { namespace client {
   class ClientActions {
   public:
-    virtual void configure() = 0;
-    virtual void config_ok() = 0;
-    virtual void config_nok() = 0;
+    virtual void action_configure() = 0;
+    virtual void action_config_ok() = 0;
+    virtual void action_config_nok() = 0;
+    virtual void action_shutdown() = 0;
 
-    virtual void submit() = 0;
-    virtual void cancel() = 0;
-    virtual void shutdown() = 0;
+    virtual void action_submit(const job_desc_t &) = 0;
+    virtual void action_cancel(const job_id_t &) = 0;
+    virtual void action_query(const job_id_t &) = 0;
+    virtual void action_retrieve(const job_id_t &) = 0;
+    virtual void action_delete(const job_id_t &) = 0;
   };
 }}
 

@@ -35,8 +35,8 @@ struct Down : sc::simple_state<Down, DaemonFSM>
 	typedef mpl::list< sc::custom_reaction<sdpa::events::StartUpEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Down() { std::cout <<" enter state 'Down'" << std::endl; }
-	~Down() { std::cout <<" leave state 'Down'" << std::endl; }
+	Down() { } //std::cout <<" enter state 'Down'" << std::endl; }
+	~Down() { } //std::cout <<" leave state 'Down'" << std::endl; }
 
 	sc::result react( const sdpa::events::StartUpEvent& );
 	sc::result react( const sc::exception_thrown & e);
@@ -48,8 +48,8 @@ struct Configurring  : sc::simple_state<Configurring, DaemonFSM>
 					   sc::custom_reaction<sdpa::events::ConfigNokEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Configurring() { std::cout <<" enter state 'Configurring'" << std::endl; }
-	~Configurring() { std::cout <<" leave state 'Configurring'" << std::endl; }
+	Configurring() { } //std::cout <<" enter state 'Configurring'" << std::endl; }
+	~Configurring() { } //std::cout <<" leave state 'Configurring'" << std::endl; }
 
 	sc::result react( const sdpa::events::ConfigOkEvent& );
 	sc::result react( const sdpa::events::ConfigNokEvent& );
@@ -67,8 +67,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
                    sc::custom_reaction<sdpa::events::ConfigRequestEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Up() { std::cout << " enter state 'Up'" << std::endl; }
-	~Up() { std::cout << " leave state 'Up'" << std::endl; }
+	Up() { } //std::cout << " enter state 'Up'" << std::endl; }
+	~Up() { } //std::cout << " leave state 'Up'" << std::endl; }
 
 	sc::result react( const sdpa::events::InterruptEvent& );
 	sc::result react( const sdpa::events::LifeSignEvent& );

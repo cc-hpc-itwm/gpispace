@@ -34,7 +34,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 {
 	JobFSM( const sdpa::job_id_t &id,
 			const sdpa::job_desc_t &desc,
-			const sdpa::daemon::ISendEventHandler* pHandler = NULL,
+			const sdpa::daemon::ISendEvent* pHandler = NULL,
 			const sdpa::job_id_t &parent = Job::invalid_job_id());
 
 	virtual ~JobFSM()  throw ();
@@ -63,8 +63,8 @@ struct Pending : sc::simple_state<Pending, JobFSM>
 					   sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Pending() { std::cout<<" enter state 'Pending'" << std::endl; }
-	~Pending() { std::cout<<" leave state 'Pending'" << std::endl; }
+	Pending() { } //std::cout<<" enter state 'Pending'" << std::endl; }
+	~Pending() { } //std::cout<<" leave state 'Pending'" << std::endl; }
 
 	sc::result react( const sdpa::events::RunJobEvent & e);
 	sc::result react( const sdpa::events::CancelJobEvent & e);
@@ -80,8 +80,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::JobFinishedEvent>,
                    sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Running() { std::cout<< " enter state 'Running'" << std::endl; }
-	~Running() { std::cout<< " leave state 'Running'" << std::endl; }
+	Running() { } //std::cout<< " enter state 'Running'" << std::endl; }
+	~Running() { } //std::cout<< " leave state 'Running'" << std::endl; }
 
 	sc::result react( const sdpa::events::JobFinishedEvent& );
   	sc::result react( const sdpa::events::JobFailedEvent& );
@@ -93,8 +93,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::JobFinishedEvent>,
 struct Cancelled : sc::simple_state<Cancelled, JobFSM, Terminating>
 {
 	typedef mpl::list< sc::custom_reaction< sc::exception_thrown > > reactions;
-	Cancelled() { std::cout<< " enter state 'Cancelled'" << std::endl; }
-	~Cancelled() { std::cout<< " leave state 'Cancelled'" << std::endl; }
+	Cancelled() { } //std::cout<< " enter state 'Cancelled'" << std::endl; }
+	~Cancelled() { } //std::cout<< " leave state 'Cancelled'" << std::endl; }
 
 	void action_query_status(const sdpa::events::QueryJobStatusEvent& e);
 	void action_cancel_ack(const sdpa::events::CancelJobAckEvent& e);
@@ -107,8 +107,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
                    sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Terminating() { std::cout<<" enter state 'Terminating'" << std::endl; }
-	~Terminating() { std::cout<< " leave state 'Terminating'" << std::endl; }
+	Terminating() { } //std::cout<<" enter state 'Terminating'" << std::endl; }
+	~Terminating() { } //std::cout<< " leave state 'Terminating'" << std::endl; }
 
     sc::result react( const sdpa::events::CancelJobAckEvent& );
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
@@ -121,8 +121,8 @@ typedef mpl::list< 	sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
                     sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Terminated() { std::cout<< " enter state 'Terminated'" << std::endl; }
-	~Terminated() { std::cout<< " leave state 'Terminated'" << std::endl; }
+	Terminated() { } //std::cout<< " enter state 'Terminated'" << std::endl; }
+	~Terminated() { } //std::cout<< " leave state 'Terminated'" << std::endl; }
 
     sc::result react( const sdpa::events::QueryJobStatusEvent& );
     sc::result react( const sdpa::events::DeleteJobEvent& );
@@ -135,8 +135,8 @@ typedef mpl::list< 	sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
 					sc::custom_reaction< sc::exception_thrown > > reactions;
 
-	Failed() { std::cout<< " enter state 'Failed'" << std::endl; }
-	~Failed() { std::cout<< " leave state 'Failed'" << std::endl; }
+	Failed() { } //std::cout<< " enter state 'Failed'" << std::endl; }
+	~Failed() { } //std::cout<< " leave state 'Failed'" << std::endl; }
 
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
 	sc::result react( const sdpa::events::DeleteJobEvent& );
@@ -150,8 +150,8 @@ typedef mpl::list<  sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					sc::custom_reaction<sdpa::events::RetrieveResultsEvent>,
 					sc::custom_reaction< sc::exception_thrown > > reactions;
 
-	Finished() { std::cout<< " enter state 'Finished'" << std::endl; }
-	~Finished() { std::cout<< " leave state 'Finished'" << std::endl; }
+	Finished() { } //std::cout<< " enter state 'Finished'" << std::endl; }
+	~Finished() { } //std::cout<< " leave state 'Finished'" << std::endl; }
 
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
 	sc::result react( const sdpa::events::DeleteJobEvent& );

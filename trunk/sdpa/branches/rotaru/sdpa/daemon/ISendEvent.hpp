@@ -5,9 +5,9 @@
 #include <sdpa/memory.hpp>
 
 namespace sdpa { namespace daemon {
-  class ISendEventHandler{
+  class ISendEvent{
   public:
-	  virtual void SendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
 
   };
 }}

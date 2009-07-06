@@ -60,7 +60,7 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	SubmitJobEvent evtSubmitJob(strFromUp, strTo);
 	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.GetJobIDList();
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.getJobIDList();
 
 	//Attention: delete succeeds only when the job should is in a final state!
 	sdpa::job_id_t job_id = vectorJobIDs[0];

@@ -3,22 +3,70 @@
 
 #include <string>
 
+#include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
+
+#include <sdpa/memory.hpp>
+#include <sdpa/common.hpp>
+#include <sdpa/types.hpp>
 #include <sdpa/client/ClientActions.hpp>
+#include <sdpa/client/ClientFsm_sm.h>
 
 namespace sdpa { namespace client {
-  class Client : public ClientActions {
+  class Client : public ClientActions, public seda::Strategy {
   public:
-    Client() {}
+    typedef sdpa::shared_ptr<Client> ptr_t;
+    typedef std::string result_t;
+
     ~Client() {}
 
-    void configure() {}
-    void config_ok() {}
-    void config_nok() {}
+    // seda strategy
+    void perform(const seda::IEvent::Ptr &);
 
-    void submit() {}
-    void cancel() {}
-    void shutdown() {}
+    // API
+    static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client");
+
+    void start();
+    void shutdown();
+
+    job_id_t submitJob(const job_desc_t &);
+    void cancelJob(const job_id_t &);
+    int queryJob(const job_id_t &);
+    void deleteJob(const job_id_t &);
+    result_t retrieveResults(const job_id_t &);
+
+    // Action implementations
+    void action_configure();
+    void action_config_ok();
+    void action_config_nok();
+    void action_shutdown();
+
+    void action_submit(const job_desc_t &);
+    void action_cancel(const job_id_t &);
+    void action_query(const job_id_t &);
+    void action_retrieve(const job_id_t &);
+    void action_delete(const job_id_t &);
+  private:
+    Client(const std::string &name)
+      : seda::Strategy(name)
+      ,SDPA_INIT_LOGGER(name)
+      ,name_(name)
+      ,fsm_(*this)
+    {
+    
+    }
+
+    void setStage(seda::Stage::Ptr stage)
+    {
+      // assert stage->strategy() == this
+      client_stage_ = stage;
+    }
+
+    SDPA_DECLARE_LOGGER();
+
+    std::string name_;
+    seda::Stage::Ptr client_stage_;
+    ClientContext fsm_;
   };
 }}
 

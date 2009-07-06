@@ -3,6 +3,10 @@
 #include <string>
 #include <list>
 
+#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+
+
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
@@ -37,7 +41,28 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	listEvents.push_back( new LifeSignEvent(strFrom, strTo));
 	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
 	listEvents.push_back( new SubmitJobEvent(strFrom, strTo));
-	listEvents.push_back( new DeleteJobEvent(strFrom, strTo, "10"));
+	while( !listEvents.empty() )
+	{
+		sc::event_base* pEvt = listEvents.front();
+		m_DaemonFSM.process_event(*pEvt);
+
+		listEvents.pop_front();
+		delete dynamic_cast<MgmtEvent*>(pEvt);
+	}
+
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.getJobIDList();
+
+	sdpa::job_id_t job_id = vectorJobIDs[0];
+	RunJobEvent evtRun(strFrom, strTo, job_id);
+	m_DaemonFSM.job_map_[job_id]->RunJob(evtRun);
+
+	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
+	m_DaemonFSM.job_map_[job_id]->JobFinished(evtFinished);
+
+	// now I#m in a final state and the delete must succeed
+	DeleteJobEvent evtDelJob( strFrom, strTo, job_id );
+
+	listEvents.push_back( new DeleteJobEvent(strFrom, strTo, job_id));
 	listEvents.push_back( new ConfigRequestEvent(strFrom, strTo));
 	listEvents.push_back( new InterruptEvent(strFrom, strTo));
 

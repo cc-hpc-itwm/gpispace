@@ -3,7 +3,8 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobFSMActions.hpp>
-#include <sdpa/daemon/ISendEventHandler.hpp>
+#include <sdpa/daemon/ISendEvent.hpp>
+#include <sdpa/common.hpp>
 #include <map>
 
 namespace sdpa { namespace daemon {
@@ -14,7 +15,7 @@ namespace sdpa { namespace daemon {
 
         JobImpl(const sdpa::job_id_t &id,
                 const sdpa::job_desc_t &desc,
-                const sdpa::daemon::ISendEventHandler* pHandler = NULL,
+                const sdpa::daemon::ISendEvent* pHandler = NULL,
                 const sdpa::job_id_t &parent = Job::invalid_job_id());
 
         virtual ~JobImpl() throw();
@@ -65,8 +66,9 @@ namespace sdpa { namespace daemon {
         job_list_t subjobs_;
 
         bool b_marked_for_del_;
+        SDPA_DECLARE_LOGGER();
     protected:
-       	const ISendEventHandler* pSendEventHandler;
+       	const ISendEvent* pSendEvent;
     };
 }}
 
