@@ -38,9 +38,9 @@ Properties::Properties(DOMNodeList* list)
   }
 }
 
-vector<DOMElement*>& Properties::toElements(DOMDocument* doc)
+vector<DOMElement*> Properties::toElements(DOMDocument* doc)
 {
-	dom.clear();
+	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> _dom;
 	
     // Initialize the XML4C2 system.
     XMLUtils::Instance();
@@ -57,7 +57,7 @@ vector<DOMElement*>& Properties::toElements(DOMDocument* doc)
         	     el = doc->createElementNS(ns, X("property"));
                  el->setAttribute(X("name"), XS(it->first));
                  el->setTextContent(XS(it->second));
-                 dom.push_back(el);
+                 _dom.push_back(el);
                }                 
            }
            catch (const OutOfMemoryException&)
@@ -78,7 +78,7 @@ vector<DOMElement*>& Properties::toElements(DOMDocument* doc)
            }
    }
 
-   return dom;
+   return _dom;
 }
 
 }

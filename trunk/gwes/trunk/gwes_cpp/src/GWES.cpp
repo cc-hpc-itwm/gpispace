@@ -24,6 +24,7 @@ namespace gwes
  */
 GWES::GWES()
 {
+	_sdpaHandler = NULL;
 }
 
 /**
@@ -312,6 +313,64 @@ void GWES::remove(Workflow& workflow) {
 void GWES::remove(const string& workflowId) {
 	cout << "gwes::GWES::remove(" << workflowId << ") ... " << endl;
 	_wfht.remove(workflowId);
+}
+
+///////////////////////////////////
+// Interface Spda2Gwes           //
+///////////////////////////////////
+
+/**
+ * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
+ */
+void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) {
+	// ToDo: throw NoSuch{Workflow|Activity}Exception?
+	_wfht.get(workflowId)->activityDispatched(activityId);
+}
+
+/**
+ * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
+ */
+void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) {
+	// ToDo: throw NoSuch{Workflow|Activity}Exception?
+	_wfht.get(workflowId)->activityFailed(activityId,output);
+}
+
+/**
+ * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
+ */
+void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) {
+	// ToDo: throw NoSuch{Workflow|Activity}Exception?
+	_wfht.get(workflowId)->activityFinished(activityId,output);
+}
+
+/**
+ * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
+ */
+void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) {
+	// ToDo: throw NoSuch{Workflow|Activity}Exception?
+	_wfht.get(workflowId)->activityCanceled(activityId);
+}
+
+/**
+ * Register the SDPA handler. 
+ */
+void GWES::registerHandler(Gwes2Sdpa *sdpa) {
+	_sdpaHandler = sdpa;
+}
+
+/**
+ * Initiate and start a workflow.
+ */
+void GWES::submitWorkflow(workflow_t &workflow) {
+	string workflowId = initiate(workflow,"sdpa");
+	start(workflowId);
+}
+
+/**
+ * Cancel a workflow.
+ */
+void GWES::cancelWorkflow(workflow_t &workflow) {
+	abort(workflow.getID());
 }
 
 } // end namespace gwes

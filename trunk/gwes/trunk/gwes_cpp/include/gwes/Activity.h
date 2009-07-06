@@ -11,6 +11,7 @@
 #include <gwes/StateTransitionException.h>
 #include <gwes/Observer.h>
 #include <gwes/Event.h>
+#include <gwes/Sdpa2Gwes.h>
 //gwdl
 #include <gwdl/Data.h>
 #include <gwdl/OperationCandidate.h>
@@ -35,28 +36,28 @@ class WorkflowHandler;
 class Activity {
 
 protected:
-	
+
 	std::string _activityImpl;
 	std::string _id;
 	int _status;
 	gwdl::OperationCandidate* _operation;
-	
+
 	/**
 	 * Vector which contains pointers to the observers of this activity.
 	 */
 	std::vector<Observer*> _observers;
-	
+
 	/**
 	 * Map of input tokens for this activity.
-     * The key of the map is the edge expression related to the token.
-     * The value contains the token of the parameter, as pointer to the gwdl::Token object.
+	 * The key of the map is the edge expression related to the token.
+	 * The value contains the token of the parameter, as pointer to the gwdl::Token object.
 	 */
 	std::map<std::string,gwdl::Token*> _inputs;
-	
+
 	/**
 	 * Map of output tokens for this activity.
-     * The key of the map is the edge expression related to the token.
-     * The value contains the token of the parameter, as pointer to the gwdl::Token object.
+	 * The key of the map is the edge expression related to the token.
+	 * The value contains the token of the parameter, as pointer to the gwdl::Token object.
 	 */
 	std::map<std::string,gwdl::Token*> _outputs;
 
@@ -70,7 +71,7 @@ protected:
 		static long counter = 0;
 		return counter++;
 	}
-	
+
 	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", std::map<std::string,gwdl::Token*>* tokensP=NULL);
 
 public:
@@ -128,136 +129,164 @@ public:
 	 * Constructor.
 	 */
 	explicit Activity(WorkflowHandler* handler, const std::string& activityImpl, gwdl::OperationCandidate* operationP);
-	
+
 	/**
 	 * Destructor.
 	 */
 	virtual ~Activity();
-	
+
 	/**
 	 * Get activity ID.
 	 */
 	const std::string& getID() const { return _id; }
-	
+
 	/**
 	 * Get activity class.
 	 */
 	std::string& getActivityClass() { return _activityImpl; }
-	
+
 	/**
 	 * Set the current status of this activity.
 	 * @param status The status (refer to STATUS_*).
 	 */
 	void setStatus(int status);
-	
+
 	/**
 	 * Get the current status code of this activity.
 	 */
 	int getStatus() const { return _status;}
+
+	/**
+	 * Get the current status of the activity as string.
+	 *
+	 * @return string representing the status of the activity.
+	 *         This String is useful for user-readable output.
+	 * @see #getStatus()
+	 * @see #getStatusAsString(int)
+	 */
+	std::string getStatusAsString() const { return getStatusAsString(_status); }
+
+	/**
+	 * Convert the status of a activity from an integer to a string.
+	 *
+	 * @param status The status code with should be converted into a string.
+	 * @return string representing the status that corresponds to the status code.
+	 */
+	std::string getStatusAsString(int status) const;
+
+	/**
+	 * Wait for activity to change its status.
+	 * @param oldStatus The old status
+	 * @return The new status
+	 */
+	int waitForStatusChangeFrom(int oldStatus) const;
+
+	/**
+	 * Wait for activity to change its status to a specified status.
+	 * @param newStatus The new status code to wait for
+	 */
+	void waitForStatusChangeTo(int newStatus) const;
+
+	/**
+	 * Wait for activity to change its status to COMPLETED or TERMINATED.
+	 */
+	void waitForStatusChangeToCompletedOrTerminated() const;
+
+	/**
+	 * Set activity inputs.
+	 */
+	void setInputs(const std::map<std::string,gwdl::Token*>& inputs) {_inputs = inputs; }
+
+	/**
+	 * Get activity inputs.
+	 */
+	std::map<std::string,gwdl::Token*>& getInputs() { return _inputs; }
+
+	/**
+	 * Set activity outputs.
+	 */
+	void setOutputs(const std::map<std::string,gwdl::Token*>& outputs) {_outputs = outputs; }
+
+	/**
+	 * Get activity outputs.
+	 */
+	std::map<std::string,gwdl::Token*>& getOutputs() { return _outputs; }
+
+	/**
+	 * Set the fault message of this activity.
+	 */
+	void setFaultMessage(const std::string& message) {_faultMessage = message; }
+
+	/**
+	 * Get the activity fault message.
+	 * @return Returns the fault message as std::string or "" if there is no message.
+	 */
+	const std::string& getFaultMessage() const {return _faultMessage;}
+
+	/**
+	 * Attach an observer to this activity.
+	 * @param observerP A pointer to the observer which should be called if this activity changes.
+	 */
+	void attachObserver(Observer* observerP);
 	
-    /**
-     * Get the current status of the activity as string.
-     *
-     * @return string representing the status of the activity.
-     *         This String is useful for user-readable output.
-     * @see #getStatus()
-     * @see #getStatusAsString(int)
-     */
-    std::string getStatusAsString() const { return getStatusAsString(_status); }
-    
-    /**
-     * Convert the status of a activity from an integer to a string.
-     *
-     * @param status The status code with should be converted into a string.
-     * @return string representing the status that corresponds to the status code.
-     */
-    std::string getStatusAsString(int status) const;
-    
-    /**
-      * Wait for activity to change its status.
-      * @param oldStatus The old status
-      * @return The new status
-      */
-     int waitForStatusChangeFrom(int oldStatus) const;
-     
-     /**
-      * Wait for activity to change its status to a specified status.
-      * @param newStatus The new status code to wait for
-      */
-     void waitForStatusChangeTo(int newStatus) const;
+	/////////////////////////////////////////
+	// Delegation from Interface Spda2Gwes -> GWES -> WorkflowHandler
+	/////////////////////////////////////////
 
-     /**
-      * Wait for activity to change its status to COMPLETED or TERMINATED.
-      */
-     void waitForStatusChangeToCompletedOrTerminated() const;
-     
-     /**
-      * Set activity inputs.
-      */
-     void setInputs(const std::map<std::string,gwdl::Token*>& inputs) {_inputs = inputs; }
-     
-     /**
-      * Get activity inputs.
-      */
-     std::map<std::string,gwdl::Token*>& getInputs() { return _inputs; }
-     
-     /**
-      * Set activity outputs.
-      */
-     void setOutputs(const std::map<std::string,gwdl::Token*>& outputs) {_outputs = outputs; }
-     
-     /**
-      * Get activity outputs.
-      */
-     std::map<std::string,gwdl::Token*>& getOutputs() { return _outputs; }
+	/**
+	 * @see Spda2Gwes::activityDispatched
+	 */
+	void activityDispatched();
 
-     /**
-      * Set the fault message of this activity.
-      */
-     void setFaultMessage(const std::string& message) {_faultMessage = message; }
-     
-     /**
-      * Get the activity fault message.
-      * @return Returns the fault message as std::string or "" if there is no message.
-      */
-     const std::string& getFaultMessage() const {return _faultMessage;}
-     
-     /**
-      * Attach an observer to this activity.
-      * @param observerP A pointer to the observer which should be called if this activity changes.
-      */
- 	 void attachObserver(Observer* observerP);
-     
-     /**
-      * Initiate this activity. Status should switch to INITIATED. Method should only work if the status was
-      * UNDEFINED before. Implement this method in all derived classes!
-      */
-     virtual void initiateActivity() throw (ActivityException,StateTransitionException) = 0;
+	/**
+	 * @see Spda2Gwes::activityFailed
+	 */
+	void activityFailed(const Sdpa2Gwes::parameter_list_t &output);
 
-     /**
-      * Start this activity. Status should switch to RUNNING. Implement this method in all derived classes!
-      */
-     virtual void startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) = 0;
+	/**
+	 * @see Spda2Gwes::activityFinished
+	 */
+	void activityFinished(const Sdpa2Gwes::parameter_list_t &output);
 
-     /**
-      * Suspend this activity. Status should switch to SUSPENDED. Implement this method in all derived classes!
-      */
-     virtual void suspendActivity() throw (ActivityException,StateTransitionException) = 0;
+	/**
+	 * @see Spda2Gwes::activityCanceled
+	 */
+	void activityCanceled();
 
-     /**
-      * Resume this activity. Status should switch to RUNNING. Implement this method in all derived classes!
-      */
-     virtual void resumeActivity() throw (ActivityException,StateTransitionException) = 0;
+	////////////////////////
+	// Virtual methods    //
+	////////////////////////
 
-     /**
-      * Abort this activity. Status should switch to TERMINATED. Implement this method in all derived classes!
-      */
-     virtual void abortActivity() throw (ActivityException,StateTransitionException) = 0;
+	/**
+	 * Initiate this activity. Status should switch to INITIATED. Method should only work if the status was
+	 * UNDEFINED before. Implement this method in all derived classes!
+	 */
+	virtual void initiateActivity() throw (ActivityException,StateTransitionException) = 0;
 
-     /**
-      * Restart this activity. Status should switch to INITIATED. Implement this method in all derived classes!
-      */
-     virtual void restartActivity() throw (ActivityException,StateTransitionException) = 0;
+	/**
+	 * Start this activity. Status should switch to RUNNING. Implement this method in all derived classes!
+	 */
+	virtual void startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) = 0;
+
+	/**
+	 * Suspend this activity. Status should switch to SUSPENDED. Implement this method in all derived classes!
+	 */
+	virtual void suspendActivity() throw (ActivityException,StateTransitionException) = 0;
+
+	/**
+	 * Resume this activity. Status should switch to RUNNING. Implement this method in all derived classes!
+	 */
+	virtual void resumeActivity() throw (ActivityException,StateTransitionException) = 0;
+
+	/**
+	 * Abort this activity. Status should switch to TERMINATED. Implement this method in all derived classes!
+	 */
+	virtual void abortActivity() throw (ActivityException,StateTransitionException) = 0;
+
+	/**
+	 * Restart this activity. Status should switch to INITIATED. Implement this method in all derived classes!
+	 */
+	virtual void restartActivity() throw (ActivityException,StateTransitionException) = 0;
 
 }; // end class Activity
 

@@ -10,6 +10,7 @@
 #include <gwes/ActivityTable.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/Channel.h>
+#include <gwes/Sdpa2Gwes.h>
 //gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
@@ -409,10 +410,26 @@ public:
 	const std::string& getUserId() const {
 		return _userId;
 	}
+	
+    /////////////////////////////////////////
+    // Delegation from Interface Spda2Gwes //
+    /////////////////////////////////////////
+    
+	// transition from pending to running
+	void activityDispatched(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException);
+
+	// transition from running to failed     
+	void activityFailed(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException);
+
+	// transition from running to finished
+	void activityFinished(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException);
+
+	// transition from * to canceled
+	void activityCanceled(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException);
 
 };
 
-}
+} // end namespace gwes
 
 /**
  * This method is used by pthread_create in order to start this workflow in an own thread.

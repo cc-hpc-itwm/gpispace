@@ -10,6 +10,8 @@
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
 //gwes
+#include <gwes/Sdpa2Gwes.h>
+#include <gwes/Gwes2Sdpa.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/NoSuchWorkflowException.h>
 #include <gwes/WorkflowHandlerTable.h>
@@ -26,7 +28,7 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class GWES
+class GWES : public Sdpa2Gwes
 {
 	
 private:
@@ -34,6 +36,12 @@ private:
 	 WorkflowHandlerTable _wfht;
 	 
 	 std::vector<std::string> _workflowIds;
+	 
+	 /**
+	  * Pointer to the Gwes2Sdpa interface implementation for 
+	  * callback methods (observer pattern).
+	  */
+	 Gwes2Sdpa* _sdpaHandler;
 	
 public:
 	
@@ -254,6 +262,29 @@ public:
      * @param workflowId The identifier of the workflow.
      */
     void remove(const std::string& workflowId);
+    
+    /**
+     * return the SPDA handler which should be notified on state transitions.
+     */
+    Gwes2Sdpa* getSdpaHandler() {return _sdpaHandler; }
+    
+    ///////////////////////////////////
+    // Interface Spda2Gwes           //
+    ///////////////////////////////////
+    
+	virtual void activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId);
+
+	virtual void activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output);
+
+	virtual void activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output);
+
+	virtual void activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId);
+
+	virtual void registerHandler(Gwes2Sdpa *sdpa);
+
+	virtual void submitWorkflow(workflow_t &workflow);
+
+	virtual void cancelWorkflow(workflow_t &workflow);
 
 };
 

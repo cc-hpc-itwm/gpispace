@@ -99,7 +99,7 @@ string getTestWorkflowDirectory() {
 	if (gwesHomeP != NULL) {
 		string gwesHome(gwesHomeP);
 		if ( gwesHome.size() > 0) {
-			return gwesHome + "/tests/gwes";
+			return gwesHome + "/workflows/test";
 		}
 	}
 	
@@ -111,12 +111,12 @@ string getTestWorkflowDirectory() {
 	// if */build/tests
 	string s2("/build/tests");
 	if ( endsWith(path,s2) ) {
-		return string("../../tests/gwes");
+		return string("../../workflows/test");
 	}
 	
 	// if */gwes/trunk
 	s2 = string("/gwes/trunk");
 	if ( endsWith(path,s2) ) {
-		return string("tests/gwes");
+		return string("workflows/test");
 	}
 }

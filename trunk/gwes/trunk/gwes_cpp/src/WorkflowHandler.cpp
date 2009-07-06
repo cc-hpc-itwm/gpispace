@@ -63,6 +63,35 @@ void WorkflowHandler::setStatus(int status) {
 //			<< getStatusAsString() << endl;
 	
 	// notify observers
+	Gwes2Sdpa* sdpaP = _gwesP->getSdpaHandler();
+	if (sdpaP != NULL) {
+		switch (_status) {
+		case (STATUS_ACTIVE): 
+			break;
+		case (STATUS_COMPLETED):
+			sdpaP->workflowFinished(*_wfP);
+			break;
+		case (STATUS_TERMINATED):
+			if (_abort) {
+				sdpaP->workflowCanceled(*_wfP);
+			} else {
+				sdpaP->workflowFailed(*_wfP);
+			}
+			break;
+		case (STATUS_FAILED):
+			break;
+		case (STATUS_INITIATED):
+			break;
+		case (STATUS_RUNNING):
+			break;
+		case (STATUS_SUSPENDED):
+			break;
+		case (STATUS_UNDEFINED):
+			break;
+		}
+	}
+	
+	// ToDo: depricated - remove?
 	if (_channels.size()>0) {
 		Event event(_id,Event::EVENT_WORKFLOW,getStatusAsString());
 		for (unsigned int i = 0; i<_channels.size(); i++ ) {
@@ -327,6 +356,7 @@ void WorkflowHandler::connect(Channel* channel) {
 /**
  * Overides gwes::Observer::update().
  * This method is called by the source of the channels connected to this workflow handler.
+ * @deprecated[Use Spda2Gwes instead]
  */
 void WorkflowHandler::update(const Event& event) {
 	// logging
@@ -359,6 +389,30 @@ void WorkflowHandler::update(const Event& event) {
  */
 gwdl::Workflow* WorkflowHandler::getWorkflow() {
 	return _wfP;
+}
+
+/////////////////////////////////////////
+// Delegation from Interface Spda2Gwes //
+/////////////////////////////////////////
+
+// transition from pending to running
+void WorkflowHandler::activityDispatched(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityDispatched();
+}
+
+// transition from running to failed     
+void WorkflowHandler::activityFailed(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output)  throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityFailed(output);
+}
+
+// transition from running to finished
+void WorkflowHandler::activityFinished(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityFailed(output);
+}
+
+// transition from * to canceled
+void WorkflowHandler::activityCanceled(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityCanceled();
 }
 
 ///////////////////////////////////////////////
@@ -524,7 +578,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		string activityID = it->first;
 		Activity* activityP = it->second;
 		int activityStatus = activityP->getStatus();
-//		cout << "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString() << endl;
+		cout << "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString() << endl;
 
 		// activity has completed or terminated
 		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
@@ -619,6 +673,9 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			_activityTable.remove(activityID);
 
 			///ToDo: fault management regarding the fault management policy property
+			if (activityStatus == Activity::STATUS_TERMINATED) {
+				_abort = true;
+			}
 
 		} else if (activityStatus == Activity::STATUS_FAILED) {
 			///ToDo: implement fault management.

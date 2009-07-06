@@ -175,7 +175,16 @@ void SubWorkflowActivity::update(const Event& event) {
 				_gwesP->remove(_subworkflowId);
 				// ToDo: copy output tokens
 			} else if (event._message.compare("TERMINATED") == 0) {
+				// print sub workflow
+				cout << *_subworkflowP << endl;
 				// ToDo: generate fault tokens
+//				for (map<string,gwdl::Token*>::iterator it=_outputs.begin(); it !=_outputs.end(); ++it) {
+//					edgeExpression = it->first;
+//					// find corresponding place in subworkflow and add token with data on this place
+//					cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..." << endl; 
+//					Place* placeP = _subworkflowP->getPlace(edgeExpression);
+//					placeP->addToken(it->second);
+//				}
 				setStatus(Activity::STATUS_TERMINATED);
 				// remove workflow from GWES and memory
 				_gwesP->remove(_subworkflowId);

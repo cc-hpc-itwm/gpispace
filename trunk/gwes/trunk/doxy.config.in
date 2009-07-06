@@ -459,7 +459,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = "@CMAKE_SOURCE_DIR@/gworkflowdl_cpp/src" "@CMAKE_SOURCE_DIR@/tests"
+INPUT                  = "@CMAKE_SOURCE_DIR@/gworkflowdl_cpp/include/gwdl" "@CMAKE_SOURCE_DIR@/gworkflowdl_cpp/src" "@CMAKE_SOURCE_DIR@/gwes_cpp/include/gwes" "@CMAKE_SOURCE_DIR@/gwes_cpp/src" 
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

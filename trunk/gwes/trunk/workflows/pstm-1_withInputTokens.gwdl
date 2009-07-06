@@ -12,11 +12,7 @@
     <place ID="OffsetParameters">
         <property name="workflowInputPlace"/>
         <token>
-            <data>
-                <min>15</min>
-                <max>33</max>
-                <step>1</step>
-            </data>
+            <data><min>15</min><max>33</max><step>1</step></data>
         </token>
     </place>
 

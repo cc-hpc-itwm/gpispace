@@ -27,8 +27,6 @@ typedef std::map<std::string, std::string>::iterator ITR_Properties;
  */ 
 class Properties : public std::map<std::string,std::string>
 {
-private:
-	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> dom;
 	
 public:
 	/**
@@ -39,7 +37,7 @@ public:
 	/**
 	 * Destructor for properties.
 	 */
-	virtual ~Properties() {clear(); dom.clear(); }
+	virtual ~Properties() {clear();}
 	
 	/**
 	 * Constructor from XML.
@@ -49,9 +47,9 @@ public:
 	/**
 	 * Convert this into a DOMElement.
 	 * @param doc The master document this elements should belong to.
-	 * @return The DOMElement.
+	 * @return The vector of DOMElements.
 	 */
-	std::vector<XERCES_CPP_NAMESPACE::DOMElement*>& toElements(XERCES_CPP_NAMESPACE::DOMDocument* doc);
+	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> toElements(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
 	/**
 	 * Put new name/value pair into properties.

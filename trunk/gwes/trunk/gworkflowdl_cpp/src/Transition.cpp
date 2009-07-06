@@ -223,9 +223,9 @@ bool Transition::isEnabled()
 		if(v.size() == 0) return false;
 		else
 		{
-			int nTokens = v.size(), nLockedTokens = 0;
-			for(int i=0; i<nTokens; ++i)
-			{
+			vector<Token*>::size_type nTokens = v.size(), nLockedTokens = 0;
+			for(vector<Token*>::size_type i=0; i<nTokens; ++i)
+			{	
 				if(v[i]->isLocked()) ++nLockedTokens;  
 			}
 			if(nLockedTokens >= nTokens) return false;

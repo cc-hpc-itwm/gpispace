@@ -16,12 +16,26 @@ int main()
    testGWES(gwes);
    
    string twd = getTestWorkflowDirectory();
-   Workflow& workflow = testWorkflow(twd + "/concatenateIt.gwdl",gwes);
+   Workflow workflow;
+
+   workflow = testWorkflow(twd + "/simple.gwdl",gwes);
+   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+   
+   workflow = testWorkflow(twd + "/split-token.gwdl",gwes);
+   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+   // ToDo: test on correct values on output tokens
+
+   //  workflow = testWorkflow(twd + "/control-loop.gwdl",gwes);
+//  assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+
+   workflow = testWorkflow(twd + "/concatenateIt.gwdl",gwes);
    assert(workflow.getProperties().get("status")=="COMPLETED");
    assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 
+   workflow = testWorkflow(twd + "/concatenateIt_fail.gwdl",gwes);
+   assert(gwes.getStatusAsString(workflow)=="TERMINATED");
+
    workflow = testPreStackProWorkflow(twd + "/psp-grd.gwdl",gwes);
-   workflow.saveToFile("tests/gwes/psp-grd_COMPLETED.gwdl");
    
    return 0;
 }

@@ -96,4 +96,26 @@ void Activity::notifyObservers(int type, const string& message, map<string,gwdl:
 	}
 }
 
+/////////////////////////////////////////
+// Delegation from Interface Spda2Gwes -> GWES -> WorkflowHandler
+/////////////////////////////////////////
+
+void Activity::activityDispatched() {
+	setStatus(Activity::STATUS_ACTIVE);
+}
+
+void Activity::activityFailed(const Sdpa2Gwes::parameter_list_t &output) {
+	// ToDo: set outputs 
+	setStatus(Activity::STATUS_TERMINATED);
+}
+
+void Activity::activityFinished(const Sdpa2Gwes::parameter_list_t &output) {
+	// ToDo: set outputs
+	setStatus(Activity::STATUS_COMPLETED);
+}
+
+void Activity::activityCanceled() {
+	setStatus(Activity::STATUS_TERMINATED);
+}
+
 } // end namespace gwes
