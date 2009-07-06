@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <boost/thread.hpp>
+
 #include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
@@ -11,6 +13,7 @@
 #include <sdpa/types.hpp>
 #include <sdpa/client/ClientActions.hpp>
 #include <sdpa/client/ClientFsm_sm.h>
+#include <sdpa/events/SDPAEvent.hpp>
 
 namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
@@ -18,13 +21,14 @@ namespace sdpa { namespace client {
     typedef sdpa::shared_ptr<Client> ptr_t;
     typedef std::string result_t;
 
-    ~Client() {}
+    ~Client();
 
     // seda strategy
     void perform(const seda::IEvent::Ptr &);
 
     // API
-    static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client");
+    static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
+                              , const std::string &output_stage="sdpa.apps.client.out");
 
     void start();
     void shutdown();
@@ -47,10 +51,11 @@ namespace sdpa { namespace client {
     void action_retrieve(const job_id_t &);
     void action_delete(const job_id_t &);
   private:
-    Client(const std::string &name)
+    Client(const std::string &name, const std::string &output_stage)
       : seda::Strategy(name)
       ,SDPA_INIT_LOGGER(name)
       ,name_(name)
+      ,output_stage_(output_stage)
       ,fsm_(*this)
     {
     
@@ -62,9 +67,19 @@ namespace sdpa { namespace client {
       client_stage_ = stage;
     }
 
+    bool waitForReply();
+
     SDPA_DECLARE_LOGGER();
 
     std::string name_;
+    std::string output_stage_;
+
+    boost::mutex mtx_;
+    boost::condition_variable cond_;
+    sdpa::events::SDPAEvent::Ptr event_;
+    bool blocked_;
+    bool config_ok_;
+
     seda::Stage::Ptr client_stage_;
     ClientContext fsm_;
   };
