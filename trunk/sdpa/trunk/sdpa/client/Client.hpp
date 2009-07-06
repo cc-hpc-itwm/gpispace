@@ -19,6 +19,7 @@ namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
+    typedef std::string config_t;
     typedef std::string result_t;
 
     ~Client();
@@ -30,7 +31,7 @@ namespace sdpa { namespace client {
     static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
                               , const std::string &output_stage="sdpa.apps.client.out");
 
-    void start();
+    void start(const config_t &cfg);
     void shutdown();
 
     job_id_t submitJob(const job_desc_t &);
@@ -40,7 +41,7 @@ namespace sdpa { namespace client {
     result_t retrieveResults(const job_id_t &);
 
     // Action implementations
-    void action_configure();
+    void action_configure(const config_t &);
     void action_config_ok();
     void action_config_nok();
     void action_shutdown();

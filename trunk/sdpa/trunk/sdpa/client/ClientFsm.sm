@@ -16,10 +16,10 @@
 %%
 Unconfigured
 {
-  Start(/* Config cfg*/)
+  Start(cfg: const std::string &)
     Configuring
     {
-      action_configure(/* cfg */);
+      action_configure(cfg);
     }
 
   Default

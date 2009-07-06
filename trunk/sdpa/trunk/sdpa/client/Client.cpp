@@ -34,14 +34,14 @@ void Client::perform(const seda::IEvent::Ptr &event)
   cond_.notify_one();
 }
 
-void Client::start(/*config*/)
+void Client::start(const Client::config_t & config)
 {
   SDPA_LOG_DEBUG("starting up");
 
   boost::unique_lock<boost::mutex> lock(mtx_);
   blocked_ = true;
 
-  fsm_.Start();
+  fsm_.Start(config);
   while (blocked_)
   {
     // wait until configured
@@ -94,7 +94,7 @@ sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid)
   return result_t("");
 }
 
-void Client::action_configure()
+void Client::action_configure(const Client::config_t &cfg)
 {
   // configure logging according to config
   sdpa::logging::Configurator::configure(/*use default config for now*/);  

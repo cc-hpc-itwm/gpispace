@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <sdpa/sdpa-config.hpp>
-#include <sdpa/client/Client.hpp>
+#include <sdpa/client/ClientApi.hpp>
 
 int main (int argc, char **argv) {
   std::cerr << "           "
@@ -19,15 +19,11 @@ int main (int argc, char **argv) {
             << std::endl;
   std::cerr << std::endl;
 
+  sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
 
-  sdpa::client::Client::ptr_t api(sdpa::client::Client::create());
-
-  api->start();
   sdpa::job_id_t jid = api->submitJob("<xml></xml>");
   api->queryJob(jid);
   api->cancelJob(jid);
   api->retrieveResults(jid);
   api->deleteJob(jid);
-  api->shutdown();
-
 }
