@@ -48,6 +48,8 @@ namespace sdpa { namespace daemon {
 	  virtual void DeleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void MarkJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 
+	  Worker::ptr_t FindWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
+
 	  std::vector<sdpa::job_id_t> GetJobIDList();
 
 	  virtual void SendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);

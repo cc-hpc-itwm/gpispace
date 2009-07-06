@@ -45,6 +45,14 @@ Job::ptr_t GenericDaemon::FindJob(const sdpa::job_id_t& job_id ) throw(JobNotFou
 		throw JobNotFoundException( job_id );
 }
 
+Worker::ptr_t GenericDaemon::FindWorker(const Worker::worker_id_t& worker_id )  throw(WorkerNotFoundException){
+	worker_map_t::iterator it = worker_map_.find(worker_id);
+	if( it != worker_map_.end() )
+		return it->second;
+	else
+		throw WorkerNotFoundException(worker_id);
+}
+
 void GenericDaemon::AddJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
 	job_map_t::iterator it;
@@ -127,6 +135,16 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
     o this datastructure is being updated everytime a message is received
 	o an aggregator is supposed to be unavailable when no messages have been received for a (configurable) period of time
      */
+	Worker::worker_id_t worker_id = e.from();
+	try {
+		Worker::ptr_t pWorker = FindWorker(worker_id);
+		pWorker->update(e);
+		std::cout<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
+	} catch(sdpa::daemon::WorkerNotFoundException) {
+		std::cout<<"Worker "<<worker_id<<" not found!"<<std::endl;
+	} catch(...) {
+		std::cout<<"Unexpected exception occurred!"<<std::endl;
+	}
 }
 
 void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
@@ -168,6 +186,22 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 	it contains the id of the last job that has been received
 	the orchestrator answers to this message with a submitJob
 	 */
+
+	//take a job from the workers' queue? and serve it
+	Worker::worker_id_t worker_id = e.from();
+	try {
+		Worker::ptr_t pWorker = FindWorker(worker_id);
+		pWorker->update(e);
+
+		Job::ptr_t pJob = pWorker->get_next_job(e.last_job_id());
+		//implement last_job_id() in RequestJobEvent !!!
+
+	} catch(sdpa::daemon::WorkerNotFoundException) {
+		std::cout<<"Worker "<<worker_id<<" not found!"<<std::endl;
+	} catch(...) {
+		std::cout<<"Unexpected exception occurred!"<<std::endl;
+	}
+
 }
 
 void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
@@ -204,6 +238,17 @@ void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent&
 	std::cout <<"perform 'action_submit_job_ack'"<< std::endl;
 
 	//put the job from pending into submitted
+	//call worker :: acknowledge(const sdpa::job_id_t& job_id ) = 0;
+	Worker::worker_id_t worker_id = e.from();
+	try {
+		Worker::ptr_t pWorker = FindWorker(worker_id);
+		pWorker->acknowledge(e.job_id());
+
+	} catch(sdpa::daemon::WorkerNotFoundException) {
+		std::cout<<"Worker "<<worker_id<<" not found!"<<endl;
+	} catch(...) {
+		std::cout<<"Unexpected exception occurred!"<<std::endl;
+	}
 }
 
 void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent& e) {

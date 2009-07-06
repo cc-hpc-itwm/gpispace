@@ -20,7 +20,11 @@ namespace events {
     		//std::cout << "Delete event 'RequestJobEvent'"<< std::endl;
     	}
 
+    	const sdpa::job_id_t & last_job_id() const { return last_job_id_; }
+
     	std::string str() const { return "RequestJobEvent"; }
+    private:
+            sdpa::job_id_t last_job_id_;
     };
 }}
 

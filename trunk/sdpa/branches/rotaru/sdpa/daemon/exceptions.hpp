@@ -17,10 +17,30 @@ namespace daemon {
 		sdpa::job_id_t job_id_;
 	};
 
+	class WorkerException : public sdpa::SDPAException {
+	public:
+		WorkerException(const std::string &reason, const sdpa::daemon::Worker::worker_id_t& worker_id)
+			: sdpa::SDPAException(reason), worker_id_(worker_id) {}
+
+		virtual ~WorkerException() throw() {}
+		const sdpa::daemon::Worker::worker_id_t& worker_id() const { return worker_id_; }
+
+		private:
+		sdpa::daemon::Worker::worker_id_t worker_id_;
+	};
+
+
 	class JobNotFoundException : public JobException {
 		public:
 			JobNotFoundException( const sdpa::job_id_t& job_id) : JobException("Job not found!", job_id) {}
 		virtual ~JobNotFoundException() throw() {}
+	};
+
+	class WorkerNotFoundException : public WorkerException {
+		public:
+			WorkerNotFoundException( const sdpa::daemon::Worker::worker_id_t& worker_id)
+				: WorkerException("Worker not found!", worker_id) {}
+		virtual ~WorkerNotFoundException() throw() {}
 	};
 
 	class JobNotAddedException : public JobException {

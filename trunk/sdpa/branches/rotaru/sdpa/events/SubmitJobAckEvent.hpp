@@ -21,6 +21,8 @@ namespace events {
     		//std::cout << "Delete event 'SubmitJobAckEvent'"<< std::endl;
     	}
 
+    	const sdpa::job_id_t & job_id() const { return job_id_; }
+
     	std::string str() const { return "SubmitJobAckEvent"; }
     private:
     	sdpa::job_id_t job_id_;

@@ -13,6 +13,7 @@
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
+using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 
@@ -33,8 +34,11 @@ void DaemonFSMTest_SMC::tearDown() { //stop the finite state machine
 void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 {
 	list<sdpa::shared_ptr<sc::event_base> > listEvents;
-	string strFrom("user");
-	string strTo("");
+
+	string strFromUp("user");
+	string strFromDown("aggregator");
+	string strTo = m_DaemonFSM.name();
+	string strFrom = strTo;
 
     sdpa::util::time_type start(sdpa::util::now());
 
@@ -44,13 +48,16 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	ConfigOkEvent evtConfigOk(strFrom, strTo);
 	m_DaemonFSM.GetContext().ConfigOk(evtConfigOk);
 
-	LifeSignEvent evtLS(strFrom, strTo);
+	Worker::ptr_t pWorker(new Worker(strFromDown));
+	m_DaemonFSM.worker_map_[strFromDown] = pWorker;
+
+	LifeSignEvent evtLS(strFromDown, strTo);
 	m_DaemonFSM.GetContext().LifeSign(evtLS);
 
-	RequestJobEvent evtReq(strFrom, strTo);
+	RequestJobEvent evtReq(strFromDown, strTo);
 	m_DaemonFSM.GetContext().RequestJob(evtReq);
 
-	SubmitJobEvent evtSubmitJob(strFrom, strTo);
+	SubmitJobEvent evtSubmitJob(strFromUp, strTo);
 	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
 
 	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.GetJobIDList();
@@ -64,10 +71,10 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	m_DaemonFSM.job_map_[job_id]->JobFinished(evtFinished);
 
 	// now I#m in a final state and the delete must succeed
-	DeleteJobEvent evtDelJob( strFrom, strTo, vectorJobIDs[0] );
+	DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
 	m_DaemonFSM.GetContext().DeleteJob(evtDelJob);
 
-	ConfigRequestEvent evtCfgReq(strFrom, strTo);
+	ConfigRequestEvent evtCfgReq(strFromDown, strTo);
 	m_DaemonFSM.GetContext().ConfigRequest(evtCfgReq);
 
 	InterruptEvent evtInt(strFrom, strTo);
