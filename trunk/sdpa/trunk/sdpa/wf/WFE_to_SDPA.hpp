@@ -21,3 +21,5 @@ namespace sdpa { namespace wf {
       virtual void workflowCancelled(const workflow_t &workflow) = 0;
   };
 }}
+
+#endif

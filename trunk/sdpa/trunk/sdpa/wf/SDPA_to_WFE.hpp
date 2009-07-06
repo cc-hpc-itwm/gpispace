@@ -35,3 +35,5 @@ namespace sdpa { namespace wf {
       virtual void cancelWorkflow(workflow_t &wf) = 0;
   };
 }}
+
+#endif
