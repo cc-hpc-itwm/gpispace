@@ -38,7 +38,7 @@ void UUIDTest::testUniqueness()
   for (std::size_t i(0); i < SAMPLES; ++i) {
     gen(id);
     uuid_list_t::const_iterator it(uuids.find(id.str()));
-    CPPUNIT_ASSERT_MESSAGE(std::string("generated uuid was not unique: ") + id.str(), it != uuids.end());
+    CPPUNIT_ASSERT_MESSAGE(std::string("generated uuid was not unique: ") + id.str(), it == uuids.end());
     uuids.insert(std::make_pair(id.str(), true));
   }
 }
