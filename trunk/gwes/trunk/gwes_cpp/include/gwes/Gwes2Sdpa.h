@@ -29,7 +29,7 @@ public:
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
-//	virtual ~Gwes2Sdpa();
+	virtual ~Gwes2Sdpa();
 
 	/**
 	 * Submit a sub workflow to the SDPA.

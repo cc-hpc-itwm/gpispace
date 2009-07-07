@@ -28,7 +28,7 @@ int testBuilder();
  
 int main() 
 {
-	XMLUtils* xmlutils = XMLUtils::Instance();
+//	XMLUtils* xmlutils = XMLUtils::Instance();
 
 if(TEST_ALL)
 {		

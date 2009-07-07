@@ -34,6 +34,10 @@ GWES::~GWES()
 {
 }
 
+Sdpa2Gwes::~Sdpa2Gwes()
+{
+}
+
 /**
   * Initiates a Grid workflow from a string containing its GWorkflowDL representation with a certain userID.
   *

@@ -47,7 +47,7 @@ public:
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
-//	virtual ~Sdpa2Gwes();
+	virtual ~Sdpa2Gwes();
 
 	/**
 	 * Notify the GWES that an activity has been dispatched

@@ -135,5 +135,5 @@ string getTestWorkflowDirectory() {
 	}
 	
 	// default
-	return string ("workflows/tests");
+	return string ("../../workflows/tests");
 }
