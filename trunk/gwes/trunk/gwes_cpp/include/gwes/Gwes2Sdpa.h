@@ -1,11 +1,9 @@
 #ifndef GWES2SDPA_H_
 #define GWES2SDPA_H_
 // gwes
-#include <gwes/Activity.h>
+#include <gwes/Types.h> 
 #include <gwes/NoSuchWorkflowException.h>
 #include <gwes/NoSuchActivityException.h>
-// gwdl
-#include <gwdl/Workflow.h>
 
 namespace gwes
 {
@@ -17,27 +15,8 @@ class Gwes2Sdpa {
 
 public:
 
-	/**
-	 * Type for referencing to a GWorkflowDL workflow object.
-	 */
-	typedef gwdl::Workflow workflow_t;
+	// typedefs have been moved to Types.h
 
-	/**
-	 * Type of the workflow identifier.
-	 */
-	typedef std::string workflow_id_t;
-	
-	/**
-	 * Type for referencing to a SPDA activity.
-	 * ToDo: replace by specific SPDA activity class. Meanwhile using gwes::Activity.
-	 */
-	typedef gwes::Activity activity_t;
-
-	/**
-	 * Type fo the activity identifier.
-	 */
-	typedef std::string activity_id_t;
-	
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
@@ -50,7 +29,7 @@ public:
 	 * The SDPA will use the callback handler Sdpa2Gwes in order
 	 * to notify the GWES about status transitions.
 	 */
-	virtual workflow_id_t submitWorkflow(const workflow_t &workflow) = 0; 
+	virtual workflow_id_t submitWorkflow(workflow_t &workflow) = 0; 
 
 	/**
 	 * Submit an atomic activity to the SDPA.
@@ -59,7 +38,7 @@ public:
 	 * The SDPA will use the callback handler Sdpa2Gwes in order
 	 * to notify the GWES about activity status transitions.
 	 */
-	virtual activity_id_t submitActivity(const activity_t &activity) = 0; 
+	virtual activity_id_t submitActivity(activity_t &activity) = 0; 
 
 	/**
 	 * Cancel a sub workflow that has previously been submitted to

@@ -104,12 +104,12 @@ void Activity::activityDispatched() {
 	setStatus(Activity::STATUS_ACTIVE);
 }
 
-void Activity::activityFailed(const Sdpa2Gwes::parameter_list_t &output) {
+void Activity::activityFailed(const parameter_list_t &output) {
 	// ToDo: set outputs 
 	setStatus(Activity::STATUS_TERMINATED);
 }
 
-void Activity::activityFinished(const Sdpa2Gwes::parameter_list_t &output) {
+void Activity::activityFinished(const parameter_list_t &output) {
 	// ToDo: set outputs
 	setStatus(Activity::STATUS_COMPLETED);
 }

@@ -1,14 +1,11 @@
 #ifndef SDPA2GWES_H_
 #define SDPA2GWES_H_
-// gwdl
-#include <gwdl/Workflow.h>
-#include <gwdl/WorkflowFormatException.h>
 // gwes
+#include <gwes/Types.h> 
 #include <gwes/NoSuchWorkflowException.h>
 #include <gwes/NoSuchActivityException.h>
-// std
-#include <string>
-#include <list>
+// gwdl
+#include <gwdl/WorkflowFormatException.h>
 
 namespace gwes
 {
@@ -21,32 +18,8 @@ class Gwes2Sdpa;
 class Sdpa2Gwes {
 	
 public:
-	
-	/**
-	 * Type for referencing to a GWorkflowDL workflow.
-	 * @todo: It could be better to use a reference to the corresponding WorkflowHandler instead!
-	 */
-	typedef gwdl::Workflow workflow_t;
-	
-	/**
-	 * Type of the workflow identifier.
-	 */
-	typedef std::string workflow_id_t;
-	
-	/**
-	 * Type fo the activity identifier.
-	 */
-	typedef std::string activity_id_t;
-	
-	/**
-	 * Type of input/output parameters.
-	 */
-	typedef std::string parameter_t;
-	
-	/**
-	 * Type of tuple of parameters.
-	 */
-	typedef std::list<parameter_t> parameter_list_t;
+
+	// typedefs have been moved to Types.h
 
 	/**
 	 * Virtual destructor because of virtual methods.
@@ -113,7 +86,7 @@ public:
 	 * completion of the cancelling process by calling the 
 	 * callback method Gwes2Sdpa::workflowCanceled.  
 	 */
-	virtual void cancelWorkflow(workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 
 };
 

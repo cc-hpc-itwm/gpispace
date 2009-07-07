@@ -396,22 +396,22 @@ gwdl::Workflow* WorkflowHandler::getWorkflow() {
 /////////////////////////////////////////
 
 // transition from pending to running
-void WorkflowHandler::activityDispatched(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException) {
+void WorkflowHandler::activityDispatched(const activity_id_t &activityId) throw (NoSuchActivityException) {
 	_activityTable.get(activityId)->activityDispatched();
 }
 
 // transition from running to failed     
-void WorkflowHandler::activityFailed(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output)  throw (NoSuchActivityException) {
+void WorkflowHandler::activityFailed(const activity_id_t &activityId, const parameter_list_t &output)  throw (NoSuchActivityException) {
 	_activityTable.get(activityId)->activityFailed(output);
 }
 
 // transition from running to finished
-void WorkflowHandler::activityFinished(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException) {
+void WorkflowHandler::activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchActivityException) {
 	_activityTable.get(activityId)->activityFailed(output);
 }
 
 // transition from * to canceled
-void WorkflowHandler::activityCanceled(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException) {
+void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (NoSuchActivityException) {
 	_activityTable.get(activityId)->activityCanceled();
 }
 

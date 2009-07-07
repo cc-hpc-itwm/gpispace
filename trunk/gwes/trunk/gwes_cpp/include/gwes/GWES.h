@@ -10,6 +10,7 @@
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
 //gwes
+#include <gwes/Types.h>
 #include <gwes/Sdpa2Gwes.h>
 #include <gwes/Gwes2Sdpa.h>
 #include <gwes/StateTransitionException.h>
@@ -284,7 +285,7 @@ public:
 
 	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (gwdl::WorkflowFormatException);
 
-	virtual void cancelWorkflow(workflow_id_t &workflowId) throw (NoSuchWorkflowException);
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
 
 };
 

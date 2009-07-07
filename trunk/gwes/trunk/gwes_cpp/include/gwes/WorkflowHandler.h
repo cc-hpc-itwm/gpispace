@@ -7,10 +7,10 @@
 #ifndef WORKFLOWHANDLER_H_
 #define WORKFLOWHANDLER_H_
 // gwes
+#include <gwes/Types.h>
 #include <gwes/ActivityTable.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/Channel.h>
-#include <gwes/Sdpa2Gwes.h>
 //gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
@@ -416,16 +416,16 @@ public:
     /////////////////////////////////////////
     
 	// transition from pending to running
-	void activityDispatched(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException);
+	void activityDispatched(const activity_id_t &activityId) throw (NoSuchActivityException);
 
 	// transition from running to failed     
-	void activityFailed(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException);
+	void activityFailed(const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchActivityException);
 
 	// transition from running to finished
-	void activityFinished(const Sdpa2Gwes::activity_id_t &activityId, const Sdpa2Gwes::parameter_list_t &output) throw (NoSuchActivityException);
+	void activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchActivityException);
 
 	// transition from * to canceled
-	void activityCanceled(const Sdpa2Gwes::activity_id_t &activityId) throw (NoSuchActivityException);
+	void activityCanceled(const activity_id_t &activityId) throw (NoSuchActivityException);
 
 };
 

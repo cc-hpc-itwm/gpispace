@@ -7,11 +7,11 @@
 #ifndef ACTIVITY_H_
 #define ACTIVITY_H_
 //gwes
+#include <gwes/Types.h>
 #include <gwes/ActivityException.h>
 #include <gwes/StateTransitionException.h>
 #include <gwes/Observer.h>
 #include <gwes/Event.h>
-#include <gwes/Sdpa2Gwes.h>
 //gwdl
 #include <gwdl/Data.h>
 #include <gwdl/OperationCandidate.h>
@@ -241,12 +241,12 @@ public:
 	/**
 	 * @see Spda2Gwes::activityFailed
 	 */
-	void activityFailed(const Sdpa2Gwes::parameter_list_t &output);
+	void activityFailed(const parameter_list_t &output);
 
 	/**
 	 * @see Spda2Gwes::activityFinished
 	 */
-	void activityFinished(const Sdpa2Gwes::parameter_list_t &output);
+	void activityFinished(const parameter_list_t &output);
 
 	/**
 	 * @see Spda2Gwes::activityCanceled

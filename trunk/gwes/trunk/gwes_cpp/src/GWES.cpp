@@ -364,7 +364,7 @@ void GWES::registerHandler(Gwes2Sdpa *sdpa) {
 /**
  * Initiate and start a workflow.
  */
-Sdpa2Gwes::workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatException) {
+workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatException) {
 	string workflowId = initiate(workflow,"sdpa");
 	start(workflowId);
 	return workflowId;
@@ -373,7 +373,7 @@ Sdpa2Gwes::workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (Workf
 /**
  * Cancel a workflow.
  */
-void GWES::cancelWorkflow(workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
 	abort(workflowId);
 }
 

@@ -1,9 +1,17 @@
-#include <iostream>
-#include <ostream>
-
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
+// tests
 #include "TestGWES.h"
+#include "TestSdpa2Gwes.h"
 #include "TestWorkflow.h"
 #include "TestPreStackProWorkflow.h"
+// 
+#include <iostream>
+#include <ostream>
 
 using namespace std;
 using namespace gwdl;
@@ -12,9 +20,14 @@ using namespace gwes;
 int main() 
 {
    gwes::GWES gwes;
-   
+
+   // test basic GWES features 
    testGWES(gwes);
    
+   // test SDPA2GWES communication
+   testSdpa2Gwes(gwes);
+   
+   // test various workflows
    string twd = getTestWorkflowDirectory();
    Workflow workflow;
 
