@@ -1,5 +1,5 @@
-#ifndef SDPA_WF_WFE_TO_SDPA_HPP
-#define SDPA_WF_WFE_TO_SDPA_HPP 1
+#ifndef SDPA_WF_SDPA_TO_WFE_HPP
+#define SDPA_WF_SDPA_TO_WFE_HPP 1
 
 #include <string>
 
