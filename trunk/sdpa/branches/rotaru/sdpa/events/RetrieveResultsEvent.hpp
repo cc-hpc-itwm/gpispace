@@ -1,5 +1,5 @@
 #ifndef SDPA_RETRIEVERESULTSEVENT_HPP
-#define SDPA_RETRIEVERESULTSEVENT_HPP
+#define SDPA_RETRIEVERESULTSEVENT_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
