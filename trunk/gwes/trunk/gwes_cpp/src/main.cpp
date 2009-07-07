@@ -18,10 +18,10 @@ string getUserName();
 
 int main(int argc, char* argv[]) {
 
-	int c;
-	int command=-1;
 	string workflowfn;
 
+//	int c;
+//	int command=-1;
 	//	while ((c = getopt(argc, argv, "s:")) != -1) {
 	//		switch (c) {
 	//		case 'i':

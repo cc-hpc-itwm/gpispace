@@ -45,6 +45,11 @@ public:
 	typedef std::list<parameter_t> parameter_list_t;
 
 	/**
+	 * Virtual destructor because of virtual methods.
+	 */
+//	virtual ~Sdpa2Gwes();
+
+	/**
 	 * Notify the GWES that an activity has been dispatched
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.

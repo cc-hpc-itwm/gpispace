@@ -58,6 +58,9 @@ link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
 link_libraries(-Wl,-Bdynamic  -ldl)
 
+# Display and stop on warnings
+#ADD_DEFINITIONS(-Wall -Werror)
+
 include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 ### does not work for automatic build! ###

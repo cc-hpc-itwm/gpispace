@@ -27,6 +27,11 @@ public:
 	typedef gwes::Activity activity_t;
 
 	/**
+	 * Virtual destructor because of virtual methods.
+	 */
+//	virtual ~Gwes2Sdpa();
+
+	/**
 	 * Submit a sub workflow to the SDPA.
 	 * This method is to be called by the GWES in order to delegate
 	 * the execution of sub workflows.

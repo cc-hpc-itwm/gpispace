@@ -92,6 +92,14 @@ bool endsWith(const string& s1, const string& s2) {
 	return false;
 }
 
+bool startsWith(const string& s1, const string& s2) {
+	if ( s2.size() > s1.size() ) return false;
+	if ( s1.compare(0,s2.size(),s2 ) == 0) {
+	   return true;
+    }
+	return false;
+}
+
 string getTestWorkflowDirectory() {
 
 	// get GWES_CPP_HOME
@@ -119,4 +127,13 @@ string getTestWorkflowDirectory() {
 	if ( endsWith(path,s2) ) {
 		return string("workflows/test");
 	}
+	
+	// if /tmp/gwes/build_gwes_????
+	s2 = string("/tmp/gwes/build_gwes");
+	if ( startsWith(path,s2) ) {
+		return string("workflows/test");
+	}
+	
+	// default
+	return string ("workflows/tests");
 }
