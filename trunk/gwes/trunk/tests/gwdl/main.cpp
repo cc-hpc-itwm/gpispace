@@ -25,34 +25,35 @@ XERCES_CPP_NAMESPACE_USE
 
 void testParser();
 int testBuilder();
- 
+
 int main() 
 {
-//	XMLUtils* xmlutils = XMLUtils::Instance();
+	XMLUtils* xmlutils = XMLUtils::Instance();
+	cout << "xmlutils singleton instantiated: " << xmlutils << endl;
 
-if(TEST_ALL)
-{		
-	// data
-	testData();
-	
-	// properties
-	testProperties();
-	
-	// token
-	testToken();
-	
-	// place
-   	testPlace();
-   	
-	// operation
-   	testOperation();
-   	
-   	// transition
-   	testTransition();
-   	
-   	// workflow
-   	testWorkflow();
-}
-    testParser();
-   	return 0;
+	if(TEST_ALL)
+	{		
+		// data
+		testData();
+
+		// properties
+		testProperties();
+
+		// token
+		testToken();
+
+		// place
+		testPlace();
+
+		// operation
+		testOperation();
+
+		// transition
+		testTransition();
+
+		// workflow
+		testWorkflow();
+	}
+	testParser();
+	return 0;
 }
