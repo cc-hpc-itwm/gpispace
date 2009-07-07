@@ -69,13 +69,13 @@ void WorkflowHandler::setStatus(int status) {
 		case (STATUS_ACTIVE): 
 			break;
 		case (STATUS_COMPLETED):
-			sdpaP->workflowFinished(*_wfP);
+			sdpaP->workflowFinished(_id);
 			break;
 		case (STATUS_TERMINATED):
 			if (_abort) {
-				sdpaP->workflowCanceled(*_wfP);
+				sdpaP->workflowCanceled(_id);
 			} else {
-				sdpaP->workflowFailed(*_wfP);
+				sdpaP->workflowFailed(_id);
 			}
 			break;
 		case (STATUS_FAILED):

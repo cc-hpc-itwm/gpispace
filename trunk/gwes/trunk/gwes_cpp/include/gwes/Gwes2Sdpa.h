@@ -2,6 +2,8 @@
 #define GWES2SDPA_H_
 // gwes
 #include <gwes/Activity.h>
+#include <gwes/NoSuchWorkflowException.h>
+#include <gwes/NoSuchActivityException.h>
 // gwdl
 #include <gwdl/Workflow.h>
 
@@ -19,6 +21,11 @@ public:
 	 * Type for referencing to a GWorkflowDL workflow object.
 	 */
 	typedef gwdl::Workflow workflow_t;
+
+	/**
+	 * Type of the workflow identifier.
+	 */
+	typedef std::string workflow_id_t;
 	
 	/**
 	 * Type for referencing to a SPDA activity.
@@ -26,6 +33,11 @@ public:
 	 */
 	typedef gwes::Activity activity_t;
 
+	/**
+	 * Type fo the activity identifier.
+	 */
+	typedef std::string activity_id_t;
+	
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
@@ -38,7 +50,7 @@ public:
 	 * The SDPA will use the callback handler Sdpa2Gwes in order
 	 * to notify the GWES about status transitions.
 	 */
-	virtual void submitWorkflow(const workflow_t &workflow) = 0; 
+	virtual workflow_id_t submitWorkflow(const workflow_t &workflow) = 0; 
 
 	/**
 	 * Submit an atomic activity to the SDPA.
@@ -47,37 +59,37 @@ public:
 	 * The SDPA will use the callback handler Sdpa2Gwes in order
 	 * to notify the GWES about activity status transitions.
 	 */
-	virtual void submitActivity(const activity_t &activity) = 0; 
+	virtual activity_id_t submitActivity(const activity_t &activity) = 0; 
 
 	/**
 	 * Cancel a sub workflow that has previously been submitted to
 	 * the SDPA. The parent job has to cancel all children.
 	 */
-	virtual void cancelWorkflow(const workflow_t &workflow) = 0;
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 	
 	/**
 	 * Cancel an atomic activity that has previously been submitted to
 	 * the SDPA.
 	 */
-	virtual void cancelActivity(const activity_t &activity) = 0;
+	virtual void cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow finished (state transition
 	 * from running to finished).
 	 */
-	virtual void workflowFinished(const workflow_t &workflow) = 0;
+	virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow failed (state transition
 	 * from running to failed).
 	 */
-	virtual void workflowFailed(const workflow_t &workflow) = 0;
+	virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow has been canceled (state
 	 * transition from * to terminated.
 	 */ 
-	virtual void workflowCanceled(const workflow_t &workflow) = 0;
+	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 };
 
 } // end gwes namespace 
