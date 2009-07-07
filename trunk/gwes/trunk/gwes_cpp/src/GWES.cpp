@@ -326,15 +326,14 @@ void GWES::remove(const string& workflowId) {
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) {
-	// ToDo: throw NoSuch{Workflow|Activity}Exception?
+void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
 	_wfht.get(workflowId)->activityDispatched(activityId);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) {
+void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
 	// ToDo: throw NoSuch{Workflow|Activity}Exception?
 	_wfht.get(workflowId)->activityFailed(activityId,output);
 }
@@ -342,7 +341,7 @@ void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) {
+void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
 	// ToDo: throw NoSuch{Workflow|Activity}Exception?
 	_wfht.get(workflowId)->activityFinished(activityId,output);
 }
@@ -350,7 +349,7 @@ void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) {
+void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
 	// ToDo: throw NoSuch{Workflow|Activity}Exception?
 	_wfht.get(workflowId)->activityCanceled(activityId);
 }
@@ -365,16 +364,17 @@ void GWES::registerHandler(Gwes2Sdpa *sdpa) {
 /**
  * Initiate and start a workflow.
  */
-void GWES::submitWorkflow(workflow_t &workflow) {
+Sdpa2Gwes::workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatException) {
 	string workflowId = initiate(workflow,"sdpa");
 	start(workflowId);
+	return workflowId;
 }
 
 /**
  * Cancel a workflow.
  */
-void GWES::cancelWorkflow(workflow_t &workflow) {
-	abort(workflow.getID());
+void GWES::cancelWorkflow(workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+	abort(workflowId);
 }
 
 } // end namespace gwes

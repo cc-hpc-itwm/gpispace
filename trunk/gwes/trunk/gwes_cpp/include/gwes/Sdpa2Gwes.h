@@ -2,6 +2,10 @@
 #define SDPA2GWES_H_
 // gwdl
 #include <gwdl/Workflow.h>
+#include <gwdl/WorkflowFormatException.h>
+// gwes
+#include <gwes/NoSuchWorkflowException.h>
+#include <gwes/NoSuchActivityException.h>
 // std
 #include <string>
 #include <list>
@@ -55,7 +59,7 @@ public:
 	 * This method is to be invoked by the SDPA.
 	 */
 	virtual void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) = 0;
+			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has failed
@@ -64,7 +68,7 @@ public:
 	 */
 	virtual void activityFailed(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
-			const parameter_list_t &output) = 0;
+			const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has finished
@@ -73,7 +77,7 @@ public:
 	 */
 	virtual void activityFinished(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
-			const parameter_list_t &output) = 0;
+			const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has been canceled
@@ -81,7 +85,7 @@ public:
 	 * This method is to be invoked by the SDPA.
 	 */
 	virtual void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) = 0;
+			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
 
 	/**
 	 * Register a SDPA handler that implements the Gwes2Sdpa
@@ -100,7 +104,7 @@ public:
 	 * asynchronously and notifiy the SPDA about status transitions
 	 * using the callback methods of the Gwes2Sdpa handler.  
 	 */
-	virtual void submitWorkflow(workflow_t &workflow) = 0;
+	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (gwdl::WorkflowFormatException) = 0;
 
 	/**
 	 * Cancel a workflow asynchronously.
@@ -109,7 +113,7 @@ public:
 	 * completion of the cancelling process by calling the 
 	 * callback method Gwes2Sdpa::workflowCanceled.  
 	 */
-	virtual void cancelWorkflow(workflow_t &workflow) = 0;
+	virtual void cancelWorkflow(workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
 
 };
 
