@@ -1,5 +1,5 @@
-#ifndef SDPA_WF_WFE_TO_SDPA_HPP
-#define SDPA_WF_WFE_TO_SDPA_HPP 1
+#ifndef SDPA_WF_SDPA_TO_WFE_HPP
+#define SDPA_WF_SDPA_TO_WFE_HPP 1
 
 #include <string>
 
@@ -18,22 +18,21 @@ namespace sdpa { namespace wf {
       // transition from pending to running
       virtual void activityDispatched(const workflow_id_t &wid, const activity_id_t &aid) = 0;
 
-      // transition from running to failed     
+      // transition from running to failed
       virtual void activityFailed(const workflow_id_t &wid, const activity_id_t &aid, const parameter_list_t &output) = 0;
 
       // transition from running to finished
       virtual void activityFinished(const workflow_id_t &wid, const activity_id_t &aid, const parameter_list_t &output) = 0;
 
       // transition from * to cancelled
-      virtual void activityCancelled(const workflow_id_t &wid, const activity_id_t &aid) = 0; 
+      virtual void activityCancelled(const workflow_id_t &wid, const activity_id_t &aid) = 0;
 
       virtual void registerHandler(WFE_to_SDPA *sdpa) = 0;
 
       // corresponds to WFE_to_SDPA::workflowFinished/Failed
-      virtual void submitWorkflow(workflow_t &wf) = 0;
+      virtual workflow_id_t submitWorkflow(workflow_t &workflow) = 0; // (sub-)workflow
 
       virtual void cancelWorkflow(workflow_t &wf) = 0;
   };
 }}
-
 #endif

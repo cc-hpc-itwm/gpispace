@@ -8,18 +8,57 @@ namespace sdpa { namespace wf {
     public:
       typedef std::string workflow_t;
       typedef std::string activity_t;
+      typedef std::string workflow_id_t;
+      typedef std::string activity_id_t;
 
-      virtual void submitWorkflow(const workflow_t &workflow) = 0; // (sub-)workflow
-      virtual void submitActivity(const activity_t &activity) = 0; // atomic workflow see Activity.hpp
+      /**
+       * Submit a sub workflow to the SDPA.
+       * This method is to be called by the GWES in order to delegate
+       * the execution of sub workflows.
+       * The SDPA will use the callback handler SdpaGwes in order
+       * to notify the GWES about status transitions.
+      */
+      virtual workflow_id_t submitWorkflow(const workflow_t &workflow) = 0;
 
-      // parent job has to cancel all children
-      virtual void cancelWorkflow(const workflow_t &workflow) = 0;
-      virtual void cancelActivity(const activity_t &activity) = 0;
+      /**
+       * Submit an atomic activity to the SDPA.
+       * This method is to be called by the GWES in order to delegate
+       * the execution of activities.
+       * The SDPA will use the callback handler SdpaGwes in order
+       * to notify the GWES about activity status transitions.
+       */
+      virtual activity_id_t submitActivity(const activity_t &activity) = 0;
 
-      virtual void workflowFinished(const workflow_t &workflow) = 0;
-      virtual void workflowFailed(const workflow_t &workflow) = 0;
-      virtual void workflowCancelled(const workflow_t &workflow) = 0;
+      /**
+       * Cancel a sub workflow that has previously been submitted to
+       * the SDPA. The parent job has to cancel all children.
+       */
+      virtual void cancelWorkflow(const workflow_id_t &workflowId) = 0; //throw (NoSuchWorkflowException);
+
+      /**
+       * Cancel an atomic activity that has previously been submitted to
+       * the SDPA.
+       */
+      virtual void cancelActivity(const activity_id_t &activityId)  = 0;//throw (NoSuchActivityException) = 0;
+
+      /**
+       * Notify the SDPA that a workflow finished (state transition
+       * from running to finished).
+       */
+      virtual void workflowFinished(const workflow_id_t &workflowId) = 0;//throw (NoSuchWorkflowException) = 0;
+
+      /**
+       * Notify the SDPA that a workflow failed (state transition
+       * from running to failed).
+       */
+      virtual void workflowFailed(const workflow_id_t &workflowId) = 0; //throw (NoSuchWorkflowException) = 0;
+
+      /**
+       * Notify the SDPA that a workflow has been canceled (state
+       * transition from * to terminated.
+       */
+      virtual void workflowCanceled(const workflow_id_t &workflowId) = 0; //throw (NoSuchWorkflowException) = 0;
+
   };
 }}
-
 #endif
