@@ -20,7 +20,7 @@ namespace sdpa {
     const uuid &operator=(const uuid &rhs);
 
     const uuid_t &data() const { return uuid_; }
-    uuid_t &data() { return uuid_; }
+    uuid_t &data() { dirty_ = true; return uuid_; }
 
     const std::string &str() const;
   private:
