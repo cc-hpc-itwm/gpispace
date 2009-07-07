@@ -2,6 +2,7 @@
 #define SDPA_JOB_ID_HPP 1
 
 #include <string>
+#include <ostream>
 
 namespace sdpa {
   class JobId {
@@ -11,8 +12,13 @@ namespace sdpa {
     JobId(const char *s);
     JobId(const JobId &other);
     const JobId &operator=(const JobId &rhs);
-    operator std::string();
-    bool operator!=(const JobId& rhs);
+    const JobId &operator=(const std::string &rhs);
+    const JobId &operator=(const char *rhs);
+//    operator std::string() const;
+    operator const char*() const;
+    bool operator!=(const JobId& rhs) const;
+    bool operator==(const JobId& rhs) const;
+    bool operator<(const JobId& rhs) const;
     ~JobId();
     const std::string &str() const;
 
@@ -21,5 +27,6 @@ namespace sdpa {
   };
 }
 
+std::ostream &operator<<(std::ostream &os, const sdpa::JobId &j);
 
 #endif

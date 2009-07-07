@@ -41,16 +41,49 @@ const JobId & JobId::operator=(const JobId &rhs)
   return *this;
 }
 
-JobId::operator std::string()
+const JobId & JobId::operator=(const std::string &rhs)
 {
-  return str();
+  id_ = rhs;
+  return *this;
 }
 
-bool JobId::operator!=(const JobId &rhs)
+const JobId & JobId::operator=(const char *rhs)
+{
+  id_ = rhs;
+  return *this;
+}
+
+//JobId::operator std::string() const
+//{
+//  return str();
+//}
+
+JobId::operator const char*() const
+{
+  return str().c_str();
+}
+
+
+bool JobId::operator!=(const JobId &rhs) const
 {
   return id_ != rhs.id_;
 }
 
+bool JobId::operator<(const JobId &rhs) const
+{
+  return id_ < rhs.id_;
+}
+
+bool JobId::operator==(const JobId &rhs) const
+{
+  return id_ == rhs.id_;
+}
+
 JobId::~JobId()
 {
+}
+
+std::ostream &operator<<(std::ostream &os, const JobId &jid) {
+  os << jid.str();
+  return os;
 }
