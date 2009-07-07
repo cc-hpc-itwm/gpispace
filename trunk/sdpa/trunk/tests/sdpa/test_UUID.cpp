@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <string>
-#include <list>
+#include <map>
 
 #include "test_UUID.hpp"
 #include <sdpa/util.hpp>
@@ -28,18 +28,18 @@ void UUIDTest::testGenerate() {
 
 void UUIDTest::testUniqueness()
 {
-  typedef std::list<std::string> uuid_list_t;
+  typedef std::map<std::string, bool> uuid_list_t;
   const std::size_t SAMPLES(10000);
 
   sdpa::uuid id;
   sdpa::uuidgen gen;
   uuid_list_t uuids;
+
   for (std::size_t i(0); i < SAMPLES; ++i) {
     gen(id);
-    for (uuid_list_t::const_iterator it(uuids.begin()); it != uuids.end(); ++it) {
-      CPPUNIT_ASSERT_EQUAL_MESSAGE("uuid was not unique!", *it, id.str());
-    }
-    uuids.push_back(id.str());
+    uuid_list_t::const_iterator it(uuids.find(id.str()));
+    CPPUNIT_ASSERT_MESSAGE(std::string("generated uuid was not unique: ") + id.str(), it != uuids.end());
+    uuids.insert(std::make_pair(id.str(), true));
   }
 }
 
