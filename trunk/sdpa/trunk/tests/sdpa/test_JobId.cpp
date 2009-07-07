@@ -28,15 +28,15 @@ void JobIdTest::testDefaultConstructor() {
 void JobIdTest::testAutoConversionFromString() {
   const std::string EXPECTED("010203040506070809101112131415");
   JobId jid1 = EXPECTED;
-  CPPUNIT_ASSERT_EQUAL(EXPECTED, std::string(jid1));
+  CPPUNIT_ASSERT_EQUAL(EXPECTED, jid1.str());
 
   JobId jid2 = "foo";
-  CPPUNIT_ASSERT_EQUAL(std::string("foo"), std::string(jid2));
+  CPPUNIT_ASSERT_EQUAL(std::string("foo"), jid2.str());
 }
 
 void JobIdTest::testAutoConversionToString() {
   const std::string EXPECTED("010203040506070809101112131415");
   JobId jid(EXPECTED);
-  const std::string actual = jid;
+  const std::string actual(jid);
   CPPUNIT_ASSERT_EQUAL(EXPECTED, actual);
 }
