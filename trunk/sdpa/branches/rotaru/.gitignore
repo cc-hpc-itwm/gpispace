@@ -4,3 +4,4 @@ build
 *.pb.h
 *_sm.h
 *_sm.cpp
+.*.swp

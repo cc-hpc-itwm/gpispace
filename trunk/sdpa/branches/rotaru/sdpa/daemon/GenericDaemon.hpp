@@ -7,6 +7,7 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
+#include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
 #include <sdpa/daemon/Job.hpp>
@@ -15,13 +16,16 @@
 #include <sdpa/daemon/GenericDaemonActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/wf/WFE_to_SDPA.hpp>
+#include <sdpa/wf/SDPA_to_WFE.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::ISendEvent,
-						public seda::Strategy {
+						public seda::Strategy,
+						public sdpa::wf::WFE_to_SDPA {
   public:
 	  GenericDaemon(const std::string &name, const std::string &outputStage);
 	  virtual ~GenericDaemon();
@@ -53,6 +57,15 @@ namespace sdpa { namespace daemon {
 
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
+      // WFE_to_SDPA interface implementation
+	  virtual sdpa::wf::WFE_to_SDPA::workflow_id_t submitWorkflow(const sdpa::wf::WFE_to_SDPA::workflow_t &workflow);
+	  virtual sdpa::wf::WFE_to_SDPA::activity_id_t submitActivity(const sdpa::wf::WFE_to_SDPA::activity_t &activity);
+	  virtual void cancelWorkflow(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException);
+	  virtual void cancelActivity(const sdpa::wf::WFE_to_SDPA::activity_id_t &activityId);//throw (NoSuchActivityException) = 0;
+	  virtual void workflowFinished(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId);//throw (NoSuchWorkflowException) = 0;
+	  virtual void workflowFailed(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
+	  virtual void workflowCanceled(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
+
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
@@ -60,17 +73,26 @@ namespace sdpa { namespace daemon {
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-    // FIXME: implement as a standalone class
-    typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
-    typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+	  // FIXME: implement as a standalone class
+	  typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
+	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 
-    job_map_t job_map_;
-    job_map_t job_map_marked_for_del_;
+	  job_map_t job_map_;
+	  job_map_t job_map_marked_for_del_;
 
-    worker_map_t worker_map_;
-    Scheduler::ptr_t scheduler_;
+	  worker_map_t worker_map_;
+	  Scheduler::ptr_t scheduler_;
+	  sdpa::wf::SDPA_to_WFE* pSDPA_to_WFE;
 
-    const std::string output_stage_;
+	  const std::string output_stage_;
+
+	  void setStage(seda::Stage::Ptr stage)
+	  {
+		  // assert stage->strategy() == this
+		  daemon_stage_ = stage;
+	  }
+
+	  seda::Stage::Ptr daemon_stage_;
   };
 
   /*

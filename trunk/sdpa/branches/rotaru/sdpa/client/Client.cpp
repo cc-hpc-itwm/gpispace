@@ -50,7 +50,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
 
 void Client::cancelJob(const job_id_t &jid)
 {
-  fsm_.Submit(jid);
+  fsm_.Cancel(jid);
 }
 
 int Client::queryJob(const job_id_t &jid)

@@ -10,7 +10,7 @@ namespace sdpa { namespace daemon {
                      const sdpa::daemon::ISendEvent* pHandler,
                      const sdpa::job_id_t &parent)
         : id_(id), desc_(desc), parent_(parent), pSendEvent(pHandler), b_marked_for_del_(false),
-        SDPA_INIT_LOGGER( "Job "+id )
+        SDPA_INIT_LOGGER( string("Job ")+ (const char*)id )
     {}
 
     JobImpl::~JobImpl() throw () { }
@@ -57,21 +57,21 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_run_job(const sdpa::events::RunJobEvent& e)
     {
     	ostringstream os;
-    	os<<"Process 'action_dispatch'";
+    	os<<"Process 'action_run_job'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& e)
     {
     	ostringstream os;
-    	os<<"Process 'action_cancel'" ;
+    	os<<"Process 'action_cancel_job'" ;
     	SDPA_LOG_DEBUG(os.str());
     }
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e)
     {
     	ostringstream os;
-    	os<<"Process 'action_cancel_ack'" ;
+    	os<<"Process 'action_cancel_job_ack'" ;
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -86,7 +86,7 @@ namespace sdpa { namespace daemon {
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
     	ostringstream os;
-    	os<<"Process 'action_query_status'";
+    	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
     	os.str("");

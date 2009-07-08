@@ -2,9 +2,10 @@
 #define SDPA_TYPES_HPP 1
 
 #include <string>
+#include <sdpa/JobId.hpp>
 
 namespace sdpa {
-  typedef std::string job_id_t;
+  typedef sdpa::JobId job_id_t;
   typedef std::string job_desc_t;
 }
 

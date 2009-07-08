@@ -33,7 +33,7 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 
 	string strFrom("");
 	string strTo("");
-	string strJobID = m_JobFSM.id();
+	string strJobID = m_JobFSM.id().str();
 
     sdpa::util::time_type start(sdpa::util::now());
 

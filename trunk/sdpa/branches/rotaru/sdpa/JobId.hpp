@@ -28,5 +28,4 @@ namespace sdpa {
 }
 
 std::ostream &operator<<(std::ostream &os, const sdpa::JobId &j);
-
 #endif

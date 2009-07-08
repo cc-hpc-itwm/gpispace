@@ -63,5 +63,6 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 	}
 
 	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
+	std::cout<<"JOB ID ="<<m_JobFSM.id()<<std::endl;
 	std::cout<< "bsc: " << delta << "us" << std::endl;
 }
