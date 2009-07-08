@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "test_JobId.hpp"
 #include <sdpa/util.hpp>
@@ -32,6 +33,9 @@ void JobIdTest::testAutoConversionFromString() {
 
   JobId jid2 = "foo";
   CPPUNIT_ASSERT_EQUAL(std::string("foo"), jid2.str());
+
+  JobId jid3 = std::string("bar");
+  CPPUNIT_ASSERT_EQUAL(std::string("bar"), jid3.str());
 }
 
 void JobIdTest::testAutoConversionToString() {
@@ -39,4 +43,15 @@ void JobIdTest::testAutoConversionToString() {
   JobId jid(EXPECTED);
   const std::string actual(jid);
   CPPUNIT_ASSERT_EQUAL(EXPECTED, actual);
+
+  const std::string jidString = jid;
+  CPPUNIT_ASSERT_EQUAL(jidString, jid.str());
+}
+
+void JobIdTest::testStream() {
+  JobId jid;
+  std::ostringstream sstr;
+  sstr << jid;
+
+  CPPUNIT_ASSERT_EQUAL(jid.str(), sstr.str());
 }

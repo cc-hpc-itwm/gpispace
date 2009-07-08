@@ -10,6 +10,7 @@ namespace sdpa {
       CPPUNIT_TEST( testDefaultConstructor );
       CPPUNIT_TEST( testAutoConversionFromString );
       CPPUNIT_TEST( testAutoConversionToString );
+      CPPUNIT_TEST( testStream );
       CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -23,6 +24,7 @@ namespace sdpa {
       void testDefaultConstructor();
       void testAutoConversionFromString();
       void testAutoConversionToString();
+      void testStream();
     };
   }
 }
