@@ -53,17 +53,6 @@ const JobId & JobId::operator=(const char *rhs)
   return *this;
 }
 
-//JobId::operator std::string() const
-//{
-//  return str();
-//}
-
-JobId::operator const char*() const
-{
-  return str().c_str();
-}
-
-
 bool JobId::operator!=(const JobId &rhs) const
 {
   return id_ != rhs.id_;
@@ -83,7 +72,8 @@ JobId::~JobId()
 {
 }
 
-std::ostream &operator<<(std::ostream &os, const JobId &jid) {
+std::ostream & operator<<(std::ostream &os, const sdpa::JobId &jid) {
   os << jid.str();
   return os;
 }
+
