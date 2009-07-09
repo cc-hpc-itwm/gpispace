@@ -2,6 +2,18 @@
 
 using namespace sdpa::daemon;
 
+SchedulerImpl::SchedulerImpl(const  JobManager::ptr_t p_job_man, const WorkerManager::ptr_t p_worker_man)
+{
+	ptr_job_man_ 	= p_job_man;
+    ptr_worker_man_ = p_worker_man;
+}
+
+SchedulerImpl::~SchedulerImpl()
+{
+
+}
+
+
 void SchedulerImpl::acknowledge(const sdpa::job_id_t& job_id ) {
 
 }

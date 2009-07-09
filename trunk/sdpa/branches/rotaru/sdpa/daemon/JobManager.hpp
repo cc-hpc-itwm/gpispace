@@ -9,6 +9,8 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 namespace sdpa { namespace daemon {
   class JobManager  {
   public:
+	  typedef sdpa::shared_ptr<JobManager> ptr_t;
+
 	  JobManager();
 	  virtual ~JobManager();
 	  virtual Job::ptr_t findJob(const sdpa::job_id_t& ) throw(JobNotFoundException) ;

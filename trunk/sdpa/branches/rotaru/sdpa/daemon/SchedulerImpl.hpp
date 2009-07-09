@@ -2,12 +2,17 @@
 #define SDPA_SCHEDULERIMPL_HPP 1
 
 #include <sdpa/daemon/Scheduler.hpp>
+#include <sdpa/daemon/JobManager.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
 
 namespace sdpa { namespace daemon {
   class SchedulerImpl : public Scheduler {
   public:
 
-	 typedef sdpa::shared_ptr<Scheduler> ptr_t;
+	 typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
+
+	 SchedulerImpl(const  JobManager::ptr_t, const WorkerManager::ptr_t );
+	 virtual ~SchedulerImpl();
 
     /**
       The scheduler should somehow keep track of the jobs that he has assigned to the nodes.
@@ -47,6 +52,10 @@ namespace sdpa { namespace daemon {
       @param job a pointer to the job that shall be executed on a remote node
       */
     virtual void schedule(const Job::ptr_t &job);
+
+  private:
+	  JobManager::ptr_t ptr_job_man_;
+	  WorkerManager::ptr_t ptr_worker_man_;
   };
 }}
 

@@ -13,8 +13,10 @@ using namespace sdpa::daemon;
 using namespace sdpa::wf;
 
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage)
-	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name)  {
-
+	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name),
+	ptr_job_man_(new JobManager()), ptr_worker_man_(new WorkerManager())
+{
+	ptr_scheduler_ = shared_ptr<SchedulerImpl>(new SchedulerImpl(ptr_job_man_, ptr_worker_man_));
 }
 
 GenericDaemon::~GenericDaemon(){
@@ -83,8 +85,8 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
      */
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
-		pWorker->update(e);
+		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
+		ptr_worker->update(e);
 		os.str("");
 		os<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
 		SDPA_LOG_DEBUG(os.str());
@@ -110,13 +112,13 @@ void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 	SDPA_LOG_DEBUG(os.str());
 
 	try{
-		Job::ptr_t pJob = job_man_.findJob(e.job_id());
+		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
 		pJob->DeleteJob(e);
 
 		if( pJob->is_marked_for_deletion() )
 		{
-			job_man_.markJobForDeletion(e.job_id(), pJob);
-			job_man_.deleteJob(e.job_id());
+			ptr_job_man_->markJobForDeletion(e.job_id(), pJob);
+			ptr_job_man_->deleteJob(e.job_id());
 
 			sdpa::events::DeleteJobAckEvent::Ptr pDelAckEvt(new sdpa::events::DeleteJobAckEvent(name(), e.from()));
 			sendEvent(output_stage_, pDelAckEvt);
@@ -157,10 +159,10 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 	//take a job from the workers' queue? and serve it
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
-		pWorker->update(e);
+		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
+		ptr_worker->update(e);
 
-		Job::ptr_t pJob = pWorker->get_next_job(e.last_job_id());
+		Job::ptr_t pJob = ptr_worker->get_next_job(e.last_job_id());
 		// implement last_job_id() in RequestJobEvent !!!
 		// trigger event
 
@@ -197,9 +199,10 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
 
 	try {
-		job_man_.addJob(job_id, pJob);
+		ptr_job_man_->addJob(job_id, pJob);
 
 		// the scheduler should take care and assign the job to some worker
+		ptr_scheduler_->schedule_local(pJob);
 
 		//send back a SubmitJobAckEvent
 		sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(name(), e.from()));
@@ -227,8 +230,8 @@ void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent&
 	//call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
-		pWorker->acknowledge(e.job_id());
+		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
+		ptr_worker->acknowledge(e.job_id());
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");

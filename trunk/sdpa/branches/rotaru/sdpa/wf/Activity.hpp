@@ -16,7 +16,8 @@ namespace sdpa { namespace wf {
     method name.  In addition to that, an activity may have an arbitrary  number
     of input parameters and predefined output parameters.
     */
-  class Activity : public sdpa::Properties {
+  class Activity : public sdpa::Properties
+  {
   public:
     typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::wf::Parameter
 
@@ -77,7 +78,7 @@ namespace sdpa { namespace wf {
     const Activity & operator=(const Activity &);
 
     ~Activity() {}
-    
+
     inline const std::string & name() const { return name_; }
     inline const Method& method() const { return method_; }
 

@@ -9,6 +9,8 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
+	  typedef sdpa::shared_ptr<WorkerManager> ptr_t;
+
 	  WorkerManager();
 	  virtual ~WorkerManager();
 

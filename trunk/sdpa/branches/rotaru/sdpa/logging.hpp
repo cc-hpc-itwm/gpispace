@@ -7,6 +7,8 @@
 
 #if SDPA_ENABLE_LOGGING == 1
 
+#include <sstream>
+
 #if SDPA_HAVE_LOG4CPP == 1
 
 #include <log4cpp/Category.hh>
@@ -25,11 +27,17 @@ typedef ::log4cpp::Priority::PriorityLevel PriorityLevel;
 #define SDPA_DEFINE_LOGGER(hierarchy) SDPA_LDEFINE_LOGGER(sdpa_logger, hierarchy)
 #define SDPA_INIT_LOGGER(hierarchy)   SDPA_LINIT_LOGGER(sdpa_logger, hierarchy)
 
-#define SDPA_LLOG_DEBUG(logger, msg) LOG4CPP_DEBUG_S(logger) << msg
-#define SDPA_LLOG_INFO(logger, msg)  LOG4CPP_INFO_S(logger)  << msg
-#define SDPA_LLOG_WARN(logger, msg)  LOG4CPP_WARN_S(logger)  << msg
-#define SDPA_LLOG_ERROR(logger, msg) LOG4CPP_ERROR_S(logger) << msg
-#define SDPA_LLOG_FATAL(logger, msg) LOG4CPP_FATAL_S(logger) << msg
+#define SDPA_LLOG_DEBUG(logger, msg) do { if (logger.isDebugEnabled()) { std::ostringstream _sdpa_sstr; _sdpa_sstr << msg; logger.debug(_sdpa_sstr.str()); } } while(0)
+#define SDPA_LLOG_INFO(logger, msg)  do { if (logger.isInfoEnabled())  { std::ostringstream _sdpa_sstr; _sdpa_sstr << msg; logger.info(_sdpa_sstr.str());  } } while(0)
+#define SDPA_LLOG_WARN(logger, msg)  do { if (logger.isWarnEnabled())  { std::ostringstream _sdpa_sstr; _sdpa_sstr << msg; logger.warn(_sdpa_sstr.str());  } } while(0)
+#define SDPA_LLOG_ERROR(logger, msg) do { if (logger.isErrorEnabled()) { std::ostringstream _sdpa_sstr; _sdpa_sstr << msg; logger.error(_sdpa_sstr.str()); } } while(0)
+#define SDPA_LLOG_FATAL(logger, msg) do { if (logger.isFatalEnabled()) { std::ostringstream _sdpa_sstr; _sdpa_sstr << msg; logger.fatal(_sdpa_sstr.str()); } } while(0)
+
+//#define SDPA_LLOG_DEBU(logger, msg)  LOG4CPP_DEBUG_S(logger)  << msg
+//#define SDPA_LLOG_INFO(logger, msg)  LOG4CPP_INFO_S(logger)  << msg
+//#define SDPA_LLOG_WARN(logger, msg)  LOG4CPP_WARN_S(logger)  << msg
+//#define SDPA_LLOG_ERROR(logger, msg) LOG4CPP_ERROR_S(logger) << msg
+//#define SDPA_LLOG_FATAL(logger, msg) LOG4CPP_FATAL_S(logger) << msg
 
 #define SDPA_LOG_DEBUG(msg) SDPA_LLOG_DEBUG(sdpa_logger, msg)
 #define SDPA_LOG_INFO(msg)  SDPA_LLOG_INFO(sdpa_logger, msg) 

@@ -10,7 +10,7 @@
 #include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
-#include <sdpa/daemon/Scheduler.hpp>
+#include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
@@ -62,14 +62,13 @@ namespace sdpa { namespace daemon {
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
-	  JobManager job_man_;
-	  WorkerManager worker_man_;
-
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  Scheduler::ptr_t scheduler_;
-	  sdpa::wf::SDPA_to_WFE* pSDPA_to_WFE;
+	  JobManager::ptr_t 	ptr_job_man_;
+	  WorkerManager::ptr_t 	ptr_worker_man_;
+	  SchedulerImpl::ptr_t 	ptr_scheduler_;
+	  sdpa::wf::SDPA_to_WFE* ptr_SDPA_to_WFE;
 
 	  const std::string output_stage_;
 
