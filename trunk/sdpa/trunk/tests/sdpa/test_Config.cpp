@@ -24,9 +24,4 @@ void ConfigTest::testPopulate() {
   cfg->parse("./program blah blah blah");
 
   CPPUNIT_ASSERT(cfg->is_set("sdpa.logging.level"));
-  CPPUNIT_ASSERT(cfg->get("sdpa.logging.level") == "debug");
-
-  if (cfg->is_set("sdpac.server")) { // orchestrator
-
-  }
 }
