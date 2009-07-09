@@ -6,7 +6,7 @@
 #include <boost/filesystem.hpp>
 
 namespace sdpa { namespace config {
-  class Config {
+  class Config : public sdpa::Properties {
     public:
       typedef sdpa::shared_ptr<Config> ptr_t;
 
@@ -14,8 +14,7 @@ namespace sdpa { namespace config {
 
       virtual ~Config() {}
 
-      bool is_set(const std::string &key) const { return false; }
-      const std::string &get(const std::string &key) const { return key; }
+      bool is_set(const std::string &key) const { return has_key(key); }
 
       void parse_env() { }
       void parse_file(const boost::filesystem::path &cfgfile) {}
