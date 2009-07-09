@@ -26,6 +26,7 @@ namespace sdpa { namespace config {
 
   struct CommonConfiguration {
     Config &operator ()(Config &cfg) {
+      cfg.put("sdpa.logging.level", "error");
       return cfg;
     }
   };
