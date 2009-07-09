@@ -5,8 +5,10 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa {
+	namespace daemon {
   class SchedulerImpl : public Scheduler {
+
   public:
 
 	 typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;

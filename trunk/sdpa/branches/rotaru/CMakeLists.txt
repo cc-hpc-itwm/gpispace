@@ -88,7 +88,7 @@ set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
-find_package(Boost 1.36 REQUIRED COMPONENTS thread)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
     message(FATAL_ERROR "At least Boost 1.36 is required")

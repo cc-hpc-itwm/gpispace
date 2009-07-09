@@ -65,6 +65,7 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job'" ;
+    	//
     	SDPA_LOG_DEBUG(os.str());
     }
 

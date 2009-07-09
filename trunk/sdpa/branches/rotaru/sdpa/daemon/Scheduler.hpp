@@ -4,7 +4,8 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa {
+namespace daemon {
   class Scheduler {
   public:
 

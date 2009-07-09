@@ -76,7 +76,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 	}
 }
 
-std::vector<sdpa::job_id_t> JobManager :: getJobIDList()
+std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 {
 	std::vector<sdpa::job_id_t> v;
 	for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)

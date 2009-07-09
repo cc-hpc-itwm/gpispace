@@ -1,6 +1,7 @@
 #include "uuid.hpp"
 #include <sstream>
 #include <cstring> // memcpy
+#include <iomanip>
 
 using namespace sdpa;
 
@@ -31,11 +32,13 @@ void uuid::set(const uuid_t &data) {
 const std::string &uuid::str() const {
   if (dirty_) {
     std::stringstream sstr;
-    sstr << std::hex;
+    sstr << std::hex << std::right;
     for (std::size_t i(0); i < sizeof(uuid_t); ++i) {
-      sstr << (uuid_[i] & 0xff);
+       int c = (int(uuid_[i]) & 0xff);
+       sstr << std::setw(2) << std::setfill('0') << c;
     }
     str_tmp_ = sstr.str();
+    dirty_ = false;
   }
   return str_tmp_;
 }
