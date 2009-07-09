@@ -50,14 +50,14 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 		delete dynamic_cast<MgmtEvent*>(pEvt);
 	}
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.getJobIDList();
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.job_man_.getJobIDList();
 
 	sdpa::job_id_t job_id = vectorJobIDs[0];
 	RunJobEvent evtRun(strFrom, strTo, job_id);
-	m_DaemonFSM.job_map_[job_id]->RunJob(evtRun);
+	m_DaemonFSM.job_man_.job_map_[job_id]->RunJob(evtRun);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.job_map_[job_id]->JobFinished(evtFinished);
+	m_DaemonFSM.job_man_.job_map_[job_id]->JobFinished(evtFinished);
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFrom, strTo, job_id );

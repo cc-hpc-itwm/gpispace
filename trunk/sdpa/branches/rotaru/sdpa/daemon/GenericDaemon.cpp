@@ -39,86 +39,6 @@ void GenericDaemon::sendEvent(const std::string& stageName, const sdpa::events::
 	SDPA_LOG_DEBUG(os.str());
 }
 
-//helpers
-Job::ptr_t GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
-{
-	job_map_t::iterator it = job_map_.find( job_id );
-	if( it != job_map_.end() )
-		return it->second;
-	else
-		throw JobNotFoundException( job_id );
-}
-
-Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id )  throw(WorkerNotFoundException){
-	worker_map_t::iterator it = worker_map_.find(worker_id);
-	if( it != worker_map_.end() )
-		return it->second;
-	else
-		throw WorkerNotFoundException(worker_id);
-}
-
-void GenericDaemon::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
-{
-	ostringstream os;
-	job_map_t::iterator it;
-	bool bsucc = false;
-
-	pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
-	pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
-
-	ret_pair =  job_map_.insert(job_pair);
-
-	if(ret_pair.second)
-	{
-		os<<"Inserted job "<<job_id<<" into the job map"<<std::endl;
-		SDPA_LOG_DEBUG(os.str());
-	}
-	else
-		throw JobNotAddedException(job_id);
-}
-
-void GenericDaemon::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
-{
-	ostringstream os;
-	job_map_t::iterator it;
-	bool bsucc = false;
-
-	pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
-	pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
-
-	ret_pair =  job_map_marked_for_del_.insert(job_pair);
-
-	if(ret_pair.second)
-	{
-		os<<"Marked job "<<job_id<<" for deletion"<<std::endl;
-		SDPA_LOG_DEBUG(os.str());
-	}
-	else
-		throw JobNotAddedException(job_id);
-}
-
-void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
-{
-	ostringstream os;
-	job_map_t::size_type ret = job_map_.erase(job_id);
-	if( !ret )
-		throw JobNotDeletedException(job_id);
-	else
-	{
-		os<<"Erased job "<<job_id<<" from job map"<<std::endl;
-		SDPA_LOG_DEBUG(os.str());
-	}
-}
-
-std::vector<sdpa::job_id_t> GenericDaemon :: getJobIDList()
-{
-	std::vector<sdpa::job_id_t> v;
-	for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)
-		v.push_back(it->first);
-
-	return v;
-}
-
 //actions
 void GenericDaemon::action_configure(const sdpa::events::StartUpEvent& e)
 {
@@ -163,7 +83,7 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
      */
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = findWorker(worker_id);
+		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
 		pWorker->update(e);
 		os.str("");
 		os<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
@@ -190,13 +110,13 @@ void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 	SDPA_LOG_DEBUG(os.str());
 
 	try{
-		Job::ptr_t pJob = findJob(e.job_id());
+		Job::ptr_t pJob = job_man_.findJob(e.job_id());
 		pJob->DeleteJob(e);
 
 		if( pJob->is_marked_for_deletion() )
 		{
-			markJobForDeletion(e.job_id(), pJob);
-			deleteJob(e.job_id());
+			job_man_.markJobForDeletion(e.job_id(), pJob);
+			job_man_.deleteJob(e.job_id());
 
 			sdpa::events::DeleteJobAckEvent::Ptr pDelAckEvt(new sdpa::events::DeleteJobAckEvent(name(), e.from()));
 			sendEvent(output_stage_, pDelAckEvt);
@@ -237,7 +157,7 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 	//take a job from the workers' queue? and serve it
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = findWorker(worker_id);
+		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
 		pWorker->update(e);
 
 		Job::ptr_t pJob = pWorker->get_next_job(e.last_job_id());
@@ -277,7 +197,7 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
 
 	try {
-		addJob(job_id, pJob);
+		job_man_.addJob(job_id, pJob);
 
 		// the scheduler should take care and assign the job to some worker
 
@@ -307,7 +227,7 @@ void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent&
 	//call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t pWorker = findWorker(worker_id);
+		Worker::ptr_t pWorker = worker_man_.findWorker(worker_id);
 		pWorker->acknowledge(e.job_id());
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {

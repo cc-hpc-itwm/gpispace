@@ -49,7 +49,7 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	m_DaemonFSM.GetContext().ConfigOk(evtConfigOk);
 
 	Worker::ptr_t pWorker(new Worker(strFromDown));
-	m_DaemonFSM.worker_map_[strFromDown] = pWorker;
+	m_DaemonFSM.worker_man_.worker_map_[strFromDown] = pWorker;
 
 	LifeSignEvent evtLS(strFromDown, strTo);
 	m_DaemonFSM.GetContext().LifeSign(evtLS);
@@ -60,15 +60,15 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	SubmitJobEvent evtSubmitJob(strFromUp, strTo);
 	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.getJobIDList();
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.job_man_.getJobIDList();
 
 	//Attention: delete succeeds only when the job should is in a final state!
 	sdpa::job_id_t job_id = vectorJobIDs[0];
 	RunJobEvent evtRun(strFrom, strTo, job_id);
-	m_DaemonFSM.job_map_[job_id]->RunJob(evtRun);
+	m_DaemonFSM.job_man_.job_map_[job_id]->RunJob(evtRun);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.job_map_[job_id]->JobFinished(evtFinished);
+	m_DaemonFSM.job_man_.job_map_[job_id]->JobFinished(evtFinished);
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
