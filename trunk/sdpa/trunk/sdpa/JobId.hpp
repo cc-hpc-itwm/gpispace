@@ -33,17 +33,17 @@ namespace sdpa {
     /**
       Assign a jobid to this one.
     */
-    const JobId &operator=(const JobId &rhs);
+    JobId &operator=(const JobId &rhs);
 
     /**
       Assign a string to this one.
     */
-    const JobId &operator=(const std::string &rhs);
+    JobId &operator=(const std::string &rhs);
 
     /**
       Assign a const char* to this one.
     */
-    const JobId &operator=(const char *rhs);
+    JobId &operator=(const char *rhs);
 
     /**
       Auto convert the jobid back to a std::string

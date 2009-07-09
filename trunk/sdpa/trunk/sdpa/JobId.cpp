@@ -32,7 +32,7 @@ const std::string &JobId::str() const
   return id_;
 }
 
-const JobId & JobId::operator=(const JobId &rhs)
+JobId & JobId::operator=(const JobId &rhs)
 {
   if (this != &rhs) 
   {
@@ -41,13 +41,13 @@ const JobId & JobId::operator=(const JobId &rhs)
   return *this;
 }
 
-const JobId & JobId::operator=(const std::string &rhs)
+JobId & JobId::operator=(const std::string &rhs)
 {
   id_ = rhs;
   return *this;
 }
 
-const JobId & JobId::operator=(const char *rhs)
+JobId & JobId::operator=(const char *rhs)
 {
   id_ = rhs;
   return *this;
@@ -55,7 +55,7 @@ const JobId & JobId::operator=(const char *rhs)
 
 bool JobId::operator!=(const JobId &rhs) const
 {
-  return id_ != rhs.id_;
+  return !(*this == rhs);
 }
 
 bool JobId::operator<(const JobId &rhs) const
