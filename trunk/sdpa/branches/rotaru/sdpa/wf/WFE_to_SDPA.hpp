@@ -2,15 +2,11 @@
 #define SDPA_WF_WFE_TO_SDPA_HPP 1
 
 #include <string>
+#include <sdpa/wf/types.hpp>
 
 namespace sdpa { namespace wf {
   class WFE_to_SDPA {
     public:
-      typedef std::string workflow_t;
-      typedef std::string activity_t;
-      typedef std::string workflow_id_t;
-      typedef std::string activity_id_t;
-
       /**
        * Submit a sub workflow to the SDPA.
        * This method is to be called by the GWES in order to delegate

@@ -2,16 +2,13 @@
 #define SDPA_WF_SDPA_TO_WFE_HPP 1
 
 #include <string>
+#include <sdpa/wf/types.hpp>
 
 namespace sdpa { namespace wf {
 
   class WFE_to_SDPA;
   class SDPA_to_WFE {
     public:
-      typedef std::string workflow_t;
-
-      typedef std::string workflow_id_t;
-      typedef std::string activity_id_t;
       typedef std::string parameter_t;
       typedef std::list<parameter_t> parameter_list_t;
 
