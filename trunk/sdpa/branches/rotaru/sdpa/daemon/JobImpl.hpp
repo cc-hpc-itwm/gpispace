@@ -5,6 +5,7 @@
 #include <sdpa/daemon/JobFSMActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
 #include <sdpa/common.hpp>
+#include <sdpa/wf/types.hpp>
 #include <map>
 
 namespace sdpa { namespace daemon {
@@ -20,13 +21,13 @@ namespace sdpa { namespace daemon {
 
         virtual ~JobImpl() throw();
 
-        virtual const sdpa::job_id_t & id() const;
-        virtual const sdpa::job_id_t & parent() const;
+        virtual const sdpa::job_id_t& id() const;
+        virtual const sdpa::job_id_t& parent() const;
 
-        virtual const sdpa::job_desc_t & description() const;
+        virtual const sdpa::job_desc_t& description() const;
 
-        virtual const Job::data_t & input() const;
-        virtual const Job::data_t & output() const;
+        virtual const Job::data_t& input() const;
+        virtual const Job::data_t& output() const;
 
         virtual void add_input(const Job::value_t & value);
         virtual void add_output(const Job::value_t & value);
@@ -37,7 +38,7 @@ namespace sdpa { namespace daemon {
         virtual bool is_marked_for_deletion();
     	virtual void process_event( const boost::statechart::event_base & e);
 
-        //job FSM actions
+        // job FSM actions
 		virtual void action_run_job(const sdpa::events::RunJobEvent& e);
 		virtual void action_cancel_job(const sdpa::events::CancelJobEvent& e);
 		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e);
@@ -60,6 +61,7 @@ namespace sdpa { namespace daemon {
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
+        sdpa::wf::workflow_id_t workflow_id_;
 
         Job::data_t input_;
         Job::data_t output_;

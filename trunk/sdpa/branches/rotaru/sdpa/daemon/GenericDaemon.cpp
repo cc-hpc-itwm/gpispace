@@ -140,7 +140,6 @@ void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 		os<<"Unexpected exception. Most probably the job to be deleted was not in a final state!"<<e.job_id()<<"!"<<std::endl;
 		SDPA_LOG_DEBUG(os.str());
 	}
-
 }
 
 void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
@@ -262,10 +261,11 @@ void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about status transitions.
 */
-WFE_to_SDPA::workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
+workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 {
 	// create new job with the job description = workflow (serialize it first)
 	// set the parent_id to ?
+	// add this job into the parent's job list call parent_job->add_subjob( new job(workflow) )
 	// do similar to action_submit_job but don't reply a SubmitJobAck
 }
 
@@ -276,7 +276,7 @@ WFE_to_SDPA::workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workf
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about activity status transitions.
  */
-WFE_to_SDPA::activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
+activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 {
 	//proceed similarly as in the case of submitWorkflow
 }

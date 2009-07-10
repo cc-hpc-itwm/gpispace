@@ -50,13 +50,13 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
       // WFE_to_SDPA interface implementation
-	  virtual sdpa::wf::WFE_to_SDPA::workflow_id_t submitWorkflow(const sdpa::wf::WFE_to_SDPA::workflow_t &workflow);
-	  virtual sdpa::wf::WFE_to_SDPA::activity_id_t submitActivity(const sdpa::wf::WFE_to_SDPA::activity_t &activity);
-	  virtual void cancelWorkflow(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException);
-	  virtual void cancelActivity(const sdpa::wf::WFE_to_SDPA::activity_id_t &activityId);//throw (NoSuchActivityException) = 0;
-	  virtual void workflowFinished(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId);//throw (NoSuchWorkflowException) = 0;
-	  virtual void workflowFailed(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
-	  virtual void workflowCanceled(const sdpa::wf::WFE_to_SDPA::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
+	  virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow);
+	  virtual sdpa::wf::activity_id_t submitActivity(const sdpa::wf::activity_t &activity);
+	  virtual void cancelWorkflow(const sdpa::wf::workflow_id_t &workflowId); //throw (NoSuchWorkflowException);
+	  virtual void cancelActivity(const sdpa::wf::activity_id_t &activityId);//throw (NoSuchActivityException) = 0;
+	  virtual void workflowFinished(const sdpa::wf::workflow_id_t &workflowId);//throw (NoSuchWorkflowException) = 0;
+	  virtual void workflowFailed(const sdpa::wf::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
+	  virtual void workflowCanceled(const sdpa::wf::workflow_id_t &workflowId); //throw (NoSuchWorkflowException) = 0;
 
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
