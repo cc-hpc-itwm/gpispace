@@ -134,6 +134,7 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'CancelJobAck'";
+		// inform WFE
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -141,6 +142,7 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'DeleteJob'";
+		// in fact do nothing here
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -148,6 +150,8 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'JobFailed'";
+		// inform WFE
+		// Create a JobFailedEventAckEvent with the destination e.from()
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -155,6 +159,8 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'JobFinished'";
+		// inform WFE
+		// Create a JobFinishedEventAckEvent with the destination e.from()
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -162,6 +168,8 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'QueryJobStatus'";
+		// Create a ReplyJobStatusEvent with the destination e.from()
+
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -169,6 +177,8 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'RetrieveResultsEvent'";
+		// Create a ResultsReplyEvent with the destination e.from() i.e. the user
+
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -176,7 +186,8 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'RunJob'";
+		// Create a ResultsReplyEvent with the destination e.from() i.e. the user
+
 		SDPA_LOG_DEBUG(os.str());
 	}
-
 }}
