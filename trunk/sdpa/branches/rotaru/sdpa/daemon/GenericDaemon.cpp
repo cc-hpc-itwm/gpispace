@@ -265,7 +265,7 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 {
 	// create new job with the job description = workflow (serialize it first)
 	// set the parent_id to ?
-	// add this job into the parent's job list call parent_job->add_subjob( new job(workflow) )
+	// add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
 	// do similar to action_submit_job but don't reply a SubmitJobAck
 }
 

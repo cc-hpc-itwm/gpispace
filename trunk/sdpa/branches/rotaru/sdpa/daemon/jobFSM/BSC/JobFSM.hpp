@@ -48,7 +48,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	void JobFailed(const sdpa::events::JobFailedEvent& event){ process_event(event); }
 	void JobFinished(const sdpa::events::JobFinishedEvent& event){ process_event(event); }
 	void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event){ process_event(event); }
-	void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event){ process_event(event); }
+	void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event){ process_event(event); }
 	void RunJob(const sdpa::events::RunJobEvent& event){ process_event(event); }
 
 	void print_states();
@@ -147,7 +147,7 @@ struct Finished : sc::simple_state<Finished, JobFSM>
 {
 typedef mpl::list<  sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
-					sc::custom_reaction<sdpa::events::RetrieveResultsEvent>,
+					sc::custom_reaction<sdpa::events::RetrieveJobResultsEvent>,
 					sc::custom_reaction< sc::exception_thrown > > reactions;
 
 	Finished() { } //std::cout<< " enter state 'Finished'" << std::endl; }
@@ -155,7 +155,7 @@ typedef mpl::list<  sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 
 	sc::result react( const sdpa::events::QueryJobStatusEvent& );
 	sc::result react( const sdpa::events::DeleteJobEvent& );
-	sc::result react( const sdpa::events::RetrieveResultsEvent& );
+	sc::result react( const sdpa::events::RetrieveJobResultsEvent& );
 	sc::result react( const sc::exception_thrown & );
 };
 

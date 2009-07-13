@@ -90,7 +90,7 @@ Finished
         	action_delete_job(event); 
         }
         
-	RetrieveResults(event: const sdpa::events::RetrieveResultsEvent&)
+	RetrieveJobResults(event: const sdpa::events::RetrieveJobResultsEvent&)
         nil
         {
         	action_retrieve_job_results(event); 
@@ -111,7 +111,7 @@ Failed
         	action_delete_job(event); 
         }
                 
-    RetrieveResults(event: const sdpa::events::RetrieveResultsEvent&)
+    RetrieveJobResults(event: const sdpa::events::RetrieveJobResultsEvent&)
         nil
         {
         	action_retrieve_job_results(event); 

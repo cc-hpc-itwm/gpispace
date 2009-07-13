@@ -217,7 +217,7 @@ sc::result Finished::react(const DeleteJobEvent& e)
 
 
 //Finished
-sc::result Finished::react(const RetrieveResultsEvent& e)
+sc::result Finished::react(const RetrieveJobResultsEvent& e)
 {
 	return transit<Finished>(&JobFSM::action_retrieve_job_results, e);
 }

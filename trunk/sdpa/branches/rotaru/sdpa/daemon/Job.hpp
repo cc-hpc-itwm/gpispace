@@ -6,6 +6,7 @@
 #include <utility>
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/wf/types.hpp>
 
 #include <boost/statechart/event_base.hpp>
 #include <sdpa/events/RunJobEvent.hpp>
@@ -17,7 +18,7 @@
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/RetrieveResultsEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 
 
 namespace sdpa { namespace daemon {
@@ -41,6 +42,7 @@ namespace sdpa { namespace daemon {
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
 
+        virtual const sdpa::wf::workflow_id_t& workflow_id() const = 0;
         virtual const job_desc_t & description() const = 0;
 
         virtual const data_t & input() const = 0;
@@ -62,7 +64,7 @@ namespace sdpa { namespace daemon {
 		virtual void JobFailed(const sdpa::events::JobFailedEvent& event)=0;
 		virtual void JobFinished(const sdpa::events::JobFinishedEvent& event)=0;
 		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event)=0;
-		virtual void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event)=0;
+		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event)=0;
 		virtual void RunJob(const sdpa::events::RunJobEvent& event)=0;
 
     };

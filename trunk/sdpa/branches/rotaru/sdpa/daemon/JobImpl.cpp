@@ -23,6 +23,10 @@ namespace sdpa { namespace daemon {
         return parent_;
     }
 
+    const sdpa::wf::workflow_id_t& JobImpl::workflow_id() const {
+    	return workflow_id_;
+    }
+
     const sdpa::job_desc_t & JobImpl::description() const {
         return desc_;
     }
@@ -109,7 +113,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e )
+    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e )
     {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";
@@ -127,6 +131,7 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'CancelJob'";
+		// if it's an atomic activity, kill the process effectively
 		SDPA_LOG_DEBUG(os.str());
 	}
 
@@ -173,10 +178,11 @@ namespace sdpa { namespace daemon {
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	void JobImpl::RetrieveResults(const sdpa::events::RetrieveResultsEvent& e)
+	void JobImpl::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& e)
 	{
 		ostringstream os;
-		os <<"Call transition  'RetrieveResultsEvent'";
+		os <<"Call transition  'RetrieveJobResults'";
+		// Call action_
 		// Create a ResultsReplyEvent with the destination e.from() i.e. the user
 
 		SDPA_LOG_DEBUG(os.str());

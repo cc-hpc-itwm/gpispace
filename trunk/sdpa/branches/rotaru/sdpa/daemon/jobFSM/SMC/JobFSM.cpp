@@ -38,8 +38,8 @@ void JobFSM :: JobFailed(const sdpa::events::JobFailedEvent& e)
 	m_fsmContext.JobFailed(e);
 }
 
-void  JobFSM ::RetrieveResults(const sdpa::events::RetrieveResultsEvent& e )
+void  JobFSM ::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& e )
 {
-	m_fsmContext.RetrieveResults(e);
+	m_fsmContext.RetrieveJobResults(e);
 }
 

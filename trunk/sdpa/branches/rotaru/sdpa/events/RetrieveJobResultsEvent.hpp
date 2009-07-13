@@ -1,5 +1,5 @@
-#ifndef SDPA_RETRIEVERESULTSEVENT_HPP
-#define SDPA_RETRIEVERESULTSEVENT_HPP 1
+#ifndef SDPA_RETRIEVEJOBRESULTSEVENT_HPP
+#define SDPA_RETRIEVEJOBRESULTSEVENT_HPP 1
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
@@ -17,7 +17,7 @@ namespace events {
 			//std::cout << "Create event 'RetrieveJobResultsEvent'"<< std::endl;
 		}
 
-		virtual ~RetrieveResultsEvent() {
+		virtual ~RetrieveJobResultsEvent() {
 			//std::cout << "Delete event 'RetrieveJobResultsEvent'"<< std::endl;
 		}
 

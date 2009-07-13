@@ -31,7 +31,7 @@ namespace sdpa { namespace fsm { namespace smc {
 			void JobFailed(const sdpa::events::JobFailedEvent& event);
 			void JobFinished(const sdpa::events::JobFinishedEvent& event);
 			void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event);
-			void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event);
+			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event);
 			void RunJob(const sdpa::events::RunJobEvent& event);
 
 			JobFSMContext& GetContext() { return m_fsmContext; }

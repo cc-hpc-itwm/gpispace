@@ -10,7 +10,7 @@
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/RetrieveResultsEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 
 namespace sdpa {
 	namespace fsm {
@@ -24,7 +24,7 @@ namespace sdpa {
 				virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)=0;
 				virtual void action_job_failed(const sdpa::events::JobFailedEvent& e)=0;
 				virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e )=0;
-				virtual void action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e )=0;
+				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e )=0;
 		};
 	}
 }

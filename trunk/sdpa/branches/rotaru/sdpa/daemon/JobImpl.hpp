@@ -24,6 +24,7 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
 
+        virtual const sdpa::wf::workflow_id_t& workflow_id() const;
         virtual const sdpa::job_desc_t& description() const;
 
         virtual const Job::data_t& input() const;
@@ -46,7 +47,7 @@ namespace sdpa { namespace daemon {
 		virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent& e);
 		virtual void action_job_failed(const sdpa::events::JobFailedEvent& e);
 		virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e );
-		virtual void action_retrieve_job_results(const sdpa::events::RetrieveResultsEvent& e );
+		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e );
 
 		virtual void CancelJob(const sdpa::events::CancelJobEvent& event);
 		virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent& event);
@@ -54,7 +55,7 @@ namespace sdpa { namespace daemon {
 		virtual void JobFailed(const sdpa::events::JobFailedEvent& event);
 		virtual void JobFinished(const sdpa::events::JobFinishedEvent& event);
 		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event);
-		virtual void RetrieveResults(const sdpa::events::RetrieveResultsEvent& event);
+		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event);
 		virtual void RunJob(const sdpa::events::RunJobEvent& event);
 
     private:
