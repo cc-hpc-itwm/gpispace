@@ -200,9 +200,6 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 	try {
 		ptr_job_man_->addJob(job_id, pJob);
 
-		// the scheduler should take care and assign the job to some worker
-		ptr_scheduler_->schedule_local(pJob);
-
 		//send back a SubmitJobAckEvent
 		sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(name(), e.from()));
 		sendEvent(output_stage_, pSubmitJobAckEvt);
@@ -261,12 +258,12 @@ void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about status transitions.
 */
-workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
+workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow) throw (NoSuchWorkflowException)
 {
 	// create new job with the job description = workflow (serialize it first)
 	// set the parent_id to ?
 	// add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
-	// do similar to action_submit_job but don't reply a SubmitJobAck
+	// schedule the new job to some worker
 }
 
 /**
@@ -276,7 +273,7 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about activity status transitions.
  */
-activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
+activity_id_t GenericDaemon::submitActivity(const activity_t &activity) throw (NoSuchActivityException)
 {
 	//proceed similarly as in the case of submitWorkflow
 }
@@ -285,7 +282,7 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
  * Cancel a sub workflow that has previously been submitted to
  * the SDPA. The parent job has to cancel all children.
  */
-void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) //throw (NoSuchWorkflowException);
+void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
 	// cancel the job corresponding to that workflow
 }
@@ -294,7 +291,7 @@ void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) //throw (NoS
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-void GenericDaemon::cancelActivity(const activity_id_t &activityId)  //throw (NoSuchActivityException) = 0;
+void GenericDaemon::cancelActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
 {
 	// cancel the job corresponding to that activity
 }
@@ -303,7 +300,7 @@ void GenericDaemon::cancelActivity(const activity_id_t &activityId)  //throw (No
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) //throw (NoSuchWorkflowException) = 0;
+void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
 	// generate a JobFinishedEvent for self
 }
@@ -312,7 +309,7 @@ void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) //throw (N
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) //throw (NoSuchWorkflowException) = 0;
+void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
 	// generate a JobFailedEvent for self
 }
@@ -321,7 +318,7 @@ void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) //throw (NoS
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::workflowCanceled(const workflow_id_t &workflowId) //throw (NoSuchWorkflowException) = 0;
+void GenericDaemon::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
 	// generate a JobCancelledEvent for self
 }

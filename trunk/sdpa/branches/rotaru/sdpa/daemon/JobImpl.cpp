@@ -69,7 +69,7 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job'" ;
-    	//
+    	// cancel the job
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -77,6 +77,7 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job_ack'" ;
+    	// Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -94,6 +95,7 @@ namespace sdpa { namespace daemon {
     	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
+    	// Post a JobStatusReplyEvent to e.from()
     	os.str("");
     	os<<"Posted an event of type StatusReplyEvent";
     	SDPA_LOG_DEBUG(os.str());
@@ -103,6 +105,8 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os <<"Process 'action_job_finished'";
+    	// inform WFE (send a JobFinishedEvent event to the stage WFE)
+    	// post a JobFinishedAckEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -110,6 +114,8 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os <<"Process 'action_job_failed'";
+    	// inform WFE (send a JobFailedEvent event to the stage WFE)
+    	// post a JobFailedAckEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -117,6 +123,7 @@ namespace sdpa { namespace daemon {
     {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";
+    	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
 
