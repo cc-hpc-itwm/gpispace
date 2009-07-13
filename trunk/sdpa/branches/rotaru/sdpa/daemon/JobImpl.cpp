@@ -173,7 +173,7 @@ namespace sdpa { namespace daemon {
 	{
 		ostringstream os;
 		os <<"Call transition  'QueryJobStatus'";
-		// Create a ReplyJobStatusEvent with the destination e.from()
+		// Create a JobStatusReplyEvent with the destination e.from()
 
 		SDPA_LOG_DEBUG(os.str());
 	}

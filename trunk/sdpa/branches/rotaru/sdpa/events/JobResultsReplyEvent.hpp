@@ -8,20 +8,20 @@ namespace sc = boost::statechart;
 
 namespace sdpa {
 namespace events {
-	class ResultsReplyEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::ResultsReplyEvent> {
+	class JobResultsReplyEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::JobResultsReplyEvent> {
 	public:
-		typedef sdpa::shared_ptr<ResultsReplyEvent> Ptr;
+		typedef sdpa::shared_ptr<JobResultsReplyEvent> Ptr;
 
-		ResultsReplyEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
+		JobResultsReplyEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent(from, to, job_id) {
-			//std::cout << "Create event 'ResultsReplyEvent'"<< std::endl;
+			//std::cout << "Create event 'JobResultsReplyEvent'"<< std::endl;
 		}
 
-		virtual ~ResultsReplyEvent() {
-			//std::cout << "Delete event 'ResultsReplyEvent'"<< std::endl;
+		virtual ~JobResultsReplyEvent() {
+			//std::cout << "Delete event 'JobResultsReplyEvent'"<< std::endl;
 		}
 
-		std::string str() const { return "ResultsReplyEvent"; }
+		std::string str() const { return "JobResultsReplyEvent"; }
 	};
 }}
 
