@@ -19,6 +19,8 @@
 #include <sdpa/wf/WFE_to_SDPA.hpp>
 #include <sdpa/wf/SDPA_to_WFE.hpp>
 
+//#include <gwes/Sdpa2Gwes.h>
+
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
@@ -27,8 +29,11 @@ namespace sdpa { namespace daemon {
 						public seda::Strategy,
 						public sdpa::wf::WFE_to_SDPA {
   public:
-	  GenericDaemon(const std::string &name, const std::string &outputStage);
+	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
+
+	  // API
+	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage );
 
 	  virtual void perform(const seda::IEvent::Ptr &);
 
@@ -50,8 +55,8 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
       // WFE_to_SDPA interface implementation
-	  virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow) throw (sdpa::daemon::NoSuchWorkflowException);
-	  virtual sdpa::wf::activity_id_t submitActivity(const sdpa::wf::activity_t &activity) throw (sdpa::daemon::NoSuchActivityException);
+	  virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow);
+	  virtual sdpa::wf::activity_id_t submitActivity(const sdpa::wf::activity_t &activity);
 	  virtual void cancelWorkflow(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
 	  virtual void cancelActivity(const sdpa::wf::activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException);
 	  virtual void workflowFinished(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
@@ -64,6 +69,8 @@ namespace sdpa { namespace daemon {
 
   protected:
 	  SDPA_DECLARE_LOGGER();
+
+	  GenericDaemon(const std::string &name, const std::string &outputStage);
 
 	  JobManager::ptr_t 	ptr_job_man_;
 	  WorkerManager::ptr_t 	ptr_worker_man_;

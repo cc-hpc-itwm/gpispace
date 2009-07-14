@@ -1,3 +1,5 @@
+#include <seda/StageRegistry.hpp>
+
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
@@ -22,6 +24,19 @@ GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputS
 GenericDaemon::~GenericDaemon(){
 
 }
+
+GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage )
+{
+	// warning: we introduce a cycle here, we have to resolve it during shutdown!
+	GenericDaemon::ptr_t daemon( new GenericDaemon(name_prefix, outputStage) );
+	seda::Stage::Ptr daemon_stage( new seda::Stage(name_prefix + "", daemon) );
+	daemon->setStage(daemon_stage);
+	seda::StageRegistry::instance().insert(daemon_stage);
+	daemon_stage->start();
+
+	return daemon;
+}
+
 
 void GenericDaemon::perform (const seda::IEvent::Ptr& pEvent){
 
@@ -258,7 +273,7 @@ void GenericDaemon::action_config_request(const sdpa::events::ConfigRequestEvent
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about status transitions.
 */
-workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow) throw (NoSuchWorkflowException)
+workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 {
 	// create new job with the job description = workflow (serialize it first)
 	// set the parent_id to ?
@@ -273,9 +288,9 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow) throw (N
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GWES about activity status transitions.
  */
-activity_id_t GenericDaemon::submitActivity(const activity_t &activity) throw (NoSuchActivityException)
+activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 {
-	//proceed similarly as in the case of submitWorkflow
+	//proceed similarly as in the submitWorkflow case
 }
 
 /**
@@ -284,7 +299,7 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity) throw (N
  */
 void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
-	// cancel the job corresponding to that workflow
+	// cancel the job corresponding to that workflow -> send a CancelJobEvent?
 }
 
 /**
@@ -293,7 +308,7 @@ void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuc
  */
 void GenericDaemon::cancelActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
 {
-	// cancel the job corresponding to that activity
+	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 }
 
 /**

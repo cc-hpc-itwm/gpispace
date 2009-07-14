@@ -10,6 +10,5 @@ add_subdirectory(daemonFSM)
 
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
 
-
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon)
 install(TARGETS sdpa-daemon ARCHIVE DESTINATION lib)

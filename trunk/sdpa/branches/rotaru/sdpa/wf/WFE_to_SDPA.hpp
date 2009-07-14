@@ -15,7 +15,7 @@ namespace sdpa { namespace wf {
        * The SDPA will use the callback handler SdpaGwes in order
        * to notify the GWES about status transitions.
       */
-      virtual workflow_id_t submitWorkflow(const workflow_t &workflow) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
+      virtual workflow_id_t submitWorkflow(const workflow_t &workflow) = 0;
 
       /**
        * Submit an atomic activity to the SDPA.
@@ -24,7 +24,7 @@ namespace sdpa { namespace wf {
        * The SDPA will use the callback handler SdpaGwes in order
        * to notify the GWES about activity status transitions.
        */
-      virtual activity_id_t submitActivity(const activity_t &activity) throw (sdpa::daemon::NoSuchActivityException) = 0;
+      virtual activity_id_t submitActivity(const activity_t &activity) = 0;
 
       /**
        * Cancel a sub workflow that has previously been submitted to
