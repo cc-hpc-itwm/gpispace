@@ -101,20 +101,24 @@ void Activity::notifyObservers(int type, const string& message, map<string,gwdl:
 /////////////////////////////////////////
 
 void Activity::activityDispatched() {
+	cout << "gwes::Activity[" << _id << "]::activityDispatched()..." << endl;
 	setStatus(Activity::STATUS_ACTIVE);
 }
 
 void Activity::activityFailed(const parameter_list_t &output) {
+	cout << "gwes::Activity[" << _id << "]::activityFailed()..." << endl;
 	// ToDo: set outputs 
 	setStatus(Activity::STATUS_TERMINATED);
 }
 
 void Activity::activityFinished(const parameter_list_t &output) {
+	cout << "gwes::Activity[" << _id << "]::activityFinished()..." << endl;
 	// ToDo: set outputs
 	setStatus(Activity::STATUS_COMPLETED);
 }
 
 void Activity::activityCanceled() {
+	cout << "gwes::Activity[" << _id << "]::activityCanceled()..." << endl;
 	setStatus(Activity::STATUS_TERMINATED);
 }
 

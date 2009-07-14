@@ -154,7 +154,6 @@ DOMDocument* Workflow::toDocument()
 		// places
 		for (map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
 		{
-			cout << "XXX place " << it->first << endl;
 			wfe->appendChild(it->second->toElement(doc));
 		}
 

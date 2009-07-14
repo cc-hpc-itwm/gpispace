@@ -12,6 +12,7 @@
 #include <gwes/StateTransitionException.h>
 #include <gwes/Observer.h>
 #include <gwes/Event.h>
+//#include <gwes/WorkflowHandler.h>
 //gwdl
 #include <gwdl/Data.h>
 #include <gwdl/OperationCandidate.h>
@@ -228,6 +229,8 @@ public:
 	 * @param observerP A pointer to the observer which should be called if this activity changes.
 	 */
 	void attachObserver(Observer* observerP);
+	
+	WorkflowHandler* getWorkflowHandler() { return _wfhP; }
 	
 	/////////////////////////////////////////
 	// Delegation from Interface Spda2Gwes -> GWES -> WorkflowHandler

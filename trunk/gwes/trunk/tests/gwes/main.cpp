@@ -25,7 +25,8 @@ int main()
    testGWES(gwes);
    
    // test SDPA2GWES communication
-   testSdpa2Gwes(gwes);
+   testSdpa2Gwes();
+   testGwes2Sdpa();
    
    // test various workflows
    string twd = getTestWorkflowDirectory();

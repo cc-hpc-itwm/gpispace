@@ -6,9 +6,8 @@
  */
 #ifndef TESTSDPA2GWES_H_
 #define TESTSDPA2GWES_H_
-// gwes
-#include <gwes/GWES.h>
 
-void testSdpa2Gwes(gwes::GWES& gwes);
+void testSdpa2Gwes();
+void testGwes2Sdpa();
 
 #endif /*TESTSDPA2GWES_H_*/

@@ -43,7 +43,19 @@ workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
  */
 activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 	cout << "SdpaDummy::submitActivity(" << activity.getID() << ")... " << endl;
-	// todo: Implement dummy starting of activity
+	workflow_id_t workflowId = activity.getWorkflowHandler()->getID();
+	// a real SDPA implementation should really dispatch the activity here
+	try {
+		_gwesP->activityDispatched(workflowId, activity.getID());
+		parameter_t output = "output";
+		parameter_list_t* outputList = new parameter_list_t();
+		outputList->push_back(output);
+		_gwesP->activityFinished(workflowId, activity.getID(), *outputList);
+	} catch (NoSuchWorkflowException e) {
+		cerr << "exception: " << e.message << endl;
+	} catch (NoSuchActivityException e) {
+		cerr << "exception: " << e.message << endl;
+	}
 	return activity.getID();
 }
 

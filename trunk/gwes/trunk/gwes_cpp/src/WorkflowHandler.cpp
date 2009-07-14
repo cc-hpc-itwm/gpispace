@@ -6,6 +6,7 @@
  */
 //gwes
 #include <gwes/WorkflowHandler.h>
+#include <gwes/SdpaActivity.h>
 #include <gwes/CommandLineActivity.h>
 #include <gwes/PreStackProActivity.h>
 #include <gwes/SubWorkflowActivity.h>
@@ -407,7 +408,7 @@ void WorkflowHandler::activityFailed(const activity_id_t &activityId, const para
 
 // transition from running to finished
 void WorkflowHandler::activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchActivityException) {
-	_activityTable.get(activityId)->activityFailed(output);
+	_activityTable.get(activityId)->activityFinished(output);
 }
 
 // transition from * to canceled
@@ -476,7 +477,9 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	// construct corresponding activity
 	Activity* activityP;
 	string operationType = operationP->getType();
-	if (operationType == "cli") {
+	if (operationType == "sdpa") {
+		activityP = new SdpaActivity(this, operationP);
+	} else if (operationType == "cli") {
 		activityP = new CommandLineActivity(this, operationP);
 	} else if (operationType == "psp") {
 		activityP = new PreStackProActivity(this, operationP);

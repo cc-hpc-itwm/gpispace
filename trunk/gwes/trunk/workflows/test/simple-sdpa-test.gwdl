@@ -1,0 +1,21 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+    <!-- $Id$ -->
+    <description>Test SDPA activity</description>
+
+    <place ID="input">
+        <token><data><file>file:///usr/local/gwes/cat/d25.dat</file></data></token>
+    </place>
+    <place ID="output"/>
+
+    <transition ID="cat1">
+        <description>dummy SDPA algorithm</description>
+        <inputPlace placeID="input" edgeExpression="input"/>
+        <outputPlace placeID="output" edgeExpression="output"/>
+ 		<operation>
+      		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="dummy">
+        		<oc:operationCandidate type="sdpa" operationName="dummy.sh" resourceName="localhost" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+</workflow>
