@@ -31,6 +31,12 @@ IF(NOT XERCESC_FOUND)
   message(FATAL_ERROR "No Xerces-c found, cannot continue.")
 ENDIF(NOT XERCESC_FOUND)
 
+## find libxml2
+Include(FindXml2)
+IF(NOT LIBXML2_FOUND)
+  message(FATAL_ERROR "No libxml2 found, cannot continue.")
+ENDIF(NOT LIBXML2_FOUND)
+
 ## find libxslt
 Include(FindLibXslt)
 IF(NOT LIBXSLT_FOUND)

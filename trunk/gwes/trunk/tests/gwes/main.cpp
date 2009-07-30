@@ -5,6 +5,7 @@
  * All rights reserved. 
  */
 // tests
+#include "TestXPathEvaluation.h"
 #include "TestGWES.h"
 #include "TestSdpa2Gwes.h"
 #include "TestWorkflow.h"
@@ -20,6 +21,8 @@ using namespace gwes;
 int main() 
 {
    gwes::GWES gwes;
+   
+   testXPathEvaluation();
 
    // test basic GWES features 
    testGWES(gwes);
