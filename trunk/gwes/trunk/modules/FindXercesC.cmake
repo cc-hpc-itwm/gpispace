@@ -31,6 +31,7 @@ FIND_LIBRARY(XERCESC_LIBRARIES
     $ENV{XERCESCROOT}/lib
     /usr/local/lib
     /usr/lib
+    /usr/lib64
 )
 
 # if the include a the library are found then we have it

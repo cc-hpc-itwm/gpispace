@@ -30,14 +30,16 @@ FIND_LIBRARY(LIBXSLT_LIBRARIES
     $ENV{LIBXSLTROOT}/lib
     /usr/local/lib
     /usr/lib
+    /usr/lib64
 )
 
 # if the include a the library are found then we have it
 IF(LIBXSLT_INCLUDE_DIRS)
+  MESSAGE(STATUS "Looking for libxslt... - found header files in ${LIBXSLT_INCLUDE_DIRS}")
   IF(LIBXSLT_LIBRARIES)
     SET( LIBXSLT_FOUND "YES" )
     IF (NOT LIBXSLT_FIND_QUIETLY)
-      MESSAGE(STATUS "Looking for libxslt... - found ${LIBXSLT_LIBRARIES}")
+      MESSAGE(STATUS "Looking for libxslt... - found library ${LIBXSLT_LIBRARIES}")
     ENDIF (NOT LIBXSLT_FIND_QUIETLY)
   ENDIF(LIBXSLT_LIBRARIES)
 ENDIF(LIBXSLT_INCLUDE_DIRS)
