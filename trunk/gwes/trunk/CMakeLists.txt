@@ -31,6 +31,12 @@ IF(NOT XERCESC_FOUND)
   message(FATAL_ERROR "No Xerces-c found, cannot continue.")
 ENDIF(NOT XERCESC_FOUND)
 
+## find libxslt
+Include(FindLibXslt)
+IF(NOT LIBXSLT_FOUND)
+  message(FATAL_ERROR "No libxslt found, cannot continue.")
+ENDIF(NOT LIBXSLT_FOUND)
+
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
