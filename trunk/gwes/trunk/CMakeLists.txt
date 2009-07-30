@@ -36,6 +36,7 @@ Include(FindXml2)
 IF(NOT LIBXML2_FOUND)
   message(FATAL_ERROR "No libxml2 found, cannot continue.")
 ENDIF(NOT LIBXML2_FOUND)
+include_directories(${LIBXML2_INCLUDE_DIRS})
 
 ## find libxslt
 Include(FindLibXslt)
