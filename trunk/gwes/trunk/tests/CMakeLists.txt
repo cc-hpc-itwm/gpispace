@@ -17,5 +17,5 @@ add_test(gwdl_test ${CMAKE_CURRENT_BINARY_DIR}/gwdl_test)
 # test gwes
 message(STATUS "linking gwes-test with srcs=\"${gwessrcs}\"")
 add_executable(gwes_test ${gwessrcs})
-target_link_libraries(gwes_test gwes_cpp gworkflowdl_cpp xerces-c)
+target_link_libraries(gwes_test gwes_cpp gworkflowdl_cpp xerces-c xml2 xslt)
 add_test(gwes_test ${CMAKE_CURRENT_BINARY_DIR}/gwes_test)
