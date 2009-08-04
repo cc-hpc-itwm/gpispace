@@ -26,15 +26,32 @@ void testXPathEvaluation() {
     cout << "initialization of xml parser..." << endl;
     xmlInitParser();
     LIBXML_TEST_VERSION
-
-    // create xpath expression
-    cout << "create xpath expression..." << endl;
-    const xmlChar* xPathExpressionP = xmlCharStrdup("//data/min");
-    cout << "xpath expression = " << xPathExpressionP << endl;
     
-    // create xpath context
-    cout << "create xpath context..." << endl;
-    const xmlChar* xmlCharP = xmlCharStrdup("<data><min>15</min><max>33</max><step>1</step></data>");
+    assert(!xPathCondition("count(//data/min) = 2", "<data><min>15</min><max>33</max><step>1</step></data>"));
+    assert(xPathCondition("count(//data/min) = 1", "<data><min>15</min><max>33</max><step>1</step></data>"));
+    assert(xPathCondition("//data/min = 15", "<data><min>15</min><max>33</max><step>1</step></data>"));
+    assert(xPathCondition("//data/min > 10", "<data><min>15</min><max>33</max><step>1</step></data>"));
+    assert(!xPathCondition("//data/min > 15", "<data><min>15</min><max>33</max><step>1</step></data>"));
+//
+//    // result output
+//    printXmlNodes(xpathObjP->nodesetval);
+
+//    xmlXPathFreeObject(xpathObjP);
+//    xmlXPathFreeContext(xpathCtxP); 
+//    xmlFreeDoc(xmlDocP); 
+
+    // cleanup
+    cout << "cleanup parser..." << endl;
+    xmlCleanupParser();
+	cout << "============== END XpathEvaluation TEST =============" << endl;
+}
+
+bool xPathCondition(char* xPathExprChar, char* xmlContextChar) {
+    // create xpath expression
+	const xmlChar* xPathExpressionP = xmlCharStrdup(xPathExprChar);
+   
+    // create context
+    const xmlChar* xmlCharP = xmlCharStrdup(xmlContextChar);
     xmlDocPtr xmlDocP = xmlParseDoc(xmlCharP);
     xmlXPathContextPtr xpathCtxP = xmlXPathNewContext(xmlDocP);
     if(xpathCtxP == NULL) {
@@ -42,7 +59,7 @@ void testXPathEvaluation() {
         xmlFreeDoc(xmlDocP); 
         assert(false);
     }
-     
+    
     // ToDo: register namespaces
     
     // evaluate xpath expression
@@ -53,20 +70,26 @@ void testXPathEvaluation() {
         xmlFreeDoc(xmlDocP); 
         assert(false);
     }
-
-    // result output
-    printXmlNodes(xpathObjP->nodesetval);
+    
+    // check Predicate (true/false)
+    bool xPathCondition = xmlXPathEvalPredicate(xpathCtxP,xpathObjP);
+    cout << "expression \"" << xPathExpressionP << "\" is " << (xPathCondition ? "true":"false") << endl;
 
     // cleanup
-    cout << "cleanup objects..." << endl;
     xmlXPathFreeObject(xpathObjP);
     xmlXPathFreeContext(xpathCtxP); 
     xmlFreeDoc(xmlDocP); 
-    xmlCleanupParser();
-	cout << "============== END XpathEvaluation TEST =============" << endl;
+    
+    return xPathCondition;
 }
 
 void printXmlNodes(xmlNodeSetPtr nodes) {
+	
+	if(xmlXPathNodeSetIsEmpty(nodes)){
+		cout << "No result" << endl;
+		return;
+	}
+	
     xmlNodePtr cur;
     int size;
     int i;
@@ -90,9 +113,9 @@ void printXmlNodes(xmlNodeSetPtr nodes) {
 	} else if(nodes->nodeTab[i]->type == XML_ELEMENT_NODE) {
 	    cur = nodes->nodeTab[i];   	    
 	    if(cur->ns) { 
-    	        cout << "= element node \"" << cur->ns->href << ":" << cur->name << "\"" << endl; 
+    	        cout << "<" << cur->ns->href << ":" << cur->name << "/>" << endl; 
 	    } else {
-    	        cout << "= element node \"" << cur->name << "\"" << endl; 
+    	        cout << "<" << cur->name << "/>" << endl; 
 	    }
 	} else {
 	    cur = nodes->nodeTab[i];    
