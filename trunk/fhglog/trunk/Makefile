@@ -25,7 +25,10 @@ doc-api: config
 doc:
 	make -C doc
 
+tags:
+	ctags -R --c++-kinds=+p --fields=+iaS --extra=+q --languages=C++ --language-force=C++ -f .tags .
+
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc
+.PHONY: clean distclean all default doc tags
