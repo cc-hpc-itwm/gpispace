@@ -6,3 +6,6 @@ link_directories(${CPPUNIT_LIBRARY_DIRS})
 link_libraries(${CPPUNIT_LIBRARIES})
 
 #add_subdirectory(fhglog)
+add_executable(logtest logtest.cpp)
+target_link_libraries(logtest fhglog)
+
