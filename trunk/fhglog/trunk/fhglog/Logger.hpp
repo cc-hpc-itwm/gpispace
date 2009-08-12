@@ -1,65 +1,70 @@
 #ifndef FHG_LOG_LOGGER_HPP
 #define FHG_LOG_LOGGER_HPP 1
 
+#include <map>
+#include <list>
 #include <string>
 
+#include <fhglog/LogLevel.hpp>
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
 
+/**
+  Common logging framework.
+
+  LoggerApi root_logger(Logger::get());
+  LoggerApi my_logger(Logger::get("module"));
+
+  my_logger.log(LogEvent(...));
+*/
 namespace fhg { namespace log {
+  class Logger;
+  class LoggerApi {
+    public:
+      explicit
+        LoggerApi(Logger *impl) : impl_(impl) {}
 
-  class LogLevel {
-  public:
-    enum Level {
-      UNSET = 0,
-      TRACE,
-      DEBUG,
-      INFO,
-      WARN,
-      ERROR,
-      FATAL
-    };
-
-    LogLevel(Level lvl)
-      : lvl_(lvl) {}
-    LogLevel(const LogLevel &other)
-      : lvl_(other.lvl_) {}
-
-    LogLevel &operator=(const LogLevel &other) {
-      if (this != &other) {
-        lvl_ = other.lvl_;
-      }
-      return *this;
-    }
-    bool operator==(const LogLevel &other) {
-      return lvl_ == other.lvl_;
-    }
-    bool operator!=(const LogLevel &other) {
-      return !(*this == other);
-    }
-    bool operator<(const LogLevel &other) {
-      return lvl_ < other.lvl_;
-    }
-  private:
-    Level lvl_;
+      const std::string &name() const;
+      void setLevel(const LogLevel &level);
+      bool isLevelEnabled(const LogLevel &level);
+      void log(const LogEvent &event);
+      void addAppender(Appender::ptr_t appender);
+      Appender::ptr_t getAppender(const std::string &appender_name);
+      void removeAppender(const std::string &appender_name);
+    private:
+      Logger *impl_;
   };
 
   class Logger {
     public:
       typedef std::size_t verbosity_type;
 
+      static LoggerApi get(const std::string &name);
+      ~Logger() {}
+
+      const std::string &name() const;
       void setLevel(const LogLevel &level);
       bool isLevelEnabled(const LogLevel &level);
 
       void log(const LogEvent &event);
-
       void addAppender(Appender::ptr_t appender);
       Appender::ptr_t getAppender(const std::string &appender_name);
       void removeAppender(const std::string &appender_name);
     private:
+      static Logger& getRootLogger();
+
+      explicit
       Logger(const std::string &name);
+
+      std::string name_;
       LogLevel lvl_;
       verbosity_type verbosity_;
+
+      typedef std::map<std::string, Logger*> logger_map_t;
+      logger_map_t loggers_;
+
+      typedef std::list<Appender::ptr_t> appender_list_t;
+      appender_list_t appenders_;
   };
 }}
 

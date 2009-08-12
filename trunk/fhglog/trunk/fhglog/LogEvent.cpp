@@ -1,25 +1,28 @@
 #include "LogEvent.hpp"
 #include <time.h>
 #include <iostream>
+#include <pthread.h>
 
 using namespace fhg::log;
 
-LogEvent::LogEvent(const file_type &file
+LogEvent::LogEvent(const severity_type &severity
+                 , const file_type &file
                  , const function_type &function
                  , const line_type &line
                  , const message_type &message)
-  : file_(file)
+  : severity_(severity)
+  , file_(file)
   , function_(function)
   , line_(line)
   , message_(message)
   , tstamp_(time(NULL))
-  , thread_(0)
+  , thread_((std::size_t)pthread_self())
 {
-  std::clog << "FIXME: thread identification is missing" << std::endl;
 }
 
 LogEvent::LogEvent(const LogEvent &e)
-  : file_(e.file())
+  : severity_(e.severity())
+  , file_(e.file())
   , function_(e.function())
   , line_(e.line())
   , message_(e.message())
@@ -35,6 +38,7 @@ LogEvent::~LogEvent()
 LogEvent &LogEvent::operator=(const LogEvent &e)
 {
   if (this != &e) {
+    severity_ = e.severity();
     file_ = e.file();
     function_ = e.function();
     line_ = e.line();
@@ -45,10 +49,11 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
   return *this;
 }
 
-bool LogEvent::operator==(const LogEvent &e)
+bool LogEvent::operator==(const LogEvent &e) const
 {
   if (this == &e) return true;
   if ( (file() == e.file())
+    && (severity() == e.severity())
     && (function() == e.function())
     && (line() == e.line())
     && (message() == e.message())
@@ -60,7 +65,7 @@ bool LogEvent::operator==(const LogEvent &e)
   return false;
 }
 
-bool LogEvent::operator<(const LogEvent &rhs)
+bool LogEvent::operator<(const LogEvent &rhs) const
 {
   return tstamp() < rhs.tstamp();
 }
