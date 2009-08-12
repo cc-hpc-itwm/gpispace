@@ -13,7 +13,7 @@ namespace events {
         typedef sdpa::shared_ptr<MgmtEvent> Ptr;
 
         MgmtEvent(const address_t &from, const address_t &to)
-          : SDPAEvent(to, from) {}
+          : SDPAEvent(from, to) {}
         ~MgmtEvent() {}
 
         virtual std::string str() const = 0;
