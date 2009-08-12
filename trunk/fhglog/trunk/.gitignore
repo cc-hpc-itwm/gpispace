@@ -1,5 +1,6 @@
 # ignore the build directory
 build
+.tags
 *.pb.cc
 *.pb.h
 *_sm.h
