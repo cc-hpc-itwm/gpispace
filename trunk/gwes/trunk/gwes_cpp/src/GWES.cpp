@@ -7,6 +7,8 @@
 // gwes
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
+// libxml2
+#include <libxml/xpathInternals.h>
 // std
 #include <iostream>
 #include <sstream>
@@ -25,6 +27,10 @@ namespace gwes
 GWES::GWES()
 {
 	_sdpaHandler = NULL;
+
+	// init libxml2 parser
+	xmlInitParser();
+	LIBXML_TEST_VERSION
 }
 
 /**
@@ -32,6 +38,8 @@ GWES::GWES()
  */
 GWES::~GWES()
 {
+	// cleanup xml parser
+	xmlCleanupParser();
 }
 
 Sdpa2Gwes::~Sdpa2Gwes()

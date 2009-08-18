@@ -22,14 +22,14 @@ int main()
 {
    gwes::GWES gwes;
    
-   testXPathEvaluation();
+   testXPathEvaluator();
 
    // test basic GWES features 
    testGWES(gwes);
    
    // test SDPA2GWES communication
-   testSdpa2Gwes();
-   testGwes2Sdpa();
+//   testSdpa2Gwes();
+//   testGwes2Sdpa();
    
    // test various workflows
    string twd = getTestWorkflowDirectory();
@@ -38,10 +38,13 @@ int main()
    workflow = testWorkflow(twd + "/simple.gwdl",gwes);
    assert(gwes.getStatusAsString(workflow)=="COMPLETED");
    
-   workflow = testWorkflow(twd + "/split-token.gwdl",gwes);
-   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
-   // ToDo: test on correct values on output tokens
+//   workflow = testWorkflow(twd + "/split-token.gwdl",gwes);
+//   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+//   // ToDo: test on correct values on output tokens
 
+   workflow = testWorkflow(twd + "/exclusive-choice.gwdl", gwes);
+   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+   
    //  workflow = testWorkflow(twd + "/control-loop.gwdl",gwes);
 //  assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 
@@ -50,11 +53,11 @@ int main()
 //   assert(workflow.getProperties().get("status")=="COMPLETED");
 //   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 
-   workflow = testWorkflow(twd + "/concatenateIt_fail.gwdl",gwes);
-   assert(gwes.getStatusAsString(workflow)=="TERMINATED");
-
-   workflow = testPreStackProWorkflow(twd + "/psp-grd.gwdl",gwes);
-   
+//   workflow = testWorkflow(twd + "/concatenateIt_fail.gwdl",gwes);
+//   assert(gwes.getStatusAsString(workflow)=="TERMINATED");
+//
+//   workflow = testPreStackProWorkflow(twd + "/psp-grd.gwdl",gwes);
+//   
    return 0;
 }
 

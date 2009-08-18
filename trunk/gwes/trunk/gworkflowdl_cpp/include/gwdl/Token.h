@@ -13,6 +13,10 @@
 #include <xercesc/dom/DOM.hpp>
 // std
 #include <string>
+// cerr, cout
+//#include <iostream>
+//#include <sstream>
+
 
 namespace gwdl
 {
@@ -127,7 +131,7 @@ public:
 	 */
 	virtual ~Token() {
 		try {
-			delete data;
+			if (isData()) delete data;
 		} catch (XERCES_CPP_NAMESPACE::DOMException e) {
 			///
 		}

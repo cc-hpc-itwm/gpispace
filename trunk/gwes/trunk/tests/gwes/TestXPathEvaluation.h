@@ -3,8 +3,7 @@
 // libxml2
 #include <libxml/xpathInternals.h>
 
-void testXPathEvaluation();
-bool xPathCondition(char* xPathExprChar, char* xmlContextChar);
+void testXPathEvaluator();
 void printXmlNodes(xmlNodeSetPtr nodes);
 
 #endif /*TESTXPATHEVALUATION_H_*/

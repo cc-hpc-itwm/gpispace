@@ -10,6 +10,7 @@
 #include <gwes/CommandLineActivity.h>
 #include <gwes/PreStackProActivity.h>
 #include <gwes/SubWorkflowActivity.h>
+#include <gwes/XPathEvaluator.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -233,7 +234,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			waitForStatusChangeFrom(WorkflowHandler::STATUS_SUSPENDED);
 		}
 
-		///ToDo: suspend if there is a deadlock because of false conditions
+        // suspend if there is a deadlock because of false conditions
+        if (getStatus() == STATUS_RUNNING && !modification && selectedTransitionP == NULL) {
+            modification = true;
+			cout << "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!"  << endl;
+			_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
+			_suspend = true;
+        }
 
 		//if no modification occurred this step, wait some time
 		if (!modification && !_abort) {
@@ -423,12 +430,30 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 /**
  * ToDo: include condition processing.
  */
-Transition* WorkflowHandler::selectTransition(
-		vector<gwdl::Transition*>& enabledTransitions) {
+Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions) {
 	if (enabledTransitions.size()<= 0)
 		return NULL;
-	else
-		return enabledTransitions.front();
+	else {
+		for (vector<gwdl::Transition*>::iterator it = enabledTransitions.begin(); it != enabledTransitions.end(); ++it) {
+			const vector<string> conditions = (*it)->getConditions();
+			if (conditions.empty()) return (*it);
+			else {
+				// check conditions
+				XPathEvaluator* xpathP = new XPathEvaluator((*it));
+				bool cond = true;
+				for (unsigned int i=0; i<conditions.size(); i++) {
+					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
+					if (!xpathP->evalCondition(conditions[i].c_str())) {
+						cond = false;
+						break;
+					}
+				}
+				delete xpathP;
+				if (cond) return (*it);
+			}
+		}
+		return NULL;
+	}
 }
 
 bool WorkflowHandler::processRedTransition(Transition* tP, int step) {
@@ -528,6 +553,8 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 	///ToDo evaluate edgeExpressions with XPath expressions.
 
 	// process input edges
+	
+	// ToDo: Use "TransitionOccurrence" (contains transition and tokens) instead?
 	vector<Edge*> inEdges = tP->getInEdges();
 	for (unsigned int i=0; i<inEdges.size(); i++) {
 		unsigned int j = 0;

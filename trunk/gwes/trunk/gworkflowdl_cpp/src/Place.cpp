@@ -165,6 +165,7 @@ void Place::addToken(Token* token) throw(CapacityException)
 
 void Place::removeToken(int i)
 {
+	cout << "gwdl::Place[" << getID() << "]::removeToken(" << i << ")..." << endl;
 	delete tokens[i];
 	tokens.erase(tokens.begin()+i);
 }
@@ -179,6 +180,7 @@ void Place::removeToken(Token* _token)
 	for(vector<Token*>::iterator it=tokens.begin(); it != tokens.end(); ++it)
 	{
 		if ((*it)->getID() == _token->getID()) {
+//			cout << "gwdl::Place[" << getID() << "]::removeToken(ID=" << _token->getID() << ")..." << endl;
 			delete *it; *it = NULL;
 			tokens.erase(it);
 			break;	

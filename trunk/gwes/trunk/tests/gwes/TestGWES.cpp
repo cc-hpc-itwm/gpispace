@@ -135,5 +135,6 @@ string getTestWorkflowDirectory() {
 	}
 	
 	// default
+	cout << "CWD=" << path << endl;
 	return string ("../../workflows/tests");
 }

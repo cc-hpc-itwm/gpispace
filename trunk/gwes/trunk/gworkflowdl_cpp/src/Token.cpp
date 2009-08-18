@@ -36,6 +36,7 @@ Token::Token(DOMElement* element)
   id = generateID();
   control = false;
   p_lock = NULL;
+  data = NULL;
   
   // XMLCh* ns = X(SCHEMA_wfSpace);
 
