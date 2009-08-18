@@ -44,6 +44,14 @@ int main()
 
    workflow = testWorkflow(twd + "/exclusive-choice.gwdl", gwes);
    assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+   assert(workflow.getPlace("end_A")->getTokenNumber() == 0);
+   assert(workflow.getPlace("end_B")->getTokenNumber() == 1);
+   
+   workflow = testWorkflow(twd + "/condition-test.gwdl", gwes);
+   assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+   assert(workflow.getPlace("end_A")->getTokenNumber() == 2);
+   assert(workflow.getPlace("end_B")->getTokenNumber() == 1);
+   //ToDo: Data is not copied from input edge "x" to output edge "x"
    
    //  workflow = testWorkflow(twd + "/control-loop.gwdl",gwes);
 //  assert(gwes.getStatusAsString(workflow)=="COMPLETED");

@@ -25,12 +25,14 @@ using namespace gwdl;
 namespace gwes
 {
 
+/**
+ * example refer to http://xmlsoft.org/examples/xpath1.c
+ */
 XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
 {
 	cout << "gwes::XPathEvaluator::XPathEvaluator(" << xmlContextChar << ")..." << endl;
 	// init parser should be done only ONCE before construction of XPathEvaluator!
-    // xmlInitParser();
-    // LIBXML_TEST_VERSION
+	XMLUtils::Instance();
 
     // create context
     _xmlContextDocP = xmlParseDoc(xmlCharStrdup(xmlContextChar));
@@ -40,7 +42,9 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
         xmlFreeDoc(_xmlContextDocP); 
         assert(false);
     }
-    // ToDo: register namespaces
+
+    // register namespaces
+	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
 XPathEvaluator::XPathEvaluator(Transition* transitionP) {
@@ -51,9 +55,24 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP) {
 	xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"token", NULL);
 	xmlDocSetRootElement(_xmlContextDocP, rootP);
 
-	xmlNodePtr cur;
+	// insert contents of next unlocked tokens that are connected with edgeExpressions.
+
+	// readPlaces
+	vector<Edge*> readEdges = transitionP->getReadEdges();
+	for (unsigned int i=0; i<readEdges.size(); i++) {
+		string edgeExpression = readEdges[i]->getExpression();
+		if (!edgeExpression.empty()) {
+			cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): adding token to context with edgeExpression=" << edgeExpression << endl;
+			unsigned int j = 0;
+			Token* tokenP = readEdges[i]->getPlace()->getTokens()[j];
+			while (tokenP->isLocked()) {
+				tokenP = readEdges[i]->getPlace()->getTokens()[++j];
+			}
+			addTokenToContext(edgeExpression, tokenP); 
+		}
+	}
 	
-	// insert contents of unlocked tokens that are connected with edgeExpressions.
+	// inputPlaces
 	vector<Edge*> inEdges = transitionP->getInEdges();
 	for (unsigned int i=0; i<inEdges.size(); i++) {
 		string edgeExpression = inEdges[i]->getExpression();
@@ -64,8 +83,7 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP) {
 			while (tokenP->isLocked()) {
 				tokenP = inEdges[i]->getPlace()->getTokens()[++j];
 			}
-			cur = xmlNewChild(rootP,NULL,(const xmlChar*)edgeExpression.c_str(),NULL);
-			// ToDo: implement!
+			addTokenToContext(edgeExpression, tokenP); 
 		}
 	}
 
@@ -75,8 +93,12 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP) {
         xmlFreeDoc(_xmlContextDocP); 
         assert(false);
     }
+    
+    cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): context:" << endl;
+	cout << *XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
 
-    // ToDo: register namespaces
+    // register namespaces
+	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
 XPathEvaluator::~XPathEvaluator()
@@ -91,6 +113,8 @@ XPathEvaluator::~XPathEvaluator()
 int XPathEvaluator::evalCondition(const char* xPathExprChar) {
 	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprChar << ")..." << endl;
 
+	// ToDo: expand variables ( $x = 5 ) -> /token/x = 5
+	
 	// create xpath expression
 	const xmlChar* xPathExpressionP = xmlCharStrdup(xPathExprChar);
     
@@ -173,6 +197,30 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
 	    cout << "= node \"" << cur->name << "\": type " << cur->type << endl;
 	}
     }
+}
+
+void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* tokenP) {
+	xmlNodePtr cur;
+	
+	if (tokenP->isData()) {
+		// data token
+		cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),NULL);
+		// ToDo: remove ugly conversion from Xerces DOMElement to libxml2 xmlDocPtr.
+		xmlDocPtr xmldoc = XMLUtils::Instance()->deserializeLibxml2(*tokenP->getData()->toString());
+		// copy children from one document to the other.
+		xmlNodePtr children = xmlDocCopyNodeList(_xmlContextDocP, xmlDocGetRootElement(xmldoc)->children);
+	    xmlAddChildList(cur,children);
+	    xmlFreeDoc(xmldoc);
+	} else {
+		// control token
+		if (tokenP->getControl()) {
+			// <control>true</control>
+			cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),(const xmlChar*)"true");
+		} else {
+			// <control>false</control>
+			cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),(const xmlChar*)"false");
+		}
+	}
 }
 
 } // end namespace gwes

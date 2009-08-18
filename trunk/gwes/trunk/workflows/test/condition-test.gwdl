@@ -1,27 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd" ID="No_ID">
   <!-- $Id: exclusive-choice.gwdl 1316 2009-05-28 09:53:39Z andreas.hoheisel@first.fraunhofer.de $ -->
-  <description>Pattern - Exclusive Choice (XOR-Split)</description>
-  <property name="occurrence.sequence" />
+  <description>condition test</description>
   <place ID="XOR_Split">
-    <token>
-      <control>false</control>
-    </token>
+    <token><data><a xmlns="">5</a></data></token>
+    <token><data><a xmlns="">6</a></data></token>
+    <token><data><a xmlns="">7</a></data></token>
+  </place>
+  <place ID="XOR_Split2">
+    <token><data><b xmlns="">8</b></data></token>
+    <token><data><b xmlns="">9</b></data></token>
+    <token><data><b xmlns="">10</b></data></token>
+  </place>
+  <place ID="Static">
+    <token><data><c xmlns="">99</c></data></token>
   </place>
   <place ID="end_A" />
   <place ID="end_B" />
   <transition ID="A">
     <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
+	<readPlace placeID="Static" edgeExpression="static" />
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
-    <outputPlace placeID="end_A" edgeExpression="output" />
-    <condition>/token/x = "true"</condition>
+    <inputPlace placeID="XOR_Split2" edgeExpression="y" />
+    <outputPlace placeID="end_A" edgeExpression="x" />
+    <condition>/token/x/a &gt; 5</condition>
+    <!-- condition>1 = 2</condition -->
     <!-- condition>$x="true"</condition -->
   </transition>
   <transition ID="B">
     <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
+	<readPlace placeID="Static" edgeExpression="static" />
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
-    <outputPlace placeID="end_B" edgeExpression="output" />
-    <condition>/token/x = "false"</condition>
+    <inputPlace placeID="XOR_Split2" edgeExpression="y" />
+    <outputPlace placeID="end_B" edgeExpression="x" />
+    <condition>/token/x/a &lt;= 5</condition>
+    <!-- condition>1 = 1</condition -->
     <!-- condition>$x="false"</condition -->
   </transition>
 </workflow>

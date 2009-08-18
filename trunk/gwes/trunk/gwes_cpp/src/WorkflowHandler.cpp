@@ -428,7 +428,7 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 ///////////////////////////////////////////////
 
 /**
- * ToDo: include condition processing.
+ * ToDo: include support of data.group
  */
 Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions) {
 	if (enabledTransitions.size()<= 0)

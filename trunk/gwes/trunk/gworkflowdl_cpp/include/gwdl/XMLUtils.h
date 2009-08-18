@@ -9,6 +9,8 @@
 // gwdl
 #include <gwdl/WorkflowFormatException.h>
 #include <gwdl/XMLDOMErrorHandler.h>
+// libxml2
+#include <libxml/xpathInternals.h>
 //xerces
 #include <xercesc/dom/DOM.hpp>
 // std
@@ -31,6 +33,8 @@ private:
 	XMLDOMErrorHandler* _errorHandler;
 	int initializeXerces();
 	void terminateXerces();
+	int initializeLibxml2();
+	void terminateLibxml2();
 
 protected:
 	XMLUtils();
@@ -60,7 +64,7 @@ public:
 	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
 	
 	/**
-	 * Serialize the DOMDocument to an ostream.
+	 * Xerces: Serialize the DOMDocument to an ostream.
 	 * @param os The output stream.
 	 * @param doc The DOM document to serialize.
 	 * @param pretty Format pretty print
@@ -69,7 +73,7 @@ public:
 	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty);
 
 	/**
-	 * Serialize the DOMNode to a string.
+	 * Xerces: Serialize the DOMNode to a string.
 	 * @param node The DOM node to serialize.
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
@@ -77,7 +81,7 @@ public:
 	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
 
 	/**
-	 * Serialize the DOMDocument to a string.
+	 * Xerces: Serialize the DOMDocument to a string.
 	 * @param node The DOM document to serialize.
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
@@ -85,11 +89,26 @@ public:
 	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty); 
 	
 	/**
-	 * Deserialize the DOMNode from a XML string.
+	 * Xerces: Deserialize the DOMNode from an XML string.
 	 * @param xmlstring The XML string containing a node.
 	 * @return The corresponding DOMNode.
 	 */
 	XERCES_CPP_NAMESPACE::DOMDocument* deserialize (const std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
+
+	/**
+	 * Libxml2: Serialize the DOMDocument to a string.
+	 * @param node The DOM document to serialize.
+	 * @param pretty Format pretty print
+	 * @return The xml string. 
+	 */
+	std::string* serializeLibxml2 (const xmlDocPtr doc, bool pretty); 
+	
+	/**
+	 * Libxml2: Deserialize the xmlDocPtr from an XML string.
+	 * @param xmlstring The XML string containing a node.
+	 * @return The corresponding xmlDocPtr.
+	 */
+	xmlDocPtr deserializeLibxml2 (const std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
 
 	/**
 	 * Creates an empty document.

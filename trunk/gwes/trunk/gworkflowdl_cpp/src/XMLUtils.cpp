@@ -13,6 +13,7 @@
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xercesc/framework/Wrapper4InputSource.hpp>
+// std
 #include <iostream>
 
 XERCES_CPP_NAMESPACE_USE
@@ -35,12 +36,14 @@ XMLUtils* XMLUtils::Instance() {
 XMLUtils::XMLUtils()
 {
 	initializeXerces();
+	initializeLibxml2();
 	_errorHandler = new XMLDOMErrorHandler();
 }
 
 XMLUtils::~XMLUtils()
 {
 	 terminateXerces();
+	 terminateLibxml2();
 	 delete _instance;
 	 delete _errorHandler;
 }
@@ -59,6 +62,20 @@ int XMLUtils::initializeXerces()
 void XMLUtils::terminateXerces()
 {
 	 XMLPlatformUtils::Terminate();
+}
+
+int XMLUtils::initializeLibxml2()
+{
+	// init libxml2 parser
+	xmlInitParser();
+	LIBXML_TEST_VERSION
+    return 0;
+}
+
+void XMLUtils::terminateLibxml2()
+{
+	// cleanup xml parser
+	xmlCleanupParser();
 }
 
 ostream& XMLUtils::serialize(ostream& os, const DOMNode* node, bool pretty)
@@ -143,7 +160,6 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
 	return str;
 }
 
-
 DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) throw (WorkflowFormatException)
 {
     DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
@@ -168,8 +184,6 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
     
     try 
     {
-    	//char* xmlFile = "/home/diotima/rose/x1.xml";
-        //doc = parser->parseURI(xmlFile);
 		doc = parser->parse(*wrapper);
     } 
     catch (const XMLException& toCatch) 
@@ -199,6 +213,20 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
 	}
     	
 	return doc;
+}
+
+string* XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
+    xmlChar *xmlbuff;
+    int buffersize;
+    xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, pretty);
+    string* strP = new string((const char*)xmlbuff);
+    xmlFree(xmlbuff);
+    return strP;
+}
+
+xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
+	if (validating) cerr << "XMLUtils::deserialize(): Validation not yet supported for libxml2" << endl;
+	return xmlParseDoc(xmlCharStrdup(xmlstring.c_str()));
 }
 
 DOMDocument* XMLUtils::createEmptyDocument(bool gwdlnamespace)

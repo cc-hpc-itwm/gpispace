@@ -34,7 +34,10 @@ private:
 	 */
 	xmlDocPtr _xmlContextDocP;
 	
+	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP);
+	
 public:
+	
 	/**
 	 * Constructor for XPathEvaluator.
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
