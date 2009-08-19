@@ -164,7 +164,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		///ToDo: search for undecided decisions. Updates "unresolvedDecisionTransitions" and "undecidedDecisions"
 
 		//select transition, find enabled transition with true condition. Updates list "enabledTrueTransitions"
-		Transition* selectedTransitionP = selectTransition(enabledTransitions);
+		Transition* selectedTransitionP = selectTransition(enabledTransitions, step);
 		
 		///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
 
@@ -430,7 +430,7 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 /**
  * ToDo: include support of data.group
  */
-Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions) {
+Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions,int step) {
 	if (enabledTransitions.size()<= 0)
 		return NULL;
 	else {
@@ -439,11 +439,13 @@ Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabled
 			if (conditions.empty()) return (*it);
 			else {
 				// check conditions
-				XPathEvaluator* xpathP = new XPathEvaluator((*it));
+				XPathEvaluator* xpathP = new XPathEvaluator((*it),step);
 				bool cond = true;
 				for (unsigned int i=0; i<conditions.size(); i++) {
 					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
-					if (!xpathP->evalCondition(conditions[i].c_str())) {
+					// expand variables ( $x = 5 ) -> /token/x = 5
+					string condition = conditions[i];
+					if (!xpathP->evalCondition( (xpathP->expandVariables(condition)).c_str() )) {
 						cond = false;
 						break;
 					}

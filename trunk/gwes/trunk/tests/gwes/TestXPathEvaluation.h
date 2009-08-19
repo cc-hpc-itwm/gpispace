@@ -4,6 +4,7 @@
 #include <libxml/xpathInternals.h>
 
 void testXPathEvaluator();
+void testXPathEvaluatorContextCache();
 void printXmlNodes(xmlNodeSetPtr nodes);
 
 #endif /*TESTXPATHEVALUATION_H_*/

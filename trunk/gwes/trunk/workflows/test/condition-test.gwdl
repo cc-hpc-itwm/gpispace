@@ -23,9 +23,7 @@
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
     <inputPlace placeID="XOR_Split2" edgeExpression="y" />
     <outputPlace placeID="end_A" edgeExpression="x" />
-    <condition>/token/x/a &gt; 5</condition>
-    <!-- condition>1 = 2</condition -->
-    <!-- condition>$x="true"</condition -->
+    <condition>$x/a &gt; 5</condition>
   </transition>
   <transition ID="B">
     <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
@@ -33,9 +31,9 @@
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
     <inputPlace placeID="XOR_Split2" edgeExpression="y" />
     <outputPlace placeID="end_B" edgeExpression="x" />
-    <condition>/token/x/a &lt;= 5</condition>
-    <!-- condition>1 = 1</condition -->
-    <!-- condition>$x="false"</condition -->
+    <condition>$x/a &lt;= 5</condition>
+    <condition>$y/b &lt;=8</condition>
+    <condition>$static/c = 99</condition>
   </transition>
 </workflow>
 

@@ -26,6 +26,14 @@ namespace gwes
 {
 
 /**
+ * Reset static context cache
+ */
+xmlXPathContextPtr XPathEvaluator::_cacheXmlContextP = NULL;
+xmlDocPtr XPathEvaluator::_cacheXmlContextDocP = NULL;
+Transition* XPathEvaluator::_cacheTransitionP = NULL;
+int XPathEvaluator::_cacheStep = -1;
+
+/**
  * example refer to http://xmlsoft.org/examples/xpath1.c
  */
 XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
@@ -47,47 +55,70 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
-XPathEvaluator::XPathEvaluator(Transition* transitionP) {
+XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) {
 	cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << ")..." << endl;
 	
-	// create new context document  
-	_xmlContextDocP = xmlNewDoc((const xmlChar*)"1.0");
-	xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"token", NULL);
-	xmlDocSetRootElement(_xmlContextDocP, rootP);
+//	// look if context is still available in cache
+//	cout << "step=" << step << " cacheStep=" << _cacheStep << endl;
+//	cout << "transition=" << transitionP << " cacheTransition=" << _cacheTransitionP << endl;
+	
+	if (step == _cacheStep && transitionP == _cacheTransitionP) {
+		_xmlContextDocP = _cacheXmlContextDocP;
+		_xmlContextP = _cacheXmlContextP;
+		cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): using context from cache." << endl;
+	}
 
-	// insert contents of next unlocked tokens that are connected with edgeExpressions.
+	// create new context from input and read places
+	else {
 
-	// readPlaces
-	vector<Edge*> readEdges = transitionP->getReadEdges();
-	for (unsigned int i=0; i<readEdges.size(); i++) {
-		string edgeExpression = readEdges[i]->getExpression();
-		if (!edgeExpression.empty()) {
-			cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): adding token to context with edgeExpression=" << edgeExpression << endl;
-			unsigned int j = 0;
-			Token* tokenP = readEdges[i]->getPlace()->getTokens()[j];
-			while (tokenP->isLocked()) {
-				tokenP = readEdges[i]->getPlace()->getTokens()[++j];
+		// create new context document  
+		_xmlContextDocP = xmlNewDoc((const xmlChar*)"1.0");
+		xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"token", NULL);
+		xmlDocSetRootElement(_xmlContextDocP, rootP);
+
+		// insert contents of next unlocked tokens that are connected with edgeExpressions.
+
+		// readPlaces
+		vector<Edge*> readEdges = transitionP->getReadEdges();
+		for (unsigned int i=0; i<readEdges.size(); i++) {
+			string edgeExpression = readEdges[i]->getExpression();
+			if (!edgeExpression.empty()) {
+//				cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): adding token to context with edgeExpression=" << edgeExpression << endl;
+				unsigned int j = 0;
+				Token* tokenP = readEdges[i]->getPlace()->getTokens()[j];
+				while (tokenP->isLocked()) {
+					tokenP = readEdges[i]->getPlace()->getTokens()[++j];
+				}
+				addTokenToContext(edgeExpression, tokenP); 
 			}
-			addTokenToContext(edgeExpression, tokenP); 
 		}
+
+		// inputPlaces
+		vector<Edge*> inEdges = transitionP->getInEdges();
+		for (unsigned int i=0; i<inEdges.size(); i++) {
+			string edgeExpression = inEdges[i]->getExpression();
+			if (!edgeExpression.empty()) {
+//				cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): adding token to context with edgeExpression=" << edgeExpression << endl;
+				unsigned int j = 0;
+				Token* tokenP = inEdges[i]->getPlace()->getTokens()[j];
+				while (tokenP->isLocked()) {
+					tokenP = inEdges[i]->getPlace()->getTokens()[++j];
+				}
+				addTokenToContext(edgeExpression, tokenP); 
+			}
+		}
+
+		_xmlContextP = xmlXPathNewContext(_xmlContextDocP);
+
+//	    cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): moving context to cache." << endl;
+		xmlXPathFreeContext(_cacheXmlContextP); 
+	    xmlFreeDoc(_cacheXmlContextDocP);
+	    _cacheXmlContextDocP = _xmlContextDocP;
+	    _cacheXmlContextP = _xmlContextP;
+	    _cacheStep = step;
+	    _cacheTransitionP = transitionP;
 	}
 	
-	// inputPlaces
-	vector<Edge*> inEdges = transitionP->getInEdges();
-	for (unsigned int i=0; i<inEdges.size(); i++) {
-		string edgeExpression = inEdges[i]->getExpression();
-		if (!edgeExpression.empty()) {
-			cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): adding token to context with edgeExpression=" << edgeExpression << endl;
-			unsigned int j = 0;
-			Token* tokenP = inEdges[i]->getPlace()->getTokens()[j];
-			while (tokenP->isLocked()) {
-				tokenP = inEdges[i]->getPlace()->getTokens()[++j];
-			}
-			addTokenToContext(edgeExpression, tokenP); 
-		}
-	}
-
-	_xmlContextP = xmlXPathNewContext(_xmlContextDocP);
     if(_xmlContextP == NULL) {
         cerr << "Error: unable to create new XPath context" << endl;
         xmlFreeDoc(_xmlContextDocP); 
@@ -104,8 +135,12 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP) {
 XPathEvaluator::~XPathEvaluator()
 {
 	cout << "gwes::XPathEvaluator::~XPathEvaluator()..." << endl;
-    xmlXPathFreeContext(_xmlContextP); 
-    xmlFreeDoc(_xmlContextDocP);
+    // do not free _xmlContextP if it has be moved to the cache.
+	if (_cacheXmlContextP != _xmlContextP) {
+		cout << "gwes::XPathEvaluator::~XPathEvaluator(): Removing context from memory (not in cache)..." << endl;
+		xmlXPathFreeContext(_xmlContextP); 
+	    xmlFreeDoc(_xmlContextDocP);
+	}
 	// cleanup parser should be done only ONCE after destruction of XPathEvaluator!
     // xmlCleanupParser();
 }
@@ -113,8 +148,6 @@ XPathEvaluator::~XPathEvaluator()
 int XPathEvaluator::evalCondition(const char* xPathExprChar) {
 	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprChar << ")..." << endl;
 
-	// ToDo: expand variables ( $x = 5 ) -> /token/x = 5
-	
 	// create xpath expression
 	const xmlChar* xPathExpressionP = xmlCharStrdup(xPathExprChar);
     
@@ -221,6 +254,16 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 			cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),(const xmlChar*)"false");
 		}
 	}
+}
+
+/** 
+ * Replace "$" by "/token/" in string
+ */
+string XPathEvaluator::expandVariables(string& str) {
+	unsigned int i = str.find('$');
+	if (i == string::npos) return str;
+	str.replace(i,1,"/token/");
+	return expandVariables(str);
 }
 
 } // end namespace gwes

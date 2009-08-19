@@ -25,6 +25,14 @@ class XPathEvaluator
 private:
 	
 	/**
+	 * Cache for XML context
+	 */
+	static xmlXPathContextPtr _cacheXmlContextP;
+	static xmlDocPtr _cacheXmlContextDocP;
+	static gwdl::Transition* _cacheTransitionP;
+	static int _cacheStep;
+	
+	/**
 	 * Pointer to XML context for XPath evaluation.
 	 */
 	xmlXPathContextPtr _xmlContextP;
@@ -50,7 +58,7 @@ public:
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
 	 * @param transitionP Pointer to the transition from which to build the context for the evaluation.
 	 */
-	explicit XPathEvaluator(gwdl::Transition* transitionP);
+	explicit XPathEvaluator(gwdl::Transition* transitionP, int step);
 
 	/**
 	 * Destructor.
@@ -73,6 +81,13 @@ public:
 	const char* evalExpression(const char* xPathExprChar);
 	
 	void printXmlNodes(xmlNodeSetPtr nodes);
+	
+	xmlXPathContextPtr getXmlContext() { return _xmlContextP; }
+	
+	/** 
+	 * Replace "$" by "/token/" in string
+	 */
+	std::string expandVariables(std::string& str);
 	
 };
 

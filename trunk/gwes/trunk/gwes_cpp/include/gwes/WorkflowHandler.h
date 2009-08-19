@@ -163,7 +163,7 @@ private:
 	 * Select one transition out of all enabled Transitions.
 	 */
 	gwdl::Transition* selectTransition(
-			std::vector<gwdl::Transition*>& enabledTransitions);
+			std::vector<gwdl::Transition*>& enabledTransitions,int step);
 
 	/**
 	 * Process red transition with undefined operation.
