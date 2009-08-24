@@ -23,6 +23,9 @@ using namespace gwes;
 
 namespace gwes {
 
+/**
+ * ToDo: Use data structure "TransitionOccurrence" (contains transition and tokens)
+ */
 WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) {
 	_status=STATUS_UNDEFINED;
 	// set user id
@@ -96,7 +99,7 @@ void WorkflowHandler::setStatus(int status) {
 	// ToDo: depricated - remove?
 	if (_channels.size()>0) {
 		Event event(_id,Event::EVENT_WORKFLOW,getStatusAsString());
-		for (unsigned int i = 0; i<_channels.size(); i++ ) {
+		for (size_t i = 0; i<_channels.size(); i++ ) {
 			_channels[i]->_sourceP->update(event);
 		}
 	}
@@ -186,8 +189,6 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 				}
 			}
 		}
-
-		///ToDo: do processing on all enabled true transitions
 
 		///ToDo: prorate blue transtions related to program executions
 
@@ -429,6 +430,7 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 
 /**
  * ToDo: include support of data.group
+ * ToDo: include support for transition priority
  */
 Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions,int step) {
 	if (enabledTransitions.size()<= 0)
@@ -441,7 +443,7 @@ Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabled
 				// check conditions
 				XPathEvaluator* xpathP = new XPathEvaluator((*it),step);
 				bool cond = true;
-				for (unsigned int i=0; i<conditions.size(); i++) {
+				for (size_t i=0; i<conditions.size(); i++) {
 					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
 					// expand variables ( $x = 5 ) -> /token/x = 5
 					string condition = conditions[i];
@@ -490,7 +492,7 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	// select selected operation
 	vector<OperationCandidate*> ocs = tP->getOperation()->getOperationClass()->getOperationCandidates();
 	OperationCandidate* operationP = NULL;
-	for (unsigned int i=0; i<ocs.size(); i++) {
+	for (size_t i=0; i<ocs.size(); i++) {
 		if (ocs[i]->isSelected()) {
 			operationP = ocs[i];
 			break;
@@ -525,7 +527,7 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	}
 	
 	// attach workflow observers to activity
-	for (unsigned int i=0; i<_channels.size(); i++) {
+	for (size_t i=0; i<_channels.size(); i++) {
 		activityP->attachObserver(_channels[i]->_sourceP);
 	}
 
@@ -552,14 +554,18 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 	
 	Token* tokenP = NULL;
 
-	///ToDo evaluate edgeExpressions with XPath expressions.
+	// Create XPathEvaluator if there are any outgoing edgeExpressions.
+	// The context is created from the tokens.
+	XPathEvaluator* xpathEvaluatorP = NULL;
+	if (tP->hasOutputOrWriteEdgeExpressions()) {
+		xpathEvaluatorP = new XPathEvaluator(tP, step);
+	}
 
 	// process input edges
 	
-	// ToDo: Use "TransitionOccurrence" (contains transition and tokens) instead?
 	vector<Edge*> inEdges = tP->getInEdges();
-	for (unsigned int i=0; i<inEdges.size(); i++) {
-		unsigned int j = 0;
+	for (size_t i=0; i<inEdges.size(); i++) {
+		size_t j = 0;
 		tokenP = inEdges[i]->getPlace()->getTokens()[j];
 		while (tokenP->isLocked()) {
 			tokenP = inEdges[i]->getPlace()->getTokens()[++j];
@@ -571,17 +577,15 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 //		else
 //			cout << "--- step " << step << " --- processing control token "	<< *tokenP << endl;
 
-		// put data tokens with edge expression to context
-		///ToDo: addToContext(tokenP, inEdge, context);
-
 		// remove input token
 		inEdges[i]->getPlace()->removeToken(tokenP);
 	}
 
+	///ToDo evaluate edgeExpressions with XPath expressions.
+
 	// put copy of inputTokens to corresponding output places
 	vector<Edge*> outEdges = tP->getOutEdges();
-
-	for (unsigned int i=0; i<outEdges.size(); i++) {
+	for (size_t i=0; i<outEdges.size(); i++) {
 		try {
 			string edgeExpression = outEdges[i]->getExpression();
 			///ToDo: put real token!!!
@@ -598,6 +602,11 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 			_wfP->getProperties().put(createNewErrorID(), e.message);
 		}
 	}
+
+	// ToDo: Support write edges!
+	
+	if (xpathEvaluatorP != NULL) delete xpathEvaluatorP;
+	
 	return true;
 }
 
@@ -630,11 +639,11 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			// remove the corresponding token from each input place that has been locked by this transition
 			vector<gwdl::Token*> lockedtokens = _activityTokenlistTable.find(activityID)->second;
 			vector<gwdl::Edge*> inEdges = transitionP->getInEdges();
-			for (unsigned int i=0; i<inEdges.size(); i++) {
+			for (size_t i=0; i<inEdges.size(); i++) {
 				const vector<Token*>& placetokens = inEdges[i]->getPlace()->getTokens();
-				unsigned int il = 0;
+				size_t il = 0;
 				while (il < lockedtokens.size()) {
-					unsigned int ip = 0;
+					size_t ip = 0;
 					while (ip < placetokens.size()) {
 						if (lockedtokens[il]->getID() == placetokens[ip]->getID()) {
 							inEdges[i]->getPlace()->removeToken(lockedtokens[il]);
@@ -649,7 +658,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 			//  put new token on each output place
 			vector<gwdl::Edge*> outEdges = transitionP->getOutEdges();
-			for (unsigned int i=0; i<outEdges.size(); i++) {
+			for (size_t i=0; i<outEdges.size(); i++) {
 				try {
 					gwdl::Token* tokenP = NULL;
 					string edgeExpression = outEdges[i]->getExpression();
@@ -748,9 +757,9 @@ map<string,gwdl::Token*> WorkflowHandler::retrieveInputTokens(gwdl::Transition* 
 	// process read edges
 	if (readEdges.size()>0) {
 		// loop through read edges (j)
-		for (unsigned int j=0; j<readEdges.size(); j++) {
+		for (size_t j=0; j<readEdges.size(); j++) {
 			// search next token which is not locked (i)
-			unsigned int i = 0;
+			size_t i = 0;
 			gwdl::Token* tokenP = readEdges[j]->getPlace()->getTokens()[i];
 			while (tokenP->isLocked()) {
 				tokenP = readEdges[j]->getPlace()->getTokens()[++i];
@@ -781,9 +790,9 @@ map<string,gwdl::Token*> WorkflowHandler::retrieveInputTokens(gwdl::Transition* 
 	// process input edges
 	if (inEdges.size()>0) {
 		// loop through input edges (j)
-		for (unsigned int j=0; j<inEdges.size(); j++) {
+		for (size_t j=0; j<inEdges.size(); j++) {
 			// search next token which is not locked (i)
-			unsigned int i = 0;
+			size_t i = 0;
 			gwdl::Token* tokenP = inEdges[j]->getPlace()->getTokens()[i];
 			while (tokenP->isLocked()) {
 				tokenP = inEdges[j]->getPlace()->getTokens()[++i];
@@ -824,7 +833,7 @@ map<string,gwdl::Token*> WorkflowHandler::generateOutputTokensTemplate(gwdl::Tra
 	map<string,gwdl::Token*> outputTokens;
 	if (outEdges.size()> 0) {
 		// loop through output edges
-		for (unsigned int i=0; i<outEdges.size(); i++) {
+		for (size_t i=0; i<outEdges.size(); i++) {
 			string edgeExpression = outEdges[i]->getExpression();
 			// put the edgeExpression to the output HashMap
 			if (edgeExpression.size()>0) {

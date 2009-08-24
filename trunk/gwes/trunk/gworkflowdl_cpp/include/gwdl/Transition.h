@@ -422,10 +422,16 @@ public:
     int getAbstractionLevel() const;
 
     /**
-     * tests wheather transition is isEnabled
+     * tests whether transition is isEnabled
      * @return   true if transition is isEnabled, false else
      */
     bool isEnabled();
+    
+    /**
+     * tests whether this transtion contains one or more output or write places with 
+     * an edgeExpression.
+     */
+    bool hasOutputOrWriteEdgeExpressions() const;
     
 };
 

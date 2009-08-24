@@ -28,7 +28,7 @@ void testXPathEvaluator() {
 	string str1 = "$x/a";
 	string str2 = xpathP->expandVariables(str1);
 	cout << "XPathEvaluator::expandVariables(\"$x/a\")=" << str2 << endl;
-	assert (str2.compare("/token/x/a")==0);
+	assert (str2.compare("/tokens/x/a")==0);
 	
 	assert(!xpathP->evalCondition("count(/data/min) = 2"));
     assert(xpathP->evalCondition("count(/data/min) = 1"));
@@ -40,8 +40,8 @@ void testXPathEvaluator() {
     assert(strcmp(xpathP->evalExpression("/data/min + /data/max"),"48")==0);
     delete xpathP;
     
-	xpathP = new XPathEvaluator("<token><x><a>5</a></x></token>");
-    assert(xpathP->evalCondition("/token/x/a = 5"));
+	xpathP = new XPathEvaluator("<tokens><x><a>5</a></x></tokens>");
+    assert(xpathP->evalCondition("/tokens/x/a = 5"));
     delete xpathP;
 
     xmlCleanupParser();
@@ -70,12 +70,12 @@ void testXPathEvaluatorContextCache() {
     p1->addToken(d1);
     
     XPathEvaluator* xpathP = new XPathEvaluator(t0,1);
-    xpathP->evalCondition("count(/token) = 1");
+    xpathP->evalCondition("count(/tokens) = 1");
     xmlXPathContextPtr contextP = xpathP->getXmlContext();
     delete xpathP;
     
     xpathP = new XPathEvaluator(t0,1);
-    xpathP->evalCondition("count(/token) = 1");
+    xpathP->evalCondition("count(/tokens) = 1");
     assert(contextP==xpathP->getXmlContext());
     delete xpathP;
     

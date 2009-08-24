@@ -55,7 +55,7 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
-XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) {
+XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) throw (gwdl::WorkflowFormatException) {
 	cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << ")..." << endl;
 	
 //	// look if context is still available in cache
@@ -73,7 +73,7 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) {
 
 		// create new context document  
 		_xmlContextDocP = xmlNewDoc((const xmlChar*)"1.0");
-		xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"token", NULL);
+		xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"tokens", NULL);
 		xmlDocSetRootElement(_xmlContextDocP, rootP);
 
 		// insert contents of next unlocked tokens that are connected with edgeExpressions.
@@ -232,7 +232,7 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
     }
 }
 
-void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* tokenP) {
+void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* tokenP) throw (gwdl::WorkflowFormatException) {
 	xmlNodePtr cur;
 	
 	if (tokenP->isData()) {
@@ -241,7 +241,16 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 		// ToDo: remove ugly conversion from Xerces DOMElement to libxml2 xmlDocPtr.
 		xmlDocPtr xmldoc = XMLUtils::Instance()->deserializeLibxml2(*tokenP->getData()->toString());
 		// copy children from one document to the other.
-		xmlNodePtr children = xmlDocCopyNodeList(_xmlContextDocP, xmlDocGetRootElement(xmldoc)->children);
+		// search for <data> element
+		xmlNodePtr dataElementP = xmlDocGetRootElement(xmldoc)->children; 
+		while (dataElementP != NULL && dataElementP->type != XML_ELEMENT_NODE) dataElementP = dataElementP->next;
+		if (dataElementP == NULL) {
+			// missing data element
+			ostringstream message; 
+			message << "Missing <data> element on data token " << tokenP->getID() << "!";
+			throw gwdl::WorkflowFormatException(message.str());
+		}
+		xmlNodePtr children = xmlDocCopyNodeList(_xmlContextDocP, dataElementP->children);
 	    xmlAddChildList(cur,children);
 	    xmlFreeDoc(xmldoc);
 	} else {
@@ -257,12 +266,12 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 }
 
 /** 
- * Replace "$" by "/token/" in string
+ * Replace "$" by "/tokens/" in string
  */
 string XPathEvaluator::expandVariables(string& str) {
 	size_t i = str.find('$');
 	if (i == str.npos) return str;
-	str.replace(i,1,"/token/");
+	str.replace(i,1,"/tokens/");
 	return expandVariables(str);
 }
 

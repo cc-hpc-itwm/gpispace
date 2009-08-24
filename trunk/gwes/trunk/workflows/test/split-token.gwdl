@@ -6,7 +6,7 @@
   <place ID="value1">
     <token>
       <data>
-        <value1>
+        <value1 xmlns="">
           <x>15</x>
           <y>23</y>
         </value1>
@@ -16,7 +16,7 @@
   <place ID="value2">
     <token>
       <data>
-        <value2>
+        <value2 xmlns="">
           <x>16</x>
           <y>24</y>
         </value2>

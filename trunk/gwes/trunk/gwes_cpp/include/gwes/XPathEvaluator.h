@@ -42,7 +42,7 @@ private:
 	 */
 	xmlDocPtr _xmlContextDocP;
 	
-	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP);
+	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP) throw (gwdl::WorkflowFormatException);
 	
 public:
 	
@@ -58,7 +58,7 @@ public:
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
 	 * @param transitionP Pointer to the transition from which to build the context for the evaluation.
 	 */
-	explicit XPathEvaluator(gwdl::Transition* transitionP, int step);
+	explicit XPathEvaluator(gwdl::Transition* transitionP, int step) throw (gwdl::WorkflowFormatException);
 
 	/**
 	 * Destructor.
@@ -85,7 +85,7 @@ public:
 	xmlXPathContextPtr getXmlContext() { return _xmlContextP; }
 	
 	/** 
-	 * Replace "$" by "/token/" in string
+	 * Replace "$" by "/tokens/" in string
 	 */
 	std::string expandVariables(std::string& str);
 	
