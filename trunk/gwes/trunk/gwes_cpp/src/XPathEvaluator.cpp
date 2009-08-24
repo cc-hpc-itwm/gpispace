@@ -260,8 +260,8 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
  * Replace "$" by "/token/" in string
  */
 string XPathEvaluator::expandVariables(string& str) {
-	unsigned int i = str.find('$');
-	if (i == string::npos) return str;
+	size_t i = str.find('$');
+	if (i == str.npos) return str;
 	str.replace(i,1,"/token/");
 	return expandVariables(str);
 }
