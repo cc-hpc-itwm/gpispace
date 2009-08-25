@@ -16,37 +16,36 @@
  * =====================================================================================
  */
 
-#include    <fhglog/LogMacros.hpp>
-#include	<fhglog/Logger.hpp>
+#include    <fhglog/fhglog.hpp>
 
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
   LoggerApi logger(Logger::get("test"));
-  logger.setLevel(LogLevel(LogLevel::WARN));
-  logger.addAppender(Appender::ptr_t(new ConsoleAppender()));
+  logger.setLevel(LogLevel::WARN);
+  logger.addAppender(Appender::ptr_t(new StreamAppender()));
 
   logger.log(LogEvent(LogLevel::TRACE
                             , __FILE__
-                            , __FUNCTION__
+                            , FHGLOG_FUNCTION
                             , __LINE__
                             , "trace message"));
 
   logger.log(LogEvent(LogLevel::DEBUG
                             , __FILE__
-                            , __FUNCTION__
+                            , FHGLOG_FUNCTION
                             , __LINE__
                             , "debug message"));
 
   logger.log(LogEvent(LogLevel::WARN
                             , __FILE__
-                            , __FUNCTION__
+                            , FHGLOG_FUNCTION
                             , __LINE__
                             , "warn message"));
 
   logger.log(LogEvent(LogLevel::ERROR
                             , __FILE__
-                            , __FUNCTION__
+                            , FHGLOG_FUNCTION
                             , __LINE__
                             , "error message"));
 

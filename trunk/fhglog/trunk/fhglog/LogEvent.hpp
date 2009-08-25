@@ -2,6 +2,7 @@
 #define FHG_LOG_LOGEVENT_HPP 1
 
 #include <string>
+#include <pthread.h>
 #include <fhglog/LogLevel.hpp>
 
 namespace fhg { namespace log {
@@ -13,7 +14,7 @@ namespace fhg { namespace log {
       typedef std::size_t line_type;
       typedef std::string message_type;
       typedef long long tstamp_type;
-      typedef int thread_type;
+      typedef pthread_t thread_type;
 
       static std::string &severityToString(const severity_type &severity);
 

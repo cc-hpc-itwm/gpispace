@@ -16,7 +16,7 @@ LogEvent::LogEvent(const severity_type &severity
   , line_(line)
   , message_(message)
   , tstamp_(time(NULL))
-  , thread_((std::size_t)pthread_self())
+  , thread_(static_cast<thread_type>(pthread_self()))
 {
 }
 

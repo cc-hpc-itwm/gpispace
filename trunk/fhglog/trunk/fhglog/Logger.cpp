@@ -1,5 +1,6 @@
-#include "Logger.hpp"
-#include	<stdexcept>
+#include    "Logger.hpp"
+#include    <stdexcept>
+#include    <iostream>
 
 using namespace fhg::log;
 
@@ -15,6 +16,7 @@ Logger &Logger::getRootLogger()
 
 LoggerApi Logger::get(const std::string &name)
 {
+  // TODO: do some tree computation here and return a meaningfull logger
   return LoggerApi(&Logger::getRootLogger());
 }
 
@@ -35,7 +37,8 @@ void Logger::setLevel(const LogLevel &level)
 
 bool Logger::isLevelEnabled(const LogLevel &level)
 {
-  return lvl_ <= level;
+  // TODO: inherit the level from the parent logger if the level was not set
+  return (lvl_ != LogLevel::UNSET) ? lvl_ <= level : true;
 }
 
 void Logger::log(const LogEvent &event)
@@ -45,7 +48,7 @@ void Logger::log(const LogEvent &event)
 
   for (appender_list_t::iterator it(appenders_.begin());
        it != appenders_.end();
-       it++)
+       ++it)
   {
     try
     {
@@ -66,7 +69,7 @@ Appender::ptr_t Logger::getAppender(const std::string &appender_name)
 {
   for (appender_list_t::iterator it(appenders_.begin());
        it != appenders_.end();
-       it++)
+       ++it)
   {
     if (appender_name == (*it)->name())
     {
@@ -80,7 +83,7 @@ void Logger::removeAppender(const std::string &appender_name)
 {
   for (appender_list_t::iterator it(appenders_.begin());
        it != appenders_.end();
-       it++)
+       ++it)
   {
     if (appender_name == (*it)->name())
     {
@@ -89,3 +92,4 @@ void Logger::removeAppender(const std::string &appender_name)
     }
   }
 }
+

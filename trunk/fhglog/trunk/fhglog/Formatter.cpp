@@ -4,6 +4,15 @@
 
 using namespace fhg::log;
 
+const std::string Formatter::FMT_SEVERITY = "S";
+const std::string Formatter::FMT_FILE     = "f";
+const std::string Formatter::FMT_FUNCTION = "F";
+const std::string Formatter::FMT_LINE     = "L";
+const std::string Formatter::FMT_MESSAGE  = "m";
+const std::string Formatter::FMT_TIMESTAMP= "t";
+const std::string Formatter::FMT_THREAD   = "T";
+const std::string Formatter::FMT_NEWLINE  = "n";
+
 std::string Formatter::format(const LogEvent &evt)
 {
   std::stringstream sstr;

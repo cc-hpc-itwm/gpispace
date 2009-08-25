@@ -16,20 +16,23 @@ namespace fhg { namespace log {
     public:
       typedef std::tr1::shared_ptr<Formatter> ptr_t;
 
-      /*
-      static const std::string FMT_SEVERITY = "S";
-      static const std::string FMT_FILE("f");
-      static const std::string FMT_FUNCTION("F");
-      static const std::string FMT_LINE("L");
-      static const std::string FMT_MESSAGE("m");
-      static const std::string FMT_TIMESTAMP("t");
-      static const std::string FMT_THREAD("T");
-      static const std::string FMT_NEWLINE("n");
-      */
+      static const std::string FMT_SEVERITY;  // = "S";
+      static const std::string FMT_FILE;      // = "f";
+      static const std::string FMT_FUNCTION;  // = "F";
+      static const std::string FMT_LINE;      // = "L";
+      static const std::string FMT_MESSAGE;   // = "m";
+      static const std::string FMT_TIMESTAMP; // = "t";
+      static const std::string FMT_THREAD;    // = "T";
+      static const std::string FMT_NEWLINE;   // = "n";
 
       explicit
       Formatter(const std::string &fmt) : fmt_(fmt) {}
       virtual ~Formatter() {}
+
+      static ptr_t DefaultFormatter()
+      {
+        return ptr_t(new Formatter("TODO: replace me some format string"));
+      }
 
       virtual std::string format(const LogEvent &evt);
       std::string operator()(const LogEvent &evt) { return format(evt); }
