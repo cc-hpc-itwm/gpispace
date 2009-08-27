@@ -22,7 +22,7 @@ using namespace gwes;
 
 int main() 
 {
-	cout << "########################### BEGIN OF ALL GWES TESTS ###########################";
+	cout << "########################### BEGIN OF ALL GWES TESTS ###########################" << endl;
 
 	gwes::GWES gwes;
 
@@ -135,7 +135,7 @@ int main()
 		assert( workflow.getProperties().get("occurrence.sequence").compare("loadTraceHeaders calcGeoReferenceData selectProjectData") == 0 );
 	}
 	
-	cout << "########################### END OF ALL GWES TESTS ###########################";
+	cout << "########################### END OF ALL GWES TESTS ###########################" << endl;
 
 	return 0;
 }

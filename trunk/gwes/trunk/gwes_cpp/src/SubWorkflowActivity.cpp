@@ -86,6 +86,8 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	// initiate subworklfow
 	_subworkflowId = _gwesP->initiate(*_subworkflowP,_wfhP->getUserId());
 
+	// ToDo: Use Gwes2Sdpa / Sdpa2Gwes interface instead!
+	
 	// connect channel for callback 
 	Channel* channelP = new Channel(this);
 	_gwesP->connect(channelP, _subworkflowId);
