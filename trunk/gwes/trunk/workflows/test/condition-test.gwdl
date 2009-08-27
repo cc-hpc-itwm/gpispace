@@ -2,6 +2,7 @@
 <workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd" ID="No_ID">
   <!-- $Id: exclusive-choice.gwdl 1316 2009-05-28 09:53:39Z andreas.hoheisel@first.fraunhofer.de $ -->
   <description>condition test</description>
+  <property name="occurrence.sequence" />
   <place ID="XOR_Split">
     <token><data><a xmlns="">5</a></data></token>
     <token><data><a xmlns="">6</a></data></token>
@@ -22,7 +23,7 @@
 	<readPlace placeID="Static" edgeExpression="static" />
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
     <inputPlace placeID="XOR_Split2" edgeExpression="y" />
-    <outputPlace placeID="end_A" edgeExpression="x" />
+    <outputPlace placeID="end_A" edgeExpression="$x" />
     <condition>$x &gt; 5</condition>
   </transition>
   <transition ID="B">
@@ -30,7 +31,7 @@
 	<readPlace placeID="Static" edgeExpression="static" />
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
     <inputPlace placeID="XOR_Split2" edgeExpression="y" />
-    <outputPlace placeID="end_B" edgeExpression="x" />
+    <outputPlace placeID="end_B" edgeExpression="$x" />
     <condition>$x &lt;= 5</condition>
     <condition>$y &lt;=8</condition>
     <condition>$static = 99</condition>

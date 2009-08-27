@@ -30,9 +30,9 @@
     <description>join and split the tokens and put the results on the places x and y</description>
     <inputPlace placeID="value1" edgeExpression="value" />
     <inputPlace placeID="value2" edgeExpression="value" />
-    <outputPlace placeID="x" edgeExpression="value/x" />
-    <outputPlace placeID="y" edgeExpression="value/y" />
-    <outputPlace placeID="value" edgeExpression="value" />
+    <outputPlace placeID="x" edgeExpression="$value/x" />
+    <outputPlace placeID="y" edgeExpression="$value/y" />
+    <outputPlace placeID="value" edgeExpression="$value" />
   </transition>
 </workflow>
 

@@ -25,23 +25,61 @@ void testXPathEvaluator() {
 	LIBXML_TEST_VERSION
     
 	XPathEvaluator* xpathP = new XPathEvaluator("<data><min>15</min><max>33</max><step>1</step></data>");
-	string str1 = "$x/a";
-	string str2 = xpathP->expandVariables(str1);
-	cout << "XPathEvaluator::expandVariables(\"$x/a\")=" << str2 << endl;
-	assert (str2.compare("/tokens/x/a")==0);
-	
-	assert(!xpathP->evalCondition("count(/data/min) = 2"));
-    assert(xpathP->evalCondition("count(/data/min) = 1"));
-    assert(xpathP->evalCondition("/data/min = 15"));
-    assert(xpathP->evalCondition("/data/min > 10"));
-    assert(!xpathP->evalCondition("/data/min > 15"));
-    assert(xpathP->evalCondition("NOT A VALID XPATH EXPRESSION")==-1);
-    assert(strcmp(xpathP->evalExpression("/data/min"),"15")==0);
-    assert(strcmp(xpathP->evalExpression("/data/min + /data/max"),"48")==0);
+	string str;
+	string str2;
+
+	// test eval conditions
+	str = "/data/min + 1 = 16";
+    assert(xpathP->evalCondition(str)==1);
+    str = "count(/data/min) = 2";
+    assert(xpathP->evalCondition(str)==0);
+    str = "count(/data/min) = 1";
+    assert(xpathP->evalCondition(str)==1);
+    str = "/data/min = 15";
+    assert(xpathP->evalCondition(str)==1);
+    str = "/data/min > 10";
+    assert(xpathP->evalCondition(str)==1);
+    str = "/data/min > 15";
+    assert(xpathP->evalCondition(str)==0);
+    str = "NOT A VALID XPATH EXPRESSION";
+    assert(xpathP->evalCondition(str)==-1);
+    
+    // test eval expressions
+    str = "/data/min"; str2 = "15";
+    assert( xpathP->evalExpression(str).compare(str2) ==0 );
+    str = "/data/min + /data/max"; str2 = "48";
+    assert( xpathP->evalExpression(str).compare(str2) ==0 );
+    // ToDo: should be <data><min>...</data> instead?
+    str = "/data"; str2 = "15331";
+    assert( xpathP->evalExpression(str).compare(str2) ==0 );
     delete xpathP;
     
-	xpathP = new XPathEvaluator("<tokens><x><a>5</a></x></tokens>");
-    assert(xpathP->evalCondition("/tokens/x/a = 5"));
+	xpathP = new XPathEvaluator("<data><x><a>5</a></x><bla>wörter</bla></data>");
+	str = "/data/x/a = 5";
+    assert(xpathP->evalCondition(str)==1);
+    str = "$x/a = 5";
+    assert(xpathP->evalCondition(str)==1);
+    
+    // test eval expression 2 xml
+
+    // node set
+	str = "/data/x"; str2 = "<data>\n  <x><a>5</a></x>\n</data>";
+    assert( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+
+    // boolean
+	str = "/data/x/a = 5";	str2 = "<data><boolean xmlns=\"\">true</boolean></data>";
+    assert( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+    str = "/data/x/a = 4";	str2 = "<data><boolean xmlns=\"\">false</boolean></data>";
+    assert( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+    
+    // number
+	str = "number(/data/x/a)"; 	str2 = "<data><number xmlns=\"\">5</number></data>";
+    assert( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+	
+	// string
+	str = "normalize-space(/data/bla)";	str2 = "<data><string xmlns=\"\">wörter</string></data>";
+    assert( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+    
     delete xpathP;
 
     xmlCleanupParser();
@@ -70,12 +108,14 @@ void testXPathEvaluatorContextCache() {
     p1->addToken(d1);
     
     XPathEvaluator* xpathP = new XPathEvaluator(t0,1);
-    xpathP->evalCondition("count(/tokens) = 1");
+    string str = "count(/data) = 1";
+    xpathP->evalCondition(str);
     xmlXPathContextPtr contextP = xpathP->getXmlContext();
     delete xpathP;
     
     xpathP = new XPathEvaluator(t0,1);
-    xpathP->evalCondition("count(/tokens) = 1");
+    str = "1 = 1";
+    xpathP->evalCondition(str);
     assert(contextP==xpathP->getXmlContext());
     delete xpathP;
     

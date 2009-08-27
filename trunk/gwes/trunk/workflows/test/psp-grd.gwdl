@@ -3,6 +3,8 @@
     
     <description>load trace headers - calc geo reference data - select project data</description>
 
+    <property name="occurrence.sequence" />
+
 	<!-- files -->
     <place ID="inputFile">
         <token><data><file>file:///data/wfTest_#pv4dSPRO#</file></data></token>

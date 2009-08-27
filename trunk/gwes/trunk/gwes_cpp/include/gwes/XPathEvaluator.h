@@ -44,6 +44,11 @@ private:
 	
 	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP) throw (gwdl::WorkflowFormatException);
 	
+	/** 
+	 * Replace "$" by "/data/" in string
+	 */
+	std::string expandVariables(std::string& str);
+	
 public:
 	
 	/**
@@ -71,23 +76,26 @@ public:
 	 * @param xPathExprChar The XPath expression to evaluate. 
 	 * @return "1" if expression is true, "0" if expression is false, "-1" if there has been an error in the evaluation.
 	 */
-	int evalCondition(const char* xPathExprChar);
+	int evalCondition(std::string& xPathExprStr);
 	
 	/**
 	 * Evaluate a XPath expression against the XML XPath context set in the constructor.
 	 * @param xPathExprChar The XPath expression to evaluate. 
+	 * @return The text contents of the result of the evaluation.
+	 */
+	std::string evalExpression(std::string& xPathExprStr);
+	
+	/**
+	 * Evaluate a XPath expression against the XML XPath context set in the constructor.
+	 * Builds parent element around single values (e.g., 15.0 -> <double>15.0</double>).
+	 * @param xPathExprChar The XPath expression to evaluate. 
 	 * @return The XML result of the evaluation.
 	 */
-	const char* evalExpression(const char* xPathExprChar);
-	
+	std::string evalExpression2Xml(std::string& xPathExprStr);
+
 	void printXmlNodes(xmlNodeSetPtr nodes);
 	
 	xmlXPathContextPtr getXmlContext() { return _xmlContextP; }
-	
-	/** 
-	 * Replace "$" by "/tokens/" in string
-	 */
-	std::string expandVariables(std::string& str);
 	
 };
 

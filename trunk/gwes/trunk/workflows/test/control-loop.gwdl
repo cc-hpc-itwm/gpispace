@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd" ID="No_ID">
   <!-- $Id: gworkflowdl_control-loop-with-read-edge.xml 1316 2009-05-28 09:53:39Z andreas.hoheisel@first.fraunhofer.de $ -->
-  <description>loop that counts from 0 to 100</description>
+  <description>loop that counts from 0 to 10</description>
   <property name="occurrence.sequence" />
   <place ID="counter">
     <token>
@@ -22,14 +22,14 @@
     <description>i++</description>
     <readPlace placeID="increment" edgeExpression="incr" />
     <inputPlace placeID="counter" edgeExpression="a" />
-    <outputPlace placeID="counter" edgeExpression="a+incr" />
-    <condition>$a &lt; 100</condition>
+    <outputPlace placeID="counter" edgeExpression="$a + $incr" />
+    <condition>$a &lt; 10</condition>
   </transition>
   <transition ID="break">
-    <description>end loop if a is greater or equal 100</description>
+    <description>end loop if a is greater or equal 10</description>
     <inputPlace placeID="counter" edgeExpression="a" />
-    <outputPlace placeID="end" edgeExpression="a" />
-    <condition>$a &gt;= 100</condition>
+    <outputPlace placeID="end" edgeExpression="$a" />
+    <condition>$a &gt;= 10</condition>
   </transition>
 </workflow>
 

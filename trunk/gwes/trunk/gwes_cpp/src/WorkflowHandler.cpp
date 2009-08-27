@@ -447,7 +447,7 @@ Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabled
 					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
 					// expand variables ( $x = 5 ) -> /token/x = 5
 					string condition = conditions[i];
-					if (!xpathP->evalCondition( (xpathP->expandVariables(condition)).c_str() )) {
+					if ( !xpathP->evalCondition(condition) ) {
 						cond = false;
 						break;
 					}
@@ -556,6 +556,7 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 
 	// Create XPathEvaluator if there are any outgoing edgeExpressions.
 	// The context is created from the tokens.
+	// ToDo: copy token properties
 	XPathEvaluator* xpathEvaluatorP = NULL;
 	if (tP->hasOutputOrWriteEdgeExpressions()) {
 		xpathEvaluatorP = new XPathEvaluator(tP, step);
@@ -583,18 +584,17 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 
 	///ToDo evaluate edgeExpressions with XPath expressions.
 
-	// put copy of inputTokens to corresponding output places
+	// put xpath evaluation of inputTokens to corresponding output places
 	vector<Edge*> outEdges = tP->getOutEdges();
 	for (size_t i=0; i<outEdges.size(); i++) {
 		try {
 			string edgeExpression = outEdges[i]->getExpression();
-			///ToDo: put real token!!!
-			//            if (edgeExpression.size() <= 0) {          // control token
-			//            	Token d(true);
-			//            } else if (dataOutputTokens != null) {     // data token
-			//                token = (Token) dataOutputTokens.get(edgeExpression);
-			//            }
-			tokenP = new Token(true);
+			if (edgeExpression.size() > 0) {				// data token
+				string str = xpathEvaluatorP->evalExpression2Xml(edgeExpression);
+				tokenP = new Token( new Data(str) );
+			} else {                                        // control token
+				tokenP = new Token(true);
+			}
 			outEdges[i]->getPlace()->addToken(tokenP);
 		} catch (CapacityException e) {
 			cerr << "exception: " << e.message << endl;
@@ -606,6 +606,14 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 	// ToDo: Support write edges!
 	
 	if (xpathEvaluatorP != NULL) delete xpathEvaluatorP;
+	
+    // store occurrence sequence
+    if (_wfP->getProperties().contains("occurrence.sequence")) {
+    	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
+    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
+    	occurrenceSequence += tP->getID();
+    	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
+    }
 	
 	return true;
 }
@@ -706,23 +714,31 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			}
 			modification = true;
 
-			///ToDo: set transition status
-			
-			// cleanup
-			_activityTransitionTable.erase(activityID);
-			_activityTokenlistTable.erase(activityID);
-			_activityTable.remove(activityID);
+		    // store occurrence sequence
+		    if (_wfP->getProperties().contains("occurrence.sequence")) {
+		    	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
+		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
+		    	occurrenceSequence += transitionP->getID();
+		    	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
+		    }
 
-			///ToDo: fault management regarding the fault management policy property
-			if (activityStatus == Activity::STATUS_TERMINATED) {
-				_abort = true;
-			}
+		    ///ToDo: set transition status
+
+		    // cleanup
+		    _activityTransitionTable.erase(activityID);
+		    _activityTokenlistTable.erase(activityID);
+		    _activityTable.remove(activityID);
+
+		    ///ToDo: fault management regarding the fault management policy property
+		    if (activityStatus == Activity::STATUS_TERMINATED) {
+		    	_abort = true;
+		    }
 
 		} else if (activityStatus == Activity::STATUS_FAILED) {
 			///ToDo: implement fault management.
 			cerr
-					<< "gwes::WorkflowHandler: Fault management not yet implemented!"
-					<< endl;
+			<< "gwes::WorkflowHandler: Fault management not yet implemented!"
+			<< endl;
 		} else {
 			// activity still not completed or terminated
 			tempworkflowstatus = STATUS_ACTIVE;
@@ -732,7 +748,6 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			}
 		}
 
-		///ToDo: set transition status
 	}
 	
 	///ToDo: annotate transitions with transition status

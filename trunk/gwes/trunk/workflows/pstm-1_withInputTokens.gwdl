@@ -49,8 +49,8 @@
         <readPlace placeID="OffsetParameters" edgeExpression="OffsetParameters"/>
         <inputPlace placeID="HasNext" edgeExpression="HasNext"/>
         <inputPlace placeID="NumberClasses" edgeExpression="i"/>
-        <outputPlace placeID="NumberClasses" edgeExpression="i+1"/>
-        <outputPlace placeID="HasNext" edgeExpression="HasNext"/>
+        <outputPlace placeID="NumberClasses" edgeExpression="$i + 1"/>
+        <outputPlace placeID="HasNext" edgeExpression="$HasNext"/>
         <outputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
         <condition>$HasNext = true</condition>
         <operation>
@@ -94,7 +94,7 @@
         <readPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
         <inputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
         <outputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
-        <outputPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <outputPlace placeID="OffsetClass" edgeExpression="$OffsetClass"/>
         <operation>
             <oc:operationClass name="calculateOffsetVolume">
                 <oc:operationCandidate type="workflow" operationName="pstm-calculateOffsetVolume.gwdl" resourceName="./" selected="true"/>
@@ -107,7 +107,7 @@
         <readPlace placeID="OutputGather" edgeExpression="OutputGather"/>
         <inputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
         <inputPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
-        <writePlace placeID="OutputGather" edgeExpression="OutputGather"/>
+        <writePlace placeID="OutputGather" edgeExpression="$OutputGather"/>
         <operation>
             <oc:operationClass name="store">
                 <oc:operationCandidate type="cli" operationName="store.sh" resourceName="./store.sh" selected="true"/>

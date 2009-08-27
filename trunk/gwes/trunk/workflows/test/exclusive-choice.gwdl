@@ -13,13 +13,13 @@
   <transition ID="A">
     <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
-    <outputPlace placeID="end_A" edgeExpression="output" />
+    <outputPlace placeID="end_A" />
     <condition>$x = "true"</condition>
   </transition>
   <transition ID="B">
     <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
     <inputPlace placeID="XOR_Split" edgeExpression="x" />
-    <outputPlace placeID="end_B" edgeExpression="output" />
+    <outputPlace placeID="end_B" />
     <condition>$x = "false"</condition>
   </transition>
 </workflow>

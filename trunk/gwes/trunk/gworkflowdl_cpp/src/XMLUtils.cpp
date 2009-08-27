@@ -7,6 +7,8 @@
 // gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Defines.h>
+// libxml2
+#include <libxml/xmlsave.h>
 // xerces-c
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -35,6 +37,7 @@ XMLUtils* XMLUtils::Instance() {
 
 XMLUtils::XMLUtils()
 {
+	cout << "XMLUtils::XMLUtils() ..." << endl;
 	initializeXerces();
 	initializeLibxml2();
 	_errorHandler = new XMLDOMErrorHandler();
@@ -42,6 +45,7 @@ XMLUtils::XMLUtils()
 
 XMLUtils::~XMLUtils()
 {
+	cout << "XMLUtils::~XMLUtils() ..." << endl;
 	 terminateXerces();
 	 terminateLibxml2();
 	 delete _instance;
@@ -215,13 +219,30 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
 	return doc;
 }
 
-string* XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
-    xmlChar *xmlbuff;
-    int buffersize;
-    xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, pretty);
-    string* strP = new string((const char*)xmlbuff);
-    xmlFree(xmlbuff);
-    return strP;
+string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
+	// Alternative without setting XML_SAVE_NO_DECL: 
+	//    xmlChar *xmlbuff;
+	//    int buffersize;
+	//    xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, pretty);
+	int option = XML_SAVE_NO_DECL;
+	if (pretty) option += XML_SAVE_FORMAT;
+	xmlBufferPtr buffer = xmlBufferCreate();
+    xmlSaveCtxtPtr ctxt = xmlSaveToBuffer(buffer, "UTF-8", option);
+    xmlSaveDoc(ctxt, doc);
+    xmlSaveClose(ctxt);
+    string str = string((const char*)buffer->content);
+    xmlBufferFree(buffer);
+    return str;
+}
+
+string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
+	cout << "XMLUtils::serializeLibxml2() ..." << endl;
+	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
+	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
+	xmlDocSetRootElement(docP,nodecopy);
+	string ret = serializeLibxml2(docP,pretty);
+	xmlFreeDoc(docP);
+	return ret;
 }
 
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {

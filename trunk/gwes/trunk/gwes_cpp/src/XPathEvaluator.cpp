@@ -73,7 +73,7 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) throw (gwdl::W
 
 		// create new context document  
 		_xmlContextDocP = xmlNewDoc((const xmlChar*)"1.0");
-		xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"tokens", NULL);
+		xmlNodePtr rootP = xmlNewDocNode(_xmlContextDocP, NULL, (const xmlChar*)"data", NULL);
 		xmlDocSetRootElement(_xmlContextDocP, rootP);
 
 		// insert contents of next unlocked tokens that are connected with edgeExpressions.
@@ -126,7 +126,7 @@ XPathEvaluator::XPathEvaluator(Transition* transitionP, int step) throw (gwdl::W
     }
     
     cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): context:" << endl;
-	cout << *XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
+	cout << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
 
     // register namespaces
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
@@ -145,11 +145,11 @@ XPathEvaluator::~XPathEvaluator()
     // xmlCleanupParser();
 }
 
-int XPathEvaluator::evalCondition(const char* xPathExprChar) {
-	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprChar << ")..." << endl;
-
+int XPathEvaluator::evalCondition(string& xPathExprStr) {
+	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprStr << ")..." << endl;
+	
 	// create xpath expression
-	const xmlChar* xPathExpressionP = xmlCharStrdup(xPathExprChar);
+    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
@@ -164,31 +164,104 @@ int XPathEvaluator::evalCondition(const char* xPathExprChar) {
     // cleanup
     xmlXPathFreeObject(xpathObjP);
     
-	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprChar << ") = " << (xPathCondition ? "true":"false") << endl;
+	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprStr << ") = " << (xPathCondition ? "true":"false") << endl;
     return xPathCondition;
 }
 
-const char* XPathEvaluator::evalExpression(const char* xPathExprChar) {
-	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprChar << ")..." << endl;
+string XPathEvaluator::evalExpression(string& xPathExprStr) {
+	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprStr << ")..." << endl;
+	
 	// create xpath expression
-	const xmlChar* xPathExpressionP = xmlCharStrdup(xPathExprChar);
-    
+    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+	    
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        cerr << "gwes::XPathEvaluator::evalCondition(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
+        cerr << "gwes::XPathEvaluator::evalExpression(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
         return NULL;
     }
     
-    const xmlChar* xmlResult = xmlXPathCastToString(xpathObjP);
+    string xmlResult = string((const char*) xmlXPathCastToString(xpathObjP));
 
     // cleanup
     xmlXPathFreeObject(xpathObjP);
     
     //printXmlNodes(xpathObjP->nodesetval);
-	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprChar << ") = " << xmlResult << endl;
+	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprStr << ") = " << xmlResult << endl;
     
-    return (char*) xmlResult;
+    return xmlResult;
+}
+
+string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
+	cout << "gwes::XPathEvaluator::evalExpression2Xml(" << xPathExprStr << ")..." << endl;
+
+	// create xpath expression
+    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+    
+    // evaluate xpath expression
+    xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
+    if(xpathObjP == NULL) {
+        cerr << "gwes::XPathEvaluator::evalExpression2Xml(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
+        return NULL;
+    }
+    
+    string xmlResult;
+	ostringstream xml;
+	// cout << "gwes::XPathEvaluator::evalExpression2Xml(): evaluates to type " << xpathObjP->type << endl;
+    //      	XPATH_UNDEFINED = 0
+    // XPATH_NODESET = 1
+    // XPATH_BOOLEAN = 2
+    // XPATH_NUMBER = 3
+    // XPATH_STRING = 4
+    //    	    XPATH_POINT = 5
+    //    	    XPATH_RANGE = 6
+    //    	    XPATH_LOCATIONSET = 7
+    //    	    XPATH_USERS = 8
+    //    	    XPATH_XSLT_TREE = 9 
+	
+	switch (xpathObjP->type) {
+	case(XPATH_UNDEFINED):
+		break;
+	case(XPATH_NODESET):
+	    cout << "gwes::XPathEvaluator::evalExpression2Xml(): nodes->nodeNr=" << xpathObjP->nodesetval->nodeNr << endl;
+		xml << "<data>\n";
+		for (int i = 0; i < xpathObjP->nodesetval->nodeNr; i++) {
+			xml << "  " << XMLUtils::Instance()->serializeLibxml2(xpathObjP->nodesetval->nodeTab[i],false);
+		}
+		xml << "</data>";
+		xmlResult = xml.str();
+		break;
+	case (XPATH_BOOLEAN): 
+		xml << "<data><boolean xmlns=\"\">";
+		if (xpathObjP->boolval) xml << "true";
+		else xml << "false";
+		xml << "</boolean></data>"; 
+		xmlResult = xml.str(); 
+		break;
+	case(XPATH_NUMBER):
+		xml << "<data><number xmlns=\"\">" << xpathObjP->floatval << "</number></data>"; 
+		xmlResult = xml.str(); 
+		break;
+	case(XPATH_STRING):
+		xml << "<data><string xmlns=\"\">" << xpathObjP->stringval << "</string></data>"; 
+		xmlResult = xml.str(); 
+		break;
+	case(XPATH_POINT):
+	case(XPATH_RANGE):
+	case(XPATH_LOCATIONSET):
+	case(XPATH_USERS):
+	case(XPATH_XSLT_TREE):
+		cerr << "XPath evaluation result (xmlXPathObjectPtr) of type " << xpathObjP->type << " is not supported!" << endl;
+		break;
+	}
+
+    // cleanup
+    xmlXPathFreeObject(xpathObjP);
+    
+    //printXmlNodes(xpathObjP->nodesetval);
+	cout << "gwes::XPathEvaluator::evalExpression2Xml(" << xPathExprStr << ") = " << xmlResult << endl;
+    
+    return xmlResult;
 }
 
 void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
@@ -266,12 +339,12 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 }
 
 /** 
- * Replace "$" by "/tokens/" in string
+ * Replace "$" by "/data/" in string
  */
 string XPathEvaluator::expandVariables(string& str) {
 	size_t i = str.find('$');
 	if (i == str.npos) return str;
-	str.replace(i,1,"/tokens/");
+	str.replace(i,1,"/data/");
 	return expandVariables(str);
 }
 

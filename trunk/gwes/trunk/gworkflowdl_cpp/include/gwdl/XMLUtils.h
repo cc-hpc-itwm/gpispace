@@ -97,12 +97,20 @@ public:
 
 	/**
 	 * Libxml2: Serialize the DOMDocument to a string.
-	 * @param node The DOM document to serialize.
+	 * @param doc The DOM document to serialize.
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
 	 */
-	std::string* serializeLibxml2 (const xmlDocPtr doc, bool pretty); 
+	std::string serializeLibxml2 (const xmlDocPtr doc, bool pretty); 
 	
+	/**
+	 * Libxml2: Serialize DOM node to a string.
+	 * @param node The DOM node to serialize.
+	 * @param pretty Format pretty print
+	 * @return The xml string. 
+	 */
+	std::string serializeLibxml2 (const xmlNodePtr node, bool pretty); 
+
 	/**
 	 * Libxml2: Deserialize the xmlDocPtr from an XML string.
 	 * @param xmlstring The XML string containing a node.
