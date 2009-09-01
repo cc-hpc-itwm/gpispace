@@ -16,8 +16,8 @@
 #include <sdpa/daemon/GenericDaemonActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
 
-#include <sdpa/wf/WFE_to_SDPA.hpp>
-#include <sdpa/wf/SDPA_to_WFE.hpp>
+#include <sdpa/wf/Gwes2Sdpa.hpp>
+#include <sdpa/wf/Sdpa2Gwes.hpp>
 
 //#include <gwes/Sdpa2Gwes.h>
 
@@ -27,7 +27,7 @@ namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::ISendEvent,
 						public seda::Strategy,
-						public sdpa::wf::WFE_to_SDPA {
+						public sdpa::wf::Gwes2Sdpa {
   public:
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
@@ -54,7 +54,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
-      // WFE_to_SDPA interface implementation
+      // Gwes2Sdpa interface implementation
 	  virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow);
 	  virtual sdpa::wf::activity_id_t submitActivity(const sdpa::wf::activity_t &activity);
 	  virtual void cancelWorkflow(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
@@ -75,7 +75,7 @@ namespace sdpa { namespace daemon {
 	  JobManager::ptr_t 	ptr_job_man_;
 	  WorkerManager::ptr_t 	ptr_worker_man_;
 	  SchedulerImpl::ptr_t 	ptr_scheduler_;
-	  sdpa::wf::SDPA_to_WFE* ptr_SDPA_to_WFE;
+	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes;
 
 	  const std::string output_stage_;
 
