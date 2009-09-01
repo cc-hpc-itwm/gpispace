@@ -14,15 +14,24 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::wf;
 
-GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage)
+//Provide ptr to an implementation of Sdpa2Gwes
+GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes*  pArgSdpa2Gwes)
 	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name),
 	ptr_job_man_(new JobManager()), ptr_worker_man_(new WorkerManager())
 {
 	ptr_scheduler_ = shared_ptr<SchedulerImpl>(new SchedulerImpl(ptr_job_man_, ptr_worker_man_));
+
+	// provide some dummy implementation (for testing) or use the real impl. from the gwes library
+	ptr_Sdpa2Gwes_ = pArgSdpa2Gwes;
+
+	if(ptr_Sdpa2Gwes_)
+		ptr_Sdpa2Gwes_->registerHandler(this);
 }
 
-GenericDaemon::~GenericDaemon(){
-
+GenericDaemon::~GenericDaemon()
+{
+	if(ptr_Sdpa2Gwes_)
+		delete ptr_Sdpa2Gwes_;
 }
 
 GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage )
@@ -210,10 +219,17 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
     */
 
 	JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
-	Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
 
 	try {
+
+		// First, parse the workflow in order to be able to create a valid job
+		Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
+
 		ptr_job_man_->addJob(job_id, pJob);
+
+		//inform the workflow engine that new workflow has come, using the interface Sdpa2Gwes!
+		//ptr_Sdpa2Gwes_->
+
 
 		//send back a SubmitJobAckEvent
 		sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(name(), e.from()));
@@ -279,6 +295,10 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 	// set the parent_id to ?
 	// add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
 	// schedule the new job to some worker
+	// ATTENTION! Important assumption: the workflow_id should be set identical to the job_id!
+
+	//call action_submit_job
+	// return the workflow_id
 }
 
 /**
@@ -291,6 +311,7 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 {
 	//proceed similarly as in the submitWorkflow case
+	//call action_submit_job
 }
 
 /**
@@ -300,6 +321,10 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
 	// cancel the job corresponding to that workflow -> send a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// generate const sdpa::events::CancelJobEvent& event
+	// Job& job = job_map_[job_id];
+	// and call the job.CancelJob(const sdpa::events::CancelJobEvent& event);
 }
 
 /**
@@ -309,6 +334,11 @@ void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuc
 void GenericDaemon::cancelActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
 {
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// in fact they should be the same!
+	// generate const sdpa::events::CancelJobEvent& event
+	// Job& job = job_map_[job_id];
+	// call job.CancelJob(event);
 }
 
 /**
@@ -317,7 +347,13 @@ void GenericDaemon::cancelActivity(const activity_id_t &activityId) throw (NoSuc
  */
 void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
-	// generate a JobFinishedEvent for self
+	// generate a JobFinishedEvent for self!
+	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// in fact they should be the same!
+	// generate const sdpa::events::JobFinishedEvent& event
+	// Job& job = job_map_[job_id];
+	// call job.JobFinished(event);
 }
 
 /**
@@ -326,7 +362,16 @@ void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) throw (NoS
  */
 void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
-	// generate a JobFailedEvent for self
+	// generate a JobFinishedEvent for self!
+	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// in fact they should be the same!
+	// generate const sdpa::events::JobFailedEvent& event
+	// Job& job = job_map_[job_id];
+	// call job.JobFailed(event);
+	// if( has siblings)
+	// kill the siblings and the master job, else kill the master job
+	// The master process (User, Orch, Agg) should be informed that the job failed or  was canceled
 }
 
 /**
@@ -335,5 +380,7 @@ void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) throw (NoSuc
  */
 void GenericDaemon::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
 {
-	// generate a JobCancelledEvent for self
+	// generate a JobCancelledEvent for self!
+	// identify the job with the job_id == workflow_id_t
+	// trigger a CancelJobAck for that job
 }

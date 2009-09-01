@@ -9,6 +9,7 @@
 
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
+#include <tests/sdpa/test_Sdpa2Gwes.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
@@ -17,7 +18,8 @@ using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 
-DaemonFSMTest_SMC::DaemonFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC"), m_DaemonFSM("orchestrator","'Output Stage'")
+DaemonFSMTest_SMC::DaemonFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC"),
+  m_DaemonFSM("orchestrator","'Output Stage'", new DummyGwes )
 {}
 
 DaemonFSMTest_SMC::~DaemonFSMTest_SMC()

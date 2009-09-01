@@ -70,12 +70,12 @@ namespace sdpa { namespace daemon {
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string &name, const std::string &outputStage);
+	  GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes*  pSdpa2Gwes = NULL);
 
 	  JobManager::ptr_t 	ptr_job_man_;
 	  WorkerManager::ptr_t 	ptr_worker_man_;
 	  SchedulerImpl::ptr_t 	ptr_scheduler_;
-	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes;
+	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
 
 	  const std::string output_stage_;
 

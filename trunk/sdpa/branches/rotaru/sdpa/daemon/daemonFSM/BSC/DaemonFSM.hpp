@@ -9,7 +9,6 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
-
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
 
@@ -22,8 +21,12 @@ struct Up;
 // The FSM
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
-	DaemonFSM(const std::string &name, const std::string &outputStage)
-		: SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM"), GenericDaemon(name, outputStage) {};
+	DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* p = NULL)
+		: SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM"),
+		GenericDaemon(name, outputStage, p)
+		{
+
+		};
 
 	void print_states();
 private:
