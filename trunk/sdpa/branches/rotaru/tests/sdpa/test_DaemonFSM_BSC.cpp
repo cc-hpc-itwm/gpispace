@@ -5,7 +5,7 @@
 
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <tests/sdpa/test_Sdpa2Gwes.hpp>
+#include "test_Sdpa2Gwes.hpp"
 
 using namespace std;
 using namespace sdpa::tests;

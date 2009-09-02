@@ -77,8 +77,8 @@ public:
 	/**
 	 * Cancel a workflow asynchronously.
 	 * This method is to be invoked by the SDPA.
-	 * The GWES will notifiy the SPDA about the
-	 * completion of the cancelling process by calling the
+	 * The GWES will notify the SPDA about the
+	 * completion of the canceling process by calling the
 	 * callback method Gwes2Sdpa::workflowCanceled.
 	 */
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;

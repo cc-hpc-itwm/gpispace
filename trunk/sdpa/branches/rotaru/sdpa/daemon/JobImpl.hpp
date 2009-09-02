@@ -66,7 +66,7 @@ namespace sdpa { namespace daemon {
 
         Job::data_t input_;
         Job::data_t output_;
-        job_list_t subjobs_;
+        job_list_t  subjobs_;
 
         bool b_marked_for_del_;
         SDPA_DECLARE_LOGGER();
