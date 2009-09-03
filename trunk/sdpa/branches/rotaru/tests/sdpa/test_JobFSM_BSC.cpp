@@ -42,8 +42,9 @@ void JobFSMTest_BSC::testJobFSM_BSC()
 	QueryJobStatusEvent::Ptr pQueryJobStatusEvent(new QueryJobStatusEvent(strFrom, strTo, strID));
 	listEvents.push_back(pQueryJobStatusEvent);
 
-	RunJobEvent::Ptr pRunJobEvent(new RunJobEvent(strFrom, strTo, strID));
-	listEvents.push_back(pRunJobEvent);
+	//empty description
+	SubmitJobEvent::Ptr pSubmitJobEvent(new SubmitJobEvent(strFrom, strTo, strID));
+	listEvents.push_back(pSubmitJobEvent);
 
 	JobFinishedEvent::Ptr pJobFinishedEvent(new JobFinishedEvent(strFrom, strTo, strID));
 	listEvents.push_back(pJobFinishedEvent);

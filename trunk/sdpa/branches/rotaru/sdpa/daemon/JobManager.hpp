@@ -14,6 +14,7 @@ namespace sdpa { namespace daemon {
 	  JobManager();
 	  virtual ~JobManager();
 	  virtual Job::ptr_t findJob(const sdpa::job_id_t& ) throw(JobNotFoundException) ;
+	  virtual Job::ptr_t getJob();
 	  virtual void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);

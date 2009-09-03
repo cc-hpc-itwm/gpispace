@@ -109,8 +109,8 @@ void GenericDaemon::action_lifesign(const sdpa::events::LifeSignEvent& e)
      */
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
-		ptr_worker->update(e);
+		Worker::ptr_t ptrWorker = ptr_worker_man_->findWorker(worker_id);
+		ptrWorker->update(e);
 		os.str("");
 		os<<"Received LS. Updated the time stamp of the worker "<<worker_id<<std::endl;
 		SDPA_LOG_DEBUG(os.str());
@@ -137,7 +137,7 @@ void GenericDaemon::action_delete_job(const sdpa::events::DeleteJobEvent& e )
 
 	try{
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
-		pJob->DeleteJob(e);
+		pJob->process_event(e);
 
 		if( pJob->is_marked_for_deletion() )
 		{
@@ -182,12 +182,22 @@ void GenericDaemon::action_request_job(const sdpa::events::RequestJobEvent& e)
 	//take a job from the workers' queue? and serve it
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
-		ptr_worker->update(e);
+		Worker::ptr_t ptrWorker = ptr_worker_man_->findWorker(worker_id);
+		ptrWorker->update(e);
 
-		Job::ptr_t pJob = ptr_worker->get_next_job(e.last_job_id());
-		// implement last_job_id() in RequestJobEvent !!!
-		// trigger event
+		Job::ptr_t ptrJob = ptr_job_man_->getJob();
+		if( ptrJob.use_count() )
+		{
+			ptrWorker->dispatch(ptrJob);  //the job was sent but not yet acknowledged
+
+			// create a SubmitJobEvent for the job job_id serialize and attach description
+			cout<<"Create SubmitJobEvent for the job "<<ptrJob->id()<<endl;
+			sdpa::events::SubmitJobEvent::Ptr pSubmitEvt(new sdpa::events::SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description()));
+			// put the job into the running state
+			ptrJob->process_event(*pSubmitEvt.get());
+			// Post a SubmitJobEvent to the slave who made the reques
+			sendEvent(output_stage_, pSubmitEvt);
+		}
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");
@@ -218,21 +228,22 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
     * send a submitJobAck back
     */
 
-	JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
+	JobId job_id, job_id_empty(""); //already assigns an unique job_id (i.e. the constructor calls the generator)
+	if(e.job_id() != job_id_empty)  //use the job_id already  assigned by the master
+		job_id = e.job_id();        //the orchestrator will assign a new job_id for the user jobs, the Agg/NRE will use the job_id assigned by the master
 
 	try {
 
 		// First, parse the workflow in order to be able to create a valid job
 		Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
-
+		// the job job_id is in the Pending state now!
 		ptr_job_man_->addJob(job_id, pJob);
 
 		//inform the workflow engine that new workflow has come, using the interface Sdpa2Gwes!
 		//ptr_Sdpa2Gwes_->
 
-
-		//send back a SubmitJobAckEvent
-		sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(name(), e.from()));
+		//send back to the user a SubmitJobAckEvent
+		sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(name(), e.from(), job_id));
 		sendEvent(output_stage_, pSubmitJobAckEvt);
 
 	}catch(sdpa::daemon::JobNotAddedException) {
@@ -250,15 +261,19 @@ void GenericDaemon::action_submit_job(const sdpa::events::SubmitJobEvent& e)
 
 void GenericDaemon::action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& e) {
 	ostringstream os;
-	os<<"Call 'action_submit_job_ack'"<< std::endl;
+	os<<"Call 'action_request_job_ack'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
-	//put the job from pending into submitted
-	//call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
+	// a slave posted an acknowledgement for a job request
+	// put the job from pending into submitted
+	// call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t ptr_worker = ptr_worker_man_->findWorker(worker_id);
-		ptr_worker->acknowledge(e.job_id());
+		Worker::ptr_t ptrWorker = ptr_worker_man_->findWorker(worker_id);
+		//put the job into the Running state: do this in acknowledge!
+		ptrWorker->acknowledge(e.job_id());
+
+
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");

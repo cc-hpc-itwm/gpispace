@@ -13,7 +13,7 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<JobFailedAckEvent> Ptr;
 
-		JobFailedAckEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
+		JobFailedAckEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t(""))
           :  sdpa::events::JobEvent( from, to, job_id ) {
 			//std::cout << "Create event 'JobFailedAckEvent'"<< std::endl;
 		}

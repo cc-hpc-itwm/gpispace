@@ -9,7 +9,7 @@
 #include <sdpa/wf/types.hpp>
 
 #include <boost/statechart/event_base.hpp>
-#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
@@ -55,17 +55,16 @@ namespace sdpa { namespace daemon {
         virtual ptr_t get_subjob(const job_id_t & id) = 0;
 
         virtual bool is_marked_for_deletion() = 0;
-        virtual void process_event( const boost::statechart::event_base & e)=0;
+        virtual void process_event( const boost::statechart::event_base & e) {}
 
         //transitions
-		virtual void CancelJob(const sdpa::events::CancelJobEvent& event)=0;
-		virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent& event)=0;
-		virtual void DeleteJob(const sdpa::events::DeleteJobEvent& event)=0;
-		virtual void JobFailed(const sdpa::events::JobFailedEvent& event)=0;
-		virtual void JobFinished(const sdpa::events::JobFinishedEvent& event)=0;
-		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event)=0;
-		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event)=0;
-		virtual void RunJob(const sdpa::events::RunJobEvent& event)=0;
+		virtual void process_event(const sdpa::events::CancelJobEvent& event) {}
+		virtual void process_event(const sdpa::events::CancelJobAckEvent& event) {}
+		virtual void process_event(const sdpa::events::DeleteJobEvent& event){}
+		virtual void process_event(const sdpa::events::JobFinishedEvent& event){}
+		virtual void process_event(const sdpa::events::QueryJobStatusEvent& event){}
+		virtual void process_event(const sdpa::events::RetrieveJobResultsEvent& event){}
+		virtual void process_event(const sdpa::events::SubmitJobEvent& event){}
 
     };
 }}

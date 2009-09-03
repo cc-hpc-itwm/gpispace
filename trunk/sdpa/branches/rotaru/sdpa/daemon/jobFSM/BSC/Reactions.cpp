@@ -31,7 +31,7 @@ void JobFSM :: print_states()
 
 
 //Pending event reactions
-sc::result Pending::react(const RunJobEvent& e)
+sc::result Pending::react(const SubmitJobEvent& e)
 {
 	//eventually, start WFE
 	return transit<Running>(&JobFSM::action_run_job, e);

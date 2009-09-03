@@ -1,7 +1,7 @@
 #ifndef JOB_FSM_ACTIONS_HPP
 #define JOB_FSM_ACTIONS_HPP 1
 
-#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
@@ -17,7 +17,7 @@ namespace sdpa {
 		class JobFSMActions {
 			public:
 				//actions
-				virtual void action_run_job(const sdpa::events::RunJobEvent& e)=0;
+				virtual void action_run_job(const sdpa::events::SubmitJobEvent& e)=0;
 				virtual void action_cancel_job(const sdpa::events::CancelJobEvent& e)=0;
 				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e)=0;
 				virtual void action_delete_job(const sdpa::events::DeleteJobEvent& e)=0;

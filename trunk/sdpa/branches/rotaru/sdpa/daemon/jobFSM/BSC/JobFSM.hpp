@@ -42,15 +42,6 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 		 sc::state_machine<JobFSM, Pending>::process_event(e);
     }
 
-	void CancelJob(const sdpa::events::CancelJobEvent& event){ process_event(event); }
-	void CancelJobAck(const sdpa::events::CancelJobAckEvent& event){ process_event(event); }
-	void DeleteJob(const sdpa::events::DeleteJobEvent& event){ process_event(event); }
-	void JobFailed(const sdpa::events::JobFailedEvent& event){ process_event(event); }
-	void JobFinished(const sdpa::events::JobFinishedEvent& event){ process_event(event); }
-	void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event){ process_event(event); }
-	void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event){ process_event(event); }
-	void RunJob(const sdpa::events::RunJobEvent& event){ process_event(event); }
-
 	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();
@@ -58,7 +49,7 @@ private:
 
 struct Pending : sc::simple_state<Pending, JobFSM>
 {
-	typedef mpl::list< sc::custom_reaction<sdpa::events::RunJobEvent>,
+	typedef mpl::list< sc::custom_reaction<sdpa::events::SubmitJobEvent>,
 					   sc::custom_reaction<sdpa::events::CancelJobEvent>,
 					   sc::custom_reaction<sdpa::events::QueryJobStatusEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
@@ -66,7 +57,7 @@ struct Pending : sc::simple_state<Pending, JobFSM>
 	Pending() { } //std::cout<<" enter state 'Pending'" << std::endl; }
 	~Pending() { } //std::cout<<" leave state 'Pending'" << std::endl; }
 
-	sc::result react( const sdpa::events::RunJobEvent & e);
+	sc::result react( const sdpa::events::SubmitJobEvent & e);
 	sc::result react( const sdpa::events::CancelJobEvent & e);
 	sc::result react( const sdpa::events::QueryJobStatusEvent & e);
 	sc::result react( const sc::exception_thrown & e);

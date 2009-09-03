@@ -40,8 +40,8 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 	QueryJobStatusEvent evtQuery(strFrom, strTo, strJobID);
 	m_JobFSM.GetContext().QueryJobStatus(evtQuery);
 
-	RunJobEvent evtRun(strFrom, strTo, strJobID);
-	m_JobFSM.GetContext().RunJob(evtRun);
+	SubmitJobEvent evtSubmit(strFrom, strTo, strJobID);
+	m_JobFSM.GetContext().SubmitJob(evtSubmit);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, strJobID);
 	m_JobFSM.GetContext().JobFinished(evtFinished);

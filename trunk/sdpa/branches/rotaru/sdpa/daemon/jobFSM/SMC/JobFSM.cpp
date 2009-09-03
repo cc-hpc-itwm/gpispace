@@ -3,42 +3,42 @@
 using namespace sdpa::fsm::smc;
 
 //transitions
-void JobFSM::RunJob(const sdpa::events::RunJobEvent& e)
+void JobFSM::process_event(const sdpa::events::SubmitJobEvent& e)
 {
-	m_fsmContext.RunJob(e);
+	m_fsmContext.SubmitJob(e);
 }
 
-void JobFSM::CancelJob(const sdpa::events::CancelJobEvent& e)
+void JobFSM::process_event(const sdpa::events::CancelJobEvent& e)
 {
 	m_fsmContext.CancelJob(e);
 }
 
-void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent& e)
+void JobFSM::process_event(const sdpa::events::CancelJobAckEvent& e)
 {
 	m_fsmContext.CancelJobAck(e);
 }
 
-void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent& e)
+void JobFSM::process_event(const sdpa::events::DeleteJobEvent& e)
 {
 	m_fsmContext.DeleteJob(e);
 }
 
-void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent& e)
+void JobFSM::process_event(const sdpa::events::QueryJobStatusEvent& e)
 {
 	m_fsmContext.QueryJobStatus(e);
 }
 
-void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent& e )
+void JobFSM::process_event(const sdpa::events::JobFinishedEvent& e )
 {
 	m_fsmContext.JobFinished(e);
 }
 
-void JobFSM :: JobFailed(const sdpa::events::JobFailedEvent& e)
+void JobFSM :: process_event(const sdpa::events::JobFailedEvent& e)
 {
 	m_fsmContext.JobFailed(e);
 }
 
-void  JobFSM ::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& e )
+void  JobFSM ::process_event(const sdpa::events::RetrieveJobResultsEvent& e )
 {
 	m_fsmContext.RetrieveJobResults(e);
 }

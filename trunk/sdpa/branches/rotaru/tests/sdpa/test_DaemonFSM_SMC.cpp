@@ -7,7 +7,7 @@
 #include <sdpa/util.hpp>
 #include <fstream>
 
-#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include "DummyGwes.hpp"
 
@@ -66,11 +66,11 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
 	//Attention: delete succeeds only when the job should is in a final state!
 	sdpa::job_id_t job_id = vectorJobIDs[0];
-	RunJobEvent evtRun(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->RunJob(evtRun);
+	SubmitJobEvent evtSubmit(strFrom, strTo, job_id);
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->JobFinished(evtFinished);
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );

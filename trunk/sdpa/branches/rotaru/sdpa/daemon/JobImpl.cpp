@@ -58,7 +58,7 @@ namespace sdpa { namespace daemon {
     	return b_marked_for_del_;
     }
 
-    void JobImpl::action_run_job(const sdpa::events::RunJobEvent& e)
+    void JobImpl::action_run_job(const sdpa::events::SubmitJobEvent& e)
     {
     	ostringstream os;
     	os<<"Process 'action_run_job'";
@@ -106,7 +106,7 @@ namespace sdpa { namespace daemon {
     	ostringstream os;
     	os <<"Process 'action_job_finished'";
     	// inform WFE (send a JobFinishedEvent event to the stage WFE)
-    	// post a JobFinishedAckEvent to e.from()
+    	// obsolete: post a JobFinishedAckEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -115,7 +115,7 @@ namespace sdpa { namespace daemon {
     	ostringstream os;
     	os <<"Process 'action_job_failed'";
     	// inform WFE (send a JobFailedEvent event to the stage WFE)
-    	// post a JobFailedAckEvent to e.from()
+    	// obsolete: post a JobFailedAckEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -126,81 +126,4 @@ namespace sdpa { namespace daemon {
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
-
-	void JobImpl::process_event( const boost::statechart::event_base & e)
-	{
-		ostringstream os;
-		os <<"Called  'JobImpl ::process_event'";
-		SDPA_LOG_DEBUG(os.str());
-	};
-
-	void JobImpl::CancelJob(const sdpa::events::CancelJobEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'CancelJob'";
-		// if it's an atomic activity, kill the process effectively
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::CancelJobAck(const sdpa::events::CancelJobAckEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'CancelJobAck'";
-		// inform WFE
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl:: DeleteJob(const sdpa::events::DeleteJobEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'DeleteJob'";
-		// in fact do nothing here
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::JobFailed(const sdpa::events::JobFailedEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'JobFailed'";
-		// inform WFE
-		// Create a JobFailedEventAckEvent with the destination e.from()
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::JobFinished(const sdpa::events::JobFinishedEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'JobFinished'";
-		// inform WFE
-		// Create a JobFinishedEventAckEvent with the destination e.from()
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::QueryJobStatus(const sdpa::events::QueryJobStatusEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'QueryJobStatus'";
-		// Create a JobStatusReplyEvent with the destination e.from()
-
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'RetrieveJobResults'";
-		// Call action_
-		// Create a ResultsReplyEvent with the destination e.from() i.e. the user
-
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	void JobImpl::RunJob(const sdpa::events::RunJobEvent& e)
-	{
-		ostringstream os;
-		os <<"Call transition  'RunJob'";
-		// Create a ResultsReplyEvent with the destination e.from() i.e. the user
-
-		SDPA_LOG_DEBUG(os.str());
-	}
 }}

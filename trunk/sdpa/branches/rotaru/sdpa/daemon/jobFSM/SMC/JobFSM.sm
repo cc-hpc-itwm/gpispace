@@ -14,7 +14,7 @@
 %%
 Pending
 {
-    RunJob(event: const sdpa::events::RunJobEvent&)
+    SubmitJob(event: const sdpa::events::SubmitJobEvent&)
         Running
         {
         	action_run_job(event); 

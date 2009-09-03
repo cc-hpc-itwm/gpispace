@@ -77,14 +77,13 @@ namespace sdpa { namespace daemon {
 	  SchedulerImpl::ptr_t 	ptr_scheduler_;
 	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
 
-	  const std::string output_stage_;
-
 	  void setStage(seda::Stage::Ptr stage)
 	  {
 		  // assert stage->strategy() == this
 		  daemon_stage_ = stage;
 	  }
 
+	  const std::string output_stage_;
 	  seda::Stage::Ptr daemon_stage_;
   };
 

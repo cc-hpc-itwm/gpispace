@@ -20,19 +20,15 @@ namespace sdpa { namespace fsm { namespace smc {
 
 			virtual ~JobFSM()  throw () { SDPA_LOG_DEBUG("State machine destroyed"); }
 
-			virtual void process_event( const boost::statechart::event_base & e) {
-					std::cout <<":call 'sdpa::fsm::smc::JobFSM::process_event'"<< std::endl;
-			}
-
 			//transitions
-			void CancelJob(const sdpa::events::CancelJobEvent& event);
-			void CancelJobAck(const sdpa::events::CancelJobAckEvent& event);
-			void DeleteJob(const sdpa::events::DeleteJobEvent& event);
-			void JobFailed(const sdpa::events::JobFailedEvent& event);
-			void JobFinished(const sdpa::events::JobFinishedEvent& event);
-			void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event);
-			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event);
-			void RunJob(const sdpa::events::RunJobEvent& event);
+			void process_event(const sdpa::events::CancelJobEvent& event);
+			void process_event(const sdpa::events::CancelJobAckEvent& event);
+			void process_event(const sdpa::events::DeleteJobEvent& event);
+			void process_event(const sdpa::events::JobFailedEvent& event);
+			void process_event(const sdpa::events::JobFinishedEvent& event);
+			void process_event(const sdpa::events::QueryJobStatusEvent& event);
+			void process_event(const sdpa::events::RetrieveJobResultsEvent& event);
+			void process_event(const sdpa::events::SubmitJobEvent& event);
 
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:

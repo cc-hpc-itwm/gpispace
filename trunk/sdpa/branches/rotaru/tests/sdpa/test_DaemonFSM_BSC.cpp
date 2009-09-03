@@ -3,7 +3,7 @@
 #include <string>
 #include <list>
 
-#include <sdpa/events/RunJobEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include "DummyGwes.hpp"
 
@@ -42,6 +42,7 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	listEvents.push_back( new LifeSignEvent(strFrom, strTo));
 	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
 	listEvents.push_back( new SubmitJobEvent(strFrom, strTo));
+
 	while( !listEvents.empty() )
 	{
 		sc::event_base* pEvt = listEvents.front();
@@ -54,11 +55,11 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.ptr_job_man_->getJobIDList();
 
 	sdpa::job_id_t job_id = vectorJobIDs[0];
-	RunJobEvent evtRun(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->RunJob(evtRun);
+	SubmitJobEvent evtSubmit(strFrom, strTo, job_id);
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->JobFinished(evtFinished);
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFrom, strTo, job_id );

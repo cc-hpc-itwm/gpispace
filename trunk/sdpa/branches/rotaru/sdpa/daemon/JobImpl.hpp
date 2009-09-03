@@ -37,10 +37,9 @@ namespace sdpa { namespace daemon {
         virtual Job::ptr_t get_subjob(const job_id_t & id);
 
         virtual bool is_marked_for_deletion();
-    	virtual void process_event( const boost::statechart::event_base & e);
 
         // job FSM actions
-		virtual void action_run_job(const sdpa::events::RunJobEvent& e);
+		virtual void action_run_job(const sdpa::events::SubmitJobEvent& e);
 		virtual void action_cancel_job(const sdpa::events::CancelJobEvent& e);
 		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e);
 		virtual void action_delete_job(const sdpa::events::DeleteJobEvent& e);
@@ -48,15 +47,6 @@ namespace sdpa { namespace daemon {
 		virtual void action_job_failed(const sdpa::events::JobFailedEvent& e);
 		virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e );
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e );
-
-		virtual void CancelJob(const sdpa::events::CancelJobEvent& event);
-		virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent& event);
-		virtual void DeleteJob(const sdpa::events::DeleteJobEvent& event);
-		virtual void JobFailed(const sdpa::events::JobFailedEvent& event);
-		virtual void JobFinished(const sdpa::events::JobFinishedEvent& event);
-		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent& event);
-		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent& event);
-		virtual void RunJob(const sdpa::events::RunJobEvent& event);
 
     private:
         sdpa::job_id_t id_;
