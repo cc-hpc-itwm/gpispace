@@ -26,9 +26,9 @@ void PreStackPro::update(const gwes::Event& event)
 	cout << "gwes::PreStackPro::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Token*>* dP = event._tokensP;
-		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->first << "]";
+		parameter_list_t* dP = event._tokensP;
+		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
+			cout << "[" << it->edgeP->getExpression() << "]";
 		}
 	}
 	cout << ")" << endl;
@@ -59,62 +59,62 @@ void PreStackPro::execute(const Event& inputEvent) {
 	cout << "algorithm name: " << algName << endl;
 	cout << "algorithm resource: " << algResource << endl;
 	
-	map<string,gwdl::Token*>* inputs = inputEvent._tokensP;
-	map<string,gwdl::Token*> outputs;
-	if (algName=="loadTraceHeaders") {
-		// check input data
-		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
-			string name = iter->first;
-			gwdl::Token* input = iter->second;
-			assert(input!=NULL);
-			if (name=="file") assert(input->getData()->getType()==gwdl::Data::TYPE_FILE);
-			else assert(false);
-		}
-		// simulate execution
-		usleep(500000);
-		// generate faked output token
-		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
-		outputs.insert(pair<string,gwdl::Token*>("thd",outputToken));
-	} 
-
-	else if (algName=="calcGeoReferenceData") {
-		// check input data
-		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
-			string name = iter->first;
-			gwdl::Token* input = iter->second;
-			assert(input!=NULL);
-			if (name=="thd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
-			else assert(false);
-		}
-		// simulate execution
-		usleep(1000000);
-		// generate faked output data
-		gwdl::Token* outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
-		outputs.insert(pair<string,gwdl::Token*>("grd",outputData));
-	} 
-	else if (algName=="selectProjectData") {
-		// check input data
-		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
-			string name = iter->first;
-			gwdl::Token* input = iter->second;
-			assert(input!=NULL);
-			if (name=="grd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
-			else if (name=="parameter") assert(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
-			else assert(false);
-		}
-		// simulate execution
-		usleep(500000);
-		// generate faked output data
-		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
-		outputs.insert(pair<string,gwdl::Token*>("frd",outputToken));
-	} 
-	else {
-		cerr << "WARNING: algorithm " << algName << " is not implemented nor simulated." << endl;
-	}
-	// create output event
-	gwes::Event outputEvent(inputEvent._sourceId,Event::EVENT_ACTIVITY_END,"COMPLETED",&outputs);
-	// notify destination observer
-	_destinationObserverP->update(outputEvent);
+//	map<string,gwdl::Token*>* inputs = inputEvent._tokensP;
+//	map<string,gwdl::Token*> outputs;
+//	if (algName=="loadTraceHeaders") {
+//		// check input data
+//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//			string name = iter->first;
+//			gwdl::Token* input = iter->second;
+//			assert(input!=NULL);
+//			if (name=="file") assert(input->getData()->getType()==gwdl::Data::TYPE_FILE);
+//			else assert(false);
+//		}
+//		// simulate execution
+//		usleep(500000);
+//		// generate faked output token
+//		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token*>("thd",outputToken));
+//	} 
+//
+//	else if (algName=="calcGeoReferenceData") {
+//		// check input data
+//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//			string name = iter->first;
+//			gwdl::Token* input = iter->second;
+//			assert(input!=NULL);
+//			if (name=="thd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
+//			else assert(false);
+//		}
+//		// simulate execution
+//		usleep(1000000);
+//		// generate faked output data
+//		gwdl::Token* outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token*>("grd",outputData));
+//	} 
+//	else if (algName=="selectProjectData") {
+//		// check input data
+//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//			string name = iter->first;
+//			gwdl::Token* input = iter->second;
+//			assert(input!=NULL);
+//			if (name=="grd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
+//			else if (name=="parameter") assert(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
+//			else assert(false);
+//		}
+//		// simulate execution
+//		usleep(500000);
+//		// generate faked output data
+//		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token*>("frd",outputToken));
+//	} 
+//	else {
+//		cerr << "WARNING: algorithm " << algName << " is not implemented nor simulated." << endl;
+//	}
+//	// create output event
+//	gwes::Event outputEvent(inputEvent._sourceId,Event::EVENT_ACTIVITY_END,"COMPLETED",&outputs);
+//	// notify destination observer
+//	_destinationObserverP->update(outputEvent);
 }
 
 /**

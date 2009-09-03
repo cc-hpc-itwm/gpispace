@@ -6,6 +6,7 @@
  */
 //gwes
 #include <gwes/CommandLineActivity.h>
+#include <gwes/TransitionOccurrence.h>
 //gwdl
 #include <gwdl/Token.h>
 //std
@@ -26,7 +27,7 @@ using namespace std;
 namespace gwes
 {
 
-CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP) : Activity(handler, "CommandLineActivity", operationP)
+CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP) : Activity(handler, toP, "CommandLineActivity", operationP)
 {
 }
 
@@ -91,7 +92,10 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 		else cerr << "gwes::CommandLineActivity::startActivity(): error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno) << endl;
 	} 
 	if (mkdir(_workingDirectory.c_str(), S_IRWXU)==0) cout << "gwes::CommandLineActivity::startActivity(): created directory " << _workingDirectory << endl;
-	else cerr << "gwes::CommandLineActivity::startActivity(): error creating " << _workingDirectory << ": " << strerror(errno) << endl;
+	else {
+		if (errno == EEXIST) cout << "gwes::CommandLineActivity::startActivity(): warning creating " << _workingDirectory << ": " << strerror(errno) << endl;
+		else cerr << "gwes::CommandLineActivity::startActivity(): error creating " << _workingDirectory << ": " << strerror(errno) << endl;
+	}
 	
 	// generate command line
 	ostringstream command;
@@ -99,38 +103,48 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	// executable
 	command << _operation->getResourceName();
 
-	//generate arguments from input tokens
-	for (map<string,gwdl::Token*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
-		string edgeExpression = it->first;
-		// stdin is reserved edgeExpression which is not treated as normal command line parameter. 
-		if (edgeExpression != "stdin") {
-			gwdl::Token* tokenP = it->second;
-			if (tokenP->isData()) {
-				string* textP = tokenP->getData()->getText();
-				command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+	//generate arguments from parameter tokens
+	for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
+		const string edgeExpression = it->edgeP->getExpression();
+		if (!edgeExpression.empty() && edgeExpression.find("$")==edgeExpression.npos) {
+			switch (it->scope) {
+			case (TokenParameter::SCOPE_READ):
+			case (TokenParameter::SCOPE_INPUT):
+				if (edgeExpression != "stdin") {
+					if (it->tokenP->isData()) {
+						string* textP = it->tokenP->getData()->getText();
+						command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+					} else {
+						command << " -" << edgeExpression << " " << (it->tokenP->getControl() ? "true" : "false");
+					}
+				}
+			break;
+			case (TokenParameter::SCOPE_WRITE):
+				// do not convert edgeExpressions stdout, stderr, exitcode to command line parameters as they are handled differently.
+				if (edgeExpression != "stdout" && edgeExpression != "stderr" && edgeExpression != "exitcode") {
+					if (it->tokenP->isData()) {
+						string* textP = it->tokenP->getData()->getText();
+						command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+					} else {
+						command << " -" << edgeExpression << " " << (it->tokenP->getControl() ? "true" : "false");
+					}
+				}
+			break;
+			case (TokenParameter::SCOPE_OUTPUT):	
+				// do not convert edgeExpressions stdout, stderr, exitcode to command line parameters as they are handled differently.
+				if (edgeExpression != "stdout" && edgeExpression != "stderr" && edgeExpression != "exitcode") {
+					// create new data token for each output. 
+					string url = generateOutputDataURL(edgeExpression);
+					ostringstream oss;
+					oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
+					it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
+					command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
+				}
+			break;
 			}
 		}
 	}
-	
-	//generate arguments from output tokens
-	for (map<string,gwdl::Token*>::iterator it=_outputs.begin(); it != _outputs.end(); ++it) {
-		string edgeExpression = it->first;
-		// if edge expression of input and output place are the same then just copy the token from input to output. ///Where is this done?
-		// if output edge expression is different from input edge expression, then create new data token. 
-		if (_inputs.find(edgeExpression)==_inputs.end()) {
-			string url = generateOutputDataURL(edgeExpression);
-			ostringstream oss;
-			oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
-			gwdl::Token* tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
-			// do not convert edgeExpressions stdout, stderr, exitcode to command line parameters as they are handled differently.
-			if (edgeExpression != "stdout" && edgeExpression != "stderr" && edgeExpression != "exitcode") {
-				command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
-			}
-			_outputs.erase(edgeExpression);
-			_outputs.insert(pair<string,gwdl::Token*>(edgeExpression,tokenP));
-		}
-	}
-	
+
 	///ToDo: redirect stdin to programm
 	
 	// redirect stdout to file
@@ -145,7 +159,6 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
     setStatus(STATUS_ACTIVE);
     string stdout = execute(command.str());
     setStatus(STATUS_RUNNING);
-    /// ToDo: put inputs and outputs
     // get exit code
     ifstream file(_exitcodefn.c_str());
     if (file.is_open()) {
@@ -162,7 +175,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	if (_observers.size()>0) {
 		ostringstream oss;
 		oss << "exitcode=" << _exitCode;
-		notifyObservers(Event::EVENT_ACTIVITY_END,oss.str(),&_outputs);
+		notifyObservers(Event::EVENT_ACTIVITY_END,oss.str(),&_toP->tokens);
 	}
 
     (!_abort && _exitCode==0) ? setStatus(STATUS_COMPLETED) : setStatus(STATUS_TERMINATED);
@@ -191,7 +204,7 @@ string CommandLineActivity::execute(const string& commandline) {
 	if (_observers.size()>0) {
 		ostringstream oss;
 		oss << "commandline=\"" << commandline << "\"";
-		notifyObservers(Event::EVENT_ACTIVITY_START,oss.str(),&_inputs);
+		notifyObservers(Event::EVENT_ACTIVITY_START,oss.str(),&_toP->tokens);
 	}
     // change to temporary working directory
 	long size;

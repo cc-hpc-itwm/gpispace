@@ -28,9 +28,9 @@ void WorkflowObserver::update(const Event& event)
 	cout << "gwes::WorkflowObserver::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Token*>* dP = event._tokensP;
-		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->first << "]";
+		parameter_list_t* dP = event._tokensP;
+		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
+			cout << "[" << it->edgeP->getExpression() << "]";
 		}
 	}
 	cout << ")" << endl;

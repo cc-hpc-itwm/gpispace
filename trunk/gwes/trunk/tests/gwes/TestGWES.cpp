@@ -46,7 +46,7 @@ void testGWES(GWES &gwes)
 	Edge* arc2 = new Edge(wf->getPlace("p1"));
 	t1->addInEdge(arc2);
 	Edge* arc4 = new Edge(wf->getPlace("p3"));
-	arc4->setExpression("input");
+	//arc4->setExpression("input");
 	t1->addInEdge(arc4);
 	Edge* arc3 = new Edge(wf->getPlace("p2"));
 	t1->addOutEdge(arc3);
@@ -63,23 +63,30 @@ void testGWES(GWES &gwes)
 	opcand->setResourceName("/bin/date");
 	opcand->setSelected(true);
 	wf->getTransition("t1")->getOperation()->getOperationClass()->addOperationCandidate(opcand);
+	
+	wf->getProperties().put("occurrence.sequence","");
 
 	cout << "initiate workflow ..." << endl;
 	string id = gwes.initiate(*wf, "test");
 	
 	// print workflow to stdout	
 	cout << *wf << endl;
+	assert(gwes.getStatusAsString(id)=="INITIATED");
 	
 	WorkflowHandlerTable& wfht = gwes.getWorkflowHandlerTable();
 	assert(wfht.get(id)->getID()==id);
 	
 	cout << "execute workflow ..." << endl;
 	gwes.execute(*wf);
-
 	// print workflow to stdout	
 	cout << *wf << endl;
-	
-	
+	assert(gwes.getStatusAsString(id)=="COMPLETED");
+	Place* placeP = wf->getPlace("p2"); 
+	assert(placeP->getTokenNumber() == 1);
+	Token* tokenP = placeP->getTokens()[0];
+	assert(!tokenP->isData());
+	assert(tokenP->getControl());
+
     cout << "============== END GWES TEST =============" << endl;
    
 }
@@ -100,14 +107,14 @@ bool startsWith(const string& s1, const string& s2) {
 	return false;
 }
 
-string getTestWorkflowDirectory() {
+string getWorkflowDirectory() {
 
 	// get GWES_CPP_HOME
 	char* gwesHomeP = getenv("GWES_CPP_HOME");
 	if (gwesHomeP != NULL) {
 		string gwesHome(gwesHomeP);
 		if ( gwesHome.size() > 0) {
-			return gwesHome + "/workflows/test";
+			return gwesHome + "/workflows";
 		}
 	}
 	
@@ -119,22 +126,28 @@ string getTestWorkflowDirectory() {
 	// if */build/tests
 	string s2("/build/tests");
 	if ( endsWith(path,s2) ) {
-		return string("../../workflows/test");
+		return string("../../workflows");
 	}
 	
 	// if */gwes/trunk
 	s2 = string("/gwes/trunk");
 	if ( endsWith(path,s2) ) {
-		return string("workflows/test");
+		return string("workflows");
 	}
 	
 	// if /tmp/gwes/build_gwes_????
 	s2 = string("/tmp/gwes/build_gwes");
 	if ( startsWith(path,s2) ) {
-		return string("workflows/test");
+		return string("workflows");
 	}
 	
 	// default
 	cout << "CWD=" << path << endl;
-	return string ("../../workflows/tests");
+	return string ("../../workflows");
+}
+
+string getTestWorkflowDirectory() {
+	string ret = getWorkflowDirectory();
+	ret += "/test";
+	return ret;
 }

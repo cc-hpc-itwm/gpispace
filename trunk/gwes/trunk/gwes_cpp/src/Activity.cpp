@@ -16,9 +16,10 @@ using namespace std;
 
 namespace gwes {
 
-Activity::Activity(WorkflowHandler* handler, const string& activityImpl, gwdl::OperationCandidate* operationP) {
+Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const string& activityImpl, gwdl::OperationCandidate* operationP) {
 	_status=STATUS_UNDEFINED;
 	_wfhP = handler;
+	_toP = toP;
 	_activityImpl = activityImpl;
 	_id = handler->getNewActivityID();
 	_operation = operationP;
@@ -29,7 +30,7 @@ Activity::Activity(WorkflowHandler* handler, const string& activityImpl, gwdl::O
 Activity::~Activity() {
 }
 
-void Activity::setStatus(int status) {
+void Activity::setStatus(Activity::status_t status) {
 	if (status == _status) return; 
 //	int oldStatus = _status;
 	_status = status;
@@ -46,7 +47,7 @@ void Activity::setStatus(int status) {
 	}
 }
 
-string Activity::getStatusAsString(int status) const {
+string Activity::getStatusAsString(Activity::status_t status) const {
 	switch (status) {
 	case (STATUS_UNDEFINED): return "UNDEFINED";
 	case (STATUS_RUNNING): return "RUNNING";
@@ -56,13 +57,11 @@ string Activity::getStatusAsString(int status) const {
 	case (STATUS_TERMINATED): return "TERMINATED";
 	case (STATUS_COMPLETED): return "COMPLETED";
 	case (STATUS_FAILED): return "FAILED";
-	default:
-		cerr << "gwes::Activity: Unknown activity status code: " << status << endl;
-		return "";
 	}
+	return "UNDEFINED";
 }
 
-int Activity::waitForStatusChangeFrom(int oldStatus) const {
+Activity::status_t Activity::waitForStatusChangeFrom(Activity::status_t oldStatus) const {
     while (_status == oldStatus) {
     	// ToDo: replace by monitor waiting.
     	usleep(_wfhP->getSleepTime());
@@ -70,7 +69,7 @@ int Activity::waitForStatusChangeFrom(int oldStatus) const {
     return _status;
 }
 
-void Activity::waitForStatusChangeTo(int newStatus) const {
+void Activity::waitForStatusChangeTo(Activity::status_t newStatus) const {
     while (_status != newStatus) {
     	// ToDo: replace by monitor waiting.
     	usleep(_wfhP->getSleepTime());
@@ -89,7 +88,7 @@ void Activity::attachObserver(Observer* observerP) {
 }
 
 // notify observers
-void Activity::notifyObservers(int type, const string& message, map<string,gwdl::Token*>* tokensP) {
+void Activity::notifyObservers(int type, const string& message, parameter_list_t* tokensP) {
 	Event event(_id,type,message,tokensP);
 	for (unsigned int i = 0; i<_observers.size(); i++ ) {
 		_observers[i]->update(event);

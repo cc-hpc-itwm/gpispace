@@ -29,6 +29,7 @@ Place::Place(const string& _id) : capacity(INT_MAX)
 	if (_id == "") id=generateID();
 	else id = _id;
 	capacity = Place_DEFAULT_CAPACITY;
+	nextUnlockedToken = NULL;
 }
 
 
@@ -64,6 +65,8 @@ Place::Place(DOMElement* element) throw(CapacityException)
 			}
 		}
 	}
+	
+	nextUnlockedToken = ( getTokenNumber() > 0 ) ? tokens[0] : NULL;
 }
 
 Place::~Place()
@@ -160,7 +163,8 @@ void Place::addToken(Token* token) throw(CapacityException)
 	if (tokens.size() >= capacity) {
 		throw CapacityException("Trying to put too many tokens on place"); 
 	}
-	tokens.push_back(token);	
+	tokens.push_back(token);
+	nextUnlockedToken = NULL;
 }
 
 void Place::removeToken(int i)
@@ -168,6 +172,7 @@ void Place::removeToken(int i)
 	cout << "gwdl::Place[" << getID() << "]::removeToken(" << i << ")..." << endl;
 	delete tokens[i];
 	tokens.erase(tokens.begin()+i);
+	nextUnlockedToken = NULL;
 }
 
 const vector<Token*>& Place::getTokens() const 
@@ -183,6 +188,7 @@ void Place::removeToken(Token* _token)
 //			cout << "gwdl::Place[" << getID() << "]::removeToken(ID=" << _token->getID() << ")..." << endl;
 			delete *it; *it = NULL;
 			tokens.erase(it);
+			nextUnlockedToken = NULL;
 			break;	
 		}	
 	}	
@@ -191,6 +197,7 @@ void Place::removeToken(Token* _token)
 void Place::removeAllTokens() {
 	for(vector<Token*>::iterator it=tokens.begin(); it != tokens.end(); ++it) delete *it;
 	tokens.clear();	
+	nextUnlockedToken = NULL;
 }
 
 void Place::setCapacity(unsigned int _capacity) throw(CapacityException) 
@@ -229,6 +236,28 @@ void Place::setProperties(Properties& _props)
 Properties& Place::getProperties() 
 {
 	return properties;	
+}
+
+void Place::lockToken(Token* p_token, Transition* p_transition) {
+	nextUnlockedToken = NULL;
+	p_token->lock(p_transition);
+}
+
+void Place::unlockToken(Token* p_token) {
+	nextUnlockedToken = NULL;
+	p_token->unlock();
+}
+
+Token* Place::getNextUnlockedToken() {
+	if ( nextUnlockedToken == NULL) {
+		for (size_t i=0; i<tokens.size(); i++) {
+			if (!tokens[i]->isLocked()) {
+				nextUnlockedToken = tokens[i];
+				break;
+			}
+		}
+	}
+	return nextUnlockedToken;
 }
 
 string Place::generateID() const

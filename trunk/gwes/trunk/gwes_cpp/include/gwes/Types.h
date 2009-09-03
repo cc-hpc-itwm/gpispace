@@ -1,5 +1,7 @@
 #ifndef TYPES_H_
 #define TYPES_H_
+// gwes
+#include <gwes/TokenParameter.h>
 // gwdl
 #include <gwdl/Workflow.h>
 // std
@@ -34,14 +36,24 @@ typedef Activity activity_t;
 typedef std::string activity_id_t;
 
 /**
- * Type of input/output parameters.
+ * Type of read/input/write/output parameters.
  */
-typedef std::string parameter_t;
+typedef TokenParameter parameter_t;
 
 /**
  * Type of tuple of parameters.
+ * The list is sorted by scope:
+ * First read tokens
+ * Second input tokens
+ * Third write tokens
+ * Forth output tokens.
  */
 typedef std::list<parameter_t> parameter_list_t;
+
+/**
+ * Type of map with edgeExpressions as keys and token pointers as values.
+ */
+////typedef std::map<std::string,gwdl::Token*> token_map_t;
 
 } // end namespace gwes
 

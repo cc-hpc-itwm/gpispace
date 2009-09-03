@@ -13,6 +13,7 @@
 #include <gwes/Observer.h>
 #include <gwes/Event.h>
 //#include <gwes/WorkflowHandler.h>
+//#include <gwes/TransitionOccurrence.h>
 //gwdl
 #include <gwdl/Data.h>
 #include <gwdl/OperationCandidate.h>
@@ -24,10 +25,10 @@
 namespace gwes {
 
 /**
- * Declare class WorkflowHandler here because of cyclic dependencies of header files.
- * Real declaration refer to WorkflowHandler.h!
+ * Declare some classes here because of cyclic dependencies of header files.
  */
 class WorkflowHandler;
+class TransitionOccurrence;
 
 /**
  * Abstract Workflow Activity.
@@ -36,48 +37,9 @@ class WorkflowHandler;
  */
 class Activity {
 
-protected:
-
-	std::string _activityImpl;
-	std::string _id;
-	int _status;
-	gwdl::OperationCandidate* _operation;
-
-	/**
-	 * Vector which contains pointers to the observers of this activity.
-	 */
-	std::vector<Observer*> _observers;
-
-	/**
-	 * Map of input tokens for this activity.
-	 * The key of the map is the edge expression related to the token.
-	 * The value contains the token of the parameter, as pointer to the gwdl::Token object.
-	 */
-	std::map<std::string,gwdl::Token*> _inputs;
-
-	/**
-	 * Map of output tokens for this activity.
-	 * The key of the map is the edge expression related to the token.
-	 * The value contains the token of the parameter, as pointer to the gwdl::Token object.
-	 */
-	std::map<std::string,gwdl::Token*> _outputs;
-
-	std::string _faultMessage;
-	int _exitCode;
-	WorkflowHandler* _wfhP;
-	bool _abort;
-	bool _suspend;
-
-	long generateID() {
-		static long counter = 0;
-		return counter++;
-	}
-
-	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", std::map<std::string,gwdl::Token*>* tokensP=NULL);
-
 public:
 
-	enum
+	enum status_t
 	{
 		/**
 		 * Status <B>UNDEFINED = 0</B>. The status remains <CODE>UNDEFINED</CODE> from the construction of the activity
@@ -129,7 +91,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	explicit Activity(WorkflowHandler* handler, const std::string& activityImpl, gwdl::OperationCandidate* operationP);
+	explicit Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const std::string& activityImpl, gwdl::OperationCandidate* operationP);
 
 	/**
 	 * Destructor.
@@ -150,12 +112,12 @@ public:
 	 * Set the current status of this activity.
 	 * @param status The status (refer to STATUS_*).
 	 */
-	void setStatus(int status);
+	void setStatus(status_t status);
 
 	/**
 	 * Get the current status code of this activity.
 	 */
-	int getStatus() const { return _status;}
+	status_t getStatus() const { return _status;}
 
 	/**
 	 * Get the current status of the activity as string.
@@ -173,20 +135,20 @@ public:
 	 * @param status The status code with should be converted into a string.
 	 * @return string representing the status that corresponds to the status code.
 	 */
-	std::string getStatusAsString(int status) const;
+	std::string getStatusAsString(status_t status) const;
 
 	/**
 	 * Wait for activity to change its status.
 	 * @param oldStatus The old status
 	 * @return The new status
 	 */
-	int waitForStatusChangeFrom(int oldStatus) const;
+	status_t waitForStatusChangeFrom(status_t oldStatus) const;
 
 	/**
 	 * Wait for activity to change its status to a specified status.
 	 * @param newStatus The new status code to wait for
 	 */
-	void waitForStatusChangeTo(int newStatus) const;
+	void waitForStatusChangeTo(status_t newStatus) const;
 
 	/**
 	 * Wait for activity to change its status to COMPLETED or TERMINATED.
@@ -194,25 +156,11 @@ public:
 	void waitForStatusChangeToCompletedOrTerminated() const;
 
 	/**
-	 * Set activity inputs.
-	 */
-	void setInputs(const std::map<std::string,gwdl::Token*>& inputs) {_inputs = inputs; }
-
-	/**
-	 * Get activity inputs.
-	 */
-	std::map<std::string,gwdl::Token*>& getInputs() { return _inputs; }
-
-	/**
-	 * Set activity outputs.
-	 */
-	void setOutputs(const std::map<std::string,gwdl::Token*>& outputs) {_outputs = outputs; }
-
-	/**
-	 * Get activity outputs.
-	 */
-	std::map<std::string,gwdl::Token*>& getOutputs() { return _outputs; }
-
+	 * Get the transition occurrence related to this activity.
+	 * The transition occurrence also hold all the read/input/write/output tokens.
+	 */ 
+	TransitionOccurrence* getTransitionOccurrence() const { return _toP; }
+	
 	/**
 	 * Set the fault message of this activity.
 	 */
@@ -290,6 +238,36 @@ public:
 	 * Restart this activity. Status should switch to INITIATED. Implement this method in all derived classes!
 	 */
 	virtual void restartActivity() throw (ActivityException,StateTransitionException) = 0;
+
+protected:
+
+	std::string _activityImpl;
+	std::string _id;
+	status_t _status;
+	gwdl::OperationCandidate* _operation;
+
+	/**
+	 * Vector which contains pointers to the observers of this activity.
+	 */
+	std::vector<Observer*> _observers;
+
+	/**
+	 * Pointer to transition occurrence related to this activity.
+	 */
+	TransitionOccurrence* _toP;
+
+	std::string _faultMessage;
+	int _exitCode;
+	WorkflowHandler* _wfhP;
+	bool _abort;
+	bool _suspend;
+
+	long generateID() {
+		static long counter = 0;
+		return counter++;
+	}
+
+	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", parameter_list_t* tokensP=NULL);
 
 }; // end class Activity
 

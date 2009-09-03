@@ -63,8 +63,9 @@ void testData()
 	///ToDo: FAILED TO DELETE data2!
 	//delete data2;
 	
-	cout << "///ToDo: FAILED WITH INTEL COMPILER/// test workflow format exception ..." << endl;
-/*	string *str3 = new string("<bla>");
+	///ToDo: FAILED WITH INTEL COMPILER/// 
+	cout << "test workflow format exception ..." << endl;
+	string *str3 = new string("<bla>");
 	bool test = false;
 	try {
 		Data *data3 = new Data(*str3);
@@ -77,7 +78,7 @@ void testData()
 	}
     assert(test);
     delete str3;
-*/	
+	
     cout << "============== END DATA TEST =============" << endl;
 	
 }

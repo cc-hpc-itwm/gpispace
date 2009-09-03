@@ -34,7 +34,7 @@ private:
 	GWES* _gwesP;
 
 public:
-	explicit SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP);
+	explicit SubWorkflowActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP);
 	
 	virtual ~SubWorkflowActivity();
 

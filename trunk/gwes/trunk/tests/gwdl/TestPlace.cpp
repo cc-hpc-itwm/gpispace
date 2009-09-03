@@ -11,6 +11,7 @@
 #include <assert.h>
 // gwdl
 #include <gwdl/Token.h>
+#include <gwdl/Transition.h>
 // tests
 #include "TestPlace.h"
 
@@ -49,7 +50,10 @@ void testPlace()
    // place addToken
    Token* token1 = new Token(true);
    cout << "place->addToken.id_" << token1->getID() << endl;
+   cout << "Original token pointer=" << token1 << endl;
    place->addToken(token1);
+   cout << "Place token pointer=" << place->getTokens()[1] << endl;
+   assert(token1 == place->getTokens()[1]);
    printTokens(*place);
 
    // place removeToken(int)
@@ -159,6 +163,24 @@ void testPlace()
    {
    cout << "WorkflowFormatException: " << e.message << endl;
    }
+   
+   // lock token
+   Place *place2 = new Place("");
+   assert(place2->getNextUnlockedToken() == NULL);
+   Token* token2a = new Token(true);
+   Token* token2b = new Token(false);
+   place2->addToken(token2a);
+   place2->addToken(token2b);
+   cout << *place2 << endl;
+   assert(place2->getNextUnlockedToken() == token2a);
+   Transition* tr2 = new Transition("");
+   place2->lockToken(token2a,tr2);
+   assert(place2->getNextUnlockedToken() == token2b);
+   place2->lockToken(token2b,tr2);
+   assert(place2->getNextUnlockedToken() == NULL);
+   
+   delete place2;
+   delete tr2;
 
    cout << "============== END PLACE TEST =============" << endl;
    

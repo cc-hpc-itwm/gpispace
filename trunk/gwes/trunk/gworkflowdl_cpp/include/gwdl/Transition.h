@@ -427,12 +427,6 @@ public:
      */
     bool isEnabled();
     
-    /**
-     * tests whether this transtion contains one or more output or write places with 
-     * an edgeExpression.
-     */
-    bool hasOutputOrWriteEdgeExpressions() const;
-    
 };
 
 }

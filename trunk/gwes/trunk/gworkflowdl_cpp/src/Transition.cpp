@@ -261,25 +261,6 @@ int Transition::getAbstractionLevel() const
 	else return Operation::BLACK;
 }
 
-bool Transition::hasOutputOrWriteEdgeExpressions() const
-{
-	// output edges
-	for (size_t i=0; i<outEdges.size(); i++) {
-		if ( (outEdges[i]->getExpression()).size() > 0 ) {
-			return true;
-		}
-	}
-	
-	// write edges
-    for (size_t i=0; i<writeEdges.size(); i++) {
-		if ( (writeEdges[i]->getExpression()).size() > 0 ) {
-			return true;
-		}
-	}
-    
-    return false;
-}
-
 } // end namespace gwdl
 
 ostream& operator<<(ostream &out, gwdl::Transition &trans) 

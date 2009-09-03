@@ -20,7 +20,7 @@ using namespace gwdl;
 namespace gwes
 {
 
-SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP) : Activity(handler, "SubWorkflowActivity", operationP)
+SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP) : Activity(handler, toP, "SubWorkflowActivity", operationP)
 {
 	_gwesP = handler->getGWES();
 	_subworkflowP = NULL;
@@ -66,15 +66,23 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	}
 	setStatus(STATUS_RUNNING);
 
-	// copy input tokens to places in sub workflow regarding the edge expressions of the parent workflow
-	string edgeExpression = "";
+	// copy read/input/write tokens to places in sub workflow regarding the edge expressions of the parent workflow
+	string edgeExpression;
 	try {
-		for (map<string,gwdl::Token*>::iterator it=_inputs.begin(); it !=_inputs.end(); ++it) {
-			edgeExpression = it->first;
-			// find corresponding place in subworkflow and add token with data on this place
-			cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..." << endl; 
-			Place* placeP = _subworkflowP->getPlace(edgeExpression);
-			placeP->addToken(it->second);
+		Place* placeP;
+		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
+			switch (it->scope) {
+			case (TokenParameter::SCOPE_READ):
+			case (TokenParameter::SCOPE_INPUT):
+			case (TokenParameter::SCOPE_WRITE):
+				edgeExpression = it->edgeP->getExpression();
+			cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..." << endl; 
+			placeP = _subworkflowP->getPlace(edgeExpression);
+			placeP->addToken(it->tokenP->deepCopy());
+			break;
+			case (TokenParameter::SCOPE_OUTPUT):	
+				return;
+			}
 		}
 	} catch (NoSuchWorkflowElement e) {
 		setStatus(STATUS_TERMINATED);
@@ -160,9 +168,9 @@ void SubWorkflowActivity::update(const Event& event) {
 	cout << "gwes::SubWorkflowActivity[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Token*>* dP = event._tokensP;
-		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->first << "]";
+		parameter_list_t* dP = event._tokensP;
+		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
+			cout << "[" << it->edgeP->getExpression() << "]";
 		}
 	}
 	cout << ")" << endl;
@@ -172,10 +180,32 @@ void SubWorkflowActivity::update(const Event& event) {
 		if (event._sourceId.compare(_subworkflowId) == 0) {
 			if (event._message.compare("COMPLETED") == 0) {
 				setStatus(Activity::STATUS_RUNNING);
+				// copy write/output tokens back to places in parent workflow regarding the edge expressions of the parent workflow
+				string edgeExpression;
+				try {
+					for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
+						switch (it->scope) {
+						case (TokenParameter::SCOPE_READ):
+						case (TokenParameter::SCOPE_INPUT):
+							continue;
+						case (TokenParameter::SCOPE_WRITE):
+						case (TokenParameter::SCOPE_OUTPUT):	
+							edgeExpression = it->edgeP->getExpression();
+							cout << "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ..." << endl; 
+							Place* placeP = _subworkflowP->getPlace(edgeExpression);
+							it->tokenP = placeP->getTokens()[0]->deepCopy();
+							break;
+						}
+					}
+				} catch (NoSuchWorkflowElement e) {
+					setStatus(STATUS_TERMINATED);
+					ostringstream message; 
+					message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+					throw WorkflowFormatException(message.str()); 
+				}
 				setStatus(Activity::STATUS_COMPLETED);
 				// remove workflow from GWES and memory
 				_gwesP->remove(_subworkflowId);
-				// ToDo: copy output tokens
 			} else if (event._message.compare("TERMINATED") == 0) {
 				// print sub workflow
 				cout << *_subworkflowP << endl;

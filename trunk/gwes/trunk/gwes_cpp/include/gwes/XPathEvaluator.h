@@ -6,8 +6,8 @@
  */
 #ifndef XPATHEVALUATOR_H_
 #define XPATHEVALUATOR_H_
-// gwdl
-#include <gwdl/Transition.h>
+// gwes
+#include <gwes/TransitionOccurrence.h>
 // libxml2
 #include <libxml/xpath.h>
 
@@ -29,7 +29,7 @@ private:
 	 */
 	static xmlXPathContextPtr _cacheXmlContextP;
 	static xmlDocPtr _cacheXmlContextDocP;
-	static gwdl::Transition* _cacheTransitionP;
+	static const TransitionOccurrence* _cacheTransitionOccurrenceP;
 	static int _cacheStep;
 	
 	/**
@@ -57,13 +57,13 @@ public:
 	 * @param xmlXpathContextChar The context for the evaluation as const char*.
 	 */
 	explicit XPathEvaluator(const char* xmlXpathContextChar);
-	
+
 	/**
 	 * Constructor for XPathEvaluator.
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
-	 * @param transitionP Pointer to the transition from which to build the context for the evaluation.
+	 * @param transitionOccurrenceP Pointer to the transition occurrence from which to build the context for the evaluation.
 	 */
-	explicit XPathEvaluator(gwdl::Transition* transitionP, int step) throw (gwdl::WorkflowFormatException);
+	explicit XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException);
 
 	/**
 	 * Destructor.

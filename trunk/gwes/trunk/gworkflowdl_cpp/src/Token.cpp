@@ -119,6 +119,22 @@ DOMElement* Token::toElement(DOMDocument * doc)
    return el;
 }
 
+Token* Token::deepCopy() {
+	Token* ret = NULL; 
+	// data token
+	if (isData()) {
+		ret = new Token(properties, data->deepCopy());
+	} 
+	
+	// control token
+	else {
+		ret = new Token(properties, control);
+	}
+	
+	return ret;
+}
+
+
 }
 
 ostream& operator<<(ostream &out, gwdl::Token &token) 

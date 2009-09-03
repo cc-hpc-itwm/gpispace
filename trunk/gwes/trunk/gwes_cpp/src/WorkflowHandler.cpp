@@ -8,9 +8,7 @@
 #include <gwes/WorkflowHandler.h>
 #include <gwes/SdpaActivity.h>
 #include <gwes/CommandLineActivity.h>
-#include <gwes/PreStackProActivity.h>
 #include <gwes/SubWorkflowActivity.h>
-#include <gwes/XPathEvaluator.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -23,9 +21,6 @@ using namespace gwes;
 
 namespace gwes {
 
-/**
- * ToDo: Use data structure "TransitionOccurrence" (contains transition and tokens)
- */
 WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) {
 	_status=STATUS_UNDEFINED;
 	// set user id
@@ -43,6 +38,12 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string&
 	_abort = false;
 	_suspend = false;
 	_sleepTime = SLEEP_TIME_MIN;
+	_simulation = false;
+	if (workflowP->getProperties().contains("simulation") && (workflowP->getProperties().get("simulation")).compare("false") != 0) {
+		_simulation = true;
+		cout << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): Simulation is ON" << endl; 
+		cout << *workflowP << endl;
+	}
 	// set status
 	setStatus(STATUS_INITIATED);
 }
@@ -55,7 +56,7 @@ WorkflowHandler::~WorkflowHandler() {
 	_activityTable.clear();
 }
 
-void WorkflowHandler::setStatus(int status) {
+void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 	if (status == _status) return;
 //	int oldStatus = _status;
 	_status = status;
@@ -166,24 +167,29 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 
 		///ToDo: search for undecided decisions. Updates "unresolvedDecisionTransitions" and "undecidedDecisions"
 
-		//select transition, find enabled transition with true condition. Updates list "enabledTrueTransitions"
-		Transition* selectedTransitionP = selectTransition(enabledTransitions, step);
+		//select transition, find enabled transition with true condition. 
+		// ToDo: Updates list "enabledTrueTransitions" ?
+		TransitionOccurrence* selectedToP = selectTransitionOccurrence(enabledTransitions, step);
+		if (selectedToP != NULL) {
+			selectedToP->simulation=_simulation;
+			cout << "Processing " << *selectedToP << " ..." << endl;
+		}
 		
 		///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
 
 		//suspend if breakpoint has been reached
-		if (!_abort && !_suspend && selectedTransitionP != NULL) {
-			Properties transprops = selectedTransitionP->getProperties();
+		if (!_abort && !_suspend && selectedToP != NULL) {
+			Properties transprops = selectedToP->transitionP->getProperties();
 			if (transprops.contains("breakpoint")) {
 				string breakstring = transprops.get("breakpoint");
 				// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 				if (breakstring=="REACHED") {
 					cout << "released breakpoint at transition "
-							<< selectedTransitionP->getID() << endl;
+							<< selectedToP->transitionP->getID() << endl;
 					transprops.put("breakpoint", "RELEASED");
 				} else {
 					cout << "reached breakpoint at transition "
-							<< selectedTransitionP->getID() << endl;
+							<< selectedToP->transitionP->getID() << endl;
 					transprops.put("breakpoint", "REACHED");
 					_suspend = true;
 				}
@@ -193,30 +199,30 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		///ToDo: prorate blue transtions related to program executions
 
 		//process selected transition.
-		if (!_abort && !_suspend && selectedTransitionP != NULL) {
-			int abstractionLevel = selectedTransitionP->getAbstractionLevel();
-			cout << "--- step " << step << " (" << getID() << ") --- processing transition \""
-					<< selectedTransitionP->getID() << "\" (level "
+		if (!_abort && !_suspend && selectedToP != NULL) {
+			int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
+			cout << "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
+					<< selectedToP->getID() << "\" (level "
 					<< abstractionLevel << ") ..." << endl;
 			switch (abstractionLevel) {
 			case (Operation::BLACK): // no operation
-				if (processBlackTransition(selectedTransitionP, step))
+				if (processBlackTransition(selectedToP, step))
 					modification = true;
 				break;
 			case (Operation::GREEN): // concrete selected operation
-				if (processGreenTransition(selectedTransitionP, step))
+				if (processGreenTransition(selectedToP, step))
 					modification = true;
 				break;
 			case (Operation::BLUE): // set of operation candidates
-				if (processBlueTransition(selectedTransitionP, step))
+				if (processBlueTransition(selectedToP, step))
 					modification = true;
 				break;
 			case (Operation::YELLOW): // operation class
-				if (processYellowTransition(selectedTransitionP, step))
+				if (processYellowTransition(selectedToP, step))
 					modification = true;
 				break;
 			case (Operation::RED): // unspecified operation
-				if (processRedTransition(selectedTransitionP, step))
+				if (processRedTransition(selectedToP, step))
 					modification = true;
 				break;
 			default:
@@ -236,7 +242,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		}
 
         // suspend if there is a deadlock because of false conditions
-        if (getStatus() == STATUS_RUNNING && !modification && selectedTransitionP == NULL) {
+        if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
             modification = true;
 			cout << "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!"  << endl;
 			_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
@@ -323,14 +329,14 @@ void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 	}
 }
 
-int WorkflowHandler::waitForStatusChangeFrom(int oldStatus) {
+WorkflowHandler::status_t WorkflowHandler::waitForStatusChangeFrom(WorkflowHandler::status_t oldStatus) {
 	while (_status == oldStatus) {
 		usleep(_sleepTime);
 	}
 	return _status;
 }
 
-void WorkflowHandler::waitForStatusChangeTo(int newStatus) {
+void WorkflowHandler::waitForStatusChangeTo(WorkflowHandler::status_t newStatus) {
 	while (_status != newStatus) {
 		usleep(_sleepTime);
 	}
@@ -368,13 +374,14 @@ void WorkflowHandler::connect(Channel* channel) {
  * @deprecated[Use Spda2Gwes instead]
  */
 void WorkflowHandler::update(const Event& event) {
+	cerr << "gwes::WorkflowHandler::update() is DEPRICATED!";
 	// logging
 	cout << "gwes::WorkflowHandler[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
 	if (event._tokensP!=NULL) {
 		cout << ",";
-		map<string,gwdl::Token*>* dP = event._tokensP;
-		for (map<string,gwdl::Token*>::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->first << "]";
+		parameter_list_t* dP = event._tokensP;
+		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
+				cout << "[" << it->edgeP->getExpression() << "]";
 		}
 	}
 	cout << ")" << endl;
@@ -385,7 +392,7 @@ void WorkflowHandler::update(const Event& event) {
 		if (activityP!=NULL) {
 			activityP->setStatus(Activity::STATUS_RUNNING);
 			if (event._tokensP!=NULL) {
-				activityP->setOutputs(*event._tokensP);
+				/// here was activity.setOutputs
 			}
 			activityP->setStatus(Activity::STATUS_COMPLETED);
 		}
@@ -429,38 +436,27 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 ///////////////////////////////////////////////
 
 /**
+ * Select next enabled transtition with true conditions and build transition occurrence object.
+ * This method also locks all input tokens.
  * ToDo: include support of data.group
  * ToDo: include support for transition priority
  */
-Transition* WorkflowHandler::selectTransition(vector<gwdl::Transition*>& enabledTransitions,int step) {
+TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::Transition*>& enabledTransitions,int step) {
 	if (enabledTransitions.size()<= 0)
 		return NULL;
 	else {
 		for (vector<gwdl::Transition*>::iterator it = enabledTransitions.begin(); it != enabledTransitions.end(); ++it) {
-			const vector<string> conditions = (*it)->getConditions();
-			if (conditions.empty()) return (*it);
-			else {
-				// check conditions
-				XPathEvaluator* xpathP = new XPathEvaluator((*it),step);
-				bool cond = true;
-				for (size_t i=0; i<conditions.size(); i++) {
-					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
-					// expand variables ( $x = 5 ) -> /token/x = 5
-					string condition = conditions[i];
-					if ( !xpathP->evalCondition(condition) ) {
-						cond = false;
-						break;
-					}
-				}
-				delete xpathP;
-				if (cond) return (*it);
+			TransitionOccurrence* toP = new TransitionOccurrence(*it);
+			if (toP->checkConditions(step)) {
+				toP->lockTokens();
+				return toP;
 			}
 		}
 		return NULL;
 	}
 }
 
-bool WorkflowHandler::processRedTransition(Transition* tP, int step) {
+bool WorkflowHandler::processRedTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
 	cerr
 			<< "gwes::WorkflowHandler::processRedTransition() not yet implemented!"
@@ -468,7 +464,7 @@ bool WorkflowHandler::processRedTransition(Transition* tP, int step) {
 	return false;
 }
 
-bool WorkflowHandler::processYellowTransition(Transition* tP, int step) {
+bool WorkflowHandler::processYellowTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
 	cerr
 			<< "gwes::WorkflowHandler::processYellowTransition() not yet implemented!"
@@ -476,7 +472,7 @@ bool WorkflowHandler::processYellowTransition(Transition* tP, int step) {
 	return false;
 }
 
-bool WorkflowHandler::processBlueTransition(Transition* tP, int step) {
+bool WorkflowHandler::processBlueTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
 	cerr
 			<< "gwes::WorkflowHandler::processBlueTransition() not yet implemented!"
@@ -484,13 +480,13 @@ bool WorkflowHandler::processBlueTransition(Transition* tP, int step) {
 	return false;
 }
 
-bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
-	cout << "gwes::WorkflowHandler::processGreenTransition(" << tP->getID()
+bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step) {
+	cout << "gwes::WorkflowHandler::processGreenTransitionOccurrence(" << toP->getID()
 			<< ") ..." << endl;
 	bool modification = false;
 
 	// select selected operation
-	vector<OperationCandidate*> ocs = tP->getOperation()->getOperationClass()->getOperationCandidates();
+	vector<OperationCandidate*> ocs = toP->transitionP->getOperation()->getOperationClass()->getOperationCandidates();
 	OperationCandidate* operationP = NULL;
 	for (size_t i=0; i<ocs.size(); i++) {
 		if (ocs[i]->isSelected()) {
@@ -507,16 +503,14 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	Activity* activityP;
 	string operationType = operationP->getType();
 	if (operationType == "sdpa") {
-		activityP = new SdpaActivity(this, operationP);
+		activityP = new SdpaActivity(this, toP, operationP);
 	} else if (operationType == "cli") {
-		activityP = new CommandLineActivity(this, operationP);
-	} else if (operationType == "psp") {
-		activityP = new PreStackProActivity(this, operationP);
+		activityP = new CommandLineActivity(this, toP, operationP);
 	} else if (operationType == "workflow") {
-		activityP = new SubWorkflowActivity(this, operationP);
+		activityP = new SubWorkflowActivity(this, toP, operationP);
 	} else {
 		ostringstream oss;
-		oss << "Transition \"" << tP->getID()
+		oss << "Transition occurrence \"" << toP->getID()
 				<< "\" is related to an operation of type \"" << operationType
 				<< "\" which is not supported." << endl;
 		throw WorkflowFormatException(oss.str());
@@ -525,6 +519,7 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 		cerr << "ERROR: Activity Pointer is NULL!" << endl;
 		return modification;
 	}
+	toP->activityP=activityP;
 	
 	// attach workflow observers to activity
 	for (size_t i=0; i<_channels.size(); i++) {
@@ -533,14 +528,9 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 
 	setStatus(STATUS_ACTIVE);
 	_activityTable.put(activityP);
-	_activityTransitionTable.insert(pair<string,gwdl::Transition*>(activityP->getID(),tP));
 
 	// initiate activity
 	activityP->initiateActivity();
-
-	// set inputs and outputs
-	activityP->setInputs(retrieveInputTokens(tP, activityP));
-	activityP->setOutputs(generateOutputTokensTemplate(tP));
 
 	// invoke activity
 	activityP->startActivity();
@@ -549,69 +539,30 @@ bool WorkflowHandler::processGreenTransition(Transition* tP, int step) {
 	return modification;
 }
 
-bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
-	cout << "gwes::WorkflowHandler::processBlackTransition(" << tP->getID() << ") ..." << endl;
+bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step) {
+	cout << "gwes::WorkflowHandler::processBlackTransitionOccurrence(" << toP->getID() << ") ..." << endl;
+
+	//evaluate edgeExpressions with XPath expressions.
+	toP->evaluateXPathEdgeExpressions(step);
 	
-	Token* tokenP = NULL;
+	// remove input tokens
+	toP->removeInputTokens();
 
-	// Create XPathEvaluator if there are any outgoing edgeExpressions.
-	// The context is created from the tokens.
-	// ToDo: copy token properties
-	XPathEvaluator* xpathEvaluatorP = NULL;
-	if (tP->hasOutputOrWriteEdgeExpressions()) {
-		xpathEvaluatorP = new XPathEvaluator(tP, step);
+	// put output tokens to output places.
+	try {
+		toP->writeWriteTokens();
+		toP->putOutputTokens();
+	} catch (CapacityException e) {
+		cerr << "exception: " << e.message << endl;
+		_abort = true;
+		_wfP->getProperties().put(createNewErrorID(), e.message);
 	}
-
-	// process input edges
-	
-	vector<Edge*> inEdges = tP->getInEdges();
-	for (size_t i=0; i<inEdges.size(); i++) {
-		size_t j = 0;
-		tokenP = inEdges[i]->getPlace()->getTokens()[j];
-		while (tokenP->isLocked()) {
-			tokenP = inEdges[i]->getPlace()->getTokens()[++j];
-		}
-
-		// logging
-//		if (tokenP->isData())
-//			cout << "--- step " << step << " --- processing data token \n" << *tokenP << endl;
-//		else
-//			cout << "--- step " << step << " --- processing control token "	<< *tokenP << endl;
-
-		// remove input token
-		inEdges[i]->getPlace()->removeToken(tokenP);
-	}
-
-	///ToDo evaluate edgeExpressions with XPath expressions.
-
-	// put xpath evaluation of inputTokens to corresponding output places
-	vector<Edge*> outEdges = tP->getOutEdges();
-	for (size_t i=0; i<outEdges.size(); i++) {
-		try {
-			string edgeExpression = outEdges[i]->getExpression();
-			if (edgeExpression.size() > 0) {				// data token
-				string str = xpathEvaluatorP->evalExpression2Xml(edgeExpression);
-				tokenP = new Token( new Data(str) );
-			} else {                                        // control token
-				tokenP = new Token(true);
-			}
-			outEdges[i]->getPlace()->addToken(tokenP);
-		} catch (CapacityException e) {
-			cerr << "exception: " << e.message << endl;
-			_abort = true;
-			_wfP->getProperties().put(createNewErrorID(), e.message);
-		}
-	}
-
-	// ToDo: Support write edges!
-	
-	if (xpathEvaluatorP != NULL) delete xpathEvaluatorP;
 	
     // store occurrence sequence
     if (_wfP->getProperties().contains("occurrence.sequence")) {
     	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
     	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
-    	occurrenceSequence += tP->getID();
+    	occurrenceSequence += toP->transitionP->getID();
     	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
     }
 	
@@ -620,7 +571,7 @@ bool WorkflowHandler::processBlackTransition(Transition* tP, int step) {
 
 bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 	bool modification = false;
-	int tempworkflowstatus = STATUS_RUNNING;
+	status_t tempworkflowstatus = STATUS_RUNNING;
 	// loop through activities
 	for (map<string,Activity*>::iterator it=_activityTable.begin(); it
 			!=_activityTable.end(); ++it) {
@@ -631,102 +582,52 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 		// activity has completed or terminated
 		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
-			Transition* transitionP = _activityTransitionTable.find(activityID)->second;
+			TransitionOccurrence* toP = activityP->getTransitionOccurrence();
+////			Transition* transitionP = _activityTransitionTable.find(activityID)->second;
 
 			// set workflow warning property if there is any activity fault message
 			string faultMessage = activityP->getFaultMessage();
 			if (faultMessage.size()>0) {
 				ostringstream oss;
 				oss << "Fault in activity \"" << activityID
-						<< "\" related to transition \""
-						<< transitionP->getID() << "\": " << faultMessage
+						<< "\" related to transition occurrence \""
+						<< toP->getID() << "\": " << faultMessage
 						<< endl;
 				_wfP->getProperties().put(createNewWarnID(), oss.str());
 			}
+			
+			// process XPath edge expressions
+			toP->evaluateXPathEdgeExpressions(step);
 
-			// remove the corresponding token from each input place that has been locked by this transition
-			vector<gwdl::Token*> lockedtokens = _activityTokenlistTable.find(activityID)->second;
-			vector<gwdl::Edge*> inEdges = transitionP->getInEdges();
-			for (size_t i=0; i<inEdges.size(); i++) {
-				const vector<Token*>& placetokens = inEdges[i]->getPlace()->getTokens();
-				size_t il = 0;
-				while (il < lockedtokens.size()) {
-					size_t ip = 0;
-					while (ip < placetokens.size()) {
-						if (lockedtokens[il]->getID() == placetokens[ip]->getID()) {
-							inEdges[i]->getPlace()->removeToken(lockedtokens[il]);
-							il = lockedtokens.size();
-							ip = placetokens.size();
-						}
-						ip++;
-					}
-					il++;
-				}
+			// remove the corresponding token from each input place
+			toP->removeInputTokens();
+
+			try {
+				// replace write tokens
+				toP->writeWriteTokens();
+				//  put new token on each output place
+				toP->putOutputTokens();
+			} catch (CapacityException e) {
+				cerr << "CapacityException:" << e.message << endl;;
+				_abort = true;
+				_wfP->getProperties().put(createNewErrorID(), e.message);
 			}
-
-			//  put new token on each output place
-			vector<gwdl::Edge*> outEdges = transitionP->getOutEdges();
-			for (size_t i=0; i<outEdges.size(); i++) {
-				try {
-					gwdl::Token* tokenP = NULL;
-					string edgeExpression = outEdges[i]->getExpression();
-
-					// control place (without edge expression)
-					if (edgeExpression.size() <= 0 ) {
-						tokenP = new Token(activityStatus == Activity::STATUS_COMPLETED);
-					}
-					// data place (with edge expression)
-					else {
-						///ToDo: detect whether the output edge expression is already attached to an input value
-						//tokenP = (Token) activity.getInputs().get(edgeExpression);
-
-						// data place with edge expression that is equal to an output parameter of the operation
-						if (tokenP == NULL) {
-							map<string,gwdl::Token*> outputs = activityP->getOutputs();
-							if (outputs.find(edgeExpression)!=outputs.end()) {
-								tokenP = outputs.find(edgeExpression)->second;
-							} else {
-								///put SOAP Fault if there is no data for edge expression
-								ostringstream fault;
-								fault << "<data><soapenv:Fault xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">";
-								fault << "<soapenv:Code><soapenv:Value>env:Receive</soapenv:Value></soapenv:Code>";
-								fault << "<soapenv:Reason><soapenv:Text xml:lang=\"en\">Activity '";
-								fault << activityP->getID();
-								fault << "': Not Output Available</soapenv:Text></soapenv:Reason>";
-							    fault << "<soapenv:Detail>The activity '" << activityP->getID();
-							    fault << "' has no output parameter related to the edge expression '" << edgeExpression;
-							    fault << "'</soapenv:Detail>";
-							    fault << "</soapenv:Fault></data>";
-							    tokenP = new Token(new Data(fault.str()));
-							}
-						}
-					}
-					outEdges[i]->getPlace()->addToken(tokenP);
-				} catch (CapacityException e) {
-					cerr << "CapacityException:" << e.message << endl;;
-					_abort = true;
-					_wfP->getProperties().put(createNewErrorID(), e.message);
-				} catch (WorkflowFormatException e) {
-					cerr << "WorkflowFormatException:" << e.message << endl;;
-					_abort = true;
-					_wfP->getProperties().put(createNewErrorID(), e.message);
-				}
-			}
+			
 			modification = true;
 
 		    // store occurrence sequence
 		    if (_wfP->getProperties().contains("occurrence.sequence")) {
 		    	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
 		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
-		    	occurrenceSequence += transitionP->getID();
+		    	occurrenceSequence += toP->transitionP->getID();
 		    	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
 		    }
 
 		    ///ToDo: set transition status
 
 		    // cleanup
-		    _activityTransitionTable.erase(activityID);
-		    _activityTokenlistTable.erase(activityID);
+////		    _activityTransitionTable.erase(activityID);
+////		    _activityTokenlistTable.erase(activityID);
 		    _activityTable.remove(activityID);
 
 		    ///ToDo: fault management regarding the fault management policy property
@@ -755,109 +656,6 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 	// set workflow status
 	setStatus(tempworkflowstatus);
 	return modification;
-}
-
-map<string,gwdl::Token*> WorkflowHandler::retrieveInputTokens(gwdl::Transition* transitionP, Activity* activityP)
-		throw (gwdl::WorkflowFormatException) {
-//	cout << "WorkflowHandler::retrieveInputDataTokens() ..." << endl;
-	// get read edges
-	const vector<gwdl::Edge*>& readEdges = transitionP->getReadEdges();
-	// get input edges
-	const vector<gwdl::Edge*>& inEdges = transitionP->getInEdges();
-
-	// create empty vector/maps
-	vector<gwdl::Token*> tokenlist;
-	map<string,gwdl::Token*> inputTokens;
-
-	// process read edges
-	if (readEdges.size()>0) {
-		// loop through read edges (j)
-		for (size_t j=0; j<readEdges.size(); j++) {
-			// search next token which is not locked (i)
-			size_t i = 0;
-			gwdl::Token* tokenP = readEdges[j]->getPlace()->getTokens()[i];
-			while (tokenP->isLocked()) {
-				tokenP = readEdges[j]->getPlace()->getTokens()[++i];
-			}
-
-			// logging
-//			if (tokenP->isData())
-//				cout
-//						<< "WorkflowHandler::retrieveInputDataTokens(): processing read data token "
-//						<< *tokenP << endl;
-//			else
-//				cout
-//						<< "WorkflowHandler::retrieveInputDataTokens(): processing read control token "
-//						<< *tokenP << endl;
-
-			// note: tokens on read places are not locked and not removed after processing!
-
-			// put data token to input Hash Map
-			string edgeExpression = readEdges[j]->getExpression();
-			if (edgeExpression.size()> 0) {
-				///ToDo: Replace all child elements names by edge expression, e.g. edge expression = value1 -->
-				// <data><value1>15</value1></data>
-				inputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,tokenP));
-			}
-		}
-	}
-
-	// process input edges
-	if (inEdges.size()>0) {
-		// loop through input edges (j)
-		for (size_t j=0; j<inEdges.size(); j++) {
-			// search next token which is not locked (i)
-			size_t i = 0;
-			gwdl::Token* tokenP = inEdges[j]->getPlace()->getTokens()[i];
-			while (tokenP->isLocked()) {
-				tokenP = inEdges[j]->getPlace()->getTokens()[++i];
-			}
-
-			// logging
-//			if (tokenP->isData())
-//				cout
-//						<< "WorkflowHandler::retrieveInputDataTokens(): processing input data token \n"
-//						<< *tokenP << endl;
-//			else
-//				cout
-//						<< "WorkflowHandler::retrieveInputDataTokens(): processing input control token "
-//						<< *tokenP << endl;
-
-			// lock input tokens and put them to tokenlist
-			tokenP->lock(transitionP);
-			tokenlist.push_back(tokenP);
-
-			// put data token to input Hash Map
-			string edgeExpression = inEdges[j]->getExpression();
-			if (edgeExpression.size()> 0) {
-				///ToDo: Replace all child elements names by edge expression, e.g. edge expression = value1 -->
-				// <data><value1>15</value1></data>
-				inputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,tokenP));
-			}
-
-			// remove token from input place is done after completion or termination of the activity.
-		}
-	}
-
-	_activityTokenlistTable.insert(pair<string, vector<gwdl::Token*> >(activityP->getID(), tokenlist));
-	return inputTokens;
-}
-
-map<string,gwdl::Token*> WorkflowHandler::generateOutputTokensTemplate(gwdl::Transition* transitionP) {
-	const vector<gwdl::Edge*>& outEdges = transitionP->getOutEdges();
-	map<string,gwdl::Token*> outputTokens;
-	if (outEdges.size()> 0) {
-		// loop through output edges
-		for (size_t i=0; i<outEdges.size(); i++) {
-			string edgeExpression = outEdges[i]->getExpression();
-			// put the edgeExpression to the output HashMap
-			if (edgeExpression.size()>0) {
-				// the real result tokens on the output place are constructed asynch
-				outputTokens.insert(pair<string, gwdl::Token*>(edgeExpression,NULL));
-			}
-		}
-	}
-	return outputTokens;
 }
 
 string WorkflowHandler::createNewErrorID() const {

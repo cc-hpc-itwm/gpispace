@@ -7,28 +7,29 @@
     <!-- $Id: pstm-1.gwdl 135 2009-06-23 12:05:54Z SVN_andreas_hohe $ -->
     
     <description>Pre-Stack Time Migration (Aggregator)</description>
+	
+	<property name="simulation">true</property>
+    <property name="occurrence.sequence" />
 
 	<!-- workflow input places (are filled with tokens by parent workflow) -->
     <place ID="OffsetParameters">
         <property name="workflowInputPlace"/>
         <token>
-            <data><min>15</min><max>33</max><step>1</step></data>
+            <data><offsets xmlns=""><min>33.</min><max>33.</max><step>1.</step></offsets></data>
         </token>
     </place>
 
     <place ID="GatherParameters">
         <property name="workflowInputPlace"/>
         <token>
-            <data>
-                <numberPoints>1000x800x400</numberPoints>
-            </data>
+            <data><numberPoints xmlns="">1000x800x400</numberPoints></data>
         </token>
     </place>
 
     <!-- intermediate places -->
     <place ID="OffsetClasses"/>
     <place ID="NumberClasses">
-        <token><data><numberClasses xsd:type="int">0</numberClasses></data></token>
+        <token><data><numberClasses xmlns="" xsd:type="int">0</numberClasses></data></token>
     </place>
     <place ID="HasNext">
         <token><control>true</control></token>
@@ -50,12 +51,12 @@
         <inputPlace placeID="HasNext" edgeExpression="HasNext"/>
         <inputPlace placeID="NumberClasses" edgeExpression="i"/>
         <outputPlace placeID="NumberClasses" edgeExpression="$i + 1"/>
-        <outputPlace placeID="HasNext" edgeExpression="$HasNext"/>
+        <outputPlace placeID="HasNext" edgeExpression="HasNext"/>
         <outputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
-        <condition>$HasNext = true</condition>
+        <condition>$HasNext = 'true'</condition>
         <operation>
             <oc:operationClass name="getNextOffsetClass">
-                <oc:operationCandidate type="cli" operationName="getNextOffsetClass.sh" resourceName="./getNextOffsetClass.sh" selected="true"/>
+                <oc:operationCandidate type="cli" operationName="getNextOffsetClass.sh" resourceName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/getNextOffsetClass.sh" selected="true"/>
             </oc:operationClass>
         </operation>
     </transition>
@@ -63,7 +64,7 @@
     <transition ID="checkHasNext">
         <inputPlace placeID="HasNext" edgeExpression="HasNext"/>
         <outputPlace placeID="IsLast"/>
-        <condition>$HasNext = false</condition>
+        <condition>not($HasNext = 'true')</condition>
     </transition>
 
     <transition ID="getNumberOfPoints">
@@ -71,7 +72,7 @@
         <outputPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
         <operation>
             <oc:operationClass name="getNumberOfPoints">
-                <oc:operationCandidate type="cli" operationName="getNumberOfPoints.sh" resourceName="./getNumberOfPoints.sh" selected="true"/>
+                <oc:operationCandidate type="cli" operationName="getNumberOfPoints.sh" resourceName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/getNumberOfPoints.sh" selected="true"/>
             </oc:operationClass>
         </operation>
     </transition>
@@ -84,7 +85,7 @@
         <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
  		<operation>
       		<oc:operationClass name="createOutputGather">
-        		<oc:operationCandidate type="cli" operationName="createOutputGather.sh" resourceName="./createOutputGather.sh" selected="true"/>
+        		<oc:operationCandidate type="cli" operationName="createOutputGather.sh" resourceName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/createOutputGather.sh" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>
@@ -97,7 +98,7 @@
         <outputPlace placeID="OffsetClass" edgeExpression="$OffsetClass"/>
         <operation>
             <oc:operationClass name="calculateOffsetVolume">
-                <oc:operationCandidate type="workflow" operationName="pstm-calculateOffsetVolume.gwdl" resourceName="./" selected="true"/>
+                <oc:operationCandidate type="workflow" operationName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/workflows/pstm-calculateOffsetVolume.gwdl" resourceName="localhost" selected="true"/>
             </oc:operationClass>
         </operation>
     </transition>
@@ -110,7 +111,7 @@
         <writePlace placeID="OutputGather" edgeExpression="$OutputGather"/>
         <operation>
             <oc:operationClass name="store">
-                <oc:operationCandidate type="cli" operationName="store.sh" resourceName="./store.sh" selected="true"/>
+                <oc:operationCandidate type="cli" operationName="store.sh" resourceName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/store.sh" selected="true"/>
             </oc:operationClass>
         </operation>
     </transition>

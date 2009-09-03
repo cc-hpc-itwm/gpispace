@@ -25,25 +25,28 @@ int main()
 	cout << "########################### BEGIN OF ALL GWES TESTS ###########################" << endl;
 
 	gwes::GWES gwes;
-
-	testXPathEvaluator();
-	testXPathEvaluatorContextCache();
+	string twd = getTestWorkflowDirectory();
+	string wd = getWorkflowDirectory();
+	Workflow workflow;
+	Place* placeP;
+	Token* tokenP;
 
 	// test basic GWES features 
 	testGWES(gwes);
 
+
 	if(TEST_ALL) {
+		
+		// test XPathEvaluator
+		testXPathEvaluator();
+		testXPathEvaluatorContextCache();
 
 		// test SDPA2GWES communication
 		testSdpa2Gwes();
 		testGwes2Sdpa();
 
 		// test various workflows
-		string twd = getTestWorkflowDirectory();
-		Workflow workflow;
-		Place* placeP;
-		Token* tokenP;
-
+		
 		// simple.gwdl
 		workflow = testWorkflow(twd + "/simple.gwdl",gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
@@ -69,7 +72,7 @@ int main()
 		cout << *(tokenP->getData()) << endl;
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>15</x>\n  <x>16</x>\n</data>") == 0);
 
-        placeP = workflow.getPlace("y"); 
+	    placeP = workflow.getPlace("y"); 
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens().front();
 		assert(tokenP->isData());
@@ -92,7 +95,7 @@ int main()
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("B A A") == 0 );
 		
-        placeP = workflow.getPlace("end_A"); 
+	    placeP = workflow.getPlace("end_A"); 
 		assert(placeP->getTokenNumber() == 2);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
@@ -103,7 +106,7 @@ int main()
 		cout << *(tokenP->getData()) << endl;
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>7</x>\n</data>") == 0);
 		
-        placeP = workflow.getPlace("end_B"); 
+	    placeP = workflow.getPlace("end_B"); 
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
@@ -114,7 +117,7 @@ int main()
 		workflow = testWorkflow(twd + "/control-loop.gwdl",gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
-        placeP = workflow.getPlace("end"); 
+	    placeP = workflow.getPlace("end"); 
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
@@ -129,11 +132,13 @@ int main()
 		//   workflow = testWorkflow(twd + "/concatenateIt_fail.gwdl",gwes);
 		//   assert(gwes.getStatusAsString(workflow)=="TERMINATED");
 		//
-		
-		workflow = testPreStackProWorkflow(twd + "/psp-grd.gwdl",gwes);
-		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
-		assert( workflow.getProperties().get("occurrence.sequence").compare("loadTraceHeaders calcGeoReferenceData selectProjectData") == 0 );
+
 	}
+
+//	// Test of PSTM use case.
+//	workflow = testWorkflow(wd + "/pstm-1_withInputTokens.gwdl",gwes);
+//	// workflow = testWorkflow(wd + "/pstm-calculateOffsetVolume_withInputTokens.gwdl",gwes);
+//	assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 	
 	cout << "########################### END OF ALL GWES TESTS ###########################" << endl;
 

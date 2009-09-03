@@ -101,7 +101,7 @@ string* Data::toString() const
 
 void Data::trim(string& s)
 {
-	s.erase(s.find_last_not_of(" ")+1).erase(0,s.find_first_not_of(" "));
+	s.erase(s.find_last_not_of(" \t\f\v\n\r")+1).erase(0,s.find_first_not_of(" \t\f\v\n\r"));
 }
 
 Data* Data::deepCopy()

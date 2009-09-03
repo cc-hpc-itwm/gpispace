@@ -89,7 +89,7 @@
         <outputPlace placeID="OffsetClass" edgeExpression="$OffsetClass"/>
         <operation>
             <oc:operationClass name="calculateOffsetVolume">
-                <oc:operationCandidate type="workflow" operationName="pstm-calculateOffsetVolume.gwdl" resourceName="./" selected="true"/>
+                <oc:operationCandidate type="workflow" operationName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/workflows/pstm-calculateOffsetVolume.gwdl" resourceName="localhost" selected="true"/>
             </oc:operationClass>
         </operation>
     </transition>

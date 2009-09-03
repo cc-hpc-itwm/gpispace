@@ -47,10 +47,20 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 	// a real SDPA implementation should really dispatch the activity here
 	try {
 		_gwesP->activityDispatched(workflowId, activity.getID());
-		parameter_t output = "output";
-		parameter_list_t* outputList = new parameter_list_t();
-		outputList->push_back(output);
-		_gwesP->activityFinished(workflowId, activity.getID(), *outputList);
+		// find and fill output tokens
+		parameter_list_t tokens = activity.getTransitionOccurrence()->tokens;
+		for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
+			switch (it->scope) {
+			case (TokenParameter::SCOPE_READ):
+			case (TokenParameter::SCOPE_INPUT):
+			case (TokenParameter::SCOPE_WRITE):
+				continue;
+			case (TokenParameter::SCOPE_OUTPUT):
+				it->tokenP = new Token("<data><sdpaOutput>15</sdpaOutput></data>"); 
+				break;
+			}
+		}
+		_gwesP->activityFinished(workflowId, activity.getID(), tokens);
 	} catch (NoSuchWorkflowException e) {
 		cerr << "exception: " << e.message << endl;
 	} catch (NoSuchActivityException e) {

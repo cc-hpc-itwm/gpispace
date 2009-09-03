@@ -82,6 +82,40 @@ void testXPathEvaluator() {
     
     delete xpathP;
 
+    // test conditions of pstm test case
+    xpathP = new XPathEvaluator("<data><OffsetParameters><min>15</min><max>33</max><step>1</step></OffsetParameters><HasNext>true</HasNext><i>0</i></data>");
+    // wrong syntax!
+	str = "$HasNext = true";
+    assert(xpathP->evalCondition(str)==0);
+	str = "$HasNext";
+    assert(xpathP->evalCondition(str)==1);
+    str = "not($HasNext)";
+    assert(xpathP->evalCondition(str)==0);
+    // correct syntax
+	str = "$HasNext = 'true'";
+    assert(xpathP->evalCondition(str)==1);
+    str = "$HasNext = 'false'";
+    assert(xpathP->evalCondition(str)==0);
+
+    delete xpathP;
+
+    // test conditions of pstm test case
+    xpathP = new XPathEvaluator("<data><OffsetParameters><min>15</min><max>33</max><step>1</step></OffsetParameters><HasNext>false</HasNext><i>18</i></data>");
+    // wrong syntax!
+	str = "$HasNext = true";
+    assert(xpathP->evalCondition(str)==0);
+	str = "$HasNext";
+    assert(xpathP->evalCondition(str)==1);
+    str = "not($HasNext)";
+    assert(xpathP->evalCondition(str)==0);
+    // correct syntax
+    str = "$HasNext = 'true'";
+    assert(xpathP->evalCondition(str)==0);
+    str = "$HasNext = 'false'";
+    assert(xpathP->evalCondition(str)==1);
+
+    delete xpathP;
+
     xmlCleanupParser();
 
 	cout << "============== END XPathEvaluation TEST =============" << endl;
@@ -107,13 +141,14 @@ void testXPathEvaluatorContextCache() {
     Token* d1 = new Token(false);
     p1->addToken(d1);
     
-    XPathEvaluator* xpathP = new XPathEvaluator(t0,1);
+    TransitionOccurrence* toP = new TransitionOccurrence(t0);
+    XPathEvaluator* xpathP = new XPathEvaluator(toP,1);
     string str = "count(/data) = 1";
     xpathP->evalCondition(str);
     xmlXPathContextPtr contextP = xpathP->getXmlContext();
     delete xpathP;
     
-    xpathP = new XPathEvaluator(t0,1);
+    xpathP = new XPathEvaluator(toP,1);
     str = "1 = 1";
     xpathP->evalCondition(str);
     assert(contextP==xpathP->getXmlContext());

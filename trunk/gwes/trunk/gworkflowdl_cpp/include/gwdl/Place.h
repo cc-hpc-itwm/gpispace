@@ -43,6 +43,7 @@ private:
     unsigned int capacity;
     std::string description;
     Properties properties;
+    Token* nextUnlockedToken;
     
     std::string generateID() const;
 	
@@ -89,7 +90,7 @@ public:
 	/**
 	 * Put an additional token on this place.
 	 * The maximum number of tokens is defined by the capacity of the place.
-	 * Note: This method adds a copy of the token to the place and not a reference or pointer!
+	 * Note: This method adds a pointer of the token to the place and not a copy!
 	 * @param token The pointer to the token object.
 	 */
 	void addToken(Token* token) throw(CapacityException);
@@ -156,6 +157,26 @@ public:
 	 * @return A reference to the properties of this place.
 	 */
 	Properties& getProperties();
+	
+	/**
+	 * Lock a token. 
+	 * Locked tokens will not be regarded in the decision whether a transition is enabled or not.
+     * The lock has no XML representation in the GWorkflowDL and is not propagated to distributed instances.
+     * @param p_token The token to lock
+     * @param p_transition The transition that locked the token.
+     */
+	void lockToken(Token* p_token, Transition* p_transition);
+	
+	/**
+	 * Unlock a token.
+	 */
+	void unlockToken(Token* p_token);
+	
+	/**
+	 * Get the next unlocked token of this place.
+	 * Returns NULL if there is no unlocked token on this place.
+	 */ 
+	Token* getNextUnlockedToken();
 	
 	/**
 	 * Convert this place into a DOMElement.

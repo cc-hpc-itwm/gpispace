@@ -36,14 +36,15 @@ private:
 	std::string _stderrfn;
 	std::string _exitcodefn;
 	std::string generateOutputDataURL(const std::string& edgeExpression);
-	std::string convertUrlToLocalPath(const std::string& url);
 	std::string execute(const std::string& commandline);
 
 public:
-	explicit CommandLineActivity(WorkflowHandler* handler, gwdl::OperationCandidate* operationP);
+	explicit CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP);
 	
 	virtual ~CommandLineActivity();
 
+	static std::string convertUrlToLocalPath(const std::string& url);
+	
 	/**
 	 * Initiate this activity. Status should switch to INITIATED. Method should only work if the status was
 	 * UNDEFINED before. 

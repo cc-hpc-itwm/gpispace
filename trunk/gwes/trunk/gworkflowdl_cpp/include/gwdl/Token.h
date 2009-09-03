@@ -167,14 +167,17 @@ public:
 	long getID() const {return id;}
 	
 	/**
-	 * Lock this token. Locked tokens will not be regarded in the decision whether a transition is enabled or not.
+	 * Internal method to lock this token. Please use Place.lockToken() instead to keep track of the 
+	 * next unlocked token.
+	 * Locked tokens will not be regarded in the decision whether a transition is enabled or not.
      * The lock has no XML representation in the GWorkflowDL and is not propagated to distributed instances.
      * @param p_transition The transition that locked the token.
      */
 	void lock(Transition* p_transition) {p_lock = p_transition;}
 	
 	/**
-	 * Unlock this token.
+	 * Internal method to unlock this token. Please use Place.unlockToken() instead to keep track of the 
+	 * next unlocked token.
 	 */
 	void unlock() {p_lock = NULL;}
 	
@@ -190,6 +193,15 @@ public:
      * @return returns <code>true</code> if the token has been locked by the specific transition, <code>false</code> otherwise.
      */
     bool isLockedBy(Transition* p_transition) const {return p_lock == p_transition;}
+    
+	/**
+	 * Make a deep copy of this Token object and return a pointer to the new Token.
+	 * Note: If token contains Data object, then also a deep copy of this data object is made.
+	 * The new token will have a new id.
+	 * Locks from transitions will be removed on the cloned token.
+	 * @return Pointer to the cloned Token object.
+	 */ 
+	Token* deepCopy();
 	
 }; // end class Token
 

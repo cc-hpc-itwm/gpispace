@@ -115,7 +115,6 @@ void testToken()
 	assert(token6->getProperties().get("key2")=="value2");
 	delete token6;
 	delete str6;
-	delete props;
 	
 	cout << "test token.lock(transition)..." << endl;
    	Token *token7 = new Token();
@@ -129,6 +128,35 @@ void testToken()
    	delete token7;
    	delete t7;
    	delete t7b;
-	
+
+	cout << "test token.deepCopy()..." << endl;
+	// control token
+   	Token *token8 = new Token(*props,true);
+   	Token *token8cp = token8->deepCopy();
+   	assert(token8 != token8cp);
+   	token8->getProperties().put("key1","valueXXX");
+   	assert(token8->getProperties().get("key1").compare("valueXXX")==0);
+   	assert(token8cp->getProperties().get("key1").compare("value1")==0);
+    cout << *token8cp << endl;
+    delete token8cp;
+    cout << *token8 << endl;
+    assert (token8);
+   	delete token8;
+   	// data token
+	Data* data9 = new Data("<data><x>1</x><y>2</y></data>");
+   	Token *token9 = new Token(*props,data9);
+   	Token *token9cp = token9->deepCopy();
+   	cout << *token9 << endl;
+   	assert(token9 != token9cp);
+   	assert(token9->getData() != token9cp->getData());
+   	// ToDo: Getting 'xercesc_2_7::DOMException' if deleting data9 here...
+//   	delete data9;
+//   	assert(token9cp);
+   	delete token9;
+   	assert(token9cp);
+   	cout << *token9cp << endl;
+   	delete token9cp;
+   	
+	delete props;
 	cout << "============== END TOKEN TEST =============" << endl;
 }
