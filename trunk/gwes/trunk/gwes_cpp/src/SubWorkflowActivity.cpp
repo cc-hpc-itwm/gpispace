@@ -51,6 +51,10 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 	// parse workflow file
 	try {
 		_subworkflowP = new gwdl::Workflow(_subworkflowFilename);
+		// delegate simulation flag to sub workflow.
+		if (_toP->simulation) {
+			_subworkflowP->getProperties().put("simulation","true");
+		}
 		setStatus(STATUS_INITIATED);
 	} catch (WorkflowFormatException e) {
 		setStatus(STATUS_TERMINATED);

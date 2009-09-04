@@ -138,6 +138,7 @@ int main()
 	// Test of PSTM use case.
 	workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),gwes);
 	assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+	assert(workflow.getProperties().get("occurrence.sequence").compare("preStackTimeMigration") == 0);
 	
 	cout << "########################### END OF ALL GWES TESTS ###########################" << endl;
 

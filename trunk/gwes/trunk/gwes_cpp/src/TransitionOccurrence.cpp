@@ -97,9 +97,11 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) {
  * Destructor.
  */
 TransitionOccurrence::~TransitionOccurrence() { 
-	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
-		delete &it;
-	}
+	///ToDo: is it enough just to clear the list?
+//	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
+//		delete &it;
+//	}
+	tokens.clear();
 }
 
 void TransitionOccurrence::lockTokens() {

@@ -581,6 +581,9 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
     	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
     }
 	
+    // cleanup
+    delete toP;
+    
 	return true;
 }
 
@@ -640,6 +643,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		    ///ToDo: set transition status
 
 		    // cleanup
+		    delete toP;
 		    _activityTable.remove(activityID);
 
 		    ///ToDo: fault management regarding the fault management policy property

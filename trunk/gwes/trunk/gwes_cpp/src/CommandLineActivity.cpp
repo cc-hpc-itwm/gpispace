@@ -145,6 +145,11 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 			}
 		}
 	}
+	
+	// put additional simulation parameter
+	if (_toP->simulation) {
+		command << " -simulation " << convertUrlToLocalPath(generateOutputDataURL("simulation"));
+	}
 
 	///ToDo: redirect stdin to programm
 	

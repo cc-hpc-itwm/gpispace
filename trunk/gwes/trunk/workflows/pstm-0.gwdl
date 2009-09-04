@@ -8,6 +8,9 @@
     
     <description>Pre-Stack Time Migration (Orchestrator)</description>
 
+	<property name="simulation">true</property>
+    <property name="occurrence.sequence" />
+	
 	<!-- workflow input places -->
     <place ID="OffsetParameters">
         <token>
