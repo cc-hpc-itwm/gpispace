@@ -70,7 +70,7 @@ fi
 value=$(($x*$y*$z))
 echo "# value=$value"
 
-echo "$value" > $numberpoints
+echo "<data><numberpoints>$value</numberpoints></data>" > $numberpoints
 
 if [ -n "$simulation" ]; then
   echo "<simulation><duration><cpu>20</cpu><io>3</io><memory><fvm>10000</fvm></memory></simulation>" > $simulation

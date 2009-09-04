@@ -117,7 +117,14 @@ public:
 	 * @return The corresponding xmlDocPtr.
 	 */
 	xmlDocPtr deserializeLibxml2 (const std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
-
+	
+	/**
+	 * Libxml2: Deserialize the xmlDocPtr from an XML file.
+	 * @param filename The filename containing the XML document.
+	 * @return The corresponding xmlDocPtr.
+	 */
+	xmlDocPtr deserializeFileLibxml2(const std::string& filename, bool validating = false) throw (WorkflowFormatException);
+	
 	/**
 	 * Creates an empty document.
 	 * @param gwdlnamespace Set to <code>true</code> if you want to use the GWorkflowDL namespace.

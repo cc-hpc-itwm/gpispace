@@ -40,7 +40,7 @@ int XPathEvaluator::_cacheStep = -1;
  */
 XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
 {
-	cout << "gwes::XPathEvaluator::XPathEvaluator(" << xmlContextChar << ")..." << endl;
+//	cout << "gwes::XPathEvaluator::XPathEvaluator(" << xmlContextChar << ")..." << endl;
 	// init parser should be done only ONCE before construction of XPathEvaluator!
 	XMLUtils::Instance();
 
@@ -78,7 +78,7 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
 		// insert contents of parameter tokens.
 		for (parameter_list_t::const_iterator it=toP->tokens.begin(); it!=toP->tokens.end(); ++it) {
 			if (it->tokenP != NULL) {
-				cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): adding token " << it->tokenP->getID() << " to context." << endl;
+//				cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): adding token " << it->tokenP->getID() << " to context." << endl;
 				addTokenToContext(it->edgeP->getExpression(), it->tokenP);
 			}
 		}
@@ -100,8 +100,8 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
         assert(false);
     }
     
-    cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): context:" << endl;
-	cout << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
+//    cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): context:" << endl;
+//	cout << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
 
     // register namespaces
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
@@ -112,7 +112,7 @@ XPathEvaluator::~XPathEvaluator()
 //	cout << "gwes::XPathEvaluator::~XPathEvaluator()..." << endl;
     // do not free _xmlContextP if it has be moved to the cache.
 	if (_cacheXmlContextP != _xmlContextP) {
-		cout << "gwes::XPathEvaluator::~XPathEvaluator(): Removing context from memory (not in cache)..." << endl;
+//		cout << "gwes::XPathEvaluator::~XPathEvaluator(): Removing context from memory (not in cache)..." << endl;
 		xmlXPathFreeContext(_xmlContextP); 
 	    xmlFreeDoc(_xmlContextDocP);
 	}
@@ -198,7 +198,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_UNDEFINED):
 		break;
 	case(XPATH_NODESET):
-	    cout << "gwes::XPathEvaluator::evalExpression2Xml(): nodes->nodeNr=" << xpathObjP->nodesetval->nodeNr << endl;
+//	    cout << "gwes::XPathEvaluator::evalExpression2Xml(): nodes->nodeNr=" << xpathObjP->nodesetval->nodeNr << endl;
 		xml << "<data>\n";
 		for (int i = 0; i < xpathObjP->nodesetval->nodeNr; i++) {
 			xml << "  " << XMLUtils::Instance()->serializeLibxml2(xpathObjP->nodesetval->nodeTab[i],false);
@@ -288,28 +288,27 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 
 		string* textP = tokenP->getData()->getText();
 		
+		cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),NULL);
+		xmlDocPtr xmldoc = NULL;
+		
 		// token contains reference to data in file
 		if ( textP->substr(0,7).compare("file://") == 0 ) {
 			// if token text begins with "file://" insert content of file
 			string fn = CommandLineActivity::convertUrlToLocalPath(*textP);
-	    	cout << "gwes::XPathEvaluator::addTokenToContext(): Adding file " << fn << " to context ..." << endl; 
-		    ifstream file(fn.c_str());
-		    if (file.is_open()) {
-		        string line;
-		        // ToDo: insert more than only the first line?
-		   		getline(file,line);
-		    	file.close();
-				cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),(const xmlChar*)line.c_str());
-		    } else {
-		    	cerr << "Unable to open file " << fn << ": " << strerror(errno) << endl;
-		    }
-		} 
-		
+//			cout << "gwes::XPathEvaluator::addTokenToContext(): Adding file '" << fn << "' to context ..." << endl;
+			xmldoc = XMLUtils::Instance()->deserializeFileLibxml2(fn);
+			if (xmldoc == NULL) {      // file not in XML format
+				cout << "gwes::XPathEvaluator::addTokenToContext(): file '" << fn << "' skipped because it is not in XML format." << endl;
+			} 
+		}
+
 		// token contains the data itself
-		else {
-			cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),NULL);
+		if (xmldoc == NULL) {
 			// ToDo: remove ugly conversion from Xerces DOMElement to libxml2 xmlDocPtr.
-			xmlDocPtr xmldoc = XMLUtils::Instance()->deserializeLibxml2(*tokenP->getData()->toString());
+			xmldoc = XMLUtils::Instance()->deserializeLibxml2(*tokenP->getData()->toString());
+		}
+		
+		if (xmldoc != NULL) {
 			// copy children from one document to the other.
 			// search for <data> element
 			xmlNodePtr dataElementP = xmlDocGetRootElement(xmldoc)->children; 

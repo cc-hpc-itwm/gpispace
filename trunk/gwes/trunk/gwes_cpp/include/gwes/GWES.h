@@ -43,7 +43,7 @@ private:
 	  * callback methods (observer pattern).
 	  */
 	 Gwes2Sdpa* _sdpaHandler;
-	
+	 
 public:
 	
 	/**

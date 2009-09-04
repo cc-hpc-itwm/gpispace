@@ -42,7 +42,7 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string&
 	if (workflowP->getProperties().contains("simulation") && (workflowP->getProperties().get("simulation")).compare("false") != 0) {
 		_simulation = true;
 		cout << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): Simulation is ON" << endl; 
-		cout << *workflowP << endl;
+//		cout << *workflowP << endl;
 	}
 	// set status
 	setStatus(STATUS_INITIATED);
@@ -156,116 +156,131 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	}
 
 	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
-	while ((!_abort && enabledTransitions.size()> 0) || _status
-			== WorkflowHandler::STATUS_ACTIVE) {
+	while ((!_abort && enabledTransitions.size()> 0) 
+			|| _status == WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
 			cout << "--- step " << step << " (" << getID() << ":" << getStatusAsString()
-					<< ") --- " << enabledTransitions.size()
-					<< " enabled transition(s)" << endl;
+			<< ") --- " << enabledTransitions.size()
+			<< " enabled transition(s)" << endl;
 			modification = false;
 		}
 
-		///ToDo: search for undecided decisions. Updates "unresolvedDecisionTransitions" and "undecidedDecisions"
+		try {
 
-		//select transition, find enabled transition with true condition. 
-		// ToDo: Updates list "enabledTrueTransitions" ?
-		TransitionOccurrence* selectedToP = selectTransitionOccurrence(enabledTransitions, step);
-		if (selectedToP != NULL) {
-			selectedToP->simulation=_simulation;
-			cout << "Processing " << *selectedToP << " ..." << endl;
-		}
-		
-		///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
+			///ToDo: search for undecided decisions. Updates "unresolvedDecisionTransitions" and "undecidedDecisions"
 
-		//suspend if breakpoint has been reached
-		if (!_abort && !_suspend && selectedToP != NULL) {
-			Properties transprops = selectedToP->transitionP->getProperties();
-			if (transprops.contains("breakpoint")) {
-				string breakstring = transprops.get("breakpoint");
-				// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
-				if (breakstring=="REACHED") {
-					cout << "released breakpoint at transition "
-							<< selectedToP->transitionP->getID() << endl;
-					transprops.put("breakpoint", "RELEASED");
-				} else {
-					cout << "reached breakpoint at transition "
-							<< selectedToP->transitionP->getID() << endl;
-					transprops.put("breakpoint", "REACHED");
-					_suspend = true;
+			//select transition, find enabled transition with true condition. 
+			// ToDo: Updates list "enabledTrueTransitions" ?
+			TransitionOccurrence* selectedToP = selectTransitionOccurrence(enabledTransitions, step);
+			if (selectedToP != NULL) {
+				selectedToP->simulation=_simulation;
+				//			cout << "Processing " << *selectedToP << " ..." << endl;
+			}
+
+			///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
+
+			//suspend if breakpoint has been reached
+			if (!_abort && !_suspend && selectedToP != NULL) {
+				Properties transprops = selectedToP->transitionP->getProperties();
+				if (transprops.contains("breakpoint")) {
+					string breakstring = transprops.get("breakpoint");
+					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
+					if (breakstring=="REACHED") {
+						cout << "released breakpoint at transition "
+						<< selectedToP->transitionP->getID() << endl;
+						transprops.put("breakpoint", "RELEASED");
+					} else {
+						cout << "reached breakpoint at transition "
+						<< selectedToP->transitionP->getID() << endl;
+						transprops.put("breakpoint", "REACHED");
+						_suspend = true;
+					}
 				}
 			}
-		}
 
-		///ToDo: prorate blue transtions related to program executions
+			///ToDo: prorate blue transtions related to program executions
 
-		//process selected transition.
-		if (!_abort && !_suspend && selectedToP != NULL) {
-			int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
-			cout << "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
-					<< selectedToP->getID() << "\" (level "
-					<< abstractionLevel << ") ..." << endl;
-			switch (abstractionLevel) {
-			case (Operation::BLACK): // no operation
-				if (processBlackTransition(selectedToP, step))
-					modification = true;
+			//process selected transition.
+			if (!_abort && !_suspend && selectedToP != NULL) {
+				int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
+				cout << "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
+				<< selectedToP->getID() << "\" (level "
+				<< abstractionLevel << ") ..." << endl;
+				switch (abstractionLevel) {
+				case (Operation::BLACK): // no operation
+					if (processBlackTransition(selectedToP, step))
+						modification = true;
 				break;
-			case (Operation::GREEN): // concrete selected operation
-				if (processGreenTransition(selectedToP, step))
-					modification = true;
+				case (Operation::GREEN): // concrete selected operation
+					if (processGreenTransition(selectedToP, step))
+						modification = true;
 				break;
-			case (Operation::BLUE): // set of operation candidates
-				if (processBlueTransition(selectedToP, step))
-					modification = true;
+				case (Operation::BLUE): // set of operation candidates
+					if (processBlueTransition(selectedToP, step))
+						modification = true;
 				break;
-			case (Operation::YELLOW): // operation class
-				if (processYellowTransition(selectedToP, step))
-					modification = true;
+				case (Operation::YELLOW): // operation class
+					if (processYellowTransition(selectedToP, step))
+						modification = true;
 				break;
-			case (Operation::RED): // unspecified operation
-				if (processRedTransition(selectedToP, step))
-					modification = true;
+				case (Operation::RED): // unspecified operation
+					if (processRedTransition(selectedToP, step))
+						modification = true;
 				break;
-			default:
-				cerr << "This should not happen." << endl;
-				_abort = true;
+				default:
+					cerr << "This should not happen." << endl;
+					_abort = true;
+				}
 			}
+
+			// check the status of all activities and process results if COMPLETED or TERMINATED (or FAILED).
+			if (checkActivityStatus(step)) modification = true;
+
+			//wait here if workflow has been suspended. Workflow must switch from ACTIVE to RUNNING first!
+			if (_suspend && _status == WorkflowHandler::STATUS_RUNNING) {
+				setStatus(WorkflowHandler::STATUS_SUSPENDED);
+				modification = true;
+				waitForStatusChangeFrom(WorkflowHandler::STATUS_SUSPENDED);
+			}
+
+			// suspend if there is a deadlock because of false conditions
+			if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
+				modification = true;
+				cout << "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!"  << endl;
+				_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
+				_suspend = true;
+			}
+
+			//if no modification occurred this step, wait some time
+			if (!modification && !_abort) {
+				usleep(_sleepTime);
+				// set dynamic sleep time
+				_sleepTime *= 2;
+				if (_sleepTime> WorkflowHandler::SLEEP_TIME_MAX)
+					_sleepTime = WorkflowHandler::SLEEP_TIME_MAX;
+			}
+			// reset sleep time if there was a modification
+			else
+				_sleepTime = WorkflowHandler::SLEEP_TIME_MIN;
+
+			//update enabled transitions
+			if (!_abort)
+				enabledTransitions = _wfP->getEnabledTransitions();
+			if (modification)
+				step++;
+		} catch (ActivityException e) {
+			ostringstream oss;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
+			cerr << oss.str() << endl;
+			_abort = true;
+			_wfP->getProperties().put(createNewErrorID(), oss.str());
+		}  catch (WorkflowFormatException e) {
+			ostringstream oss;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
+			cerr << oss.str() << endl;
+			_abort = true;
+			_wfP->getProperties().put(createNewErrorID(), oss.str());
 		}
-
-		// check the status of all activities and process results if COMPLETED or TERMINATED (or FAILED).
-		if (checkActivityStatus(step)) modification = true;
-
-		//wait here if workflow has been suspended. Workflow must switch from ACTIVE to RUNNING first!
-		if (_suspend && _status == WorkflowHandler::STATUS_RUNNING) {
-			setStatus(WorkflowHandler::STATUS_SUSPENDED);
-			modification = true;
-			waitForStatusChangeFrom(WorkflowHandler::STATUS_SUSPENDED);
-		}
-
-        // suspend if there is a deadlock because of false conditions
-        if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
-            modification = true;
-			cout << "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!"  << endl;
-			_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
-			_suspend = true;
-        }
-
-		//if no modification occurred this step, wait some time
-		if (!modification && !_abort) {
-			usleep(_sleepTime);
-			// set dynamic sleep time
-			_sleepTime *= 2;
-			if (_sleepTime> WorkflowHandler::SLEEP_TIME_MAX)
-				_sleepTime = WorkflowHandler::SLEEP_TIME_MAX;
-		}
-		// reset sleep time if there was a modification
-		else
-			_sleepTime = WorkflowHandler::SLEEP_TIME_MIN;
-
-		//update enabled transitions
-		if (!_abort)
-			enabledTransitions = _wfP->getEnabledTransitions();
-		if (modification)
-			step++;
 	}
 
 	//set exit status
@@ -583,7 +598,6 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		// activity has completed or terminated
 		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
 			TransitionOccurrence* toP = activityP->getTransitionOccurrence();
-////			Transition* transitionP = _activityTransitionTable.find(activityID)->second;
 
 			// set workflow warning property if there is any activity fault message
 			string faultMessage = activityP->getFaultMessage();
@@ -626,8 +640,6 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		    ///ToDo: set transition status
 
 		    // cleanup
-////		    _activityTransitionTable.erase(activityID);
-////		    _activityTokenlistTable.erase(activityID);
 		    _activityTable.remove(activityID);
 
 		    ///ToDo: fault management regarding the fault management policy property

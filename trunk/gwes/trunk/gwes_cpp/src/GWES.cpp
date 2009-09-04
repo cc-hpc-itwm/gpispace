@@ -7,6 +7,7 @@
 // gwes
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
+#include <gwes/Utils.h>
 // std
 #include <iostream>
 #include <sstream>
@@ -25,6 +26,7 @@ namespace gwes
 GWES::GWES()
 {
 	_sdpaHandler = NULL;
+	Utils::setEnvironmentVariables();
 }
 
 /**

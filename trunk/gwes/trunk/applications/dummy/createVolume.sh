@@ -65,7 +65,10 @@ if [ -z "$volumefn" ]; then
 fi
 
 ####################################
-numberpoints=`cat $numberpointsfn`
+# <data><numberpoints>320000000</numberpoints></data>
+np1=`cat $numberpointsfn`
+np2=${np1#*<numberpoints>}
+numberpoints=${np2%</numberpoints>*}
 echo "# numberpoints=$numberpoints"
 memory=$(($numberpoints*16))
 echo "# memory=$memory"

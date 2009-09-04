@@ -72,7 +72,7 @@ Workflow::Workflow(DOMElement* element)
 	}
 }
 
-Workflow::Workflow(const string& filename) 
+Workflow::Workflow(const string& filename) throw (WorkflowFormatException) 
 {
 	// read file
 	ifstream file(filename.c_str());
@@ -84,7 +84,10 @@ Workflow::Workflow(const string& filename)
 		}
 		file.close();
 	} else {
-		cerr << "Unable to open file " << filename << ": " << strerror(errno) << endl;
+		ostringstream message; 
+		message << "Unable to open file " << filename << ": " << strerror(errno);
+		cerr << message << endl;
+		throw WorkflowFormatException(message.str());
 	}
 
 	// convert string to DOMElement

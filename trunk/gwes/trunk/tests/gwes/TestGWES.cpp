@@ -1,11 +1,13 @@
-#include <unistd.h>  // getcwd() definition
-#include <sys/param.h>  // MAXPATHLEN definition
+// tests
+#include "TestGWES.h"
+// gwes
+#include <gwes/Utils.h>
 // std
 #include <iostream>
 #include <sstream>
 #include <assert.h>
-// tests
-#include "TestGWES.h"
+#include <unistd.h>  // getcwd() definition
+#include <sys/param.h>  // MAXPATHLEN definition
 
 using namespace std;
 using namespace gwdl;
@@ -89,65 +91,4 @@ void testGWES(GWES &gwes)
 
     cout << "============== END GWES TEST =============" << endl;
    
-}
-
-bool endsWith(const string& s1, const string& s2) {
-	if ( s2.size() > s1.size() ) return false;
-	if ( s1.compare(s1.size()-s2.size(),s2.size(),s2 ) == 0) {
-	   return true;
-    }
-	return false;
-}
-
-bool startsWith(const string& s1, const string& s2) {
-	if ( s2.size() > s1.size() ) return false;
-	if ( s1.compare(0,s2.size(),s2 ) == 0) {
-	   return true;
-    }
-	return false;
-}
-
-string getWorkflowDirectory() {
-
-	// get GWES_CPP_HOME
-	char* gwesHomeP = getenv("GWES_CPP_HOME");
-	if (gwesHomeP != NULL) {
-		string gwesHome(gwesHomeP);
-		if ( gwesHome.size() > 0) {
-			return gwesHome + "/workflows";
-		}
-	}
-	
-	// get current working directory
-	char pathC[MAXPATHLEN];
-	getcwd(pathC, MAXPATHLEN);
-	string path(pathC);
-
-	// if */build/tests
-	string s2("/build/tests");
-	if ( endsWith(path,s2) ) {
-		return string("../../workflows");
-	}
-	
-	// if */gwes/trunk
-	s2 = string("/gwes/trunk");
-	if ( endsWith(path,s2) ) {
-		return string("workflows");
-	}
-	
-	// if /tmp/gwes/build_gwes_????
-	s2 = string("/tmp/gwes/build_gwes");
-	if ( startsWith(path,s2) ) {
-		return string("workflows");
-	}
-	
-	// default
-	cout << "CWD=" << path << endl;
-	return string ("../../workflows");
-}
-
-string getTestWorkflowDirectory() {
-	string ret = getWorkflowDirectory();
-	ret += "/test";
-	return ret;
 }

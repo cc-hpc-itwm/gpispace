@@ -6,6 +6,7 @@
  */
 //gwes
 #include <gwes/SubWorkflowActivity.h>
+#include <gwes/Utils.h>
 //gwdl
 #include <gwdl/Token.h>
 //std
@@ -44,12 +45,19 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 		throw StateTransitionException(oss.str());
 	}
 	// set workflow file 
-	_subworkflowFilename = _operation->getOperationName();
+	_subworkflowFilename = Utils::expandEnv(_operation->getOperationName());
 	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") trying to read file " << _subworkflowFilename << endl;
 
 	// parse workflow file
-	_subworkflowP = new gwdl::Workflow(_subworkflowFilename);
-	setStatus(STATUS_INITIATED);
+	try {
+		_subworkflowP = new gwdl::Workflow(_subworkflowFilename);
+		setStatus(STATUS_INITIATED);
+	} catch (WorkflowFormatException e) {
+		setStatus(STATUS_TERMINATED);
+		ostringstream message; 
+		message << "Not able to build subworkflow activity: " << e.message;
+		throw ActivityException(message.str()); 
+	}
 }
 
 /**
@@ -81,7 +89,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 			placeP->addToken(it->tokenP->deepCopy());
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	
-				return;
+				continue;
 			}
 		}
 	} catch (NoSuchWorkflowElement e) {
@@ -191,9 +199,11 @@ void SubWorkflowActivity::update(const Event& event) {
 						case (TokenParameter::SCOPE_WRITE):
 						case (TokenParameter::SCOPE_OUTPUT):	
 							edgeExpression = it->edgeP->getExpression();
-							cout << "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ..." << endl; 
-							Place* placeP = _subworkflowP->getPlace(edgeExpression);
-							it->tokenP = placeP->getTokens()[0]->deepCopy();
+							if (edgeExpression.find("$")==edgeExpression.npos) { // ignore XPath expressions
+								Place* placeP = _subworkflowP->getPlace(edgeExpression);
+								it->tokenP = placeP->getTokens()[0]->deepCopy();
+								cout << "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ..." << endl;
+							}
 							break;
 						}
 					}

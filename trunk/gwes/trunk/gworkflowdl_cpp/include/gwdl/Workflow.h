@@ -12,6 +12,7 @@
 #include <gwdl/Transition.h>
 #include <gwdl/Properties.h>
 #include <gwdl/NoSuchWorkflowElement.h>
+#include <gwdl/WorkflowFormatException.h>
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 // std
@@ -157,7 +158,7 @@ public:
 	 * Construct workflow from file.
 	 * @param filename The filename of the GWorkflowDL file including its path. 
 	 */
-	explicit Workflow(const std::string& filename);
+	explicit Workflow(const std::string& filename) throw (WorkflowFormatException);
 
 	/**
 	 * Destructor.

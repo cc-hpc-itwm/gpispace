@@ -7,6 +7,7 @@
 //gwes
 #include <gwes/CommandLineActivity.h>
 #include <gwes/TransitionOccurrence.h>
+#include <gwes/Utils.h>
 //gwdl
 #include <gwdl/Token.h>
 //std
@@ -101,12 +102,12 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	ostringstream command;
 
 	// executable
-	command << _operation->getResourceName();
+	command << Utils::expandEnv(_operation->getResourceName());
 
 	//generate arguments from parameter tokens
 	for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 		const string edgeExpression = it->edgeP->getExpression();
-		if (!edgeExpression.empty() && edgeExpression.find("$")==edgeExpression.npos) {
+		if (!edgeExpression.empty() && edgeExpression.find("$")==edgeExpression.npos) {  // ignore XPath edge expressions
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):
 			case (TokenParameter::SCOPE_INPUT):

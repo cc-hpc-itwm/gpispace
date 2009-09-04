@@ -11,15 +11,13 @@
 	<!-- workflow input places -->
     <place ID="OffsetParameters">
         <token>
-            <data><min>15</min><max>33</max><step>1</step></data>
+            <data><offsets xmlns=""><min>33.</min><max>33.</max><step>1.</step></offsets></data>
         </token>
     </place>
 
     <place ID="OutputGatherParameters">
         <token>
-            <data>
-                <numberPoints>1000x800x400</numberPoints>
-            </data>
+            <data><numberPoints xmlns="">1000x800x400</numberPoints></data>
         </token>
     </place>
 
@@ -34,7 +32,7 @@
         <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
  		<operation>
       		<oc:operationClass name="preStackTimeMigration">
-        		<oc:operationCandidate type="workflow" operationName="/home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/workflows/pstm-1.gwdl" resourceName="localhost" selected="true"/>
+        		<oc:operationCandidate type="workflow" operationName="${GWES_CPP_HOME}/workflows/pstm-1.gwdl" resourceName="localhost" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>

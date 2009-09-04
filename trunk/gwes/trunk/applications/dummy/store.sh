@@ -37,7 +37,11 @@ while [ $# -gt 0 ]
 do
   case $1 in
     -OffsetClass)
-      offsetclassfn=$2
+      if [ -r $2 ]; then
+        offsetclass="`cat $2 | grep offsetclass`"
+      else
+        offsetclass="<offsetclass>$2</offsetclass>"
+      fi 
       shift 2
       ;;
     -OffsetVolume)
@@ -60,28 +64,22 @@ do
   esac
 done
 
-if [ -z "$offsetclassfn" ]; then
+if [ -z "$offsetclass" ]; then
   echo "### ERROR: missing input parameter '-OffsetClass'!" 1>&2
   usage
   exit 2
 fi
 
-if [ ! -r "$offsetclassfn" ]; then
-  echo "### ERROR: cannot read OffsetClass file '$offsetclassfn'!" 1>&2
-  usage
-  exit 3
-fi
-
 if [ -z "$offsetvolumefn" ]; then
   echo "### ERROR: missing input parameter '-OffsetVolume'!" 1>&2
   usage
-  exit 4
+  exit 3
 fi
 
 if [ ! -r "$offsetvolumefn" ]; then
   echo "### ERROR: cannot read OffsetVolume file '$offsetvolumefn'!" 1>&2
   usage
-  exit 5
+  exit 4
 fi
 
 if [ -z "$outputgatherfn" ]; then
@@ -92,7 +90,7 @@ fi
 
 ####################################
 echo "<storevolume>" >> $outputgatherfn
-echo "  `cat $offsetclassfn | grep offsetclass`" >> $outputgatherfn
+echo "  $offsetclass" >> $outputgatherfn
 echo "  <traces>" >> $outputgatherfn
 echo "  `cat $offsetvolumefn | grep -m 1 offsetclass`" >> $outputgatherfn
 echo "  `cat $offsetvolumefn | grep traceindex`" >> $outputgatherfn

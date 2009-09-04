@@ -76,6 +76,10 @@ public:
 	std::string getID() const; 
     
     void evaluateXPathEdgeExpressions(int step);
+    
+private:
+	
+	std::string _id;
 
 };
 	

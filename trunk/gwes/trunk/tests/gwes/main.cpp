@@ -10,7 +10,9 @@
 #include "TestSdpa2Gwes.h"
 #include "TestWorkflow.h"
 #include "TestPreStackProWorkflow.h"
-// 
+// gwes
+#include <gwes/Utils.h>
+// std
 #include <iostream>
 #include <ostream>
 
@@ -25,8 +27,6 @@ int main()
 	cout << "########################### BEGIN OF ALL GWES TESTS ###########################" << endl;
 
 	gwes::GWES gwes;
-	string twd = getTestWorkflowDirectory();
-	string wd = getWorkflowDirectory();
 	Workflow workflow;
 	Place* placeP;
 	Token* tokenP;
@@ -48,12 +48,12 @@ int main()
 		// test various workflows
 		
 		// simple.gwdl
-		workflow = testWorkflow(twd + "/simple.gwdl",gwes);
+		workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"),gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("t") == 0 );
 
 		// split-token.gwdl
-		workflow = testWorkflow(twd + "/split-token.gwdl",gwes);
+		workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/split-token.gwdl"),gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("joinSplitTokens") == 0 );
 
@@ -80,7 +80,7 @@ int main()
 		assert(tokenP->getData()->toString()->compare("<data>\n  <y>23</y>\n  <y>24</y>\n</data>") == 0);
 
 		// exclusive-choice.gwdl
-		workflow = testWorkflow(twd + "/exclusive-choice.gwdl", gwes);
+		workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/exclusive-choice.gwdl"), gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("B") == 0 );
 		assert(workflow.getPlace("end_A")->getTokenNumber() == 0);
@@ -91,7 +91,7 @@ int main()
 		assert(tokenP->getControl());
 
 		// condition-test.gwdl
-		workflow = testWorkflow(twd + "/condition-test.gwdl", gwes);
+		workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/condition-test.gwdl"), gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("B A A") == 0 );
 		
@@ -114,7 +114,7 @@ int main()
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>5</x>\n</data>") == 0);
 
 		// control-loop.gwdl
-		workflow = testWorkflow(twd + "/control-loop.gwdl",gwes);
+		workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/control-loop.gwdl"),gwes);
 		assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 		assert( workflow.getProperties().get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
 	    placeP = workflow.getPlace("end"); 
@@ -135,10 +135,9 @@ int main()
 
 	}
 
-//	// Test of PSTM use case.
-//	workflow = testWorkflow(wd + "/pstm-1_withInputTokens.gwdl",gwes);
-//	// workflow = testWorkflow(wd + "/pstm-calculateOffsetVolume_withInputTokens.gwdl",gwes);
-//	assert(gwes.getStatusAsString(workflow)=="COMPLETED");
+	// Test of PSTM use case.
+	workflow = testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),gwes);
+	assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 	
 	cout << "########################### END OF ALL GWES TESTS ###########################" << endl;
 

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+// gwdl 
+#include <gwdl/WorkflowFormatException.h>
 // gwes
 #include <gwes/WorkflowObserver.h>
 #include <gwes/Channel.h>
@@ -15,28 +17,32 @@ using namespace gwes;
 Workflow& testWorkflow(string workflowfn, gwes::GWES &gwes) {
 	cout << "============== BEGIN EXECUTION " << workflowfn << "==============" << endl;
 
-	Workflow* wfP = new Workflow(workflowfn);
-	
-	// initiate workflow
-    cout << "initiating workflow ..." << endl;
-    string workflowId = gwes.initiate(*wfP,"test");
-    
-	// register channel with source observer
-    WorkflowObserver* observerP = new WorkflowObserver();
-    Channel* channelP = new Channel(observerP);
-    gwes.connect(channelP, workflowId);
-    
-	// start workflow
-    gwes.start(workflowId);
-    
-    // wait for workflow to end
-    WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
-    
-    wfhP->waitForStatusChangeToCompletedOrTerminated();
-	
-    // print workflow
-    cout << *wfP << endl;
-	cout << "============== END EXECUTION " << workflowfn << "==============" << endl;
-    
-    return *wfP;
+	try {
+		Workflow* wfP = new Workflow(workflowfn);
+
+		// initiate workflow
+		cout << "initiating workflow ..." << endl;
+		string workflowId = gwes.initiate(*wfP,"test");
+
+		// register channel with source observer
+		WorkflowObserver* observerP = new WorkflowObserver();
+		Channel* channelP = new Channel(observerP);
+		gwes.connect(channelP, workflowId);
+
+		// start workflow
+		gwes.start(workflowId);
+
+		// wait for workflow to end
+		WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
+
+		wfhP->waitForStatusChangeToCompletedOrTerminated();
+
+		// print workflow
+		cout << *wfP << endl;
+		cout << "============== END EXECUTION " << workflowfn << "==============" << endl;
+		return *wfP;
+	} catch (WorkflowFormatException e) {
+		cerr << "WorkflowFormatException: " << e.message << endl;
+		assert(false);
+	}
 }

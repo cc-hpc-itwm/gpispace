@@ -236,7 +236,7 @@ string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
 }
 
 string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
-	cout << "XMLUtils::serializeLibxml2() ..." << endl;
+//	cout << "XMLUtils::serializeLibxml2() ..." << endl;
 	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
 	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
 	xmlDocSetRootElement(docP,nodecopy);
@@ -248,6 +248,11 @@ string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
 	if (validating) cerr << "XMLUtils::deserialize(): Validation not yet supported for libxml2" << endl;
 	return xmlParseDoc(xmlCharStrdup(xmlstring.c_str()));
+}
+
+xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
+	if (validating) cerr << "XMLUtils::deserialize(): Validation not yet supported for libxml2" << endl;
+	return xmlParseFile(filename.c_str());
 }
 
 DOMDocument* XMLUtils::createEmptyDocument(bool gwdlnamespace)
