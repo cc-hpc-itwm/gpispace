@@ -6,8 +6,6 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
-#include <unistd.h>  // getcwd() definition
-#include <sys/param.h>  // MAXPATHLEN definition
 
 using namespace std;
 using namespace gwdl;

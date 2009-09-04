@@ -7,6 +7,7 @@
 // gwes
 #include <gwes/Utils.h>
 // std
+#include <stdlib.h>
 #include <unistd.h>  // getcwd() definition
 #include <sys/param.h>  // MAXPATHLEN definition
 #include <iostream>
