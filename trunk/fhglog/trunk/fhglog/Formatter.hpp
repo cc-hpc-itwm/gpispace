@@ -16,14 +16,15 @@ namespace fhg { namespace log {
     public:
       typedef std::tr1::shared_ptr<Formatter> ptr_t;
 
-      static const std::string FMT_SEVERITY;  // = "S";
-      static const std::string FMT_FILE;      // = "f";
-      static const std::string FMT_FUNCTION;  // = "F";
-      static const std::string FMT_LINE;      // = "L";
-      static const std::string FMT_MESSAGE;   // = "m";
-      static const std::string FMT_TIMESTAMP; // = "t";
-      static const std::string FMT_THREAD;    // = "T";
-      static const std::string FMT_NEWLINE;   // = "n";
+      static const char FMT_SEVERITY  = 'S'; // the level of the event
+      static const char FMT_FILE      = 'p'; // just the filename
+      static const char FMT_PATH      = 'P'; // complete path of the file
+      static const char FMT_FUNCTION  = 'F'; // function (full signature)
+      static const char FMT_LINE      = 'L'; // line of the log
+      static const char FMT_MESSAGE   = 'm'; // the logmessage
+      static const char FMT_TIMESTAMP = 't'; // when was the event created
+      static const char FMT_THREAD    = 'T'; // by which thread has it been created
+      static const char FMT_NEWLINE   = 'n'; // a line separator
 
       explicit
       Formatter(const std::string &fmt) : fmt_(fmt) {}
@@ -31,7 +32,11 @@ namespace fhg { namespace log {
 
       static ptr_t DefaultFormatter()
       {
-        return ptr_t(new Formatter("TODO: replace me some format string"));
+        return ptr_t(new Formatter("%t %S thread:%T %p:%L (%F) - %m%n"));
+      }
+      static ptr_t ShortFormatter()
+      {
+        return ptr_t(new Formatter("%S %p:%L - %m%n"));
       }
 
       virtual std::string format(const LogEvent &evt);

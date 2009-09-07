@@ -4,18 +4,68 @@
 
 using namespace fhg::log;
 
-const std::string Formatter::FMT_SEVERITY = "S";
-const std::string Formatter::FMT_FILE     = "f";
-const std::string Formatter::FMT_FUNCTION = "F";
-const std::string Formatter::FMT_LINE     = "L";
-const std::string Formatter::FMT_MESSAGE  = "m";
-const std::string Formatter::FMT_TIMESTAMP= "t";
-const std::string Formatter::FMT_THREAD   = "T";
-const std::string Formatter::FMT_NEWLINE  = "n";
-
 std::string Formatter::format(const LogEvent &evt)
 {
   std::stringstream sstr;
+  std::string::const_iterator c(fmt_.begin());
+  while (c != fmt_.end())
+  {
+    if ('%' == *c)
+    {
+      // a single % at the end of the format is an error
+      if ( (c + 1) == fmt_.end())
+      {
+        throw std::runtime_error("Format string ends with a single %");
+      }
+      else
+      {
+        // what do we have
+        switch (*(c+1))
+        {
+          case '%':
+            sstr << "%";
+            break;
+          case FMT_SEVERITY:
+            sstr << evt.severity().str();
+            break;
+          case FMT_FILE:
+            sstr << evt.file();
+            break;
+          case FMT_PATH:
+            sstr << evt.path();
+            break;
+          case FMT_FUNCTION:
+            sstr << evt.function();
+            break;
+          case FMT_LINE:
+            sstr << evt.line();
+            break;
+          case FMT_MESSAGE:
+            sstr << evt.message();
+            break;
+          case FMT_TIMESTAMP:
+            sstr << evt.tstamp();
+            break;
+          case FMT_THREAD:
+            sstr  << evt.thread();
+            break;
+          case FMT_NEWLINE:
+            sstr << std::endl;
+            break;
+          default:
+            throw std::runtime_error("Illegal format character occured!");
+        }
+        ++c;
+      }
+    }
+    else
+    {
+      sstr << *c;
+    }
+    ++c;
+  }
+/*
+  //
   // fmt = "%t %S thread:%T %f:%L (%F) - %m%n
   sstr << evt.tstamp()
        << " "
@@ -32,5 +82,6 @@ std::string Formatter::format(const LogEvent &evt)
        << " - " 
        << evt.message()
        << std::endl;
+*/
   return sstr.str();
 }
