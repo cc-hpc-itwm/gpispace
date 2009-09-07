@@ -19,7 +19,7 @@ namespace fhg { namespace log {
       static std::string &severityToString(const severity_type &severity);
 
       LogEvent(const severity_type &severity
-             , const file_type &file
+             , const file_type &path
              , const function_type &function
              , const line_type &line
              , const message_type &message);
@@ -39,13 +39,17 @@ namespace fhg { namespace log {
 
       inline const severity_type &severity() const { return severity_; }
       inline const file_type &file() const { return file_; }
+      inline const file_type &path() const { return path_; }
       inline const function_type &function() const { return function_; }
       inline const line_type &line() const { return line_; }
       inline const message_type &message() const { return message_; }
       inline const tstamp_type &tstamp() const { return tstamp_; }
       inline const thread_type &thread() const { return thread_; }
     private:
+      std::string get_filename_from_path(const std::string &path) const;
+
       severity_type severity_;
+      file_type path_;
       file_type file_;
       function_type function_;
       line_type line_;

@@ -6,12 +6,13 @@
 using namespace fhg::log;
 
 LogEvent::LogEvent(const severity_type &severity
-                 , const file_type &file
+                 , const file_type &path
                  , const function_type &function
                  , const line_type &line
                  , const message_type &message)
   : severity_(severity)
-  , file_(file)
+  , path_(path)
+  , file_(get_filename_from_path(path))
   , function_(function)
   , line_(line)
   , message_(message)
@@ -22,6 +23,7 @@ LogEvent::LogEvent(const severity_type &severity
 
 LogEvent::LogEvent(const LogEvent &e)
   : severity_(e.severity())
+  , path_(e.path())
   , file_(e.file())
   , function_(e.function())
   , line_(e.line())
@@ -39,6 +41,7 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
 {
   if (this != &e) {
     severity_ = e.severity();
+    path_ = e.path();
     file_ = e.file();
     function_ = e.function();
     line_ = e.line();
@@ -53,6 +56,7 @@ bool LogEvent::operator==(const LogEvent &e) const
 {
   if (this == &e) return true;
   if ( (file() == e.file())
+    && (path() == e.path())
     && (severity() == e.severity())
     && (function() == e.function())
     && (line() == e.line())
@@ -68,4 +72,22 @@ bool LogEvent::operator==(const LogEvent &e) const
 bool LogEvent::operator<(const LogEvent &rhs) const
 {
   return tstamp() < rhs.tstamp();
+}
+
+std::string LogEvent::get_filename_from_path(const std::string &path) const
+{
+  // TODO: the following should be coded with boost::filesystem due to platform
+  // independence
+  static const std::string path_sep("/");
+  std::string::size_type last_path_segment_idx = path.find_last_of(path_sep.c_str());
+  if (last_path_segment_idx == std::string::npos)
+  {
+    // return the whole path since we could not find a separator
+    return path;
+  }
+  else
+  {
+    // slit the path at that position and return the remaining part
+    return path.substr(last_path_segment_idx+1);
+  }
 }
