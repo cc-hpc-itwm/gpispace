@@ -17,6 +17,7 @@
  */
 
 #include    <fhglog/fhglog.hpp>
+#include    <unistd.h>
 #include    <sstream>
 
 class Test
@@ -34,10 +35,17 @@ class Test
     fhg::log::LoggerApi log_;
 };
 
+std::string compute_large_output_string()
+{
+  sleep(3);
+  return "computation took 3sec...: result 42";
+}
+
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
   LoggerApi logger(Logger::get("test"));
+  logger.setLevel(LogLevel::TRACE);
   if (argc > 1)
   {
     int lvl;
@@ -45,18 +53,14 @@ int main(int argc, char **argv)
     istr >> lvl;
     logger.setLevel(static_cast<LogLevel::Level>(lvl));
   }
-  else
-  {
-    logger.setLevel(LogLevel::TRACE);
-  }
   std::cerr << "the log-level has been set to: " << logger.getLevel().str() << "(" << logger.getLevel().lvl() << ")" << std::endl;
+
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::DefaultFormatter());
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::ShortFormatter());
 
   {
     Test test;
   }
-
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::DefaultFormatter());
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::ShortFormatter());
 
   logger.log(LogEvent(LogLevel::TRACE
                             , __FILE__
@@ -89,4 +93,6 @@ int main(int argc, char **argv)
                             , "error message"));
   LOG_ERROR(logger, "this is an error:" << 42);
   LOG_WARN(logger, "this is a warning:" << 42);
+
+  LOG_TRACE(logger, "this message should not take up time, if it is not logged: " << compute_large_output_string());
 }
