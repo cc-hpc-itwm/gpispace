@@ -12,7 +12,7 @@ namespace sdpa { namespace daemon {
 
       The acknowledge of a job_id means that the job has been successfully sent to a worker node.
      */
-    virtual void acknowledge(const Job::job_id_t job_id &) = 0;
+    virtual void acknowledge(const Worker::worker_id_t &worker_id, const Job::job_id_t job_id &) = 0;
 
     /**
       Retrieve the next available job for the given worker node.
