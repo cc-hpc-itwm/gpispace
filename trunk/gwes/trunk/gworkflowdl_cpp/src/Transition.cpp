@@ -6,15 +6,15 @@
  */
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // gwdl
 #include <gwdl/Transition.h>
 #include <gwdl/Defines.h>
 #include <gwdl/Workflow.h>
 #include <gwdl/XMLUtils.h>
-// std
-#include <iostream>
-#include <sstream>
 
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
@@ -194,16 +194,16 @@ DOMElement* Transition::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		XERCES_STD_QUALIFIER cerr << "OutOfMemoryException during Transition.toElement()." << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException during Transition.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		XERCES_STD_QUALIFIER cerr << "DOMException during Transition.toElement(). code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-		XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "DOMException during Transition.toElement(). code is:  " << e.code );
+		LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		XERCES_STD_QUALIFIER cerr << "An error occurred creating the document during Transition.toElement()." << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document during Transition.toElement()." );
 	}
 
 	return el;
@@ -256,7 +256,6 @@ string Transition::generateID() const
 
 int Transition::getAbstractionLevel() const 
 {	
-//	cout << "gwdl::Transition[" << getID() << "]::getAbstractionLevel()" << endl;
 	if (operationP != NULL) return operationP->getAbstractionLevel();
 	else return Operation::BLACK;
 }

@@ -11,47 +11,51 @@
 #include <gwdl/XMLUtils.h>
 //tests
 #include "TestProperties.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 
 void testProperties()
 {
-	cout << "============== BEGIN PROPERTIES TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+	LOG_INFO(logger, "============== BEGIN PROPERTIES TEST =============");
 	
-	cout << "test put properties..." << endl;
+	LOG_INFO(logger, "test put properties...");
 	Properties *props = new Properties();
 	props->put("key1","value1");
 	props->put("key2","value2");
 	props->put("key3","value3");
 	
-	cout << *props << endl;
+	LOG_INFO(logger, *props);
 	
-	cout << "key1=" << props->get("key1") << endl;
+	LOG_INFO(logger, "key1=" << props->get("key1"));
 	assert(props->get("key1")=="value1");
-	cout << "key2=" << props->get("key2") << endl;
+	LOG_INFO(logger, "key2=" << props->get("key2"));
 	assert(props->get("key2")=="value2");
-	cout << "key3=" << props->get("key3") << endl;
+	LOG_INFO(logger, "key3=" << props->get("key3"));
 	assert(props->get("key3")=="value3");
 	assert(props->size()==3);
 	
-	cout << "test remove properties..." << endl;
+	LOG_INFO(logger, "test remove properties...");
 	props->remove("key1");
-    cout << "number of properties: " << props->size() << endl;
+    LOG_INFO(logger, "number of properties: " << props->size());
     assert(props->size()==2);
 	
-	cout << "test properties toElements() ..." << endl;
+	LOG_INFO(logger, "test properties toElements() ...");
 	vector<DOMElement*> elements = props->toElements(XMLUtils::Instance()->createEmptyDocument(true));
-	cout << "number of elements: " << elements.size() << endl;
-	cout << *props << endl;
+	LOG_INFO(logger, "number of elements: " << elements.size());
+	LOG_INFO(logger, *props);
 	
-	cout << "test overwriting of properties ..." << endl;
+	LOG_INFO(logger, "test overwriting of properties ...");
 	props->put("key3","value3b");
-	cout << *props << endl;
+	LOG_INFO(logger, *props);
 	assert(props->get("key3")=="value3b");
 
 	delete props;
 
-	cout << "============== END PROPERTIES TEST =============" << endl;
+	LOG_INFO(logger, "============== END PROPERTIES TEST =============");
 }

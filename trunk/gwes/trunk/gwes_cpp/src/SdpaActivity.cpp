@@ -32,7 +32,7 @@ SdpaActivity::~SdpaActivity()
  * UNDEFINED before. 
  */
 void SdpaActivity::initiateActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SdpaActivity::initiateActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "initiateActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
@@ -57,7 +57,7 @@ void SdpaActivity::initiateActivity() throw (ActivityException,StateTransitionEx
  * Start this activity. Status should switch to RUNNING. 
  */
 void SdpaActivity::startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) {
-	cout << "gwes::SdpaActivity::startActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "startActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
@@ -77,16 +77,16 @@ void SdpaActivity::startActivity() throw (ActivityException,StateTransitionExcep
  * Suspend this activity. Status should switch to SUSPENDED. 
  */
 void SdpaActivity::suspendActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SdpaActivity::suspendActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "suspendActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::SdpaActivity::suspendActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "suspendActivity() not yet implemented!");
 }
 
 /**
  * Resume this activity. Status should switch to RUNNING. 
  */
 void SdpaActivity::resumeActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SdpaActivity::resumeActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "resumeActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
@@ -95,14 +95,14 @@ void SdpaActivity::resumeActivity() throw (ActivityException,StateTransitionExce
 		throw StateTransitionException(oss.str());
 	}
 	///ToDo: Implement!
-	cerr << "gwes::SdpaActivity::resumeActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "resumeActivity() not yet implemented!");
 }
 
 /**
  * Abort this activity. Status should switch to TERMINATED.
  */
 void SdpaActivity::abortActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SdpaActivity::abortActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "abortActivity(" << _id << ") ... ");
 	//check status
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
@@ -121,9 +121,9 @@ void SdpaActivity::abortActivity() throw (ActivityException,StateTransitionExcep
  * Restart this activity. Status should switch to INITIATED. 
  */
 void SdpaActivity::restartActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SdpaActivity::restartActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "restartActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::SdpaActivity::restartActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "restartActivity() not yet implemented!");
 }
 
 } // end namespace gwes

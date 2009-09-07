@@ -4,35 +4,38 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <iostream>
-#include <sstream>
 #include <assert.h>
 // tests
 #include "TestWorkflow.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
+using namespace fhg::log;
 using namespace gwdl;
 
 void testWorkflow()
 {
-	cout << "============== BEGIN WORKFLOW TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+
+	LOG_INFO(logger, "============== BEGIN WORKFLOW TEST =============");
 	// create empty workflow
 	Workflow *wf = new Workflow();
 	wf->setID("test-workflow");
 
 	// add description
-	cout << "  description..." << endl;
+	LOG_INFO(logger, "  description...");
 	wf->setDescription("This is the description of the workflow");
 	assert(wf->getDescription()=="This is the description of the workflow") ;
 
 	// add properties
-	cout << "  properties..." << endl,
+	LOG_INFO(logger, "  properties...");
 	wf->getProperties().put("b_name1","value1");	
 	wf->getProperties().put("a_name2","value2");	
 	assert(wf->getProperties().get("b_name1")=="value1");
 	
 	// add places
-	cout << "  places..." << endl;
+	LOG_INFO(logger, "  places...");
 	Place* p0 = new Place("p0");
 	Place* p1 = new Place("p1");
 	wf->addPlace(p0);
@@ -40,14 +43,14 @@ void testWorkflow()
 	assert(wf->placeCount()==2);
 	
 	// create transition
-	cout << "  transition..." << endl;
+	LOG_INFO(logger, "  transition...");
 	Transition* t0 = new Transition("t0");
 	// input edge from p0 to t0
-	cout << "  input edge..." << endl;
+	LOG_INFO(logger, "  input edge...");
 	Edge* arc0 = new Edge(wf->getPlace("p0"));
 	t0->addInEdge(arc0);
 	// output edge from t0 to p1
-	cout << "  output edge..." << endl;
+	LOG_INFO(logger, "  output edge...");
 	Edge* arc1 = new Edge(wf->getPlace("p1"));
 	t0->addOutEdge(arc1);
 	
@@ -58,7 +61,7 @@ void testWorkflow()
 	assert(wf->getTransition("t0")->isEnabled()==false);	
 			
 	// add token
-	cout << "  token..." << endl;
+	LOG_INFO(logger, "  token...");
 	Token* d0 = new Token(true);
 	wf->getPlace("p0")->addToken(d0);
 
@@ -66,15 +69,15 @@ void testWorkflow()
 	assert(wf->getTransition("t0")->isEnabled()==true);
 	
 	// add operation to transition
-	cout << "  operation..." << endl;
-	cout << "  set operation..." << endl;
+	LOG_INFO(logger, "  operation...");
+	LOG_INFO(logger, "  set operation...");
 	Operation* op = new Operation();
 	wf->getTransition("t0")->setOperation(op);	
-	cout << "  set operation class..." << endl;
+	LOG_INFO(logger, "  set operation class...");
 	OperationClass* opc = new OperationClass();
 	opc->setName("mean-value");
 	wf->getTransition("t0")->getOperation()->setOperationClass(opc);
-	cout << "  add operation candidate..." << endl;
+	LOG_INFO(logger, "  add operation candidate...");
 	OperationCandidate* opcand1 = new OperationCandidate();
 	opcand1->setType("psp");
 	opcand1->setOperationName("alg-mean-value");
@@ -88,7 +91,7 @@ void testWorkflow()
 	wf->getTransition("t0")->getOperation()->getOperationClass()->addOperationCandidate(opcand2);
 
 	// print workflow to stdout	
-	cout << *wf << endl;
+	LOG_INFO(logger, *wf);
 	
 	// test no such workflow element getTransition
 	bool test = false;
@@ -98,7 +101,7 @@ void testWorkflow()
 	}
 	catch (NoSuchWorkflowElement e)
 	{	
-		cout << "NoSuchWorkflowElement: " << e.message << endl;
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
 	assert(test);
@@ -111,7 +114,7 @@ void testWorkflow()
 	}
 	catch (NoSuchWorkflowElement e)
 	{	
-		cout << "NoSuchWorkflowElement: " << e.message << endl;
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
 	assert(test);
@@ -124,7 +127,7 @@ void testWorkflow()
 	}
 	catch (NoSuchWorkflowElement e)
 	{	
-		cout << "NoSuchWorkflowElement: " << e.message << endl;
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
 	assert(test);
@@ -137,21 +140,21 @@ void testWorkflow()
 	}
 	catch (NoSuchWorkflowElement e)
 	{	
-		cout << "NoSuchWorkflowElement: " << e.message << endl;
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
 	assert(test);
 	
-	cout << "safe to file ..." << endl;
+	LOG_INFO(logger, "safe to file ...");
 	wf->saveToFile("/tmp/wf.xml");
 	
-	cout << "load from file ..." << endl;
+	LOG_INFO(logger, "load from file ...");
 	Workflow* wf2 = new Workflow("/tmp/wf.xml");
-	cout << *wf2 << endl;
+	LOG_INFO(logger, *wf2);
 
 	delete wf;
 	delete wf2;
 	
-	cout << "============== END WORKFLOW TEST =============" << endl;
+	LOG_INFO(logger, "============== END WORKFLOW TEST =============");
 	
 }

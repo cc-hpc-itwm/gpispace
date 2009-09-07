@@ -7,8 +7,11 @@
 #ifndef TESTPLACE_H_
 #define TESTPLACE_H_
 #include <gwdl/Place.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
+
 
 void testPlace() ;
-void printTokens(gwdl::Place &place); 
+void printTokens(fhg::log::LoggerApi logger, gwdl::Place &place); 
 
 #endif /*TESTPLACE_H_*/

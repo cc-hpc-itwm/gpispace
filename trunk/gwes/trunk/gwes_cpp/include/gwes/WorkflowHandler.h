@@ -15,6 +15,8 @@
 //gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 //std
 #include <vector>
 #include <pthread.h>
@@ -267,6 +269,11 @@ private:
 	 * Default is 60000000 micro seconds = 1Minute
 	 */
 	const static long SLEEP_TIME_MAX=60000000;
+	
+	/**
+	 * Fhg Logger
+	 */
+	fhg::log::LoggerApi _logger;
 
 	/**
 	 * Current sleep time.

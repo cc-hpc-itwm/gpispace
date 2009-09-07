@@ -9,6 +9,8 @@
 //gworkflowdl
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 //gwes
 #include <gwes/Types.h>
 #include <gwes/Sdpa2Gwes.h>
@@ -43,6 +45,11 @@ private:
 	  * callback methods (observer pattern).
 	  */
 	 Gwes2Sdpa* _sdpaHandler;
+
+	 /**
+	  * Fhg Logger.
+	  */
+	 fhg::log::LoggerApi _logger;
 	 
 public:
 	

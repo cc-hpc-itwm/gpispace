@@ -9,11 +9,14 @@
 #include <iostream>
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // gwdl
 #include <gwdl/Properties.h>
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
 
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
@@ -62,18 +65,18 @@ vector<DOMElement*> Properties::toElements(DOMDocument* doc)
            }
            catch (const OutOfMemoryException&)
            {
-               XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
+               LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException" );
                errorCode = 5;
            }
            catch (const DOMException& e)
            {
-               XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-               XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+               LOG_WARN(Logger::get("gwdl"), "DOMException code is:  " << e.code );
+               LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
                errorCode = 2;
            }
            catch (...)
            {
-               XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+               LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document" );
                errorCode = 3;
            }
    }

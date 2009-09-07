@@ -9,6 +9,8 @@
 
 // gwes
 #include <gwes/Observer.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 namespace gwes
 {
@@ -24,6 +26,8 @@ public:
 	WorkflowObserver();
 	virtual ~WorkflowObserver();
 	virtual void update(const Event& event);
+private:
+	fhg::log::LoggerApi _logger;
 };
 
 }

@@ -9,6 +9,8 @@
 // gwdl
 #include <gwdl/WorkflowFormatException.h>
 #include <gwdl/XMLDOMErrorHandler.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // libxml2
 #include <libxml/xpathInternals.h>
 //xerces
@@ -31,6 +33,7 @@ class XMLUtils
 private:
 	static XMLUtils* _instance;
 	XMLDOMErrorHandler* _errorHandler;
+	fhg::log::LoggerApi _logger;
 	int initializeXerces();
 	void terminateXerces();
 	int initializeLibxml2();

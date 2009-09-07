@@ -38,9 +38,9 @@ int XPathEvaluator::_cacheStep = -1;
 /**
  * example refer to http://xmlsoft.org/examples/xpath1.c
  */
-XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
+XPathEvaluator::XPathEvaluator(const char* xmlContextChar) : _logger(fhg::log::Logger::get("gwes"))
 {
-//	cout << "gwes::XPathEvaluator::XPathEvaluator(" << xmlContextChar << ")..." << endl;
+	LOG_DEBUG(_logger, "XPathEvaluator(" << xmlContextChar << ")...");
 	// init parser should be done only ONCE before construction of XPathEvaluator!
 	XMLUtils::Instance();
 
@@ -48,7 +48,7 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
     _xmlContextDocP = xmlParseDoc(xmlCharStrdup(xmlContextChar));
     _xmlContextP = xmlXPathNewContext(_xmlContextDocP);
     if(_xmlContextP == NULL) {
-        cerr << "Error: unable to create new XPath context" << endl;
+        LOG_WARN(_logger, "Error: unable to create new XPath context");
         xmlFreeDoc(_xmlContextDocP); 
         assert(false);
     }
@@ -57,14 +57,14 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar)
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
-XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException) {
-//	cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << ")..." << endl;
+XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException) : _logger(fhg::log::Logger::get("gwes")) {
+	LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << ")...");
 	
     // look if context is still available in cache
 	if (step == _cacheStep && toP == _cacheTransitionOccurrenceP) {
 		_xmlContextDocP = _cacheXmlContextDocP;
 		_xmlContextP = _cacheXmlContextP;
-//		cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): using context from cache." << endl;
+		LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): using context from cache.");
 	}
 
 	// create new context from input and read places
@@ -78,14 +78,12 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
 		// insert contents of parameter tokens.
 		for (parameter_list_t::const_iterator it=toP->tokens.begin(); it!=toP->tokens.end(); ++it) {
 			if (it->tokenP != NULL) {
-//				cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): adding token " << it->tokenP->getID() << " to context." << endl;
 				addTokenToContext(it->edgeP->getExpression(), it->tokenP);
 			}
 		}
 
 		_xmlContextP = xmlXPathNewContext(_xmlContextDocP);
 
-//	    cout << "gwes::XPathEvaluator::XPathEvaluator(Transition=" << transitionP->getID() << "): moving context to cache." << endl;
 		xmlXPathFreeContext(_cacheXmlContextP); 
 	    xmlFreeDoc(_cacheXmlContextDocP);
 	    _cacheXmlContextDocP = _xmlContextDocP;
@@ -95,13 +93,13 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
 	}
 	
     if(_xmlContextP == NULL) {
-        cerr << "Error: unable to create new XPath context" << endl;
+        LOG_WARN(_logger, "Error: unable to create new XPath context");
         xmlFreeDoc(_xmlContextDocP); 
         assert(false);
     }
     
-//    cout << "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): context:" << endl;
-//	cout << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false) << endl;
+    LOG_DEBUG(_logger, "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): context:"
+    		<< endl << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false));
 
     // register namespaces
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
@@ -109,10 +107,9 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
 
 XPathEvaluator::~XPathEvaluator()
 {
-//	cout << "gwes::XPathEvaluator::~XPathEvaluator()..." << endl;
     // do not free _xmlContextP if it has be moved to the cache.
 	if (_cacheXmlContextP != _xmlContextP) {
-//		cout << "gwes::XPathEvaluator::~XPathEvaluator(): Removing context from memory (not in cache)..." << endl;
+		LOG_DEBUG(_logger, "Removing context from memory (not in cache)...");
 		xmlXPathFreeContext(_xmlContextP); 
 	    xmlFreeDoc(_xmlContextDocP);
 	}
@@ -121,15 +118,13 @@ XPathEvaluator::~XPathEvaluator()
 }
 
 int XPathEvaluator::evalCondition(string& xPathExprStr) {
-//	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprStr << ")..." << endl;
-	
 	// create xpath expression
     const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        cerr << "gwes::XPathEvaluator::evalCondition(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
+        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return -1;
     }
     
@@ -139,20 +134,18 @@ int XPathEvaluator::evalCondition(string& xPathExprStr) {
     // cleanup
     xmlXPathFreeObject(xpathObjP);
     
-	cout << "gwes::XPathEvaluator::evalCondition(" << xPathExprStr << ") = " << (xPathCondition ? "true":"false") << endl;
+	LOG_DEBUG(_logger, "evalCondition(" << xPathExprStr << ") = " << (xPathCondition ? "true":"false"));
     return xPathCondition;
 }
 
 string XPathEvaluator::evalExpression(string& xPathExprStr) {
-//	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprStr << ")..." << endl;
-	
 	// create xpath expression
     const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
 	    
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        cerr << "gwes::XPathEvaluator::evalExpression(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
+        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
     }
     
@@ -162,27 +155,24 @@ string XPathEvaluator::evalExpression(string& xPathExprStr) {
     xmlXPathFreeObject(xpathObjP);
     
     //printXmlNodes(xpathObjP->nodesetval);
-	cout << "gwes::XPathEvaluator::evalExpression(" << xPathExprStr << ") = " << xmlResult << endl;
+	LOG_INFO(_logger, "evalExpression(" << xPathExprStr << ") = " << xmlResult);
     
     return xmlResult;
 }
 
 string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
-//	cout << "gwes::XPathEvaluator::evalExpression2Xml(" << xPathExprStr << ")..." << endl;
-
 	// create xpath expression
     const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        cerr << "gwes::XPathEvaluator::evalExpression2Xml(): ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!" << endl;
+        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
     }
     
     string xmlResult;
 	ostringstream xml;
-	// cout << "gwes::XPathEvaluator::evalExpression2Xml(): evaluates to type " << xpathObjP->type << endl;
     //      	XPATH_UNDEFINED = 0
     // XPATH_NODESET = 1
     // XPATH_BOOLEAN = 2
@@ -198,7 +188,6 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_UNDEFINED):
 		break;
 	case(XPATH_NODESET):
-//	    cout << "gwes::XPathEvaluator::evalExpression2Xml(): nodes->nodeNr=" << xpathObjP->nodesetval->nodeNr << endl;
 		xml << "<data>\n";
 		for (int i = 0; i < xpathObjP->nodesetval->nodeNr; i++) {
 			xml << "  " << XMLUtils::Instance()->serializeLibxml2(xpathObjP->nodesetval->nodeTab[i],false);
@@ -226,7 +215,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_LOCATIONSET):
 	case(XPATH_USERS):
 	case(XPATH_XSLT_TREE):
-		cerr << "XPath evaluation result (xmlXPathObjectPtr) of type " << xpathObjP->type << " is not supported!" << endl;
+		LOG_WARN(_logger, "XPath evaluation result (xmlXPathObjectPtr) of type " << xpathObjP->type << " is not supported!");
 		break;
 	}
 
@@ -234,7 +223,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
     xmlXPathFreeObject(xpathObjP);
     
     //printXmlNodes(xpathObjP->nodesetval);
-	cout << "gwes::XPathEvaluator::evalExpression2Xml(" << xPathExprStr << ") = " << xmlResult << endl;
+	LOG_DEBUG(_logger, "evalExpression2Xml(" << xPathExprStr << ") = " << xmlResult);
     
     return xmlResult;
 }
@@ -242,7 +231,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
 	
 	if(xmlXPathNodeSetIsEmpty(nodes)){
-		cout << "No result" << endl;
+		LOG_INFO(_logger, "No result");
 		return;
 	}
 	
@@ -252,7 +241,7 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
     
     size = (nodes) ? nodes->nodeNr : 0;
     
-    cout << "Result (" << size << "):" << endl;
+    LOG_INFO(_logger, "Result (" << size << "):");
     for(i = 0; i < size; ++i) {
 	assert(nodes->nodeTab[i]);
 	
@@ -262,20 +251,20 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
 	    ns = (xmlNsPtr)nodes->nodeTab[i];
 	    cur = (xmlNodePtr)ns->next;
 	    if(cur->ns) { 
-	        cout << "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->ns->href << ":" << cur->name << endl;
+	        LOG_INFO(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->ns->href << ":" << cur->name);
 	    } else {
-	        cout << "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->name << endl;
+	        LOG_INFO(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->name);
 	    }
 	} else if(nodes->nodeTab[i]->type == XML_ELEMENT_NODE) {
 	    cur = nodes->nodeTab[i];   	    
 	    if(cur->ns) { 
-    	        cout << "<" << cur->ns->href << ":" << cur->name << "/>" << endl; 
+    	        LOG_INFO(_logger, "<" << cur->ns->href << ":" << cur->name << "/>"); 
 	    } else {
-    	        cout << "<" << cur->name << "/>" << endl; 
+    	        LOG_INFO(_logger, "<" << cur->name << "/>"); 
 	    }
 	} else {
 	    cur = nodes->nodeTab[i];    
-	    cout << "= node \"" << cur->name << "\": type " << cur->type << endl;
+	    LOG_INFO(_logger, "= node \"" << cur->name << "\": type " << cur->type);
 	}
     }
 }
@@ -295,10 +284,10 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 		if ( textP->substr(0,7).compare("file://") == 0 ) {
 			// if token text begins with "file://" insert content of file
 			string fn = CommandLineActivity::convertUrlToLocalPath(*textP);
-//			cout << "gwes::XPathEvaluator::addTokenToContext(): Adding file '" << fn << "' to context ..." << endl;
+			LOG_DEBUG(_logger, "Adding file '" << fn << "' to context ...");
 			xmldoc = XMLUtils::Instance()->deserializeFileLibxml2(fn);
 			if (xmldoc == NULL) {      // file not in XML format
-				cout << "gwes::XPathEvaluator::addTokenToContext(): file '" << fn << "' skipped because it is not in XML format." << endl;
+				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in XML format.");
 			} 
 		}
 

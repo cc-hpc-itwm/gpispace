@@ -10,8 +10,6 @@
 #include <gwes/CommandLineActivity.h>
 #include <gwes/SubWorkflowActivity.h>
 //std
-#include <iostream>
-#include <sstream>
 #include <unistd.h>
 #include <map>
 
@@ -21,7 +19,7 @@ using namespace gwes;
 
 namespace gwes {
 
-WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) {
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) : _logger(fhg::log::Logger::get("gwes")) {
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;
@@ -41,8 +39,8 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string&
 	_simulation = false;
 	if (workflowP->getProperties().contains("simulation") && (workflowP->getProperties().get("simulation")).compare("false") != 0) {
 		_simulation = true;
-		cout << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): Simulation is ON" << endl; 
-//		cout << *workflowP << endl;
+		LOG_INFO(_logger, getID() << ": Simulation is ON");
+		LOG_DEBUG(_logger, *workflowP);
 	}
 	// set status
 	setStatus(STATUS_INITIATED);
@@ -58,15 +56,13 @@ WorkflowHandler::~WorkflowHandler() {
 
 void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 	if (status == _status) return;
-//	int oldStatus = _status;
+	status_t oldStatus = _status;
 	_status = status;
 	if (_status != STATUS_UNDEFINED) {
 		_wfP->getProperties().put("status", getStatusAsString(_status));
 	}
 	
-//	cout << "gwes::WorkflowHandler: status of workflow \"" << getID()
-//			<< "\" changed from " << getStatusAsString(oldStatus) << " to "
-//			<< getStatusAsString() << endl;
+	LOG_DEBUG(_logger, "status of workflow \"" << getID() << "\" changed from " << getStatusAsString(oldStatus) << " to " << getStatusAsString());
 	
 	// notify observers
 	Gwes2Sdpa* sdpaP = _gwesP->getSdpaHandler();
@@ -121,8 +117,7 @@ void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
-		oss << "Invalid status " << getStatusAsString()
-				<< " for starting workflow \"" << getID() << "\"" << endl;
+		oss << "Invalid status " << getStatusAsString()	<< " for starting workflow \"" << getID() << "\"";
 		throw StateTransitionException(oss.str());
 	}
 
@@ -134,12 +129,11 @@ void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
  * Execute this workflow. Status should switch to RUNNING.
  */
 void WorkflowHandler::executeWorkflow() throw (StateTransitionException, WorkflowFormatException) {
-//	cout << "gwes::WorkflowHandler::executeWorkflow(" << getID() << ") ..." << endl;
+	LOG_DEBUG(_logger, "executeWorkflow(" << getID() << ") ...");
 	//check status
 	if (getStatus() != WorkflowHandler::STATUS_INITIATED) {
 		ostringstream oss;
-		oss << "Invalid status " << getStatusAsString()
-				<< " for starting workflow \"" << getID() << "\"" << endl;
+		oss << "Invalid status " << getStatusAsString() << " for starting workflow \"" << getID() << "\"";
 		throw StateTransitionException(oss.str());
 	}
 
@@ -151,17 +145,16 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	//get enabled transitions
 	vector<Transition*>& enabledTransitions = _wfP->getEnabledTransitions();
 	if (enabledTransitions.size() <= 0) {
-		cerr << "workflow \"" << getID()
-				<< "\" does not contain any enabled transitions!" << endl;
+		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
 	}
 
 	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
 	while ((!_abort && enabledTransitions.size()> 0) 
 			|| _status == WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
-			cout << "--- step " << step << " (" << getID() << ":" << getStatusAsString()
+			LOG_INFO(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 			<< ") --- " << enabledTransitions.size()
-			<< " enabled transition(s)" << endl;
+			<< " enabled transition(s)");
 			modification = false;
 		}
 
@@ -174,7 +167,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			TransitionOccurrence* selectedToP = selectTransitionOccurrence(enabledTransitions, step);
 			if (selectedToP != NULL) {
 				selectedToP->simulation=_simulation;
-				//			cout << "Processing " << *selectedToP << " ..." << endl;
+				LOG_DEBUG(_logger, "Processing " << *selectedToP << " ...");
 			}
 
 			///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
@@ -186,12 +179,12 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 					string breakstring = transprops.get("breakpoint");
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
-						cout << "released breakpoint at transition "
-						<< selectedToP->transitionP->getID() << endl;
+						LOG_INFO(_logger, "released breakpoint at transition "
+						<< selectedToP->transitionP->getID());
 						transprops.put("breakpoint", "RELEASED");
 					} else {
-						cout << "reached breakpoint at transition "
-						<< selectedToP->transitionP->getID() << endl;
+						LOG_INFO(_logger, "reached breakpoint at transition "
+						<< selectedToP->transitionP->getID());
 						transprops.put("breakpoint", "REACHED");
 						_suspend = true;
 					}
@@ -203,9 +196,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			//process selected transition.
 			if (!_abort && !_suspend && selectedToP != NULL) {
 				int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
-				cout << "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
+				LOG_INFO(_logger, "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
 				<< selectedToP->getID() << "\" (level "
-				<< abstractionLevel << ") ..." << endl;
+				<< abstractionLevel << ") ...");
 				switch (abstractionLevel) {
 				case (Operation::BLACK): // no operation
 					if (processBlackTransition(selectedToP, step))
@@ -228,7 +221,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 						modification = true;
 				break;
 				default:
-					cerr << "This should not happen." << endl;
+					LOG_WARN(_logger, "This should not happen.");
 					_abort = true;
 				}
 			}
@@ -246,7 +239,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			// suspend if there is a deadlock because of false conditions
 			if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
 				modification = true;
-				cout << "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!"  << endl;
+				LOG_INFO(_logger, "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!" );
 				_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
 				_suspend = true;
 			}
@@ -271,13 +264,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		} catch (ActivityException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
-			cerr << oss.str() << endl;
+			LOG_WARN(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
 		}  catch (WorkflowFormatException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
-			cerr << oss.str() << endl;
+			LOG_WARN(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
 		}
@@ -389,17 +382,13 @@ void WorkflowHandler::connect(Channel* channel) {
  * @deprecated[Use Spda2Gwes instead]
  */
 void WorkflowHandler::update(const Event& event) {
-	cerr << "gwes::WorkflowHandler::update() is DEPRICATED!";
+	LOG_WARN(_logger, "update() is DEPRICATED!");
 	// logging
-	cout << "gwes::WorkflowHandler[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._tokensP!=NULL) {
-		cout << ",";
-		parameter_list_t* dP = event._tokensP;
-		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
-				cout << "[" << it->edgeP->getExpression() << "]";
-		}
-	}
-	cout << ")" << endl;
+	LOG_INFO(_logger, _id << ":update(" 
+			<< event._sourceId 
+			<< "," << event._eventType 
+			<< "," << event._message 
+			<< ")");
 	
 	// forward events regarding activities to the corresponding activity.
 	if (event._eventType==Event::EVENT_ACTIVITY_END) {
@@ -473,31 +462,24 @@ TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::T
 
 bool WorkflowHandler::processRedTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	cerr
-			<< "gwes::WorkflowHandler::processRedTransition() not yet implemented!"
-			<< endl;
+	LOG_WARN(_logger, "processRedTransition() not yet implemented!");
 	return false;
 }
 
 bool WorkflowHandler::processYellowTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	cerr
-			<< "gwes::WorkflowHandler::processYellowTransition() not yet implemented!"
-			<< endl;
+	LOG_WARN(_logger, "processYellowTransition() not yet implemented!");
 	return false;
 }
 
 bool WorkflowHandler::processBlueTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	cerr
-			<< "gwes::WorkflowHandler::processBlueTransition() not yet implemented!"
-			<< endl;
+	LOG_WARN(_logger, "processBlueTransition() not yet implemented!");
 	return false;
 }
 
 bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step) {
-	cout << "gwes::WorkflowHandler::processGreenTransitionOccurrence(" << toP->getID()
-			<< ") ..." << endl;
+	LOG_DEBUG(_logger, "processGreenTransitionOccurrence(" << toP->getID() << ") ...");
 	bool modification = false;
 
 	// select selected operation
@@ -510,7 +492,7 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 		}
 	}
 	if (operationP == NULL) {
-		cerr << "ERROR: No selected operation available!" << endl;
+		LOG_WARN(_logger, "ERROR: No selected operation available!");
 		return modification;
 	}
 
@@ -531,7 +513,7 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 		throw WorkflowFormatException(oss.str());
 	}
 	if (activityP == NULL) {
-		cerr << "ERROR: Activity Pointer is NULL!" << endl;
+		LOG_WARN(_logger, "ERROR: Activity Pointer is NULL!");
 		return modification;
 	}
 	toP->activityP=activityP;
@@ -555,7 +537,7 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 }
 
 bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step) {
-	cout << "gwes::WorkflowHandler::processBlackTransitionOccurrence(" << toP->getID() << ") ..." << endl;
+	LOG_DEBUG(_logger, "gwes::WorkflowHandler::processBlackTransitionOccurrence(" << toP->getID() << ") ...");
 
 	//evaluate edgeExpressions with XPath expressions.
 	toP->evaluateXPathEdgeExpressions(step);
@@ -568,7 +550,7 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 		toP->writeWriteTokens();
 		toP->putOutputTokens();
 	} catch (CapacityException e) {
-		cerr << "exception: " << e.message << endl;
+		LOG_WARN(_logger, "exception: " << e.message);
 		_abort = true;
 		_wfP->getProperties().put(createNewErrorID(), e.message);
 	}
@@ -596,7 +578,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		string activityID = it->first;
 		Activity* activityP = it->second;
 		int activityStatus = activityP->getStatus();
-		cout << "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString() << endl;
+		LOG_INFO(_logger, "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString());
 
 		// activity has completed or terminated
 		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
@@ -625,7 +607,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 				//  put new token on each output place
 				toP->putOutputTokens();
 			} catch (CapacityException e) {
-				cerr << "CapacityException:" << e.message << endl;;
+				LOG_WARN(_logger, "CapacityException:" << e.message);;
 				_abort = true;
 				_wfP->getProperties().put(createNewErrorID(), e.message);
 			}
@@ -653,9 +635,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 		} else if (activityStatus == Activity::STATUS_FAILED) {
 			///ToDo: implement fault management.
-			cerr
-			<< "gwes::WorkflowHandler: Fault management not yet implemented!"
-			<< endl;
+			LOG_WARN(_logger, "Fault management not yet implemented!");
 		} else {
 			// activity still not completed or terminated
 			tempworkflowstatus = STATUS_ACTIVE;

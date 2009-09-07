@@ -8,6 +8,8 @@
 #define XPATHEVALUATOR_H_
 // gwes
 #include <gwes/TransitionOccurrence.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // libxml2
 #include <libxml/xpath.h>
 
@@ -41,6 +43,11 @@ private:
 	 * Pointer to XML document context.
 	 */
 	xmlDocPtr _xmlContextDocP;
+	
+	/**
+	 * Fhg Logger.
+	 */
+	fhg::log::LoggerApi _logger;
 	
 	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP) throw (gwdl::WorkflowFormatException);
 	

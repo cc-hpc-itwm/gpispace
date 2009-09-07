@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // gwdl 
 #include <gwdl/WorkflowFormatException.h>
 // gwes
@@ -11,17 +13,20 @@
 #include "TestWorkflow.h"
 
 using namespace std;
+using namespace fhg::log;
 using namespace gwdl;
 using namespace gwes;
  
 Workflow& testWorkflow(string workflowfn, gwes::GWES &gwes) {
-	cout << "============== BEGIN EXECUTION " << workflowfn << "==============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+
+	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 
 	try {
 		Workflow* wfP = new Workflow(workflowfn);
 
 		// initiate workflow
-		cout << "initiating workflow ..." << endl;
+		LOG_INFO(logger, "initiating workflow ...");
 		string workflowId = gwes.initiate(*wfP,"test");
 
 		// register channel with source observer
@@ -38,11 +43,11 @@ Workflow& testWorkflow(string workflowfn, gwes::GWES &gwes) {
 		wfhP->waitForStatusChangeToCompletedOrTerminated();
 
 		// print workflow
-		cout << *wfP << endl;
-		cout << "============== END EXECUTION " << workflowfn << "==============" << endl;
+		LOG_DEBUG(logger, *wfP);
+		LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
 		return *wfP;
 	} catch (WorkflowFormatException e) {
-		cerr << "WorkflowFormatException: " << e.message << endl;
+		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
 		assert(false);
 	}
 }

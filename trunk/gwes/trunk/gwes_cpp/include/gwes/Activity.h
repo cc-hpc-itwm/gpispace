@@ -17,6 +17,8 @@
 //gwdl
 #include <gwdl/Data.h>
 #include <gwdl/OperationCandidate.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 //std
 #include <string>
 #include <map>
@@ -247,6 +249,11 @@ protected:
 	gwdl::OperationCandidate* _operation;
 
 	/**
+	 * Fhg Logger
+	 */
+	fhg::log::LoggerApi _logger;
+
+	/**
 	 * Vector which contains pointers to the observers of this activity.
 	 */
 	std::vector<Observer*> _observers;
@@ -268,7 +275,7 @@ protected:
 	}
 
 	void notifyObservers(int type=Event::EVENT_ACTIVITY, const std::string& message="", parameter_list_t* tokensP=NULL);
-
+	
 }; // end class Activity
 
 } // end namespace gwes

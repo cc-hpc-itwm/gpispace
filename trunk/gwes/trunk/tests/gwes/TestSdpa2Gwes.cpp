@@ -12,6 +12,8 @@
 #include <gwdl/Workflow.h>
 // gwes
 #include <gwes/Utils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // std
 #include <iostream>
 #include <ostream>
@@ -19,10 +21,13 @@
 
 using namespace gwes;
 using namespace gwdl;
+using namespace fhg::log;
 using namespace std;
 
 void testSdpa2Gwes() {
-	cout << "============== BEGIN SDPA2GWES TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwes"));
+
+	LOG_INFO(logger, "============== BEGIN SDPA2GWES TEST =============");
 
 	try {
 		// create SDPA dummy and register to GWES
@@ -30,12 +35,12 @@ void testSdpa2Gwes() {
 
 		// parse workflow from file
 		string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"); 
-		cout << "testSdpa2Gwes(): reading workflow '"+fn+"'..." << endl;
+		LOG_INFO(logger, "testSdpa2Gwes(): reading workflow '"+fn+"'...");
 		Workflow wf = (Workflow) fn;
 
 		// submit workflow
 		string workflowId = sdpaP->submitWorkflow(wf);
-		cout << "workflowId = " << workflowId << endl;
+		LOG_INFO(logger, "workflowId = " << workflowId);
 
 		// wait one second until worklfow finished in order to prevent segfault because of 
 		// destroyed workflow object.
@@ -43,18 +48,19 @@ void testSdpa2Gwes() {
 		usleep(1000000);
 
 		string status = wf.getProperties().get("status");
-		cout << "TEST " << status << endl;
+		LOG_INFO(logger, "TEST " << status);
 		assert(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
-		cerr << "WorkflowFormatException: " << e.message << endl;
+		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
 ///		assert(false);
 	}
 
-	cout << "============== END SDPA2GWES TEST =============" << endl;
+	LOG_INFO(logger, "============== END SDPA2GWES TEST =============");
 }
 
 void testGwes2Sdpa() {
-	cout << "============== BEGIN GWES2SDPA TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwes"));
+	LOG_INFO(logger, "============== BEGIN GWES2SDPA TEST =============");
 
 	try {
 		// create SDPA dummy and register to GWES
@@ -62,12 +68,12 @@ void testGwes2Sdpa() {
 
 		// parse workflow from file
 		string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple-sdpa-test.gwdl"); 
-		cout << "testGwes2Sdpa(): reading workflow '"+fn+"'..." << endl;
+		LOG_INFO(logger, "testGwes2Sdpa(): reading workflow '"+fn+"'...");
 		Workflow wf = (Workflow) fn;
 
 		// submit workflow
 		string workflowId = sdpaP->submitWorkflow(wf);
-		cout << "workflowId = " << workflowId << endl;
+		LOG_INFO(logger, "workflowId = " << workflowId);
 
 		// wait one second until worklfow finished in order to prevent segfault because of 
 		// destroyed workflow object.
@@ -75,14 +81,14 @@ void testGwes2Sdpa() {
 		usleep(1000000);
 
 		// ToDo: the following line results in segfault!
-		//cout << wf << endl;
+		//LOG_INFO(logger, wf);
 		string status = wf.getProperties().get("status");
-		cout << "TEST " << status << endl;
+		LOG_INFO(logger, "TEST " << status);
 		assert(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
-		cerr << "WorkflowFormatException: " << e.message << endl;
+		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
 		///		assert(false);
 	}
 
-	cout << "============== END GWES2SDPA TEST =============" << endl;
+	LOG_INFO(logger, "============== END GWES2SDPA TEST =============");
 }

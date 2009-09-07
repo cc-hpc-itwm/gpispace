@@ -41,7 +41,7 @@ CommandLineActivity::~CommandLineActivity()
  * UNDEFINED before. 
  */
 void CommandLineActivity::initiateActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::CommandLineActivity::initiateActivity(" << _id << ") ... " << endl;
+	LOG_DEBUG(_logger, "initiateActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
@@ -76,7 +76,7 @@ void CommandLineActivity::initiateActivity() throw (ActivityException,StateTrans
  * Start this activity. Status should switch to RUNNING. 
  */
 void CommandLineActivity::startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) {
-	cout << "gwes::CommandLineActivity::startActivity(" << _id << ") ... " << endl;
+	LOG_DEBUG(_logger, "startActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
@@ -89,13 +89,13 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	// create temp directory
 	struct stat buffer;
 	if (stat(GWES_TEMP_DIRECTORY, &buffer)!=0) {
-		if (mkdir(GWES_TEMP_DIRECTORY, S_IRWXU)==0) cout << "gwes::CommandLineActivity::startActivity(): created directory " << GWES_TEMP_DIRECTORY << endl;
-		else cerr << "gwes::CommandLineActivity::startActivity(): error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno) << endl;
+		if (mkdir(GWES_TEMP_DIRECTORY, S_IRWXU)==0) LOG_INFO(_logger, "created directory " << GWES_TEMP_DIRECTORY);
+		else LOG_WARN(_logger, "error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno));
 	} 
-	if (mkdir(_workingDirectory.c_str(), S_IRWXU)==0) cout << "gwes::CommandLineActivity::startActivity(): created directory " << _workingDirectory << endl;
+	if (mkdir(_workingDirectory.c_str(), S_IRWXU)==0) LOG_INFO(_logger, "created directory " << _workingDirectory);
 	else {
-		if (errno == EEXIST) cout << "gwes::CommandLineActivity::startActivity(): warning creating " << _workingDirectory << ": " << strerror(errno) << endl;
-		else cerr << "gwes::CommandLineActivity::startActivity(): error creating " << _workingDirectory << ": " << strerror(errno) << endl;
+		if (errno == EEXIST) LOG_WARN(_logger, "warning creating " << _workingDirectory << ": " << strerror(errno));
+		else LOG_WARN(_logger, "error creating " << _workingDirectory << ": " << strerror(errno));
 	}
 	
 	// generate command line
@@ -174,7 +174,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
     	char* pEnd;
     	_exitCode = strtol(line.c_str(),&pEnd,10);
     } else {
-    	cerr << "Unable to open file " << _exitcodefn << ": " << strerror(errno) << endl;
+    	LOG_WARN(_logger, "Unable to open file " << _exitcodefn << ": " << strerror(errno));
     }
     
 	// notify observers
@@ -205,7 +205,7 @@ string CommandLineActivity::convertUrlToLocalPath(const string& url) {
  * ToDo: make it thread safe.
  */
 string CommandLineActivity::execute(const string& commandline) {
-    cout << "gwes::CommandLineActivity::startActivity(" << _id << ").execute(" << commandline << ")" << endl;
+    LOG_INFO(_logger, "startActivity(" << _id << ").execute(" << commandline << ")");
     // notify observers
 	if (_observers.size()>0) {
 		ostringstream oss;
@@ -221,7 +221,7 @@ string CommandLineActivity::execute(const string& commandline) {
 	    olddir = getcwd(buf, (size_t)size);
 	}
 	//  char *getcwd(char *buf, size_t size);
-    if (chdir(_workingDirectory.c_str())!=0) cerr << "error changing to working directory: " << strerror(errno) << endl;
+    if (chdir(_workingDirectory.c_str())!=0) LOG_WARN(_logger, "error changing to working directory: " << strerror(errno));
     string stdout;
     char buffer[1024];
     FILE* p=popen(commandline.c_str(), "r");
@@ -237,16 +237,16 @@ string CommandLineActivity::execute(const string& commandline) {
  * Suspend this activity. Status should switch to SUSPENDED. 
  */
 void CommandLineActivity::suspendActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::CommandLineActivity::suspendActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "suspendActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::CommandLineActivity::suspendActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "suspendActivity() not yet implemented!");
 }
 
 /**
  * Resume this activity. Status should switch to RUNNING. 
  */
 void CommandLineActivity::resumeActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::CommandLineActivity::resumeActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "resumeActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
@@ -255,14 +255,14 @@ void CommandLineActivity::resumeActivity() throw (ActivityException,StateTransit
 		throw StateTransitionException(oss.str());
 	}
 	///ToDo: Implement!
-	cerr << "gwes::CommandLineActivity::resumeActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "resumeActivity() not yet implemented!");
 }
 
 /**
  * Abort this activity. Status should switch to TERMINATED.
  */
 void CommandLineActivity::abortActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::CommandLineActivity::abortActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "abortActivity(" << _id << ") ... ");
 	//check status
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
@@ -280,9 +280,9 @@ void CommandLineActivity::abortActivity() throw (ActivityException,StateTransiti
  * Restart this activity. Status should switch to INITIATED. 
  */
 void CommandLineActivity::restartActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::CommandLineActivity::restartActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "restartActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::CommandLineActivity::restartActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "restartActivity() not yet implemented!");
 }
 
 } // end namespace gwes

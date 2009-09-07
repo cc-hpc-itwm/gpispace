@@ -11,23 +11,28 @@
 #include <gwdl/OperationCandidate.h>
 // tests
 #include "TestTransition.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
+
  
 void testTransition() 
 {
-   cout << "============== BEGIN TRANSITION TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+   LOG_INFO(logger, "============== BEGIN TRANSITION TEST =============");
    
-   cout << "test empty transition..." << endl;
+   LOG_INFO(logger, "test empty transition...");
    Transition *t0 = new Transition("");
-   cout << *t0 << endl;
+   LOG_INFO(logger, *t0);
    
-   cout << "test description..." << endl;
+   LOG_INFO(logger, "test description...");
    t0->setDescription("This is the description of the transition"); 
    assert(t0->getDescription()=="This is the description of the transition");
 		
-   cout << "test transition connected to four places..." << endl;
+   LOG_INFO(logger, "test transition connected to four places...");
    Place *p0 = new Place("");
    Place *p1 = new Place("");
    Place *p2 = new Place("");
@@ -41,17 +46,17 @@ void testTransition()
    t0->addWriteEdge(e2);
    t0->addOutEdge(e3);
    
-   cout << "test properties..." << endl;
+   LOG_INFO(logger, "test properties...");
    t0->getProperties().put("key1","value1");
    
-   cout << "test condition..." << endl;
+   LOG_INFO(logger, "test condition...");
    t0->addCondition("true");
    
    // this is still a control transition (without operation)
    assert(t0->getAbstractionLevel()==Operation::BLACK);
 
    // link this transtion with an operation
-   cout << "test operation class..." << endl;
+   LOG_INFO(logger, "test operation class...");
    Operation* op = new Operation(); 
    OperationClass* opc = new OperationClass();
    opc->setName("calculateEverything");
@@ -87,8 +92,8 @@ void testTransition()
    // transition is now enabled
    assert(t0->isEnabled()==true);	
 
-   cout << *t0 << endl;
+   LOG_INFO(logger, *t0);
    		
    delete t0;
-   cout << "============== END TRANSITION TEST =============" << endl;
+   LOG_INFO(logger, "============== END TRANSITION TEST =============");
 }

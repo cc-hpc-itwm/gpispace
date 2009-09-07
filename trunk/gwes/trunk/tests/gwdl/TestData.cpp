@@ -11,23 +11,27 @@
 #include <gwdl/XMLUtils.h>
 //tests
 #include "TestData.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 
 #define X(str) XMLString::transcode((const char*)& str)
 
 void testData()
 {
-    cout << "============== BEGIN DATA TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+    LOG_INFO(logger, "============== BEGIN DATA TEST =============");
 	
-	cout << "test empty data token... " << endl;
+	LOG_INFO(logger, "test empty data token... ");
 	Data *emptyData = new Data();
 	assert(emptyData->toElement(NULL)==NULL);
 	delete emptyData;
  
-	cout << "test xml data token from DOM element... " << endl;
+	LOG_INFO(logger, "test xml data token from DOM element... ");
 	DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
 	DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
 	// <data>
@@ -44,19 +48,19 @@ void testData()
 	e2->appendChild(e2value);
 	
 	Data *data = new Data(dataElement);
-	cout << "test data << operator ..." << endl;
-	cout << *data << endl;
-	cout << "test data.toString() ..." << endl;
+	LOG_INFO(logger, "test data << operator ...");
+	LOG_DEBUG(logger, *data);
+	LOG_INFO(logger, "test data.toString() ...");
 	string* datastr = data->toString();
-	cout << *datastr << endl;
+	LOG_INFO(logger, *datastr);
 	assert(*(data->toString())=="<data><value1>25</value1><value2>15</value2></data>");
 	delete data;
 	
-	cout << "test constructing data from string..." << endl;
+	LOG_INFO(logger, "test constructing data from string...");
 	string *str = new string("<data xmlns=\"http://www.gridworkflow.org/gworkflowdl\"><x>1</x><y>2</y></data>");
 	Data *data2 = new Data(*str);
-	cout << *data2 << endl;
-	cout << *str << endl;
+	LOG_INFO(logger, *data2);
+	LOG_INFO(logger, *str);
 	char* name = XMLString::transcode(data->toElement(NULL)->getTagName()); 
 	assert(!strcmp(name,"data"));
 	
@@ -64,21 +68,21 @@ void testData()
 	//delete data2;
 	
 	///ToDo: FAILED WITH INTEL COMPILER/// 
-	cout << "test workflow format exception ..." << endl;
+	LOG_INFO(logger, "test workflow format exception ...");
 	string *str3 = new string("<bla>");
 	bool test = false;
 	try {
 		Data *data3 = new Data(*str3);
-        cout << *data3 << endl;
+        LOG_INFO(logger, *data3);
     } catch(WorkflowFormatException e) {
-   	    cout << "WorkflowFormatException: " << e.message << endl;
+   	    LOG_INFO(logger, "WorkflowFormatException: " << e.message);
    	    test = true;
     } catch (...) {
-        cout << "another exception" << endl;
+        LOG_INFO(logger, "another exception");
 	}
     assert(test);
     delete str3;
 	
-    cout << "============== END DATA TEST =============" << endl;
+    LOG_INFO(logger, "============== END DATA TEST =============");
 	
 }

@@ -6,16 +6,13 @@
  */
 // gwes
 #include <gwes/WorkflowObserver.h>
-// std
-#include <iostream>
-#include <ostream>
 
 using namespace std;
 
 namespace gwes
 {
 
-WorkflowObserver::WorkflowObserver()
+WorkflowObserver::WorkflowObserver() : _logger(fhg::log::Logger::get("gwes"))
 {
 }
 
@@ -25,15 +22,7 @@ WorkflowObserver::~WorkflowObserver()
 
 void WorkflowObserver::update(const Event& event)
 {
-	cout << "gwes::WorkflowObserver::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._tokensP!=NULL) {
-		cout << ",";
-		parameter_list_t* dP = event._tokensP;
-		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->edgeP->getExpression() << "]";
-		}
-	}
-	cout << ")" << endl;
+	LOG_DEBUG(_logger, "gwes::WorkflowObserver::update(" << event._sourceId << "," << event._eventType << "," << event._message << ")");
 }
 
 }

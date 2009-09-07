@@ -36,7 +36,7 @@ SubWorkflowActivity::~SubWorkflowActivity()
  * UNDEFINED before. 
  */
 void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "initiateActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
@@ -46,7 +46,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 	}
 	// set workflow file 
 	_subworkflowFilename = Utils::expandEnv(_operation->getOperationName());
-	cout << "gwes::SubWorkflowActivity::initiateActivity(" << _id << ") trying to read file " << _subworkflowFilename << endl;
+	LOG_INFO(_logger, "trying to read file " << _subworkflowFilename);
 
 	// parse workflow file
 	try {
@@ -68,7 +68,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
  * Start this activity. Status should switch to RUNNING. 
  */
 void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransitionException,WorkflowFormatException) {
-	cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "startActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
@@ -88,7 +88,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 			case (TokenParameter::SCOPE_INPUT):
 			case (TokenParameter::SCOPE_WRITE):
 				edgeExpression = it->edgeP->getExpression();
-			cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..." << endl; 
+			LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
 			placeP = _subworkflowP->getPlace(edgeExpression);
 			placeP->addToken(it->tokenP->deepCopy());
 			break;
@@ -123,16 +123,16 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
  * Suspend this activity. Status should switch to SUSPENDED. 
  */
 void SubWorkflowActivity::suspendActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SubWorkflowActivity::suspendActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "suspendActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::SubWorkflowActivity::suspendActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "suspendActivity() not yet implemented!");
 }
 
 /**
  * Resume this activity. Status should switch to RUNNING. 
  */
 void SubWorkflowActivity::resumeActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SubWorkflowActivity::resumeActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "resumeActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
@@ -141,14 +141,14 @@ void SubWorkflowActivity::resumeActivity() throw (ActivityException,StateTransit
 		throw StateTransitionException(oss.str());
 	}
 	///ToDo: Implement!
-	cerr << "gwes::SubWorkflowActivity::resumeActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "resumeActivity() not yet implemented!");
 }
 
 /**
  * Abort this activity. Status should switch to TERMINATED.
  */
 void SubWorkflowActivity::abortActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SubWorkflowActivity::abortActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "abortActivity(" << _id << ") ... ");
 	//check status
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
@@ -166,9 +166,9 @@ void SubWorkflowActivity::abortActivity() throw (ActivityException,StateTransiti
  * Restart this activity. Status should switch to INITIATED. 
  */
 void SubWorkflowActivity::restartActivity() throw (ActivityException,StateTransitionException) {
-	cout << "gwes::SubWorkflowActivity::restartActivity(" << _id << ") ... " << endl;
+	LOG_INFO(_logger, "restartActivity(" << _id << ") ... ");
 	///ToDo: Implement!
-	cerr << "gwes::SubWorkflowActivity::restartActivity() not yet implemented!" << endl;
+	LOG_WARN(_logger, "restartActivity() not yet implemented!");
 }
 
 /**
@@ -176,16 +176,7 @@ void SubWorkflowActivity::restartActivity() throw (ActivityException,StateTransi
  * This method is called by the workflow handler that invokes the sub workflow.
  */
 void SubWorkflowActivity::update(const Event& event) {
-	// logging
-	cout << "gwes::SubWorkflowActivity[" << _id << "]::update(" << event._sourceId << "," << event._eventType << "," << event._message ;
-	if (event._tokensP!=NULL) {
-		cout << ",";
-		parameter_list_t* dP = event._tokensP;
-		for (parameter_list_t::iterator it=dP->begin(); it!=dP->end(); ++it) {
-			cout << "[" << it->edgeP->getExpression() << "]";
-		}
-	}
-	cout << ")" << endl;
+	LOG_DEBUG(_logger, _id << ":update(" << event._sourceId << "," << event._eventType << "," << event._message << ")");
 
 	// parse event
 	if (event._eventType==Event::EVENT_WORKFLOW) {
@@ -206,7 +197,7 @@ void SubWorkflowActivity::update(const Event& event) {
 							if (edgeExpression.find("$")==edgeExpression.npos) { // ignore XPath expressions
 								Place* placeP = _subworkflowP->getPlace(edgeExpression);
 								it->tokenP = placeP->getTokens()[0]->deepCopy();
-								cout << "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ..." << endl;
+								LOG_INFO(_logger, "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ...");
 							}
 							break;
 						}
@@ -222,12 +213,12 @@ void SubWorkflowActivity::update(const Event& event) {
 				_gwesP->remove(_subworkflowId);
 			} else if (event._message.compare("TERMINATED") == 0) {
 				// print sub workflow
-				cout << *_subworkflowP << endl;
+				LOG_DEBUG(_logger, *_subworkflowP);
 				// ToDo: generate fault tokens
 //				for (map<string,gwdl::Token*>::iterator it=_outputs.begin(); it !=_outputs.end(); ++it) {
 //					edgeExpression = it->first;
 //					// find corresponding place in subworkflow and add token with data on this place
-//					cout << "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..." << endl; 
+//					LOG_INFO(_logger, "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..."); 
 //					Place* placeP = _subworkflowP->getPlace(edgeExpression);
 //					placeP->addToken(it->second);
 //				}

@@ -8,15 +8,24 @@
 #include <gwes/GWES.h>
 #include <gwes/WorkflowObserver.h>
 #include <gwes/Channel.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
 using namespace gwes;
+using namespace fhg::log;
 
-void usage();
+void usage(LoggerApi logger);
 string getUserName();
 
 int main(int argc, char* argv[]) {
+	LoggerApi logger(Logger::get("gwes"));
+	logger.setLevel(LogLevel::INFO);
+	Appender::ptr_t appender = Appender::ptr_t(new StreamAppender());
+	Formatter::ptr_t formatter = Formatter::ptr_t(Formatter::ShortFormatter());
+	appender->setFormat(formatter);
+	logger.addAppender(appender);
 
 	string workflowfn;
 
@@ -44,8 +53,8 @@ int main(int argc, char* argv[]) {
 	//	}
 
 	if (argc < 2) {
-		cerr << "ERROR: workflow not specified!" << endl;
-		usage();
+		LOG_WARN(logger, "ERROR: workflow not specified!");
+		usage(logger);
 		exit(1);
 	} else {
 		workflowfn = argv[1];
@@ -53,11 +62,11 @@ int main(int argc, char* argv[]) {
 
 	try {
 		GWES gwes;
-		cout << "### BEGIN EXECUTION " << workflowfn << endl;
+		LOG_INFO(logger, "### BEGIN EXECUTION " << workflowfn);
 		Workflow* wfP = new Workflow(workflowfn);
 
 		// initiate workflow
-		cout << "initiating workflow ..." << endl;
+		LOG_INFO(logger, "initiating workflow ...");
 		string workflowId = gwes.initiate(*wfP, getUserName());
 
 		// register channel with source observer
@@ -73,22 +82,22 @@ int main(int argc, char* argv[]) {
 		//	wfhP->waitForStatusChangeToCompletedOrTerminated();
 
 		// print workflow
-		cout << *wfP << endl;
-		cout << "### END EXECUTION " << workflowfn << endl;
+		LOG_INFO(logger, *wfP);
+		LOG_INFO(logger, "### END EXECUTION " << workflowfn);
 
 	}
 	catch(WorkflowFormatException e) {
-		cerr << "WorkflowFormatException: " << e.message << endl;
+		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
 	}
 
 	//	//ToDo: return 0, 1, ...
 }
 
-void usage() {
-	cout << "---------------------------------------------------" << endl;
-	cout << "Usage: gwes <GWorkflowDL>" << endl;
-	cout << "<GWorkflowDL>: Filename of workflow to invoke." << endl;
-	cout << "---------------------------------------------------" << endl;
+void usage(LoggerApi logger) {
+	LOG_INFO(logger, "---------------------------------------------------");
+	LOG_INFO(logger, "Usage: gwes <GWorkflowDL>");
+	LOG_INFO(logger, "<GWorkflowDL>: Filename of workflow to invoke.");
+	LOG_INFO(logger, "---------------------------------------------------");
 }
 
 string getUserName() {

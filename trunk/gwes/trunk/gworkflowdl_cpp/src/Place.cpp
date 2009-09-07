@@ -8,12 +8,12 @@
 #include <gwdl/Place.h>
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 //xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
-//std
-#include <iostream>
-#include <sstream>
 
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
@@ -123,16 +123,16 @@ DOMElement* Place::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException" );
 	}
 	catch (const DOMException& e)
 	{
-		XERCES_STD_QUALIFIER cerr << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-		XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "DOMException code is:  " << e.code );
+		LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		XERCES_STD_QUALIFIER cerr << "An error occurred creating the document" << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document" );
 	}
 
 	return el;
@@ -169,7 +169,6 @@ void Place::addToken(Token* token) throw(CapacityException)
 
 void Place::removeToken(int i)
 {
-	cout << "gwdl::Place[" << getID() << "]::removeToken(" << i << ")..." << endl;
 	delete tokens[i];
 	tokens.erase(tokens.begin()+i);
 	nextUnlockedToken = NULL;
@@ -185,7 +184,6 @@ void Place::removeToken(Token* _token)
 	for(vector<Token*>::iterator it=tokens.begin(); it != tokens.end(); ++it)
 	{
 		if ((*it)->getID() == _token->getID()) {
-//			cout << "gwdl::Place[" << getID() << "]::removeToken(ID=" << _token->getID() << ")..." << endl;
 			delete *it; *it = NULL;
 			tokens.erase(it);
 			nextUnlockedToken = NULL;

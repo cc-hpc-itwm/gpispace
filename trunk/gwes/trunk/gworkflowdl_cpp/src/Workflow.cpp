@@ -7,14 +7,15 @@
 //gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/XMLUtils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 //std
-#include <iostream>
-#include <sstream>
 #include <fstream>
 #include <errno.h>
 
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
@@ -33,7 +34,6 @@ Workflow::Workflow()
 
 Workflow::~Workflow()
 {
-	//cout << "~Workflow()=" << this << endl;
 	for(vector<Transition*>::iterator it=transitions.begin(); it!=transitions.end(); ++it) delete *it;
 	transitions.clear();
 	enabledTransitions.clear();
@@ -86,7 +86,7 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 	} else {
 		ostringstream message; 
 		message << "Unable to open file " << filename << ": " << strerror(errno);
-		cerr << message << endl;
+		LOG_WARN(Logger::get("gwdl"), message);
 		throw WorkflowFormatException(message.str());
 	}
 
@@ -168,16 +168,16 @@ DOMDocument* Workflow::toDocument()
 	}
 	catch (const OutOfMemoryException&)
 	{
-		XERCES_STD_QUALIFIER cerr << "OutOfMemoryException during Workflow.toElement()." << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException during Workflow.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		XERCES_STD_QUALIFIER cerr << "DOMException during Workflow.toElement(). code is:  " << e.code << XERCES_STD_QUALIFIER endl;
-		XERCES_STD_QUALIFIER cerr << "Message: " << S(e.msg) << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "DOMException during Workflow.toElement(). code is:  " << e.code );
+		LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		XERCES_STD_QUALIFIER cerr << "An error occurred creating the document during Workflow.toElement()." << XERCES_STD_QUALIFIER endl;
+		LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document during Workflow.toElement()." );
 	}
 
 	return doc;
@@ -190,7 +190,7 @@ void Workflow::saveToFile(const string& filename) {
 		file << *this;
 		file.close();
 	} else {
-		cerr << "Unable to open file " << filename << ": " << strerror(errno) << endl;
+		LOG_WARN(Logger::get("gwdl"), "Unable to open file " << filename << ": " << strerror(errno));
 	}
 }
 

@@ -14,90 +14,95 @@
 #include <gwdl/Transition.h>
 // tests
 #include "TestPlace.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
  
 void testPlace() 
 {
-   cout << "============== BEGIN PLACE TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+
+   LOG_INFO(logger, "============== BEGIN PLACE TEST =============");
 	
    // place set id
    string idstr("0815");
    Place *place = new Place(idstr);	
-   cout << "place->getID()=" << place->getID() << endl;
+   LOG_INFO(logger, "place->getID()=" << place->getID());
    assert(place->getID() == "0815");
    
    // place set token type
    string str("data");
-   cout << "place->setTokenType(" << str << ")" << endl;
+   LOG_INFO(logger, "place->setTokenType(" << str << ")");
    place->setTokenType(str);
-   cout << "place->getTokenType()=" << place->getTokenType() << endl;
+   LOG_INFO(logger, "place->getTokenType()=" << place->getTokenType());
    assert(place->getTokenType() == "data");
 
    // place isEmpty
-   cout << "place->isEmpty()=" << place->isEmpty() << endl;
+   LOG_INFO(logger, "place->isEmpty()=" << place->isEmpty());
    assert(place->isEmpty());
 
    // place addToken
    gwdl::Token* token0 = new Token(false);
-   cout << "place->addToken.id_" << token0->getID() << endl;
+   LOG_INFO(logger, "place->addToken.id_" << token0->getID());
    place->addToken(token0);
-   cout << "place->isEmpty()=" << place->isEmpty() << endl;
+   LOG_INFO(logger, "place->isEmpty()=" << place->isEmpty());
    assert(!place->isEmpty());
-   printTokens(*place);
+   printTokens(logger,*place);
    
    // place addToken
    Token* token1 = new Token(true);
-   cout << "place->addToken.id_" << token1->getID() << endl;
-   cout << "Original token pointer=" << token1 << endl;
+   LOG_INFO(logger, "place->addToken.id_" << token1->getID());
+   LOG_INFO(logger, "Original token pointer=" << token1);
    place->addToken(token1);
-   cout << "Place token pointer=" << place->getTokens()[1] << endl;
+   LOG_INFO(logger, "Place token pointer=" << place->getTokens()[1]);
    assert(token1 == place->getTokens()[1]);
-   printTokens(*place);
+   printTokens(logger,*place);
 
    // place removeToken(int)
-   cout << "place->removeToken(1)" << endl;
+   LOG_INFO(logger, "place->removeToken(1)");
    place->removeToken(1);
-   printTokens(*place);
+   printTokens(logger,*place);
    assert(place->getTokens().size() == 1);
    
    // place removeToken(token)
    Token* token2 = new Token(true);
-   cout << "place->addToken.id_" << token2->getID() << endl;
+   LOG_INFO(logger, "place->addToken.id_" << token2->getID());
    place->addToken(token2);
-   printTokens(*place);
-   cout << "place->removeToken.id_" << token2->getID() << endl;
+   printTokens(logger,*place);
+   LOG_INFO(logger, "place->removeToken.id_" << token2->getID());
    place->removeToken(token2);
-   printTokens(*place);
+   printTokens(logger,*place);
    vector<Token*> tokens = place->getTokens();
    assert(tokens.size() == 1);
    Token* t = tokens[0];
    assert(t->getControl() == false);
 
    // place removeAllTokens()
-   cout << "place.removeAllTokens()" << endl;
+   LOG_INFO(logger, "place.removeAllTokens()");
    place->removeAllTokens();
    assert(place->isEmpty());
     
    // place set capacity
-   cout << "place->setCapacity(1)" << endl;
+   LOG_INFO(logger, "place->setCapacity(1)");
    place->setCapacity(1);
    int cap = place->getCapacity();
-   cout << "place->getCapacity()=" << cap << endl;
+   LOG_INFO(logger, "place->getCapacity()=" << cap);
    assert(cap == 1);
    
    // place CapacityException
-   cout << "check capacity exception" << endl;
+   LOG_INFO(logger, "check capacity exception");
    bool test = false;
    Token* token3 = new Token(false);
-   cout << "place->addToken.id_" << token3->getID() << endl;
+   LOG_INFO(logger, "place->addToken.id_" << token3->getID());
    place->addToken(token3);
    try {
    	gwdl::Token* token4 = new Token(true);
    	place->addToken(token4);
    } catch(gwdl::CapacityException e) {
-   	cout << "CapacityException:" << e.message << endl;
+   	LOG_INFO(logger, "CapacityException:" << e.message);
    	test = true;
    }
    assert(test);
@@ -106,28 +111,28 @@ void testPlace()
    try {
 	place->setCapacity(0);
    } catch(gwdl::CapacityException e) {
-   	cout << "CapacityException:" << e.message << endl;
+   	LOG_INFO(logger, "CapacityException:" << e.message);
    	test = true;
    }
    assert(test);
 
    // place getTokenNumber()
-   cout << "place->getTokenNumber()="<< place->getTokenNumber() << endl;
+   LOG_INFO(logger, "place->getTokenNumber()="<< place->getTokenNumber());
    assert(place->getTokenNumber()==1);
    
    // place set description
    str = "bla";
-   cout << "place.setDescription(" << str << ")" << endl;
+   LOG_INFO(logger, "place.setDescription(" << str << ")");
    place->setDescription(str);
-   cout << "place->getDescription()=" << place->getDescription() << endl;
+   LOG_INFO(logger, "place->getDescription()=" << place->getDescription());
    assert(place->getDescription() == "bla");
    delete place;
    
-   cout << "test place with data tokens and properties..." << endl;
+   LOG_INFO(logger, "test place with data tokens and properties...");
    try 
    {
    Place *place1 = new Place("");
-   cout << "  constructed place with id " << place1->getID() << endl;
+   LOG_INFO(logger, "  constructed place with id " << place1->getID());
    assert(place1->getID()=="p0");
    Properties *props1 = new Properties();
    props1->put("k1","v1");
@@ -148,20 +153,20 @@ void testPlace()
    vector<Token*> tokens = place1->getTokens();
    for (unsigned int i=0; i<tokens.size(); i++) {
    		
-   		cout << "tokens[" << i << "].getData(): " << tokens[i]->getData()->toString() << endl;
+   		LOG_INFO(logger, "tokens[" << i << "].getData(): " << tokens[i]->getData()->toString());
    }
    assert(*(tokens[0]->getData()->toString())=="<data><x>245.4</x></data>");   
    assert(*(tokens[1]->getData()->toString())=="<data><y>445</y></data>");   
    place1->removeToken(token1);
    assert(place1->getTokenNumber()==1);
-   cout << *place1 << endl;
+   LOG_INFO(logger, *place1);
    
    delete props1;
    delete place1;
    }
    catch (WorkflowFormatException e) 
    {
-   cout << "WorkflowFormatException: " << e.message << endl;
+   LOG_INFO(logger, "WorkflowFormatException: " << e.message);
    }
    
    // lock token
@@ -171,7 +176,7 @@ void testPlace()
    Token* token2b = new Token(false);
    place2->addToken(token2a);
    place2->addToken(token2b);
-   cout << *place2 << endl;
+   LOG_INFO(logger, *place2);
    assert(place2->getNextUnlockedToken() == token2a);
    Transition* tr2 = new Transition("");
    place2->lockToken(token2a,tr2);
@@ -182,16 +187,16 @@ void testPlace()
    delete place2;
    delete tr2;
 
-   cout << "============== END PLACE TEST =============" << endl;
+   LOG_INFO(logger, "============== END PLACE TEST =============");
    
 }
 
-void printTokens(gwdl::Place &place) 
+void printTokens(LoggerApi logger, gwdl::Place &place) 
 {
 	vector<gwdl::Token*> tokens = place.getTokens();
 	for (unsigned int i=0; i<tokens.size(); i++) {
 		gwdl::Token* token = tokens[i];
-		cout << "Token[" << i << "].id_" << token->getID() << "=" << *token << endl;					
+		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID() << "=" << *token);					
 	}	
 	
 }

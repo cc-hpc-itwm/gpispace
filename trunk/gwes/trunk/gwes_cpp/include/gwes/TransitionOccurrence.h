@@ -12,6 +12,8 @@
 //gwdl
 #include <gwdl/Transition.h>
 #include <gwdl/CapacityException.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 //std
 #include <map>
 #include <string>
@@ -80,6 +82,8 @@ public:
 private:
 	
 	std::string _id;
+
+	fhg::log::LoggerApi _logger;
 
 };
 	

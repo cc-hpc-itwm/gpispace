@@ -2,24 +2,27 @@
 #include "TestXPathEvaluation.h"
 // gwes
 #include <gwes/XPathEvaluator.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // std
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <iostream>
 #include <fstream>
-#include <sstream>
 #include <ctime>
 
 using namespace std;
+using namespace fhg::log;
 using namespace gwes;
 using namespace gwdl;
  
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED)
 
 void testXPathEvaluator() {
-	cout << "============== BEGIN XPathEvaluation TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwes"));
+
+	LOG_INFO(logger, "============== BEGIN XPathEvaluation TEST =============");
 	
 	xmlInitParser();
 	LIBXML_TEST_VERSION
@@ -118,12 +121,13 @@ void testXPathEvaluator() {
 
     xmlCleanupParser();
 
-	cout << "============== END XPathEvaluation TEST =============" << endl;
+	LOG_INFO(logger, "============== END XPathEvaluation TEST =============");
 }
 
 
 void testXPathEvaluatorContextCache() {
-	cout << "============== BEGIN XPathEvaluatorContextCache TEST =============" << endl;
+	LoggerApi logger(Logger::get("gwes"));
+	LOG_INFO(logger, "============== BEGIN XPathEvaluatorContextCache TEST =============");
 	
 	xmlInitParser();
 	LIBXML_TEST_VERSION
@@ -156,12 +160,13 @@ void testXPathEvaluatorContextCache() {
     
 
 	xmlCleanupParser();
-	cout << "============== END XPathEvaluatorContextCache TEST =============" << endl;
+	LOG_INFO(logger, "============== END XPathEvaluatorContextCache TEST =============");
 }
 
 #else
 void testXPathEvaluator() {
-    cerr << "XPath support not compiled in" << endl;
+	LoggerApi logger(Logger::get("gwes"));
+    LOG_WARN(logger, "XPath support not compiled in");
     assert(false);
 }
 #endif

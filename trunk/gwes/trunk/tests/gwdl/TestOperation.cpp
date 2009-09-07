@@ -9,26 +9,32 @@
 #include <assert.h>
 // tests
 #include "TestOperation.h"
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
+
  
 void testOperation() 
 {
-   cout << "============== BEGIN OPERATION TEST =============" << endl;
-   cout << "test red operation..." << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+
+   LOG_INFO(logger, "============== BEGIN OPERATION TEST =============");
+   LOG_INFO(logger, "test red operation...");
    Operation* op = new Operation();
-   cout << *op << endl;
+   LOG_INFO(logger, *op);
    assert(op->getAbstractionLevel()==Operation::RED);
    
-   cout << "test yellow operation..." << endl;
+   LOG_INFO(logger, "test yellow operation...");
    OperationClass* opc = new OperationClass();
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
-   cout << *op << endl;
+   LOG_INFO(logger, *op);
    assert(op->getAbstractionLevel()==Operation::YELLOW);
    
-   cout << "test blue operation..." << endl;
+   LOG_INFO(logger, "test blue operation...");
    OperationCandidate* opcan1 = new OperationCandidate();
    opcan1->setType("phastgrid");
    opcan1->setOperationName("calculate1");
@@ -40,21 +46,21 @@ void testOperation()
    opcan2->setOperationName("calculate2");
    opcan2->setResourceName("big_machine");
    op->getOperationClass()->addOperationCandidate(opcan2);
-   cout << "  candidate size=" << op->getOperationClass()->getOperationCandidates().size() << endl;
+   LOG_INFO(logger, "  candidate size=" << op->getOperationClass()->getOperationCandidates().size());
    assert(op->getOperationClass()->getOperationCandidates().size()==2);
-   cout << *op << endl; 
+   LOG_INFO(logger, *op); 
    assert(op->getAbstractionLevel()==Operation::BLUE);
    
-   cout << "test green operation..." << endl;
+   LOG_INFO(logger, "test green operation...");
    opcan1->setSelected();
    assert(op->getOperationClass()->getOperationCandidates()[0]->isSelected()==true);
    assert(op->getOperationClass()->getOperationCandidates()[0]->getAbstractionLevel()==Operation::GREEN);
    assert(op->getOperationClass()->getOperationCandidates()[1]->isSelected()==false);
    assert(op->getOperationClass()->getOperationCandidates()[1]->getAbstractionLevel()==Operation::BLUE);
-   cout << *op << endl; 
+   LOG_INFO(logger, *op); 
    assert(op->getAbstractionLevel()==Operation::GREEN);
    
    delete op;
 		
-   cout << "============== END OPERATION TEST =============" << endl;
+   LOG_INFO(logger, "============== END OPERATION TEST =============");
 }

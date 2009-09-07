@@ -12,6 +12,8 @@
 #include "TestPreStackProWorkflow.h"
 // gwes
 #include <gwes/Utils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // std
 #include <iostream>
 #include <ostream>
@@ -19,12 +21,20 @@
 using namespace std;
 using namespace gwdl;
 using namespace gwes;
+using namespace fhg::log;
 
 #define TEST_ALL true
 
 int main() 
 {
-	cout << "########################### BEGIN OF ALL GWES TESTS ###########################" << endl;
+	// get logger
+	LoggerApi logger(Logger::get("gwes"));
+	logger.setLevel(LogLevel::INFO);
+	Appender::ptr_t appender = Appender::ptr_t(new StreamAppender());
+	Formatter::ptr_t formatter = Formatter::ptr_t(Formatter::ShortFormatter());
+	appender->setFormat(formatter);
+	logger.addAppender(appender);
+	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
 
 	gwes::GWES gwes;
 	Workflow workflow;
@@ -61,7 +71,7 @@ int main()
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens().front();
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		// ToDo: improve pretty printing (too much spaces).
 		assert(tokenP->getData()->toString()->compare("<data>\n  <value>\n          <x>15</x>\n          <y>23</y>\n        </value>\n  <value>\n          <x>16</x>\n          <y>24</y>\n        </value>\n</data>") == 0);
 
@@ -69,14 +79,14 @@ int main()
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens().front();
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>15</x>\n  <x>16</x>\n</data>") == 0);
 
 	    placeP = workflow.getPlace("y"); 
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens().front();
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <y>23</y>\n  <y>24</y>\n</data>") == 0);
 
 		// exclusive-choice.gwdl
@@ -99,18 +109,18 @@ int main()
 		assert(placeP->getTokenNumber() == 2);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>6</x>\n</data>") == 0);
 		tokenP = placeP->getTokens()[1];
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>7</x>\n</data>") == 0);
 		
 	    placeP = workflow.getPlace("end_B"); 
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <x>5</x>\n</data>") == 0);
 
 		// control-loop.gwdl
@@ -121,7 +131,7 @@ int main()
 		assert(placeP->getTokenNumber() == 1);
 		tokenP = placeP->getTokens()[0];
 		assert(tokenP->isData());
-		cout << *(tokenP->getData()) << endl;
+		LOG_INFO(logger, *(tokenP->getData()));
 		assert(tokenP->getData()->toString()->compare("<data>\n  <a>10</a>\n</data>") == 0);
 
 		// Will not work on auto build because shell scripts are not installed there.
@@ -140,7 +150,7 @@ int main()
 	assert(gwes.getStatusAsString(workflow)=="COMPLETED");
 	assert(workflow.getProperties().get("occurrence.sequence").compare("preStackTimeMigration") == 0);
 	
-	cout << "########################### END OF ALL GWES TESTS ###########################" << endl;
+	LOG_INFO(logger, "########################### END OF ALL GWES TESTS ###########################");
 
 	return 0;
 }

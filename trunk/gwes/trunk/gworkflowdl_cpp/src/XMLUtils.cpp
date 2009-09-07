@@ -15,8 +15,6 @@
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xercesc/framework/Wrapper4InputSource.hpp>
-// std
-#include <iostream>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -35,9 +33,9 @@ XMLUtils* XMLUtils::Instance() {
 	return _instance;
 }
 
-XMLUtils::XMLUtils()
+XMLUtils::XMLUtils() : _logger(fhg::log::Logger::get("gwes"))
 {
-	cout << "XMLUtils::XMLUtils() ..." << endl;
+	LOG_DEBUG(_logger, "XMLUtils() ...");
 	initializeXerces();
 	initializeLibxml2();
 	_errorHandler = new XMLDOMErrorHandler();
@@ -45,7 +43,7 @@ XMLUtils::XMLUtils()
 
 XMLUtils::~XMLUtils()
 {
-	cout << "XMLUtils::~XMLUtils() ..." << endl;
+	LOG_DEBUG(_logger, "~XMLUtils() ...");
 	 terminateXerces();
 	 terminateLibxml2();
 	 delete _instance;
@@ -97,7 +95,7 @@ ostream& XMLUtils::serialize(ostream& os, const DOMNode* node, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		cerr << _errorHandler->message << endl;;
+		LOG_WARN(_logger, _errorHandler->message);
 	}
 	return os;
 }
@@ -117,7 +115,7 @@ ostream& XMLUtils::serialize(ostream& os, const DOMDocument* doc, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		cerr << _errorHandler->message << endl;;
+		LOG_WARN(_logger, _errorHandler->message);
 	}
 	return os;
 }
@@ -137,7 +135,7 @@ string* XMLUtils::serialize (const DOMNode* node, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		cerr << _errorHandler->message << endl;;
+		LOG_WARN(_logger, _errorHandler->message);
 	}
 	
 	return str;
@@ -158,7 +156,7 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		cerr << _errorHandler->message << endl;;
+		LOG_WARN(_logger, _errorHandler->message);
 	}
 	
 	return str;
@@ -193,19 +191,19 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
     catch (const XMLException& toCatch) 
     {
         char* message = XMLString::transcode(toCatch.getMessage());
-        cerr << "Exception message is: \n" << message << "\n";
+        LOG_WARN(_logger, "ERROR: Exception message is: \n" << message );
         XMLString::release(&message);
         throw WorkflowFormatException(message);
     }
     catch (const DOMException& toCatch) 
     {
         char* message = XMLString::transcode(toCatch.msg);
-        cerr << "Exception message is: \n" << message << "\n";
+        LOG_WARN(_logger, "ERROR: Exception message is: \n" << message );
         XMLString::release(&message);
         throw WorkflowFormatException(message);
     }
     catch (...) {
-        cerr << "Unexpected Exception \n" ;
+        LOG_WARN(_logger, "Unexpected Exception");
         throw WorkflowFormatException("Unexpected Exception");
     }
     
@@ -213,7 +211,7 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
 	{
 		_errorHandler->reset();
 		//throw WorkflowFormatException(_errorHandler->message);
-		cout << _errorHandler->message << endl; 
+		LOG_WARN(_logger, _errorHandler->message); 
 	}
     	
 	return doc;
@@ -236,7 +234,7 @@ string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
 }
 
 string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
-//	cout << "XMLUtils::serializeLibxml2() ..." << endl;
+//	LOG_INFO(_logger, "XMLUtils::serializeLibxml2() ...");
 	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
 	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
 	xmlDocSetRootElement(docP,nodecopy);
@@ -246,12 +244,12 @@ string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
 }
 
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
-	if (validating) cerr << "XMLUtils::deserialize(): Validation not yet supported for libxml2" << endl;
+	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	return xmlParseDoc(xmlCharStrdup(xmlstring.c_str()));
 }
 
 xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
-	if (validating) cerr << "XMLUtils::deserialize(): Validation not yet supported for libxml2" << endl;
+	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	return xmlParseFile(filename.c_str());
 }
 
@@ -262,12 +260,11 @@ DOMDocument* XMLUtils::createEmptyDocument(bool gwdlnamespace)
 	DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
 	if (impl==NULL)
 	{
-	    XERCES_STD_QUALIFIER cerr << "Requested implementation is not supported" << XERCES_STD_QUALIFIER endl;
+	    LOG_WARN(_logger, "ERROR Requested implementation is not supported");
     }
 	
 	DOMDocument* doc = impl->createDocument(ns,X("workflow"),0);
 	return doc;
 }
-
 
 }

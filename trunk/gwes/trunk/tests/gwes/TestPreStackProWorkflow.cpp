@@ -1,7 +1,7 @@
 // std
-#include <iostream>
 #include <fstream>
-#include <sstream>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // gwes
 #include <gwes/Channel.h>
 // test
@@ -9,16 +9,19 @@
 #include "TestPreStackProWorkflow.h"
 
 using namespace std;
+using namespace fhg::log;
 using namespace gwdl;
 using namespace gwes;
  
 Workflow& testPreStackProWorkflow(string workflowfn, gwes::GWES &gwes) {
-	cout << "============== BEGIN EXECUTION " << workflowfn << "==============" << endl;
+	LoggerApi logger(Logger::get("gwdl"));
+
+	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 
 	Workflow* wfP = new Workflow(workflowfn);
 	
 	// initiate workflow
-    cout << "initiating workflow ..." << endl;
+    LOG_INFO(logger, "initiating workflow ...");
     string workflowId = gwes.initiate(*wfP,"test");
     
 	// register channel with source observer (=PreStackPro)
@@ -35,12 +38,12 @@ Workflow& testPreStackProWorkflow(string workflowfn, gwes::GWES &gwes) {
     // wait for workflow to end
     WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
     
-    cout << "waiting for workflow to complete..." << endl;
+    LOG_INFO(logger, "waiting for workflow to complete...");
     wfhP->waitForStatusChangeToCompletedOrTerminated();
 	
     // print workflow
-    cout << *wfP << endl;
-	cout << "============== END EXECUTION " << workflowfn << "==============" << endl;
+    LOG_INFO(logger, *wfP);
+	LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
     
     return *wfP;
 }

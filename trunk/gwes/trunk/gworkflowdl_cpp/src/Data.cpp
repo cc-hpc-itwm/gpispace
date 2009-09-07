@@ -4,8 +4,6 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <iostream>
-#include <sstream>
 // gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Data.h>
@@ -74,13 +72,9 @@ DOMElement* Data::toElement(DOMDocument* doc)
 	if (doc!=NULL) {
 		DOMDocument * owner = data->getOwnerDocument();
 		if (owner != doc) {
-			//				cout << "wrong owner, importing node..." << endl;
 			DOMNode* newdata = doc->importNode(data,true); 
 			return (DOMElement*) newdata;
 		} 
-		//			else {
-		//				cout << "right owner, nothing to import..." << endl;	
-		//			}
 	}
 	return data;
 }

@@ -2,19 +2,22 @@
 #include "TestGWES.h"
 // gwes
 #include <gwes/Utils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // std
-#include <iostream>
-#include <sstream>
 #include <assert.h>
 
 using namespace std;
+using namespace fhg::log;
 using namespace gwdl;
 using namespace gwes;
  
 void testGWES(GWES &gwes) 
 {
-	cout << "============== BEGIN GWES TEST =============" << endl;
-	cout << "create workflow ..." << endl;
+	LoggerApi logger(Logger::get("gwes"));
+
+	LOG_INFO(logger, "============== BEGIN GWES TEST =============");
+	LOG_INFO(logger, "create workflow ...");
    
    	Workflow *wf = new Workflow();
    	// p0
@@ -66,20 +69,20 @@ void testGWES(GWES &gwes)
 	
 	wf->getProperties().put("occurrence.sequence","");
 
-	cout << "initiate workflow ..." << endl;
+	LOG_INFO(logger, "initiate workflow ...");
 	string id = gwes.initiate(*wf, "test");
 	
 	// print workflow to stdout	
-	cout << *wf << endl;
+	LOG_DEBUG(logger, *wf);
 	assert(gwes.getStatusAsString(id)=="INITIATED");
 	
 	WorkflowHandlerTable& wfht = gwes.getWorkflowHandlerTable();
 	assert(wfht.get(id)->getID()==id);
 	
-	cout << "execute workflow ..." << endl;
+	LOG_INFO(logger, "execute workflow ...");
 	gwes.execute(*wf);
 	// print workflow to stdout	
-	cout << *wf << endl;
+	LOG_DEBUG(logger, *wf);
 	assert(gwes.getStatusAsString(id)=="COMPLETED");
 	Place* placeP = wf->getPlace("p2"); 
 	assert(placeP->getTokenNumber() == 1);
@@ -87,6 +90,6 @@ void testGWES(GWES &gwes)
 	assert(!tokenP->isData());
 	assert(tokenP->getControl());
 
-    cout << "============== END GWES TEST =============" << endl;
+    LOG_INFO(logger, "============== END GWES TEST =============");
    
 }

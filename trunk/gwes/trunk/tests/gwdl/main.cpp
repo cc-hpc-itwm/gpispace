@@ -6,8 +6,6 @@
  */
 #include <iostream>
 #include <ostream>
-//gwdl
-#include <gwdl/XMLUtils.h>
 // test
 #include "TestData.h"
 #include "TestToken.h"
@@ -16,9 +14,14 @@
 #include "TestOperation.h"
 #include "TestTransition.h"
 #include "TestWorkflow.h"
+//gwdl
+#include <gwdl/XMLUtils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
+using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 
 #define TEST_ALL true
@@ -28,8 +31,16 @@ int testBuilder();
 
 int main() 
 {
+	// get logger
+	LoggerApi logger(Logger::get("gwdl"));
+	logger.setLevel(LogLevel::INFO);
+	Appender::ptr_t appender = Appender::ptr_t(new StreamAppender());
+	Formatter::ptr_t formatter = Formatter::ptr_t(Formatter::ShortFormatter());
+	appender->setFormat(formatter);
+	logger.addAppender(appender);
+
 	XMLUtils* xmlutils = XMLUtils::Instance();
-	cout << "xmlutils singleton instantiated: " << xmlutils << endl;
+	LOG_INFO(logger, "xmlutils singleton instantiated: " << xmlutils);;
 
 	if(TEST_ALL)
 	{		

@@ -16,7 +16,7 @@ class Utils
 {
 
 public:
-
+	
 	static bool endsWith(const std::string& s1, const std::string& s2);
 
 	static bool startsWith(const std::string& s1, const std::string& s2);

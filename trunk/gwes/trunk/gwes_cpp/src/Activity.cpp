@@ -16,7 +16,7 @@ using namespace std;
 
 namespace gwes {
 
-Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const string& activityImpl, gwdl::OperationCandidate* operationP) {
+Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const string& activityImpl, gwdl::OperationCandidate* operationP) : _logger(fhg::log::Logger::get("gwes")) {
 	_status=STATUS_UNDEFINED;
 	_wfhP = handler;
 	_toP = toP;
@@ -34,9 +34,9 @@ void Activity::setStatus(Activity::status_t status) {
 	if (status == _status) return; 
 //	int oldStatus = _status;
 	_status = status;
-//	cout << "gwes::Activity: status of activity \"" << _id
+//	LOG_DEBUG(_logger, "gwes::Activity: status of activity \"" << _id
 //			<< "\" changed from " << getStatusAsString(oldStatus) << " to "
-//			<< getStatusAsString() << endl;
+//			<< getStatusAsString());
 	
 	// notify observers
 	if (_observers.size()>0) {
@@ -100,24 +100,24 @@ void Activity::notifyObservers(int type, const string& message, parameter_list_t
 /////////////////////////////////////////
 
 void Activity::activityDispatched() {
-	cout << "gwes::Activity[" << _id << "]::activityDispatched()..." << endl;
+	LOG_DEBUG(_logger, _id << ": activityDispatched()...");
 	setStatus(Activity::STATUS_ACTIVE);
 }
 
 void Activity::activityFailed(const parameter_list_t &output) {
-	cout << "gwes::Activity[" << _id << "]::activityFailed()..." << endl;
+	LOG_DEBUG(_logger, _id << ": activityFailed()...");
 	// ToDo: set outputs 
 	setStatus(Activity::STATUS_TERMINATED);
 }
 
 void Activity::activityFinished(const parameter_list_t &output) {
-	cout << "gwes::Activity[" << _id << "]::activityFinished()..." << endl;
+	LOG_DEBUG(_logger, _id << ": activityFinished()...");
 	// ToDo: set outputs
 	setStatus(Activity::STATUS_COMPLETED);
 }
 
 void Activity::activityCanceled() {
-	cout << "gwes::Activity[" << _id << "]::activityCanceled()..." << endl;
+	LOG_DEBUG(_logger, _id << ": activityCanceled()...");
 	setStatus(Activity::STATUS_TERMINATED);
 }
 

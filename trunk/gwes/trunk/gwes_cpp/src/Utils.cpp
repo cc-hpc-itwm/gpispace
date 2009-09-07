@@ -6,6 +6,8 @@
  */
 // gwes
 #include <gwes/Utils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // std
 #include <stdlib.h>
 #include <unistd.h>  // getcwd() definition
@@ -36,6 +38,7 @@ bool Utils::startsWith(const string& s1, const string& s2) {
 }
 
 void Utils::setEnvironmentVariables() {
+	static fhg::log::LoggerApi logger(fhg::log::Logger::get("gwes"));
 	const char* name = "GWES_CPP_HOME";
 	const char* gwesHome = getenv(name);
 	if (gwesHome == NULL) {
@@ -43,7 +46,7 @@ void Utils::setEnvironmentVariables() {
 		char pathC[MAXPATHLEN];
 		getcwd(pathC, MAXPATHLEN);
 		string path(pathC);
-		cout << "Utils::setEnvironmentVariables(): getcwd=" << path << endl;
+		LOG_DEBUG(logger, "getcwd=" << path);
 		string value;
 		
 		if ( Utils::endsWith(path,"/gwes/trunk") ) {
@@ -56,23 +59,14 @@ void Utils::setEnvironmentVariables() {
 		}
 		
 		setenv(name,value.c_str(),1);
-		cout << "Utils::setEnvironmentVariables(): setenv " << name << "=" << value << endl;
-
-		//		// if /tmp/gwes/build_gwes_????
-//		s2 = string("/tmp/gwes/build_gwes");
-//		if ( startsWith(path,s2) ) {
-//			return string("workflows");
-//		}
-//		
-//		// default
-//		cout << "CWD=" << path << endl;
-//		return string ("../..");
+		LOG_DEBUG(logger, "setEnvironmentVariables(): setenv " << name << "=" << value);
 	} else {
-		cout << "Utils::setEnvironmentVariables(): " << name << "=" << gwesHome << endl;
+		LOG_DEBUG(logger, "setEnvironmentVariables(): " << name << "=" << gwesHome);
 	}
 }
 
 string Utils::expandEnv(const string& path) {
+	static fhg::log::LoggerApi logger(fhg::log::Logger::get("gwes"));
 	string::size_type loc1 = path.find("${",0);
 	if (loc1!=path.npos) {
 		string::size_type loc2 = path.find_first_of("}",loc1);
@@ -81,7 +75,7 @@ string Utils::expandEnv(const string& path) {
 			string name = path.substr(loc1+2,loc2-loc1-2);
 			const char* value = getenv(name.c_str());
 			if (value != NULL) {
-				cout << "gwes::Utils::expandEnv(): expanding ${" << name << "}=" << value << endl;
+				LOG_DEBUG(logger, "expanding ${" << name << "}=" << value);
 				string* newPath = new string(path);
 				return newPath->replace(loc1,loc2-loc1+1,value);
 			}

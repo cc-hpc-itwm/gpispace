@@ -7,9 +7,6 @@
 //gwes
 #include <gwes/TransitionOccurrence.h>
 #include <gwes/XPathEvaluator.h>
-// std
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 using namespace gwdl;
@@ -19,8 +16,7 @@ namespace gwes {
 /**
  * Constructor.
  */
-TransitionOccurrence::TransitionOccurrence(Transition* transition) {
-//	cout << "gwes::TransitionOccurrence::TransitionOccurrence(" << transition->getID() << ") ..." << endl;
+TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg::log::Logger::get("gwes")) {
 	transitionP = transition;
 	activityP = NULL;
 	hasXPathEdgeExpressions=false;
@@ -36,9 +32,9 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) {
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			cerr << "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!" << endl;
+			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
-//			cout << "gwes::TransitionOccurrence::TransitionOccurrence(" << transitionP->getID() << "): building parameter from read token " << tokenP->getID() << endl;
+			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from read token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_READ); 
 			tokens.push_back(*tpP); 
 			id << "_r" << tokenP->getID(); 
@@ -50,9 +46,9 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) {
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			cerr << "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!" << endl;
+			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
-//			cout << "gwes::TransitionOccurrence::TransitionOccurrence(" << transitionP->getID() << "): building parameter from input token " << tokenP->getID() << endl;
+			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from input token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_INPUT); 
 			tokens.push_back(*tpP); 
 			id << "_i" << tokenP->getID(); 
@@ -64,13 +60,13 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) {
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			cerr << "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!" << endl;
+			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
 			if (!hasXPathEdgeExpressions) {
 				string edgeExpression = edges[i]->getExpression();
 				if (edgeExpression.find("$")!=edgeExpression.npos) hasXPathEdgeExpressions=true; 
 			}
-//			cout << "gwes::TransitionOccurrence::TransitionOccurrence(" << transitionP->getID() << "): building parameter from write token " << tokenP->getID() << endl;
+			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from write token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_WRITE); 
 			tokens.push_back(*tpP);
 			id << "_w" << tokenP->getID(); 
@@ -84,7 +80,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) {
 			string edgeExpression = edges[i]->getExpression();
 			if (edgeExpression.find("$")!=edgeExpression.npos) hasXPathEdgeExpressions=true; 
 		}
-//		cout << "gwes::TransitionOccurrence::TransitionOccurrence(" << transitionP->getID() << "): building parameter from dummy output token" << endl;
+		LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from dummy output token");
 		parameter_t* tpP = new TokenParameter(NULL, edges[i], TokenParameter::SCOPE_OUTPUT); 
 		tokens.push_back(*tpP); 
 	}
@@ -105,7 +101,7 @@ TransitionOccurrence::~TransitionOccurrence() {
 }
 
 void TransitionOccurrence::lockTokens() {
-//	cout << "gwes::TransitionOccurrence::lockTokens[" << getID() << "] ..." << endl;
+	LOG_DEBUG(_logger, "lockTokens[" << getID() << "] ...");
 	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
 		switch (it->scope) {
 		case (TokenParameter::SCOPE_READ):
@@ -121,7 +117,7 @@ void TransitionOccurrence::lockTokens() {
 }
 
 void TransitionOccurrence::unlockTokens() {
-//	cout << "gwes::TransitionOccurrence::unlockTokens[" << getID() << "] ..." << endl;
+	LOG_DEBUG(_logger, "unlockTokens[" << getID() << "] ...");
 	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
 		switch (it->scope) {
 		case (TokenParameter::SCOPE_READ):
@@ -139,12 +135,11 @@ void TransitionOccurrence::unlockTokens() {
 bool TransitionOccurrence::checkConditions(int step) const {
 	if (transitionP->getConditions().empty()) return true;
 
-//	cout << "gwes::TransitionOccurrence::checkConditions[" << getID() << "] ..." << endl;
+	LOG_DEBUG(fhg::log::Logger::get("gwes"), "checkConditions[" << getID() << "] ...");
 	const vector<string> conditions = transitionP->getConditions();
 	XPathEvaluator* xpathP = new XPathEvaluator(this,step);
 	bool cond = true;
 	for (size_t i=0; i<conditions.size(); i++) {
-		//					cout << "gwes:WorkflowHandler::selectTransition(): checking condition " << conditions[i] << endl;
 		string condition = conditions[i];
 		if ( !xpathP->evalCondition(condition) ) {
 			cond = false;
@@ -161,7 +156,7 @@ void TransitionOccurrence::removeInputTokens() {
 		case (TokenParameter::SCOPE_READ):
 			continue;
 		case (TokenParameter::SCOPE_INPUT):
-//			cout << "gwes::TransitionOccurrence::removeInputTokens[" << getID() << "] removing token 'i" << it->tokenP->getID() << "' from place '" << it->edgeP->getPlace()->getID() << "'" << endl;
+			LOG_DEBUG(_logger, "removeInputTokens[" << getID() << "] removing token 'i" << it->tokenP->getID() << "' from place '" << it->edgeP->getPlace()->getID() << "'");
 			it->edgeP->getPlace()->removeToken(it->tokenP);
 			it->tokenP = NULL;
 			break;
@@ -208,7 +203,7 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 				}
 			}
 			// put token to output place
-//			cout << "gwes::TransitionOccurrence::putOutputTokens[" << getID() << "] putting token 'o" << it->tokenP->getID() << "' to place '" << it->edgeP->getPlace()->getID() << "'" << endl;
+			LOG_DEBUG(_logger, "putOutputTokens[" << getID() << "] putting token 'o" << it->tokenP->getID() << "' to place '" << it->edgeP->getPlace()->getID() << "'");
 			it->edgeP->getPlace()->addToken(it->tokenP);
 			break;
 		}
@@ -228,9 +223,9 @@ void TransitionOccurrence::writeWriteTokens() throw (CapacityException) {
 			placeP = it->edgeP->getPlace();
 			oldTokenP = placeP->getNextUnlockedToken();
 			if (it->tokenP != oldTokenP) {
-//				cout << "gwes::TransitionOccurrence::writeWriteTokens[" << getID() << "] replacing token 'w" 
-//				<< oldTokenP->getID() << "' with token 'w" << it->tokenP->getID() << "' on place '" 
-//				<< it->edgeP->getPlace()->getID() << "'" << endl;
+				LOG_DEBUG(_logger, "writeWriteTokens[" << getID() << "] replacing token 'w" 
+				<< oldTokenP->getID() << "' with token 'w" << it->tokenP->getID() << "' on place '" 
+				<< it->edgeP->getPlace()->getID() << "'");
 				placeP->removeToken(oldTokenP);
 				placeP->addToken(it->tokenP);
 			}
@@ -247,7 +242,7 @@ string TransitionOccurrence::getID() const {
 
 void TransitionOccurrence::evaluateXPathEdgeExpressions(int step) {
 	if (!hasXPathEdgeExpressions) return;
-	cout << "gwes::TransitionOccurrence::evaluateXPathEdgeExpressions[" << getID() << "] ..." << endl;
+	LOG_DEBUG(_logger, "gwes::TransitionOccurrence::evaluateXPathEdgeExpressions[" << getID() << "] ...");
 	XPathEvaluator* xpathEvaluatorP = new XPathEvaluator(this, step);
 
 	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
@@ -299,6 +294,3 @@ ostream& operator<<(ostream &out, gwes::TransitionOccurrence &transitionOccurren
 	
 	return out;
 }
-
-
-
