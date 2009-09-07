@@ -39,6 +39,7 @@ namespace fhg { namespace log {
       ~StreamAppender() {}
 
       void setFormat(Formatter::ptr_t fmt) { fmt_ = fmt; }
+      void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
       void append(const LogEvent &evt);
       const std::string &name() const { return name_; }
     private:
