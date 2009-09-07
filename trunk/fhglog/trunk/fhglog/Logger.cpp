@@ -53,16 +53,22 @@ void Logger::log(const LogEvent &event)
     try
     {
       (*it)->append(event);
-    } catch (...)
+    }
+    catch (const std::exception &ex)
     {
-      std::clog << "could not append log event to appender: " << (*it)->name() << std::endl;
+      std::clog << "could not append log event to appender " << (*it)->name() << ": " << ex.what() << std::endl;
+    }
+    catch (...)
+    {
+      std::clog << "could not append log event to appender " << (*it)->name() << ": unknown errror" << std::endl;
     }
   }
 }
 
-void Logger::addAppender(Appender::ptr_t appender)
+Appender::ptr_t Logger::addAppender(Appender::ptr_t appender)
 {
   appenders_.push_back(appender);
+  return appender;
 }
 
 Appender::ptr_t Logger::getAppender(const std::string &appender_name)

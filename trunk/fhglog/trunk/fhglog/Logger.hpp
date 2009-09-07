@@ -28,7 +28,7 @@ namespace fhg { namespace log {
       void setLevel(const LogLevel &level);
       bool isLevelEnabled(const LogLevel &level);
       void log(const LogEvent &event);
-      void addAppender(Appender::ptr_t appender);
+      Appender::ptr_t addAppender(Appender::ptr_t appender);
       Appender::ptr_t getAppender(const std::string &appender_name);
       void removeAppender(const std::string &appender_name);
     private:
@@ -47,7 +47,7 @@ namespace fhg { namespace log {
       bool isLevelEnabled(const LogLevel &level);
 
       void log(const LogEvent &event);
-      void addAppender(Appender::ptr_t appender);
+      Appender::ptr_t addAppender(Appender::ptr_t appender);
       Appender::ptr_t getAppender(const std::string &appender_name);
       void removeAppender(const std::string &appender_name);
     private:

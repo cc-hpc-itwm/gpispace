@@ -19,9 +19,9 @@ void LoggerApi::log(const LogEvent &event)
 {
   impl_->log(event);
 }
-void LoggerApi::addAppender(Appender::ptr_t appender)
+Appender::ptr_t LoggerApi::addAppender(Appender::ptr_t appender)
 {
-  impl_->addAppender(appender);
+  return impl_->addAppender(appender);
 }
 Appender::ptr_t LoggerApi::getAppender(const std::string &appender_name)
 {
