@@ -23,7 +23,8 @@ int main(int argc, char **argv)
   using namespace fhg::log;
   LoggerApi logger(Logger::get("test"));
   logger.setLevel(LogLevel::WARN);
-  logger.addAppender(Appender::ptr_t(new StreamAppender()));
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::DefaultFormatter());
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::ShortFormatter());
 
   logger.log(LogEvent(LogLevel::TRACE
                             , __FILE__
