@@ -72,6 +72,7 @@ namespace fhg { namespace log {
       }
 
       const std::string &str() const;
+      const Level &lvl() const { return lvl_; }
     private:
       Level lvl_;
   };

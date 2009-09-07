@@ -10,6 +10,10 @@ void LoggerApi::setLevel(const LogLevel &level)
 {
   impl_->setLevel(level);
 }
+const LogLevel &LoggerApi::getLevel() const
+{
+  return impl_->getLevel();
+}
 
 bool LoggerApi::isLevelEnabled(const LogLevel &level)
 {

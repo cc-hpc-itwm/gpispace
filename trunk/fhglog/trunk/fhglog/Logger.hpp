@@ -19,6 +19,16 @@
 */
 namespace fhg { namespace log {
   class Logger;
+  /*
+   * This class wraps around a simple Logger object.
+   *
+   * The main reason to have a separate loggerapi class and an implementation
+   * is the following, when we want to disable logging completely, we should
+   * make sure that the classes using loggers as member variables still have
+   * the same size. In this case, sizeof(LoggerApi) == sizeof(void*) - that
+   * means in the disabled case, we can just allocate an empty void pointer.
+   *
+   */
   class LoggerApi {
     public:
       explicit
@@ -26,6 +36,7 @@ namespace fhg { namespace log {
 
       const std::string &name() const;
       void setLevel(const LogLevel &level);
+      const LogLevel & getLevel() const;
       bool isLevelEnabled(const LogLevel &level);
       void log(const LogEvent &event);
       Appender::ptr_t addAppender(Appender::ptr_t appender);
@@ -44,6 +55,7 @@ namespace fhg { namespace log {
 
       const std::string &name() const;
       void setLevel(const LogLevel &level);
+      const LogLevel &getLevel() const;
       bool isLevelEnabled(const LogLevel &level);
 
       void log(const LogEvent &event);

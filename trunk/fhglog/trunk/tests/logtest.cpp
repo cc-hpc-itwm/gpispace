@@ -17,12 +17,44 @@
  */
 
 #include    <fhglog/fhglog.hpp>
+#include    <sstream>
+
+class Test
+{
+  public:
+    Test() : log_(fhg::log::Logger::get("test-class"))
+    {
+      LOG_DEBUG(log_, "Test class constructor");
+    }
+    ~Test()
+    {
+      LOG_DEBUG(log_, "Test class destructor");
+    }
+  private:
+    fhg::log::LoggerApi log_;
+};
 
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
   LoggerApi logger(Logger::get("test"));
-  logger.setLevel(LogLevel::WARN);
+  if (argc > 1)
+  {
+    int lvl;
+    std::istringstream istr(argv[1]);
+    istr >> lvl;
+    logger.setLevel(static_cast<LogLevel::Level>(lvl));
+  }
+  else
+  {
+    logger.setLevel(LogLevel::TRACE);
+  }
+  std::cerr << "the log-level has been set to: " << logger.getLevel().str() << "(" << logger.getLevel().lvl() << ")" << std::endl;
+
+  {
+    Test test;
+  }
+
   logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::DefaultFormatter());
   logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::ShortFormatter());
 
@@ -38,6 +70,12 @@ int main(int argc, char **argv)
                             , __LINE__
                             , "debug message"));
 
+  logger.log(LogEvent(LogLevel::INFO
+                            , __FILE__
+                            , FHGLOG_FUNCTION
+                            , __LINE__
+                            , "info message"));
+
   logger.log(LogEvent(LogLevel::WARN
                             , __FILE__
                             , FHGLOG_FUNCTION
@@ -49,7 +87,6 @@ int main(int argc, char **argv)
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "error message"));
-
-  LOG_DEBUG(logger, "this is an error:" << 42);
+  LOG_ERROR(logger, "this is an error:" << 42);
   LOG_WARN(logger, "this is a warning:" << 42);
 }

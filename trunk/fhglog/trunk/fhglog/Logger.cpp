@@ -35,6 +35,11 @@ void Logger::setLevel(const LogLevel &level)
   lvl_ = level;
 }
 
+const LogLevel &Logger::getLevel() const
+{
+  return lvl_;
+}
+
 bool Logger::isLevelEnabled(const LogLevel &level)
 {
   // TODO: inherit the level from the parent logger if the level was not set

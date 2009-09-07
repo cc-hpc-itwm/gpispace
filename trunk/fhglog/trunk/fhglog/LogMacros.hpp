@@ -18,6 +18,10 @@ namespace fhg { namespace log {
                                     ::std::stringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::INFO), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } while(0)
 #define LOG_WARN(logger, msg)  do { using namespace fhg::log;\
                                     ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::WARN), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } while(0)
+#define LOG_ERROR(logger, msg) do { using namespace fhg::log;\
+                                   ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::ERROR), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } while(0)
+#define LOG_FATAL(logger, msg) do { using namespace fhg::log;\
+                                    ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::FATAL), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } while(0)
 }}
 
 #endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */
