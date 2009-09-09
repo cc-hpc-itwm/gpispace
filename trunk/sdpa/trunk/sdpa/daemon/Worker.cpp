@@ -42,7 +42,7 @@ Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) {
   acknowledge(last_job_id);
 
   // move the job from pending to submitted
-  Job::ptr_t job(pending().pop());
+  Job::ptr_t job(pending().try_pop());
   submitted().push(job);
   return job;
 }
