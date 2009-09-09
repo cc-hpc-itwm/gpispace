@@ -21,7 +21,6 @@
 
 #include <boost/thread.hpp>
 #include <sdpa/SDPAException.hpp>
-#include <iostream> // std::cout
 
 namespace sdpa { namespace daemon {
   class QueueException : public SDPAException
@@ -59,18 +58,37 @@ namespace sdpa { namespace daemon {
     typedef typename container_type::const_iterator const_iterator;
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
+    typedef boost::condition_variable_any condition_type;
 
-    SynchronizedQueue() {}
-    ~SynchronizedQueue() {}
+    SynchronizedQueue() : destroying_(false) {}
+    ~SynchronizedQueue()
+    {
+      lock_type lock(mtx_);
+      destroying_ = true; 
+      not_empty_.notify_all();
+    }
     
-    inline value_type pop()
+    inline value_type try_pop()
     {
       lock_type lock(mtx_);
       if (container_.empty()) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
-      std::cout << "pop()" << std::endl;
+      return item;
+    }
+
+    inline value_type pop()
+    {
+      lock_type lock(mtx_);
+      while (container_.empty())
+      {
+        not_empty_.wait(lock);
+      }
+      if (destroying_) throw QueueEmpty();
+
+      value_type item = container_.front();
+      container_.pop_front();
       return item;
     }
 
@@ -78,6 +96,7 @@ namespace sdpa { namespace daemon {
     {
       lock_type lock(mtx_);
       container_.push_back(item);
+      not_empty_.notify_one();
     }
 
     inline size_type size() const
@@ -124,7 +143,9 @@ namespace sdpa { namespace daemon {
     mutex_type &mutex() { return mtx_; }
   private:
     mutable mutex_type mtx_;
+    condition_type not_empty_;
     container_type container_;
+    bool destroying_;
   };
 }}
 #endif
