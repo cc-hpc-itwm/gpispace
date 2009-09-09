@@ -3,6 +3,8 @@
 #include "test_Worker.hpp"
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -43,7 +45,7 @@ void WorkerTest::testGetNextJob() {
   Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
   CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty now
   CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted has one job
-  CPPUNIT_ASSERT_EQUAL((*worker.submitted().begin())->id(), job->id());
+  CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
 }
 
 void WorkerTest::testAcknowledge() {
@@ -63,3 +65,39 @@ void WorkerTest::testAcknowledge() {
   CPPUNIT_ASSERT(worker.submitted().empty()); // submitted is now empty
   CPPUNIT_ASSERT(! worker.acknowledged().empty()); // added to acknowledged
 }
+
+
+typedef SynchronizedQueue<std::list<int> > queue_type;
+struct thread_data {
+  thread_data(queue_type *q) : q(q), val(0) {}
+  void operator()() {
+    for (std::size_t cnt(0); cnt < 10; ++cnt)
+    {
+      val += q->pop();
+      std::cout << "-";
+      boost::this_thread::yield();
+    }
+  }
+  queue_type *q;
+  int val;
+};
+  
+void WorkerTest::testQueue() {
+  std::cout << "testing synchronized queue..." << std::endl;
+  queue_type test_queue;
+  thread_data thrd_data(&test_queue);
+  boost::thread thrd(thrd_data);
+  std::cout << "pushing..." << std::endl;
+  for (std::size_t cnt(0); cnt < 10; ++cnt)
+  {
+    std::cout << "+";
+    test_queue.push(42);
+    boost::this_thread::yield();
+    std::cout.flush();
+    if (cnt % 2 == 0) sleep(1);
+  }
+  thrd.join();
+  std::cout << std::endl;
+  CPPUNIT_ASSERT_EQUAL(10 * 42, thrd_data.val);
+}
+
