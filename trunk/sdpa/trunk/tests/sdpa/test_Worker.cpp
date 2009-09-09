@@ -27,10 +27,9 @@ void WorkerTest::testDispatch() {
 
   Job::ptr_t job(new JobImpl("1", "description"));
   worker.dispatch(job);
-  worker.dispatch(Job::ptr_t(new JobImpl("1", "description")));
 
   CPPUNIT_ASSERT(! worker.pending().empty());
-  CPPUNIT_ASSERT( worker.pending().front()->id() == job->id());
+  CPPUNIT_ASSERT( (*worker.pending().begin())->id() == job->id());
   worker.pending().clear();
 }
 
