@@ -7,6 +7,7 @@
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
 
 namespace sdpa { namespace daemon {
   /**
@@ -23,7 +24,7 @@ namespace sdpa { namespace daemon {
     typedef std::string worker_id_t;
 
     // TODO: to be replaced by a real class (synchronization!)
-    typedef std::list<Job::ptr_t> JobQueue;
+    typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 
     /**
       A worker has a globally unique name and a location.
