@@ -44,6 +44,12 @@ IF(NOT LIBXSLT_FOUND)
   message(FATAL_ERROR "No libxslt found, cannot continue.")
 ENDIF(NOT LIBXSLT_FOUND)
 
+## find fhglog
+Include(FindFhgLog)
+IF(NOT FHGLOG_FOUND)
+  message(FATAL_ERROR "No libfhglog found, cannot continue.")
+ENDIF(NOT FHGLOG_FOUND)
+
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
@@ -65,11 +71,13 @@ include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_SOURCE_DIR}/gworkflowdl_cpp/include)
 include_directories(${CMAKE_SOURCE_DIR}/gwes_cpp/include)
 #include_directories(${SMC_INCLUDE_DIR})
+include_directories(${FHGLOG_INCLUDE_DIR})
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
 link_libraries(-Wl,-Bdynamic  -ldl)
+link_libraries(${FHGLOG_LIBRARY})
 
 # Display and stop on warnings
 ADD_DEFINITIONS(-Wall -Werror)
