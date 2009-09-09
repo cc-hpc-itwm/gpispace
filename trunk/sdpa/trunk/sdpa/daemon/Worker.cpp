@@ -21,15 +21,14 @@ void Worker::dispatch(const Job::ptr_t &job) {
 }
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
-  // FIXME: lock the jobqueue and the submitted queue!
-  JobQueue::lock_type lockSub(submitted_.mutex());
-  JobQueue::lock_type lockPen(pending_.mutex());
+  JobQueue::lock_type lockSub(submitted().mutex());
+  JobQueue::lock_type lockAck(acknowledged().mutex());
 
-  for (JobQueue::iterator job(pending_.begin()); job != pending_.end(); job++) {
+  for (JobQueue::iterator job(submitted().begin()); job != submitted().end(); job++) {
     if (job_id == (*job)->id()) {
-      // remove it and put it to the submitted queue
-      submitted_.push(*job);
-      pending_.erase(job);
+      // remove it and put it to the acknowledged queue
+      acknowledged().push(*job);
+      submitted().erase(job);
       SDPA_LOG_DEBUG("acknowledged job(" << job_id << ")");
       return true;
     }
@@ -39,15 +38,12 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
 }
 
 Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) {
+  // acknowledge a previous job
   acknowledge(last_job_id);
-  return *pending_.begin();
-  /*
-  if (pending_.empty()) {
-    throw std::runtime_error("pending queue is empty");
-  } else {
-    SDPA_LOG_DEBUG("next job(" << pending_.front()->id() << ")");
-    return pending_.pop();
-  }
-  */
+
+  // move the job from pending to submitted
+  Job::ptr_t job(pending().pop());
+  submitted().push(job);
+  return job;
 }
 

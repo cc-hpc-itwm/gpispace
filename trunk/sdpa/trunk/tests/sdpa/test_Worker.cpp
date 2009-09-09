@@ -41,8 +41,9 @@ void WorkerTest::testGetNextJob() {
   CPPUNIT_ASSERT(! worker.pending().empty());
 
   Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
-  CPPUNIT_ASSERT(! worker.pending().empty()); // still in pending
-  CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
+  CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty now
+  CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted has one job
+  CPPUNIT_ASSERT_EQUAL((*worker.submitted().begin())->id(), job->id());
 }
 
 void WorkerTest::testAcknowledge() {
@@ -53,11 +54,12 @@ void WorkerTest::testAcknowledge() {
   CPPUNIT_ASSERT(! worker.pending().empty());
 
   Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
-  CPPUNIT_ASSERT(! worker.pending().empty()); // still in pending
-  CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
+  CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty
+  CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted is not empty anymore
 
   bool ackResult = worker.acknowledge(job->id());
   CPPUNIT_ASSERT(ackResult);
-  CPPUNIT_ASSERT(worker.pending().empty()); // removed from pending
-  CPPUNIT_ASSERT(! worker.submitted().empty()); // removed from pending
+  CPPUNIT_ASSERT(worker.pending().empty()); // pending still empty
+  CPPUNIT_ASSERT(worker.submitted().empty()); // submitted is now empty
+  CPPUNIT_ASSERT(! worker.acknowledged().empty()); // added to acknowledged
 }

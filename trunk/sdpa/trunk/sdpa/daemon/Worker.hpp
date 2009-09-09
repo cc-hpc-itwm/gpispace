@@ -95,6 +95,14 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& submitted() { return submitted_; }
+
+    /**
+      Provide access to the acknowledged queue.
+
+      We are required to have access to the submitted queue of a worker because
+      we might need to reschedule tasks.
+      */
+    JobQueue& acknowledged() { return acknowledged_; }
   private:
     SDPA_DECLARE_LOGGER();
 
@@ -102,8 +110,9 @@ namespace sdpa { namespace daemon {
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 
-    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet confirmed)
-    JobQueue submitted_; //! the queue of jobs assigned to this worker (successfully submitted)
+    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
+    JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+    JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
   };
 }}
 
