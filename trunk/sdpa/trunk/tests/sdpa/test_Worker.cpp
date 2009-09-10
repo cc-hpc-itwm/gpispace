@@ -73,7 +73,7 @@ struct thread_data {
   void operator()() {
     for (std::size_t cnt(0); cnt < 10; ++cnt)
     {
-      val += q->pop();
+      val += q->pop_and_wait();
       std::cout << "-";
       boost::this_thread::yield();
     }

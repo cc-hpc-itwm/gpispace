@@ -60,15 +60,10 @@ namespace sdpa { namespace daemon {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
 
-    SynchronizedQueue() : destroying_(false) {}
-    ~SynchronizedQueue()
-    {
-      lock_type lock(mtx_);
-      destroying_ = true; 
-      not_empty_.notify_all();
-    }
+    SynchronizedQueue() {}
+    ~SynchronizedQueue() {}
     
-    inline value_type try_pop()
+    inline value_type pop() throw (QueueEmpty)
     {
       lock_type lock(mtx_);
       if (container_.empty()) throw QueueEmpty();
@@ -78,14 +73,13 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop()
+    inline value_type pop_and_wait() throw ()
     {
       lock_type lock(mtx_);
       while (container_.empty())
       {
         not_empty_.wait(lock);
       }
-      if (destroying_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
@@ -145,7 +139,6 @@ namespace sdpa { namespace daemon {
     mutable mutex_type mtx_;
     condition_type not_empty_;
     container_type container_;
-    bool destroying_;
   };
 }}
 #endif
