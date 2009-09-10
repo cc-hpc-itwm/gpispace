@@ -31,8 +31,10 @@ namespace sdpa { namespace wf {
 
       // corresponds to WFE_to_SDPA::workflowFinished/Failed
       virtual void submitWorkflow(workflow_t &wf) = 0;
+      virtual void submitWorkflow(workflow_t &wf, const workflow_id_t &wid) = 0;
 
       virtual void cancelWorkflow(workflow_t &wf) = 0;
+      virtual void cancelWorkflow(const workflow_id_t &wid) = 0;
   };
 }}
 
