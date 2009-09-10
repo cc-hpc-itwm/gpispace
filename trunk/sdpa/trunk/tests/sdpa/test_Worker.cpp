@@ -71,11 +71,17 @@ typedef SynchronizedQueue<std::list<int> > queue_type;
 struct thread_data {
   thread_data(queue_type *q) : q(q), val(0) {}
   void operator()() {
-    for (std::size_t cnt(0); cnt < 10; ++cnt)
+    try
     {
-      val += q->pop_and_wait();
-      std::cout << "-";
-      boost::this_thread::yield();
+      for (;;)
+      {
+        val += q->pop_and_wait();
+        std::cout << "-";
+      }
+    }
+    catch (const boost::thread_interrupted &irq)
+    {
+      std::cout << "x";
     }
   }
   queue_type *q;
@@ -86,18 +92,19 @@ void WorkerTest::testQueue() {
   std::cout << "testing synchronized queue..." << std::endl;
   queue_type test_queue;
   thread_data thrd_data(&test_queue);
-  boost::thread thrd(thrd_data);
+  boost::thread thrd(boost::ref(thrd_data));
   std::cout << "pushing..." << std::endl;
   for (std::size_t cnt(0); cnt < 10; ++cnt)
   {
     std::cout << "+";
     test_queue.push(42);
-    boost::this_thread::yield();
     std::cout.flush();
     if (cnt % 2 == 0) sleep(1);
   }
+  thrd.interrupt();
   thrd.join();
   std::cout << std::endl;
-  CPPUNIT_ASSERT_EQUAL(10 * 42, thrd_data.val);
+  std::cout << thrd_data.val << std::endl;
+  CPPUNIT_ASSERT(thrd_data.val >= 42);
 }
 
