@@ -11,7 +11,7 @@
 #include <tests/sdpa/test_Config.hpp>
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
-#include <tests/sdpa/test_JobFSM_BSC.hpp>
+//#include <tests/sdpa/test_JobFSM_BSC.hpp>
 #include <tests/sdpa/test_DaemonFSM_SMC.hpp>
 #include <tests/sdpa/test_DaemonFSM_BSC.hpp>
 
@@ -26,11 +26,10 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
-      suiteOfTests->addTest( FSMPerformanceTest::suite() );
-      suiteOfTests->addTest( DaemonFSMTest_BSC::suite() );*/
-      suiteOfTests->addTest( DaemonFSMTest_SMC::suite() );
-      /*suiteOfTests->addTest( JobFSMTest_BSC::suite() );
-      suiteOfTests->addTest( JobFSMTest_SMC::suite() );*/
+      suiteOfTests->addTest( FSMPerformanceTest::suite() )*/;
+      suiteOfTests->addTest( DaemonFSMTest_BSC::suite() );
+      //suiteOfTests->addTest( DaemonFSMTest_SMC::suite() );
+      //suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       return suiteOfTests;
     }
   };

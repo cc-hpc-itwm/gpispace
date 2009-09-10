@@ -33,7 +33,8 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage );
+	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
+	  static void start(GenericDaemon::ptr_t daemon );
 
 	  virtual void perform(const seda::IEvent::Ptr &);
 
@@ -51,6 +52,9 @@ namespace sdpa { namespace daemon {
 	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
 	  virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
+	  virtual void action_job_finished(const sdpa::events::JobFinishedEvent& );
+	  virtual void action_job_failed(const sdpa::events::JobFailedEvent& );
+	  virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& );
 
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
@@ -63,6 +67,9 @@ namespace sdpa { namespace daemon {
 	  virtual void workflowFailed(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
 	  virtual void workflowCanceled(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
 
+	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
+	  void addWorker(const  Worker::ptr_t );
+
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
@@ -70,11 +77,10 @@ namespace sdpa { namespace daemon {
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes*  pSdpa2Gwes = NULL);
+	  GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes*  pSdpa2Gwes);
 
-	  JobManager::ptr_t 	ptr_job_man_;
-	  WorkerManager::ptr_t 	ptr_worker_man_;
-	  SchedulerImpl::ptr_t 	ptr_scheduler_;
+	  JobManager::ptr_t ptr_job_man_;
+	  Scheduler::ptr_t 	ptr_scheduler_;
 	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
 
 	  void setStage(seda::Stage::Ptr stage)

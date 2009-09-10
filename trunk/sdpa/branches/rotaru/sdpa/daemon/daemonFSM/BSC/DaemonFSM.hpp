@@ -21,9 +21,9 @@ struct Up;
 // The FSM
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
-	DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* p = NULL)
+	DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* ptrGwes = NULL)
 		: SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM"),
-		GenericDaemon(name, outputStage, p)
+		GenericDaemon(name, outputStage, ptrGwes)
 		{
 
 		};
@@ -68,6 +68,9 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
                    sc::custom_reaction<sdpa::events::SubmitJobEvent>,
                    sc::custom_reaction<sdpa::events::SubmitJobAckEvent>,
                    sc::custom_reaction<sdpa::events::ConfigRequestEvent>,
+                   sc::custom_reaction<sdpa::events::JobFinishedEvent>,
+                   sc::custom_reaction<sdpa::events::JobFailedEvent>,
+                   sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Up() { } //std::cout << " enter state 'Up'" << std::endl; }
@@ -80,6 +83,9 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
     sc::result react( const sdpa::events::SubmitJobEvent& );
     sc::result react( const sdpa::events::SubmitJobAckEvent& );
     sc::result react( const sdpa::events::ConfigRequestEvent& );
+    sc::result react( const sdpa::events::JobFinishedEvent& );
+    sc::result react( const sdpa::events::JobFailedEvent& );
+    sc::result react( const sdpa::events::CancelJobAckEvent& );
     sc::result react( const sc::exception_thrown & );
 };
 

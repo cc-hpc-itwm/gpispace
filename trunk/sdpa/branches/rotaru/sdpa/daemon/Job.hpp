@@ -55,16 +55,19 @@ namespace sdpa { namespace daemon {
         virtual ptr_t get_subjob(const job_id_t & id) = 0;
 
         virtual bool is_marked_for_deletion() = 0;
+        virtual bool is_local()=0;
+        virtual void set_local(bool)=0;
         virtual void process_event( const boost::statechart::event_base & e) {}
 
         //transitions
-		virtual void process_event(const sdpa::events::CancelJobEvent& event) {}
-		virtual void process_event(const sdpa::events::CancelJobAckEvent& event) {}
-		virtual void process_event(const sdpa::events::DeleteJobEvent& event){}
-		virtual void process_event(const sdpa::events::JobFinishedEvent& event){}
-		virtual void process_event(const sdpa::events::QueryJobStatusEvent& event){}
-		virtual void process_event(const sdpa::events::RetrieveJobResultsEvent& event){}
-		virtual void process_event(const sdpa::events::SubmitJobEvent& event){}
+		virtual void CancelJob();
+		virtual void CancelJobAck();
+		virtual void DeleteJob();
+		virtual void JobFailed();
+		virtual void JobFinished();
+		virtual void QueryJobStatus();
+		virtual void RetrieveJobResults();
+		virtual void Dispatch();
 
     };
 }}

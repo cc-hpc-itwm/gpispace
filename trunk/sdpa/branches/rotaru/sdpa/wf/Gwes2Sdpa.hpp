@@ -6,7 +6,6 @@
 #include <sdpa/daemon/exceptions.hpp>
 
  //for the exceptions, should be changed -> put common exceptions into some shared folder
-using namespace sdpa::daemon;
 
 namespace sdpa { namespace wf {
 
@@ -47,31 +46,31 @@ public:
 	 * Cancel a sub workflow that has previously been submitted to
 	 * the SDPA. The parent job has to cancel all children.
 	 */
-	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 
 	/**
 	 * Cancel an atomic activity that has previously been submitted to
 	 * the SDPA.
 	 */
-	virtual void cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) = 0;
+	virtual void cancelActivity(const activity_id_t &activityId)  throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow finished (state transition
 	 * from running to finished).
 	 */
-	virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowFinished(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow failed (state transition
 	 * from running to failed).
 	 */
-	virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowFailed(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow has been canceled (state
 	 * transition from * to terminated.
 	 */
-	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 };
 
 }}

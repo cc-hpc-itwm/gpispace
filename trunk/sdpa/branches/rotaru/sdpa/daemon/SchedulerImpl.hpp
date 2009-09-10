@@ -4,6 +4,9 @@
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
+#include <sdpa/wf/Sdpa2Gwes.hpp>
+#include <boost/thread.hpp>
 
 namespace sdpa {
 	namespace daemon {
@@ -12,8 +15,10 @@ namespace sdpa {
   public:
 
 	 typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
+	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
+	 //typedef SynchronizedQueue<Job::ptr_t > JobQueue;
 
-	 SchedulerImpl(const  JobManager::ptr_t, const WorkerManager::ptr_t );
+	 SchedulerImpl(sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes);
 	 virtual ~SchedulerImpl();
 
     /**
@@ -55,9 +60,24 @@ namespace sdpa {
       */
     virtual void schedule(const Job::ptr_t &job);
 
+    void handleJob(Job::ptr_t& pJob);
+    Worker::ptr_t findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
+    void addWorker(const  Worker::ptr_t );
+
+    // thread related functions
+   void start();
+   void stop();
+   void run();
+
+
   private:
-	  JobManager::ptr_t ptr_job_man_;
+	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
+	  sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes_;
+
+	  bool bStopRequested;
+	  boost::shared_ptr<boost::thread> m_thread;
+	  SDPA_DECLARE_LOGGER();
   };
 }}
 

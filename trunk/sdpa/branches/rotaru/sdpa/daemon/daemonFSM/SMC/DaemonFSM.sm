@@ -85,5 +85,26 @@ Up
 	{
 		action_config_request(event);
 	}
+	
+	//a slave finished its job
+	JobFinished(event: sdpa::events::JobFinishedEvent& )
+	nil
+	{
+		action_job_finished(event);
+	}
+	
+	//a slave finished its job
+	JobFailed(event: sdpa::events::JobFailedEvent& )
+	nil
+	{
+		action_job_failed(event);
+	}
+	
+	//a slave finished its job
+	JobCanceled(event: sdpa::events::CancelJobAckEvent& )
+	nil
+	{
+		action_job_canceled(event);
+	}
 }
 %%

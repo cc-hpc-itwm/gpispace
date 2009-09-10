@@ -52,7 +52,7 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
 
 	if(ret_pair.second)
 	{
-		os<<"Inserted job "<<job_id<<" into the job map"<<std::endl;
+		os<<"Inserted job "<<job_id<<" into the job map";
 		SDPA_LOG_DEBUG(os.str());
 	}
 	else
@@ -72,7 +72,7 @@ void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr
 
 	if(ret_pair.second)
 	{
-		os<<"Marked job "<<job_id<<" for deletion"<<std::endl;
+		os<<"Marked job "<<job_id<<" for deletion";
 		SDPA_LOG_DEBUG(os.str());
 	}
 	else
@@ -87,7 +87,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 		throw JobNotDeletedException(job_id);
 	else
 	{
-		os<<"Erased job "<<job_id<<" from job map"<<std::endl;
+		os<<"Erased job "<<job_id<<" from job map";
 		SDPA_LOG_DEBUG(os.str());
 	}
 }

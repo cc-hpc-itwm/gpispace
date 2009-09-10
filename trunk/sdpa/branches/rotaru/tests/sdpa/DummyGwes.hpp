@@ -23,7 +23,7 @@ public:
 	 * This method is to be invoked by the SDPA.
 	 */
 	void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (NoSuchWorkflowException, NoSuchActivityException)
+			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
      {
 		SDPA_LOG_DEBUG("Called activityDispatched ...");
      }
@@ -35,7 +35,7 @@ public:
 	 */
 	void activityFailed(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (NoSuchWorkflowException, NoSuchActivityException)
+			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
 	{
 		SDPA_LOG_DEBUG("Called activityFailed ...");
 	}
@@ -47,7 +47,7 @@ public:
 	 */
 	void activityFinished(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (NoSuchWorkflowException, NoSuchActivityException)
+			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
 	{
 		SDPA_LOG_DEBUG("Called activityFinished ...");
 	}
@@ -58,7 +58,7 @@ public:
 	 * This method is to be invoked by the SDPA.
 	 */
 	void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (NoSuchWorkflowException, NoSuchActivityException)
+			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
     {
 		SDPA_LOG_DEBUG("Called activityCanceled ...");
     }
@@ -71,7 +71,7 @@ public:
 	 * sub workflows to the SDPA.
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	void registerHandler(Gwes2Sdpa *sdpa)
+	void registerHandler(Gwes2Sdpa *sdpa) const
 	{
 		SDPA_LOG_DEBUG("Called registerHandler ...");
 	}
@@ -86,6 +86,21 @@ public:
 	workflow_id_t submitWorkflow(workflow_t &workflow) //throw (gwdl::WorkflowFormatException) {}
 	{
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
+		return "0";
+	}
+
+	/**
+			 * Submit a workflow to the GWES.
+			 * The workflow_id is already assigned and is identical to the job_id to which the workflow belongs
+			 * This method is to be invoked by the SDPA.
+			 * The GWES will initiate and start the workflow
+			 * asynchronously and notifiy the SPDA about status transitions
+			 * using the callback methods of the Gwes2Sdpa handler.
+			 */
+	workflow_id_t submitWorkflow(const workflow_id_t &workflowId, workflow_t &workflow) //throw (gwdl::WorkflowFormatException) = 0;
+	{
+		SDPA_LOG_DEBUG("Called submitWorkflow ...");
+		return "0";
 	}
 
 	/**
@@ -95,7 +110,7 @@ public:
 	 * completion of the cancelling process by calling the
 	 * callback method Gwes2Sdpa::workflowCanceled.
 	 */
-	void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
+	void cancelWorkflow(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException)
 	{
 		SDPA_LOG_DEBUG("Called cancelWorkflow ...");
 	}

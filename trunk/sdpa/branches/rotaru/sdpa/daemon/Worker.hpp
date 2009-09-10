@@ -7,8 +7,13 @@
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
+#include <sdpa/daemon/exceptions.hpp>
 
 namespace sdpa { namespace daemon {
+
+
+
   /**
     This class holds all information about an attached worker.
 
@@ -19,11 +24,11 @@ namespace sdpa { namespace daemon {
   public:
     typedef sdpa::shared_ptr<Worker> ptr_t;
 
-    typedef std::string location_t;
-    typedef std::string worker_id_t;
+    typedef sdpa::location_t location_t;
+    typedef sdpa::worker_id_t worker_id_t;
 
     // TODO: to be replaced by a real class (synchronization!)
-    typedef std::list<Job::ptr_t> JobQueue;
+    typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 
     /**
       A worker has a globally unique name and a location.
@@ -35,8 +40,7 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    explicit
-    Worker(const worker_id_t &name, const location_t &location = "");
+    explicit Worker(const worker_id_t &name, const location_t &location = "");
 
     /**
       Take an event related to that particular worker and update the internal
@@ -77,7 +81,7 @@ namespace sdpa { namespace daemon {
 
       @param last_job_id the id of the last sucessfully submitted job
       */
-    Job::ptr_t get_next_job(const sdpa::job_id_t &last_job_id);
+    Job::ptr_t get_next_job( const sdpa::job_id_t &last_job_id ) throw (NoJobScheduledException);
 
     /**
       Provide access to the pending queue.
@@ -94,6 +98,14 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& submitted() { return submitted_; }
+
+    /**
+      Provide access to the acknowledged queue.
+
+      We are required to have access to the submitted queue of a worker because
+      we might need to reschedule tasks.
+      */
+    JobQueue& acknowledged() { return acknowledged_; }
   private:
     SDPA_DECLARE_LOGGER();
 
@@ -101,8 +113,9 @@ namespace sdpa { namespace daemon {
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 
-    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet confirmed)
-    JobQueue submitted_; //! the queue of jobs assigned to this worker (successfully submitted)
+    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
+    JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+    JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
   };
 }}
 

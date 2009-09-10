@@ -1,6 +1,7 @@
 #ifndef SDPA_DAEMON_JOB_MANAGER_HPP
 #define SDPA_DAEMON_JOB_MANAGER_HPP 1
 
+#include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 

@@ -97,6 +97,20 @@ sc::result Up::react(const ConfigRequestEvent& e )
    	return transit<Up>(&DaemonFSM::action_config_request, e);
 }
 
+sc::result Up::react( const sdpa::events::JobFinishedEvent& e)
+{
+	return transit<Up>(&DaemonFSM::action_job_finished, e);
+}
+
+sc::result Up::react( const sdpa::events::JobFailedEvent& e)
+{
+	return transit<Up>(&DaemonFSM::action_job_failed, e);
+}
+
+sc::result Up::react( const sdpa::events::CancelJobAckEvent& e)
+{
+	return transit<Up>(&DaemonFSM::action_job_canceled, e);
+}
 
 sc::result Up::react(const sc::exception_thrown & e)
 {
@@ -108,7 +122,7 @@ sc::result Up::react(const sc::exception_thrown & e)
 	{
 	  // ... all other exceptions are forwarded to our outer
 	  // state(s). The state machine is terminated and the
-	  // exception rethrown if the outer state(s) can't
+	  // exception re-thrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();
 	}

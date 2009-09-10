@@ -15,20 +15,20 @@ namespace sdpa { namespace fsm { namespace smc {
 				    const sdpa::daemon::ISendEvent* pHandler = NULL,
 				    const sdpa::job_id_t &parent = Job::invalid_job_id())
 				: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.smc.JobFSM"), m_fsmContext(*this) {
-				SDPA_LOG_DEBUG("State machine created");
+				SDPA_LOG_DEBUG("Job state machine created");
 			}
 
-			virtual ~JobFSM()  throw () { SDPA_LOG_DEBUG("State machine destroyed"); }
+			virtual ~JobFSM()  throw () { SDPA_LOG_DEBUG("Job state machine destroyed"); }
 
 			//transitions
-			void process_event(const sdpa::events::CancelJobEvent& event);
-			void process_event(const sdpa::events::CancelJobAckEvent& event);
-			void process_event(const sdpa::events::DeleteJobEvent& event);
-			void process_event(const sdpa::events::JobFailedEvent& event);
-			void process_event(const sdpa::events::JobFinishedEvent& event);
-			void process_event(const sdpa::events::QueryJobStatusEvent& event);
-			void process_event(const sdpa::events::RetrieveJobResultsEvent& event);
-			void process_event(const sdpa::events::SubmitJobEvent& event);
+			  void CancelJob();
+			  void CancelJobAck();
+			  void DeleteJob();
+			  void JobFailed();
+			  void JobFinished();
+			  void QueryJobStatus();
+			  void RetrieveJobResults();
+			  void Dispatch();
 
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:

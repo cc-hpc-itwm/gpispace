@@ -23,7 +23,7 @@ namespace sdpa {
 			  void testDaemonFSM_SMC();
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM m_DaemonFSM;
+			  shared_ptr<sdpa::fsm::smc::DaemonFSM> m_ptrDaemonFSM;
 			};
 		}
 }

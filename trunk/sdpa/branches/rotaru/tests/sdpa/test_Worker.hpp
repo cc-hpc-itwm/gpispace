@@ -7,6 +7,7 @@ namespace sdpa {
       CPPUNIT_TEST( testDispatch );
       CPPUNIT_TEST( testGetNextJob );
       CPPUNIT_TEST( testAcknowledge );
+      CPPUNIT_TEST( testQueue );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -20,6 +21,7 @@ namespace sdpa {
       void testDispatch();
       void testGetNextJob();
       void testAcknowledge();
+      void testQueue();
     };
   }
 }

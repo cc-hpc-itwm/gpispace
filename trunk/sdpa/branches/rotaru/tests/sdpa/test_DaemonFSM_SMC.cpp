@@ -11,6 +11,9 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include "DummyGwes.hpp"
 
+
+#include <seda/StageRegistry.hpp>
+
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
@@ -18,19 +21,34 @@ using namespace sdpa::daemon;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 
-DaemonFSMTest_SMC::DaemonFSMTest_SMC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC"),
-  m_DaemonFSM("orchestrator","'Output Stage'", new DummyGwes )
-{}
+DaemonFSMTest_SMC::DaemonFSMTest_SMC() :
+	m_ptrDaemonFSM(new sdpa::fsm::smc::DaemonFSM("orchestrator","'Output Stage'", new DummyGwes)),
+	SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC")
+{
+}
 
 DaemonFSMTest_SMC::~DaemonFSMTest_SMC()
 {}
 
 void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
+
+	sdpa::fsm::smc::DaemonFSM::start(m_ptrDaemonFSM);
+
 }
 
 void DaemonFSMTest_SMC::tearDown() { //stop the finite state machine
+
+	seda::StageRegistry::instance().lookup("orchestrator")->stop();
+
+	ostringstream os;
+
+	SDPA_LOG_DEBUG("Reset the pointer to the daemon state machine");
+	m_ptrDaemonFSM.reset();
 	SDPA_LOG_DEBUG("tearDown");
+
+	seda::StageRegistry::instance().clear();
+
 }
 
 void DaemonFSMTest_SMC::testDaemonFSM_SMC()
@@ -39,49 +57,52 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
 	string strFromUp("user");
 	string strFromDown("aggregator");
-	string strTo = m_DaemonFSM.name();
+	string strTo = m_ptrDaemonFSM->name();
 	string strFrom = strTo;
 
     sdpa::util::time_type start(sdpa::util::now());
 
 	StartUpEvent evtStartUp(strFrom, strTo);
-	m_DaemonFSM.GetContext().StartUp(evtStartUp);
+	m_ptrDaemonFSM->GetContext().StartUp(evtStartUp);
 
 	ConfigOkEvent evtConfigOk(strFrom, strTo);
-	m_DaemonFSM.GetContext().ConfigOk(evtConfigOk);
+	m_ptrDaemonFSM->GetContext().ConfigOk(evtConfigOk);
 
 	Worker::ptr_t pWorker(new Worker(strFromDown));
-	m_DaemonFSM.ptr_worker_man_->worker_map_[strFromDown] = pWorker;
+	m_ptrDaemonFSM->addWorker(pWorker);
 
 	LifeSignEvent evtLS(strFromDown, strTo);
-	m_DaemonFSM.GetContext().LifeSign(evtLS);
+	m_ptrDaemonFSM->GetContext().LifeSign(evtLS);
 
-	RequestJobEvent evtReq(strFromDown, strTo);
-	m_DaemonFSM.GetContext().RequestJob(evtReq);
+	// send an external job
+	SubmitJobEvent evtSubmitJob1(strFromUp, strTo);
+	m_ptrDaemonFSM->GetContext().SubmitJob(evtSubmitJob1);
 
-	SubmitJobEvent evtSubmitJob(strFromUp, strTo);
-	m_DaemonFSM.GetContext().SubmitJob(evtSubmitJob);
+	// send a local job
+	SubmitJobEvent evtSubmitJob2(strTo, strTo);
+	m_ptrDaemonFSM->GetContext().SubmitJob(evtSubmitJob2);
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.ptr_job_man_->getJobIDList();
+	std::vector<sdpa::job_id_t> vectorJobIDs = m_ptrDaemonFSM->ptr_job_man_->getJobIDList();
 
 	//Attention: delete succeeds only when the job should is in a final state!
 	sdpa::job_id_t job_id = vectorJobIDs[0];
 	SubmitJobEvent evtSubmit(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
+	m_ptrDaemonFSM->ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
 
 	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
+	m_ptrDaemonFSM->ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
+
+	// post a job request
+	RequestJobEvent evtReq(strFromDown, strTo);
+	m_ptrDaemonFSM->GetContext().RequestJob(evtReq);
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
-	m_DaemonFSM.GetContext().DeleteJob(evtDelJob);
+	m_ptrDaemonFSM->GetContext().DeleteJob(evtDelJob);
 
 	ConfigRequestEvent evtCfgReq(strFromDown, strTo);
-	m_DaemonFSM.GetContext().ConfigRequest(evtCfgReq);
+	m_ptrDaemonFSM->GetContext().ConfigRequest(evtCfgReq);
 
 	InterruptEvent evtInt(strFrom, strTo);
-	m_DaemonFSM.GetContext().Interrupt(evtInt);
-
-	sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
-	std::cout << "smc: " << delta << "us" << std::endl;
+	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);
 }

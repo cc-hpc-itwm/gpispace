@@ -13,6 +13,10 @@
 #include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+
 
 namespace sdpa { namespace daemon {
 	  class GenericDaemonActions {
@@ -27,6 +31,9 @@ namespace sdpa { namespace daemon {
 			virtual void action_submit_job(const sdpa::events::SubmitJobEvent& )=0;
 			virtual void action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& )=0;
 			virtual void action_config_request(const sdpa::events::ConfigRequestEvent& )=0;
+			virtual void action_job_finished(const sdpa::events::JobFinishedEvent& )=0;
+			virtual void action_job_failed(const sdpa::events::JobFailedEvent& )=0;
+			virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& )=0;
   };
 }}
 

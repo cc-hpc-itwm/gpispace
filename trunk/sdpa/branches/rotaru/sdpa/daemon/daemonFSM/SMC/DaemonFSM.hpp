@@ -10,18 +10,18 @@ namespace sdpa {
 		namespace smc {
 			class DaemonFSM : public sdpa::daemon::GenericDaemon {
 				public:
-					typedef std::tr1::shared_ptr<DaemonFSM> Ptr;
+					typedef std::tr1::shared_ptr<DaemonFSM> ptr_t;
 
-					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::wf::Sdpa2Gwes* p = NULL) :
+					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::wf::Sdpa2Gwes* pGwes = NULL) :
 						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
-						GenericDaemon(name, outputStage, p),
+						GenericDaemon(name, outputStage, pGwes),
 						m_fsmContext(*this)
 						{
-							SDPA_LOG_DEBUG("State machine created");
+							SDPA_LOG_DEBUG("Daemon state machine created");
 						}
 
 					virtual ~DaemonFSM() {
-						SDPA_LOG_DEBUG("State machine destroyed");
+						SDPA_LOG_DEBUG("Daemon State machine destroyed");
 					}
 
 					DaemonFSMContext& GetContext() { return m_fsmContext; }

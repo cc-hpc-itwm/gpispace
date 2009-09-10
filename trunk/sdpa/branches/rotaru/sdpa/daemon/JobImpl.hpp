@@ -37,16 +37,18 @@ namespace sdpa { namespace daemon {
         virtual Job::ptr_t get_subjob(const job_id_t & id);
 
         virtual bool is_marked_for_deletion();
+        virtual bool is_local();
+        virtual void set_local(bool);
 
         // job FSM actions
-		virtual void action_run_job(const sdpa::events::SubmitJobEvent& e);
-		virtual void action_cancel_job(const sdpa::events::CancelJobEvent& e);
-		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e);
-		virtual void action_delete_job(const sdpa::events::DeleteJobEvent& e);
-		virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent& e);
-		virtual void action_job_failed(const sdpa::events::JobFailedEvent& e);
-		virtual void action_job_finished(const sdpa::events::JobFinishedEvent& e );
-		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e );
+		virtual void action_run_job();
+		virtual void action_cancel_job();
+		virtual void action_cancel_job_ack();
+		virtual void action_delete_job();
+		virtual void action_query_job_status();
+		virtual void action_job_failed();
+		virtual void action_job_finished();
+		virtual void action_retrieve_job_results();
 
     private:
         sdpa::job_id_t id_;
@@ -59,6 +61,7 @@ namespace sdpa { namespace daemon {
         job_list_t  subjobs_;
 
         bool b_marked_for_del_;
+        bool b_local_;
         SDPA_DECLARE_LOGGER();
     protected:
        	const ISendEvent* pSendEvent;

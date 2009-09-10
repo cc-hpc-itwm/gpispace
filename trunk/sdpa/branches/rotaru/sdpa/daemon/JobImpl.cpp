@@ -9,7 +9,7 @@ namespace sdpa { namespace daemon {
                      const sdpa::job_desc_t &desc,
                      const sdpa::daemon::ISendEvent* pHandler,
                      const sdpa::job_id_t &parent)
-        : id_(id), desc_(desc), parent_(parent), pSendEvent(pHandler), b_marked_for_del_(false),
+        : id_(id), desc_(desc), parent_(parent), pSendEvent(pHandler), b_marked_for_del_(false), b_local_(false),
         SDPA_INIT_LOGGER( string("Job ")+ id.str() )
     {}
 
@@ -58,14 +58,22 @@ namespace sdpa { namespace daemon {
     	return b_marked_for_del_;
     }
 
-    void JobImpl::action_run_job(const sdpa::events::SubmitJobEvent& e)
+    bool JobImpl::is_local() {
+      	return b_local_;
+    }
+
+    void JobImpl::set_local(bool b_val) {
+    	b_local_ = b_val;
+    }
+
+    void JobImpl::action_run_job()
     {
     	ostringstream os;
     	os<<"Process 'action_run_job'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& e)
+    void JobImpl::action_cancel_job()
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job'" ;
@@ -73,7 +81,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e)
+    void JobImpl::action_cancel_job_ack()
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job_ack'" ;
@@ -81,7 +89,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
+    void JobImpl::action_delete_job()
     {
     	ostringstream os;
     	os<<"Process 'action_delete_job'" ;
@@ -89,7 +97,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
+    void JobImpl::action_query_job_status()
     {
     	ostringstream os;
     	os<<"Process 'action_query_job_status'";
@@ -101,7 +109,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& e )
+    void JobImpl::action_job_finished()
     {
     	ostringstream os;
     	os <<"Process 'action_job_finished'";
@@ -110,7 +118,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& e)
+    void JobImpl::action_job_failed()
     {
     	ostringstream os;
     	os <<"Process 'action_job_failed'";
@@ -119,7 +127,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e )
+    void  JobImpl::action_retrieve_job_results()
     {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";

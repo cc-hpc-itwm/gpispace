@@ -15,6 +15,8 @@ namespace sdpa { namespace daemon {
 	  virtual ~WorkerManager();
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
+	  void addWorker(const Worker::ptr_t pWorker);
+	  Worker::ptr_t getNextWorker();
 
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
@@ -25,6 +27,7 @@ namespace sdpa { namespace daemon {
 	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 
 	  worker_map_t worker_map_;
+	  worker_map_t::iterator iter_last_worker_;
   };
 }}
 

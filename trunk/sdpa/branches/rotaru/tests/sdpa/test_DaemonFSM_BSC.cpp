@@ -40,8 +40,10 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	listEvents.push_back( new StartUpEvent(strFrom, strTo));
 	listEvents.push_back( new ConfigOkEvent(strFrom, strTo));
 	listEvents.push_back( new LifeSignEvent(strFrom, strTo));
-	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
+
 	listEvents.push_back( new SubmitJobEvent(strFrom, strTo));
+	listEvents.push_back( new SubmitJobEvent(strTo, strTo));
+
 
 	while( !listEvents.empty() )
 	{
@@ -55,11 +57,11 @@ void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.ptr_job_man_->getJobIDList();
 
 	sdpa::job_id_t job_id = vectorJobIDs[0];
-	SubmitJobEvent evtSubmit(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
 
-	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->Dispatch();
+	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->JobFinished();
+
+	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
 
 	// now I#m in a final state and the delete must succeed
 	DeleteJobEvent evtDelJob( strFrom, strTo, job_id );

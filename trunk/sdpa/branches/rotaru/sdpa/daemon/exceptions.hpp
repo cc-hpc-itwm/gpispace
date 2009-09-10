@@ -2,7 +2,6 @@
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
 #include <sdpa/SDPAException.hpp>
-#include <sdpa/daemon/Worker.hpp>
 #include <sdpa/wf/types.hpp>
 
 namespace sdpa {
@@ -21,16 +20,15 @@ namespace daemon {
 
 	class WorkerException : public sdpa::SDPAException {
 	public:
-		WorkerException(const std::string &reason, const sdpa::daemon::Worker::worker_id_t& worker_id)
+		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id)
 			: sdpa::SDPAException(reason), worker_id_(worker_id) {}
 
 		virtual ~WorkerException() throw() {}
-		const sdpa::daemon::Worker::worker_id_t& worker_id() const { return worker_id_; }
+		const sdpa::worker_id_t& worker_id() const { return worker_id_; }
 
 		private:
-		sdpa::daemon::Worker::worker_id_t worker_id_;
+		sdpa::worker_id_t worker_id_;
 	};
-
 
 	class JobNotFoundException : public JobException {
 		public:
@@ -40,10 +38,18 @@ namespace daemon {
 
 	class WorkerNotFoundException : public WorkerException {
 		public:
-		WorkerNotFoundException( const sdpa::daemon::Worker::worker_id_t& worker_id)
+		WorkerNotFoundException( const sdpa::worker_id_t& worker_id)
 			: WorkerException("Worker not found!", worker_id) {}
 		virtual ~WorkerNotFoundException() throw() {}
 	};
+
+	class NoJobScheduledException : public WorkerException {
+		public:
+			NoJobScheduledException( const sdpa::worker_id_t& worker_id)
+			: WorkerException("Worker not found!", worker_id) {}
+		virtual ~NoJobScheduledException() throw() {}
+	};
+
 
 	class JobNotAddedException : public JobException {
 		public:
