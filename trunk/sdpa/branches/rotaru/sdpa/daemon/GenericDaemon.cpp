@@ -10,6 +10,9 @@
 #include <map>
 
 #include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/wf/types.hpp>
+//#include <sdpa/wf/WorkflowInterface.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::wf;
@@ -81,9 +84,27 @@ void GenericDaemon::onStageStop(const std::string &stageName){
     daemon_stage_.reset();
 }
 
-void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr& e) {
+void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
+{
+	try {
+		daemon_stage_->send(pEvt);
+	}
+	catch(QueueFull)
+	{
+		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
+	}
+
 	ostringstream os;
-	os<<"Send event: " <<e->str()<<" ("<<e->from()<<" -> "<<e->to()<<")"<<" to the stage "<<stageName;
+	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
+	SDPA_LOG_DEBUG(os.str());
+}
+
+void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr& pEvt)
+{
+	daemon_stage_->send(stageName, pEvt);
+
+	ostringstream os;
+	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
 	SDPA_LOG_DEBUG(os.str());
 }
 
@@ -151,7 +172,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update(e);
 		os.str("");
-		os<<"Received LS. Updated the time stamp of the worker "<<worker_id;
+		os<<"Received LS from the worker "<<worker_id<<" Updated the time-stamp";
 		SDPA_LOG_DEBUG(os.str());
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");
@@ -184,7 +205,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 			ptr_job_man_->deleteJob(e.job_id());
 
 			DeleteJobAckEvent::Ptr pDelAckEvt(new DeleteJobAckEvent(name(), e.from()));
-			sendEvent(output_stage_, pDelAckEvt);
+			//sendEvent(output_stage_, pDelAckEvt);
 		}
 	} catch(sdpa::daemon::JobNotFoundException){
 		os.str("");
@@ -242,7 +263,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			// put the job into the running state
 			ptrJob->process_event(*pSubmitEvt.get());
 			// Post a SubmitJobEvent to the slave who made the reques
-			sendEvent(output_stage_, pSubmitEvt);
+			//sendEvent(output_stage_, pSubmitEvt);
 		}
 	}
 	catch(NoJobScheduledException)
@@ -293,14 +314,14 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		// In fact, you should put the job into the scheduler's queue, in order to
 		// be scheduled at some time (a separate thread will handle this!)
-		if(e.from() == e.to())
+		if(e.from() == name() ) //e.to())
 			pJob->set_local(true);
 
 		ptr_scheduler_->handleJob(pJob);
 
 		//send back to the user a SubmitJobAckEvent
 		SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
-		sendEvent(output_stage_, pSubmitJobAckEvt);
+		//sendEvent(output_stage_, pSubmitJobAckEvt);
 
 		//catch also workflow exceptions
 	}catch(sdpa::daemon::JobNotAddedException) {
@@ -366,6 +387,19 @@ void GenericDaemon::action_job_canceled(const CancelJobAckEvent& )
 
 }
 
+void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
+{
+	Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
+	addWorker(pWorker);
+
+	ostringstream os;
+	os<<"Registered the worker "<<pWorker->name()<<" ...";
+	SDPA_LOG_DEBUG(os.str());
+
+	// send back an acknowledgement
+	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+	//sendEvent(output_stage_, pWorkerRegAckEvt);
+}
 
 /* Implements Gwes2Sdpa */
 
@@ -384,8 +418,15 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 	// schedule the new job to some worker
 	// ATTENTION! Important assumption: the workflow_id should be set identical to the job_id!
 
-	//call action_submit_job
-	// return the workflow_id
+	// simple generate a SubmitJobEvent cu from = to = name()
+	// send an external job
+
+	job_desc_t job_desc = workflow.serialize();
+
+	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), workflow.getId(), job_desc));
+	//sendEvent(pEvtSubmitJob);
+
+	return workflow.getId();
 }
 
 /**
@@ -397,8 +438,14 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
  */
 activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 {
-	//proceed similarly as in the submitWorkflow case
-	//call action_submit_job
+	// proceed similarly as in the submitWorkflow case
+
+	job_desc_t job_desc = activity.serialize();
+
+	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), activity.getId(), job_desc));
+	//sendEvent(pEvtSubmitJob);
+
+	return activity.getId();
 }
 
 /**
@@ -412,6 +459,9 @@ void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuc
 	// generate const CancelJobEvent& event
 	// Job& job = job_map_[job_id];
 	// and call the job.CancelJob(const CancelJobEvent& event);
+
+	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), workflowId));
+	//sendEvent(pEvtCancelJob);
 }
 
 /**
@@ -426,6 +476,9 @@ void GenericDaemon::cancelActivity(const activity_id_t &activityId) throw (NoSuc
 	// generate const CancelJobEvent& event
 	// Job& job = job_map_[job_id];
 	// call job.CancelJob(event);
+
+	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), activityId));
+	//sendEvent(pEvtCancelJob);
 }
 
 /**
@@ -441,6 +494,9 @@ void GenericDaemon::workflowFinished(const workflow_id_t &workflowId) throw (NoS
 	// generate const JobFinishedEvent& event
 	// Job& job = job_map_[job_id];
 	// call job.JobFinished(event);
+
+	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), workflowId));
+	//sendEvent(pEvtJobFinished);
 }
 
 /**
@@ -459,6 +515,9 @@ void GenericDaemon::workflowFailed(const workflow_id_t &workflowId) throw (NoSuc
 	// if( has siblings)
 	// kill the siblings and the master job, else kill the master job
 	// The master process (User, Orch, Agg) should be informed that the job failed or  was canceled
+
+	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), workflowId ));
+	//sendEvent(pEvtJobFailed);
 }
 
 /**
@@ -470,4 +529,9 @@ void GenericDaemon::workflowCanceled(const workflow_id_t &workflowId) throw (NoS
 	// generate a JobCancelledEvent for self!
 	// identify the job with the job_id == workflow_id_t
 	// trigger a CancelJobAck for that job
+
+	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), workflowId));
+	//sendEvent(pEvtCancelJobAck);
 }
+
+

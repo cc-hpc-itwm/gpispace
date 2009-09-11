@@ -112,6 +112,11 @@ sc::result Up::react( const sdpa::events::CancelJobAckEvent& e)
 	return transit<Up>(&DaemonFSM::action_job_canceled, e);
 }
 
+sc::result Up::react( const sdpa::events::WorkerRegistrationEvent& e)
+{
+	return transit<Up>(&DaemonFSM::action_register_worker, e);
+}
+
 sc::result Up::react(const sc::exception_thrown & e)
 {
 	try

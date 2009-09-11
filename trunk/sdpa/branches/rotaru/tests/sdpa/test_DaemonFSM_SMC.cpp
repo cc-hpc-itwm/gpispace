@@ -9,6 +9,7 @@
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include "DummyGwes.hpp"
 
 
@@ -68,8 +69,8 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	ConfigOkEvent evtConfigOk(strFrom, strTo);
 	m_ptrDaemonFSM->GetContext().ConfigOk(evtConfigOk);
 
-	Worker::ptr_t pWorker(new Worker(strFromDown));
-	m_ptrDaemonFSM->addWorker(pWorker);
+	WorkerRegistrationEvent evtWorkerReg(strFromDown, strTo);
+	m_ptrDaemonFSM->GetContext().RegisterWorker(evtWorkerReg);
 
 	LifeSignEvent evtLS(strFromDown, strTo);
 	m_ptrDaemonFSM->GetContext().LifeSign(evtLS);

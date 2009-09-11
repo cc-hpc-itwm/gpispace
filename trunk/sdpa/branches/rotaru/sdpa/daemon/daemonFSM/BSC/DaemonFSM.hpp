@@ -51,8 +51,8 @@ struct Configurring  : sc::simple_state<Configurring, DaemonFSM>
 					   sc::custom_reaction<sdpa::events::ConfigNokEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Configurring() { } //std::cout <<" enter state 'Configurring'" << std::endl; }
-	~Configurring() { } //std::cout <<" leave state 'Configurring'" << std::endl; }
+	Configurring() { } //std::cout <<" enter state 'Configuring'" << std::endl; }
+	~Configurring() { } //std::cout <<" leave state 'Configuring'" << std::endl; }
 
 	sc::result react( const sdpa::events::ConfigOkEvent& );
 	sc::result react( const sdpa::events::ConfigNokEvent& );
@@ -71,6 +71,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
                    sc::custom_reaction<sdpa::events::JobFinishedEvent>,
                    sc::custom_reaction<sdpa::events::JobFailedEvent>,
                    sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
+                   sc::custom_reaction<sdpa::events::WorkerRegistrationEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Up() { } //std::cout << " enter state 'Up'" << std::endl; }
@@ -86,7 +87,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
     sc::result react( const sdpa::events::JobFinishedEvent& );
     sc::result react( const sdpa::events::JobFailedEvent& );
     sc::result react( const sdpa::events::CancelJobAckEvent& );
-    sc::result react( const sc::exception_thrown & );
+    sc::result react( const sdpa::events::WorkerRegistrationEvent& );
+    sc::result react( const sc::exception_thrown& );
 };
 
 }}}

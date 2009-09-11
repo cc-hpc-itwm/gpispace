@@ -36,6 +36,14 @@ namespace daemon {
 		virtual ~JobNotFoundException() throw() {}
 	};
 
+	class NoWorkerFoundException : public sdpa::SDPAException  {
+		public:
+			NoWorkerFoundException()
+			: sdpa::SDPAException("No worker found!") {}
+		virtual ~NoWorkerFoundException() throw() {}
+	};
+
+
 	class WorkerNotFoundException : public WorkerException {
 		public:
 		WorkerNotFoundException( const sdpa::worker_id_t& worker_id)

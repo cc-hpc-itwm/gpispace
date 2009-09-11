@@ -16,6 +16,8 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 
 
 namespace sdpa { namespace daemon {
@@ -34,6 +36,7 @@ namespace sdpa { namespace daemon {
 			virtual void action_job_finished(const sdpa::events::JobFinishedEvent& )=0;
 			virtual void action_job_failed(const sdpa::events::JobFailedEvent& )=0;
 			virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& )=0;
+			virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& )=0;
   };
 }}
 

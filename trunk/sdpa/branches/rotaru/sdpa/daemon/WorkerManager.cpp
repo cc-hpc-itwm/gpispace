@@ -36,8 +36,11 @@ void WorkerManager::addWorker(const Worker::ptr_t pWorker)
 /**
  * get next worker to be served
  */
-Worker::ptr_t WorkerManager::getNextWorker()
+Worker::ptr_t WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
+	if( worker_map_.empty() )
+		throw NoWorkerFoundException();
+
 	if(iter_last_worker_ != worker_map_.end())
 		iter_last_worker_++;
 	else

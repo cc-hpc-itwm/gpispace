@@ -32,7 +32,7 @@ Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &worker_id, con
 void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	sdpa::wf::workflow_t wf_desc("");//pJob->description());
+	sdpa::wf::workflow_t workflow(pJob->description());
 	sdpa::wf::workflow_id_t wf_id = pJob->id().str();
 
 	// Should set the workflow_id here, or send it together with the workflow description
@@ -42,7 +42,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 
 	if(ptr_Sdpa2Gwes_)
 	{
-		ptr_Sdpa2Gwes_->submitWorkflow(wf_id, wf_desc);
+		ptr_Sdpa2Gwes_->submitWorkflow(wf_id, workflow);
 
 		// Only with the SMC variant!!!!!
 		pJob->Dispatch();
@@ -54,10 +54,19 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 /*
  * Implement here in a first phase a simple round-robin schedule
  */
-void SchedulerImpl::schedule(const Job::ptr_t &job) {
+void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule ...");
 
-
+	try {
+		Worker::ptr_t pWorker = ptr_worker_man_->getNextWorker();
+		pWorker->dispatch(pJob);
+	}
+	catch(NoWorkerFoundException)
+	{
+		// put the job back into the queue
+		jobs_to_be_scheduled.push(pJob);
+		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available!");
+	}
 }
 
 void SchedulerImpl::handleJob(Job::ptr_t& pJob)
@@ -65,6 +74,7 @@ void SchedulerImpl::handleJob(Job::ptr_t& pJob)
 	ostringstream os;
 	os<<"Ask the scheduler to handle the job "<<pJob->id();
 	SDPA_LOG_DEBUG(os.str());
+
 	jobs_to_be_scheduled.push(pJob);
 }
 

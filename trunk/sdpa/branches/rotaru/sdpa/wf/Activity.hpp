@@ -9,6 +9,8 @@
 #include <sdpa/wf/Parameter.hpp>
 
 namespace sdpa { namespace wf {
+
+typedef std::string activity_id_t;
   /**
     This class describes an abstract activity to be executed.
 
@@ -19,6 +21,7 @@ namespace sdpa { namespace wf {
   class Activity : public sdpa::Properties
   {
   public:
+	typedef Activity activity_t;
     typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::wf::Parameter
 
     /**
@@ -91,7 +94,14 @@ namespace sdpa { namespace wf {
     void add_output(const Parameter &);
 
     void writeTo(std::ostream &) const;
+
+	activity_id_t getId() const { return id; }
+	activity_id_t setId(const activity_id_t& activity_id) { id = activity_id; }
+
+	std::string serialize() const { return "dummy workflow"; }
+
   private:
+	activity_id_t id;
     std::string name_;
     Method method_;
     parameter_list input_;

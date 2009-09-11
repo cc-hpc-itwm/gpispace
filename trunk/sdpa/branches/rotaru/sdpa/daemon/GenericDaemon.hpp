@@ -55,7 +55,9 @@ namespace sdpa { namespace daemon {
 	  virtual void action_job_finished(const sdpa::events::JobFinishedEvent& );
 	  virtual void action_job_failed(const sdpa::events::JobFailedEvent& );
 	  virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& );
+	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
 
+	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
       // Gwes2Sdpa interface implementation

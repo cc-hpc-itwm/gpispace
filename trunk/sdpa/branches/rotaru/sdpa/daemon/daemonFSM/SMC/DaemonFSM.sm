@@ -44,6 +44,12 @@ Up
 		action_interrupt(event);
 	}
 	
+	RegisterWorker(event: sdpa::events::WorkerRegistrationEvent& )
+	nil
+	{
+		action_register_worker(event);
+	}
+	
 	//event sent from the upper level
 	DeleteJob(event: sdpa::events::DeleteJobEvent& )
 	nil
