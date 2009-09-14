@@ -10,18 +10,14 @@ namespace fhg { namespace log {
 // as it seems it's not macro
 #define FHGLOG_FUNCTION __PRETTY_FUNCTION__
 
-#define LOG_TRACE(logger, msg) do { using namespace fhg::log;\
-                                    if (logger.isLevelEnabled(LogLevel::TRACE)) { ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::TRACE), logger.name(), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-#define LOG_DEBUG(logger, msg) do { using namespace fhg::log;\
-                                    if (logger.isLevelEnabled(LogLevel::DEBUG)) { ::std::stringstream osstr; osstr << msg;  logger.log(LogEvent(LogLevel(LogLevel::DEBUG), logger.name(), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-#define LOG_INFO(logger, msg)  do { using namespace fhg::log;\
-                                    if (logger.isLevelEnabled(LogLevel::INFO))  { ::std::stringstream osstr; osstr << msg;  logger.log(LogEvent(LogLevel(LogLevel::INFO), logger.name(),  __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-#define LOG_WARN(logger, msg)  do { using namespace fhg::log;\
-                                    if (logger.isLevelEnabled(LogLevel::WARN))  { ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::WARN), logger.name(),  __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-#define LOG_ERROR(logger, msg) do { using namespace fhg::log;\
-                                   if (logger.isLevelEnabled(LogLevel::ERROR))  { ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::ERROR), logger.name(), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-#define LOG_FATAL(logger, msg) do { using namespace fhg::log;\
-                                   if (logger.isLevelEnabled(LogLevel::FATAL))  { ::std::ostringstream osstr; osstr << msg; logger.log(LogEvent(LogLevel(LogLevel::FATAL), logger.name(), __FILE__, FHGLOG_FUNCTION, __LINE__, osstr.str())); } } while(0)
-}}
+#define LOG(logger, level, msg) do { using namespace fhg::log;\
+                                    if (logger.isLevelEnabled(LogLevel::level)) { LogEvent evt(LogLevel(LogLevel::level), __FILE__, FHGLOG_FUNCTION, __LINE__); evt.stream() << msg; logger.log(evt); } } while(0)
+#define LOG_TRACE(logger, msg) LOG(logger, TRACE, msg)
+#define LOG_DEBUG(logger, msg) LOG(logger, DEBUG, msg)
+#define LOG_INFO(logger, msg)  LOG(logger, INFO, msg)
+#define LOG_WARN(logger, msg)  LOG(logger, WARN, msg)
+#define LOG_ERROR(logger, msg) LOG(logger, ERROR, msg)
+#define LOG_FATAL(logger, msg) LOG(logger, FATAL, msg)
 
 #endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */
+}}
