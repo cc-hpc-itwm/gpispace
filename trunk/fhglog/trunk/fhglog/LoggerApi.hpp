@@ -52,6 +52,10 @@ namespace fhg { namespace log {
   };
   typedef LoggerApi logger_t;
 
+  inline logger_t getLogger()
+  {
+    return LoggerApi(Logger::get());
+  }
   inline logger_t getLogger(const std::string &name)
   {
     return LoggerApi(Logger::get(name));
@@ -77,7 +81,7 @@ namespace fhg { namespace log {
   };
 
   typedef LoggerApi logger_t;
-  inline logger_t getLogger(const std::string &name)
+  inline logger_t getLogger(const std::string &name = "")
   {
     return LoggerApi(NULL);
   }

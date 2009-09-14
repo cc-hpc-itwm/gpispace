@@ -8,7 +8,7 @@ using namespace fhg::log;
  * Logger implementation
  *
  */
-const Logger::ptr_t &Logger::getRootLogger()
+const Logger::ptr_t &Logger::get()
 {
   static Logger::ptr_t logger_(new Logger(""));
   return logger_;
@@ -16,8 +16,7 @@ const Logger::ptr_t &Logger::getRootLogger()
 
 const Logger::ptr_t &Logger::get(const std::string &name)
 {
-  // TODO: do some tree computation here and return a meaningfull logger
-  return getRootLogger()->get_logger(name);
+  return get()->get_logger(name);
 }
 
 Logger::Logger(const std::string &name)

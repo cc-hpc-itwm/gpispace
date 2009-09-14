@@ -33,7 +33,9 @@ namespace fhg { namespace log {
       typedef std::size_t verbosity_type;
       typedef std::tr1::shared_ptr<Logger> ptr_t;
 
-      static const Logger::ptr_t &get(const std::string &name = "");
+      static const Logger::ptr_t &get();
+      static const Logger::ptr_t &get(const std::string &name);
+
       ~Logger() {}
 
       const std::string &name() const;
@@ -46,8 +48,6 @@ namespace fhg { namespace log {
       const Appender::ptr_t &getAppender(const std::string &appender_name) const;
       void removeAppender(const std::string &appender_name);
     private:
-      static const Logger::ptr_t &getRootLogger();
-
       const Logger::ptr_t &get_logger(const std::string &name);
 
       // returns one of the internal loggers or adds a new one with the given name
