@@ -17,6 +17,7 @@
  */
 
 #include    <fhglog/fhglog.hpp>
+#include    <fhglog/Filter.hpp>
 #include    <unistd.h>
 #include    <sstream>
 
@@ -44,7 +45,7 @@ std::string compute_large_output_string()
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
-  LoggerApi logger(Logger::get("test"));
+  LoggerApi logger(getLogger("test"));
   logger.setLevel(LogLevel::TRACE);
   if (argc > 1)
   {
