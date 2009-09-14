@@ -17,7 +17,6 @@
  */
 
 #include    <fhglog/fhglog.hpp>
-#include    <fhglog/Filter.hpp>
 #include    <unistd.h>
 #include    <sstream>
 
