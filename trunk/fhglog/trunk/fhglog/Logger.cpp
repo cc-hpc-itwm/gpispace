@@ -20,12 +20,12 @@ const Logger::ptr_t &Logger::get(const std::string &name)
 }
 
 Logger::Logger(const std::string &name, const std::string &parent)
-  : name_(parent + "." + name), parent_(parent), lvl_(LogLevel(LogLevel::UNSET))
+  : name_(parent + "." + name), parent_(parent), lvl_(LogLevel(LogLevel::UNSET)), filter_(new NullFilter())
 {
 }
 
 Logger::Logger(const std::string &name, const Logger &parent)
-  : name_(parent.name() + "." + name), parent_(parent.name()), lvl_(parent.getLevel())
+  : name_(parent.name() + "." + name), parent_(parent.name()), lvl_(parent.getLevel()), filter_(parent.getFilter())
 {
   for (appender_list_t::const_iterator appender(parent.appenders_.begin()); appender != parent.appenders_.end(); ++appender)
   {
@@ -82,6 +82,11 @@ bool Logger::isLevelEnabled(const LogLevel &level) const
   return (lvl_ != LogLevel::UNSET) ? lvl_ <= level : true;
 }
 
+bool Logger::isFiltered(const LogEvent &evt) const
+{
+  return (*filter_)(evt);
+}
+
 void Logger::log(const LogEvent &event) const
 {
   if (! isLevelEnabled(event.severity()))
@@ -112,6 +117,11 @@ const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
   return appender;
+}
+
+const Filter::ptr_t &Logger::getFilter() const
+{
+  return filter_;
 }
 
 const Appender::ptr_t &Logger::getAppender(const std::string &appender_name) const

@@ -8,6 +8,7 @@
 #include <fhglog/LogLevel.hpp>
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
+#include <fhglog/Filter.hpp>
 
 /**
   Common logging framework.
@@ -41,10 +42,15 @@ namespace fhg { namespace log {
       const std::string &name() const;
       const std::string &parent() const;
       void setLevel(const LogLevel &level);
+      void setFilter(const Filter::ptr_t &filter);
+      const Filter::ptr_t &getFilter() const;
       const LogLevel &getLevel() const;
       bool isLevelEnabled(const LogLevel &level) const;
+      bool isFiltered(const LogEvent &evt) const;
 
       void log(const LogEvent &event) const;
+      void flush() const;
+
       const Appender::ptr_t &addAppender(const Appender::ptr_t &appender);
       const Appender::ptr_t &getAppender(const std::string &appender_name) const;
       void removeAppender(const std::string &appender_name);
@@ -62,6 +68,7 @@ namespace fhg { namespace log {
       std::string name_;
       std::string parent_;
       LogLevel lvl_;
+      Filter::ptr_t filter_;
       verbosity_type verbosity_;
 
       typedef std::map<std::string, Logger::ptr_t> logger_map_t;
