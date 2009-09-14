@@ -27,6 +27,7 @@ namespace fhg { namespace log {
     typedef std::tr1::shared_ptr<Filter> ptr_t;
 
     virtual bool operator()(const LogEvent &event) const = 0;
+    virtual ~Filter() {} // make the compiler be happy
   };
 
   class FilterChain {
