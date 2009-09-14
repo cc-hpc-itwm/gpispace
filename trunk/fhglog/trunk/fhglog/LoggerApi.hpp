@@ -57,20 +57,20 @@ namespace fhg { namespace log {
     return LoggerApi(Logger::get(name));
   }
 #else
-  typedef void   logger_impl_t;
+  typedef void    logger_impl_t;
 
   class LoggerApi {
     public:
       explicit
       LoggerApi(logger_impl_t *impl) : impl_(impl) {}
 
-      const std::string &name() const { return ""; }
+      const std::string &name() const { static std::string name_(""); return name_; }
       void setLevel(const LogLevel &level) {}
-      const LogLevel & getLevel() const { return LogLevel::UNSET; }
-      bool isLevelEnabled(const LogLevel &level) { return false; }
+      const LogLevel & getLevel() const { static LogLevel level_(LogLevel::UNSET); return level_; }
+      bool isLevelEnabled(const LogLevel &level) const { return false; }
       void log(const LogEvent &event) const {}
-      Appender::ptr_t addAppender(Appender::ptr_t appender) { return appender; }
-      Appender::ptr_t getAppender(const std::string &appender_name) { return Appender::ptr_t((Appender*)(0)); }
+      const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
+      const Appender::ptr_t &getAppender(const std::string &appender_name) { throw std::runtime_error("no such appender!"); }
       void removeAppender(const std::string &appender_name) {}
     private:
       logger_impl_t *impl_;
