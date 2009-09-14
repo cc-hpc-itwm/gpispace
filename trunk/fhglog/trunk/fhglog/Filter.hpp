@@ -30,7 +30,7 @@ namespace fhg { namespace log {
     virtual ~Filter() {} // make the compiler be happy
   };
 
-  class FilterChain {
+  class FilterChain : public Filter {
   public:
     void addFilter(const Filter::ptr_t &filter)
     {
@@ -52,7 +52,7 @@ namespace fhg { namespace log {
     filter_list_t filter_list_;
   };
 
-  class LevelFilter {
+  class LevelFilter : public Filter {
   public:
     explicit
     LevelFilter(const LogLevel &level)
@@ -64,6 +64,13 @@ namespace fhg { namespace log {
     }
   private:
     LogLevel level_;
+  };
+
+  class NullFilter : public Filter {
+    bool operator()(const LogEvent &evt) const
+    {
+      return false;
+    }
   };
 }}
 
