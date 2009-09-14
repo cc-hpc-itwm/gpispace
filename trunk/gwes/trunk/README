@@ -1,3 +1,8 @@
-Refer to doxygen documentation
+GWES for C++, written by Andreas Hoheisel (http://www.andreas-hoheisel.de/).
 
-make doc
+This package contains the sources for building the following components:
+- gwes command line program to invoke GWorkflowDL workflows
+- gworkflowdl_cpp library for parsing or creating workflow objects (-> libgworkflowdl_cpp.a and header files)
+- gwes_cpp library for invoking worklfows in own applications (-> libgwes_cpp.a and header files)
+
+Please refer to doxygen documentation for details about the gworkflowdl and gwes API.

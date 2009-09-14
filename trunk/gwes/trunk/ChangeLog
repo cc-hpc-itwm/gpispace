@@ -1,1 +1,8 @@
-The changelog.
+Changelog for GWES 
+
+Version 2.0:
+- supports GWorkflowDL 2.0
+- local execution of workflows using command line interface (cli) activities
+- XPath evaluation of edgeExpressions and conditions
+- improved cmake files for installing gwes
+
