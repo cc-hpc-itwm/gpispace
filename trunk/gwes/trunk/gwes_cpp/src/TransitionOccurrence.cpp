@@ -135,7 +135,7 @@ void TransitionOccurrence::unlockTokens() {
 bool TransitionOccurrence::checkConditions(int step) const {
 	if (transitionP->getConditions().empty()) return true;
 
-	LOG_DEBUG(fhg::log::Logger::get("gwes"), "checkConditions[" << getID() << "] ...");
+	LOG_DEBUG(logger_t(getLogger("gwes")), "checkConditions[" << getID() << "] ...");
 	const vector<string> conditions = transitionP->getConditions();
 	XPathEvaluator* xpathP = new XPathEvaluator(this,step);
 	bool cond = true;

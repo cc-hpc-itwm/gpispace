@@ -12,6 +12,6 @@
 
 
 void testPlace() ;
-void printTokens(fhg::log::LoggerApi logger, gwdl::Place &place); 
+void printTokens(fhg::log::logger_t logger, gwdl::Place &place); 
 
 #endif /*TESTPLACE_H_*/

@@ -14,7 +14,7 @@ using namespace gwes;
  
 void testGWES(GWES &gwes) 
 {
-	LoggerApi logger(Logger::get("gwes"));
+	logger_t logger(Logger::get("gwes"));
 
 	LOG_INFO(logger, "============== BEGIN GWES TEST =============");
 	LOG_INFO(logger, "create workflow ...");

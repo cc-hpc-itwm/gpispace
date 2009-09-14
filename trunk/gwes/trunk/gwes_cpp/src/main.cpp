@@ -16,49 +16,58 @@ using namespace gwdl;
 using namespace gwes;
 using namespace fhg::log;
 
-void usage(LoggerApi logger);
+void usage();
 string getUserName();
 
 int main(int argc, char* argv[]) {
-	LoggerApi logger(Logger::get("gwes"));
+	// logger
+	logger_t logger(getLogger("gwes"));
 	logger.setLevel(LogLevel::INFO);
-	Appender::ptr_t appender = Appender::ptr_t(new StreamAppender());
-	Formatter::ptr_t formatter = Formatter::ptr_t(Formatter::ShortFormatter());
-	appender->setFormat(formatter);
-	logger.addAppender(appender);
+	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 
 	string workflowfn;
 
-//	int c;
-//	int command=-1;
-	//	while ((c = getopt(argc, argv, "s:")) != -1) {
-	//		switch (c) {
-	//		case 'i':
-	//			command = COMMAND_INITIATE;
-	//			workflowfn = optarg;
-	//			break;
-	//		case '?':
-	//			if (optopt == 'i')
-	//				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-	//			else if (isprint(optopt))
-	//				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-	//			else
-	//				fprintf(stderr,
-	//				"Unknown option character `\\x%x'.\n",
-	//				optopt);
-	//			return 1;
-	//		default:
-	//			abort();
-	//		}
-	//	}
-
-	if (argc < 2) {
-		LOG_WARN(logger, "ERROR: workflow not specified!");
-		usage(logger);
-		exit(1);
-	} else {
-		workflowfn = argv[1];
+	int c;
+	while ((c = getopt(argc, argv, "v:")) != -1) {
+		switch (c) {
+		case 'v':
+			// TRACE, DEBUG, INFO, WARN, ERROR
+			if (strcmp(optarg,"TRACE") == 0) logger.setLevel(LogLevel::TRACE);
+			else if (strcmp(optarg,"DEBUG") == 0) logger.setLevel(LogLevel::DEBUG);
+			else if (strcmp(optarg,"INFO") == 0) logger.setLevel(LogLevel::INFO);
+			else if (strcmp(optarg,"WARN") == 0) logger.setLevel(LogLevel::WARN);
+			else if (strcmp(optarg,"ERROR") == 0) logger.setLevel(LogLevel::ERROR);
+			else {
+				LOG_FATAL(logger, "Unknown verbose level!");
+				usage();
+				exit(1);
+			}
+			break;
+		case '?':
+			if (optopt == 'v')
+				LOG_FATAL(logger, "Option -" << optopt << " requires an argument.");
+			else if (isprint(optopt))
+				LOG_FATAL(logger, "Unknown option `-" << optopt << "'.");
+			else
+				LOG_FATAL(logger, "Unknown option character `\\x" << optopt << "'.");
+		    usage();
+		    exit(1);
+		default:
+		    usage();
+		    exit(1);
+		}
 	}
+	
+    for (int index = optind; index < argc; index++) {
+       LOG_DEBUG(logger, "Non-option argument " << argv[index]);
+       workflowfn = argv[index];
+    }
+	
+	if (workflowfn.empty()) {
+		LOG_FATAL(logger, "ERROR: workflow not specified!");
+		usage();
+		exit(1);
+	} 
 
 	try {
 		GWES gwes;
@@ -66,7 +75,7 @@ int main(int argc, char* argv[]) {
 		Workflow* wfP = new Workflow(workflowfn);
 
 		// initiate workflow
-		LOG_INFO(logger, "initiating workflow ...");
+		LOG_DEBUG(logger, "initiating workflow ...");
 		string workflowId = gwes.initiate(*wfP, getUserName());
 
 		// register channel with source observer
@@ -82,22 +91,23 @@ int main(int argc, char* argv[]) {
 		//	wfhP->waitForStatusChangeToCompletedOrTerminated();
 
 		// print workflow
-		LOG_INFO(logger, *wfP);
+		LOG_DEBUG(logger, *wfP);
 		LOG_INFO(logger, "### END EXECUTION " << workflowfn);
-
 	}
 	catch(WorkflowFormatException e) {
-		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
 	}
 
 	//	//ToDo: return 0, 1, ...
 }
 
-void usage(LoggerApi logger) {
-	LOG_INFO(logger, "---------------------------------------------------");
-	LOG_INFO(logger, "Usage: gwes <GWorkflowDL>");
-	LOG_INFO(logger, "<GWorkflowDL>: Filename of workflow to invoke.");
-	LOG_INFO(logger, "---------------------------------------------------");
+void usage() {
+	cout << "---------------------------------------------------" << endl;
+	cout << "Usage: gwes [-v <VERBOSE_LEVEL>] <GWorkflowDL>" << endl;
+	cout << "<VERBOSE_LEVEL>: Set the logger level." << endl;
+	cout << "                 Valid levels are: TRACE, DEBUG, INFO, WARN, ERROR." << endl;
+	cout << "<GWorkflowDL>  : Filename of workflow to invoke." << endl;
+	cout << "---------------------------------------------------" << endl;
 }
 
 string getUserName() {

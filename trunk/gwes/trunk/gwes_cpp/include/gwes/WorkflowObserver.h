@@ -27,7 +27,7 @@ public:
 	virtual ~WorkflowObserver();
 	virtual void update(const Event& event);
 private:
-	fhg::log::LoggerApi _logger;
+	fhg::log::logger_t _logger;
 };
 
 }

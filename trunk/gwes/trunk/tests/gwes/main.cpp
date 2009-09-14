@@ -27,16 +27,13 @@ using namespace fhg::log;
 
 int main() 
 {
-	// get logger
-	LoggerApi logger(Logger::get("gwes"));
+	// logger
+	logger_t logger(getLogger("gwes"));
 	logger.setLevel(LogLevel::INFO);
-	Appender::ptr_t appender = Appender::ptr_t(new StreamAppender());
-	Formatter::ptr_t formatter = Formatter::ptr_t(Formatter::ShortFormatter());
-	appender->setFormat(formatter);
-	logger.addAppender(appender);
+	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
 
-	gwes::GWES gwes;
+	gwes::GWES gwes; 
 	Workflow workflow;
 	Place* placeP;
 	Token* tokenP;

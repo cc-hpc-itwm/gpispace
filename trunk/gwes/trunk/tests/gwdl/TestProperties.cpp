@@ -21,7 +21,7 @@ XERCES_CPP_NAMESPACE_USE
 
 void testProperties()
 {
-	LoggerApi logger(Logger::get("gwdl"));
+	logger_t logger(logger_t(getLogger("gwdl")));
 	LOG_INFO(logger, "============== BEGIN PROPERTIES TEST =============");
 	
 	LOG_INFO(logger, "test put properties...");

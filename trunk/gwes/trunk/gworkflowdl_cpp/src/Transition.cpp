@@ -194,16 +194,16 @@ DOMElement* Transition::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException during Transition.toElement()." );
+		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException during Transition.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(Logger::get("gwdl"), "DOMException during Transition.toElement(). code is:  " << e.code );
-		LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
+		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException during Transition.toElement(). code is:  " << e.code );
+		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document during Transition.toElement()." );
+		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document during Transition.toElement()." );
 	}
 
 	return el;

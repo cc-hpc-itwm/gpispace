@@ -49,7 +49,7 @@ private:
 	 /**
 	  * Fhg Logger.
 	  */
-	 fhg::log::LoggerApi _logger;
+	 fhg::log::logger_t _logger;
 	 
 public:
 	

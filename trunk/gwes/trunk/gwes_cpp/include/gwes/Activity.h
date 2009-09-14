@@ -251,7 +251,7 @@ protected:
 	/**
 	 * Fhg Logger
 	 */
-	fhg::log::LoggerApi _logger;
+	fhg::log::logger_t _logger;
 
 	/**
 	 * Vector which contains pointers to the observers of this activity.

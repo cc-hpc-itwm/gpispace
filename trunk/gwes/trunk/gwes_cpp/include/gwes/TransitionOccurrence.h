@@ -83,7 +83,7 @@ private:
 	
 	std::string _id;
 
-	fhg::log::LoggerApi _logger;
+	fhg::log::logger_t _logger;
 
 };
 	

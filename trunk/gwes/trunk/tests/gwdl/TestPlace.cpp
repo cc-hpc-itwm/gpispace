@@ -23,7 +23,7 @@ using namespace fhg::log;
  
 void testPlace() 
 {
-	LoggerApi logger(Logger::get("gwdl"));
+	logger_t logger(Logger::get("gwdl"));
 
    LOG_INFO(logger, "============== BEGIN PLACE TEST =============");
 	
@@ -191,7 +191,7 @@ void testPlace()
    
 }
 
-void printTokens(LoggerApi logger, gwdl::Place &place) 
+void printTokens(logger_t logger, gwdl::Place &place) 
 {
 	vector<gwdl::Token*> tokens = place.getTokens();
 	for (unsigned int i=0; i<tokens.size(); i++) {

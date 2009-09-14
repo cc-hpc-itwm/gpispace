@@ -14,7 +14,7 @@ using namespace gwdl;
 using namespace gwes;
  
 Workflow& testPreStackProWorkflow(string workflowfn, gwes::GWES &gwes) {
-	LoggerApi logger(Logger::get("gwdl"));
+	logger_t logger(Logger::get("gwdl"));
 
 	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 

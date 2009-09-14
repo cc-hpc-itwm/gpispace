@@ -17,13 +17,13 @@ using namespace fhg::log;
 using namespace std;
 
 SdpaDummy::SdpaDummy() {
-	LOG_INFO(Logger::get("gwes"), "SdpaDummy() ... ");
+	LOG_INFO(logger_t(getLogger("gwes")), "SdpaDummy() ... ");
 	_gwesP = new GWES();
 	_gwesP->registerHandler(this);
 }
 
 SdpaDummy::~SdpaDummy() {
-	LOG_INFO(Logger::get("gwes"), "~SdpaDummy() ... ");
+	LOG_INFO(logger_t(getLogger("gwes")), "~SdpaDummy() ... ");
 	delete _gwesP;
 }
 
@@ -33,7 +33,7 @@ gwes::Gwes2Sdpa::~Gwes2Sdpa() {}
  * The SDPA dummy uses the local gwes for submitting sub-workflows.
  */
 workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
-	LOG_INFO(Logger::get("gwes"), "submitWorkflow(" << workflow.getID() << ")...");
+	LOG_INFO(logger_t(getLogger("gwes")), "submitWorkflow(" << workflow.getID() << ")...");
 	return _gwesP->submitWorkflow(workflow);
 }
 
@@ -45,7 +45,7 @@ workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
  * to notify the GWES about activity status transitions.
  */
 activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
-	LOG_INFO(Logger::get("gwes"), "submitActivity(" << activity.getID() << ")...");
+	LOG_INFO(logger_t(getLogger("gwes")), "submitActivity(" << activity.getID() << ")...");
 	workflow_id_t workflowId = activity.getWorkflowHandler()->getID();
 	// a real SDPA implementation should really dispatch the activity here
 	try {
@@ -65,9 +65,9 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 		}
 		_gwesP->activityFinished(workflowId, activity.getID(), tokens);
 	} catch (NoSuchWorkflowException e) {
-		LOG_WARN(Logger::get("gwes"), "exception: " << e.message);
+		LOG_WARN(logger_t(getLogger("gwes")), "exception: " << e.message);
 	} catch (NoSuchActivityException e) {
-		LOG_WARN(Logger::get("gwes"), "exception: " << e.message);
+		LOG_WARN(logger_t(getLogger("gwes")), "exception: " << e.message);
 	}
 	return activity.getID();
 }
@@ -77,7 +77,7 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
  * the SDPA. The parent job has to cancel all children.
  */
 void SdpaDummy::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	LOG_INFO(Logger::get("gwes"), "cancelWorkflow(" << workflowId << ")...");
+	LOG_INFO(logger_t(getLogger("gwes")), "cancelWorkflow(" << workflowId << ")...");
 	_gwesP->cancelWorkflow(workflowId);
 }
 
@@ -86,7 +86,7 @@ void SdpaDummy::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWor
  * the SDPA.
  */
 void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) {
-	LOG_INFO(Logger::get("gwes"), "cancelActivity(" << activityId << ")...");
+	LOG_INFO(logger_t(getLogger("gwes")), "cancelActivity(" << activityId << ")...");
 	// ToDo: implement!
 
 }
@@ -96,7 +96,7 @@ void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchAc
  * from running to finished).
  */
 void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	LOG_INFO(Logger::get("gwes"), "workflowFinished(" << workflowId << ").");
+	LOG_INFO(logger_t(getLogger("gwes")), "workflowFinished(" << workflowId << ").");
 }
 
 /**
@@ -104,7 +104,7 @@ void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchW
  * from running to failed).
  */
 void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	LOG_INFO(Logger::get("gwes"), "workflowFailed(" << workflowId << ").");
+	LOG_INFO(logger_t(getLogger("gwes")), "workflowFailed(" << workflowId << ").");
 }
 
 /**
@@ -112,5 +112,5 @@ void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWor
  * transition from * to terminated.
  */ 
 void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	LOG_INFO(Logger::get("gwes"), "workflowCanceled(" << workflowId << ").");
+	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
 }

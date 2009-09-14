@@ -65,18 +65,18 @@ vector<DOMElement*> Properties::toElements(DOMDocument* doc)
            }
            catch (const OutOfMemoryException&)
            {
-               LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException" );
+               LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
                errorCode = 5;
            }
            catch (const DOMException& e)
            {
-               LOG_WARN(Logger::get("gwdl"), "DOMException code is:  " << e.code );
-               LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
+               LOG_WARN(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
+               LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
                errorCode = 2;
            }
            catch (...)
            {
-               LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document" );
+               LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
                errorCode = 3;
            }
    }

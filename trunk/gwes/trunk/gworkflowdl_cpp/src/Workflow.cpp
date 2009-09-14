@@ -86,7 +86,7 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 	} else {
 		ostringstream message; 
 		message << "Unable to open file " << filename << ": " << strerror(errno);
-		LOG_WARN(Logger::get("gwdl"), message);
+		LOG_WARN(logger_t(getLogger("gwdl")), message);
 		throw WorkflowFormatException(message.str());
 	}
 
@@ -168,16 +168,16 @@ DOMDocument* Workflow::toDocument()
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(Logger::get("gwdl"), "OutOfMemoryException during Workflow.toElement()." );
+		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException during Workflow.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(Logger::get("gwdl"), "DOMException during Workflow.toElement(). code is:  " << e.code );
-		LOG_WARN(Logger::get("gwdl"), "Message: " << S(e.msg) );
+		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException during Workflow.toElement(). code is:  " << e.code );
+		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(Logger::get("gwdl"), "An error occurred creating the document during Workflow.toElement()." );
+		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document during Workflow.toElement()." );
 	}
 
 	return doc;
@@ -190,7 +190,7 @@ void Workflow::saveToFile(const string& filename) {
 		file << *this;
 		file.close();
 	} else {
-		LOG_WARN(Logger::get("gwdl"), "Unable to open file " << filename << ": " << strerror(errno));
+		LOG_WARN(logger_t(getLogger("gwdl")), "Unable to open file " << filename << ": " << strerror(errno));
 	}
 }
 

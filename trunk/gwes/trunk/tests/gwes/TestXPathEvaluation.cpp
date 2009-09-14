@@ -20,7 +20,7 @@ using namespace gwdl;
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED)
 
 void testXPathEvaluator() {
-	LoggerApi logger(Logger::get("gwes"));
+	logger_t logger(Logger::get("gwes"));
 
 	LOG_INFO(logger, "============== BEGIN XPathEvaluation TEST =============");
 	
@@ -126,7 +126,7 @@ void testXPathEvaluator() {
 
 
 void testXPathEvaluatorContextCache() {
-	LoggerApi logger(Logger::get("gwes"));
+	logger_t logger(Logger::get("gwes"));
 	LOG_INFO(logger, "============== BEGIN XPathEvaluatorContextCache TEST =============");
 	
 	xmlInitParser();
@@ -165,7 +165,7 @@ void testXPathEvaluatorContextCache() {
 
 #else
 void testXPathEvaluator() {
-	LoggerApi logger(Logger::get("gwes"));
+	logger_t logger(Logger::get("gwes"));
     LOG_WARN(logger, "XPath support not compiled in");
     assert(false);
 }

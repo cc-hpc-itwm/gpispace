@@ -33,7 +33,7 @@ class XMLUtils
 private:
 	static XMLUtils* _instance;
 	XMLDOMErrorHandler* _errorHandler;
-	fhg::log::LoggerApi _logger;
+	fhg::log::logger_t _logger;
 	int initializeXerces();
 	void terminateXerces();
 	int initializeLibxml2();

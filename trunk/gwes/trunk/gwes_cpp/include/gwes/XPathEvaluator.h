@@ -47,7 +47,7 @@ private:
 	/**
 	 * Fhg Logger.
 	 */
-	fhg::log::LoggerApi _logger;
+	fhg::log::logger_t _logger;
 	
 	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP) throw (gwdl::WorkflowFormatException);
 	

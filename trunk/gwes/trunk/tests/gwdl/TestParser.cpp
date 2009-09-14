@@ -25,7 +25,7 @@ XERCES_CPP_NAMESPACE_USE
 
 void testParser()
 {
-	LoggerApi logger(Logger::get("gwdl"));
+	logger_t logger(Logger::get("gwdl"));
 	LOG_INFO(logger, "============== test PARSER =============");
 	Workflow *wf = new Workflow();
 	wf->setID("test_workflow");

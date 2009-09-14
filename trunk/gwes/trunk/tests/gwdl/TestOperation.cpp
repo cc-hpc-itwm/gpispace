@@ -19,7 +19,7 @@ using namespace fhg::log;
  
 void testOperation() 
 {
-	LoggerApi logger(Logger::get("gwdl"));
+	logger_t logger(Logger::get("gwdl"));
 
    LOG_INFO(logger, "============== BEGIN OPERATION TEST =============");
    LOG_INFO(logger, "test red operation...");
