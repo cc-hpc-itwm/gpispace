@@ -4,8 +4,8 @@ project(libfhglog)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-set(V_MAJOR 0)
-set(V_MINOR 1)
+set(V_MAJOR 1)
+set(V_MINOR 0)
 set(V_PATCH 0)
 
 set(PROJECT_DESCRIPTION "FHG Logging Framework")
