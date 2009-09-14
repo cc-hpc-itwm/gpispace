@@ -80,7 +80,7 @@ link_libraries(-Wl,-Bdynamic  -ldl)
 link_libraries(${FHGLOG_LIBRARY})
 
 # Display and stop on warnings
-ADD_DEFINITIONS(-Wall -Werror)
+ADD_DEFINITIONS(-Wall -Werror -g -ggdb -O0 -fno-omit-frame-pointer)
 
 include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
