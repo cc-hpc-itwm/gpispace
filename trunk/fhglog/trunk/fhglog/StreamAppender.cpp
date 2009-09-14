@@ -23,5 +23,5 @@ using namespace fhg::log;
 void
 StreamAppender::append(const LogEvent &evt) const
 {
-  const_cast<std::ostream&>(stream_) << fmt_->format(evt);
+  const_cast<std::ostream&>(stream_) << getFormat()->format(evt);
 }		/* -----  end of method ConsoleAppender::append  ----- */

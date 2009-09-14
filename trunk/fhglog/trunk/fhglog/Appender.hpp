@@ -13,12 +13,21 @@ namespace fhg { namespace log {
 
       virtual void append(const LogEvent &evt) const = 0;
 
-      virtual void setFormat(Formatter::ptr_t fmt) = 0;
+      inline void setFormat(Formatter::ptr_t fmt) { fmt_ = fmt; }
+      // takes ownership!
+      inline void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
+      inline const Formatter::ptr_t getFormat() const { return fmt_; }
 
-      /* takes ownership of the passed formatter */
-      virtual void setFormat(Formatter *fmt) = 0;
-
-      virtual const std::string &name() const = 0;
+      const std::string &name() const { return name_; }
+    protected:
+      explicit
+      Appender(const std::string &name)
+        : name_(name), fmt_(Formatter::Default())
+      {
+      }
+    private:
+      std::string name_;
+      Formatter::ptr_t fmt_;
   };
 }}
 

@@ -35,16 +35,11 @@ namespace fhg { namespace log {
       * close the stream on your own.
       */
       StreamAppender(const std::string &name = "console", std::ostream &stream = std::clog)
-        : name_(name), fmt_(Formatter::Default()), stream_(stream) {}
+        : Appender(name), stream_(stream) {}
       ~StreamAppender() {}
 
-      void setFormat(Formatter::ptr_t fmt) { fmt_ = fmt; }
-      void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
       void append(const LogEvent &evt) const;
-      const std::string &name() const { return name_; }
     private:
-      std::string name_;
-      Formatter::ptr_t fmt_;
       std::ostream &stream_;
   };
 }}
