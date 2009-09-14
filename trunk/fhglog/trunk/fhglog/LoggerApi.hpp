@@ -22,6 +22,7 @@
 #include <string>
 #include <fhglog/LogLevel.hpp>
 #include <fhglog/Appender.hpp>
+#include <fhglog/Logger.hpp>
 
 namespace fhg { namespace log {
 
@@ -29,8 +30,8 @@ namespace fhg { namespace log {
 #define FHGLOG_ENABLED 1
 
 #if FHGLOG_ENABLED == 1
+#include <fhglog/Logger.hpp>
   // forward declaration for the logger class
-  class Logger;
   typedef Logger logger_impl_t;
 
   class LoggerApi {
@@ -49,6 +50,11 @@ namespace fhg { namespace log {
     private:
       logger_impl_t *impl_;
   };
+
+  inline LoggerApi getLogger(const std::string &name)
+  {
+    return LoggerApi(&Logger::get(name));
+  }
 #else
   typedef void   logger_impl_t;
 
@@ -68,6 +74,11 @@ namespace fhg { namespace log {
     private:
       logger_impl_t *impl_;
   };
+
+  inline LoggerApi getLogger(const std::string &name)
+  {
+    return LoggerApi(NULL);
+  }
 #endif
 }}
 #endif

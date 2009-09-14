@@ -24,7 +24,7 @@
 class Test
 {
   public:
-    Test() : log_(fhg::log::Logger::get("test-class"))
+    Test() : log_(fhg::log::getLogger("test-class"))
     {
       LOG_DEBUG(log_, "Test class constructor");
     }

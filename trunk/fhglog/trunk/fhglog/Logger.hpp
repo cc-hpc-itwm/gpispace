@@ -9,8 +9,6 @@
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
 
-#include <fhglog/LoggerApi.hpp>
-
 /**
   Common logging framework.
 
@@ -34,7 +32,7 @@ namespace fhg { namespace log {
     public:
       typedef std::size_t verbosity_type;
 
-      static LoggerApi get(const std::string &name);
+      static Logger &get(const std::string &name);
       ~Logger() {}
 
       const std::string &name() const;
@@ -62,11 +60,6 @@ namespace fhg { namespace log {
       typedef std::list<Appender::ptr_t> appender_list_t;
       appender_list_t appenders_;
   };
-
-  inline LoggerApi getLogger(const std::string &name)
-  {
-    return Logger::get(name);
-  }
 }}
 
 #endif

@@ -3,7 +3,7 @@
 
 
 #include	<fhglog/LogMacros.hpp>
-#include	<fhglog/Logger.hpp>
+#include	<fhglog/LoggerApi.hpp>
 #include	<fhglog/Appender.hpp>
 #include    <fhglog/LogEvent.hpp>
 #include	<fhglog/StreamAppender.hpp>

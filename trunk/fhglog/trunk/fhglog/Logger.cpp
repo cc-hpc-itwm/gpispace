@@ -14,10 +14,10 @@ Logger &Logger::getRootLogger()
   return logger_;
 }
 
-LoggerApi Logger::get(const std::string &name)
+Logger &Logger::get(const std::string &name)
 {
   // TODO: do some tree computation here and return a meaningfull logger
-  return LoggerApi(&Logger::getRootLogger());
+  return getRootLogger();
 }
 
 Logger::Logger(const std::string &name)
