@@ -61,8 +61,10 @@ void testData()
 	Data *data2 = new Data(*str);
 	LOG_INFO(logger, *data2);
 	LOG_INFO(logger, *str);
-	char* name = XMLString::transcode(data->toElement(NULL)->getTagName()); 
-	assert(!strcmp(name,"data"));
+	DOMElement* eP = data->toElement(NULL);
+	assert(eP);
+	char* name = XMLString::transcode(eP->getTagName()); 
+	assert(strcmp(name,"data")==0);
 	
 	///ToDo: FAILED TO DELETE data2!
 	//delete data2;
