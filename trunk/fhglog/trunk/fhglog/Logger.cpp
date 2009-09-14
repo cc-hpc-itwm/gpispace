@@ -8,22 +8,32 @@ using namespace fhg::log;
  * Logger implementation
  *
  */
-Logger &Logger::getRootLogger()
+const Logger::ptr_t &Logger::getRootLogger()
 {
-  static Logger logger_("");
+  static Logger::ptr_t logger_(new Logger(""));
   return logger_;
 }
 
-Logger &Logger::get(const std::string &name)
+const Logger::ptr_t Logger::get(const std::string &name)
 {
   // TODO: do some tree computation here and return a meaningfull logger
-  return getRootLogger();
+  return getRootLogger()->get_logger(name);
 }
 
 Logger::Logger(const std::string &name)
   : name_(name), lvl_(LogLevel(LogLevel::UNSET))
 {
 }
+
+Logger::Logger(const std::string &name, const Logger &parent)
+  : name_(name), lvl_(parent.getLevel())
+{
+  for (appender_list_t::const_iterator appender(parent.appenders_.begin()); appender != parent.appenders_.end(); ++appender)
+  {
+    addAppender(*appender);
+  }
+}
+
 
 const std::string &Logger::name() const
 {
@@ -33,6 +43,38 @@ const std::string &Logger::name() const
 void Logger::setLevel(const LogLevel &level)
 {
   lvl_ = level;
+}
+
+const Logger::ptr_t Logger::get_logger(const std::string &name)
+{
+  std::string::size_type spos(0);
+  std::string::size_type epos(name.find_first_of('.'));
+
+  if (std::string::npos == epos)
+  {
+    return get_add_logger(name);
+  }
+  else
+  {
+    return get_add_logger(name.substr(spos, epos), name.substr(epos+1, name.size()));
+  }
+}
+
+const Logger::ptr_t Logger::get_add_logger(const std::string &name, const std::string &rest)
+{
+  logger_map_t::iterator logger(loggers_.find(name));
+  if (logger == loggers_.end())
+  {
+    Logger::ptr_t newLogger(new Logger(name, *this)); // inherit config from this logger
+    loggers_.insert(std::make_pair(name, newLogger));
+    if (rest == "") return newLogger;
+    else return newLogger->get_logger(rest);
+  }
+  else
+  {
+    if (rest == "") return logger->second;
+    else return logger->second->get_logger(rest);
+  }
 }
 
 const LogLevel &Logger::getLevel() const

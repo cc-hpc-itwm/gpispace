@@ -31,8 +31,9 @@ namespace fhg { namespace log {
   class Logger {
     public:
       typedef std::size_t verbosity_type;
+      typedef std::tr1::shared_ptr<Logger> ptr_t;
 
-      static Logger &get(const std::string &name);
+      static const Logger::ptr_t get(const std::string &name = "");
       ~Logger() {}
 
       const std::string &name() const;
@@ -45,16 +46,23 @@ namespace fhg { namespace log {
       Appender::ptr_t getAppender(const std::string &appender_name) const;
       void removeAppender(const std::string &appender_name);
     private:
-      static Logger& getRootLogger();
+      static const Logger::ptr_t &getRootLogger();
+
+      const Logger::ptr_t get_logger(const std::string &name);
+
+      // returns one of the internal loggers or adds a new one with the given name
+      const Logger::ptr_t get_add_logger(const std::string &name, const std::string &rest = "");
 
       explicit
       Logger(const std::string &name);
+
+      Logger(const std::string &name, const Logger &parent);
 
       std::string name_;
       LogLevel lvl_;
       verbosity_type verbosity_;
 
-      typedef std::map<std::string, Logger*> logger_map_t;
+      typedef std::map<std::string, Logger::ptr_t> logger_map_t;
       logger_map_t loggers_;
 
       typedef std::list<Appender::ptr_t> appender_list_t;

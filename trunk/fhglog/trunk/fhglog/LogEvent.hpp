@@ -21,6 +21,7 @@ namespace fhg { namespace log {
       static std::string &severityToString(const severity_type &severity);
 
       LogEvent(const severity_type &severity
+             , const std::string &logged_via
              , const file_type &path
              , const function_type &function
              , const line_type &line
@@ -48,6 +49,7 @@ namespace fhg { namespace log {
       inline const tstamp_type &tstamp() const { return tstamp_; }
       inline const pid_type &pid() const { return pid_; }
       inline const tid_type &tid() const { return tid_; }
+      inline const std::string &logged_via() const { return logged_via_; }
     private:
       std::string get_filename_from_path(const std::string &path) const;
 
@@ -60,6 +62,7 @@ namespace fhg { namespace log {
       tstamp_type tstamp_;
       pid_type pid_;
       tid_type tid_;
+      std::string logged_via_;
   };
 }}
 

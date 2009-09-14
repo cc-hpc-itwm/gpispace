@@ -44,7 +44,8 @@ std::string compute_large_output_string()
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
-  LoggerApi logger(getLogger("test"));
+  logger_t root(getLogger(""));
+  logger_t logger(getLogger("test"));
   logger.setLevel(LogLevel::TRACE);
   if (argc > 1)
   {
@@ -62,31 +63,42 @@ int main(int argc, char **argv)
     Test test;
   }
 
+  root.log(LogEvent(LogLevel::TRACE
+                            , "root"
+                            , __FILE__
+                            , FHGLOG_FUNCTION
+                            , __LINE__
+                            , "trace message"));
   logger.log(LogEvent(LogLevel::TRACE
+                            , "test"
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "trace message"));
 
   logger.log(LogEvent(LogLevel::DEBUG
+                            , "test"
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "debug message"));
 
   logger.log(LogEvent(LogLevel::INFO
+                            , "test"
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "info message"));
 
   logger.log(LogEvent(LogLevel::WARN
+                            , "test"
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "warn message"));
 
   logger.log(LogEvent(LogLevel::ERROR
+                            , "test"
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__

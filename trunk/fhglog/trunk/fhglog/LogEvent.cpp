@@ -6,11 +6,13 @@
 using namespace fhg::log;
 
 LogEvent::LogEvent(const severity_type &severity
+                 , const std::string &logged_via
                  , const file_type &path
                  , const function_type &function
                  , const line_type &line
                  , const message_type &message)
   : severity_(severity)
+  , logged_via_(logged_via)
   , path_(path)
   , file_(get_filename_from_path(path))
   , function_(function)
@@ -24,6 +26,7 @@ LogEvent::LogEvent(const severity_type &severity
 
 LogEvent::LogEvent(const LogEvent &e)
   : severity_(e.severity())
+  , logged_via_(e.logged_via())
   , path_(e.path())
   , file_(e.file())
   , function_(e.function())
