@@ -37,6 +37,7 @@ FIND_LIBRARY(FHGLOG_LIBRARY
 # if the include and the program are found then we have it
 IF(FHGLOG_INCLUDE_DIR AND FHGLOG_LIBRARY) 
   SET(FHGLOG_FOUND "YES")
+  message(STATUS "Looking for FHGLog ... found headers in ${FHGLOG_INCLUDE_DIR} and library ${FHGLOG_LIBRARY}")
 else(FHGLOG_INCLUDE_DIR AND FHGLOG_LIBRARY) 
   message(STATUS "FHGLog could not be found, try setting FHGLOG_HOME (value=\"${FHGLOG_HOME}\").")
 ENDIF(FHGLOG_INCLUDE_DIR AND FHGLOG_LIBRARY)
