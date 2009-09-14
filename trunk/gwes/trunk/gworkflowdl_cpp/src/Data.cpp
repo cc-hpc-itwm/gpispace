@@ -34,7 +34,9 @@ Data::Data(DOMElement* element)
 Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 {
 	DOMDocument* doc = XMLUtils::Instance()->deserialize(xmlstring);
+    assert(doc);
 	DOMElement* element = doc->getDocumentElement();
+    assert(element);
 	char* name = XMLString::transcode(element->getTagName()); 
 	if (strcmp(name,"data")) {
 		ostringstream message; 
@@ -48,8 +50,8 @@ Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 
 Data::~Data()
 {
-	if (data != NULL) data->release();
-	if (dataText != NULL) delete dataText;
+	if (data != NULL) { data->release(); data = NULL; }
+	if (dataText != NULL) { delete dataText; dataText = NULL; }
 }
 
 void Data::setType() {
