@@ -68,7 +68,7 @@ int main(int argc, char **argv)
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
-                            , "trace message"));
+                            , "E: this message should not be logged (no appender for the root logger defined"));
   logger.log(LogEvent(LogLevel::TRACE
                             , "test"
                             , __FILE__
@@ -107,4 +107,5 @@ int main(int argc, char **argv)
   LOG_WARN(logger, "this is a warning:" << 42);
 
   LOG_TRACE(logger, "this message should not take up time, if it is not logged: " << compute_large_output_string());
+  LOG_INFO(logger, "sizeof(logger_t) = " << sizeof(logger_t) << " sizeof(void*) = " << sizeof(void*));
 }
