@@ -16,7 +16,7 @@ namespace gwes {
 /**
  * Constructor.
  */
-TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg::log::Logger::get("gwes")) {
+TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg::log::getLogger("gwes")) {
 	transitionP = transition;
 	activityP = NULL;
 	hasXPathEdgeExpressions=false;
