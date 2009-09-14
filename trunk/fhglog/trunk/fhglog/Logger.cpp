@@ -14,7 +14,7 @@ const Logger::ptr_t &Logger::getRootLogger()
   return logger_;
 }
 
-const Logger::ptr_t Logger::get(const std::string &name)
+const Logger::ptr_t &Logger::get(const std::string &name)
 {
   // TODO: do some tree computation here and return a meaningfull logger
   return getRootLogger()->get_logger(name);
@@ -45,7 +45,7 @@ void Logger::setLevel(const LogLevel &level)
   lvl_ = level;
 }
 
-const Logger::ptr_t Logger::get_logger(const std::string &name)
+const Logger::ptr_t &Logger::get_logger(const std::string &name)
 {
   std::string::size_type spos(0);
   std::string::size_type epos(name.find_first_of('.'));
@@ -60,21 +60,16 @@ const Logger::ptr_t Logger::get_logger(const std::string &name)
   }
 }
 
-const Logger::ptr_t Logger::get_add_logger(const std::string &name, const std::string &rest)
+const Logger::ptr_t &Logger::get_add_logger(const std::string &name, const std::string &rest)
 {
   logger_map_t::iterator logger(loggers_.find(name));
   if (logger == loggers_.end())
   {
     Logger::ptr_t newLogger(new Logger(name, *this)); // inherit config from this logger
-    loggers_.insert(std::make_pair(name, newLogger));
-    if (rest == "") return newLogger;
-    else return newLogger->get_logger(rest);
+    logger = loggers_.insert(std::make_pair(name, newLogger)).first;
   }
-  else
-  {
-    if (rest == "") return logger->second;
-    else return logger->second->get_logger(rest);
-  }
+  if (rest == "") return logger->second;
+  else return logger->second->get_logger(rest);
 }
 
 const LogLevel &Logger::getLevel() const
@@ -112,13 +107,13 @@ void Logger::log(const LogEvent &event) const
   }
 }
 
-Appender::ptr_t Logger::addAppender(Appender::ptr_t appender)
+const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
   return appender;
 }
 
-Appender::ptr_t Logger::getAppender(const std::string &appender_name) const
+const Appender::ptr_t &Logger::getAppender(const std::string &appender_name) const
 {
   for (appender_list_t::const_iterator it(appenders_.begin());
        it != appenders_.end();
