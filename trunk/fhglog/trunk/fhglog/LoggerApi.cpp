@@ -18,11 +18,11 @@ const LogLevel &LoggerApi::getLevel() const
   return impl_->getLevel();
 }
 
-bool LoggerApi::isLevelEnabled(const LogLevel &level)
+bool LoggerApi::isLevelEnabled(const LogLevel &level) const
 {
   return impl_->isLevelEnabled(level);
 }
-void LoggerApi::log(const LogEvent &event)
+void LoggerApi::log(const LogEvent &event) const
 {
   impl_->log(event);
 }
@@ -30,7 +30,7 @@ Appender::ptr_t LoggerApi::addAppender(Appender::ptr_t appender)
 {
   return impl_->addAppender(appender);
 }
-Appender::ptr_t LoggerApi::getAppender(const std::string &appender_name)
+Appender::ptr_t LoggerApi::getAppender(const std::string &appender_name) const
 {
   return impl_->getAppender(appender_name);
 }

@@ -38,11 +38,11 @@ namespace fhg { namespace log {
       const std::string &name() const;
       void setLevel(const LogLevel &level);
       const LogLevel &getLevel() const;
-      bool isLevelEnabled(const LogLevel &level);
+      bool isLevelEnabled(const LogLevel &level) const;
 
-      void log(const LogEvent &event);
+      void log(const LogEvent &event) const;
       Appender::ptr_t addAppender(Appender::ptr_t appender);
-      Appender::ptr_t getAppender(const std::string &appender_name);
+      Appender::ptr_t getAppender(const std::string &appender_name) const;
       void removeAppender(const std::string &appender_name);
     private:
       static Logger& getRootLogger();

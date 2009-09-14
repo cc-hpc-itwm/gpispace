@@ -40,18 +40,18 @@ const LogLevel &Logger::getLevel() const
   return lvl_;
 }
 
-bool Logger::isLevelEnabled(const LogLevel &level)
+bool Logger::isLevelEnabled(const LogLevel &level) const
 {
   // TODO: inherit the level from the parent logger if the level was not set
   return (lvl_ != LogLevel::UNSET) ? lvl_ <= level : true;
 }
 
-void Logger::log(const LogEvent &event)
+void Logger::log(const LogEvent &event) const
 {
   if (! isLevelEnabled(event.severity()))
     return;
 
-  for (appender_list_t::iterator it(appenders_.begin());
+  for (appender_list_t::const_iterator it(appenders_.begin());
        it != appenders_.end();
        ++it)
   {
@@ -76,9 +76,9 @@ Appender::ptr_t Logger::addAppender(Appender::ptr_t appender)
   return appender;
 }
 
-Appender::ptr_t Logger::getAppender(const std::string &appender_name)
+Appender::ptr_t Logger::getAppender(const std::string &appender_name) const
 {
-  for (appender_list_t::iterator it(appenders_.begin());
+  for (appender_list_t::const_iterator it(appenders_.begin());
        it != appenders_.end();
        ++it)
   {

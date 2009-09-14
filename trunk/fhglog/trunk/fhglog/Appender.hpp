@@ -11,7 +11,7 @@ namespace fhg { namespace log {
 
       virtual ~Appender() {}
 
-      virtual void append(const LogEvent &evt) = 0;
+      virtual void append(const LogEvent &evt) const = 0;
 
       virtual void setFormat(Formatter::ptr_t fmt) = 0;
 

@@ -40,7 +40,7 @@ namespace fhg { namespace log {
 
       void setFormat(Formatter::ptr_t fmt) { fmt_ = fmt; }
       void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
-      void append(const LogEvent &evt);
+      void append(const LogEvent &evt) const;
       const std::string &name() const { return name_; }
     private:
       std::string name_;
