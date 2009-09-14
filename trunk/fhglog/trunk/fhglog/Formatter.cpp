@@ -46,8 +46,11 @@ std::string Formatter::format(const LogEvent &evt)
           case FMT_TIMESTAMP:
             sstr << evt.tstamp();
             break;
-          case FMT_THREAD:
-            sstr  << evt.thread();
+          case FMT_PID:
+            sstr  << evt.pid();
+            break;
+          case FMT_TID:
+            sstr  << evt.tid();
             break;
           case FMT_NEWLINE:
             sstr << std::endl;

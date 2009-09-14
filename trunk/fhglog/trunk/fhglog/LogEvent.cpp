@@ -17,7 +17,8 @@ LogEvent::LogEvent(const severity_type &severity
   , line_(line)
   , message_(message)
   , tstamp_(time(NULL))
-  , thread_(static_cast<thread_type>(pthread_self()))
+  , pid_(getpid())
+  , tid_(static_cast<tid_type>(pthread_self()))
 {
 }
 
@@ -29,7 +30,8 @@ LogEvent::LogEvent(const LogEvent &e)
   , line_(e.line())
   , message_(e.message())
   , tstamp_(e.tstamp())
-  , thread_(e.thread())
+  , pid_(e.pid())
+  , tid_(e.tid())
 {
 }
 
@@ -47,7 +49,8 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
     line_ = e.line();
     message_ = e.message();
     tstamp_ = e.tstamp();
-    thread_ = e.thread();
+    pid_ = e.pid();
+    tid_ = e.tid();
   }
   return *this;
 }
@@ -55,14 +58,17 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
 bool LogEvent::operator==(const LogEvent &e) const
 {
   if (this == &e) return true;
-  if ( (file() == e.file())
+  if (
+       (file() == e.file())
     && (path() == e.path())
     && (severity() == e.severity())
     && (function() == e.function())
     && (line() == e.line())
     && (message() == e.message())
     && (tstamp() == e.tstamp())
-    && (thread() == e.thread()))
+    && (pid() == e.pid())
+    && (tid() == e.tid())
+    )
   {
     return true;
   }

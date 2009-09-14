@@ -2,6 +2,7 @@
 #define FHG_LOG_LOGEVENT_HPP 1
 
 #include <string>
+#include <sys/types.h>
 #include <pthread.h>
 #include <fhglog/LogLevel.hpp>
 
@@ -14,7 +15,8 @@ namespace fhg { namespace log {
       typedef std::size_t line_type;
       typedef std::string message_type;
       typedef long long tstamp_type;
-      typedef pthread_t thread_type;
+      typedef pid_t     pid_type;
+      typedef pthread_t tid_type;
 
       static std::string &severityToString(const severity_type &severity);
 
@@ -44,7 +46,8 @@ namespace fhg { namespace log {
       inline const line_type &line() const { return line_; }
       inline const message_type &message() const { return message_; }
       inline const tstamp_type &tstamp() const { return tstamp_; }
-      inline const thread_type &thread() const { return thread_; }
+      inline const pid_type &pid() const { return pid_; }
+      inline const tid_type &tid() const { return tid_; }
     private:
       std::string get_filename_from_path(const std::string &path) const;
 
@@ -55,7 +58,8 @@ namespace fhg { namespace log {
       line_type line_;
       message_type message_;
       tstamp_type tstamp_;
-      thread_type thread_;
+      pid_type pid_;
+      tid_type tid_;
   };
 }}
 
