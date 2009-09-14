@@ -44,7 +44,7 @@ std::string compute_large_output_string()
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
-  logger_t root(getLogger(""));
+  logger_t root(getLogger());
   logger_t logger(getLogger("test"));
   logger.setLevel(LogLevel::TRACE);
   if (argc > 1)
