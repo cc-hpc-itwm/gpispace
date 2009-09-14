@@ -26,6 +26,7 @@ namespace fhg { namespace log {
       static const char FMT_TID       = 'T'; // by which thread has it been created
       static const char FMT_PID       = 'R'; // by which process has it been created
       static const char FMT_NEWLINE   = 'n'; // a line separator
+      static const char FMT_LOGGER    = 'l'; // the logger via which this event came
 
       explicit
       Formatter(const std::string &fmt) : fmt_(fmt) {}
@@ -33,7 +34,7 @@ namespace fhg { namespace log {
 
       static ptr_t DefaultFormatter()
       {
-        return ptr_t(new Formatter("%t %S thread:%T %p:%L (%F) - %m%n"));
+        return ptr_t(new Formatter("%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n"));
       }
       static ptr_t ShortFormatter()
       {
