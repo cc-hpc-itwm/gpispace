@@ -86,6 +86,8 @@ void Logger::log(const LogEvent &event) const
 {
   if (! isLevelEnabled(event.severity()))
     return;
+  event.finish();
+  event.logged_via(name());
 
   for (appender_list_t::const_iterator it(appenders_.begin());
        it != appenders_.end();

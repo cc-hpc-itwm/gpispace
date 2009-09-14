@@ -16,9 +16,10 @@
  * =====================================================================================
  */
 
-#include    <fhglog/fhglog.hpp>
-#include    <unistd.h>
+#include <iostream>
 #include    <sstream>
+#include    <unistd.h>
+#include    <fhglog/fhglog.hpp>
 
 class Test
 {
@@ -64,41 +65,35 @@ int main(int argc, char **argv)
   }
 
   root.log(LogEvent(LogLevel::TRACE
-                            , root.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "E: this message should not be logged (no appender for the root logger defined"));
   logger.log(LogEvent(LogLevel::TRACE
-                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "trace message"));
 
   logger.log(LogEvent(LogLevel::DEBUG
-                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "debug message"));
 
   logger.log(LogEvent(LogLevel::INFO
-                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "info message"));
 
   logger.log(LogEvent(LogLevel::WARN
-                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "warn message"));
 
   logger.log(LogEvent(LogLevel::ERROR
-                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__

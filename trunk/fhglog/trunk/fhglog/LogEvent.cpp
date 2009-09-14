@@ -6,7 +6,6 @@
 using namespace fhg::log;
 
 LogEvent::LogEvent(const severity_type &severity
-                 , const std::string &logged_via
                  , const file_type &path
                  , const function_type &function
                  , const line_type &line
@@ -20,7 +19,6 @@ LogEvent::LogEvent(const severity_type &severity
   , tstamp_(time(NULL))
   , pid_(getpid())
   , tid_(static_cast<tid_type>(pthread_self()))
-  , logged_via_(logged_via)
 {
 }
 
