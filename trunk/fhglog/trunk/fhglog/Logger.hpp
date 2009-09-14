@@ -39,6 +39,7 @@ namespace fhg { namespace log {
       ~Logger() {}
 
       const std::string &name() const;
+      const std::string &parent() const;
       void setLevel(const LogLevel &level);
       const LogLevel &getLevel() const;
       bool isLevelEnabled(const LogLevel &level) const;
@@ -53,12 +54,12 @@ namespace fhg { namespace log {
       // returns one of the internal loggers or adds a new one with the given name
       const Logger::ptr_t &get_add_logger(const std::string &name, const std::string &rest = "");
 
-      explicit
-      Logger(const std::string &name);
+      Logger(const std::string &name, const std::string &parent);
 
       Logger(const std::string &name, const Logger &parent);
 
       std::string name_;
+      std::string parent_;
       LogLevel lvl_;
       verbosity_type verbosity_;
 

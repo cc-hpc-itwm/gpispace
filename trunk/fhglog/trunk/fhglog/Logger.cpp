@@ -10,7 +10,7 @@ using namespace fhg::log;
  */
 const Logger::ptr_t &Logger::get()
 {
-  static Logger::ptr_t logger_(new Logger(""));
+  static Logger::ptr_t logger_(new Logger("", ""));
   return logger_;
 }
 
@@ -19,13 +19,13 @@ const Logger::ptr_t &Logger::get(const std::string &name)
   return get()->get_logger(name);
 }
 
-Logger::Logger(const std::string &name)
-  : name_(name), lvl_(LogLevel(LogLevel::UNSET))
+Logger::Logger(const std::string &name, const std::string &parent)
+  : name_(parent + "." + name), parent_(parent), lvl_(LogLevel(LogLevel::UNSET))
 {
 }
 
 Logger::Logger(const std::string &name, const Logger &parent)
-  : name_(name), lvl_(parent.getLevel())
+  : name_(parent.name() + "." + name), parent_(parent.name()), lvl_(parent.getLevel())
 {
   for (appender_list_t::const_iterator appender(parent.appenders_.begin()); appender != parent.appenders_.end(); ++appender)
   {

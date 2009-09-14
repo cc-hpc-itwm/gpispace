@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 {
   using namespace fhg::log;
   logger_t root(getLogger());
-  logger_t logger(getLogger("test"));
+  logger_t logger(getLogger("test.mod"));
   logger.setLevel(LogLevel::TRACE);
   if (argc > 1)
   {
@@ -64,41 +64,41 @@ int main(int argc, char **argv)
   }
 
   root.log(LogEvent(LogLevel::TRACE
-                            , "root"
+                            , root.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "E: this message should not be logged (no appender for the root logger defined"));
   logger.log(LogEvent(LogLevel::TRACE
-                            , "test"
+                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "trace message"));
 
   logger.log(LogEvent(LogLevel::DEBUG
-                            , "test"
+                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "debug message"));
 
   logger.log(LogEvent(LogLevel::INFO
-                            , "test"
+                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "info message"));
 
   logger.log(LogEvent(LogLevel::WARN
-                            , "test"
+                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
                             , "warn message"));
 
   logger.log(LogEvent(LogLevel::ERROR
-                            , "test"
+                            , logger.name()
                             , __FILE__
                             , FHGLOG_FUNCTION
                             , __LINE__
