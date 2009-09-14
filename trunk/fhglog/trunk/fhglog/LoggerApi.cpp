@@ -1,6 +1,9 @@
-#include "Logger.hpp"
+#include "LoggerApi.hpp"
 
 using namespace fhg::log;
+
+#if FHGLOG_ENABLED == 1
+#include "Logger.hpp"
 
 /*
  * LoggerApi implementation
@@ -36,4 +39,4 @@ void LoggerApi::removeAppender(const std::string &appender_name)
   return impl_->removeAppender(appender_name);
 }
 
-
+#endif

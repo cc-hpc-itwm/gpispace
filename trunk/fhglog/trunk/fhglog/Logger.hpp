@@ -9,6 +9,8 @@
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
 
+#include <fhglog/LoggerApi.hpp>
+
 /**
   Common logging framework.
 
@@ -18,7 +20,6 @@
   my_logger.log(LogEvent(...));
 */
 namespace fhg { namespace log {
-  class Logger;
   /*
    * This class wraps around a simple Logger object.
    *
@@ -29,23 +30,6 @@ namespace fhg { namespace log {
    * means in the disabled case, we can just allocate an empty void pointer.
    *
    */
-  class LoggerApi {
-    public:
-      explicit
-        LoggerApi(Logger *impl) : impl_(impl) {}
-
-      const std::string &name() const;
-      void setLevel(const LogLevel &level);
-      const LogLevel & getLevel() const;
-      bool isLevelEnabled(const LogLevel &level);
-      void log(const LogEvent &event);
-      Appender::ptr_t addAppender(Appender::ptr_t appender);
-      Appender::ptr_t getAppender(const std::string &appender_name);
-      void removeAppender(const std::string &appender_name);
-    private:
-      Logger *impl_;
-  };
-
   class Logger {
     public:
       typedef std::size_t verbosity_type;
