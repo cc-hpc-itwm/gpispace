@@ -128,6 +128,12 @@ const Appender::ptr_t &Logger::getAppender(const std::string &appender_name) con
   throw std::runtime_error("no matching appender could be found!");
 }
 
+void Logger::removeAllAppenders()
+{
+  appenders_.clear();
+}
+
+
 void Logger::removeAppender(const std::string &appender_name)
 {
   for (appender_list_t::iterator it(appenders_.begin());

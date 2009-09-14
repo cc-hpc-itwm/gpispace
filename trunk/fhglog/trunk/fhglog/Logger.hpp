@@ -48,6 +48,7 @@ namespace fhg { namespace log {
       const Appender::ptr_t &addAppender(const Appender::ptr_t &appender);
       const Appender::ptr_t &getAppender(const std::string &appender_name) const;
       void removeAppender(const std::string &appender_name);
+      void removeAllAppenders();
     private:
       const Logger::ptr_t &get_logger(const std::string &name);
 
