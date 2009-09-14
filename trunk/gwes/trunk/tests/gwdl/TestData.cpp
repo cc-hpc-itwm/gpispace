@@ -20,6 +20,7 @@ using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 
 #define X(str) XMLString::transcode((const char*)& str)
+#define SAFE_DELETE(ptr) if ((ptr) != 0) { delete (ptr); ptr=0; }
 
 void testData()
 {
@@ -27,9 +28,10 @@ void testData()
     LOG_INFO(logger, "============== BEGIN DATA TEST =============");
 	
 	LOG_INFO(logger, "test empty data token... ");
-	Data *emptyData = new Data();
-	assert(emptyData->toElement(NULL)==NULL);
-	delete emptyData;
+    {
+      Data emptyData;
+      assert(emptyData.toElement(NULL)==NULL);
+    }
  
 	LOG_INFO(logger, "test xml data token from DOM element... ");
 	DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
@@ -47,35 +49,42 @@ void testData()
 	DOMText* e2value = doc->createTextNode(X("15"));
 	e2->appendChild(e2value);
 	
-	Data *data = new Data(dataElement);
+	Data data(dataElement);
 	LOG_INFO(logger, "test data << operator ...");
-	LOG_DEBUG(logger, *data);
+	LOG_DEBUG(logger, data);
 	LOG_INFO(logger, "test data.toString() ...");
-	string* datastr = data->toString();
+	string* datastr = data.toString();
 	LOG_INFO(logger, *datastr);
-	assert(*(data->toString())=="<data><value1>25</value1><value2>15</value2></data>");
-	delete data;
+	assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+    SAFE_DELETE(datastr);
 	
 	LOG_INFO(logger, "test constructing data from string...");
-	string *str = new string("<data xmlns=\"http://www.gridworkflow.org/gworkflowdl\"><x>1</x><y>2</y></data>");
-	Data *data2 = new Data(*str);
-	LOG_INFO(logger, *data2);
-	LOG_INFO(logger, *str);
-	DOMElement* eP = data->toElement(NULL);
-	assert(eP);
-	char* name = XMLString::transcode(eP->getTagName()); 
-	assert(strcmp(name,"data")==0);
-	
+    // FIXME: the problem is in the destructor of Data, it ->release() the
+    // internal DOMElement structure which ends up  in a delete 0;
+    {
+      string str("<data xmlns=\"http://www.gridworkflow.org/gworkflowdl\"><x>1</x><y>2</y></data>");
+      Data data2(str);
+      LOG_INFO(logger, data2);
+      LOG_INFO(logger, str);
+      DOMElement* eP = data2.toElement(NULL);
+      assert(eP);
+      char* name = XMLString::transcode(eP->getTagName()); 
+      assert(strcmp(name,"data")==0);
+      delete [] name; // or free()?
+      SAFE_DELETE(eP); // this fails!
+	}
+
+
 	///ToDo: FAILED TO DELETE data2!
 	//delete data2;
 	
 	///ToDo: FAILED WITH INTEL COMPILER/// 
 	LOG_INFO(logger, "test workflow format exception ...");
-	string *str3 = new string("<bla>");
+	string str3("<bla>");
 	bool test = false;
 	try {
-		Data *data3 = new Data(*str3);
-        LOG_INFO(logger, *data3);
+		Data data3(str3);
+        LOG_INFO(logger, data3);
     } catch(WorkflowFormatException e) {
    	    LOG_INFO(logger, "WorkflowFormatException: " << e.message);
    	    test = true;
@@ -83,8 +92,6 @@ void testData()
         LOG_INFO(logger, "another exception");
 	}
     assert(test);
-    delete str3;
 	
     LOG_INFO(logger, "============== END DATA TEST =============");
-	
 }
