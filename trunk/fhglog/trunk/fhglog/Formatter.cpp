@@ -25,6 +25,9 @@ std::string Formatter::format(const LogEvent &evt)
           case '%':
             sstr << "%";
             break;
+          case FMT_SHORT_SEVERITY:
+            sstr << evt.severity().str()[0];
+            break;
           case FMT_SEVERITY:
             sstr << evt.severity().str();
             break;

@@ -16,6 +16,7 @@ namespace fhg { namespace log {
     public:
       typedef std::tr1::shared_ptr<Formatter> ptr_t;
 
+      static const char FMT_SHORT_SEVERITY  = 's'; // the level of the event
       static const char FMT_SEVERITY  = 'S'; // the level of the event
       static const char FMT_FILE      = 'p'; // just the filename
       static const char FMT_PATH      = 'P'; // complete path of the file
@@ -28,23 +29,32 @@ namespace fhg { namespace log {
       static const char FMT_NEWLINE   = 'n'; // a line separator
       static const char FMT_LOGGER    = 'l'; // the logger via which this event came
 
-      explicit
-      Formatter(const std::string &fmt) : fmt_(fmt) {}
       virtual ~Formatter() {}
 
-      static ptr_t DefaultFormatter()
+      static ptr_t Custom(const std::string &fmt)
       {
-        return ptr_t(new Formatter("%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n"));
+        return ptr_t(new Formatter(fmt));
       }
-      static ptr_t ShortFormatter()
+      static ptr_t Default()
       {
-        return ptr_t(new Formatter("%S %p:%L - %m%n"));
+        return Short();
+      }
+      static ptr_t Full()
+      {
+        return Custom("%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n");
+      }
+      static ptr_t Short()
+      {
+        return Custom("%s: %p:%L - %m%n");
       }
 
       virtual std::string format(const LogEvent &evt);
       std::string operator()(const LogEvent &evt) { return format(evt); }
       void setFormat(const std::string &fmt) { fmt_ = fmt; }
     private:
+      explicit
+      Formatter(const std::string &fmt) : fmt_(fmt) {}
+
       std::string fmt_;
   }; /* -----  end of class Formatter  ----- */
 }}

@@ -56,8 +56,8 @@ int main(int argc, char **argv)
   }
   std::cerr << "the log-level has been set to: " << logger.getLevel().str() << "(" << logger.getLevel().lvl() << ")" << std::endl;
 
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::DefaultFormatter());
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::ShortFormatter());
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::Default());
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::Full());
 
   {
     Test test;
