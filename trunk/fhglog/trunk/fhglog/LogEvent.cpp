@@ -12,7 +12,6 @@ LogEvent::LogEvent(const severity_type &severity
                  , const line_type &line
                  , const message_type &message)
   : severity_(severity)
-  , logged_via_(logged_via)
   , path_(path)
   , file_(get_filename_from_path(path))
   , function_(function)
@@ -21,12 +20,12 @@ LogEvent::LogEvent(const severity_type &severity
   , tstamp_(time(NULL))
   , pid_(getpid())
   , tid_(static_cast<tid_type>(pthread_self()))
+  , logged_via_(logged_via)
 {
 }
 
 LogEvent::LogEvent(const LogEvent &e)
   : severity_(e.severity())
-  , logged_via_(e.logged_via())
   , path_(e.path())
   , file_(e.file())
   , function_(e.function())
@@ -35,6 +34,7 @@ LogEvent::LogEvent(const LogEvent &e)
   , tstamp_(e.tstamp())
   , pid_(e.pid())
   , tid_(e.tid())
+  , logged_via_(e.logged_via())
 {
 }
 
