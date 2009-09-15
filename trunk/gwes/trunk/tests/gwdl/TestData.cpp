@@ -35,29 +35,60 @@ void testData()
     }
  
 	LOG_INFO(logger, "test xml data token from DOM element... ");
-	DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
-	DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
-	// <data>
-	DOMElement* dataElement = doc->createElement(X("data"));
-	// <value1>25</value1>
-	DOMElement* e1 = doc->createElement(X("value1"));
-	dataElement->appendChild(e1);
-	DOMText* e1value = doc->createTextNode(X("25"));
-	e1->appendChild(e1value);
-	// <value2>15</value1>
-	DOMElement* e2 = doc->createElement(X("value2"));
-	dataElement->appendChild(e2);
-	DOMText* e2value = doc->createTextNode(X("15"));
-	e2->appendChild(e2value);
-	
-	Data data(dataElement);
-	LOG_INFO(logger, "test data << operator ...");
-	LOG_DEBUG(logger, data);
-	LOG_INFO(logger, "test data.toString() ...");
-	string* datastr = data.toString();
-	LOG_INFO(logger, *datastr);
-	assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
-    SAFE_DELETE(datastr);
+    {
+      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
+      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
+      // <data>
+      DOMElement* dataElement = doc->createElement(X("data"));
+      // <value1>25</value1>
+      DOMElement* e1 = doc->createElement(X("value1"));
+      dataElement->appendChild(e1);
+      DOMText* e1value = doc->createTextNode(X("25"));
+      e1->appendChild(e1value);
+      // <value2>15</value1>
+      DOMElement* e2 = doc->createElement(X("value2"));
+      dataElement->appendChild(e2);
+      DOMText* e2value = doc->createTextNode(X("15"));
+      e2->appendChild(e2value);
+      
+      Data data(dataElement);
+      LOG_INFO(logger, "test data << operator ...");
+      LOG_DEBUG(logger, data);
+      LOG_INFO(logger, "test data.toString() ...");
+      string* datastr = data.toString();
+      LOG_INFO(logger, *datastr);
+      assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+      SAFE_DELETE(datastr);
+    }
+
+	LOG_INFO(logger, "test xml data token (loop) from DOM element... ");
+    {
+      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
+      // who releases this doc?
+      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
+      // <data>
+      DOMElement* dataElement = doc->createElement(X("data"));
+      // <value1>25</value1>
+      DOMElement* e1 = doc->createElement(X("value1"));
+      dataElement->appendChild(e1);
+      DOMText* e1value = doc->createTextNode(X("25"));
+      e1->appendChild(e1value);
+      // <value2>15</value1>
+      DOMElement* e2 = doc->createElement(X("value2"));
+      dataElement->appendChild(e2);
+      DOMText* e2value = doc->createTextNode(X("15"));
+      e2->appendChild(e2value);
+      
+      std::list<Data> dataList;
+      for (std::size_t numElements(0); numElements < 100000; ++numElements)
+      {
+        Data data(dataElement);
+        string* datastr = data.toString();
+        assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+        SAFE_DELETE(datastr);
+        dataList.push_back(data);
+      }
+    }
 	
 	LOG_INFO(logger, "test constructing data from string...");
     // FIXME: the problem is in the destructor of Data, it ->release() the

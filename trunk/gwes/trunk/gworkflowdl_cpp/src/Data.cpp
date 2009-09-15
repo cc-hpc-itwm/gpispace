@@ -44,13 +44,17 @@ Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 		throw WorkflowFormatException(message.str());	
 	} 
 	data = element;
+    // FIXME: replace this with a member variable std::string, not a pointer!
 	dataText = NULL;
 	setType();
 }
 
 Data::~Data()
 {
-//	if (data != NULL) { data->release(); data = NULL; }
+// FIXME: if Data(DOMElement) is used, who owns the document?
+//        if Data(string) is used, who releases the document?
+//        what happens if Data(DOMElement) is used several times?
+//    if (data != NULL) { data->getOwnerDocument()->release(); data = NULL; }
 	if (dataText != NULL) { delete dataText; dataText = NULL; }
 }
 
