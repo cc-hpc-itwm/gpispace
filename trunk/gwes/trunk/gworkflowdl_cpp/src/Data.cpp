@@ -50,7 +50,7 @@ Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 
 Data::~Data()
 {
-	if (data != NULL) { data->release(); data = NULL; }
+//	if (data != NULL) { data->release(); data = NULL; }
 	if (dataText != NULL) { delete dataText; dataText = NULL; }
 }
 

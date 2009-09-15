@@ -20,6 +20,7 @@ using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 
 #define X(str) XMLString::transcode((const char*)& str)
+#define D(str) XMLString::release(&str)
 #define SAFE_DELETE(ptr) if ((ptr) != 0) { delete (ptr); ptr=0; }
 
 void testData()
@@ -70,8 +71,9 @@ void testData()
       assert(eP);
       char* name = XMLString::transcode(eP->getTagName()); 
       assert(strcmp(name,"data")==0);
-      delete [] name; // or free()?
-      SAFE_DELETE(eP); // this fails!
+      D(name);
+//      delete [] name; // or free()?
+//      SAFE_DELETE(eP); // this fails!
 	}
 
 
