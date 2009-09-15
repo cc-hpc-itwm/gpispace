@@ -75,16 +75,6 @@ public:
 	virtual workflow_id_t submitWorkflow(workflow_t &workflow) = 0; //throw (gwdl::WorkflowFormatException) = 0;
 
 	/**
-		 * Submit a workflow to the GWES.
-		 * The workflow_id is already assigned and is identical to the job_id to which the workflow belongs
-		 * This method is to be invoked by the SDPA.
-		 * The GWES will initiate and start the workflow
-		 * asynchronously and notifiy the SPDA about status transitions
-		 * using the callback methods of the Gwes2Sdpa handler.
-		 */
-	virtual workflow_id_t submitWorkflow(const workflow_id_t &workflowId, workflow_t &workflow) = 0; //throw (gwdl::WorkflowFormatException) = 0;
-
-	/**
 	 * Cancel a workflow asynchronously.
 	 * This method is to be invoked by the SDPA.
 	 * The GWES will notify the SPDA about the

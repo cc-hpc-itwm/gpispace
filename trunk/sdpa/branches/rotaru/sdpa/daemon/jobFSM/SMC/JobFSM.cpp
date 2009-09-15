@@ -1,5 +1,5 @@
 #include "JobFSM.hpp"
-
+using namespace sdpa::events;
 using namespace sdpa::fsm::smc;
 
 //transitions
@@ -42,4 +42,3 @@ void  JobFSM ::RetrieveJobResults()
 {
 	m_fsmContext.RetrieveJobResults();
 }
-

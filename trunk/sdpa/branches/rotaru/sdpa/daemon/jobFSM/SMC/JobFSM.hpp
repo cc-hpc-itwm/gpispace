@@ -21,14 +21,14 @@ namespace sdpa { namespace fsm { namespace smc {
 			virtual ~JobFSM()  throw () { SDPA_LOG_DEBUG("Job state machine destroyed"); }
 
 			//transitions
-			  void CancelJob();
-			  void CancelJobAck();
-			  void DeleteJob();
-			  void JobFailed();
-			  void JobFinished();
-			  void QueryJobStatus();
-			  void RetrieveJobResults();
-			  void Dispatch();
+			void CancelJob();
+			void CancelJobAck();
+			void DeleteJob();
+			void JobFailed();
+			void JobFinished();
+			void QueryJobStatus();
+			void RetrieveJobResults();
+			void Dispatch();
 
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:

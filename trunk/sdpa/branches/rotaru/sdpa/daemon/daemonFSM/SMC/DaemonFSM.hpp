@@ -24,8 +24,10 @@ namespace sdpa {
 						SDPA_LOG_DEBUG("Daemon State machine destroyed");
 					}
 
+					void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
-				private:
+				protected:
 					SDPA_DECLARE_LOGGER();
 					DaemonFSMContext m_fsmContext;
 			};

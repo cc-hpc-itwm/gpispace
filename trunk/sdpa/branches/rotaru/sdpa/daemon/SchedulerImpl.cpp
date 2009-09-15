@@ -32,8 +32,8 @@ Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &worker_id, con
 void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	sdpa::wf::workflow_t workflow(pJob->description());
 	sdpa::wf::workflow_id_t wf_id = pJob->id().str();
+	sdpa::wf::workflow_t workflow(wf_id, pJob->description());
 
 	// Should set the workflow_id here, or send it together with the workflow description
 	ostringstream os;
@@ -42,7 +42,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 
 	if(ptr_Sdpa2Gwes_)
 	{
-		ptr_Sdpa2Gwes_->submitWorkflow(wf_id, workflow);
+		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
 
 		// Only with the SMC variant!!!!!
 		pJob->Dispatch();
@@ -72,7 +72,7 @@ void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 void SchedulerImpl::handleJob(Job::ptr_t& pJob)
 {
 	ostringstream os;
-	os<<"Ask the scheduler to handle the job "<<pJob->id();
+	os<<"Handle job "<<pJob->id();
 	SDPA_LOG_DEBUG(os.str());
 
 	jobs_to_be_scheduled.push(pJob);
@@ -131,7 +131,7 @@ void SchedulerImpl::run()
 			SDPA_LOG_DEBUG("Thread interrupted ...");
 			bStopRequested = true;
 		}
-		catch( sdpa::daemon::QueueEmpty)
+		catch( sdpa::daemon::QueueEmpty )
 		{
 			SDPA_LOG_DEBUG("Q empty exception");
 			bStopRequested = true;

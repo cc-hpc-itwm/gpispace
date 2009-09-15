@@ -5,6 +5,8 @@
 #include "sdpa/logging.hpp"
 #include <sdpa/wf/Sdpa2Gwes.hpp>
 #include <sdpa/wf/Gwes2Sdpa.hpp>
+#include <sdpa/JobId.hpp>
+
 
 using namespace sdpa::wf;
 
@@ -14,6 +16,7 @@ private:
 public:
 	DummyGwes() : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
+		ptr_Gwes2SdpaHandler = NULL;
 		SDPA_LOG_DEBUG("Dummy workflow engine created ...");
 	}
 
@@ -71,8 +74,9 @@ public:
 	 * sub workflows to the SDPA.
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	void registerHandler(Gwes2Sdpa *sdpa) const
+	void registerHandler(Gwes2Sdpa *pSdpa) const
 	{
+		ptr_Gwes2SdpaHandler = pSdpa;
 		SDPA_LOG_DEBUG("Called registerHandler ...");
 	}
 
@@ -85,21 +89,20 @@ public:
 	 */
 	workflow_id_t submitWorkflow(workflow_t &workflow) //throw (gwdl::WorkflowFormatException) {}
 	{
+		// GWES is supposed to parse the workflow and generate a suite of
+		// sub-workflows or activities that are sent to SDPA
+		// GWES assigns an unique workflow_id which will be used as a job_id
+		// on SDPA side
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
-		return "0";
-	}
 
-	/**
-			 * Submit a workflow to the GWES.
-			 * The workflow_id is already assigned and is identical to the job_id to which the workflow belongs
-			 * This method is to be invoked by the SDPA.
-			 * The GWES will initiate and start the workflow
-			 * asynchronously and notifiy the SPDA about status transitions
-			 * using the callback methods of the Gwes2Sdpa handler.
-			 */
-	workflow_id_t submitWorkflow(const workflow_id_t &workflowId, workflow_t &workflow) //throw (gwdl::WorkflowFormatException) = 0;
-	{
-		SDPA_LOG_DEBUG("Called submitWorkflow ...");
+		// Here, GWES is supposed to create new workflows ....
+
+		sdpa::JobId job_id;
+		workflow.setId(job_id.str());
+		// for testing purposes, generate here a sub-workflow (the same)
+		SDPA_LOG_DEBUG("Gwes calls submitWorkflow ...");
+		ptr_Gwes2SdpaHandler->submitWorkflow(workflow);
+
 		return "0";
 	}
 
@@ -114,6 +117,9 @@ public:
 	{
 		SDPA_LOG_DEBUG("Called cancelWorkflow ...");
 	}
+
+private:
+	mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
 };
 
 #endif

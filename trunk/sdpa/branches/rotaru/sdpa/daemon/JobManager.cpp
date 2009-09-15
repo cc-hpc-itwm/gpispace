@@ -15,6 +15,7 @@ JobManager::~JobManager(){
 //helpers
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
+	lock_type lock(mtx_);
 	job_map_t::iterator it = job_map_.find( job_id );
 	if( it != job_map_.end() )
 		return it->second;
@@ -22,7 +23,7 @@ Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundE
 		throw JobNotFoundException( job_id );
 }
 
-//helpers
+/*
 Job::ptr_t JobManager::getJob()
 {
 	Job::ptr_t ptrJob;
@@ -36,11 +37,12 @@ Job::ptr_t JobManager::getJob()
 	}
 
 	return ptrJob;
-}
+}*/
 
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
+	lock_type lock(mtx_);
 	ostringstream os;
 	job_map_t::iterator it;
 	bool bsucc = false;
@@ -61,6 +63,7 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
 
 void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
 {
+	lock_type lock(mtx_);
 	ostringstream os;
 	job_map_t::iterator it;
 	bool bsucc = false;
@@ -81,6 +84,7 @@ void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
 {
+	lock_type lock(mtx_);
 	ostringstream os;
 	job_map_t::size_type ret = job_map_.erase(job_id);
 	if( !ret )

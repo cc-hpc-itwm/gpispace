@@ -14,6 +14,7 @@ class Workflow
 public:
 	typedef Workflow workflow_t;
 	Workflow(std::string desc) { description = desc; }
+	Workflow(workflow_id_t& id_arg, std::string desc_arg) { id = id_arg; description = desc_arg; }
 	workflow_id_t getId() const { return id; }
 	workflow_id_t setId(const workflow_id_t& workflow_id) { id = workflow_id; }
 

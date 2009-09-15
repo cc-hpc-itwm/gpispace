@@ -19,6 +19,7 @@
 #include <sdpa/wf/Gwes2Sdpa.hpp>
 #include <sdpa/wf/Sdpa2Gwes.hpp>
 
+#include <sdpa/events/SubmitJobEvent.hpp>
 //#include <gwes/Sdpa2Gwes.h>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
@@ -36,7 +37,9 @@ namespace sdpa { namespace daemon {
 	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
 	  static void start(GenericDaemon::ptr_t daemon );
 
-	  virtual void perform(const seda::IEvent::Ptr &);
+	  virtual void perform(const seda::IEvent::Ptr&);
+	  virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+	  void handleJobEvent(const seda::IEvent::Ptr& pEvent);
 
 	  virtual void onStageStart(const std::string &stageName);
 	  virtual void onStageStop(const std::string &stageName);

@@ -38,12 +38,12 @@ void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machin
 
 }
 
-void DaemonFSMTest_SMC::tearDown() { //stop the finite state machine
+void DaemonFSMTest_SMC::tearDown()
+{ 	//stop the finite state machine
 
 	seda::StageRegistry::instance().lookup("orchestrator")->stop();
 
 	ostringstream os;
-
 	SDPA_LOG_DEBUG("Reset the pointer to the daemon state machine");
 	m_ptrDaemonFSM.reset();
 	SDPA_LOG_DEBUG("tearDown");
@@ -63,30 +63,30 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	StartUpEvent evtStartUp(strFrom, strTo);
-	m_ptrDaemonFSM->GetContext().StartUp(evtStartUp);
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strFrom, strTo));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtStartUp);//GetContext().StartUp(evtStartUp);
 
-	ConfigOkEvent evtConfigOk(strFrom, strTo);
-	m_ptrDaemonFSM->GetContext().ConfigOk(evtConfigOk);
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strFrom, strTo));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtConfigOk); //GetContext().ConfigOk(evtConfigOk);
 
-	WorkerRegistrationEvent evtWorkerReg(strFromDown, strTo);
-	m_ptrDaemonFSM->GetContext().RegisterWorker(evtWorkerReg);
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strTo));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtWorkerReg); //GetContext().RegisterWorker(evtWorkerReg);
 
-	LifeSignEvent evtLS(strFromDown, strTo);
-	m_ptrDaemonFSM->GetContext().LifeSign(evtLS);
+	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strTo));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtLS); //GetContext().LifeSign(evtLS);
 
 	// send an external job
-	SubmitJobEvent evtSubmitJob1(strFromUp, strTo);
-	m_ptrDaemonFSM->GetContext().SubmitJob(evtSubmitJob1);
+	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strTo));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
 
 	// send a local job
-	SubmitJobEvent evtSubmitJob2(strTo, strTo);
-	m_ptrDaemonFSM->GetContext().SubmitJob(evtSubmitJob2);
+	//SubmitJobEvent evtSubmitJob2(strTo, strTo);
+	//m_ptrDaemonFSM->GetContext().SubmitJob(evtSubmitJob2);
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_ptrDaemonFSM->ptr_job_man_->getJobIDList();
+	//std::vector<sdpa::job_id_t> vectorJobIDs = m_ptrDaemonFSM->ptr_job_man_->getJobIDList();
 
 	//Attention: delete succeeds only when the job should is in a final state!
-	sdpa::job_id_t job_id = vectorJobIDs[0];
+	/*sdpa::job_id_t job_id = vectorJobIDs[0];
 	SubmitJobEvent evtSubmit(strFrom, strTo, job_id);
 	m_ptrDaemonFSM->ptr_job_man_->job_map_[job_id]->process_event(evtSubmit);
 
@@ -95,15 +95,19 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
 	// post a job request
 	RequestJobEvent evtReq(strFromDown, strTo);
-	m_ptrDaemonFSM->GetContext().RequestJob(evtReq);
+	m_ptrDaemonFSM->GetContext().RequestJob(evtReq);*/
+
+	// request the results before deleting the job!
 
 	// now I#m in a final state and the delete must succeed
-	DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
+	/*DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
 	m_ptrDaemonFSM->GetContext().DeleteJob(evtDelJob);
 
 	ConfigRequestEvent evtCfgReq(strFromDown, strTo);
 	m_ptrDaemonFSM->GetContext().ConfigRequest(evtCfgReq);
 
 	InterruptEvent evtInt(strFrom, strTo);
-	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);
+	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);*/
+
+	sleep(10);
 }
