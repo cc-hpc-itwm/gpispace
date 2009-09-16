@@ -495,6 +495,8 @@ fHeap (const Offset_t Offset, const PValue_t UNUSED (PVal), void *Pdat)
   heap_ins (Pdat, Offset);
 }
 
+
+// WORK HERE! This is terrible slow!
 void
 tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               const PMemSize_t PFreeSizeWanted)
@@ -545,7 +547,8 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               RET_SUCCESS)
             TMMGR_ERROR_STRANGE;
 
-          fMemmove (OffsetFree, OffsetUsed, Size);
+          if (fMemmove != NULL)
+            fMemmove (OffsetFree, OffsetUsed, Size);
 
           tmmgr_del (ptmmgr, Handle, Offset, Size);
           tmmgr_ins (ptmmgr, Handle, OffsetFree, Size);
@@ -607,6 +610,34 @@ tmmgr_info (const PTmmgr_t PTmmgr)
           ptmmgr->mem_size - ptmmgr->mem_free, ptmmgr->mem_free,
           ptmmgr->mem_size);
 
+  Count_t nhandle = tmmgr_numhandle (PTmmgr);
+  Count_t nalloc = tmmgr_numalloc (PTmmgr);
+  Count_t nfree = tmmgr_numfree (PTmmgr);
+  MemSize_t salloc = tmmgr_sumalloc (PTmmgr);
+  MemSize_t sfree = tmmgr_sumfree (PTmmgr);
+  MemSize_t mfree = tmmgr_memfree (PTmmgr);
+  MemSize_t mused = tmmgr_memused (PTmmgr);
+  MemSize_t mmin = tmmgr_minfree (PTmmgr);
+  MemSize_t hwater = tmmgr_highwater (PTmmgr);
+
+  printf ("numhandle = " FMT_Count_t ", numalloc = " FMT_Count_t
+          ", numfree = " FMT_Count_t ", sumalloc = " FMT_MemSize_t
+          ", sumfree = " FMT_MemSize_t ", memfree = " FMT_MemSize_t
+          ", memused = " FMT_MemSize_t ", minfree = " FMT_MemSize_t
+          ", highwater = " FMT_MemSize_t "\n",
+          nhandle, nalloc, nfree, salloc, sfree, mfree, mused, mmin, hwater);
+}
+
+void
+tmmgr_status (const PTmmgr_t PTmmgr)
+{
+  if (PTmmgr == NULL)
+    return;
+
+  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+
+  tmmgr_info (ptmmgr);
+
   printf ("allocs (handle-(offset,size)) =\n[");
 
   ostab_work (ptmmgr->handle_to_offset_and_size, &fPrintOStab, NULL);
@@ -636,21 +667,4 @@ tmmgr_info (const PTmmgr_t PTmmgr)
   trie_work (ptmmgr->free_segment_end, &fPrintTrie, NULL);
 
   printf ("]\n");
-
-  Count_t nhandle = tmmgr_numhandle (PTmmgr);
-  Count_t nalloc = tmmgr_numalloc (PTmmgr);
-  Count_t nfree = tmmgr_numfree (PTmmgr);
-  MemSize_t salloc = tmmgr_sumalloc (PTmmgr);
-  MemSize_t sfree = tmmgr_sumfree (PTmmgr);
-  MemSize_t mfree = tmmgr_memfree (PTmmgr);
-  MemSize_t mused = tmmgr_memused (PTmmgr);
-  MemSize_t mmin = tmmgr_minfree (PTmmgr);
-  MemSize_t hwater = tmmgr_highwater (PTmmgr);
-
-  printf ("numhandle = " FMT_Count_t ", numalloc = " FMT_Count_t
-          ", numfree = " FMT_Count_t ", sumalloc = " FMT_MemSize_t
-          ", sumfree = " FMT_MemSize_t ", memfree = " FMT_MemSize_t
-          ", memused = " FMT_MemSize_t ", minfree = " FMT_MemSize_t
-          ", highwater = " FMT_MemSize_t "\n",
-          nhandle, nalloc, nfree, salloc, sfree, mfree, mused, mmin, hwater);
 }
