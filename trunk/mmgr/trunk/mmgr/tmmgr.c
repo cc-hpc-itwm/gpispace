@@ -55,7 +55,7 @@ tmmgr_ins_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
 void
 tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 {
-  if (*(ptmmgr_t *) PTmmgr != NULL)
+  if (PTmmgr == NULL || *(ptmmgr_t *) PTmmgr != NULL)
     return;
 
   *(ptmmgr_t *) PTmmgr = malloc (sizeof (tmmgr_t));
@@ -83,6 +83,9 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 ResizeReturn_t
 tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSize)
 {
+  if (PTmmgr == NULL)
+    return RESIZE_FAILURE;
+
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
   if (NewSize < ptmmgr->mem_size - ptmmgr->mem_free)
@@ -139,7 +142,7 @@ tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSize)
 MemSize_t
 tmmgr_finalize (PTmmgr_t PTmmgr)
 {
-  if (*(ptmmgr_t *) PTmmgr == NULL)
+  if (PTmmgr == NULL || *(ptmmgr_t *) PTmmgr == NULL)
     return 0;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
@@ -213,6 +216,9 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 AllocReturn_t
 tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle, const MemSize_t Size)
 {
+  if (PTmmgr == NULL)
+    return ALLOC_FAILURE;
+
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
   if (ptmmgr->mem_free < Size)
@@ -240,6 +246,9 @@ AllocReturn_t
 tmmgr_oalloc (PTmmgr_t PTmmgr, const Handle_t Handle, const Offset_t Offset,
               const MemSize_t Size)
 {
+  if (PTmmgr == NULL)
+    return ALLOC_FAILURE;
+
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
   if (ptmmgr->mem_free < Size)
@@ -333,6 +342,9 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 HandleReturn_t
 tmmgr_free (PTmmgr_t PTmmgr, const Handle_t Handle)
 {
+  if (PTmmgr == NULL)
+    return RET_FAILURE;
+
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
   Offset_t Offset;
@@ -415,6 +427,9 @@ void
 tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               const PMemSize_t PFreeSizeWanted)
 {
+  if (PTmmgr == NULL)
+    return;
+
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
   if (PFreeSizeWanted != NULL && *PFreeSizeWanted > tmmgr_memfree (ptmmgr))

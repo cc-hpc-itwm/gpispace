@@ -32,6 +32,9 @@ empty ()
 PValue_t
 trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 {
+  if (PPTrie == NULL)
+    return NULL;
+
   if (*(PTrie_t *) PPTrie == NULL)
     {
       *(PTrie_t *) PPTrie = empty ();
@@ -101,7 +104,7 @@ trie_get (const PTrieMap_t PCTrie, Key_t Key)
 Bool_t
 trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 {
-  if (*(PTrie_t *) PPTrie == NULL)
+  if (PPTrie == NULL || *(PTrie_t *) PPTrie == NULL)
     return False;
 
   Bool_t rc;
@@ -144,7 +147,7 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 Value_t
 trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
 {
-  if (*(PTrie_t *) PPTrie == NULL)
+  if (PPTrie == NULL || *(PTrie_t *) PPTrie == NULL)
     return 0;
 
   Size_t Bytes = sizeof (Trie_t);

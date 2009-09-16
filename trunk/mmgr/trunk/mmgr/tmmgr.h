@@ -24,7 +24,8 @@ extern "C"
   typedef enum
   { RESIZE_SUCCESS,
     RESIZE_BELOW_HIGHWATER,
-    RESIZE_BELOW_MEMUSED
+    RESIZE_BELOW_MEMUSED,
+    RESIZE_FAILURE
   } ResizeReturn_t;
 
   extern ResizeReturn_t tmmgr_resize (PTmmgr_t, const MemSize_t);
@@ -35,7 +36,8 @@ extern "C"
     ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY,
     ALLOC_INSUFFICIENT_MEMORY,
     ALLOC_BAD_OFFSET,
-    ALLOC_INSUFFICIENT_MEMORY_AT_OFFSET
+    ALLOC_INSUFFICIENT_MEMORY_AT_OFFSET,
+    ALLOC_FAILURE
   } AllocReturn_t;
 
   /* calculates offset */
@@ -48,7 +50,8 @@ extern "C"
 
   typedef enum
   { RET_SUCCESS,
-    RET_HANDLE_UNKNOWN
+    RET_HANDLE_UNKNOWN,
+    RET_FAILURE
   } HandleReturn_t;
 
   extern HandleReturn_t tmmgr_free (PTmmgr_t, const Handle_t);

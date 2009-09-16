@@ -35,6 +35,9 @@ do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
     case ALLOC_INSUFFICIENT_MEMORY:
       printf ("ALLOC_INSUFFICIENT_MEMORY");
       break;
+    case ALLOC_FAILURE:
+      printf ("ALLOC_FAILURE");
+      break;
     default:
       fprintf (stderr, "STRANGE\n");
       exit (EXIT_FAILURE);
@@ -56,6 +59,9 @@ do_free (PTmmgr_t PTmmgr, Handle_t Handle)
       break;
     case RET_HANDLE_UNKNOWN:
       printf ("RET_HANDLE_UNKNOWN");
+      break;
+    case RET_FAILURE:
+      printf ("RET_FAILURE");
       break;
     default:
       fprintf (stderr, "STRANGE\n");
@@ -81,6 +87,9 @@ do_resize (PTmmgr_t PTmmgr, MemSize_t NewSize)
       break;
     case RESIZE_BELOW_MEMUSED:
       printf ("RESIZE_BELOW_MEMUSED");
+      break;
+    case RESIZE_FAILURE:
+      printf ("RESIZE_FAILURE");
       break;
     default:
       fprintf (stderr, "STRANGE\n");

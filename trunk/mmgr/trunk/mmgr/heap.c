@@ -112,6 +112,9 @@ swap (pheap_t pheap, Size_t x, Size_t y)
 void
 heap_ins (PHeap_t PHeap, const Offset_t Offset)
 {
+  if (PHeap == NULL)
+    return;
+
   if (*(pheap_t *) PHeap == NULL)
     {
       *(pheap_t *) PHeap = heap_mk (heap_initial_size);
@@ -161,7 +164,7 @@ small (pheap_t pheap, Size_t Node, Size_t Child)
 void
 heap_delmin (PHeap_t PHeap)
 {
-  if (*(pheap_t *) PHeap == NULL)
+  if (PHeap == NULL || *(pheap_t *) PHeap == NULL)
     return;
 
   pheap_t pheap = *(pheap_t *) PHeap;
@@ -224,7 +227,7 @@ heap_delmin (PHeap_t PHeap)
 Size_t
 heap_free (PHeap_t PHeap)
 {
-  if (*(pheap_t *) PHeap == NULL)
+  if (PHeap == NULL || *(pheap_t *) PHeap == NULL)
     return 0;
 
   pheap_t pheap = *(pheap_t *) PHeap;

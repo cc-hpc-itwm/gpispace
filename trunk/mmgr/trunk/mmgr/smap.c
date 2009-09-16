@@ -31,6 +31,9 @@ empty ()
 Bool_t
 smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
 {
+  if (PPTree == NULL)
+    return False;
+
   if (*(PTree_t *) PPTree == NULL)
     {
       *(PTree_t *) PPTree = empty ();
@@ -144,6 +147,9 @@ smap_get_atleast_minimal (const SMap_t PCTree, PKey_t PWantHave)
 Bool_t
 smap_del (PSMap_t PPTree, const Key_t Key, const SMAP_DEL_SEL_t del_sel)
 {
+  if (PPTree == NULL)
+    return False;
+
   PTree_t *PPParent = PPTree;
   PTree_t PTree = *(PTree_t *) PPTree;
 
@@ -258,7 +264,7 @@ smap_work (const SMap_t PCTree, const fSMapWork_t fSMapWork, void *Pdat)
 Size_t
 smap_free (PSMap_t PPTree)
 {
-  if (*(PTree_t *) PPTree == NULL)
+  if (PPTree == NULL || *(PTree_t *) PPTree == NULL)
     return 0;
 
   Size_t Bytes = sizeof (Tree_t);
