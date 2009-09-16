@@ -1,0 +1,8 @@
+#! /bin/sh
+# 
+# Bootstrap the project from a clean checkout.
+#
+if test ! -d "build"; then
+	mkdir build
+fi
+cd build && cmake .. $@
