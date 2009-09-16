@@ -1,0 +1,26 @@
+
+#ifndef BOOL_H
+#define BOOL_H
+
+#include <null.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#ifndef BOOL_T
+#define BOOL_T
+  typedef enum
+  { False = 0,
+    True
+  } Bool_t, *PBool_t;
+#endif
+
+  static const PBool_t PBoolIgnore = (PBool_t) NULL;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
