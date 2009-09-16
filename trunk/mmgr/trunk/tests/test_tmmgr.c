@@ -291,5 +291,9 @@ main ()
 
   tmmgr_info (tmmgrAligned);
 
+  tmmgr_finalize (&tmmgrAligned);
+
+  malloc_stats();
+
   return EXIT_SUCCESS;
 }

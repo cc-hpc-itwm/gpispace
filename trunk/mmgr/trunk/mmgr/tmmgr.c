@@ -24,6 +24,8 @@ typedef struct
   Align_t align;
   Count_t num_alloc;
   Count_t num_free;
+  MemSize_t sum_alloc;
+  MemSize_t sum_free;
 } tmmgr_t, *ptmmgr_t;
 
 static inline MemSize_t
@@ -89,6 +91,7 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
     alignDown (MemSize, ptmmgr->align);
   ptmmgr->high_water = 0;
   ptmmgr->num_alloc = ptmmgr->num_free = 0;
+  ptmmgr->sum_alloc = ptmmgr->sum_free = 0;
 
   tmmgr_ins_free_seg (ptmmgr, 0, ptmmgr->mem_size);
 }
@@ -256,6 +259,7 @@ tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle,
   tmmgr_ins (ptmmgr, Handle, *POffset, Size);
 
   ++ptmmgr->num_alloc;
+  ptmmgr->sum_alloc += Size;
 
   return ALLOC_SUCCESS;
 }
@@ -288,6 +292,7 @@ tmmgr_oalloc (PTmmgr_t PTmmgr, const Handle_t Handle, const Offset_t Offset,
   tmmgr_ins (ptmmgr, Handle, Offset, Size);
 
   ++ptmmgr->num_alloc;
+  ptmmgr->sum_alloc += Size;
 
   return ALLOC_SUCCESS;
 }
@@ -375,6 +380,7 @@ tmmgr_free (PTmmgr_t PTmmgr, const Handle_t Handle)
     return RET_HANDLE_UNKNOWN;
 
   ++ptmmgr->num_free;
+  ptmmgr->sum_free += Size;
 
   tmmgr_del (ptmmgr, Handle, Offset, Size);
 
@@ -435,6 +441,22 @@ tmmgr_numfree (const PTmmgr_t PTmmgr)
   ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
 
   return ptmmgr->num_free;
+}
+
+MemSize_t
+tmmgr_sumalloc (const PTmmgr_t PTmmgr)
+{
+  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+
+  return ptmmgr->sum_alloc;
+}
+
+MemSize_t
+tmmgr_sumfree (const PTmmgr_t PTmmgr)
+{
+  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+
+  return ptmmgr->sum_free;
 }
 
 static void
@@ -582,17 +604,20 @@ tmmgr_info (const PTmmgr_t PTmmgr)
 
   printf ("]\n");
 
-  Size_t nhandle = tmmgr_numhandle (PTmmgr);
-  Size_t nalloc = tmmgr_numalloc (PTmmgr);
-  Size_t nfree = tmmgr_numfree (PTmmgr);
+  Count_t nhandle = tmmgr_numhandle (PTmmgr);
+  Count_t nalloc = tmmgr_numalloc (PTmmgr);
+  Count_t nfree = tmmgr_numfree (PTmmgr);
+  MemSize_t salloc = tmmgr_sumalloc (PTmmgr);
+  MemSize_t sfree = tmmgr_sumfree (PTmmgr);
   MemSize_t mfree = tmmgr_memfree (PTmmgr);
   MemSize_t mused = tmmgr_memused (PTmmgr);
   MemSize_t mmin = tmmgr_minfree (PTmmgr);
   MemSize_t hwater = tmmgr_highwater (PTmmgr);
 
-  printf ("numhandle = " FMT_MemSize_t ", numalloc = " FMT_MemSize_t
-          ", numfree = " FMT_MemSize_t ", memfree = " FMT_MemSize_t
-          ", memused = " FMT_MemSize_t
-          ", minfree = " FMT_MemSize_t ", highwater = " FMT_MemSize_t "\n",
-          nhandle, nalloc, nfree, mfree, mused, mmin, hwater);
+  printf ("numhandle = " FMT_Count_t ", numalloc = " FMT_Count_t
+          ", numfree = " FMT_Count_t ", sumalloc = " FMT_MemSize_t
+          ", sumfree = " FMT_MemSize_t ", memfree = " FMT_MemSize_t
+          ", memused = " FMT_MemSize_t ", minfree = " FMT_MemSize_t
+          ", highwater = " FMT_MemSize_t "\n",
+          nhandle, nalloc, nfree, salloc, sfree, mfree, mused, mmin, hwater);
 }

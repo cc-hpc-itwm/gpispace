@@ -70,6 +70,8 @@ extern "C"
   extern Count_t tmmgr_numhandle (const Tmmgr_t);
   extern Count_t tmmgr_numalloc (const Tmmgr_t);
   extern Count_t tmmgr_numfree (const Tmmgr_t);
+  extern MemSize_t tmmgr_sumalloc (const Tmmgr_t);
+  extern MemSize_t tmmgr_sumfree (const Tmmgr_t);
 
   typedef Offset_t OffsetDest_t;
   typedef Offset_t OffsetSrc_t;
