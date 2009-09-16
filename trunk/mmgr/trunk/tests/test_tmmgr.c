@@ -293,7 +293,7 @@ main ()
 
   tmmgr_finalize (&tmmgrAligned);
 
-  malloc_stats();
+  malloc_stats ();
 
   return EXIT_SUCCESS;
 }
