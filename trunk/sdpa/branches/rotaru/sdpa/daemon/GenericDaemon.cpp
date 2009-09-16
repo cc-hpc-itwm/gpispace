@@ -36,15 +36,19 @@ GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputS
 
 GenericDaemon::~GenericDaemon()
 {
+	ostringstream os;
+	os<<"GenericDaemon destructor called ...";
+	SDPA_LOG_DEBUG(os.str());
+
+	// stop the scheduler
 	ptr_scheduler_->stop();
 
 	//Here you should stop the scheduler thread
 	if(ptr_Sdpa2Gwes_)
 		delete ptr_Sdpa2Gwes_;
 
-	ostringstream os;
-	os<<"GenericDaemon destructor called ...";
-	SDPA_LOG_DEBUG(os.str());
+	seda::StageRegistry::instance().lookup("orchestrator")->stop();
+	seda::StageRegistry::instance().clear();
 }
 
 GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes )
@@ -166,7 +170,14 @@ void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
 
 void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr& pEvt)
 {
-	daemon_stage_->send(stageName, pEvt);
+	try {
+		daemon_stage_->send(stageName, pEvt);
+	}
+	catch(QueueFull)
+	{
+		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
+	}
+
 
 	ostringstream os;
 	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
@@ -324,14 +335,15 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
 			os.str("");
-			os<<"Create SubmitJobEvent for the job "<<ptrJob->id();
+			os<<"Create SubmitJobEvent for the job "<<ptrJob->id()<<" (to be submitted to "<<e.from()<<"! )";
 			SDPA_LOG_DEBUG(os.str());
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description()));
 
-			// put the job into the running state
-			ptrJob->Dispatch();
 			// Post a SubmitJobEvent to the slave who made the reques
 			sendEvent(output_stage_, pSubmitEvt);
+
+			// put the job into the running state
+			ptrJob->Dispatch();
 		}
 	}
 	catch(NoJobScheduledException)
@@ -344,10 +356,23 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	{	os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
-	} catch(...) {
+	}
+	catch(QueueFull)
+	{
 		os.str("");
-		os<<"Unexpected exception occurred!";
+		os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
 		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(seda::StageNotFound)
+	{
+		os.str("");
+		os<<"Stage not found when trying to send SubmitJobEvent";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(...) {
+	os.str("");
+	os<<"Unexpected exception occurred!";
+	SDPA_LOG_DEBUG(os.str());
 	}
 }
 
@@ -480,19 +505,34 @@ void GenericDaemon::action_job_canceled(const CancelJobAckEvent& )
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
-	Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
-	addWorker(pWorker);
-
 	ostringstream os;
-	os<<"Registered the worker "<<pWorker->name()<<" ...";
-	SDPA_LOG_DEBUG(os.str());
+	try {
+		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
+		addWorker(pWorker);
 
-	os.str("");
-	os<<"Send back registration acknowledgement to the worker "<<pWorker->name()<<" ...";
-	SDPA_LOG_DEBUG(os.str());
-	// send back an acknowledgement
-	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-	//sendEvent(output_stage_, pWorkerRegAckEvt);
+		ostringstream os;
+		os<<"Registered the worker "<<pWorker->name()<<" ...";
+		SDPA_LOG_DEBUG(os.str());
+
+		os.str("");
+		os<<"Send back registration acknowledgement to the worker "<<pWorker->name()<<" ...";
+		SDPA_LOG_DEBUG(os.str());
+		// send back an acknowledgement
+		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+		sendEvent(output_stage_, pWorkerRegAckEvt);
+	}
+	catch(QueueFull)
+	{
+		os.str("");
+		os<<"Failed to send to the output stage "<<output_stage_<<" a WorkerRegistrationEvent";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(seda::StageNotFound)
+	{
+		os.str("");
+		os<<"Stage not found when trying to submit WorkerRegistrationEvent";
+		SDPA_LOG_DEBUG(os.str());
+	}
 }
 
 /* Implements Gwes2Sdpa */
@@ -514,16 +554,31 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 
 	// simple generate a SubmitJobEvent cu from = to = name()
 	// send an external job
+	ostringstream os;
 
-	SDPA_LOG_DEBUG("New workflow submitted by GWES ...");
+	try {
+		SDPA_LOG_DEBUG("New workflow submitted by GWES ...");
 
-	job_id_t job_id(workflow.getId());
-	job_desc_t job_desc = workflow.serialize();
+		job_id_t job_id(workflow.getId());
+		job_desc_t job_desc = workflow.serialize();
 
-	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
-    sendEvent(pEvtSubmitJob);
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
+		sendEvent(pEvtSubmitJob);
 
-	return workflow.getId();
+		return workflow.getId();
+	}
+	catch(QueueFull)
+		{
+			os.str("");
+			os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+			SDPA_LOG_DEBUG(os.str());
+		}
+		catch(seda::StageNotFound)
+		{
+			os.str("");
+			os<<"Stage not found when trying to submit SubmitJobEvent";
+			SDPA_LOG_DEBUG(os.str());
+		}
 }
 
 /**

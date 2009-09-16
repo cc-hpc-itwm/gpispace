@@ -4,6 +4,7 @@
 #include <string>
 #include <sdpa/wf/types.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/common.hpp>
 
 namespace sdpa { namespace wf {
 
@@ -15,6 +16,8 @@ class Gwes2Sdpa;
 class Sdpa2Gwes {
 
 public:
+
+	typedef sdpa::shared_ptr<Sdpa2Gwes> ptr_t;
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */

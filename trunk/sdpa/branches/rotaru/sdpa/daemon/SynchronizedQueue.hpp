@@ -27,7 +27,7 @@ namespace sdpa { namespace daemon {
   {
     public:
       explicit
-      QueueException(const std::string &reason) : SDPAException(reason) {} 
+      QueueException(const std::string &reason) : SDPAException(reason) {}
   };
 
   class QueueFull : public QueueException
@@ -62,7 +62,7 @@ namespace sdpa { namespace daemon {
 
     SynchronizedQueue() {}
     ~SynchronizedQueue() {}
-    
+
     inline value_type pop() throw (QueueEmpty)
     {
       lock_type lock(mtx_);

@@ -2,24 +2,19 @@
 
 using namespace sdpa::daemon;
 
-SchedulerImpl::SchedulerImpl(sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes):
+SchedulerImpl::SchedulerImpl(sdpa::wf::Sdpa2Gwes*  pSdpa2Gwes):
+	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	ptr_worker_man_(new WorkerManager()),
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerImpl")
 {
-	if(ptr_Sdpa2Gwes)
-		ptr_Sdpa2Gwes_ = ptr_Sdpa2Gwes;
-	else
-		ptr_Sdpa2Gwes_=NULL;
 }
 
 SchedulerImpl::~SchedulerImpl()
 {
-
+	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
 }
 
-
 void SchedulerImpl::acknowledge(const sdpa::job_id_t& job_id ) {
-
 }
 
 Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &worker_id, const sdpa::job_id_t &last_job) {
@@ -106,10 +101,17 @@ void SchedulerImpl::start()
 void SchedulerImpl::stop()
 {
    assert(m_thread);
+
+   //m_thread->interrupt();
+
+   /*Job::ptr_t pJob;
+   pJob.reset();
+   jobs_to_be_scheduled.push(pJob);*/
+
+
    bStopRequested = true;
-   m_thread->interrupt();
    m_thread->join();
-   SDPA_LOG_DEBUG("Scheduler thread stopped ...");
+   SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 
 void SchedulerImpl::run()
@@ -121,10 +123,18 @@ void SchedulerImpl::run()
 		try {
 			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
 
-			if(pJob->is_local())
-				schedule_local(pJob);
+			if( pJob.use_count() )
+			{
+				if(pJob->is_local())
+					schedule_local(pJob);
+				else
+					schedule(pJob);
+			}
 			else
-				schedule(pJob);
+			{
+				bStopRequested = true;
+				SDPA_LOG_DEBUG("Thread stops now!");
+			}
 		}
 		catch( boost::thread_interrupted )
 		{
@@ -133,7 +143,7 @@ void SchedulerImpl::run()
 		}
 		catch( sdpa::daemon::QueueEmpty )
 		{
-			SDPA_LOG_DEBUG("Q empty exception");
+			SDPA_LOG_DEBUG("Queue empty exception");
 			bStopRequested = true;
 		}
 	}

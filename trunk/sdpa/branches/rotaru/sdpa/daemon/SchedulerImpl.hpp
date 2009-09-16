@@ -73,7 +73,7 @@ namespace sdpa {
   private:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
-	  sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes_;
+	  sdpa::wf::Sdpa2Gwes::ptr_t ptr_Sdpa2Gwes_;
 
 	  bool bStopRequested;
 	  boost::shared_ptr<boost::thread> m_thread;
