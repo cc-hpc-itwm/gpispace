@@ -7,9 +7,9 @@
 #include <malloc.h>
 
 static void
-do_alloc (PTmmgr_t ptmmgr, Handle_t Handle, Size_t Size)
+do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
 {
-  AllocReturn_t AllocReturn = tmmgr_alloc (ptmmgr, Handle, Size);
+  AllocReturn_t AllocReturn = tmmgr_alloc (&PTmmgr, Handle, Size);
 
   printf ("ALLOC: (Handle = " FMT_Handle_t ", Size = " FMT_Size_t ") => ",
           Handle, Size);
@@ -21,7 +21,7 @@ do_alloc (PTmmgr_t ptmmgr, Handle_t Handle, Size_t Size)
       {
         Offset_t Offset;
 
-        tmmgr_offset_size (ptmmgr, Handle, &Offset, NULL);
+        tmmgr_offset_size (PTmmgr, Handle, &Offset, NULL);
 
         printf (", Offset = " FMT_Offset_t, Offset);
       }
@@ -45,11 +45,11 @@ do_alloc (PTmmgr_t ptmmgr, Handle_t Handle, Size_t Size)
 }
 
 static void
-do_free (PTmmgr_t ptmmgr, Handle_t Handle)
+do_free (PTmmgr_t PTmmgr, Handle_t Handle)
 {
   printf ("FREE: (Handle = " FMT_Handle_t ") => ", Handle);
 
-  switch (tmmgr_free (ptmmgr, Handle))
+  switch (tmmgr_free (&PTmmgr, Handle))
     {
     case RET_SUCCESS:
       printf ("RET_SUCCESS");
@@ -67,11 +67,11 @@ do_free (PTmmgr_t ptmmgr, Handle_t Handle)
 }
 
 static void
-do_resize (PTmmgr_t ptmmgr, MemSize_t NewSize)
+do_resize (PTmmgr_t PTmmgr, MemSize_t NewSize)
 {
   printf ("RESIZE: NewSize = " FMT_MemSize_t " => ", NewSize);
 
-  switch (tmmgr_resize (ptmmgr, NewSize))
+  switch (tmmgr_resize (&PTmmgr, NewSize))
     {
     case RESIZE_SUCCESS:
       printf ("RESIZE_SUCCESS");
@@ -102,122 +102,138 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 int
 main ()
 {
-  PTmmgr_t ptmmgr = tmmgr_init (45, 1);
+  Tmmgr_t tmmgr = (Tmmgr_t) NULL;
 
-  tmmgr_info (ptmmgr);
+  tmmgr_init (&tmmgr, 45, 1);
+
+  tmmgr_info (tmmgr);
 
   for (Word_t i = 0; i < 10; ++i)
-    do_alloc (ptmmgr, i, 1);
+    do_alloc (tmmgr, i, 1);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_free (ptmmgr, 2);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 6);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 3);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 7);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 8);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 1);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 5);
-  tmmgr_info (ptmmgr);
-  do_free (ptmmgr, 4);
-  tmmgr_info (ptmmgr);
+  printf ("beep\n");
 
-  do_alloc (ptmmgr, 1, 1);
-  tmmgr_info (ptmmgr);
+  do_free (tmmgr, 2);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 6);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 3);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 7);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 8);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 1);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 5);
+  tmmgr_info (tmmgr);
+  do_free (tmmgr, 4);
+  tmmgr_info (tmmgr);
 
-  do_alloc (ptmmgr, 11, 4);
-  do_alloc (ptmmgr, 12, 4);
-  do_alloc (ptmmgr, 11, 4);
-  do_alloc (ptmmgr, 12, 4);
-  do_alloc (ptmmgr, 13, 35);
-  do_alloc (ptmmgr, 13, 34);
+  do_alloc (tmmgr, 1, 1);
+  tmmgr_info (tmmgr);
 
-  do_free (ptmmgr, 13);
+  do_alloc (tmmgr, 11, 4);
+  do_alloc (tmmgr, 12, 4);
+  do_alloc (tmmgr, 11, 4);
+  do_alloc (tmmgr, 12, 4);
+  do_alloc (tmmgr, 13, 35);
+  do_alloc (tmmgr, 13, 34);
 
-  tmmgr_info (ptmmgr);
+  do_free (tmmgr, 13);
+
+  tmmgr_info (tmmgr);
 
   /* complete defragmentation */
-  tmmgr_defrag (ptmmgr, &fMemmove, NULL);
+  tmmgr_defrag (&tmmgr, &fMemmove, NULL);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_alloc (ptmmgr, 26, 5);
-  do_alloc (ptmmgr, 27, 5);
-  do_alloc (ptmmgr, 28, 5);
-  do_alloc (ptmmgr, 29, 5);
-  do_alloc (ptmmgr, 30, 5);
+  do_alloc (tmmgr, 26, 5);
+  do_alloc (tmmgr, 27, 5);
+  do_alloc (tmmgr, 28, 5);
+  do_alloc (tmmgr, 29, 5);
+  do_alloc (tmmgr, 30, 5);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_free (ptmmgr, 26);
-  do_free (ptmmgr, 28);
-  do_free (ptmmgr, 29);
+  do_free (tmmgr, 26);
+  do_free (tmmgr, 28);
+  do_free (tmmgr, 29);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
   /* only up to a free chunk of size 12 */
   MemSize_t FreeSizeWanted = 12;
-  tmmgr_defrag (ptmmgr, &fMemmove, &FreeSizeWanted);
+  tmmgr_defrag (&tmmgr, &fMemmove, &FreeSizeWanted);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  tmmgr_resize (ptmmgr, 50);
+  do_resize (tmmgr, 50);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_alloc (ptmmgr, 101, 14);
+  do_alloc (tmmgr, 101, 14);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 45);
+  do_resize (tmmgr, 45);
 
-  tmmgr_defrag (ptmmgr, &fMemmove, NULL);
+  tmmgr_defrag (&tmmgr, &fMemmove, NULL);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 34);
-  do_resize (ptmmgr, 35);
+  do_resize (tmmgr, 34);
+  do_resize (tmmgr, 35);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 50);
+  do_resize (tmmgr, 50);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 45);
+  do_resize (tmmgr, 45);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_free (ptmmgr, 0);
-  do_free (ptmmgr, 1);
-  do_free (ptmmgr, 9);
-  do_free (ptmmgr, 11);
-  do_free (ptmmgr, 12);
-  do_free (ptmmgr, 27);
-  do_free (ptmmgr, 30);
-  do_free (ptmmgr, 101);
+  do_free (tmmgr, 0);
+  do_free (tmmgr, 1);
+  do_free (tmmgr, 9);
+  do_free (tmmgr, 11);
+  do_free (tmmgr, 12);
+  do_free (tmmgr, 27);
+  do_free (tmmgr, 30);
+  do_free (tmmgr, 101);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 0);
+  do_resize (tmmgr, 0);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
-  do_resize (ptmmgr, 3141);
+  do_resize (tmmgr, 3141);
 
-  tmmgr_info (ptmmgr);
+  tmmgr_info (tmmgr);
 
   printf ("\n");
 
-  Size_t Bytes = tmmgr_finalize (ptmmgr);
+  {
+    printf ("%p %p\n", &tmmgr, tmmgr);
 
-  printf ("Bytes = " FMT_Size_t "\n", Bytes);
+    Size_t Bytes = tmmgr_finalize (&tmmgr);
+
+    printf ("Bytes = " FMT_Size_t "\n", Bytes);
+  }
+
+  {
+    printf ("%p %p\n", &tmmgr, tmmgr);
+
+    Size_t Bytes = tmmgr_finalize (&tmmgr);
+
+    printf ("Bytes = " FMT_Size_t "\n", Bytes);
+  }
 
   malloc_stats ();
 
