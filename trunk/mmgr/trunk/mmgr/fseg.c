@@ -45,6 +45,9 @@ void
 fseg_del (PFSeg_t PFSeg, const Key_t Key, const Value_t Value,
           const SMAP_DEL_SEL_t del_sel)
 {
+  if (PFSeg == NULL)
+    return;
+
   PValue_t PVal = smap_get (*PFSeg, Key);
 
   if (PVal != NULL)
@@ -71,6 +74,9 @@ fFree (const Key_t UNUSED (Key), const Value_t Value, void *Pdat)
 Size_t
 fseg_free (PFSeg_t PFSeg)
 {
+  if (PFSeg == NULL)
+    return 0;
+
   Size_t Size = 0;
 
   smap_work (*PFSeg, fFree, &Size);

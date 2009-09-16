@@ -17,7 +17,7 @@ ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
   Bool_t was_there;
   const PValue_t PVal = trie_ins (postab, Key, &was_there);
   const pdata_t data =
-    (was_there == True) ? ((pdata_t) * PVal) : malloc (sizeof (data_t));
+    (was_there == True) ? ((pdata_t) (*PVal)) : malloc (sizeof (data_t));
 
   if (data == NULL)
     OSTAB_ERROR_MALLOC_FAILED;
@@ -50,6 +50,9 @@ ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
 static Size_t
 fUser_free (const PValue_t PVal)
 {
+  if (PVal == NULL)
+    return 0;
+
   free ((pdata_t) (*PVal));
 
   return sizeof (data_t);
