@@ -32,6 +32,15 @@ gen_key ()
 int
 main (int argc, char **argv)
 {
+  if (!(argc > 3))
+    {
+      fprintf (stderr, "usage: %s struct val size\n", argv[0]);
+      fprintf (stderr, " struct: i == Trie, else == Tree\n");
+      fprintf (stderr, " val: r == random, k == gen key, else == seqential\n");
+      fprintf (stderr, " size: nonneg\n");
+      exit (EXIT_FAILURE);
+    }
+
   int use_trie = (argv[1][0] == 'i') ? 1 : 0;
   int use_rand = (argv[2][0] == 'r') ? 1 : 0;
   int use_gen = (argv[2][0] == 'k') ? 1 : 0;
