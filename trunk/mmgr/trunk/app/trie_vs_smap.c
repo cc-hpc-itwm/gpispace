@@ -36,7 +36,8 @@ main (int argc, char **argv)
     {
       fprintf (stderr, "usage: %s struct val size\n", argv[0]);
       fprintf (stderr, " struct: i == Trie, else == Tree\n");
-      fprintf (stderr, " val: r == random, k == gen key, else == seqential\n");
+      fprintf (stderr,
+               " val: r == random, k == gen key, else == sequential\n");
       fprintf (stderr, " size: nonneg\n");
       exit (EXIT_FAILURE);
     }
