@@ -73,7 +73,7 @@ smap_get (const SMap_t PCTree, const Key_t Key)
       PTree = (Key < PTree->key) ? PTree->child[0] : PTree->child[1];
     }
 
-  return (PTree == NULL) ? NULL : &PTree->value;
+  return (PTree == NULL) ? NULL : &(PTree->value);
 }
 
 PValue_t

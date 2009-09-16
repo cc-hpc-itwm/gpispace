@@ -26,6 +26,18 @@ typedef struct
   Count_t num_free;
 } tmmgr_t, *ptmmgr_t;
 
+static inline MemSize_t
+alignDown (MemSize_t Size, Align_t Align)
+{
+  return (Size & ~(Align - 1));
+}
+
+static inline Offset_t
+alignUp (MemSize_t Size, Align_t Align)
+{
+  return alignDown (Size + Align - 1, Align);
+}
+
 static void
 tmmgr_del_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
                     const MemSize_t Size)
@@ -73,7 +85,8 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 
   ptmmgr->align = Align;
 
-  ptmmgr->mem_size = ptmmgr->mem_free = ptmmgr->min_free = MemSize;
+  ptmmgr->mem_size = ptmmgr->mem_free = ptmmgr->min_free =
+    alignDown (MemSize, ptmmgr->align);
   ptmmgr->high_water = 0;
   ptmmgr->num_alloc = ptmmgr->num_free = 0;
 
@@ -81,12 +94,14 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 }
 
 ResizeReturn_t
-tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSize)
+tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSizeUnaligned)
 {
   if (PTmmgr == NULL)
     return RESIZE_FAILURE;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
+
+  const MemSize_t NewSize = alignDown (NewSizeUnaligned, ptmmgr->align);
 
   if (NewSize < ptmmgr->mem_size - ptmmgr->mem_free)
     return RESIZE_BELOW_MEMUSED;
@@ -214,12 +229,15 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 }
 
 AllocReturn_t
-tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle, const MemSize_t Size)
+tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle,
+             const MemSize_t SizeUnaligned)
 {
   if (PTmmgr == NULL)
     return ALLOC_FAILURE;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
+
+  const MemSize_t Size = alignUp (SizeUnaligned, ptmmgr->align);
 
   if (ptmmgr->mem_free < Size)
     return ALLOC_INSUFFICIENT_MEMORY;
@@ -244,12 +262,14 @@ tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle, const MemSize_t Size)
 
 AllocReturn_t
 tmmgr_oalloc (PTmmgr_t PTmmgr, const Handle_t Handle, const Offset_t Offset,
-              const MemSize_t Size)
+              const MemSize_t SizeUnaligned)
 {
   if (PTmmgr == NULL)
     return ALLOC_FAILURE;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
+
+  const MemSize_t Size = alignUp (SizeUnaligned, ptmmgr->align);
 
   if (ptmmgr->mem_free < Size)
     return ALLOC_INSUFFICIENT_MEMORY;

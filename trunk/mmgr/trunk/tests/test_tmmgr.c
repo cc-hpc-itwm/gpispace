@@ -9,6 +9,9 @@
 static void
 do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
 {
+  if (PTmmgr == NULL)
+    return;
+
   AllocReturn_t AllocReturn = tmmgr_alloc (&PTmmgr, Handle, Size);
 
   printf ("ALLOC: (Handle = " FMT_Handle_t ", Size = " FMT_Size_t ") => ",
@@ -50,6 +53,9 @@ do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
 static void
 do_free (PTmmgr_t PTmmgr, Handle_t Handle)
 {
+  if (PTmmgr == NULL)
+    return;
+
   printf ("FREE: (Handle = " FMT_Handle_t ") => ", Handle);
 
   switch (tmmgr_free (&PTmmgr, Handle))
@@ -75,6 +81,9 @@ do_free (PTmmgr_t PTmmgr, Handle_t Handle)
 static void
 do_resize (PTmmgr_t PTmmgr, MemSize_t NewSize)
 {
+  if (PTmmgr == NULL)
+    return;
+
   printf ("RESIZE: NewSize = " FMT_MemSize_t " => ", NewSize);
 
   switch (tmmgr_resize (&PTmmgr, NewSize))
@@ -118,7 +127,7 @@ main ()
   tmmgr_info (tmmgr);
 
   for (Word_t i = 0; i < 10; ++i)
-    do_alloc (tmmgr, i, 1);
+    do_alloc (tmmgr, (Handle_t) i, (MemSize_t) 1);
 
   tmmgr_info (tmmgr);
 
@@ -245,6 +254,42 @@ main ()
   }
 
   malloc_stats ();
+
+  Tmmgr_t tmmgrAligned = (Tmmgr_t) NULL;
+
+  tmmgr_init (&tmmgrAligned, 45, (1 << 4));
+
+  tmmgr_info (tmmgrAligned);
+
+  do_resize (tmmgrAligned, 67);
+  tmmgr_info (tmmgrAligned);
+
+  do_resize (tmmgrAligned, 64);
+  tmmgr_info (tmmgrAligned);
+
+  for (Word_t i = 0; i < 10; ++i)
+    do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
+
+  tmmgr_info (tmmgrAligned);
+
+  do_resize (tmmgrAligned, 1000);
+
+  for (Word_t i = 0; i < 10; ++i)
+    do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
+
+  tmmgr_info (tmmgrAligned);
+
+  do_resize (tmmgrAligned, 150);
+
+  do_free (tmmgrAligned, 0);
+
+  do_resize (tmmgrAligned, 150);
+
+  tmmgr_defrag (&tmmgrAligned, &fMemmove, NULL);
+
+  do_resize (tmmgrAligned, 150);
+
+  tmmgr_info (tmmgrAligned);
 
   return EXIT_SUCCESS;
 }
