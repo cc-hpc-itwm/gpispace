@@ -37,13 +37,13 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
   while (Key > 0)
     {
       if (PTrie->child[Key % 16] == NULL)
-	{
-	  PTrie->child[Key % 16] = empty ();
-	}
+        {
+          PTrie->child[Key % 16] = empty ();
+        }
 
       PTrie = PTrie->child[Key % 16];
 
-      Key /= 8;
+      Key /= 16;
     }
 
   if (Pwas_there != NULL)
@@ -54,7 +54,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
       PTrie->data = malloc (sizeof (Value_t));
 
       if (PTrie->data == NULL)
-	TRIE_ERROR_MALLOC_FAILED;
+        TRIE_ERROR_MALLOC_FAILED;
     }
 
   return PTrie->data;
@@ -68,46 +68,37 @@ trie_getany (const PTrieMap_t PCTrie)
   while (PTrie != NULL && PTrie->data == NULL)
     {
       PTrie = (PTrie->child[0] != NULL)
-	? PTrie->child[0]
-	: ((PTrie->child[1] != NULL)
-	   ? PTrie->child[1]
-	   : ((PTrie->child[2] != NULL)
-	      ? PTrie->child[2]
-	      : ((PTrie->child[3] != NULL)
-		 ? PTrie->child[3]
-		 : ((PTrie->child[4] != NULL)
-		    ? PTrie->child[4]
-		    : ((PTrie->child[5] != NULL)
-		       ? PTrie->child[5]
-		       : ((PTrie->child[6] != NULL)
-			  ? PTrie->child[6] 
+        ? PTrie->child[0]
+        : ((PTrie->child[1] != NULL)
+           ? PTrie->child[1]
+           : ((PTrie->child[2] != NULL)
+              ? PTrie->child[2]
+              : ((PTrie->child[3] != NULL)
+                 ? PTrie->child[3]
+                 : ((PTrie->child[4] != NULL)
+                    ? PTrie->child[4]
+                    : ((PTrie->child[5] != NULL)
+                       ? PTrie->child[5]
+                       : ((PTrie->child[6] != NULL)
+                          ? PTrie->child[6]
                           : ((PTrie->child[7] != NULL)
-	? PTrie->child[7]
-	: ((PTrie->child[8] != NULL)
-	   ? PTrie->child[8]
-	   : ((PTrie->child[9] != NULL)
-	      ? PTrie->child[9]
-	      : ((PTrie->child[10] != NULL)
-		 ? PTrie->child[10]
-		 : ((PTrie->child[11] != NULL)
-		    ? PTrie->child[11]
-		    : ((PTrie->child[12] != NULL)
-		       ? PTrie->child[12]
-		       : ((PTrie->child[13] != NULL)
-			  ? PTrie->child[13] 
-                          : ((PTrie->child[14] != NULL) ? PTrie->child[15] : PTrie->child[15])
-                         )
-                      )
-                   )
-                )
-             )
-          ))
-                         )
-                      )
-                   )
-                )
-             )
-          );
+                             ? PTrie->child[7]
+                             : ((PTrie->child[8] != NULL)
+                                ? PTrie->child[8]
+                                : ((PTrie->child[9] != NULL)
+                                   ? PTrie->child[9]
+                                   : ((PTrie->child[10] != NULL)
+                                      ? PTrie->child[10]
+                                      : ((PTrie->child[11] != NULL)
+                                         ? PTrie->child[11]
+                                         : ((PTrie->child[12] != NULL)
+                                            ? PTrie->child[12]
+                                            : ((PTrie->child[13] != NULL)
+                                               ? PTrie->child[13]
+                                               : ((PTrie->child[14] !=
+                                                   NULL) ? PTrie->
+                                                  child[14] : PTrie->
+                                                  child[15]))))))))))))));
     }
 
   return (PTrie == NULL) ? NULL : PTrie->data;
@@ -142,45 +133,44 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
       rc = trie_del (&(PTrie->child[Key % 16]), Key / 16, fUser);
 
       if (PTrie->child[0] == NULL && PTrie->child[1] == NULL
-	  && PTrie->child[2] == NULL && PTrie->child[3] == NULL
-	  && PTrie->child[4] == NULL && PTrie->child[5] == NULL
-	  && PTrie->child[6] == NULL && PTrie->child[7] == NULL
+          && PTrie->child[2] == NULL && PTrie->child[3] == NULL
+          && PTrie->child[4] == NULL && PTrie->child[5] == NULL
+          && PTrie->child[6] == NULL && PTrie->child[7] == NULL
           && PTrie->child[8] == NULL && PTrie->child[9] == NULL
-	  && PTrie->child[10] == NULL && PTrie->child[11] == NULL
-	  && PTrie->child[12] == NULL && PTrie->child[13] == NULL
-	  && PTrie->child[14] == NULL && PTrie->child[15] == NULL
-	  && PTrie->data == NULL)
-	{
-	  free (PTrie);
+          && PTrie->child[10] == NULL && PTrie->child[11] == NULL
+          && PTrie->child[12] == NULL && PTrie->child[13] == NULL
+          && PTrie->child[14] == NULL && PTrie->child[15] == NULL
+          && PTrie->data == NULL)
+        {
+          free (PTrie);
 
-	  *(PTrie_t *) PPTrie = NULL;
-	}
+          *(PTrie_t *) PPTrie = NULL;
+        }
     }
   else
     {
       rc = (PTrie->data == NULL) ? False : True;
 
       if (fUser != NULL && PTrie->data != NULL)
-	fUser (PTrie->data);
+        fUser (PTrie->data);
 
       free (PTrie->data);
 
       PTrie->data = NULL;
 
       if (PTrie->child[0] == NULL && PTrie->child[1] == NULL
-	  && PTrie->child[2] == NULL && PTrie->child[3] == NULL
-	  && PTrie->child[4] == NULL && PTrie->child[5] == NULL
-	  && PTrie->child[6] == NULL && PTrie->child[7] == NULL
+          && PTrie->child[2] == NULL && PTrie->child[3] == NULL
+          && PTrie->child[4] == NULL && PTrie->child[5] == NULL
+          && PTrie->child[6] == NULL && PTrie->child[7] == NULL
           && PTrie->child[8] == NULL && PTrie->child[9] == NULL
-	  && PTrie->child[10] == NULL && PTrie->child[11] == NULL
-	  && PTrie->child[12] == NULL && PTrie->child[13] == NULL
-	  && PTrie->child[14] == NULL && PTrie->child[15] == NULL
-)
-	{
-	  free (PTrie);
+          && PTrie->child[10] == NULL && PTrie->child[11] == NULL
+          && PTrie->child[12] == NULL && PTrie->child[13] == NULL
+          && PTrie->child[14] == NULL && PTrie->child[15] == NULL)
+        {
+          free (PTrie);
 
-	  *(PTrie_t *) PPTrie = NULL;
-	}
+          *(PTrie_t *) PPTrie = NULL;
+        }
     }
 
   return rc;
@@ -199,7 +189,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
   if (PTrie->data != NULL)
     {
       if (fUser != NULL)
-	Bytes += fUser (PTrie->data);
+        Bytes += fUser (PTrie->data);
 
       free (PTrie->data);
 
@@ -245,7 +235,7 @@ trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
   if (PTrie->data != NULL)
     {
       if (fUser != NULL)
-	Bytes += fUser (PTrie->data);
+        Bytes += fUser (PTrie->data);
 
       Bytes += sizeof (Size_t);
     }
@@ -276,38 +266,53 @@ patch (const Key_t Key, const Word_t Level, const unsigned int slot)
   switch (slot)
     {
     case 0:
-      return ((((Key & ~(1 << Level)) & ~(2 << Level)) & ~(4 << Level)) & ~ (8 << Level));
+      return ((((Key & ~(1 << Level)) & ~(2 << Level)) & ~(4 << Level)) &
+              ~(8 << Level));
     case 1:
-      return ((((Key | (1 << Level)) & ~(2 << Level)) & ~(4 << Level)) & ~ (8 << Level));
+      return ((((Key | (1 << Level)) & ~(2 << Level)) & ~(4 << Level)) &
+              ~(8 << Level));
     case 2:
-      return ((((Key & ~(1 << Level)) | (2 << Level)) & ~(4 << Level)) & ~ (8 << Level));
+      return ((((Key & ~(1 << Level)) | (2 << Level)) & ~(4 << Level)) &
+              ~(8 << Level));
     case 3:
-      return ((((Key | (1 << Level)) | (2 << Level)) & ~(4 << Level)) & ~ (8 << Level));
+      return ((((Key | (1 << Level)) | (2 << Level)) & ~(4 << Level)) &
+              ~(8 << Level));
     case 4:
-      return ((((Key & ~(1 << Level)) & ~(2 << Level)) | (4 << Level)) & ~ (8 << Level));
+      return ((((Key & ~(1 << Level)) & ~(2 << Level)) | (4 << Level)) &
+              ~(8 << Level));
     case 5:
-      return ((((Key | (1 << Level)) & ~(2 << Level)) | (4 << Level)) & ~ (8 << Level));
+      return ((((Key | (1 << Level)) & ~(2 << Level)) | (4 << Level)) &
+              ~(8 << Level));
     case 6:
-      return ((((Key & ~(1 << Level)) | (2 << Level)) | (4 << Level)) & ~ (8 << Level));
+      return ((((Key & ~(1 << Level)) | (2 << Level)) | (4 << Level)) &
+              ~(8 << Level));
     case 7:
-      return ((((Key | (1 << Level)) | (2 << Level)) | (4 << Level)) & ~ (8 << Level));
-
+      return ((((Key | (1 << Level)) | (2 << Level)) | (4 << Level)) &
+              ~(8 << Level));
     case 8:
-      return ((((Key & ~(1 << Level)) & ~(2 << Level)) & ~(4 << Level)) | (8 << Level));
+      return ((((Key & ~(1 << Level)) & ~(2 << Level)) & ~(4 << Level)) |
+              (8 << Level));
     case 9:
-      return ((((Key | (1 << Level)) & ~(2 << Level)) & ~(4 << Level)) |  (8 << Level));
+      return ((((Key | (1 << Level)) & ~(2 << Level)) & ~(4 << Level)) |
+              (8 << Level));
     case 10:
-      return ((((Key & ~(1 << Level)) | (2 << Level)) & ~(4 << Level)) |  (8 << Level));
+      return ((((Key & ~(1 << Level)) | (2 << Level)) & ~(4 << Level)) |
+              (8 << Level));
     case 11:
-      return ((((Key | (1 << Level)) | (2 << Level)) & ~(4 << Level)) |  (8 << Level));
+      return ((((Key | (1 << Level)) | (2 << Level)) & ~(4 << Level)) |
+              (8 << Level));
     case 12:
-      return ((((Key & ~(1 << Level)) & ~(2 << Level)) | (4 << Level)) |  (8 << Level));
+      return ((((Key & ~(1 << Level)) & ~(2 << Level)) | (4 << Level)) |
+              (8 << Level));
     case 13:
-      return ((((Key | (1 << Level)) & ~(2 << Level)) | (4 << Level)) | (8 << Level));
+      return ((((Key | (1 << Level)) & ~(2 << Level)) | (4 << Level)) |
+              (8 << Level));
     case 14:
-      return ((((Key & ~(1 << Level)) | (2 << Level)) | (4 << Level)) | (8 << Level));
+      return ((((Key & ~(1 << Level)) | (2 << Level)) | (4 << Level)) |
+              (8 << Level));
     case 15:
-      return ((((Key | (1 << Level)) | (2 << Level)) | (4 << Level)) | (8 << Level));
+      return ((((Key | (1 << Level)) | (2 << Level)) | (4 << Level)) |
+              (8 << Level));
     }
 
   TRIE_ERROR_STRANGE;
@@ -317,7 +322,7 @@ patch (const Key_t Key, const Word_t Level, const unsigned int slot)
 
 static void
 trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
-	       const Key_t Key, const Word_t Level, void *Pdat)
+               const Key_t Key, const Word_t Level, void *Pdat)
 {
   if (PTrie == NULL)
     return;
@@ -326,31 +331,38 @@ trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
       fTrieWork (Key, PTrie->data, Pdat);
     }
 
-  trie_work_key (PTrie->child[0], fTrieWork,
-		 patch (Key, Level, 0), Level + 3, Pdat);
-  trie_work_key (PTrie->child[1], fTrieWork,
-		 patch (Key, Level, 1), Level + 3, Pdat);
-  trie_work_key (PTrie->child[2], fTrieWork,
-		 patch (Key, Level, 2), Level + 3, Pdat);
-  trie_work_key (PTrie->child[3], fTrieWork,
-		 patch (Key, Level, 3), Level + 3, Pdat);
-  trie_work_key (PTrie->child[4], fTrieWork,
-		 patch (Key, Level, 4), Level + 3, Pdat);
-  trie_work_key (PTrie->child[5], fTrieWork,
-		 patch (Key, Level, 5), Level + 3, Pdat);
-  trie_work_key (PTrie->child[6], fTrieWork,
-		 patch (Key, Level, 6), Level + 3, Pdat);
-  trie_work_key (PTrie->child[7], fTrieWork,
-		 patch (Key, Level, 7), Level + 3, Pdat);
-
-  trie_work_key (PTrie->child[8], fTrieWork,patch (Key, Level, 8), Level + 3, Pdat);
-  trie_work_key (PTrie->child[9], fTrieWork,patch (Key, Level, 9), Level + 3, Pdat);
-  trie_work_key (PTrie->child[10], fTrieWork,patch (Key, Level, 10), Level + 3, Pdat);
-  trie_work_key (PTrie->child[11], fTrieWork,patch (Key, Level, 11), Level + 3, Pdat);
-  trie_work_key (PTrie->child[12], fTrieWork,patch (Key, Level, 12), Level + 3, Pdat);
-  trie_work_key (PTrie->child[13], fTrieWork,patch (Key, Level, 13), Level + 3, Pdat);
-  trie_work_key (PTrie->child[14], fTrieWork,patch (Key, Level, 14), Level + 3, Pdat);
-  trie_work_key (PTrie->child[15], fTrieWork,patch (Key, Level, 15), Level + 3, Pdat);
+  trie_work_key (PTrie->child[0], fTrieWork, patch (Key, Level, 0), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[1], fTrieWork, patch (Key, Level, 1), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[2], fTrieWork, patch (Key, Level, 2), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[3], fTrieWork, patch (Key, Level, 3), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[4], fTrieWork, patch (Key, Level, 4), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[5], fTrieWork, patch (Key, Level, 5), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[6], fTrieWork, patch (Key, Level, 6), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[7], fTrieWork, patch (Key, Level, 7), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[8], fTrieWork, patch (Key, Level, 8), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[9], fTrieWork, patch (Key, Level, 9), Level + 4,
+                 Pdat);
+  trie_work_key (PTrie->child[10], fTrieWork, patch (Key, Level, 10),
+                 Level + 4, Pdat);
+  trie_work_key (PTrie->child[11], fTrieWork, patch (Key, Level, 11),
+                 Level + 4, Pdat);
+  trie_work_key (PTrie->child[12], fTrieWork, patch (Key, Level, 12),
+                 Level + 4, Pdat);
+  trie_work_key (PTrie->child[13], fTrieWork, patch (Key, Level, 13),
+                 Level + 4, Pdat);
+  trie_work_key (PTrie->child[14], fTrieWork, patch (Key, Level, 14),
+                 Level + 4, Pdat);
+  trie_work_key (PTrie->child[15], fTrieWork, patch (Key, Level, 15),
+                 Level + 4, Pdat);
 }
 
 void
