@@ -495,7 +495,6 @@ fHeap (const Offset_t Offset, const PValue_t UNUSED (PVal), void *Pdat)
   heap_ins (Pdat, Offset);
 }
 
-
 // WORK HERE! This is terrible slow!
 void
 tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
@@ -540,24 +539,24 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
             TMMGR_ERROR_STRANGE;
 
           Handle_t Handle = *PHandle;
-          Offset_t Offset;
-          MemSize_t Size;
+          MemSize_t SizeUsed;
 
-          if (tmmgr_offset_size (ptmmgr, Handle, &Offset, &Size) !=
+          if (tmmgr_offset_size (ptmmgr, Handle, NULL, &SizeUsed) !=
               RET_SUCCESS)
             TMMGR_ERROR_STRANGE;
 
           if (fMemmove != NULL)
-            fMemmove (OffsetFree, OffsetUsed, Size);
+            fMemmove (OffsetFree, OffsetUsed, SizeUsed);
 
-          tmmgr_del (ptmmgr, Handle, Offset, Size);
-          tmmgr_ins (ptmmgr, Handle, OffsetFree, Size);
+          tmmgr_del (ptmmgr, Handle, OffsetUsed, SizeUsed);
+          tmmgr_ins (ptmmgr, Handle, OffsetFree, SizeUsed);
 
-          heap_free (&HeapOffFree);
-          heap_free (&HeapOffUsed);
+          heap_delmin (&HeapOffFree);
+          heap_delmin (&HeapOffUsed);
 
-          trie_work (ptmmgr->free_segment_start, fHeap, &HeapOffFree);
-          trie_work (ptmmgr->offset_to_handle, fHeap, &HeapOffUsed);
+          if (heap_size (HeapOffFree) == 0
+              || heap_min (HeapOffFree) != OffsetFree + SizeUsed)
+            heap_ins (&HeapOffFree, OffsetFree + SizeUsed);
         }
     }
 
