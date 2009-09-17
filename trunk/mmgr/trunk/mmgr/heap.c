@@ -80,6 +80,7 @@ heap_copy (pheap_t dest, pheap_t src, Size_t size)
     return;
 
   memcpy (dest->arr, src->arr, size * sizeof (Offset_t));
+
   dest->pos = src->pos;
 }
 
@@ -129,10 +130,9 @@ heap_ins (PHeap_t PHeap, const Offset_t Offset)
 
         heap_copy (pheap_new, pheap, pheap->size);
 
-        *(pheap_t *) PHeap = pheap_new;
+        heap_free (PHeap);
 
-        free (pheap->arr);
-        free (pheap);
+        *(pheap_t *) PHeap = pheap_new;
       }
   }
 
@@ -217,10 +217,9 @@ heap_delmin (PHeap_t PHeap)
 
       heap_copy (pheap_new, pheap, pheap_new->size);
 
-      *(pheap_t *) PHeap = pheap_new;
+      heap_free (PHeap);
 
-      free (pheap->arr);
-      free (pheap);
+      *(pheap_t *) PHeap = pheap_new;
     }
 }
 
