@@ -13,18 +13,10 @@ typedef struct node_t
 static inline PTrie_t
 empty ()
 {
-  const PTrie_t t = malloc (sizeof (Trie_t));
+  const PTrie_t t = calloc (1, sizeof (Trie_t));
 
   if (t == NULL)
-    {
-      TRIE_ERROR_MALLOC_FAILED;
-    }
-  else
-    {
-      t->child[0] = t->child[1] = NULL;
-
-      t->data = NULL;
-    }
+    TRIE_ERROR_MALLOC_FAILED;
 
   return t;
 }
@@ -44,15 +36,18 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 
   while (Key > 0)
     {
-      if (PTrie->child[Key & 1] == NULL)
+      if (PTrie->child[Key % 2] == NULL)
         {
-          PTrie->child[Key & 1] = empty ();
+          PTrie->child[Key % 2] = empty ();
         }
 
-      PTrie = PTrie->child[Key & 1];
+      PTrie = PTrie->child[Key % 2];
 
       Key >>= 1;
     }
+
+  if (Pwas_there != NULL)
+    *Pwas_there = (PTrie->data == NULL) ? False : True;
 
   if (PTrie->data == NULL)
     {
@@ -60,14 +55,6 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 
       if (PTrie->data == NULL)
         TRIE_ERROR_MALLOC_FAILED;
-
-      if (Pwas_there != NULL)
-        *Pwas_there = False;
-    }
-  else
-    {
-      if (Pwas_there != NULL)
-        *Pwas_there = True;
     }
 
   return PTrie->data;
@@ -93,7 +80,7 @@ trie_get (const PTrieMap_t PCTrie, Key_t Key)
 
   while (PTrie != NULL && Key > 0)
     {
-      PTrie = PTrie->child[Key & 1];
+      PTrie = PTrie->child[Key % 2];
 
       Key >>= 1;
     }
@@ -112,7 +99,7 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 
   if (Key > 0)
     {
-      rc = trie_del (&(PTrie->child[Key & 1]), Key >> 1, fUser);
+      rc = trie_del (&(PTrie->child[Key % 2]), Key >> 1, fUser);
 
       if (PTrie->child[0] == NULL && PTrie->child[1] == NULL
           && PTrie->data == NULL)

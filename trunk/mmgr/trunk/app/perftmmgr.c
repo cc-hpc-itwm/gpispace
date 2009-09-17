@@ -51,7 +51,7 @@ main (int argc, char **argv)
 
   tmmgr_init (&tmmgr, size, align);
 
-  srand (31415926);
+  srand (31415926); knum = 0;
 
   double t = -current_time ();
 
@@ -67,10 +67,10 @@ main (int argc, char **argv)
 
   tmmgr_info (tmmgr);
 
-  printf (FMT_Size_t " time alloc = %g (%g ms per alloc)\n", alloc, t,
+  printf (FMT_Size_t " time alloc = %g (%g us per alloc)\n", alloc, t,
           1e6 * t / (double) alloc);
 
-  srand (31415926);
+  srand (31415926); knum = 0;
 
   t = -current_time ();
 
@@ -85,10 +85,10 @@ main (int argc, char **argv)
 
   tmmgr_info (tmmgr);
 
-  printf (FMT_Size_t " time free = %g (%g ms per free)\n", alloc, t,
+  printf (FMT_Size_t " time free = %g (%g us per free)\n", alloc, t,
           1e6 * t / (double) alloc);
 
-  srand (31415926);
+  srand (31415926); knum = 0;
 
   for (Count_t i = 0; i < alloc; ++i)
     {
@@ -98,7 +98,7 @@ main (int argc, char **argv)
          (size / alloc));
     }
 
-  srand (31415926);
+  srand (31415926); knum = 0;
 
   for (Count_t i = 0; i < alloc / 2; ++i)
     {
