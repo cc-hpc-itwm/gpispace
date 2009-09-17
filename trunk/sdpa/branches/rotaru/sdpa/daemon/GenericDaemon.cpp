@@ -47,7 +47,6 @@ GenericDaemon::~GenericDaemon()
 		delete ptr_Sdpa2Gwes_;
 
 	ptr_scheduler_->stop();
-
 	daemon_stage_->stop();
 	//seda::StageRegistry::instance().lookup(name())->stop();
 }

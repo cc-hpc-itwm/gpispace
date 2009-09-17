@@ -102,7 +102,7 @@ void SchedulerImpl::stop()
 {
    assert(m_thread);
 
-   //m_thread->interrupt();
+   m_thread->interrupt();
 
    /*Job::ptr_t pJob;
    pJob.reset();
