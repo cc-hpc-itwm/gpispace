@@ -10,8 +10,16 @@ namespace fhg { namespace log {
 // as it seems it's not macro
 #define FHGLOG_FUNCTION __PRETTY_FUNCTION__
 
+#if FHGLOG_DISABLE_LOGGING == 1
+
+#define LOG(logger, level, msg)
+
+#else
+
 #define LOG(logger, level, msg) do { using namespace fhg::log;\
                                     if (logger.isLevelEnabled(LogLevel::level)) { LogEvent evt(LogLevel(LogLevel::level), __FILE__, FHGLOG_FUNCTION, __LINE__); if (! logger.isFiltered(evt)) { evt.stream() << msg; logger.log(evt); } } } while(0)
+#endif // if FHGLOG_ENABLED == 0
+
 #define LOG_TRACE(logger, msg) LOG(logger, TRACE, msg)
 #define LOG_DEBUG(logger, msg) LOG(logger, DEBUG, msg)
 #define LOG_INFO(logger, msg)  LOG(logger, INFO, msg)

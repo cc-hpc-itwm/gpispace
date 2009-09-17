@@ -26,19 +26,20 @@
 
 namespace fhg { namespace log {
 
-// FIXME: move this to a configuration header
-#define FHGLOG_ENABLED 1
+class LoggerApi;
+typedef LoggerApi logger_t;
+logger_t getLogger();
+logger_t getLogger(const std::string &name);
 
-#if FHGLOG_ENABLED == 1
-#include <fhglog/Logger.hpp>
+#if FHGLOG_DISABLE_LOGGING != 1
   // forward declaration for the logger class
-  typedef Logger logger_impl_t;
+  typedef Logger::ptr_t logger_impl_t;
 
   class LoggerApi {
-    public:
-      explicit
-      LoggerApi(logger_impl_t::ptr_t impl) : impl_(impl) {}
+      friend logger_t getLogger();
+      friend logger_t getLogger(const std::string &);
 
+    public:
       inline const std::string &name() const { return impl_->name(); }
 
       inline void setLevel(const LogLevel &level) { impl_->setLevel(level); }
@@ -55,9 +56,11 @@ namespace fhg { namespace log {
 
       inline void log(const LogEvent &event) const { impl_->log(event); }
     private:
-      logger_impl_t::ptr_t impl_;
+      explicit
+      LoggerApi(logger_impl_t impl) : impl_(impl) {}
+
+      logger_impl_t impl_;
   };
-  typedef LoggerApi logger_t;
 
   inline logger_t getLogger()
   {
@@ -67,31 +70,45 @@ namespace fhg { namespace log {
   {
     return LoggerApi(Logger::get(name));
   }
+
 #else
-  typedef void    logger_impl_t;
+  typedef char  logger_impl_t[sizeof(Logger::ptr_t)];
 
   class LoggerApi {
+      friend logger_t getLogger();
+      friend logger_t getLogger(const std::string &name);
     public:
-      explicit
-      LoggerApi(logger_impl_t *impl) : impl_(impl) {}
-
       const std::string &name() const { static std::string name_(""); return name_; }
-      void setLevel(const LogLevel &level) {}
-      const LogLevel & getLevel() const { static LogLevel level_(LogLevel::UNSET); return level_; }
-      bool isLevelEnabled(const LogLevel &level) const { return false; }
-      void log(const LogEvent &event) const {}
-      const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
-      const Appender::ptr_t &getAppender(const std::string &appender_name) { throw std::runtime_error("no such appender!"); }
-      void removeAppender(const std::string &appender_name) {}
+
+      inline void setLevel(const LogLevel &level) {}
+      inline const LogLevel & getLevel() const { static LogLevel level_(LogLevel::UNSET); return level_; }
+      inline bool isLevelEnabled(const LogLevel &level) const { return false; }
+
+      inline void setFilter(const Filter::ptr_t &) { }
+      inline const Filter::ptr_t &getFilter() const { static Filter::ptr_t filter(new NullFilter()); return filter; }
+      inline bool isFiltered(const LogEvent &event) const { return true; }
+
+      inline const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
+      inline const Appender::ptr_t &getAppender(const std::string &appender_name) { throw std::runtime_error("no such appender!"); }
+      inline void removeAppender(const std::string &appender_name) {}
+
+      inline void log(const LogEvent &event) const {}
     private:
-      logger_impl_t *impl_;
+      explicit
+      LoggerApi() {}
+
+      logger_impl_t impl_;
   };
 
-  typedef LoggerApi logger_t;
-  inline logger_t getLogger(const std::string &name = "")
+  inline logger_t getLogger()
   {
-    return LoggerApi(NULL);
+    return LoggerApi();
+  }
+  inline logger_t getLogger(const std::string &name)
+  {
+    return LoggerApi();
   }
 #endif // FHGLOG_ENABLED
+
 }}
 #endif

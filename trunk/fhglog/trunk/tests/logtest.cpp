@@ -19,6 +19,7 @@
 #include <iostream>
 #include    <sstream>
 #include    <unistd.h>
+//#define FHGLOG_DISABLE_LOGGING 1
 #include    <fhglog/fhglog.hpp>
 
 class Test
@@ -102,5 +103,16 @@ int main(int argc, char **argv)
   LOG_WARN(logger, "this is a warning:" << 42);
 
   LOG_TRACE(logger, "this message should not take up time, if it is not logged: " << compute_large_output_string());
-  LOG_INFO(logger, "sizeof(logger_t) = " << sizeof(logger_t) << " sizeof(void*) = " << sizeof(void*));
+
+  std::clog << "testing sizeof() of logger types...";
+  if (sizeof(logger_t) != sizeof(logger_impl_t))
+  {
+    std::clog << "FAILED!" << std::endl;
+    std::cerr << "\tsizeof(logger_t) = " << sizeof(logger_t) << std::endl;
+    std::cerr << "\tsizeof(logger_impl_t) = " << sizeof(logger_impl_t) << std::endl;
+  }
+  else
+  {
+    std::clog << "OK" << std::endl;
+  }
 }
