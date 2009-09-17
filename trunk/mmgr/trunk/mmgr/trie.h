@@ -42,6 +42,10 @@ extern "C"
 #define TRIE_ERROR_MALLOC_FAILED TRIE_ERROR_HANDLER(__FILE__,__LINE__,"malloc")
 #endif
 
+#ifndef TRIE_ERROR_STRANGE
+#define TRIE_ERROR_STRANGE TRIE_ERROR_HANDLER(__FILE__,__LINE__,"STRANGE")
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -19,7 +19,7 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 ADD_DEFINITIONS(-Wall -Werror)
-ADD_DEFINITIONS(-std=c99 -O3)
+ADD_DEFINITIONS(-std=c99)
 #ADD_DEFINITIONS(-pg)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
