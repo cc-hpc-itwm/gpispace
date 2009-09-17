@@ -45,7 +45,7 @@ add_subdirectory(tests)
 
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS modules/FindFhgLog.cmake DESTINATION
+INSTALL(FILES README COPYING DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
   )
 
