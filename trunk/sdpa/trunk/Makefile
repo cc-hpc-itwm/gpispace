@@ -25,6 +25,9 @@ doc-api: config
 doc:
 	make -C doc
 
+dist: test
+	make -C $(BUILD_DIR) package
+
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
