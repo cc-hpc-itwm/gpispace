@@ -495,7 +495,6 @@ fHeap (const Offset_t Offset, const PValue_t UNUSED (PVal), void *Pdat)
   heap_ins (Pdat, Offset);
 }
 
-// WORK HERE! This is terrible slow!
 void
 tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               const PMemSize_t PFreeSizeWanted)
