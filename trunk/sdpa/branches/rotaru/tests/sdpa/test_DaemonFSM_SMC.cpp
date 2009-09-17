@@ -73,13 +73,9 @@ void DaemonFSMTest_SMC::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
+
 	seda::StageRegistry::instance().lookup("orchestrator")->stop();
 	seda::StageRegistry::instance().lookup("output_stage")->stop();
-
-	ostringstream os;
-	SDPA_LOG_DEBUG("Reset the pointer to the daemon state machine");
-	m_ptrDaemonFSM.reset();
-
 	seda::StageRegistry::instance().clear();
 }
 

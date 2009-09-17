@@ -17,6 +17,7 @@ namespace daemon {
 	 virtual void handleJob(Job::ptr_t& pJob) = 0;
 	 virtual void start()=0;
 	 virtual void stop()=0;
+	 virtual void run()=0;
   };
 }}
 

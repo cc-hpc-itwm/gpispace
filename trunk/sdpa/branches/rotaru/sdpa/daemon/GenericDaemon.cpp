@@ -41,14 +41,15 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG(os.str());
 
 	// stop the scheduler
-	ptr_scheduler_->stop();
 
 	//Here you should stop the scheduler thread
 	if(ptr_Sdpa2Gwes_)
 		delete ptr_Sdpa2Gwes_;
 
-	seda::StageRegistry::instance().lookup("orchestrator")->stop();
-	seda::StageRegistry::instance().clear();
+	ptr_scheduler_->stop();
+
+	daemon_stage_->stop();
+	//seda::StageRegistry::instance().lookup(name())->stop();
 }
 
 GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes )
@@ -150,7 +151,6 @@ void GenericDaemon::onStageStart(const std::string &stageName)
 void GenericDaemon::onStageStop(const std::string &stageName)
 {
 	// stop the scheduler thread
-    daemon_stage_.reset();
 }
 
 void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
