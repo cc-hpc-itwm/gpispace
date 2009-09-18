@@ -53,6 +53,9 @@ namespace sdpa { namespace daemon {
   public:
     typedef Container container_type;
     typedef typename container_type::value_type value_type;
+    typedef typename container_type::reference reference;
+    typedef typename container_type::const_reference const_reference;
+
     typedef typename container_type::size_type size_type;
     typedef typename container_type::iterator iterator;
     typedef typename container_type::const_iterator const_iterator;
@@ -86,7 +89,7 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline void push(value_type item)
+    inline void push(const_reference item)
     {
       lock_type lock(mtx_);
       container_.push_back(item);
