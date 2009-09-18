@@ -18,10 +18,6 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
-ADD_DEFINITIONS(-Wall -Werror)
-
-OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -31,82 +27,15 @@ set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
+set(CMAKE_CXX_FLAGS "-Wall -Werror -O3 -Wno-non-virtual-dtor")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor")
+
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
     set(HAVE_PTHREAD_H 1)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
-
-## PkgConfig is helpful
-#include(FindPkgConfig)
-#if ( PKG_CONFIG_FOUND )
-#   pkg_check_modules (CPPUNIT REQUIRED cppunit>=1.12)
-#   message(STATUS "CPPUnit: -I${CPPUNIT_INCLUDE_DIRS} -L${CPPUNIT_LIBRARY_DIRS} -l${CPPUNIT_LIBRARIES}")
-#
-#else  ( PKG_CONFIG_FOUND )
-#  message(FATAL "No PKGCONFIG found - hoping for the best.")
-#    # search packages by hand
-#    # CPPunit
-#    ##include(FindCppUnit)
-#endif ( PKG_CONFIG_FOUND )
-
-# seda library
-#include(FindSEDA)
-## check for seda
-#if (SEDA_FOUND)
-#    include_directories(${SEDA_INCLUDE_DIRS})
-#    link_directories(${SEDA_LIBRARY_DIRS})
-#    link_libraries(${SEDA_LIBRARIES})
-#endif(SEDA_FOUND)
-
-# google protocol buffers
-#include(FindProtocolBuffers)
-#if (PB_FOUND)
-#    message(STATUS "Found Protocol Buffers: ${PB_PROTOC_CMD}, Inc:${PB_INCLUDE_DIR} Lib:${PB_LIBRARY}")
-#    include_directories(${PB_INCLUDE_DIR})
-#    link_libraries(${PB_LIBRARY})
-#endif (PB_FOUND)
-#include(PBMacros)
-
-# uuid library
-#include(FindUUID)
-#if (UUID_FOUND)
-#  message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
-#  include_directories(${UUID_INCLUDE_DIR})
-#  link_libraries(${UUID_LIBRARY})
-#else(UUID_FOUND)
-#  message(FATAL_ERROR "UUID library could not be found but is required")
-#endif(UUID_FOUND)
-
-# state machine compiler (only when required)
-#if (USE_SMC)
-#  include(FindSMC)
-#  if (SMC_FOUND)
-#    message(STATUS "Found StateMachineCompiler: ${SMC_JAR}")
-#    include_directories(${SMC_INCLUDE_DIR})
-#  else (SMC_FOUND)
-#    message(FATAL_ERROR "SMC could not be found but is required")
-#  endif (SMC_FOUND)
-#  include (SMCMacros)
-#endif (USE_SMC)
-
-## check for boost
-#set(BOOST_ROOT "${CMAKE_ADDITIONAL_PATH}" CACHE PATH "Where to find the Boost libraries")
-#set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0")
-#set(Boost_FIND_QUIETLY false)
-#set(Boost_USE_STATIC_LIBS ON)
-#include(FindBoost)
-#find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem)
-## we need at least 1.36 so check for it
-#if (Boost_MAJOR_VERSION LESS 1)
-#    message(FATAL_ERROR "At least Boost 1.36 is required")
-#endif(Boost_MAJOR_VERSION LESS 1)
-#if (Boost_MINOR_VERSION LESS 36)
-#    message(FATAL_ERROR "At least Boost 1.36 is required")
-#endif (Boost_MINOR_VERSION LESS 36)
-#message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-#link_libraries(${Boost_LIBRARIES})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
@@ -122,6 +51,8 @@ link_directories(${${PROJECT_NAME}_BINARY_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
 include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+
+message(STATUS "build type has been set to ${CMAKE_BUILD_TYPE}")
 
 # Reflect the package structure
 add_subdirectory(fhglog)
