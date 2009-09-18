@@ -443,7 +443,8 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	}
 }
 
-void GenericDaemon::action_submit_job_ack(const SubmitJobAckEvent& e) {
+void GenericDaemon::action_submit_job_ack(const SubmitJobAckEvent& e)
+{
 	ostringstream os;
 	os<<"Call 'action_request_job_ack'"<< std::endl;
 	SDPA_LOG_DEBUG(os.str());
@@ -467,7 +468,8 @@ void GenericDaemon::action_submit_job_ack(const SubmitJobAckEvent& e) {
 	}
 }
 
-void GenericDaemon::action_config_request(const ConfigRequestEvent& e) {
+void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
+{
 	ostringstream os;
 	os<<"Call 'action_configure'";
 	SDPA_LOG_DEBUG(os.str());
@@ -478,11 +480,63 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e) {
 	 */
 }
 
-void GenericDaemon::action_job_finished(const JobFinishedEvent& )
+void GenericDaemon::action_job_finished(const JobFinishedEvent& e)
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
+
+	ostringstream os;
+	os<<"Call 'action_job_finished'"<< std::endl;
+	SDPA_LOG_DEBUG(os.str());
+
+	//put the job into the state Finished
+	Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
+	pJob->JobFinished();
+
+	if(e.from() != e.to() ) // the message comes from GWES, this is a local job
+	{
+
+		Worker::worker_id_t worker_id = e.from();
+		try {
+			Worker::ptr_t ptrWorker = findWorker(worker_id);
+			// delete job from worker's queues
+			ptrWorker->delete_job(e.job_id());
+
+			sdpa::wf::workflow_id_t wf_id = e.job_id().str();
+			activity_id_t activityId;
+			parameter_list_t output;
+
+			// Should set the workflow_id here, or send it together with the workflow description
+			ostringstream os;
+			os<<"Inform GWES that the workflow "<<wf_id<<" finished";
+			SDPA_LOG_DEBUG(os.str());
+
+			if(ptr_Sdpa2Gwes_)
+			{
+				ptr_Sdpa2Gwes_->activityFinished(wf_id, activityId, output);
+			}
+			else
+				SDPA_LOG_ERROR("Gwes not initialized!");
+		} catch(sdpa::daemon::WorkerNotFoundException) {
+			os.str("");
+			os<<"Worker "<<worker_id<<" not found!";
+			SDPA_LOG_DEBUG(os.str());
+		}
+		catch(sdpa::daemon::NoSuchWorkflowException& )
+		{
+			SDPA_LOG_ERROR("NoSuchWorkflowException occurred!");
+		}
+		catch(sdpa::daemon::NoSuchActivityException& )
+		{
+			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
+		}
+		catch(...) {
+			os.str("");
+			os<<"Unexpected exception occurred!";
+			SDPA_LOG_DEBUG(os.str());
+		}
+	}
 }
 
 void GenericDaemon::action_job_failed(const JobFailedEvent& )

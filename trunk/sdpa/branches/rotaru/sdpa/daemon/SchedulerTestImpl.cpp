@@ -3,7 +3,7 @@
 using namespace sdpa::daemon;
 
 SchedulerTestImpl::SchedulerTestImpl(sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes):
-	SDPA_INIT_LOGGER("sdpa::tests::SchedulerTestImpl")
+	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerTestImpl")
 {
 }
 

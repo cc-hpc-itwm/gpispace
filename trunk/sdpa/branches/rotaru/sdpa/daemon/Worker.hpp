@@ -83,6 +83,14 @@ namespace sdpa { namespace daemon {
       */
     Job::ptr_t get_next_job( const sdpa::job_id_t &last_job_id ) throw (NoJobScheduledException);
 
+
+    /**
+	  Remove a job that was finished or failed from the acknowledged_ queue
+
+	  a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
+	  @param last_job_id the id of the last sucessfully submitted job
+	  */
+    void delete_job(const sdpa::job_id_t &job_id);
     /**
       Provide access to the pending queue.
 

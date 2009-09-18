@@ -14,9 +14,7 @@
 #include "DummyGwes.hpp"
 
 #include <seda/Stage.hpp>
-#include <seda/Strategy.hpp>
 #include <seda/StageRegistry.hpp>
-#include <seda/AccumulateStrategy.hpp>
 
 
 using namespace std;
@@ -32,14 +30,38 @@ public:
 	 void perform(const seda::IEvent::Ptr& pEvt) {
 
 		 if( dynamic_cast<WorkerRegistrationAckEvent*>(pEvt.get())  )
-			 SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent!");
+		 {
+			 SDPA_LOG_DEBUG("Pushed WorkerRegistrationAckEvent!");
+		 }
 		 else if( dynamic_cast<SubmitJobAckEvent*>(pEvt.get())  )
-			 SDPA_LOG_DEBUG("Received SubmitJobAckEvent!");
+		 {
+			 SDPA_LOG_DEBUG("Pushed SubmitJobAckEvent!");
+		 }
 		 else if( dynamic_cast<SubmitJobEvent*>(pEvt.get())  )
-		 	 SDPA_LOG_DEBUG("Received SubmitJobEvent!");
+		 {
+		 	 SDPA_LOG_DEBUG("Pushed SubmitJobEvent!");
+		 }
 		 else
+		 {
 		     SDPA_LOG_DEBUG("Unexpected event!");
+		 }
+
+		 eventQueue.push(pEvt);
 	 }
+
+	 std::string str()
+	 {
+		std::ostringstream ostream(std::ostringstream::out);
+		eventQueue_t::iterator it;
+		for (it = eventQueue.begin(); it != eventQueue.end(); it++) {
+			ostream <<typeid(*(it->get())).name() << std::endl;
+		}
+		return ostream.str();
+	 }
+
+	 typedef SynchronizedQueue<std::list<seda::IEvent::Ptr> > eventQueue_t;
+
+	 eventQueue_t eventQueue;
 
 	 SDPA_DECLARE_LOGGER();
 };
@@ -58,10 +80,11 @@ void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machin
 	SDPA_LOG_DEBUG("setUP");
 
 	m_ptrSdpa2Gwes = sdpa::wf::Sdpa2Gwes::ptr_t (new DummyGwes);
-	seda::Strategy::Ptr ptrTestStrategy( new TestStrategy("test") );
-	seda::AccumulateStrategy::Ptr ptrAccStrategy( new seda::AccumulateStrategy(ptrTestStrategy) );
+	ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
+	//seda::AccumulateStrategy::Ptr ptrAccStrategy( new seda::AccumulateStrategy(ptrTestStrategy) );
+	//m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrAccStrategy) );
 
-	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrAccStrategy) );
+	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrTestStrategy) );
 	m_ptrDaemonFSM = shared_ptr<sdpa::fsm::smc::DaemonFSM>(new sdpa::fsm::smc::DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes.get()));
 
 	sdpa::fsm::smc::DaemonFSM::start(m_ptrDaemonFSM);
@@ -113,15 +136,41 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strTo));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
 
-	sleep(1);
-	// post a job request
+	ostringstream os;
+	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(ptrTestStrategy.get());
+	os<<"Sequence of events sent to the output stage: "<<std::endl<<pTestStr->str();
+	SDPA_LOG_DEBUG(os.str());
+
+	seda::IEvent::Ptr pEvent;
+	// user waits for acknowledgement
+	do
+	{
+		pEvent = pTestStr->eventQueue.pop_and_wait();
+		os.str("");
+		os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+		SDPA_LOG_DEBUG(os.str());
+	}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobAckEvent));
+
+	sleep(1); //leave time for GWES to produce new jobs
+
+	// slave post a job request
 	RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strTo) );
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtReq);
 
-	seda::AccumulateStrategy* pAcc = dynamic_cast<seda::AccumulateStrategy*>(m_ptrOutputStage->strategy().get());
-	ostringstream os;
-    os<<"Sequence of events sent to the output stage: "<<std::endl<<pAcc->str();
-    SDPA_LOG_DEBUG(os.str());
+	//wait until the request is served
+	do
+	{
+		pEvent = pTestStr->eventQueue.pop_and_wait();
+		os.str("");
+		os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+		SDPA_LOG_DEBUG(os.str());
+	}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobEvent));
+
+	// submit a JobFinishedEvent to Orchestrator/Aggregator
+	// the user submits a job
+	sdpa::job_id_t job_id = dynamic_cast<sdpa::events::JobEvent*>(pEvent.get())->job_id();
+	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strTo, job_id));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtJobFinished); //GetContext().SubmitJob(evtSubmitJob1);
 
 
 	SDPA_LOG_DEBUG("Finished!");

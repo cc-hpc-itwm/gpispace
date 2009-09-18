@@ -38,6 +38,22 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
   return false;
 }
 
+void Worker::delete_job(const sdpa::job_id_t &job_id) {
+  JobQueue::lock_type lockAck(acknowledged().mutex());
+
+  for (JobQueue::iterator job(submitted().begin()); job != submitted().end(); job++) {
+    if (job_id == (*job)->id()) {
+      // remove it and put it to the acknowledged queue
+      acknowledged().erase(job);
+      SDPA_LOG_DEBUG("deleted job(" << job_id << ") from the acknowledged_ queue!");
+      return;
+    }
+  }
+
+  //should throw an exception
+  SDPA_LOG_ERROR("The job " << job_id << " could not be found into the acknowledged_ queue!");
+}
+
 Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	  // acknowledge a previous job

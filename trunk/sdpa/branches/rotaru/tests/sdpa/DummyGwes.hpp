@@ -53,6 +53,13 @@ public:
 			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
 	{
 		SDPA_LOG_DEBUG("Called activityFinished ...");
+
+		if(ptr_Gwes2SdpaHandler)
+		{
+			ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch);
+		}
+		else
+			SDPA_LOG_ERROR("SDPA is unregistered ...");
 	}
 
 	/**
@@ -97,6 +104,7 @@ public:
 
 		// Here, GWES is supposed to create new workflows ....
 
+		wf_id_orch = workflow.getId();
 		//sdpa::JobId job_id;
 		workflow_t workflow_new("");
 
@@ -128,6 +136,7 @@ public:
 
 private:
 	mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
+	workflow_id_t wf_id_orch;
 };
 
 #endif

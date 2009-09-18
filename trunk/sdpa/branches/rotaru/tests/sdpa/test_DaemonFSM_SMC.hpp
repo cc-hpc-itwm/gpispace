@@ -6,6 +6,7 @@
 #include "sdpa/logging.hpp"
 #include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 #include <sdpa/wf/Gwes2Sdpa.hpp>
+#include <seda/Strategy.hpp>
 
 
 namespace sdpa {
@@ -28,6 +29,7 @@ namespace sdpa {
 			  shared_ptr<sdpa::fsm::smc::DaemonFSM> m_ptrDaemonFSM;
 			  sdpa::wf::Sdpa2Gwes::ptr_t m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
+			  seda::Strategy::Ptr ptrTestStrategy;
 			};
 		}
 }

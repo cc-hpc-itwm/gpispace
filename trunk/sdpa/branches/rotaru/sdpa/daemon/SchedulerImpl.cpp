@@ -39,7 +39,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	{
 		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
 
-		// Only with the SMC variant!!!!!
+		//Put the job into Running state
 		pJob->Dispatch();
 	}
 	else
