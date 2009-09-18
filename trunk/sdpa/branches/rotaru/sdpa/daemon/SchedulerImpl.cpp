@@ -105,6 +105,7 @@ void SchedulerImpl::stop()
    bStopRequested = true;
    SDPA_LOG_DEBUG("Scheduler thread before join ...");
    m_thread.join();
+   //	ptr_Sdpa2Gwes_ = NULL;
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 

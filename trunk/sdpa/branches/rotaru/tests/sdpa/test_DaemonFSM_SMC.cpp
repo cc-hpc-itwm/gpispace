@@ -46,7 +46,7 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 
-DaemonFSMTest_SMC::DaemonFSMTest_SMC() : m_ptrSdpa2Gwes(new DummyGwes),
+DaemonFSMTest_SMC::DaemonFSMTest_SMC() :
 	SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC")
 {
 }
@@ -57,6 +57,7 @@ DaemonFSMTest_SMC::~DaemonFSMTest_SMC()
 void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
+	m_ptrSdpa2Gwes = sdpa::wf::Sdpa2Gwes::ptr_t (new DummyGwes);
 	seda::Strategy::Ptr ptrTestStrategy( new TestStrategy("test") );
 	seda::AccumulateStrategy::Ptr ptrAccStrategy( new seda::AccumulateStrategy(ptrTestStrategy) );
 
@@ -74,6 +75,8 @@ void DaemonFSMTest_SMC::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
+
+	m_ptrSdpa2Gwes.reset();
 
 	seda::StageRegistry::instance().lookup("orchestrator")->stop();
 	seda::StageRegistry::instance().lookup("output_stage")->stop();

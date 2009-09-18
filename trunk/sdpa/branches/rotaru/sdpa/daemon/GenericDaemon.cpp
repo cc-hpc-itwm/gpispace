@@ -144,6 +144,8 @@ void GenericDaemon::onStageStop(const std::string &stageName)
 	daemon_stage_ = NULL;
 	// stop the scheduler thread
 	ptr_scheduler_->stop();
+	//ptr_Sdpa2Gwes_ = NULL;
+
 }
 
 void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
