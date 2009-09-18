@@ -61,8 +61,8 @@ namespace sdpa {
     virtual void schedule(const Job::ptr_t &job);
 
     void handleJob(Job::ptr_t& pJob);
-    Worker::ptr_t findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
-    void addWorker(const  Worker::ptr_t );
+    Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
+    void addWorker(const  Worker::ptr_t &);
 
     // thread related functions
    void start();
@@ -73,10 +73,10 @@ namespace sdpa {
   private:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
-	  sdpa::wf::Sdpa2Gwes::ptr_t ptr_Sdpa2Gwes_;
+	  sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes_;
 
 	  bool bStopRequested;
-	  boost::shared_ptr<boost::thread> m_thread;
+	  boost::thread m_thread;
 	  SDPA_DECLARE_LOGGER();
   };
 }}

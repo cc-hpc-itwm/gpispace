@@ -21,6 +21,7 @@
 
 #include <boost/thread.hpp>
 #include <sdpa/SDPAException.hpp>
+#include <iostream>
 
 namespace sdpa { namespace daemon {
   class QueueException : public SDPAException
@@ -60,8 +61,8 @@ namespace sdpa { namespace daemon {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
 
-    SynchronizedQueue() {}
-    ~SynchronizedQueue() {}
+    SynchronizedQueue() : stopped_(false) {}
+    ~SynchronizedQueue() { std::cout<<"Destructor of SyncQ"<<std::endl;}
 
     inline value_type pop() throw (QueueEmpty)
     {
@@ -73,13 +74,20 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop_and_wait() throw (boost::thread_interrupted)
+    inline void stop()
+    {
+    	lock_type lock(mtx_);
+    	stopped_ = true;
+    	not_empty_.notify_all();
+    }
+    inline value_type pop_and_wait() throw (boost::thread_interrupted, QueueEmpty)
     {
       lock_type lock(mtx_);
-      while (container_.empty())
+      while (container_.empty() && !stopped_)
       {
         not_empty_.wait(lock);
       }
+      if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
@@ -139,6 +147,7 @@ namespace sdpa { namespace daemon {
     mutable mutex_type mtx_;
     condition_type not_empty_;
     container_type container_;
+    bool stopped_;
   };
 }}
 #endif

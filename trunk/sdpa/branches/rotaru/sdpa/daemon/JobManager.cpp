@@ -13,7 +13,7 @@ JobManager::~JobManager(){
 }
 
 //helpers
-Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
+Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
 	lock_type lock(mtx_);
 	job_map_t::iterator it = job_map_.find( job_id );

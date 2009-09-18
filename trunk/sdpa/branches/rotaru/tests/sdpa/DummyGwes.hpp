@@ -101,7 +101,14 @@ public:
 		workflow.setId(job_id.str());
 		// for testing purposes, generate here a sub-workflow (the same)
 		SDPA_LOG_DEBUG("Gwes calls submitWorkflow ...");
-		ptr_Gwes2SdpaHandler->submitWorkflow(workflow);
+
+		if(ptr_Gwes2SdpaHandler)
+		{
+			//SDPA_LOG_DEBUG("Valid pointer to SDPA ...");
+			ptr_Gwes2SdpaHandler->submitWorkflow(workflow);
+		}
+		else
+			SDPA_LOG_ERROR("SDPA not registered. NULL pointer ...");
 
 		return "0";
 	}

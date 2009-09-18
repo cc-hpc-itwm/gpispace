@@ -73,7 +73,7 @@ void SchedulerImpl::handleJob(Job::ptr_t& pJob)
 	jobs_to_be_scheduled.push(pJob);
 }
 
-Worker::ptr_t SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	try {
 		return ptr_worker_man_->findWorker(worker_id);
@@ -84,7 +84,7 @@ Worker::ptr_t SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) t
 	}
 }
 
-void SchedulerImpl::addWorker(const Worker::ptr_t pWorker)
+void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
 {
 	ptr_worker_man_->addWorker(pWorker);
 }
@@ -92,25 +92,19 @@ void SchedulerImpl::addWorker(const Worker::ptr_t pWorker)
 
 void SchedulerImpl::start()
 {
-   assert(!m_thread);
-   m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SchedulerImpl::run, this)));
-   SDPA_LOG_DEBUG("Scheduler thread started ...");
    bStopRequested = false;
+   m_thread = boost::thread(boost::bind(&SchedulerImpl::run, this));
+   SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
 
 void SchedulerImpl::stop()
 {
-   assert(m_thread);
-
-   m_thread->interrupt();
-
-   /*Job::ptr_t pJob;
-   pJob.reset();
-   jobs_to_be_scheduled.push(pJob);*/
-
+   m_thread.interrupt();
+   //jobs_to_be_scheduled.stop();
 
    bStopRequested = true;
-   m_thread->join();
+   SDPA_LOG_DEBUG("Scheduler thread before join ...");
+   m_thread.join();
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 
@@ -136,12 +130,12 @@ void SchedulerImpl::run()
 				SDPA_LOG_DEBUG("Thread stops now!");
 			}
 		}
-		catch( boost::thread_interrupted )
+		catch( const boost::thread_interrupted & )
 		{
 			SDPA_LOG_DEBUG("Thread interrupted ...");
 			bStopRequested = true;
 		}
-		catch( sdpa::daemon::QueueEmpty )
+		catch( const sdpa::daemon::QueueEmpty &)
 		{
 			SDPA_LOG_DEBUG("Queue empty exception");
 			bStopRequested = true;

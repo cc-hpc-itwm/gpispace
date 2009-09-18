@@ -49,21 +49,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_SMC );
 DaemonFSMTest_SMC::DaemonFSMTest_SMC() : m_ptrSdpa2Gwes(new DummyGwes),
 	SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_SMC")
 {
+}
+
+DaemonFSMTest_SMC::~DaemonFSMTest_SMC()
+{}
+
+void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machine
+	SDPA_LOG_DEBUG("setUP");
+
 	seda::Strategy::Ptr ptrTestStrategy( new TestStrategy("test") );
 	seda::AccumulateStrategy::Ptr ptrAccStrategy( new seda::AccumulateStrategy(ptrTestStrategy) );
 
 	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrAccStrategy) );
-
 	m_ptrDaemonFSM = shared_ptr<sdpa::fsm::smc::DaemonFSM>(new sdpa::fsm::smc::DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes.get()));
-}
-
-DaemonFSMTest_SMC::~DaemonFSMTest_SMC()
-{
-	m_ptrDaemonFSM.reset();
-}
-
-void DaemonFSMTest_SMC::setUp() { //initialize and start the finite state machine
-	SDPA_LOG_DEBUG("setUP");
 
 	sdpa::fsm::smc::DaemonFSM::start(m_ptrDaemonFSM);
 
@@ -77,10 +75,12 @@ void DaemonFSMTest_SMC::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
-
-	//seda::StageRegistry::instance().lookup("orchestrator")->stop();
+	seda::StageRegistry::instance().lookup("orchestrator")->stop();
 	seda::StageRegistry::instance().lookup("output_stage")->stop();
 	seda::StageRegistry::instance().clear();
+
+	m_ptrOutputStage.reset();
+	m_ptrDaemonFSM.reset();
 }
 
 void DaemonFSMTest_SMC::testDaemonFSM_SMC()
@@ -143,6 +143,4 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
 	InterruptEvent evtInt(strFrom, strTo);
 	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);*/
-
-
 }

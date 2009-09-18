@@ -16,7 +16,7 @@ WorkerManager::~WorkerManager(){
 /**
  * find worker
  */
-Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
@@ -28,7 +28,7 @@ Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) t
 /**
  * add new worker
  */
-void WorkerManager::addWorker(const Worker::ptr_t pWorker)
+void WorkerManager::addWorker(const Worker::ptr_t &pWorker)
 {
 	worker_map_[pWorker->name()] = pWorker;
 }
@@ -36,7 +36,7 @@ void WorkerManager::addWorker(const Worker::ptr_t pWorker)
 /**
  * get next worker to be served
  */
-Worker::ptr_t WorkerManager::getNextWorker() throw (NoWorkerFoundException)
+Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();

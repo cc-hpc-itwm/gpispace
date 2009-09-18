@@ -88,14 +88,14 @@ namespace sdpa { namespace daemon {
 	  Scheduler::ptr_t 	ptr_scheduler_;
 	  sdpa::wf::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
 
-	  void setStage(seda::Stage::Ptr stage)
+	  void setStage(seda::Stage* stage)
 	  {
 		  // assert stage->strategy() == this
 		  daemon_stage_ = stage;
 	  }
 
 	  const std::string output_stage_;
-	  seda::Stage::Ptr daemon_stage_;
+	  seda::Stage* daemon_stage_;
   };
 
   /*
