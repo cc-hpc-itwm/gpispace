@@ -27,7 +27,7 @@ set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
-set(CMAKE_CXX_FLAGS "-Wall -Werror -O3 -Wno-non-virtual-dtor")
+set(CMAKE_CXX_FLAGS "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor")
 
 # threads
