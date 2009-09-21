@@ -19,21 +19,41 @@
 #include <sstream> // ostringstream
 #include <cstdlib> // exit
 #include <fhglog/fhglog.hpp>
+#include <fhglog/NullAppender.hpp>
 
-///#define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::LogLevel::level, __FILE__, FHGLOG_FUNCTION, __LINE__, message)
 int main (int argc, char **argv)
 {
-  int errcount(0);
-
   using namespace fhg::log;
 
-  std::ostringstream logstream;
+  int errcount(0);
   logger_t log(getLogger());
+
+  {
+    std::clog << "** testing adding removing appender...";
+    log.addAppender(Appender::ptr_t(new NullAppender("null")));
+    try {
+      log.getAppender("null");
+    } catch(...) {
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\tappender has not been added!" << std::endl;
+      ++errcount;
+    }
+    log.removeAppender("null");
+    try {
+      log.getAppender("null");
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\tappender has not been removed correctly!" << std::endl;
+      ++errcount;
+    } catch (...) {
+      std::clog << "OK!" << std::endl;
+    }
+  }
+
+  std::ostringstream logstream;
   log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream)))->setFormat(Formatter::Custom("%m"));
 
-  // test 1 - append a single event
   {
-    std::clog << "** testing event appending...";
+    std::clog << "** testing event appending (one appender)...";
     FHGLOG_MKEVENT(evt, DEBUG, "hello world!");
     log.log(evt);
     if (logstream.str() != "hello world!")
@@ -47,6 +67,28 @@ int main (int argc, char **argv)
     {
       std::clog << "OK!" << std::endl;
     }
+    logstream.str("");
+  }
+
+  {
+    std::clog << "** testing event appending (two appender)...";
+    std::ostringstream logstream2;
+    log.addAppender(Appender::ptr_t(new StreamAppender("stringstream-2", logstream2)))->setFormat(Formatter::Custom("%m"));
+    FHGLOG_MKEVENT(evt, DEBUG, "hello world!");
+    log.log(evt);
+    if (logstream.str() != "hello world!" || logstream2.str() != "hello world!")
+    {
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\tlogged message: " << logstream.str() << std::endl;
+      std::clog << "\texpected: " << "hello world!" << std::endl;
+      ++errcount;
+    }
+    else
+    {
+      std::clog << "OK!" << std::endl;
+    }
+    log.removeAppender("stringstream-2");
+    logstream.str("");
   }
 
   std::exit(errcount);
