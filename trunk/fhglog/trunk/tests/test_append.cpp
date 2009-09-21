@@ -21,6 +21,17 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/NullAppender.hpp>
 
+class FormattingNullAppender : public fhg::log::Appender
+{
+  public:
+    FormattingNullAppender(const std::string &name) : fhg::log::Appender(name) {}
+
+    void append(const fhg::log::LogEvent &evt) const
+    {
+      fhg::log::Appender::getFormat()->format(evt);
+    }
+};
+
 int main (int argc, char **argv)
 {
   using namespace fhg::log;
@@ -49,13 +60,24 @@ int main (int argc, char **argv)
     }
   }
 
+  {
+    std::clog << "** testing formatting performance...";
+    log.addAppender(Appender::ptr_t(new FormattingNullAppender("null")))->setFormat(Formatter::Full());
+    for (std::size_t count(0); count < 100000; ++count)
+    {
+      log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
+    }
+    log.removeAppender("null");
+  }
+
+
+
   std::ostringstream logstream;
   log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream)))->setFormat(Formatter::Custom("%m"));
 
   {
     std::clog << "** testing event appending (one appender)...";
-    FHGLOG_MKEVENT(evt, DEBUG, "hello world!");
-    log.log(evt);
+    log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
     if (logstream.str() != "hello world!")
     {
       std::clog << "FAILED!" << std::endl;
