@@ -19,6 +19,8 @@ namespace fhg { namespace log {
       inline const Formatter::ptr_t getFormat() const { return fmt_; }
 
       const std::string &name() const { return name_; }
+
+      Appender &operator<<(const LogEvent &evt) { this->append(evt); return *this; }
     protected:
       explicit
       Appender(const std::string &name)
