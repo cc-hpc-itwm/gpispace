@@ -24,7 +24,7 @@
 class FormattingNullAppender : public fhg::log::Appender
 {
   public:
-    FormattingNullAppender(const std::string &name) : fhg::log::Appender(name) {}
+    FormattingNullAppender(const std::string &a_name) : fhg::log::Appender(a_name) {}
 
     void append(const fhg::log::LogEvent &evt) const
     {
@@ -32,7 +32,7 @@ class FormattingNullAppender : public fhg::log::Appender
     }
 };
 
-int main (int argc, char **argv)
+int main (int , char **)
 {
   using namespace fhg::log;
 
