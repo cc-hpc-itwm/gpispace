@@ -67,7 +67,7 @@ namespace fhg { namespace log {
   };
 
   class NullFilter : public Filter {
-    bool operator()(const LogEvent &evt) const
+    bool operator()(const LogEvent &) const
     {
       return false;
     }

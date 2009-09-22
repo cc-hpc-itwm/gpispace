@@ -40,8 +40,8 @@ namespace fhg { namespace log {
         , MAX_LEVEL = FATAL
       };
 
-      LogLevel(Level lvl = UNSET)
-        : lvl_(lvl)
+      LogLevel(Level level = UNSET)
+        : lvl_(level)
       {
         if (lvl_ != UNSET && (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL))
         {

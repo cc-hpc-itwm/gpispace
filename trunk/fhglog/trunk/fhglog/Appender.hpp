@@ -23,8 +23,8 @@ namespace fhg { namespace log {
       Appender &operator<<(const LogEvent &evt) { this->append(evt); return *this; }
     protected:
       explicit
-      Appender(const std::string &name)
-        : name_(name), fmt_(Formatter::Default())
+      Appender(const std::string &a_name)
+        : name_(a_name), fmt_(Formatter::Default())
       {
       }
     private:

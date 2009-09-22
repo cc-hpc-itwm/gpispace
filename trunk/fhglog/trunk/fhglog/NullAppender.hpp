@@ -27,10 +27,10 @@ namespace fhg { namespace log {
   {
   public:
     explicit
-    NullAppender(const std::string &name = "null")
-      : Appender(name) { }
+    NullAppender(const std::string &a_name = "null")
+      : Appender(a_name) { }
 
-    virtual void append(const LogEvent &evt) const { }
+    virtual void append(const LogEvent &) const { }
   };
 }}
 #endif   /* ----- #ifndef FHG_LOG_NULLAPPENDER_HPP_INC  ----- */

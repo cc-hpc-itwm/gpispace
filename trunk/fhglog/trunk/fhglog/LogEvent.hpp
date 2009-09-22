@@ -46,7 +46,7 @@ namespace fhg { namespace log {
       inline const function_type &function() const { return function_; }
       inline const line_type &line() const { return line_; }
       inline const message_type &message() const { return message_; }
-      inline const void finish() const
+      inline void finish() const
       {
         if (message_.empty())
         {

@@ -80,19 +80,19 @@ logger_t getLogger(const std::string &name);
     public:
       const std::string &name() const { static std::string name_(""); return name_; }
 
-      inline void setLevel(const LogLevel &level) {}
+      inline void setLevel(const LogLevel &) {}
       inline const LogLevel & getLevel() const { static LogLevel level_(LogLevel::UNSET); return level_; }
-      inline bool isLevelEnabled(const LogLevel &level) const { return false; }
+      inline bool isLevelEnabled(const LogLevel &) const { return false; }
 
       inline void setFilter(const Filter::ptr_t &) { }
       inline const Filter::ptr_t &getFilter() const { static Filter::ptr_t filter(new NullFilter()); return filter; }
-      inline bool isFiltered(const LogEvent &event) const { return true; }
+      inline bool isFiltered(const LogEvent &) const { return true; }
 
       inline const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
-      inline const Appender::ptr_t &getAppender(const std::string &appender_name) { throw std::runtime_error("no such appender!"); }
-      inline void removeAppender(const std::string &appender_name) {}
+      inline const Appender::ptr_t &getAppender(const std::string &) { throw std::runtime_error("no such appender!"); }
+      inline void removeAppender(const std::string &) {}
 
-      inline void log(const LogEvent &event) const {}
+      inline void log(const LogEvent &) const {}
     private:
       explicit
       LoggerApi() {}
@@ -104,7 +104,7 @@ logger_t getLogger(const std::string &name);
   {
     return LoggerApi();
   }
-  inline logger_t getLogger(const std::string &name)
+  inline logger_t getLogger(const std::string &)
   {
     return LoggerApi();
   }
