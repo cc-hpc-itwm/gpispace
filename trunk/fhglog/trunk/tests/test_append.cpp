@@ -63,10 +63,11 @@ int main (int argc, char **argv)
   {
     std::clog << "** testing formatting performance...";
     log.addAppender(Appender::ptr_t(new FormattingNullAppender("null")))->setFormat(Formatter::Full());
-    for (std::size_t count(0); count < 100000; ++count)
+    for (std::size_t count(0); count < 1000000; ++count)
     {
       log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
     }
+    std::clog << "OK!" << std::endl;
     log.removeAppender("null");
   }
 
