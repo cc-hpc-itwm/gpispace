@@ -8,12 +8,13 @@ std::string Formatter::format(const LogEvent &evt)
 {
   std::stringstream sstr;
   std::string::const_iterator c(fmt_.begin());
-  while (c != fmt_.end())
+  std::string::size_type len(fmt_.size());
+  while (len > 0)
   {
     if ('%' == *c)
     {
       // a single % at the end of the format is an error
-      if ( (c + 1) == fmt_.end())
+      if ((len - 1) == 0)
       {
         throw std::runtime_error("Format string ends with a single %");
       }
@@ -64,14 +65,14 @@ std::string Formatter::format(const LogEvent &evt)
           default:
             throw std::runtime_error("Illegal format character occured!");
         }
-        ++c;
+        ++c; --len;
       }
     }
     else
     {
       sstr << *c;
     }
-    ++c;
+    ++c; --len;
   }
   return sstr.str();
 }
