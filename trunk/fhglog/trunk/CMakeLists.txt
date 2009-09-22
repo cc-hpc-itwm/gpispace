@@ -27,11 +27,10 @@ set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
-set(CMAKE_CXX_FLAGS "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor")
-
+set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror -Wno-non-virtual-dtor")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wall -Werror -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Woverloaded-virtual -Wno-system-headers -Wno-non-virtual-dtor -pg -fprofile-arcs -ftest-coverage")
 # gprof and gcov support
-set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wall -Werror -Wno-non-virtual-dtor -pg -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wall -Werror -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Woverloaded-virtual -Wno-system-headers -Wno-non-virtual-dtor -pg -fprofile-arcs -ftest-coverage")
 
 # threads
 include(FindThreads)
@@ -57,16 +56,17 @@ include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 message(STATUS "build type has been set to ${CMAKE_BUILD_TYPE}")
 
-# Reflect the package structure
-add_subdirectory(fhglog)
-enable_testing()
-add_subdirectory(tests)
-
-
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS modules/FindFhgLog.cmake DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  )
+)
+
+# CTest
+include(CTest)
+
+# Reflect the package structure
+add_subdirectory(fhglog)
+add_subdirectory(tests)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
