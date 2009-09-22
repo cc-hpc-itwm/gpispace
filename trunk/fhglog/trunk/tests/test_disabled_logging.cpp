@@ -30,7 +30,7 @@ std::string simulate_computation(std::size_t time = 5)
   return "";
 }
 
-int main (int argc, char **argv)
+int main (int, char **)
 {
   using namespace fhg::log;
 
