@@ -28,7 +28,10 @@ doc:
 tags:
 	@ctags -R --c++-kinds=+p --fields=+iaS --extra=+q --languages=C++ --language-force=C++ -f .tags .
 
+ctest: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage
+
 .DEFAULT:
 	@cd $(BUILD_DIR) && $(MAKE) -$(MAKEFLAGS) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc tags
+.PHONY: clean distclean all default doc tags ctest
