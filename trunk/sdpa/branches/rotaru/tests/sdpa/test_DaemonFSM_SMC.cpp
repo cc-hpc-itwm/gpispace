@@ -41,6 +41,18 @@ public:
 		 {
 		 	 SDPA_LOG_DEBUG("Pushed SubmitJobEvent!");
 		 }
+		 else if( dynamic_cast<JobFinishedAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFinishedAckEvent!");
+		 }
+		 else if( dynamic_cast<JobFailedAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFailedAckEvent!");
+		 }
+		 else if( dynamic_cast<JobFinishedEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFinishedEvent!");
+		 }
 		 else
 		 {
 		     SDPA_LOG_DEBUG("Unexpected event!");
@@ -115,30 +127,34 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 
 	string strFromUp("user");
 	string strFromDown("aggregator");
-	string strTo   = m_ptrDaemonFSM->name();
-	string strFrom = strTo;
+	string strDaemon   = m_ptrDaemonFSM->name();
+	//ring strDaemon = strDaemon;
 
     sdpa::util::time_type start(sdpa::util::now());
-    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strFrom, strTo));
+    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtStartUp);//GetContext().StartUp(evtStartUp);
 
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strFrom, strTo));
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtConfigOk); //GetContext().ConfigOk(evtConfigOk);
 
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strTo));
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtWorkerReg); //GetContext().RegisterWorker(evtWorkerReg);
 
+	/*nfigRequestEvent evtCfgReq(strFromDown, strDaemon);
+	m_ptrDaemonFSM->GetContext().ConfigRequest(evtCfgReq);
 
-    for(int k=0;k<10; k++)
+	InterruptEvent evtInt(strDaemon, strDaemon);
+	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);*/
+
+    for(int k=0;k<1; k++)
     {
-
     	cout<<"************ITERATION "<<k<<" ************************"<<std::endl;
 
-		LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strTo));
+		LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 		m_ptrDaemonFSM->daemon_stage_->send(pEvtLS); //GetContext().LifeSign(evtLS);*/
 
 		// the user submits a job
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strTo));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 		m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
 
 		ostringstream os;
@@ -159,7 +175,7 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 		sleep(1); //leave time for GWES to produce new jobs
 
 		// slave post a job request
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strTo) );
+		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
 		m_ptrDaemonFSM->daemon_stage_->send(pEvtReq);
 
 		//wait until the request is served
@@ -174,31 +190,28 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 		// submit a JobFinishedEvent to Orchestrator/Aggregator
 		// the user submits a job
 		sdpa::job_id_t job_id = dynamic_cast<sdpa::events::JobEvent*>(pEvent.get())->job_id();
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strTo, job_id));
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strDaemon, job_id));
 		m_ptrDaemonFSM->daemon_stage_->send(pEvtJobFinished); //GetContext().SubmitJob(evtSubmitJob1);*/
+
+		// wait for a JobFinishedAckEvent
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::JobFinishedAckEvent));
+
+		// check if the job finished i.e. send QueryJobEvent
+		QueryJobStatusEvent::Ptr pEvtQueryStatus(new QueryJobStatusEvent(strFromUp, strDaemon, pEvtSubmitJob->job_id()));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtQueryStatus); //GetContext().SubmitJob(evtSubmitJob1);
+
+	    // delete explicitely the orchestrator job
+		//DeleteJobEvent evtDelJob( strFromUp, strDaemon, vectorJobIDs[0] );
+		//m_ptrDaemonFSM->GetContext().DeleteJob(evtDelJob);
 
 		SDPA_LOG_DEBUG("Finished!");
     }
 
 	// request the results before deleting the job!
-
-	/*
-	// now I#m in a final state and the delete must succeed
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_ptrDaemonFSM->ptr_job_man_->getJobIDList();
-
-	//Attention: delete succeeds only when the job should is in a final state!
-	sdpa::job_id_t job_id = vectorJobIDs[0];
-
-	JobFinishedEvent evtFinished(strFrom, strTo, job_id);
-	m_ptrDaemonFSM->ptr_job_man_->job_map_[job_id]->process_event(evtFinished);
-
-
-	 DeleteJobEvent evtDelJob( strFromUp, strTo, vectorJobIDs[0] );
-	m_ptrDaemonFSM->GetContext().DeleteJob(evtDelJob);
-
-	ConfigRequestEvent evtCfgReq(strFromDown, strTo);
-	m_ptrDaemonFSM->GetContext().ConfigRequest(evtCfgReq);
-
-	InterruptEvent evtInt(strFrom, strTo);
-	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);*/
 }

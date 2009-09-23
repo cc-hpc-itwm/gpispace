@@ -76,7 +76,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 			if( dynamic_cast<JobFinishedEvent*>(pEvent.get()) ||
 				dynamic_cast<JobFailedEvent*>(pEvent.get()) ||
 				dynamic_cast<CancelJobAckEvent*>(pEvent.get()) ||
-				dynamic_cast<SubmitJobEvent*>(pEvent.get())) handleDaemonEvent(pEvent);
+				dynamic_cast<SubmitJobEvent*>(pEvent.get()) ) handleDaemonEvent(pEvent);
 			else
 				handleJobEvent(pEvent);
 		}
@@ -539,7 +539,6 @@ void GenericDaemon::action_job_finished(const JobFinishedEvent& e)
 	}
 	else
 	{
-
 		Worker::worker_id_t worker_id = e.from();
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
