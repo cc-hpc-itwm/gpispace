@@ -119,8 +119,7 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	string strFrom = strTo;
 
     sdpa::util::time_type start(sdpa::util::now());
-
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strFrom, strTo));
+    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strFrom, strTo));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtStartUp);//GetContext().StartUp(evtStartUp);
 
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strFrom, strTo));
@@ -129,51 +128,58 @@ void DaemonFSMTest_SMC::testDaemonFSM_SMC()
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strTo));
 	m_ptrDaemonFSM->daemon_stage_->send(pEvtWorkerReg); //GetContext().RegisterWorker(evtWorkerReg);
 
-	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strTo));
-	m_ptrDaemonFSM->daemon_stage_->send(pEvtLS); //GetContext().LifeSign(evtLS);*/
 
-	// the user submits a job
-	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strTo));
-	m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
+    for(int k=0;k<10; k++)
+    {
 
-	ostringstream os;
-	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(ptrTestStrategy.get());
-	os<<"Sequence of events sent to the output stage: "<<std::endl<<pTestStr->str();
-	SDPA_LOG_DEBUG(os.str());
+    	cout<<"************ITERATION "<<k<<" ************************"<<std::endl;
 
-	seda::IEvent::Ptr pEvent;
-	// user waits for acknowledgement
-	do
-	{
-		pEvent = pTestStr->eventQueue.pop_and_wait();
-		os.str("");
-		os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+		LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strTo));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtLS); //GetContext().LifeSign(evtLS);*/
+
+		// the user submits a job
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strTo));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
+
+		ostringstream os;
+		TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(ptrTestStrategy.get());
+		os<<"Sequence of events sent to the output stage: "<<std::endl<<pTestStr->str();
 		SDPA_LOG_DEBUG(os.str());
-	}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobAckEvent));
 
-	sleep(1); //leave time for GWES to produce new jobs
+		seda::IEvent::Ptr pEvent;
+		// user waits for acknowledgement
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobAckEvent));
 
-	// slave post a job request
-	RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strTo) );
-	m_ptrDaemonFSM->daemon_stage_->send(pEvtReq);
+		sleep(1); //leave time for GWES to produce new jobs
 
-	//wait until the request is served
-	do
-	{
-		pEvent = pTestStr->eventQueue.pop_and_wait();
-		os.str("");
-		os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
-		SDPA_LOG_DEBUG(os.str());
-	}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobEvent));
+		// slave post a job request
+		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strTo) );
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtReq);
 
-	// submit a JobFinishedEvent to Orchestrator/Aggregator
-	// the user submits a job
-	sdpa::job_id_t job_id = dynamic_cast<sdpa::events::JobEvent*>(pEvent.get())->job_id();
-	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strTo, job_id));
-	m_ptrDaemonFSM->daemon_stage_->send(pEvtJobFinished); //GetContext().SubmitJob(evtSubmitJob1);
+		//wait until the request is served
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobEvent));
 
+		// submit a JobFinishedEvent to Orchestrator/Aggregator
+		// the user submits a job
+		sdpa::job_id_t job_id = dynamic_cast<sdpa::events::JobEvent*>(pEvent.get())->job_id();
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strTo, job_id));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtJobFinished); //GetContext().SubmitJob(evtSubmitJob1);*/
 
-	SDPA_LOG_DEBUG("Finished!");
+		SDPA_LOG_DEBUG("Finished!");
+    }
+
 	// request the results before deleting the job!
 
 	/*

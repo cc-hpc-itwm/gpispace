@@ -10,6 +10,9 @@ namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
 	  typedef sdpa::shared_ptr<WorkerManager> ptr_t;
+	  typedef boost::recursive_mutex mutex_type;
+	  typedef boost::unique_lock<mutex_type> lock_type;
+	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 
 	  WorkerManager();
 	  virtual ~WorkerManager();
@@ -22,12 +25,12 @@ namespace sdpa { namespace daemon {
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
+	  worker_map_t worker_map_;
   protected:
 	  SDPA_DECLARE_LOGGER();
-	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
-
-	  worker_map_t worker_map_;
 	  worker_map_t::iterator iter_last_worker_;
+
+	  mutable mutex_type mtx_;
   };
 }}
 

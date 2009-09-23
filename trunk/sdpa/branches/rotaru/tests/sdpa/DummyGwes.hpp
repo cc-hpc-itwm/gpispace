@@ -103,7 +103,6 @@ public:
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
 		// Here, GWES is supposed to create new workflows ....
-
 		wf_id_orch = workflow.getId();
 		//sdpa::JobId job_id;
 		workflow_t workflow_new("");

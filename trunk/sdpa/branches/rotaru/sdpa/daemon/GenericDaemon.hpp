@@ -56,7 +56,9 @@ namespace sdpa { namespace daemon {
 	  virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 	  virtual void action_job_finished(const sdpa::events::JobFinishedEvent& );
+	  virtual void action_job_finished_ack(const sdpa::events::JobFinishedAckEvent& );
 	  virtual void action_job_failed(const sdpa::events::JobFailedEvent& );
+	  virtual void action_job_failed_ack(const sdpa::events::JobFailedAckEvent& );
 	  virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& );
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
 
@@ -74,6 +76,8 @@ namespace sdpa { namespace daemon {
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const  Worker::ptr_t );
+
+	  std::string master()const { return master_;}
 
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
@@ -96,6 +100,7 @@ namespace sdpa { namespace daemon {
 
 	  const std::string output_stage_;
 	  seda::Stage* daemon_stage_;
+	  std::string master_;
   };
 
   /*

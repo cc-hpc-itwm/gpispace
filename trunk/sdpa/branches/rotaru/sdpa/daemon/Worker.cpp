@@ -39,11 +39,9 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
 }
 
 void Worker::delete_job(const sdpa::job_id_t &job_id) {
-  JobQueue::lock_type lockAck(acknowledged().mutex());
-
-  for (JobQueue::iterator job(submitted().begin()); job != submitted().end(); job++) {
+  for (JobQueue::iterator job(acknowledged().begin()); job != acknowledged().end(); job++) {
     if (job_id == (*job)->id()) {
-      // remove it and put it to the acknowledged queue
+      // remove the job
       acknowledged().erase(job);
       SDPA_LOG_DEBUG("deleted job(" << job_id << ") from the acknowledged_ queue!");
       return;

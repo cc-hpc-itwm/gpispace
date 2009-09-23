@@ -23,6 +23,8 @@ GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputS
 	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name),
 	ptr_job_man_(new JobManager()), ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes))
 {
+	master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
+
 	// provide some dummy implementation (for testing) or use the real impl. from the gwes library
 	ptr_Sdpa2Gwes_ = pArgSdpa2Gwes;
 
@@ -491,33 +493,90 @@ void GenericDaemon::action_job_finished(const JobFinishedEvent& e)
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job into the state Finished
-	Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
-	pJob->JobFinished();
+	try {
+		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
+		pJob->JobFinished();
+	}
+	catch(sdpa::daemon::JobNotFoundException){
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not found!";
+		SDPA_LOG_DEBUG(os.str());
+	}
 
-	if(e.from() != e.to() ) // the message comes from GWES, this is a local job
+	if(e.from() == e.to() && name() != std::string("orchestrator") ) // use a predefined variable here of type enum or use typeid
+	{
+		// the message comes from GWES, this is a local job
+		// if I'm not the orchestrator
+		//send JobFinished event to the master if daemon == aggregator || NRE
+		try {
+			// forward it up
+			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), e.job_id()));
+
+			// send the event to the master
+			sendEvent(output_stage_, pEvtJobFinished);
+
+			// delete it from the map when you receive a JobFinishedAckEvent!
+		}
+		catch(QueueFull)
+		{
+			os.str("");
+			os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+			SDPA_LOG_DEBUG(os.str());
+		}
+		catch(seda::StageNotFound)
+		{
+			os.str("");
+			os<<"Stage not found when trying to submit SubmitJobEvent";
+			SDPA_LOG_DEBUG(os.str());
+		}
+		catch(...) {
+			os.str("");
+			os<<"Unexpected exception occurred!";
+			SDPA_LOG_DEBUG(os.str());
+		}
+
+		// no acknowledgement to be sent to GWES
+	}
+	else
 	{
 
 		Worker::worker_id_t worker_id = e.from();
 		try {
-			Worker::ptr_t ptrWorker = findWorker(worker_id);
-			// delete job from worker's queues
-			ptrWorker->delete_job(e.job_id());
-
-			sdpa::wf::workflow_id_t wf_id = e.job_id().str();
-			activity_id_t activityId;
-			parameter_list_t output;
-
 			// Should set the workflow_id here, or send it together with the workflow description
-			ostringstream os;
-			os<<"Inform GWES that the workflow "<<wf_id<<" finished";
-			SDPA_LOG_DEBUG(os.str());
-
 			if(ptr_Sdpa2Gwes_)
 			{
+				sdpa::wf::workflow_id_t wf_id = e.job_id().str();
+				activity_id_t activityId;
+				parameter_list_t output;
+
+				os.str("");
+				os<<"Inform GWES that the workflow "<<wf_id<<" finished";
+				SDPA_LOG_DEBUG(os.str());
+
 				ptr_Sdpa2Gwes_->activityFinished(wf_id, activityId, output);
+
+				Worker::ptr_t ptrWorker = findWorker(worker_id);
+				// delete job from worker's queues
+
+				os.str("");
+				os<<"Delete the job "<<e.job_id()<<" from the worke's queues!";
+				SDPA_LOG_DEBUG(os.str());
+
+				ptrWorker->delete_job(e.job_id());
+
+				// send a JobFinishedAckEvent back to the worker/slave
+				//delete it also from job_map_
+				JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent(name(), master(), e.job_id()));
+
+				// send the event to the master
+				sendEvent(output_stage_, pEvtJobFinishedAck);
+
+				//delete it also from job_map_
+				ptr_job_man_->deleteJob(e.job_id());
 			}
 			else
 				SDPA_LOG_ERROR("Gwes not initialized!");
+
 		} catch(sdpa::daemon::WorkerNotFoundException) {
 			os.str("");
 			os<<"Worker "<<worker_id<<" not found!";
@@ -531,6 +590,12 @@ void GenericDaemon::action_job_finished(const JobFinishedEvent& e)
 		{
 			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
 		}
+		catch(JobNotDeletedException&)
+		{
+			os.str("");
+			os<<"The JobManager could not delete the job "<<e.job_id();
+			SDPA_LOG_DEBUG(os.str());
+		}
 		catch(...) {
 			os.str("");
 			os<<"Unexpected exception occurred!";
@@ -539,14 +604,74 @@ void GenericDaemon::action_job_finished(const JobFinishedEvent& e)
 	}
 }
 
+// respond to a worker that the JobFinishedEvent was received
+void GenericDaemon::action_job_finished_ack(const JobFinishedAckEvent& e)
+{
+   // The result was succesfully delivered, so I can delete the job from the job map
+	ostringstream os;
+	try {
+		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
+		// delete it from the map when you receive a JobFinishedAckEvent!
+		ptr_job_man_->deleteJob(e.job_id());
+	}
+	catch(sdpa::daemon::JobNotFoundException)
+	{
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not found!";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(JobNotDeletedException&)
+	{
+		os.str("");
+		os<<"The JobManager could not delete the job "<<e.job_id();
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(...) {
+		os.str("");
+		os<<"Unexpected exception occurred!";
+		SDPA_LOG_DEBUG(os.str());
+	}
+}
+
+
 void GenericDaemon::action_job_failed(const JobFailedEvent& )
+{
+
+}
+
+
+// respond to a worker that the JobFailedEvent was received
+void GenericDaemon::action_job_failed_ack(const JobFailedAckEvent& e )
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
+	ostringstream os;
+	try {
+		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
+		// delete it from the map when you receive a JobFinishedAckEvent!
+		ptr_job_man_->deleteJob(e.job_id());
+	}
+	catch(sdpa::daemon::JobNotFoundException)
+	{
+		os.str("");
+		os<<"Job "<<e.job_id()<<" not found!";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(JobNotDeletedException&)
+	{
+		os.str("");
+		os<<"The JobManager could not delete the job "<<e.job_id();
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(...) {
+		os.str("");
+		os<<"Unexpected exception occurred!";
+		SDPA_LOG_DEBUG(os.str());
+	}
 }
 
-void GenericDaemon::action_job_canceled(const CancelJobAckEvent& )
+void GenericDaemon::action_job_canceled(const CancelJobAckEvent& e)
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob

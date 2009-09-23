@@ -6,7 +6,7 @@ using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {
-	iter_last_worker_ = worker_map_.begin();
+	iter_last_worker_ = worker_map_.end();
 }
 
 WorkerManager::~WorkerManager(){
@@ -18,6 +18,7 @@ WorkerManager::~WorkerManager(){
  */
 Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
+	lock_type lock(mtx_);
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
 		return it->second;
@@ -30,7 +31,10 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) 
  */
 void WorkerManager::addWorker(const Worker::ptr_t &pWorker)
 {
-	worker_map_[pWorker->name()] = pWorker;
+	lock_type lock(mtx_);
+	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(),pWorker));
+	if(worker_map_.size() == 1)
+		iter_last_worker_ = worker_map_.begin();
 }
 
 /**
@@ -38,13 +42,13 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker)
  */
 Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
+	lock_type lock(mtx_);
+
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
 	if(iter_last_worker_ != worker_map_.end())
-		iter_last_worker_++;
+		return iter_last_worker_++->second;
 	else
-		iter_last_worker_= worker_map_.begin();
-
-	return iter_last_worker_->second;
+		return (iter_last_worker_= worker_map_.begin())->second;
 }

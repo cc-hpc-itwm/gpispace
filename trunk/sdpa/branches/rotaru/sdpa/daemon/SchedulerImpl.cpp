@@ -53,10 +53,13 @@ void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule ...");
 
 	try {
-		Worker::ptr_t pWorker = ptr_worker_man_->getNextWorker();
+		SDPA_LOG_DEBUG("Get the next worker ...");
+		Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+
+		SDPA_LOG_DEBUG("The next worker dispatches the job ...");
 		pWorker->dispatch(pJob);
 	}
-	catch(NoWorkerFoundException)
+	catch(NoWorkerFoundException&)
 	{
 		// put the job back into the queue
 		jobs_to_be_scheduled.push(pJob);
@@ -122,8 +125,14 @@ void SchedulerImpl::run()
 			{
 				if(pJob->is_local())
 					schedule_local(pJob);
-				else
-					schedule(pJob);
+				else //schedule(pJob);
+				{
+					SDPA_LOG_DEBUG("Get the next worker ...");
+					Worker::ptr_t pWorker = ptr_worker_man_->getNextWorker();
+
+					SDPA_LOG_DEBUG("The next worker dispatches the job ...");
+					pWorker->dispatch(pJob);
+				}
 			}
 			else
 			{

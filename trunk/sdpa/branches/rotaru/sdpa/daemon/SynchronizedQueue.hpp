@@ -62,7 +62,7 @@ namespace sdpa { namespace daemon {
     typedef boost::condition_variable_any condition_type;
 
     SynchronizedQueue() : stopped_(false) {}
-    ~SynchronizedQueue() { std::cout<<"Destructor of SyncQ"<<std::endl;}
+    ~SynchronizedQueue() { }
 
     inline value_type pop() throw (QueueEmpty)
     {
