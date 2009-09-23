@@ -88,7 +88,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	if(pEvt->from() == pEvt->to() && name() != std::string("orchestrator") ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == pEvt->to() /*&& name() != std::string("orchestrator")*/ ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
