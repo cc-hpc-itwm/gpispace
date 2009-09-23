@@ -23,14 +23,6 @@ void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 		GetContext().LifeSign(*ptr);
 	else if( RequestJobEvent* ptr = dynamic_cast<RequestJobEvent*>(pEvent.get()) )
 		GetContext().RequestJob(*ptr);
-	else if( SubmitJobAckEvent* ptr = dynamic_cast<SubmitJobAckEvent*>(pEvent.get()) )
-		GetContext().SubmitJobAck(*ptr);
 	else if( ConfigRequestEvent* ptr = dynamic_cast<ConfigRequestEvent*>(pEvent.get()) )
 		GetContext().ConfigRequest(*ptr);
-	else if( JobFinishedEvent* ptr = dynamic_cast<JobFinishedEvent*>(pEvent.get()) )
-		GetContext().JobFinished(*ptr);
-	else if( JobFailedEvent* ptr = dynamic_cast<JobFailedEvent*>(pEvent.get()) )
-		GetContext().JobFailed(*ptr);
-	else if( CancelJobAckEvent* ptr = dynamic_cast<CancelJobAckEvent*>(pEvent.get()) )
-		GetContext().JobCanceled(*ptr);
 }

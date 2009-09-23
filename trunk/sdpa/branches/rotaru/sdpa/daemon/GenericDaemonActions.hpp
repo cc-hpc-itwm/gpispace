@@ -33,14 +33,8 @@ namespace sdpa { namespace daemon {
 			virtual void action_delete_job(const sdpa::events::DeleteJobEvent& )=0;
 			virtual void action_request_job(const sdpa::events::RequestJobEvent& )=0;
 			virtual void action_submit_job(const sdpa::events::SubmitJobEvent& )=0;
-			virtual void action_submit_job_ack(const sdpa::events::SubmitJobAckEvent& )=0;
 			virtual void action_config_request(const sdpa::events::ConfigRequestEvent& )=0;
-			virtual void action_job_finished(const sdpa::events::JobFinishedEvent& )=0;
-			virtual void action_job_failed(const sdpa::events::JobFailedEvent& )=0;
-			virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& )=0;
 			virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& )=0;
-			virtual void action_job_finished_ack(const sdpa::events::JobFinishedAckEvent& )=0;
-			virtual void action_job_failed_ack(const sdpa::events::JobFailedAckEvent& )=0;
   };
 }}
 

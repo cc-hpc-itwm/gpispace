@@ -44,7 +44,7 @@ namespace sdpa { namespace daemon {
 	  virtual void onStageStart(const std::string &stageName);
 	  virtual void onStageStop(const std::string &stageName);
 
-		//actions
+	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
 	  virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
 	  virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
@@ -53,14 +53,19 @@ namespace sdpa { namespace daemon {
 	  virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
 	  virtual void action_request_job( const sdpa::events::RequestJobEvent& );
 	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-	  virtual void action_submit_job_ack( const sdpa::events::SubmitJobAckEvent& );
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
-	  virtual void action_job_finished(const sdpa::events::JobFinishedEvent& );
-	  virtual void action_job_finished_ack(const sdpa::events::JobFinishedAckEvent& );
-	  virtual void action_job_failed(const sdpa::events::JobFailedEvent& );
-	  virtual void action_job_failed_ack(const sdpa::events::JobFailedAckEvent& );
-	  virtual void action_job_canceled(const sdpa::events::CancelJobAckEvent& );
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
+
+	  // job event handlers
+	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* pEvent);
+	  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
+	  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
+	  virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+	  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
+	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
+	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
+	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
+	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
 	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);

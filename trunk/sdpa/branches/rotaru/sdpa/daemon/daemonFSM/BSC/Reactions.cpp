@@ -87,29 +87,9 @@ sc::result Up::react(const SubmitJobEvent& e )
    	return transit<Up>(&DaemonFSM::action_submit_job, e);
 }
 
-sc::result Up::react(const SubmitJobAckEvent& e )
-{
-   	return transit<Up>(&DaemonFSM::action_submit_job_ack, e);
-}
-
 sc::result Up::react(const ConfigRequestEvent& e )
 {
    	return transit<Up>(&DaemonFSM::action_config_request, e);
-}
-
-sc::result Up::react( const sdpa::events::JobFinishedEvent& e)
-{
-	return transit<Up>(&DaemonFSM::action_job_finished, e);
-}
-
-sc::result Up::react( const sdpa::events::JobFailedEvent& e)
-{
-	return transit<Up>(&DaemonFSM::action_job_failed, e);
-}
-
-sc::result Up::react( const sdpa::events::CancelJobAckEvent& e)
-{
-	return transit<Up>(&DaemonFSM::action_job_canceled, e);
 }
 
 sc::result Up::react( const sdpa::events::WorkerRegistrationEvent& e)
