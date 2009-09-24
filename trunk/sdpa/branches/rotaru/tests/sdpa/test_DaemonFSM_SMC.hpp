@@ -13,7 +13,9 @@ namespace sdpa {
 		namespace tests {
 			class DaemonFSMTest_SMC : public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonFSMTest_SMC );
-			  CPPUNIT_TEST( testDaemonFSM_SMC );
+			  CPPUNIT_TEST( testDaemonFSM_SMC_JobFinished );
+			  //CPPUNIT_TEST( testDaemonFSM_SMC_JobFailed );
+			  //CPPUNIT_TEST( testDaemonFSM_SMC_JobCancelled );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -23,7 +25,10 @@ namespace sdpa {
 			  void tearDown();
 
 			protected:
-			  void testDaemonFSM_SMC();
+			  void testDaemonFSM_SMC_JobFinished();
+			  void testDaemonFSM_SMC_JobFailed();
+			  void testDaemonFSM_SMC_JobCancelled();
+
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  shared_ptr<sdpa::fsm::smc::DaemonFSM> m_ptrDaemonFSM;

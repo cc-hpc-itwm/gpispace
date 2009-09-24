@@ -88,6 +88,8 @@ namespace sdpa { namespace daemon {
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
+	  virtual const std::string output_stage() const { return output_stage_ ; }
+
   protected:
 	  SDPA_DECLARE_LOGGER();
 

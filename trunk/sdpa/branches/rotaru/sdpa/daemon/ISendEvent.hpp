@@ -8,6 +8,7 @@ namespace sdpa { namespace daemon {
   class ISendEvent{
   public:
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual const std::string output_stage() const = 0;
 
   };
 }}

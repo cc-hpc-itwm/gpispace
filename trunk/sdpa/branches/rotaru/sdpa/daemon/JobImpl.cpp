@@ -1,8 +1,15 @@
 #include "JobImpl.hpp"
 #include <sstream>
 
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+
 using namespace std;
 using namespace boost::statechart;
+using namespace sdpa::events;
 
 namespace sdpa { namespace daemon {
     JobImpl::JobImpl(const sdpa::job_id_t &id,
@@ -97,13 +104,19 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& event)
+    void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
     	ostringstream os;
     	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
     	// Post a JobStatusReplyEvent to e.from()
+		const JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id()));
+
+		// send the event
+		const std::string outstage = pSendEvent->output_stage();
+		//pSendEvent->sendEvent(outstage, pStatReply);
+
     	os.str("");
     	os<<"Posted an event of type StatusReplyEvent";
     	SDPA_LOG_DEBUG(os.str());
@@ -127,10 +140,19 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& event)
+    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";
+
+    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id()));
+
+    	// attach to this event the results!
+
+    	// send the event
+    	const std::string outstage = pSendEvent->output_stage();
+    	//pSendEvent->sendEvent(outstage, pResReply);
+
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());
     }
