@@ -3,11 +3,12 @@
 
 #include <string>
 
-#include <boost/thread.hpp>
+#include <boost/thread.hpp> // condition variables
 
 #include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
+#include <sdpa/sdpa-config.hpp>
 #include <sdpa/memory.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/types.hpp>
@@ -31,6 +32,21 @@ namespace sdpa { namespace client {
     static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
                               , const std::string &output_stage="sdpa.apps.client.out");
 
+    const std::string &version() const
+    {
+      return version_;
+    }
+
+    const std::string &copyright() const
+    {
+      return copyright_;
+    }
+
+    const std::string &contact() const
+    {
+      return contact_;
+    }
+
     void start(const config_t &cfg);
     void shutdown();
 
@@ -46,15 +62,20 @@ namespace sdpa { namespace client {
     void action_config_nok();
     void action_shutdown();
 
-    void action_submit(const job_desc_t &);
-    void action_cancel(const job_id_t &);
-    void action_query(const job_id_t &);
-    void action_retrieve(const job_id_t &);
-    void action_delete(const job_id_t &);
+    void action_submit(const seda::IEvent::Ptr&);
+    void action_cancel(const seda::IEvent::Ptr&);
+    void action_query(const seda::IEvent::Ptr&);
+    void action_retrieve(const seda::IEvent::Ptr&);
+    void action_delete(const seda::IEvent::Ptr&);
+
+    void action_store_reply(const seda::IEvent::Ptr &);
   private:
     Client(const std::string &name, const std::string &output_stage)
       : seda::Strategy(name)
       ,SDPA_INIT_LOGGER(name)
+      ,version_(SDPA_VERSION)
+      ,copyright_(SDPA_COPYRIGHT)
+      ,contact_(SDPA_CONTACT)
       ,name_(name)
       ,output_stage_(output_stage)
       ,fsm_(*this)
@@ -68,16 +89,22 @@ namespace sdpa { namespace client {
       client_stage_ = stage;
     }
 
+    typedef unsigned long long timeout_t;
+    seda::IEvent::Ptr wait_for_reply(timeout_t timeout = 0);
     bool waitForReply();
 
     SDPA_DECLARE_LOGGER();
+
+    std::string version_;
+    std::string copyright_;
+    std::string contact_;
 
     std::string name_;
     std::string output_stage_;
 
     boost::mutex mtx_;
     boost::condition_variable cond_;
-    sdpa::events::SDPAEvent::Ptr event_;
+    seda::IEvent::Ptr reply_;
     bool blocked_;
     bool config_ok_;
 

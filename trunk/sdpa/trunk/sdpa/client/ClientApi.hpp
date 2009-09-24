@@ -23,6 +23,21 @@ namespace sdpa { namespace client {
       pimpl->shutdown();
     }
 
+    const std::string &version() const
+    {
+      return pimpl->version();
+    }
+
+    const std::string &copyright() const
+    {
+      return pimpl->copyright();
+    }
+
+    const std::string &contact() const
+    {
+      return pimpl->contact();
+    }
+
     job_id_t submitJob(const job_desc_t &desc)
     {
       return pimpl->submitJob(desc);

@@ -21,9 +21,6 @@ namespace sdpa {
         const address_t & to() const { return to_; }
 
         virtual std::string str() const = 0;
-
-        virtual const std::string &serialize() const = 0;
-        virtual void deserialize() = 0;
       protected:
         SDPAEvent(const SDPAEvent &other);
         SDPAEvent(const address_t &from, const address_t &to);
