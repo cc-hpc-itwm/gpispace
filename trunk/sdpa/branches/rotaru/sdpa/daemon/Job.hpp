@@ -60,14 +60,14 @@ namespace sdpa { namespace daemon {
         virtual void process_event( const boost::statechart::event_base & e) {}
 
         //transitions
-		virtual void CancelJob();
-		virtual void CancelJobAck();
-		virtual void DeleteJob();
-		virtual void JobFailed();
-		virtual void JobFinished();
-		virtual void QueryJobStatus();
-		virtual void RetrieveJobResults();
-		virtual void Dispatch();
+		virtual void CancelJob(const sdpa::events::CancelJobEvent*);
+		virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
+		virtual void DeleteJob(const sdpa::events::DeleteJobEvent*);
+		virtual void JobFailed(const sdpa::events::JobFailedEvent*);
+		virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
+		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
+		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
+		virtual void Dispatch(const sdpa::events::SubmitJobEvent*);
 
     };
 }}

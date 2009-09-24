@@ -17,14 +17,14 @@ namespace sdpa {
 		class JobFSMActions {
 			public:
 				//actions
-				virtual void action_run_job()=0;
-				virtual void action_cancel_job()=0;
-				virtual void action_cancel_job_ack()=0;
-				virtual void action_delete_job()=0;
-				virtual void action_query_job_status()=0;
-				virtual void action_job_failed()=0;
-				virtual void action_job_finished()=0;
-				virtual void action_retrieve_job_results()=0;
+				virtual void action_run_job(const sdpa::events::SubmitJobEvent&)=0;
+				virtual void action_cancel_job(const sdpa::events::CancelJobEvent&)=0;
+				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&)=0;
+				virtual void action_delete_job(const sdpa::events::DeleteJobEvent&)=0;
+				virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&)=0;
+				virtual void action_job_failed(const sdpa::events::JobFailedEvent&)=0;
+				virtual void action_job_finished(const sdpa::events::JobFinishedEvent&)=0;
+				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&)=0;
 		};
 	}
 }

@@ -17,11 +17,14 @@ JobFSM::JobFSM( const sdpa::job_id_t &id,
 				const sdpa::job_id_t &parent)
 				: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
 {
+	initiate();
 	SDPA_LOG_DEBUG("State machine created");
 }
 
-
-JobFSM::~JobFSM()  throw () { SDPA_LOG_DEBUG("State machine destroyed"); }
+JobFSM::~JobFSM()  throw () {
+	terminate();
+	SDPA_LOG_DEBUG("State machine destroyed");
+}
 
 void JobFSM :: print_states()
 {
@@ -29,6 +32,15 @@ void JobFSM :: print_states()
 		std::cout<<"State "<<typeid(*it).name()<<std::endl;
 }
 
+
+void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::Dispatch(const sdpa::events::SubmitJobEvent* pEvt) { process_event(*pEvt); }
 
 //Pending event reactions
 sc::result Pending::react(const SubmitJobEvent& e)

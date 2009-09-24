@@ -41,14 +41,14 @@ namespace sdpa { namespace daemon {
         virtual void set_local(bool);
 
         // job FSM actions
-		virtual void action_run_job();
-		virtual void action_cancel_job();
-		virtual void action_cancel_job_ack();
-		virtual void action_delete_job();
-		virtual void action_query_job_status();
-		virtual void action_job_failed();
-		virtual void action_job_finished();
-		virtual void action_retrieve_job_results();
+		virtual void action_run_job(const sdpa::events::SubmitJobEvent&);
+		virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
+		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
+		virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
+		virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
+		virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
+		virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
+		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
     private:
         sdpa::job_id_t id_;

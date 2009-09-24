@@ -2,80 +2,218 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <sdpa/memory.hpp>
+#include <time.h>
+#include <sdpa/util.hpp>
+#include <fstream>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+
 #include "DummyGwes.hpp"
+
+#include <seda/Stage.hpp>
+#include <seda/StageRegistry.hpp>
+
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
+namespace sc = boost::statechart;
+
+class TestStrategy : public seda::Strategy
+{
+public:
+	 typedef std::tr1::shared_ptr<TestStrategy> Ptr;
+	 TestStrategy(const std::string& name): seda::Strategy(name), SDPA_INIT_LOGGER("TestStrategy")  {}
+	 void perform(const seda::IEvent::Ptr& pEvt) {
+
+		 if( dynamic_cast<WorkerRegistrationAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed WorkerRegistrationAckEvent!");
+		 }
+		 else if( dynamic_cast<SubmitJobAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed SubmitJobAckEvent!");
+		 }
+		 else if( dynamic_cast<SubmitJobEvent*>(pEvt.get())  )
+		 {
+		 	 SDPA_LOG_DEBUG("Pushed SubmitJobEvent!");
+		 }
+		 else if( dynamic_cast<JobFinishedAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFinishedAckEvent!");
+		 }
+		 else if( dynamic_cast<JobFailedAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFailedAckEvent!");
+		 }
+		 else if( dynamic_cast<JobFinishedEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Pushed JobFinishedEvent!");
+		 }
+		 else
+		 {
+		     SDPA_LOG_DEBUG("Unexpected event!");
+		 }
+
+		 eventQueue.push(pEvt);
+	 }
+
+	 std::string str()
+	 {
+		std::ostringstream ostream(std::ostringstream::out);
+		eventQueue_t::iterator it;
+		for (it = eventQueue.begin(); it != eventQueue.end(); it++) {
+			ostream <<typeid(*(it->get())).name() << std::endl;
+		}
+		return ostream.str();
+	 }
+
+	 typedef SynchronizedQueue<std::list<seda::IEvent::Ptr> > eventQueue_t;
+
+	 eventQueue_t eventQueue;
+
+	 SDPA_DECLARE_LOGGER();
+};
+
 CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest_BSC );
 
-DaemonFSMTest_BSC::DaemonFSMTest_BSC() : SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_BSC"),
-  m_DaemonFSM("orchestrator","'Output Stage'", new DummyGwes)
-{}
+DaemonFSMTest_BSC::DaemonFSMTest_BSC() :
+	SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest_BSC")
+{
+}
 
 DaemonFSMTest_BSC::~DaemonFSMTest_BSC()
 {}
 
 void DaemonFSMTest_BSC::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
-	m_DaemonFSM.initiate();
+
+	m_ptrSdpa2Gwes = sdpa::wf::Sdpa2Gwes::ptr_t (new DummyGwes);
+	ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
+	//seda::AccumulateStrategy::Ptr ptrAccStrategy( new seda::AccumulateStrategy(ptrTestStrategy) );
+	//m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrAccStrategy) );
+
+	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", ptrTestStrategy) );
+	m_ptrDaemonFSM = shared_ptr<sdpa::fsm::bsc::DaemonFSM>(new sdpa::fsm::bsc::DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes.get()));
+
+	sdpa::fsm::bsc::DaemonFSM::start(m_ptrDaemonFSM);
+
+	//create output stage
+	seda::StageRegistry::instance().insert(m_ptrOutputStage);
+	m_ptrOutputStage->start();
 }
 
-void DaemonFSMTest_BSC::tearDown() { //stop the finite state machine
+void DaemonFSMTest_BSC::tearDown()
+{
 	SDPA_LOG_DEBUG("tearDown");
+	//stop the finite state machine
+
+	m_ptrSdpa2Gwes.reset();
+
+	seda::StageRegistry::instance().lookup("orchestrator")->stop();
+	seda::StageRegistry::instance().lookup("output_stage")->stop();
+	seda::StageRegistry::instance().clear();
+
+	m_ptrOutputStage.reset();
+	m_ptrDaemonFSM.reset();
 }
 
 void DaemonFSMTest_BSC::testDaemonFSM_BSC()
 {
-	list<sc::event_base*> listEvents;
+	list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
-	string strFrom("");
-	string strTo("");
+	string strFromUp("user");
+	string strFromDown("aggregator");
+	string strDaemon   = m_ptrDaemonFSM->name();
+	//ring strDaemon = strDaemon;
 
-	listEvents.push_back( new StartUpEvent(strFrom, strTo));
-	listEvents.push_back( new ConfigOkEvent(strFrom, strTo));
-	listEvents.push_back( new LifeSignEvent(strFrom, strTo));
+	m_ptrDaemonFSM->print_states();
 
-	listEvents.push_back( new SubmitJobEvent(strFrom, strTo));
-	listEvents.push_back( new SubmitJobEvent(strTo, strTo));
+    sdpa::util::time_type start(sdpa::util::now());
+    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtStartUp);//GetContext().StartUp(evtStartUp);
+
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtConfigOk); //GetContext().ConfigOk(evtConfigOk);
+
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
+	m_ptrDaemonFSM->daemon_stage_->send(pEvtWorkerReg); //GetContext().RegisterWorker(evtWorkerReg);
+
+	/*ConfigRequestEvent evtCfgReq(strFromDown, strDaemon);
+	m_ptrDaemonFSM->GetContext().ConfigRequest(evtCfgReq);
+
+	InterruptEvent evtInt(strDaemon, strDaemon);
+	m_ptrDaemonFSM->GetContext().Interrupt(evtInt);*/
+
+    for(int k=0;k<1; k++)
+    {
+    	cout<<"************ITERATION "<<k<<" ************************"<<std::endl;
+
+		//LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
+		//m_ptrDaemonFSM->daemon_stage_->send(pEvtLS); //GetContext().LifeSign(evtLS);*/
+
+		// the user submits a job
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtSubmitJob); //GetContext().SubmitJob(evtSubmitJob1);
+
+		ostringstream os;
+		TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(ptrTestStrategy.get());
 
 
-	while( !listEvents.empty() )
-	{
-		sc::event_base* pEvt = listEvents.front();
-		m_DaemonFSM.process_event(*pEvt);
+		seda::IEvent::Ptr pEvent;
+		// user waits for acknowledgement
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobAckEvent));
 
-		listEvents.pop_front();
-		delete dynamic_cast<MgmtEvent*>(pEvt);
-	}
+		sleep(1); //leave time for GWES to produce new jobs
 
-	std::vector<sdpa::job_id_t> vectorJobIDs = m_DaemonFSM.ptr_job_man_->getJobIDList();
+		// slave post a job request
+		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtReq);
 
-	sdpa::job_id_t job_id = vectorJobIDs[0];
+		//wait until the request is served
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::SubmitJobEvent));
 
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->Dispatch();
-	m_DaemonFSM.ptr_job_man_->job_map_[job_id]->JobFinished();
+		// submit a JobFinishedEvent to Orchestrator/Aggregator
+		// the user submits a job
+		sdpa::job_id_t job_id = dynamic_cast<sdpa::events::JobEvent*>(pEvent.get())->job_id();
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strDaemon, job_id));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtJobFinished); //GetContext().SubmitJob(evtSubmitJob1);*/
 
-	listEvents.push_back( new RequestJobEvent(strFrom, strTo));
+		// wait for a JobFinishedAckEvent
+		do
+		{
+			pEvent = pTestStr->eventQueue.pop_and_wait();
+			os.str("");
+			os<<"Popped-up event "<<typeid(*(pEvent.get())).name();
+			SDPA_LOG_DEBUG(os.str());
+		}while(typeid(*(pEvent.get())) != typeid(sdpa::events::JobFinishedAckEvent));
 
-	// now I#m in a final state and the delete must succeed
-	DeleteJobEvent evtDelJob( strFrom, strTo, job_id );
+		// check if the job finished i.e. send QueryJobEvent
+		QueryJobStatusEvent::Ptr pEvtQueryStatus(new QueryJobStatusEvent(strFromUp, strDaemon, pEvtSubmitJob->job_id()));
+		m_ptrDaemonFSM->daemon_stage_->send(pEvtQueryStatus); //GetContext().SubmitJob(evtSubmitJob1);
 
-	listEvents.push_back( new DeleteJobEvent(strFrom, strTo, job_id));
-	listEvents.push_back( new ConfigRequestEvent(strFrom, strTo));
-	listEvents.push_back( new InterruptEvent(strFrom, strTo));
+	    // delete explicitely the orchestrator job
+		//DeleteJobEvent evtDelJob( strFromUp, strDaemon, vectorJobIDs[0] );
+		//m_ptrDaemonFSM->GetContext().DeleteJob(evtDelJob);
 
-	while( !listEvents.empty() )
-	{
-		sc::event_base* pEvt = listEvents.front();
-		m_DaemonFSM.process_event(*pEvt);
-
-		listEvents.pop_front();
-		delete dynamic_cast<MgmtEvent*>(pEvt);
-	}
+		SDPA_LOG_DEBUG("Finished!");
+    }
+	// request the results before deleting the job!
 }

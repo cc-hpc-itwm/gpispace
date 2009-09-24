@@ -1,4 +1,5 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 
 using namespace sdpa::daemon;
 
@@ -40,7 +41,9 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
 
 		//Put the job into Running state
-		pJob->Dispatch();
+		//send back to the user a SubmitJobAckEvent
+		sdpa::events::SubmitJobEvent::Ptr pSubmitJobEvt(new sdpa::events::SubmitJobEvent("", "", pJob->id()));
+		pJob->Dispatch(pSubmitJobEvt.get()); // no event need to be sent
 	}
 	else
 		SDPA_LOG_ERROR("Gwes not initialized!");

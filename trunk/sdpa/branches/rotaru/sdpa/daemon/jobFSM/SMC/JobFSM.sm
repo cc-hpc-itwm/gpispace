@@ -14,122 +14,122 @@
 %%
 Pending
 {
-    Dispatch
+    Dispatch(pEvent: const sdpa::events::SubmitJobEvent*)
         Running
         {
-        	action_run_job(); 
+        	action_run_job(*pEvent); 
         }
 
-    CancelJob
+    CancelJob(pEvent: const sdpa::events::CancelJobEvent*)
         Cancelled
         {
-           action_cancel_job(); 
+           action_cancel_job(*pEvent); 
         }
 
-    QueryJobStatus
+    QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-            action_query_job_status();
+            action_query_job_status(*pEvent);
         }
 }
 
 Running
 {
-    JobFinished
+    JobFinished(pEvent: const sdpa::events::JobFinishedEvent*)
       	Finished
         {
-        	action_job_finished();
+        	action_job_finished(*pEvent);
         }
       
-  	JobFailed
+  	JobFailed(pEvent: const sdpa::events::JobFailedEvent*)
     	Failed
         {
-            action_job_failed();
+            action_job_failed(*pEvent);
         }
         
-    CancelJob
+    CancelJob(pEvent: const sdpa::events::CancelJobEvent*)
         Cancelling
         {
-			action_cancel_job();
+			action_cancel_job(*pEvent);
         }
 
-    QueryJobStatus
+    QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-            action_query_job_status();
+            action_query_job_status(*pEvent);
         }
 }
 
 Cancelling
 {
-    CancelJobAck
+    CancelJobAck(pEvent: const sdpa::events::CancelJobAckEvent*)
     	Cancelled
     	{
-    		action_cancel_job_ack();
+    		action_cancel_job_ack(*pEvent);
     	}
     	
-	QueryJobStatus
+	QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(); 
+        	action_query_job_status(*pEvent); 
         }
 }
 
 Finished
 {
-    QueryJobStatus
+    QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(); 
+        	action_query_job_status(*pEvent); 
         }
         
     
-    DeleteJob
+    DeleteJob(pEvent: const sdpa::events::DeleteJobEvent*)
         nil
         {
-        	action_delete_job(); 
+        	action_delete_job(*pEvent); 
         }
         
-	RetrieveJobResults
+	RetrieveJobResults(pEvent: const sdpa::events::RetrieveJobResultsEvent*)
         nil
         {
-        	action_retrieve_job_results(); 
+        	action_retrieve_job_results(*pEvent); 
         }        
 }
 
 Failed
 {
-    QueryJobStatus
+    QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(); 
+        	action_query_job_status(*pEvent); 
         }
         
-	DeleteJob
+	DeleteJob(pEvent: const sdpa::events::DeleteJobEvent*)
         nil
         {
-        	action_delete_job(); 
+        	action_delete_job(*pEvent); 
         }
                 
-    RetrieveJobResults
+    RetrieveJobResults(pEvent: const sdpa::events::RetrieveJobResultsEvent*)
         nil
         {
-        	action_retrieve_job_results(); 
+        	action_retrieve_job_results(*pEvent); 
         }       
 }
 
 Cancelled
 {
-	DeleteJob
+	DeleteJob(pEvent: const sdpa::events::DeleteJobEvent*)
         nil
         {
-        	action_delete_job(); 
+        	action_delete_job(*pEvent); 
         }
         
-    QueryJobStatus
+    QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(); 
+        	action_query_job_status(*pEvent); 
         }
 }
 

@@ -27,7 +27,7 @@ void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
 		handleSubmitJobAckEvent(ptr);
 	else if( JobFinishedEvent* ptr = dynamic_cast<JobFinishedEvent*>(pEvent.get()) )
 		handleJobFinishedEvent(ptr);
-	else if(	JobFailedEvent* ptr = dynamic_cast<JobFailedEvent*>(pEvent.get()))
+	else if( JobFailedEvent* ptr = dynamic_cast<JobFailedEvent*>(pEvent.get()))
 		handleJobFailedEvent(ptr);
 	else if( QueryJobStatusEvent* ptr = dynamic_cast<QueryJobStatusEvent*>(pEvent.get()) )
 		handleQueryJobStatusEvent(ptr);
@@ -80,7 +80,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 	//put the job into the state Finished
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->JobFinished();
+		pJob->JobFinished(pEvt);
 	}
 	catch(sdpa::daemon::JobNotFoundException){
 		os.str("");
@@ -203,7 +203,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	//put the job into the state Finished
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->JobFailed();
+		pJob->JobFailed(pEvt);
 	}
 	catch(sdpa::daemon::JobNotFoundException){
 		os.str("");
@@ -323,7 +323,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		// delete it from the map when you receive a JobFinishedAckEvent!
-		pJob->CancelJobAck();
+		pJob->CancelJobAck(pEvt);
 
 		// inform GWES ? or forward message to the master
 		// should check from where the message comes worker or GWES?
@@ -410,32 +410,30 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 	}
 }
 
-void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* ptr )
+void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());
-		pJob->QueryJobStatus(); // should send back a message with the status
-
-
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}
 	catch(JobNotFoundException)
 	{
 		ostringstream os;
-		os<<"The job "<<ptr->job_id()<<" was not found by the JobManager";
+		os<<"The job "<<pEvt->job_id()<<" was not found by the JobManager";
 		SDPA_LOG_DEBUG(os.str());
 	}
 }
 
-void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* ptr )
+void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());
-		pJob->CancelJob();
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->CancelJob(pEvt);
 	}
 	catch(JobNotFoundException)
 	{
 		ostringstream os;
-		os<<"The job "<<ptr->job_id()<<" was not found by the JobManager";
+		os<<"The job "<<pEvt->job_id()<<" was not found by the JobManager";
 		SDPA_LOG_DEBUG(os.str());
 	}
 }
@@ -444,7 +442,7 @@ void GenericDaemon::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pt
 {
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());
-		pJob->RetrieveJobResults();
+		pJob->RetrieveJobResults(ptr);
 	}
 	catch(JobNotFoundException)
 	{

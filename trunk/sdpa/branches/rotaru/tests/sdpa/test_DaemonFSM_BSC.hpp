@@ -2,8 +2,11 @@
 #define DAEMON_FSM_BSC_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
+#include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
 #include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
+#include <sdpa/wf/Gwes2Sdpa.hpp>
+#include <seda/Strategy.hpp>
 
 namespace sdpa {
 		namespace tests {
@@ -22,7 +25,10 @@ namespace sdpa {
 			  void testDaemonFSM_BSC();
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::bsc::DaemonFSM m_DaemonFSM;
+			  shared_ptr<sdpa::fsm::bsc::DaemonFSM> m_ptrDaemonFSM;
+			  sdpa::wf::Sdpa2Gwes::ptr_t m_ptrSdpa2Gwes;
+			  seda::Stage::Ptr m_ptrOutputStage;
+			  seda::Strategy::Ptr ptrTestStrategy;
 			};
 		}
 }

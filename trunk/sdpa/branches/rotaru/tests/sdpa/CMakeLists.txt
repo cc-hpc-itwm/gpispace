@@ -20,12 +20,14 @@ target_link_libraries(sdpa_test_suite sdpa-wf)
 target_link_libraries(sdpa_test_suite sdpa-daemon)
 
 target_link_libraries(sdpa_test_suite sdpa-events)
+
+target_link_libraries(sdpa_test_suite sdpa-jobFSM_SMC)
+target_link_libraries(sdpa_test_suite sdpa-jobFSM_BSC)
+
 target_link_libraries(sdpa_test_suite sdpa-daemonFSM_BSC)
 target_link_libraries(sdpa_test_suite sdpa-daemonFSM_SMC)
-#target_link_libraries(sdpa_test_suite sdpa-jobFSM_BSC)
-target_link_libraries(sdpa_test_suite sdpa-jobFSM_SMC)
 
-target_link_libraries(sdpa_test_suite dl)
+target_link_libraries(sdpa_test_suite dl  uuid)
 
 # test module
 add_library(example-mod SHARED ExampleModule.cpp)

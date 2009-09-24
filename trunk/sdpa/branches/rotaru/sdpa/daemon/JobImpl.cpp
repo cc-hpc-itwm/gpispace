@@ -66,14 +66,14 @@ namespace sdpa { namespace daemon {
     	b_local_ = b_val;
     }
 
-    void JobImpl::action_run_job()
+    void JobImpl::action_run_job(const sdpa::events::SubmitJobEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_run_job'";
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_cancel_job()
+    void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job'" ;
@@ -81,7 +81,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_cancel_job_ack()
+    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_cancel_job_ack'" ;
@@ -89,7 +89,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_delete_job()
+    void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_delete_job'" ;
@@ -97,7 +97,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_query_job_status()
+    void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_query_job_status'";
@@ -109,7 +109,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_job_finished()
+    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& event)
     {
     	ostringstream os;
     	os <<"Process 'action_job_finished'";
@@ -118,7 +118,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_job_failed()
+    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& event)
     {
     	ostringstream os;
     	os <<"Process 'action_job_failed'";
@@ -127,7 +127,7 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void  JobImpl::action_retrieve_job_results()
+    void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& event)
     {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";

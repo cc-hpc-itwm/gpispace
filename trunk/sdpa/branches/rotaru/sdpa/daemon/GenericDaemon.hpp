@@ -39,7 +39,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 	  virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
-	  void handleJobEvent(const seda::IEvent::Ptr& pEvent);
+	  virtual void handleJobEvent(const seda::IEvent::Ptr& pEvent);
 
 	  virtual void onStageStart(const std::string &stageName);
 	  virtual void onStageStop(const std::string &stageName);

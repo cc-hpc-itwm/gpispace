@@ -37,7 +37,7 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 
     sdpa::util::time_type start(sdpa::util::now());
 
-	m_JobFSM.GetContext().QueryJobStatus();
+	/*m_JobFSM.GetContext().QueryJobStatus();
 
 	//dispatch job
 	m_JobFSM.GetContext().Dispatch();
@@ -46,5 +46,5 @@ void JobFSMTest_SMC::testJobFSM_SMC()
 
 	m_JobFSM.GetContext().QueryJobStatus();
 
-	m_JobFSM.GetContext().DeleteJob();
+	m_JobFSM.GetContext().DeleteJob();*/
 }

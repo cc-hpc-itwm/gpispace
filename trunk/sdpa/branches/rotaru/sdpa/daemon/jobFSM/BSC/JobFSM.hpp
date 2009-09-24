@@ -42,6 +42,15 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 		 sc::state_machine<JobFSM, Pending>::process_event(e);
     }
 
+	virtual void CancelJob(const sdpa::events::CancelJobEvent*);
+	virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
+	virtual void DeleteJob(const sdpa::events::DeleteJobEvent*);
+	virtual void JobFailed(const sdpa::events::JobFailedEvent*);
+	virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
+	virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
+	virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
+	virtual void Dispatch(const sdpa::events::SubmitJobEvent*);
+
 	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();

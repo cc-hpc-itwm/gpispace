@@ -3,7 +3,7 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
-//#include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
+#include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
 #include <sstream>
@@ -68,6 +68,10 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
+	ostringstream os;
+	os<<"Perform: Handling event " <<typeid(*pEvent.get()).name();
+	SDPA_LOG_DEBUG(os.str());
+
 	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
 		handleDaemonEvent(pEvent);
 	else
@@ -100,7 +104,6 @@ void GenericDaemon::onStageStop(const std::string &stageName)
 	// stop the scheduler thread
 	ptr_scheduler_->stop();
 	//ptr_Sdpa2Gwes_ = NULL;
-
 }
 
 void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
@@ -134,7 +137,6 @@ void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr
 	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
 	SDPA_LOG_DEBUG(os.str());
 }
-
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
@@ -224,7 +226,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 	try{
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
-		pJob->process_event(e);
+		pJob->DeleteJob(&e);
 
 		if( pJob->is_marked_for_deletion() )
 		{
@@ -294,7 +296,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			sendEvent(output_stage_, pSubmitEvt);
 
 			// put the job into the running state
-			ptrJob->Dispatch();
+			ptrJob->Dispatch(pSubmitEvt.get());
 		}
 	}
 	catch(NoJobScheduledException)
@@ -347,7 +349,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	JobId job_id, job_id_empty(""); //already assigns an unique job_id (i.e. the constructor calls the generator)
 	if(e.job_id() != job_id_empty)  //use the job_id already  assigned by the master
 		job_id = e.job_id();        //the orchestrator will assign a new job_id for the user jobs, the Agg/NRE will use the job_id assigned by the master
-
 
 	try {
 		// First, parse the workflow in order to be able to create a valid job
@@ -409,8 +410,6 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
      * TODO: what is contained in the Configuration?
 	 */
 }
-
-
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
