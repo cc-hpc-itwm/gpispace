@@ -25,6 +25,9 @@
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
+
+  const std::string ORCHESTRATOR("orchestrator") ;
+
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::ISendEvent,
 						public seda::Strategy,

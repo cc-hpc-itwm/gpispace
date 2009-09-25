@@ -64,7 +64,7 @@ namespace sdpa { namespace daemon {
         bool b_local_;
         SDPA_DECLARE_LOGGER();
     protected:
-       	const ISendEvent* pSendEvent;
+       	mutable ISendEvent* pSendEvent;
     };
 }}
 

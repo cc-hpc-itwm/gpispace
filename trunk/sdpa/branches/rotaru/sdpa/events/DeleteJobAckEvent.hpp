@@ -9,11 +9,12 @@ namespace sc = boost::statechart;
 
 namespace sdpa {
 namespace events {
-    class DeleteJobAckEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::DeleteJobAckEvent> {
+    class DeleteJobAckEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::DeleteJobAckEvent> {
     public:
         typedef sdpa::shared_ptr<DeleteJobAckEvent> Ptr;
 
-        DeleteJobAckEvent(const address_t &from, const address_t &to) : MgmtEvent(from, to) {
+        DeleteJobAckEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t(""))
+              :  sdpa::events::JobEvent( from, to, job_id ) {
         	//std::cout << "Create event 'DeleteJobAckEvent'"<< std::endl;
         }
 

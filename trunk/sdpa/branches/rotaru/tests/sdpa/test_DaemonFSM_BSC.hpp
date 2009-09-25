@@ -12,7 +12,7 @@ namespace sdpa {
 		namespace tests {
 			class DaemonFSMTest_BSC : public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE(sdpa::tests::DaemonFSMTest_BSC);
-			  CPPUNIT_TEST(testDaemonFSM_BSC);
+			  CPPUNIT_TEST(testDaemonFSM_BSC_JobFinished);
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -22,13 +22,13 @@ namespace sdpa {
 			  void tearDown();
 
 			protected:
-			  void testDaemonFSM_BSC();
+			  void testDaemonFSM_BSC_JobFinished();
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  shared_ptr<sdpa::fsm::bsc::DaemonFSM> m_ptrDaemonFSM;
 			  sdpa::wf::Sdpa2Gwes::ptr_t m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
-			  seda::Strategy::Ptr ptrTestStrategy;
+			  seda::Strategy::Ptr m_ptrTestStrategy;
 			};
 		}
 }

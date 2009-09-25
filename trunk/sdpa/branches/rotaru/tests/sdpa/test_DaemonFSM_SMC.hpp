@@ -26,15 +26,15 @@ namespace sdpa {
 
 			protected:
 			  void testDaemonFSM_SMC_JobFinished();
-			  void testDaemonFSM_SMC_JobFailed();
-			  void testDaemonFSM_SMC_JobCancelled();
+			  //void testDaemonFSM_SMC_JobFailed();
+			  //void testDaemonFSM_SMC_JobCancelled();
 
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  shared_ptr<sdpa::fsm::smc::DaemonFSM> m_ptrDaemonFSM;
 			  sdpa::wf::Sdpa2Gwes::ptr_t m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
-			  seda::Strategy::Ptr ptrTestStrategy;
+			  seda::Strategy::Ptr m_ptrTestStrategy;
 			};
 		}
 }

@@ -6,6 +6,10 @@
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+
+#include <seda/Stage.hpp>
+#include <seda/StageRegistry.hpp>
 
 using namespace std;
 using namespace boost::statechart;
@@ -16,7 +20,7 @@ namespace sdpa { namespace daemon {
                      const sdpa::job_desc_t &desc,
                      const sdpa::daemon::ISendEvent* pHandler,
                      const sdpa::job_id_t &parent)
-        : id_(id), desc_(desc), parent_(parent), pSendEvent(pHandler), b_marked_for_del_(false), b_local_(false),
+        : id_(id), desc_(desc), parent_(parent), pSendEvent(const_cast<ISendEvent*>(pHandler)), b_marked_for_del_(false), b_local_(false),
         SDPA_INIT_LOGGER( string("Job ")+ id.str() )
     {}
 
@@ -96,11 +100,16 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
-    void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& event)
+    void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
     	ostringstream os;
     	os<<"Process 'action_delete_job'" ;
     	b_marked_for_del_ = true;
+
+    	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id()) );
+    	//send the event
+    	pSendEvent->sendEvent(pSendEvent->output_stage(), pDelJobReply);
+
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -110,12 +119,10 @@ namespace sdpa { namespace daemon {
     	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
-    	// Post a JobStatusReplyEvent to e.from()
-		const JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id()));
-
-		// send the event
-		const std::string outstage = pSendEvent->output_stage();
-		//pSendEvent->sendEvent(outstage, pStatReply);
+    	//Post a JobStatusReplyEvent to e.from()
+		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id()));
+		//send the event
+		pSendEvent->sendEvent(pSendEvent->output_stage(), pStatReply);
 
     	os.str("");
     	os<<"Posted an event of type StatusReplyEvent";
@@ -151,7 +158,7 @@ namespace sdpa { namespace daemon {
 
     	// send the event
     	const std::string outstage = pSendEvent->output_stage();
-    	//pSendEvent->sendEvent(outstage, pResReply);
+    	pSendEvent->sendEvent(outstage, pResReply);
 
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());

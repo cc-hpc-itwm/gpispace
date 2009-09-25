@@ -39,7 +39,6 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG(os.str());
 
 	// stop the scheduler
-
 	//daemon_stage_->stop();
 	//seda::StageRegistry::instance().lookup(name())->stop();
 }
@@ -78,6 +77,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 		if(dynamic_cast<JobEvent*>(pEvent.get()))
 		{
 			if(	dynamic_cast<SubmitJobEvent*>(pEvent.get()) ) handleDaemonEvent(pEvent);
+			else if( dynamic_cast<DeleteJobEvent*>(pEvent.get()) ) handleDaemonEvent(pEvent);
 			else
 				handleJobEvent(pEvent);
 		}
@@ -110,32 +110,33 @@ void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
 {
 	try {
 		if(daemon_stage_)
+		{
 			daemon_stage_->send(pEvt);
+
+			ostringstream os;
+			os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
+			SDPA_LOG_DEBUG(os.str());
+		}
 	}
 	catch(QueueFull)
 	{
 		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
 	}
-
-	ostringstream os;
-	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
-	SDPA_LOG_DEBUG(os.str());
 }
 
 void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr& pEvt)
 {
 	try {
 		seda::Stage::send(stageName, pEvt);
+
+		ostringstream os;
+		os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
+		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(QueueFull)
 	{
 		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
 	}
-
-
-	ostringstream os;
-	os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
-	SDPA_LOG_DEBUG(os.str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -232,9 +233,6 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 		{
 			ptr_job_man_->markJobForDeletion(e.job_id(), pJob);
 			ptr_job_man_->deleteJob(e.job_id());
-
-			DeleteJobAckEvent::Ptr pDelAckEvt(new DeleteJobAckEvent(name(), e.from()));
-			sendEvent(output_stage_, pDelAckEvt);
 		}
 	} catch(sdpa::daemon::JobNotFoundException){
 		os.str("");

@@ -22,7 +22,7 @@ namespace events {
 			// std::cout << "Delete event 'JobStatusReplyEvent'"<< std::endl;
 		}
 
-		std::string str() const { std::cout<<from()<<" - JobStatusReplyEvent -> "<<to()<<std::endl; }
+		std::string str() const { return "JobStatusReplyEvent"; }
 	};
 }}
 

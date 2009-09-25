@@ -66,7 +66,6 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 	}
 }
 
-
 void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 {
 	// check if the message comes from outside/slave or from WFE
@@ -88,39 +87,42 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	if(pEvt->from() == pEvt->to() /*&& name() != std::string("orchestrator")*/ ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == pEvt->to() ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
 		//send JobFinished event to the master if daemon == aggregator || NRE
-		try {
-			// forward it up
-			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
-
-			// send the event to the master
-			sendEvent(output_stage_, pEvtJobFinished);
-
-			// delete it from the map when you receive a JobFinishedAckEvent!
-		}
-		catch(QueueFull)
+		if( name() != sdpa::daemon::ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
 		{
-			os.str("");
-			os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(seda::StageNotFound)
-		{
-			os.str("");
-			os<<"Stage not found when trying to submit SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(...) {
-			os.str("");
-			os<<"Unexpected exception occurred!";
-			SDPA_LOG_DEBUG(os.str());
-		}
+			try {
+				// forward it up
+				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
 
-		// no acknowledgement to be sent to GWES
+				// send the event to the master
+				sendEvent(output_stage_, pEvtJobFinished);
+				// delete it from the map when you receive a JobFinishedAckEvent!
+			}
+			catch(QueueFull)
+			{
+				os.str("");
+				os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+				SDPA_LOG_DEBUG(os.str());
+			}
+			catch(seda::StageNotFound)
+			{
+				os.str("");
+				os<<"Stage not found when trying to submit SubmitJobEvent";
+				SDPA_LOG_DEBUG(os.str());
+			}
+			catch(...) {
+				os.str("");
+				os<<"Unexpected exception occurred!";
+				SDPA_LOG_DEBUG(os.str());
+			}
+		}
+		else
+			SDPA_LOG_DEBUG("Don't notify the user! He will periodically query for the job status!");
+			// no acknowledgement to be sent to GWES
 	}
 	else
 	{
@@ -143,14 +145,13 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				// delete job from worker's queues
 
 				os.str("");
-				os<<"Delete the job "<<pEvt->job_id()<<" from the worke's queues!";
+				os<<"Delete the job "<<pEvt->job_id()<<" from the worker's queues!";
 				SDPA_LOG_DEBUG(os.str());
 
 				ptrWorker->delete_job(pEvt->job_id());
 
-				// send a JobFinishedAckEvent back to the worker/slave
-				//delete it also from job_map_
-				JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), master(), pEvt->job_id()));
+				// send a JobFinishedAckEvent back down to the worker/slave
+				JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
 				// send the event to the master
 				sendEvent(output_stage_, pEvtJobFinishedAckEvt);
@@ -211,12 +212,15 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	if(pEvt->from() == pEvt->to() && name() != std::string("orchestrator") ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == pEvt->to() ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
 		//send JobFinished event to the master if daemon == aggregator || NRE
-		try {
+
+		if( name() != sdpa::daemon::ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
+		{
+			try {
 			// forward it up
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
 
@@ -224,24 +228,27 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			sendEvent(output_stage_, pEvtJobFailedEvent);
 
 			// delete it from the map when you receive a JobFinishedAckEvent!
+			}
+			catch(QueueFull)
+			{
+				os.str("");
+				os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+				SDPA_LOG_DEBUG(os.str());
+			}
+			catch(seda::StageNotFound)
+			{
+				os.str("");
+				os<<"Stage not found when trying to submit SubmitJobEvent";
+				SDPA_LOG_DEBUG(os.str());
+			}
+			catch(...) {
+				os.str("");
+				os<<"Unexpected exception occurred!";
+				SDPA_LOG_DEBUG(os.str());
+			}
 		}
-		catch(QueueFull)
-		{
-			os.str("");
-			os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(seda::StageNotFound)
-		{
-			os.str("");
-			os<<"Stage not found when trying to submit SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(...) {
-			os.str("");
-			os<<"Unexpected exception occurred!";
-			SDPA_LOG_DEBUG(os.str());
-		}
+		else
+			SDPA_LOG_DEBUG("Don't notify the user! He will periodically query for the job status!");
 
 		// no acknowledgement to be sent to GWES
 	}
