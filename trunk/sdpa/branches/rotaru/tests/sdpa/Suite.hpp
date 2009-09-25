@@ -29,8 +29,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() )*/;
       //suiteOfTests->addTest( SchedulerTest::suite() );
-      //suiteOfTests->addTest( DaemonFSMTest_SMC::suite() );
-      suiteOfTests->addTest( DaemonFSMTest_BSC::suite() );
+      suiteOfTests->addTest( DaemonFSMTest_SMC::suite() );
+      //suiteOfTests->addTest( DaemonFSMTest_BSC::suite() );
       //suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       return suiteOfTests;
     }

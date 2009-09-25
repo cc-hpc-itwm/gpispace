@@ -119,9 +119,12 @@ namespace sdpa { namespace daemon {
     	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
-    	//Post a JobStatusReplyEvent to e.from()
-		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id()));
-		//send the event
+    	JobStatusReplyEvent::status_t status(""); //typeid(GetContext().getState()).name());
+
+    	// Post a JobStatusReplyEvent to e.from()
+		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));
+
+		// send the event
 		pSendEvent->sendEvent(pSendEvent->output_stage(), pStatReply);
 
     	os.str("");
@@ -152,7 +155,10 @@ namespace sdpa { namespace daemon {
     	ostringstream os;
     	os <<"Process 'action_retrieve_results'";
 
-    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id()));
+    	// fill it here with real results
+    	JobResultsReplyEvent::result_t results("");
+
+    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), results));
 
     	// attach to this event the results!
 
