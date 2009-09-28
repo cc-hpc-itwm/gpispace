@@ -95,8 +95,9 @@ int main (int, char **)
   errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%s", "F", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%S", "FATAL", false);
 
+  errcount += test_format(LogEvent(LogLevel::DEBUG, "tests/test_formatter.cpp", "main", 98, "hello"), "%P", "tests/test_formatter.cpp", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%p", "test_formatter.cpp", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "99", false); // keep this line up-to-date!
+  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "100", false); // keep this line up-to-date!
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%l", "", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%m", "hello", false);
   {
