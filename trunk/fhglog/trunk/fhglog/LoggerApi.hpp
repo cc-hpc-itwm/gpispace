@@ -53,6 +53,7 @@ logger_t getLogger(const std::string &name);
       inline const Appender::ptr_t &addAppender(Appender::ptr_t appender) { return impl_->addAppender(appender); }
       inline const Appender::ptr_t &getAppender(const std::string &appender_name) const { return impl_->getAppender(appender_name); }
       inline void removeAppender(const std::string &appender_name) { impl_->removeAppender(appender_name); }
+      inline void removeAllAppenders() { impl_->removeAllAppenders(); }
 
       inline void log(const LogEvent &event) const { impl_->log(event); }
     private:
@@ -91,6 +92,7 @@ logger_t getLogger(const std::string &name);
       inline const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
       inline const Appender::ptr_t &getAppender(const std::string &) { throw std::runtime_error("no such appender!"); }
       inline void removeAppender(const std::string &) {}
+      inline void removeAllAppenders() { }
 
       inline void log(const LogEvent &) const {}
     private:

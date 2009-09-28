@@ -40,7 +40,7 @@ int main (int , char **)
   logger_t log(getLogger());
 
   {
-    std::clog << "** testing adding removing appender...";
+    std::clog << "** testing adding and removing appender...";
     log.addAppender(Appender::ptr_t(new NullAppender("null")));
     try {
       log.getAppender("null");
@@ -61,6 +61,36 @@ int main (int , char **)
   }
 
   {
+    std::clog << "** testing adding and removing all appender...";
+    log.addAppender(Appender::ptr_t(new NullAppender("null-0")));
+    log.addAppender(Appender::ptr_t(new NullAppender("null-1")));
+    log.addAppender(Appender::ptr_t(new NullAppender("null-2")));
+    log.addAppender(Appender::ptr_t(new NullAppender("null-3")));
+    try {
+      log.getAppender("null-0");
+      log.getAppender("null-1");
+      log.getAppender("null-2");
+      log.getAppender("null-3");
+    } catch(...) {
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\tappender has not been added!" << std::endl;
+      ++errcount;
+    }
+    log.removeAllAppenders();
+    try {
+      log.getAppender("null-0");
+      log.getAppender("null-1");
+      log.getAppender("null-2");
+      log.getAppender("null-3");
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\tappender has not been removed correctly!" << std::endl;
+      ++errcount;
+    } catch (...) {
+      std::clog << "OK!" << std::endl;
+    }
+  }
+
+  {
     std::clog << "** testing formatting performance...";
     log.addAppender(Appender::ptr_t(new FormattingNullAppender("null")))->setFormat(Formatter::Full());
     for (std::size_t count(0); count < 1000000; ++count)
@@ -70,7 +100,6 @@ int main (int , char **)
     std::clog << "OK!" << std::endl;
     log.removeAppender("null");
   }
-
 
 
   std::ostringstream logstream;
