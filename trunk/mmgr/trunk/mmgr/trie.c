@@ -44,9 +44,9 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
   while (Key > 0)
     {
       if (PTrie->child[Key % NCHILD] == NULL)
-	{
-	  PTrie->child[Key % NCHILD] = empty ();
-	}
+        {
+          PTrie->child[Key % NCHILD] = empty ();
+        }
 
       PTrie = PTrie->child[Key % NCHILD];
 
@@ -61,7 +61,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
       PTrie->data = malloc (sizeof (Value_t));
 
       if (PTrie->data == NULL)
-	TRIE_ERROR_MALLOC_FAILED;
+        TRIE_ERROR_MALLOC_FAILED;
     }
 
   return PTrie->data;
@@ -127,20 +127,20 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
         {
           allNULL = (PTrie->child[child] == NULL) ? True : False;
         }
-      
-      if (allNULL == True && PTrie->data == NULL)
-	{
-	  free (PTrie);
 
-	  *(PTrie_t *) PPTrie = NULL;
-	}
+      if (allNULL == True && PTrie->data == NULL)
+        {
+          free (PTrie);
+
+          *(PTrie_t *) PPTrie = NULL;
+        }
     }
   else
     {
       rc = (PTrie->data == NULL) ? False : True;
 
       if (fUser != NULL && PTrie->data != NULL)
-	fUser (PTrie->data);
+        fUser (PTrie->data);
 
       free (PTrie->data);
 
@@ -152,13 +152,13 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
         {
           allNULL = (PTrie->child[child] == NULL) ? True : False;
         }
-      
-      if (allNULL == True)
-	{
-	  free (PTrie);
 
-	  *(PTrie_t *) PPTrie = NULL;
-	}
+      if (allNULL == True)
+        {
+          free (PTrie);
+
+          *(PTrie_t *) PPTrie = NULL;
+        }
     }
 
   return rc;
@@ -177,7 +177,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
   if (PTrie->data != NULL)
     {
       if (fUser != NULL)
-	Bytes += fUser (PTrie->data);
+        Bytes += fUser (PTrie->data);
 
       free (PTrie->data);
 
@@ -209,7 +209,7 @@ trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
   if (PTrie->data != NULL)
     {
       if (fUser != NULL)
-	Bytes += fUser (PTrie->data);
+        Bytes += fUser (PTrie->data);
 
       Bytes += sizeof (Size_t);
     }
@@ -242,7 +242,7 @@ patch (Key_t Key, const Word_t Level, const unsigned int slot)
 
 static void
 trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
-	       const Key_t Key, const Word_t Level, void *Pdat)
+               const Key_t Key, const Word_t Level, void *Pdat)
 {
   if (PTrie == NULL)
     return;
@@ -253,7 +253,7 @@ trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
 
   for (unsigned int child = 0; child < NCHILD; ++child)
     trie_work_key (PTrie->child[child], fTrieWork,
-                  patch (Key, Level, child), Level + TRIE_BITS, Pdat);
+                   patch (Key, Level, child), Level + TRIE_BITS, Pdat);
 }
 
 void
