@@ -63,5 +63,61 @@ int main (int, char **)
     }
   }
 
+  {
+    try {
+      LogEvent evt1(LogLevel::DEBUG
+                 , "tests/test_event.cpp"
+                 , "main"
+                 , 34
+                 , "hello world!");
+      LogEvent evt2(evt1);
+      LogEvent evt3(LogLevel::INFO
+                 , "tests/test_formatter.cpp"
+                 , "foo"
+                 , 42 
+                 , "blah!");
+
+      std::clog << "** testing copy constructor...";
+      if (evt1 != evt2)
+      {
+        std::clog << "FAILED!" << std::endl;
+        std::clog << "\tcopy constructor missed something!" << std::endl;
+        ++errcount;
+      }
+      else
+      {
+        std::clog << "OK!" << std::endl;
+      }
+
+      std::clog << "** testing equality operator...";
+      if (evt1 == evt3)
+      {
+        std::clog << "FAILED!" << std::endl;
+        std::clog << "\tequal operator missed something!" << std::endl;
+        ++errcount;
+      }
+      else
+      {
+        std::clog << "OK!" << std::endl;
+      }
+
+      std::clog << "** testing assignment operator...";
+      evt1 = evt3;
+      if (evt1 != evt3)
+      {
+        std::clog << "FAILED!" << std::endl;
+        std::clog << "\tassignment operator missed something!" << std::endl;
+        ++errcount;
+      }
+      else
+      {
+        std::clog << "OK!" << std::endl;
+      }
+    } catch (const std::exception &ex) {
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "\texception occured: " << ex.what() << std::endl;
+      ++errcount;
+    }
+  }
   std::exit(errcount);
 }
