@@ -80,10 +80,23 @@ int main (int, char **)
   using namespace fhg::log;
   int errcount(0);
 
+  errcount += test_format(FHGLOG_MKEVENT_HERE(UNSET, "hello"), "%s", "U", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(UNSET, "hello"), "%S", "UNSET", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(TRACE, "hello"), "%s", "T", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(TRACE, "hello"), "%S", "TRACE", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%s", "D", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%S", "DEBUG", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(INFO, "hello"), "%s", "I", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(INFO, "hello"), "%S", "INFO", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(WARN, "hello"), "%s", "W", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(WARN, "hello"), "%S", "WARN", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(ERROR, "hello"), "%s", "E", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(ERROR, "hello"), "%S", "ERROR", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%s", "F", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%S", "FATAL", false);
+
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%p", "test_formatter.cpp", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "86", false);
+  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "99", false); // keep this line up-to-date!
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%l", "", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%m", "hello", false);
   {

@@ -26,16 +26,16 @@ namespace fhg { namespace log {
   class LogLevel {
     public:
       enum Level {
-          TRACE = 0
+          UNSET = 0
+        , TRACE
         , DEBUG
         , INFO
         , WARN
         , ERROR
         , FATAL
-        , UNSET
 
         // keep the following definitions always up-to-date
-        , MIN_LEVEL = TRACE
+        , MIN_LEVEL = UNSET
         , DEF_LEVEL = INFO
         , MAX_LEVEL = FATAL
       };
@@ -43,7 +43,7 @@ namespace fhg { namespace log {
       LogLevel(Level level = UNSET)
         : lvl_(level)
       {
-        if (lvl_ != UNSET && (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL))
+        if (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL)
         {
           throw std::runtime_error("the specified log-level is out of range!");
         }

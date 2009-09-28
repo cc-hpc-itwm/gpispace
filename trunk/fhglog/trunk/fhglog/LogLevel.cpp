@@ -26,13 +26,13 @@ const std::string &LogLevel::str() const
 {
   static std::string LevelToStringMap_[] =
   {
-    "TRACE"
+    "UNSET"
+    , "TRACE"
     , "DEBUG"
     , "INFO"
     , "WARN"
     , "ERROR"
     , "FATAL"
-    , "UNSET"
   };
   assert(lvl_ >= 0 && lvl_ < static_cast<int>(sizeof(LevelToStringMap_)));
   return LevelToStringMap_[lvl_];
