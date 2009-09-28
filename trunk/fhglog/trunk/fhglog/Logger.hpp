@@ -56,23 +56,13 @@ namespace fhg { namespace log {
       void removeAppender(const std::string &appender_name);
       void removeAllAppenders();
     private:
-      const Logger::ptr_t &get_logger(const std::string &name);
-
-      // returns one of the internal loggers or adds a new one with the given name
-      const Logger::ptr_t &get_add_logger(const std::string &name, const std::string &rest = "");
-
-      Logger(const std::string &name, const std::string &parent);
-
-      Logger(const std::string &name, const Logger &parent);
+      explicit
+      Logger(const std::string &name);
 
       std::string name_;
-      std::string parent_;
       LogLevel lvl_;
       Filter::ptr_t filter_;
       verbosity_type verbosity_;
-
-      typedef std::map<std::string, Logger::ptr_t> logger_map_t;
-      logger_map_t loggers_;
 
       typedef std::list<Appender::ptr_t> appender_list_t;
       appender_list_t appenders_;

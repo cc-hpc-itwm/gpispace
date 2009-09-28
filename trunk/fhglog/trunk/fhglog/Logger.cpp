@@ -10,29 +10,28 @@ using namespace fhg::log;
  */
 const Logger::ptr_t &Logger::get()
 {
-  static Logger::ptr_t logger_(new Logger("", ""));
-  return logger_;
+  return get("default");
 }
 
-const Logger::ptr_t &Logger::get(const std::string &name)
+const Logger::ptr_t &Logger::get(const std::string &a_name)
 {
-  return get()->get_logger(name);
-}
+  typedef std::map<std::string, Logger::ptr_t> logger_map_t;
+  static logger_map_t loggers_;
 
-Logger::Logger(const std::string &a_name, const std::string &a_parent)
-  : name_(a_parent + "." + a_name), parent_(a_parent), lvl_(LogLevel(LogLevel::UNSET)), filter_(new NullFilter())
-{
-}
-
-Logger::Logger(const std::string &a_name, const Logger &a_parent)
-  : name_(a_parent.name() + "." + a_name), parent_(a_parent.name()), lvl_(a_parent.getLevel()), filter_(a_parent.getFilter())
-{
-  for (appender_list_t::const_iterator appender(a_parent.appenders_.begin()); appender != a_parent.appenders_.end(); ++appender)
+  logger_map_t::iterator logger(loggers_.find(a_name));
+  if (logger == loggers_.end())
   {
-    addAppender(*appender);
+    Logger::ptr_t newLogger(new Logger(a_name));
+    logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
   }
+
+  return logger->second;
 }
 
+Logger::Logger(const std::string &a_name)
+  : name_(a_name), lvl_(LogLevel(LogLevel::UNSET)), filter_(new NullFilter())
+{
+}
 
 const std::string &Logger::name() const
 {
@@ -42,33 +41,6 @@ const std::string &Logger::name() const
 void Logger::setLevel(const LogLevel &level)
 {
   lvl_ = level;
-}
-
-const Logger::ptr_t &Logger::get_logger(const std::string &a_name)
-{
-  std::string::size_type spos(0);
-  std::string::size_type epos(a_name.find_first_of('.'));
-
-  if (std::string::npos == epos)
-  {
-    return get_add_logger(a_name);
-  }
-  else
-  {
-    return get_add_logger(a_name.substr(spos, epos), a_name.substr(epos+1, a_name.size()));
-  }
-}
-
-const Logger::ptr_t &Logger::get_add_logger(const std::string &a_name, const std::string &rest)
-{
-  logger_map_t::iterator logger(loggers_.find(a_name));
-  if (logger == loggers_.end())
-  {
-    Logger::ptr_t newLogger(new Logger(a_name, *this)); // inherit config from this logger
-    logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
-  }
-  if (rest == "") return logger->second;
-  else return logger->second->get_logger(rest);
 }
 
 const LogLevel &Logger::getLevel() const
