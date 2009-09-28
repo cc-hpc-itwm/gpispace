@@ -28,6 +28,7 @@ set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror -Wno-non-virtual-dtor")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Werror -Wno-non-virtual-dtor")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wall -Werror -W -Wreturn-type -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Woverloaded-virtual -Wno-system-headers -Wno-non-virtual-dtor -pg -fprofile-arcs -ftest-coverage")
 # gprof and gcov support
 set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wall -Werror -W -Wreturn-type -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Woverloaded-virtual -Wno-system-headers -Wno-non-virtual-dtor -pg -fprofile-arcs -ftest-coverage")

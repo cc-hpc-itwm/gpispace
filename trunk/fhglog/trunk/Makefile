@@ -1,6 +1,6 @@
 CMAKE=cmake
+CMAKE_CONFIG=
 BUILD_DIR=build
-CMAKE_CONFIG="-DCMAKE_BUILD_TYPE=Debug"
 top_srcdir=${CURDIR}
 
 default: compile
