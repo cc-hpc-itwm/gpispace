@@ -19,7 +19,7 @@ using namespace gwes;
 
 namespace gwes {
 
-WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) : _logger(fhg::log::Logger::get("gwes")) {
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;

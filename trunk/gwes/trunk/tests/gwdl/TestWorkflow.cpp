@@ -16,7 +16,7 @@ using namespace gwdl;
 
 void testWorkflow()
 {
-	logger_t logger(Logger::get("gwdl"));
+	logger_t logger(getLogger("gwdl"));
 
 	LOG_INFO(logger, "============== BEGIN WORKFLOW TEST =============");
 	// create empty workflow

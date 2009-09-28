@@ -25,7 +25,7 @@ using namespace fhg::log;
 using namespace std;
 
 void testSdpa2Gwes() {
-	logger_t logger(Logger::get("gwes"));
+	logger_t logger(getLogger("gwes"));
 
 	LOG_INFO(logger, "============== BEGIN SDPA2GWES TEST =============");
 
@@ -59,7 +59,7 @@ void testSdpa2Gwes() {
 }
 
 void testGwes2Sdpa() {
-	logger_t logger(Logger::get("gwes"));
+	logger_t logger(getLogger("gwes"));
 	LOG_INFO(logger, "============== BEGIN GWES2SDPA TEST =============");
 
 	try {

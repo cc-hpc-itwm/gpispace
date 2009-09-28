@@ -18,7 +18,7 @@ using namespace gwdl;
 using namespace gwes;
  
 Workflow& testWorkflow(string workflowfn, gwes::GWES &gwes) {
-	logger_t logger(Logger::get("gwdl"));
+	logger_t logger(getLogger("gwdl"));
 
 	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 

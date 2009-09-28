@@ -33,7 +33,7 @@ XMLUtils* XMLUtils::Instance() {
 	return _instance;
 }
 
-XMLUtils::XMLUtils() : _logger(fhg::log::Logger::get("gwes"))
+XMLUtils::XMLUtils() : _logger(fhg::log::getLogger("gwes"))
 {
 	LOG_DEBUG(_logger, "XMLUtils() ...");
 	initializeXerces();

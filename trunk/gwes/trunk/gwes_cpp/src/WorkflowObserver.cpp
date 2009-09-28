@@ -12,7 +12,7 @@ using namespace std;
 namespace gwes
 {
 
-WorkflowObserver::WorkflowObserver() : _logger(fhg::log::Logger::get("gwes"))
+WorkflowObserver::WorkflowObserver() : _logger(fhg::log::getLogger("gwes"))
 {
 }
 

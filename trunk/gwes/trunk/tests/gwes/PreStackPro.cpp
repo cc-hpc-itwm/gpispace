@@ -26,7 +26,7 @@ PreStackPro::~PreStackPro()
 void PreStackPro::update(const gwes::Event& event)
 {
 	// logging
-	logger_t logger(Logger::get("gwes"));
+	logger_t logger(getLogger("gwes"));
 	LOG_INFO(logger, "gwes::PreStackPro::update(" << event._sourceId << "," << event._eventType << "," << event._message << ")");
 	
 	// invocation of algorithm (own thread)
@@ -49,7 +49,7 @@ void PreStackPro::setDestinationObserver(Observer* destinationP) {
  * Execute an algorithm. The inputEvent contains the algorithm name and the input data.
  */ 
 void PreStackPro::execute(const Event& inputEvent) {
-	logger_t logger(Logger::get("gwes"));
+	logger_t logger(getLogger("gwes"));
 	// analyse message (example message="loadTraceHeaders@phastgrid")
 	string algName=inputEvent._message.substr(0,inputEvent._message.find_first_of("@"));
 	string algResource=inputEvent._message.substr(inputEvent._message.find_first_of("@")+1);

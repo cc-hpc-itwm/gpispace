@@ -20,7 +20,7 @@ namespace gwes
 /**
  * Constructor for GWES.
  */
-GWES::GWES() : _logger(fhg::log::Logger::get("gwes")) 
+GWES::GWES() : _logger(fhg::log::getLogger("gwes")) 
 {
 	_sdpaHandler = NULL;
 	Utils::setEnvironmentVariables();

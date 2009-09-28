@@ -25,7 +25,7 @@ XERCES_CPP_NAMESPACE_USE
 
 void testData()
 {
-	logger_t logger(Logger::get("gwdl"));
+	logger_t logger(getLogger("gwdl"));
     LOG_INFO(logger, "============== BEGIN DATA TEST =============");
 	
 	LOG_INFO(logger, "test empty data token... ");

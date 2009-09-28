@@ -38,7 +38,7 @@ bool Utils::startsWith(const string& s1, const string& s2) {
 }
 
 void Utils::setEnvironmentVariables() {
-	static fhg::log::logger_t logger(fhg::log::Logger::get("gwes"));
+	static fhg::log::logger_t logger(fhg::log::getLogger("gwes"));
 	const char* name = "GWES_CPP_HOME";
 	const char* gwesHome = getenv(name);
 	if (gwesHome == NULL) {
@@ -66,7 +66,7 @@ void Utils::setEnvironmentVariables() {
 }
 
 string Utils::expandEnv(const string& path) {
-	static fhg::log::logger_t logger(fhg::log::Logger::get("gwes"));
+	static fhg::log::logger_t logger(fhg::log::getLogger("gwes"));
 	string::size_type loc1 = path.find("${",0);
 	if (loc1!=path.npos) {
 		string::size_type loc2 = path.find_first_of("}",loc1);

@@ -38,7 +38,7 @@ int XPathEvaluator::_cacheStep = -1;
 /**
  * example refer to http://xmlsoft.org/examples/xpath1.c
  */
-XPathEvaluator::XPathEvaluator(const char* xmlContextChar) : _logger(fhg::log::Logger::get("gwes"))
+XPathEvaluator::XPathEvaluator(const char* xmlContextChar) : _logger(fhg::log::getLogger("gwes"))
 {
 	LOG_DEBUG(_logger, "XPathEvaluator(" << xmlContextChar << ")...");
 	// init parser should be done only ONCE before construction of XPathEvaluator!
@@ -60,7 +60,7 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar) : _logger(fhg::log::L
 ///ToDo FIXME: This class seems not to be thread safe for multiple workflows (segfault).
 /// Check cache (one cache per workflow?)
 /// Cache deactivated!!!
-XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException) : _logger(fhg::log::Logger::get("gwes")) {
+XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException) : _logger(fhg::log::getLogger("gwes")) {
 	LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << ")...");
 	
 //    // look if context is still available in cache

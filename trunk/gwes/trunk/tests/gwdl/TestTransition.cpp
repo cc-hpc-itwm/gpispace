@@ -21,7 +21,7 @@ using namespace fhg::log;
  
 void testTransition() 
 {
-	logger_t logger(Logger::get("gwdl"));
+	logger_t logger(getLogger("gwdl"));
    LOG_INFO(logger, "============== BEGIN TRANSITION TEST =============");
    
    LOG_INFO(logger, "test empty transition...");

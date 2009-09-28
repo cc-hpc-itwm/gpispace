@@ -24,7 +24,7 @@ XERCES_CPP_NAMESPACE_USE
 
 void testToken()
 {
-	logger_t logger(Logger::get("gwdl"));
+	logger_t logger(getLogger("gwdl"));
 	LOG_INFO(logger, "============== BEGIN TOKEN TEST =============");
 	
 	LOG_INFO(logger, "test default control token...");
