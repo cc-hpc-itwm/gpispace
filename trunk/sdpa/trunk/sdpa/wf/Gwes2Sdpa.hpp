@@ -15,60 +15,52 @@ namespace sdpa { namespace wf {
 class Gwes2Sdpa {
 
 public:
-
-	// typedefs have been moved to Types.h
-
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
-	// don't need it!
-	//virtual ~Gwes2Sdpa();
+	virtual ~Gwes2Sdpa() {}
+
+    /**
+	 *  Submit  a  generic  activity  (atomic   or   complex)   to   the   SDPA.
+     *
+     * This method is to be  called  by  the  GWES  in  order  to  delegate  the
+     * execution of "activities".  The SDPA component  will  then  decide  where
+     * to execute this activity (local or remote).
+     *
+     * @see Sdpa2Gwes::activityDispatched
+     * @see Sdpa2Gwes::activityFailed
+     * @see Sdpa2Gwes::activityFinished
+     * @see Sdpa2Gwes::activityCanceled
+     */
+	virtual  activity_id_t  submitActivity(const  activity_t  &activity)  =   0;
 
 	/**
-	 * Submit a sub workflow to the SDPA.
-	 * This method is to be called by the GWES in order to delegate
-	 * the execution of sub workflows.
-	 * The SDPA will use the callback handler Sdpa2Gwes in order
-	 * to notify the GWES about status transitions.
-	 */
-	virtual workflow_id_t submitWorkflow(const workflow_t &workflow) = 0;
-
-	/**
-	 * Submit an atomic activity to the SDPA.
-	 * This method is to be called by the GWES in order to delegate
-	 * the execution of activities.
-	 * The SDPA will use the callback handler Sdpa2Gwes in order
-	 * to notify the GWES about activity status transitions.
-	 */
-	virtual activity_id_t submitActivity(const activity_t &activity) = 0;
-
-	/**
-	 * Cancel a sub workflow that has previously been submitted to
-	 * the SDPA. The parent job has to cancel all children.
-	 */
-	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
-
-	/**
-	 * Cancel an atomic activity that has previously been submitted to
-	 * the SDPA.
+	 * Cancel a previously submitted activity.
 	 */
 	virtual void cancelActivity(const activity_id_t &activityId)  throw (sdpa::daemon::NoSuchActivityException) = 0;
+
 
 	/**
 	 * Notify the SDPA that a workflow finished (state transition
 	 * from running to finished).
+     *
+     * @see Sdpa2Gwes::submitWorkflow
 	 */
 	virtual void workflowFinished(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow failed (state transition
 	 * from running to failed).
+     *
+     * @see Sdpa2Gwes::submitWorkflow
 	 */
 	virtual void workflowFailed(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow has been canceled (state
 	 * transition from * to terminated.
+     *
+     * @see Sdpa2Gwes::submitWorkflow
 	 */
 	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException) = 0;
 };
