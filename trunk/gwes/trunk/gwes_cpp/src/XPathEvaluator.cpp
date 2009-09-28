@@ -57,18 +57,21 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar) : _logger(fhg::log::L
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
 }
 
+///ToDo FIXME: This class seems not to be thread safe for multiple workflows (segfault).
+/// Check cache (one cache per workflow?)
+/// Cache deactivated!!!
 XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException) : _logger(fhg::log::Logger::get("gwes")) {
 	LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << ")...");
 	
-    // look if context is still available in cache
-	if (step == _cacheStep && toP == _cacheTransitionOccurrenceP) {
-		_xmlContextDocP = _cacheXmlContextDocP;
-		_xmlContextP = _cacheXmlContextP;
-		LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): using context from cache.");
-	}
-
-	// create new context from input and read places
-	else {
+//    // look if context is still available in cache
+//	if (step == _cacheStep && toP == _cacheTransitionOccurrenceP) {
+//		_xmlContextDocP = _cacheXmlContextDocP;
+//		_xmlContextP = _cacheXmlContextP;
+//		LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): using context from cache.");
+//	}
+//
+//	// create new context from input and read places
+//	else {
 
 		// create new context document  
 		_xmlContextDocP = xmlNewDoc((const xmlChar*)"1.0");
@@ -84,16 +87,16 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
 
 		_xmlContextP = xmlXPathNewContext(_xmlContextDocP);
 
-		xmlXPathFreeContext(_cacheXmlContextP); 
-	    xmlFreeDoc(_cacheXmlContextDocP);
-	    _cacheXmlContextDocP = _xmlContextDocP;
-	    _cacheXmlContextP = _xmlContextP;
-	    _cacheStep = step;
-	    _cacheTransitionOccurrenceP = toP;
-	}
+//		xmlXPathFreeContext(_cacheXmlContextP); 
+//	    xmlFreeDoc(_cacheXmlContextDocP);
+//	    _cacheXmlContextDocP = _xmlContextDocP;
+//	    _cacheXmlContextP = _xmlContextP;
+//	    _cacheStep = step;
+//	    _cacheTransitionOccurrenceP = toP;
+//	}
 	
     if(_xmlContextP == NULL) {
-        LOG_WARN(_logger, "Error: unable to create new XPath context");
+        LOG_FATAL(_logger, "Error: unable to create new XPath context");
         xmlFreeDoc(_xmlContextDocP); 
         assert(false);
     }

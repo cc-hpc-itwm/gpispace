@@ -46,7 +46,8 @@ int main()
 		
 		// test XPathEvaluator
 		testXPathEvaluator();
-		testXPathEvaluatorContextCache();
+		///ToDo: FixMe Test commented out because cache in XPathEvaluator is currently deactivated
+		//testXPathEvaluatorContextCache();
 
 		// test SDPA2GWES communication
 		testSdpa2Gwes();

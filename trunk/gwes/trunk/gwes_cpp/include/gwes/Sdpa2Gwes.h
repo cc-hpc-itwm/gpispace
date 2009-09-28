@@ -30,6 +30,8 @@ public:
 	 * Notify the GWES that an activity has been dispatched
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted 
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
 	virtual void activityDispatched(const workflow_id_t &workflowId,
 			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
@@ -38,6 +40,8 @@ public:
 	 * Notify the GWES that an activity has failed
 	 * (state transition from "running" to "failed").
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted 
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
 	virtual void activityFailed(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
@@ -47,6 +51,8 @@ public:
 	 * Notify the GWES that an activity has finished
 	 * (state transition from running to finished).
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted 
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
 	virtual void activityFinished(const workflow_id_t &workflowId,
 			const activity_id_t &activityId,
@@ -56,6 +62,8 @@ public:
 	 * Notify the GWES that an activity has been canceled
 	 * (state transition from * to terminated).
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted 
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
 	virtual void activityCanceled(const workflow_id_t &workflowId,
 			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
