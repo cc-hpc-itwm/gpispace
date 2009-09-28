@@ -1,22 +1,50 @@
 #ifndef SDPA_ERROREVENT_HPP
 #define SDPA_ERROREVENT_HPP 1
 
-#include <seda/SystemEvent.hpp>
+// this should be added to CMakeLists.txt and put into the global configuration header
+#define USE_BOOST_SC 1
 
-namespace sdpa {
-  class ErrorEvent : public seda::SystemEvent {
-  public:
-    ErrorEvent(const std::string& reason, const std::string& additionalData="");
-    ~ErrorEvent();
+#if USE_BOOST_SC == 1
+#include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
 
-    const std::string& reason() const;
-    const std::string& additionalData() const;
+#include <sdpa/events/MgmtEvent.hpp>
 
-    std::string str() const;
-  private:
-    std::string _reason;
-    std::string _additionalData;
+namespace sdpa { namespace events {
+// this could be replaced by a small macro
+#if USE_BOOST_SC == 1
+  class ErrorEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::ErrorEvent>
+#else
+  class ErrorEvent : public sdpa::events::MgmtEvent
+#endif
+  {
+    public:
+      typedef sdpa::shared_ptr<ErrorEvent> Ptr;
+
+      enum error_code_t {
+          ENOERROR = 0
+        , ENOJOBAVAIL
+        , EBUSY
+        , EAGAIN
+      };
+
+      ErrorEvent(const address_t &from, const address_t &to, const error_code_t &error_code, const std::string& reason = "unknown reason")
+      : MgmtEvent(from, to), error_code_(error_code), reason_(reason)
+      {
+      }
+
+      ~ErrorEvent()
+      {
+      }
+
+      const std::string& reason() const { return reason_; }
+      const error_code_t error_code() const { return error_code_; }
+
+      std::string str() const { return "ErrorEvent"; }
+    private:
+      error_code_t error_code_;
+      std::string reason_;
   };
-}
-
+}}
 #endif
