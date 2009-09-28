@@ -31,6 +31,10 @@ extern "C"
 
   extern void trie_work (const TrieMap_t, const fTrieWork_t, void *);
 
+#ifndef TRIE_BITS
+#define TRIE_BITS 3
+#endif
+
   /* *********************************************************************** */
 
 #ifndef TRIE_ERROR_HANDLER
