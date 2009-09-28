@@ -1,0 +1,38 @@
+msc {
+  hscale = "1.0";
+
+  U, O, Go, A, Ga, N, Gn;
+
+  |||;
+  U->O [ label="submitJob(description)" ];
+  O=>Go [ label="Workflow wf(gwes::parse_workflow(description))" ];
+  --- [ label = "if the syntax is ok, schedule the job" ];
+  O=>Go [ label="submitWorkflow(wf)" ];
+  Go=>O [ label="submitActivity(act)" ];
+  O=>O [ label="false = handle_local(act)" ];
+  O=>Go [ label="Workflow swf = gwes::transform_activity_to_workflow(act)" ];
+  O=>Go [ label="Description desc = gwes::serialize(swf)" ];
+  O->A [ label="submitJob(desc)" ];
+
+  ...;
+  A=>Ga [ label="Workflow wf = gwes::parse_workflow(desc)" ];
+  --- [ label = "the syntax must be ok on this level!" ];
+  A=>Ga [ label="submitWorkflow(wf)" ];
+  Ga=>A [ label="submitActivity(act)" ];
+  A=>A [ label="false = handle_local(act)" ];
+  A=>Ga [ label="Workflow swf = gwes::transform_activity_to_workflow(act)" ];
+  A=>Ga [ label="Description desc = gwes::serialize(swf)" ];
+  A->N [ label="submitJob(desc)" ];
+
+  ...;
+  N=>Gn [ label="Workflow wf = gwes::parse_workflow(desc)" ];
+  --- [ label = "the syntax must be ok on this level!" ];
+  N=>N [ label = "atomic = measure_complexity(wf)" ];
+  N=>N [ label = "execute(wf)" ];
+  ...;
+  N=>N [ label = "complex = measure_complexity(wf)" ];
+  N=>Gn [ label = "submitWorkflow(wf)" ];
+  Gn=>N [ label="submitActivity(act)" ];
+  N=>N [ label="true = handle_local(act)" ];
+  N=>N [ label = "execute(wf)" ];
+}
