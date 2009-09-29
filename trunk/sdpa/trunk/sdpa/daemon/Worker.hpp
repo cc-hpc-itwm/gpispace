@@ -104,8 +104,6 @@ namespace sdpa { namespace daemon {
       */
     JobQueue& acknowledged() { return acknowledged_; }
   private:
-    SDPA_DECLARE_LOGGER();
-
     worker_id_t name_; //! name of the worker
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received

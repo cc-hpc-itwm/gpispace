@@ -1,11 +1,11 @@
 #include "Worker.hpp"
+#include <fhglog/fhglog.hpp>
 #include <stdexcept>
 
 using namespace sdpa::daemon;
 
 Worker::Worker(const worker_id_t &name, const location_t &location)
-  : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
-    name_(name),
+  : name_(name),
     location_(location),
     tstamp_(sdpa::util::now()) {
     
@@ -16,7 +16,7 @@ void Worker::update(const sdpa::events::SDPAEvent &event) {
 }
 
 void Worker::dispatch(const Job::ptr_t &job) {
-  SDPA_LOG_DEBUG("appending job(" << job->id() << ") to the pending queue");
+  LOG(DEBUG, "appending job(" << job->id() << ") to the pending queue");
   pending_.push(job);
 }
 
@@ -29,11 +29,11 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
       // remove it and put it to the acknowledged queue
       acknowledged().push(*job);
       submitted().erase(job);
-      SDPA_LOG_DEBUG("acknowledged job(" << job_id << ")");
+      LOG(DEBUG, "acknowledged job(" << job_id << ")");
       return true;
     }
   }
-  SDPA_LOG_DEBUG("not acknowledged job(" << job_id << ")");
+  LOG(DEBUG, "not acknowledged job(" << job_id << ")");
   return false;
 }
 
