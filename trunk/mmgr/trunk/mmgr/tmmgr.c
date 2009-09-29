@@ -309,12 +309,12 @@ typedef struct
 } os, *pos;
 
 static void
-fTrieMax (const Offset_t Offset, const PSize_t PSize, void * OS)
+fTrieMax (const Offset_t Offset, const PSize_t PSize, void *OS)
 {
-  if (Offset > ((pos)OS)->Offset)
+  if (Offset > ((pos) OS)->Offset)
     {
-      ((pos)OS)->Offset = Offset;
-      ((pos)OS)->Size = *PSize;
+      ((pos) OS)->Offset = Offset;
+      ((pos) OS)->Size = *PSize;
     }
 }
 
@@ -379,7 +379,7 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 
   if (Offset + Size == ptmmgr->high_water)
     {
-      os OS = {0,0};
+      os OS = { 0, 0 };
 
       trie_work (ptmmgr->free_segment_end, fTrieMax, &OS);
 
