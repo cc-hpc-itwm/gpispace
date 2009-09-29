@@ -108,6 +108,13 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 link_libraries(${Boost_LIBRARIES})
 
 # logging
+include(FindFhgLog)
+if (FHGLOG_FOUND)
+  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
+  include_directories(${FHGLOG_INCLUDE_DIR})
+  link_libraries(${FHGLOG_LIBRARY})
+endif(FHGLOG_FOUND)
+
 if (ENABLE_LOGGING)
     set(ENABLE_LOGGING 1)
     include(FindLogging)
