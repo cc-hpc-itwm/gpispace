@@ -62,6 +62,21 @@ public:
 	virtual void registerHandler(Gwes2Sdpa *sdpa) const = 0;
 
 	/**
+	 * Unregister a SDPA handler that implements the Gwes2Sdpa
+	 */
+	virtual void unregisterHandler(Gwes2Sdpa *sdpa) const = 0;
+
+    /*
+     * initialize and start internal datastructures
+     */
+    virtual void start() = 0;
+
+    /*
+     * stop and destroy internal datastructures
+     */
+    virtual void stop() = 0;
+
+	/**
 	 * Submit a workflow to the GWES.
 	 * This method is to be invoked by the SDPA.
 	 * The GWES will initiate and start the workflow
