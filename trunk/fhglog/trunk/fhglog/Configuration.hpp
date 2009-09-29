@@ -12,7 +12,7 @@ namespace fhg { namespace log {
         std::clog << "I: performing default logging configuration" << std::endl;
         try {
           getLogger().removeAllAppenders();
-          getLogger().addAppender(Appender::ptr_t(new StreamAppender("console"))->setFormat(Formatter::Default()));
+          getLogger().addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Default());
           getLogger().setLevel(LogLevel::TRACE);
         } catch (const std::exception& ex) {
           std::clog << "E: Could not configure the logging environment: " << ex.what() << std::endl;
@@ -33,7 +33,6 @@ namespace fhg { namespace log {
         (cf)();
       }
   };
-}
-}
+}}
 
 #endif
