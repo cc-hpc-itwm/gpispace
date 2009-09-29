@@ -1,6 +1,7 @@
 #include	"Formatter.hpp"
 
 #include <sstream>
+#include <ios>
 
 using namespace fhg::log;
 
@@ -54,7 +55,11 @@ std::string Formatter::format(const LogEvent &evt)
             sstr  << evt.pid();
             break;
           case FMT_TID:
-            sstr  << evt.tid();
+            {
+              std::ios_base::fmtflags flags(sstr.flags());
+              sstr << std::hex << evt.tid();
+              sstr.flags(flags);
+            }
             break;
           case FMT_LOGGER:
             sstr << evt.logged_via();
