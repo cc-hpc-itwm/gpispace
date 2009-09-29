@@ -19,7 +19,6 @@
 #include <iostream>
 #include    <sstream>
 #include    <unistd.h>
-//#define FHGLOG_DISABLE_LOGGING 1
 #include    <fhglog/fhglog.hpp>
 
 class Test
@@ -58,18 +57,15 @@ int main(int argc, char **argv)
   }
   std::cerr << "the log-level has been set to: " << logger.getLevel().str() << "(" << logger.getLevel().lvl() << ")" << std::endl;
 
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::Default());
+  root.addAppender(Appender::ptr_t(new StreamAppender("console-long")))->setFormat(Formatter::Default());
   logger.addAppender(Appender::ptr_t(new StreamAppender("console-short")))->setFormat(Formatter::Full());
+
+  LOG(INFO, "this is a very small info message");
 
   {
     Test test;
   }
 
-  root.log(LogEvent(LogLevel::TRACE
-                            , __FILE__
-                            , FHGLOG_FUNCTION
-                            , __LINE__
-                            , "E: this message should not be logged (no appender for the root logger defined"));
   logger.log(LogEvent(LogLevel::TRACE
                             , __FILE__
                             , FHGLOG_FUNCTION
