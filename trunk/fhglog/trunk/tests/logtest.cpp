@@ -20,6 +20,7 @@
 #include    <sstream>
 #include    <unistd.h>
 #include    <fhglog/fhglog.hpp>
+#include    <fhglog/Configuration.hpp>
 
 class Test
 {
@@ -45,6 +46,12 @@ std::string compute_large_output_string()
 int main(int argc, char **argv)
 {
   using namespace fhg::log;
+
+  {
+    fhg::log::Configurator::configure();
+    getLogger().removeAllAppenders();
+  }
+
   logger_t root(getLogger());
   logger_t logger(getLogger("test.mod"));
   logger.setLevel(LogLevel::TRACE);
