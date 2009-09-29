@@ -66,11 +66,11 @@ tmmgr_ins_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
     }
 }
 
-void
+MemSize_t
 tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 {
   if (PTmmgr == NULL || *(ptmmgr_t *) PTmmgr != NULL)
-    return;
+    return 0;
 
   *(ptmmgr_t *) PTmmgr = malloc (sizeof (tmmgr_t));
 
@@ -94,6 +94,8 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
   ptmmgr->sum_alloc = ptmmgr->sum_free = 0;
 
   tmmgr_ins_free_seg (ptmmgr, 0, ptmmgr->mem_size);
+
+  return ptmmgr->mem_size;
 }
 
 ResizeReturn_t
@@ -300,6 +302,22 @@ tmmgr_oalloc (PTmmgr_t PTmmgr, const Handle_t Handle, const Offset_t Offset,
   return ALLOC_SUCCESS;
 }
 
+typedef struct
+{
+  Offset_t Offset;
+  Size_t Size;
+} os, *pos;
+
+static void
+fTrieMax (const Offset_t Offset, const PSize_t PSize, void * OS)
+{
+  if (Offset > ((pos)OS)->Offset)
+    {
+      ((pos)OS)->Offset = Offset;
+      ((pos)OS)->Size = *PSize;
+    }
+}
+
 static void
 tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
            const MemSize_t Size)
@@ -307,13 +325,6 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   assert (Size > 0);
 
   ptmmgr->mem_free += Size;
-
-  if (Offset + Size == ptmmgr->high_water)
-    {
-      PMemSize_t PFreeSize = trie_get (ptmmgr->free_segment_end, Offset);
-
-      ptmmgr->high_water = Offset - (PFreeSize == NULL) ? 0 : *PFreeSize;
-    }
 
   ostab_del (&ptmmgr->handle_to_offset_and_size, Handle);
   trie_del (&ptmmgr->offset_to_handle, Offset, fUserNone);
@@ -365,12 +376,21 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
     {
       tmmgr_ins_free_seg (ptmmgr, Offset, Size);
     }
+
+  if (Offset + Size == ptmmgr->high_water)
+    {
+      os OS = {0,0};
+
+      trie_work (ptmmgr->free_segment_end, fTrieMax, &OS);
+
+      ptmmgr->high_water = OS.Offset - OS.Size;
+    }
 }
 
 HandleReturn_t
 tmmgr_free (PTmmgr_t PTmmgr, const Handle_t Handle)
 {
-  if (PTmmgr == NULL)
+  if (PTmmgr == NULL || *(ptmmgr_t *) PTmmgr == NULL)
     return RET_FAILURE;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
@@ -388,6 +408,17 @@ tmmgr_free (PTmmgr_t PTmmgr, const Handle_t Handle)
   tmmgr_del (ptmmgr, Handle, Offset, Size);
 
   return RET_SUCCESS;
+}
+
+MemSize_t
+tmmgr_memsize (const PTmmgr_t PTmmgr)
+{
+  if (PTmmgr == NULL)
+    return 0;
+
+  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+
+  return ptmmgr->mem_size;
 }
 
 MemSize_t
@@ -604,7 +635,7 @@ tmmgr_info (const PTmmgr_t PTmmgr)
 
   ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
 
-  printf ("\n***** mem: used = %lu free = %lu size = %lu\n",
+  printf ("***** mem: used = %lu free = %lu size = %lu\n",
           ptmmgr->mem_size - ptmmgr->mem_free, ptmmgr->mem_free,
           ptmmgr->mem_size);
 

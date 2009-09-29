@@ -18,7 +18,7 @@ extern "C"
 #define FMT_MemSize_t FMT_Word_t
 #define FMT_Align_t FMT_Word_t
 
-  extern void tmmgr_init (PTmmgr_t, const MemSize_t, const Align_t);
+  extern MemSize_t tmmgr_init (PTmmgr_t, const MemSize_t, const Align_t);
   extern MemSize_t tmmgr_finalize (PTmmgr_t);
 
   typedef enum
@@ -58,6 +58,7 @@ extern "C"
   extern HandleReturn_t tmmgr_offset_size (const Tmmgr_t, const Handle_t,
                                            POffset_t, PMemSize_t);
 
+  extern MemSize_t tmmgr_memsize (const Tmmgr_t);
   extern MemSize_t tmmgr_memfree (const Tmmgr_t);
   extern MemSize_t tmmgr_memused (const Tmmgr_t);
   extern MemSize_t tmmgr_minfree (const Tmmgr_t);
