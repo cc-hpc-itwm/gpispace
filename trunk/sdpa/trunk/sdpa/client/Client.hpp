@@ -72,7 +72,6 @@ namespace sdpa { namespace client {
   private:
     Client(const std::string &name, const std::string &output_stage)
       : seda::Strategy(name)
-      ,SDPA_INIT_LOGGER(name)
       ,version_(SDPA_VERSION)
       ,copyright_(SDPA_COPYRIGHT)
       ,contact_(SDPA_CONTACT)
@@ -92,8 +91,6 @@ namespace sdpa { namespace client {
     typedef unsigned long long timeout_t;
     seda::IEvent::Ptr wait_for_reply(timeout_t timeout = 0);
     bool waitForReply();
-
-    SDPA_DECLARE_LOGGER();
 
     std::string version_;
     std::string copyright_;
