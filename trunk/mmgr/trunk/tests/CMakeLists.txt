@@ -25,3 +25,6 @@ target_link_libraries(test_ostab mmgr)
 
 add_executable(test_tmmgr test_tmmgr.c)
 target_link_libraries(test_tmmgr mmgr)
+
+add_executable(test_dtmmgr test_dtmmgr.c)
+target_link_libraries(test_dtmmgr mmgr)

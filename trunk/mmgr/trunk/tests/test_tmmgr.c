@@ -111,10 +111,11 @@ do_resize (PTmmgr_t PTmmgr, MemSize_t NewSize)
 
 static void
 fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
-          const MemSize_t Size)
+          const MemSize_t Size, void *PDat)
 {
-  printf ("CALLBACK: Moving %lu Byte(s) from %lu to %lu\n", Size, OffsetSrc,
-          OffsetDest);
+  printf ("CALLBACK-%lu: Moving %lu Byte(s) from %lu to %lu\n",
+          (*(unsigned long *) PDat)++, Size, OffsetSrc, OffsetDest);
+
 }
 
 int
@@ -124,34 +125,32 @@ main ()
 
   tmmgr_init (&tmmgr, 45, 1);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   for (Word_t i = 0; i < 10; ++i)
     do_alloc (tmmgr, (Handle_t) i, (MemSize_t) 1);
 
-  tmmgr_status (tmmgr);
-
-  printf ("beep\n");
+  tmmgr_status (tmmgr, NULL);
 
   do_free (tmmgr, 2);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 6);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 3);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 7);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 8);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 1);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 5);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
   do_free (tmmgr, 4);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_alloc (tmmgr, 1, 1);
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_alloc (tmmgr, 11, 4);
   do_alloc (tmmgr, 12, 4);
@@ -162,12 +161,14 @@ main ()
 
   do_free (tmmgr, 13);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
+
+  unsigned long callback_count = 0;
 
   /* complete defragmentation */
-  tmmgr_defrag (&tmmgr, &fMemmove, NULL);
+  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_alloc (tmmgr, 26, 5);
   do_alloc (tmmgr, 27, 5);
@@ -175,46 +176,46 @@ main ()
   do_alloc (tmmgr, 29, 5);
   do_alloc (tmmgr, 30, 5);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_free (tmmgr, 26);
   do_free (tmmgr, 28);
   do_free (tmmgr, 29);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   /* only up to a free chunk of size 12 */
   MemSize_t FreeSizeWanted = 12;
-  tmmgr_defrag (&tmmgr, &fMemmove, &FreeSizeWanted);
+  tmmgr_defrag (&tmmgr, &fMemmove, &FreeSizeWanted, &callback_count);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 50);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_alloc (tmmgr, 101, 14);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 45);
 
-  tmmgr_defrag (&tmmgr, &fMemmove, NULL);
+  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 34);
   do_resize (tmmgr, 35);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 50);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 45);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_free (tmmgr, 0);
   do_free (tmmgr, 1);
@@ -225,15 +226,15 @@ main ()
   do_free (tmmgr, 30);
   do_free (tmmgr, 101);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 0);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   do_resize (tmmgr, 3141);
 
-  tmmgr_status (tmmgr);
+  tmmgr_status (tmmgr, NULL);
 
   printf ("\n");
 
@@ -259,25 +260,25 @@ main ()
 
   tmmgr_init (&tmmgrAligned, 45, (1 << 4));
 
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   do_resize (tmmgrAligned, 67);
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   do_resize (tmmgrAligned, 64);
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   for (Word_t i = 0; i < 10; ++i)
     do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
 
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   do_resize (tmmgrAligned, 1000);
 
   for (Word_t i = 0; i < 10; ++i)
     do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
 
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   do_resize (tmmgrAligned, 150);
 
@@ -285,11 +286,11 @@ main ()
 
   do_resize (tmmgrAligned, 150);
 
-  tmmgr_defrag (&tmmgrAligned, &fMemmove, NULL);
+  tmmgr_defrag (&tmmgrAligned, &fMemmove, NULL, &callback_count);
 
   do_resize (tmmgrAligned, 150);
 
-  tmmgr_status (tmmgrAligned);
+  tmmgr_status (tmmgrAligned, NULL);
 
   tmmgr_finalize (&tmmgrAligned);
 

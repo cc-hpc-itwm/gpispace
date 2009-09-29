@@ -40,13 +40,8 @@ extern "C"
     ALLOC_FAILURE
   } AllocReturn_t;
 
-  /* calculates offset */
   extern AllocReturn_t tmmgr_alloc (PTmmgr_t, const Handle_t,
                                     const MemSize_t);
-
-  /* tries to use offset */
-  extern AllocReturn_t tmmgr_oalloc (PTmmgr_t, const Handle_t, const Offset_t,
-                                     const MemSize_t);
 
   typedef enum
   { RET_SUCCESS,
@@ -81,15 +76,16 @@ extern "C"
 #define FMT_OffsetSrc_t FMT_Offset_t
 
   typedef void (*fMemmove_t) (const OffsetDest_t, const OffsetSrc_t,
-                              const MemSize_t);
+                              const MemSize_t, void *);
 
   /* stops, when enough contiguous memory is available */
-  extern void tmmgr_defrag (PTmmgr_t, const fMemmove_t, const PMemSize_t);
+  extern void tmmgr_defrag (PTmmgr_t, const fMemmove_t, const PMemSize_t,
+                            void *);
 
   /* *********************************************************************** */
 
-  extern void tmmgr_status (const Tmmgr_t);
-  extern void tmmgr_info (const Tmmgr_t);       /* short */
+  extern void tmmgr_status (const Tmmgr_t, const char *);
+  extern void tmmgr_info (const Tmmgr_t, const char *); /* short */
 
   /* *********************************************************************** */
 

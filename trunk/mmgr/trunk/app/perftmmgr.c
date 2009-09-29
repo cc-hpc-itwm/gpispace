@@ -51,7 +51,8 @@ main (int argc, char **argv)
 
   tmmgr_init (&tmmgr, size, align);
 
-  srand (31415926); knum = 0;
+  srand (31415926);
+  knum = 0;
 
   double t = -current_time ();
 
@@ -65,12 +66,13 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  tmmgr_info (tmmgr);
+  tmmgr_info (tmmgr, NULL);
 
   printf (FMT_Size_t " time alloc = %g (%g us per alloc)\n", alloc, t,
           1e6 * t / (double) alloc);
 
-  srand (31415926); knum = 0;
+  srand (31415926);
+  knum = 0;
 
   t = -current_time ();
 
@@ -83,12 +85,13 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  tmmgr_info (tmmgr);
+  tmmgr_info (tmmgr, NULL);
 
   printf (FMT_Size_t " time free = %g (%g us per free)\n", alloc, t,
           1e6 * t / (double) alloc);
 
-  srand (31415926); knum = 0;
+  srand (31415926);
+  knum = 0;
 
   for (Count_t i = 0; i < alloc; ++i)
     {
@@ -98,7 +101,8 @@ main (int argc, char **argv)
          (size / alloc));
     }
 
-  srand (31415926); knum = 0;
+  srand (31415926);
+  knum = 0;
 
   for (Count_t i = 0; i < alloc / 2; ++i)
     {
@@ -107,15 +111,15 @@ main (int argc, char **argv)
          (Handle_t) (use_rand ? rand () : (use_gen ? gen_key () : i)));
     }
 
-  tmmgr_info (tmmgr);
+  tmmgr_info (tmmgr, NULL);
 
   t = -current_time ();
 
-  tmmgr_defrag (&tmmgr, NULL, NULL);
+  tmmgr_defrag (&tmmgr, NULL, NULL, NULL);
 
   t += current_time ();
 
-  tmmgr_info (tmmgr);
+  tmmgr_info (tmmgr, NULL);
 
   printf (FMT_Size_t " time defrag = %g\n", alloc, t);
 
