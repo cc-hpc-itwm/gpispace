@@ -80,6 +80,22 @@ endif(UUID_FOUND)
 
 # GWES/GWDL
 include(FindGwes)
+if (GWES_FOUND)
+  message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
+  include_directories(${GWES_INCLUDE_DIR})
+  link_libraries(${GWES_LIBRARY})
+else(GWES_FOUND)
+  message(FATAL_ERROR "Gwes could not be found!")
+endif (GWES_FOUND)
+
+if (GWDL_FOUND)
+  message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
+  include_directories(${GWDL_INCLUDE_DIR})
+  link_libraries(${GWDL_LIBRARY})
+else(GWDL_FOUND)
+  message(FATAL_ERROR "Gwdl could not be found!")
+endif (GWDL_FOUND)
+
 
 # state machine compiler (only when required)
 if (USE_SMC)
