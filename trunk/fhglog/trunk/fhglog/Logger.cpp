@@ -21,8 +21,16 @@ const Logger::ptr_t &Logger::get(const std::string &a_name)
   logger_map_t::iterator logger(loggers_.find(a_name));
   if (logger == loggers_.end())
   {
-    Logger::ptr_t newLogger(new Logger(a_name));
-    logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
+    if (a_name != "default")
+    {
+      Logger::ptr_t newLogger(new Logger(a_name, *get("default")));
+      logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
+    }
+    else
+    {
+      Logger::ptr_t newLogger(new Logger(a_name));
+      logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
+    }
   }
 
   return logger->second;
@@ -32,6 +40,16 @@ Logger::Logger(const std::string &a_name)
   : name_(a_name), lvl_(LogLevel(LogLevel::UNSET)), filter_(new NullFilter())
 {
 }
+
+Logger::Logger(const std::string &a_name, const Logger &inherit_from)
+  : name_(a_name), lvl_(inherit_from.getLevel()), filter_(inherit_from.getFilter())
+{
+  for (appender_list_t::const_iterator it(inherit_from.appenders_.begin()); it != inherit_from.appenders_.end(); ++it)
+  {
+    addAppender(*it);    
+  }
+}
+
 
 const std::string &Logger::name() const
 {

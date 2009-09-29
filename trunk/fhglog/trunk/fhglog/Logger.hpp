@@ -60,6 +60,8 @@ namespace fhg { namespace log {
       explicit
       Logger(const std::string &name);
 
+      Logger(const std::string &name, const Logger &inherit_from);
+
       std::string name_;
       LogLevel lvl_;
       Filter::ptr_t filter_;
