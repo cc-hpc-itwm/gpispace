@@ -32,60 +32,61 @@ Client::ptr_t Client::create(const std::string &name_prefix, const std::string &
 
 Client::~Client()
 {
-  LOG(DEBUG, "destroying client api");
+  MLOG(DEBUG, "destroying client api");
 }
 
 void Client::perform(const seda::IEvent::Ptr &event)
 {
-  LOG(DEBUG, "got event: " << event->str());
+  DMLOG(DEBUG, "got event: " << event->str());
   if (dynamic_cast<ConfigOK*>(event.get())) {
-    LOG(DEBUG, "ok");
+    DMLOG(DEBUG, "ok");
     fsm_.ConfigOk(event);
   } else if (dynamic_cast<ConfigNOK*>(event.get())) {
-    LOG(DEBUG,"nok");
+    DMLOG(DEBUG,"nok");
     fsm_.ConfigNok(event);
   } else if (StartUp * start = dynamic_cast<StartUp*>(event.get())) {
-    LOG(DEBUG,"start");
+    DMLOG(DEBUG,"start");
     fsm_.Start(start->config());
   } else if (Shutdown *shut = dynamic_cast<Shutdown*>(event.get())) {
-    LOG(DEBUG,"shut");
+    DMLOG(DEBUG,"shut");
     fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
-    LOG(DEBUG,"sub");
+    DMLOG(DEBUG,"sub");
     fsm_.Submit(event);
   } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
-    LOG(DEBUG,"ack");
+    DMLOG(DEBUG,"ack");
     fsm_.SubmitAck(event);
   } else if (dynamic_cast<se::QueryJobStatusEvent*>(event.get())) {
-    LOG(DEBUG,"qstat");
+    DMLOG(DEBUG,"qstat");
     fsm_.Query(event);
   } else if (dynamic_cast<se::JobStatusReplyEvent*>(event.get())) {
-    LOG(DEBUG,"rstat");
+    DMLOG(DEBUG,"rstat");
     fsm_.StatusReply(event);
   } else if (dynamic_cast<se::CancelJobEvent*>(event.get())) {
-    LOG(DEBUG,"kill");
+    DMLOG(DEBUG,"kill");
     fsm_.Cancel(event);
   } else if (dynamic_cast<se::CancelJobAckEvent*>(event.get())) {
-    LOG(DEBUG,"ack");
+    DMLOG(DEBUG,"ack");
     fsm_.CancelAck(event);
   } else if (dynamic_cast<se::RetrieveJobResultsEvent*>(event.get())) {
-    LOG(DEBUG,"get");
+    DMLOG(DEBUG,"get");
     fsm_.Retrieve(event);
   } else if (dynamic_cast<se::JobResultsReplyEvent*>(event.get())) {
-    LOG(DEBUG,"get");
+    DMLOG(DEBUG,"get");
     fsm_.Results(event);
   } else if (dynamic_cast<se::DeleteJobEvent*>(event.get())) {
-    LOG(DEBUG,"del");
+    DMLOG(DEBUG,"del");
     fsm_.Delete(event);
   } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
-    LOG(DEBUG,"ack");
+    DMLOG(DEBUG,"ack");
     fsm_.DeleteAck(event);
   }
 }
 
 void Client::start(const Client::config_t & config)
 {
-  std::clog << "starting up" << std::endl;
+  std::clog << "I: starting up" << std::endl;
+  fhg::log::Configurator::configure(/*use default config for now*/);
 
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
@@ -94,7 +95,7 @@ void Client::start(const Client::config_t & config)
   // check event type
   if (dynamic_cast<ConfigOK*>(reply.get()))
   {
-    LOG(INFO,"configuration was ok");
+    MLOG(INFO,"configuration was ok");
   }
   else if (dynamic_cast<ConfigNOK*>(reply.get()))
   {
@@ -130,15 +131,15 @@ seda::IEvent::Ptr Client::wait_for_reply(const timeout_t timeout)
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
 {
-  LOG(DEBUG,"submitting job with description = " << desc);
+  MLOG(DEBUG,"submitting job with description = " << desc);
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), /* config.get("sdpa.topology.orchestrator") */ "orchestrator", desc)));
-  LOG(DEBUG,"waiting for a reply");
+  MLOG(DEBUG,"waiting for a reply");
   // TODO: wait_for_reply(config.get<timeout_t>("sdpa.network.timeout")
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
   {
-    LOG(DEBUG,"got an acknowledge: "
+    MLOG(DEBUG,"got an acknowledge: "
         << sj_ack->from()
         << " -> "
         << sj_ack->to()
@@ -154,16 +155,16 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
 
 void Client::cancelJob(const job_id_t &jid)
 {
-  LOG(DEBUG,"cancelling job: " << jid);
+  MLOG(DEBUG,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent(name()
                                                              , "orchestrator"
                                                              , jid)));
-  LOG(DEBUG,"waiting for a reply");
+  MLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (se::CancelJobAckEvent *ack = dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
   {
-    LOG(DEBUG,"cancellation has been acknowledged");
+    MLOG(DEBUG,"cancellation has been acknowledged");
   }
   else
   {
@@ -173,16 +174,16 @@ void Client::cancelJob(const job_id_t &jid)
 
 int Client::queryJob(const job_id_t &jid)
 {
-  LOG(DEBUG,"querying status of job: " << jid);
+  MLOG(DEBUG,"querying status of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                                  , "orchestrator"
                                                                  , jid)));
-  LOG(DEBUG,"waiting for a reply");
+  MLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (se::JobStatusReplyEvent *status = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
   {
-    LOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
+    MLOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
     return status->status();
   }
   else
@@ -193,16 +194,16 @@ int Client::queryJob(const job_id_t &jid)
 
 void Client::deleteJob(const job_id_t &jid)
 {
-  LOG(DEBUG,"deleting job: " << jid);
+  MLOG(DEBUG,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name()
                                                              , "orchestrator"
                                                              , jid)));
-  LOG(DEBUG,"waiting for a reply");
+  MLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (se::DeleteJobAckEvent *ack = dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
   {
-    LOG(DEBUG,"deletion of job has been acknowledged");
+    MLOG(DEBUG,"deletion of job has been acknowledged");
   }
   else
   {
@@ -212,16 +213,16 @@ void Client::deleteJob(const job_id_t &jid)
 
 sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid)
 {
-  LOG(DEBUG,"retrieving results of job: " << jid);
+  MLOG(DEBUG,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , "orchestrator"
                                                                       , jid)));
-  LOG(DEBUG,"waiting for a reply");
+  MLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
   {
-    LOG(DEBUG,"results: " << res->result());
+    MLOG(DEBUG,"results: " << res->result());
     return res->result();
   }
   else
@@ -233,8 +234,8 @@ sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid)
 void Client::action_configure(const Client::config_t &cfg)
 {
   // configure logging according to config
-  fhg::log::Configurator::configure(/*use default config for now*/);  
-  LOG(DEBUG,"configuring my environment");
+  //   TODO: do something
+  MLOG(DEBUG, "configuring my environment");
   // send event to myself
   if (cfg == "config-nok") client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
   else client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
@@ -242,36 +243,36 @@ void Client::action_configure(const Client::config_t &cfg)
 
 void Client::action_config_ok()
 {
-  LOG(DEBUG,"config ok");
+  MLOG(DEBUG,"config ok");
 }
 
 void Client::action_config_nok()
 {
-  LOG(DEBUG,"config not ok");
+  MLOG(DEBUG,"config not ok");
 }
 
 void Client::action_shutdown()
 {
-  LOG(DEBUG,"shutting down");
+  MLOG(DEBUG,"shutting down");
 
-  LOG(DEBUG,"waking up api");
+  MLOG(DEBUG,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
 }
 
 void Client::action_submit(const seda::IEvent::Ptr &e)
 {
-  LOG(DEBUG,"sending submit message <TODO>");
+  MLOG(DEBUG,"sending submit message <TODO>");
 //  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 
-  LOG(WARN,"faking acknowledgement");
+  MLOG(WARN,"faking acknowledgement");
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobAckEvent("orchestrator", name(), job_id_t())));
 }
 
 void Client::action_cancel(const seda::IEvent::Ptr &e)
 {
-  LOG(DEBUG,"sending cancel message");
+  MLOG(DEBUG,"sending cancel message");
 
-  LOG(WARN,"faking acknowledgement");
+  MLOG(WARN,"faking acknowledgement");
   if (se::CancelJobEvent *cancel = dynamic_cast<se::CancelJobEvent*>(e.get()))
   {
     client_stage_->send(seda::IEvent::Ptr(new se::CancelJobAckEvent("orchestrator"
@@ -280,15 +281,15 @@ void Client::action_cancel(const seda::IEvent::Ptr &e)
   }
   else
   {
-    LOG(ERROR,"i got some very strange event: " << e->str());
+    MLOG(ERROR,"i got some very strange event: " << e->str());
   }
 }
 
 void Client::action_query(const seda::IEvent::Ptr &e)
 {
-  LOG(DEBUG,"sending query message");
+  MLOG(DEBUG,"sending query message");
 //  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-  LOG(WARN,"faking status reply");
+  MLOG(WARN,"faking status reply");
   if (se::QueryJobStatusEvent* q = dynamic_cast<se::QueryJobStatusEvent*>(e.get()))
   {
     client_stage_->send(seda::IEvent::Ptr(new se::JobStatusReplyEvent("orchestrator"
@@ -298,14 +299,14 @@ void Client::action_query(const seda::IEvent::Ptr &e)
   }
   else
   {
-    LOG(ERROR,"i got some very strange event: " << e->str());
+    MLOG(ERROR,"i got some very strange event: " << e->str());
   }
 }
 
 void Client::action_retrieve(const seda::IEvent::Ptr &e)
 {
-  LOG(DEBUG,"sending retrieve message");
-  LOG(WARN,"faking results");
+  MLOG(DEBUG,"sending retrieve message");
+  MLOG(WARN,"faking results");
   if (se::RetrieveJobResultsEvent *retr = dynamic_cast<se::RetrieveJobResultsEvent*>(e.get()))
   {
     client_stage_->send(seda::IEvent::Ptr(new se::JobResultsReplyEvent("orchestrator"
@@ -315,14 +316,14 @@ void Client::action_retrieve(const seda::IEvent::Ptr &e)
   }
   else
   {
-    LOG(ERROR,"i got some very strange event: " << e->str());
+    MLOG(ERROR,"i got some very strange event: " << e->str());
   }
 }
 
 void Client::action_delete(const seda::IEvent::Ptr &e)
 {
-  LOG(DEBUG,"sending delete message");
-  LOG(WARN,"faking acknowledgement");
+  MLOG(DEBUG,"sending delete message");
+  MLOG(WARN,"faking acknowledgement");
   if (se::DeleteJobEvent *del = dynamic_cast<se::DeleteJobEvent*>(e.get()))
   {
     client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobAckEvent("orchestrator"
@@ -330,7 +331,7 @@ void Client::action_delete(const seda::IEvent::Ptr &e)
   }
   else
   {
-    LOG(ERROR,"i got some very strange event: " << e->str());
+    MLOG(ERROR,"i got some very strange event: " << e->str());
   }
 }
 
@@ -338,7 +339,7 @@ void Client::action_store_reply(const seda::IEvent::Ptr &reply)
 {
   boost::unique_lock<boost::mutex> lock(mtx_);
 
-  LOG(DEBUG,"storing reply message: " << reply->str());
+  MLOG(DEBUG,"storing reply message: " << reply->str());
   reply_ = reply;
   cond_.notify_one();
 }
