@@ -249,10 +249,10 @@ Execution of an activity on the Aggregator
 <line x1="382" y1="520" x2="382" y2="545" stroke="black"/>
 <line x1="467" y1="520" x2="467" y2="545" stroke="black"/>
 <line x1="552" y1="520" x2="552" y2="545" stroke="black"/>
-<line x1="297" y1="532" x2="382" y2="532" stroke="black"/>
-<polygon fill="black" points="382,532 372,538 372,526"/>
-<text x="244" y="530" textLength="191" font-family="Helvetica" font-size="10" fill="black">
-Workflow wf = gwes::parse_workflow(desc)
+<line x1="297" y1="532" x2="127" y2="532" stroke="black"/>
+<line x1="127" y1="532" x2="137" y2="538" stroke="black"/>
+<text x="152" y="530" textLength="118" font-family="Helvetica" font-size="10" fill="black">
+submitJobAck(msg.jobid())
 </text>
 <line x1="42" y1="545" x2="42" y2="570" stroke="black"/>
 <line x1="127" y1="545" x2="127" y2="570" stroke="black"/>
@@ -261,11 +261,11 @@ Workflow wf = gwes::parse_workflow(desc)
 <line x1="382" y1="545" x2="382" y2="570" stroke="black"/>
 <line x1="467" y1="545" x2="467" y2="570" stroke="black"/>
 <line x1="552" y1="545" x2="552" y2="570" stroke="black"/>
-<text x="219" y="559" textLength="155" font-family="Helvetica" font-size="10" fill="black">
-the syntax must be ok on this level!
+<line x1="297" y1="557" x2="382" y2="557" stroke="black"/>
+<polygon fill="black" points="382,557 372,563 372,551"/>
+<text x="244" y="555" textLength="191" font-family="Helvetica" font-size="10" fill="black">
+Workflow wf = gwes::parse_workflow(desc)
 </text>
-<line x1="21" y1="557" x2="218" y2="557" stroke="black" stroke-dasharray="2,2"/>
-<line x1="377" y1="557" x2="574" y2="557" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="570" x2="42" y2="595" stroke="black"/>
 <line x1="127" y1="570" x2="127" y2="595" stroke="black"/>
 <line x1="212" y1="570" x2="212" y2="595" stroke="black"/>
@@ -273,11 +273,11 @@ the syntax must be ok on this level!
 <line x1="382" y1="570" x2="382" y2="595" stroke="black"/>
 <line x1="467" y1="570" x2="467" y2="595" stroke="black"/>
 <line x1="552" y1="570" x2="552" y2="595" stroke="black"/>
-<line x1="297" y1="582" x2="382" y2="582" stroke="black"/>
-<polygon fill="black" points="382,582 372,588 372,576"/>
-<text x="296" y="580" textLength="87" font-family="Helvetica" font-size="10" fill="black">
-submitWorkflow(wf)
+<text x="219" y="584" textLength="155" font-family="Helvetica" font-size="10" fill="black">
+the syntax must be ok on this level!
 </text>
+<line x1="21" y1="582" x2="218" y2="582" stroke="black" stroke-dasharray="2,2"/>
+<line x1="377" y1="582" x2="574" y2="582" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="595" x2="42" y2="620" stroke="black"/>
 <line x1="127" y1="595" x2="127" y2="620" stroke="black"/>
 <line x1="212" y1="595" x2="212" y2="620" stroke="black"/>
@@ -285,10 +285,10 @@ submitWorkflow(wf)
 <line x1="382" y1="595" x2="382" y2="620" stroke="black"/>
 <line x1="467" y1="595" x2="467" y2="620" stroke="black"/>
 <line x1="552" y1="595" x2="552" y2="620" stroke="black"/>
-<line x1="382" y1="607" x2="297" y2="607" stroke="black"/>
-<polygon fill="black" points="297,607 307,613 307,601"/>
-<text x="299" y="605" textLength="81" font-family="Helvetica" font-size="10" fill="black">
-submitActivity(act)
+<line x1="297" y1="607" x2="382" y2="607" stroke="black"/>
+<polygon fill="black" points="382,607 372,613 372,601"/>
+<text x="296" y="605" textLength="87" font-family="Helvetica" font-size="10" fill="black">
+submitWorkflow(wf)
 </text>
 <line x1="42" y1="620" x2="42" y2="645" stroke="black"/>
 <line x1="127" y1="620" x2="127" y2="645" stroke="black"/>
@@ -297,9 +297,10 @@ submitActivity(act)
 <line x1="382" y1="620" x2="382" y2="645" stroke="black"/>
 <line x1="467" y1="620" x2="467" y2="645" stroke="black"/>
 <line x1="552" y1="620" x2="552" y2="645" stroke="black"/>
-<path d="M 297 626 A42,6 0 0,1 296,637" stroke="black" fill="none"/><polygon fill="black" points="297,638 307,644 307,632"/>
-<text x="186" y="630" textLength="108" font-family="Helvetica" font-size="10" fill="black">
-false = handle_local(act)
+<line x1="382" y1="632" x2="297" y2="632" stroke="black"/>
+<polygon fill="black" points="297,632 307,638 307,626"/>
+<text x="299" y="630" textLength="81" font-family="Helvetica" font-size="10" fill="black">
+submitActivity(act)
 </text>
 <line x1="42" y1="645" x2="42" y2="670" stroke="black"/>
 <line x1="127" y1="645" x2="127" y2="670" stroke="black"/>
@@ -308,10 +309,9 @@ false = handle_local(act)
 <line x1="382" y1="645" x2="382" y2="670" stroke="black"/>
 <line x1="467" y1="645" x2="467" y2="670" stroke="black"/>
 <line x1="552" y1="645" x2="552" y2="670" stroke="black"/>
-<line x1="297" y1="657" x2="382" y2="657" stroke="black"/>
-<polygon fill="black" points="382,657 372,663 372,651"/>
-<text x="212" y="655" textLength="255" font-family="Helvetica" font-size="10" fill="black">
-Workflow swf = gwes::transform_activity_to_workflow(act)
+<path d="M 297 651 A42,6 0 0,1 296,662" stroke="black" fill="none"/><polygon fill="black" points="297,663 307,669 307,657"/>
+<text x="186" y="655" textLength="108" font-family="Helvetica" font-size="10" fill="black">
+false = handle_local(act)
 </text>
 <line x1="42" y1="670" x2="42" y2="695" stroke="black"/>
 <line x1="127" y1="670" x2="127" y2="695" stroke="black"/>
@@ -322,8 +322,8 @@ Workflow swf = gwes::transform_activity_to_workflow(act)
 <line x1="552" y1="670" x2="552" y2="695" stroke="black"/>
 <line x1="297" y1="682" x2="382" y2="682" stroke="black"/>
 <polygon fill="black" points="382,682 372,688 372,676"/>
-<text x="253" y="680" textLength="172" font-family="Helvetica" font-size="10" fill="black">
-Description desc = gwes::serialize(swf)
+<text x="212" y="680" textLength="255" font-family="Helvetica" font-size="10" fill="black">
+Workflow swf = gwes::transform_activity_to_workflow(act)
 </text>
 <line x1="42" y1="695" x2="42" y2="720" stroke="black"/>
 <line x1="127" y1="695" x2="127" y2="720" stroke="black"/>
@@ -332,48 +332,53 @@ Description desc = gwes::serialize(swf)
 <line x1="382" y1="695" x2="382" y2="720" stroke="black"/>
 <line x1="467" y1="695" x2="467" y2="720" stroke="black"/>
 <line x1="552" y1="695" x2="552" y2="720" stroke="black"/>
-<line x1="297" y1="707" x2="467" y2="707" stroke="black"/>
-<line x1="467" y1="707" x2="457" y2="713" stroke="black"/>
-<text x="345" y="705" textLength="73" font-family="Helvetica" font-size="10" fill="black">
+<line x1="297" y1="707" x2="382" y2="707" stroke="black"/>
+<polygon fill="black" points="382,707 372,713 372,701"/>
+<text x="253" y="705" textLength="172" font-family="Helvetica" font-size="10" fill="black">
+Description desc = gwes::serialize(swf)
+</text>
+<line x1="42" y1="720" x2="42" y2="745" stroke="black"/>
+<line x1="127" y1="720" x2="127" y2="745" stroke="black"/>
+<line x1="212" y1="720" x2="212" y2="745" stroke="black"/>
+<line x1="297" y1="720" x2="297" y2="745" stroke="black"/>
+<line x1="382" y1="720" x2="382" y2="745" stroke="black"/>
+<line x1="467" y1="720" x2="467" y2="745" stroke="black"/>
+<line x1="552" y1="720" x2="552" y2="745" stroke="black"/>
+<line x1="297" y1="732" x2="467" y2="732" stroke="black"/>
+<line x1="467" y1="732" x2="457" y2="738" stroke="black"/>
+<text x="345" y="730" textLength="73" font-family="Helvetica" font-size="10" fill="black">
 submitJob(desc)
 </text>
-<line x1="42" y1="720" x2="42" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="127" y1="720" x2="127" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="212" y1="720" x2="212" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="297" y1="720" x2="297" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="382" y1="720" x2="382" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="467" y1="720" x2="467" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="552" y1="720" x2="552" y2="745" stroke="black" stroke-dasharray="2,2"/>
-<line x1="42" y1="745" x2="42" y2="770" stroke="black"/>
-<line x1="127" y1="745" x2="127" y2="770" stroke="black"/>
-<line x1="212" y1="745" x2="212" y2="770" stroke="black"/>
-<line x1="297" y1="745" x2="297" y2="770" stroke="black"/>
-<line x1="382" y1="745" x2="382" y2="770" stroke="black"/>
-<line x1="467" y1="745" x2="467" y2="770" stroke="black"/>
-<line x1="552" y1="745" x2="552" y2="770" stroke="black"/>
-<line x1="42" y1="794" x2="42" y2="795" stroke="black"/>
-<line x1="127" y1="794" x2="127" y2="795" stroke="black"/>
-<line x1="212" y1="794" x2="212" y2="795" stroke="black"/>
-<line x1="297" y1="794" x2="297" y2="795" stroke="black"/>
-<line x1="382" y1="794" x2="382" y2="795" stroke="black"/>
-<line x1="467" y1="794" x2="467" y2="795" stroke="black"/>
-<line x1="552" y1="794" x2="552" y2="795" stroke="black"/>
-<line x1="14" y1="770" x2="581" y2="770" stroke="black"/>
-<line x1="14" y1="794" x2="581" y2="794" stroke="black"/>
-<line x1="14" y1="770" x2="8" y2="782" stroke="black"/>
-<line x1="14" y1="794" x2="8" y2="782" stroke="black"/>
-<line x1="581" y1="770" x2="587" y2="782" stroke="black"/>
-<line x1="581" y1="794" x2="587" y2="782" stroke="black"/>
-<text x="220" y="784" textLength="153" font-family="Helvetica" font-size="10" fill="black">
+<line x1="42" y1="745" x2="42" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="127" y1="745" x2="127" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="212" y1="745" x2="212" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="297" y1="745" x2="297" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="382" y1="745" x2="382" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="467" y1="745" x2="467" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="552" y1="745" x2="552" y2="770" stroke="black" stroke-dasharray="2,2"/>
+<line x1="42" y1="770" x2="42" y2="795" stroke="black"/>
+<line x1="127" y1="770" x2="127" y2="795" stroke="black"/>
+<line x1="212" y1="770" x2="212" y2="795" stroke="black"/>
+<line x1="297" y1="770" x2="297" y2="795" stroke="black"/>
+<line x1="382" y1="770" x2="382" y2="795" stroke="black"/>
+<line x1="467" y1="770" x2="467" y2="795" stroke="black"/>
+<line x1="552" y1="770" x2="552" y2="795" stroke="black"/>
+<line x1="42" y1="819" x2="42" y2="820" stroke="black"/>
+<line x1="127" y1="819" x2="127" y2="820" stroke="black"/>
+<line x1="212" y1="819" x2="212" y2="820" stroke="black"/>
+<line x1="297" y1="819" x2="297" y2="820" stroke="black"/>
+<line x1="382" y1="819" x2="382" y2="820" stroke="black"/>
+<line x1="467" y1="819" x2="467" y2="820" stroke="black"/>
+<line x1="552" y1="819" x2="552" y2="820" stroke="black"/>
+<line x1="14" y1="795" x2="581" y2="795" stroke="black"/>
+<line x1="14" y1="819" x2="581" y2="819" stroke="black"/>
+<line x1="14" y1="795" x2="8" y2="807" stroke="black"/>
+<line x1="14" y1="819" x2="8" y2="807" stroke="black"/>
+<line x1="581" y1="795" x2="587" y2="807" stroke="black"/>
+<line x1="581" y1="819" x2="587" y2="807" stroke="black"/>
+<text x="220" y="809" textLength="153" font-family="Helvetica" font-size="10" fill="black">
 Execution of an activity on an NRE
 </text>
-<line x1="42" y1="795" x2="42" y2="820" stroke="black"/>
-<line x1="127" y1="795" x2="127" y2="820" stroke="black"/>
-<line x1="212" y1="795" x2="212" y2="820" stroke="black"/>
-<line x1="297" y1="795" x2="297" y2="820" stroke="black"/>
-<line x1="382" y1="795" x2="382" y2="820" stroke="black"/>
-<line x1="467" y1="795" x2="467" y2="820" stroke="black"/>
-<line x1="552" y1="795" x2="552" y2="820" stroke="black"/>
 <line x1="42" y1="820" x2="42" y2="845" stroke="black"/>
 <line x1="127" y1="820" x2="127" y2="845" stroke="black"/>
 <line x1="212" y1="820" x2="212" y2="845" stroke="black"/>
@@ -381,11 +386,6 @@ Execution of an activity on an NRE
 <line x1="382" y1="820" x2="382" y2="845" stroke="black"/>
 <line x1="467" y1="820" x2="467" y2="845" stroke="black"/>
 <line x1="552" y1="820" x2="552" y2="845" stroke="black"/>
-<line x1="467" y1="832" x2="552" y2="832" stroke="black"/>
-<polygon fill="black" points="552,832 542,838 542,826"/>
-<text x="403" y="830" textLength="191" font-family="Helvetica" font-size="10" fill="black">
-Workflow wf = gwes::parse_workflow(desc)
-</text>
 <line x1="42" y1="845" x2="42" y2="870" stroke="black"/>
 <line x1="127" y1="845" x2="127" y2="870" stroke="black"/>
 <line x1="212" y1="845" x2="212" y2="870" stroke="black"/>
@@ -393,11 +393,11 @@ Workflow wf = gwes::parse_workflow(desc)
 <line x1="382" y1="845" x2="382" y2="870" stroke="black"/>
 <line x1="467" y1="845" x2="467" y2="870" stroke="black"/>
 <line x1="552" y1="845" x2="552" y2="870" stroke="black"/>
-<text x="160" y="859" textLength="273" font-family="Helvetica" font-size="10" fill="black">
-there are two possibilities for this workflow: atomic or complex
+<line x1="467" y1="857" x2="297" y2="857" stroke="black"/>
+<line x1="297" y1="857" x2="307" y2="863" stroke="black"/>
+<text x="322" y="855" textLength="118" font-family="Helvetica" font-size="10" fill="black">
+submitJobAck(msg.jobid())
 </text>
-<line x1="21" y1="857" x2="159" y2="857" stroke="black" stroke-dasharray="2,2"/>
-<line x1="436" y1="857" x2="574" y2="857" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="870" x2="42" y2="895" stroke="black"/>
 <line x1="127" y1="870" x2="127" y2="895" stroke="black"/>
 <line x1="212" y1="870" x2="212" y2="895" stroke="black"/>
@@ -405,20 +405,23 @@ there are two possibilities for this workflow: atomic or complex
 <line x1="382" y1="870" x2="382" y2="895" stroke="black"/>
 <line x1="467" y1="870" x2="467" y2="895" stroke="black"/>
 <line x1="552" y1="870" x2="552" y2="895" stroke="black"/>
+<line x1="467" y1="882" x2="552" y2="882" stroke="black"/>
+<polygon fill="black" points="552,882 542,888 542,876"/>
+<text x="403" y="880" textLength="191" font-family="Helvetica" font-size="10" fill="black">
+Workflow wf = gwes::parse_workflow(desc)
+</text>
 <line x1="42" y1="895" x2="42" y2="920" stroke="black"/>
 <line x1="127" y1="895" x2="127" y2="920" stroke="black"/>
 <line x1="212" y1="895" x2="212" y2="920" stroke="black"/>
-<line x1="297" y1="919" x2="297" y2="920" stroke="black"/>
-<line x1="382" y1="919" x2="382" y2="920" stroke="black"/>
-<line x1="467" y1="919" x2="467" y2="920" stroke="black"/>
+<line x1="297" y1="895" x2="297" y2="920" stroke="black"/>
+<line x1="382" y1="895" x2="382" y2="920" stroke="black"/>
+<line x1="467" y1="895" x2="467" y2="920" stroke="black"/>
 <line x1="552" y1="895" x2="552" y2="920" stroke="black"/>
-<line x1="263" y1="895" x2="502" y2="895" stroke="black"/>
-<line x1="263" y1="919" x2="502" y2="919" stroke="black"/>
-<line x1="263" y1="895" x2="263" y2="919" stroke="black"/>
-<line x1="502" y1="895" x2="502" y2="919" stroke="black"/>
-<text x="288" y="909" textLength="187" font-family="Helvetica" font-size="10" fill="black">
-execution of an atomic activity on the NRE
+<text x="160" y="909" textLength="273" font-family="Helvetica" font-size="10" fill="black">
+there are two possibilities for this workflow: atomic or complex
 </text>
+<line x1="21" y1="907" x2="159" y2="907" stroke="black" stroke-dasharray="2,2"/>
+<line x1="436" y1="907" x2="574" y2="907" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="920" x2="42" y2="945" stroke="black"/>
 <line x1="127" y1="920" x2="127" y2="945" stroke="black"/>
 <line x1="212" y1="920" x2="212" y2="945" stroke="black"/>
@@ -429,13 +432,16 @@ execution of an atomic activity on the NRE
 <line x1="42" y1="945" x2="42" y2="970" stroke="black"/>
 <line x1="127" y1="945" x2="127" y2="970" stroke="black"/>
 <line x1="212" y1="945" x2="212" y2="970" stroke="black"/>
-<line x1="297" y1="945" x2="297" y2="970" stroke="black"/>
-<line x1="382" y1="945" x2="382" y2="970" stroke="black"/>
-<line x1="467" y1="945" x2="467" y2="970" stroke="black"/>
+<line x1="297" y1="969" x2="297" y2="970" stroke="black"/>
+<line x1="382" y1="969" x2="382" y2="970" stroke="black"/>
+<line x1="467" y1="969" x2="467" y2="970" stroke="black"/>
 <line x1="552" y1="945" x2="552" y2="970" stroke="black"/>
-<path d="M 467 951 A42,6 0 0,1 466,962" stroke="black" fill="none"/><polygon fill="black" points="467,963 477,969 477,957"/>
-<text x="70" y="955" textLength="394" font-family="Helvetica" font-size="10" fill="black">
-atomic = measure_complexity(wf), directly execute it (schedule to local execution worker)
+<line x1="263" y1="945" x2="502" y2="945" stroke="black"/>
+<line x1="263" y1="969" x2="502" y2="969" stroke="black"/>
+<line x1="263" y1="945" x2="263" y2="969" stroke="black"/>
+<line x1="502" y1="945" x2="502" y2="969" stroke="black"/>
+<text x="288" y="959" textLength="187" font-family="Helvetica" font-size="10" fill="black">
+execution of an atomic activity on the NRE
 </text>
 <line x1="42" y1="970" x2="42" y2="995" stroke="black"/>
 <line x1="127" y1="970" x2="127" y2="995" stroke="black"/>
@@ -444,10 +450,6 @@ atomic = measure_complexity(wf), directly execute it (schedule to local executio
 <line x1="382" y1="970" x2="382" y2="995" stroke="black"/>
 <line x1="467" y1="970" x2="467" y2="995" stroke="black"/>
 <line x1="552" y1="970" x2="552" y2="995" stroke="black"/>
-<path d="M 467 976 A42,6 0 0,1 466,987" stroke="black" fill="none"/><polygon fill="black" points="467,988 477,994 477,982"/>
-<text x="377" y="980" textLength="87" font-family="Helvetica" font-size="10" fill="black">
-result = execute(wf)
-</text>
 <line x1="42" y1="995" x2="42" y2="1020" stroke="black"/>
 <line x1="127" y1="995" x2="127" y2="1020" stroke="black"/>
 <line x1="212" y1="995" x2="212" y2="1020" stroke="black"/>
@@ -455,19 +457,20 @@ result = execute(wf)
 <line x1="382" y1="995" x2="382" y2="1020" stroke="black"/>
 <line x1="467" y1="995" x2="467" y2="1020" stroke="black"/>
 <line x1="552" y1="995" x2="552" y2="1020" stroke="black"/>
+<path d="M 467 1001 A42,6 0 0,1 466,1012" stroke="black" fill="none"/><polygon fill="black" points="467,1013 477,1019 477,1007"/>
+<text x="70" y="1005" textLength="394" font-family="Helvetica" font-size="10" fill="black">
+atomic = measure_complexity(wf), directly execute it (schedule to local execution worker)
+</text>
 <line x1="42" y1="1020" x2="42" y2="1045" stroke="black"/>
 <line x1="127" y1="1020" x2="127" y2="1045" stroke="black"/>
 <line x1="212" y1="1020" x2="212" y2="1045" stroke="black"/>
-<line x1="297" y1="1044" x2="297" y2="1045" stroke="black"/>
-<line x1="382" y1="1044" x2="382" y2="1045" stroke="black"/>
-<line x1="467" y1="1044" x2="467" y2="1045" stroke="black"/>
-<line x1="552" y1="1044" x2="552" y2="1045" stroke="black"/>
-<line x1="263" y1="1020" x2="587" y2="1020" stroke="black"/>
-<line x1="263" y1="1044" x2="587" y2="1044" stroke="black"/>
-<line x1="263" y1="1020" x2="263" y2="1044" stroke="black"/>
-<line x1="587" y1="1020" x2="587" y2="1044" stroke="black"/>
-<text x="329" y="1034" textLength="190" font-family="Helvetica" font-size="10" fill="black">
-execution of a complex activity on the NRE
+<line x1="297" y1="1020" x2="297" y2="1045" stroke="black"/>
+<line x1="382" y1="1020" x2="382" y2="1045" stroke="black"/>
+<line x1="467" y1="1020" x2="467" y2="1045" stroke="black"/>
+<line x1="552" y1="1020" x2="552" y2="1045" stroke="black"/>
+<path d="M 467 1026 A42,6 0 0,1 466,1037" stroke="black" fill="none"/><polygon fill="black" points="467,1038 477,1044 477,1032"/>
+<text x="377" y="1030" textLength="87" font-family="Helvetica" font-size="10" fill="black">
+result = execute(wf)
 </text>
 <line x1="42" y1="1045" x2="42" y2="1070" stroke="black"/>
 <line x1="127" y1="1045" x2="127" y2="1070" stroke="black"/>
@@ -479,13 +482,16 @@ execution of a complex activity on the NRE
 <line x1="42" y1="1070" x2="42" y2="1095" stroke="black"/>
 <line x1="127" y1="1070" x2="127" y2="1095" stroke="black"/>
 <line x1="212" y1="1070" x2="212" y2="1095" stroke="black"/>
-<line x1="297" y1="1070" x2="297" y2="1095" stroke="black"/>
-<line x1="382" y1="1070" x2="382" y2="1095" stroke="black"/>
-<line x1="467" y1="1070" x2="467" y2="1095" stroke="black"/>
-<line x1="552" y1="1070" x2="552" y2="1095" stroke="black"/>
-<path d="M 467 1076 A42,6 0 0,1 466,1087" stroke="black" fill="none"/><polygon fill="black" points="467,1088 477,1094 477,1082"/>
-<text x="169" y="1080" textLength="295" font-family="Helvetica" font-size="10" fill="black">
-complex = measure_complexity(wf), pass it to the WFE to handle it
+<line x1="297" y1="1094" x2="297" y2="1095" stroke="black"/>
+<line x1="382" y1="1094" x2="382" y2="1095" stroke="black"/>
+<line x1="467" y1="1094" x2="467" y2="1095" stroke="black"/>
+<line x1="552" y1="1094" x2="552" y2="1095" stroke="black"/>
+<line x1="263" y1="1070" x2="587" y2="1070" stroke="black"/>
+<line x1="263" y1="1094" x2="587" y2="1094" stroke="black"/>
+<line x1="263" y1="1070" x2="263" y2="1094" stroke="black"/>
+<line x1="587" y1="1070" x2="587" y2="1094" stroke="black"/>
+<text x="329" y="1084" textLength="190" font-family="Helvetica" font-size="10" fill="black">
+execution of a complex activity on the NRE
 </text>
 <line x1="42" y1="1095" x2="42" y2="1120" stroke="black"/>
 <line x1="127" y1="1095" x2="127" y2="1120" stroke="black"/>
@@ -494,11 +500,6 @@ complex = measure_complexity(wf), pass it to the WFE to handle it
 <line x1="382" y1="1095" x2="382" y2="1120" stroke="black"/>
 <line x1="467" y1="1095" x2="467" y2="1120" stroke="black"/>
 <line x1="552" y1="1095" x2="552" y2="1120" stroke="black"/>
-<line x1="467" y1="1107" x2="552" y2="1107" stroke="black"/>
-<polygon fill="black" points="552,1107 542,1113 542,1101"/>
-<text x="466" y="1105" textLength="87" font-family="Helvetica" font-size="10" fill="black">
-submitWorkflow(wf)
-</text>
 <line x1="42" y1="1120" x2="42" y2="1145" stroke="black"/>
 <line x1="127" y1="1120" x2="127" y2="1145" stroke="black"/>
 <line x1="212" y1="1120" x2="212" y2="1145" stroke="black"/>
@@ -506,10 +507,9 @@ submitWorkflow(wf)
 <line x1="382" y1="1120" x2="382" y2="1145" stroke="black"/>
 <line x1="467" y1="1120" x2="467" y2="1145" stroke="black"/>
 <line x1="552" y1="1120" x2="552" y2="1145" stroke="black"/>
-<line x1="552" y1="1132" x2="467" y2="1132" stroke="black"/>
-<polygon fill="black" points="467,1132 477,1138 477,1126"/>
-<text x="469" y="1130" textLength="81" font-family="Helvetica" font-size="10" fill="black">
-submitActivity(act)
+<path d="M 467 1126 A42,6 0 0,1 466,1137" stroke="black" fill="none"/><polygon fill="black" points="467,1138 477,1144 477,1132"/>
+<text x="169" y="1130" textLength="295" font-family="Helvetica" font-size="10" fill="black">
+complex = measure_complexity(wf), pass it to the WFE to handle it
 </text>
 <line x1="42" y1="1145" x2="42" y2="1170" stroke="black"/>
 <line x1="127" y1="1145" x2="127" y2="1170" stroke="black"/>
@@ -518,9 +518,10 @@ submitActivity(act)
 <line x1="382" y1="1145" x2="382" y2="1170" stroke="black"/>
 <line x1="467" y1="1145" x2="467" y2="1170" stroke="black"/>
 <line x1="552" y1="1145" x2="552" y2="1170" stroke="black"/>
-<path d="M 467 1151 A42,6 0 0,1 466,1162" stroke="black" fill="none"/><polygon fill="black" points="467,1163 477,1169 477,1157"/>
-<text x="360" y="1155" textLength="104" font-family="Helvetica" font-size="10" fill="black">
-true = handle_local(act)
+<line x1="467" y1="1157" x2="552" y2="1157" stroke="black"/>
+<polygon fill="black" points="552,1157 542,1163 542,1151"/>
+<text x="466" y="1155" textLength="87" font-family="Helvetica" font-size="10" fill="black">
+submitWorkflow(wf)
 </text>
 <line x1="42" y1="1170" x2="42" y2="1195" stroke="black"/>
 <line x1="127" y1="1170" x2="127" y2="1195" stroke="black"/>
@@ -529,9 +530,10 @@ true = handle_local(act)
 <line x1="382" y1="1170" x2="382" y2="1195" stroke="black"/>
 <line x1="467" y1="1170" x2="467" y2="1195" stroke="black"/>
 <line x1="552" y1="1170" x2="552" y2="1195" stroke="black"/>
-<path d="M 467 1176 A42,6 0 0,1 466,1187" stroke="black" fill="none"/><polygon fill="black" points="467,1188 477,1194 477,1182"/>
-<text x="374" y="1180" textLength="90" font-family="Helvetica" font-size="10" fill="black">
-result = execute(act)
+<line x1="552" y1="1182" x2="467" y2="1182" stroke="black"/>
+<polygon fill="black" points="467,1182 477,1188 477,1176"/>
+<text x="469" y="1180" textLength="81" font-family="Helvetica" font-size="10" fill="black">
+submitActivity(act)
 </text>
 <line x1="42" y1="1195" x2="42" y2="1220" stroke="black"/>
 <line x1="127" y1="1195" x2="127" y2="1220" stroke="black"/>
@@ -540,10 +542,9 @@ result = execute(act)
 <line x1="382" y1="1195" x2="382" y2="1220" stroke="black"/>
 <line x1="467" y1="1195" x2="467" y2="1220" stroke="black"/>
 <line x1="552" y1="1195" x2="552" y2="1220" stroke="black"/>
-<line x1="467" y1="1207" x2="552" y2="1207" stroke="black"/>
-<polygon fill="black" points="552,1207 542,1213 542,1201"/>
-<text x="451" y="1205" textLength="117" font-family="Helvetica" font-size="10" fill="black">
-activityDispatched(act.id())
+<path d="M 467 1201 A42,6 0 0,1 466,1212" stroke="black" fill="none"/><polygon fill="black" points="467,1213 477,1219 477,1207"/>
+<text x="360" y="1205" textLength="104" font-family="Helvetica" font-size="10" fill="black">
+true = handle_local(act)
 </text>
 <line x1="42" y1="1220" x2="42" y2="1245" stroke="black"/>
 <line x1="127" y1="1220" x2="127" y2="1245" stroke="black"/>
@@ -552,11 +553,10 @@ activityDispatched(act.id())
 <line x1="382" y1="1220" x2="382" y2="1245" stroke="black"/>
 <line x1="467" y1="1220" x2="467" y2="1245" stroke="black"/>
 <line x1="552" y1="1220" x2="552" y2="1245" stroke="black"/>
-<text x="173" y="1234" textLength="247" font-family="Helvetica" font-size="10" fill="black">
-when the activity is finished, we have to inform the WFE
+<path d="M 467 1226 A42,6 0 0,1 466,1237" stroke="black" fill="none"/><polygon fill="black" points="467,1238 477,1244 477,1232"/>
+<text x="374" y="1230" textLength="90" font-family="Helvetica" font-size="10" fill="black">
+result = execute(act)
 </text>
-<line x1="21" y1="1232" x2="172" y2="1232" stroke="black" stroke-dasharray="2,2"/>
-<line x1="423" y1="1232" x2="574" y2="1232" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1245" x2="42" y2="1270" stroke="black"/>
 <line x1="127" y1="1245" x2="127" y2="1270" stroke="black"/>
 <line x1="212" y1="1245" x2="212" y2="1270" stroke="black"/>
@@ -566,8 +566,8 @@ when the activity is finished, we have to inform the WFE
 <line x1="552" y1="1245" x2="552" y2="1270" stroke="black"/>
 <line x1="467" y1="1257" x2="552" y2="1257" stroke="black"/>
 <polygon fill="black" points="552,1257 542,1263 542,1251"/>
-<text x="442" y="1255" textLength="135" font-family="Helvetica" font-size="10" fill="black">
-activityFinished(act.id(), result)
+<text x="451" y="1255" textLength="117" font-family="Helvetica" font-size="10" fill="black">
+activityDispatched(act.id())
 </text>
 <line x1="42" y1="1270" x2="42" y2="1295" stroke="black"/>
 <line x1="127" y1="1270" x2="127" y2="1295" stroke="black"/>
@@ -576,11 +576,11 @@ activityFinished(act.id(), result)
 <line x1="382" y1="1270" x2="382" y2="1295" stroke="black"/>
 <line x1="467" y1="1270" x2="467" y2="1295" stroke="black"/>
 <line x1="552" y1="1270" x2="552" y2="1295" stroke="black"/>
-<text x="138" y="1284" textLength="317" font-family="Helvetica" font-size="10" fill="black">
-somewhen later the WFE will inform us that the whole workflow is done.
+<text x="173" y="1284" textLength="247" font-family="Helvetica" font-size="10" fill="black">
+when the activity is finished, we have to inform the WFE
 </text>
-<line x1="21" y1="1282" x2="137" y2="1282" stroke="black" stroke-dasharray="2,2"/>
-<line x1="458" y1="1282" x2="574" y2="1282" stroke="black" stroke-dasharray="2,2"/>
+<line x1="21" y1="1282" x2="172" y2="1282" stroke="black" stroke-dasharray="2,2"/>
+<line x1="423" y1="1282" x2="574" y2="1282" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1295" x2="42" y2="1320" stroke="black"/>
 <line x1="127" y1="1295" x2="127" y2="1320" stroke="black"/>
 <line x1="212" y1="1295" x2="212" y2="1320" stroke="black"/>
@@ -588,10 +588,10 @@ somewhen later the WFE will inform us that the whole workflow is done.
 <line x1="382" y1="1295" x2="382" y2="1320" stroke="black"/>
 <line x1="467" y1="1295" x2="467" y2="1320" stroke="black"/>
 <line x1="552" y1="1295" x2="552" y2="1320" stroke="black"/>
-<line x1="552" y1="1307" x2="467" y2="1307" stroke="black"/>
-<polygon fill="black" points="467,1307 477,1313 477,1301"/>
-<text x="454" y="1305" textLength="110" font-family="Helvetica" font-size="10" fill="black">
-workflowFinished(wf.id())
+<line x1="467" y1="1307" x2="552" y2="1307" stroke="black"/>
+<polygon fill="black" points="552,1307 542,1313 542,1301"/>
+<text x="442" y="1305" textLength="135" font-family="Helvetica" font-size="10" fill="black">
+activityFinished(act.id(), result)
 </text>
 <line x1="42" y1="1320" x2="42" y2="1345" stroke="black"/>
 <line x1="127" y1="1320" x2="127" y2="1345" stroke="black"/>
@@ -600,19 +600,22 @@ workflowFinished(wf.id())
 <line x1="382" y1="1320" x2="382" y2="1345" stroke="black"/>
 <line x1="467" y1="1320" x2="467" y2="1345" stroke="black"/>
 <line x1="552" y1="1320" x2="552" y2="1345" stroke="black"/>
+<text x="138" y="1334" textLength="317" font-family="Helvetica" font-size="10" fill="black">
+somewhen later the WFE will inform us that the whole workflow is done.
+</text>
+<line x1="21" y1="1332" x2="137" y2="1332" stroke="black" stroke-dasharray="2,2"/>
+<line x1="458" y1="1332" x2="574" y2="1332" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1345" x2="42" y2="1370" stroke="black"/>
 <line x1="127" y1="1345" x2="127" y2="1370" stroke="black"/>
 <line x1="212" y1="1345" x2="212" y2="1370" stroke="black"/>
-<line x1="297" y1="1369" x2="297" y2="1370" stroke="black"/>
-<line x1="382" y1="1369" x2="382" y2="1370" stroke="black"/>
-<line x1="467" y1="1369" x2="467" y2="1370" stroke="black"/>
+<line x1="297" y1="1345" x2="297" y2="1370" stroke="black"/>
+<line x1="382" y1="1345" x2="382" y2="1370" stroke="black"/>
+<line x1="467" y1="1345" x2="467" y2="1370" stroke="black"/>
 <line x1="552" y1="1345" x2="552" y2="1370" stroke="black"/>
-<line x1="263" y1="1345" x2="502" y2="1345" stroke="black"/>
-<line x1="263" y1="1369" x2="502" y2="1369" stroke="black"/>
-<line x1="263" y1="1345" x2="263" y2="1369" stroke="black"/>
-<line x1="502" y1="1345" x2="502" y2="1369" stroke="black"/>
-<text x="269" y="1359" textLength="225" font-family="Helvetica" font-size="10" fill="black">
-execution of the job finished, inform the aggregator
+<line x1="552" y1="1357" x2="467" y2="1357" stroke="black"/>
+<polygon fill="black" points="467,1357 477,1363 477,1351"/>
+<text x="454" y="1355" textLength="110" font-family="Helvetica" font-size="10" fill="black">
+workflowFinished(wf.id())
 </text>
 <line x1="42" y1="1370" x2="42" y2="1395" stroke="black"/>
 <line x1="127" y1="1370" x2="127" y2="1395" stroke="black"/>
@@ -624,13 +627,16 @@ execution of the job finished, inform the aggregator
 <line x1="42" y1="1395" x2="42" y2="1420" stroke="black"/>
 <line x1="127" y1="1395" x2="127" y2="1420" stroke="black"/>
 <line x1="212" y1="1395" x2="212" y2="1420" stroke="black"/>
-<line x1="297" y1="1395" x2="297" y2="1420" stroke="black"/>
-<line x1="382" y1="1395" x2="382" y2="1420" stroke="black"/>
-<line x1="467" y1="1395" x2="467" y2="1420" stroke="black"/>
+<line x1="297" y1="1419" x2="297" y2="1420" stroke="black"/>
+<line x1="382" y1="1419" x2="382" y2="1420" stroke="black"/>
+<line x1="467" y1="1419" x2="467" y2="1420" stroke="black"/>
 <line x1="552" y1="1395" x2="552" y2="1420" stroke="black"/>
-<path d="M 467 1401 A42,6 0 0,1 466,1412" stroke="black" fill="none"/><polygon fill="black" points="467,1413 477,1419 477,1407"/>
-<text x="319" y="1405" textLength="145" font-family="Helvetica" font-size="10" fill="black">
-waitlist.insert(wf.id(), wf.results())
+<line x1="263" y1="1395" x2="502" y2="1395" stroke="black"/>
+<line x1="263" y1="1419" x2="502" y2="1419" stroke="black"/>
+<line x1="263" y1="1395" x2="263" y2="1419" stroke="black"/>
+<line x1="502" y1="1395" x2="502" y2="1419" stroke="black"/>
+<text x="269" y="1409" textLength="225" font-family="Helvetica" font-size="10" fill="black">
+execution of the job finished, inform the aggregator
 </text>
 <line x1="42" y1="1420" x2="42" y2="1445" stroke="black"/>
 <line x1="127" y1="1420" x2="127" y2="1445" stroke="black"/>
@@ -639,11 +645,6 @@ waitlist.insert(wf.id(), wf.results())
 <line x1="382" y1="1420" x2="382" y2="1445" stroke="black"/>
 <line x1="467" y1="1420" x2="467" y2="1445" stroke="black"/>
 <line x1="552" y1="1420" x2="552" y2="1445" stroke="black"/>
-<line x1="467" y1="1432" x2="297" y2="1432" stroke="black"/>
-<line x1="297" y1="1432" x2="307" y2="1438" stroke="black"/>
-<text x="312" y="1430" textLength="139" font-family="Helvetica" font-size="10" fill="black">
-jobFinished(wf.id(), wf.results())
-</text>
 <line x1="42" y1="1445" x2="42" y2="1470" stroke="black"/>
 <line x1="127" y1="1445" x2="127" y2="1470" stroke="black"/>
 <line x1="212" y1="1445" x2="212" y2="1470" stroke="black"/>
@@ -651,21 +652,21 @@ jobFinished(wf.id(), wf.results())
 <line x1="382" y1="1445" x2="382" y2="1470" stroke="black"/>
 <line x1="467" y1="1445" x2="467" y2="1470" stroke="black"/>
 <line x1="552" y1="1445" x2="552" y2="1470" stroke="black"/>
-<line x1="42" y1="1494" x2="42" y2="1495" stroke="black"/>
-<line x1="127" y1="1494" x2="127" y2="1495" stroke="black"/>
-<line x1="212" y1="1494" x2="212" y2="1495" stroke="black"/>
-<line x1="297" y1="1494" x2="297" y2="1495" stroke="black"/>
-<line x1="382" y1="1494" x2="382" y2="1495" stroke="black"/>
-<line x1="467" y1="1494" x2="467" y2="1495" stroke="black"/>
-<line x1="552" y1="1494" x2="552" y2="1495" stroke="black"/>
-<line x1="14" y1="1470" x2="581" y2="1470" stroke="black"/>
-<line x1="14" y1="1494" x2="581" y2="1494" stroke="black"/>
-<line x1="14" y1="1470" x2="8" y2="1482" stroke="black"/>
-<line x1="14" y1="1494" x2="8" y2="1482" stroke="black"/>
-<line x1="581" y1="1470" x2="587" y2="1482" stroke="black"/>
-<line x1="581" y1="1494" x2="587" y2="1482" stroke="black"/>
-<text x="229" y="1484" textLength="135" font-family="Helvetica" font-size="10" fill="black">
-Execution on the NRE finished
+<path d="M 467 1451 A42,6 0 0,1 466,1462" stroke="black" fill="none"/><polygon fill="black" points="467,1463 477,1469 477,1457"/>
+<text x="319" y="1455" textLength="145" font-family="Helvetica" font-size="10" fill="black">
+waitlist.insert(wf.id(), wf.results())
+</text>
+<line x1="42" y1="1470" x2="42" y2="1495" stroke="black"/>
+<line x1="127" y1="1470" x2="127" y2="1495" stroke="black"/>
+<line x1="212" y1="1470" x2="212" y2="1495" stroke="black"/>
+<line x1="297" y1="1470" x2="297" y2="1495" stroke="black"/>
+<line x1="382" y1="1470" x2="382" y2="1495" stroke="black"/>
+<line x1="467" y1="1470" x2="467" y2="1495" stroke="black"/>
+<line x1="552" y1="1470" x2="552" y2="1495" stroke="black"/>
+<line x1="467" y1="1482" x2="297" y2="1482" stroke="black"/>
+<line x1="297" y1="1482" x2="307" y2="1488" stroke="black"/>
+<text x="312" y="1480" textLength="139" font-family="Helvetica" font-size="10" fill="black">
+jobFinished(wf.id(), wf.results())
 </text>
 <line x1="42" y1="1495" x2="42" y2="1520" stroke="black"/>
 <line x1="127" y1="1495" x2="127" y2="1520" stroke="black"/>
@@ -674,13 +675,22 @@ Execution on the NRE finished
 <line x1="382" y1="1495" x2="382" y2="1520" stroke="black"/>
 <line x1="467" y1="1495" x2="467" y2="1520" stroke="black"/>
 <line x1="552" y1="1495" x2="552" y2="1520" stroke="black"/>
-<line x1="42" y1="1520" x2="42" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="127" y1="1520" x2="127" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="212" y1="1520" x2="212" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="297" y1="1520" x2="297" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="382" y1="1520" x2="382" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="467" y1="1520" x2="467" y2="1545" stroke="black" stroke-dasharray="2,2"/>
-<line x1="552" y1="1520" x2="552" y2="1545" stroke="black" stroke-dasharray="2,2"/>
+<line x1="42" y1="1544" x2="42" y2="1545" stroke="black"/>
+<line x1="127" y1="1544" x2="127" y2="1545" stroke="black"/>
+<line x1="212" y1="1544" x2="212" y2="1545" stroke="black"/>
+<line x1="297" y1="1544" x2="297" y2="1545" stroke="black"/>
+<line x1="382" y1="1544" x2="382" y2="1545" stroke="black"/>
+<line x1="467" y1="1544" x2="467" y2="1545" stroke="black"/>
+<line x1="552" y1="1544" x2="552" y2="1545" stroke="black"/>
+<line x1="14" y1="1520" x2="581" y2="1520" stroke="black"/>
+<line x1="14" y1="1544" x2="581" y2="1544" stroke="black"/>
+<line x1="14" y1="1520" x2="8" y2="1532" stroke="black"/>
+<line x1="14" y1="1544" x2="8" y2="1532" stroke="black"/>
+<line x1="581" y1="1520" x2="587" y2="1532" stroke="black"/>
+<line x1="581" y1="1544" x2="587" y2="1532" stroke="black"/>
+<text x="229" y="1534" textLength="135" font-family="Helvetica" font-size="10" fill="black">
+Execution on the NRE finished
+</text>
 <line x1="42" y1="1545" x2="42" y2="1570" stroke="black"/>
 <line x1="127" y1="1545" x2="127" y2="1570" stroke="black"/>
 <line x1="212" y1="1545" x2="212" y2="1570" stroke="black"/>
@@ -688,22 +698,13 @@ Execution on the NRE finished
 <line x1="382" y1="1545" x2="382" y2="1570" stroke="black"/>
 <line x1="467" y1="1545" x2="467" y2="1570" stroke="black"/>
 <line x1="552" y1="1545" x2="552" y2="1570" stroke="black"/>
-<line x1="297" y1="1557" x2="467" y2="1557" stroke="black"/>
-<line x1="467" y1="1557" x2="457" y2="1563" stroke="black"/>
-<text x="331" y="1555" textLength="101" font-family="Helvetica" font-size="10" fill="black">
-jobFinishedAck(wf.id())
-</text>
-<line x1="42" y1="1570" x2="42" y2="1595" stroke="black"/>
-<line x1="127" y1="1570" x2="127" y2="1595" stroke="black"/>
-<line x1="212" y1="1570" x2="212" y2="1595" stroke="black"/>
-<line x1="297" y1="1570" x2="297" y2="1595" stroke="black"/>
-<line x1="382" y1="1570" x2="382" y2="1595" stroke="black"/>
-<line x1="467" y1="1570" x2="467" y2="1595" stroke="black"/>
-<line x1="552" y1="1570" x2="552" y2="1595" stroke="black"/>
-<path d="M 467 1576 A42,6 0 0,1 466,1587" stroke="black" fill="none"/><polygon fill="black" points="467,1588 477,1594 477,1582"/>
-<text x="364" y="1580" textLength="100" font-family="Helvetica" font-size="10" fill="black">
-waitlist.remove(wf.id())
-</text>
+<line x1="42" y1="1570" x2="42" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="127" y1="1570" x2="127" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="212" y1="1570" x2="212" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="297" y1="1570" x2="297" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="382" y1="1570" x2="382" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="467" y1="1570" x2="467" y2="1595" stroke="black" stroke-dasharray="2,2"/>
+<line x1="552" y1="1570" x2="552" y2="1595" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1595" x2="42" y2="1620" stroke="black"/>
 <line x1="127" y1="1595" x2="127" y2="1620" stroke="black"/>
 <line x1="212" y1="1595" x2="212" y2="1620" stroke="black"/>
@@ -711,11 +712,11 @@ waitlist.remove(wf.id())
 <line x1="382" y1="1595" x2="382" y2="1620" stroke="black"/>
 <line x1="467" y1="1595" x2="467" y2="1620" stroke="black"/>
 <line x1="552" y1="1595" x2="552" y2="1620" stroke="black"/>
-<text x="161" y="1609" textLength="270" font-family="Helvetica" font-size="10" fill="black">
-the aggregator can inform the WFE that an activity is finished
+<line x1="297" y1="1607" x2="467" y2="1607" stroke="black"/>
+<line x1="467" y1="1607" x2="457" y2="1613" stroke="black"/>
+<text x="331" y="1605" textLength="101" font-family="Helvetica" font-size="10" fill="black">
+jobFinishedAck(wf.id())
 </text>
-<line x1="21" y1="1607" x2="160" y2="1607" stroke="black" stroke-dasharray="2,2"/>
-<line x1="434" y1="1607" x2="574" y2="1607" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1620" x2="42" y2="1645" stroke="black"/>
 <line x1="127" y1="1620" x2="127" y2="1645" stroke="black"/>
 <line x1="212" y1="1620" x2="212" y2="1645" stroke="black"/>
@@ -723,10 +724,9 @@ the aggregator can inform the WFE that an activity is finished
 <line x1="382" y1="1620" x2="382" y2="1645" stroke="black"/>
 <line x1="467" y1="1620" x2="467" y2="1645" stroke="black"/>
 <line x1="552" y1="1620" x2="552" y2="1645" stroke="black"/>
-<line x1="297" y1="1632" x2="382" y2="1632" stroke="black"/>
-<polygon fill="black" points="382,1632 372,1638 372,1626"/>
-<text x="172" y="1630" textLength="334" font-family="Helvetica" font-size="10" fill="black">
-activityFinished(act.id() = wf.id(), results), we got an activity in the first-place
+<path d="M 467 1626 A42,6 0 0,1 466,1637" stroke="black" fill="none"/><polygon fill="black" points="467,1638 477,1644 477,1632"/>
+<text x="364" y="1630" textLength="100" font-family="Helvetica" font-size="10" fill="black">
+waitlist.remove(wf.id())
 </text>
 <line x1="42" y1="1645" x2="42" y2="1670" stroke="black"/>
 <line x1="127" y1="1645" x2="127" y2="1670" stroke="black"/>
@@ -735,11 +735,11 @@ activityFinished(act.id() = wf.id(), results), we got an activity in the first-p
 <line x1="382" y1="1645" x2="382" y2="1670" stroke="black"/>
 <line x1="467" y1="1645" x2="467" y2="1670" stroke="black"/>
 <line x1="552" y1="1645" x2="552" y2="1670" stroke="black"/>
-<text x="138" y="1659" textLength="317" font-family="Helvetica" font-size="10" fill="black">
-somewhen later the WFE will inform us that the whole workflow is done.
+<text x="161" y="1659" textLength="270" font-family="Helvetica" font-size="10" fill="black">
+the aggregator can inform the WFE that an activity is finished
 </text>
-<line x1="21" y1="1657" x2="137" y2="1657" stroke="black" stroke-dasharray="2,2"/>
-<line x1="458" y1="1657" x2="574" y2="1657" stroke="black" stroke-dasharray="2,2"/>
+<line x1="21" y1="1657" x2="160" y2="1657" stroke="black" stroke-dasharray="2,2"/>
+<line x1="434" y1="1657" x2="574" y2="1657" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1670" x2="42" y2="1695" stroke="black"/>
 <line x1="127" y1="1670" x2="127" y2="1695" stroke="black"/>
 <line x1="212" y1="1670" x2="212" y2="1695" stroke="black"/>
@@ -747,10 +747,10 @@ somewhen later the WFE will inform us that the whole workflow is done.
 <line x1="382" y1="1670" x2="382" y2="1695" stroke="black"/>
 <line x1="467" y1="1670" x2="467" y2="1695" stroke="black"/>
 <line x1="552" y1="1670" x2="552" y2="1695" stroke="black"/>
-<line x1="382" y1="1682" x2="297" y2="1682" stroke="black"/>
-<polygon fill="black" points="297,1682 307,1688 307,1676"/>
-<text x="284" y="1680" textLength="110" font-family="Helvetica" font-size="10" fill="black">
-workflowFinished(wf.id())
+<line x1="297" y1="1682" x2="382" y2="1682" stroke="black"/>
+<polygon fill="black" points="382,1682 372,1688 372,1676"/>
+<text x="172" y="1680" textLength="334" font-family="Helvetica" font-size="10" fill="black">
+activityFinished(act.id() = wf.id(), results), we got an activity in the first-place
 </text>
 <line x1="42" y1="1695" x2="42" y2="1720" stroke="black"/>
 <line x1="127" y1="1695" x2="127" y2="1720" stroke="black"/>
@@ -759,10 +759,11 @@ workflowFinished(wf.id())
 <line x1="382" y1="1695" x2="382" y2="1720" stroke="black"/>
 <line x1="467" y1="1695" x2="467" y2="1720" stroke="black"/>
 <line x1="552" y1="1695" x2="552" y2="1720" stroke="black"/>
-<path d="M 297 1701 A42,6 0 0,1 296,1712" stroke="black" fill="none"/><polygon fill="black" points="297,1713 307,1719 307,1707"/>
-<text x="149" y="1705" textLength="145" font-family="Helvetica" font-size="10" fill="black">
-waitlist.insert(wf.id(), wf.results())
+<text x="138" y="1709" textLength="317" font-family="Helvetica" font-size="10" fill="black">
+somewhen later the WFE will inform us that the whole workflow is done.
 </text>
+<line x1="21" y1="1707" x2="137" y2="1707" stroke="black" stroke-dasharray="2,2"/>
+<line x1="458" y1="1707" x2="574" y2="1707" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1720" x2="42" y2="1745" stroke="black"/>
 <line x1="127" y1="1720" x2="127" y2="1745" stroke="black"/>
 <line x1="212" y1="1720" x2="212" y2="1745" stroke="black"/>
@@ -770,10 +771,10 @@ waitlist.insert(wf.id(), wf.results())
 <line x1="382" y1="1720" x2="382" y2="1745" stroke="black"/>
 <line x1="467" y1="1720" x2="467" y2="1745" stroke="black"/>
 <line x1="552" y1="1720" x2="552" y2="1745" stroke="black"/>
-<line x1="297" y1="1732" x2="127" y2="1732" stroke="black"/>
-<line x1="127" y1="1732" x2="137" y2="1738" stroke="black"/>
-<text x="80" y="1730" textLength="263" font-family="Helvetica" font-size="10" fill="black">
-jobFinished(wf.id(), wf.results()), this is the parent-workflow!
+<line x1="382" y1="1732" x2="297" y2="1732" stroke="black"/>
+<polygon fill="black" points="297,1732 307,1738 307,1726"/>
+<text x="284" y="1730" textLength="110" font-family="Helvetica" font-size="10" fill="black">
+workflowFinished(wf.id())
 </text>
 <line x1="42" y1="1745" x2="42" y2="1770" stroke="black"/>
 <line x1="127" y1="1745" x2="127" y2="1770" stroke="black"/>
@@ -782,21 +783,21 @@ jobFinished(wf.id(), wf.results()), this is the parent-workflow!
 <line x1="382" y1="1745" x2="382" y2="1770" stroke="black"/>
 <line x1="467" y1="1745" x2="467" y2="1770" stroke="black"/>
 <line x1="552" y1="1745" x2="552" y2="1770" stroke="black"/>
-<line x1="42" y1="1794" x2="42" y2="1795" stroke="black"/>
-<line x1="127" y1="1794" x2="127" y2="1795" stroke="black"/>
-<line x1="212" y1="1794" x2="212" y2="1795" stroke="black"/>
-<line x1="297" y1="1794" x2="297" y2="1795" stroke="black"/>
-<line x1="382" y1="1794" x2="382" y2="1795" stroke="black"/>
-<line x1="467" y1="1794" x2="467" y2="1795" stroke="black"/>
-<line x1="552" y1="1794" x2="552" y2="1795" stroke="black"/>
-<line x1="14" y1="1770" x2="581" y2="1770" stroke="black"/>
-<line x1="14" y1="1794" x2="581" y2="1794" stroke="black"/>
-<line x1="14" y1="1770" x2="8" y2="1782" stroke="black"/>
-<line x1="14" y1="1794" x2="8" y2="1782" stroke="black"/>
-<line x1="581" y1="1770" x2="587" y2="1782" stroke="black"/>
-<line x1="581" y1="1794" x2="587" y2="1782" stroke="black"/>
-<text x="215" y="1784" textLength="163" font-family="Helvetica" font-size="10" fill="black">
-Execution on the Aggregator finished
+<path d="M 297 1751 A42,6 0 0,1 296,1762" stroke="black" fill="none"/><polygon fill="black" points="297,1763 307,1769 307,1757"/>
+<text x="149" y="1755" textLength="145" font-family="Helvetica" font-size="10" fill="black">
+waitlist.insert(wf.id(), wf.results())
+</text>
+<line x1="42" y1="1770" x2="42" y2="1795" stroke="black"/>
+<line x1="127" y1="1770" x2="127" y2="1795" stroke="black"/>
+<line x1="212" y1="1770" x2="212" y2="1795" stroke="black"/>
+<line x1="297" y1="1770" x2="297" y2="1795" stroke="black"/>
+<line x1="382" y1="1770" x2="382" y2="1795" stroke="black"/>
+<line x1="467" y1="1770" x2="467" y2="1795" stroke="black"/>
+<line x1="552" y1="1770" x2="552" y2="1795" stroke="black"/>
+<line x1="297" y1="1782" x2="127" y2="1782" stroke="black"/>
+<line x1="127" y1="1782" x2="137" y2="1788" stroke="black"/>
+<text x="80" y="1780" textLength="263" font-family="Helvetica" font-size="10" fill="black">
+jobFinished(wf.id(), wf.results()), this is the parent-workflow!
 </text>
 <line x1="42" y1="1795" x2="42" y2="1820" stroke="black"/>
 <line x1="127" y1="1795" x2="127" y2="1820" stroke="black"/>
@@ -805,13 +806,22 @@ Execution on the Aggregator finished
 <line x1="382" y1="1795" x2="382" y2="1820" stroke="black"/>
 <line x1="467" y1="1795" x2="467" y2="1820" stroke="black"/>
 <line x1="552" y1="1795" x2="552" y2="1820" stroke="black"/>
-<line x1="42" y1="1820" x2="42" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="127" y1="1820" x2="127" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="212" y1="1820" x2="212" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="297" y1="1820" x2="297" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="382" y1="1820" x2="382" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="467" y1="1820" x2="467" y2="1845" stroke="black" stroke-dasharray="2,2"/>
-<line x1="552" y1="1820" x2="552" y2="1845" stroke="black" stroke-dasharray="2,2"/>
+<line x1="42" y1="1844" x2="42" y2="1845" stroke="black"/>
+<line x1="127" y1="1844" x2="127" y2="1845" stroke="black"/>
+<line x1="212" y1="1844" x2="212" y2="1845" stroke="black"/>
+<line x1="297" y1="1844" x2="297" y2="1845" stroke="black"/>
+<line x1="382" y1="1844" x2="382" y2="1845" stroke="black"/>
+<line x1="467" y1="1844" x2="467" y2="1845" stroke="black"/>
+<line x1="552" y1="1844" x2="552" y2="1845" stroke="black"/>
+<line x1="14" y1="1820" x2="581" y2="1820" stroke="black"/>
+<line x1="14" y1="1844" x2="581" y2="1844" stroke="black"/>
+<line x1="14" y1="1820" x2="8" y2="1832" stroke="black"/>
+<line x1="14" y1="1844" x2="8" y2="1832" stroke="black"/>
+<line x1="581" y1="1820" x2="587" y2="1832" stroke="black"/>
+<line x1="581" y1="1844" x2="587" y2="1832" stroke="black"/>
+<text x="215" y="1834" textLength="163" font-family="Helvetica" font-size="10" fill="black">
+Execution on the Aggregator finished
+</text>
 <line x1="42" y1="1845" x2="42" y2="1870" stroke="black"/>
 <line x1="127" y1="1845" x2="127" y2="1870" stroke="black"/>
 <line x1="212" y1="1845" x2="212" y2="1870" stroke="black"/>
@@ -819,22 +829,13 @@ Execution on the Aggregator finished
 <line x1="382" y1="1845" x2="382" y2="1870" stroke="black"/>
 <line x1="467" y1="1845" x2="467" y2="1870" stroke="black"/>
 <line x1="552" y1="1845" x2="552" y2="1870" stroke="black"/>
-<line x1="127" y1="1857" x2="297" y2="1857" stroke="black"/>
-<line x1="297" y1="1857" x2="287" y2="1863" stroke="black"/>
-<text x="161" y="1855" textLength="101" font-family="Helvetica" font-size="10" fill="black">
-jobFinishedAck(wf.id())
-</text>
-<line x1="42" y1="1870" x2="42" y2="1895" stroke="black"/>
-<line x1="127" y1="1870" x2="127" y2="1895" stroke="black"/>
-<line x1="212" y1="1870" x2="212" y2="1895" stroke="black"/>
-<line x1="297" y1="1870" x2="297" y2="1895" stroke="black"/>
-<line x1="382" y1="1870" x2="382" y2="1895" stroke="black"/>
-<line x1="467" y1="1870" x2="467" y2="1895" stroke="black"/>
-<line x1="552" y1="1870" x2="552" y2="1895" stroke="black"/>
-<path d="M 297 1876 A42,6 0 0,1 296,1887" stroke="black" fill="none"/><polygon fill="black" points="297,1888 307,1894 307,1882"/>
-<text x="194" y="1880" textLength="100" font-family="Helvetica" font-size="10" fill="black">
-waitlist.remove(wf.id())
-</text>
+<line x1="42" y1="1870" x2="42" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="127" y1="1870" x2="127" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="212" y1="1870" x2="212" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="297" y1="1870" x2="297" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="382" y1="1870" x2="382" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="467" y1="1870" x2="467" y2="1895" stroke="black" stroke-dasharray="2,2"/>
+<line x1="552" y1="1870" x2="552" y2="1895" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="1895" x2="42" y2="1920" stroke="black"/>
 <line x1="127" y1="1895" x2="127" y2="1920" stroke="black"/>
 <line x1="212" y1="1895" x2="212" y2="1920" stroke="black"/>
@@ -842,10 +843,10 @@ waitlist.remove(wf.id())
 <line x1="382" y1="1895" x2="382" y2="1920" stroke="black"/>
 <line x1="467" y1="1895" x2="467" y2="1920" stroke="black"/>
 <line x1="552" y1="1895" x2="552" y2="1920" stroke="black"/>
-<line x1="127" y1="1907" x2="212" y2="1907" stroke="black"/>
-<polygon fill="black" points="212,1907 202,1913 202,1901"/>
-<text x="118" y="1905" textLength="102" font-family="Helvetica" font-size="10" fill="black">
-activityFinished(wf.id())
+<line x1="127" y1="1907" x2="297" y2="1907" stroke="black"/>
+<line x1="297" y1="1907" x2="287" y2="1913" stroke="black"/>
+<text x="161" y="1905" textLength="101" font-family="Helvetica" font-size="10" fill="black">
+jobFinishedAck(wf.id())
 </text>
 <line x1="42" y1="1920" x2="42" y2="1945" stroke="black"/>
 <line x1="127" y1="1920" x2="127" y2="1945" stroke="black"/>
@@ -854,10 +855,9 @@ activityFinished(wf.id())
 <line x1="382" y1="1920" x2="382" y2="1945" stroke="black"/>
 <line x1="467" y1="1920" x2="467" y2="1945" stroke="black"/>
 <line x1="552" y1="1920" x2="552" y2="1945" stroke="black"/>
-<line x1="212" y1="1932" x2="127" y2="1932" stroke="black"/>
-<polygon fill="black" points="127,1932 137,1938 137,1926"/>
-<text x="114" y="1930" textLength="110" font-family="Helvetica" font-size="10" fill="black">
-workflowFinished(wf.id())
+<path d="M 297 1926 A42,6 0 0,1 296,1937" stroke="black" fill="none"/><polygon fill="black" points="297,1938 307,1944 307,1932"/>
+<text x="194" y="1930" textLength="100" font-family="Helvetica" font-size="10" fill="black">
+waitlist.remove(wf.id())
 </text>
 <line x1="42" y1="1945" x2="42" y2="1970" stroke="black"/>
 <line x1="127" y1="1945" x2="127" y2="1970" stroke="black"/>
@@ -866,9 +866,10 @@ workflowFinished(wf.id())
 <line x1="382" y1="1945" x2="382" y2="1970" stroke="black"/>
 <line x1="467" y1="1945" x2="467" y2="1970" stroke="black"/>
 <line x1="552" y1="1945" x2="552" y2="1970" stroke="black"/>
-<path d="M 126 1962 A42,6 0 0,1 127,1951" stroke="black" fill="none"/><polygon fill="black" points="127,1963 117,1969 117,1957"/>
-<text x="128" y="1955" textLength="343" font-family="Helvetica" font-size="10" fill="black">
-waitlist.insert(wf.id(), wf.results()), keep only the results, forget everything else
+<line x1="127" y1="1957" x2="212" y2="1957" stroke="black"/>
+<polygon fill="black" points="212,1957 202,1963 202,1951"/>
+<text x="118" y="1955" textLength="102" font-family="Helvetica" font-size="10" fill="black">
+activityFinished(wf.id())
 </text>
 <line x1="42" y1="1970" x2="42" y2="1995" stroke="black"/>
 <line x1="127" y1="1970" x2="127" y2="1995" stroke="black"/>
@@ -877,21 +878,21 @@ waitlist.insert(wf.id(), wf.results()), keep only the results, forget everything
 <line x1="382" y1="1970" x2="382" y2="1995" stroke="black"/>
 <line x1="467" y1="1970" x2="467" y2="1995" stroke="black"/>
 <line x1="552" y1="1970" x2="552" y2="1995" stroke="black"/>
-<line x1="42" y1="2019" x2="42" y2="2020" stroke="black"/>
-<line x1="127" y1="2019" x2="127" y2="2020" stroke="black"/>
-<line x1="212" y1="2019" x2="212" y2="2020" stroke="black"/>
-<line x1="297" y1="2019" x2="297" y2="2020" stroke="black"/>
-<line x1="382" y1="2019" x2="382" y2="2020" stroke="black"/>
-<line x1="467" y1="2019" x2="467" y2="2020" stroke="black"/>
-<line x1="552" y1="2019" x2="552" y2="2020" stroke="black"/>
-<line x1="14" y1="1995" x2="581" y2="1995" stroke="black"/>
-<line x1="14" y1="2019" x2="581" y2="2019" stroke="black"/>
-<line x1="14" y1="1995" x2="8" y2="2007" stroke="black"/>
-<line x1="14" y1="2019" x2="8" y2="2007" stroke="black"/>
-<line x1="581" y1="1995" x2="587" y2="2007" stroke="black"/>
-<line x1="581" y1="2019" x2="587" y2="2007" stroke="black"/>
-<text x="211" y="2009" textLength="170" font-family="Helvetica" font-size="10" fill="black">
-Execution on the Orchestrator finished
+<line x1="212" y1="1982" x2="127" y2="1982" stroke="black"/>
+<polygon fill="black" points="127,1982 137,1988 137,1976"/>
+<text x="114" y="1980" textLength="110" font-family="Helvetica" font-size="10" fill="black">
+workflowFinished(wf.id())
+</text>
+<line x1="42" y1="1995" x2="42" y2="2020" stroke="black"/>
+<line x1="127" y1="1995" x2="127" y2="2020" stroke="black"/>
+<line x1="212" y1="1995" x2="212" y2="2020" stroke="black"/>
+<line x1="297" y1="1995" x2="297" y2="2020" stroke="black"/>
+<line x1="382" y1="1995" x2="382" y2="2020" stroke="black"/>
+<line x1="467" y1="1995" x2="467" y2="2020" stroke="black"/>
+<line x1="552" y1="1995" x2="552" y2="2020" stroke="black"/>
+<path d="M 126 2012 A42,6 0 0,1 127,2001" stroke="black" fill="none"/><polygon fill="black" points="127,2013 117,2019 117,2007"/>
+<text x="128" y="2005" textLength="343" font-family="Helvetica" font-size="10" fill="black">
+waitlist.insert(wf.id(), wf.results()), keep only the results, forget everything else
 </text>
 <line x1="42" y1="2020" x2="42" y2="2045" stroke="black"/>
 <line x1="127" y1="2020" x2="127" y2="2045" stroke="black"/>
@@ -900,13 +901,22 @@ Execution on the Orchestrator finished
 <line x1="382" y1="2020" x2="382" y2="2045" stroke="black"/>
 <line x1="467" y1="2020" x2="467" y2="2045" stroke="black"/>
 <line x1="552" y1="2020" x2="552" y2="2045" stroke="black"/>
-<line x1="42" y1="2045" x2="42" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="127" y1="2045" x2="127" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="212" y1="2045" x2="212" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="297" y1="2045" x2="297" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="382" y1="2045" x2="382" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="467" y1="2045" x2="467" y2="2070" stroke="black" stroke-dasharray="2,2"/>
-<line x1="552" y1="2045" x2="552" y2="2070" stroke="black" stroke-dasharray="2,2"/>
+<line x1="42" y1="2069" x2="42" y2="2070" stroke="black"/>
+<line x1="127" y1="2069" x2="127" y2="2070" stroke="black"/>
+<line x1="212" y1="2069" x2="212" y2="2070" stroke="black"/>
+<line x1="297" y1="2069" x2="297" y2="2070" stroke="black"/>
+<line x1="382" y1="2069" x2="382" y2="2070" stroke="black"/>
+<line x1="467" y1="2069" x2="467" y2="2070" stroke="black"/>
+<line x1="552" y1="2069" x2="552" y2="2070" stroke="black"/>
+<line x1="14" y1="2045" x2="581" y2="2045" stroke="black"/>
+<line x1="14" y1="2069" x2="581" y2="2069" stroke="black"/>
+<line x1="14" y1="2045" x2="8" y2="2057" stroke="black"/>
+<line x1="14" y1="2069" x2="8" y2="2057" stroke="black"/>
+<line x1="581" y1="2045" x2="587" y2="2057" stroke="black"/>
+<line x1="581" y1="2069" x2="587" y2="2057" stroke="black"/>
+<text x="211" y="2059" textLength="170" font-family="Helvetica" font-size="10" fill="black">
+Execution on the Orchestrator finished
+</text>
 <line x1="42" y1="2070" x2="42" y2="2095" stroke="black"/>
 <line x1="127" y1="2070" x2="127" y2="2095" stroke="black"/>
 <line x1="212" y1="2070" x2="212" y2="2095" stroke="black"/>
@@ -914,23 +924,13 @@ Execution on the Orchestrator finished
 <line x1="382" y1="2070" x2="382" y2="2095" stroke="black"/>
 <line x1="467" y1="2070" x2="467" y2="2095" stroke="black"/>
 <line x1="552" y1="2070" x2="552" y2="2095" stroke="black"/>
-<line x1="42" y1="2082" x2="127" y2="2082" stroke="black"/>
-<line x1="127" y1="2082" x2="117" y2="2088" stroke="black"/>
-<text x="34" y="2080" textLength="100" font-family="Helvetica" font-size="10" fill="black">
-retrieveResults(wf.id())
-</text>
-<line x1="42" y1="2095" x2="42" y2="2120" stroke="black"/>
-<line x1="127" y1="2095" x2="127" y2="2120" stroke="black"/>
-<line x1="212" y1="2095" x2="212" y2="2120" stroke="black"/>
-<line x1="297" y1="2095" x2="297" y2="2120" stroke="black"/>
-<line x1="382" y1="2095" x2="382" y2="2120" stroke="black"/>
-<line x1="467" y1="2095" x2="467" y2="2120" stroke="black"/>
-<line x1="552" y1="2095" x2="552" y2="2120" stroke="black"/>
-<line x1="127" y1="2107" x2="42" y2="2107" stroke="black"/>
-<line x1="42" y1="2107" x2="52" y2="2113" stroke="black"/>
-<text x="27" y="2105" textLength="115" font-family="Helvetica" font-size="10" fill="black">
-jobResults(wf.id(), results)
-</text>
+<line x1="42" y1="2095" x2="42" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="127" y1="2095" x2="127" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="212" y1="2095" x2="212" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="297" y1="2095" x2="297" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="382" y1="2095" x2="382" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="467" y1="2095" x2="467" y2="2120" stroke="black" stroke-dasharray="2,2"/>
+<line x1="552" y1="2095" x2="552" y2="2120" stroke="black" stroke-dasharray="2,2"/>
 <line x1="42" y1="2120" x2="42" y2="2145" stroke="black"/>
 <line x1="127" y1="2120" x2="127" y2="2145" stroke="black"/>
 <line x1="212" y1="2120" x2="212" y2="2145" stroke="black"/>
@@ -940,8 +940,8 @@ jobResults(wf.id(), results)
 <line x1="552" y1="2120" x2="552" y2="2145" stroke="black"/>
 <line x1="42" y1="2132" x2="127" y2="2132" stroke="black"/>
 <line x1="127" y1="2132" x2="117" y2="2138" stroke="black"/>
-<text x="46" y="2130" textLength="77" font-family="Helvetica" font-size="10" fill="black">
-deleteJob(wf.id())
+<text x="34" y="2130" textLength="100" font-family="Helvetica" font-size="10" fill="black">
+retrieveResults(wf.id())
 </text>
 <line x1="42" y1="2145" x2="42" y2="2170" stroke="black"/>
 <line x1="127" y1="2145" x2="127" y2="2170" stroke="black"/>
@@ -950,9 +950,10 @@ deleteJob(wf.id())
 <line x1="382" y1="2145" x2="382" y2="2170" stroke="black"/>
 <line x1="467" y1="2145" x2="467" y2="2170" stroke="black"/>
 <line x1="552" y1="2145" x2="552" y2="2170" stroke="black"/>
-<path d="M 126 2162 A42,6 0 0,1 127,2151" stroke="black" fill="none"/><polygon fill="black" points="127,2163 117,2169 117,2157"/>
-<text x="128" y="2155" textLength="159" font-family="Helvetica" font-size="10" fill="black">
-remove everything related to the job
+<line x1="127" y1="2157" x2="42" y2="2157" stroke="black"/>
+<line x1="42" y1="2157" x2="52" y2="2163" stroke="black"/>
+<text x="27" y="2155" textLength="115" font-family="Helvetica" font-size="10" fill="black">
+jobResults(wf.id(), results)
 </text>
 <line x1="42" y1="2170" x2="42" y2="2195" stroke="black"/>
 <line x1="127" y1="2170" x2="127" y2="2195" stroke="black"/>
@@ -961,10 +962,10 @@ remove everything related to the job
 <line x1="382" y1="2170" x2="382" y2="2195" stroke="black"/>
 <line x1="467" y1="2170" x2="467" y2="2195" stroke="black"/>
 <line x1="552" y1="2170" x2="552" y2="2195" stroke="black"/>
-<line x1="127" y1="2182" x2="42" y2="2182" stroke="black"/>
-<line x1="42" y1="2182" x2="52" y2="2188" stroke="black"/>
-<text x="38" y="2180" textLength="93" font-family="Helvetica" font-size="10" fill="black">
-deleteJobAck(wf.id())
+<line x1="42" y1="2182" x2="127" y2="2182" stroke="black"/>
+<line x1="127" y1="2182" x2="117" y2="2188" stroke="black"/>
+<text x="46" y="2180" textLength="77" font-family="Helvetica" font-size="10" fill="black">
+deleteJob(wf.id())
 </text>
 <line x1="42" y1="2195" x2="42" y2="2220" stroke="black"/>
 <line x1="127" y1="2195" x2="127" y2="2220" stroke="black"/>
@@ -973,19 +974,21 @@ deleteJobAck(wf.id())
 <line x1="382" y1="2195" x2="382" y2="2220" stroke="black"/>
 <line x1="467" y1="2195" x2="467" y2="2220" stroke="black"/>
 <line x1="552" y1="2195" x2="552" y2="2220" stroke="black"/>
-<line x1="42" y1="2244" x2="42" y2="2245" stroke="black"/>
-<line x1="127" y1="2244" x2="127" y2="2245" stroke="black"/>
-<line x1="212" y1="2244" x2="212" y2="2245" stroke="black"/>
-<line x1="297" y1="2244" x2="297" y2="2245" stroke="black"/>
-<line x1="382" y1="2244" x2="382" y2="2245" stroke="black"/>
-<line x1="467" y1="2244" x2="467" y2="2245" stroke="black"/>
-<line x1="552" y1="2244" x2="552" y2="2245" stroke="black"/>
-<line x1="8" y1="2220" x2="587" y2="2220" stroke="black"/>
-<line x1="8" y1="2244" x2="587" y2="2244" stroke="black"/>
-<line x1="8" y1="2220" x2="8" y2="2244" stroke="black"/>
-<line x1="587" y1="2220" x2="587" y2="2244" stroke="black"/>
-<text x="246" y="2234" textLength="101" font-family="Helvetica" font-size="10" fill="black">
-Job has been removed
+<path d="M 126 2212 A42,6 0 0,1 127,2201" stroke="black" fill="none"/><polygon fill="black" points="127,2213 117,2219 117,2207"/>
+<text x="128" y="2205" textLength="159" font-family="Helvetica" font-size="10" fill="black">
+remove everything related to the job
+</text>
+<line x1="42" y1="2220" x2="42" y2="2245" stroke="black"/>
+<line x1="127" y1="2220" x2="127" y2="2245" stroke="black"/>
+<line x1="212" y1="2220" x2="212" y2="2245" stroke="black"/>
+<line x1="297" y1="2220" x2="297" y2="2245" stroke="black"/>
+<line x1="382" y1="2220" x2="382" y2="2245" stroke="black"/>
+<line x1="467" y1="2220" x2="467" y2="2245" stroke="black"/>
+<line x1="552" y1="2220" x2="552" y2="2245" stroke="black"/>
+<line x1="127" y1="2232" x2="42" y2="2232" stroke="black"/>
+<line x1="42" y1="2232" x2="52" y2="2238" stroke="black"/>
+<text x="38" y="2230" textLength="93" font-family="Helvetica" font-size="10" fill="black">
+deleteJobAck(wf.id())
 </text>
 <line x1="42" y1="2245" x2="42" y2="2270" stroke="black"/>
 <line x1="127" y1="2245" x2="127" y2="2270" stroke="black"/>
@@ -994,4 +997,25 @@ Job has been removed
 <line x1="382" y1="2245" x2="382" y2="2270" stroke="black"/>
 <line x1="467" y1="2245" x2="467" y2="2270" stroke="black"/>
 <line x1="552" y1="2245" x2="552" y2="2270" stroke="black"/>
+<line x1="42" y1="2294" x2="42" y2="2295" stroke="black"/>
+<line x1="127" y1="2294" x2="127" y2="2295" stroke="black"/>
+<line x1="212" y1="2294" x2="212" y2="2295" stroke="black"/>
+<line x1="297" y1="2294" x2="297" y2="2295" stroke="black"/>
+<line x1="382" y1="2294" x2="382" y2="2295" stroke="black"/>
+<line x1="467" y1="2294" x2="467" y2="2295" stroke="black"/>
+<line x1="552" y1="2294" x2="552" y2="2295" stroke="black"/>
+<line x1="8" y1="2270" x2="587" y2="2270" stroke="black"/>
+<line x1="8" y1="2294" x2="587" y2="2294" stroke="black"/>
+<line x1="8" y1="2270" x2="8" y2="2294" stroke="black"/>
+<line x1="587" y1="2270" x2="587" y2="2294" stroke="black"/>
+<text x="246" y="2284" textLength="101" font-family="Helvetica" font-size="10" fill="black">
+Job has been removed
+</text>
+<line x1="42" y1="2295" x2="42" y2="2320" stroke="black"/>
+<line x1="127" y1="2295" x2="127" y2="2320" stroke="black"/>
+<line x1="212" y1="2295" x2="212" y2="2320" stroke="black"/>
+<line x1="297" y1="2295" x2="297" y2="2320" stroke="black"/>
+<line x1="382" y1="2295" x2="382" y2="2320" stroke="black"/>
+<line x1="467" y1="2295" x2="467" y2="2320" stroke="black"/>
+<line x1="552" y1="2295" x2="552" y2="2320" stroke="black"/>
 </svg>

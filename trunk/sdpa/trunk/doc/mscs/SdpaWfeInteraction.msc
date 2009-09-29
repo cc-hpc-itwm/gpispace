@@ -26,6 +26,7 @@ msc {
   U abox Gn [ label = "Execution of an activity on the Aggregator" ];
   |||;
 
+  A->O [ label = "submitJobAck(msg.jobid())" ];
   A=>Ga [ label="Workflow wf = gwes::parse_workflow(desc)" ];
   --- [ label = "the syntax must be ok on this level!" ];
   A=>Ga [ label="submitWorkflow(wf)" ];
@@ -40,6 +41,7 @@ msc {
   U abox Gn [ label = "Execution of an activity on an NRE" ];
   |||;
 
+  N->A [ label = "submitJobAck(msg.jobid())" ];
   N=>Gn [ label="Workflow wf = gwes::parse_workflow(desc)" ];
 
   --- [ label = "there are two possibilities for this workflow: atomic or complex" ];
