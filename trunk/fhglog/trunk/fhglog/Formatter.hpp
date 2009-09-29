@@ -45,7 +45,7 @@ namespace fhg { namespace log {
       }
       static ptr_t Short()
       {
-        return Custom("%s: %p:%L - %m%n");
+        return Custom("%s: %l %p:%L - %m%n");
       }
 
       virtual std::string format(const LogEvent &evt);
