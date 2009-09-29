@@ -28,8 +28,11 @@ namespace fhg { namespace log {
 #define __DLOG(logger, level, msg)
 #endif
 
-#define LOG(level, msg) __LOG(::fhg::log::getLogger(), level, msg)
-#define DLOG(level, msg) __DLOG(::fhg::log::getLogger(), level, msg)
+#define LLOG(level, logger, msg) __LOG(logger, level, msg)
+#define LOG(level, msg) LLOG(::fhg::log::getLogger(), level, msg)
+
+#define DLLOG(level, logger, msg) __DLOG(::fhg::log::getLogger(), level, msg)
+#define DLOG(level, msg) DLLOG(::fhg::log::getLogger(), level, msg)
 
 // regular logging messages
 #define LOG_TRACE(logger, msg) __LOG(logger, TRACE, msg)
