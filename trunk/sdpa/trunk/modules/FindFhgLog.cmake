@@ -1,6 +1,6 @@
 # locates the FHG Logging framework
 # This file defines:
-# * FHGLOG_FOUND if protoc was found
+# * FHGLOG_FOUND if fhglog was found
 # * FHGLOG_LIBRARY The lib to link to (currently only a static unix lib) 
 # * FHGLOG_INCLUDE_DIR
 
