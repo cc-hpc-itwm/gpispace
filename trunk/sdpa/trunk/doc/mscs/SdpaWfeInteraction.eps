@@ -1,11 +1,11 @@
 %!PS-Adobe-3.0 EPSF-2.0
-%%BoundingBox: 0 0 416.499993 538.999991
+%%BoundingBox: 0 0 416.499993 1151.499980
 %%Creator: mscgen 0.14
 %%EndComments
 0.700000 0.700000 scale
 0 0 moveto
-0 770 lineto
-595 770 lineto
+0 1645 lineto
+595 1645 lineto
 595 0 lineto
 closepath
 clip
@@ -14,7 +14,7 @@ clip
 /Helvetica findfont
 10 scalefont
 setfont
-0 770 translate
+0 1645 translate
 /mtrx matrix def
 /ellipse
   { /endangle exch def
@@ -85,9 +85,9 @@ newpath 297 -120 moveto 297 -145 lineto stroke
 newpath 382 -120 moveto 382 -145 lineto stroke
 newpath 467 -120 moveto 467 -145 lineto stroke
 newpath 552 -120 moveto 552 -145 lineto stroke
-newpath 127 -132 moveto 212 -132 lineto stroke
-newpath 212 -132 moveto 202 -138 lineto 202 -126 lineto closepath fill
-127 -130 moveto (submitWorkflow(wf)) show
+newpath 127 -132 85 12 90 270 ellipse stroke
+newpath 127 -138 moveto 117 -144 lineto 117 -132 lineto closepath fill
+129 -130 moveto (create Job and assign jobid) show
 newpath 42 -145 moveto 42 -170 lineto stroke
 newpath 127 -145 moveto 127 -170 lineto stroke
 newpath 212 -145 moveto 212 -170 lineto stroke
@@ -95,9 +95,9 @@ newpath 297 -145 moveto 297 -170 lineto stroke
 newpath 382 -145 moveto 382 -170 lineto stroke
 newpath 467 -145 moveto 467 -170 lineto stroke
 newpath 552 -145 moveto 552 -170 lineto stroke
-newpath 212 -157 moveto 127 -157 lineto stroke
-newpath 127 -157 moveto 137 -163 lineto 137 -151 lineto closepath fill
-130 -155 moveto (submitActivity(act)) show
+newpath 127 -157 85 12 90 270 ellipse stroke
+newpath 127 -163 moveto 117 -169 lineto 117 -157 lineto closepath fill
+129 -155 moveto (wf.setId(jobid)) show
 newpath 42 -170 moveto 42 -195 lineto stroke
 newpath 127 -170 moveto 127 -195 lineto stroke
 newpath 212 -170 moveto 212 -195 lineto stroke
@@ -105,9 +105,9 @@ newpath 297 -170 moveto 297 -195 lineto stroke
 newpath 382 -170 moveto 382 -195 lineto stroke
 newpath 467 -170 moveto 467 -195 lineto stroke
 newpath 552 -170 moveto 552 -195 lineto stroke
-newpath 127 -182 85 12 90 270 ellipse stroke
-newpath 127 -188 moveto 117 -194 lineto 117 -182 lineto closepath fill
-129 -180 moveto (false = handle_local(act)) show
+newpath 127 -182 moveto 42 -182 lineto stroke
+newpath 42 -182 moveto 52 -188 lineto stroke
+40 -180 moveto (submitJobAck(jobid)) show
 newpath 42 -195 moveto 42 -220 lineto stroke
 newpath 127 -195 moveto 127 -220 lineto stroke
 newpath 212 -195 moveto 212 -220 lineto stroke
@@ -115,9 +115,13 @@ newpath 297 -195 moveto 297 -220 lineto stroke
 newpath 382 -195 moveto 382 -220 lineto stroke
 newpath 467 -195 moveto 467 -220 lineto stroke
 newpath 552 -195 moveto 552 -220 lineto stroke
-newpath 127 -207 moveto 212 -207 lineto stroke
-newpath 212 -207 moveto 202 -213 lineto 202 -201 lineto closepath fill
-43 -205 moveto (Workflow swf = gwes::transform_activity_to_workflow(act)) show
+220 -209 moveto (hand the workflow over to the WFE) show
+[2] 0 setdash
+newpath 21 -207 moveto 218 -207 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 377 -207 moveto 574 -207 lineto stroke
+[] 0 setdash
 newpath 42 -220 moveto 42 -245 lineto stroke
 newpath 127 -220 moveto 127 -245 lineto stroke
 newpath 212 -220 moveto 212 -245 lineto stroke
@@ -127,7 +131,7 @@ newpath 467 -220 moveto 467 -245 lineto stroke
 newpath 552 -220 moveto 552 -245 lineto stroke
 newpath 127 -232 moveto 212 -232 lineto stroke
 newpath 212 -232 moveto 202 -238 lineto 202 -226 lineto closepath fill
-84 -230 moveto (Description desc = gwes::serialize(swf)) show
+127 -230 moveto (submitWorkflow(wf)) show
 newpath 42 -245 moveto 42 -270 lineto stroke
 newpath 127 -245 moveto 127 -270 lineto stroke
 newpath 212 -245 moveto 212 -270 lineto stroke
@@ -135,30 +139,19 @@ newpath 297 -245 moveto 297 -270 lineto stroke
 newpath 382 -245 moveto 382 -270 lineto stroke
 newpath 467 -245 moveto 467 -270 lineto stroke
 newpath 552 -245 moveto 552 -270 lineto stroke
-newpath 127 -257 moveto 297 -257 lineto stroke
-newpath 297 -257 moveto 287 -263 lineto stroke
-176 -255 moveto (submitJob(desc)) show
-[2] 0 setdash
+newpath 212 -257 moveto 127 -257 lineto stroke
+newpath 127 -257 moveto 137 -263 lineto 137 -251 lineto closepath fill
+130 -255 moveto (submitActivity(act)) show
 newpath 42 -270 moveto 42 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 127 -270 moveto 127 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 212 -270 moveto 212 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 297 -270 moveto 297 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 382 -270 moveto 382 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 467 -270 moveto 467 -295 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 552 -270 moveto 552 -295 lineto stroke
-[] 0 setdash
+newpath 127 -282 85 12 90 270 ellipse stroke
+newpath 127 -288 moveto 117 -294 lineto 117 -282 lineto closepath fill
+129 -280 moveto (false = handle_local(act)) show
 newpath 42 -295 moveto 42 -320 lineto stroke
 newpath 127 -295 moveto 127 -320 lineto stroke
 newpath 212 -295 moveto 212 -320 lineto stroke
@@ -166,9 +159,9 @@ newpath 297 -295 moveto 297 -320 lineto stroke
 newpath 382 -295 moveto 382 -320 lineto stroke
 newpath 467 -295 moveto 467 -320 lineto stroke
 newpath 552 -295 moveto 552 -320 lineto stroke
-newpath 297 -307 moveto 382 -307 lineto stroke
-newpath 382 -307 moveto 372 -313 lineto 372 -301 lineto closepath fill
-245 -305 moveto (Workflow wf = gwes::parse_workflow(desc)) show
+newpath 127 -307 moveto 212 -307 lineto stroke
+newpath 212 -307 moveto 202 -313 lineto 202 -301 lineto closepath fill
+43 -305 moveto (Workflow swf = gwes::transform_activity_to_workflow(act)) show
 newpath 42 -320 moveto 42 -345 lineto stroke
 newpath 127 -320 moveto 127 -345 lineto stroke
 newpath 212 -320 moveto 212 -345 lineto stroke
@@ -176,13 +169,9 @@ newpath 297 -320 moveto 297 -345 lineto stroke
 newpath 382 -320 moveto 382 -345 lineto stroke
 newpath 467 -320 moveto 467 -345 lineto stroke
 newpath 552 -320 moveto 552 -345 lineto stroke
-220 -334 moveto (the syntax must be ok on this level!) show
-[2] 0 setdash
-newpath 21 -332 moveto 218 -332 lineto stroke
-[] 0 setdash
-[2] 0 setdash
-newpath 377 -332 moveto 574 -332 lineto stroke
-[] 0 setdash
+newpath 127 -332 moveto 212 -332 lineto stroke
+newpath 212 -332 moveto 202 -338 lineto 202 -326 lineto closepath fill
+84 -330 moveto (Description desc = gwes::serialize(swf)) show
 newpath 42 -345 moveto 42 -370 lineto stroke
 newpath 127 -345 moveto 127 -370 lineto stroke
 newpath 212 -345 moveto 212 -370 lineto stroke
@@ -190,19 +179,30 @@ newpath 297 -345 moveto 297 -370 lineto stroke
 newpath 382 -345 moveto 382 -370 lineto stroke
 newpath 467 -345 moveto 467 -370 lineto stroke
 newpath 552 -345 moveto 552 -370 lineto stroke
-newpath 297 -357 moveto 382 -357 lineto stroke
-newpath 382 -357 moveto 372 -363 lineto 372 -351 lineto closepath fill
-297 -355 moveto (submitWorkflow(wf)) show
+newpath 127 -357 moveto 297 -357 lineto stroke
+newpath 297 -357 moveto 287 -363 lineto stroke
+176 -355 moveto (submitJob(desc)) show
+[2] 0 setdash
 newpath 42 -370 moveto 42 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 127 -370 moveto 127 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 212 -370 moveto 212 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 297 -370 moveto 297 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 382 -370 moveto 382 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 467 -370 moveto 467 -395 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 552 -370 moveto 552 -395 lineto stroke
-newpath 382 -382 moveto 297 -382 lineto stroke
-newpath 297 -382 moveto 307 -388 lineto 307 -376 lineto closepath fill
-300 -380 moveto (submitActivity(act)) show
+[] 0 setdash
 newpath 42 -395 moveto 42 -420 lineto stroke
 newpath 127 -395 moveto 127 -420 lineto stroke
 newpath 212 -395 moveto 212 -420 lineto stroke
@@ -210,9 +210,9 @@ newpath 297 -395 moveto 297 -420 lineto stroke
 newpath 382 -395 moveto 382 -420 lineto stroke
 newpath 467 -395 moveto 467 -420 lineto stroke
 newpath 552 -395 moveto 552 -420 lineto stroke
-newpath 297 -407 85 12 270 90 ellipse stroke
-newpath 297 -413 moveto 307 -419 lineto 307 -407 lineto closepath fill
-187 -405 moveto (false = handle_local(act)) show
+newpath 297 -407 moveto 382 -407 lineto stroke
+newpath 382 -407 moveto 372 -413 lineto 372 -401 lineto closepath fill
+245 -405 moveto (Workflow wf = gwes::parse_workflow(desc)) show
 newpath 42 -420 moveto 42 -445 lineto stroke
 newpath 127 -420 moveto 127 -445 lineto stroke
 newpath 212 -420 moveto 212 -445 lineto stroke
@@ -220,9 +220,13 @@ newpath 297 -420 moveto 297 -445 lineto stroke
 newpath 382 -420 moveto 382 -445 lineto stroke
 newpath 467 -420 moveto 467 -445 lineto stroke
 newpath 552 -420 moveto 552 -445 lineto stroke
-newpath 297 -432 moveto 382 -432 lineto stroke
-newpath 382 -432 moveto 372 -438 lineto 372 -426 lineto closepath fill
-213 -430 moveto (Workflow swf = gwes::transform_activity_to_workflow(act)) show
+220 -434 moveto (the syntax must be ok on this level!) show
+[2] 0 setdash
+newpath 21 -432 moveto 218 -432 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 377 -432 moveto 574 -432 lineto stroke
+[] 0 setdash
 newpath 42 -445 moveto 42 -470 lineto stroke
 newpath 127 -445 moveto 127 -470 lineto stroke
 newpath 212 -445 moveto 212 -470 lineto stroke
@@ -232,7 +236,7 @@ newpath 467 -445 moveto 467 -470 lineto stroke
 newpath 552 -445 moveto 552 -470 lineto stroke
 newpath 297 -457 moveto 382 -457 lineto stroke
 newpath 382 -457 moveto 372 -463 lineto 372 -451 lineto closepath fill
-254 -455 moveto (Description desc = gwes::serialize(swf)) show
+297 -455 moveto (submitWorkflow(wf)) show
 newpath 42 -470 moveto 42 -495 lineto stroke
 newpath 127 -470 moveto 127 -495 lineto stroke
 newpath 212 -470 moveto 212 -495 lineto stroke
@@ -240,30 +244,19 @@ newpath 297 -470 moveto 297 -495 lineto stroke
 newpath 382 -470 moveto 382 -495 lineto stroke
 newpath 467 -470 moveto 467 -495 lineto stroke
 newpath 552 -470 moveto 552 -495 lineto stroke
-newpath 297 -482 moveto 467 -482 lineto stroke
-newpath 467 -482 moveto 457 -488 lineto stroke
-346 -480 moveto (submitJob(desc)) show
-[2] 0 setdash
+newpath 382 -482 moveto 297 -482 lineto stroke
+newpath 297 -482 moveto 307 -488 lineto 307 -476 lineto closepath fill
+300 -480 moveto (submitActivity(act)) show
 newpath 42 -495 moveto 42 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 127 -495 moveto 127 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 212 -495 moveto 212 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 297 -495 moveto 297 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 382 -495 moveto 382 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 467 -495 moveto 467 -520 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 552 -495 moveto 552 -520 lineto stroke
-[] 0 setdash
+newpath 297 -507 85 12 270 90 ellipse stroke
+newpath 297 -513 moveto 307 -519 lineto 307 -507 lineto closepath fill
+187 -505 moveto (false = handle_local(act)) show
 newpath 42 -520 moveto 42 -545 lineto stroke
 newpath 127 -520 moveto 127 -545 lineto stroke
 newpath 212 -520 moveto 212 -545 lineto stroke
@@ -271,9 +264,9 @@ newpath 297 -520 moveto 297 -545 lineto stroke
 newpath 382 -520 moveto 382 -545 lineto stroke
 newpath 467 -520 moveto 467 -545 lineto stroke
 newpath 552 -520 moveto 552 -545 lineto stroke
-newpath 467 -532 moveto 552 -532 lineto stroke
-newpath 552 -532 moveto 542 -538 lineto 542 -526 lineto closepath fill
-404 -530 moveto (Workflow wf = gwes::parse_workflow(desc)) show
+newpath 297 -532 moveto 382 -532 lineto stroke
+newpath 382 -532 moveto 372 -538 lineto 372 -526 lineto closepath fill
+213 -530 moveto (Workflow swf = gwes::transform_activity_to_workflow(act)) show
 newpath 42 -545 moveto 42 -570 lineto stroke
 newpath 127 -545 moveto 127 -570 lineto stroke
 newpath 212 -545 moveto 212 -570 lineto stroke
@@ -281,13 +274,9 @@ newpath 297 -545 moveto 297 -570 lineto stroke
 newpath 382 -545 moveto 382 -570 lineto stroke
 newpath 467 -545 moveto 467 -570 lineto stroke
 newpath 552 -545 moveto 552 -570 lineto stroke
-220 -559 moveto (the syntax must be ok on this level!) show
-[2] 0 setdash
-newpath 21 -557 moveto 218 -557 lineto stroke
-[] 0 setdash
-[2] 0 setdash
-newpath 377 -557 moveto 574 -557 lineto stroke
-[] 0 setdash
+newpath 297 -557 moveto 382 -557 lineto stroke
+newpath 382 -557 moveto 372 -563 lineto 372 -551 lineto closepath fill
+254 -555 moveto (Description desc = gwes::serialize(swf)) show
 newpath 42 -570 moveto 42 -595 lineto stroke
 newpath 127 -570 moveto 127 -595 lineto stroke
 newpath 212 -570 moveto 212 -595 lineto stroke
@@ -295,40 +284,40 @@ newpath 297 -570 moveto 297 -595 lineto stroke
 newpath 382 -570 moveto 382 -595 lineto stroke
 newpath 467 -570 moveto 467 -595 lineto stroke
 newpath 552 -570 moveto 552 -595 lineto stroke
-newpath 467 -582 85 12 270 90 ellipse stroke
-newpath 467 -588 moveto 477 -594 lineto 477 -582 lineto closepath fill
-316 -580 moveto (atomic = measure_complexity(wf)) show
+newpath 297 -582 moveto 467 -582 lineto stroke
+newpath 467 -582 moveto 457 -588 lineto stroke
+346 -580 moveto (submitJob(desc)) show
+[2] 0 setdash
 newpath 42 -595 moveto 42 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 127 -595 moveto 127 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 212 -595 moveto 212 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 297 -595 moveto 297 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 382 -595 moveto 382 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 467 -595 moveto 467 -620 lineto stroke
+[] 0 setdash
+[2] 0 setdash
 newpath 552 -595 moveto 552 -620 lineto stroke
-newpath 467 -607 85 12 270 90 ellipse stroke
-newpath 467 -613 moveto 477 -619 lineto 477 -607 lineto closepath fill
-414 -605 moveto (execute(wf)) show
-[2] 0 setdash
+[] 0 setdash
 newpath 42 -620 moveto 42 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 127 -620 moveto 127 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 212 -620 moveto 212 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 297 -620 moveto 297 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 382 -620 moveto 382 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 467 -620 moveto 467 -645 lineto stroke
-[] 0 setdash
-[2] 0 setdash
 newpath 552 -620 moveto 552 -645 lineto stroke
-[] 0 setdash
+newpath 467 -632 moveto 552 -632 lineto stroke
+newpath 552 -632 moveto 542 -638 lineto 542 -626 lineto closepath fill
+404 -630 moveto (Workflow wf = gwes::parse_workflow(desc)) show
 newpath 42 -645 moveto 42 -670 lineto stroke
 newpath 127 -645 moveto 127 -670 lineto stroke
 newpath 212 -645 moveto 212 -670 lineto stroke
@@ -336,9 +325,13 @@ newpath 297 -645 moveto 297 -670 lineto stroke
 newpath 382 -645 moveto 382 -670 lineto stroke
 newpath 467 -645 moveto 467 -670 lineto stroke
 newpath 552 -645 moveto 552 -670 lineto stroke
-newpath 467 -657 85 12 270 90 ellipse stroke
-newpath 467 -663 moveto 477 -669 lineto 477 -657 lineto closepath fill
-309 -655 moveto (complex = measure_complexity(wf)) show
+161 -659 moveto (there are two possibilities for this workflow: atomic or complex) show
+[2] 0 setdash
+newpath 21 -657 moveto 159 -657 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 436 -657 moveto 574 -657 lineto stroke
+[] 0 setdash
 newpath 42 -670 moveto 42 -695 lineto stroke
 newpath 127 -670 moveto 127 -695 lineto stroke
 newpath 212 -670 moveto 212 -695 lineto stroke
@@ -346,9 +339,9 @@ newpath 297 -670 moveto 297 -695 lineto stroke
 newpath 382 -670 moveto 382 -695 lineto stroke
 newpath 467 -670 moveto 467 -695 lineto stroke
 newpath 552 -670 moveto 552 -695 lineto stroke
-newpath 467 -682 moveto 552 -682 lineto stroke
-newpath 552 -682 moveto 542 -688 lineto 542 -676 lineto closepath fill
-467 -680 moveto (submitWorkflow(wf)) show
+newpath 467 -682 85 12 270 90 ellipse stroke
+newpath 467 -688 moveto 477 -694 lineto 477 -682 lineto closepath fill
+71 -680 moveto (atomic = measure_complexity(wf), directly execute it (schedule to local execution worker)) show
 newpath 42 -695 moveto 42 -720 lineto stroke
 newpath 127 -695 moveto 127 -720 lineto stroke
 newpath 212 -695 moveto 212 -720 lineto stroke
@@ -356,9 +349,9 @@ newpath 297 -695 moveto 297 -720 lineto stroke
 newpath 382 -695 moveto 382 -720 lineto stroke
 newpath 467 -695 moveto 467 -720 lineto stroke
 newpath 552 -695 moveto 552 -720 lineto stroke
-newpath 552 -707 moveto 467 -707 lineto stroke
-newpath 467 -707 moveto 477 -713 lineto 477 -701 lineto closepath fill
-470 -705 moveto (submitActivity(act)) show
+newpath 467 -707 85 12 270 90 ellipse stroke
+newpath 467 -713 moveto 477 -719 lineto 477 -707 lineto closepath fill
+378 -705 moveto (result = execute(wf)) show
 newpath 42 -720 moveto 42 -745 lineto stroke
 newpath 127 -720 moveto 127 -745 lineto stroke
 newpath 212 -720 moveto 212 -745 lineto stroke
@@ -366,9 +359,13 @@ newpath 297 -720 moveto 297 -745 lineto stroke
 newpath 382 -720 moveto 382 -745 lineto stroke
 newpath 467 -720 moveto 467 -745 lineto stroke
 newpath 552 -720 moveto 552 -745 lineto stroke
-newpath 467 -732 85 12 270 90 ellipse stroke
-newpath 467 -738 moveto 477 -744 lineto 477 -732 lineto closepath fill
-361 -730 moveto (true = handle_local(act)) show
+169 -734 moveto (when the job is finished, we have to inform the aggregator) show
+[2] 0 setdash
+newpath 21 -732 moveto 167 -732 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 427 -732 moveto 574 -732 lineto stroke
+[] 0 setdash
 newpath 42 -745 moveto 42 -770 lineto stroke
 newpath 127 -745 moveto 127 -770 lineto stroke
 newpath 212 -745 moveto 212 -770 lineto stroke
@@ -376,6 +373,413 @@ newpath 297 -745 moveto 297 -770 lineto stroke
 newpath 382 -745 moveto 382 -770 lineto stroke
 newpath 467 -745 moveto 467 -770 lineto stroke
 newpath 552 -745 moveto 552 -770 lineto stroke
-newpath 467 -757 85 12 270 90 ellipse stroke
-newpath 467 -763 moveto 477 -769 lineto 477 -757 lineto closepath fill
-414 -755 moveto (execute(wf)) show
+newpath 467 -757 moveto 297 -757 lineto stroke
+newpath 297 -757 moveto 307 -763 lineto stroke
+323 -755 moveto (jobFinished(wf.id(), output)) show
+[2] 0 setdash
+newpath 42 -770 moveto 42 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 127 -770 moveto 127 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 212 -770 moveto 212 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 297 -770 moveto 297 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 382 -770 moveto 382 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 467 -770 moveto 467 -795 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 552 -770 moveto 552 -795 lineto stroke
+[] 0 setdash
+newpath 42 -795 moveto 42 -820 lineto stroke
+newpath 127 -795 moveto 127 -820 lineto stroke
+newpath 212 -795 moveto 212 -820 lineto stroke
+newpath 297 -795 moveto 297 -820 lineto stroke
+newpath 382 -795 moveto 382 -820 lineto stroke
+newpath 467 -795 moveto 467 -820 lineto stroke
+newpath 552 -795 moveto 552 -820 lineto stroke
+newpath 467 -807 85 12 270 90 ellipse stroke
+newpath 467 -813 moveto 477 -819 lineto 477 -807 lineto closepath fill
+170 -805 moveto (complex = measure_complexity(wf), pass it to the WFE to handle it) show
+newpath 42 -820 moveto 42 -845 lineto stroke
+newpath 127 -820 moveto 127 -845 lineto stroke
+newpath 212 -820 moveto 212 -845 lineto stroke
+newpath 297 -820 moveto 297 -845 lineto stroke
+newpath 382 -820 moveto 382 -845 lineto stroke
+newpath 467 -820 moveto 467 -845 lineto stroke
+newpath 552 -820 moveto 552 -845 lineto stroke
+newpath 467 -832 moveto 552 -832 lineto stroke
+newpath 552 -832 moveto 542 -838 lineto 542 -826 lineto closepath fill
+467 -830 moveto (submitWorkflow(wf)) show
+newpath 42 -845 moveto 42 -870 lineto stroke
+newpath 127 -845 moveto 127 -870 lineto stroke
+newpath 212 -845 moveto 212 -870 lineto stroke
+newpath 297 -845 moveto 297 -870 lineto stroke
+newpath 382 -845 moveto 382 -870 lineto stroke
+newpath 467 -845 moveto 467 -870 lineto stroke
+newpath 552 -845 moveto 552 -870 lineto stroke
+newpath 552 -857 moveto 467 -857 lineto stroke
+newpath 467 -857 moveto 477 -863 lineto 477 -851 lineto closepath fill
+470 -855 moveto (submitActivity(act)) show
+newpath 42 -870 moveto 42 -895 lineto stroke
+newpath 127 -870 moveto 127 -895 lineto stroke
+newpath 212 -870 moveto 212 -895 lineto stroke
+newpath 297 -870 moveto 297 -895 lineto stroke
+newpath 382 -870 moveto 382 -895 lineto stroke
+newpath 467 -870 moveto 467 -895 lineto stroke
+newpath 552 -870 moveto 552 -895 lineto stroke
+newpath 467 -882 85 12 270 90 ellipse stroke
+newpath 467 -888 moveto 477 -894 lineto 477 -882 lineto closepath fill
+361 -880 moveto (true = handle_local(act)) show
+newpath 42 -895 moveto 42 -920 lineto stroke
+newpath 127 -895 moveto 127 -920 lineto stroke
+newpath 212 -895 moveto 212 -920 lineto stroke
+newpath 297 -895 moveto 297 -920 lineto stroke
+newpath 382 -895 moveto 382 -920 lineto stroke
+newpath 467 -895 moveto 467 -920 lineto stroke
+newpath 552 -895 moveto 552 -920 lineto stroke
+newpath 467 -907 85 12 270 90 ellipse stroke
+newpath 467 -913 moveto 477 -919 lineto 477 -907 lineto closepath fill
+375 -905 moveto (result = execute(act)) show
+newpath 42 -920 moveto 42 -945 lineto stroke
+newpath 127 -920 moveto 127 -945 lineto stroke
+newpath 212 -920 moveto 212 -945 lineto stroke
+newpath 297 -920 moveto 297 -945 lineto stroke
+newpath 382 -920 moveto 382 -945 lineto stroke
+newpath 467 -920 moveto 467 -945 lineto stroke
+newpath 552 -920 moveto 552 -945 lineto stroke
+newpath 467 -932 moveto 552 -932 lineto stroke
+newpath 552 -932 moveto 542 -938 lineto 542 -926 lineto closepath fill
+452 -930 moveto (activityDispatched(act.id())) show
+newpath 42 -945 moveto 42 -970 lineto stroke
+newpath 127 -945 moveto 127 -970 lineto stroke
+newpath 212 -945 moveto 212 -970 lineto stroke
+newpath 297 -945 moveto 297 -970 lineto stroke
+newpath 382 -945 moveto 382 -970 lineto stroke
+newpath 467 -945 moveto 467 -970 lineto stroke
+newpath 552 -945 moveto 552 -970 lineto stroke
+174 -959 moveto (when the activity is finished, we have to inform the WFE) show
+[2] 0 setdash
+newpath 21 -957 moveto 172 -957 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 423 -957 moveto 574 -957 lineto stroke
+[] 0 setdash
+newpath 42 -970 moveto 42 -995 lineto stroke
+newpath 127 -970 moveto 127 -995 lineto stroke
+newpath 212 -970 moveto 212 -995 lineto stroke
+newpath 297 -970 moveto 297 -995 lineto stroke
+newpath 382 -970 moveto 382 -995 lineto stroke
+newpath 467 -970 moveto 467 -995 lineto stroke
+newpath 552 -970 moveto 552 -995 lineto stroke
+newpath 467 -982 moveto 552 -982 lineto stroke
+newpath 552 -982 moveto 542 -988 lineto 542 -976 lineto closepath fill
+443 -980 moveto (activityFinished(act.id(), result)) show
+newpath 42 -995 moveto 42 -1020 lineto stroke
+newpath 127 -995 moveto 127 -1020 lineto stroke
+newpath 212 -995 moveto 212 -1020 lineto stroke
+newpath 297 -995 moveto 297 -1020 lineto stroke
+newpath 382 -995 moveto 382 -1020 lineto stroke
+newpath 467 -995 moveto 467 -1020 lineto stroke
+newpath 552 -995 moveto 552 -1020 lineto stroke
+139 -1009 moveto (somewhen later the WFE will inform us that the whole workflow is done.) show
+[2] 0 setdash
+newpath 21 -1007 moveto 137 -1007 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 458 -1007 moveto 574 -1007 lineto stroke
+[] 0 setdash
+newpath 42 -1020 moveto 42 -1045 lineto stroke
+newpath 127 -1020 moveto 127 -1045 lineto stroke
+newpath 212 -1020 moveto 212 -1045 lineto stroke
+newpath 297 -1020 moveto 297 -1045 lineto stroke
+newpath 382 -1020 moveto 382 -1045 lineto stroke
+newpath 467 -1020 moveto 467 -1045 lineto stroke
+newpath 552 -1020 moveto 552 -1045 lineto stroke
+newpath 552 -1032 moveto 467 -1032 lineto stroke
+newpath 467 -1032 moveto 477 -1038 lineto 477 -1026 lineto closepath fill
+455 -1030 moveto (workflowFinished(wf.id())) show
+newpath 42 -1045 moveto 42 -1070 lineto stroke
+newpath 127 -1045 moveto 127 -1070 lineto stroke
+newpath 212 -1045 moveto 212 -1070 lineto stroke
+newpath 297 -1045 moveto 297 -1070 lineto stroke
+newpath 382 -1045 moveto 382 -1070 lineto stroke
+newpath 467 -1045 moveto 467 -1070 lineto stroke
+newpath 552 -1045 moveto 552 -1070 lineto stroke
+newpath 467 -1057 moveto 297 -1057 lineto stroke
+newpath 297 -1057 moveto 307 -1063 lineto stroke
+313 -1055 moveto (jobFinished(wf.id(), wf.results())) show
+newpath 42 -1070 moveto 42 -1095 lineto stroke
+newpath 127 -1070 moveto 127 -1095 lineto stroke
+newpath 212 -1070 moveto 212 -1095 lineto stroke
+newpath 297 -1070 moveto 297 -1095 lineto stroke
+newpath 382 -1070 moveto 382 -1095 lineto stroke
+newpath 467 -1070 moveto 467 -1095 lineto stroke
+newpath 552 -1070 moveto 552 -1095 lineto stroke
+56 -1084 moveto (wait on an acknowledge from the upper level, and resend jobFinished messages (maybe even persist to disk)) show
+[2] 0 setdash
+newpath 21 -1082 moveto 54 -1082 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 541 -1082 moveto 574 -1082 lineto stroke
+[] 0 setdash
+newpath 42 -1095 moveto 42 -1120 lineto stroke
+newpath 127 -1095 moveto 127 -1120 lineto stroke
+newpath 212 -1095 moveto 212 -1120 lineto stroke
+newpath 297 -1095 moveto 297 -1120 lineto stroke
+newpath 382 -1095 moveto 382 -1120 lineto stroke
+newpath 467 -1095 moveto 467 -1120 lineto stroke
+newpath 552 -1095 moveto 552 -1120 lineto stroke
+newpath 467 -1107 85 12 270 90 ellipse stroke
+newpath 467 -1113 moveto 477 -1119 lineto 477 -1107 lineto closepath fill
+320 -1105 moveto (waitlist.insert(wf.id(), wf.results())) show
+[2] 0 setdash
+newpath 42 -1120 moveto 42 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 127 -1120 moveto 127 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 212 -1120 moveto 212 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 297 -1120 moveto 297 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 382 -1120 moveto 382 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 467 -1120 moveto 467 -1145 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 552 -1120 moveto 552 -1145 lineto stroke
+[] 0 setdash
+newpath 42 -1145 moveto 42 -1170 lineto stroke
+newpath 127 -1145 moveto 127 -1170 lineto stroke
+newpath 212 -1145 moveto 212 -1170 lineto stroke
+newpath 297 -1145 moveto 297 -1170 lineto stroke
+newpath 382 -1145 moveto 382 -1170 lineto stroke
+newpath 467 -1145 moveto 467 -1170 lineto stroke
+newpath 552 -1145 moveto 552 -1170 lineto stroke
+newpath 297 -1157 moveto 467 -1157 lineto stroke
+newpath 467 -1157 moveto 457 -1163 lineto stroke
+332 -1155 moveto (jobFinishedAck(wf.id())) show
+newpath 42 -1170 moveto 42 -1195 lineto stroke
+newpath 127 -1170 moveto 127 -1195 lineto stroke
+newpath 212 -1170 moveto 212 -1195 lineto stroke
+newpath 297 -1170 moveto 297 -1195 lineto stroke
+newpath 382 -1170 moveto 382 -1195 lineto stroke
+newpath 467 -1170 moveto 467 -1195 lineto stroke
+newpath 552 -1170 moveto 552 -1195 lineto stroke
+newpath 467 -1182 85 12 270 90 ellipse stroke
+newpath 467 -1188 moveto 477 -1194 lineto 477 -1182 lineto closepath fill
+365 -1180 moveto (waitlist.remove(wf.id())) show
+newpath 42 -1195 moveto 42 -1220 lineto stroke
+newpath 127 -1195 moveto 127 -1220 lineto stroke
+newpath 212 -1195 moveto 212 -1220 lineto stroke
+newpath 297 -1195 moveto 297 -1220 lineto stroke
+newpath 382 -1195 moveto 382 -1220 lineto stroke
+newpath 467 -1195 moveto 467 -1220 lineto stroke
+newpath 552 -1195 moveto 552 -1220 lineto stroke
+162 -1209 moveto (the aggregator can inform the WFE that an activity is finished) show
+[2] 0 setdash
+newpath 21 -1207 moveto 160 -1207 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 434 -1207 moveto 574 -1207 lineto stroke
+[] 0 setdash
+newpath 42 -1220 moveto 42 -1245 lineto stroke
+newpath 127 -1220 moveto 127 -1245 lineto stroke
+newpath 212 -1220 moveto 212 -1245 lineto stroke
+newpath 297 -1220 moveto 297 -1245 lineto stroke
+newpath 382 -1220 moveto 382 -1245 lineto stroke
+newpath 467 -1220 moveto 467 -1245 lineto stroke
+newpath 552 -1220 moveto 552 -1245 lineto stroke
+newpath 297 -1232 moveto 382 -1232 lineto stroke
+newpath 382 -1232 moveto 372 -1238 lineto 372 -1226 lineto closepath fill
+173 -1230 moveto (activityFinished(act.id() = wf.id(), results), we got an activity in the first-place) show
+newpath 42 -1245 moveto 42 -1270 lineto stroke
+newpath 127 -1245 moveto 127 -1270 lineto stroke
+newpath 212 -1245 moveto 212 -1270 lineto stroke
+newpath 297 -1245 moveto 297 -1270 lineto stroke
+newpath 382 -1245 moveto 382 -1270 lineto stroke
+newpath 467 -1245 moveto 467 -1270 lineto stroke
+newpath 552 -1245 moveto 552 -1270 lineto stroke
+139 -1259 moveto (somewhen later the WFE will inform us that the whole workflow is done.) show
+[2] 0 setdash
+newpath 21 -1257 moveto 137 -1257 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 458 -1257 moveto 574 -1257 lineto stroke
+[] 0 setdash
+newpath 42 -1270 moveto 42 -1295 lineto stroke
+newpath 127 -1270 moveto 127 -1295 lineto stroke
+newpath 212 -1270 moveto 212 -1295 lineto stroke
+newpath 297 -1270 moveto 297 -1295 lineto stroke
+newpath 382 -1270 moveto 382 -1295 lineto stroke
+newpath 467 -1270 moveto 467 -1295 lineto stroke
+newpath 552 -1270 moveto 552 -1295 lineto stroke
+newpath 382 -1282 moveto 297 -1282 lineto stroke
+newpath 297 -1282 moveto 307 -1288 lineto 307 -1276 lineto closepath fill
+285 -1280 moveto (workflowFinished(wf.id())) show
+newpath 42 -1295 moveto 42 -1320 lineto stroke
+newpath 127 -1295 moveto 127 -1320 lineto stroke
+newpath 212 -1295 moveto 212 -1320 lineto stroke
+newpath 297 -1295 moveto 297 -1320 lineto stroke
+newpath 382 -1295 moveto 382 -1320 lineto stroke
+newpath 467 -1295 moveto 467 -1320 lineto stroke
+newpath 552 -1295 moveto 552 -1320 lineto stroke
+newpath 297 -1307 moveto 127 -1307 lineto stroke
+newpath 127 -1307 moveto 137 -1313 lineto stroke
+81 -1305 moveto (jobFinished(wf.id(), wf.results()), this is the parent-workflow!) show
+newpath 42 -1320 moveto 42 -1345 lineto stroke
+newpath 127 -1320 moveto 127 -1345 lineto stroke
+newpath 212 -1320 moveto 212 -1345 lineto stroke
+newpath 297 -1320 moveto 297 -1345 lineto stroke
+newpath 382 -1320 moveto 382 -1345 lineto stroke
+newpath 467 -1320 moveto 467 -1345 lineto stroke
+newpath 552 -1320 moveto 552 -1345 lineto stroke
+newpath 297 -1332 85 12 270 90 ellipse stroke
+newpath 297 -1338 moveto 307 -1344 lineto 307 -1332 lineto closepath fill
+150 -1330 moveto (waitlist.insert(wf.id(), wf.results())) show
+[2] 0 setdash
+newpath 42 -1345 moveto 42 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 127 -1345 moveto 127 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 212 -1345 moveto 212 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 297 -1345 moveto 297 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 382 -1345 moveto 382 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 467 -1345 moveto 467 -1370 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 552 -1345 moveto 552 -1370 lineto stroke
+[] 0 setdash
+newpath 42 -1370 moveto 42 -1395 lineto stroke
+newpath 127 -1370 moveto 127 -1395 lineto stroke
+newpath 212 -1370 moveto 212 -1395 lineto stroke
+newpath 297 -1370 moveto 297 -1395 lineto stroke
+newpath 382 -1370 moveto 382 -1395 lineto stroke
+newpath 467 -1370 moveto 467 -1395 lineto stroke
+newpath 552 -1370 moveto 552 -1395 lineto stroke
+newpath 127 -1382 moveto 297 -1382 lineto stroke
+newpath 297 -1382 moveto 287 -1388 lineto stroke
+162 -1380 moveto (jobFinishedAck(wf.id())) show
+newpath 42 -1395 moveto 42 -1420 lineto stroke
+newpath 127 -1395 moveto 127 -1420 lineto stroke
+newpath 212 -1395 moveto 212 -1420 lineto stroke
+newpath 297 -1395 moveto 297 -1420 lineto stroke
+newpath 382 -1395 moveto 382 -1420 lineto stroke
+newpath 467 -1395 moveto 467 -1420 lineto stroke
+newpath 552 -1395 moveto 552 -1420 lineto stroke
+newpath 297 -1407 85 12 270 90 ellipse stroke
+newpath 297 -1413 moveto 307 -1419 lineto 307 -1407 lineto closepath fill
+195 -1405 moveto (waitlist.remove(wf.id())) show
+newpath 42 -1420 moveto 42 -1445 lineto stroke
+newpath 127 -1420 moveto 127 -1445 lineto stroke
+newpath 212 -1420 moveto 212 -1445 lineto stroke
+newpath 297 -1420 moveto 297 -1445 lineto stroke
+newpath 382 -1420 moveto 382 -1445 lineto stroke
+newpath 467 -1420 moveto 467 -1445 lineto stroke
+newpath 552 -1420 moveto 552 -1445 lineto stroke
+newpath 127 -1432 moveto 212 -1432 lineto stroke
+newpath 212 -1432 moveto 202 -1438 lineto 202 -1426 lineto closepath fill
+119 -1430 moveto (activityFinished(wf.id())) show
+newpath 42 -1445 moveto 42 -1470 lineto stroke
+newpath 127 -1445 moveto 127 -1470 lineto stroke
+newpath 212 -1445 moveto 212 -1470 lineto stroke
+newpath 297 -1445 moveto 297 -1470 lineto stroke
+newpath 382 -1445 moveto 382 -1470 lineto stroke
+newpath 467 -1445 moveto 467 -1470 lineto stroke
+newpath 552 -1445 moveto 552 -1470 lineto stroke
+newpath 212 -1457 moveto 127 -1457 lineto stroke
+newpath 127 -1457 moveto 137 -1463 lineto 137 -1451 lineto closepath fill
+115 -1455 moveto (workflowFinished(wf.id())) show
+newpath 42 -1470 moveto 42 -1495 lineto stroke
+newpath 127 -1470 moveto 127 -1495 lineto stroke
+newpath 212 -1470 moveto 212 -1495 lineto stroke
+newpath 297 -1470 moveto 297 -1495 lineto stroke
+newpath 382 -1470 moveto 382 -1495 lineto stroke
+newpath 467 -1470 moveto 467 -1495 lineto stroke
+newpath 552 -1470 moveto 552 -1495 lineto stroke
+156 -1484 moveto (now we have reached a state in which the execution has ended.) show
+[2] 0 setdash
+newpath 21 -1482 moveto 154 -1482 lineto stroke
+[] 0 setdash
+[2] 0 setdash
+newpath 441 -1482 moveto 574 -1482 lineto stroke
+[] 0 setdash
+newpath 42 -1495 moveto 42 -1520 lineto stroke
+newpath 127 -1495 moveto 127 -1520 lineto stroke
+newpath 212 -1495 moveto 212 -1520 lineto stroke
+newpath 297 -1495 moveto 297 -1520 lineto stroke
+newpath 382 -1495 moveto 382 -1520 lineto stroke
+newpath 467 -1495 moveto 467 -1520 lineto stroke
+newpath 552 -1495 moveto 552 -1520 lineto stroke
+newpath 127 -1507 85 12 90 270 ellipse stroke
+newpath 127 -1513 moveto 117 -1519 lineto 117 -1507 lineto closepath fill
+129 -1505 moveto (waitlist.insert(wf.id(), wf.results()), keep only the results, forget everything else) show
+newpath 42 -1520 moveto 42 -1545 lineto stroke
+newpath 127 -1520 moveto 127 -1545 lineto stroke
+newpath 212 -1520 moveto 212 -1545 lineto stroke
+newpath 297 -1520 moveto 297 -1545 lineto stroke
+newpath 382 -1520 moveto 382 -1545 lineto stroke
+newpath 467 -1520 moveto 467 -1545 lineto stroke
+newpath 552 -1520 moveto 552 -1545 lineto stroke
+newpath 42 -1532 moveto 127 -1532 lineto stroke
+newpath 127 -1532 moveto 117 -1538 lineto stroke
+35 -1530 moveto (retrieveResults(wf.id())) show
+newpath 42 -1545 moveto 42 -1570 lineto stroke
+newpath 127 -1545 moveto 127 -1570 lineto stroke
+newpath 212 -1545 moveto 212 -1570 lineto stroke
+newpath 297 -1545 moveto 297 -1570 lineto stroke
+newpath 382 -1545 moveto 382 -1570 lineto stroke
+newpath 467 -1545 moveto 467 -1570 lineto stroke
+newpath 552 -1545 moveto 552 -1570 lineto stroke
+newpath 127 -1557 moveto 42 -1557 lineto stroke
+newpath 42 -1557 moveto 52 -1563 lineto stroke
+28 -1555 moveto (jobResults(wf.id(), results)) show
+newpath 42 -1570 moveto 42 -1595 lineto stroke
+newpath 127 -1570 moveto 127 -1595 lineto stroke
+newpath 212 -1570 moveto 212 -1595 lineto stroke
+newpath 297 -1570 moveto 297 -1595 lineto stroke
+newpath 382 -1570 moveto 382 -1595 lineto stroke
+newpath 467 -1570 moveto 467 -1595 lineto stroke
+newpath 552 -1570 moveto 552 -1595 lineto stroke
+newpath 42 -1582 moveto 127 -1582 lineto stroke
+newpath 127 -1582 moveto 117 -1588 lineto stroke
+47 -1580 moveto (deleteJob(wf.id())) show
+newpath 42 -1595 moveto 42 -1620 lineto stroke
+newpath 127 -1595 moveto 127 -1620 lineto stroke
+newpath 212 -1595 moveto 212 -1620 lineto stroke
+newpath 297 -1595 moveto 297 -1620 lineto stroke
+newpath 382 -1595 moveto 382 -1620 lineto stroke
+newpath 467 -1595 moveto 467 -1620 lineto stroke
+newpath 552 -1595 moveto 552 -1620 lineto stroke
+newpath 127 -1607 85 12 90 270 ellipse stroke
+newpath 127 -1613 moveto 117 -1619 lineto 117 -1607 lineto closepath fill
+129 -1605 moveto (remove everything related to the job) show
+newpath 42 -1620 moveto 42 -1645 lineto stroke
+newpath 127 -1620 moveto 127 -1645 lineto stroke
+newpath 212 -1620 moveto 212 -1645 lineto stroke
+newpath 297 -1620 moveto 297 -1645 lineto stroke
+newpath 382 -1620 moveto 382 -1645 lineto stroke
+newpath 467 -1620 moveto 467 -1645 lineto stroke
+newpath 552 -1620 moveto 552 -1645 lineto stroke
+newpath 127 -1632 moveto 42 -1632 lineto stroke
+newpath 42 -1632 moveto 52 -1638 lineto stroke
+39 -1630 moveto (deleteJobAck(wf.id())) show
