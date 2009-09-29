@@ -1,13 +1,13 @@
 #ifndef FHG_LOG_APPENDER_HPP
 #define FHG_LOG_APPENDER_HPP 1
 
-#include    <tr1/memory>
+#include    <fhglog/memory.hpp>
 #include    <fhglog/Formatter.hpp>
 
 namespace fhg { namespace log {
   class Appender {
     public:
-      typedef std::tr1::shared_ptr<Appender> ptr_t;
+      typedef shared_ptr<Appender> ptr_t;
 
       virtual ~Appender() {}
 

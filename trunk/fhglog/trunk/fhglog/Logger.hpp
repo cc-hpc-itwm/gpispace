@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 
+#include <fhglog/memory.hpp>
 #include <fhglog/LogLevel.hpp>
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
@@ -32,7 +33,7 @@ namespace fhg { namespace log {
   class Logger {
     public:
       typedef std::size_t verbosity_type;
-      typedef std::tr1::shared_ptr<Logger> ptr_t;
+      typedef shared_ptr<Logger> ptr_t;
 
       static const Logger::ptr_t &get();
       static const Logger::ptr_t &get(const std::string &name);

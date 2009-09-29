@@ -19,12 +19,13 @@
 #ifndef FHGLOG_FILTER_HPP
 #define FHGLOG_FILTER_HPP 1
 
+#include <fhglog/memory.hpp>
 #include <fhglog/LogEvent.hpp>
 
 namespace fhg { namespace log {
   class Filter {
   public:
-    typedef std::tr1::shared_ptr<Filter> ptr_t;
+    typedef shared_ptr<Filter> ptr_t;
 
     virtual bool operator()(const LogEvent &event) const = 0;
     virtual ~Filter() {} // make the compiler be happy

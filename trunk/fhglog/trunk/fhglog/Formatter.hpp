@@ -1,7 +1,7 @@
 #ifndef  FHG_LOG_FORMATTER_HPP_INC
 #define  FHG_LOG_FORMATTER_HPP_INC
 
-#include <tr1/memory>
+#include <fhglog/memory.hpp>
 #include <fhglog/LogEvent.hpp>
 
 namespace fhg { namespace log {
@@ -14,7 +14,7 @@ namespace fhg { namespace log {
   class Formatter
   {
     public:
-      typedef std::tr1::shared_ptr<Formatter> ptr_t;
+      typedef shared_ptr<Formatter> ptr_t;
 
       static const char FMT_SHORT_SEVERITY  = 's'; // the level of the event
       static const char FMT_SEVERITY  = 'S'; // the level of the event
