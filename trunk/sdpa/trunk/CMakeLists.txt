@@ -78,6 +78,9 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
+# GWES/GWDL
+include(FindGwes)
+
 # state machine compiler (only when required)
 if (USE_SMC)
   include(FindSMC)
