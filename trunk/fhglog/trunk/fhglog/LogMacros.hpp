@@ -30,10 +30,12 @@ namespace fhg { namespace log {
 #endif
 
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
-#define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
+#define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
+#define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
 
 #define DLLOG(level, logger, msg) __DLOG(logger, level, msg)
-#define DLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
+#define DMLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
+#define DLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(), msg)
 
 // regular logging messages
 #define LOG_TRACE(logger, msg) __LOG(logger, TRACE, msg)
