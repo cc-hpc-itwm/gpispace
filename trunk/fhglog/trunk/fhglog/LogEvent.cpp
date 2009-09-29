@@ -2,6 +2,7 @@
 #include <time.h>
 #include <iostream>
 #include <pthread.h>
+#include "util.hpp"
 
 using namespace fhg::log;
 
@@ -83,18 +84,5 @@ bool LogEvent::operator<(const LogEvent &rhs) const
 
 std::string LogEvent::get_filename_from_path(const std::string &a_path) const
 {
-  // TODO: the following should be coded with boost::filesystem due to platform
-  // independence
-  static const std::string path_sep("/");
-  std::string::size_type last_path_segment_idx = a_path.find_last_of(path_sep.c_str());
-  if (last_path_segment_idx == std::string::npos)
-  {
-    // return the whole path since we could not find a separator
-    return a_path;
-  }
-  else
-  {
-    // slit the path at that position and return the remaining part
-    return a_path.substr(last_path_segment_idx+1);
-  }
+  return ::fhg::log::get_filename_from_path(a_path);
 }
