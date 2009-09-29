@@ -28,34 +28,28 @@ public:
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityDispatched(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has failed
 	 * (state transition from "running" to "failed").
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityFailed(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityFailed(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has finished
 	 * (state transition from running to finished).
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityFinished(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has been canceled
 	 * (state transition from * to terminated).
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityCanceled(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Register a SDPA handler that implements the Gwes2Sdpa
