@@ -18,9 +18,6 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
-ADD_DEFINITIONS(-Wall -Werror)
-ADD_DEFINITIONS(-std=c99 -O3)
-#ADD_DEFINITIONS(-pg)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -29,6 +26,11 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
+set(CMAKE_C_FLAGS "-std=c99 -Wall -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-O3")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
+set(CMAKE_C_FLAGS_PROFILE "-O0 -g -pg")
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -43,7 +45,6 @@ add_subdirectory(mmgr)
 enable_testing()
 add_subdirectory(app)
 add_subdirectory(tests)
-
 
 # add some files to the installation target
 INSTALL(FILES README COPYING DESTINATION
