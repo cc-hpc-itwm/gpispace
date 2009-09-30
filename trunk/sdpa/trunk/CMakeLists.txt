@@ -1,3 +1,7 @@
+cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
+cmake_policy(SET CMP0011 NEW)
+
 # -*- mode: cmake; -*-
 project(libsdpa)
 
@@ -22,7 +26,6 @@ set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where man
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
-cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
