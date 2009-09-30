@@ -108,60 +108,48 @@ trie_get (const PTrieMap_t PCTrie, Key_t Key)
   return (PTrie == NULL) ? NULL : PTrie->data;
 }
 
-Bool_t
+void
 trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 {
   if (PPTrie == NULL || *(PTrie_t *) PPTrie == NULL)
-    return False;
-
-  Bool_t rc;
-  const PTrie_t PTrie = *(PTrie_t *) PPTrie;
+    return;
 
   if (Key > 0)
     {
-      rc = trie_del (&(PTrie->child[Key % NCHILD]), Key / NCHILD, fUser);
+      const PTrie_t PTrie = *(PTrie_t *) PPTrie;
 
-      Bool_t allNULL = True;
+      trie_del (&(PTrie->child[Key % NCHILD]), Key / NCHILD, fUser);
 
-      for (unsigned int child = 0; allNULL == True && child < NCHILD; ++child)
-        {
-          allNULL = (PTrie->child[child] == NULL) ? True : False;
-        }
+      for (int child = 0; child < NCHILD; ++child)
+        if (PTrie->child[child] != NULL)
+          return;
 
-      if (allNULL == True && PTrie->data == NULL)
-        {
-          free (PTrie);
-
-          *(PTrie_t *) PPTrie = NULL;
-        }
-    }
-  else
-    {
-      rc = (PTrie->data == NULL) ? False : True;
-
-      if (fUser != NULL && PTrie->data != NULL)
-        fUser (PTrie->data);
-
-      free (PTrie->data);
-
-      PTrie->data = NULL;
-
-      Bool_t allNULL = True;
-
-      for (unsigned int child = 0; allNULL == True && child < NCHILD; ++child)
-        {
-          allNULL = (PTrie->child[child] == NULL) ? True : False;
-        }
-
-      if (allNULL == True)
+      if (PTrie->data == NULL)
         {
           free (PTrie);
 
           *(PTrie_t *) PPTrie = NULL;
         }
+
+      return;
     }
 
-  return rc;
+  const PTrie_t PTrie = *(PTrie_t *) PPTrie;
+
+  if (fUser != NULL && PTrie->data != NULL)
+    fUser (PTrie->data);
+
+  free (PTrie->data);
+
+  PTrie->data = NULL;
+
+  for (int child = 0; child < NCHILD; ++child)
+    if (PTrie->child[child] != NULL)
+      return;
+
+  free (PTrie);
+
+  *(PTrie_t *) PPTrie = NULL;
 }
 
 Value_t

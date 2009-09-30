@@ -59,10 +59,9 @@ ins (PTrieMap_t tm, const Key_t key, const Value_t val)
 static void
 del (PTrieMap_t tm, const Value_t key)
 {
-  const Bool_t was_there = trie_del (tm, key, fUserNone);
+  trie_del (tm, key, fUserNone);
 
-  printf ("del " FMT_Key_t ": tm = %p, was_there = %s\n", key, tm,
-          (was_there == True) ? "True" : "False");
+  printf ("del " FMT_Key_t ": tm = %p\n", key, tm);
 }
 
 static void

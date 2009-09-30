@@ -58,10 +58,10 @@ fUser_free (const PValue_t PVal)
   return sizeof (data_t);
 }
 
-Bool_t
+void
 ostab_del (POStab_t postab, const Key_t Key)
 {
-  return trie_del (postab, Key, &fUser_free);
+  trie_del (postab, Key, &fUser_free);
 }
 
 Size_t

@@ -21,7 +21,7 @@ extern "C"
   /* O(b) */ extern PValue_t trie_ins (PTrieMap_t, const Key_t, PBool_t);
   /* O(b) */ extern PValue_t trie_get (const TrieMap_t, const Key_t);
   /* O(b) */ extern PValue_t trie_getany (const TrieMap_t);
-  /* O(b) */ extern Bool_t trie_del (PTrieMap_t, const Key_t, const fUser_t);
+  /* O(b) */ extern void trie_del (PTrieMap_t, const Key_t, const fUser_t);
 
   /* O(N) */ extern Size_t trie_free (PTrieMap_t, const fUser_t);
   /* O(N) */ extern Size_t trie_memused (const TrieMap_t, const fUser_t);
