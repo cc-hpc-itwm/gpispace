@@ -17,8 +17,6 @@ extern "C"
   } Bool_t, *PBool_t;
 #endif
 
-  static const PBool_t PBoolIgnore = (PBool_t) NULL;
-
 #ifdef __cplusplus
 }
 #endif

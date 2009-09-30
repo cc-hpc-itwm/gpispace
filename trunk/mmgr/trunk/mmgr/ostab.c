@@ -39,10 +39,13 @@ ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
   if (PVal == NULL)
     return False;
 
+  const pdata_t pdata = (pdata_t) (*PVal);
+
   if (POffset != NULL)
-    *POffset = ((pdata_t) * PVal)->offset;
+    *POffset = pdata->offset;
+
   if (PSize != NULL)
-    *PSize = ((pdata_t) * PVal)->size;
+    *PSize = pdata->size;
 
   return True;
 }
@@ -53,7 +56,9 @@ fUser_free (const PValue_t PVal)
   if (PVal == NULL)
     return 0;
 
-  free ((pdata_t) (*PVal));
+  const pdata_t pdata = (pdata_t) (*PVal);
+
+  free (pdata);
 
   return sizeof (data_t);
 }
@@ -97,10 +102,10 @@ typedef struct
 static void
 fWork (const Key_t Key, const PValue_t PVal, void *Pwd)
 {
-  const pdata_t data = (pdata_t) (*PVal);
+  const pdata_t pdata = (pdata_t) (*PVal);
   const pwork_dat_t pwd = (pwork_dat_t) Pwd;
 
-  pwd->fOStabWork (Key, data->offset, data->size, pwd->Pdat);
+  pwd->fOStabWork (Key, pdata->offset, pdata->size, pwd->Pdat);
 }
 
 void

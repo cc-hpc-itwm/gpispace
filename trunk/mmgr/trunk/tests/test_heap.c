@@ -80,7 +80,7 @@ main ()
 
   printf ("\n");
 
-  printf ("free = %lu\n", heap_free (&h));
+  printf ("free = " FMT_Size_t "\n", heap_free (&h));
 
   malloc_stats ();
 

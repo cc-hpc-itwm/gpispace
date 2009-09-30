@@ -20,11 +20,13 @@ heap_out (const Heap_t Heap)
 
   if (Heap != NULL)
     {
-      printf ("|%lu %lu|", ((pheap_t) Heap)->pos, ((pheap_t) Heap)->size);
+      const pheap_t pheap = (pheap_t) Heap;
 
-      for (Size_t i = 0; i < ((pheap_t) Heap)->pos; ++i)
+      printf ("|" FMT_Size_t " " FMT_Size_t "|", pheap->pos, pheap->size);
+
+      for (Size_t i = 0; i < pheap->pos; ++i)
         {
-          printf (" " FMT_Offset_t, ((pheap_t) Heap)->arr[i]);
+          printf (" " FMT_Offset_t, pheap->arr[i]);
         }
     }
 
@@ -37,7 +39,9 @@ heap_size (const Heap_t Heap)
   if (Heap == NULL)
     return 0;
 
-  return ((pheap_t) Heap)->pos;
+  const pheap_t pheap = (pheap_t) Heap;
+
+  return pheap->pos;
 }
 
 Offset_t
@@ -46,7 +50,7 @@ heap_min (const Heap_t Heap)
   if (heap_size (Heap) == 0)
     HEAP_ERROR_EMPTY;
 
-  pheap_t pheap = Heap;
+  const pheap_t pheap = Heap;
 
   return pheap->arr[0];
 }
@@ -57,7 +61,7 @@ heap_mk (Size_t size)
   if (size == 0)
     return NULL;
 
-  pheap_t pheap = malloc (sizeof (heap_t));
+  const pheap_t pheap = malloc (sizeof (heap_t));
 
   if (pheap == NULL)
     HEAP_ERROR_MALLOC_FAILED;

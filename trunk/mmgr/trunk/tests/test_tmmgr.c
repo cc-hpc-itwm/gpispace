@@ -113,8 +113,9 @@ static void
 fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
           const MemSize_t Size, void *PDat)
 {
-  printf ("CALLBACK-%lu: Moving %lu Byte(s) from %lu to %lu\n",
-          (*(unsigned long *) PDat)++, Size, OffsetSrc, OffsetDest);
+  printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t
+          " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size,
+          OffsetSrc, OffsetDest);
 
 }
 
