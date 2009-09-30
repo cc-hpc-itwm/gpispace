@@ -3,6 +3,7 @@
 
 #include <boost/statechart/event.hpp>
 #include <sdpa/events/JobEvent.hpp>
+#include <sdpa/types.hpp>
 
 namespace sc = boost::statechart;
 
@@ -11,7 +12,7 @@ namespace events {
 	class JobStatusReplyEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::JobStatusReplyEvent> {
 	public:
 		typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
-        typedef std::string status_t;
+		typedef sdpa::status_t status_t;
 
 		JobStatusReplyEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id, const status_t &a_status = "")
           :  sdpa::events::JobEvent(from, to, job_id)
@@ -28,7 +29,7 @@ namespace events {
 
         const status_t &status() const { return status_; }
     private:
-      status_t status_;
+        status_t status_;
 	};
 }}
 

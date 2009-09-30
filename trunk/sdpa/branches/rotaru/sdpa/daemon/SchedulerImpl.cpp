@@ -1,5 +1,5 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
-#include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
 
 using namespace sdpa::daemon;
 
@@ -42,8 +42,8 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 
 		//Put the job into Running state
 		//send back to the user a SubmitJobAckEvent
-		sdpa::events::SubmitJobEvent::Ptr pSubmitJobEvt(new sdpa::events::SubmitJobEvent("", "", pJob->id()));
-		pJob->Dispatch(pSubmitJobEvt.get()); // no event need to be sent
+		sdpa::events::SubmitJobAckEvent::Ptr pSubmAckEvt(new sdpa::events::SubmitJobAckEvent("", "", pJob->id()));
+		pJob->Dispatch(pSubmAckEvt.get()); // no event need to be sent
 	}
 	else
 		SDPA_LOG_ERROR("Gwes not initialized!");
@@ -111,7 +111,8 @@ void SchedulerImpl::stop()
    bStopRequested = true;
    SDPA_LOG_DEBUG("Scheduler thread before join ...");
    m_thread.join();
-   //	ptr_Sdpa2Gwes_ = NULL;
+
+   ptr_Sdpa2Gwes_ = NULL;
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 

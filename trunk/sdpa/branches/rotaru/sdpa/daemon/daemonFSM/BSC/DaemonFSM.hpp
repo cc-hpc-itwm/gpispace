@@ -9,6 +9,7 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 #include <sdpa/logging.hpp>
+#include <sdpa/memory.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
@@ -22,6 +23,8 @@ struct Up;
 // The FSM
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
+	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
+
 	DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* ptrGwes = NULL);
 	virtual ~DaemonFSM();
 

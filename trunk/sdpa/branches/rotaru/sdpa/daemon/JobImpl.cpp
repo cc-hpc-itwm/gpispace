@@ -77,7 +77,7 @@ namespace sdpa { namespace daemon {
     	b_local_ = b_val;
     }
 
-    void JobImpl::action_run_job(const sdpa::events::SubmitJobEvent& event)
+    void JobImpl::action_run_job(const sdpa::events::SubmitJobAckEvent& event)
     {
     	ostringstream os;
     	os<<"Process 'action_run_job'";
@@ -119,7 +119,7 @@ namespace sdpa { namespace daemon {
     	os<<"Process 'action_query_job_status'";
     	SDPA_LOG_DEBUG(os.str());
 
-    	JobStatusReplyEvent::status_t status(""); //typeid(GetContext().getState()).name());
+    	JobStatusReplyEvent::status_t status = getStatus();
 
     	// Post a JobStatusReplyEvent to e.from()
 		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));

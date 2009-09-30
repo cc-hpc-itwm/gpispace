@@ -4,6 +4,7 @@
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM_sm.h>
 #include <sdpa/logging.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa { namespace fsm { namespace smc {
 	class JobFSM : public sdpa::daemon::JobImpl {
@@ -28,12 +29,15 @@ namespace sdpa { namespace fsm { namespace smc {
 			void JobFinished(const sdpa::events::JobFinishedEvent*);
 			void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
 			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
-			void Dispatch(const sdpa::events::SubmitJobEvent*);
+			void Dispatch(const sdpa::events::SubmitJobAckEvent*);
+
+			sdpa::status_t getStatus() { return m_status_; }
 
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:
 			SDPA_DECLARE_LOGGER();
 			JobFSMContext m_fsmContext;
+			sdpa::status_t m_status_;
 	};
 }}}
 

@@ -14,11 +14,9 @@ namespace events {
         typedef sdpa::shared_ptr<ConfigReplyEvent> Ptr;
 
         ConfigReplyEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) {
-        	//std::cout << "Create event 'ConfigReplyEvent'"<< std::endl;
         }
 
     	virtual ~ConfigReplyEvent() {
-    		//std::cout << "Delete event 'ConfigReplyEvent'"<< std::endl;
     	}
 
     	std::string str() const { return "ConfigReplyEvent"; }

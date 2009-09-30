@@ -27,6 +27,8 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 namespace sdpa { namespace daemon {
 
   const std::string ORCHESTRATOR("orchestrator") ;
+  const std::string AGGREGATOR("aggregator") ;
+  const std::string NRE("nre") ;
 
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::ISendEvent,
@@ -74,9 +76,9 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
 
       // Gwes2Sdpa interface implementation
-	  virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow);
+	  //virtual sdpa::wf::workflow_id_t submitWorkflow(const sdpa::wf::workflow_t &workflow);
 	  virtual sdpa::wf::activity_id_t submitActivity(const sdpa::wf::activity_t &activity);
-	  virtual void cancelWorkflow(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
+	  //virtual void cancelWorkflow(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
 	  virtual void cancelActivity(const sdpa::wf::activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException);
 	  virtual void workflowFinished(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
 	  virtual void workflowFailed(const sdpa::wf::workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException);
@@ -88,10 +90,10 @@ namespace sdpa { namespace daemon {
 	  std::string master()const { return master_;}
 
 	  //only for testing purposes!
-	  friend class sdpa::tests::DaemonFSMTest_SMC;
-	  friend class sdpa::tests::DaemonFSMTest_BSC;
+	  //friend class sdpa::tests::DaemonFSMTest;
 
 	  virtual const std::string output_stage() const { return output_stage_ ; }
+	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 
   protected:
 	  SDPA_DECLARE_LOGGER();

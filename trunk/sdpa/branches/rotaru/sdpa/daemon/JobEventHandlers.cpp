@@ -44,7 +44,7 @@ void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
 	ostringstream os;
-	os<<"Call 'handleSubmitJobAckEvent'"<< std::endl;
+	os<<"Call 'handleSubmitJobAckEvent'";
 	SDPA_LOG_DEBUG(os.str());
 
 	// a slave posted an acknowledgement for a job request
@@ -55,6 +55,11 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		//put the job into the Running state: do this in acknowledge!
 		ptrWorker->acknowledge(pEvent->job_id());
+
+		// put the job into the Running state
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvent->job_id());
+		pJob->Dispatch(pEvent);
+
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
@@ -73,7 +78,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 	// if it comes from WFE -> concerns the master job
 
 	ostringstream os;
-	os<<"Call 'handleJobFinishedEvent'"<< std::endl;
+	os<<"Call 'handleJobFinishedEvent'";
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job into the state Finished
@@ -131,15 +136,14 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
 			{
-				sdpa::wf::workflow_id_t wf_id = pEvt->job_id().str();
-				activity_id_t activityId;
+				activity_id_t activityId = pEvt->job_id().str();
 				parameter_list_t output;
 
 				os.str("");
-				os<<"Inform GWES that the workflow "<<wf_id<<" finished";
+				os<<"Inform GWES that the activity "<<activityId<<" finished";
 				SDPA_LOG_DEBUG(os.str());
 
-				ptr_Sdpa2Gwes_->activityFinished(wf_id, activityId, output);
+				ptr_Sdpa2Gwes_->activityFinished(activityId, output);
 
 				Worker::ptr_t ptrWorker = findWorker(worker_id);
 				// delete job from worker's queues
@@ -198,7 +202,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	// if it comes from WFE -> concerns the master job
 
 	ostringstream os;
-	os<<"Call 'handleJobFailedEvent'"<< std::endl;
+	os<<"Call 'handleJobFailedEvent'";
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job into the state Finished
@@ -227,7 +231,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// send the event to the master
 			sendEvent(output_stage_, pEvtJobFailedEvent);
 
-			// delete it from the map when you receive a JobFinishedAckEvent!
+			// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
 			{
@@ -259,21 +263,20 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
 			{
-				sdpa::wf::workflow_id_t wf_id = pEvt->job_id().str();
-				activity_id_t activityId;
+				activity_id_t activityId = pEvt->job_id().str();
 				parameter_list_t output;
 
 				os.str("");
-				os<<"Inform GWES that the workflow "<<wf_id<<" finished";
+				os<<"Inform GWES that the activity "<<activityId<<" failed";
 				SDPA_LOG_DEBUG(os.str());
 
-				ptr_Sdpa2Gwes_->activityFailed(wf_id, activityId, output);
+				ptr_Sdpa2Gwes_->activityFailed(activityId, output);
 
 				Worker::ptr_t ptrWorker = findWorker(worker_id);
 				// delete job from worker's queues
 
 				os.str("");
-				os<<"Delete the job "<<pEvt->job_id()<<" from the worke's queues!";
+				os<<"Delete the job "<<pEvt->job_id()<<" from the worker's queues!";
 				SDPA_LOG_DEBUG(os.str());
 
 				ptrWorker->delete_job(pEvt->job_id());

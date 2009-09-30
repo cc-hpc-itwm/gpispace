@@ -4,6 +4,8 @@
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 #include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
+#include <sdpa/events/ConfigReplyEvent.hpp>
+
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
 #include <sstream>
@@ -17,6 +19,7 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::wf;
 using namespace sdpa::events;
+using namespace sdpa::fsm::smc;
 
 //Provide ptr to an implementation of Sdpa2Gwes
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes)
@@ -27,9 +30,6 @@ GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputS
 
 	// provide some dummy implementation (for testing) or use the real impl. from the gwes library
 	ptr_Sdpa2Gwes_ = pArgSdpa2Gwes;
-
-	if(pArgSdpa2Gwes)
-		pArgSdpa2Gwes->registerHandler(this);
 }
 
 GenericDaemon::~GenericDaemon()
@@ -67,9 +67,9 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-	ostringstream os;
+	/*ostringstream os;
 	os<<"Perform: Handling event " <<typeid(*pEvent.get()).name();
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG(os.str());*/
 
 	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
 		handleDaemonEvent(pEvent);
@@ -95,6 +95,9 @@ void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 void GenericDaemon::onStageStart(const std::string &stageName)
 {
 	// start the scheduler thread
+	if(ptr_Sdpa2Gwes_)
+		ptr_Sdpa2Gwes_->registerHandler(this);
+
 	ptr_scheduler_->start();
 }
 
@@ -102,7 +105,9 @@ void GenericDaemon::onStageStop(const std::string &stageName)
 {
 	daemon_stage_ = NULL;
 	// stop the scheduler thread
+
 	ptr_scheduler_->stop();
+
 	//ptr_Sdpa2Gwes_ = NULL;
 }
 
@@ -278,12 +283,10 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update(e);
 
-		// you should consume from the  worker's pending list
+		// you should consume from the  worker's pending list; put the job into the worker's submitted list
 		Job::ptr_t ptrJob = ptrWorker->get_next_job(e.last_job_id());
-		if( ptrJob.use_count() )
+		if( ptrJob.get() )
 		{
-			ptrWorker->dispatch(ptrJob);  //the job was sent but not yet acknowledged
-
 			// create a SubmitJobEvent for the job job_id serialize and attach description
 			os.str("");
 			os<<"Create SubmitJobEvent for the job "<<ptrJob->id()<<" (to be submitted to "<<e.from()<<"! )";
@@ -292,21 +295,41 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 			// Post a SubmitJobEvent to the slave who made the reques
 			sendEvent(output_stage_, pSubmitEvt);
-
-			// put the job into the running state
-			ptrJob->Dispatch(pSubmitEvt.get());
 		}
+		else // send an error event
+		{
+			// create a SubmitJobEvent for the job job_id serialize and attach description
+			os.str("");
+			os<<"No job available!";
+			SDPA_LOG_DEBUG(os.str());
+			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
+
+			// Post a SubmitJobEvent to the slave who made the reques
+			sendEvent(output_stage_, pErrorEvt);
+		}
+
 	}
 	catch(NoJobScheduledException)
 	{
 		os.str("");
 		os<<"No job was scheduled to be executed on the worker '"<<worker_id<<"'";
 		SDPA_LOG_DEBUG(os.str());
+
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
+
+		// Post a SubmitJobEvent to the slave who made the reques
+		sendEvent(output_stage_, pErrorEvt);
 	}
 	catch(sdpa::daemon::WorkerNotFoundException)
 	{	os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
+
+		// the worker should register first, before posting a job request
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
+
+		// Post a SubmitJobEvent to the slave who made the reques
+		sendEvent(output_stage_, pErrorEvt);
 	}
 	catch(QueueFull)
 	{
@@ -350,7 +373,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 	try {
 		// First, parse the workflow in order to be able to create a valid job
-		Job::ptr_t pJob( new sdpa::fsm::smc::JobFSM( job_id, e.description(), this ));
+		Job::ptr_t pJob( new JobFSM( job_id, e.description(), this ));
 
 		// the job job_id is in the Pending state now!
 		ptr_job_man_->addJob(job_id, pJob);
@@ -400,13 +423,16 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 {
 	ostringstream os;
-	os<<"Call 'action_configure'";
+	os<<"Call 'action_configure_request'";
 	SDPA_LOG_DEBUG(os.str());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator
 	 * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
-     * TODO: what is contained in the Configuration?
+     * TODO: what is contained into the Configuration?
 	 */
+
+	ConfigReplyEvent::Ptr pCfgReplyEvt( new ConfigReplyEvent( name(), e.from()) );
+	sendEvent(output_stage_, pCfgReplyEvt);
 }
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
@@ -443,14 +469,15 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 /* Implements Gwes2Sdpa */
 
+
 /**
- * Submit a sub workflow to the SDPA.
+ * Submit an atomic activity to the SDPA.
  * This method is to be called by the GWES in order to delegate
- * the execution of sub workflows.
+ * the execution of activities.
  * The SDPA will use the callback handler SdpaGwes in order
- * to notify the GWES about status transitions.
-*/
-workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
+ * to notify the GWES about activity status transitions.
+ */
+activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 {
 	// create new job with the job description = workflow (serialize it first)
 	// set the parent_id to ?
@@ -463,15 +490,15 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 	ostringstream os;
 
 	try {
-		SDPA_LOG_DEBUG("New workflow submitted by GWES ...");
+		SDPA_LOG_DEBUG("New activity submitted by GWES ...");
 
-		job_id_t job_id(workflow.getId());
-		job_desc_t job_desc = workflow.serialize();
+		job_id_t job_id(activity.getId());
+		job_desc_t job_desc = activity.serialize();
 
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
 		sendEvent(pEvtSubmitJob);
 
-		return workflow.getId();
+		return activity.getId();
 	}
 	catch(QueueFull)
 		{
@@ -487,42 +514,6 @@ workflow_id_t GenericDaemon::submitWorkflow(const workflow_t &workflow)
 		}
 }
 
-/**
- * Submit an atomic activity to the SDPA.
- * This method is to be called by the GWES in order to delegate
- * the execution of activities.
- * The SDPA will use the callback handler SdpaGwes in order
- * to notify the GWES about activity status transitions.
- */
-activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
-{
-	// proceed similarly as in the submitWorkflow case
-
-	job_id_t job_id(activity.getId());
-	job_desc_t job_desc = activity.serialize();
-
-	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
-	sendEvent(pEvtSubmitJob);
-
-	return activity.getId();
-}
-
-/**
- * Cancel a sub workflow that has previously been submitted to
- * the SDPA. The parent job has to cancel all children.
- */
-void GenericDaemon::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException)
-{
-	// cancel the job corresponding to that workflow -> send a CancelJobEvent?
-	// look for the job_id corresponding to the received workflowId into job_map_
-	// generate const CancelJobEvent& event
-	// Job& job = job_map_[job_id];
-	// and call the job.CancelJob(const CancelJobEvent& event);
-
-	job_id_t job_id(workflowId);
-	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), workflowId));
-	sendEvent(pEvtCancelJob);
-}
 
 /**
  * Cancel an atomic activity that has previously been submitted to

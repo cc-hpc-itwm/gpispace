@@ -5,6 +5,7 @@
 #include <sdpa/wf/types.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <sdpa/common.hpp>
+#include <sdpa/wf/WorkflowInterface.hpp>
 
 namespace sdpa { namespace wf {
 
@@ -21,42 +22,35 @@ public:
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
-	//don't need it!
-	//virtual ~Sdpa2Gwes();
+	virtual ~Sdpa2Gwes() {}
 
 	/**
 	 * Notify the GWES that an activity has been dispatched
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityDispatched(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has failed
 	 * (state transition from "running" to "failed").
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityFailed(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityFailed(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has finished
 	 * (state transition from running to finished).
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityFinished(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Notify the GWES that an activity has been canceled
 	 * (state transition from * to terminated).
 	 * This method is to be invoked by the SDPA.
 	 */
-	virtual void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException) = 0;
+	virtual void activityCanceled(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException) = 0;
 
 	/**
 	 * Register a SDPA handler that implements the Gwes2Sdpa
@@ -67,6 +61,21 @@ public:
 	 * Currently you can only register ONE handler for a GWES.
 	 */
 	virtual void registerHandler(Gwes2Sdpa *sdpa) const = 0;
+
+	/**
+	 * Unregister a SDPA handler that implements the Gwes2Sdpa
+	 */
+	virtual void unregisterHandler(Gwes2Sdpa *sdpa) const = 0;
+
+    /*
+     * initialize and start internal datastructures
+     */
+    virtual void start() = 0;
+
+    /*
+     * stop and destroy internal datastructures
+     */
+    virtual void stop() = 0;
 
 	/**
 	 * Submit a workflow to the GWES.

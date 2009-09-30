@@ -9,10 +9,12 @@ namespace sdpa { namespace wf {
 
 typedef std::string workflow_id_t;
 
+class Workflow;
+typedef Workflow workflow_t;
+
 class Workflow
 {
 public:
-	typedef Workflow workflow_t;
 	Workflow(std::string desc) { description = desc; }
 	Workflow(workflow_id_t& id_arg, std::string desc_arg) { id = id_arg; description = desc_arg; }
 	workflow_id_t getId() const { return id; }

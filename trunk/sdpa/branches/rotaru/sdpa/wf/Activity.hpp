@@ -7,9 +7,12 @@
 
 #include <sdpa/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
+#include <sdpa/wf/WorkflowInterface.hpp>
 
 namespace sdpa { namespace wf {
 
+class Activity;
+typedef Activity activity_t;
 typedef std::string activity_id_t;
   /**
     This class describes an abstract activity to be executed.
@@ -36,6 +39,8 @@ typedef std::string activity_id_t;
      */
     class Method {
       public:
+    	Method() :  module_(""), name_("") {}
+
         Method(const std::string & module, const std::string & method_name)
           : module_(module), name_(method_name) {}
 
@@ -49,6 +54,14 @@ typedef std::string activity_id_t;
         std::string module_;
         std::string name_;
     };
+
+    /**
+         Create a new activity using the given method.
+
+         @param name the name of this activity
+         @param method the method to be used
+        */
+       Activity(const std::string &name);
 
     /**
       Create a new activity using the given method.
@@ -97,6 +110,13 @@ typedef std::string activity_id_t;
 
 	activity_id_t getId() const { return id; }
 	activity_id_t setId(const activity_id_t& activity_id) { id = activity_id; }
+
+	workflow_t transform_to_workflow() const
+	{
+		sdpa::wf::workflow_id_t wf_id =  getId();
+		Workflow wf(wf_id, std::string("empty description")) ;
+		return wf;
+	}
 
 	std::string serialize() const { return "dummy workflow"; }
 

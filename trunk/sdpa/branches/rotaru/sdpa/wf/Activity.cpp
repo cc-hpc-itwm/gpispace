@@ -2,6 +2,10 @@
 
 using namespace sdpa::wf;
 
+Activity::Activity(const std::string &name)
+  : name_(name) {
+}
+
 Activity::Activity(const std::string &name, const Method &method)
   : name_(name), method_(method) {
 }
@@ -35,7 +39,7 @@ void Activity::add_output(const Parameter &p) {
 
 void Activity::writeTo(std::ostream &os) const {
   os << name() << ":" << method().module() << "::" << method().name();
- 
+
   os << "(";
   for (parameter_list::const_iterator p(input().begin()); p != input().end(); p++) {
     os << *p;

@@ -9,6 +9,7 @@ namespace sdpa {
   typedef std::string job_desc_t;
   typedef std::string location_t;
   typedef std::string worker_id_t;
+  typedef std::string status_t;
 }
 
 #endif

@@ -4,13 +4,14 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/daemonFSM/SMC/DaemonFSM_sm.h>
 #include <sdpa/logging.hpp>
+#include <sdpa/memory.hpp>
 
 namespace sdpa {
 	namespace fsm {
 		namespace smc {
 			class DaemonFSM : public sdpa::daemon::GenericDaemon {
 				public:
-					typedef std::tr1::shared_ptr<DaemonFSM> ptr_t;
+					typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
 					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::wf::Sdpa2Gwes* pGwes = NULL) :
 						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),

@@ -14,4 +14,4 @@ void Job::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { }
 void Job::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) { }
 void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { }
 void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { }
-void Job::Dispatch(const sdpa::events::SubmitJobEvent*) { }
+void Job::Dispatch(const sdpa::events::SubmitJobAckEvent*) { }

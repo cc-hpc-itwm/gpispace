@@ -8,8 +8,6 @@ using namespace std;
 
 namespace sdpa {
 	namespace wf {
-		typedef Workflow::workflow_t workflow_t;
-		typedef Activity::activity_t activity_t;
 		typedef std::string parameter_t;
 		typedef std::list<parameter_t> parameter_list_t;
 	}

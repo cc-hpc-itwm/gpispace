@@ -8,13 +8,13 @@
 %class JobFSM
 %header JobFSM.hpp
 
-%start SMC_JobFSM::Pending
-%map SMC_JobFSM
+%start SDPA::Pending
+%map SDPA
 
 %%
 Pending
 {
-    Dispatch(pEvent: const sdpa::events::SubmitJobEvent*)
+    Dispatch(pEvent: const sdpa::events::SubmitJobAckEvent*)
         Running
         {
         	action_run_job(*pEvent); 

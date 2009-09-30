@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sc = boost::statechart;
 
@@ -13,7 +13,8 @@ namespace events {
     public:
         typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
 
-        SubmitJobAckEvent(const address_t& from, const address_t& to, const sdpa::job_id_t & job_id) : JobEvent(from, to, job_id) {
+        SubmitJobAckEvent(const address_t& from, const address_t& to, const sdpa::job_id_t & job_id) :
+        	JobEvent(from, to, job_id) {
 			//std::cout << "Create event 'SubmitJobAckEvent'"<< std::endl;
         }
 

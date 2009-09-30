@@ -9,7 +9,7 @@
 #include <sdpa/wf/types.hpp>
 
 #include <boost/statechart/event_base.hpp>
-#include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
@@ -67,7 +67,9 @@ namespace sdpa { namespace daemon {
 		virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
 		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
 		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
-		virtual void Dispatch(const sdpa::events::SubmitJobEvent*);
+		virtual void Dispatch(const sdpa::events::SubmitJobAckEvent*);
+
+		virtual sdpa::status_t getStatus() { return "Undefined"; }
 
     };
 }}
