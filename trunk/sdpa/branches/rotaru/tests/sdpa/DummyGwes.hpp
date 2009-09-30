@@ -25,8 +25,7 @@ public:
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.
 	 */
-	void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
+	void activityDispatched(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException)
      {
 		SDPA_LOG_DEBUG("Called activityDispatched ...");
      }
@@ -36,11 +35,16 @@ public:
 	 * (state transition from "running" to "failed").
 	 * This method is to be invoked by the SDPA.
 	 */
-	void activityFailed(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
+	void activityFailed(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException)
 	{
 		SDPA_LOG_DEBUG("Called activityFailed ...");
+
+		if(ptr_Gwes2SdpaHandler)
+		{
+			ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch);
+		}
+		else
+			SDPA_LOG_ERROR("SDPA has unregistered ...");
 	}
 
 	/**
@@ -48,9 +52,7 @@ public:
 	 * (state transition from running to finished).
 	 * This method is to be invoked by the SDPA.
 	 */
-	void activityFinished(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
+	void activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException)
 	{
 		SDPA_LOG_DEBUG("Called activityFinished ...");
 
@@ -59,7 +61,7 @@ public:
 			ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch);
 		}
 		else
-			SDPA_LOG_ERROR("SDPA is unregistered ...");
+			SDPA_LOG_ERROR("SDPA has unregistered ...");
 	}
 
 	/**
@@ -67,8 +69,7 @@ public:
 	 * (state transition from * to terminated).
 	 * This method is to be invoked by the SDPA.
 	 */
-	void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (sdpa::daemon::NoSuchWorkflowException, sdpa::daemon::NoSuchActivityException)
+	void activityCanceled(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException)
     {
 		SDPA_LOG_DEBUG("Called activityCanceled ...");
     }
@@ -87,6 +88,34 @@ public:
 		SDPA_LOG_DEBUG("Called registerHandler ...");
 	}
 
+
+	/**
+	 * Unregister a SDPA handler that implements the Gwes2Sdpa
+	 */
+	virtual void unregisterHandler(Gwes2Sdpa *pSdpa) const
+	{
+		if( pSdpa == ptr_Gwes2SdpaHandler)
+			ptr_Gwes2SdpaHandler = NULL;
+
+		SDPA_LOG_DEBUG("SDPA has unregistered ...");
+	}
+
+	/*
+	 * initialize and start internal datastructures
+	 */
+	virtual void start()
+	{
+
+	}
+
+	/*
+	 * stop and destroy internal datastructures
+	 */
+	virtual void stop()
+	{
+
+	}
+
 	/**
 	 * Submit a workflow to the GWES.
 	 * This method is to be invoked by the SDPA.
@@ -103,20 +132,22 @@ public:
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
 		// Here, GWES is supposed to create new workflows ....
-		wf_id_orch = workflow.getId();
-		//sdpa::JobId job_id;
-		workflow_t workflow_new("");
+		activity_t::Method method("","");
 
-		// for testing purposes, generate here a sub-workflow (the same)
-		SDPA_LOG_DEBUG("Gwes calls submitWorkflow ...");
+		SDPA_LOG_DEBUG("Create activity ...");
+
+		// either you assign here an id or it be assigned by daemon
+		activity_t activity("An activity", method);
+
+		wf_id_orch = workflow.getId();
 
 		if(ptr_Gwes2SdpaHandler)
 		{
-			//SDPA_LOG_DEBUG("Valid pointer to SDPA ...");
-			ptr_Gwes2SdpaHandler->submitWorkflow(workflow_new);
+			SDPA_LOG_DEBUG("Gwes submits new activity ...");
+			ptr_Gwes2SdpaHandler->submitActivity(activity);
 		}
 		else
-			SDPA_LOG_ERROR("SDPA is unregistered ...");
+			SDPA_LOG_ERROR("SDPA has unregistered ...");
 
 		return workflow.getId();
 	}

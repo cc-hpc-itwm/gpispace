@@ -56,11 +56,24 @@ void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule ...");
 
 	try {
-		SDPA_LOG_DEBUG("Get the next worker ...");
-		Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-		SDPA_LOG_DEBUG("The next worker dispatches the job ...");
-		pWorker->dispatch(pJob);
+		if( ptr_worker_man_ )
+		{
+			SDPA_LOG_DEBUG("Get the next worker ...");
+			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+
+			SDPA_LOG_DEBUG("The next worker dispatches the job ...");
+			pWorker->dispatch(pJob);
+		}
+		else //execute the job (NRE side)
+		{
+			// put the job into the running state and execute it
+			sdpa::events::SubmitJobAckEvent::Ptr pSubmAckEvt(new sdpa::events::SubmitJobAckEvent("", "", pJob->id()));
+			pJob->Dispatch(pSubmAckEvt.get()); // no event need to be sent
+
+			// execute the job
+			// upon successful execution send JobFinished or JobFailed events to the output stage
+		}
 	}
 	catch(NoWorkerFoundException&)
 	{
@@ -129,14 +142,10 @@ void SchedulerImpl::run()
 			{
 				if(pJob->is_local())
 					schedule_local(pJob);
-				else //schedule(pJob);
-				{
-					SDPA_LOG_DEBUG("Get the next worker ...");
-					Worker::ptr_t pWorker = ptr_worker_man_->getNextWorker();
-
-					SDPA_LOG_DEBUG("The next worker dispatches the job ...");
-					pWorker->dispatch(pJob);
-				}
+				else
+					// if it's an NRE just execute it!
+					// Attention!: an NRE has no WorkerManager!!!!
+					schedule(pJob);
 			}
 			else
 			{

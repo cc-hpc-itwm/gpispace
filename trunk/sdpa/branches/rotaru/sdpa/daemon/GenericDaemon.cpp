@@ -493,6 +493,11 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 		SDPA_LOG_DEBUG("New activity submitted by GWES ...");
 
 		job_id_t job_id(activity.getId());
+
+		// here, one should call gwes::transform_activity_to_workflow(activity);
+		//workflow_t wf_new(activity.getId(), "");
+
+		//here, one should call gwes::serialize(wf_new);
 		job_desc_t job_desc = activity.serialize();
 
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
