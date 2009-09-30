@@ -11,6 +11,10 @@
 
 #define NCHILD (1 << TRIE_BITS)
 
+typedef int ItChild_t;
+
+#define FOR_CHILD(id) for (ItChild_t id = 0; id < NCHILD; ++id)
+
 typedef struct node_t
 {
   struct node_t *child[NCHILD];
@@ -74,7 +78,7 @@ trie_getany (const PTrieMap_t PCTrie)
 
   while (PTrie != NULL && PTrie->data == NULL)
     {
-      unsigned int child = 0;
+      ItChild_t child = 0;
 
     CHILD:
 
@@ -120,9 +124,8 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 
       trie_del (&(PTrie->child[Key % NCHILD]), Key / NCHILD, fUser);
 
-      for (int child = 0; child < NCHILD; ++child)
-        if (PTrie->child[child] != NULL)
-          return;
+      FOR_CHILD (child) if (PTrie->child[child] != NULL)
+        return;
 
       if (PTrie->data == NULL)
         {
@@ -143,9 +146,8 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 
   PTrie->data = NULL;
 
-  for (int child = 0; child < NCHILD; ++child)
-    if (PTrie->child[child] != NULL)
-      return;
+  FOR_CHILD (child) if (PTrie->child[child] != NULL)
+    return;
 
   free (PTrie);
 
@@ -174,8 +176,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
       Bytes += sizeof (Value_t);
     }
 
-  for (unsigned int child = 0; child < NCHILD; ++child)
-    Bytes += trie_free (PTrie->child + child, fUser);
+  FOR_CHILD (child) Bytes += trie_free (PTrie->child + child, fUser);
 
   free (PTrie);
 
@@ -202,20 +203,19 @@ trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
       Bytes += sizeof (Size_t);
     }
 
-  for (unsigned int child = 0; child < NCHILD; ++child)
-    Bytes += trie_memused (PTrie->child[child], fUser);
+  FOR_CHILD (child) Bytes += trie_memused (PTrie->child[child], fUser);
 
   return Bytes;
 }
 
 static inline Key_t
-patch (Key_t Key, const Word_t Level, const unsigned int slot)
+patch (Key_t Key, const Word_t Level, const ItChild_t child)
 {
   for (Word_t bit = 0; bit < TRIE_BITS; ++bit)
     {
       Word_t Bit = (1 << bit);
 
-      if ((slot & Bit) > 0)
+      if ((child & Bit) > 0)
         {
           Key |= Bit << Level;
         }
@@ -234,14 +234,15 @@ trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
 {
   if (PTrie == NULL)
     return;
+
   if (PTrie->data != NULL)
     {
       fTrieWork (Key, PTrie->data, Pdat);
     }
 
-  for (unsigned int child = 0; child < NCHILD; ++child)
-    trie_work_key (PTrie->child[child], fTrieWork,
-                   patch (Key, Level, child), Level + TRIE_BITS, Pdat);
+  FOR_CHILD (child) trie_work_key (PTrie->child[child], fTrieWork,
+                                   patch (Key, Level, child),
+                                   Level + TRIE_BITS, Pdat);
 }
 
 void
