@@ -269,22 +269,6 @@ tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle,
   return ALLOC_SUCCESS;
 }
 
-typedef struct
-{
-  Offset_t Offset;
-  Size_t Size;
-} os, *pos;
-
-static void
-fTrieMax (const Offset_t Offset, const PSize_t PSize, void *OS)
-{
-  if (Offset > ((pos) OS)->Offset)
-    {
-      ((pos) OS)->Offset = Offset;
-      ((pos) OS)->Size = *PSize;
-    }
-}
-
 static void
 tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
            const MemSize_t Size)
@@ -298,6 +282,11 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 
   PMemSize_t PSizeL = trie_get (ptmmgr->free_segment_end, Offset);
   PMemSize_t PSizeR = trie_get (ptmmgr->free_segment_start, Offset + Size);
+
+  if (Offset + Size == ptmmgr->high_water)
+    {
+      ptmmgr->high_water = Offset - ((PSizeL == NULL) ? 0 : *PSizeL);
+    }
 
   if (PSizeL != NULL && PSizeR != NULL)
     {
@@ -342,15 +331,6 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   else
     {
       tmmgr_ins_free_seg (ptmmgr, Offset, Size);
-    }
-
-  if (Offset + Size == ptmmgr->high_water)
-    {
-      os OS = { 0, 0 };
-
-      trie_work (ptmmgr->free_segment_end, fTrieMax, &OS);
-
-      ptmmgr->high_water = OS.Offset - OS.Size;
     }
 }
 
