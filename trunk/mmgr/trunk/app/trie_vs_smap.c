@@ -81,7 +81,7 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  printf (FMT_Size_t " time insert = %g (%g ms per ins)\n", size, t,
+  printf (FMT_Size_t " time insert = %g (%g us per ins)\n", size, t,
           1e6 * t / (double) size);
 
   t = -current_time ();
@@ -90,7 +90,7 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  printf (FMT_Size_t " time size = %g (%g ms per elem)\n", size, t,
+  printf (FMT_Size_t " time size = %g (%g us per elem)\n", size, t,
           1e6 * t / (double) Size);
 
   t = -current_time ();
@@ -129,7 +129,7 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  printf (FMT_Size_t " time free = %g (%g ms per elem)\n", size, t,
+  printf (FMT_Size_t " time free = %g (%g us per elem)\n", size, t,
           1e6 * t / (double) Size);
 
   printf (FMT_Size_t " dups = " FMT_Word_t "\n", size, dups);
