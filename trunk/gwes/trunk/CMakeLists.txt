@@ -46,11 +46,14 @@ IF(NOT LIBXSLT_FOUND)
   message(FATAL_ERROR "No libxslt found, cannot continue.")
 ENDIF(NOT LIBXSLT_FOUND)
 
-## find fhglog
-Include(FindFhgLog)
-IF(NOT FHGLOG_FOUND)
-  message(FATAL_ERROR "No libfhglog found, cannot continue.")
-ENDIF(NOT FHGLOG_FOUND)
+## find fhglog 
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  ## we are compiling as standalone project. Search for fhglog
+  Include(FindFhgLog)
+  IF(NOT FHGLOG_FOUND)
+    message(FATAL_ERROR "No libfhglog found, cannot continue.")
+  ENDIF(NOT FHGLOG_FOUND)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## PkgConfig is helpful
 include(FindPkgConfig)
@@ -70,8 +73,8 @@ endif ( PKG_CONFIG_FOUND )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
-include_directories(${CMAKE_SOURCE_DIR}/gworkflowdl_cpp/include)
-include_directories(${CMAKE_SOURCE_DIR}/gwes_cpp/include)
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gworkflowdl_cpp/include)
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gwes_cpp/include)
 #include_directories(${SMC_INCLUDE_DIR})
 include_directories(${FHGLOG_INCLUDE_DIR})
 
@@ -84,7 +87,9 @@ link_libraries(${FHGLOG_LIBRARY})
 # Display and stop on warnings
 ADD_DEFINITIONS(-Wall -Werror -g -ggdb -O0 -fno-omit-frame-pointer)
 
-include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ### does not work for automatic build! ###
 ## set GWES_CPP_HOME
