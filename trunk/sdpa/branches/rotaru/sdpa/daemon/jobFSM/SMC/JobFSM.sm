@@ -23,7 +23,7 @@ Pending
     CancelJob(pEvent: const sdpa::events::CancelJobEvent*)
         Cancelled
         {
-           action_cancel_job(*pEvent); 
+           action_cancel_job_from_pending(*pEvent); 
         }
 
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)

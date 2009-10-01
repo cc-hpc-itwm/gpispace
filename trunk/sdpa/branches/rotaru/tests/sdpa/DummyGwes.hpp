@@ -7,7 +7,9 @@
 #include <sdpa/wf/Gwes2Sdpa.hpp>
 #include <sdpa/JobId.hpp>
 
+#include <sdpa/uuidgen.hpp>
 
+using namespace sdpa;
 using namespace sdpa::wf;
 
 class DummyGwes : public Sdpa2Gwes {
@@ -131,15 +133,24 @@ public:
 		// on SDPA side
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
+		// save the workflow_id
+		wf_id_orch = workflow.getId();
+
 		// Here, GWES is supposed to create new workflows ....
 		activity_t::Method method("","");
 
-		SDPA_LOG_DEBUG("Create activity ...");
+		SDPA_LOG_DEBUG("Generate activity ...");
 
 		// either you assign here an id or it be assigned by daemon
 		activity_t activity("An activity", method);
 
-		wf_id_orch = workflow.getId();
+		// generate unique id
+		uuid uid;
+		uuidgen gen;
+		gen(uid);
+		act_id= uid.str();
+
+		activity.setId(act_id);
 
 		if(ptr_Gwes2SdpaHandler)
 		{
@@ -162,11 +173,21 @@ public:
 	void cancelWorkflow(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException)
 	{
 		SDPA_LOG_DEBUG("Called cancelWorkflow ...");
+
+		if(ptr_Gwes2SdpaHandler)
+		{
+			SDPA_LOG_DEBUG("Gwes cancels the activities related to that workflow ...");
+			ptr_Gwes2SdpaHandler->cancelActivity(act_id);
+		}
+		else
+			SDPA_LOG_ERROR("SDPA has unregistered ...");
+
 	}
 
 private:
 	mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
 	workflow_id_t wf_id_orch;
+	activity_id_t act_id;
 };
 
 #endif

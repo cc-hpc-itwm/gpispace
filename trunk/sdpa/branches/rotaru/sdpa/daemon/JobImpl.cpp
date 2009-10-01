@@ -7,6 +7,7 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
@@ -84,11 +85,28 @@ namespace sdpa { namespace daemon {
     	SDPA_LOG_DEBUG(os.str());
     }
 
+	void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&)
+	{
+		ostringstream os;
+		os<<"Process 'action_cancel_job_from_pending'";
+		SDPA_LOG_DEBUG(os.str());
+	}
+
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& event)
     {
     	ostringstream os;
-    	os<<"Process 'action_cancel_job'" ;
+    	os<<"Process 'action_cancel_job'";
     	// cancel the job
+
+    	if(event.from() != event.to() )
+    	{
+    		os<<std::endl<<"Sent CancelJobEvent to "<<event.to();
+    		CancelJobEvent::Ptr pCancelEvt(new CancelJobEvent(event));
+
+    		// only if the job was already submitted
+    		pSendEvent->sendEvent(pSendEvent->output_stage(), pCancelEvt);
+    	}
+
     	SDPA_LOG_DEBUG(os.str());
     }
 

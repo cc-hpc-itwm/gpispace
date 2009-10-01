@@ -18,6 +18,7 @@ namespace sdpa {
 			public:
 				//actions
 				virtual void action_run_job(const sdpa::events::SubmitJobAckEvent&)=0;
+				virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&)=0;
 				virtual void action_cancel_job(const sdpa::events::CancelJobEvent&)=0;
 				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&)=0;
 				virtual void action_delete_job(const sdpa::events::DeleteJobEvent&)=0;

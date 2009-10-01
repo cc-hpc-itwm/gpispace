@@ -16,9 +16,11 @@ void Worker::update(const sdpa::events::SDPAEvent &event) {
   tstamp_ = sdpa::util::now();
 }
 
-void Worker::dispatch(const Job::ptr_t &job) {
-  SDPA_LOG_DEBUG("appending job(" << job->id() << ") to the pending queue");
-  pending_.push(job);
+void Worker::dispatch(const Job::ptr_t &pJob) {
+  SDPA_LOG_DEBUG("appending job(" << pJob->id() << ") to the pending queue");
+
+  pJob->put("worker", name());
+  pending_.push(pJob);
 }
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
@@ -51,6 +53,7 @@ void Worker::delete_job(const sdpa::job_id_t &job_id) {
   //should throw an exception
   SDPA_LOG_ERROR("The job " << job_id << " could not be found into the acknowledged_ queue!");
 }
+
 
 Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {

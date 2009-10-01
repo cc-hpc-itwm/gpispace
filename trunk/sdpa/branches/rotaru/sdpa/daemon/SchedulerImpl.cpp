@@ -143,9 +143,12 @@ void SchedulerImpl::run()
 				if(pJob->is_local())
 					schedule_local(pJob);
 				else
+				{
 					// if it's an NRE just execute it!
 					// Attention!: an NRE has no WorkerManager!!!!
+					// or has an Worker Manager and the workers are threads
 					schedule(pJob);
+				}
 			}
 			else
 			{

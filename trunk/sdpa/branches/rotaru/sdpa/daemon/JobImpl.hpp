@@ -43,6 +43,7 @@ namespace sdpa { namespace daemon {
         // job FSM actions
 		virtual void action_run_job(const sdpa::events::SubmitJobAckEvent&);
 		virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
+		virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
 		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
 		virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
 		virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);

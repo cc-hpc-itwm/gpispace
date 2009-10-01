@@ -28,7 +28,7 @@ namespace sdpa { namespace daemon {
      * The interface to the generic job description we keep around in all
      * components.
      */
-    class Job {
+    class Job : public Properties {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
