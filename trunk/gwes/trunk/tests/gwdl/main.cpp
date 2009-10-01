@@ -71,7 +71,7 @@ int main()
   runner.run (testresult);
 
   // print and save results
-  std::ofstream outStream("out.xml");
+  std::ofstream outStream("gwdl_out.xml");
   //outStream= new std::ofstream("out.xml", std::ios::app );
   CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
   //CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cout);
