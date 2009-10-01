@@ -1,0 +1,51 @@
+project(sdpa_main)
+
+# have the full monty in makefiles
+set(CMAKE_VERBOSE_MAKEFILE true)
+
+set(V_MAJOR 0)
+set(V_MINOR 1)
+set(V_PATCH 0)
+
+set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
+set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
+set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
+set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
+set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
+set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
+set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
+
+# add a path where some libraries might be stored
+set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
+
+OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
+
+cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+# Where are the additional libraries installed? Note: provide includes
+# path here, subsequent checks will resolve everything else
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
+set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+
+##########################################################
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/fhglog)
+link_directories(${CMAKE_BINARY_DIR}/fhglog/fhglog)
+link_libraries(fhglog)
+link_directories(${CMAKE_BINARY_DIR}/seda/seda)
+link_libraries(seda)
+message(STATUS "===LINK : ${CMAKE_BINARY_DIR}/fhglog/fhglog")
+
+message(STATUS "Add project fhglog")
+add_subdirectory(fhglog)
+message(STATUS "Add project gwes")
+add_subdirectory(gwes)
+message(STATUS "Add project mmgr")
+add_subdirectory(mmgr)
+message(STATUS "Add project sdpa")
+add_subdirectory(sdpa)
+message(STATUS "Add project seda")
+add_subdirectory(seda)
+
+add_dependencies(sdpa seda)
