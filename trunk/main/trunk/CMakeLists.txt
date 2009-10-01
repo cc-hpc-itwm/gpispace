@@ -49,3 +49,6 @@ message(STATUS "Add project seda")
 add_subdirectory(seda)
 
 add_dependencies(sdpa seda)
+add_dependencies(gwes fhglog)
+
+include(TargetDoc.cmake OPTIONAL)
