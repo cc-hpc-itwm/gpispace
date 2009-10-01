@@ -39,7 +39,6 @@ public:
 	 */
 	virtual void cancelActivity(const activity_id_t &activityId)  throw (sdpa::daemon::NoSuchActivityException) = 0;
 
-
 	/**
 	 * Notify the SDPA that a workflow finished (state transition
 	 * from running to finished).
