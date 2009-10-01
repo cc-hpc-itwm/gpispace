@@ -56,7 +56,9 @@ link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
-include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 message(STATUS "build type has been set to ${CMAKE_BUILD_TYPE}")
 
