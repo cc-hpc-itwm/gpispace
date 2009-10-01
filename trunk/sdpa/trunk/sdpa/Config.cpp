@@ -13,3 +13,8 @@ Config::ptr_t Config::create()
 Config::Config() {
 
 }
+
+Config &Config::load_defaults()
+{
+  return DefaultConfiguration()(*this);
+}
