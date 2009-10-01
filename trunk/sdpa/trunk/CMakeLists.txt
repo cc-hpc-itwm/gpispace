@@ -56,13 +56,15 @@ else  ( PKG_CONFIG_FOUND )
 endif ( PKG_CONFIG_FOUND )
 
 # seda library
-include(FindSEDA)
-# check for seda
-if (SEDA_FOUND)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include(FindSEDA)
+  # check for seda
+  if (SEDA_FOUND)
     include_directories(${SEDA_INCLUDE_DIRS})
     link_directories(${SEDA_LIBRARY_DIRS})
     link_libraries(${SEDA_LIBRARIES})
-endif(SEDA_FOUND)
+  endif(SEDA_FOUND)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # google protocol buffers
 include(FindProtocolBuffers)
@@ -84,22 +86,24 @@ else(UUID_FOUND)
 endif(UUID_FOUND)
 
 # GWES/GWDL
-include(FindGwes)
-if (GWES_FOUND)
-  message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
-  include_directories(${GWES_INCLUDE_DIR})
-  link_libraries(${GWES_LIBRARY})
-else(GWES_FOUND)
-  message(FATAL_ERROR "Gwes could not be found!")
-endif (GWES_FOUND)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include(FindGwes)
+  if (GWES_FOUND)
+    message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
+    include_directories(${GWES_INCLUDE_DIR})
+    link_libraries(${GWES_LIBRARY})
+  else(GWES_FOUND)
+    message(FATAL_ERROR "Gwes could not be found!")
+  endif (GWES_FOUND)
 
-if (GWDL_FOUND)
-  message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
-  include_directories(${GWDL_INCLUDE_DIR})
-  link_libraries(${GWDL_LIBRARY})
-else(GWDL_FOUND)
-  message(FATAL_ERROR "Gwdl could not be found!")
-endif (GWDL_FOUND)
+  if (GWDL_FOUND)
+    message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
+    include_directories(${GWDL_INCLUDE_DIR})
+    link_libraries(${GWDL_LIBRARY})
+  else(GWDL_FOUND)
+    message(FATAL_ERROR "Gwdl could not be found!")
+  endif (GWDL_FOUND)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 # state machine compiler (only when required)
@@ -132,12 +136,14 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 link_libraries(${Boost_LIBRARIES})
 
 # logging
-include(FindFhgLog)
-if (FHGLOG_FOUND)
-  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
-  include_directories(${FHGLOG_INCLUDE_DIR})
-  link_libraries(${FHGLOG_LIBRARY})
-endif(FHGLOG_FOUND)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+ include(FindFhgLog)
+  if (FHGLOG_FOUND)
+    message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
+    include_directories(${FHGLOG_INCLUDE_DIR})
+    link_libraries(${FHGLOG_LIBRARY})
+  endif(FHGLOG_FOUND)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (ENABLE_LOGGING)
     set(ENABLE_LOGGING 1)
@@ -169,7 +175,9 @@ link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
-include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Reflect the package structure
 add_subdirectory(sdpa)
