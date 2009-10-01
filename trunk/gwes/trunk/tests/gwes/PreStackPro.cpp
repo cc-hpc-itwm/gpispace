@@ -63,9 +63,9 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
 //			gwdl::Token* input = iter->second;
-//			assert(input!=NULL);
-//			if (name=="file") assert(input->getData()->getType()==gwdl::Data::TYPE_FILE);
-//			else assert(false);
+//			CPPUNIT_ASSERT(input!=NULL);
+//			if (name=="file") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_FILE);
+//			else CPPUNIT_ASSERT(false);
 //		}
 //		// simulate execution
 //		usleep(500000);
@@ -79,9 +79,9 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
 //			gwdl::Token* input = iter->second;
-//			assert(input!=NULL);
-//			if (name=="thd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
-//			else assert(false);
+//			CPPUNIT_ASSERT(input!=NULL);
+//			if (name=="thd") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
+//			else CPPUNIT_ASSERT(false);
 //		}
 //		// simulate execution
 //		usleep(1000000);
@@ -94,10 +94,10 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
 //			gwdl::Token* input = iter->second;
-//			assert(input!=NULL);
-//			if (name=="grd") assert(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
-//			else if (name=="parameter") assert(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
-//			else assert(false);
+//			CPPUNIT_ASSERT(input!=NULL);
+//			if (name=="grd") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
+//			else if (name=="parameter") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
+//			else CPPUNIT_ASSERT(false);
 //		}
 //		// simulate execution
 //		usleep(500000);

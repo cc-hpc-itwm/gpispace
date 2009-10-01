@@ -17,14 +17,16 @@
 // std
 #include <iostream>
 #include <ostream>
-#include <assert.h>
 
 using namespace gwes;
 using namespace gwdl;
 using namespace fhg::log;
 using namespace std;
+using namespace gwes::tests;
 
-void testSdpa2Gwes() {
+CPPUNIT_TEST_SUITE_REGISTRATION( gwes::tests::Sdpa2GwesAPITest );
+
+void Sdpa2GwesAPITest::testSdpa2Gwes() {
 	logger_t logger(getLogger("gwes"));
 
 	LOG_INFO(logger, "============== BEGIN SDPA2GWES TEST =============");
@@ -49,16 +51,16 @@ void testSdpa2Gwes() {
 
 		string status = wf.getProperties().get("status");
 		LOG_INFO(logger, "TEST " << status);
-		assert(status == "COMPLETED");
+		CPPUNIT_ASSERT(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
 		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
-///		assert(false);
+///		CPPUNIT_ASSERT(false);
 	}
 
 	LOG_INFO(logger, "============== END SDPA2GWES TEST =============");
 }
 
-void testGwes2Sdpa() {
+void Sdpa2GwesAPITest::testGwes2Sdpa() {
 	logger_t logger(getLogger("gwes"));
 	LOG_INFO(logger, "============== BEGIN GWES2SDPA TEST =============");
 
@@ -84,10 +86,10 @@ void testGwes2Sdpa() {
 		//LOG_INFO(logger, wf);
 		string status = wf.getProperties().get("status");
 		LOG_INFO(logger, "TEST " << status);
-		assert(status == "COMPLETED");
+		CPPUNIT_ASSERT(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
 		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
-		///		assert(false);
+		///		CPPUNIT_ASSERT(false);
 	}
 
 	LOG_INFO(logger, "============== END GWES2SDPA TEST =============");

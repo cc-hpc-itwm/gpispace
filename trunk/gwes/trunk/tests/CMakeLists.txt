@@ -14,6 +14,7 @@ message(STATUS "linking gwdl-test with srcs=\"${gwdlsrcs}\"")
 add_executable(gwdl_test ${gwdlsrcs})
 target_link_libraries(gwdl_test gworkflowdl_cpp xerces-c xml2 )
 add_test(gwdl_test ${CMAKE_CURRENT_BINARY_DIR}/gwdl_test)
+
 # test gwes
 message(STATUS "linking gwes-test with srcs=\"${gwessrcs}\"")
 add_executable(gwes_test ${gwessrcs})
