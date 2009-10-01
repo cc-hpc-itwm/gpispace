@@ -6,7 +6,6 @@
  */
 #include <iostream>
 #include <ostream>
-#include <assert.h>
 //gwdl
 #include <gwdl/XMLUtils.h>
 //tests
@@ -17,9 +16,12 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 XERCES_CPP_NAMESPACE_USE
 
-void testProperties()
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::PropertiesTest );
+
+void PropertiesTest::testProperties()
 {
 	logger_t logger(logger_t(getLogger("gwdl")));
 	LOG_INFO(logger, "============== BEGIN PROPERTIES TEST =============");
@@ -33,17 +35,17 @@ void testProperties()
 	LOG_INFO(logger, *props);
 	
 	LOG_INFO(logger, "key1=" << props->get("key1"));
-	assert(props->get("key1")=="value1");
+	CPPUNIT_ASSERT(props->get("key1")=="value1");
 	LOG_INFO(logger, "key2=" << props->get("key2"));
-	assert(props->get("key2")=="value2");
+	CPPUNIT_ASSERT(props->get("key2")=="value2");
 	LOG_INFO(logger, "key3=" << props->get("key3"));
-	assert(props->get("key3")=="value3");
-	assert(props->size()==3);
+	CPPUNIT_ASSERT(props->get("key3")=="value3");
+	CPPUNIT_ASSERT(props->size()==3);
 	
 	LOG_INFO(logger, "test remove properties...");
 	props->remove("key1");
     LOG_INFO(logger, "number of properties: " << props->size());
-    assert(props->size()==2);
+    CPPUNIT_ASSERT(props->size()==2);
 	
 	LOG_INFO(logger, "test properties toElements() ...");
 	vector<DOMElement*> elements = props->toElements(XMLUtils::Instance()->createEmptyDocument(true));
@@ -53,7 +55,7 @@ void testProperties()
 	LOG_INFO(logger, "test overwriting of properties ...");
 	props->put("key3","value3b");
 	LOG_INFO(logger, *props);
-	assert(props->get("key3")=="value3b");
+	CPPUNIT_ASSERT(props->get("key3")=="value3b");
 
 	delete props;
 

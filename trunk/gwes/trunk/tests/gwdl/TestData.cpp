@@ -6,7 +6,6 @@
  */
 #include <iostream>
 #include <ostream>
-#include <assert.h>
 //gwdl
 #include <gwdl/XMLUtils.h>
 //tests
@@ -17,13 +16,16 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 XERCES_CPP_NAMESPACE_USE
+
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::DataTest );
 
 #define X(str) XMLString::transcode((const char*)& str)
 #define D(str) XMLString::release(&str)
 #define SAFE_DELETE(ptr) if ((ptr) != 0) { delete (ptr); ptr=0; }
 
-void testData()
+void DataTest::testData()
 {
 	logger_t logger(getLogger("gwdl"));
     LOG_INFO(logger, "============== BEGIN DATA TEST =============");
@@ -31,7 +33,7 @@ void testData()
 	LOG_INFO(logger, "test empty data token... ");
     {
       Data emptyData;
-      assert(emptyData.toElement(NULL)==NULL);
+      CPPUNIT_ASSERT(emptyData.toElement(NULL)==NULL);
     }
  
 	LOG_INFO(logger, "test xml data token from DOM element... ");
@@ -57,7 +59,7 @@ void testData()
       LOG_INFO(logger, "test data.toString() ...");
       string* datastr = data.toString();
       LOG_INFO(logger, *datastr);
-      assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+      CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
       SAFE_DELETE(datastr);
     }
 
@@ -84,7 +86,7 @@ void testData()
       {
         Data data(dataElement);
         string* datastr = data.toString();
-        assert((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+        CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
         SAFE_DELETE(datastr);
         dataList.push_back(data);
       }
@@ -99,9 +101,9 @@ void testData()
       LOG_INFO(logger, data2);
       LOG_INFO(logger, str);
       DOMElement* eP = data2.toElement(NULL);
-      assert(eP);
+      CPPUNIT_ASSERT(eP);
       char* name = XMLString::transcode(eP->getTagName()); 
-      assert(strcmp(name,"data")==0);
+      CPPUNIT_ASSERT(strcmp(name,"data")==0);
       D(name);
 //      delete [] name; // or free()?
 //      SAFE_DELETE(eP); // this fails!
@@ -124,7 +126,7 @@ void testData()
     } catch (...) {
         LOG_INFO(logger, "another exception");
 	}
-    assert(test);
+    CPPUNIT_ASSERT(test);
 	
     LOG_INFO(logger, "============== END DATA TEST =============");
 }

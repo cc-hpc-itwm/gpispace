@@ -6,7 +6,6 @@
  */
 #include <iostream>
 #include <ostream>
-#include <assert.h>
 //gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Transition.h>
@@ -20,9 +19,12 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 XERCES_CPP_NAMESPACE_USE
 
-void testToken()
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::TokenTest );
+
+void TokenTest::testToken()
 {
 	logger_t logger(getLogger("gwdl"));
 	LOG_INFO(logger, "============== BEGIN TOKEN TEST =============");
@@ -30,13 +32,13 @@ void testToken()
 	LOG_INFO(logger, "test default control token...");
 	Token * token1 = new Token();
 	LOG_INFO(logger, *token1);
-	assert(token1->getControl());
+	CPPUNIT_ASSERT(token1->getControl());
 	delete token1;
 	
 	LOG_INFO(logger, "test false control token...");
 	Token * token2 = new Token(false);
 	LOG_INFO(logger, *token2);
-	assert(!token2->getControl());
+	CPPUNIT_ASSERT(!token2->getControl());
 	delete token2;
 
 	LOG_INFO(logger, "test control token with properties...");
@@ -46,7 +48,7 @@ void testToken()
 	Token * token3 = new Token(*props,true);
 	LOG_INFO(logger, *props);
 	Properties props2 = token3->getProperties();
-	assert(props2.get("key2")=="value2");
+	CPPUNIT_ASSERT(props2.get("key2")=="value2");
 	LOG_INFO(logger, *token3);
 	delete token3;
 	
@@ -81,7 +83,7 @@ void testToken()
 		char* message = XMLString::transcode(e.msg);
         LOG_WARN(logger, "DOMException: " << message);
         XMLString::release(&message);
-        assert(false);
+        CPPUNIT_ASSERT(false);
 	}
 
     LOG_INFO(logger, "test data token with data constructed from string...");
@@ -96,8 +98,8 @@ void testToken()
 		Data *data5b = token5->getData();
 		string* str2 = data5b->toString();
 		LOG_INFO(logger, *str2);
-		assert(*str==*str2);
-		assert(token5->isData());
+		CPPUNIT_ASSERT(*str==*str2);
+		CPPUNIT_ASSERT(token5->isData());
 		test = true;
 		delete str;
 		delete token5;
@@ -108,27 +110,27 @@ void testToken()
         LOG_WARN(logger, "DOMException: " << message);
         XMLString::release(&message);
 	}
-	assert(test);
+	CPPUNIT_ASSERT(test);
 	
 	LOG_INFO(logger, "test data token with properties...");
 	string* str6 = new string("<data><x>6</x></data>");
 	Data* data6 = new Data(*str6);
 	Token* token6 = new Token(*props,data6);
 	LOG_INFO(logger, *token6);
-	assert(*str6==*(token6->getData()->toString()));
-	assert(token6->getProperties().get("key2")=="value2");
+	CPPUNIT_ASSERT(*str6==*(token6->getData()->toString()));
+	CPPUNIT_ASSERT(token6->getProperties().get("key2")=="value2");
 	delete token6;
 	delete str6;
 	
 	LOG_INFO(logger, "test token.lock(transition)...");
    	Token *token7 = new Token();
-   	assert(token7->isLocked()==false);
+   	CPPUNIT_ASSERT(token7->isLocked()==false);
    	Transition *t7 = new Transition("");
    	Transition *t7b = new Transition("");
    	token7->lock(t7);
-   	assert(token7->isLocked());
-    assert(token7->isLockedBy(t7));
-    assert(!token7->isLockedBy(t7b));
+   	CPPUNIT_ASSERT(token7->isLocked());
+    CPPUNIT_ASSERT(token7->isLockedBy(t7));
+    CPPUNIT_ASSERT(!token7->isLockedBy(t7b));
    	delete token7;
    	delete t7;
    	delete t7b;
@@ -137,27 +139,27 @@ void testToken()
 	// control token
    	Token *token8 = new Token(*props,true);
    	Token *token8cp = token8->deepCopy();
-   	assert(token8 != token8cp);
+   	CPPUNIT_ASSERT(token8 != token8cp);
    	token8->getProperties().put("key1","valueXXX");
-   	assert(token8->getProperties().get("key1").compare("valueXXX")==0);
-   	assert(token8cp->getProperties().get("key1").compare("value1")==0);
+   	CPPUNIT_ASSERT(token8->getProperties().get("key1").compare("valueXXX")==0);
+   	CPPUNIT_ASSERT(token8cp->getProperties().get("key1").compare("value1")==0);
     LOG_INFO(logger, *token8cp);
     delete token8cp;
     LOG_INFO(logger, *token8);
-    assert (token8);
+    CPPUNIT_ASSERT (token8);
    	delete token8;
    	// data token
 	Data* data9 = new Data("<data><x>1</x><y>2</y></data>");
    	Token *token9 = new Token(*props,data9);
    	Token *token9cp = token9->deepCopy();
    	LOG_INFO(logger, *token9);
-   	assert(token9 != token9cp);
-   	assert(token9->getData() != token9cp->getData());
+   	CPPUNIT_ASSERT(token9 != token9cp);
+   	CPPUNIT_ASSERT(token9->getData() != token9cp->getData());
    	// ToDo: Getting 'xercesc_2_7::DOMException' if deleting data9 here...
 //   	delete data9;
-//   	assert(token9cp);
+//   	CPPUNIT_ASSERT(token9cp);
    	delete token9;
-   	assert(token9cp);
+   	CPPUNIT_ASSERT(token9cp);
    	LOG_INFO(logger, *token9cp);
    	delete token9cp;
    	

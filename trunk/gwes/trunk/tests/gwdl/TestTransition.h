@@ -6,8 +6,21 @@
  */
 #ifndef TESTTRANSITION_H_
 #define TESTTRANSITION_H_
+#include <cppunit/extensions/HelperMacros.h>
+
 #include <gwdl/Transition.h>
 
-void testTransition();
+namespace gwdl {
+  namespace tests {
+    class TransitionTest : public CPPUNIT_NS::TestFixture {
+      CPPUNIT_TEST_SUITE( gwdl::tests::TransitionTest );
+      CPPUNIT_TEST( testTransition );
+      CPPUNIT_TEST_SUITE_END();
+
+    protected:
+      void testTransition();
+    };
+  }
+}
 
 #endif /*TESTTRANSITION_H_*/

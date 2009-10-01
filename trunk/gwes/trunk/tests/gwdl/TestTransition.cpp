@@ -6,7 +6,6 @@
  */
 #include <iostream>
 #include <sstream>
-#include <assert.h>
 // gwdl
 #include <gwdl/OperationCandidate.h>
 // tests
@@ -17,9 +16,11 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 
- 
-void testTransition() 
+ CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::TransitionTest );
+
+void TransitionTest::testTransition() 
 {
 	logger_t logger(getLogger("gwdl"));
    LOG_INFO(logger, "============== BEGIN TRANSITION TEST =============");
@@ -30,7 +31,7 @@ void testTransition()
    
    LOG_INFO(logger, "test description...");
    t0->setDescription("This is the description of the transition"); 
-   assert(t0->getDescription()=="This is the description of the transition");
+   CPPUNIT_ASSERT(t0->getDescription()=="This is the description of the transition");
 		
    LOG_INFO(logger, "test transition connected to four places...");
    Place *p0 = new Place("");
@@ -53,7 +54,7 @@ void testTransition()
    t0->addCondition("true");
    
    // this is still a control transition (without operation)
-   assert(t0->getAbstractionLevel()==Operation::BLACK);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::BLACK);
 
    // link this transtion with an operation
    LOG_INFO(logger, "test operation class...");
@@ -62,7 +63,7 @@ void testTransition()
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
    t0->setOperation(op);
-   assert(t0->getAbstractionLevel()==Operation::YELLOW);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::YELLOW);
      
    OperationCandidate* opcand1 = new OperationCandidate();
    opcand1->setType("psp");
@@ -71,26 +72,26 @@ void testTransition()
    opcand1->setQuality(0.9);
    opcand1->setSelected();
    t0->getOperation()->getOperationClass()->addOperationCandidate(opcand1);
-   assert(t0->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::GREEN);
 
    // transition is not enabled
-   assert(t0->isEnabled()==false);	
+   CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add read token
    Token* d0 = new Token(true);
    p0->addToken(d0);
-   assert(t0->isEnabled()==false);	
+   CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add input token
    Token* d1 = new Token(true);
    p1->addToken(d1);
-   assert(t0->isEnabled()==false);	
+   CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add write token
    Token* d2 = new Token(true);
    p2->addToken(d2);
    // transition is now enabled
-   assert(t0->isEnabled()==true);	
+   CPPUNIT_ASSERT(t0->isEnabled()==true);	
 
    LOG_INFO(logger, *t0);
    		

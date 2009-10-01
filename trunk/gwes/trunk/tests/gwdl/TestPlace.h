@@ -6,12 +6,25 @@
  */
 #ifndef TESTPLACE_H_
 #define TESTPLACE_H_
+//cppunit
+#include <cppunit/extensions/HelperMacros.h>
 #include <gwdl/Place.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
+namespace gwdl {
+  namespace tests {
+    class PlaceTest : public CPPUNIT_NS::TestFixture {
+      CPPUNIT_TEST_SUITE( gwdl::tests::PlaceTest );
+      CPPUNIT_TEST( testPlace );
+      CPPUNIT_TEST_SUITE_END();
 
-void testPlace() ;
-void printTokens(fhg::log::logger_t logger, gwdl::Place &place); 
+    protected:
+      void testPlace() ;
+      void printTokens(fhg::log::logger_t logger, gwdl::Place &place); 
+    };
+  }
+}
+
 
 #endif /*TESTPLACE_H_*/

@@ -4,9 +4,9 @@ file(GLOB gwdlsrcs "gwdl/*.cpp")
 file(GLOB gwessrcs "gwes/*.cpp")
 
 # add the CPPUNIT stuff
-#include_directories(${CPPUNIT_INCLUDE_DIRS})
-#link_directories(${CPPUNIT_LIBRARY_DIRS})
-#link_libraries(${CPPUNIT_LIBRARIES})
+include_directories(${CPPUNIT_INCLUDE_DIRS})
+link_directories(${CPPUNIT_LIBRARY_DIRS})
+link_libraries(${CPPUNIT_LIBRARIES})
 
 #### Big test for bitten
 # test gwdl

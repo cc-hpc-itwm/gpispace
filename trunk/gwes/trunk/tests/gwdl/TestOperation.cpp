@@ -6,7 +6,6 @@
  */
 #include <iostream>
 #include <sstream>
-#include <assert.h>
 // tests
 #include "TestOperation.h"
 //fhglog
@@ -15,9 +14,11 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 
- 
-void testOperation() 
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::OperationTest );
+
+void OperationTest::testOperation() 
 {
 	logger_t logger(getLogger("gwdl"));
 
@@ -25,14 +26,14 @@ void testOperation()
    LOG_INFO(logger, "test red operation...");
    Operation* op = new Operation();
    LOG_INFO(logger, *op);
-   assert(op->getAbstractionLevel()==Operation::RED);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::RED);
    
    LOG_INFO(logger, "test yellow operation...");
    OperationClass* opc = new OperationClass();
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
    LOG_INFO(logger, *op);
-   assert(op->getAbstractionLevel()==Operation::YELLOW);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::YELLOW);
    
    LOG_INFO(logger, "test blue operation...");
    OperationCandidate* opcan1 = new OperationCandidate();
@@ -47,18 +48,18 @@ void testOperation()
    opcan2->setResourceName("big_machine");
    op->getOperationClass()->addOperationCandidate(opcan2);
    LOG_INFO(logger, "  candidate size=" << op->getOperationClass()->getOperationCandidates().size());
-   assert(op->getOperationClass()->getOperationCandidates().size()==2);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates().size()==2);
    LOG_INFO(logger, *op); 
-   assert(op->getAbstractionLevel()==Operation::BLUE);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::BLUE);
    
    LOG_INFO(logger, "test green operation...");
    opcan1->setSelected();
-   assert(op->getOperationClass()->getOperationCandidates()[0]->isSelected()==true);
-   assert(op->getOperationClass()->getOperationCandidates()[0]->getAbstractionLevel()==Operation::GREEN);
-   assert(op->getOperationClass()->getOperationCandidates()[1]->isSelected()==false);
-   assert(op->getOperationClass()->getOperationCandidates()[1]->getAbstractionLevel()==Operation::BLUE);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[0]->isSelected()==true);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[0]->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[1]->isSelected()==false);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[1]->getAbstractionLevel()==Operation::BLUE);
    LOG_INFO(logger, *op); 
-   assert(op->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::GREEN);
    
    delete op;
 		

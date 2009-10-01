@@ -58,7 +58,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
-#   pkg_check_modules (CPPUNIT REQUIRED cppunit>=1.12)
+   pkg_check_modules (CPPUNIT REQUIRED cppunit>=1.12)
    message(STATUS "CPPUnit: -I${CPPUNIT_INCLUDE_DIRS} -L${CPPUNIT_LIBRARY_DIRS} -l${CPPUNIT_LIBRARIES}")
 else  ( PKG_CONFIG_FOUND )
   message(FATAL "No PKGCONFIG found - hoping for the best.")

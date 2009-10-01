@@ -7,7 +7,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <assert.h>
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -15,15 +14,20 @@
 // gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/XMLUtils.h>
+//tests
+#include "TestParser.h"
 //fhglog
 #include <fhglog/fhglog.hpp>
 
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
+using namespace gwdl::tests;
 XERCES_CPP_NAMESPACE_USE
 
-void testParser()
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::ParserTest );
+
+void ParserTest::testParser()
 {
 	logger_t logger(getLogger("gwdl"));
 	LOG_INFO(logger, "============== test PARSER =============");
@@ -33,13 +37,13 @@ void testParser()
 	// description
 	LOG_INFO(logger, "  description...");
 	wf->setDescription("This is the description of the workflow");
-	assert(wf->getDescription()=="This is the description of the workflow") ;
+	CPPUNIT_ASSERT(wf->getDescription()=="This is the description of the workflow") ;
 
 	// properties
 	LOG_INFO(logger, "  properties...");
 	wf->getProperties().put("b_name1","value1");	
 	wf->getProperties().put("a_name2","value2");	
-	assert(wf->getProperties().get("b_name1")=="value1");
+	CPPUNIT_ASSERT(wf->getProperties().get("b_name1")=="value1");
 	
 	// places
 	LOG_INFO(logger, "  places...");
@@ -47,7 +51,7 @@ void testParser()
 	Place* p1 = new Place("p1");
 	wf->addPlace(p0);
 	wf->addPlace(p1);
-	assert(wf->placeCount()==2);
+	CPPUNIT_ASSERT(wf->placeCount()==2);
 	
 	// transition
 	LOG_INFO(logger, "  transition...");
@@ -65,7 +69,7 @@ void testParser()
 	wf->addTransition(t0);
 
 	// transition is not enabled
-	assert(wf->getTransition("t0")->isEnabled()==false);	
+	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==false);	
 			
 	// add token
 	LOG_INFO(logger, "  token...");
@@ -75,7 +79,7 @@ void testParser()
 	wf->getPlace("p0")->addToken(d1);
 
 	// transition is now enabled
-	assert(wf->getTransition("t0")->isEnabled()==true);
+	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==true);
 	
 	// add operation to transition
 	LOG_INFO(logger, "  operation...");
@@ -112,7 +116,7 @@ void testParser()
     
     LOG_INFO(logger, "workflow out:");
     LOG_INFO(logger, *s2);
-    assert(*s == *s2);
+    CPPUNIT_ASSERT(*s == *s2);
     
 	delete wf;
 	delete wf1;

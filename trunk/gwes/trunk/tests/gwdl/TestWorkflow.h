@@ -6,8 +6,22 @@
  */
 #ifndef TESTWORKFLOW_H_
 #define TESTWORKFLOW_H_
+//cppunit
+#include <cppunit/extensions/HelperMacros.h>
+//gwdl
 #include <gwdl/Workflow.h>
 
-void testWorkflow();
+namespace gwdl {
+  namespace tests {
+    class WorkflowTest : public CPPUNIT_NS::TestFixture {
+      CPPUNIT_TEST_SUITE( gwdl::tests::WorkflowTest );
+      CPPUNIT_TEST( testWorkflow );
+      CPPUNIT_TEST_SUITE_END();
+
+    protected:
+      void testWorkflow() ;
+    };
+  }
+}
 
 #endif /*TESTWORKFLOW_H_*/

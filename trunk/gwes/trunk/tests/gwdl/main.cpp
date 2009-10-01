@@ -6,14 +6,27 @@
  */
 #include <iostream>
 #include <ostream>
-// test
-#include "TestData.h"
-#include "TestToken.h"
-#include "TestProperties.h"
-#include "TestPlace.h"
-#include "TestOperation.h"
-#include "TestTransition.h"
-#include "TestWorkflow.h"
+// cppunit includes
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/XmlOutputter.h>
+#include <cppunit/TestResult.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include <cppunit/TextTestProgressListener.h>
+#include <cppunit/BriefTestProgressListener.h>
+#include <cppunit/TestFailure.h>
+#include <cppunit/Test.h>
+
+#include <cppunit/XmlOutputterHook.h>
+#include <cppunit/tools/XmlElement.h>
+#include <cppunit/tools/StringTools.h>
+#include <cppunit/tools/XmlDocument.h>
+#include <cppunit/TestFailure.h>
+#include <cppunit/SourceLine.h>
+#include <cppunit/Exception.h>
+#include <cppunit/Message.h>
 //gwdl
 #include <gwdl/XMLUtils.h>
 //fhglog
@@ -39,29 +52,36 @@ int main()
 	XMLUtils* xmlutils = XMLUtils::Instance();
 	LOG_INFO(logger, "xmlutils singleton instantiated: " << xmlutils);;
 
-	if(TEST_ALL)
-	{		
-		// data
-		testData();
+  // Informiert Test-Listener ueber Testresultate
+  CPPUNIT_NS::TestResult                   testresult;
+  CPPUNIT_NS::TestResultCollector collectedresults;
+  testresult.addListener (&collectedresults);
 
-		// properties
-		testProperties();
+  // Test-Suite ueber die Registry im Test-Runner einfuegen
+  CPPUNIT_NS :: TestRunner runner;
+  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
 
-		// token
-		testToken();
+  //CPPUNIT_NS::CompilerOutputter *outputter = new CPPUNIT_NS::CompilerOutputter(&runner.result(), std::cout);
+  //outputter->setLocationFormat("%p(%l) : ");
+  //outputter->setNoWrap();
+  //runner.setOutputter(outputter);
 
-		// place
-		testPlace();
+  std::cout << "running testsuite" << std::endl;
 
-		// operation
-		testOperation();
+  runner.run (testresult);
 
-		// transition
-		testTransition();
+  // print and save results
+  std::ofstream outStream("out.xml");
+  //outStream= new std::ofstream("out.xml", std::ios::app );
+  CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
+  //CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cout);
+  xmloutputter.write ();
 
-		// workflow
-		testWorkflow();
-	}
-	testParser();
-	return 0;
+  // text mode
+  //CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
+  //compileroutputter.write ();
+
+
+  //
+  return collectedresults.wasSuccessful () ? 0 : 1;
 }

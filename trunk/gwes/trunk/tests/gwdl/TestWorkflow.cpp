@@ -4,7 +4,6 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <assert.h>
 // tests
 #include "TestWorkflow.h"
 //fhglog
@@ -13,8 +12,11 @@
 using namespace std;
 using namespace fhg::log;
 using namespace gwdl;
+using namespace gwdl::tests;
 
-void testWorkflow()
+CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::WorkflowTest );
+
+void WorkflowTest::testWorkflow()
 {
 	logger_t logger(getLogger("gwdl"));
 
@@ -26,13 +28,13 @@ void testWorkflow()
 	// add description
 	LOG_INFO(logger, "  description...");
 	wf->setDescription("This is the description of the workflow");
-	assert(wf->getDescription()=="This is the description of the workflow") ;
+	CPPUNIT_ASSERT(wf->getDescription()=="This is the description of the workflow") ;
 
 	// add properties
 	LOG_INFO(logger, "  properties...");
 	wf->getProperties().put("b_name1","value1");	
 	wf->getProperties().put("a_name2","value2");	
-	assert(wf->getProperties().get("b_name1")=="value1");
+	CPPUNIT_ASSERT(wf->getProperties().get("b_name1")=="value1");
 	
 	// add places
 	LOG_INFO(logger, "  places...");
@@ -40,7 +42,7 @@ void testWorkflow()
 	Place* p1 = new Place("p1");
 	wf->addPlace(p0);
 	wf->addPlace(p1);
-	assert(wf->placeCount()==2);
+	CPPUNIT_ASSERT(wf->placeCount()==2);
 	
 	// create transition
 	LOG_INFO(logger, "  transition...");
@@ -58,7 +60,7 @@ void testWorkflow()
 	wf->addTransition(t0);
 
 	// transition is not enabled
-	assert(wf->getTransition("t0")->isEnabled()==false);	
+	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==false);	
 			
 	// add token
 	LOG_INFO(logger, "  token...");
@@ -66,7 +68,7 @@ void testWorkflow()
 	wf->getPlace("p0")->addToken(d0);
 
 	// transition is now enabled
-	assert(wf->getTransition("t0")->isEnabled()==true);
+	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==true);
 	
 	// add operation to transition
 	LOG_INFO(logger, "  operation...");
@@ -104,7 +106,7 @@ void testWorkflow()
 		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
-	assert(test);
+	CPPUNIT_ASSERT(test);
 		
 	// test no such workflow element getPlace
 	test = false;
@@ -117,7 +119,7 @@ void testWorkflow()
 		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
-	assert(test);
+	CPPUNIT_ASSERT(test);
 
 	// test no such workflow element removePlace
 	test = false;
@@ -130,7 +132,7 @@ void testWorkflow()
 		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
-	assert(test);
+	CPPUNIT_ASSERT(test);
 
 	// test no such workflow element removeTransition
 	test = false;
@@ -143,7 +145,7 @@ void testWorkflow()
 		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
 		test = true;
 	}
-	assert(test);
+	CPPUNIT_ASSERT(test);
 	
 	LOG_INFO(logger, "safe to file ...");
 	wf->saveToFile("/tmp/wf.xml");
