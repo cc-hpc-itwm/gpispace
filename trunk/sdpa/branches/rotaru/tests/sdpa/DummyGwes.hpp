@@ -74,6 +74,24 @@ public:
 	void activityCanceled(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException)
     {
 		SDPA_LOG_DEBUG("Called activityCanceled ...");
+
+		/**
+		 * Notify the SDPA that a workflow has been canceled (state
+		 * transition from * to terminated.
+		 */
+		//try
+		{
+			if(ptr_Gwes2SdpaHandler)
+			{
+				ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch);
+			}
+			else
+				SDPA_LOG_ERROR("SDPA has unregistered ...");
+		}
+		/*catch (NoSuchWorkflowException&)
+		{
+			SDPA_LOG_ERROR("NoSuchWorkflowException occured!");
+		}*/
     }
 
 	/**

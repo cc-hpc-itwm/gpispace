@@ -406,6 +406,8 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 	//put the job into the state Finished
 	try {
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->CancelJob(pEvt);
+		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 	}
 	catch(sdpa::daemon::JobNotFoundException){
 		os.str("");
@@ -427,8 +429,6 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 				ptr_Sdpa2Gwes_->cancelWorkflow(workflowId);
 			}
 
-			CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent(name(), name(), pEvt->job_id()));
-			pJob->CancelJob(pCancelEvt.get());
 		}
 		catch(sdpa::daemon::NoSuchWorkflowException)
 		{
@@ -455,11 +455,14 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
             // check if the job was already submitted
             // if not, generate immediately a CancelJobAckEvent for self (transition from Cancelling to Cancelled)
 
-            // else, forward the cancel to the workers
+            // else, forward the cancel to the worker
+            os.str("");
+            os<<"Send CancelJobEvent for the job "<<pEvt->job_id()<<" to the worker "<<worker_id;
+            SDPA_LOG_DEBUG(os.str());
 
-			// put the job into the Cancelling state
+
 			CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent(name(), worker_id, pEvt->job_id()));
-			pJob->CancelJob(pCancelEvt.get());
+			sendEvent(output_stage_, pCancelEvt);
 
 		} catch(sdpa::PropertyLookupFailed& ) {
 			os.str("");
@@ -485,8 +488,28 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	ostringstream os;
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		// delete it from the map when you receive a JobFinishedAckEvent!
-		pJob->CancelJobAck(pEvt);
+
+		// put the job into the state Cancelled
+	    pJob->CancelJobAck(pEvt);
+	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+
+
+    	// should send acknowlwdgement
+    	if(pEvt->from() == pEvt->to() ) // the message comes from GWES, forward it to the master
+		{
+			os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
+			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
+
+			// only if the job was already submitted
+			sendEvent(output_stage(), pCancelAckEvt);
+		}
+    	else // the message comes from an worker, forward it to GWES
+    	{
+    		// tell to GWES that the activity ob_id() was cancelled
+    		activity_id_t actId = pEvt->job_id();
+    		ptr_Sdpa2Gwes_->activityCanceled(actId);
+    	}
+
 
 		// inform GWES ? or forward message to the master
 		// should check from where the message comes worker or GWES?

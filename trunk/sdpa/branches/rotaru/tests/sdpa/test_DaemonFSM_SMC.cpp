@@ -88,6 +88,14 @@ public:
 		 {
 			 SDPA_LOG_DEBUG("Received JobResultsReplyEvent!");
 		 }
+		 else if( dynamic_cast<CancelJobEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Received CancelJobEvent!");
+		 }
+		 else if( dynamic_cast<CancelJobAckEvent*>(pEvt.get())  )
+		 {
+			 SDPA_LOG_DEBUG("Received CancelJobAckEvent!");
+		 }
 		 else if( dynamic_cast<ErrorEvent*>(pEvt.get())  )
 		 {
 			 SDPA_LOG_DEBUG("Received ErrorEvent!");
@@ -516,11 +524,21 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUp, strDaemon, job_id_user) );
 	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
 
+	// the worker expects a CancelJobEvent ...
+	CancelJobEvent::Ptr pCancelEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobEvent>(pErrorEvt);
+
+	// the worker cancells the job
+	SDPA_LOG_DEBUG("Cancelled the job "<<pCancelEvt->job_id()<<"!Sending CancelJobAckEvent to "<<pCancelEvt->from()<<" ...");
+
+	// ... and replies with a CancelJobAckEvent
+	CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
+	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobAckEvt);
+
+
+	// the user expects now a CancelJobAckEvent
+
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Cancelled the job "<<pCancelAckEvt->job_id());
-
-
+	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 
 	// submit a JobFinishedEvent to master
 	/*JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromDown, strDaemon, job_id_slave));

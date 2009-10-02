@@ -98,15 +98,6 @@ namespace sdpa { namespace daemon {
     	os<<"Process 'action_cancel_job'";
     	// cancel the job
 
-    	if(event.from() != event.to() )
-    	{
-    		os<<std::endl<<"Sent CancelJobEvent to "<<event.to();
-    		CancelJobEvent::Ptr pCancelEvt(new CancelJobEvent(event));
-
-    		// only if the job was already submitted
-    		pSendEvent->sendEvent(pSendEvent->output_stage(), pCancelEvt);
-    	}
-
     	SDPA_LOG_DEBUG(os.str());
     }
 
@@ -115,6 +106,7 @@ namespace sdpa { namespace daemon {
     	ostringstream os;
     	os<<"Process 'action_cancel_job_ack'" ;
     	// Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
+
     	SDPA_LOG_DEBUG(os.str());
     }
 
