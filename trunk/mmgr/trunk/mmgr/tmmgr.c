@@ -220,7 +220,9 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   assert (PSizeStart != NULL);
   assert (Size <= *PSizeStart);
 
+#ifndef NDEBUG
   PMemSize_t PSizeEnd =
+#endif
     trie_get (ptmmgr->free_segment_end, Offset + (*PSizeStart));
 
   assert (PSizeEnd != NULL);
