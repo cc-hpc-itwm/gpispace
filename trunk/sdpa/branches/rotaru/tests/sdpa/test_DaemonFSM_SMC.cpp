@@ -481,10 +481,6 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
-	for( int k=0; k<1000; k++ ) {
-
-		SDPA_LOG_DEBUG("**************************ITERATION "<<k<<" ********************");
-
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -541,8 +537,6 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
-
-	}
 
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
