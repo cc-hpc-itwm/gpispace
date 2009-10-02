@@ -14,9 +14,10 @@ namespace sdpa {
 		namespace tests {
 			class DaemonFSMTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonFSMTest );
-			  //CPPUNIT_TEST( testDaemonFSM_JobFinished );
+			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  //CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -29,6 +30,7 @@ namespace sdpa {
 			  void testDaemonFSM_JobFinished();
 			  void testDaemonFSM_JobFailed();
 			  void testDaemonFSM_JobCancelled();
+			  void testDaemonFSM_JobCancelled_from_Pending();
 
 			private:
 			  SDPA_DECLARE_LOGGER();

@@ -55,6 +55,8 @@ namespace sdpa { namespace daemon {
         virtual ptr_t get_subjob(const job_id_t & id) = 0;
 
         virtual bool is_marked_for_deletion() = 0;
+        virtual bool mark_for_deletion() = 0;
+
         virtual bool is_local()=0;
         virtual void set_local(bool)=0;
         virtual void process_event( const boost::statechart::event_base & e) {}

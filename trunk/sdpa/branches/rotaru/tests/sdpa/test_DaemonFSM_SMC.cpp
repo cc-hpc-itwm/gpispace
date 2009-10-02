@@ -481,6 +481,10 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
+	for( int k=0; k<1000; k++ ) {
+
+		SDPA_LOG_DEBUG("**************************ITERATION "<<k<<" ********************");
+
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -519,7 +523,6 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave) );
 	m_ptrDaemonFSM->daemon_stage()->send(pSubmitJobAck);
 
-
 	// Now, a cancel message the user sends a CancelJob  message
 	CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUp, strDaemon, job_id_user) );
 	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
@@ -534,53 +537,13 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
 	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobAckEvt);
 
-
 	// the user expects now a CancelJobAckEvent
 
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 
-	// submit a JobFinishedEvent to master
-	/*JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromDown, strDaemon, job_id_slave));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtJobFailed);
-
-	pTestStr->WaitForEvent<sdpa::events::JobFailedAckEvent>(pErrorEvt);
-
-	// check if the job finished
-	QueryJobStatusEvent::Ptr pEvtQueryStatus(new QueryJobStatusEvent(strFromUp, strDaemon, job_id_user));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtQueryStatus);
-
-	// wait for a JobStatusReplyEvent
-	JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pTestStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
-	os.str("");
-	os<<"The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status();
-	SDPA_LOG_DEBUG(os.str());
-
-	if( pJobStatusReplyEvent->status().find("Finished") != std::string::npos ||
-		pJobStatusReplyEvent->status().find("Failed")   != std::string::npos )
-	{
-		// if the job is in the finished or failed state, one is allowed
-		// to retriieve the results now
-		RetrieveJobResultsEvent::Ptr pEvtRetrieveRes(new RetrieveJobResultsEvent(strFromUp, strDaemon, job_id_user));
-		m_ptrDaemonFSM->daemon_stage()->send(pEvtRetrieveRes);
-		// wait for a JobStatusReplyEvent
-		pTestStr->WaitForEvent<sdpa::events::JobResultsReplyEvent>(pErrorEvt);
-
-		// check the job status. if the job is in a final state, send a DeletJobEvent
-		DeleteJobEvent::Ptr pEvtDelJob( new DeleteJobEvent(strFromUp, strDaemon, job_id_user) );
-		m_ptrDaemonFSM->daemon_stage()->send(pEvtDelJob);
-
-		// wait for an acknowledgment from Orchestrator that job was deleted
-		sdpa::job_id_t jobid = pTestStr->WaitForEvent<sdpa::events::DeleteJobAckEvent>(pErrorEvt)->job_id();
-		os.str("");
-		os<<"Successfully deleted the job "<<jobid;
-		SDPA_LOG_DEBUG(os.str());
 	}
-	else
-		SDPA_LOG_ERROR("The job is supposed to be into a 'terminal state' in order to be able to retrieve results!");
 
-
-    */
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtInt);
@@ -588,4 +551,64 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	// you can leave now
 	SDPA_LOG_DEBUG("Slave: Finished!");
 }
+
+
+void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
+{
+	ostringstream os;
+	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;
+	SDPA_LOG_DEBUG(os.str());
+
+	string strFromUp("user");
+	string strFromDown("aggregator");
+	string strDaemon   = m_ptrDaemonFSM->name();
+	//ring strDaemon = strDaemon;
+	sdpa::events::ErrorEvent::Ptr pErrorEvt;
+
+	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
+
+    sdpa::util::time_type start(sdpa::util::now());
+    //start-up the orchestrator
+    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
+
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
+
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
+	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
+
+	ConfigRequestEvent::Ptr pEvtCfgReq( new ConfigRequestEvent(strFromDown, strDaemon ));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtCfgReq);
+
+	// wait for a configuration reply event
+	pTestStr->WaitForEvent<sdpa::events::ConfigReplyEvent>(pErrorEvt);
+
+	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
+
+	// the user submits a job
+	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
+
+	// the user waits for an acknowledgment
+	sdpa::job_id_t job_id_user = pTestStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
+
+	// Now, a cancel message the user sends a CancelJob  message
+	CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUp, strDaemon, job_id_user) );
+	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
+
+	// the user expects now a CancelJobAckEvent
+	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
+	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+
+	// shutdown the orchestrator
+	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
+	m_ptrDaemonFSM->daemon_stage()->send(pEvtInt);
+
+	// you can leave now
+	SDPA_LOG_DEBUG("Slave: Finished!");
+}
+
 

@@ -37,7 +37,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 {
 	JobFSM( const sdpa::job_id_t &id,
 			const sdpa::job_desc_t &desc,
-			const sdpa::daemon::ISendEvent* pHandler = NULL,
+			const sdpa::daemon::IComm* pHandler = NULL,
 			const sdpa::job_id_t &parent = Job::invalid_job_id());
 
 	virtual ~JobFSM()  throw ();

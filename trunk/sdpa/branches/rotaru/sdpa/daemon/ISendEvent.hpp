@@ -3,13 +3,16 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
+#include <sdpa/wf/Sdpa2Gwes.hpp>
 
 namespace sdpa { namespace daemon {
-  class ISendEvent{
+  class IComm{
   public:
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
 	  virtual const std::string output_stage() const = 0;
-
+	  virtual sdpa::wf::Sdpa2Gwes* gwes() const = 0;
+	  virtual std::string master()const = 0;
+	  virtual const std::string& name() const = 0;
   };
 }}
 

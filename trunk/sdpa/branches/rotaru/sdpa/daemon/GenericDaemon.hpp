@@ -31,7 +31,7 @@ namespace sdpa { namespace daemon {
   const std::string NRE("nre") ;
 
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
-						public sdpa::daemon::ISendEvent,
+						public sdpa::daemon::IComm,
 						public seda::Strategy,
 						public sdpa::wf::Gwes2Sdpa {
   public:
@@ -88,12 +88,14 @@ namespace sdpa { namespace daemon {
 	  void addWorker(const  Worker::ptr_t );
 
 	  std::string master()const { return master_;}
+	  const std::string& name() const { return Strategy::name(); }
 
 	  //only for testing purposes!
 	  //friend class sdpa::tests::DaemonFSMTest;
 
 	  virtual const std::string output_stage() const { return output_stage_ ; }
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
+	  virtual  sdpa::wf::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 
   protected:
 	  SDPA_DECLARE_LOGGER();

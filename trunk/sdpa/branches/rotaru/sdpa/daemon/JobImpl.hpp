@@ -16,7 +16,7 @@ namespace sdpa { namespace daemon {
 
         JobImpl(const sdpa::job_id_t &id,
                 const sdpa::job_desc_t &desc,
-                const sdpa::daemon::ISendEvent* pHandler = NULL,
+                const sdpa::daemon::IComm* pHandler = NULL,
                 const sdpa::job_id_t &parent = Job::invalid_job_id());
 
         virtual ~JobImpl() throw();
@@ -37,6 +37,8 @@ namespace sdpa { namespace daemon {
         virtual Job::ptr_t get_subjob(const job_id_t & id);
 
         virtual bool is_marked_for_deletion();
+        virtual bool mark_for_deletion();
+
         virtual bool is_local();
         virtual void set_local(bool);
 
@@ -65,7 +67,7 @@ namespace sdpa { namespace daemon {
         bool b_local_;
         SDPA_DECLARE_LOGGER();
     protected:
-       	mutable ISendEvent* pSendEvent;
+       	mutable IComm* pComm;
     };
 }}
 
