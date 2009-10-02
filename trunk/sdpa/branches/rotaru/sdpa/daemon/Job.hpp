@@ -7,6 +7,7 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/wf/types.hpp>
+#include <sdpa/Properties.hpp>
 
 #include <boost/statechart/event_base.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -19,7 +20,6 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
-
 
 namespace sdpa { namespace daemon {
 
