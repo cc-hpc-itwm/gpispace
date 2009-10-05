@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 project(sdpa_main)
 
 # have the full monty in makefiles
@@ -30,9 +31,25 @@ set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 ##########################################################
+set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
+# gprof and gcov support
+set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
+
+##########################################################
 include_directories(${${PROJECT_NAME}_SOURCE_DIR}/fhglog)
 link_directories(${CMAKE_BINARY_DIR}/fhglog/fhglog)
 link_libraries(fhglog)
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/seda)
+include_directories(${CMAKE_BINARY_DIR}/seda)
 link_directories(${CMAKE_BINARY_DIR}/seda/seda)
 link_libraries(seda)
 message(STATUS "===LINK : ${CMAKE_BINARY_DIR}/fhglog/fhglog")
