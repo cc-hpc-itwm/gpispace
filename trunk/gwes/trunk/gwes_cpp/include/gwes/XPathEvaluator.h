@@ -8,6 +8,7 @@
 #define XPATHEVALUATOR_H_
 // gwes
 #include <gwes/TransitionOccurrence.h>
+#include <gwes/XPathException.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // libxml2
@@ -63,14 +64,14 @@ public:
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
 	 * @param xmlXpathContextChar The context for the evaluation as const char*.
 	 */
-	explicit XPathEvaluator(const char* xmlXpathContextChar);
+	explicit XPathEvaluator(const char* xmlXpathContextChar) throw(XPathException);
 
 	/**
 	 * Constructor for XPathEvaluator.
 	 * Note: xmlInitParser() and LIBXML_TEST_VERSION must be invoked only ONCE before invoking this constructor!
 	 * @param transitionOccurrenceP Pointer to the transition occurrence from which to build the context for the evaluation.
 	 */
-	explicit XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException);
+	explicit XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException,XPathException);
 
 	/**
 	 * Destructor.
