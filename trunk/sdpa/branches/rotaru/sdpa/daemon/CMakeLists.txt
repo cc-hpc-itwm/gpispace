@@ -1,5 +1,5 @@
 file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+file(GLOB srcs "*.cpp" "../Properties.cpp")
 
 add_subdirectory(orchestrator)
 add_subdirectory(aggregator)

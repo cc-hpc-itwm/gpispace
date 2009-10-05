@@ -12,6 +12,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 
+#include <sdpa/Properties.hpp>
+
 namespace sdpa {
 	namespace fsm {
 		class JobFSMActions {
