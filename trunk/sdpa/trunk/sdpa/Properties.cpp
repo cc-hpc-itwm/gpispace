@@ -2,21 +2,21 @@
 
 void sdpa::Properties::put(const std::string &key, const std::string &val) {
     del(key);
-    _properties.insert(std::make_pair(key, val));
+    properties_.insert(std::make_pair(key, val));
 }
 
 std::size_t sdpa::Properties::del(const std::string &key) {
-    return _properties.erase(key);
+    return properties_.erase(key);
 }
 
 bool sdpa::Properties::has_key(const std::string &key) const {
-    std::map<std::string, std::string>::const_iterator it(_properties.find(key));
-    return (it != _properties.end());
+    std::map<std::string, std::string>::const_iterator it(properties_.find(key));
+    return (it != properties_.end());
 }
 
 const std::string &sdpa::Properties::get(const std::string &key) const throw(PropertyLookupFailed) {
-    std::map<std::string, std::string>::const_iterator it(_properties.find(key));
-    if (it != _properties.end()) {
+    std::map<std::string, std::string>::const_iterator it(properties_.find(key));
+    if (it != properties_.end()) {
         return it->second;
     } else {
         throw PropertyLookupFailed(key);
@@ -32,9 +32,9 @@ const std::string &sdpa::Properties::get(const std::string &key, const std::stri
 }
 
 void sdpa::Properties::clear() {
-    _properties.clear();
+    properties_.clear();
 }
 
 bool sdpa::Properties::empty() const {
-    return _properties.empty();
+    return properties_.empty();
 }

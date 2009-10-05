@@ -12,7 +12,7 @@ namespace events {
     public:
         typedef sdpa::shared_ptr<DeleteJobAckEvent> Ptr;
 
-        DeleteJobAckEvent(const address_t &from, const address_t &to) : MgmtEvent(from, to) {
+        DeleteJobAckEvent(const address_t &a_from, const address_t &a_to) : MgmtEvent(a_from, a_to) {
         }
 
     	virtual ~DeleteJobAckEvent() {

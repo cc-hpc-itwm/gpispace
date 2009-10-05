@@ -49,7 +49,7 @@ void TokenTest::testTokenDataTypes() {
   }
 
   try {
-    int tmp(token.as<int>());
+    token.as<int>();
     CPPUNIT_ASSERT_MESSAGE("Token contained a non-integer string and could be casted to int!", false);
   } catch (const boost::bad_any_cast &bac) {
   }

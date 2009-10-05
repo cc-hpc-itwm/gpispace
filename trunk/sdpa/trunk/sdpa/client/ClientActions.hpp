@@ -6,6 +6,7 @@
 namespace sdpa { namespace client {
   class ClientActions {
     public:
+      virtual ~ClientActions() { }
       virtual void action_configure(const std::string &) = 0;
       virtual void action_config_ok() = 0;
       virtual void action_config_nok() = 0;

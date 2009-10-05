@@ -18,9 +18,9 @@ namespace sdpa { namespace config {
 
       Config& load_defaults();
       Config& parse_env() { return *this; }
-      Config& parse_file(const boost::filesystem::path &cfgfile) { return *this; }
-      Config& parse(const std::string &cmdline) { return *this; }
-      Config& parse(int argc, char **argv) { return *this; }
+      Config& parse_file(const boost::filesystem::path & /* cfgfile */) { return *this; }
+      Config& parse(const std::string & /* cmdline */) { return *this; }
+      Config& parse(int /* argc */, char ** /* argv */) { return *this; }
     private:
       Config();
   };
@@ -32,6 +32,7 @@ namespace sdpa { namespace config {
       cfg.put("config.configfile", "/etc/sdpa/sdparc"); // TODO: CMAKE_INSTALL_PREFIX/etc/sdpa/sdparc
       cfg.put("logging.loggers", "default");
       cfg.put("logging.default.level", 0);
+      return cfg;
     }
   };
 

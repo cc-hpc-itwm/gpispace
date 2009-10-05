@@ -49,6 +49,9 @@ namespace modules {
       void call(const std::string &function, const input_data_t&, output_data_t&) const throw (FunctionNotFound, BadFunctionArgument, FunctionException);
       void add_function(const std::string &function, GenericFunction) throw (DuplicateFunction, FunctionException);
     private:
+      Module(const Module&);
+      Module &operator=(const Module &);
+
       std::string name_;
       handle_t handle_;
       call_table_t call_table_;

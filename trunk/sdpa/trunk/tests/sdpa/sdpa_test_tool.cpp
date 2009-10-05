@@ -15,7 +15,8 @@ struct LogConfig {
     }
 };
 
-int main(int argc, char **argv) {
+int main(int /* argc */, char ** /* argv */)
+{
     using namespace sdpa;
     sdpa::logging::Configurator::configure(LogConfig());
 

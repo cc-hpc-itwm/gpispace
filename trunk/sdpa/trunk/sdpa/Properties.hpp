@@ -9,8 +9,8 @@
 namespace sdpa {
     class PropertyLookupFailed : public sdpa::SDPAException {
     public:
-        PropertyLookupFailed(const std::string &key)
-            : sdpa::SDPAException(std::string("property not found: ") + key), _key(key) {}
+        PropertyLookupFailed(const std::string &a_key)
+            : sdpa::SDPAException(std::string("property not found: ") + a_key), _key(a_key) {}
         virtual ~PropertyLookupFailed() throw() {}
 
         const std::string &key() const { return _key; }
@@ -20,8 +20,8 @@ namespace sdpa {
 
     class PropertyConversionFailed : public sdpa::SDPAException {
     public:
-        PropertyConversionFailed(const std::string &key, const std::string &value)
-            : sdpa::SDPAException(std::string("property {"+key+","+value+"} could not be converted!")), _key(key), _value(value) {}
+        PropertyConversionFailed(const std::string &a_key, const std::string &a_value)
+            : sdpa::SDPAException(std::string("property {"+a_key+","+a_value+"} could not be converted!")), _key(a_key), _value(a_value) {}
         virtual ~PropertyConversionFailed() throw() {}
 
         const std::string &key() const { return _key; }
@@ -38,7 +38,10 @@ namespace sdpa {
      */
     class Properties {
     public:
-        Properties() {}
+        Properties()
+          : properties_()
+        {
+        }
         virtual ~Properties() {}
 
         void put(const std::string &key, const std::string &value);
@@ -85,7 +88,7 @@ namespace sdpa {
         void clear();
         bool empty() const;
     private:
-        std::map<std::string, std::string> _properties;
+        std::map<std::string, std::string> properties_;
     };
 }
 

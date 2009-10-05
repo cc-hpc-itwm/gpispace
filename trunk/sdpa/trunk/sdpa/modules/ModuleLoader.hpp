@@ -28,7 +28,10 @@ namespace modules {
     Module& load(const std::string &module, const std::string &file) throw(ModuleLoadFailed);
     void unload(const std::string &module);
   private:
-    ModuleLoader() {}
+    ModuleLoader()
+      : module_table_()
+    {
+    }
     ModuleLoader(const ModuleLoader&);
     void unload_all();
     void unload(module_table_t::iterator);

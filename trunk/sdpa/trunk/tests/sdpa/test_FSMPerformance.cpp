@@ -4,6 +4,11 @@
 #include "test_FSMPerformance.hpp"
 #include "PerformanceTestFSMEvent.hpp"
 #include "PerformanceTestBSCEvent.hpp"
+
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wunused"
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "PerformanceTest_sm.h"
 #include "PerformanceTest_sc.h"
 #include <sdpa/util.hpp>

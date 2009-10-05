@@ -69,7 +69,7 @@ void WorkerTest::testAcknowledge() {
 
 typedef SynchronizedQueue<std::list<int> > queue_type;
 struct thread_data {
-  thread_data(queue_type *q) : q(q), val(0) {}
+  thread_data(queue_type *a_q) : q(a_q), val(0) {}
   void operator()() {
     try
     {

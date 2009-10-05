@@ -4,14 +4,18 @@
 
 using namespace sdpa::daemon;
 
-Worker::Worker(const worker_id_t &name, const location_t &location)
-  : name_(name),
-    location_(location),
-    tstamp_(sdpa::util::now()) {
+Worker::Worker(const worker_id_t &a_name, const location_t &a_location)
+  : name_(a_name)
+  , location_(a_location)
+  , tstamp_(sdpa::util::now())
+  , pending_()
+  , submitted_()
+  , acknowledged_()
+{
     
 }
 
-void Worker::update(const sdpa::events::SDPAEvent &event) {
+void Worker::update(const sdpa::events::SDPAEvent &) {
   tstamp_ = sdpa::util::now();
 }
 

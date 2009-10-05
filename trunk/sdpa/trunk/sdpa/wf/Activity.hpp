@@ -32,10 +32,10 @@ namespace sdpa { namespace wf {
      */
     class Method {
       public:
-        Method(const std::string & module, const std::string & method_name)
-          : module_(module), name_(method_name) {}
+        Method(const std::string & a_module, const std::string & a_method_name)
+          : module_(a_module), name_(a_method_name) {}
 
-        void operator()(const parameter_list & in, parameter_list & out) {
+        void operator()(const parameter_list & , parameter_list & ) {
           // \todo{implement me}
         }
 
@@ -74,7 +74,7 @@ namespace sdpa { namespace wf {
     Activity(const std::string &name, const Method & m, const parameter_list & input, const parameter_list & output);
 
     Activity(const Activity &);
-    const Activity & operator=(const Activity &);
+    Activity & operator=(const Activity &);
 
     ~Activity() {}
     

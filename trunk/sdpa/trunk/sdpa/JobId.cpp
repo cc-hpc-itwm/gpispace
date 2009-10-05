@@ -4,6 +4,7 @@
 using namespace sdpa;
 
 JobId::JobId()
+  : id_()
 {
   uuid uid;
   uuidgen gen;

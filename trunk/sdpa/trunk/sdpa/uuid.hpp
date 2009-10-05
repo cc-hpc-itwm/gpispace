@@ -17,7 +17,7 @@ namespace sdpa {
 
     ~uuid();
 
-    const uuid &operator=(const uuid &rhs);
+    uuid &operator=(const uuid &rhs);
 
     const uuid_t &data() const { return uuid_; }
     uuid_t &data() { dirty_ = true; return uuid_; }

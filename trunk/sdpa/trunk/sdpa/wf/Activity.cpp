@@ -2,27 +2,46 @@
 
 using namespace sdpa::wf;
 
-Activity::Activity(const std::string &name, const Method &method)
-  : name_(name), method_(method) {
+Activity::Activity(const std::string &a_name, const Method &a_method)
+  : name_(a_name)
+  , method_(a_method)
+  , input_()
+  , output_()
+{
 }
 
-Activity::Activity(const std::string &name, const Method &method, const parameter_list & input)
-  : name_(name), method_(method), input_(input) {
+Activity::Activity(const std::string &a_name, const Method &a_method, const parameter_list & a_input)
+  : name_(a_name)
+  , method_(a_method)
+  , input_(a_input)
+  , output_()
+{
 }
 
-Activity::Activity(const std::string &name, const Method &method, const parameter_list & input, const parameter_list & output)
-  : name_(name), method_(method), input_(input), output_(output) {
+Activity::Activity(const std::string &a_name, const Method &a_method, const parameter_list & a_input, const parameter_list & a_output)
+  : name_(a_name)
+  , method_(a_method)
+  , input_(a_input)
+  , output_(a_output)
+{
 }
 
 Activity::Activity(const Activity &other)
-  : name_(other.name()), method_(other.method()), input_(other.input()), output_(other.output()) {
+  : name_(other.name())
+  , method_(other.method())
+  , input_(other.input())
+  , output_(other.output())
+{
 }
 
-const Activity & Activity::operator=(const Activity &rhs) {
-  name_ = rhs.name();
-  method_ = rhs.method();
-  input_ = rhs.input();
-  output_ = rhs.output();
+Activity& Activity::operator=(const Activity &rhs) {
+  if (this != &rhs)
+  {
+    name_ = rhs.name();
+    method_ = rhs.method();
+    input_ = rhs.input();
+    output_ = rhs.output();
+  }
   return *this;
 }
 

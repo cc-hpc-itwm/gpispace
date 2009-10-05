@@ -5,28 +5,38 @@
 
 using namespace sdpa;
 
-uuid::uuid(const uuid &other) {
+uuid::uuid(const uuid &other)
+  : dirty_(true)
+  , str_tmp_("")
+{
   set(other.data());
 }
 
-uuid::uuid(const uuid_t &data) {
-  set(data);
+uuid::uuid(const uuid_t &some_data)
+  : dirty_(true)
+  , str_tmp_("")
+{
+  set(some_data);
 }
 
-uuid::uuid() {}
+uuid::uuid()
+  : dirty_(true)
+  , str_tmp_("")
+{
+}
 
 uuid::~uuid() {}
 
-const uuid &uuid::operator=(const uuid &other) {
+uuid &uuid::operator=(const uuid &other) {
   if (this != &other) {
     set(other.data());
   }
   return *this;
 }
 
-void uuid::set(const uuid_t &data) {
+void uuid::set(const uuid_t &a_data) {
   dirty_ = true;
-  std::memcpy(uuid_, data, sizeof(uuid_t));
+  std::memcpy(uuid_, a_data, sizeof(uuid_t));
 }
 
 const std::string &uuid::str() const {

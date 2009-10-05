@@ -1,7 +1,6 @@
 #ifndef SDPA_SubmitJobEvent_HPP
 #define SDPA_SubmitJobEvent_HPP
 
-#include <iostream>
 #include <boost/statechart/event.hpp>
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
@@ -14,16 +13,16 @@ namespace sdpa {
       public:
         typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
 
-        SubmitJobEvent( const address_t& from
-                      , const address_t& to
-                      , const job_desc_t& description = sdpa::job_desc_t("")
-                      , const sdpa::job_id_t& job_id = sdpa::job_id_t("")) :
-          sdpa::events::JobEvent( from, to, job_id ), desc_(description)  {
-            //std::cout << "Create event 'SubmitJobEvent'"<< std::endl;
-          }
+        SubmitJobEvent( const address_t& a_from
+                      , const address_t& a_to
+                      , const job_desc_t& a_description = sdpa::job_desc_t("")
+                      , const sdpa::job_id_t& a_job_id = sdpa::job_id_t(""))
+          : sdpa::events::JobEvent( a_from, a_to, a_job_id )
+          , desc_(a_description)
+        {
+        }
 
         virtual ~SubmitJobEvent() {
-          //std::cout << "Delete event 'SubmitJobEvent'"<< std::endl;
         }
 
         std::string str() const { return "SubmitJobEvent"; }

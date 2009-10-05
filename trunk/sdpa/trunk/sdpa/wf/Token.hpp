@@ -38,8 +38,8 @@ namespace sdpa { namespace wf {
 
         @param [in] the new data
        */
-      void reset(const any_t & data) {
-        data_ = data;
+      void reset(const any_t & some_data) {
+        data_ = some_data;
         initialized_ = true;
       }
 
@@ -77,11 +77,11 @@ namespace sdpa { namespace wf {
     public:
       Token()
         : data_(any_t()), initialized_(false) {}
-      Token(const any_t & data)
-        : data_(data), initialized_(true) { }
+      Token(const any_t & some_data)
+        : data_(some_data), initialized_(true) { }
       template <typename T>
-      Token(T data)
-        : data_(data), initialized_(true) { }
+      Token(T some_data)
+        : data_(some_data), initialized_(true) { }
 
       Token(const Token & other)
         : data_(other.data()), initialized_(true) {

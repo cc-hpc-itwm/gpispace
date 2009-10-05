@@ -48,7 +48,7 @@ namespace sdpa { namespace wf {
        */
       Parameter(const std::string & name, EdgeType edge_type);
       Parameter(const Parameter &);
-      const Parameter & operator=(const Parameter &);
+      Parameter & operator=(const Parameter &);
 
       ~Parameter() {}
 

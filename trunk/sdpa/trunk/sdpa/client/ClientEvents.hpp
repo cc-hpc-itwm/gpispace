@@ -1,5 +1,5 @@
-#ifndef SDPA_CLIENT_CONFIG_EVENTS_HPP
-#define SDPA_CLIENT_CONFIG_EVENTS_HPP 1
+#ifndef SDPA_CLIENT_EVENTS_HPP
+#define SDPA_CLIENT_EVENTS_HPP 1
 
 #include <seda/IEvent.hpp>
 
@@ -8,7 +8,7 @@ namespace sdpa { namespace client {
   {
     public:
       explicit
-      StartUp(const std::string &config) : config_(config) {}
+      StartUp(const std::string &a_config) : config_(a_config) {}
       std::string str() const { return "StartUp"; }
 
       const std::string &config() const { return config_; }

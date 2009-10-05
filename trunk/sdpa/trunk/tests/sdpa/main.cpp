@@ -23,7 +23,7 @@
 #include <sdpa/LoggingConfigurator.hpp>
 #include <tests/sdpa/Suite.hpp>
 
-int main(int argc, char **argv)
+int main(int /* argc */, char ** /* argv */)
 {
   sdpa::logging::Configurator::configure();
 

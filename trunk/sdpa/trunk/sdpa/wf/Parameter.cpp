@@ -2,18 +2,21 @@
 
 using namespace sdpa::wf;
 
-Parameter::Parameter(const Token &token, const std::string &name, EdgeType edge_type)
-  : token_(token), name_(name), edge_type_(edge_type) {
+Parameter::Parameter(const Token &a_token, const std::string &a_name, EdgeType a_edge_type)
+  : token_(a_token), name_(a_name), edge_type_(a_edge_type) {
   }
 
 Parameter::Parameter(const Parameter &other)
   : token_(other.token()), name_(other.name()), edge_type_(other.edge_type()) {
 }
 
-const Parameter& Parameter::operator=(const Parameter &rhs) {
-  token_ = rhs.token();
-  name_ = rhs.name();
-  edge_type_ = rhs.edge_type();
+Parameter& Parameter::operator=(const Parameter &rhs) {
+  if (this != &rhs)
+  {
+    token_ = rhs.token();
+    name_ = rhs.name();
+    edge_type_ = rhs.edge_type();
+  }
   return *this;
 }
 

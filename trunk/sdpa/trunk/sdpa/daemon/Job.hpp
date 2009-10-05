@@ -24,6 +24,8 @@ namespace sdpa { namespace daemon {
 
         static const job_id_t &invalid_job_id();
 
+        virtual ~Job() {}
+
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
 

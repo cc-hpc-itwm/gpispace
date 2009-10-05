@@ -13,8 +13,8 @@ namespace events {
 		typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
         typedef int status_t;
 
-		JobStatusReplyEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id, const status_t &a_status = 0)
-          :  sdpa::events::JobEvent(from, to, job_id)
+		JobStatusReplyEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id, const status_t &a_status = 0)
+          :  sdpa::events::JobEvent(a_from, a_to, a_job_id)
           , status_(a_status)
         {
 			// std::cout << "Create event 'JobStatusReplyEvent'"<< std::endl;

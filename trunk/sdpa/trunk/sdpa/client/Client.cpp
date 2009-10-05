@@ -4,7 +4,7 @@
 #include <fhglog/Configuration.hpp>
 
 #include <seda/StageRegistry.hpp>
-#include <sdpa/client/ConfigEvents.hpp>
+#include <sdpa/client/ClientEvents.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -46,10 +46,10 @@ void Client::perform(const seda::IEvent::Ptr &event)
   } else if (dynamic_cast<ConfigNOK*>(event.get())) {
     DMLOG(DEBUG,"nok");
     fsm_.ConfigNok(event);
-  } else if (StartUp * start = dynamic_cast<StartUp*>(event.get())) {
+  } else if (StartUp * startup = dynamic_cast<StartUp*>(event.get())) {
     DMLOG(DEBUG,"start");
-    fsm_.Start(start->config());
-  } else if (Shutdown *shut = dynamic_cast<Shutdown*>(event.get())) {
+    fsm_.Start(startup->config());
+  } else if (/* Shutdown *shut = */ dynamic_cast<Shutdown*>(event.get())) {
     DMLOG(DEBUG,"shut");
     fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
@@ -164,7 +164,7 @@ void Client::cancelJob(const job_id_t &jid)
   DMLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
-  if (se::CancelJobAckEvent *ack = dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
+  if (/* se::CancelJobAckEvent *ack = */ dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
   {
     DMLOG(DEBUG,"cancellation has been acknowledged");
   }
@@ -203,7 +203,7 @@ void Client::deleteJob(const job_id_t &jid)
   DMLOG(DEBUG,"waiting for a reply");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
-  if (se::DeleteJobAckEvent *ack = dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
+  if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
   {
     DMLOG(DEBUG,"deletion of job has been acknowledged");
   }

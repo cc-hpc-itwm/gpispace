@@ -13,6 +13,12 @@
 #include <sdpa/common.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/client/ClientActions.hpp>
+
+
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wunused"
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <sdpa/client/ClientFsm_sm.h>
 #include <sdpa/events/SDPAEvent.hpp>
 
@@ -70,14 +76,14 @@ namespace sdpa { namespace client {
 
     void action_store_reply(const seda::IEvent::Ptr &);
   private:
-    Client(const std::string &name, const std::string &output_stage)
-      : seda::Strategy(name)
-      ,version_(SDPA_VERSION)
-      ,copyright_(SDPA_COPYRIGHT)
-      ,contact_(SDPA_CONTACT)
-      ,name_(name)
-      ,output_stage_(output_stage)
-      ,fsm_(*this)
+    Client(const std::string &a_name, const std::string &output_stage)
+      : seda::Strategy(a_name)
+      , version_(SDPA_VERSION)
+      , copyright_(SDPA_COPYRIGHT)
+      , contact_(SDPA_CONTACT)
+      , name_(a_name)
+      , output_stage_(output_stage)
+      , fsm_(*this)
     {
     
     }

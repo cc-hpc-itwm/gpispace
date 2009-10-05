@@ -2,11 +2,15 @@
 
 using namespace sdpa::modules;
 
-Module::Module(const std::string &name, handle_t handle)
-  : name_(name), handle_(handle) {
+Module::Module(const std::string &a_name, handle_t a_handle)
+  : name_(a_name)
+  , handle_(a_handle)
+  , call_table_()
+{
 }
 
-Module::~Module() {
+Module::~Module()
+{
 }
 
 void Module::call(const std::string &function, const input_data_t &input, output_data_t &output) const throw (FunctionNotFound, BadFunctionArgument, FunctionException) {
