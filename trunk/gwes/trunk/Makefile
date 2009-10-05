@@ -12,6 +12,12 @@ compile: config
 config: $(BUILD_DIR) CMakeLists.txt
 	cd $(BUILD_DIR) && $(CMAKE) $(top_srcdir)
 
+release: configrelease
+	make -C $(BUILD_DIR)
+
+configrelease: $(BUILD_DIR) CMakeLists.txt
+	cd $(BUILD_DIR) && $(CMAKE) $(top_srcdir) -DCMAKE_BUILD_TYPE=Release
+
 distclean:
 	@-rm -rf $(BUILD_DIR)
 	@-find . -name "*~" -delete
