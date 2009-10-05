@@ -30,8 +30,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  # TODO: we need to check the compiler here, gcc does not know about those flags
-  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror -wd383 -wd981")
+
+  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+
+  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
+  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+    set(CMAKE_CXX_FALGS "${CMAKE_CXX_FLAGS} -wd383 -wd981")
+  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow -fno-omit-frame-pointer")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
