@@ -8,12 +8,15 @@
 #include <gwes/Utils.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
+// uuid
+#include <uuid/uuid.h>
 // std
 #include <stdlib.h>
 #include <unistd.h>  // getcwd() definition
 #include <sys/param.h>  // MAXPATHLEN definition
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 using namespace gwes;
@@ -96,6 +99,17 @@ string Utils::expandEnv(const string& path) {
 	return path;
 }
 
-
+string Utils::generateUuid() {
+	unsigned char uuid[16];
+	uuid_generate(uuid);
+    std::stringstream sstr;
+    sstr << std::hex << std::right;
+    for (std::size_t i(0); i < sizeof(uuid); ++i) {
+       int c = (int(uuid[i]) & 0xff);
+       sstr << std::setw(2) << std::setfill('0') << c;
+       if (i==3||i==5||i==7||i==9) sstr << "-";
+    }
+    return sstr.str();
+}
 
 } // end namespace gwes

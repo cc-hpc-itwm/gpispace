@@ -56,6 +56,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   ENDIF(NOT FHGLOG_FOUND)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
+# uuid library
+Include(FindUUID)
+IF(UUID_FOUND)
+  message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
+  include_directories(${UUID_INCLUDE_DIR})
+  link_libraries(${UUID_LIBRARY})
+ELSE(UUID_FOUND)
+  message(FATAL_ERROR "UUID library could not be found but is required")
+ENDIF(UUID_FOUND)
+
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )

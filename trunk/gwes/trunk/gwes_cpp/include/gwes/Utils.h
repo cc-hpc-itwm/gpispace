@@ -29,6 +29,8 @@ public:
 	static void setEnvironmentVariables();
 	
 	static std::string expandEnv(const std::string& path);
+	
+	static std::string generateUuid(); 
 
 }; // end class Utils
 

@@ -9,6 +9,7 @@
 #include <gwes/SdpaActivity.h>
 #include <gwes/CommandLineActivity.h>
 #include <gwes/SubWorkflowActivity.h>
+#include <gwes/Utils.h>
 //std
 #include <unistd.h>
 #include <map>
@@ -357,10 +358,8 @@ void WorkflowHandler::waitForStatusChangeToCompletedOrTerminated() {
 }
 
 string WorkflowHandler::generateID() const {
-	///ToDo: Implement with UUID.
-	static long counter = 0;
 	ostringstream oss;
-	oss << _userId << "_" << counter++;
+	oss << _userId << "_" << Utils::generateUuid();
 	return oss.str();
 }
 
