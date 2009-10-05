@@ -31,7 +31,7 @@ SET(_gwes_BINARY_SEARCH_DIRS
 
 if( "${GWES_HOME}" STREQUAL "")
   if("" MATCHES "$ENV{GWES_HOME}")
-    message(STATUS "GWES_HOME env is not set, setting it to /usr/local")
+    message(STATUS "GWES_HOME env is not set, setting it to ${_gwes_HOME}")
     set (GWES_HOME ${_gwes_HOME})
   else("" MATCHES "$ENV{GWES_HOME}")
     set (GWES_HOME "$ENV{GWES_HOME}")
@@ -124,7 +124,7 @@ SET(_gwdl_BINARY_SEARCH_DIRS
 ##
 if( "${GWDL_HOME}" STREQUAL "")
   if("" MATCHES "$ENV{GWDL_HOME}")
-    message(STATUS "GWDL_HOME env is not set, setting it to /usr/local")
+    message(STATUS "GWDL_HOME env is not set, setting it to ${_gwdl_HOME}")
     set (GWDL_HOME ${_gwdl_HOME})
   else("" MATCHES "$ENV{GWDL_HOME}")
     set (GWDL_HOME "$ENV{GWDL_HOME}")
