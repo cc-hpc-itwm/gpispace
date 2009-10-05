@@ -5,13 +5,11 @@
 
 if(UUID_HOME MATCHES "")
   if("" MATCHES "$ENV{UUID_HOME}")
-    message(STATUS "UUID_HOME env is not set, setting it to /usr/local")
     set (UUID_HOME "/usr/local")
   else("" MATCHES "$ENV{UUID_HOME}")
     set (UUID_HOME "$ENV{UUID_HOME}")
   endif("" MATCHES "$ENV{UUID_HOME}")
 else(UUID_HOME MATCHES "")
-  message(STATUS "UUID_HOME is not empty: \"${UUID_HOME}\"")
   set (UUID_HOME "${UUID_HOME}")
 endif(UUID_HOME MATCHES "")
 
@@ -36,6 +34,7 @@ FIND_LIBRARY(UUID_LIBRARY
 # if the include and the program are found then we have it
 IF(UUID_INCLUDE_DIR AND UUID_LIBRARY) 
   SET(UUID_FOUND "YES")
+  message(STATUS "Found UUID Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
 else(UUID_INCLUDE_DIR AND UUID_LIBRARY) 
   message(STATUS "UUID library could not be found, try setting UUID_HOME (value=\"${UUID_HOME}\").")
 ENDIF(UUID_INCLUDE_DIR AND UUID_LIBRARY)

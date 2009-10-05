@@ -23,13 +23,11 @@ SET(_pb_LIBRARIES_SEARCH_DIRS
 ##
 if( "${PB_HOME}" STREQUAL "")
   if("" MATCHES "$ENV{PB_HOME}")
-    message(STATUS "PB_HOME env is not set, setting it to /usr/local")
     set (PB_HOME ${_pb_HOME})
   else("" MATCHES "$ENV{PB_HOME}")
     set (PB_HOME "$ENV{PB_HOME}")
   endif("" MATCHES "$ENV{PB_HOME}")
 else( "${PB_HOME}" STREQUAL "")
-  message(STATUS "PB_HOME is not empty: \"${PB_HOME}\"")
 endif( "${PB_HOME}" STREQUAL "")
 ##
 
@@ -105,6 +103,7 @@ FIND_LIBRARY(PB_LIBRARY
 # if the include and the program are found then we have it
 IF(PB_PROTOC_CMD AND PB_LIBRARY) 
   SET(PB_FOUND "YES")
+  message(STATUS "Found ProtocolBuffers Inc:${PB_INCLUDE_DIR} Lib:${PB_LIBRARY} Cmd:${PB_PROTOC_CMD}")
 else(PB_PROTOC_CMD AND PB_LIBRARY) 
   message(STATUS "ProtocolBuffers could not be found, try setting PB_HOME (value=\"${PB_HOME}\").")
 ENDIF(PB_PROTOC_CMD AND PB_LIBRARY)

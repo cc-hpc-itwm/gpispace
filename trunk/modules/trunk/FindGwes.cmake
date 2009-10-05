@@ -29,7 +29,6 @@ SET(_gwes_BINARY_SEARCH_DIRS
   /usr/lib
   )
 
-##
 if( "${GWES_HOME}" STREQUAL "")
   if("" MATCHES "$ENV{GWES_HOME}")
     message(STATUS "GWES_HOME env is not set, setting it to /usr/local")
@@ -40,7 +39,6 @@ if( "${GWES_HOME}" STREQUAL "")
 else( "${GWES_HOME}" STREQUAL "")
   message(STATUS "GWES_HOME is not empty: \"${GWES_HOME}\"")
 endif( "${GWES_HOME}" STREQUAL "")
-##
 
 message(STATUS "Looking for GWES in ${GWES_HOME}")
 
