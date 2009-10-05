@@ -31,23 +31,25 @@ message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules"
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
+    # gprof and gcov support
+    set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
+    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
+    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
+  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
   # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-    set(CMAKE_CXX_FALGS "${CMAKE_CXX_FLAGS} -wd383 -wd981")
+    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
   endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow -fno-omit-frame-pointer")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
-  # gprof and gcov support
-  set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # threads
