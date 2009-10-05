@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <string>
 
-#define GWES_TEMP_DIRECTORY "/tmp/.gwes"
+#define GWES_TEMP_DIRECTORY ".gwes"
 
 namespace gwes
 {

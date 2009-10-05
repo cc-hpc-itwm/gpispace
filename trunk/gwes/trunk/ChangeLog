@@ -3,6 +3,8 @@ Changelog for GWES
 Version 2.0.1:
 - using CPPUNIT for tests
 - concurrent execution of sub workflows
+- CommandLineActivity uses path ".gwes" (relative to current working directory) for executing
+  command line programs. 
 
 Version 2.0:
 - supports GWorkflowDL 2.0

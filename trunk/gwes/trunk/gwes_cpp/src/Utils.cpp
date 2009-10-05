@@ -37,6 +37,18 @@ bool Utils::startsWith(const string& s1, const string& s2) {
 	return false;
 }
 
+string Utils::convertRelativeToAbsolutePath(const string& relpath) {
+	// is already absolute path
+	if (startsWith(relpath,"/")) return relpath;
+	// get current working directory
+	char pathC[MAXPATHLEN];
+	getcwd(pathC, MAXPATHLEN);
+	string path(pathC);
+	path += "/";
+	path += relpath;
+	return path;
+}
+
 void Utils::setEnvironmentVariables() {
 	static fhg::log::logger_t logger(fhg::log::getLogger("gwes"));
 	const char* name = "GWES_CPP_HOME";

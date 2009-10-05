@@ -50,7 +50,7 @@ void CommandLineActivity::initiateActivity() throw (ActivityException,StateTrans
 		throw StateTransitionException(oss.str());
 	}
 	// set working directory
-	_workingDirectory.append(GWES_TEMP_DIRECTORY);
+	_workingDirectory.append(Utils::convertRelativeToAbsolutePath(GWES_TEMP_DIRECTORY));
 	_workingDirectory.append("/");
 	_workingDirectory.append(_id);
 	// set stdoutfn
@@ -100,6 +100,9 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	
 	// generate command line
 	ostringstream command;
+	
+	// change to temporary working directory
+	command << "cd " << _workingDirectory << " && ";
 
 	// executable
 	command << Utils::expandEnv(_operation->getResourceName());
@@ -201,8 +204,7 @@ string CommandLineActivity::convertUrlToLocalPath(const string& url) {
 }
 
 /**
- * Note: execute is NOT thread safe, because of changing the working directory!
- * ToDo: make it thread safe.
+ * The "cd workingdirectory" must be part of the commandline, e.g., "cd test && execute..."
  */
 string CommandLineActivity::execute(const string& commandline) {
     LOG_INFO(_logger, "startActivity(" << _id << ").execute(" << commandline << ")");
@@ -212,24 +214,11 @@ string CommandLineActivity::execute(const string& commandline) {
 		oss << "commandline=\"" << commandline << "\"";
 		notifyObservers(Event::EVENT_ACTIVITY_START,oss.str(),&_toP->tokens);
 	}
-    // change to temporary working directory
-	long size;
-	char *buf;
-	char *olddir;
-	size = pathconf(".", _PC_PATH_MAX);
-	if ((buf = (char *)malloc((size_t)size)) != NULL) {
-	    olddir = getcwd(buf, (size_t)size);
-	}
-	//  char *getcwd(char *buf, size_t size);
-    if (chdir(_workingDirectory.c_str())!=0) LOG_WARN(_logger, "error changing to working directory: " << strerror(errno));
     string stdout;
     char buffer[1024];
     FILE* p=popen(commandline.c_str(), "r");
     while (fgets(buffer, 1024, p) != NULL) stdout.append(buffer);
     pclose(p);
-    // change back to old directory
-    chdir(olddir);
-    free(olddir);
 	return stdout;
 }
 
