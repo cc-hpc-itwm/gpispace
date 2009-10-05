@@ -20,7 +20,7 @@
 #include <sstream> // std::ostringstream
 #include <fhglog/fhglog.hpp>
 
-int test_format(const fhg::log::LogEvent &evt
+static int test_format(const fhg::log::LogEvent &evt
               , const std::string &fmt
               , const std::string &expected
               , bool does_throw)

@@ -24,11 +24,12 @@
 #define FHGLOG_DISABLE_LOGGING 1
 #include <fhglog/fhglog.hpp>
 
-std::string simulate_computation(std::size_t time = 5)
-{
-  sleep(time);
-  return "";
-}
+// UNUSED
+// static std::string simulate_computation(std::size_t time = 5)
+// {
+//   sleep(time);
+//   return "";
+// }
 
 int main (int, char **)
 {

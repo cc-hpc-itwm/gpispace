@@ -37,7 +37,7 @@ class Test
     fhg::log::LoggerApi log_;
 };
 
-std::string compute_large_output_string()
+static std::string compute_large_output_string()
 {
   sleep(3);
   return "computation took 3sec...: result 42";

@@ -58,7 +58,7 @@ int main (int, char **)
       std::clog << "FAILED!" << std::endl;
       std::clog << "\tloglevel was out of range, exception expected!" << std::endl;
       ++errcount;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
       std::clog << "OK!" << std::endl;
     }
   }

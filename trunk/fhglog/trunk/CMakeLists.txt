@@ -30,7 +30,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror -wd383 -wd981")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow -fno-omit-frame-pointer")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
