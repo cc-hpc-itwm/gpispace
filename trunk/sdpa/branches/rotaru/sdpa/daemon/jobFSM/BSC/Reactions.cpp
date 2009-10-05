@@ -51,7 +51,7 @@ sc::result Pending::react(const SubmitJobAckEvent& e)
 
 sc::result Pending::react(const CancelJobEvent& e)
 {
-	return transit<Cancelled>(&JobFSM::action_cancel_job, e);
+	return transit<Cancelled>(&JobFSM::action_cancel_job_from_pending, e);
 }
 
 /*sc::result Pending::react(const QueryJobStatusEvent& e)

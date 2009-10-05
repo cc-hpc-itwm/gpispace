@@ -19,7 +19,7 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::wf;
 using namespace sdpa::events;
-using namespace sdpa::fsm::bsc;
+using namespace sdpa::fsm::smc;
 
 //Provide ptr to an implementation of Sdpa2Gwes
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes)
