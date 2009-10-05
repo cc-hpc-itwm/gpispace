@@ -32,7 +32,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
+			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
 			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from read token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_READ); 
@@ -46,7 +46,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
+			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
 			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from input token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_INPUT); 
@@ -60,7 +60,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	for (size_t i=0; i<edges.size(); i++) {
 		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
-			LOG_WARN(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
+			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
 			if (!hasXPathEdgeExpressions) {
 				string edgeExpression = edges[i]->getExpression();

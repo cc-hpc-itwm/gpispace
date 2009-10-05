@@ -10,6 +10,8 @@
 #include <gwes/CommandLineActivity.h>
 #include <gwes/SubWorkflowActivity.h>
 #include <gwes/Utils.h>
+//gwdl
+#include <gwdl/AbstractionLevel.h>
 //std
 #include <unistd.h>
 #include <map>
@@ -201,29 +203,26 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 				<< selectedToP->getID() << "\" (level "
 				<< abstractionLevel << ") ...");
 				switch (abstractionLevel) {
-				case (Operation::BLACK): // no operation
+				case (AbstractionLevel::BLACK): // no operation
 					if (processBlackTransition(selectedToP, step))
 						modification = true;
 				break;
-				case (Operation::GREEN): // concrete selected operation
+				case (AbstractionLevel::GREEN): // concrete selected operation
 					if (processGreenTransition(selectedToP, step))
 						modification = true;
 				break;
-				case (Operation::BLUE): // set of operation candidates
+				case (AbstractionLevel::BLUE): // set of operation candidates
 					if (processBlueTransition(selectedToP, step))
 						modification = true;
 				break;
-				case (Operation::YELLOW): // operation class
+				case (AbstractionLevel::YELLOW): // operation class
 					if (processYellowTransition(selectedToP, step))
 						modification = true;
 				break;
-				case (Operation::RED): // unspecified operation
+				case (AbstractionLevel::RED): // unspecified operation
 					if (processRedTransition(selectedToP, step))
 						modification = true;
 				break;
-				default:
-					LOG_WARN(_logger, "This should not happen.");
-					_abort = true;
 				}
 			}
 
@@ -265,13 +264,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		} catch (ActivityException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
-			LOG_WARN(_logger, oss.str());
+			LOG_ERROR(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
 		}  catch (WorkflowFormatException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
-			LOG_WARN(_logger, oss.str());
+			LOG_ERROR(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
 		}
@@ -461,24 +460,24 @@ TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::T
 
 bool WorkflowHandler::processRedTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	LOG_WARN(_logger, "processRedTransition() not yet implemented!");
+	LOG_WARN(_logger, "processRedTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
 	return false;
 }
 
 bool WorkflowHandler::processYellowTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	LOG_WARN(_logger, "processYellowTransition() not yet implemented!");
+	LOG_WARN(_logger, "processYellowTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
 	return false;
 }
 
 bool WorkflowHandler::processBlueTransition(TransitionOccurrence* toP, int step) {
 	/// ToDo: implement!
-	LOG_WARN(_logger, "processBlueTransition() not yet implemented!");
+	LOG_WARN(_logger, "processBlueTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
 	return false;
 }
 
 bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step) {
-	LOG_DEBUG(_logger, "processGreenTransitionOccurrence(" << toP->getID() << ") ...");
+	LOG_DEBUG(_logger, "processGreenTransitionOccurrence(" << toP->getID() << ") --- step=" << step <<" ...");
 	bool modification = false;
 
 	// select selected operation
@@ -512,7 +511,7 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 		throw WorkflowFormatException(oss.str());
 	}
 	if (activityP == NULL) {
-		LOG_WARN(_logger, "ERROR: Activity Pointer is NULL!");
+		LOG_ERROR(_logger, "ERROR: Activity Pointer is NULL!");
 		return modification;
 	}
 	toP->activityP=activityP;
@@ -549,7 +548,7 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 		toP->writeWriteTokens();
 		toP->putOutputTokens();
 	} catch (CapacityException e) {
-		LOG_WARN(_logger, "exception: " << e.message);
+		LOG_ERROR(_logger, "exception: " << e.message);
 		_abort = true;
 		_wfP->getProperties().put(createNewErrorID(), e.message);
 	}
@@ -606,7 +605,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 				//  put new token on each output place
 				toP->putOutputTokens();
 			} catch (CapacityException e) {
-				LOG_WARN(_logger, "CapacityException:" << e.message);;
+				LOG_ERROR(_logger, "CapacityException:" << e.message);;
 				_abort = true;
 				_wfP->getProperties().put(createNewErrorID(), e.message);
 			}

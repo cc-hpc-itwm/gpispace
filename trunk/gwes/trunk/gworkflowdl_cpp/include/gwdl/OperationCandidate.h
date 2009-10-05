@@ -9,6 +9,7 @@
 //gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Defines.h>
+#include <gwdl/AbstractionLevel.h>
 //xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/dom/DOM.hpp>
@@ -133,7 +134,7 @@ public:
      * get abstraction degree of operation
      * @return  color
      */
-    int getAbstractionLevel() const;		
+	AbstractionLevel::abstraction_t getAbstractionLevel() const;		
     
 };
 

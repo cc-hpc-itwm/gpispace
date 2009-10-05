@@ -9,6 +9,7 @@
 
 // gwdl
 #include <gwdl/OperationClass.h>
+#include <gwdl/AbstractionLevel.h>
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
 // std
@@ -84,32 +85,6 @@ private:
 	
 public:
 
-    enum
-    {
-    /**
-     * no operation
-     */
-     BLACK = -1,
-    /**
-     * no Classoperation specified
-     */
-     RED,
-    /**
-     * WSOperationClass owl specified
-     */
-     YELLOW = 1,
-
-    /**
-     * List of WSOperations given, non (or more than one) selected
-     */
-     BLUE   = 2,
-
-    /**
-     * List given and one WSOperation selected
-     */
-     GREEN  = 3
-    };
-
 	/**
 	 * Constructor for empty (red) operation.
 	 */
@@ -153,7 +128,7 @@ public:
      * to GREEN (one candidate is selected).
      * @return  color
      */
-    int getAbstractionLevel() const;
+    AbstractionLevel::abstraction_t getAbstractionLevel() const;
 };
 
 }

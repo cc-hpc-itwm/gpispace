@@ -53,8 +53,8 @@ void Sdpa2GwesAPITest::testSdpa2Gwes() {
 		LOG_INFO(logger, "TEST " << status);
 		CPPUNIT_ASSERT(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
-		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
-///		CPPUNIT_ASSERT(false);
+		LOG_FATAL(logger, "WorkflowFormatException: " << e.message);
+		CPPUNIT_ASSERT(false);
 	}
 
 	LOG_INFO(logger, "============== END SDPA2GWES TEST =============");
@@ -88,8 +88,8 @@ void Sdpa2GwesAPITest::testGwes2Sdpa() {
 		LOG_INFO(logger, "TEST " << status);
 		CPPUNIT_ASSERT(status == "COMPLETED");
 	} catch (WorkflowFormatException e) {
-		LOG_WARN(logger, "WorkflowFormatException: " << e.message);
-		///		CPPUNIT_ASSERT(false);
+		LOG_FATAL(logger, "WorkflowFormatException: " << e.message);
+		CPPUNIT_ASSERT(false);
 	}
 
 	LOG_INFO(logger, "============== END GWES2SDPA TEST =============");

@@ -97,25 +97,25 @@ DOMElement* Token::toElement(DOMDocument * doc)
               		if (eld != NULL) {
           				el->appendChild(eld);
               		} else {
-                   		LOG_WARN(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
+                   		LOG_ERROR(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
               		}
                	} else {
-               		LOG_WARN(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
+               		LOG_ERROR(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
                	}
                }                                  
            }
            catch (const OutOfMemoryException&)
            {
-               LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
+               LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
            }
            catch (const DOMException& e)
            {
-               LOG_WARN(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
-               LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
+               LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
+               LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
            }
            catch (...)
            {
-               LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
+               LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
            }
    }
 

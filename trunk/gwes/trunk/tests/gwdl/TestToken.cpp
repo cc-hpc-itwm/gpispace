@@ -78,10 +78,10 @@ void TokenTest::testToken()
 	//    delete data4;
 		delete token4;
 	} catch (WorkflowFormatException e) {
-		LOG_WARN(logger, e.message);	
+		LOG_ERROR(logger, e.message);	
 	} catch (DOMException e) {
 		char* message = XMLString::transcode(e.msg);
-        LOG_WARN(logger, "DOMException: " << message);
+        LOG_FATAL(logger, "DOMException: " << message);
         XMLString::release(&message);
         CPPUNIT_ASSERT(false);
 	}
@@ -104,10 +104,10 @@ void TokenTest::testToken()
 		delete str;
 		delete token5;
 	} catch (WorkflowFormatException e) {
-		LOG_WARN(logger, e.message);	
+		LOG_ERROR(logger, e.message);	
 	} catch (DOMException e) {
 		char* message = XMLString::transcode(e.msg);
-        LOG_WARN(logger, "DOMException: " << message);
+        LOG_ERROR(logger, "DOMException: " << message);
         XMLString::release(&message);
 	}
 	CPPUNIT_ASSERT(test);

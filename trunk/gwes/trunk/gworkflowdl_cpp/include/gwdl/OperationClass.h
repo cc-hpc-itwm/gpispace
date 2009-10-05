@@ -8,6 +8,7 @@
 #define CLASSOPERATION_H_
 //gwdl
 #include <gwdl/OperationCandidate.h>
+#include <gwdl/AbstractionLevel.h>
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
 //std
@@ -68,7 +69,7 @@ public:
      * to GREEN (one candidate is selected).
      * @return  color
      */
-    int getAbstractionLevel() const;
+	AbstractionLevel::abstraction_t getAbstractionLevel() const;
 
 	/**
 	 * Get the name of this operation class.

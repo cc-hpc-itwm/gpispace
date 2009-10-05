@@ -26,14 +26,14 @@ void OperationTest::testOperation()
    LOG_INFO(logger, "test red operation...");
    Operation* op = new Operation();
    LOG_INFO(logger, *op);
-   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::RED);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==AbstractionLevel::RED);
    
    LOG_INFO(logger, "test yellow operation...");
    OperationClass* opc = new OperationClass();
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
    LOG_INFO(logger, *op);
-   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::YELLOW);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==AbstractionLevel::YELLOW);
    
    LOG_INFO(logger, "test blue operation...");
    OperationCandidate* opcan1 = new OperationCandidate();
@@ -50,16 +50,16 @@ void OperationTest::testOperation()
    LOG_INFO(logger, "  candidate size=" << op->getOperationClass()->getOperationCandidates().size());
    CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates().size()==2);
    LOG_INFO(logger, *op); 
-   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::BLUE);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==AbstractionLevel::BLUE);
    
    LOG_INFO(logger, "test green operation...");
    opcan1->setSelected();
    CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[0]->isSelected()==true);
-   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[0]->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[0]->getAbstractionLevel()==AbstractionLevel::GREEN);
    CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[1]->isSelected()==false);
-   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[1]->getAbstractionLevel()==Operation::BLUE);
+   CPPUNIT_ASSERT(op->getOperationClass()->getOperationCandidates()[1]->getAbstractionLevel()==AbstractionLevel::BLUE);
    LOG_INFO(logger, *op); 
-   CPPUNIT_ASSERT(op->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(op->getAbstractionLevel()==AbstractionLevel::GREEN);
    
    delete op;
 		

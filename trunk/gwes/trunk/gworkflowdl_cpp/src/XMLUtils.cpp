@@ -95,7 +95,7 @@ ostream& XMLUtils::serialize(ostream& os, const DOMNode* node, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		LOG_WARN(_logger, _errorHandler->message);
+		LOG_ERROR(_logger, _errorHandler->message);
 	}
 	return os;
 }
@@ -115,7 +115,7 @@ ostream& XMLUtils::serialize(ostream& os, const DOMDocument* doc, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		LOG_WARN(_logger, _errorHandler->message);
+		LOG_ERROR(_logger, _errorHandler->message);
 	}
 	return os;
 }
@@ -135,7 +135,7 @@ string* XMLUtils::serialize (const DOMNode* node, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		LOG_WARN(_logger, _errorHandler->message);
+		LOG_ERROR(_logger, _errorHandler->message);
 	}
 	
 	return str;
@@ -156,7 +156,7 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
-		LOG_WARN(_logger, _errorHandler->message);
+		LOG_ERROR(_logger, _errorHandler->message);
 	}
 	
 	return str;
@@ -191,19 +191,19 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
     catch (const XMLException& toCatch) 
     {
         char* message = XMLString::transcode(toCatch.getMessage());
-        LOG_WARN(_logger, "ERROR: Exception message is: \n" << message );
+        LOG_ERROR(_logger, "ERROR: Exception message is: \n" << message );
         XMLString::release(&message);
         throw WorkflowFormatException(message);
     }
     catch (const DOMException& toCatch) 
     {
         char* message = XMLString::transcode(toCatch.msg);
-        LOG_WARN(_logger, "ERROR: Exception message is: \n" << message );
+        LOG_ERROR(_logger, "ERROR: Exception message is: \n" << message );
         XMLString::release(&message);
         throw WorkflowFormatException(message);
     }
     catch (...) {
-        LOG_WARN(_logger, "Unexpected Exception");
+        LOG_ERROR(_logger, "Unexpected Exception");
         throw WorkflowFormatException("Unexpected Exception");
     }
     
@@ -211,7 +211,7 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
 	{
 		_errorHandler->reset();
 		//throw WorkflowFormatException(_errorHandler->message);
-		LOG_WARN(_logger, _errorHandler->message); 
+		LOG_ERROR(_logger, _errorHandler->message); 
 	}
     	
 	return doc;
@@ -260,7 +260,7 @@ DOMDocument* XMLUtils::createEmptyDocument(bool gwdlnamespace)
 	DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
 	if (impl==NULL)
 	{
-	    LOG_WARN(_logger, "ERROR Requested implementation is not supported");
+	    LOG_ERROR(_logger, "ERROR Requested implementation is not supported");
     }
 	
 	DOMDocument* doc = impl->createDocument(ns,X("workflow"),0);

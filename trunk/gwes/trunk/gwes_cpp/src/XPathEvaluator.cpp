@@ -61,6 +61,7 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar) throw(XPathException)
 /// Cache deactivated!!!
 XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw (gwdl::WorkflowFormatException,XPathException) : _logger(fhg::log::getLogger("gwes")) {
 	LOG_DEBUG(_logger, "XPathEvaluator(TransitionOccurrence=" << toP->getID() << ")...");
+	LOG_DEBUG(_logger, "step=" << step);
 	
 //    // look if context is still available in cache
 //	if (step == _cacheStep && toP == _cacheTransitionOccurrenceP) {
@@ -126,7 +127,7 @@ int XPathEvaluator::evalCondition(string& xPathExprStr) {
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
+        LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return -1;
     }
     
@@ -147,7 +148,7 @@ string XPathEvaluator::evalExpression(string& xPathExprStr) {
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
+        LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
     }
     
@@ -169,7 +170,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
     if(xpathObjP == NULL) {
-        LOG_WARN(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
+        LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
     }
     
@@ -217,7 +218,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_LOCATIONSET):
 	case(XPATH_USERS):
 	case(XPATH_XSLT_TREE):
-		LOG_WARN(_logger, "XPath evaluation result (xmlXPathObjectPtr) of type " << xpathObjP->type << " is not supported!");
+		LOG_ERROR(_logger, "XPath evaluation result (xmlXPathObjectPtr) of type " << xpathObjP->type << " is not supported!");
 		break;
 	}
 

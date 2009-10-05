@@ -90,12 +90,22 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 	struct stat buffer;
 	if (stat(GWES_TEMP_DIRECTORY, &buffer)!=0) {
 		if (mkdir(GWES_TEMP_DIRECTORY, S_IRWXU)==0) LOG_INFO(_logger, "created directory " << GWES_TEMP_DIRECTORY);
-		else LOG_WARN(_logger, "error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno));
+		else {
+			ostringstream oss;
+			oss << "error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno);
+			LOG_ERROR(_logger, oss);
+			throw ActivityException(oss.str());
+		}
 	} 
 	if (mkdir(_workingDirectory.c_str(), S_IRWXU)==0) LOG_INFO(_logger, "created directory " << _workingDirectory);
 	else {
 		if (errno == EEXIST) LOG_WARN(_logger, "warning creating " << _workingDirectory << ": " << strerror(errno));
-		else LOG_WARN(_logger, "error creating " << _workingDirectory << ": " << strerror(errno));
+		else {
+			ostringstream oss;
+			oss << "error creating " << _workingDirectory << ": " << strerror(errno);
+			LOG_ERROR(_logger, oss);
+			throw ActivityException(oss.str());
+		}
 	}
 	
 	// generate command line
@@ -177,7 +187,8 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
     	char* pEnd;
     	_exitCode = strtol(line.c_str(),&pEnd,10);
     } else {
-    	LOG_WARN(_logger, "Unable to open file " << _exitcodefn << ": " << strerror(errno));
+    	LOG_ERROR(_logger, "Unable to open file " << _exitcodefn << ": " << strerror(errno));
+    	_exitCode = 255;
     }
     
 	// notify observers

@@ -65,9 +65,9 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 		}
 		_gwesP->activityFinished(workflowId, activity.getID(), tokens);
 	} catch (NoSuchWorkflowException e) {
-		LOG_WARN(logger_t(getLogger("gwes")), "exception: " << e.message);
+		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
 	} catch (NoSuchActivityException e) {
-		LOG_WARN(logger_t(getLogger("gwes")), "exception: " << e.message);
+		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
 	}
 	return activity.getID();
 }

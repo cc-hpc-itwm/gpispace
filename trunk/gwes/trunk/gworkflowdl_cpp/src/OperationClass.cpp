@@ -8,7 +8,6 @@
 // gwdl
 #include <gwdl/Defines.h>
 #include <gwdl/OperationClass.h>
-#include <gwdl/Operation.h>
 #include <gwdl/XMLUtils.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
@@ -35,9 +34,9 @@ OperationClass::OperationClass(DOMElement* element)
 	for(unsigned int i=0; i < le->getLength(); ++i)
 	{
 		DOMElement* el = (DOMElement*) le->item(i);
-		const XMLCh* name = el->getTagName(); 
+		const XMLCh* elname = el->getTagName(); 
 
-		if(XMLString::equals(name,X("oc:operationCandidate")))
+		if(XMLString::equals(elname,X("oc:operationCandidate")))
 		{
 			operationCandidates.push_back(new OperationCandidate(el));	
 		}
@@ -68,16 +67,16 @@ DOMElement* OperationClass::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
+		LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
-		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
 	}
 
 	return el;
@@ -88,23 +87,23 @@ const vector<OperationCandidate*>& OperationClass::getOperationCandidates() cons
 	return operationCandidates;
 }
 
-int OperationClass::getAbstractionLevel() const
+AbstractionLevel::abstraction_t OperationClass::getAbstractionLevel() const
 {
 	if(operationCandidates.size() == 0)
 	{
-		return Operation::YELLOW;
+		return AbstractionLevel::YELLOW;
 	}
 	else
 	{
 		int count = 0;
 		for (unsigned int i = 0; i < operationCandidates.size(); i++)
 		{
-			if(operationCandidates[i]->getAbstractionLevel()==Operation::GREEN)
+			if(operationCandidates[i]->getAbstractionLevel()==AbstractionLevel::GREEN)
 			{
 				count++;
 			}
 		}
-		return count == 1 ? Operation::GREEN : Operation::BLUE;
+		return count == 1 ? AbstractionLevel::GREEN : AbstractionLevel::BLUE;
 	}
 }
 

@@ -28,7 +28,7 @@ namespace gwdl
 
 Workflow::Workflow()
 {
-	id = WORKFLOW_DEFAULT_ID;
+	_id = WORKFLOW_DEFAULT_ID;
 	description = WORKFLOW_DEFAULT_DESCRIPTION;
 }
 
@@ -48,7 +48,7 @@ Workflow::Workflow(DOMElement* element)
 	description = WORKFLOW_DEFAULT_DESCRIPTION;
 
 	// ID
-	id = string(S(element->getAttribute(X("ID"))));
+	_id = string(S(element->getAttribute(X("ID"))));
 	
 	//XMLCh* ns = X(SCHEMA_wfSpace);
 
@@ -86,7 +86,7 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 	} else {
 		ostringstream message; 
 		message << "Unable to open file " << filename << ": " << strerror(errno);
-		LOG_WARN(logger_t(getLogger("gwdl")), message);
+		LOG_ERROR(logger_t(getLogger("gwdl")), message);
 		throw WorkflowFormatException(message.str());
 	}
 
@@ -96,7 +96,7 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 
 	// create new workflow object
 	// ID
-	id = string(S(element->getAttribute(X("ID"))));
+	_id = string(S(element->getAttribute(X("ID"))));
 
 	//XMLCh* ns = X(SCHEMA_wfSpace);
 
@@ -137,7 +137,7 @@ DOMDocument* Workflow::toDocument()
 		wfe->setAttributeNS(X(SCHEMA_xsi), X("xsi:schemaLocation"), X(SCHEMA_location));
 
 		//identity
-		wfe->setAttribute(X("ID"), XS(id));
+		wfe->setAttribute(X("ID"), XS(_id));
 
 		// description
 		if (description.size()>0)
@@ -168,16 +168,16 @@ DOMDocument* Workflow::toDocument()
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException during Workflow.toElement()." );
+		LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException during Workflow.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException during Workflow.toElement(). code is:  " << e.code );
-		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException during Workflow.toElement(). code is:  " << e.code );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document during Workflow.toElement()." );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document during Workflow.toElement()." );
 	}
 
 	return doc;
@@ -190,7 +190,7 @@ void Workflow::saveToFile(const string& filename) {
 		file << *this;
 		file.close();
 	} else {
-		LOG_WARN(logger_t(getLogger("gwdl")), "Unable to open file " << filename << ": " << strerror(errno));
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Unable to open file " << filename << ": " << strerror(errno));
 	}
 }
 

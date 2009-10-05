@@ -168,7 +168,7 @@ void XPathEvaluationTest::testXPathEvaluatorContextCache() {
 #else
 void XPathEvaluationTest::testXPathEvaluator() {
 	logger_t logger(getLogger("gwes"));
-    LOG_WARN(logger, "XPath support not compiled in");
+    LOG_FATAL(logger, "XPath support not compiled in");
     CPPUNIT_ASSERT(false);
 }
 #endif

@@ -54,7 +54,7 @@ void TransitionTest::testTransition()
    t0->addCondition("true");
    
    // this is still a control transition (without operation)
-   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::BLACK);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==AbstractionLevel::BLACK);
 
    // link this transtion with an operation
    LOG_INFO(logger, "test operation class...");
@@ -63,7 +63,7 @@ void TransitionTest::testTransition()
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
    t0->setOperation(op);
-   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::YELLOW);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==AbstractionLevel::YELLOW);
      
    OperationCandidate* opcand1 = new OperationCandidate();
    opcand1->setType("psp");
@@ -72,7 +72,7 @@ void TransitionTest::testTransition()
    opcand1->setQuality(0.9);
    opcand1->setSelected();
    t0->getOperation()->getOperationClass()->addOperationCandidate(opcand1);
-   CPPUNIT_ASSERT(t0->getAbstractionLevel()==Operation::GREEN);
+   CPPUNIT_ASSERT(t0->getAbstractionLevel()==AbstractionLevel::GREEN);
 
    // transition is not enabled
    CPPUNIT_ASSERT(t0->isEnabled()==false);	

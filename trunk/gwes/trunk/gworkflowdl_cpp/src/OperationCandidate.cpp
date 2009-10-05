@@ -8,7 +8,6 @@
 #include <gwdl/OperationCandidate.h>
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Defines.h>
-#include <gwdl/Operation.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 //xerces-c
@@ -72,25 +71,25 @@ DOMElement* OperationCandidate::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
+		LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
-		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
 	}
 
 	return el;
 }
 
-int OperationCandidate::getAbstractionLevel() const
+AbstractionLevel::abstraction_t OperationCandidate::getAbstractionLevel() const
 {
-	if (selected) return Operation::GREEN;
-	else return Operation::BLUE;		
+	if (selected) return AbstractionLevel::GREEN;
+	else return AbstractionLevel::BLUE;		
 }
 
 } // end namespace gwdl

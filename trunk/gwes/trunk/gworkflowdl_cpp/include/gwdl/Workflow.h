@@ -133,7 +133,7 @@ class Workflow
 {
 
 private:
-    std::string id;
+    std::string _id;
     std::string description;
     Properties properties;
     std::vector<Transition*> transitions;
@@ -180,12 +180,12 @@ public:
     /**
      * get workflow id.
      */
-    const std::string& getID() const {return id;}
+    const std::string& getID() const {return _id;}
     
     /**
      * set workflow id.
      */
-    void setID(const std::string& _id) {id=_id;}
+    void setID(const std::string& id) {_id=id;}
 
     /**
      * Appends a place to the registered places.

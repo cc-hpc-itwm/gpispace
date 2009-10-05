@@ -194,16 +194,16 @@ DOMElement* Transition::toElement(DOMDocument* doc)
 	}
 	catch (const OutOfMemoryException&)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "OutOfMemoryException during Transition.toElement()." );
+		LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException during Transition.toElement()." );
 	}
 	catch (const DOMException& e)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "DOMException during Transition.toElement(). code is:  " << e.code );
-		LOG_WARN(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException during Transition.toElement(). code is:  " << e.code );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
 	}
 	catch (...)
 	{
-		LOG_WARN(logger_t(getLogger("gwdl")), "An error occurred creating the document during Transition.toElement()." );
+		LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document during Transition.toElement()." );
 	}
 
 	return el;
@@ -257,7 +257,7 @@ string Transition::generateID() const
 int Transition::getAbstractionLevel() const 
 {	
 	if (operationP != NULL) return operationP->getAbstractionLevel();
-	else return Operation::BLACK;
+	else return AbstractionLevel::BLACK;
 }
 
 } // end namespace gwdl

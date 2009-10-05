@@ -235,7 +235,7 @@ Workflow& GWESTest::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
     LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
     return *wfP;
   } catch (WorkflowFormatException e) {
-    LOG_WARN(logger, "WorkflowFormatException: " << e.message);
+    LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
 	throw;
   }
 }
