@@ -19,7 +19,7 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::wf;
 using namespace sdpa::events;
-using namespace sdpa::fsm::smc;
+using namespace sdpa::fsm::bsc;
 
 //Provide ptr to an implementation of Sdpa2Gwes
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes)
@@ -38,9 +38,8 @@ GenericDaemon::~GenericDaemon()
 	os<<"GenericDaemon destructor called ...";
 	SDPA_LOG_DEBUG(os.str());
 
-	// stop the scheduler
-	//daemon_stage_->stop();
-	//seda::StageRegistry::instance().lookup(name())->stop();
+	// Allocated outside and passed as a parameter
+	daemon_stage_ = NULL;
 }
 
 GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage, Sdpa2Gwes*  pArgSdpa2Gwes )
@@ -61,9 +60,9 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon) );
 	ptr_daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
+
 	daemon_stage->start();
 }
-
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
@@ -107,8 +106,7 @@ void GenericDaemon::onStageStop(const std::string &stageName)
 	// stop the scheduler thread
 
 	ptr_scheduler_->stop();
-
-	//ptr_Sdpa2Gwes_ = NULL;
+	ptr_Sdpa2Gwes_ = NULL;
 }
 
 void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
@@ -158,7 +156,6 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 {
 	ptr_scheduler_->addWorker(pWorker);
 }
-
 
 //actions
 void GenericDaemon::action_configure(const StartUpEvent& e)

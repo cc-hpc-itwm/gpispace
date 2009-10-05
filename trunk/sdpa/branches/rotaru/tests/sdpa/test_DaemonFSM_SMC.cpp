@@ -1,5 +1,5 @@
 #include "test_DaemonFSM_SMC.hpp"
-//#include "test_DaemonFSM_BSC.hpp"
+
 #include <iostream>
 #include <string>
 #include <list>
@@ -190,8 +190,8 @@ void DaemonFSMTest::tearDown()
 
 	m_ptrSdpa2Gwes.reset();
 
-	seda::StageRegistry::instance().lookup("orchestrator")->stop();
-	seda::StageRegistry::instance().lookup("output_stage")->stop();
+	seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
+	seda::StageRegistry::instance().lookup(m_ptrOutputStage->name())->stop();
 	seda::StageRegistry::instance().clear();
 
 	m_ptrOutputStage.reset();
