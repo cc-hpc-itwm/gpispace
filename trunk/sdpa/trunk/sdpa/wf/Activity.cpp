@@ -23,6 +23,7 @@ const Activity & Activity::operator=(const Activity &rhs) {
   method_ = rhs.method();
   input_ = rhs.input();
   output_ = rhs.output();
+  return *this;
 }
 
 void Activity::add_input(const Parameter &p) {

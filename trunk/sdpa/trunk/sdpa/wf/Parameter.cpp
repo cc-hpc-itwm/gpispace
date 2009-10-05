@@ -14,6 +14,7 @@ const Parameter& Parameter::operator=(const Parameter &rhs) {
   token_ = rhs.token();
   name_ = rhs.name();
   edge_type_ = rhs.edge_type();
+  return *this;
 }
 
 void Parameter::writeTo(std::ostream &os) const {
