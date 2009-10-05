@@ -135,7 +135,9 @@ void PlaceTest::testPlace()
    {
    Place *place1 = new Place("");
    LOG_INFO(logger, "  constructed place with id " << place1->getID());
-   CPPUNIT_ASSERT(place1->getID()=="p0");
+   // should generate place ID "pX".
+   CPPUNIT_ASSERT(place1->getID().size() > 0);
+   CPPUNIT_ASSERT(place1->getID().substr(0,1) == "p");
    Properties *props1 = new Properties();
    props1->put("k1","v1");
    props1->put("k2","v2");

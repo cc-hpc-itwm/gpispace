@@ -5,7 +5,7 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 2)
 set(V_MINOR 0)
-set(V_PATCH 0)
+set(V_PATCH 1)
 
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
