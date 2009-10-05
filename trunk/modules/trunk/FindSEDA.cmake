@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # Tries to locate a logging framework.
 # This file defines:
 # * SEDA_FOUND if log4cpp was found
@@ -22,34 +23,96 @@
 # *   <XPREFIX> = <PREFIX>  when |MODULES| == 1, else
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
-if ( PKG_CONFIG_FOUND )
+message(STATUS "FindSEDA check")
+IF (NOT WIN32)
+  include(FindPkgConfig)
+  if ( PKG_CONFIG_FOUND )
 
-   pkg_check_modules (SEDA REQUIRED libseda>=0.1)
-   message(STATUS "SEDA: -I${SEDA_INCLUDE_DIRS} -L${SEDA_LIBRARY_DIRS} -l${SEDA_LIBRARIES} f=${SEDA_FOUND}")
+   pkg_check_modules (PC_SEDA libseda>=0.1)
 
-else  ( PKG_CONFIG_FOUND )
-  FIND_PATH(SEDA_INCLUDE_DIRS seda/IEvent.hpp
-    ${CMAKE_INCLUDE_PATH}
-    $ENV{SEDA_HOME}/include
-    /usr/local/include
-    /usr/include
+   message(STATUS "SEDA: -I${PC_SEDA_INCLUDE_DIRS} -L${PC_SEDA_LIBRARY_DIRS} -l${PC_SEDA_LIBRARIES} f=${PC_SEDA_FOUND}")
+  endif(PKG_CONFIG_FOUND)
+endif (NOT WIN32)
+
+SET(_seda_HOME "/usr/local")
+SET(_seda_INCLUDE_SEARCH_DIRS
+  ${CMAKE_INCLUDE_PATH}
+  /usr/local/include
+  /usr/include
   )
 
-SET(SEDA_LIBRARY_NAMES ${SEDA_LIBRARY_NAMES} libseda.a)
-FIND_LIBRARY(SEDA_LIBRARY
-  NAMES ${SEDA_LIBRARY_NAMES}
-  PATHS ${CMAKE_LIBRARY_PATH} $ENV{SEDA_HOME}/lib /usr/lib /usr/local/lib
+SET(_seda_LIBRARIES_SEARCH_DIRS
+  ${CMAKE_LIBRARY_PATH}
+  /usr/local/lib
+  /usr/lib
+  )
+
+SET(_seda_BINARY_SEARCH_DIRS
+  ${CMAKE_BINARY_PATH}
+  /usr/local/lib
+  /usr/lib
+  )
+
+##
+if( "${SEDA_HOME}" STREQUAL "")
+  if("" MATCHES "$ENV{SEDA_HOME}")
+    message(STATUS "SEDA_HOME env is not set, setting it to /usr/local")
+    set (SEDA_HOME ${_seda_HOME})
+  else("" MATCHES "$ENV{SEDA_HOME}")
+    set (SEDA_HOME "$ENV{SEDA_HOME}")
+  endif("" MATCHES "$ENV{SEDA_HOME}")
+else( "${SEDA_HOME}" STREQUAL "")
+  message(STATUS "SEDA_HOME is not empty: \"${SEDA_HOME}\"")
+endif( "${SEDA_HOME}" STREQUAL "")
+##
+
+message(STATUS "Looking for seda in ${SEDA_HOME}")
+
+IF( NOT ${SEDA_HOME} STREQUAL "" )
+    SET(_seda_INCLUDE_SEARCH_DIRS ${SEDA_HOME}/include ${_seda_INCLUDE_SEARCH_DIRS})
+    SET(_seda_LIBRARIES_SEARCH_DIRS ${SEDA_HOME}/lib ${_seda_LIBRARIES_SEARCH_DIRS})
+    SET(_seda_HOME ${SEDA_HOME})
+ENDIF( NOT ${SEDA_HOME} STREQUAL "" )
+
+IF( NOT $ENV{SEDA_INCLUDEDIR} STREQUAL "" )
+  SET(_seda_INCLUDE_SEARCH_DIRS $ENV{SEDA_INCLUDEDIR} ${_seda_INCLUDE_SEARCH_DIRS})
+ENDIF( NOT $ENV{SEDA_INCLUDEDIR} STREQUAL "" )
+
+IF( NOT $ENV{SEDA_LIBRARYDIR} STREQUAL "" )
+  SET(_seda_LIBRARIES_SEARCH_DIRS $ENV{SEDA_LIBRARYDIR} ${_seda_LIBRARIES_SEARCH_DIRS})
+ENDIF( NOT $ENV{SEDA_LIBRARYDIR} STREQUAL "" )
+
+IF( SEDA_HOME )
+  SET(_seda_INCLUDE_SEARCH_DIRS ${SEDA_HOME}/include ${_seda_INCLUDE_SEARCH_DIRS})
+  SET(_seda_LIBRARIES_SEARCH_DIRS ${SEDA_HOME}/lib ${_seda_LIBRARIES_SEARCH_DIRS})
+  SET(_seda_HOME ${SEDA_HOME})
+ENDIF( SEDA_HOME )
+
+#############################
+
+FIND_PATH(SEDA_INCLUDE_DIRS seda/IEvent.hpp
+   HINTS
+     ${PC_SEDA_INCLUDEDIR}
+     ${PC_SEDA_INCLUDE_DIRS}
+     ${_seda_INCLUDE_SEARCH_DIRS}
+     ${CMAKE_INCLUDE_PATH}
 )
 
+SET(SEDA_LIBRARY_NAMES ${SEDA_LIBRARY_NAMES} libseda.a)
+FIND_LIBRARY(SEDA_LIBRARY NAMES ${SEDA_LIBRARY_NAMES}
+  HINTS
+    ${PC_SEDA_LIBDIR}
+    ${PC_SEDA_LIBRARY_DIRS}
+    ${_seda_LIBRARIES_SEARCH_DIRS}
+)
 
 # if the include and the program are found then we have it
-  IF(SEDA_LIBRARY AND SEDA_INCLUDE_DIRS) 
+if(SEDA_LIBRARY AND SEDA_INCLUDE_DIRS) 
     message(STATUS "Found seda: -I${SEDA_INCLUDE_DIRS} ${SEDA_LIBRARY}")
     GET_FILENAME_COMPONENT (SEDA_LIBRARY_DIRS ${SEDA_LIBRARY} PATH)
     GET_FILENAME_COMPONENT (SEDA_LIBRARIES ${SEDA_LIBRARY} NAME)
     SET(SEDA_FOUND "YES")
-  ENDIF(SEDA_LIBRARY AND SEDA_INCLUDE_DIRS)
-ENDIF(PKG_CONFIG_FOUND)
+endif(SEDA_LIBRARY AND SEDA_INCLUDE_DIRS)
 
 MARK_AS_ADVANCED(
   SEDA_LIBRARY

@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # Finds the zero mq library
 #
 # ZeroMQ is available from http://www.zeromq.org
@@ -7,6 +8,17 @@
 # * ZMQ_SERVER if the server could be found it's location is set here - not required for building
 # * ZMQ_LIBRARY the library used to link to zmq (static is preferred)
 # * ZMQ_INCLUDE_DIR the inlude directory for the zmq header files
+
+message(STATUS "FindZmq check")
+
+IF (NOT WIN32)
+  include(FindPkgConfig)
+  if ( PKG_CONFIG_FOUND )
+
+     pkg_check_modules (PC_ZMQ zmq>=1.0)
+
+  endif(PKG_CONFIG_FOUND)
+endif (NOT WIN32)
 
 # set defaults
 SET(_zmq_HOME "/usr/local")
