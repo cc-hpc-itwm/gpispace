@@ -6,3 +6,6 @@ Version 2.0:
 - XPath evaluation of edgeExpressions and conditions
 - improved cmake files for installing gwes
 
+- using CPPUNIT for tests
+
+
