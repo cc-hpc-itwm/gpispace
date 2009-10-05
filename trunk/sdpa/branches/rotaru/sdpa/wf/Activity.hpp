@@ -109,7 +109,7 @@ typedef std::string activity_id_t;
     void writeTo(std::ostream &) const;
 
 	activity_id_t getId() const { return id; }
-	activity_id_t setId(const activity_id_t& activity_id) { id = activity_id; }
+	void setId(const activity_id_t& activity_id) { id = activity_id; }
 
 	workflow_t transform_to_workflow() const
 	{

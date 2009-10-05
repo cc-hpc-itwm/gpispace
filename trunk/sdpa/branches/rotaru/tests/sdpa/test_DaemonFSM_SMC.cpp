@@ -233,6 +233,7 @@ void DaemonFSMTest::testDaemonFSM_JobFinished()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
+	for(int k=0; k<1000;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -312,6 +313,7 @@ void DaemonFSMTest::testDaemonFSM_JobFinished()
 	else
 		SDPA_LOG_ERROR("The job is supposed to be into a 'terminal state' in order to be able to retrieve results!");
 
+	}
 
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
@@ -357,6 +359,7 @@ void DaemonFSMTest::testDaemonFSM_JobFailed()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
+	for(int k=0; k<1000;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -436,6 +439,7 @@ void DaemonFSMTest::testDaemonFSM_JobFailed()
 	else
 		SDPA_LOG_ERROR("The job is supposed to be into a 'terminal state' in order to be able to retrieve results!");
 
+	}
 
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
@@ -481,6 +485,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
+	for(int k=0; k<1000;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -537,6 +542,8 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+
+	}
 
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
