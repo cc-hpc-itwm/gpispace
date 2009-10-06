@@ -11,28 +11,6 @@ using namespace sdpa::events;
 using namespace sdpa::fsm::bsc;
 
 
-JobFSM::JobFSM( const sdpa::job_id_t &id,
-				const sdpa::job_desc_t &desc,
-				const sdpa::daemon::IComm* pHandler,
-				const sdpa::job_id_t &parent)
-				: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
-{
-	initiate();
-	SDPA_LOG_DEBUG("State machine created");
-}
-
-JobFSM::~JobFSM()  throw () {
-	terminate();
-	SDPA_LOG_DEBUG("State machine destroyed");
-}
-
-void JobFSM :: print_states()
-{
-	for( state_iterator it = state_begin(); it != state_end(); it++ )
-		std::cout<<"State "<<typeid(*it).name()<<std::endl;
-}
-
-
 void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt) { process_event(*pEvt); }
 void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { process_event(*pEvt); }
 void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { process_event(*pEvt); }
@@ -109,11 +87,67 @@ sc::result Running::react(const sc::exception_thrown & e)
 	catch ( ... )
 	{
 	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
+	  // state(s). The state machine is Cancelled and the
 	  // exception rethrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();
 	}
+}
+
+sc::result Cancel::react(const sc::exception_thrown & e)
+{
+	try
+	{
+	  throw;
+	}
+	catch ( ... )
+	{
+	  // ... all other exceptions are forwarded to our outer
+	  // state(s). The state machine is Cancelled and the
+	  // exception rethrown if the outer state(s) can't
+	  // handle it either...
+	  return forward_event();
+	}
+}
+
+//Cancelling
+sc::result Cancelling::react(const CancelJobAckEvent& e)
+{
+    return transit<Cancelled>(&JobFSM::action_cancel_job_ack, e);
+}
+
+//Cancelling
+/*sc::result Cancelling::react(const QueryJobStatusEvent& e)
+{
+  	return transit<Cancelling>(&JobFSM::action_query_job_status, e);
+}*/
+
+sc::result Cancelling::react(const sc::exception_thrown & e)
+{
+	try
+	{
+	  throw;
+	}
+	catch ( ... )
+	{
+	  // ... all other exceptions are forwarded to our outer
+	  // state(s). The state machine is Cancelled and the
+	  // exception rethrown if the outer state(s) can't
+	  // handle it either...
+	  return forward_event();
+	}
+}
+
+//Cancelled
+/*sc::result Cancelled::react(const QueryJobStatusEvent& e)
+{
+	return transit<Cancelled>(&JobFSM::action_query_job_status, e);
+}*/
+
+//Cancelled
+sc::result Cancelled::react(const DeleteJobEvent& e)
+{
+	return transit<Cancelled>(&JobFSM::action_delete_job, e);
 }
 
 sc::result Cancelled::react(const sc::exception_thrown & e)
@@ -125,63 +159,7 @@ sc::result Cancelled::react(const sc::exception_thrown & e)
 	catch ( ... )
 	{
 	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
-	  // exception rethrown if the outer state(s) can't
-	  // handle it either...
-	  return forward_event();
-	}
-}
-
-//Terminating
-sc::result Terminating::react(const CancelJobAckEvent& e)
-{
-    return transit<Terminated>(&JobFSM::action_cancel_job_ack, e);
-}
-
-//Terminating
-/*sc::result Terminating::react(const QueryJobStatusEvent& e)
-{
-  	return transit<Terminating>(&JobFSM::action_query_job_status, e);
-}*/
-
-sc::result Terminating::react(const sc::exception_thrown & e)
-{
-	try
-	{
-	  throw;
-	}
-	catch ( ... )
-	{
-	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
-	  // exception rethrown if the outer state(s) can't
-	  // handle it either...
-	  return forward_event();
-	}
-}
-
-//Terminated
-/*sc::result Terminated::react(const QueryJobStatusEvent& e)
-{
-	return transit<Terminated>(&JobFSM::action_query_job_status, e);
-}*/
-
-//Terminated
-sc::result Terminated::react(const DeleteJobEvent& e)
-{
-	return transit<Terminated>(&JobFSM::action_delete_job, e);
-}
-
-sc::result Terminated::react(const sc::exception_thrown & e)
-{
-	try
-	{
-	  throw;
-	}
-	catch ( ... )
-	{
-	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
+	  // state(s). The state machine is Cancelled and the
 	  // exception re-thrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();
@@ -194,10 +172,16 @@ sc::result Terminated::react(const sc::exception_thrown & e)
 	return transit<Failed>(&JobFSM::action_query_job_status, e);
 }*/
 
-//Terminated
+//Cancelled
 sc::result Failed::react(const DeleteJobEvent& e)
 {
 	return transit<Failed>(&JobFSM::action_delete_job, e);
+}
+
+//Finished
+sc::result Failed::react(const RetrieveJobResultsEvent& e)
+{
+	return transit<Finished>(&JobFSM::action_retrieve_job_results, e);
 }
 
 sc::result Failed::react(const sc::exception_thrown & e)
@@ -209,7 +193,7 @@ sc::result Failed::react(const sc::exception_thrown & e)
 	catch ( ... )
 	{
 	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
+	  // state(s). The state machine is Cancelled and the
 	  // exception rethrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();
@@ -222,7 +206,7 @@ sc::result Failed::react(const sc::exception_thrown & e)
 	return transit<Finished>(&JobFSM::action_query_job_status, e);
 }*/
 
-//Terminated
+//Cancelled
 sc::result Finished::react(const DeleteJobEvent& e)
 {
 	return transit<Finished>(&JobFSM::action_delete_job, e);
@@ -244,7 +228,7 @@ sc::result Finished::react(const sc::exception_thrown & e)
 	catch ( ... )
 	{
 	  // ... all other exceptions are forwarded to our outer
-	  // state(s). The state machine is terminated and the
+	  // state(s). The state machine is Cancelled and the
 	  // exception rethrown if the outer state(s) can't
 	  // handle it either...
 	  return forward_event();
