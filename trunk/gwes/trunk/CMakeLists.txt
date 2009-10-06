@@ -83,9 +83,9 @@ endif ( PKG_CONFIG_FOUND )
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gworkflowdl_cpp/include)
 include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gwes_cpp/include)
+include_directories(${CMAKE_INCLUDE_PATH})
 #include_directories(${SMC_INCLUDE_DIR})
 include_directories(${FHGLOG_INCLUDE_DIR})
 
