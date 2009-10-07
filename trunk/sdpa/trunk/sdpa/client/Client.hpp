@@ -15,7 +15,7 @@
 #include <sdpa/client/ClientActions.hpp>
 
 
-#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1) || ( __GNUC__==4 && __GNUC_MINOR__==1 && __GNUC_PATCHLEVEL__ >1)
+#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1)
 #  pragma GCC diagnostic ignored "-Wall"
 #  pragma GCC diagnostic ignored "-Wunused"
 #  pragma GCC diagnostic ignored "-Weffc++"
