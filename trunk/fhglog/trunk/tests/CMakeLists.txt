@@ -15,6 +15,11 @@ target_link_libraries(test_append fhglog)
 get_target_property(LOC test_append LOCATION_)
 add_test(test_append ${LOC})
 
+add_executable(test_synch_appender test_synch_appender.cpp)
+target_link_libraries(test_synch_appender fhglog)
+get_target_property(LOC test_synch_appender LOCATION_)
+add_test(test_synch_appender ${LOC})
+
 add_executable(test_disabled_logging test_disabled_logging.cpp)
 target_link_libraries(test_disabled_logging fhglog)
 get_target_property(LOC test_disabled_logging LOCATION_)
