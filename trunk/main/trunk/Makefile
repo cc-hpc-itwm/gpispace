@@ -28,7 +28,11 @@ doc:
 dist: test
 	make -C $(BUILD_DIR) package
 
+test: ctest
+ctest: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage
+
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc
+.PHONY: clean distclean all default doc test
