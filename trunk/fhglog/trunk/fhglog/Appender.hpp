@@ -13,10 +13,10 @@ namespace fhg { namespace log {
 
       virtual void append(const LogEvent &evt) const = 0;
 
-      inline void setFormat(Formatter::ptr_t fmt) { fmt_ = fmt; }
+      virtual inline void setFormat(const Formatter::ptr_t &fmt) { fmt_ = fmt; }
       // takes ownership!
-      inline void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
-      inline const Formatter::ptr_t getFormat() const { return fmt_; }
+      virtual inline void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
+      virtual inline const Formatter::ptr_t &getFormat() const { return fmt_; }
 
       const std::string &name() const { return name_; }
 
