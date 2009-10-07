@@ -56,10 +56,6 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		//put the job into the Running state: do this in acknowledge!
 		ptrWorker->acknowledge(pEvent->job_id());
 
-		// put the job into the Running state
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvent->job_id());
-		pJob->Dispatch();
-
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
@@ -407,10 +403,21 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 	try {
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->CancelJob(pEvt);
+		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+
 		if(pJob->is_marked_for_deletion())
 			ptr_job_man_->deleteJob(pEvt->job_id());
 
-		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+		//if master not set i.e. I'm the orchestrator send immediately an acknowledgment to the user
+		if( name() == ORCHESTRATOR )
+		{
+			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+
+			// only if the job was already submitted
+			sendEvent(output_stage(), pCancelAckEvt);
+			os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
+			SDPA_LOG_DEBUG(os.str());
+		}
 	}
 	catch(sdpa::daemon::JobNotFoundException){
 		os.str("");
@@ -436,13 +443,17 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
-    	if( pEvt->from() == pEvt->to() ) // the message comes from GWES, forward it to the master
+    	if( pEvt->from() == pEvt->to()  ) // the message comes from GWES, forward it to the master
 		{
-			os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
-			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
+    		// the orchestrator submitted immediately an aknowledgment !
+    		if( name()!= ORCHESTRATOR )
+    		{
+				os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
+				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
 
-			// only if the job was already submitted
-			sendEvent(output_stage(), pCancelAckEvt);
+				// only if the job was already submitted
+				sendEvent(output_stage(), pCancelAckEvt);
+    		}
 		}
     	else // the message comes from an worker, forward it to GWES
     	{

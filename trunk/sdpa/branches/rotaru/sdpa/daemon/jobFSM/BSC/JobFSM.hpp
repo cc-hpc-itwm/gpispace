@@ -78,6 +78,11 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 		return JobImpl::action_query_job_status(evt);
 	}
 
+	virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)
+	{
+		return JobImpl::action_cancel_job_ack(evt);
+	}
+
 	sdpa::status_t getStatus()
 	{
 		sdpa::status_t status("");
@@ -160,6 +165,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
 struct Cancelled : sc::simple_state<Cancelled, Cancel>
 {
 typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+					sc::in_state_reaction<sdpa::events::CancelJobAckEvent, JobFSM, &JobFSM::action_cancel_job_ack >,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
                     sc::custom_reaction<sc::exception_thrown> > reactions;
 

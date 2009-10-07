@@ -32,6 +32,7 @@ using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
+const int NITER = 1000;
 
 class TestStrategy : public seda::Strategy
 {
@@ -233,7 +234,7 @@ void DaemonFSMTest::testDaemonFSM_JobFinished()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
-	for(int k=0; k<1000;k++) {
+	for(int k=0; k<NITER;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -359,7 +360,7 @@ void DaemonFSMTest::testDaemonFSM_JobFailed()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
-	for(int k=0; k<1000;k++) {
+	for(int k=0; k<NITER;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -485,7 +486,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
-	for(int k=0; k<1000;k++) {
+	for(int k=0; k<NITER;k++) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -545,6 +546,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 
 	}
 
+	sleep(5);
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtInt);
@@ -552,6 +554,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	// you can leave now
 	SDPA_LOG_DEBUG("Slave: Finished!");
 }
+
 
 
 void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
@@ -589,6 +592,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtLS);
 
+	for(int k=0; k<1; k++ ) {
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
@@ -604,6 +608,8 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 
+	}
+
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtInt);
@@ -611,5 +617,3 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	// you can leave now
 	SDPA_LOG_DEBUG("Slave: Finished!");
 }
-
-

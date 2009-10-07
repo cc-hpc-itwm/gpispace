@@ -284,6 +284,9 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		Job::ptr_t ptrJob = ptrWorker->get_next_job(e.last_job_id());
 		if( ptrJob.get() )
 		{
+			// put the job into the Runnig state here
+			ptrJob->Dispatch(); // no event need to be sent
+
 			// create a SubmitJobEvent for the job job_id serialize and attach description
 			os.str("");
 			os<<"Create SubmitJobEvent for the job "<<ptrJob->id()<<" (to be submitted to "<<e.from()<<"! )";
@@ -292,6 +295,9 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 			// Post a SubmitJobEvent to the slave who made the reques
 			sendEvent(output_stage_, pSubmitEvt);
+
+			//inform GWES
+			ptr_Sdpa2Gwes_->activityDispatched(ptrJob->id());
 		}
 		else // send an error event
 		{
@@ -380,7 +386,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		if(e.from() != name() ) //e.to())
 			pJob->set_local(true);
 
-		ptr_scheduler_->handleJob(pJob);
+		ptr_scheduler_->schedule(pJob);
 
 		if(pJob->is_local())
 		{
@@ -499,8 +505,6 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc));
 		sendEvent(pEvtSubmitJob);
-
-		return activity.getId();
 	}
 	catch(QueueFull)
 		{
@@ -514,6 +518,8 @@ activity_id_t GenericDaemon::submitActivity(const activity_t &activity)
 			os<<"Stage not found when trying to submit SubmitJobEvent";
 			SDPA_LOG_DEBUG(os.str());
 		}
+
+	return activity.getId();
 }
 
 

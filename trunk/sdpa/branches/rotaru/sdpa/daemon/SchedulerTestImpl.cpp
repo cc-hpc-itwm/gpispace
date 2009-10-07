@@ -12,7 +12,7 @@ SchedulerTestImpl::~SchedulerTestImpl()
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerTestImpl ...");
 }
 
-void SchedulerTestImpl::handleJob(Job::ptr_t& pJob)
+void SchedulerTestImpl::schedule(Job::ptr_t& pJob)
 {
 	ostringstream os;
 	os<<"Handle job "<<pJob->id();

@@ -45,7 +45,7 @@ void SchedulerTest::testSchedulerImpl()
 		JobId job_id;
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
 		pJob->set_local(true);
-		ptr_scheduler_->handleJob(pJob);
+		ptr_scheduler_->schedule(pJob);
 	}
 
 	sleep(5);

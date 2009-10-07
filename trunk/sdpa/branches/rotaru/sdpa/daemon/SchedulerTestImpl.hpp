@@ -19,7 +19,7 @@ class SchedulerTestImpl : public Scheduler {
 	 SchedulerTestImpl(sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes=NULL);
 	 virtual ~SchedulerTestImpl();
 
-    void handleJob(Job::ptr_t& pJob);
+    void schedule(Job::ptr_t& pJob);
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
 

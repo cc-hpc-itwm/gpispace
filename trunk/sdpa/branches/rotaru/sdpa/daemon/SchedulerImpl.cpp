@@ -38,8 +38,8 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 
 	if(ptr_Sdpa2Gwes_)
 	{
+		pJob->Dispatch();
 		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
-		pJob->Dispatch(); // no event need to be sent
 	}
 	else
 		SDPA_LOG_ERROR("Gwes not initialized!");
@@ -48,7 +48,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 /*
  * Implement here in a first phase a simple round-robin schedule
  */
-void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
+void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule ...");
 
 	try {
@@ -61,24 +61,20 @@ void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 			SDPA_LOG_DEBUG("The next worker dispatches the job ...");
 			pWorker->dispatch(pJob);
 		}
-		else //execute the job (NRE side)
-		{
-			// put the job into the running state and execute it
-			pJob->Dispatch(); // no event need to be sent
-
-			// execute the job
-			// upon successful execution send JobFinished or JobFailed events to the output stage
-		}
 	}
 	catch(NoWorkerFoundException&)
 	{
 		// put the job back into the queue
 		jobs_to_be_scheduled.push(pJob);
-		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available!");
+		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
+	}
+	catch (sdpa::daemon::NoSuchActivityException& )
+	{
+		SDPA_LOG_DEBUG("NoSuchActivityException exception occured!");
 	}
 }
 
-void SchedulerImpl::handleJob(Job::ptr_t& pJob)
+void SchedulerImpl::schedule(Job::ptr_t& pJob)
 {
 	ostringstream os;
 	os<<"Handle job "<<pJob->id();
@@ -142,7 +138,7 @@ void SchedulerImpl::run()
 					// if it's an NRE just execute it!
 					// Attention!: an NRE has no WorkerManager!!!!
 					// or has an Worker Manager and the workers are threads
-					schedule(pJob);
+					schedule_remote(pJob);
 				}
 			}
 			else
