@@ -31,7 +31,7 @@ set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 ##########################################################
-set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
+set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Werror -Wno-unknown-pragmas")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
