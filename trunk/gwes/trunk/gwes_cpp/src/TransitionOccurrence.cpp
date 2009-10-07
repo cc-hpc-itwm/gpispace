@@ -240,6 +240,10 @@ string TransitionOccurrence::getID() const {
 	return _id;
 }
 
+parameter_list_t* TransitionOccurrence::getTokens() {
+	return &tokens;
+}
+
 void TransitionOccurrence::evaluateXPathEdgeExpressions(int step) {
 	if (!hasXPathEdgeExpressions) return;
 	LOG_DEBUG(_logger, "gwes::TransitionOccurrence::evaluateXPathEdgeExpressions[" << getID() << "] ...");
@@ -289,6 +293,7 @@ ostream& operator<<(ostream &out, gwes::TransitionOccurrence &transitionOccurren
 		}
 		out << it->edgeP->getExpression();
 		if (it->tokenP != NULL) out << "(" << it->tokenP->getID() << ")"; 
+//		if (it->tokenP != NULL) out << "(" << *it->tokenP << ")"; 
 	}
 	out << "]";
 	

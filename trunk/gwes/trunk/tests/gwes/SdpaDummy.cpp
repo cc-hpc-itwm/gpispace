@@ -29,6 +29,10 @@ SdpaDummy::~SdpaDummy() {
 
 gwes::Gwes2Sdpa::~Gwes2Sdpa() {}
 
+///////////////////////////////////
+// Interface Gwes2Sdpa
+///////////////////////////////////
+
 /**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GWES in order to delegate
@@ -42,20 +46,21 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 	// a real SDPA implementation should really dispatch the activity here
 	try {
 		_gwesP->activityDispatched(workflowId, activity.getID());
-		// find and fill output tokens
-		parameter_list_t tokens = activity.getTransitionOccurrence()->tokens;
-		for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
+		// find and fill dummy output tokens
+		parameter_list_t* tokensP = activity.getTransitionOccurrence()->getTokens();
+		for (parameter_list_t::iterator it=tokensP->begin(); it!=tokensP->end(); ++it) {
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):
 			case (TokenParameter::SCOPE_INPUT):
 			case (TokenParameter::SCOPE_WRITE):
 				continue;
 			case (TokenParameter::SCOPE_OUTPUT):
-				it->tokenP = new Token("<data><sdpaOutput>15</sdpaOutput></data>"); 
+				it->tokenP = new Token(new Data(string("<data><output xmlns=\"\">15</output></data>")));
+				LOG_INFO(logger_t(getLogger("gwes")), "Generated dummy output token: " << *it->tokenP);
 				break;
 			}
 		}
-		_gwesP->activityFinished(workflowId, activity.getID(), tokens);
+		_gwesP->activityFinished(workflowId, activity.getID(), *tokensP);
 	} catch (NoSuchWorkflowException e) {
 		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
 	} catch (NoSuchActivityException e) {
@@ -79,6 +84,9 @@ void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchAc
  */
 void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFinished(" << workflowId << ").");
+	_wfStatusMap.erase(workflowId);
+	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FINISHED));
+	logWorkflowStatus();
 }
 
 /**
@@ -87,6 +95,9 @@ void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchW
  */
 void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFailed(" << workflowId << ").");
+	_wfStatusMap.erase(workflowId);
+	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FAILED));
+	logWorkflowStatus();
 }
 
 /**
@@ -95,4 +106,29 @@ void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWor
  */ 
 void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
+	_wfStatusMap.erase(workflowId);
+	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,CANCELED));
+	logWorkflowStatus();
+}
+
+/////////////////////////////
+// helper methods
+/////////////////////////////
+void SdpaDummy::logWorkflowStatus() {
+	logger_t logger = getLogger("gwes");
+	map<gwes::workflow_id_t,ogsa_bes_status_t>::iterator it;
+	for ( it=_wfStatusMap.begin() ; it != _wfStatusMap.end(); it++ ) {
+	    LOG_INFO(logger, "Workflow status: " << (*it).first << " => " << (*it).second);
+	}
+}
+
+workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
+	workflow_id_t workflowId = _gwesP->submitWorkflow(workflow);
+	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,RUNNING));
+	logWorkflowStatus();
+	return workflowId;
+}
+
+SdpaDummy::ogsa_bes_status_t SdpaDummy::getWorkflowStatus(workflow_id_t workflowId) {
+	return _wfStatusMap.find(workflowId)->second;
 }

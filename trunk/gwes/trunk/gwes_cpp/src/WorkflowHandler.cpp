@@ -133,6 +133,7 @@ void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
  */
 void WorkflowHandler::executeWorkflow() throw (StateTransitionException, WorkflowFormatException) {
 	LOG_DEBUG(_logger, "executeWorkflow(" << getID() << ") ...");
+	LOG_DEBUG(_logger, *_wfP);
 	//check status
 	if (getStatus() != WorkflowHandler::STATUS_INITIATED) {
 		ostringstream oss;

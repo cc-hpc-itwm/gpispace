@@ -76,6 +76,8 @@ public:
 	void writeWriteTokens() throw(gwdl::CapacityException);
 	
 	std::string getID() const; 
+	
+	gwes::parameter_list_t* getTokens();
     
     void evaluateXPathEdgeExpressions(int step);
     

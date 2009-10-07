@@ -12,6 +12,7 @@
 #include <gwdl/Workflow.h>
 // gwes
 #include <gwes/Utils.h>
+#include <gwes/Types.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // std
@@ -25,6 +26,40 @@ using namespace std;
 using namespace gwes::tests;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( gwes::tests::Sdpa2GwesAPITest );
+
+void Sdpa2GwesAPITest::testWorkflowWithSdpaActivity() {
+	logger_t log(getLogger("gwes"));
+	LOG_INFO(log, "============== BEGIN testWorkflowWithSdpaActivity =============");
+	
+	// create SDPA dummy. SDPA dummy creates own local gwes.
+	SdpaDummy sdpa;
+	
+	// create workflow_t object from file
+	string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple-sdpa-test.gwdl"); 
+	LOG_INFO(log, "reading workflow '"+fn+"'...");
+	workflow_t wf = (Workflow) fn;
+	CPPUNIT_ASSERT(wf.getEnabledTransitions().size() == 1);
+			
+	// start workflow
+	workflow_id_t wfId = sdpa.submitWorkflow(wf);
+	
+	// poll for completion of workflow
+	SdpaDummy::ogsa_bes_status_t status = sdpa.getWorkflowStatus(wfId);
+	while (status == SdpaDummy::PENDING || status == SdpaDummy::RUNNING) {
+		usleep(100000);
+		status = sdpa.getWorkflowStatus(wfId);
+		LOG_INFO(log, "status " << wfId << " = " << status);
+	}
+	
+	// print out workflow XML of finished workflow.
+	LOG_INFO(log, "Finished workflow:\n" << wf);
+	
+	// get and check output
+	std::vector<Token*> outputTokens = wf.getPlace("output")->getTokens();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
+	
+	LOG_INFO(log, "============== END testWorkflowWithSdpaActivity =============");
+}
 
 void Sdpa2GwesAPITest::testSdpa2Gwes() {
 	logger_t logger(getLogger("gwes"));

@@ -106,15 +106,17 @@ void Activity::activityDispatched() {
 
 void Activity::activityFailed(const parameter_list_t &output) {
 	LOG_DEBUG(_logger, _id << ": activityFailed()...");
-	// ToDo: set outputs
-	LOG_WARN(_logger, "Outputs ignored (parameter list size=" << output.size() << ")");
+	// set outputs
+	LOG_DEBUG(_logger, "Setting result parameters (parameter list size=" << output.size() << ") ...");
+	_toP->tokens = output;
 	setStatus(Activity::STATUS_TERMINATED);
 }
 
 void Activity::activityFinished(const parameter_list_t &output) {
 	LOG_DEBUG(_logger, _id << ": activityFinished()...");
-	// ToDo: set outputs
-	LOG_WARN(_logger, "Outputs ignored (parameter list size=" << output.size() << ")");
+	// set outputs
+	LOG_DEBUG(_logger, "Setting result parameters (parameter list size=" << output.size() << ") ...");
+	_toP->tokens = output;
 	setStatus(Activity::STATUS_COMPLETED);
 }
 

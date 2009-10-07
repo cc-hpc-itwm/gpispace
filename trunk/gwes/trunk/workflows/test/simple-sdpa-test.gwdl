@@ -3,12 +3,12 @@
     <description>Test SDPA activity</description>
 
     <place ID="input">
-        <token><data><file>file:///usr/local/gwes/cat/d25.dat</file></data></token>
+        <token><data><file xmlns="">file:///usr/local/gwes/cat/d25.dat</file></data></token>
     </place>
 	
     <place ID="output"/>
 
-    <transition ID="cat1">
+    <transition ID="alg-dummy">
         <description>dummy SDPA algorithm</description>
         <inputPlace placeID="input" edgeExpression="input"/>
         <outputPlace placeID="output" edgeExpression="output"/>
