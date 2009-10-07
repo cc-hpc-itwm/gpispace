@@ -1,0 +1,8 @@
+package seda.comm;
+option optimize_for = SPEED;
+
+message Message {
+    required string to      = 1;
+    required string from    = 2;
+    required bytes  payload = 3;
+}
