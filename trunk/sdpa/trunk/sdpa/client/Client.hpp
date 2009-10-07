@@ -15,10 +15,12 @@
 #include <sdpa/client/ClientActions.hpp>
 
 
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused"
-#pragma GCC diagnostic ignored "-Weffc++"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1) || ( __GNUC__==4 && __GNUC_MINOR__==1 && __GNUC_PATCHLEVEL__ >1)
+#  pragma GCC diagnostic ignored "-Wall"
+#  pragma GCC diagnostic ignored "-Wunused"
+#  pragma GCC diagnostic ignored "-Weffc++"
+#  pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <sdpa/client/ClientFsm_sm.h>
 #include <sdpa/events/SDPAEvent.hpp>
 
