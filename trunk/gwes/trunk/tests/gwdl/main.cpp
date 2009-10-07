@@ -49,6 +49,8 @@ int main()
 	logger.setLevel(LogLevel::INFO);
 	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 	
+	LOG_INFO(logger, "########################### BEGIN OF ALL GWDL TESTS ###########################");
+	
 	XMLUtils* xmlutils = XMLUtils::Instance();
 	LOG_INFO(logger, "xmlutils singleton instantiated: " << xmlutils);;
 
@@ -81,7 +83,7 @@ int main()
 	//CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
 	//compileroutputter.write ();
 
+	LOG_INFO(logger, "########################### END OF ALL GWDL TESTS ###########################");
 
-	//
 	return collectedresults.wasSuccessful () ? 0 : 1;
 }

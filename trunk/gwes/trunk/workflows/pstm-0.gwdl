@@ -14,7 +14,7 @@
 	<!-- workflow input places -->
     <place ID="OffsetParameters">
         <token>
-            <data><offsets xmlns=""><min>15.</min><max>33.</max><step>1.</step></offsets></data>
+            <data><offsets xmlns=""><min>30.</min><max>33.</max><step>1.</step></offsets></data>
         </token>
     </place>
 

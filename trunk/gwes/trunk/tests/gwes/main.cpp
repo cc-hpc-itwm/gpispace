@@ -54,38 +54,38 @@ int main()
 	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
 
-  // Informiert Test-Listener ueber Testresultate
-  CPPUNIT_NS::TestResult                   testresult;
-  CPPUNIT_NS::TestResultCollector collectedresults;
-  testresult.addListener (&collectedresults);
+	// Informiert Test-Listener ueber Testresultate
+	CPPUNIT_NS::TestResult                   testresult;
+	CPPUNIT_NS::TestResultCollector collectedresults;
+	testresult.addListener (&collectedresults);
 
-  // Test-Suite ueber die Registry im Test-Runner einfuegen
-  CPPUNIT_NS :: TestRunner runner;
-  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
+	// Test-Suite ueber die Registry im Test-Runner einfuegen
+	CPPUNIT_NS :: TestRunner runner;
+	runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
 
-  //CPPUNIT_NS::CompilerOutputter *outputter = new CPPUNIT_NS::CompilerOutputter(&runner.result(), std::cout);
-  //outputter->setLocationFormat("%p(%l) : ");
-  //outputter->setNoWrap();
-  //runner.setOutputter(outputter);
+	//CPPUNIT_NS::CompilerOutputter *outputter = new CPPUNIT_NS::CompilerOutputter(&runner.result(), std::cout);
+	//outputter->setLocationFormat("%p(%l) : ");
+	//outputter->setNoWrap();
+	//runner.setOutputter(outputter);
 
-  std::cout << "running testsuite" << std::endl;
+	std::cout << "running testsuite" << std::endl;
 
-  runner.run (testresult);
+	runner.run (testresult);
 
-  // print and save results
-  std::ofstream outStream("gwes_out.xml");
-  //outStream= new std::ofstream("out.xml", std::ios::app );
-  CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
-  //CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cout);
-  xmloutputter.write ();
+	// print and save results
+	std::ofstream outStream("gwes_out.xml");
+	//outStream= new std::ofstream("out.xml", std::ios::app );
+	CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
+	//CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cout);
+	xmloutputter.write ();
 
-  // text mode
-  //CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
-  //compileroutputter.write ();
+	// text mode
+	//CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
+	//compileroutputter.write ();
 
 
-  //
-  LOG_INFO(logger, "########################### END OF ALL GWES TESTS ###########################");
-  return collectedresults.wasSuccessful () ? 0 : 1;
+	//
+	LOG_INFO(logger, "########################### END OF ALL GWES TESTS ###########################");
+	return collectedresults.wasSuccessful () ? 0 : 1;
 }
 

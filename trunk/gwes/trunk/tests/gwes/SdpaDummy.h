@@ -21,9 +21,7 @@ public:
 	virtual ~SdpaDummy();
 	
 	// from interface Gwes2Sdpa
-	virtual gwes::workflow_id_t submitWorkflow(gwes::workflow_t &workflow); 
 	virtual gwes::activity_id_t submitActivity(gwes::activity_t &activity); 
-	virtual void cancelWorkflow(const gwes::workflow_id_t &workflowId) throw (gwes::NoSuchWorkflowException);
 	virtual void cancelActivity(const gwes::activity_id_t &activityId)  throw (gwes::NoSuchActivityException);
 	virtual void workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::NoSuchWorkflowException);
 	virtual void workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::NoSuchWorkflowException);

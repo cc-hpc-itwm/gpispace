@@ -5,6 +5,7 @@
     <place ID="input">
         <token><data><file>file:///usr/local/gwes/cat/d25.dat</file></data></token>
     </place>
+	
     <place ID="output"/>
 
     <transition ID="cat1">
@@ -13,7 +14,7 @@
         <outputPlace placeID="output" edgeExpression="output"/>
  		<operation>
       		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="dummy">
-        		<oc:operationCandidate type="sdpa" operationName="dummy.sh" resourceName="localhost" selected="true"/>
+        		<oc:operationCandidate type="sdpa" operationName="dummy" resourceName="nre#1" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>

@@ -30,14 +30,6 @@ SdpaDummy::~SdpaDummy() {
 gwes::Gwes2Sdpa::~Gwes2Sdpa() {}
 
 /**
- * The SDPA dummy uses the local gwes for submitting sub-workflows.
- */
-workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
-	LOG_INFO(logger_t(getLogger("gwes")), "submitWorkflow(" << workflow.getID() << ")...");
-	return _gwesP->submitWorkflow(workflow);
-}
-
-/**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GWES in order to delegate
  * the execution of activities.
@@ -73,22 +65,12 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 }
 
 /**
- * Cancel a sub workflow that has previously been submitted to
- * the SDPA. The parent job has to cancel all children.
- */
-void SdpaDummy::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	LOG_INFO(logger_t(getLogger("gwes")), "cancelWorkflow(" << workflowId << ")...");
-	_gwesP->cancelWorkflow(workflowId);
-}
-
-/**
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
 void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) {
 	LOG_INFO(logger_t(getLogger("gwes")), "cancelActivity(" << activityId << ")...");
 	// ToDo: implement!
-
 }
 
 /**
