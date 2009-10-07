@@ -59,6 +59,7 @@ link_directories(${CMAKE_BINARY_DIR}/seda/seda)
 link_libraries(seda)
 message(STATUS "===LINK : ${CMAKE_BINARY_DIR}/fhglog/fhglog")
 
+include(CTest)
 message(STATUS "Add project fhglog")
 add_subdirectory(fhglog)
 message(STATUS "Add project gwes")
