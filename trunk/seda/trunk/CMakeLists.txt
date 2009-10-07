@@ -1,4 +1,10 @@
 # -*- mode: cmake; -*-
+cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
+
 project(libseda)
 
 # have the full monty in makefiles
@@ -27,7 +33,6 @@ OPTION(ENABLE_COMM_LIB
   "Build communication library"
   YES)
 
-cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
