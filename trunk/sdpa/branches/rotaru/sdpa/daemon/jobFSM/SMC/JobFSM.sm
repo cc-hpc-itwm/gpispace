@@ -14,10 +14,10 @@
 %%
 Pending
 {
-    Dispatch(pEvent: const sdpa::events::SubmitJobAckEvent*)
+    Dispatch()
         Running
         {
-        	action_run_job(*pEvent); 
+        	action_run_job(); 
         }
 
     CancelJob(pEvent: const sdpa::events::CancelJobEvent*)
@@ -67,6 +67,19 @@ Cancelling
     	{
     		action_cancel_job_ack(*pEvent);
     	}
+    	
+    JobFinished(pEvent: const sdpa::events::JobFinishedEvent*)
+      	Finished
+        {
+        	action_job_finished(*pEvent);
+        }
+      
+  	JobFailed(pEvent: const sdpa::events::JobFailedEvent*)
+    	Failed
+        {
+            action_job_failed(*pEvent);
+        }
+        	
     	
 	QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil

@@ -58,7 +58,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 
 		// put the job into the Running state
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvent->job_id());
-		pJob->Dispatch(pEvent);
+		pJob->Dispatch();
 
 	} catch(sdpa::daemon::WorkerNotFoundException) {
 		os.str("");

@@ -18,13 +18,13 @@ void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { process_event
 void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) { process_event(*pEvt); }
 void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { process_event(*pEvt); }
 void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::Dispatch(const sdpa::events::SubmitJobAckEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::Dispatch() { process_event(EvtBSCDispatch()); }
 
 //Pending event reactions
-sc::result Pending::react(const SubmitJobAckEvent& e)
+sc::result Pending::react(const EvtBSCDispatch& e)
 {
 	//eventually, start WFE
-	return transit<Running>(&JobFSM::action_run_job, e);
+	return transit<Running>();//(&JobFSM::action_run_job, e);
 }
 
 sc::result Pending::react(const CancelJobEvent& e)
@@ -121,6 +121,18 @@ sc::result Cancelling::react(const CancelJobAckEvent& e)
 {
   	return transit<Cancelling>(&JobFSM::action_query_job_status, e);
 }*/
+
+//Running event reactions
+sc::result Cancelling::react(const JobFinishedEvent& e )
+{
+	return transit<Cancelled>(&JobFSM::action_job_finished, e);
+}
+
+//Running
+sc::result Cancelling::react(const JobFailedEvent& e)
+{
+	return transit<Cancelled>(&JobFSM::action_job_failed, e);
+}
 
 sc::result Cancelling::react(const sc::exception_thrown & e)
 {

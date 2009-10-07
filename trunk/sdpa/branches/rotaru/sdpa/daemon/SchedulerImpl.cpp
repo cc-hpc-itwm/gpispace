@@ -39,11 +39,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	if(ptr_Sdpa2Gwes_)
 	{
 		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
-
-		//Put the job into Running state
-		//send back to the user a SubmitJobAckEvent
-		sdpa::events::SubmitJobAckEvent::Ptr pSubmAckEvt(new sdpa::events::SubmitJobAckEvent("", "", pJob->id()));
-		pJob->Dispatch(pSubmAckEvt.get()); // no event need to be sent
+		pJob->Dispatch(); // no event need to be sent
 	}
 	else
 		SDPA_LOG_ERROR("Gwes not initialized!");
@@ -68,8 +64,7 @@ void SchedulerImpl::schedule(const Job::ptr_t &pJob) {
 		else //execute the job (NRE side)
 		{
 			// put the job into the running state and execute it
-			sdpa::events::SubmitJobAckEvent::Ptr pSubmAckEvt(new sdpa::events::SubmitJobAckEvent("", "", pJob->id()));
-			pJob->Dispatch(pSubmAckEvt.get()); // no event need to be sent
+			pJob->Dispatch(); // no event need to be sent
 
 			// execute the job
 			// upon successful execution send JobFinished or JobFailed events to the output stage

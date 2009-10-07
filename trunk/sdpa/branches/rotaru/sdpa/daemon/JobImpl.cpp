@@ -93,7 +93,7 @@ namespace sdpa { namespace daemon {
     	b_local_ = b_val;
     }
 
-    void JobImpl::action_run_job(const sdpa::events::SubmitJobAckEvent& event)
+    void JobImpl::action_run_job()
     {
     	ostringstream os;
     	os<<"Process 'action_run_job'";

@@ -29,7 +29,7 @@ namespace sdpa { namespace fsm { namespace smc {
 			void JobFinished(const sdpa::events::JobFinishedEvent*);
 			void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
 			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
-			void Dispatch(const sdpa::events::SubmitJobAckEvent*);
+			void Dispatch();
 
 			sdpa::status_t getStatus() { return m_status_; }
 

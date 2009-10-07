@@ -3,10 +3,10 @@ using namespace sdpa::events;
 using namespace sdpa::fsm::smc;
 
 //transitions
-void JobFSM::Dispatch(const sdpa::events::SubmitJobAckEvent* pEvt)
+void JobFSM::Dispatch()
 {
 	m_status_ = m_fsmContext.getState().getName();
-	m_fsmContext.Dispatch(pEvt);
+	m_fsmContext.Dispatch();
 	m_status_ = m_fsmContext.getState().getName();
 }
 
