@@ -23,15 +23,15 @@
 #                  [ERROR_STRIP_TRAILING_WHITESPACE])
 
 # check the version of the compiler
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
-  OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
-
-set(CMAKE_CXX_COMPILER_MAJOR "unknown")
-set(CMAKE_CXX_COMPILER_MINOR "unknown")
-set(CMAKE_CXX_COMPILER_PATCH "unknown")
+set(CMAKE_CXX_COMPILER_MAJOR 0)
+set(CMAKE_CXX_COMPILER_MINOR 0)
+set(CMAKE_CXX_COMPILER_PATCH 0)
 
 # extract the version of the compiler
 if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
+      OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
+
   string(REGEX REPLACE ".*\\(ICC\\) ([0-9]+)\\.([0-9]+).*" "\\1"
          CMAKE_CXX_COMPILER_MAJOR ${CMAKE_CXX_COMPILER_VERSION})
   string(REGEX REPLACE ".*\\(ICC\\) ([0-9]+)\\.([0-9]+).*" "\\2"
@@ -40,11 +40,15 @@ if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
 endif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
 
 if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-  string(REGEX REPLACE ".*\\(GCC\\) ([0-9]+)\\.([0-9]+).*" "\\1"
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+      OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
+
+  string(STRIP ${CMAKE_CXX_COMPILER_VERSION} CMAKE_CXX_COMPILER_VERSION)
+  string(REGEX REPLACE "^([0-9]+).*$" "\\1"
          CMAKE_CXX_COMPILER_MAJOR ${CMAKE_CXX_COMPILER_VERSION})
-  string(REGEX REPLACE ".*\\(GCC\\) ([0-9]+)\\.([0-9]+).*" "\\2"
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\2"
          CMAKE_CXX_COMPILER_MINOR ${CMAKE_CXX_COMPILER_VERSION})
-  string(REGEX REPLACE ".*\\(GCC\\) ([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3"
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$" "\\3"
          CMAKE_CXX_COMPILER_PATCH ${CMAKE_CXX_COMPILER_VERSION})
 endif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
