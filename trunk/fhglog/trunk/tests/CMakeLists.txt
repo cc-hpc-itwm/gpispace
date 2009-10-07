@@ -1,31 +1,13 @@
 # -*- mode: cmake; -*-
 
-add_executable(logtest logtest.cpp)
-target_link_libraries(logtest fhglog)
-get_target_property(LOC logtest LOCATION_)
-add_test(logtest ${LOC})
+file(GLOB tc_srcs "test_*.cpp")
+foreach (tc_src ${tc_srcs})
+  # get the filename without extension
+  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" tc_name ${tc_src})
+  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
-add_executable(test_event test_event.cpp)
-target_link_libraries(test_event fhglog)
-get_target_property(LOC test_event LOCATION_)
-add_test(test_event ${LOC})
-
-add_executable(test_append test_append.cpp)
-target_link_libraries(test_append fhglog)
-get_target_property(LOC test_append LOCATION_)
-add_test(test_append ${LOC})
-
-add_executable(test_synch_appender test_synch_appender.cpp)
-target_link_libraries(test_synch_appender fhglog)
-get_target_property(LOC test_synch_appender LOCATION_)
-add_test(test_synch_appender ${LOC})
-
-add_executable(test_disabled_logging test_disabled_logging.cpp)
-target_link_libraries(test_disabled_logging fhglog)
-get_target_property(LOC test_disabled_logging LOCATION_)
-add_test(test_disabled_logging ${LOC})
-
-add_executable(test_formatter test_formatter.cpp)
-target_link_libraries(test_formatter fhglog)
-get_target_property(LOC test_formatter LOCATION_)
-add_test(test_formatter ${LOC})
+  add_executable(${tc_name} ${tc_src})
+  target_link_libraries(${tc_name} fhglog)
+  get_target_property(LOC ${tc_name} LOCATION_)
+  add_test(${tc_name} ${LOC})
+endforeach(tc_src ${tc_srcs})

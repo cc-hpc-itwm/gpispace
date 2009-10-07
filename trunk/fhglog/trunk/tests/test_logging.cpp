@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  logtest.cpp
+ *       Filename:  test_logging.cpp
  *
  *    Description:  testing tool for the logging framework
  *
