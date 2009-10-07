@@ -11,7 +11,7 @@
 #endif
 
 int
-main(int argc, char **argv) {
+main(int, char **) {
 #if ENABLE_LOGGING
     ::log4cpp::BasicConfigurator::configure();
     ::log4cpp::Category::setRootPriority(::log4cpp::Priority::DEBUG);

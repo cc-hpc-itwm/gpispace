@@ -4,7 +4,7 @@
 
 using namespace seda::comm;
 
-SimpleGlobal::SimpleGlobal(const std::string &s) {
+SimpleGlobal::SimpleGlobal(const std::string &) {
 }
 
 SimpleGlobal::~SimpleGlobal() {

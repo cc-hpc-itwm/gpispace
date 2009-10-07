@@ -37,12 +37,12 @@ void ConnectionStrategy::onMessage(const seda::comm::SedaMessage &recvMsg)
   ForwardStrategy::perform(SedaMessage::Ptr(new SedaMessage(recvMsg)));
 }
 
-void ConnectionStrategy::onStageStart(const std::string &stageName)
+void ConnectionStrategy::onStageStart(const std::string &)
 {
   conn_->start();
 }
 
-void ConnectionStrategy::onStageStop(const std::string &stageName)
+void ConnectionStrategy::onStageStop(const std::string &)
 {
   conn_->stop();
 }

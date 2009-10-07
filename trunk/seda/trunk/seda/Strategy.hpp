@@ -15,9 +15,9 @@ namespace seda {
         typedef std::tr1::shared_ptr<Strategy> Ptr;
     
         virtual ~Strategy() {}
-        virtual void perform(const IEvent::Ptr& e) = 0; //{ throw seda::EventNotSupported(e); }
-        virtual void onStageStart(const std::string& stageName) {}
-        virtual void onStageStop(const std::string& stageName)  {}
+        virtual void perform(const IEvent::Ptr&) = 0; //{ throw seda::EventNotSupported(e); }
+        virtual void onStageStart(const std::string&) {}
+        virtual void onStageStop(const std::string&)  {}
         const std::string& name() const { return _name; }
 
         virtual std::string str() const { return name(); }
