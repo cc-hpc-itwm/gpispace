@@ -29,7 +29,12 @@ dtmmgr_init (PDTmmgr_t PDTmmgr, const MemSize_t MemSize, const Align_t Align)
   if (pdtmmgr == NULL)
     DTMMGR_ERROR_MALLOC_FAILED;
 
-  FOR_ARENA (Arena) tmmgr_init (pdtmmgr->arena + Arena, MemSize, Align);
+  FOR_ARENA (Arena)
+    {
+      pdtmmgr->arena[Arena] = NULL;
+
+      tmmgr_init (pdtmmgr->arena + Arena, MemSize, Align);
+    }
 
   // get the real size after alignment
   pdtmmgr->mem_size = tmmgr_memsize (pdtmmgr->arena[ARENA_GLOBAL]);
