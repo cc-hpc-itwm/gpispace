@@ -37,6 +37,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from read token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_READ); 
 			tokens.push_back(*tpP); 
+                        delete tpP;
 			id << "_r" << tokenP->getID(); 
 		}
 	}
@@ -51,6 +52,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from input token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_INPUT); 
 			tokens.push_back(*tpP); 
+                        delete tpP;
 			id << "_i" << tokenP->getID(); 
 		}
 	}
@@ -69,6 +71,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 			LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from write token " << tokenP->getID());
 			parameter_t* tpP = new TokenParameter(tokenP, edges[i], TokenParameter::SCOPE_WRITE); 
 			tokens.push_back(*tpP);
+                        delete tpP;
 			id << "_w" << tokenP->getID(); 
 		}
 	}
@@ -83,6 +86,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 		LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from dummy output token");
 		parameter_t* tpP = new TokenParameter(NULL, edges[i], TokenParameter::SCOPE_OUTPUT); 
 		tokens.push_back(*tpP); 
+                delete tpP;
 	}
 	
 	// identifier
