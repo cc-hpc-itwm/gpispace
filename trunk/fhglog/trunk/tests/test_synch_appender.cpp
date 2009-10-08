@@ -17,7 +17,6 @@
  */
 
 #include <sstream> // ostringstream
-#include <cstdlib> // exit
 #include <fhglog/fhglog.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
 #include <fhglog/NullAppender.hpp>
@@ -49,5 +48,5 @@ int main (int , char **)
     logstream.str("");
   }
 
-  std::exit(errcount);
+  return errcount;
 }

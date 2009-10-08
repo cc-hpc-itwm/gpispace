@@ -18,7 +18,6 @@
 
 #include <sstream> // ostringstream
 #include <iostream>
-#include <cstdlib> // exit
 #include <ctime>   // time
 #include <unistd.h> // sleep
 
@@ -119,5 +118,5 @@ int main (int, char **)
       ++errcount;
     }
   }
-  std::exit(errcount);
+  return errcount;
 }

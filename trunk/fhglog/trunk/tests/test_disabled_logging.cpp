@@ -17,7 +17,6 @@
  */
 
 #include <sstream> // ostringstream
-#include <cstdlib> // exit
 #include <ctime>   // time
 #include <unistd.h> // sleep
 
@@ -159,6 +158,5 @@ int main (int, char **)
       std::clog << "OK!" << std::endl;
     }
   }
-
-  std::exit(errcount);
+  return errcount;
 }

@@ -17,7 +17,6 @@
  */
 
 #include <sstream> // ostringstream
-#include <cstdlib> // exit
 #include <fhglog/fhglog.hpp>
 #include <fhglog/NullAppender.hpp>
 
@@ -93,7 +92,7 @@ int main (int , char **)
   {
     std::clog << "** testing formatting performance...";
     log.addAppender(Appender::ptr_t(new FormattingNullAppender("null")))->setFormat(Formatter::Full());
-    for (std::size_t count(0); count < 1000000; ++count)
+    for (std::size_t count(0); count < 100000; ++count)
     {
       log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
     }
@@ -143,5 +142,6 @@ int main (int , char **)
     logstream.str("");
   }
 
-  std::exit(errcount);
+  log.removeAllAppenders();
+  return errcount;
 }

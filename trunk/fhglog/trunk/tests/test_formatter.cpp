@@ -16,7 +16,6 @@
  * =====================================================================================
  */
 
-#include <cstdlib> // exit
 #include <sstream> // std::ostringstream
 #include <fhglog/fhglog.hpp>
 
@@ -97,7 +96,7 @@ int main (int, char **)
 
   errcount += test_format(LogEvent(LogLevel::DEBUG, "tests/test_formatter.cpp", "main", 98, "hello"), "%P", "tests/test_formatter.cpp", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%p", "test_formatter.cpp", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "100", false); // keep this line up-to-date!
+  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", "99", false); // keep this line up-to-date!
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%l", "", false);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%m", "hello", false);
   {
@@ -109,5 +108,5 @@ int main (int, char **)
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%U", "not-used", true);
   errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%", "not-used", true);
 
-  std::exit(errcount != 0);
+  return errcount;
 }
