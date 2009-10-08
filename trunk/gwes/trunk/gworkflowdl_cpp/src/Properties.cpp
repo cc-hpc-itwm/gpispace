@@ -33,10 +33,18 @@ Properties::Properties(DOMNodeList* list)
   {
 	  DOMNode* node = (DOMNode*) list->item(i);
 	  if (node->getNodeType() == DOMNode::ELEMENT_NODE) {
-		  if (XMLString::equals(node->getNodeName(),X("property"))) {
+            XMLCh* property(X("property"));
+		  if (XMLString::equals(node->getNodeName(),property)) {
 			  DOMElement* el = (DOMElement*) node;
-		      insert(pair<string,string>(string(S(el->getAttribute(X("name")))), string(S(el->getTextContent()))));
+            XMLCh* name(X("name"));
+            char* attr(S(el->getAttribute(name)));
+            char* cntx(S(el->getTextContent()));
+		      insert(pair<string,string>(string(attr), string(cntx)));
+                      XMLString::release(&name);
+                      XMLString::release(&attr);
+                      XMLString::release(&cntx);
 		  }
+                  XMLString::release(&property);
 	  }
   }
 }

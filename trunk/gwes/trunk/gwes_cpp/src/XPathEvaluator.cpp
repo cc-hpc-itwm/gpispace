@@ -169,6 +169,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
+    delete[]   xPathExpressionP;
     if(xpathObjP == NULL) {
         LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
@@ -224,7 +225,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 
     // cleanup
     xmlXPathFreeObject(xpathObjP);
-    
+  
     //printXmlNodes(xpathObjP->nodesetval);
 	LOG_DEBUG(_logger, "evalExpression2Xml(" << xPathExprStr << ") = " << xmlResult);
     

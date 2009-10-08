@@ -124,7 +124,9 @@ ostream& XMLUtils::serialize(ostream& os, const DOMDocument* doc, bool pretty)
 
 string* XMLUtils::serialize (const DOMNode* node, bool pretty) 
 {
-    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
+  XMLCh* ls (X("ls"));
+    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
+    XMLString::release(&ls);
     DOMWriter* writer = ((DOMImplementationLS*)impl)->createDOMWriter();
     // set features
     if (pretty && writer->canSetFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true)) writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true);
@@ -166,7 +168,9 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
 
 DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) throw (WorkflowFormatException)
 {
-    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
+  XMLCh* ls(X("ls"));
+    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
+    XMLString::release(&ls);
     DOMBuilder* parser = ((DOMImplementationLS*)impl)->createDOMBuilder(DOMImplementationLS::MODE_SYNCHRONOUS, 0);
     DOMDocument *doc;
     
