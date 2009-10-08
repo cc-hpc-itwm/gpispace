@@ -133,10 +133,10 @@ Failed
 
 Cancelled
 {
-	CancelJobAck(pEvent: const sdpa::events::CancelJobAckEvent*)
+	Default()
     	nil
     	{
-    		action_cancel_job_ack(*pEvent);
+    		//action_cancel_job_ack(*pEvent);
     	}
         
 	DeleteJob(pEvent: const sdpa::events::DeleteJobEvent*)

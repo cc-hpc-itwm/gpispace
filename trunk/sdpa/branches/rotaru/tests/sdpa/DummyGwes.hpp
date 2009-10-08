@@ -8,9 +8,20 @@
 #include <sdpa/JobId.hpp>
 
 #include <sdpa/uuidgen.hpp>
+#include <map>
 
 using namespace sdpa;
 using namespace sdpa::wf;
+
+#include <boost/config.hpp>
+#include <iostream>
+
+#include <boost/bimap.hpp>
+
+
+typedef boost::bimap< std::string, std::string > bimap_t;
+typedef bimap_t::value_type id_pair;
+
 
 class DummyGwes : public Sdpa2Gwes {
 private:
@@ -43,7 +54,10 @@ public:
 
 		if(ptr_Gwes2SdpaHandler)
 		{
+			// find the corresponding workflow
+			workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
 			ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch);
+			bimap_wf_act_ids_.left.erase(wf_id_orch);
 		}
 		else
 			SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -60,7 +74,10 @@ public:
 
 		if(ptr_Gwes2SdpaHandler)
 		{
+			// find the corresponding workflow
+			workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
 			ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch);
+			bimap_wf_act_ids_.left.erase(wf_id_orch);
 		}
 		else
 			SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -83,7 +100,10 @@ public:
 		{
 			if(ptr_Gwes2SdpaHandler)
 			{
+				// find the corresponding workflow
+				workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
 				ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch);
+				bimap_wf_act_ids_.left.erase(wf_id_orch);
 			}
 			else
 				SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -152,7 +172,7 @@ public:
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
 		// save the workflow_id
-		wf_id_orch = workflow.getId();
+		workflow_id_t wf_id_orch = workflow.getId();
 
 		// Here, GWES is supposed to create new workflows ....
 		activity_t::Method method("","");
@@ -166,8 +186,10 @@ public:
 		uuid uid;
 		uuidgen gen;
 		gen(uid);
-		act_id= uid.str();
+		activity_id_t act_id = uid.str();
 
+		//bimap_wf_act_ids_[wf_id_orch] = act_id;
+		bimap_wf_act_ids_.insert( id_pair(wf_id_orch, act_id) );
 		activity.setId(act_id);
 
 		if(ptr_Gwes2SdpaHandler)
@@ -194,18 +216,20 @@ public:
 
 		if(ptr_Gwes2SdpaHandler)
 		{
-			SDPA_LOG_DEBUG("Gwes cancels the activities related to that workflow ...");
+			SDPA_LOG_DEBUG("Gwes cancels the activities related to the workflow "<<workflowId);
+			activity_id_t act_id = bimap_wf_act_ids_.left.at(workflowId);
 			ptr_Gwes2SdpaHandler->cancelActivity(act_id);
 		}
 		else
 			SDPA_LOG_ERROR("SDPA has unregistered ...");
-
 	}
 
 private:
 	mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
-	workflow_id_t wf_id_orch;
-	activity_id_t act_id;
+	bimap_t bimap_wf_act_ids_;
+	//use here a bidirectional map!
+	/*workflow_id_t wf_id_orch;
+	activity_id_t act_id;*/
 };
 
 #endif

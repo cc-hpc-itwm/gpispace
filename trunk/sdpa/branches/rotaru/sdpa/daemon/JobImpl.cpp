@@ -109,10 +109,13 @@ namespace sdpa { namespace daemon {
 
 		if(evt.from() == pComm->master() ) //the master sent a Cancel message -> inform the workfloe engine
 		{
-			// clearly, I'm in the Pending state here
-			// return back to the master a CancelJobAckEvent
-			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id()) );
-			pComm->sendEvent( pComm->output_stage(), pCancelAckEvt );
+			if( pComm->name()!= sdpa::daemon::ORCHESTRATOR )
+			{
+				// clearly, I'm in the Pending state here
+				// return back to the master a CancelJobAckEvent
+				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id()) );
+				pComm->sendEvent( pComm->output_stage(), pCancelAckEvt );
+			}
 
 			// mark the job deletion
 			mark_for_deletion();

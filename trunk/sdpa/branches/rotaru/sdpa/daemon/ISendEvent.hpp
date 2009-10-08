@@ -5,7 +5,16 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/wf/Sdpa2Gwes.hpp>
 
+
+
+
 namespace sdpa { namespace daemon {
+
+const std::string ORCHESTRATOR("orchestrator") ;
+const std::string AGGREGATOR("aggregator") ;
+const std::string NRE("nre") ;
+const std::string USER("user") ;
+
   class IComm{
   public:
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
