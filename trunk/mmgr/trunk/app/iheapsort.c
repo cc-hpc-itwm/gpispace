@@ -23,5 +23,7 @@ main ()
       heap_delmin (&h);
     }
 
+  heap_free (&h);
+
   return EXIT_SUCCESS;
 }
