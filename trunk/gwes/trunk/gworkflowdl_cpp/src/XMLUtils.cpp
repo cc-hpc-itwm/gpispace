@@ -134,7 +134,9 @@ string* XMLUtils::serialize (const DOMNode* node, bool pretty)
     writer->setErrorHandler(_errorHandler);
     // write 
 	XMLCh* xmlstr = writer->writeToString(*node);
-	string *str = new string(XMLString::transcode((XMLCh*)xmlstr));
+        char * xmlstrT(XMLString::transcode((XMLCh*)xmlstr));
+	string *str = new string(xmlstrT);
+        XMLString::release(&xmlstrT);
 	// check for errors
 	if (_errorHandler->hasError) 
 	{
