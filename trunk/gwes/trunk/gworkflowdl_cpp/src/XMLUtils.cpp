@@ -84,7 +84,9 @@ void XMLUtils::terminateLibxml2()
 
 ostream& XMLUtils::serialize(ostream& os, const DOMNode* node, bool pretty)
 {
-    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
+  XMLCh* ls(X("LS"));
+    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
+    XMLString::release(&ls);
     DOMWriter* writer = ((DOMImplementationLS*)impl)->createDOMWriter();
     // set features
     if (pretty && writer->canSetFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true)) writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true); 
@@ -93,18 +95,22 @@ ostream& XMLUtils::serialize(ostream& os, const DOMNode* node, bool pretty)
     // write
 	XMLCh* xmlstr = writer->writeToString(*node);
 	os << XMLString::transcode((XMLCh*)xmlstr);
+        XMLString::release(&xmlstr);
 	// check for errors
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
 		LOG_ERROR(_logger, _errorHandler->message);
 	}
+        writer->release();
 	return os;
 }
 
 ostream& XMLUtils::serialize(ostream& os, const DOMDocument* doc, bool pretty)
 {
-    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
+  XMLCh* ls (X("LS"));
+    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
+    XMLString::release(&ls);
     DOMWriter* writer = ((DOMImplementationLS*)impl)->createDOMWriter();
     // set features
     if (pretty && writer->canSetFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true)) writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true); 
@@ -113,12 +119,14 @@ ostream& XMLUtils::serialize(ostream& os, const DOMDocument* doc, bool pretty)
     // write
 	XMLCh* xmlstr = writer->writeToString(*doc);
 	os << XMLString::transcode((XMLCh*)xmlstr);
+        XMLString::release(&xmlstr);
 	// check for errors
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
 		LOG_ERROR(_logger, _errorHandler->message);
 	}
+        writer->release();
 	return os;
 }
 
@@ -134,8 +142,9 @@ string* XMLUtils::serialize (const DOMNode* node, bool pretty)
     writer->setErrorHandler(_errorHandler);
     // write 
 	XMLCh* xmlstr = writer->writeToString(*node);
-        char * xmlstrT(XMLString::transcode((XMLCh*)xmlstr));
+	char * xmlstrT = XMLString::transcode(xmlstr);
 	string *str = new string(xmlstrT);
+        XMLString::release(&xmlstr);
         XMLString::release(&xmlstrT);
 	// check for errors
 	if (_errorHandler->hasError) 
@@ -143,13 +152,15 @@ string* XMLUtils::serialize (const DOMNode* node, bool pretty)
 		_errorHandler->reset();
 		LOG_ERROR(_logger, _errorHandler->message);
 	}
-	
+	writer->release();
 	return str;
 }
 
 string* XMLUtils::serialize (const DOMDocument* doc, bool pretty) 
 {
-    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(X("LS"));
+  XMLCh*ls(X("LS"));
+    DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
+    XMLString::release(&ls);
     DOMWriter* writer = ((DOMImplementationLS*)impl)->createDOMWriter();
     // set features
     if (pretty && writer->canSetFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true)) writer->setFeature(XMLUni::fgDOMWRTFormatPrettyPrint, true);
@@ -158,13 +169,14 @@ string* XMLUtils::serialize (const DOMDocument* doc, bool pretty)
     // write 
 	XMLCh* xmlstr = writer->writeToString(*doc);
 	string *str = new string(XMLString::transcode((XMLCh*)xmlstr));
+        XMLString::release(&xmlstr);
 	// check for errors
 	if (_errorHandler->hasError) 
 	{
 		_errorHandler->reset();
 		LOG_ERROR(_logger, _errorHandler->message);
 	}
-	
+	writer->release();
 	return str;
 }
 
@@ -173,7 +185,7 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
   XMLCh* ls(X("ls"));
     DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ls);
     XMLString::release(&ls);
-    DOMBuilder* parser = ((DOMImplementationLS*)impl)->createDOMBuilder(DOMImplementationLS::MODE_SYNCHRONOUS, 0);
+    DOMBuilder* parser (((DOMImplementationLS*)impl)->createDOMBuilder(DOMImplementationLS::MODE_SYNCHRONOUS, 0));
     DOMDocument *doc;
     
     // set parser features
@@ -221,7 +233,7 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
 		//throw WorkflowFormatException(_errorHandler->message);
 		LOG_ERROR(_logger, _errorHandler->message); 
 	}
-    	
+
 	return doc;
 }
 
