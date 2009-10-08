@@ -64,6 +64,7 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif(CMAKE_USE_PTHREADS_INIT)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
 add_definitions(-DHAVE_CONFIG_H)
 
 # Make sure all subdirectories include correctly
@@ -83,7 +84,10 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "build type has been set to ${CMAKE_BUILD_TYPE}")
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS modules/FindFhgLog.cmake DESTINATION
+INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
+  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
 )
 
