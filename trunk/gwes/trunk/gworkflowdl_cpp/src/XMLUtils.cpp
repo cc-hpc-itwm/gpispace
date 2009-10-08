@@ -16,6 +16,8 @@
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xercesc/framework/Wrapper4InputSource.hpp>
 
+#include <tr1/memory>
+
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
@@ -182,8 +184,8 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
     // input source
     const char * xmlbyte = xmlstring.c_str();
 	MemBufInputSource* memBufIS = new MemBufInputSource( (const XMLByte*)xmlbyte, strlen(xmlbyte), "id", false);
-    Wrapper4InputSource *wrapper=new Wrapper4InputSource(memBufIS,false);
-    
+    std::tr1::shared_ptr<Wrapper4InputSource> wrapper (new Wrapper4InputSource(memBufIS,false));
+
     try 
     {
 		doc = parser->parse(*wrapper);
