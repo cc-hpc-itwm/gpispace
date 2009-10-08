@@ -10,34 +10,67 @@
 #
 # Use the SMC_HOME environment variable to define the installation directory of SMC
 
+cmake_minimum_required(VERSION "2.6.2" FATAL_ERROR)
 Include(FindJava)
 
-IF( NOT SMC_HOME )
-  SET(SMC_HOME "/usr/local/lib/smc")
-ENDIF(NOT SMC_HOME)
-
-FIND_FILE(SMC_JAR
-  NAMES
-    Smc.jar
-  PATHS
-    $ENV{SMC_HOME}
-    ${SMC_HOME}
-    "[HKEY_CURRENT_USER\\smc\\bin]"
-    /usr/local/bin
-    /usr/bin
-  PATH_SUFFIXES
-    bin
-  DOC "Location of the Smc.jar file"
-)
-
-FIND_PATH(SMC_INCLUDE_DIR statemap.h
-  $ENV{SMC_HOME}/lib/C++
-  ${SMC_HOME}/lib/
-  "[HKEY_CURRENT_USER\\smc\\lib]"
+# set defaults
+SET(_smc_HOME "/usr/local")
+SET(_smc_INCLUDE_SEARCH_DIRS
+  ${CMAKE_INCLUDE_PATH}
   /usr/local/include
   /usr/include
+  )
+
+SET(_smc_BINARY_SEARCH_DIRS
+  ${CMAKE_BINARY_PATH}
+  /usr/local/lib
+  /usr/lib
+  )
+
+##
+if( "${SMC_HOME}" STREQUAL "")
+  if("" MATCHES "$ENV{SMC_HOME}")
+    set (SMC_HOME ${_smc_HOME})
+  else("" MATCHES "$ENV{SMC_HOME}")
+    set (SMC_HOME "$ENV{SMC_HOME}")
+  endif("" MATCHES "$ENV{SMC_HOME}")
+else( "${SMC_HOME}" STREQUAL "")
+endif( "${SMC_HOME}" STREQUAL "")
+##
+
+message(STATUS "Looking for protobuf in ${SMC_HOME}")
+
+IF( NOT ${SMC_HOME} STREQUAL "" )
+    SET(_smc_INCLUDE_SEARCH_DIRS ${SMC_HOME}/lib/C++ ${_smc_INCLUDE_SEARCH_DIRS})
+    SET(_smc_HOME ${SMC_HOME})
+ENDIF( NOT ${SMC_HOME} STREQUAL "" )
+
+IF( NOT $ENV{SMC_INCLUDEDIR} STREQUAL "" )
+  SET(_smc_INCLUDE_SEARCH_DIRS $ENV{SMC_INCLUDEDIR} ${_smc_INCLUDE_SEARCH_DIRS})
+ENDIF( NOT $ENV{SMC_INCLUDEDIR} STREQUAL "" )
+
+IF( NOT $ENV{SMC_BINARYDIR} STREQUAL "" )
+  SET(_smc_BINARY_SEARCH_DIRS $ENV{SMC_BINARYDIR} ${_smc_BINARY_SEARCH_DIRS})
+ENDIF( NOT $ENV{SMC_BINARYDIR} STREQUAL "" )
+
+IF( SMC_HOME )
+    SET(_smc_INCLUDE_SEARCH_DIRS ${SMC_HOME}/lib/C++ ${_smc_INCLUDE_SEARCH_DIRS})
+    SET(_smc_BINARY_SEARCH_DIRS ${SMC_HOME}/bin ${_smc_BINARY_SEARCH_DIRS})
+    SET(_smc_HOME ${SMC_HOME})
+ENDIF( SMC_HOME )
+
+# find the include files
+FIND_PATH(SMC_INCLUDE_DIR
+  NAMES statemap.h
+  HINTS ${_smc_INCLUDE_SEARCH_DIRS}
 )
 
+FIND_FILE(SMC_JAR
+  NAMES Smc.jar
+  HINTS ${_smc_BINARY_SEARCH_DIRS}
+#    "[HKEY_CURRENT_USER\\smc\\bin]"
+  DOC "Location of the Smc.jar file"
+)
 
 # if the include and the program are found then we have it
 IF(SMC_JAR AND SMC_INCLUDE_DIR)
