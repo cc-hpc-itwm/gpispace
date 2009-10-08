@@ -93,6 +93,11 @@ int main(int argc, char* argv[]) {
 		// print workflow
 		LOG_DEBUG(logger, *wfP);
 		LOG_INFO(logger, "### END EXECUTION " << workflowfn);
+
+                // gwes is deleted, so delete the channel and the obersever and the workflow
+                delete channelP;
+                delete observerP;
+                delete wfP;
 	}
 	catch(WorkflowFormatException e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
