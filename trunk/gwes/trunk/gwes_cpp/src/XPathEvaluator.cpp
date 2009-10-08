@@ -298,7 +298,9 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 		// token contains the data itself
 		if (xmldoc == NULL) {
 			// ToDo: remove ugly conversion from Xerces DOMElement to libxml2 xmlDocPtr.
-			xmldoc = XMLUtils::Instance()->deserializeLibxml2(*tokenP->getData()->toString());
+                  std::string* str = tokenP->getData()->toString();
+			xmldoc = XMLUtils::Instance()->deserializeLibxml2(*str);
+                        delete str;
 		}
 		
 		if (xmldoc != NULL) {
