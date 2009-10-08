@@ -126,6 +126,6 @@ enable_testing()
 add_subdirectory(tests)
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
+INSTALL(FILES README COPYING ChangeLog NEWS DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
 )
