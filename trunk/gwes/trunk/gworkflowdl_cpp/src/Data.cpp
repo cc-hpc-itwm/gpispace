@@ -98,7 +98,9 @@ DOMElement* Data::toElement(DOMDocument* doc)
 string* Data::getText()
 {
 	if (dataText == NULL) {
-		dataText = new string(S(data->getTextContent()));
+          char * cntx(S(data->getTextContent()));
+		dataText = new string(cntx);
+                XMLString::release(&cntx);
 		trim(*dataText);
 	}
 	return dataText;
