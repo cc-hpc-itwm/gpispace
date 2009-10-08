@@ -44,7 +44,9 @@ XPathEvaluator::XPathEvaluator(const char* xmlContextChar) throw(XPathException)
 	XMLUtils::Instance();
 
     // create context
-    _xmlContextDocP = xmlParseDoc(xmlCharStrdup(xmlContextChar));
+        xmlChar*xmlContextCharDuped(xmlCharStrdup(xmlContextChar));
+    _xmlContextDocP = xmlParseDoc(xmlContextCharDuped);
+    xmlFree(xmlContextCharDuped);
     _xmlContextP = xmlXPathNewContext(_xmlContextDocP);
     if(_xmlContextP == NULL) {
         LOG_ERROR(_logger, "Error: unable to create new XPath context");
@@ -122,10 +124,11 @@ XPathEvaluator::~XPathEvaluator()
 
 int XPathEvaluator::evalCondition(string& xPathExprStr) {
 	// create xpath expression
-    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+  xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
+    xmlFree(xPathExpressionP);
     if(xpathObjP == NULL) {
         LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return -1;
@@ -143,10 +146,11 @@ int XPathEvaluator::evalCondition(string& xPathExprStr) {
 
 string XPathEvaluator::evalExpression(string& xPathExprStr) {
 	// create xpath expression
-    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+  xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
 	    
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
+    xmlFree(xPathExpressionP);
     if(xpathObjP == NULL) {
         LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;
@@ -165,11 +169,11 @@ string XPathEvaluator::evalExpression(string& xPathExprStr) {
 
 string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	// create xpath expression
-    const xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+  xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
-    delete[]   xPathExpressionP;
+    xmlFree(xPathExpressionP);
     if(xpathObjP == NULL) {
         LOG_ERROR(_logger, "ERROR: unable to evaluate xpath expression \"" << xPathExpressionP << "\"!");
         return NULL;

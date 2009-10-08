@@ -251,11 +251,10 @@ string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
 
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
-        //	return xmlParseDoc(xmlCharStrdup(xmlstring.c_str()));
-	xmlChar*duped(xmlCharStrdup(xmlstring.c_str()));
+        xmlChar*duped(xmlCharStrdup(xmlstring.c_str()));
         xmlDocPtr res(xmlParseDoc(duped));
-        XMLString::release(&duped);
-	return res;
+        xmlFree(duped);
+        return res;
 }
 
 xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
