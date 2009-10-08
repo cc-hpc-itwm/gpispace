@@ -18,7 +18,7 @@ namespace fhg { namespace log {
 #if FHGLOG_DISABLE_LOGGING == 1
 #define __LOG(logger, level, msg)
 #else
-#define __LOG(logger, level, msg) do { using namespace fhg::log; if (logger.isLevelEnabled(LogLevel::level)) { FHGLOG_MKEVENT(evt, level, ""); if (! logger.isFiltered(evt)) { evt.stream() << msg; logger.log(evt); }}} while(0)
+#define __LOG(logger, level, msg) do { using namespace fhg::log; if (logger.isLevelEnabled(LogLevel::level)) { FHGLOG_MKEVENT(__log_evt, level, ""); if (! logger.isFiltered(__log_evt)) { __log_evt.stream() << msg; logger.log(__log_evt); }}} while(0)
 #endif // if FHGLOG_ENABLED == 0
 
 #ifndef NDEBUG
