@@ -25,13 +25,22 @@ OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
   YES)
 
+OPTION(WITH_FHGLOG
+  "Build the project with fhglog"
+  YES)
+
+OPTION(WITH_LOG4CPP
+  "Build the project with log4cpp"
+  NO)
+
+OPTION(WITH_COMM
+  "Build communication library"
+  YES)
+
 OPTION(ENABLE_UNIT_TESTS
   "Build and perform unit tests"
   YES)
 
-OPTION(ENABLE_COMM_LIB
-  "Build communication library"
-  YES)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -50,17 +59,17 @@ if (WIN32)
 else(WIN32)
   if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     # set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-unused-parameter -Werror")
 
     # Releases are made with the release build. Optimize code.
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     if (${CMAKE_BUILD_TYPE} MATCHES "Release")
       add_definitions("-DNDEBUG")
     endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wreturn-type -fno-omit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused -Wunused-variable -Wunused-function -Wno-unused-parameter")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wextra -Wreturn-type -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused -Wunused-variable -Wunused-function")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
@@ -92,16 +101,35 @@ else  ( PKG_CONFIG_FOUND )
   endif (ENABLE_UNIT_TESTS)
 
 endif ( PKG_CONFIG_FOUND )
-## logging
-if (ENABLE_LOGGING)
-  include(FindLogging)
-  message(STATUS "LOG4CPP: ${LOG4CPP_CFLAGS} ${LOG4CPP_LDFLAGS} STATIC=${LOG4CPP_STATIC_LDFLAGS}")
-endif (ENABLE_LOGGING)
 
 ## logging
 if (ENABLE_LOGGING)
-  include(FindLogging)
-  message(STATUS "LOG4CPP: -I${LOG4CPP_INCLUDE_DIRS} '${LOG4CPP_LIBRARY}'")
+
+  if (WITH_LOG4CPP)
+    set (WITH_FHGLOG NO)
+    message(STATUS "Building with log4cpp...")
+
+    include (FindLogging)
+    if (LOG4CPP_FOUND)
+      include_directories(${LOG4CPP_INCLUDE_DIRS})
+      link_libraries(${LOG4CPP_LIBRARIES})
+      set(HAVE_LOG4CPP 1)
+    else (LOG4CPP_FOUND)
+      message(FATAL "Log4Cpp could not be found!")
+    endif(LOG4CPP_FOUND)
+  endif(WITH_LOG4CPP)
+
+  if (WITH_FHGLOG)
+    message(STATUS "Building with fhglog...")
+    include(FindFhgLog)
+    if (FHGLOG_FOUND)
+      include_directories(${FHGLOG_INCLUDE_DIR})
+      link_libraries(${FHGLOG_LIBRARY})
+      set(HAVE_FHGLOG 1)
+    else (FHGLOG_FOUND)
+      message(FATAL "could not find FhgLog")
+    endif (FHGLOG_FOUND)
+  endif(WITH_FHGLOG)
 endif (ENABLE_LOGGING)
 
 ## check for threads
@@ -127,7 +155,7 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 
-if (ENABLE_COMM_LIB)
+if (WITH_COMM)
   # we need zeromq
   include (FindZeroMQ)
   if (ZMQ_FOUND)
@@ -145,22 +173,7 @@ if (ENABLE_COMM_LIB)
       link_libraries(${PB_LIBRARY})
   endif (PB_FOUND)
   include(PBMacros)
-endif (ENABLE_COMM_LIB)
-
-# Deal with logging
-if(ENABLE_LOGGING)
-  set(ENABLE_LOGGING 1)
-  if (LOG4CPP_FOUND)
-    set(HAVE_LOG4CPP 1)
-    message(STATUS "Building with logging enabled.")
-  else (LOG4CPP_FOUND)
-    set(HAVE_LOG4CPP)
-    message(STATUS "Failed to find log4cpp. Deactivating logging.")
-  endif (LOG4CPP_FOUND)
-else(ENABLE_LOGGING)
-  message("Disabled logging by request.")
-  set(ENABLE_LOGGING)
-endif(ENABLE_LOGGING)
+endif (WITH_COMM)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)
@@ -168,32 +181,21 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Make sure all subdirectories include correctly
-if (ENABLE_LOGGING)
-  include_directories(${LOG4CPP_INCLUDE_DIRS})
-endif (ENABLE_LOGGING)
 include_directories(${Boost_INCLUDE_DIRS})
-if (ENABLE_COMM_LIB)
-  include_directories(${ZMQ_INCLUDE_DIR})
-endif (ENABLE_COMM_LIB)
-include_directories(${PB_INCLUDE_DIR})
-
 include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
-    if (CMAKE_USE_PTHREADS_INIT)
-    link_libraries(-lpthread)
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries(-lpthread)
 endif(CMAKE_USE_PTHREADS_INIT)
 link_libraries(${Boost_LIBRARIES})
-if(ENABLE_LOGGING)
-  link_libraries(${LOG4CPP_LIBRARY})
-endif(ENABLE_LOGGING)
 
 # Reflect the package structure
 add_subdirectory(seda)
-if (ENABLE_COMM_LIB)
+if (WITH_COMM)
   add_subdirectory(seda/comm)
-endif (ENABLE_COMM_LIB)
+endif (WITH_COMM)
 
 if (ENABLE_UNIT_TESTS)
   enable_testing()
@@ -243,38 +245,3 @@ ELSE(WIN32 AND NOT UNIX)
   SET(CPACK_SOURCE_STRIP_FILES "")
 ENDIF(WIN32 AND NOT UNIX)
 INCLUDE(CPack)
-
-### print some output for the user
-message("")
-message("***** Configuration *****")
-message("  prefix: ${CMAKE_INSTALL_PREFIX}")
-if (ENABLE_LOGGING)
-  message("  logging: yes")
-  message("  LOG4CPP: -I${LOG4CPP_INCLUDE_DIRS} -l${LOG4CPP_LIBRARY}")
-else (ENABLE_LOGGING)
-  message("  logging: no")
-endif (ENABLE_LOGGING)
-if (ENABLE_UNIT_TESTS)
-  message("  unit tests: yes")
-  message("  CPPUnit: -I${CPPUNIT_INCLUDE_DIRS} -L${CPPUNIT_LIBRARY_DIRS} -l${CPPUNIT_LIBRARIES}")
-else (ENABLE_UNIT_TESTS)
-  message("  unit tests: no")
-endif (ENABLE_UNIT_TESTS)
-if (ENABLE_COMM_LIB)
-  message("  with libsedaComm: yes")
-else (ENABLE_COMM_LIB)
-  message("  with libsedaComm: no")
-endif (ENABLE_COMM_LIB)
-message("")
-message("Additional libraries:")
-message("  Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS}")
-#message("                AMQ: -I${AMQ_INCLUDE_DIRS} -L${AMQ_LIBRARY_DIRS} -l${AMQ_LIBRARIES}")
-message("")
-message("Additional tools")
-message("----------------")
-message("")
-if (ENABLE_COMM_LIB)
-  message("  pb: ${PB_PROTOC_CMD}")
-endif (ENABLE_COMM_LIB)
-message("")
-
