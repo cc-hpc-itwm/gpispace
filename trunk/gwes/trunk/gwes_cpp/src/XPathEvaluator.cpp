@@ -293,7 +293,7 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 			} 
 		}
 
-                delete textP; // this is a big win! -> valgrind is your friend!
+                //                delete textP; // this is a big win! -> valgrind is your friend!
 
 		// token contains the data itself
 		if (xmldoc == NULL) {
