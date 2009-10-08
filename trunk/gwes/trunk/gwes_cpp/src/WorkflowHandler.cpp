@@ -454,6 +454,10 @@ TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::T
 				toP->lockTokens();
 				return toP;
 			}
+                        else
+                          {
+                            delete toP;
+                          }
 		}
 		return NULL;
 	}
