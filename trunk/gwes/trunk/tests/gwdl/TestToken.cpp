@@ -14,7 +14,7 @@
 //tests
 #include "TestToken.h"
 
-#define X(str) XMLString::transcode((const char*)& str)
+#include <gwdl/XMLTranscode.hpp>
 
 using namespace std;
 using namespace gwdl;

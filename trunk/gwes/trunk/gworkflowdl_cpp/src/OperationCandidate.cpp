@@ -13,13 +13,11 @@
 //xerces-c
 #include <xercesc/util/OutOfMemoryException.hpp>
 
+#include <gwdl/XMLTranscode.hpp>
+
 using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
-
-#define X(str) XMLString::transcode((const char*)& str)
-#define XS(strg) XMLString::transcode((const char*) strg.c_str())
-#define S(str) XMLString::transcode(str)
 
 namespace gwdl
 {

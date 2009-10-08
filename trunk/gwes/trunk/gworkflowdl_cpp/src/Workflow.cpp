@@ -15,13 +15,11 @@
 #include <fstream>
 #include <errno.h>
 
+#include <gwdl/XMLTranscode.hpp>
+
 using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
-
-#define X(str) XMLString::transcode((const char*)& str)
-#define XS(strg) XMLString::transcode((const char*) strg.c_str())
-#define S(str) XMLString::transcode(str)
 
 namespace gwdl
 {
@@ -60,22 +58,15 @@ Workflow::Workflow(DOMElement* element)
 		for (XMLSize_t i = 0; i<le->getLength(); i++) {
 			DOMNode* node = le->item(i);
 			const XMLCh* name = node->getNodeName(); 
-                        XMLCh*xdescription(X("description"));
-                        XMLCh*xplace(X("place"));
-                        XMLCh*xtransition(X("transition"));
-			if (XMLString::equals(name,xdescription)) {
+			if (XMLString::equals(name,X("description"))) {
                           char * cntx (XMLString::transcode(node->getTextContent()));
 				description = string(cntx);
                                 XMLString::release(&cntx);
-			} else if (XMLString::equals(name,xplace)) {
+			} else if (XMLString::equals(name,X("place"))) {
 				addPlace(new Place((DOMElement*) node));
-			} else if (XMLString::equals(name,xtransition)) {
+			} else if (XMLString::equals(name,X("transition"))) {
 				addTransition(new Transition(this, (DOMElement*) node));
 			}
-                        XMLString::release(&xdescription);
-                        XMLString::release(&xplace);
-                        XMLString::release(&xtransition);
-
 		}
 	}
 }
@@ -104,9 +95,7 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 
 	// create new workflow object
 	// ID
-        XMLCh* id(X("ID"));
-	_id = string(S(element->getAttribute(id)));
-        XMLString::release(&id);
+	_id = string(S(element->getAttribute(X("ID"))));
 
 	//XMLCh* ns = X(SCHEMA_wfSpace);
 
@@ -118,22 +107,15 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 		for (XMLSize_t i = 0; i<le->getLength(); i++) {
 			DOMNode* node = le->item(i);
 			const XMLCh* name = node->getNodeName(); 
-                        XMLCh*xdescription(X("description"));
-                        XMLCh*xplace(X("place"));
-                        XMLCh*xtransition(X("transition"));
-			if (XMLString::equals(name,xdescription)) {
+			if (XMLString::equals(name,X("description"))) {
                           char * cntx (XMLString::transcode(node->getTextContent()));
 				description = string(cntx);
                                 XMLString::release(&cntx);
-			} else if (XMLString::equals(name,xplace)) {
+			} else if (XMLString::equals(name,X("place"))) {
 				addPlace(new Place((DOMElement*) node));
-			} else if (XMLString::equals(name,xtransition)) {
+			} else if (XMLString::equals(name,X("transition"))) {
 				addTransition(new Transition(this, (DOMElement*) node));
 			}
-                        XMLString::release(&xdescription);
-                        XMLString::release(&xplace);
-                        XMLString::release(&xtransition);
-
 		}
 	}
 }

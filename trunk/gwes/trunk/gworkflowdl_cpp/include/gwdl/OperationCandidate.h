@@ -17,9 +17,6 @@
 #include <string>
 #include <iostream>
 
-#define X(str) XMLString::transcode((const char*)& str)
-#define S(str) XMLString::transcode(str)
-
 namespace gwdl
 {
 

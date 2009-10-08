@@ -16,13 +16,11 @@
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
 
+#include <gwdl/XMLTranscode.hpp>
+
 using namespace fhg::log;
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
-
-#define X(str) XMLString::transcode((const char*)& str)
-#define XS(strg) XMLString::transcode((const char*) strg.c_str())
-#define S(str) XMLString::transcode(str)
 
 namespace gwdl
 {
@@ -33,18 +31,14 @@ Properties::Properties(DOMNodeList* list)
   {
 	  DOMNode* node = (DOMNode*) list->item(i);
 	  if (node->getNodeType() == DOMNode::ELEMENT_NODE) {
-            XMLCh* property(X("property"));
-		  if (XMLString::equals(node->getNodeName(),property)) {
+		  if (XMLString::equals(node->getNodeName(),X("property"))) {
 			  DOMElement* el = (DOMElement*) node;
-            XMLCh* name(X("name"));
-            char* attr(S(el->getAttribute(name)));
-            char* cntx(S(el->getTextContent()));
-		      insert(pair<string,string>(string(attr), string(cntx)));
-                      XMLString::release(&name);
-                      XMLString::release(&attr);
-                      XMLString::release(&cntx);
+		      insert(pair<string,string>
+                             ( string(S(el->getAttribute(X("name"))))
+                             , string(S(el->getTextContent()))
+                             )
+                            );
 		  }
-                  XMLString::release(&property);
 	  }
   }
 }

@@ -12,7 +12,7 @@
 #include "TestData.h"
 //fhglog
 #include <fhglog/fhglog.hpp>
-
+#include <gwdl/XMLTranscode.hpp>
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
@@ -21,7 +21,6 @@ XERCES_CPP_NAMESPACE_USE
 
 CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::DataTest );
 
-#define X(str) XMLString::transcode((const char*)& str)
 #define D(str) XMLString::release(&str)
 #define SAFE_DELETE(ptr) if ((ptr) != 0) { delete (ptr); ptr=0; }
 
