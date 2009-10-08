@@ -1,11 +1,10 @@
 # -*- mode: cmake; -*-
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
 cmake_policy(VERSION 2.6)
 if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-# -*- mode: cmake; -*-
 project(libsdpa)
 
 # have the full monty in makefiles
@@ -100,15 +99,13 @@ else  ( PKG_CONFIG_FOUND )
 endif ( PKG_CONFIG_FOUND )
 
 # seda library
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include(FindSEDA)
-  # check for seda
-  if (SEDA_FOUND)
-    include_directories(${SEDA_INCLUDE_DIRS})
-    link_directories(${SEDA_LIBRARY_DIRS})
-    link_libraries(${SEDA_LIBRARIES})
-  endif(SEDA_FOUND)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+include(FindSEDA)
+# check for seda
+if (SEDA_FOUND)
+  include_directories(${SEDA_INCLUDE_DIR})
+  link_directories(${SEDA_LIBRARY_DIR})
+  link_libraries(${SEDA_LIBRARY})
+endif(SEDA_FOUND)
 
 # google protocol buffers
 include(FindProtocolBuffers)
@@ -128,25 +125,23 @@ else(UUID_FOUND)
 endif(UUID_FOUND)
 
 # GWES/GWDL
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include(FindGwes)
-  if (GWES_FOUND)
-    message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
-    include_directories(${GWES_INCLUDE_DIR})
-    link_libraries(${GWES_LIBRARY})
-  else(GWES_FOUND)
-    message(FATAL_ERROR "Gwes could not be found!")
-  endif (GWES_FOUND)
+include(FindGwes)
+# check for gwes/gwdl
+if (GWES_FOUND)
+  message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
+  include_directories(${GWES_INCLUDE_DIR})
+  link_libraries(${GWES_LIBRARY})
+else(GWES_FOUND)
+  message(FATAL_ERROR "Gwes could not be found!")
+endif (GWES_FOUND)
 
-  if (GWDL_FOUND)
-    message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
-    include_directories(${GWDL_INCLUDE_DIR})
-    link_libraries(${GWDL_LIBRARY})
-  else(GWDL_FOUND)
-    message(FATAL_ERROR "Gwdl could not be found!")
-  endif (GWDL_FOUND)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-
+if (GWDL_FOUND)
+  message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
+  include_directories(${GWDL_INCLUDE_DIR})
+  link_libraries(${GWDL_LIBRARY})
+else(GWDL_FOUND)
+  message(FATAL_ERROR "Gwdl could not be found!")
+endif (GWDL_FOUND)
 
 # state machine compiler (only when required)
 if (USE_SMC)
@@ -178,14 +173,12 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 link_libraries(${Boost_LIBRARIES})
 
 # logging
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
- include(FindFhgLog)
-  if (FHGLOG_FOUND)
-    message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
-    include_directories(${FHGLOG_INCLUDE_DIR})
-    link_libraries(${FHGLOG_LIBRARY})
-  endif(FHGLOG_FOUND)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+include(FindFhgLog)
+if (FHGLOG_FOUND)
+  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
+  include_directories(${FHGLOG_INCLUDE_DIR})
+  link_libraries(${FHGLOG_LIBRARY})
+endif(FHGLOG_FOUND)
 
 if (ENABLE_LOGGING)
     set(ENABLE_LOGGING 1)

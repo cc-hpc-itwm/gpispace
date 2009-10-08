@@ -1,4 +1,10 @@
 # -*- mode: cmake; -*-
+cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
+
 project(gwes)
 
 # have the full monty in makefiles
@@ -48,13 +54,12 @@ IF(NOT LIBXSLT_FOUND)
 ENDIF(NOT LIBXSLT_FOUND)
 
 ## find fhglog 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  ## we are compiling as standalone project. Search for fhglog
-  Include(FindFhgLog)
-  IF(NOT FHGLOG_FOUND)
-    message(FATAL_ERROR "No libfhglog found, cannot continue.")
-  ENDIF(NOT FHGLOG_FOUND)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+include(FindFhgLog)
+if (FHGLOG_FOUND)
+  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
+  include_directories(${FHGLOG_INCLUDE_DIR})
+  link_libraries(${FHGLOG_LIBRARY})
+endif(FHGLOG_FOUND)
 
 # uuid library
 Include(FindUUID)
@@ -87,13 +92,11 @@ include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gworkflowdl_cpp/include)
 include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gwes_cpp/include)
 include_directories(${CMAKE_INCLUDE_PATH})
 #include_directories(${SMC_INCLUDE_DIR})
-include_directories(${FHGLOG_INCLUDE_DIR})
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
-link_libraries(-Wl,-Bdynamic  -ldl)
-link_libraries(${FHGLOG_LIBRARY})
+#link_libraries(-Wl,-Bdynamic  -ldl)
 
 # Display and stop on warnings
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})

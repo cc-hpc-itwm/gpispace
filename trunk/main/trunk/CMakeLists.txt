@@ -2,7 +2,7 @@
 project(sdpa_main)
 
 # have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE true)
+set(CMAKE_VERBOSE_MAKEFILE false)
 
 set(V_MAJOR 0)
 set(V_MINOR 1)
@@ -22,7 +22,7 @@ set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where man
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
-cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+cmake_minimum_required(VERSION "2.6.2" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
@@ -31,7 +31,7 @@ set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 ##########################################################
-set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Werror")
+set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor ")#-Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
@@ -50,28 +50,16 @@ include(CheckCompiler)
 info_compiler()
 
 ##########################################################
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/fhglog)
-link_directories(${CMAKE_BINARY_DIR}/fhglog/fhglog)
-link_libraries(fhglog)
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/seda)
-include_directories(${CMAKE_BINARY_DIR}/seda)
-link_directories(${CMAKE_BINARY_DIR}/seda/seda)
-link_libraries(seda)
-message(STATUS "===LINK : ${CMAKE_BINARY_DIR}/fhglog/fhglog")
-
 include(CTest)
-message(STATUS "Add project fhglog")
+message(STATUS "========== Add project fhglog")
 add_subdirectory(fhglog)
-message(STATUS "Add project gwes")
+message(STATUS "========== Add project gwes")
 add_subdirectory(gwes)
-message(STATUS "Add project mmgr")
+message(STATUS "========== Add project mmgr")
 add_subdirectory(mmgr)
-message(STATUS "Add project sdpa")
+message(STATUS "========== Add project sdpa")
 add_subdirectory(sdpa)
-message(STATUS "Add project seda")
+message(STATUS "========== Add project seda")
 add_subdirectory(seda)
-
-add_dependencies(sdpa seda)
-add_dependencies(gwes fhglog)
 
 include(TargetDoc.cmake OPTIONAL)

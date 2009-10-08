@@ -24,5 +24,13 @@
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
 message(STATUS "FindSEDA check")
-include(FindPackageHelper)
-check_package(SEDA seda/IEvent.hpp seda 1.0)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include(FindPackageHelper)
+  check_package(SEDA seda/IEvent.hpp seda 1.0)
+else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  set(SEDA_FOUND true)
+  set(SEDA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/seda;${CMAKE_BINARY_DIR}/seda")
+  set(SEDA_LIBRARY_DIR "")
+  set(SEDA_LIBRARY seda)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+
