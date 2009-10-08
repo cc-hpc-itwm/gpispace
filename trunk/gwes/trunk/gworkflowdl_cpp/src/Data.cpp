@@ -41,8 +41,10 @@ Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 	if (strcmp(name,"data")) {
 		ostringstream message; 
 		message << "Error: Data element must have name \"data\", but has name \""<< name << "\"";
+                XMLString::release(&name);
 		throw WorkflowFormatException(message.str());	
 	} 
+                XMLString::release(&name);
 	data = element;
     // FIXME: replace this with a member variable std::string, not a pointer!
 	dataText = NULL;
@@ -65,10 +67,18 @@ void Data::setType() {
 	for (XMLSize_t i = 0; i<le->getLength(); i++) {
 		DOMNode* node = le->item(i);
 		const XMLCh* name = node->getNodeName(); 
-		if (XMLString::equals(name,X("file"))) _type = TYPE_FILE;
-		else if (XMLString::equals(name,X("volume"))) _type = TYPE_VOLUME;
-		else if (XMLString::equals(name,X("parameter"))) _type = TYPE_PARAMETER;
-		else if (XMLString::equals(name,X("soapenv:Fault"))) _type = TYPE_FAULT;
+                XMLCh* file = S("file");
+                XMLCh* volume = S("volume");
+                XMLCh* parameter = S("parameter");
+                XMLCh* soapenvFault = S("soapenv:Fault");
+		if (XMLString::equals(name,file)) _type = TYPE_FILE;
+		else if (XMLString::equals(name,volume)) _type = TYPE_VOLUME;
+		else if (XMLString::equals(name,parameter)) _type = TYPE_PARAMETER;
+		else if (XMLString::equals(name,soapenvFault)) _type = TYPE_FAULT;
+                XMLString::release (&file);
+                XMLString::release (&volume);
+                XMLString::release (&parameter);
+                XMLString::release (&soapenvFault);
 	}
 }
 
