@@ -4,17 +4,24 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/CompilerOutputter.h>
 
-#if ENABLE_LOGGING
-#include <log4cpp/BasicConfigurator.hh>
-#include <log4cpp/Priority.hh>
-#include <iostream>
+#ifdef ENABLE_LOGGING
+#  if defined(HAVE_FHGLOG)
+#    include <fhglog/Configuration.hpp>
+#  elif defined(HAVE_LOG4CPP)
+#    include <log4cpp/BasicConfigurator.hh>
+#    include <log4cpp/Priority.hh>
+#  endif
 #endif
 
 int
 main(int, char **) {
-#if ENABLE_LOGGING
-    ::log4cpp::BasicConfigurator::configure();
-    ::log4cpp::Category::setRootPriority(::log4cpp::Priority::DEBUG);
+#ifdef ENABLE_LOGGING
+#  if defined (HAVE_FHGLOG)
+  ::fhg::log::Configurator::configure();  
+#  elif defined (HAVE_LOG4CPP)
+  ::log4cpp::BasicConfigurator::configure();
+  ::log4cpp::Category::setRootPriority(::log4cpp::Priority::DEBUG);
+#  endif
 #endif
   CppUnit::TextUi::TestRunner runner;
   CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
