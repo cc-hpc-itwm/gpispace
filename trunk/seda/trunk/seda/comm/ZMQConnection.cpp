@@ -218,9 +218,19 @@ ZMQConnection::exchange_t ZMQConnection::locate(const address_type &addr)
 }
 
 template <typename T> struct recv_waiting_mgr {
-  recv_waiting_mgr(T *cnt) : cnt(cnt) { *cnt++; }
-  ~recv_waiting_mgr() { *cnt--; }
-  T *cnt;
+  public:
+    recv_waiting_mgr(T *count)
+      : cnt(count)
+    {
+      *cnt++;
+    }
+
+    ~recv_waiting_mgr()
+    {
+      *cnt--;
+    }
+  private:
+    T *cnt;
 };
 
 bool ZMQConnection::recv(SedaMessage &msg, const bool block) throw(boost::thread_interrupted)

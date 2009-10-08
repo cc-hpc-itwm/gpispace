@@ -2,8 +2,8 @@
 
 using namespace seda;
 
-CompositeStrategy::CompositeStrategy(const std::string& name)
-  : Strategy(name) {}
+CompositeStrategy::CompositeStrategy(const std::string& a_name)
+  : Strategy(a_name) {}
 
 void CompositeStrategy::add(const Strategy::Ptr& s) {
   _children.push_back(s);

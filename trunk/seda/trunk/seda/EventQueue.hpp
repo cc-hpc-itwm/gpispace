@@ -20,10 +20,10 @@ namespace seda {
             typedef std::tr1::shared_ptr< EventQueue > Ptr;
 
             explicit
-                EventQueue(const std::string& name, std::size_t maxQueueSize=SEDA_MAX_QUEUE_SIZE)
-                : SEDA_INIT_LOGGER("seda.queue."+name),
-                _name(name),
-                _maxQueueSize(maxQueueSize) {}
+                EventQueue(const std::string& a_name, std::size_t a_maxQueueSize=SEDA_MAX_QUEUE_SIZE)
+                : SEDA_INIT_LOGGER("seda.queue."+a_name),
+                _name(a_name),
+                _maxQueueSize(a_maxQueueSize) {}
             virtual ~EventQueue() {}
 
             const std::string& name() { return _name; }

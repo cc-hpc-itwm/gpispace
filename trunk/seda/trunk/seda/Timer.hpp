@@ -10,10 +10,10 @@ namespace seda {
             typedef std::tr1::shared_ptr<Timer> Ptr;
 
             explicit
-            Timer(const std::string &targetStage,
-                  const boost::posix_time::time_duration &interval = boost::posix_time::seconds(1),
-                  const std::string& tag = "tick")
-                : _targetStage(targetStage), _interval(interval), _tag(tag), _active(false) {}
+            Timer(const std::string &a_targetStage,
+                  const boost::posix_time::time_duration &a_interval = boost::posix_time::seconds(1),
+                  const std::string& a_tag = "tick")
+                : _targetStage(a_targetStage), _interval(a_interval), _tag(a_tag), _active(false) {}
             virtual ~Timer() { stop(); }
 
             void start();

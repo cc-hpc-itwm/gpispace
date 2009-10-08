@@ -8,9 +8,9 @@ namespace seda
 {
     class StageAlreadyRegistered : public SedaException {
     public:
-        StageAlreadyRegistered(const std::string& stageName) :
-            SedaException("stage already registred: "+stageName),
-            _stageName(stageName) {}
+        StageAlreadyRegistered(const std::string& stage) :
+            SedaException("stage already registred: "+stage),
+            _stageName(stage) {}
         virtual ~StageAlreadyRegistered() throw() { }
         
         virtual const std::string& stageName() const { return _stageName; }

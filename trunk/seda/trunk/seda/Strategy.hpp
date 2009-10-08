@@ -27,8 +27,8 @@ namespace seda {
            withing the perform method. */
     protected:
         explicit
-        Strategy(const std::string& name) 
-            : SEDA_INIT_LOGGER(name), _name(name)
+        Strategy(const std::string& a_name) 
+            : SEDA_INIT_LOGGER(a_name), _name(a_name)
         {}
         SEDA_DECLARE_LOGGER();
     private:

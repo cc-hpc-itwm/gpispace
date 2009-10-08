@@ -14,14 +14,14 @@ namespace seda {
 
     class From {
       public:
-        explicit From(const address_type &val)
-          : val(val) {}
+        explicit From(const address_type &value)
+          : val(value) {}
         address_type val;
     };
     class To {
       public:
-        explicit To(const address_type &val)
-          : val(val) {}
+        explicit To(const address_type &value)
+          : val(value) {}
         address_type val;
     };
 
@@ -32,8 +32,8 @@ namespace seda {
         explicit
           SedaMessage()
           : from_(address_type()), to_(address_type()), payload_(payload_type()), valid_(false) {}
-        SedaMessage(const address_type & from, const address_type & to, const payload_type & payload)
-          : from_(from), to_(to), payload_(payload), valid_(true) { }
+        SedaMessage(const address_type & a_from, const address_type & a_to, const payload_type & a_payload)
+          : from_(a_from), to_(a_to), payload_(a_payload), valid_(true) { }
 
         SedaMessage(const SedaMessage &other)
           : from_(other.from()), to_(other.to()), payload_(other.payload()), valid_(other.is_valid()) {}

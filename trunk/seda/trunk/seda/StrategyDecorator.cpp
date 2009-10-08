@@ -2,8 +2,8 @@
 
 using namespace seda;
 
-StrategyDecorator::StrategyDecorator(const std::string& name, const seda::Strategy::Ptr& s)
-  : Strategy(name), _component(s) {}
+StrategyDecorator::StrategyDecorator(const std::string& a_name, const seda::Strategy::Ptr& s)
+  : Strategy(a_name), _component(s) {}
 
 StrategyDecorator::~StrategyDecorator() {}
 

@@ -10,7 +10,7 @@ namespace seda {
         typedef std::tr1::shared_ptr<TimerEvent> Ptr;
 
         explicit
-        TimerEvent(const std::string& tag) : _tag(tag) {}
+        TimerEvent(const std::string& a_tag) : _tag(a_tag) {}
 
         const std::string& tag() const { return _tag; }
         std::string str() const { return "timer-event."+tag(); }

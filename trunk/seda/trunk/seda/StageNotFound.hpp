@@ -8,9 +8,9 @@ namespace seda
 {
     class StageNotFound : public SedaException {
     public:
-        StageNotFound(const std::string& stageName) :
-            SedaException("stage could not be found: "+stageName),
-            _stageName(stageName) {}
+        StageNotFound(const std::string& stage) :
+            SedaException("stage could not be found: "+stage),
+            _stageName(stage) {}
         virtual ~StageNotFound() throw() { }
         
         virtual const std::string& stageName() const { return _stageName; }

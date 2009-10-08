@@ -9,8 +9,8 @@ namespace comm {
     class DecodingError : public SedaCommError {
     public:
         explicit
-        DecodingError(const std::string &reason="error while decoding event")
-        : SedaCommError(reason) {}
+        DecodingError(const std::string &a_reason="error while decoding event")
+        : SedaCommError(a_reason) {}
 
         virtual ~DecodingError() throw() {}
     };

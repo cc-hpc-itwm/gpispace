@@ -5,24 +5,24 @@
 #include "StageRegistry.hpp"
 
 namespace seda {
-    Stage::Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize, std::size_t maxQueueSize, const std::string& errorHandler)
-        : SEDA_INIT_LOGGER("seda.stage."+name),
-          _queue(new EventQueue("seda.stage."+name+".queue", maxQueueSize)),
-          _strategy(strategy),
-          _name(name),
-          _error_handler(errorHandler),
-          _maxPoolSize(maxPoolSize),
+    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, std::size_t a_maxQueueSize, const std::string& a_errorHandler)
+        : SEDA_INIT_LOGGER("seda.stage."+a_name),
+          _queue(new EventQueue("seda.stage."+a_name+".queue", a_maxQueueSize)),
+          _strategy(a_strategy),
+          _name(a_name),
+          _error_handler(a_errorHandler),
+          _maxPoolSize(a_maxPoolSize),
           _timeout(SEDA_DEFAULT_TIMEOUT)
     {
     }
 
-    Stage::Stage(const std::string& name, IEventQueue::Ptr queue, Strategy::Ptr strategy, std::size_t maxPoolSize, const std::string& errorHandler)
-        : SEDA_INIT_LOGGER("seda.stage."+name),
-          _queue(queue),
-          _strategy(strategy),
-          _name(name),
-          _error_handler(errorHandler),
-          _maxPoolSize(maxPoolSize),
+    Stage::Stage(const std::string& a_name, IEventQueue::Ptr a_queue, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, const std::string& a_errorHandler)
+        : SEDA_INIT_LOGGER("seda.stage."+a_name),
+          _queue(a_queue),
+          _strategy(a_strategy),
+          _name(a_name),
+          _error_handler(a_errorHandler),
+          _maxPoolSize(a_maxPoolSize),
           _timeout(SEDA_DEFAULT_TIMEOUT)
     {
     }

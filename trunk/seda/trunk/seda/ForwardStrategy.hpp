@@ -7,16 +7,16 @@ namespace seda {
     class ForwardStrategy : public Strategy {
     public:
         explicit
-        ForwardStrategy(const std::string& next)
-            : Strategy("fwd-to-"+next), _next(next) {}
+        ForwardStrategy(const std::string& a_next)
+            : Strategy("fwd-to-"+a_next), _next(a_next) {}
         
-        ForwardStrategy(const std::string& name, const std::string& next)
-            : Strategy(name), _next(next) {}
+        ForwardStrategy(const std::string& a_name, const std::string& a_next)
+            : Strategy(a_name), _next(a_next) {}
         virtual ~ForwardStrategy() {}
 
         virtual void perform(const IEvent::Ptr&);
 
-        virtual void next(const std::string& next) { _next = next; }
+        virtual void next(const std::string& a_next) { _next = a_next; }
         virtual const std::string& next() const { return _next; }
     private:
         std::string _next;

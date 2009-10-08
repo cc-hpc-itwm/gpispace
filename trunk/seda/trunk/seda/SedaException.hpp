@@ -8,8 +8,8 @@ namespace seda {
   class SedaException : public std::exception {
   public:
     explicit
-    SedaException(const std::string& reason) :
-      _reason(reason) {}
+    SedaException(const std::string& a_reason) :
+      _reason(a_reason) {}
     virtual ~SedaException() throw() {}
     virtual const char* what() const throw() { return reason().c_str(); }
     virtual const std::string& reason() const { return _reason; }
