@@ -3,9 +3,6 @@
 
 // gwes
 #include <gwes/Types.h> 
-#include <gwes/NoSuchWorkflowException.h>
-#include <gwes/NoSuchActivityException.h>
-
 
 #include <gwdl/IWorkflow.h>
 #include <gwes/IActivity.h>
@@ -65,7 +62,7 @@ public:
 	 * Cancel an atomic activity that has previously been submitted to
 	 * the SDPA using submitActivity.
 	 */
-	virtual void cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) = 0;
+	virtual void cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivity) = 0;
 
 	/**
 	 * Notify the SDPA that a workflow finished (state transition
@@ -73,7 +70,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */
-	virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow failed (state transition
@@ -81,7 +78,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */
-	virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow has been canceled (state
@@ -89,7 +86,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */ 
-	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
 };
 
 } // end gwes namespace 

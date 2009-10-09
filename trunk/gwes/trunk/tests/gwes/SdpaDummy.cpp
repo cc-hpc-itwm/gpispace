@@ -59,9 +59,9 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 			}
 		}
 		_gwesP->activityFinished(workflowId, activity.getID(), *tokensP);
-	} catch (NoSuchWorkflowException e) {
+	} catch (const NoSuchWorkflowException &e) {
 		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
-	} catch (NoSuchActivityException e) {
+	} catch (const NoSuchActivityException &e) {
 		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
 	}
 	return activity.getID();
@@ -71,7 +71,7 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivityException) {
+void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchActivity) {
 	LOG_INFO(logger_t(getLogger("gwes")), "cancelActivity(" << activityId << ")...");
 	// ToDo: implement!
 }
@@ -80,7 +80,7 @@ void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchAc
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFinished(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FINISHED));
@@ -91,7 +91,7 @@ void SdpaDummy::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchW
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFailed(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FAILED));
@@ -102,7 +102,7 @@ void SdpaDummy::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWor
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */ 
-void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,CANCELED));
