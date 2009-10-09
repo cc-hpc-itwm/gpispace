@@ -45,10 +45,11 @@ string Utils::convertRelativeToAbsolutePath(const string& relpath) {
 	if (startsWith(relpath,"/")) return relpath;
 	// get current working directory
 	char pathC[MAXPATHLEN];
-	getcwd(pathC, MAXPATHLEN);
+	char *wd = getcwd(pathC, MAXPATHLEN);
 	string path(pathC);
 	path += "/";
 	path += relpath;
+    wd = NULL;
 	return path;
 }
 
@@ -59,7 +60,7 @@ void Utils::setEnvironmentVariables() {
 	if (gwesHome == NULL) {
 		// get current working directory
 		char pathC[MAXPATHLEN];
-		getcwd(pathC, MAXPATHLEN);
+		char *wd = getcwd(pathC, MAXPATHLEN); wd = NULL;
 		string path(pathC);
 		LOG_DEBUG(logger, "getcwd=" << path);
 		string value;
