@@ -3,3 +3,5 @@ add_dependencies(sdpac sdpa-client)
 target_link_libraries(sdpac sdpa)
 target_link_libraries(sdpac sdpa-client)
 target_link_libraries(sdpac sdpa-events)
+
+install(TARGETS sdpac DESTINATION bin)
