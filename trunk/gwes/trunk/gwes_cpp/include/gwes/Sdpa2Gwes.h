@@ -2,10 +2,6 @@
 #define SDPA2GWES_H_
 // gwes
 #include <gwes/Types.h> 
-#include <gwes/NoSuchWorkflowException.h>
-#include <gwes/NoSuchActivityException.h>
-// gwdl
-#include <gwdl/WorkflowFormatException.h>
 
 #include <stdexcept>
 
