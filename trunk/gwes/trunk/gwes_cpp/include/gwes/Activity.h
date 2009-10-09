@@ -7,6 +7,7 @@
 #ifndef ACTIVITY_H_
 #define ACTIVITY_H_
 //gwes
+#include <gwes/IActivity.h>
 #include <gwes/Types.h>
 #include <gwes/ActivityException.h>
 #include <gwes/StateTransitionException.h>
@@ -37,7 +38,7 @@ class TransitionOccurrence;
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class Activity {
+class Activity : public IActivity {
 
 public:
 
@@ -103,7 +104,21 @@ public:
 	/**
 	 * Get activity ID.
 	 */
-	const std::string& getID() const { return _id; }
+	const activity_id_t &getID() const { return _id; }
+
+    /**
+     * Set a new ID
+     */
+    void setID(const activity_id_t &id) { _id = id; }
+
+
+    /** 
+     * TODO: implement me
+     */
+    gwdl::IWorkflow::ptr_t transform_to_workflow() const
+    {
+      return gwdl::IWorkflow::ptr_t((gwdl::IWorkflow*)NULL);
+    }
 
 	/**
 	 * Get activity class.
