@@ -405,8 +405,9 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 		pJob->CancelJob(pEvt);
 		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
-		if(pJob->is_marked_for_deletion())
-			ptr_job_man_->deleteJob(pEvt->job_id());
+		// The user or the GC does this!
+		/*if(pJob->is_marked_for_deletion())
+			ptr_job_man_->deleteJob(pEvt->job_id());*/
 
 		//if master not set i.e. I'm the orchestrator send immediately an acknowledgment to the user
 		if( name() == ORCHESTRATOR )
@@ -435,6 +436,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	// transition from Cancelling to Cancelled
 
 	ostringstream os;
+	Worker::worker_id_t worker_id = pEvt->from();
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 
@@ -445,7 +447,6 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	// should send acknowlwdgement
     	if( pEvt->from() == pEvt->to()  ) // the message comes from GWES, forward it to the master
 		{
-    		// the orchestrator submitted immediately an aknowledgment !
     		if( name()!= ORCHESTRATOR )
     		{
 				os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
@@ -453,18 +454,32 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 				// only if the job was already submitted
 				sendEvent(output_stage(), pCancelAckEvt);
+
+				// if I'm not the orchestrator delete effectively the job
+				ptr_job_man_->deleteJob(pEvt->job_id());
     		}
 		}
     	else // the message comes from an worker, forward it to GWES
     	{
+    		Worker::ptr_t ptrWorker = findWorker(worker_id);
+
+    		//  can be in submitted or
+    		ptrWorker->delete_job(pEvt->job_id(), ptrWorker->submitted());
+
+    		// in acknowledged
+    		ptrWorker->delete_job(pEvt->job_id(), ptrWorker->acknowledged());
+
     		// tell to GWES that the activity ob_id() was cancelled
     		activity_id_t actId = pEvt->job_id();
     		ptr_Sdpa2Gwes_->activityCanceled(actId);
     	}
 
-		// inform GWES ? or forward message to the master
-		// should check from where the message comes worker or GWES?
-		ptr_job_man_->deleteJob(pEvt->job_id());
+	}
+	 catch(sdpa::daemon::WorkerNotFoundException)
+	 {
+		os.str("");
+		os<<"Worker "<<worker_id<<" not found!";
+		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(sdpa::daemon::JobNotFoundException)
 	{

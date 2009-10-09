@@ -115,10 +115,10 @@ namespace sdpa { namespace daemon {
 				// return back to the master a CancelJobAckEvent
 				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id()) );
 				pComm->sendEvent( pComm->output_stage(), pCancelAckEvt );
-			}
 
-			// mark the job deletion
-			mark_for_deletion();
+				// mark the job deletion
+				mark_for_deletion();
+			}
 		}
 		// else the message comes from GWES, should identify the worker to which the activity was assigned
 		// and send him a CancelJob
@@ -131,9 +131,9 @@ namespace sdpa { namespace daemon {
 				// inform immediately GWES that the corresponding activity was cancelled
 				sdpa::wf::activity_id_t actId = evt.job_id();
 				pComm->gwes()->activityCanceled(actId);
-				mark_for_deletion();
 
 				// mark the job for deletion
+				mark_for_deletion();
 			} catch(sdpa::PropertyLookupFailed& ) {
 				os.str("");
 				os<<"The job was not assigned to a worker!";
