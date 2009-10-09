@@ -27,8 +27,6 @@ SdpaDummy::~SdpaDummy() {
 	delete _gwesP;
 }
 
-gwes::Gwes2Sdpa::~Gwes2Sdpa() {}
-
 ///////////////////////////////////
 // Interface Gwes2Sdpa
 ///////////////////////////////////
