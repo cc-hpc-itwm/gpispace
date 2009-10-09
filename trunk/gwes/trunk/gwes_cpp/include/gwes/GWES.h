@@ -280,19 +280,20 @@ public:
     // Interface Spda2Gwes           //
     ///////////////////////////////////
     
-	virtual void activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity);
 
 	virtual void registerHandler(Gwes2Sdpa *sdpa);
+	virtual void unregisterHandler(Gwes2Sdpa *sdpa);
 
-	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (gwdl::WorkflowFormatException);
+	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (std::exception);
 
-	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
 
 };
 

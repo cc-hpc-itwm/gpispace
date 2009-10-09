@@ -325,28 +325,28 @@ void GWES::remove(const string& workflowId) {
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
 	_wfht.get(workflowId)->activityDispatched(activityId);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
 	_wfht.get(workflowId)->activityFailed(activityId,output);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
 	_wfht.get(workflowId)->activityFinished(activityId,output);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
 	_wfht.get(workflowId)->activityCanceled(activityId);
 }
 
@@ -358,9 +358,23 @@ void GWES::registerHandler(Gwes2Sdpa *sdpa) {
 }
 
 /**
+ * UnRegister the SDPA handler. 
+ */
+void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
+    if (_sdpaHandler == sdpa)
+    {
+	  _sdpaHandler = NULL;
+    }
+    else
+    {
+	  LOG_ERROR(_logger, "tried to unregister a not-registered handler!");
+    }
+}
+
+/**
  * Initiate and start a workflow.
  */
-workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatException) {
+workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (std::exception) { //(WorkflowFormatException) {
 	string workflowId = initiate(static_cast<Workflow&>(workflow),"sdpa");
 	start(workflowId);
 	return workflowId;
@@ -369,7 +383,7 @@ workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatEx
 /**
  * Cancel a workflow.
  */
-void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
+void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
 	abort(workflowId);
 }
 
