@@ -384,7 +384,14 @@ workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (std::exception) 
  * Cancel a workflow.
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
-	abort(workflowId);
+    try
+    {
+  	abort(workflowId);
+    }
+    catch (const NoSuchWorkflowException &nswfe)
+    {
+      throw NoSuchWorkflow(workflowId);
+    }
 }
 
 } // end namespace gwes
