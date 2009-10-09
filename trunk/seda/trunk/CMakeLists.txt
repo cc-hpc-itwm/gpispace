@@ -154,6 +154,9 @@ if (Boost_MINOR_VERSION LESS 36)
     message(FATAL_ERROR "At least Boost 1.36 is required")
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+link_libraries(${Boost_LIBRARIES})
 
 if (WITH_COMM)
   # we need zeromq
@@ -181,15 +184,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Make sure all subdirectories include correctly
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${CMAKE_INCLUDE_PATH})
-link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries(-lpthread)
 endif(CMAKE_USE_PTHREADS_INIT)
-link_libraries(${Boost_LIBRARIES})
 
 # Reflect the package structure
 add_subdirectory(seda)
