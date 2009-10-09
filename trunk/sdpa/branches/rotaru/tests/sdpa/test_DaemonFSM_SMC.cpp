@@ -610,7 +610,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 
 	}
 
-	sleep(2);
+	sleep(3);
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtInt( new InterruptEvent(strDaemon, strDaemon ));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtInt);
