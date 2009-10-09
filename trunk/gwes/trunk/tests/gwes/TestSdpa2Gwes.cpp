@@ -37,7 +37,7 @@ void Sdpa2GwesAPITest::testWorkflowWithSdpaActivity() {
 	// create workflow_t object from file
 	string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple-sdpa-test.gwdl"); 
 	LOG_INFO(log, "reading workflow '"+fn+"'...");
-	workflow_t wf = (Workflow) fn;
+	Workflow wf(fn);
 	CPPUNIT_ASSERT(wf.getEnabledTransitions().size() == 1);
 			
 	// start workflow

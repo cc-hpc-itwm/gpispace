@@ -361,7 +361,7 @@ void GWES::registerHandler(Gwes2Sdpa *sdpa) {
  * Initiate and start a workflow.
  */
 workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (WorkflowFormatException) {
-	string workflowId = initiate(workflow,"sdpa");
+	string workflowId = initiate(static_cast<Workflow&>(workflow),"sdpa");
 	start(workflowId);
 	return workflowId;
 }

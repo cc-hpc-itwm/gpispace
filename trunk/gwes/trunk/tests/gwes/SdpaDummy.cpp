@@ -40,12 +40,12 @@ SdpaDummy::~SdpaDummy() {
  */
 activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 	LOG_INFO(logger_t(getLogger("gwes")), "submitActivity(" << activity.getID() << ")...");
-	workflow_id_t workflowId = activity.getWorkflowHandler()->getID();
+	workflow_id_t workflowId = static_cast<Activity&>(activity).getWorkflowHandler()->getID();
 	// a real SDPA implementation should really dispatch the activity here
 	try {
 		_gwesP->activityDispatched(workflowId, activity.getID());
 		// find and fill dummy output tokens
-		parameter_list_t* tokensP = activity.getTransitionOccurrence()->getTokens();
+		parameter_list_t* tokensP = static_cast<Activity&>(activity).getTransitionOccurrence()->getTokens();
 		for (parameter_list_t::iterator it=tokensP->begin(); it!=tokensP->end(); ++it) {
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):

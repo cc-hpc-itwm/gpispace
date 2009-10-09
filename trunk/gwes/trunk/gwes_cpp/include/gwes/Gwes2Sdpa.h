@@ -4,9 +4,6 @@
 // gwes
 #include <gwes/Types.h> 
 
-#include <gwdl/IWorkflow.h>
-#include <gwes/IActivity.h>
-
 #include <stdexcept>
 
 namespace gwes
