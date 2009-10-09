@@ -18,13 +18,21 @@ set(V_PATCH 1)
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+
+message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
+
+# Make sure all subdirectories include correctly
+include_directories(${CMAKE_INCLUDE_PATH})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gworkflowdl_cpp/include)
+include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gwes_cpp/include)
+
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
-
-message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 # Find doxygen
 include(FindDoxygen)
@@ -85,12 +93,6 @@ else  ( PKG_CONFIG_FOUND )
   ENDIF(WIN32)
 endif ( PKG_CONFIG_FOUND )
 
-# Make sure all subdirectories include correctly
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gworkflowdl_cpp/include)
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/gwes_cpp/include)
-include_directories(${CMAKE_INCLUDE_PATH})
 #include_directories(${SMC_INCLUDE_DIR})
 
 link_directories(${CMAKE_LIBRARY_PATH})
