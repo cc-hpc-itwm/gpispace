@@ -26,6 +26,10 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+# Make sure all subdirectories include correctly
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH})
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
@@ -67,15 +71,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINA
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
 add_definitions(-DHAVE_CONFIG_H)
 
-# Make sure all subdirectories include correctly
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${CMAKE_INCLUDE_PATH})
-include_directories(${Boost_INCLUDE_DIRS})
-
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
