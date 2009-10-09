@@ -28,12 +28,14 @@ public:
 
     class NoSuchWorkflow : public Gwes2SdpaException
     {
+    public:
       explicit NoSuchWorkflow(const gwdl::IWorkflow::workflow_id_t &wid)
         : Gwes2SdpaException(std::string("no such workflow: ") + wid) {}
     };
 
     class NoSuchActivity : public Gwes2SdpaException
     {
+    public:
       explicit NoSuchActivity(const gwes::IActivity::activity_id_t &aid)
         : Gwes2SdpaException(std::string("no such activity: ") + aid) {}
     };
