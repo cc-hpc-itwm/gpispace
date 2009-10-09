@@ -1,9 +1,9 @@
 #ifndef GWES_MEMORY_HPP
 #define GWES_MEMORY_HPP 1
 
-#if HAVE_CONFIG_H
-#include <gwes/gwes-config.hpp>
-#endif
+//#if HAVE_CONFIG_H
+//#include <gwes/gwes-config.hpp>
+//#endif
 
 #define USE_STL_TR1 1
 

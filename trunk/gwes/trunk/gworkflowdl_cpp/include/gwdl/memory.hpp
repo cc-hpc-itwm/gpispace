@@ -1,9 +1,9 @@
 #ifndef GWDL_MEMORY_HPP
 #define GWDL_MEMORY_HPP 1
 
-#if HAVE_CONFIG_H
-#include <gwdl/gwdl-config.hpp>
-#endif
+//#if HAVE_CONFIG_H
+//#include <gwdl/gwdl-config.hpp>
+//#endif
 
 #define USE_STL_TR1 1
 
