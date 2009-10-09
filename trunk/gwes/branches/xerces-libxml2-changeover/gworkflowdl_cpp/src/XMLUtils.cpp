@@ -7,6 +7,7 @@
 // gwdl
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Defines.h>
+#include <gwdl/Libxml2Builder.h>
 // libxml2
 #include <libxml/xmlsave.h>
 // xerces-c
