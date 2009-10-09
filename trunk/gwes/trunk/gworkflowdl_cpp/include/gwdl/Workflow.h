@@ -7,6 +7,7 @@
 #ifndef WORKFLOW_H_
 #define WORKFLOW_H_
 // gwdl
+#include <gwdl/IWorkflow.h>
 #include <gwdl/Defines.h>
 #include <gwdl/Place.h>
 #include <gwdl/Transition.h>
@@ -129,7 +130,7 @@ namespace gwdl
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class Workflow
+class Workflow : public IWorkflow
 {
 
 private:
@@ -180,12 +181,12 @@ public:
     /**
      * get workflow id.
      */
-    const std::string& getID() const {return _id;}
+    const workflow_id_t & getID() const {return _id;}
     
     /**
      * set workflow id.
      */
-    void setID(const std::string& id) {_id=id;}
+    void setID(const workflow_id_t &id) {_id=id;}
 
     /**
      * Appends a place to the registered places.
@@ -374,6 +375,16 @@ public:
       }
       return enabledTransitions;
     }
+
+  void deserialize(const std::string &)
+  {
+    // FIXME: implement me
+  }
+
+  std::string serialize() const
+  {
+    return "FIXME: Workflow::serialize() not implemented";
+  }
 };
 
 }
