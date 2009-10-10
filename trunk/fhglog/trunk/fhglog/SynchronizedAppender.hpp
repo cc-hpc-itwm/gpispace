@@ -16,6 +16,9 @@
  * =====================================================================================
  */
 
+#ifndef FHG_LOG_SYNCHRONIZED_APPENDER_HPP
+#define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
+
 #include <pthread.h>
 #include <fhglog/Appender.hpp>
 
@@ -87,3 +90,5 @@ namespace fhg { namespace log {
     pthread_mutex_t mtx_;
   };
 }}
+
+#endif
