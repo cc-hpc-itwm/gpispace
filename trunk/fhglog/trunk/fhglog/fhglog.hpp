@@ -9,5 +9,6 @@
 
 #include	<fhglog/StreamAppender.hpp>
 #include	<fhglog/SynchronizedAppender.hpp>
+#include	<fhglog/FileAppender.hpp>
 
 #endif   /* ----- #ifndef FHGLOG_INC  ----- */
