@@ -6,6 +6,8 @@
 #include	<fhglog/Appender.hpp>
 #include    <fhglog/Filter.hpp>
 #include    <fhglog/LogEvent.hpp>
+
 #include	<fhglog/StreamAppender.hpp>
+#include	<fhglog/SynchronizedAppender.hpp>
 
 #endif   /* ----- #ifndef FHGLOG_INC  ----- */
