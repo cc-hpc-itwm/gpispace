@@ -20,7 +20,7 @@ namespace fhg { namespace log {
 
       const std::string &name() const { return name_; }
 
-      Appender &operator<<(const LogEvent &evt) { this->append(evt); return *this; }
+      const Appender &operator<<(const LogEvent &evt) const { this->append(evt); return *this; }
     protected:
       explicit
       Appender(const std::string &a_name)
