@@ -21,7 +21,7 @@ clean:
 	make -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C build doc
+	make -C $(BUILD_DIR) doc
 
 doc:
 	make -C doc
