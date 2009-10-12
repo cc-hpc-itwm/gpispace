@@ -11,9 +11,6 @@
 
 namespace gwes
 {
-
-class Activity;
-
 /**
  * Type for referencing to a GWorkflowDL workflow.
  * @todo: It could be better to use a reference to the corresponding WorkflowHandler instead!
