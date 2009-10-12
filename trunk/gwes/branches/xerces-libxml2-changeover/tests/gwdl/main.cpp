@@ -55,7 +55,7 @@ int main()
 	LOG_INFO(logger, "xmlutils singleton instantiated: " << xmlutils);;
 
 	// Informiert Test-Listener ueber Testresultate
-	CPPUNIT_NS::TestResult                   testresult;
+	CPPUNIT_NS::TestResult testresult;
 	CPPUNIT_NS::TestResultCollector collectedresults;
 	testresult.addListener (&collectedresults);
 

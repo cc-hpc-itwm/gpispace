@@ -10,6 +10,7 @@
 #include <gwes/Utils.h>
 //gwdl
 #include <gwdl/Token.h>
+#include <gwdl/XMLUtils.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -93,7 +94,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 		else {
 			ostringstream oss;
 			oss << "error creating " << GWES_TEMP_DIRECTORY << ": " << strerror(errno);
-			LOG_ERROR(_logger, oss);
+			LOG_ERROR(_logger, oss.str());
 			throw ActivityException(oss.str());
 		}
 	} 
@@ -103,7 +104,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 		else {
 			ostringstream oss;
 			oss << "error creating " << _workingDirectory << ": " << strerror(errno);
-			LOG_ERROR(_logger, oss);
+			LOG_ERROR(_logger, oss.str());
 			throw ActivityException(oss.str());
 		}
 	}
@@ -126,8 +127,8 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 			case (TokenParameter::SCOPE_INPUT):
 				if (edgeExpression != "stdin") {
 					if (it->tokenP->isData()) {
-						string* textP = it->tokenP->getData()->getText();
-						command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+						string text = gwdl::XMLUtils::Instance()->getText(it->tokenP->getData()->getContent());
+						command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
 					} else {
 						command << " -" << edgeExpression << " " << (it->tokenP->getControl() ? "true" : "false");
 					}
@@ -137,8 +138,8 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 				// do not convert edgeExpressions stdout, stderr, exitcode to command line parameters as they are handled differently.
 				if (edgeExpression != "stdout" && edgeExpression != "stderr" && edgeExpression != "exitcode") {
 					if (it->tokenP->isData()) {
-						string* textP = it->tokenP->getData()->getText();
-						command << " -" << edgeExpression << " " << convertUrlToLocalPath(*textP);
+						string text = gwdl::XMLUtils::Instance()->getText(it->tokenP->getData()->getContent());
+						command << " -" << edgeExpression << " " << convertUrlToLocalPath(text);
 					} else {
 						command << " -" << edgeExpression << " " << (it->tokenP->getControl() ? "true" : "false");
 					}

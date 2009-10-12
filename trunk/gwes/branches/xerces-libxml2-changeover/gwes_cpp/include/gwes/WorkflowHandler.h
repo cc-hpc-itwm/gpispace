@@ -124,7 +124,7 @@ public:
 	/**
 	 * Translate status code to string.
 	 */
-	std::string getStatusAsString(status_t status) const {
+	static std::string getStatusAsString(status_t status) {
 		switch (status) {
 		case STATUS_UNDEFINED:
 			return std::string("UNDEFINED");
@@ -142,9 +142,8 @@ public:
 			return std::string("FAILED");
 		case STATUS_TERMINATED:
 			return std::string("TERMINATED");
-		default:
-			return std::string("");
 		}
+		return std::string("UNKNOWN");
 	}
 
 	/**

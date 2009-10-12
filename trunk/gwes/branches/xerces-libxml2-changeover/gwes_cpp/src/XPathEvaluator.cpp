@@ -124,7 +124,7 @@ XPathEvaluator::~XPathEvaluator()
 
 int XPathEvaluator::evalCondition(string& xPathExprStr) {
 	// create xpath expression
-  xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
+	xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
     // evaluate xpath expression
     xmlXPathObjectPtr xpathObjP = xmlXPathEvalExpression(xPathExpressionP, _xmlContextP);
@@ -282,28 +282,32 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 	// data token
 	if (tokenP->isData()) {
 
-		string* textP = tokenP->getData()->getText();
+		XMLUtils* utilsP = XMLUtils::Instance(); 
+		xmlDocPtr contentsDocP = utilsP->deserializeLibxml2(tokenP->getData()->getContent());
+		xmlNodePtr rootElementP = xmlDocGetRootElement(contentsDocP);
+		ostringstream out;
+		utilsP->getText(out,rootElementP);
+		string text = out.str();
 		
 		cur = xmlNewTextChild(xmlDocGetRootElement(_xmlContextDocP),NULL,(const xmlChar*)edgeExpression.c_str(),NULL);
 		xmlDocPtr xmldoc = NULL;
 		
 		// token contains reference to data in file
-		if ( textP->substr(0,7).compare("file://") == 0 ) {
+		if ( text.substr(0,7).compare("file://") == 0 ) {
 			// if token text begins with "file://" insert content of file
-			string fn = CommandLineActivity::convertUrlToLocalPath(*textP);
+			string fn = CommandLineActivity::convertUrlToLocalPath(text);
 			LOG_DEBUG(_logger, "Adding file '" << fn << "' to context ...");
-			xmldoc = XMLUtils::Instance()->deserializeFileLibxml2(fn);
+			xmldoc = utilsP->deserializeFileLibxml2(fn);
 			if (xmldoc == NULL) {      // file not in XML format
 				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in XML format.");
-			} 
+			} else {
+				xmlFreeDoc(contentsDocP);
+			}
 		}
 
 		// token contains the data itself
 		if (xmldoc == NULL) {
-			// ToDo: remove ugly conversion from Xerces DOMElement to libxml2 xmlDocPtr.
-                  std::string* str = tokenP->getData()->toString();
-			xmldoc = XMLUtils::Instance()->deserializeLibxml2(*str);
-                        delete str;
+			xmldoc = contentsDocP;
 		}
 		
 		if (xmldoc != NULL) {

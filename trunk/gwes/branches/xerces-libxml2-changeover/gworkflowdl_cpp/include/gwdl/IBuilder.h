@@ -25,16 +25,16 @@ class IBuilder
 public:
 
 	// Data 
-	virtual Data deserializeData(const std::string& xmlstring) = 0;
-	virtual std::string serialize(const Data& data) = 0;
-	
-	// Token
-	virtual Token deserializeToken(const std::string& xmlstring) = 0;
-	virtual std::string serialize(const Token& token) = 0;
+    virtual const Data::ptr_t deserializeData(const std::string &) const = 0;
+    virtual const std::string serializeData(const Data::ptr_t &) const = 0;
+
+    // Token
+//	virtual Token deserializeToken(const std::string& xmlstring) = 0;
+//	virtual std::string serializeToken(const Token& token) = 0;
 	
 	// Place
-	virtual Place deserializePlace(const std::string& xmlstring) = 0;
-	virtual std::string serialize(const Place& place) = 0;
+//	virtual Place deserializePlace(const std::string& xmlstring) = 0;
+//	virtual std::string serializePlace(const Place& place) = 0;
 	
 	// Transition
 	

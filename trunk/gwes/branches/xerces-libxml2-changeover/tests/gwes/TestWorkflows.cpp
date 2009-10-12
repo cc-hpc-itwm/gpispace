@@ -60,21 +60,22 @@ void TestWorkflows::testWorkflowSplitToken()
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
   // ToDo: improve pretty printing (too much spaces).
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <value>\n          <x>15</x>\n          <y>23</y>\n        </value>\n  <value>\n          <x>16</x>\n          <y>24</y>\n        </value>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <value>\n          <x>15</x>\n          <y>23</y>\n        </value>\n  <value>\n          <x>16</x>\n          <y>24</y>\n        </value>\n</data>"),
+		  tokenP->getData()->getContent());
 
   placeP = workflow.getPlace("x"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
   tokenP = placeP->getTokens().front();
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <x>15</x>\n  <x>16</x>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>15</x>\n  <x>16</x>\n</data>"), tokenP->getData()->getContent());
 
   placeP = workflow.getPlace("y"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
   tokenP = placeP->getTokens().front();
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <y>23</y>\n  <y>24</y>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <y>23</y>\n  <y>24</y>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -111,18 +112,18 @@ void TestWorkflows::testWorkflowConditionTest()
   Token* tokenP = placeP->getTokens()[0];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <x>6</x>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>6</x>\n</data>"), tokenP->getData()->getContent());
   tokenP = placeP->getTokens()[1];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <x>7</x>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>7</x>\n</data>") , tokenP->getData()->getContent());
 		
   placeP = workflow.getPlace("end_B"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
   tokenP = placeP->getTokens()[0];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <x>5</x>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>5</x>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -140,7 +141,7 @@ void TestWorkflows::testWorkflowControlLoop()
   Token* tokenP = placeP->getTokens()[0];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT(tokenP->getData()->toString()->compare("<data>\n  <a>10</a>\n</data>") == 0);
+  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <a>10</a>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -206,8 +207,7 @@ Workflow& TestWorkflows::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
 
     // wait for workflow to end
     WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
-
-    wfhP->waitForStatusChangeToCompletedOrTerminated();
+    _monitorWorkflow(WorkflowHandler::STATUS_INITIATED, wfhP);
     
     // print workflow
     LOG_DEBUG(logger, *wfP);
@@ -217,5 +217,28 @@ Workflow& TestWorkflows::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
     LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
 	throw;
   }
-  
+ 
+}
+
+WorkflowHandler::status_t TestWorkflows::_monitorWorkflow(WorkflowHandler::status_t oldStatus, WorkflowHandler* wfhP) {
+	logger_t logger(getLogger("gwes"));
+	WorkflowHandler::status_t status = wfhP->waitForStatusChangeFrom(oldStatus);
+
+	switch(status) {
+	case WorkflowHandler::STATUS_UNDEFINED:
+	case WorkflowHandler::STATUS_INITIATED:
+	case WorkflowHandler::STATUS_RUNNING:
+	case WorkflowHandler::STATUS_ACTIVE:
+	case WorkflowHandler::STATUS_FAILED:
+		LOG_INFO(logger, "Transient status = " << WorkflowHandler::getStatusAsString(status));
+		_monitorWorkflow(status, wfhP);
+		break;
+	case WorkflowHandler::STATUS_SUSPENDED:
+	case WorkflowHandler::STATUS_COMPLETED:
+	case WorkflowHandler::STATUS_TERMINATED:
+		LOG_INFO(logger, "Final status = " << WorkflowHandler::getStatusAsString(status));
+		return status;
+	}
+
+	return status;
 }

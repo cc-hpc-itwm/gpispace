@@ -67,16 +67,17 @@ void TokenTest::testToken()
 		dataElement->appendChild(e2);
 		DOMText* e2value = doc->createTextNode(X("15"));
 		e2->appendChild(e2value);
-		Data *data4 = new Data(dataElement);
-		data4->toElement(doc);
-		LOG_INFO(logger, "  data constructed:" << *data4);
-	    Token* token4 = new Token(data4);
-	    LOG_INFO(logger, "  token4->toElement(doc) ...");
-		DOMElement* token4elem = token4->toElement(doc);
-	    string* token4str = XMLUtils::Instance()->serialize(token4elem,true);
-	    LOG_INFO(logger, "  token4str:" << *token4str);
-	//    delete data4;
-		delete token4;
+		LOG_WARN(logger, "ToDo: refractoring from xerces-c to libxml2!");
+//		Data *data4 = new Data(dataElement);
+//		data4->toElement(doc);
+//		LOG_INFO(logger, "  data constructed:" << *data4);
+//	    Token* token4 = new Token(data4);
+//	    LOG_INFO(logger, "  token4->toElement(doc) ...");
+//		DOMElement* token4elem = token4->toElement(doc);
+//	    string* token4str = XMLUtils::Instance()->serialize(token4elem,true);
+//	    LOG_INFO(logger, "  token4str:" << *token4str);
+//	//    delete data4;
+//		delete token4;
 	} catch (WorkflowFormatException e) {
 		LOG_ERROR(logger, e.message);	
 	} catch (DOMException e) {
@@ -89,19 +90,18 @@ void TokenTest::testToken()
     LOG_INFO(logger, "test data token with data constructed from string...");
     bool test = false;
 	try {
-		string* str = new string("<data><x>1</x><y>2</y></data>");
-		Data* data5 = new Data(*str);
+		string str = string("<data><x>1</x><y>2</y></data>");
+		Data* data5 = new Data(str);
 		LOG_INFO(logger, " data constructed.");
 		Token* token5 = new Token(data5);
 		LOG_INFO(logger, " token constructed.");
 		LOG_INFO(logger, *token5);
 		Data *data5b = token5->getData();
-		string* str2 = data5b->toString();
-		LOG_INFO(logger, *str2);
-		CPPUNIT_ASSERT(*str==*str2);
-		CPPUNIT_ASSERT(token5->isData());
+		string str2 = data5b->getContent();
+		LOG_INFO(logger, str2);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Token string contents", str, str2);
+		CPPUNIT_ASSERT_MESSAGE("isData()", token5->isData());
 		test = true;
-		delete str;
 		delete token5;
 	} catch (WorkflowFormatException e) {
 		LOG_ERROR(logger, e.message);	
@@ -113,14 +113,13 @@ void TokenTest::testToken()
 	CPPUNIT_ASSERT(test);
 	
 	LOG_INFO(logger, "test data token with properties...");
-	string* str6 = new string("<data><x>6</x></data>");
-	Data* data6 = new Data(*str6);
+	string str6 = string("<data><x>6</x></data>");
+	Data* data6 = new Data(str6);
 	Token* token6 = new Token(*props,data6);
 	LOG_INFO(logger, *token6);
-	CPPUNIT_ASSERT(*str6==*(token6->getData()->toString()));
+	CPPUNIT_ASSERT(str6==token6->getData()->getContent());
 	CPPUNIT_ASSERT(token6->getProperties().get("key2")=="value2");
 	delete token6;
-	delete str6;
 	
 	LOG_INFO(logger, "test token.lock(transition)...");
    	Token *token7 = new Token();
