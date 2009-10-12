@@ -1,4 +1,5 @@
 CMAKE=cmake
+CMAKE_CONFIG=
 BUILD_DIR=build
 top_srcdir=${CURDIR}
 
@@ -20,7 +21,7 @@ clean:
 	make -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C build doc
+	make -C ${BUILD_DIR} doc
 
 doc:
 	make -C doc
