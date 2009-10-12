@@ -24,10 +24,12 @@
 using namespace fhg::log;
 
 FileAppender::FileAppender(const std::string &a_name
-                         , const std::string &a_path) throw (std::exception)
+                         , const std::string &a_path
+                         , const std::ios_base::openmode &a_mode) throw (std::exception)
   : Appender(a_name)
   , path_(a_path)
   , stream_()
+  , mode_(a_mode)
 {
   stream_.exceptions(std::ios_base::badbit | std::ios_base::failbit);
   open();
@@ -67,10 +69,7 @@ void FileAppender::close() throw (std::exception)
 
 void FileAppender::open() throw (std::exception)
 {
-  stream_.open(path_.c_str()
-             , std::ios_base::out 
-             | std::ios_base::app
-             | std::ios_base::binary);
+  stream_.open(path_.c_str(), mode_);
 #ifndef NDEBUG // FIXME: use a better marking message
 //  stream_ << "------ MARK (file opened)" << std::endl;
 #endif

@@ -33,7 +33,8 @@ namespace fhg { namespace log {
     typedef shared_ptr<FileAppender> ptr_t;
 
     FileAppender(const std::string &a_name
-               , const std::string &a_path) throw (std::exception);
+               , const std::string &a_path
+               , const std::ios_base::openmode &a_mode = std::ios_base::out | std::ios_base::app | std::ios_base::binary) throw (std::exception);
     virtual ~FileAppender() throw();
 
     const std::string &path() const
@@ -46,6 +47,16 @@ namespace fhg { namespace log {
       path_ = p;
     }
 
+    const std::ios_base::openmode &mode() const
+    {
+      return mode_;
+    }
+
+    void set_mode(const std::ios_base::openmode &a_mode)
+    {
+      mode_ = a_mode;
+    }
+
     virtual void flush() throw ();
     virtual void close() throw (std::exception);
     virtual void open() throw (std::exception);
@@ -55,6 +66,7 @@ namespace fhg { namespace log {
   private:
     std::string path_;
     std::ofstream stream_;
+    std::ios_base::openmode mode_;
   };
 }}
 
