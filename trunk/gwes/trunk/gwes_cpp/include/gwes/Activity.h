@@ -111,7 +111,6 @@ public:
      */
     void setID(const activity_id_t &id) { _id = id; }
 
-
     /** 
      * TODO: implement me
      */
@@ -119,6 +118,11 @@ public:
     {
       return gwdl::IWorkflow::ptr_t((gwdl::IWorkflow*)NULL);
     }
+
+	/**
+	 * Get the ID of the owning workflog
+	 */
+	const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const;
 
 	/**
 	 * Get activity class.

@@ -12,6 +12,8 @@
 #include <sstream>
 #include <unistd.h>
 
+#include <stdexcept> // runtime_error
+
 using namespace std;
 
 namespace gwes {
@@ -28,6 +30,11 @@ Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const st
 }
 
 Activity::~Activity() {
+}
+
+const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const
+{
+  throw std::runtime_error("Activity.cpp:35 - getOwnerWorkflowID() - not implemented");
 }
 
 void Activity::setStatus(Activity::status_t status) {
