@@ -1,14 +1,19 @@
 #ifndef SDPA2GWES_H_
 #define SDPA2GWES_H_
+
+
+// include
+#include <gwes/Gwes2Sdpa.h>
+
 // gwes
-#include <gwes/Types.h> 
+//#include <gwes/Types.h> 
 
 #include <stdexcept>
 
 namespace gwes
 {
 
-class Gwes2Sdpa;
+//class Gwes2Sdpa;
 
 /**
  * Interface class for the communication from SDPA to GWES.
@@ -30,14 +35,14 @@ public:
     class NoSuchWorkflow : public Sdpa2GwesException
     {
     public:
-      explicit NoSuchWorkflow(const gwdl::IWorkflow::workflow_id_t &wid)
+      explicit NoSuchWorkflow(const workflow_id_t &wid)
         : Sdpa2GwesException(std::string("no such workflow: ") + wid) {}
     };
 
     class NoSuchActivity : public Sdpa2GwesException
     {
     public:
-      explicit NoSuchActivity(const gwes::IActivity::activity_id_t &aid)
+      explicit NoSuchActivity(const activity_id_t &aid)
         : Sdpa2GwesException(std::string("no such activity: ") + aid) {}
     };
 

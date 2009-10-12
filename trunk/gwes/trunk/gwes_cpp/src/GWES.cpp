@@ -5,6 +5,7 @@
  * All rights reserved. 
  */
 // gwes
+#include <gwes/internal_types.h>
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>

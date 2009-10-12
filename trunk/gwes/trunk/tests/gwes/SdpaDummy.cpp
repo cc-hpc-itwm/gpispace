@@ -5,6 +5,7 @@
  * All rights reserved. 
  */
 // tests
+#include <gwes/internal_types.h>
 #include "SdpaDummy.h"
 // gwes
 #include <gwes/GWES.h>
