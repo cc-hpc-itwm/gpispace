@@ -78,7 +78,11 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "build type has been set to ${CMAKE_BUILD_TYPE}")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  message(STATUS "Build type: default (not-set)")
+else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
