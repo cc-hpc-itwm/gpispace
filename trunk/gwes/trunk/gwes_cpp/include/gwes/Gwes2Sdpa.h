@@ -1,13 +1,15 @@
 #ifndef GWES2SDPA_H_
 #define GWES2SDPA_H_
 
-// gwes
-#include <gwes/Types.h> 
-
 #include <stdexcept>
+
+#include <gwdl/IWorkflow.h>
+#include <gwes/IActivity.h>
 
 namespace gwes
 {
+    typedef gwdl::IWorkflow workflow_t;
+    typedef gwdl::IWorkflow::workflow_id_t workflow_id_t;
 
 /**
  * Interface class for the communication from GWES to SDPA.
@@ -15,7 +17,6 @@ namespace gwes
 class Gwes2Sdpa {
 
 public:
-    
     // exceptions
     class Gwes2SdpaException : public std::runtime_error
     {
@@ -29,18 +30,16 @@ public:
     class NoSuchWorkflow : public Gwes2SdpaException
     {
     public:
-      explicit NoSuchWorkflow(const gwdl::IWorkflow::workflow_id_t &wid)
+      explicit NoSuchWorkflow(const workflow_id_t &wid)
         : Gwes2SdpaException(std::string("no such workflow: ") + wid) {}
     };
 
     class NoSuchActivity : public Gwes2SdpaException
     {
     public:
-      explicit NoSuchActivity(const gwes::IActivity::activity_id_t &aid)
+      explicit NoSuchActivity(const activity_id_t &aid)
         : Gwes2SdpaException(std::string("no such activity: ") + aid) {}
     };
-
-	// typedefs are declared in Types.h
 
 	/**
 	 * Virtual destructor because of virtual methods.

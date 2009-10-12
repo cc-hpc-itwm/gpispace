@@ -39,6 +39,9 @@ namespace gwes
 
     virtual gwdl::IWorkflow::ptr_t transform_to_workflow() const = 0;
   };
+  
+  typedef IActivity activity_t;
+  typedef activity_t::activity_id_t activity_id_t;
 }
 
 #endif
