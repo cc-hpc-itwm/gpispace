@@ -75,8 +75,9 @@ namespace seda {
 
         for (ThreadPool::iterator it(_threadPool.begin()); it != _threadPool.end(); ++it) {
             (*it)->worker->stop(); // signal threads to stop
+            (*it)->thread.interrupt();
         }
-        queue()->wakeUpAll(); // release blocked threads
+//        queue()->wakeUpAll(); // release blocked threads
 
         while (!_threadPool.empty()) {
             ThreadInfo *i(_threadPool.front()); _threadPool.pop_front();

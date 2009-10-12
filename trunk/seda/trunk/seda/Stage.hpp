@@ -53,7 +53,7 @@ namespace seda {
         virtual void send(const IEvent::Ptr& e) throw (QueueFull) {
             queue()->push(e);
         }
-        virtual IEvent::Ptr recv(unsigned long millis) throw (QueueEmpty) {
+        virtual IEvent::Ptr recv(unsigned long millis) throw (QueueEmpty, boost::thread_interrupted) {
             return queue()->pop(millis);
         }
 

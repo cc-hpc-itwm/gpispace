@@ -1,6 +1,8 @@
 #ifndef SEDA_IEVENT_QUEUE_HPP
 #define SEDA_IEVENT_QUEUE_HPP 1
 
+#include <boost/thread.hpp>
+
 #include <seda/shared_ptr.hpp>
 #include <seda/IEvent.hpp>
 #include <seda/SedaException.hpp>
@@ -22,8 +24,8 @@ namespace seda {
     
     virtual ~IEventQueue() {}
 
-    virtual IEvent::Ptr pop() throw (QueueEmpty) = 0;
-    virtual IEvent::Ptr pop(unsigned long millis) throw (QueueEmpty) = 0;
+    virtual IEvent::Ptr pop() throw (QueueEmpty, boost::thread_interrupted) = 0;
+    virtual IEvent::Ptr pop(unsigned long millis) throw (QueueEmpty, boost::thread_interrupted) = 0;
     
     virtual void push(const IEvent::Ptr& e) throw (QueueFull) = 0;
     

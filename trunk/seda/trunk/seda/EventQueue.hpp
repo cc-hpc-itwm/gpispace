@@ -28,7 +28,7 @@ namespace seda {
 
             const std::string& name() { return _name; }
 
-            virtual IEvent::Ptr pop() throw(QueueEmpty) {
+            virtual IEvent::Ptr pop() throw(QueueEmpty, boost::thread_interrupted) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (empty()) {
@@ -45,7 +45,7 @@ namespace seda {
                 return e;
             }
 
-            virtual IEvent::Ptr pop(unsigned long millis) throw(QueueEmpty) {
+            virtual IEvent::Ptr pop(unsigned long millis) throw(QueueEmpty, boost::thread_interrupted) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (empty()) {
