@@ -5,7 +5,6 @@
  * All rights reserved. 
  */
 // gwes
-#include <gwes/internal_types.h>
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>
@@ -31,10 +30,6 @@ GWES::GWES() : _logger(fhg::log::getLogger("gwes"))
  * Destructor for GWES
  */
 GWES::~GWES()
-{
-}
-
-Sdpa2Gwes::~Sdpa2Gwes()
 {
 }
 

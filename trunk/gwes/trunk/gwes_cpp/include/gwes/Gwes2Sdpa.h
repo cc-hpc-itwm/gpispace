@@ -1,22 +1,26 @@
 #ifndef GWES2SDPA_H_
 #define GWES2SDPA_H_
 
-#include <stdexcept>
-
 #include <gwdl/IWorkflow.h>
 #include <gwes/IActivity.h>
 
+#include <stdexcept>
+
 namespace gwes
 {
-    typedef gwdl::IWorkflow workflow_t;
-    typedef gwdl::IWorkflow::workflow_id_t workflow_id_t;
-
 /**
  * Interface class for the communication from GWES to SDPA.
  */
+//template <class WorkflowT, class ActivityT> class Gwes2Sdpa {
 class Gwes2Sdpa {
 
 public:
+    typedef gwdl::IWorkflow workflow_t;
+    typedef workflow_t::workflow_id_t workflow_id_t;
+
+    typedef gwes::IActivity activity_t;
+    typedef activity_t::activity_id_t activity_id_t;
+
     // exceptions
     class Gwes2SdpaException : public std::runtime_error
     {
