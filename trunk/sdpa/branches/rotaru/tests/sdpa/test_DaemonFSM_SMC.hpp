@@ -5,7 +5,7 @@
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
 #include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
-#include <sdpa/wf/Gwes2Sdpa.hpp>
+#include <gwes/Gwes2Sdpa.h>
 #include <seda/Strategy.hpp>
 
 using namespace sdpa::fsm::smc;
@@ -37,7 +37,7 @@ namespace sdpa {
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  DaemonFSM::ptr_t m_ptrDaemonFSM;
-			  sdpa::wf::Sdpa2Gwes::ptr_t m_ptrSdpa2Gwes;
+			  gwes::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
 			  seda::Strategy::Ptr m_ptrTestStrategy;
 			};

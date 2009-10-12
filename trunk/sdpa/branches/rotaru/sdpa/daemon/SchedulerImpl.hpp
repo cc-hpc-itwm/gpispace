@@ -5,7 +5,7 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
-#include <sdpa/wf/Sdpa2Gwes.hpp>
+#include <gwes/Sdpa2Gwes.h>
 #include <boost/thread.hpp>
 
 namespace sdpa {
@@ -18,7 +18,7 @@ namespace sdpa {
 	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 	 //typedef SynchronizedQueue<Job::ptr_t > JobQueue;
 
-	 SchedulerImpl(sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes);
+	 SchedulerImpl(gwes::Sdpa2Gwes* ptr_Sdpa2Gwes);
 	 virtual ~SchedulerImpl();
 
     /**
@@ -73,7 +73,7 @@ namespace sdpa {
   private:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
-	  sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes_;
+	  gwes::Sdpa2Gwes* ptr_Sdpa2Gwes_;
 
 	  bool bStopRequested;
 	  boost::thread m_thread;

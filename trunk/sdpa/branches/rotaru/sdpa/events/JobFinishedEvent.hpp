@@ -13,8 +13,12 @@ namespace events {
 	public:
 		typedef sdpa::shared_ptr<JobFinishedEvent> Ptr;
 
-		JobFinishedEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
-          :  sdpa::events::JobEvent( from, to, job_id ) {
+		JobFinishedEvent(	const address_t& from,
+							const address_t& to,
+							const sdpa::job_id_t& job_id = sdpa::job_id_t(),
+							const sdpa::job_id_t& parent_id = sdpa::job_id_t())
+
+          :  sdpa::events::JobEvent( from, to, job_id ), parent_(parent_id) {
 			////std::cout << "Create event 'JobFinishedEvent'"<< std::endl;
 		}
 
@@ -22,7 +26,11 @@ namespace events {
 			// //std::cout << "Delete event 'JobFinishedEvent'"<< std::endl;
 		}
 
+		sdpa::job_id_t parent_id() const { return parent_; }
+
 		std::string str() const { return "JobFinishedEvent"; }
+	private:
+		sdpa::job_id_t parent_;
 	};
 }}
 

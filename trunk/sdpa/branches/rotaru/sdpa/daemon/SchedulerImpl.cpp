@@ -1,9 +1,13 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 
-using namespace sdpa::daemon;
+#include <tests/sdpa/DummyGwes.hpp>
+#include <sstream>
 
-SchedulerImpl::SchedulerImpl(sdpa::wf::Sdpa2Gwes*  pSdpa2Gwes):
+using namespace sdpa::daemon;
+using namespace std;
+
+SchedulerImpl::SchedulerImpl(gwes::Sdpa2Gwes*  pSdpa2Gwes):
 	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	ptr_worker_man_(new WorkerManager()),
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerImpl")
@@ -28,8 +32,12 @@ Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &worker_id, con
 void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	sdpa::wf::workflow_id_t wf_id = pJob->id().str();
-	sdpa::wf::workflow_t workflow(wf_id, pJob->description());
+	gwes::workflow_id_t wf_id = pJob->id().str();
+
+	// Use gwes workflow here!
+	// IBuilder or a workflow fabric should be invoked here intstead of this!!!
+	gwes::workflow_t::ptr_t ptrWorkflow(new DummyWorkflow(pJob->description()));
+	ptrWorkflow->setID(wf_id);
 
 	// Should set the workflow_id here, or send it together with the workflow description
 	ostringstream os;
@@ -39,7 +47,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	if(ptr_Sdpa2Gwes_)
 	{
 		pJob->Dispatch();
-		ptr_Sdpa2Gwes_->submitWorkflow(workflow);
+		ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
 	}
 	else
 		SDPA_LOG_ERROR("Gwes not initialized!");
@@ -68,7 +76,7 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 		jobs_to_be_scheduled.push(pJob);
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
 	}
-	catch (sdpa::daemon::NoSuchActivityException& )
+	catch (gwes::Sdpa2Gwes::NoSuchActivity& )
 	{
 		SDPA_LOG_DEBUG("NoSuchActivityException exception occured!");
 	}

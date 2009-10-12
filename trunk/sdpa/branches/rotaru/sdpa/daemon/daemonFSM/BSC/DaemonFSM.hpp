@@ -25,7 +25,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 {
 	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
-	DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::wf::Sdpa2Gwes* ptrGwes = NULL);
+	DaemonFSM(const std::string &name, const std::string &outputStage, gwes::Sdpa2Gwes* ptrGwes = NULL);
 	virtual ~DaemonFSM();
 
 	virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);

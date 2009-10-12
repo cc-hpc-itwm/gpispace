@@ -6,7 +6,6 @@
 #include <utility>
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/wf/types.hpp>
 #include <sdpa/Properties.hpp>
 
 #include <boost/statechart/event_base.hpp>
@@ -20,6 +19,7 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <gwdl/IWorkflow.h>
 
 namespace sdpa { namespace daemon {
 
@@ -37,12 +37,11 @@ namespace sdpa { namespace daemon {
         typedef std::pair<place_t, token_t> value_t;
         typedef std::vector<value_t> data_t;
 
-        static const job_id_t &invalid_job_id();
+        static const job_id_t &invalid_job_id() { static sdpa::job_id_t invalid_id("-"); return invalid_id; }
 
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
 
-        virtual const sdpa::wf::workflow_id_t& workflow_id() const = 0;
         virtual const job_desc_t & description() const = 0;
 
         virtual const data_t & input() const = 0;

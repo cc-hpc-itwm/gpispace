@@ -5,7 +5,6 @@
 #include <sdpa/daemon/JobFSMActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
 #include <sdpa/common.hpp>
-#include <sdpa/wf/types.hpp>
 #include <map>
 
 namespace sdpa { namespace daemon {
@@ -24,7 +23,6 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
 
-        virtual const sdpa::wf::workflow_id_t& workflow_id() const;
         virtual const sdpa::job_desc_t& description() const;
 
         virtual const Job::data_t& input() const;
@@ -57,7 +55,6 @@ namespace sdpa { namespace daemon {
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
-        sdpa::wf::workflow_id_t workflow_id_;
 
         Job::data_t input_;
         Job::data_t output_;

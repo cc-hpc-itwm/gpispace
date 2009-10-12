@@ -171,11 +171,11 @@ DaemonFSMTest::~DaemonFSMTest()
 void DaemonFSMTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	m_ptrSdpa2Gwes = sdpa::wf::Sdpa2Gwes::ptr_t (new DummyGwes);
+	m_ptrSdpa2Gwes = new DummyGwes();
 	m_ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
 
 	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", m_ptrTestStrategy) );
-	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes.get()));
+	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes));
 
 	DaemonFSM::start(m_ptrDaemonFSM);
 
@@ -189,14 +189,13 @@ void DaemonFSMTest::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
-	m_ptrSdpa2Gwes.reset();
-
 	seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
 	seda::StageRegistry::instance().lookup(m_ptrOutputStage->name())->stop();
 	seda::StageRegistry::instance().clear();
 
 	m_ptrOutputStage.reset();
 	m_ptrDaemonFSM.reset();
+	delete m_ptrSdpa2Gwes;
 }
 
 void DaemonFSMTest::testDaemonFSM_JobFinished()

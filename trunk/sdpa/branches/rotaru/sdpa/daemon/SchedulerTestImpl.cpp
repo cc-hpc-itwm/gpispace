@@ -1,8 +1,12 @@
 #include "SchedulerTestImpl.hpp"
+#include <iostream>
+#include <sstream>
+
+using namespace std;
 
 using namespace sdpa::daemon;
 
-SchedulerTestImpl::SchedulerTestImpl(sdpa::wf::Sdpa2Gwes* ptr_Sdpa2Gwes):
+SchedulerTestImpl::SchedulerTestImpl(gwes::Sdpa2Gwes* ptr_Sdpa2Gwes):
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerTestImpl")
 {
 }

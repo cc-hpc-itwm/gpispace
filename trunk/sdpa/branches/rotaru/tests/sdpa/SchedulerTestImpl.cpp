@@ -1,6 +1,7 @@
 #include "SchedulerTestImpl.hpp"
 
 using namespace sdpa::tests;
+using namespace std;
 
 SchedulerTestImpl::SchedulerTestImpl():
 	SDPA_INIT_LOGGER("sdpa::tests::SchedulerTestImpl")

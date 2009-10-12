@@ -14,12 +14,6 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-// for workflow_id_t
-#include <sdpa/wf/WorkflowInterface.hpp>
-
-// for activity_id_t
-#include <sdpa/wf/Activity.hpp>
-
 using namespace std;
 using namespace boost::statechart;
 using namespace sdpa::events;
@@ -45,10 +39,6 @@ namespace sdpa { namespace daemon {
 
     const sdpa::job_id_t & JobImpl::parent() const {
         return parent_;
-    }
-
-    const sdpa::wf::workflow_id_t& JobImpl::workflow_id() const {
-    	return workflow_id_;
     }
 
     const sdpa::job_desc_t & JobImpl::description() const {
@@ -118,8 +108,10 @@ namespace sdpa { namespace daemon {
 			try {
 				// clearly, I'm in the Pending state here
 				// inform immediately GWES that the corresponding activity was cancelled
-				sdpa::wf::activity_id_t actId = evt.job_id();
-				pComm->gwes()->activityCanceled(actId);
+				gwes::activity_id_t actId = evt.job_id();
+				gwes::workflow_id_t wfId  = parent().str();
+
+				pComm->gwes()->activityCanceled( wfId, actId );
 
 			} catch(sdpa::PropertyLookupFailed& ) {
 				os.str("");
@@ -129,7 +121,7 @@ namespace sdpa { namespace daemon {
 				os.str("");
 				os<<"Unexpected exception occurred!";
 				SDPA_LOG_DEBUG(os.str());
-			}
+			} //handle here NoSuchWorkflow,NoSuchActivity exceptions
 		}
 		else //the master sent a Cancel message -> forward it to the workflow engine
 		{
@@ -157,10 +149,10 @@ namespace sdpa { namespace daemon {
     	if( evt.from() == pComm->master() ) //the master sent a Cancel message -> inform the workflow engine
 		{
 			try {
-				sdpa::wf::workflow_id_t workflowId = evt.job_id();
+				gwes::workflow_id_t workflowId = evt.job_id();
 				pComm->gwes()->cancelWorkflow(workflowId);
 			}
-			catch(sdpa::daemon::NoSuchWorkflowException)
+			catch(gwes::Gwes2Sdpa::NoSuchWorkflow)
 			{
 				os.str("");
 				os<<"No such workflow exception occured!";

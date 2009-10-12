@@ -22,7 +22,11 @@ namespace events {
 			//std::cout << "Delete event 'JobFailedEvent'"<< std::endl;
 		}
 
+		sdpa::job_id_t parent_id() const { return parent_; }
 		std::string str() const { return "JobFailedEvent"; }
+
+	private:
+		sdpa::job_id_t parent_;
 	};
 }}
 

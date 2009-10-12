@@ -1,17 +1,17 @@
-#ifndef test_SDPA_2_GWES_HPP
-#define test_SDPA_2_GWES_HPP 1
+#ifndef DUMMY_WORKFLOW_HPP
+#define DUMMY_WORKFLOW_HPP 1
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/logging.hpp"
-#include <sdpa/wf/Sdpa2Gwes.hpp>
-#include <sdpa/wf/Gwes2Sdpa.hpp>
-#include <sdpa/JobId.hpp>
+
+#include <gwes/Gwes2Sdpa.h>
+#include <gwes/Sdpa2Gwes.h>
+
+// for job_desc_t
+#include <sdpa/types.hpp>
 
 #include <sdpa/uuidgen.hpp>
 #include <map>
-
-using namespace sdpa;
-using namespace sdpa::wf;
 
 #include <boost/config.hpp>
 #include <iostream>
@@ -19,11 +19,54 @@ using namespace sdpa::wf;
 #include <boost/bimap.hpp>
 
 
+using namespace sdpa;
+using namespace gwes;
+
 typedef boost::bimap< std::string, std::string > bimap_t;
 typedef bimap_t::value_type id_pair;
 
+class DummyWorkflow : public gwes::workflow_t
+{
+public:
+		DummyWorkflow(const sdpa::job_desc_t& desc ) { }
 
-class DummyGwes : public Sdpa2Gwes {
+	    const gwes::workflow_id_t &getID() const { return wf_id_; }
+	    void setID(const gwes::workflow_id_t &id) { wf_id_ = id; }
+
+	    std::string serialize() const { return "serialized workflow"; }
+	    void deserialize(const std::string &) {}
+private:
+	  	gwes::workflow_id_t wf_id_;
+};
+
+
+class DummyActivity : public gwes::activity_t
+{
+public:
+		DummyActivity(  gwes::activity_id_t act_id_arg, gwes::workflow_id_t owner_wf_id_arg )
+		{
+			act_id_ = act_id_arg;
+			owner_wf_id_ = owner_wf_id_arg;
+		}
+
+	    void  setID( const activity_id_t &id_arg ) { act_id_ = id_arg; }
+	    const activity_id_t &getID() const { return act_id_; }
+
+	    virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
+
+	    gwdl::IWorkflow::ptr_t transform_to_workflow() const
+	    {
+	    	gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
+	    	return pWf;
+	    }
+
+private:
+	    gwes::activity_id_t act_id_;
+	    gwes::workflow_id_t owner_wf_id_;
+
+};
+
+class DummyGwes : public gwes::Sdpa2Gwes {
 private:
 	SDPA_DECLARE_LOGGER();
 public:
@@ -37,8 +80,12 @@ public:
 	 * Notify the GWES that an activity has been dispatched
 	 * (state transition from "pending" to "running").
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	void activityDispatched(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException)
+	virtual void activityDispatched( const workflow_id_t &workflowId,
+			                         const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity)
+
      {
 		SDPA_LOG_DEBUG("Called activityDispatched ...");
      }
@@ -47,8 +94,13 @@ public:
 	 * Notify the GWES that an activity has failed
 	 * (state transition from "running" to "failed").
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	void activityFailed(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException)
+	virtual void activityFailed(const workflow_id_t &workflowId
+	                              , const activity_id_t &activityId
+	                              , const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity)
+
 	{
 		SDPA_LOG_DEBUG("Called activityFailed ...");
 
@@ -67,8 +119,13 @@ public:
 	 * Notify the GWES that an activity has finished
 	 * (state transition from running to finished).
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	void activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (sdpa::daemon::NoSuchActivityException)
+	virtual void activityFinished(const workflow_id_t &workflowId
+								, const activity_id_t &activityId
+								, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity)
+
 	{
 		SDPA_LOG_DEBUG("Called activityFinished ...");
 
@@ -87,8 +144,11 @@ public:
 	 * Notify the GWES that an activity has been canceled
 	 * (state transition from * to terminated).
 	 * This method is to be invoked by the SDPA.
+	 * This is a callback listener method to monitor activities submitted
+	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	void activityCanceled(const activity_id_t &activityId) throw (sdpa::daemon::NoSuchActivityException)
+	virtual void activityCanceled(const workflow_id_t &workflowId
+								, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity)
     {
 		SDPA_LOG_DEBUG("Called activityCanceled ...");
 
@@ -122,17 +182,21 @@ public:
 	 * sub workflows to the SDPA.
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	void registerHandler(Gwes2Sdpa *pSdpa) const
+	virtual void registerHandler(Gwes2Sdpa *pSdpa)
 	{
 		ptr_Gwes2SdpaHandler = pSdpa;
 		SDPA_LOG_DEBUG("Called registerHandler ...");
 	}
 
-
 	/**
-	 * Unregister a SDPA handler that implements the Gwes2Sdpa
+	 * UnRegister a SDPA handler that implements the Gwes2Sdpa
+	 * interface. This handler is notified on each status
+	 * transitions of each workflow. This handler is also used
+	 * by the GWES to delegate the execution of activities or
+	 * sub workflows to the SDPA.
+	 * Currently you can only register ONE handler for a GWES.
 	 */
-	virtual void unregisterHandler(Gwes2Sdpa *pSdpa) const
+	virtual void unregisterHandler(Gwes2Sdpa *pSdpa)
 	{
 		if( pSdpa == ptr_Gwes2SdpaHandler)
 			ptr_Gwes2SdpaHandler = NULL;
@@ -163,7 +227,7 @@ public:
 	 * asynchronously and notifiy the SPDA about status transitions
 	 * using the callback methods of the Gwes2Sdpa handler.
 	 */
-	workflow_id_t submitWorkflow(workflow_t &workflow) //throw (gwdl::WorkflowFormatException) {}
+	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (std::exception)
 	{
 		// GWES is supposed to parse the workflow and generate a suite of
 		// sub-workflows or activities that are sent to SDPA
@@ -172,15 +236,8 @@ public:
 		SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
 		// save the workflow_id
-		workflow_id_t wf_id_orch = workflow.getId();
-
-		// Here, GWES is supposed to create new workflows ....
-		activity_t::Method method("","");
-
+		workflow_id_t wf_id_orch = workflow.getID();
 		SDPA_LOG_DEBUG("Generate activity ...");
-
-		// either you assign here an id or it be assigned by daemon
-		activity_t activity("An activity", method);
 
 		// generate unique id
 		uuid uid;
@@ -188,19 +245,23 @@ public:
 		gen(uid);
 		activity_id_t act_id = uid.str();
 
+		// either you assign here an id or it be assigned by daemon
+	    DummyActivity dummyActivity(act_id, wf_id_orch);
+
+
 		//bimap_wf_act_ids_[wf_id_orch] = act_id;
 		bimap_wf_act_ids_.insert( id_pair(wf_id_orch, act_id) );
-		activity.setId(act_id);
+
 
 		if(ptr_Gwes2SdpaHandler)
 		{
 			SDPA_LOG_DEBUG("Gwes submits new activity ...");
-			ptr_Gwes2SdpaHandler->submitActivity(activity);
+			ptr_Gwes2SdpaHandler->submitActivity(dummyActivity);
 		}
 		else
 			SDPA_LOG_ERROR("SDPA has unregistered ...");
 
-		return workflow.getId();
+		return workflow.getID();
 	}
 
 	/**
@@ -210,7 +271,7 @@ public:
 	 * completion of the cancelling process by calling the
 	 * callback method Gwes2Sdpa::workflowCanceled.
 	 */
-	void cancelWorkflow(const workflow_id_t &workflowId) throw (sdpa::daemon::NoSuchWorkflowException)
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception)
 	{
 		SDPA_LOG_DEBUG("Called cancelWorkflow ...");
 
@@ -232,4 +293,4 @@ private:
 	activity_id_t act_id;*/
 };
 
-#endif
+#endif //DUMMY_WORKFLOW_HPP

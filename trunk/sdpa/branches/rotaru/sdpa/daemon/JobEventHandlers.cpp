@@ -14,7 +14,7 @@
 
 using namespace std;
 using namespace sdpa::daemon;
-using namespace sdpa::wf;
+using namespace gwes;
 using namespace sdpa::events;
 
 
@@ -56,7 +56,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 		//put the job into the Running state: do this in acknowledge!
 		ptrWorker->acknowledge(pEvent->job_id());
 
-	} catch(sdpa::daemon::WorkerNotFoundException) {
+	} catch(WorkerNotFoundException) {
 		os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
@@ -82,7 +82,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFinished(pEvt);
 	}
-	catch(sdpa::daemon::JobNotFoundException){
+	catch(JobNotFoundException){
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
@@ -93,7 +93,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
 		//send JobFinished event to the master if daemon == aggregator || NRE
-		if( name() != sdpa::daemon::ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
+		if( name() != ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
 		{
 			try {
 				// forward it up
@@ -132,14 +132,16 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
 			{
-				activity_id_t activityId = pEvt->job_id().str();
+				// how this should be constructed
 				parameter_list_t output;
 
 				os.str("");
-				os<<"Inform GWES that the activity "<<activityId<<" finished";
+				os<<"Inform GWES that the activity "<<pEvt->job_id().str()<<" finished";
 				SDPA_LOG_DEBUG(os.str());
 
-				ptr_Sdpa2Gwes_->activityFinished(activityId, output);
+				activity_id_t actId = pEvt->job_id().str();
+				workflow_id_t wfId = pEvt->parent_id().str();
+				ptr_Sdpa2Gwes_->activityFinished( wfId, actId, output );
 
 				Worker::ptr_t ptrWorker = findWorker(worker_id);
 				// delete job from worker's queues
@@ -162,16 +164,16 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 			else
 				SDPA_LOG_ERROR("Gwes not initialized!");
 
-		} catch(sdpa::daemon::WorkerNotFoundException) {
+		} catch(WorkerNotFoundException) {
 			os.str("");
 			os<<"Worker "<<worker_id<<" not found!";
 			SDPA_LOG_DEBUG(os.str());
 		}
-		catch(sdpa::daemon::NoSuchWorkflowException& )
+		catch(gwes::Gwes2Sdpa::NoSuchWorkflow& )
 		{
 			SDPA_LOG_ERROR("NoSuchWorkflowException occurred!");
 		}
-		catch(sdpa::daemon::NoSuchActivityException& )
+		catch(gwes::Gwes2Sdpa::NoSuchActivity& )
 		{
 			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
 		}
@@ -206,7 +208,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
-	catch(sdpa::daemon::JobNotFoundException){
+	catch(JobNotFoundException){
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
@@ -218,7 +220,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		// if I'm not the orchestrator
 		//send JobFinished event to the master if daemon == aggregator || NRE
 
-		if( name() != sdpa::daemon::ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
+		if( name() != ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
 		{
 			try {
 			// forward it up
@@ -259,14 +261,15 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
 			{
-				activity_id_t activityId = pEvt->job_id().str();
+				activity_id_t actId = pEvt->job_id().str();
+				workflow_id_t wfId = pEvt->parent_id().str();
 				parameter_list_t output;
 
 				os.str("");
-				os<<"Inform GWES that the activity "<<activityId<<" failed";
+				os<<"Inform GWES that the activity "<<actId<<" failed";
 				SDPA_LOG_DEBUG(os.str());
 
-				ptr_Sdpa2Gwes_->activityFailed(activityId, output);
+				ptr_Sdpa2Gwes_->activityFailed(wfId, actId, output);
 
 				Worker::ptr_t ptrWorker = findWorker(worker_id);
 				// delete job from worker's queues
@@ -290,16 +293,16 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			else
 				SDPA_LOG_ERROR("Gwes not initialized!");
 
-		} catch(sdpa::daemon::WorkerNotFoundException) {
+		} catch(WorkerNotFoundException) {
 			os.str("");
 			os<<"Worker "<<worker_id<<" not found!";
 			SDPA_LOG_DEBUG(os.str());
 		}
-		catch(sdpa::daemon::NoSuchWorkflowException& )
+		catch(gwes::Gwes2Sdpa::NoSuchWorkflow& )
 		{
 			SDPA_LOG_ERROR("NoSuchWorkflowException occurred!");
 		}
-		catch(sdpa::daemon::NoSuchActivityException& )
+		catch(gwes::Gwes2Sdpa::NoSuchActivity& )
 		{
 			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
 		}
@@ -327,7 +330,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
-	catch(sdpa::daemon::JobNotFoundException)
+	catch(JobNotFoundException)
 	{
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";
@@ -359,7 +362,7 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
-	catch(sdpa::daemon::JobNotFoundException)
+	catch(JobNotFoundException)
 	{
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";
@@ -422,7 +425,7 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 			SDPA_LOG_DEBUG(os.str());
 		}
 	}
-	catch(sdpa::daemon::JobNotFoundException){
+	catch(JobNotFoundException){
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
@@ -485,17 +488,19 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     		// tell to GWES that the activity ob_id() was cancelled
     		activity_id_t actId = pEvt->job_id();
-    		ptr_Sdpa2Gwes_->activityCanceled(actId);
+    		workflow_id_t wfId  = pEvt->parent_id();
+
+    		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
     	}
 
 	}
-	 catch(sdpa::daemon::WorkerNotFoundException)
+	 catch(WorkerNotFoundException)
 	 {
 		os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
 	}
-	catch(sdpa::daemon::JobNotFoundException)
+	catch(JobNotFoundException)
 	{
 		os.str("");
 		os<<"Job "<<pEvt->job_id()<<" not found!";

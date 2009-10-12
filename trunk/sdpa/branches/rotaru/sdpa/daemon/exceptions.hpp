@@ -2,7 +2,6 @@
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
 #include <sdpa/SDPAException.hpp>
-#include <sdpa/wf/types.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -75,45 +74,6 @@ namespace daemon {
 		public:
 		JobNotMarkedException( const sdpa::job_id_t& job_id) : JobException("Job not marked for deletion!", job_id) {}
 		virtual ~JobNotMarkedException() throw() {}
-	};
-
-	class WorkflowException : public sdpa::SDPAException {
-		public:
-			WorkflowException(const std::string &reason, const sdpa::wf::workflow_id_t& workflow_id)
-			: sdpa::SDPAException(reason), workflow_id_(workflow_id) {}
-
-		virtual ~WorkflowException() throw() {}
-		const sdpa::wf::workflow_id_t& workflow_id() const { return workflow_id_; }
-
-		private:
-		sdpa::wf::workflow_id_t workflow_id_;
-	};
-
-	class NoSuchWorkflowException: public WorkflowException {
-		public:
-		NoSuchWorkflowException( const sdpa::wf::workflow_id_t& workflow_id)
-			: WorkflowException("No such workflow!", workflow_id) {}
-		virtual ~NoSuchWorkflowException() throw() {}
-	};
-
-	class ActivityException : public sdpa::SDPAException {
-		public:
-		ActivityException( const std::string &reason, const sdpa::wf::activity_id_t& activity_id )
-			: sdpa::SDPAException(reason), activity_id_(activity_id) {}
-
-		virtual ~ActivityException() throw() {}
-		const sdpa::wf::activity_id_t& activity_id() const { return activity_id_; }
-
-		private:
-		sdpa::wf::activity_id_t activity_id_;
-	};
-
-	class NoSuchActivityException: public ActivityException {
-		public:
-			NoSuchActivityException( const sdpa::wf::activity_id_t& activity_id)
-			: ActivityException("No such activity!", activity_id) {}
-		virtual ~NoSuchActivityException() throw() {}
-
 	};
 
 }}
