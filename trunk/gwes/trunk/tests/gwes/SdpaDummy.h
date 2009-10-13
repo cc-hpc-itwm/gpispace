@@ -17,7 +17,7 @@ class SdpaDummy : public gwes::Gwes2Sdpa
 {
 
 public:
-    typedef gwes::Sdpa2Gwes<gwdl::IWorkflow, gwes::IActivity, gwes::TokenParameter, gwes::Gwes2Sdpa> sdpa2gwes_t;
+    typedef gwes::Sdpa2Gwes<gwes::TokenParameter> sdpa2gwes_t;
 	
 	enum ogsa_bes_status_t {
 	    PENDING = 0,

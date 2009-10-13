@@ -3,29 +3,30 @@
 
 #include <stdexcept>
 
+#include <gwdl/IWorkflow.h>
+#include <gwes/IActivity.h>
+
 namespace gwes
 {
 
-//class Gwes2Sdpa;
+class Gwes2Sdpa;
+
+typedef gwdl::IWorkflow workflow_t;
+typedef gwdl::IWorkflow::workflow_id_t workflow_id_t;
+typedef gwes::IActivity activity_t;
+typedef gwes::IActivity::activity_id_t activity_id_t;
 
 /**
  * Interface class for the communication from SDPA to GWES.
  */
-template <class WorkflowT, class ActivityT, class ParameterT, class Gwes2SdpaT> class Sdpa2Gwes {
+template <class ParameterT> class Sdpa2Gwes {
 	
 public:
-    typedef WorkflowT workflow_t;
-    typedef typename workflow_t::workflow_id_t workflow_id_t;
-
-    typedef ActivityT activity_t;
-    typedef typename activity_t::activity_id_t activity_id_t;
-
     typedef ParameterT parameter_t;
     typedef std::list<parameter_t> parameter_list_t;
 
-    typedef Gwes2SdpaT gwes2sdpa_t;
+    typedef Gwes2Sdpa callback_handler_t;
 
-    
     // exceptions
     class Sdpa2GwesException : public std::runtime_error
     {
@@ -107,7 +108,7 @@ public:
 	 * sub workflows to the SDPA. 
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	virtual void registerHandler(gwes2sdpa_t *sdpa) = 0;
+	virtual void registerHandler(callback_handler_t *sdpa) = 0;
 
 	/**
 	 * UnRegister a SDPA handler that implements the Gwes2Sdpa
@@ -117,7 +118,7 @@ public:
 	 * sub workflows to the SDPA. 
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	virtual void unregisterHandler(gwes2sdpa_t *sdpa) = 0;
+	virtual void unregisterHandler(callback_handler_t *sdpa) = 0;
 
 	/**
 	 * Submit a workflow to the GWES.
@@ -137,7 +138,6 @@ public:
 	 */
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception) = 0;
 };
-
 }
 
 #endif /*SDPA2GWES_H_*/

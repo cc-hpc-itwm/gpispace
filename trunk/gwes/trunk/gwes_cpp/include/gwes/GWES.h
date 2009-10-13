@@ -32,7 +32,7 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class GWES : public Sdpa2Gwes<gwdl::IWorkflow, gwes::IActivity, gwes::TokenParameter, Gwes2Sdpa>
+class GWES : public Sdpa2Gwes<gwes::TokenParameter>
 {
 	
 private:
