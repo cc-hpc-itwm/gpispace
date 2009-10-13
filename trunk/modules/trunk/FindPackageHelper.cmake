@@ -88,9 +88,9 @@ function(check_package_search_path NAME INCLUDE_FILE LIBNAME LIBVERSION
   set(${GEN_LIBRARIES_SEARCH_DIRS} ${${GEN_LIBRARIES_SEARCH_DIRS}} PARENT_SCOPE)
   set(${GEN_BINARY_SEARCH_DIRS} ${${GEN_BINARY_SEARCH_DIRS}} PARENT_SCOPE)
   message(STATUS "Looking for HOME in ${${GEN_HOME}}")
-  message(STATUS "Looking for include in in '${${GEN_INCLUDE_SEARCH_DIRS}}'")
-  message(STATUS "Looking for library in in '${${GEN_LIBRARIES_SEARCH_DIRS}}'")
-  message(STATUS "Looking for binary in in '${${GEN_BINARY_SEARCH_DIRS}}'")
+  message(STATUS "Looking for include in '${${GEN_INCLUDE_SEARCH_DIRS}}'")
+  message(STATUS "Looking for library in '${${GEN_LIBRARIES_SEARCH_DIRS}}'")
+  message(STATUS "Looking for binary in '${${GEN_BINARY_SEARCH_DIRS}}'")
 
 endfunction()
 
@@ -109,9 +109,9 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
 
 
 #  message(STATUS "Looking for HOME in '${_xxx_HOME}'")
-#  message(STATUS "Looking for include in in '${_xxx_INCLUDE_SEARCH_DIRS}'")
-#  message(STATUS "Looking for library in in '${_xxx_LIBRARIES_SEARCH_DIRS}'")
-#  message(STATUS "Looking for binary in in '${_xxx_BINARY_SEARCH_DIRS}'")
+#  message(STATUS "Looking for include in '${_xxx_INCLUDE_SEARCH_DIRS}'")
+#  message(STATUS "Looking for library in '${_xxx_LIBRARIES_SEARCH_DIRS}'")
+#  message(STATUS "Looking for binary in '${_xxx_BINARY_SEARCH_DIRS}'")
    
   # find the include files
   FIND_PATH(${NAME}_INCLUDE_DIR ${INCLUDE_FILE}
