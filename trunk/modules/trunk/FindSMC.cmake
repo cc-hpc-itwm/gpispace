@@ -38,7 +38,7 @@ else( "${SMC_HOME}" STREQUAL "")
 endif( "${SMC_HOME}" STREQUAL "")
 ##
 
-message(STATUS "Looking for protobuf in ${SMC_HOME}")
+message(STATUS "Looking for SMC in ${SMC_HOME}")
 
 IF( NOT ${SMC_HOME} STREQUAL "" )
     SET(_smc_INCLUDE_SEARCH_DIRS ${SMC_HOME}/lib/C++ ${_smc_INCLUDE_SEARCH_DIRS})
