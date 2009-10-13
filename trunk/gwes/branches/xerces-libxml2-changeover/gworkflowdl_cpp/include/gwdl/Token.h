@@ -9,14 +9,8 @@
 // gwdl
 #include <gwdl/Properties.h>
 #include <gwdl/Data.h>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 // std
 #include <string>
-// cerr, cout
-//#include <iostream>
-//#include <sstream>
-
 
 namespace gwdl
 {
@@ -75,6 +69,8 @@ private:
     long generateID() {static long counter = 0; return counter++;}
 	
 public:
+	
+    typedef shared_ptr<Token> ptr_t;
 
 	/**
 	 * Construct a default control token with control = <code>true</code>.
@@ -100,7 +96,8 @@ public:
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param _data XML content of the data token as data object.
 	 */  
-	explicit Token(Data* _data);
+	explicit Token(Data* _data)
+	  {id = generateID(); data = _data;	p_lock = NULL;}
 	
 	/**
 	 * Constructor for data token with specific properties.
@@ -112,29 +109,13 @@ public:
 	  {id = generateID(); properties = _properties; data = _data; p_lock = NULL;} 
 	
 	/**
-	 * Construct a data token based on its DOMElement.
-	 * Note: When the token is deleted, then also the data object will be deleted! 
-	 * @param element XML content of the data token as DOMElement.
-	 */
-	explicit Token(XERCES_CPP_NAMESPACE::DOMElement* element);
-	
-	/**
-	 * Convert this token into a DOMElement.
-	 * @param doc The master document this element should belong to.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
-	
-	/**
 	 * Destructor for data token.
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 */
 	virtual ~Token() {
 		try {
 			if (isData()) delete data;
-		} catch (XERCES_CPP_NAMESPACE::DOMException e) {
-			///
-		}
+		} 
 		data = NULL;
 	}
 	

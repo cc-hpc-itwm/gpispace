@@ -9,6 +9,8 @@
 
 // gwdl
 #include <gwdl/IBuilder.h>
+// libxml2
+#include <libxml/xpathInternals.h>
 
 namespace gwdl 
 {
@@ -37,8 +39,8 @@ public:
     const std::string serializeData(const Data::ptr_t &) const;
 	
 	// Token
-//	virtual Token deserializeToken(const std::string& xmlstring);
-//	virtual std::string serializeToken(const Token& token);
+	const Token::ptr_t deserializeToken(const std::string&) const;
+	const std::string serializeToken(const Token::ptr_t &) const;
 	
 	// Place
 //	virtual Place deserializePlace(const std::string& xmlstring);
