@@ -41,7 +41,7 @@ int main (int argc, char **argv) {
     fhg::log::Appender::ptr_t(
       new fhg::log::FileAppender("logfile"
                                , "sdpac.log"
-                               , std::ios_base::trunc
+                               , std::ios_base::app
                                | std::ios_base::binary
                                | std::ios_base::out)))->setFormat(fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
   fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
@@ -75,6 +75,10 @@ int main (int argc, char **argv) {
               << std::endl;
     exit(0);
   }
+
+  MLOG(INFO, "***************************************************");
+  MLOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
+  MLOG(INFO, "***************************************************");
 
   if (argv[idx] == std::string("submit"))
   {
