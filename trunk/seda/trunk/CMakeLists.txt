@@ -14,9 +14,6 @@ set(V_MAJOR 1)
 set(V_MINOR 2)
 set(V_PATCH 0)
 
-# add a path where some libraries might be stored
-set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
-
 ###################################################################################################
 # No user settings below
 ###################################################################################################
@@ -44,8 +41,6 @@ OPTION(ENABLE_UNIT_TESTS
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -93,13 +88,6 @@ if ( PKG_CONFIG_FOUND )
 
 else  ( PKG_CONFIG_FOUND )
   message("No PKGCONFIG found - hoping for the best.")
-
-  if (ENABLE_UNIT_TESTS)
-    set(CPPUNIT_INCLUDE_DIRS "${CMAKE_ADDITIONAL_PATH}/include" CACHE PATH "CPPUnit Include dir")
-    set(CPPUNIT_LIBRARY_DIRS "${CMAKE_ADDITIONAL_PATH}/lib" CACHE PATH "CPPUnit Library dir")
-    set(CPPUNIT_LIBRARIES "cppunit" CACHE PATH "CPPUnit libraries")
-  endif (ENABLE_UNIT_TESTS)
-
 endif ( PKG_CONFIG_FOUND )
 
 ## logging
@@ -141,7 +129,6 @@ if (CMAKE_USE_PTHREADS_INIT)
 endif (CMAKE_USE_PTHREADS_INIT)
 
 ## check for boost
-set(BOOST_ROOT "${CMAKE_ADDITIONAL_PATH}" CACHE PATH "Where to find the Boost libraries")
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
