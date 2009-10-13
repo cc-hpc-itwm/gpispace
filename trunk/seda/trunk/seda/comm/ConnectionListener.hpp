@@ -25,6 +25,7 @@ namespace seda { namespace comm {
   class ConnectionListener {
   public:
     virtual void onMessage(const seda::comm::SedaMessage &) = 0;
+    virtual ~ConnectionListener() {}
   };
 }}
 

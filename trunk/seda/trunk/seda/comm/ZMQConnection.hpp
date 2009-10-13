@@ -24,7 +24,7 @@ namespace comm {
                 , const std::string &name
                 , const std::string &in_interface
                 , const std::string &out_interface);
-    ~ZMQConnection();
+    virtual ~ZMQConnection();
 
     void start();
     void stop();

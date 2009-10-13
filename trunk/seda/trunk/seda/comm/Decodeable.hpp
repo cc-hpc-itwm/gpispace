@@ -18,6 +18,7 @@ namespace comm {
     class Decodeable {
     public:
         virtual void decode(const std::string&) throw(DecodingError) = 0;
+        virtual ~Decodeable() {}
     };
 }}
 

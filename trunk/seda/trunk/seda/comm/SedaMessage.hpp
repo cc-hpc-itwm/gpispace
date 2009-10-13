@@ -36,7 +36,13 @@ namespace seda {
           : from_(a_from), to_(a_to), payload_(a_payload), valid_(true) { }
 
         SedaMessage(const SedaMessage &other)
-          : from_(other.from()), to_(other.to()), payload_(other.payload()), valid_(other.is_valid()) {}
+          : UserEvent()
+          , Encodeable()
+          , Decodeable()
+          , from_(other.from())
+          , to_(other.to())
+          , payload_(other.payload())
+          , valid_(other.is_valid()) {}
         virtual ~SedaMessage() {}
 
         const SedaMessage &operator=(const SedaMessage &rhs) {
