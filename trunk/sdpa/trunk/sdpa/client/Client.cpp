@@ -87,12 +87,12 @@ void Client::perform(const seda::IEvent::Ptr &event)
 
 void Client::start(const Client::config_t & config)
 {
-  std::clog << "I: starting up" << std::endl;
-  fhg::log::Configurator::configure(/*use default config for now*/);
+  DMLOG(DEBUG, "starting up with config: " << config);
+//  fhg::log::Configurator::configure(/*use default config for now*/);
 
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
-  std::clog << "waiting until configuration is done" << std::endl;
+  DMLOG(DEBUG, "waiting until configuration is done.");
   seda::IEvent::Ptr reply(wait_for_reply());
   // check event type
   if (dynamic_cast<ConfigOK*>(reply.get()))
