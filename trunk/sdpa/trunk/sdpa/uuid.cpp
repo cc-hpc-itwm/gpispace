@@ -5,22 +5,22 @@
 
 using namespace sdpa;
 
-uuid::uuid(const uuid &other)
-  : dirty_(true)
+  uuid::uuid(const uuid &other)
+: dirty_(true)
   , str_tmp_("")
 {
   set(other.data());
 }
 
-uuid::uuid(const uuid_t &some_data)
-  : dirty_(true)
+  uuid::uuid(const uuid_t &some_data)
+: dirty_(true)
   , str_tmp_("")
 {
   set(some_data);
 }
 
-uuid::uuid()
-  : dirty_(true)
+  uuid::uuid()
+: dirty_(true)
   , str_tmp_("")
 {
 }
@@ -44,8 +44,15 @@ const std::string &uuid::str() const {
     std::stringstream sstr;
     sstr << std::hex << std::right;
     for (std::size_t i(0); i < sizeof(uuid_t); ++i) {
-       int c = (int(uuid_[i]) & 0xff);
-       sstr << std::setw(2) << std::setfill('0') << c;
+      int c = (int(uuid_[i]) & 0xff);
+      sstr << std::setw(2) << std::setfill('0') << c;
+      if ( (i == 3)
+        || (i == 5)
+        || (i == 7)
+        || (i == 9) )
+      {
+        sstr << "-";
+      }
     }
     str_tmp_ = sstr.str();
     dirty_ = false;
