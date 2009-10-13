@@ -23,7 +23,7 @@ void UUIDTest::testGenerate() {
   sdpa::uuid id;
   sdpa::uuidgen gen;
   gen(id);
-  CPPUNIT_ASSERT_EQUAL(36U, id.str().size());
+  CPPUNIT_ASSERT_EQUAL(std::size_t(36), id.str().size());
 }
 
 void UUIDTest::testUniqueness()
