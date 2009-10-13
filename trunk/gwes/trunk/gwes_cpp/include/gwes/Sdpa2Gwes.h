@@ -2,6 +2,7 @@
 #define SDPA2GWES_H_
 
 #include <stdexcept>
+#include <list>
 
 #include <gwdl/IWorkflow.h>
 #include <gwes/IActivity.h>
