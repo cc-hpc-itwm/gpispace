@@ -1,12 +1,64 @@
+#include <fstream>
+#include <sstream>
 #include <iostream>
+#include <unistd.h>
+
+#include <fhglog/fhglog.hpp>
+#include <fhglog/Configuration.hpp>
 
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
-int main (int argc, char **argv) {
-  sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
+static void usage(const std::string &name)
+{
+  std::cerr << "usage: " << name << " [-v|-h|-V] command [arguments]" << std::endl;
+  std::cerr << std::endl;
+  std::cerr << "\tcommands and their arguments are:" << std::endl;
+  std::cerr << "\t\tsubmit path-to-job-desc" << std::endl;
+  std::cerr << "\t\tcancel job-id" << std::endl;
+  std::cerr << "\t\tstatus job-id" << std::endl;
+  std::cerr << "\t\tresults job-id" << std::endl;
+  std::cerr << "\t\tdelete job-id" << std::endl;
+}
 
-  if (argc > 1 && (std::string(argv[1]) == "-v"))
+int main (int argc, char **argv) {
+  const std::string name(argv[0]);
+
+  int idx(1);
+  if (idx == argc)
+  {
+    usage(argv[0]);
+    exit(1);
+  }
+
+  if (argv[idx] == std::string("-h"))
+  {
+    usage(argv[0]);
+    exit(0);
+  }
+
+  fhg::log::getLogger().addAppender(
+    fhg::log::Appender::ptr_t(
+      new fhg::log::FileAppender("logfile"
+                               , "sdpac.log"
+                               , std::ios_base::trunc
+                               | std::ios_base::binary
+                               | std::ios_base::out)))->setFormat(fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
+  fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
+  if (argv[idx] == std::string("-v"))
+  {
+    fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
+    idx++;
+  }
+
+  if (idx == argc)
+  {
+    usage(argv[0]);
+    exit(0);
+  }  
+
+  sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
+  if (argv[idx] == std::string("-V"))
   {
     std::cerr << "           "
               << "SDPA - Seismic Data Processing Architecture" << std::endl;
@@ -21,13 +73,67 @@ int main (int argc, char **argv) {
     std::cerr << "       "
               << api->contact()
               << std::endl;
-    std::cerr << std::endl;
+    exit(0);
   }
 
+  if (argv[idx] == std::string("submit"))
+  {
+    if ((idx+1) == argc)
+    {
+      std::cerr << "submit requires an argument" << std::endl;
+      exit(1);
+    }
 
-  sdpa::job_id_t jid = api->submitJob("<xml></xml>");
-  api->queryJob(jid);
-  api->cancelJob(jid);
-  api->retrieveResults(jid);
-  api->deleteJob(jid);
+    std::ifstream ifs(argv[idx+1]);
+    if (! ifs.good())
+    {
+      std::cerr << "could not open: " << argv[idx+1] << std::endl;
+      exit(2);
+    }
+
+    std::stringstream sstr;
+    ifs >> sstr.rdbuf();
+    std::cout << api->submitJob(sstr.str()) << std::endl;
+  }
+  else if (argv[idx] == std::string("cancel"))
+  {
+    if ((idx+1) == argc)
+    {
+      std::cerr << "cancel requires an argument" << std::endl;
+      exit(1);
+    }
+    api->cancelJob(argv[idx+1]);
+  }
+  else if (argv[idx] == std::string("status"))
+  {
+    if ((idx+1) == argc)
+    {
+      std::cerr << "status requires an argument" << std::endl;
+      exit(1);
+    }
+    std::cout << api->queryJob(argv[idx+1]) << std::endl;
+  }
+  else if (argv[idx] == std::string("results"))
+  {
+    if ((idx+1) == argc)
+    {
+      std::cerr << "results requires an argument" << std::endl;
+      exit(1);
+    }
+    std::cout << api->retrieveResults(argv[idx+1]) << std::endl;
+  }
+  else if (argv[idx] == std::string("delete"))
+  {
+    if ((idx+1) == argc)
+    {
+      std::cerr << "delete requires an argument" << std::endl;
+      exit(1);
+    }
+    api->deleteJob(argv[idx+1]);
+  }
+  else
+  {
+    std::cerr << "illegal command: " << argv[idx] << std::endl;
+    exit(1);
+  }
 }
