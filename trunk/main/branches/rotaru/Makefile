@@ -1,4 +1,6 @@
 CMAKE=cmake
+CMAKE_CONFIG=
+CTEST_CONFIG=
 BUILD_DIR=build
 top_srcdir=${CURDIR}
 
@@ -10,7 +12,7 @@ compile: config
 	make -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
-	cd $(BUILD_DIR) && $(CMAKE) $(top_srcdir)
+	cd $(BUILD_DIR) && $(CMAKE) ${CMAKE_CONFIG} $(top_srcdir)
 
 distclean: clean
 	@-rm -rf $(BUILD_DIR)
@@ -20,7 +22,7 @@ clean:
 	make -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C build doc
+	make -C ${BUILD_DIR} doc
 
 doc:
 	make -C doc
@@ -28,7 +30,11 @@ doc:
 dist: test
 	make -C $(BUILD_DIR) package
 
+test: ctest
+ctest: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage ${CTEST_CONFIG}
+
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc
+.PHONY: clean distclean all default doc test
