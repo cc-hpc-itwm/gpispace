@@ -6,7 +6,7 @@ using namespace std;
 
 using namespace sdpa::daemon;
 
-SchedulerTestImpl::SchedulerTestImpl(gwes::Sdpa2Gwes* ptr_Sdpa2Gwes):
+SchedulerTestImpl::SchedulerTestImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes):
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerTestImpl")
 {
 }

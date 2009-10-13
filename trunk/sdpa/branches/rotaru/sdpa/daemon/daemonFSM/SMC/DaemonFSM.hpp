@@ -13,7 +13,7 @@ namespace sdpa {
 				public:
 					typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
-					DaemonFSM(const std::string& name, const std::string& outputStage, gwes::Sdpa2Gwes* pGwes = NULL) :
+					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
 						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
 						GenericDaemon(name, outputStage, pGwes),
 						m_fsmContext(*this)

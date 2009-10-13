@@ -24,13 +24,13 @@ namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
-						public Gwes2Sdpa {
+						public gwes::Gwes2Sdpa {
   public:
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage, Sdpa2Gwes* pArgSdpa2Gwes = NULL);
+	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
 	  static void start(GenericDaemon::ptr_t daemon );
 
 	  virtual void perform(const seda::IEvent::Ptr&);
@@ -68,13 +68,13 @@ namespace sdpa { namespace daemon {
 
       // Gwes2Sdpa interface implementation
 	  //virtual workflow_id_t submitWorkflow(const workflow_t &workflow);
-	  virtual activity_id_t submitActivity(activity_t &activity);
+	  virtual gwes::activity_id_t submitActivity(gwes::activity_t &activity);
 
 	  //virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
-	  virtual void cancelActivity(const activity_id_t &activityId) throw (NoSuchActivity);
-	  virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
-	  virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
-	  virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+	  virtual void cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity);
+	  virtual void workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+	  virtual void workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+	  virtual void workflowCanceled(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const  Worker::ptr_t );
@@ -87,16 +87,16 @@ namespace sdpa { namespace daemon {
 
 	  virtual const std::string output_stage() const { return output_stage_ ; }
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
-	  virtual  Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
+	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string &name, const std::string &outputStage, Sdpa2Gwes*  pSdpa2Gwes);
+	  GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::Sdpa2Gwes*  pSdpa2Gwes);
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
-	  Sdpa2Gwes*  ptr_Sdpa2Gwes_;
+	  sdpa::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
 
 	  void setStage(seda::Stage* stage)
 	  {

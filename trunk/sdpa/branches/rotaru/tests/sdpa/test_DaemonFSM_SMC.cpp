@@ -32,7 +32,7 @@ using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-const int NITER = 1000;
+const int NITER = 1;
 
 class TestStrategy : public seda::Strategy
 {

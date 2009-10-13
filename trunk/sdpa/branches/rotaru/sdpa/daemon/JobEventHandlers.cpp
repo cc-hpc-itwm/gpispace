@@ -10,7 +10,7 @@
 #include <map>
 
 #include <sdpa/daemon/exceptions.hpp>
-#include <sdpa/wf/types.hpp>
+
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -78,8 +78,9 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job into the state Finished
+	Job::ptr_t pJob;
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFinished(pEvt);
 	}
 	catch(JobNotFoundException){
@@ -139,8 +140,9 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				os<<"Inform GWES that the activity "<<pEvt->job_id().str()<<" finished";
 				SDPA_LOG_DEBUG(os.str());
 
-				activity_id_t actId = pEvt->job_id().str();
-				workflow_id_t wfId = pEvt->parent_id().str();
+				activity_id_t actId = pJob->id().str();
+				workflow_id_t wfId  = pJob->parent().str();
+
 				ptr_Sdpa2Gwes_->activityFinished( wfId, actId, output );
 
 				Worker::ptr_t ptrWorker = findWorker(worker_id);
@@ -204,8 +206,9 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	SDPA_LOG_DEBUG(os.str());
 
 	//put the job into the state Finished
+	Job::ptr_t pJob;
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
 	catch(JobNotFoundException){
@@ -261,8 +264,8 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
 			{
-				activity_id_t actId = pEvt->job_id().str();
-				workflow_id_t wfId = pEvt->parent_id().str();
+				activity_id_t actId = pJob->id().str();
+				workflow_id_t wfId  = pJob->parent().str();
 				parameter_list_t output;
 
 				os.str("");
@@ -442,8 +445,9 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 	ostringstream os;
 	Worker::worker_id_t worker_id = pEvt->from();
+	Job::ptr_t pJob;
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
 
 		// put the job into the state Cancelled
 	    pJob->CancelJobAck(pEvt);
@@ -487,8 +491,8 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		ptrWorker->delete_job(pEvt->job_id(), ptrWorker->acknowledged());
 
     		// tell to GWES that the activity ob_id() was cancelled
-    		activity_id_t actId = pEvt->job_id();
-    		workflow_id_t wfId  = pEvt->parent_id();
+    		activity_id_t actId = pJob->id();
+    		workflow_id_t wfId  = pJob->parent();
 
     		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
     	}

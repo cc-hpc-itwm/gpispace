@@ -5,7 +5,7 @@
 #include "sdpa/logging.hpp"
 
 #include <gwes/Gwes2Sdpa.h>
-#include <gwes/Sdpa2Gwes.h>
+#include <sdpa/Sdpa2Gwes.hpp>
 
 // for job_desc_t
 #include <sdpa/types.hpp>
@@ -66,7 +66,7 @@ private:
 
 };
 
-class DummyGwes : public gwes::Sdpa2Gwes {
+class DummyGwes : public sdpa::Sdpa2Gwes {
 private:
 	SDPA_DECLARE_LOGGER();
 public:

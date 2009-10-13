@@ -5,7 +5,9 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <boost/thread.hpp>
-#include <gwes/Sdpa2Gwes.h>
+
+
+#include <sdpa/Sdpa2Gwes.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -16,7 +18,7 @@ class SchedulerTestImpl : public Scheduler {
 	 typedef sdpa::shared_ptr<SchedulerTestImpl> ptr_t;
 	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 
-	 SchedulerTestImpl(gwes::Sdpa2Gwes* ptr_Sdpa2Gwes=NULL);
+	 SchedulerTestImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes=NULL);
 	 virtual ~SchedulerTestImpl();
 
     void schedule(Job::ptr_t& pJob);

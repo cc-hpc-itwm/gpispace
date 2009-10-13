@@ -7,7 +7,7 @@
 using namespace sdpa::daemon;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(gwes::Sdpa2Gwes*  pSdpa2Gwes):
+SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes):
 	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	ptr_worker_man_(new WorkerManager()),
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerImpl")
@@ -44,13 +44,19 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	os<<"Submit the workflow attached to the job "<<wf_id<<" to GWES";
 	SDPA_LOG_DEBUG(os.str());
 
-	if(ptr_Sdpa2Gwes_)
-	{
-		pJob->Dispatch();
-		ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
+	try {
+		if(ptr_Sdpa2Gwes_)
+		{
+			pJob->Dispatch();
+			ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
+		}
+		else
+			SDPA_LOG_ERROR("Gwes not initialized!");
 	}
-	else
-		SDPA_LOG_ERROR("Gwes not initialized!");
+	catch (std::exception& )
+	{
+		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+	}
 }
 
 /*
@@ -75,10 +81,6 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 		// put the job back into the queue
 		jobs_to_be_scheduled.push(pJob);
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
-	}
-	catch (gwes::Sdpa2Gwes::NoSuchActivity& )
-	{
-		SDPA_LOG_DEBUG("NoSuchActivityException exception occured!");
 	}
 }
 

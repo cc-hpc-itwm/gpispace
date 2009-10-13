@@ -1,12 +1,12 @@
 #ifndef SDPA_SCHEDULERIMPL_HPP
 #define SDPA_SCHEDULERIMPL_HPP 1
 
+#include <boost/thread.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
-#include <gwes/Sdpa2Gwes.h>
-#include <boost/thread.hpp>
+#include <sdpa/Sdpa2Gwes.hpp>
 
 namespace sdpa {
 	namespace daemon {
@@ -18,7 +18,7 @@ namespace sdpa {
 	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 	 //typedef SynchronizedQueue<Job::ptr_t > JobQueue;
 
-	 SchedulerImpl(gwes::Sdpa2Gwes* ptr_Sdpa2Gwes);
+	 SchedulerImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes);
 	 virtual ~SchedulerImpl();
 
     /**
@@ -73,7 +73,7 @@ namespace sdpa {
   private:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
-	  gwes::Sdpa2Gwes* ptr_Sdpa2Gwes_;
+	  sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes_;
 
 	  bool bStopRequested;
 	  boost::thread m_thread;

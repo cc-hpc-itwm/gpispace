@@ -5,7 +5,6 @@
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
 #include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
-#include <gwes/Gwes2Sdpa.h>
 #include <seda/Strategy.hpp>
 
 using namespace sdpa::fsm::smc;
@@ -15,8 +14,8 @@ namespace sdpa {
 			class DaemonFSMTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonFSMTest );
 
-			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
-			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
+			  //CPPUNIT_TEST( testDaemonFSM_JobFinished );
+			  //CPPUNIT_TEST( testDaemonFSM_JobFailed );
 			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
 			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
@@ -37,7 +36,7 @@ namespace sdpa {
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  DaemonFSM::ptr_t m_ptrDaemonFSM;
-			  gwes::Sdpa2Gwes* m_ptrSdpa2Gwes;
+			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
 			  seda::Strategy::Ptr m_ptrTestStrategy;
 			};

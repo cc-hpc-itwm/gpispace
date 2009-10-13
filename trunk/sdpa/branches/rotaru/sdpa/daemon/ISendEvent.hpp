@@ -4,11 +4,8 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
 
-
 #include <gwes/Gwes2Sdpa.h>
-#include <gwes/Sdpa2Gwes.h>
-using namespace gwes;
-
+#include <sdpa/Sdpa2Gwes.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -21,7 +18,9 @@ const std::string USER("user") ;
   public:
 	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
 	  virtual const std::string output_stage() const = 0;
-	  virtual Sdpa2Gwes* gwes() const = 0;
+
+	  // only for testing with DummyGwes, change it
+	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
   };
