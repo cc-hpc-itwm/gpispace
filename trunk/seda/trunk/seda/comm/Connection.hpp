@@ -29,6 +29,8 @@ namespace seda { namespace comm {
   public:
     typedef seda::shared_ptr<Connection> ptr_t;
 
+    virtual ~Connection() {}
+
     virtual void start() = 0;
     virtual void stop() = 0;
 

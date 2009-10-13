@@ -12,6 +12,7 @@ namespace seda {
 
             explicit
             StageFactory() {}
+            virtual ~StageFactory() {}
 
             virtual seda::Stage::Ptr createStage(const std::string &name,
                     seda::Strategy::Ptr strategy,

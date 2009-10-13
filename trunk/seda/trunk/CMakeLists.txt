@@ -63,7 +63,7 @@ else(WIN32)
     endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wextra -Wreturn-type -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wextra -Wreturn-type -fno-omit-frame-pointer -Wnon-virtual-dtor")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused -Wunused-variable -Wunused-function")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
     # gprof and gcov support
