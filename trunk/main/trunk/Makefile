@@ -46,8 +46,8 @@ unify:
 	mv -i ${LOGDIR}/LastBuild_$${CTEST_TAG}.log ${LOGDIR}/LastBuild.log; \
 	mv -i ${LOGDIR}/LastConfigure_$${CTEST_TAG}.log ${LOGDIR}/LastConfigure.log; \
 	mv -i ${LOGDIR}/LastCoverage_$${CTEST_TAG}.log ${LOGDIR}/LastCoverage.log; \
-	mv -i ${LOGDIR}/LastTest_$${CTEST_TAG}.log ${LOGDIR}/LastTest.log ; \
-	mv -i ${LOGDIR}/LastTestsFailed_$${CTEST_TAG}.log ${LOGDIR}/LastTestsFailed.log)
+	mv -i ${LOGDIR}/LastTest_$${CTEST_TAG}.log ${LOGDIR}/LastTest.log )
+##	mv -i ${LOGDIR}/LastTestsFailed_$${CTEST_TAG}.log ${LOGDIR}/LastTestsFailed.log
 
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
