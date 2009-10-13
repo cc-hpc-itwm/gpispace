@@ -7,6 +7,10 @@
 //gwes
 #include <gwes/Activity.h>
 #include <gwes/WorkflowHandler.h>
+#include <gwes/Utils.h>
+//gwdl
+#include <gwdl/WorkflowFormatException.h>
+#include <gwdl/NoSuchWorkflowElement.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -32,10 +36,72 @@ Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const st
 Activity::~Activity() {
 }
 
-const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const
-{
-  throw std::runtime_error("Activity.cpp:35 - getOwnerWorkflowID() - not implemented");
+/////////////////////////////////////////
+// IActivity interface methods 
+/////////////////////////////////////////
+
+/** 
+ * Generates workflow object that corresponds to this activity.
+ */
+gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const {
+	LOG_INFO(_logger, "transforming activity " << _id << " to workflow object...");
+
+	// set workflow file 
+	string subworkflowFilename = Utils::expandEnv(_operation->getOperationName());
+	LOG_INFO(_logger, "trying to read file " << subworkflowFilename);
+
+	// parse workflow file
+	gwdl::Workflow* subworkflowP;
+	try {
+		subworkflowP = new gwdl::Workflow(subworkflowFilename);
+		// delegate simulation flag to sub workflow.
+		if (_toP->simulation) {
+			subworkflowP->getProperties().put("simulation","true");
+		}
+	} catch (gwdl::WorkflowFormatException e) {
+		ostringstream message; 
+		message << "Not able to build subworkflow activity: " << e.message;
+		LOG_ERROR(_logger, message.str());
+		throw ActivityException(message.str()); 
+	}
+	
+	// copy read/input/write tokens to places in sub workflow regarding the edge expressions of the parent workflow
+	string edgeExpression;
+	try {
+		gwdl::Place* placeP;
+		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
+			switch (it->scope) {
+			case (TokenParameter::SCOPE_READ):
+			case (TokenParameter::SCOPE_INPUT):
+			case (TokenParameter::SCOPE_WRITE):
+				edgeExpression = it->edgeP->getExpression();
+			LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from activity to sub workflow ..."); 
+			placeP = subworkflowP->getPlace(edgeExpression);
+			placeP->addToken(it->tokenP->deepCopy());
+			break;
+			case (TokenParameter::SCOPE_OUTPUT):	
+				continue;
+			}
+		}
+	} catch (gwdl::NoSuchWorkflowElement e) {
+		ostringstream message; 
+		message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+		LOG_ERROR(_logger, message.str());
+		throw ActivityException(message.str()); 
+	}
+		
+	LOG_DEBUG(_logger,"generated workflow from activity:\n" << *subworkflowP);
+
+	return gwdl::IWorkflow::ptr_t((gwdl::IWorkflow*)subworkflowP);
 }
+
+const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const {
+	return _wfhP->getID();
+}
+
+/////////////////////////////////////////
+// GWES internal methods 
+/////////////////////////////////////////
 
 void Activity::setStatus(Activity::status_t status) {
 	if (status == _status) return; 

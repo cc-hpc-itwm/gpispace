@@ -47,7 +47,18 @@ private:
 	sdpa2gwes_t* _gwesP;
 	std::map<gwes::workflow_id_t,ogsa_bes_status_t> _wfStatusMap;
 	void logWorkflowStatus();
-	
+	void executeSubWorkflow(
+			const activity_id_t &activityId, 
+			const workflow_id_t &workflowId, 
+			gwes::activity_t &activity
+			);
+	void executeAtomicActivity(
+			const gwes::activity_id_t &activityId, 
+			const gwes::workflow_id_t &workflowId, 
+			const std::string& operationName, 
+			const std::string& resourceName, 
+			gwes::parameter_list_t* parameters
+			);
 };
 
 #endif /*SDPADUMMY_H_*/

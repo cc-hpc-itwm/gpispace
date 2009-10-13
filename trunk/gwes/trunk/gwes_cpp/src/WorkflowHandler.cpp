@@ -504,6 +504,8 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 	string operationType = operationP->getType();
 	if (operationType == "sdpa") {
 		activityP = new SdpaActivity(this, toP, operationP);
+	} else if (operationType == "sdpa/workflow") {
+		activityP = new SdpaActivity(this, toP, operationP);
 	} else if (operationType == "cli") {
 		activityP = new CommandLineActivity(this, toP, operationP);
 	} else if (operationType == "workflow") {
@@ -678,7 +680,8 @@ string WorkflowHandler::createNewWarnID() const {
  * @param workflowHandlerP Pointer to the WorkflowHandler.
  */
 void *startWorkflowAsThread(void *workflowHandlerP) {
-	WorkflowHandler* wfhP = (WorkflowHandler*) workflowHandlerP;
+	gwes::WorkflowHandler* wfhP = (gwes::WorkflowHandler*) workflowHandlerP;
+	LOG_DEBUG(logger_t(getLogger("gwes")), "start workflow as new thread...");
 	wfhP->executeWorkflow();
 	return 0;
 }

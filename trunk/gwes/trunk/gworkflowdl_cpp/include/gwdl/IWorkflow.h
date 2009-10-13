@@ -21,6 +21,8 @@
 
 #include <string>
 #include <gwdl/memory.hpp>
+///Temporary Fix (I know, Place.h should not be here).
+#include <gwdl/Place.h>
 
 namespace gwdl
 {
@@ -35,6 +37,8 @@ namespace gwdl
 
     virtual std::string serialize() const = 0;
     virtual void deserialize(const std::string &) = 0;
+    
+    virtual Place* getPlace(const std::string& id) = 0;
   };
 }
 

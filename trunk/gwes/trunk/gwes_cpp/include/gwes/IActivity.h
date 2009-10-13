@@ -37,7 +37,7 @@ namespace gwes
 
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const = 0;
 
-    virtual gwdl::IWorkflow::ptr_t transform_to_workflow() const = 0;
+    virtual gwdl::IWorkflow::ptr_t transform2Workflow() const = 0;
   };
   
   typedef IActivity activity_t;

@@ -101,6 +101,10 @@ public:
 	 */
 	virtual ~Activity();
 
+	/////////////////////////////////////////
+	// IActivity interface methods 
+	/////////////////////////////////////////
+
 	/**
 	 * Get activity ID.
 	 */
@@ -112,17 +116,18 @@ public:
     void setID(const activity_id_t &id) { _id = id; }
 
     /** 
-     * TODO: implement me
+     * Generates workflow object that corresponds to this activity.
      */
-    gwdl::IWorkflow::ptr_t transform_to_workflow() const
-    {
-      return gwdl::IWorkflow::ptr_t((gwdl::IWorkflow*)NULL);
-    }
-
-	/**
+    gwdl::IWorkflow::ptr_t transform2Workflow() const;
+    
+    /**
 	 * Get the ID of the owning workflog
 	 */
 	const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const;
+
+	/////////////////////////////////////////
+	// GWES internal methods 
+	/////////////////////////////////////////
 
 	/**
 	 * Get the operation candidate which contains information

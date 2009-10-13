@@ -32,6 +32,7 @@ Workflow::Workflow()
 
 Workflow::~Workflow()
 {
+	LOG_INFO(logger_t(getLogger("gwdl")), "~Workflow("<< _id << ")...");
 	for(vector<Transition*>::iterator it=transitions.begin(); it!=transitions.end(); ++it) delete *it;
 	transitions.clear();
 	enabledTransitions.clear();
