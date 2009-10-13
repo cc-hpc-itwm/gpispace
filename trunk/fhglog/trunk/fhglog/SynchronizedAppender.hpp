@@ -20,10 +20,10 @@
 #define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
 
 #include <pthread.h>
-#include <fhglog/Appender.hpp>
+#include <fhglog/DecoratingAppender.hpp>
 
 namespace fhg { namespace log {
-  class SynchronizedAppender : public Appender
+  class SynchronizedAppender : public DecoratingAppender
   {
   private:
     class Lock
@@ -48,16 +48,14 @@ namespace fhg { namespace log {
   public:
     explicit
     SynchronizedAppender(const Appender::ptr_t &appender)
-      : Appender(appender->name() + "-sync")
-      , real_appender_(appender)
+      : DecoratingAppender(appender, "-sync")
     {
       pthread_mutex_init(&mtx_, NULL);
     }
 
     explicit
     SynchronizedAppender(Appender *appender)
-      : Appender(appender->name() + "-sync")
-      , real_appender_(appender)
+      : DecoratingAppender(appender, "-sync")
     {
       pthread_mutex_init(&mtx_, NULL);
     }
@@ -67,26 +65,12 @@ namespace fhg { namespace log {
       pthread_mutex_destroy(&mtx_);
     }
 
-    virtual inline void setFormat(Formatter *fmt)
-    {
-      real_appender_->setFormat(fmt);
-    }
-    virtual inline void setFormat(const Formatter::ptr_t &fmt)
-    {
-      real_appender_->setFormat(fmt);
-    }
-    virtual inline const Formatter::ptr_t &getFormat() const
-    {
-      return real_appender_->getFormat();
-    }
-
     virtual void append(const LogEvent &evt) const
     {
       Lock lock(&mtx_);
-      real_appender_->append(evt);
+      DecoratingAppender::append(evt);
     }
   private:
-    Appender::ptr_t real_appender_;
     pthread_mutex_t mtx_;
   };
 }}
