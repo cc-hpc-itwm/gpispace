@@ -32,7 +32,7 @@ using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-const int NITER = 1000;
+const int NITER = 100;
 
 class TestStrategy : public seda::Strategy
 {
@@ -606,7 +606,6 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	// the user expects now a CancelJobAckEvent
 	//CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 	//SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
-
 	}
 
 	sleep(3);

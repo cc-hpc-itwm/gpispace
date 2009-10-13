@@ -427,8 +427,6 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 			os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
 			SDPA_LOG_DEBUG(os.str());
 		}
-		else
-			ptr_job_man_->deleteJob(pEvt->job_id());
 	}
 	catch(JobNotFoundException){
 		os.str("");

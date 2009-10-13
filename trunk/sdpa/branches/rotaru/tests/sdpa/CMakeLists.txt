@@ -31,7 +31,7 @@ target_link_libraries(sdpa_test_suite dl  uuid)
 add_library(example-mod SHARED ExampleModule.cpp)
 
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
-target_link_libraries(sdpa_test_tool sdpa sdpa-wf sdpa-daemon dl)
+target_link_libraries(sdpa_test_tool sdpa-daemon sdpa sdpa-wf dl)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)

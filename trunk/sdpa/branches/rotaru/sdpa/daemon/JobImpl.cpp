@@ -133,7 +133,8 @@ namespace sdpa { namespace daemon {
 				pComm->sendEvent( pComm->output_stage(), pCancelAckEvt );
 
 				// delete the job
-				mark_for_deletion();
+				if( GenericDaemon* pDaemon = dynamic_cast<GenericDaemon*>(pComm))
+					pDaemon->jobManager()->deleteJob(evt.job_id());
 			}
 		}
 	}

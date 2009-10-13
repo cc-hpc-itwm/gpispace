@@ -82,6 +82,8 @@ namespace sdpa { namespace daemon {
 	  std::string master()const { return master_;}
 	  const std::string& name() const { return Strategy::name(); }
 
+	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+
 	  //only for testing purposes!
 	  //friend class sdpa::tests::DaemonFSMTest;
 
