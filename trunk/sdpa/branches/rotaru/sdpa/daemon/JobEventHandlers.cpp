@@ -427,6 +427,8 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 			os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
 			SDPA_LOG_DEBUG(os.str());
 		}
+		else
+			ptr_job_man_->deleteJob(pEvt->job_id());
 	}
 	catch(JobNotFoundException){
 		os.str("");
@@ -457,7 +459,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	if( pEvt->from() == pEvt->to()  ) // the message comes from GWES, forward it to the master
 		{
 
-			Worker::worker_id_t worker_id = pJob->get("worker");
+			/*Worker::worker_id_t worker_id = pJob->get("worker");
 
 			if(!worker_id.empty())
 			{
@@ -466,7 +468,8 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 				//  can be in submitted or
 				ptrWorker->delete_job(pEvt->job_id(), ptrWorker->pending());
-			}
+				ptrWorker->delete_job(pEvt->job_id(), ptrWorker->submitted());
+			}*/
 
     		if( name()!= ORCHESTRATOR )
     		{
@@ -484,11 +487,8 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	{
     		Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-    		//  can be in submitted or
-    		ptrWorker->delete_job(pEvt->job_id(), ptrWorker->submitted());
-
-    		// in acknowledged
-    		ptrWorker->delete_job(pEvt->job_id(), ptrWorker->acknowledged());
+    		// in the message comes from a worker
+    		ptrWorker->delete_job(pEvt->job_id());
 
     		// tell to GWES that the activity ob_id() was cancelled
     		activity_id_t actId = pJob->id();

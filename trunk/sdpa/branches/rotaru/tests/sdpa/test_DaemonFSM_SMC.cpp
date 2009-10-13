@@ -32,7 +32,7 @@ using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-const int NITER = 1;
+const int NITER = 1000;
 
 class TestStrategy : public seda::Strategy
 {
@@ -532,7 +532,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	CancelJobEvent::Ptr pCancelEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobEvent>(pErrorEvt);
 
 	// the worker cancells the job
-	SDPA_LOG_DEBUG("Cancelled the job "<<pCancelEvt->job_id()<<"!Sending CancelJobAckEvent to "<<pCancelEvt->from()<<" ...");
+	SDPA_LOG_DEBUG("SLAVE: Canceled the job "<<pCancelEvt->job_id()<<"!Sending CancelJobAckEvent to "<<pCancelEvt->from()<<" ...");
 
 	// ... and replies with a CancelJobAckEvent
 	CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
@@ -541,7 +541,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 	// the user expects now a CancelJobAckEvent
 
 	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
-	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+	SDPA_LOG_DEBUG("USER: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 
 	}
 
@@ -604,8 +604,8 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
 
 	// the user expects now a CancelJobAckEvent
-	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
-	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+	//CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
+	//SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 
 	}
 
