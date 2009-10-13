@@ -37,10 +37,8 @@ private :
       XMLCh* fLocalForm;
     };
 
-#define X(str) StrXML(str).localForm()
-  // XMLString::transcode((const char *)& str)
-#define XS(strg) StrXML(strg.c_str()).localForm()
-  // XMLString::transcode((const char*) strg.c_str())
+#define X(str) XMLString::transcode((const char *)& str)
+#define XS(strg) XMLString::transcode((const char*) strg.c_str())
 #define S(str) XMLString::transcode(str)
 }
 
