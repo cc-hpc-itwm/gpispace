@@ -26,7 +26,7 @@ namespace modules {
    */
   class Module {
     public:
-      typedef sdpa::shared_ptr<Module> Ptr;
+      typedef shared_ptr<Module> ptr_t;
 
       typedef void* handle_t;
       typedef void (*InitFunction)(Module*);

@@ -21,7 +21,7 @@ void ModuleTest::testModuleLoad() {
 }
 
 void ModuleTest::testModuleUnLoad() {
-  sdpa::modules::ModuleLoader::Ptr loader = sdpa::modules::createModuleLoader();
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
   } catch (sdpa::modules::ModuleLoadFailed &mlf) {
@@ -30,7 +30,7 @@ void ModuleTest::testModuleUnLoad() {
 } 
 
 void ModuleTest::testModuleFunctionCall() {
-  sdpa::modules::ModuleLoader::Ptr loader = sdpa::modules::createModuleLoader();
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
   } catch (sdpa::modules::ModuleLoadFailed &mlf) {
@@ -48,7 +48,7 @@ void ModuleTest::testModuleFunctionCall() {
 }
 
 void ModuleTest::testModuleIllegalFunctionCall() {
-  sdpa::modules::ModuleLoader::Ptr loader = sdpa::modules::createModuleLoader();
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
@@ -70,7 +70,7 @@ void ModuleTest::testModuleIllegalFunctionCall() {
 }
 
 void ModuleTest::testModuleLoopingCall() {
-  sdpa::modules::ModuleLoader::Ptr loader = sdpa::modules::createModuleLoader();
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
