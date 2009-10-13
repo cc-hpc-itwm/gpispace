@@ -120,9 +120,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ### does not work for automatic build! ###
+### not supported for ctest yet. will need cmake 2.8
 ## set GWES_CPP_HOME
 #set( ENV{GWES_CPP_HOME} ${PROJECT_SOURCE_DIR})
-#message(STATUS "ENV GWES_CPP_HOME=${PROJECT_SOURCE_DIR}")
+#message(STATUS "ENV GWES_CPP_HOME=$ENV{GWES_CPP_HOME}")
 
 # Reflect the package structure
 add_subdirectory(gworkflowdl_cpp)
