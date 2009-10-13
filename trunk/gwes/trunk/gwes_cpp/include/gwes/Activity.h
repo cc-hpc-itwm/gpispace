@@ -125,6 +125,12 @@ public:
 	const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const;
 
 	/**
+	 * Get the operation candidate which contains information
+	 * about operation name and resource name.
+	 */
+	gwdl::OperationCandidate* getOperationCandidate() { return _operation; }
+	
+	/**
 	 * Get activity class.
 	 */
 	std::string& getActivityClass() { return _activityImpl; }

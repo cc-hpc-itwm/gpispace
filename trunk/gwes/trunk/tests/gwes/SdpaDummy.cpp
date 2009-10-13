@@ -39,13 +39,20 @@ SdpaDummy::~SdpaDummy() {
  * to notify the GWES about activity status transitions.
  */
 activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
-	LOG_INFO(logger_t(getLogger("gwes")), "submitActivity(" << activity.getID() << ")...");
+	logger_t logger(getLogger("gwes"));
+	LOG_INFO(logger, "submitActivity(" << activity.getID() << ")...");
 	workflow_id_t workflowId = static_cast<Activity&>(activity).getWorkflowHandler()->getID();
 	// a real SDPA implementation should really dispatch the activity here
 	try {
 		_gwesP->activityDispatched(workflowId, activity.getID());
+		// get operation name and resource name
+		string operationName = static_cast<Activity&>(activity).getOperationCandidate()->getOperationName();
+		LOG_INFO(logger, "operationName=" << operationName);
+		string resourceName = static_cast<Activity&>(activity).getOperationCandidate()->getResourceName();
+		LOG_INFO(logger, "resourceName=" << resourceName);
 		// find and fill dummy output tokens
 		parameter_list_t* tokensP = static_cast<Activity&>(activity).getTransitionOccurrence()->getTokens();
+		// iterate though parameter list, which contains all input/output parameters.
 		for (parameter_list_t::iterator it=tokensP->begin(); it!=tokensP->end(); ++it) {
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):
@@ -54,15 +61,15 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 				continue;
 			case (TokenParameter::SCOPE_OUTPUT):
 				it->tokenP = new Token(new Data(string("<data><output xmlns=\"\">15</output></data>")));
-				LOG_INFO(logger_t(getLogger("gwes")), "Generated dummy output token: " << *it->tokenP);
+				LOG_INFO(logger, "Generated dummy output token: " << *it->tokenP);
 				break;
 			}
 		}
 		_gwesP->activityFinished(workflowId, activity.getID(), *tokensP);
 	} catch (const NoSuchWorkflowException &e) {
-		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
+		LOG_ERROR(logger, "exception: " << e.message);
 	} catch (const NoSuchActivityException &e) {
-		LOG_ERROR(logger_t(getLogger("gwes")), "exception: " << e.message);
+		LOG_ERROR(logger, "exception: " << e.message);
 	}
 	return activity.getID();
 }
