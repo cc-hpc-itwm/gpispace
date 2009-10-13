@@ -1,5 +1,6 @@
 CMAKE=cmake
 CMAKE_CONFIG=
+CTEST_CONFIG=
 BUILD_DIR=build
 top_srcdir=${CURDIR}
 
@@ -31,7 +32,7 @@ dist: test
 
 test: ctest
 ctest: config
-	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage ${CTEST_CONFIG}
 
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
