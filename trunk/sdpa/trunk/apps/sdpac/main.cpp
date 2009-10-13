@@ -76,9 +76,9 @@ int main (int argc, char **argv) {
     exit(0);
   }
 
-  MLOG(INFO, "***************************************************");
-  MLOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
-  MLOG(INFO, "***************************************************");
+  LOG(INFO, "***************************************************");
+  LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
+  LOG(INFO, "***************************************************");
 
   if (argv[idx] == std::string("submit"))
   {
