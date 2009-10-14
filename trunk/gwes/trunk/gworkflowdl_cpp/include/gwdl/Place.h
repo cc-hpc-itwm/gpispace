@@ -7,7 +7,6 @@
 #ifndef PLACE_H_
 #define PLACE_H_
 //gwdl
-#include <gwdl/Token.h>
 #include <gwdl/Properties.h>
 #include <gwdl/CapacityException.h>
 // xerces-c
@@ -19,6 +18,8 @@
 
 namespace gwdl
 {
+    class Token;
+    class Transition;
 	
 #define Place_DEFAULT_CAPACITY INT_MAX
 #define Place_DEFAULT_TOKEN_NUMBER 0

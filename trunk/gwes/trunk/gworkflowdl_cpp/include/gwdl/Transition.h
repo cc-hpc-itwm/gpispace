@@ -10,6 +10,8 @@
 #include <gwdl/Edge.h>
 #include <gwdl/Operation.h>
 #include <gwdl/Properties.h>
+#include <gwdl/Place.h>
+
 //xerces-c
 #include <xercesc/dom/DOM.hpp>
 //std

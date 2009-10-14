@@ -10,6 +10,7 @@
 #include <fhglog/fhglog.hpp>
 // gwdl
 #include <gwdl/Transition.h>
+#include <gwdl/Token.h>
 #include <gwdl/Defines.h>
 #include <gwdl/Workflow.h>
 #include <gwdl/XMLUtils.h>

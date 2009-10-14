@@ -6,6 +6,8 @@
  */
 //gwdl
 #include <gwdl/Place.h>
+#include <gwdl/Transition.h>
+#include <gwdl/Token.h>
 #include <gwdl/Defines.h>
 #include <gwdl/XMLUtils.h>
 //fhglog
