@@ -23,13 +23,20 @@
 #include <gwdl/XMLUtils.h>
 #include <gwdl/Workflow.h>
 
-gwdl::IWorkflow *gwdl::deserializeWorkflow(const std::string &bytes)
+gwdl::IWorkflow *gwdl::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error)
 {
   XERCES_CPP_NAMESPACE::DOMElement* element = (gwdl::XMLUtils::Instance()->deserialize(bytes))->getDocumentElement();
-  return new gwdl::Workflow(element);
+  if (element)
+  {
+    return new gwdl::Workflow(element);
+  }
+  else
+  {
+    throw std::runtime_error("could not deserialize input string");
+  }
 }
 
-std::string gwdl::serializeWorkflow(const gwdl::IWorkflow &workflow)
+std::string gwdl::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std::runtime_error)
 {
   gwdl::Workflow &real_workflow = static_cast<gwdl::Workflow&>(const_cast<IWorkflow&>(workflow));
   std::ostringstream ostr;

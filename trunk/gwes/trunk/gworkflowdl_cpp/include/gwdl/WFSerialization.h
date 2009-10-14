@@ -19,12 +19,15 @@
 #ifndef GWDL_WFSERIALIZATION_HPP
 #define GWDL_WFSERIALIZATION_HPP 1
 
+#include <string>
+#include <stdexcept>
+
 #include <gwdl/IWorkflow.h>
 
 namespace gwdl
 {
-  extern gwdl::IWorkflow *deserializeWorkflow(const std::string &);
-  extern std::string serializeWorkflow(const gwdl::IWorkflow &);
+  extern gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error);
+  extern std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error);
 }
 
 #endif
