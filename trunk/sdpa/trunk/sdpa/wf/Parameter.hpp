@@ -3,6 +3,8 @@
 
 #include <string>
 #include <ostream>
+
+#include <sdpa/memory.hpp>
 #include <sdpa/wf/Token.hpp>
 
 namespace sdpa { namespace wf {
@@ -15,6 +17,8 @@ namespace sdpa { namespace wf {
    */
   class Parameter {
     public:
+      typedef shared_ptr<Parameter> ptr_t;
+
       /**
         The type of the edge this parameter belongs to.
         
@@ -36,17 +40,8 @@ namespace sdpa { namespace wf {
         @param name the parameter name (or edge description)
         @param edge_type the type of the edge this parameter belongs to
        */
-      Parameter(const Token & token, const std::string & name, EdgeType edge_type);
+      Parameter(const std::string &name, EdgeType edge_type, const Token & token);
 
-      /**
-        Construct an output Parameter with an empty token.
-
-        \todo{an input parameter should never be created with an empty token}
-
-        @param name the parameter name (or edge description)
-        @param edge_type the type of the edge this parameter belongs to
-       */
-      Parameter(const std::string & name, EdgeType edge_type);
       Parameter(const Parameter &);
       Parameter & operator=(const Parameter &);
 
@@ -59,9 +54,9 @@ namespace sdpa { namespace wf {
 
       void writeTo(std::ostream &) const;
     private:
-      Token token_;
       std::string name_;
       EdgeType edge_type_;
+      Token token_;
   };
 }}
 

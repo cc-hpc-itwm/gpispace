@@ -2,23 +2,7 @@
 
 using namespace sdpa::wf;
 
-Activity::Activity(const std::string &a_name, const Method &a_method)
-  : name_(a_name)
-  , method_(a_method)
-  , input_()
-  , output_()
-{
-}
-
-Activity::Activity(const std::string &a_name, const Method &a_method, const parameter_list & a_input)
-  : name_(a_name)
-  , method_(a_method)
-  , input_(a_input)
-  , output_()
-{
-}
-
-Activity::Activity(const std::string &a_name, const Method &a_method, const parameter_list & a_input, const parameter_list & a_output)
+Activity::Activity(const std::string &a_name, const Method &a_method, const parameter_list_t & a_input, const parameter_list_t & a_output)
   : name_(a_name)
   , method_(a_method)
   , input_(a_input)
@@ -57,12 +41,12 @@ void Activity::writeTo(std::ostream &os) const {
   os << name() << ":" << method().module() << "::" << method().name();
  
   os << "(";
-  for (parameter_list::const_iterator p(input().begin()); p != input().end(); p++) {
+  for (parameter_list_t::const_iterator p(input().begin()); p != input().end(); p++) {
     os << *p;
   }
   os << ")->[";
 
-  for (parameter_list::const_iterator p(output().begin()); p != output().end(); p++) {
+  for (parameter_list_t::const_iterator p(output().begin()); p != output().end(); p++) {
     os << *p;
   }
   os << "]";

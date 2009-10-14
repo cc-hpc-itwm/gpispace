@@ -31,12 +31,15 @@ int main(int /* argc */, char ** /* argv */)
     std::clog << "id = " << job->id() << std::endl;
     std::clog << "desc = " << job->description() << std::endl;
 
-    sdpa::wf::Activity activity("activity-1", sdpa::wf::Activity::Method("test.so", "loopStep"));
+    sdpa::wf::Activity activity("activity-1"
+                              , sdpa::wf::Activity::Method("test.so", "loopStep")
+                              , sdpa::wf::Activity::parameter_list_t()
+                              , sdpa::wf::Activity::parameter_list_t());
     activity.add_input(sdpa::wf::Parameter
-        (sdpa::wf::Token(0), "i", sdpa::wf::Parameter::INPUT_EDGE)
+        ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(0))
     );
     activity.add_output(sdpa::wf::Parameter
-        (sdpa::wf::Token(), "i", sdpa::wf::Parameter::OUTPUT_EDGE)
+        ("i", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token())
     );
     std::clog << "activity = " << activity << std::endl;
 }

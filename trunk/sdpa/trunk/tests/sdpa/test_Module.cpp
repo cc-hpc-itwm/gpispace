@@ -44,7 +44,7 @@ void ModuleTest::testModuleFunctionCall() {
   mod.call("HelloWorld", in, out);
   CPPUNIT_ASSERT_EQUAL((sdpa::modules::Module::output_data_t::size_type)1, out.size());
   sdpa::wf::Token token(out.front());
-  CPPUNIT_ASSERT_EQUAL(std::string("hello world"), token.as<std::string>());
+  CPPUNIT_ASSERT_EQUAL(std::string("hello world"), token.data());
 }
 
 void ModuleTest::testModuleIllegalFunctionCall() {

@@ -18,7 +18,9 @@ namespace sdpa { namespace wf {
     */
   class Activity : public sdpa::Properties {
   public:
-    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::wf::Parameter
+    typedef std::string activity_id_t;
+    typedef shared_ptr<Activity> ptr_t;
+    typedef std::list<Parameter> parameter_list_t; //!< the type of our parameters @see sdpa::wf::Parameter
 
     /**
       This class encapsulates a method call to a generic method.
@@ -33,9 +35,10 @@ namespace sdpa { namespace wf {
     class Method {
       public:
         Method(const std::string & a_module, const std::string & a_method_name)
-          : module_(a_module), name_(a_method_name) {}
+          : module_(a_module)
+          , name_(a_method_name) {}
 
-        void operator()(const parameter_list & , parameter_list & ) {
+        void operator()(const parameter_list_t & , parameter_list_t & ) {
           // \todo{implement me}
         }
 
@@ -47,31 +50,14 @@ namespace sdpa { namespace wf {
     };
 
     /**
-      Create a new activity using the given method.
-
-      @param name the name of this activity
-      @param method the method to be used
-     */
-    Activity(const std::string &name, const Method & m);
-
-    /**
       Create a new activity with the given parameters.
 
-      @param name the name of this activity
-      @param method the method to be called
-      @param input a generic list of input parameters
-     */
-    Activity(const std::string &name, const Method & m, const parameter_list & input);
-
-    /**
-      Create a new activity with the given parameters.
-
-      @param name the name of this activity
+      @param id the id of this activity
       @param method the method to be called
       @param input a generic list of input parameters
       @param output a generic list of predefined output parameters
      */
-    Activity(const std::string &name, const Method & m, const parameter_list & input, const parameter_list & output);
+    Activity(const activity_id_t &id, const Method & m, const parameter_list_t & input, const parameter_list_t & output);
 
     Activity(const Activity &);
     Activity & operator=(const Activity &);
@@ -81,10 +67,10 @@ namespace sdpa { namespace wf {
     inline const std::string & name() const { return name_; }
     inline const Method& method() const { return method_; }
 
-    inline parameter_list & input() { return input_; }
-    inline parameter_list & output() { return output_; }
-    inline const parameter_list & input() const { return input_; }
-    inline const parameter_list & output() const { return output_; }
+    inline parameter_list_t & input() { return input_; }
+    inline parameter_list_t & output() { return output_; }
+    inline const parameter_list_t & input() const { return input_; }
+    inline const parameter_list_t & output() const { return output_; }
 
     void add_input(const Parameter &);
     void add_output(const Parameter &);
@@ -93,8 +79,8 @@ namespace sdpa { namespace wf {
   private:
     std::string name_;
     Method method_;
-    parameter_list input_;
-    parameter_list output_;
+    parameter_list_t input_;
+    parameter_list_t output_;
   };
 }}
 
