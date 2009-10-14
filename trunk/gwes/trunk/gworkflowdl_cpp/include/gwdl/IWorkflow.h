@@ -21,11 +21,11 @@
 
 #include <string>
 #include <gwdl/memory.hpp>
-///Temporary Fix (I know, Place.h should not be here).
-#include <gwdl/Place.h>
 
 namespace gwdl
 {
+  class Place;
+
   class IWorkflow
   {
   public:
