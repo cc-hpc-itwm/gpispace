@@ -15,7 +15,7 @@
 
 namespace gwes
 {
-    using std::tr1::shared_ptr;
+    using ::std::tr1::shared_ptr;
 }
 
 #endif

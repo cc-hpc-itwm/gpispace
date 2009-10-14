@@ -29,7 +29,7 @@ namespace gwes
   class IActivity
   {
   public:
-    typedef gwes::shared_ptr<IActivity> ptr_t;
+    typedef shared_ptr<IActivity> ptr_t;
     typedef std::string activity_id_t;
 
     virtual void  setID(const activity_id_t &) = 0;

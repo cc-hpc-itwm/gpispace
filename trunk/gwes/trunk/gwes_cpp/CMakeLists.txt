@@ -1,5 +1,5 @@
 
-file(GLOB gwes-hdrs "include/gwes/*.h")
+file(GLOB gwes-hdrs "include/gwes/*.h" "include/gwes/*.hpp")
 file(GLOB gwes-srcs "src/*.cpp")
 
 # library gwes_cpp
