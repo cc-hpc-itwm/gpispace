@@ -8,8 +8,6 @@
 #define TESTWORKFLOW_H_
 //cppunit
 #include <cppunit/extensions/HelperMacros.h>
-//gwdl
-#include <gwdl/Workflow.h>
 
 namespace gwdl {
   namespace tests {

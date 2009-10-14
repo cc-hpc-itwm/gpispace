@@ -13,6 +13,8 @@
 #include <xercesc/util/PlatformUtils.hpp>
 // gwdl
 #include <gwdl/Workflow.h>
+#include <gwdl/Place.h>
+#include <gwdl/Token.h>
 #include <gwdl/XMLUtils.h>
 //tests
 #include "TestParser.h"

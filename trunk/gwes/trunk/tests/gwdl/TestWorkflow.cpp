@@ -6,6 +6,11 @@
  */
 // tests
 #include "TestWorkflow.h"
+//gwdl
+#include <gwdl/Workflow.h>
+#include <gwdl/Place.h>
+#include <gwdl/Token.h>
+
 //fhglog
 #include <fhglog/fhglog.hpp>
 
