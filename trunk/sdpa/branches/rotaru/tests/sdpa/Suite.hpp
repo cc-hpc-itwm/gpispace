@@ -11,7 +11,7 @@
 #include <tests/sdpa/test_Config.hpp>
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
-#include <tests/sdpa/test_DaemonFSM_SMC.hpp>
+#include <tests/sdpa/test_DaemonDummyGwes.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
