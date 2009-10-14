@@ -1,5 +1,5 @@
 
-file(GLOB gwdl-hdrs "include/gwdl/*.h")
+file(GLOB gwdl-hdrs "include/gwdl/*.h" "include/gwdl/*.hpp")
 file(GLOB gwdl-srcs "src/*.cpp")
 
 # library gworkflowdl_cpp
