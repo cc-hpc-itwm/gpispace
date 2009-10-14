@@ -29,12 +29,12 @@ set(CMAKE_CXX_COMPILER_PATCH "CMAKE_CXX_COMPILER_PATCH-NOTFOUND")
 
 # extract the version of the compiler
 if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
       OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
 
-  string(REGEX REPLACE ".*\\(ICC\\) ([0-9]+)\\.([0-9]+).*" "\\1"
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\1"
          CMAKE_CXX_COMPILER_MAJOR ${CMAKE_CXX_COMPILER_VERSION})
-  string(REGEX REPLACE ".*\\(ICC\\) ([0-9]+)\\.([0-9]+).*" "\\2"
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\2"
          CMAKE_CXX_COMPILER_MINOR ${CMAKE_CXX_COMPILER_VERSION})
   set(CMAKE_CXX_COMPILER_PATCH "")
 endif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
