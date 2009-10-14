@@ -1,4 +1,4 @@
-#include "test_DaemonFSM_SMC.hpp"
+#include "test_DaemonDummyGwes.hpp"
 
 #include <iostream>
 #include <string>
@@ -32,7 +32,7 @@ using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-const int NITER = 10;
+const int NITER = 1000;
 
 class TestStrategy : public seda::Strategy
 {
