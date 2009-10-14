@@ -8,8 +8,8 @@ using namespace sdpa::daemon;
 using namespace std;
 
 SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes):
-	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	ptr_worker_man_(new WorkerManager()),
+	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerImpl")
 {
 }

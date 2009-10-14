@@ -7,7 +7,6 @@
 
 #include <sdpa/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
-#include <sdpa/wf/WorkflowInterface.hpp>
 
 namespace sdpa { namespace wf {
 
@@ -111,12 +110,6 @@ typedef std::string activity_id_t;
 	activity_id_t getId() const { return id; }
 	void setId(const activity_id_t& activity_id) { id = activity_id; }
 
-	workflow_t transform_to_workflow() const
-	{
-		sdpa::wf::workflow_id_t wf_id =  getId();
-		Workflow wf(wf_id, std::string("empty description")) ;
-		return wf;
-	}
 
 	std::string serialize() const { return "dummy workflow"; }
 

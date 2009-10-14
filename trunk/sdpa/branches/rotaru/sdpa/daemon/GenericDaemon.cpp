@@ -501,7 +501,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		job_id_t job_id(activity.getID());
 
 		// transform activity to workflow
-		gwdl::IWorkflow::ptr_t pWf = activity.transform_to_workflow();
+		gwdl::IWorkflow::ptr_t pWf = activity.transform2Workflow();
 
 		// serialize workflow
 		job_desc_t job_desc = pWf->serialize();

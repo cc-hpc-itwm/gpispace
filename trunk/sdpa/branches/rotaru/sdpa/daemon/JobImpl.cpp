@@ -25,10 +25,10 @@ namespace sdpa { namespace daemon {
                      const sdpa::job_id_t &parent)
         : id_(id), desc_(desc),
           parent_(parent),
-          pComm(const_cast<IComm*>(pHandler)),
           b_marked_for_del_(false),
           b_local_(false),
-        SDPA_INIT_LOGGER( string("Job ")+ id.str() )
+          pComm(const_cast<IComm*>(pHandler)),
+          SDPA_INIT_LOGGER( string("Job ")+ id.str() )
     {}
 
     JobImpl::~JobImpl() throw () { }

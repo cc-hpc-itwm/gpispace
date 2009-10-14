@@ -14,9 +14,9 @@ namespace sdpa {
 			class DaemonFSMTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonFSMTest );
 
-			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
+			  /*CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );*/
 			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
 			  CPPUNIT_TEST_SUITE_END();

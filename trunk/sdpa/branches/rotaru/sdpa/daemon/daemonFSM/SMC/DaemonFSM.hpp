@@ -14,8 +14,8 @@ namespace sdpa {
 					typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
 					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
-						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
 						GenericDaemon(name, outputStage, pGwes),
+						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
 						m_fsmContext(*this)
 						{
 							SDPA_LOG_DEBUG("Daemon state machine created");

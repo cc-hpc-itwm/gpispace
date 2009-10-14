@@ -25,44 +25,53 @@ using namespace gwes;
 typedef boost::bimap< std::string, std::string > bimap_t;
 typedef bimap_t::value_type id_pair;
 
+namespace gwdl
+{
+	class Place {
+		Place() {}
+	};
+}
+
 class DummyWorkflow : public gwes::workflow_t
 {
 public:
-		DummyWorkflow(const sdpa::job_desc_t& desc ) { }
+	DummyWorkflow(const sdpa::job_desc_t& desc ) { }
 
-	    const gwes::workflow_id_t &getID() const { return wf_id_; }
-	    void setID(const gwes::workflow_id_t &id) { wf_id_ = id; }
+	const gwes::workflow_id_t &getID() const { return wf_id_; }
+	void setID(const gwes::workflow_id_t &id) { wf_id_ = id; }
 
-	    std::string serialize() const { return "serialized workflow"; }
-	    void deserialize(const std::string &) {}
+	std::string serialize() const { return "serialized workflow"; }
+	void deserialize(const std::string &) {}
+	gwdl::Place* getPlace(const std::string& id) { return NULL; }
+
 private:
-	  	gwes::workflow_id_t wf_id_;
+	gwes::workflow_id_t wf_id_;
 };
 
 
 class DummyActivity : public gwes::activity_t
 {
 public:
-		DummyActivity(  gwes::activity_id_t act_id_arg, gwes::workflow_id_t owner_wf_id_arg )
-		{
-			act_id_ = act_id_arg;
-			owner_wf_id_ = owner_wf_id_arg;
-		}
+	DummyActivity(  gwes::activity_id_t act_id_arg, gwes::workflow_id_t owner_wf_id_arg )
+	{
+		act_id_ = act_id_arg;
+		owner_wf_id_ = owner_wf_id_arg;
+	}
 
-	    void  setID( const activity_id_t &id_arg ) { act_id_ = id_arg; }
-	    const activity_id_t &getID() const { return act_id_; }
+	void  setID( const activity_id_t &id_arg ) { act_id_ = id_arg; }
+	const activity_id_t &getID() const { return act_id_; }
 
-	    virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
+	virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
 
-	    gwdl::IWorkflow::ptr_t transform_to_workflow() const
-	    {
-	    	gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
-	    	return pWf;
-	    }
+	gwdl::IWorkflow::ptr_t transform2Workflow() const
+	{
+		gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
+		return pWf;
+	}
 
 private:
-	    gwes::activity_id_t act_id_;
-	    gwes::workflow_id_t owner_wf_id_;
+	gwes::activity_id_t act_id_;
+	gwes::workflow_id_t owner_wf_id_;
 
 };
 
