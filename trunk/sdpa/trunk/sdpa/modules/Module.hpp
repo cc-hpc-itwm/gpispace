@@ -43,7 +43,7 @@ namespace modules {
       const std::string &name() const { return name_; }
       handle_t handle() { return handle_; }
 
-      void call(const std::string &function, data_t&) const throw (FunctionNotFound, BadFunctionArgument, FunctionException);
+      void call(const std::string &function, data_t&) const throw (FunctionNotFound, BadFunctionArgument, FunctionException, std::exception);
       void add_function(const std::string &function, GenericFunction) throw (DuplicateFunction, FunctionException);
     private:
       Module(const Module&);
