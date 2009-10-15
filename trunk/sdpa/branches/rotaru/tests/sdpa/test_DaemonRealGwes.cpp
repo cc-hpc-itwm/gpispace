@@ -1,4 +1,4 @@
-#include "test_DaemonDummyGwes.hpp"
+#include "test_DaemonRealGwes.hpp"
 
 #include <iostream>
 #include <string>
@@ -6,9 +6,7 @@
 #include <sdpa/memory.hpp>
 #include <time.h>
 #include <sdpa/util.hpp>
-#include <iostream>
 #include <fstream>
-#include <sstream>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
@@ -23,15 +21,22 @@
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
 #include <boost/shared_ptr.hpp>
-#include "DummyGwes.hpp"
+
+#include <gwes/GWES.h>
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+
+
+#include <iostream>
+#include <fstream>
+
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
+
 
 const int NITER = 1;
 
@@ -159,14 +164,14 @@ public:
 	 SDPA_DECLARE_LOGGER();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DaemonDummyGwesTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( DaemonRealGwesTest );
 
-DaemonDummyGwesTest::DaemonDummyGwesTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.DaemonDummyGwesTest")
+DaemonRealGwesTest::DaemonRealGwesTest() :
+	SDPA_INIT_LOGGER("sdpa.tests.DaemonRealGwesTest")
 {
 }
 
-DaemonDummyGwesTest::~DaemonDummyGwesTest()
+DaemonRealGwesTest::~DaemonRealGwesTest()
 {}
 
 
@@ -187,10 +192,11 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-void DaemonDummyGwesTest::setUp() { //initialize and start the finite state machine
+
+void DaemonRealGwesTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	m_ptrSdpa2Gwes = new DummyGwes();
+	m_ptrSdpa2Gwes = new gwes::GWES();
 	m_ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
 
 	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", m_ptrTestStrategy) );
@@ -206,7 +212,7 @@ void DaemonDummyGwesTest::setUp() { //initialize and start the finite state mach
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
-void DaemonDummyGwesTest::tearDown()
+void DaemonRealGwesTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
@@ -220,7 +226,13 @@ void DaemonDummyGwesTest::tearDown()
 	delete m_ptrSdpa2Gwes;
 }
 
-void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
+
+void read_master_test_workflow()
+{
+
+}
+
+void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFinished******************************************"<<std::endl;
@@ -257,7 +269,6 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 
 	for(int k=0; k<NITER;k++) {
 	// the user submits a job
-	// no Jobid set!
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
 
@@ -265,7 +276,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 	sdpa::job_id_t job_id_user = pTestStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
 	// the slave posts a job request
-	RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
+	/*RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtReq);
 
 	sdpa::job_id_t job_id_slave;
@@ -336,6 +347,8 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 	else
 		SDPA_LOG_ERROR("The job is supposed to be into a 'terminal state' in order to be able to retrieve results!");
 
+		*/
+
 	}
 
 	// shutdown the orchestrator
@@ -347,7 +360,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 }
 
 
-void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
+void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFailed******************************************"<<std::endl;
@@ -473,7 +486,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 }
 
 
-void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
+void DaemonRealGwesTest::testDaemonFSM_JobCancelled()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled******************************************"<<std::endl;
@@ -579,7 +592,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 
 
 
-void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
+void DaemonRealGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;
