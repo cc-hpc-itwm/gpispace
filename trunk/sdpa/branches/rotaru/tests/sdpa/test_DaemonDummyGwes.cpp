@@ -26,6 +26,8 @@
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
 
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace sdpa::tests;
@@ -158,17 +160,42 @@ public:
 	 SDPA_DECLARE_LOGGER();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DaemonFSMTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( DaemonDummyGwesTest );
 
-DaemonFSMTest::DaemonFSMTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.DaemonFSMTest")
+DaemonDummyGwesTest::DaemonDummyGwesTest() :
+	SDPA_INIT_LOGGER("sdpa.tests.DaemonDummyGwesTest")
 {
 }
 
-DaemonFSMTest::~DaemonFSMTest()
+DaemonDummyGwesTest::~DaemonDummyGwesTest()
 {}
 
-void DaemonFSMTest::setUp() { //initialize and start the finite state machine
+
+
+string read_workflow()
+{
+	ostringstream os;
+	char buffer[256];
+
+	ifstream file ("workflows/masterworkflow-sdpa-test.gwdl");
+
+	if (! file.is_open())
+	{
+		cout << "Error opening file";
+		exit (1);
+	}
+
+	while (! file.eof() )
+	{
+		file.getline(buffer,100);
+		os<< buffer<<endl;
+	}
+
+	return os.str();
+}
+
+
+void DaemonDummyGwesTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
 	m_ptrSdpa2Gwes = new DummyGwes();
@@ -182,9 +209,11 @@ void DaemonFSMTest::setUp() { //initialize and start the finite state machine
 	//create output stage
 	seda::StageRegistry::instance().insert(m_ptrOutputStage);
 	m_ptrOutputStage->start();
+
+	m_strWorkflow = read_workflow();
 }
 
-void DaemonFSMTest::tearDown()
+void DaemonDummyGwesTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
@@ -198,7 +227,7 @@ void DaemonFSMTest::tearDown()
 	delete m_ptrSdpa2Gwes;
 }
 
-void DaemonFSMTest::testDaemonFSM_JobFinished()
+void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFinished******************************************"<<std::endl;
@@ -237,6 +266,8 @@ void DaemonFSMTest::testDaemonFSM_JobFinished()
 	// the user submits a job
 	SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
+
+	SDPA_LOG_DEBUG("Submitted the workflow "<<m_strWorkflow);
 
 	// the user waits for an acknowledgment
 	sdpa::job_id_t job_id_user = pTestStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
@@ -324,7 +355,7 @@ void DaemonFSMTest::testDaemonFSM_JobFinished()
 }
 
 
-void DaemonFSMTest::testDaemonFSM_JobFailed()
+void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFailed******************************************"<<std::endl;
@@ -450,7 +481,7 @@ void DaemonFSMTest::testDaemonFSM_JobFailed()
 }
 
 
-void DaemonFSMTest::testDaemonFSM_JobCancelled()
+void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled******************************************"<<std::endl;
@@ -556,7 +587,7 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled()
 
 
 
-void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
+void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;
@@ -604,8 +635,8 @@ void DaemonFSMTest::testDaemonFSM_JobCancelled_from_Pending()
 	m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
 
 	// the user expects now a CancelJobAckEvent
-	CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
-	SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+	//CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
+	//SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 	}
 
 	sleep(2);

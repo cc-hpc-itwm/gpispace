@@ -2,6 +2,8 @@
 
 file(GLOB test_srcs "test_*.cpp" SchedulerTestImpl.cpp)
 file(GLOB test_hdrs "*.hpp")
+
+
 set(test_hdrs "${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.h" ${test_hdrs}) 
 set(test_srcs "${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.cpp" ${test_srcs})
 add_state_machine(PerformanceTest)

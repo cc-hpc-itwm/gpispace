@@ -1,5 +1,5 @@
-#ifndef DAEMON_FSM_TEST_HPP_
-#define DAEMON_FSM_TEST_HPP_
+#ifndef DAEMON_DUMMY_GWES_TEST_HPP_
+#define DAEMON_DUMMY_GWES_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
@@ -11,8 +11,8 @@ using namespace sdpa::fsm::smc;
 
 namespace sdpa {
 		namespace tests {
-			class DaemonFSMTest: public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonFSMTest );
+			class DaemonDummyGwesTest: public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonDummyGwesTest );
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
@@ -22,8 +22,8 @@ namespace sdpa {
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-			  DaemonFSMTest();
-			  ~DaemonFSMTest();
+			  DaemonDummyGwesTest();
+			  ~DaemonDummyGwesTest();
 			  void setUp();
 			  void tearDown();
 
@@ -39,6 +39,7 @@ namespace sdpa {
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
 			  seda::Strategy::Ptr m_ptrTestStrategy;
+			  std::string m_strWorkflow;
 			};
 		}
 }

@@ -25,12 +25,12 @@ using namespace gwes;
 typedef boost::bimap< std::string, std::string > bimap_t;
 typedef bimap_t::value_type id_pair;
 
-namespace gwdl
+/*namespace gwdl
 {
 	class Place {
 		Place() {}
 	};
-}
+}*/
 
 class DummyWorkflow : public gwes::workflow_t
 {

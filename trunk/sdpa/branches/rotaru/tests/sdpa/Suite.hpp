@@ -12,6 +12,7 @@
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 #include <tests/sdpa/test_DaemonDummyGwes.hpp>
+#include <tests/sdpa/test_DaemonRealGwes.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
@@ -27,7 +28,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );*/
       //suiteOfTests->addTest( SchedulerTest::suite() );
-      suiteOfTests->addTest( DaemonFSMTest::suite() );
+      //suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
+      suiteOfTests->addTest( DaemonRealGwesTest::suite() );
       //suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       return suiteOfTests;
     }
