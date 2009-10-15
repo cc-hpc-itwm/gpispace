@@ -36,6 +36,7 @@ namespace sdpa { namespace wf {
       inline void data(const data_t &d)
       {
         data_ = d;
+        put("datatype", typeid(d).name());
       }
 
       template <typename T> inline void data(const T &some_data)
@@ -46,6 +47,7 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         type_ = typeid(T).name();
 #endif
+        put("datatype", typeid(T).name());
       }
 
       data_t data_as() const throw (std::logic_error)
@@ -73,7 +75,9 @@ namespace sdpa { namespace wf {
       Token()
         : Properties()
         , data_("")
-      {}
+      {
+        put("datatype", "unknown");
+      }
 
       explicit
       Token(const data_t & some_data)
@@ -82,7 +86,9 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         , type_(typeid(some_data).name())
 #endif
-      {}
+      {
+        put("datatype", typeid(some_data).name());
+      }
 
       template <typename T>
       explicit
@@ -96,6 +102,7 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         type_ = typeid(T).name();
 #endif
+        put("datatype", typeid(some_data).name());
       }
 
       Token(const Token & other)
@@ -104,7 +111,9 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         , type_(other.type_)
 #endif
-      { }
+      {
+        put("datatype", other.get("datatype"));
+      }
 
       const Token & operator=(const Token & rhs) {
         if (this != &rhs)
@@ -113,6 +122,7 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
           type_ = rhs.type_;
 #endif
+          put("datatype", rhs.get("datatype"));
         }
         return *this;
       }
@@ -121,7 +131,7 @@ namespace sdpa { namespace wf {
         if (data().empty()) {
           os << "Token()";
         } else {
-          os << "Token(\""<< data() << "\")";
+          os << "Token(" << get("datatype") << ":\""<< data() << "\")";
         }
       }
     private:
