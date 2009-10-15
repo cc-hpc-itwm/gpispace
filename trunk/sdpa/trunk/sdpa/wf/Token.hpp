@@ -5,6 +5,7 @@
 #include <ostream>
 #include <stdexcept> // logic_error
 
+#include <sdpa/sdpa-config.hpp>
 #include <sdpa/memory.hpp>
 #include <sdpa/Properties.hpp>
 
@@ -46,10 +47,15 @@ namespace sdpa { namespace wf {
         Try to convert the stored data to the given type.
         */
       template<typename T> inline T data_as() const throw (std::logic_error) {
+#if defined(ENABLE_TYPE_CHECKING) && (ENABLE_TYPE_CHECKING == 1)
+        if (typeid(T).name() != type_) {
+          throw std::logic_error(std::string("type mismatch occured: expected:")+type_+ " got:"+typeid(T).name());
+        }
+#endif
         T val;
         std::istringstream istr(data());
         istr >> val;
-        if (! istr.good()) throw std::logic_error(std::string("could not convert data") + (typeid(T).name()));
+        if (! istr) throw std::logic_error(std::string("could not convert data to type: ") + (typeid(T).name()));
         return val;
       }
 
@@ -63,9 +69,13 @@ namespace sdpa { namespace wf {
       Token(const data_t & some_data)
         : Properties()
         , data_(some_data)
+#ifdef ENABLE_TYPE_CHECKING
+        , type_(typeid(some_data).name())
+#endif
       {}
 
       template <typename T>
+      explicit
       Token(T some_data)
         : Properties()
         , data_("")
@@ -73,17 +83,26 @@ namespace sdpa { namespace wf {
         std::ostringstream ostr;
         ostr << some_data;
         data_ = ostr.str();
+#ifdef ENABLE_TYPE_CHECKING
+        type_ = typeid(T).name();
+#endif
       }
 
       Token(const Token & other)
         : Properties()
         , data_(other.data())
+#ifdef ENABLE_TYPE_CHECKING
+        , type_(other.type_)
+#endif
       { }
 
       const Token & operator=(const Token & rhs) {
         if (this != &rhs)
         {
           data(rhs.data());
+#ifdef ENABLE_TYPE_CHECKING
+          type_ = rhs.type_;
+#endif
         }
         return *this;
       }
@@ -97,6 +116,9 @@ namespace sdpa { namespace wf {
       }
     private:
       data_t data_;
+#ifdef ENABLE_TYPE_CHECKING
+      std::string type_;
+#endif
   };
 }}
 
