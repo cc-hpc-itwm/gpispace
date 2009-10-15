@@ -4,13 +4,15 @@
 #include <iostream>
 #include <dlfcn.h>
 
+#include <fhglog/fhglog.hpp>
+
 using namespace sdpa::modules;
 
 FallBackModuleLoader::~FallBackModuleLoader() {
   try {
     unload_all();
-  } catch (...) {
-    std::cerr << "E: " << __FILE__ << ":" << __LINE__ << " - " << "could not unload module" << std::endl;
+  } catch (const std::exception &ex) {
+    LOG(ERROR, "could not unload module: " << ex.what());
   }
 }
 
@@ -23,6 +25,7 @@ void FallBackModuleLoader::unload(const std::string &module) {
 
 void FallBackModuleLoader::unload(module_table_t::iterator mod) {
   assert( mod != module_table_.end() );
+  LOG(INFO, "unloading module " << mod->second->name());
   dlclose(mod->second->handle());
   module_table_.erase(mod);
 }
@@ -43,6 +46,8 @@ const Module& FallBackModuleLoader::get(const std::string &module) const throw(M
 }
 
 Module& FallBackModuleLoader::load(const std::string &module, const std::string &file) throw (ModuleLoadFailed) {
+  LOG(DEBUG, "attempting to load module " << module << " from file " << file);
+
   char *error = 0;
 
   Module::handle_t handle = dlopen(file.c_str(), RTLD_LAZY);
@@ -69,5 +74,7 @@ Module& FallBackModuleLoader::load(const std::string &module, const std::string 
   }
 
   module_table_.insert(std::make_pair(module, mod));
+
+  LOG(INFO, "sucessfully loaded: " << module);
   return *mod;
 }
