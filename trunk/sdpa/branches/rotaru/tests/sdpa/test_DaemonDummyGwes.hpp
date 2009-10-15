@@ -27,6 +27,8 @@ namespace sdpa {
 			  void setUp();
 			  void tearDown();
 
+			  std::string read_workflow(std::string strFileName);
+
 			protected:
 			  void testDaemonFSM_JobFinished();
 			  void testDaemonFSM_JobFailed();

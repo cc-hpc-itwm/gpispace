@@ -9,8 +9,8 @@ using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
 
 DaemonFSM ::DaemonFSM(const std::string &name, const std::string &outputStage, sdpa::Sdpa2Gwes* ptrGwes)
-	: SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM"),
-	GenericDaemon(name, outputStage, ptrGwes)
+	: GenericDaemon(name, outputStage, ptrGwes),
+	  SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM")
 {
 	initiate();
 	SDPA_LOG_DEBUG("Daemon state machine initialized ...");

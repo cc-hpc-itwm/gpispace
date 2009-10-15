@@ -15,9 +15,9 @@ namespace sdpa {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonRealGwesTest );
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
-			  /*CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );*/
+			  //CPPUNIT_TEST( testDaemonFSM_JobFailed );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
 			  CPPUNIT_TEST_SUITE_END();
 
@@ -27,6 +27,7 @@ namespace sdpa {
 			  void setUp();
 			  void tearDown();
 
+			  std::string read_workflow(std::string strFileName);
 			protected:
 			  void testDaemonFSM_JobFinished();
 			  void testDaemonFSM_JobFailed();

@@ -298,6 +298,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			gwes::activity_id_t actId = ptrJob->id().str();
 			gwes::workflow_id_t wfId  = ptrJob->parent().str();
 
+			SDPA_LOG_DEBUG("Call ptr_Sdpa2Gwes_->activityDispatched( "<<wfId<<", "<<actId<<" )");
 			ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
 		}
 		else // send an error event
@@ -503,10 +504,21 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		// transform activity to workflow
 		gwdl::IWorkflow::ptr_t pWf = activity.transform2Workflow();
 
+		// check if the generated workflow has the same id as the activity_id
+		// if not, set explicitely
+		if(activity.getID() != pWf->getID() )
+		{
+			SDPA_LOG_DEBUG("The transformed workflow does not have an id already set. Set this to the activity_id ...");
+			pWf->setID(activity.getID());
+		}
+
 		// serialize workflow
 		job_desc_t job_desc = pWf->serialize();
+		SDPA_LOG_DEBUG("activity_id = "<<activity.getID()<<", workflow_id = "<<pWf->getID());
 
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc, pWf->getID()));
+		gwes::workflow_id_t parent_id = activity.getOwnerWorkflowID();
+
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc, parent_id));
 		sendEvent(pEvtSubmitJob);
 	}
 	catch(QueueFull)
@@ -557,6 +569,7 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
 	// generate const JobFinishedEvent& event
 	// Job& job = job_map_[job_id];
 	// call job.JobFinished(event);
+
 
 	job_id_t job_id(workflowId);
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id));

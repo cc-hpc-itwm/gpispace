@@ -2,6 +2,8 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 
 #include <tests/sdpa/DummyGwes.hpp>
+#include <gwdl/WFSerialization.h>
+
 #include <sstream>
 
 using namespace sdpa::daemon;
@@ -33,11 +35,18 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
 	gwes::workflow_id_t wf_id = pJob->id().str();
+	gwes::workflow_t* ptrWorkflow = NULL;
 
 	// Use gwes workflow here!
 	// IBuilder or a workflow fabric should be invoked here intstead of this!!!
-	gwes::workflow_t::ptr_t ptrWorkflow(new DummyWorkflow(pJob->description()));
-	ptrWorkflow->setID(wf_id);
+	try {
+		//ptrWorkflow = new DummyWorkflow(pJob->description());
+		ptrWorkflow = gwdl::deserializeWorkflow( pJob->description() ) ;
+		ptrWorkflow->setID(wf_id);
+	} catch(std::runtime_error&){
+		SDPA_LOG_ERROR("GWES could not deserialize the input string!");
+		return;
+	}
 
 	// Should set the workflow_id here, or send it together with the workflow description
 	ostringstream os;
@@ -45,13 +54,13 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG(os.str());
 
 	try {
-		if(ptr_Sdpa2Gwes_)
+		if(ptr_Sdpa2Gwes_ && ptrWorkflow )
 		{
 			pJob->Dispatch();
 			ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
 		}
 		else
-			SDPA_LOG_ERROR("Gwes not initialized!");
+			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
 	}
 	catch (std::exception& )
 	{
@@ -63,7 +72,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
  * Implement here in a first phase a simple round-robin schedule
  */
 void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
-	SDPA_LOG_DEBUG("Called schedule ...");
+	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
 	try {
 

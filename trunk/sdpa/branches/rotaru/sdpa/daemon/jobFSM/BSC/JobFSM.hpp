@@ -42,7 +42,8 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 			const sdpa::job_desc_t &desc,
 		    const sdpa::daemon::IComm* pHandler = NULL,
 		    const sdpa::job_id_t &parent = Job::invalid_job_id())
-			: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
+			: JobImpl(id, desc, pHandler, parent),
+			  SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
 	{
 		initiate();
 		SDPA_LOG_DEBUG("State machine created");

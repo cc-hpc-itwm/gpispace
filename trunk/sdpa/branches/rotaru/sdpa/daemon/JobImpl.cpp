@@ -27,8 +27,8 @@ namespace sdpa { namespace daemon {
           parent_(parent),
           b_marked_for_del_(false),
           b_local_(false),
-          pComm(const_cast<IComm*>(pHandler)),
-          SDPA_INIT_LOGGER( string("Job ")+ id.str() )
+          SDPA_INIT_LOGGER( string("Job ")+ id.str() ),
+          pComm(const_cast<IComm*>(pHandler))
     {}
 
     JobImpl::~JobImpl() throw () { }
