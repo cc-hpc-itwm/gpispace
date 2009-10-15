@@ -44,6 +44,8 @@ int main(int /* argc */, char ** /* argv */)
     );
     std::clog << "activity = " << activity << std::endl;
 
+    std::clog << sdpa::wf::Activity::Method("test.so@loopStep") << std::endl;
+
     try
     {
       gwdl::deserializeWorkflow("foo");
