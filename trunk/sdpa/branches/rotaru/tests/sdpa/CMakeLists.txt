@@ -38,3 +38,6 @@ target_link_libraries(sdpa_test_tool sdpa-daemon sdpa sdpa-wf dl)
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(sdpa_test_tool ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_tool)
+
+# copy workflows over to the build directory
+add_subdirectory(workflows)
