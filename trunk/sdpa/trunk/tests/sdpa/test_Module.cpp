@@ -82,3 +82,44 @@ void ModuleTest::testModuleLoopingCall() {
 
   std::cout << "call loop took " << (end - start) << "usec" << std::endl;
 }
+
+void ModuleTest::testAddFunctionCall() {
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
+  try {
+    loader->load("example-mod", "./libexample-mod.so");
+  } catch (sdpa::modules::ModuleLoadFailed &mlf) {
+    CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
+  }
+
+  sdpa::modules::Module &mod = loader->get("example-mod");
+  sdpa::modules::Module::data_t params;
+  long long sum(0);
+  const long long max(100000);
+  const long long expected( (max*max) / 2 - (max / 2));
+
+  std::cout << "summing from 0 to " << max << " ";
+  std::cout.flush();
+  params["out"] = sdpa::wf::Parameter("out", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token((long long)0));
+
+  sdpa::util::time_type start = sdpa::util::now();
+  for (long long i(0); i < max; ++i)
+  {
+    params["a"] = sdpa::wf::Parameter("a", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token((long long)i));
+    params["b"] = sdpa::wf::Parameter("a", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token((long long)sum));
+    try {
+      mod.call("Add", params);
+    } catch (const std::exception & ex) {
+      CPPUNIT_ASSERT_MESSAGE(std::string("function call failed: ") + ex.what(), false);
+    }
+    sum = params["out"].token().data_as<long long>();
+    if ((i % 10000) == 0) { std::cout << "."; std::cout.flush(); }
+  }
+  sdpa::util::time_type end = sdpa::util::now();
+
+  std::cout << sum << std::endl;
+  std::cout << "loop took " << (end - start) << "usec" << std::endl;
+
+  CPPUNIT_ASSERT_EQUAL(expected, sum);
+  CPPUNIT_ASSERT_EQUAL(sum, params["out"].token().data_as<long long>());
+}
+
