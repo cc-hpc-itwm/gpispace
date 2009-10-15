@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+#include <sdpa/sdpa-config.hpp>
+
 // choose the implementation depending on what we have available
 #if defined(HAVE_FVM)
 #   include <sdpa/modules/FVMModuleLoader.hpp>

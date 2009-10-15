@@ -19,5 +19,6 @@
 #define SDPA_COPYING     "@PROJECT_COPYING@"
 
 #cmakedefine ENABLE_TYPE_CHECKING 1
+#cmakedefine HAVE_FVM 1
 
 #endif

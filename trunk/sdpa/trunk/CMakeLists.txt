@@ -198,6 +198,18 @@ else (ENABLE_LOGGING)
     set(ENABLE_LOGGING 0)
 endif (ENABLE_LOGGING)
 
+# check for Fraunhofer Virtual Machine
+message(STATUS "****** FIXME: Checking for Fraunhofer Virtual Machine...")
+include(FindFVM OPTIONAL)
+if (FVM_FOUND)
+  # this should actually be specific to the sdpa/modules/ directory (i think)
+  include_directories(${FVM_INCLUDE_DIR})
+  link_directories(${FVM_LIBRARY})
+  set (HAVE_FVM 1)
+else (FVM_FOUND)
+  set (HAVE_FVM 0)
+endif (FVM_FOUND)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
 
