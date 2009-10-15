@@ -1,5 +1,6 @@
 # -*- mode: cmake; -*-
 project(libfhglog)
+string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
@@ -7,6 +8,8 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 set(V_MAJOR 1)
 set(V_MINOR 0)
 set(V_PATCH 0)
+
+# don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(PROJECT_DESCRIPTION "FHG Logging Framework")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
@@ -71,6 +74,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINA
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
 add_definitions(-DHAVE_CONFIG_H)
 
+# this file is installed and contains all necessary information about the installed libseda,
+# it also loads the file with the exported targets
+configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
@@ -88,6 +95,11 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
 )
+install(EXPORT ${PROJECT_NAME}Exports DESTINATION lib/shared
+  FILE ${PROJECT_NAME}Targets.cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  DESTINATION lib/shared )
+
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
 )
