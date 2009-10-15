@@ -8,6 +8,9 @@
 #include <sdpa/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
 
+// gwes
+#include <gwes/Activity.h> // class Activity to provide wrapping
+
 namespace sdpa { namespace wf {
   /**
     This class describes an abstract activity to be executed.
@@ -38,12 +41,17 @@ namespace sdpa { namespace wf {
           : module_(a_module)
           , name_(a_method_name) {}
 
-        void operator()(const parameter_list_t & , parameter_list_t & ) {
+        void operator()(const parameter_list_t &) {
           // \todo{implement me}
         }
 
         const std::string & module() const { return module_; }
         const std::string & name() const { return name_; }
+
+        void writeTo(std::ostream &os) const
+        {
+          os << module_ << "@" << name_;
+        }
       private:
         std::string module_;
         std::string name_;
@@ -57,7 +65,9 @@ namespace sdpa { namespace wf {
       @param input a generic list of input parameters
       @param output a generic list of predefined output parameters
      */
-    Activity(const activity_id_t &id, const Method & m, const parameter_list_t & input, const parameter_list_t & output);
+    Activity(const activity_id_t &id, const Method & m, const parameter_list_t & params);
+
+    Activity(const gwes::Activity &);
 
     Activity(const Activity &);
     Activity & operator=(const Activity &);
@@ -67,23 +77,20 @@ namespace sdpa { namespace wf {
     inline const std::string & name() const { return name_; }
     inline const Method& method() const { return method_; }
 
-    inline parameter_list_t & input() { return input_; }
-    inline parameter_list_t & output() { return output_; }
-    inline const parameter_list_t & input() const { return input_; }
-    inline const parameter_list_t & output() const { return output_; }
+    inline parameter_list_t & parameters() { return params_; }
+    inline const parameter_list_t & parameters() const { return params_; }
 
-    void add_input(const Parameter &);
-    void add_output(const Parameter &);
+    void add_parameter(const Parameter &);
 
     void writeTo(std::ostream &) const;
   private:
     std::string name_;
     Method method_;
-    parameter_list_t input_;
-    parameter_list_t output_;
+    parameter_list_t params_;
   };
 }}
 
 extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity::Method &m);
 
 #endif
