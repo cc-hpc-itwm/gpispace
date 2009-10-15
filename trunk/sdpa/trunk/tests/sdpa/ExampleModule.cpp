@@ -45,6 +45,13 @@ void Free(sdpa::modules::Module::data_t &p) throw (std::exception)
   }
 }
 
+void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
+{
+  int *ptr = (int*)p["ptr"].token().data_as<void*>();
+  unsigned int value= p["value"].token().data_as<unsigned int>();
+  *ptr = value;
+}
+
 extern "C" {
   void sdpa_mod_init(Module *mod) {
     SDPA_REGISTER_FUN(mod, HelloWorld);
@@ -52,6 +59,7 @@ extern "C" {
     SDPA_REGISTER_FUN(mod, Add);
     SDPA_REGISTER_FUN(mod, Malloc);
     SDPA_REGISTER_FUN(mod, Free);
+    SDPA_REGISTER_FUN(mod, Update);
   }
 }
 
