@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include <string>
 #include "ActivityExecutor.hpp"
 
 using namespace sdpa::modules;
@@ -24,6 +25,8 @@ void ActivityExecutor::execute(sdpa::wf::Activity &act) throw (std::exception)
 {
   // FIXME: does it make sense to make a backup copy of the parameters?
   // sdpa::wf::Activity::parameters_t params(act.parameters());
-  Module &mod = loader_->get(act.method().module());
-  mod.call(act.method().name(), act.parameters());
+  const std::string mod_name(act.method().module());
+  const std::string fun_name(act.method().name());
+
+  loader_->get(mod_name).call(fun_name, act.parameters());
 }
