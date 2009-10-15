@@ -38,7 +38,17 @@ namespace sdpa { namespace wf {
         data_ = d;
       }
 
-      std::string data_as() const throw (std::logic_error)
+      template <typename T> inline void data(const T &some_data)
+      {
+        std::ostringstream ostr;
+        ostr << some_data;
+        data_ = ostr.str();
+#ifdef ENABLE_TYPE_CHECKING
+        type_ = typeid(T).name();
+#endif
+      }
+
+      data_t data_as() const throw (std::logic_error)
       {
         return data();
       }
@@ -49,7 +59,7 @@ namespace sdpa { namespace wf {
       template<typename T> inline T data_as() const throw (std::logic_error) {
 #if defined(ENABLE_TYPE_CHECKING) && (ENABLE_TYPE_CHECKING == 1)
         if (typeid(T).name() != type_) {
-          throw std::logic_error(std::string("type mismatch occured: expected:")+type_+ " got:"+typeid(T).name());
+          throw std::logic_error(std::string("type mismatch occured: expected:")+type_+ " got:"+typeid(T).name() + " data:"+data_);
         }
 #endif
         T val;
