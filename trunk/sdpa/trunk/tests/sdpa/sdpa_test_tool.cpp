@@ -11,47 +11,57 @@
 #include <iostream>
 
 struct LogConfig {
-    void operator()() {
-        sdpa::logging::DefaultConfiguration()();
-        std::clog << "private config stuff here." << std::endl;
-    }
+  void operator()() {
+    sdpa::logging::DefaultConfiguration()();
+    std::clog << "private config stuff here." << std::endl;
+  }
 };
 
 int main(int /* argc */, char ** /* argv */)
 {
-    using namespace sdpa;
-    sdpa::logging::Configurator::configure(LogConfig());
+  using namespace sdpa;
+  sdpa::logging::Configurator::configure(LogConfig());
 
-    SDPA_DEFINE_LOGGER("tests.test-tool");
+  SDPA_DEFINE_LOGGER("tests.test-tool");
 
-    SDPA_LOG_ERROR("test");
+  SDPA_LOG_ERROR("test");
 
-    sdpa::daemon::Job::ptr_t job(new sdpa::daemon::JobImpl("job-1234", "<job></job>"));
-    std::clog << "logging enabled = " << SDPA_ENABLE_LOGGING << std::endl;
-    std::clog << "log4cpp = " << SDPA_HAVE_LOG4CPP << std::endl;
-    std::clog << "sdpa_logger = " << sdpa_logger.getName() << std::endl;
-    std::clog << "id = " << job->id() << std::endl;
-    std::clog << "desc = " << job->description() << std::endl;
+  sdpa::daemon::Job::ptr_t job(new sdpa::daemon::JobImpl("job-1234", "<job></job>"));
+  std::clog << "logging enabled = " << SDPA_ENABLE_LOGGING << std::endl;
+  std::clog << "log4cpp = " << SDPA_HAVE_LOG4CPP << std::endl;
+  std::clog << "sdpa_logger = " << sdpa_logger.getName() << std::endl;
+  std::clog << "id = " << job->id() << std::endl;
+  std::clog << "desc = " << job->description() << std::endl;
 
-    sdpa::wf::Activity activity("activity-1"
-                              , sdpa::wf::Activity::Method("test.so", "loopStep")
-                              , sdpa::wf::Activity::parameter_list_t());
-    activity.add_parameter(sdpa::wf::Parameter
-        ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
-    );
-    activity.add_parameter(sdpa::wf::Parameter
-        ("o", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token(""))
-    );
-    std::clog << "activity = " << activity << std::endl;
+  sdpa::wf::Activity activity("activity-1"
+      , sdpa::wf::Activity::Method("test.so", "loopStep")
+      , sdpa::wf::Activity::parameters_t());
+  activity.add_parameter(sdpa::wf::Parameter
+      ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
+      );
+  activity.add_parameter(sdpa::wf::Parameter
+      ("o", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token(""))
+      );
+  std::clog << "activity = " << activity << std::endl;
 
-    std::clog << sdpa::wf::Activity::Method("test.so@loopStep") << std::endl;
+  std::clog << sdpa::wf::Activity::Method("test.so@loopStep") << std::endl;
 
-    try
-    {
-      gwdl::deserializeWorkflow("foo");
-    } catch (const std::runtime_error &re)
-    {
-      std::clog << "at least it throws now" << std::endl;  
+  try
+  {
+    gwdl::deserializeWorkflow("foo");
+  } catch (const std::runtime_error &re)
+  {
+    std::clog << "at least it throws now" << std::endl;  
+  }
+
+  {
+    sdpa::wf::Token iToken((int)42);
+    try {
+      std::clog << "iToken: " << iToken << std::endl;
+      std::clog << "\tas int: " << iToken.data_as<int>() << std::endl;
+      std::clog << "\tas float: " << iToken.data_as<float>() << std::endl;
+    } catch (const std::exception &ex) {
+      std::clog << "\texception: " << ex.what() << std::endl;
     }
-
+  }
 }

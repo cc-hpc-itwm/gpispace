@@ -2,6 +2,13 @@
 
 using namespace sdpa::wf;
 
+Parameter::Parameter()
+  : name_("unknown")
+  , edge_type_(OUTPUT_EDGE)
+  , token_()
+{
+
+}
 Parameter::Parameter(const std::string &a_name, EdgeType a_edge_type, const Token &a_token)
   : name_(a_name)
   , edge_type_(a_edge_type)

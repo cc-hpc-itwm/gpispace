@@ -2,15 +2,18 @@
 #define SDPA_ACTIVITY_HPP 1
 
 #include <string>
-#include <list>
+#include <map>
 #include <istream>
 #include <ostream>
 
 #include <sdpa/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
 
-// gwes
-#include <gwes/Activity.h> // class Activity to provide wrapping
+// forward decl
+namespace gwes
+{
+  class Activity;
+}
 
 namespace sdpa { namespace wf {
   /**
@@ -24,7 +27,7 @@ namespace sdpa { namespace wf {
   public:
     typedef std::string activity_id_t;
     typedef shared_ptr<Activity> ptr_t;
-    typedef std::list<Parameter> parameter_list_t; //!< the type of our parameters @see sdpa::wf::Parameter
+    typedef std::map<std::string, Parameter> parameters_t; //!< the type of our parameters @see sdpa::wf::Parameter
 
     /**
       This class encapsulates a method call to a generic method.
@@ -64,7 +67,7 @@ namespace sdpa { namespace wf {
           return *this;
         }
 
-        void operator()(const parameter_list_t &) {
+        void operator()(const parameters_t &) {
           // \todo{implement me}
         }
 
@@ -107,9 +110,7 @@ namespace sdpa { namespace wf {
       @param input a generic list of input parameters
       @param output a generic list of predefined output parameters
      */
-    Activity(const activity_id_t &id, const Method & m, const parameter_list_t & params);
-
-    Activity(const gwes::Activity &);
+    Activity(const activity_id_t &id, const Method & m, const parameters_t & params);
 
     Activity(const Activity &);
     Activity & operator=(const Activity &);
@@ -119,16 +120,20 @@ namespace sdpa { namespace wf {
     inline const std::string & name() const { return name_; }
     inline const Method& method() const { return method_; }
 
-    inline parameter_list_t & parameters() { return params_; }
-    inline const parameter_list_t & parameters() const { return params_; }
+    inline parameters_t & parameters() { return params_; }
+    inline const parameters_t & parameters() const { return params_; }
 
     void add_parameter(const Parameter &);
 
     void writeTo(std::ostream &) const;
+
+    // glue code for gwes
+    Activity(const gwes::Activity &);
+    void storeResultsInGwesActivity(gwes::Activity &);
   private:
     std::string name_;
     Method method_;
-    parameter_list_t params_;
+    parameters_t params_;
   };
 }}
 

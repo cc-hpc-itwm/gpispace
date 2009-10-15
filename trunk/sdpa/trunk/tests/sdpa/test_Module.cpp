@@ -37,14 +37,10 @@ void ModuleTest::testModuleFunctionCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::input_data_t in;
-  sdpa::modules::Module::output_data_t out;
-
-  in.push_back(sdpa::wf::Token(42));
-  mod.call("HelloWorld", in, out);
-  CPPUNIT_ASSERT_EQUAL((sdpa::modules::Module::output_data_t::size_type)1, out.size());
-  sdpa::wf::Token token(out.front());
-  CPPUNIT_ASSERT_EQUAL(std::string("hello world"), token.data());
+  sdpa::modules::Module::data_t params;
+  params["out"] = sdpa::wf::Parameter("out", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token());
+  mod.call("HelloWorld", params);
+  CPPUNIT_ASSERT_EQUAL(std::string("hello world"), params["out"].token().data());
 }
 
 void ModuleTest::testModuleIllegalFunctionCall() {
@@ -55,11 +51,10 @@ void ModuleTest::testModuleIllegalFunctionCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::input_data_t in;
-  sdpa::modules::Module::output_data_t out;
+  sdpa::modules::Module::data_t data;
 
   try {
-    mod.call("NonExistingFunction", in, out);
+    mod.call("NonExistingFunction", data);
   } catch (const sdpa::modules::FunctionNotFound &fnf) {
     // ok
   } catch (const std::exception &ex) {
@@ -77,12 +72,11 @@ void ModuleTest::testModuleLoopingCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::input_data_t in;
+  sdpa::modules::Module::data_t data;
 
   sdpa::util::time_type start = sdpa::util::now();
   for (std::size_t i = 0; i < 100000; ++i) {
-    sdpa::modules::Module::output_data_t out;
-    mod.call("DoNothing", in, out);
+    mod.call("DoNothing", data);
   }
   sdpa::util::time_type end = sdpa::util::now();
 

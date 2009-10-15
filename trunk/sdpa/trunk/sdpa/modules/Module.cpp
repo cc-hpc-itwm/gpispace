@@ -13,12 +13,13 @@ Module::~Module()
 {
 }
 
-void Module::call(const std::string &function, const input_data_t &input, output_data_t &output) const throw (FunctionNotFound, BadFunctionArgument, FunctionException) {
+void Module::call(const std::string &function
+                , data_t &data) const throw (FunctionNotFound, BadFunctionArgument, FunctionException) {
   call_table_t::const_iterator f = call_table_.find(function);
   if (f == call_table_.end()) {
     throw FunctionNotFound(name(), function);
   } else {
-    (*(f->second))(input, output);
+    (*(f->second))(data);
   }
 }
 
