@@ -3,6 +3,7 @@
 
 #include <string>
 #include <list>
+#include <istream>
 #include <ostream>
 
 #include <sdpa/Properties.hpp>
@@ -37,9 +38,31 @@ namespace sdpa { namespace wf {
      */
     class Method {
       public:
+        Method(const std::string & module_at_method)
+          : module_()
+          , name_()
+        {
+          deserialize(module_at_method);
+        }
+
         Method(const std::string & a_module, const std::string & a_method_name)
           : module_(a_module)
           , name_(a_method_name) {}
+
+        Method(const Method& other)
+          : module_(other.module())
+          , name_(other.name())
+        {}
+
+        Method &operator=(const Method &rhs)
+        {
+          if (this != &rhs)
+          {
+            module_ = rhs.module();
+            name_ = rhs.name();
+          }
+          return *this;
+        }
 
         void operator()(const parameter_list_t &) {
           // \todo{implement me}
@@ -48,9 +71,28 @@ namespace sdpa { namespace wf {
         const std::string & module() const { return module_; }
         const std::string & name() const { return name_; }
 
+        std::string serialize() const
+        {
+          return module() + "@" + name();
+        }
+
+        void deserialize(const std::string &bytes)
+        {
+          const std::string::size_type pos_of_at(bytes.find_first_of('@'));
+          module_ = bytes.substr(0,           pos_of_at);
+          name_   = bytes.substr(pos_of_at+1, std::string::npos);
+        }
+
         void writeTo(std::ostream &os) const
         {
-          os << module_ << "@" << name_;
+          os << serialize();
+        }
+
+        void readFrom(std::istream &is)
+        {
+          std::string tmp;
+          is >> tmp;
+          deserialize(tmp);
         }
       private:
         std::string module_;
