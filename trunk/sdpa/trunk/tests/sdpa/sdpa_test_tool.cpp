@@ -6,6 +6,8 @@
 #include <sdpa/wf/Parameter.hpp>
 #include <sdpa/wf/Activity.hpp>
 
+#include <gwdl/WFSerialization.h>
+
 #include <iostream>
 
 struct LogConfig {
@@ -33,13 +35,21 @@ int main(int /* argc */, char ** /* argv */)
 
     sdpa::wf::Activity activity("activity-1"
                               , sdpa::wf::Activity::Method("test.so", "loopStep")
-                              , sdpa::wf::Activity::parameter_list_t()
                               , sdpa::wf::Activity::parameter_list_t());
-    activity.add_input(sdpa::wf::Parameter
-        ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(0))
+    activity.add_parameter(sdpa::wf::Parameter
+        ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
     );
-    activity.add_output(sdpa::wf::Parameter
-        ("i", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token())
+    activity.add_parameter(sdpa::wf::Parameter
+        ("o", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token(""))
     );
     std::clog << "activity = " << activity << std::endl;
+
+    try
+    {
+      gwdl::deserializeWorkflow("foo");
+    } catch (const std::runtime_error &re)
+    {
+      std::clog << "at least it throws now" << std::endl;  
+    }
+
 }

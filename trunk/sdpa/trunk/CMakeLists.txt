@@ -48,6 +48,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
@@ -106,6 +107,22 @@ if (UUID_FOUND)
 else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
+
+## find xerces-c
+Include(FindXercesC)
+IF(NOT XERCESC_FOUND)
+  message(FATAL_ERROR "No Xerces-c found, cannot continue.")
+ENDIF(NOT XERCESC_FOUND)
+include_directories(${XERCERC_INCLUDE_DIRS})
+link_libraries(${XERCESC_LIBRARIES})
+
+## find libxml2
+Include(FindXml2)
+IF(NOT LIBXML2_FOUND)
+  message(FATAL_ERROR "No libxml2 found, cannot continue.")
+ENDIF(NOT LIBXML2_FOUND)
+include_directories(${LIBXML2_INCLUDE_DIRS})
+link_libraries(${LIBXML2_LIBRARIES})
 
 # GWES/GWDL
 include(FindGwes)
