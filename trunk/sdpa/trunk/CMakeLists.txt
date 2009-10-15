@@ -48,6 +48,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 

@@ -18,4 +18,6 @@
 #define SDPA_README      "@PROJECT_README@"
 #define SDPA_COPYING     "@PROJECT_COPYING@"
 
+#cmakedefine ENABLE_TYPE_CHECKING 1
+
 #endif
