@@ -5,9 +5,7 @@
 #include <sdpa/sdpa-config.hpp>
 #endif
 
-#define USE_STL_TR1 1
-
-#if USE_STL_TR1 == 1
+#if defined(USE_STL_TR1) && (USE_STL_TR1 == 1)
 #include <tr1/memory>
 #else
 #include <boost/tr1/memory.hpp>
