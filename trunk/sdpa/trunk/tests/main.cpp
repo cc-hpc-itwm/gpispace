@@ -43,16 +43,15 @@
 
 #include <tests/sdpa/Suite.hpp>
 
-/*---------------------------------------------------------------------*
- * Local headers
- *
- *---------------------------------------------------------------------*/
+#include <fhglog/Configuration.hpp>
 
 int main(
   int argc,
   char **argv
   )
 {
+  fhg::log::Configurator::configure();
+
   // Informiert Test-Listener ueber Testresultate
   CPPUNIT_NS::TestResult                   testresult;
   CPPUNIT_NS::TestResultCollector collectedresults;
@@ -75,3 +74,4 @@ int main(
 
   return collectedresults.wasSuccessful () ? 0 : 1;
 }
+
