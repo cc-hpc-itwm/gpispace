@@ -88,7 +88,7 @@ void ModuleTest::testAddFunctionCall() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
-  } catch (sdpa::modules::ModuleLoadFailed &mlf) {
+  } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
 
@@ -128,7 +128,7 @@ void ModuleTest::testAlloc() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
     loader->load("example-mod", "./libexample-mod.so");
-  } catch (sdpa::modules::ModuleLoadFailed &mlf) {
+  } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
 
@@ -151,8 +151,5 @@ void ModuleTest::testAlloc() {
     CPPUNIT_ASSERT_MESSAGE("calling Free twice should result in a double-free detection", false);
   } catch (const std::exception &ex) {
     // OK - free detected a double-free ;-)
-  } catch (...) {
-    
   }
 }
-
