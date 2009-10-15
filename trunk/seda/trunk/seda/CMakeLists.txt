@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 file(GLOB hdrs "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 file(GLOB srcs "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
@@ -7,8 +8,13 @@ ADD_LIBRARY(seda STATIC ${hdrs} ${srcs})
 
 install(FILES ${hdrs} DESTINATION include/seda)
 install(TARGETS seda
-	ARCHIVE DESTINATION lib)
+  DESTINATION lib
+#  CONFIGURATIONS Release
+  EXPORT ${PROJECT_NAME}Exports)
+
 #install(TARGETS sedaShared
 #	LIBRARY DESTINATION lib)
 #install(TARGETS sedaStatic
 #	ARCHIVE DESTINATION lib)
+
+#install(TARGETS foo DESTINATION lib EXPORT fooExports)

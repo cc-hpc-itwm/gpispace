@@ -6,6 +6,7 @@ if(POLICY CMP0011)
 endif(POLICY CMP0011)
 
 project(libseda)
+string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
@@ -17,22 +18,27 @@ set(V_PATCH 0)
 ###################################################################################################
 # No user settings below
 ###################################################################################################
+# don't forget to add the configuration option inc libsedaConfig.cmake.in
 
 OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
-  YES)
+  1)
 
 OPTION(WITH_FHGLOG
   "Build the project with fhglog"
-  YES)
+  1)
 
 OPTION(WITH_LOG4CPP
   "Build the project with log4cpp"
-  NO)
+  0)
 
 OPTION(WITH_COMM
   "Build communication library"
-  YES)
+  1)
+
+OPTION(USE_STL_TR1 
+ "Use tr1 from stl"
+ 1)
 
 OPTION(ENABLE_UNIT_TESTS
   "Build and perform unit tests"
@@ -55,6 +61,7 @@ else(WIN32)
   if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     # set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
     set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-unused-parameter -Werror")
+    #set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-unused-parameter")
 
     # Releases are made with the release build. Optimize code.
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -92,6 +99,8 @@ endif ( PKG_CONFIG_FOUND )
 
 ## logging
 if (ENABLE_LOGGING)
+  message(STATUS "Prject: '${PROJECT_NAME}'")
+  set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
   if (WITH_LOG4CPP)
     set (WITH_FHGLOG NO)
@@ -99,9 +108,9 @@ if (ENABLE_LOGGING)
 
     include (FindLogging)
     if (LOG4CPP_FOUND)
-      include_directories(${LOG4CPP_INCLUDE_DIRS})
-      link_libraries(${LOG4CPP_LIBRARIES})
-      set(HAVE_LOG4CPP 1)
+      include_directories(${LOG4CPP_INCLUDE_DIR})
+      link_libraries(${LOG4CPP_LIBRARY})
+      set(${UPPER_PROJECT_NAME}_HAVE_LOG4CPP 1)
     else (LOG4CPP_FOUND)
       message(FATAL "Log4Cpp could not be found!")
     endif(LOG4CPP_FOUND)
@@ -114,7 +123,7 @@ if (ENABLE_LOGGING)
       message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
       include_directories(${FHGLOG_INCLUDE_DIR})
       link_libraries(${FHGLOG_LIBRARY})
-      set(HAVE_FHGLOG 1)
+      set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
     else (FHGLOG_FOUND)
       message(FATAL "could not find FhgLog")
     endif (FHGLOG_FOUND)
@@ -169,6 +178,10 @@ endif (WITH_COMM)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)
 
+# this file is installed and contains all necessary information about the installed libseda,
+# it also loads the file with the exported targets
+configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Make sure all subdirectories include correctly
@@ -197,6 +210,10 @@ INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp
   DESTINATION include/seda
 )
+install(EXPORT ${PROJECT_NAME}Exports DESTINATION lib/shared
+  FILE ${PROJECT_NAME}Targets.cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  DESTINATION lib/shared )
 
 # install pkgconfig file
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc
