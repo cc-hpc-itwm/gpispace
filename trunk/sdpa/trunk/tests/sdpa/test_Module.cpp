@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib> // malloc,free
 
 #include "test_Module.hpp"
 #include <sdpa/modules/modules.hpp>
@@ -121,5 +122,37 @@ void ModuleTest::testAddFunctionCall() {
 
   CPPUNIT_ASSERT_EQUAL(expected, sum);
   CPPUNIT_ASSERT_EQUAL(sum, params["out"].token().data_as<long long>());
+}
+
+void ModuleTest::testAlloc() {
+  sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
+  try {
+    loader->load("example-mod", "./libexample-mod.so");
+  } catch (sdpa::modules::ModuleLoadFailed &mlf) {
+    CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
+  }
+
+  sdpa::modules::Module &mod = loader->get("example-mod");
+  sdpa::modules::Module::data_t params;
+
+  std::clog << "allocating " << sizeof(int) << " bytes" << std::endl;
+  params["size"] = sdpa::wf::Parameter("size", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(sizeof(int)));
+  mod.call("Malloc", params);
+  {
+    int *i = (int*)params["out"].token().data_as<void*>();
+    *i = 42;
+  }
+  std::clog << "deallocating " << params["out"].token().data_as<void*>() << std::endl;
+  params["ptr"] = sdpa::wf::Parameter("ptr", sdpa::wf::Parameter::INPUT_EDGE, params["out"].token());
+  mod.call("Free", params);
+  std::clog << "ptr-value after free: " << params["ptr"].token().data_as<void*>() << std::endl;
+  try {
+    mod.call("Free", params);
+    CPPUNIT_ASSERT_MESSAGE("calling Free twice should result in a double-free detection", false);
+  } catch (const std::exception &ex) {
+    // OK - free detected a double-free ;-)
+  } catch (...) {
+    
+  }
 }
 

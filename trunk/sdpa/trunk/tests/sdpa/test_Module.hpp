@@ -10,6 +10,7 @@ namespace sdpa {
       CPPUNIT_TEST( testModuleIllegalFunctionCall );
       CPPUNIT_TEST( testModuleLoopingCall );
       CPPUNIT_TEST( testAddFunctionCall );
+      CPPUNIT_TEST( testAlloc );
       CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -26,6 +27,7 @@ namespace sdpa {
       void testModuleIllegalFunctionCall();
       void testModuleLoopingCall();
       void testAddFunctionCall();
+      void testAlloc();
     };
   }
 }
