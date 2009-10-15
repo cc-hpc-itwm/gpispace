@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # - Try to find the Sqlite encryption library
 # Once done this will define
 #
@@ -10,6 +11,30 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
+message(STATUS "FindSQLite check")
+if(USE_HELPER)
+  include(FindPackageHelper)
+  if(WIN32)
+    check_package(SQLITE sqlite3/sqlite3.h sqlite3 3.0)
+    SET(HAVE_SQLITE3_SQLITE3_H true)
+  else(WIN32)
+    check_package(SQLITE sqlite3.h sqlite 3.0)
+    SET(HAVE_SQLITE3_H true)
+  endif(WIN32)
+else(USE_HELPER)
+
+  IF (NOT WIN32)
+  include(FindPkgConfig)
+  if ( PKG_CONFIG_FOUND )
+
+     pkg_check_modules (PC_SQLITE sqlite>=1.0)
+
+     set(SQLITE_DEFINITIONS ${PC_SQLITE_CFLAGS_OTHER})
+  endif(PKG_CONFIG_FOUND)
+endif (NOT WIN32)
+
+#
+# set defaults
 if(SQLITE_HOME MATCHES "")
   if("" MATCHES "$ENV{SQLITE_HOME}")
     message(STATUS "SQLITE_HOME env is not set, setting it to /usr/local")

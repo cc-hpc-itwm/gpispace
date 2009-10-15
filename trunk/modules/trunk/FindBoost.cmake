@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # - Try to find Boost include dirs and libraries
 # Usage of this module as follows:
 #
@@ -511,6 +512,7 @@ ELSE (_boost_IN_CACHE)
   ENDIF(Boost_INCLUDE_DIR)
 
   IF (Boost_FOUND)
+    set(BOOST_FOUND true)
       IF (NOT Boost_FIND_QUIETLY)
         MESSAGE(STATUS "Found The Following Boost Libraries:")
         FOREACH ( COMPONENT  ${Boost_FIND_COMPONENTS} )
@@ -535,9 +537,11 @@ ELSE (_boost_IN_CACHE)
   ENDIF(WIN32)
 
   # show the Boost_INCLUDE_DIRS AND Boost_LIBRARIES variables only in the advanced view
-  MARK_AS_ADVANCED(Boost_INCLUDE_DIRS
-      Boost_LIBRARIES
-      Boost_LIBRARY_DIRS
+  MARK_AS_ADVANCED(
+    BOOST_FOUND
+    Boost_INCLUDE_DIRS
+    Boost_LIBRARIES
+    Boost_LIBRARY_DIRS
   )
 ENDIF(_boost_IN_CACHE)
 
