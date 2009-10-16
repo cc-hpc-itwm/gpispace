@@ -44,6 +44,20 @@ namespace sdpa {
         }
         virtual ~Properties() {}
 
+        Properties(const Properties &other)
+          : properties_(other.properties_)
+        {
+        }
+
+        Properties &operator=(const Properties &rhs)
+        {
+          if (this != &rhs)
+          {
+            properties_ = rhs.properties_;
+          }
+          return *this;
+        }
+
         void put(const std::string &key, const std::string &value);
         template <typename T> void put(const std::string &key, const T &value) throw(PropertyConversionFailed) {
             std::stringstream sstr;
