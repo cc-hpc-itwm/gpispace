@@ -9,6 +9,12 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/Properties.hpp>
 
+// glue code for gwes, fwd declare
+namespace gwdl
+{
+  class Token;
+}
+
 namespace sdpa { namespace wf {
   /**
     A class representing a Token.
@@ -80,6 +86,9 @@ namespace sdpa { namespace wf {
       }
 
       explicit
+      Token(const gwdl::Token &) throw (std::exception);
+
+      explicit
       Token(const data_t & some_data)
         : data_(some_data)
 #ifdef ENABLE_TYPE_CHECKING
@@ -127,11 +136,40 @@ namespace sdpa { namespace wf {
       inline properties_t & properties() { return properties_; }
       inline const properties_t & properties() const { return properties_; }
       void writeTo(std::ostream &os) const {
-        if (data().empty()) {
-          os << "Token()";
-        } else {
-          os << "Token(" << properties().get("datatype") << ":\""<< data() << "\")";
+        os << "{";
+        os << "token,";
+        os << "{";
+        if (properties().get<std::string>("datatype", "unknown") == ("control"))
+        {
+          os << "{";
+          os << "control";
+          os << ",";
+          os << std::ios::boolalpha;
+          os << properties().get<bool>("control");
+          os << std::ios::boolalpha;
+          os << "}";
         }
+        else
+        {
+          os << "{"
+             << "data"
+             << ","
+             << "\""
+             << properties().get("datatype")
+             << "\""
+             << ","
+             << "\""
+             << data()
+             << "\""
+             << "}";
+        }
+        os << ",";
+        os << "{"
+           << "props"
+           << ","
+           << properties()
+           << "}";
+        os << "}";
       }
     private:
       data_t data_;
