@@ -9,16 +9,14 @@
 using namespace sdpa::wf;
 
 Activity::Activity(const std::string &a_name, const Method &a_method, const parameters_t & params)
-  : Properties()
-  , name_(a_name)
+  : name_(a_name)
   , method_(a_method)
   , params_(params)
 {
 }
 
 Activity::Activity(const gwes::Activity &gwes_activity)
-  : Properties()
-  , name_(gwes_activity.getID())
+  : name_(gwes_activity.getID())
   , method_("", "")
   , params_()
 {
@@ -70,6 +68,7 @@ Activity::Activity(const Activity &other)
   : name_(other.name())
   , method_(other.method())
   , params_(other.parameters())
+  , properties_(other.properties())
 {
 }
 
@@ -79,6 +78,7 @@ Activity& Activity::operator=(const Activity &rhs) {
     name_ = rhs.name();
     method_ = rhs.method();
     params_ = rhs.parameters();
+    properties_ = rhs.properties();
   }
   return *this;
 }

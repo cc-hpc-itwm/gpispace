@@ -23,11 +23,12 @@ namespace sdpa { namespace wf {
     method name.  In addition to that, an activity may have an arbitrary  number
     of input parameters and predefined output parameters.
     */
-  class Activity : public sdpa::Properties {
+  class Activity {
   public:
     typedef std::string activity_id_t;
     typedef shared_ptr<Activity> ptr_t;
     typedef std::map<std::string, Parameter> parameters_t; //!< the type of our parameters @see sdpa::wf::Parameter
+    typedef sdpa::Properties properties_t;
 
     /**
       This class encapsulates a method call to a generic method.
@@ -123,6 +124,9 @@ namespace sdpa { namespace wf {
     inline parameters_t & parameters() { return params_; }
     inline const parameters_t & parameters() const { return params_; }
 
+    inline properties_t &properties() { return properties_; }
+    inline const properties_t &properties() const { return properties_; }
+
     void add_parameter(const Parameter &);
 
     void writeTo(std::ostream &) const;
@@ -134,6 +138,7 @@ namespace sdpa { namespace wf {
     std::string name_;
     Method method_;
     parameters_t params_;
+    properties_t properties_;
   };
 }}
 
