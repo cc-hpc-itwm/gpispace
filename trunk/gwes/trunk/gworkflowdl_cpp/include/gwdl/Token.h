@@ -84,6 +84,13 @@ public:
 	/**
 	 * Constructor for control token with specified value.
 	 * @param _control Boolean value of the control token.
+     *
+     * FIXME: C++ automatically converts nearly everything to bool
+     *        which means that code like 'Token("foo")' compiles,
+     *        it just creates a Control-Token with control==true
+     *
+     * TODO: remove this constructor and replace it with explicit
+     *       factory method
 	 */ 
 	explicit Token(bool _control){id = generateID(); data=NULL; control = _control; p_lock = NULL;}
 	
