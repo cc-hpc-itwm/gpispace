@@ -1,3 +1,5 @@
+#include <fhglog/Configuration.hpp>
+
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/LoggingConfigurator.hpp>
@@ -7,6 +9,7 @@
 #include <sdpa/wf/Activity.hpp>
 
 #include <gwdl/WFSerialization.h>
+#include <gwdl/Token.h>
 
 #include <iostream>
 
@@ -21,6 +24,7 @@ int main(int /* argc */, char ** /* argv */)
 {
   using namespace sdpa;
   sdpa::logging::Configurator::configure(LogConfig());
+  fhg::log::Configurator::configure();
 
   SDPA_DEFINE_LOGGER("tests.test-tool");
 
@@ -63,5 +67,19 @@ int main(int /* argc */, char ** /* argv */)
     } catch (const std::exception &ex) {
       std::clog << "\texception: " << ex.what() << std::endl;
     }
+  }
+
+  {
+    gwdl::Token gtoken(true);
+    sdpa::wf::Token stoken(gtoken);
+    std::clog << "gtoken: " << gtoken << std::endl;
+    std::clog << "stoken: " << stoken << std::endl;;
+  }
+
+  {
+    gwdl::Token gtoken(false);
+    sdpa::wf::Token stoken(gtoken);
+    std::clog << "gtoken: " << gtoken << std::endl;;
+    std::clog << "stoken: " << stoken << std::endl;;
   }
 }
