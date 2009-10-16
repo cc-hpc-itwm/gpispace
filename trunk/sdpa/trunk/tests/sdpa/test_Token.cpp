@@ -58,7 +58,7 @@ void TokenTest::testTokenDataTypes() {
 
 void TokenTest::testPropertyPut() {
   Token t;
-  std::string expected("bar");
-  t.put("foo", expected);
-  CPPUNIT_ASSERT_EQUAL(expected, t.get<std::string>("foo"));
+  const std::string expected("bar");
+  t.properties().put("foo", expected);
+  CPPUNIT_ASSERT_EQUAL(expected, t.properties().get<std::string>("foo"));
 }

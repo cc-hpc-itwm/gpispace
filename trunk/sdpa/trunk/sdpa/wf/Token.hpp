@@ -15,9 +15,10 @@ namespace sdpa { namespace wf {
 
     A Token just transports arbitrary data through a workflow.
    */
-  class Token : public sdpa::Properties {
+  class Token {
     public:
       typedef std::string data_t;
+      typedef sdpa::Properties properties_t;
 
       virtual ~Token() {}
 
@@ -36,7 +37,7 @@ namespace sdpa { namespace wf {
       inline void data(const data_t &d)
       {
         data_ = d;
-        put("datatype", typeid(d).name());
+        properties().put("datatype", typeid(d).name());
       }
 
       template <typename T> inline void data(const T &some_data)
@@ -47,7 +48,7 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         type_ = typeid(T).name();
 #endif
-        put("datatype", typeid(T).name());
+        properties().put("datatype", typeid(T).name());
       }
 
       data_t data_as() const throw (std::logic_error)
@@ -73,28 +74,25 @@ namespace sdpa { namespace wf {
 
     public:
       Token()
-        : Properties()
-        , data_("")
+        : data_("")
       {
-        put("datatype", "unknown");
+        properties().put("datatype", "unknown");
       }
 
       explicit
       Token(const data_t & some_data)
-        : Properties()
-        , data_(some_data)
+        : data_(some_data)
 #ifdef ENABLE_TYPE_CHECKING
         , type_(typeid(some_data).name())
 #endif
       {
-        put("datatype", typeid(some_data).name());
+        properties().put("datatype", typeid(some_data).name());
       }
 
       template <typename T>
       explicit
       Token(T some_data)
-        : Properties()
-        , data_("")
+        : data_("")
       {
         std::ostringstream ostr;
         ostr << some_data;
@@ -102,17 +100,16 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
         type_ = typeid(T).name();
 #endif
-        put("datatype", typeid(some_data).name());
+        properties().put("datatype", typeid(some_data).name());
       }
 
       Token(const Token & other)
-        : Properties()
-        , data_(other.data())
+        : data_(other.data())
 #ifdef ENABLE_TYPE_CHECKING
         , type_(other.type_)
 #endif
+        , properties_(other.properties())
       {
-        put("datatype", other.get("datatype"));
       }
 
       const Token & operator=(const Token & rhs) {
@@ -122,16 +119,18 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
           type_ = rhs.type_;
 #endif
-          put("datatype", rhs.get("datatype"));
+          properties_ = rhs.properties();
         }
         return *this;
       }
 
+      inline properties_t & properties() { return properties_; }
+      inline const properties_t & properties() const { return properties_; }
       void writeTo(std::ostream &os) const {
         if (data().empty()) {
           os << "Token()";
         } else {
-          os << "Token(" << get("datatype") << ":\""<< data() << "\")";
+          os << "Token(" << properties().get("datatype") << ":\""<< data() << "\")";
         }
       }
     private:
@@ -139,6 +138,7 @@ namespace sdpa { namespace wf {
 #ifdef ENABLE_TYPE_CHECKING
       std::string type_;
 #endif
+      properties_t properties_;
   };
 }}
 
