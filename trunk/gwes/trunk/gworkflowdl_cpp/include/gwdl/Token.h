@@ -92,7 +92,7 @@ public:
 	 * @param _properties The properties of this token.
 	 * @param _control The control value of this token.
 	 */
-	explicit Token(Properties _properties, bool _control)
+	explicit Token(const Properties &_properties, bool _control)
 	 {id = generateID(); data=NULL; control = _control; properties = _properties; p_lock = NULL;}
 	
 	/**
@@ -108,7 +108,7 @@ public:
 	 * @param _properties The properties of this data token.
 	 * @param _data The data of this token.
 	 */
-	explicit Token(Properties _properties, Data* _data)
+	explicit Token(const Properties &_properties, Data* _data)
 	  {id = generateID(); properties = _properties; data = _data; p_lock = NULL;} 
 	
 	/**
