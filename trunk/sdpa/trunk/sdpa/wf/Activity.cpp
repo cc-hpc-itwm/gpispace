@@ -37,28 +37,43 @@ Activity::Activity(const gwes::Activity &gwes_activity)
   gwes::parameter_list_t *gwes_params = act.getTransitionOccurrence()->getTokens();
   for (gwes::parameter_list_t::iterator it(gwes_params->begin()); it != gwes_params->end(); ++it) {
     const std::string gwes_param_name(it->edgeP->getExpression());
-    const std::string gwes_param_data( it->tokenP->isData() ? *(it->tokenP->getData()->getText()) : "control");
 
+    Token tok(*it->tokenP);
+  
     switch (it->scope) {
       case (gwes::TokenParameter::SCOPE_READ):
-        DLOG(DEBUG, "read " << gwes_param_name << "(" << gwes_param_data << ")" );
-        add_parameter(Parameter(gwes_param_name, Parameter::READ_EDGE, Token(gwes_param_data)));
+      {
+        Parameter p(gwes_param_name, Parameter::READ_EDGE, tok);
+        DLOG(DEBUG, "read " << p);
+        add_parameter(p);
         break;
+      }
       case (gwes::TokenParameter::SCOPE_INPUT):
-        DLOG(DEBUG, "input " << gwes_param_name << "(" << gwes_param_data << ")" );
-        add_parameter(Parameter(gwes_param_name, Parameter::INPUT_EDGE, Token(gwes_param_data)));
+      {
+        Parameter p(gwes_param_name, Parameter::INPUT_EDGE, tok);
+        DLOG(DEBUG, "input " << p);
+        add_parameter(p);
         break;
+      }
       case (gwes::TokenParameter::SCOPE_WRITE):
-        DLOG(DEBUG, "write " << gwes_param_name << "(" << gwes_param_data << ")" );
-        add_parameter(Parameter(gwes_param_name, Parameter::WRITE_EDGE, Token(gwes_param_data)));
+      {
+        Parameter p(gwes_param_name, Parameter::WRITE_EDGE, tok);
+        DLOG(DEBUG, "write " << p);
+        add_parameter(p);
         break;
+      }
       case (gwes::TokenParameter::SCOPE_OUTPUT):
-        DLOG(DEBUG, "output " << gwes_param_name << "(" << gwes_param_data << ")" );
-        add_parameter(Parameter(gwes_param_name, Parameter::OUTPUT_EDGE, Token(gwes_param_data)));
+      {
+        Parameter p(gwes_param_name, Parameter::OUTPUT_EDGE, tok);
+        DLOG(DEBUG, "output " << p);
+        add_parameter(p);
         break;
+      }
       default:
-        DLOG(DEBUG, "unknown " << gwes_param_name << "(" << gwes_param_data << ")" );
+      {
+        DLOG(ERROR, "unknown parameter type: " << gwes_param_name << "(" << tok << ")" );
         break;
+      }
     }
   }
 }
@@ -88,17 +103,31 @@ void Activity::add_parameter(const Parameter &p) {
 }
 
 void Activity::writeTo(std::ostream &os) const {
-  os << name() << ":" << method();
- 
-  os << "(";
-  for (parameters_t::const_iterator p(parameters().begin()); p != parameters().end(); p++) {
+  os << "{"
+     << "act"
+     << ","
+     << name()
+     << ","
+     << method()
+     << ","
+     << "{" << "params"
+     << ","
+     << "[";
+  for (parameters_t::const_iterator p(parameters().begin());;) {
     os << p->second;
-    if (p != parameters().end())
+    ++p;
+    if (p == parameters().end())
     {
-      os << ", ";
+      break;
+    }
+    else
+    {
+      os << ",";
     }
   }
-  os << ")";
+  os << "]"
+     << "}"
+     << "}";
 }
 
 std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a) {

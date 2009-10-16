@@ -89,7 +89,7 @@ namespace sdpa { namespace wf {
 
         void writeTo(std::ostream &os) const
         {
-          os << serialize();
+          os << "{" << "method" << "," << module() << "," << name()  << "}";
         }
 
         void readFrom(std::istream &is)
