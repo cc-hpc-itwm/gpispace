@@ -35,6 +35,11 @@ Parameter& Parameter::operator=(const Parameter &rhs)
 }
 
 void Parameter::writeTo(std::ostream &os) const {
+  os << "{"
+     << "param"
+     << ","
+     << name()
+     << ",";
   switch (edge_type()) {
     case INPUT_EDGE:
       os << "i";
@@ -55,8 +60,9 @@ void Parameter::writeTo(std::ostream &os) const {
       os << "u";
       break;
   }
-  os << ":";
-  os << name() << "=" << token();
+  os << ","
+     << token()
+     << "}";
 }
 
 std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p) {
