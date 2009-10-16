@@ -38,3 +38,34 @@ void sdpa::Properties::clear() {
 bool sdpa::Properties::empty() const {
     return properties_.empty();
 }
+
+void sdpa::Properties::writeTo(std::ostream &os) const
+{
+  os << "[";
+  std::map<std::string, std::string>::const_iterator it(properties_.begin());
+  for (;;)
+  {
+    os << "{"
+       << it->first
+       << ","
+       << it->second
+       << "}";
+
+    ++it;
+    if (it == properties_.end())
+    {
+      break;
+    }
+    else
+    {
+      os << ",";
+    }
+  }
+  os << "]";
+}
+
+std::ostream &operator<<(std::ostream &os, const sdpa::Properties &props)
+{
+  props.writeTo(os);
+  return os;
+}

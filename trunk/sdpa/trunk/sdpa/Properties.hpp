@@ -101,9 +101,13 @@ namespace sdpa {
 
         void clear();
         bool empty() const;
+
+        void writeTo(std::ostream &) const;
     private:
         std::map<std::string, std::string> properties_;
     };
 }
+
+extern std::ostream & operator<<(std::ostream &, const sdpa::Properties &);
 
 #endif // ! SDPA_PROPERTIES_HPP
