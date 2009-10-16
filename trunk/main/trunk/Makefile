@@ -21,6 +21,12 @@ distclean: clean
 	@-rm -rf $(BUILD_DIR)
 	@-find . -name "*~" -delete
 
+clean-sdpa:
+	make -C $(BUILD_DIR)/sdpa clean
+
+distclean-sdpa: clean-sdpa
+	@-rm -rf $(BUILD_DIR)/sdpa
+
 clean:
 	make -C $(BUILD_DIR) clean
 
@@ -52,4 +58,4 @@ unify:
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc test
+.PHONY: clean distclean all default doc test clean-sdpa distclean-sdpa
