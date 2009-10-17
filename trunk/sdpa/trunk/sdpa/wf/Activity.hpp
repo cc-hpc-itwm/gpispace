@@ -9,12 +9,6 @@
 #include <sdpa/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
 
-// forward decl
-namespace gwes
-{
-  class Activity;
-}
-
 namespace sdpa { namespace wf {
   /**
     This class describes an abstract activity to be executed.
@@ -140,10 +134,6 @@ namespace sdpa { namespace wf {
     void add_parameter(const Parameter &);
 
     void writeTo(std::ostream &) const;
-
-    // glue code for gwes
-    Activity(const gwes::Activity &);
-    void storeResultsInGwesActivity(gwes::Activity &);
   private:
     std::string name_;
     Method method_;
