@@ -73,7 +73,9 @@ namespace sdpa { namespace wf {
         }
 
         const std::string & module() const { return module_; }
+        std::string & module() { return module_; }
         const std::string & name() const { return name_; }
+        std::string & name() { return name_; }
 
         std::string serialize() const
         {
@@ -113,19 +115,27 @@ namespace sdpa { namespace wf {
      */
     Activity(const activity_id_t &id, const Method & m, const parameters_t & params);
 
+    Activity()
+      : name_("")
+      , method_("")
+    { }
+
     Activity(const Activity &);
     Activity & operator=(const Activity &);
 
     ~Activity() {}
     
     inline const std::string & name() const { return name_; }
+    inline std::string & name() { return name_; }
+
     inline const Method& method() const { return method_; }
+    inline Method& method() { return method_; }
 
-    inline parameters_t & parameters() { return params_; }
     inline const parameters_t & parameters() const { return params_; }
+    inline parameters_t & parameters() { return params_; }
 
-    inline properties_t &properties() { return properties_; }
     inline const properties_t &properties() const { return properties_; }
+    inline properties_t &properties() { return properties_; }
 
     void add_parameter(const Parameter &);
 
