@@ -105,6 +105,9 @@ namespace sdpa {
         bool empty() const;
 
         void writeTo(std::ostream &) const;
+
+        const map_t & map() const { return properties_; }
+        map_t & map() { return properties_; }
     private:
         map_t properties_;
     };
