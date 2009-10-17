@@ -38,6 +38,8 @@ namespace sdpa {
      */
     class Properties {
     public:
+        typedef std::map<std::string, std::string> map_t;
+
         Properties()
           : properties_()
         {
@@ -104,7 +106,7 @@ namespace sdpa {
 
         void writeTo(std::ostream &) const;
     private:
-        std::map<std::string, std::string> properties_;
+        map_t properties_;
     };
 }
 

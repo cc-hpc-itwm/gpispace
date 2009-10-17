@@ -10,12 +10,12 @@ std::size_t sdpa::Properties::del(const std::string &key) {
 }
 
 bool sdpa::Properties::has_key(const std::string &key) const {
-    std::map<std::string, std::string>::const_iterator it(properties_.find(key));
+    map_t::const_iterator it(properties_.find(key));
     return (it != properties_.end());
 }
 
 const std::string &sdpa::Properties::get(const std::string &key) const throw(PropertyLookupFailed) {
-    std::map<std::string, std::string>::const_iterator it(properties_.find(key));
+    map_t::const_iterator it(properties_.find(key));
     if (it != properties_.end()) {
         return it->second;
     } else {
@@ -42,7 +42,7 @@ bool sdpa::Properties::empty() const {
 void sdpa::Properties::writeTo(std::ostream &os) const
 {
   os << "[";
-  std::map<std::string, std::string>::const_iterator it(properties_.begin());
+  map_t::const_iterator it(properties_.begin());
   for (;;)
   {
     os << "{"
