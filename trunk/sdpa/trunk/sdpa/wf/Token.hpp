@@ -9,12 +9,6 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/Properties.hpp>
 
-// glue code for gwes, fwd declare
-namespace gwdl
-{
-  class Token;
-}
-
 namespace sdpa { namespace wf {
   /**
     A class representing a Token.
@@ -84,9 +78,6 @@ namespace sdpa { namespace wf {
       {
         properties().put("datatype", "unknown");
       }
-
-      explicit
-      Token(const gwdl::Token &) throw (std::exception);
 
       explicit
       Token(const data_t & some_data)

@@ -9,6 +9,7 @@
 #include <sdpa/wf/Parameter.hpp>
 #include <sdpa/wf/Activity.hpp>
 
+#include <sdpa/wf/GwesGlue.hpp>
 #include <sdpa/wf/Serialization.hpp>
 
 #include <gwdl/WFSerialization.h>
@@ -74,14 +75,14 @@ int main(int /* argc */, char ** /* argv */)
 
   {
     gwdl::Token gtoken(true);
-    sdpa::wf::Token stoken(gtoken);
+    sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
     std::clog << "gtoken: " << gtoken << std::endl;
     std::clog << "stoken: " << stoken << std::endl;;
   }
 
   {
     gwdl::Token gtoken(false);
-    sdpa::wf::Token stoken(gtoken);
+    sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
     std::clog << "gtoken: " << gtoken << std::endl;;
     std::clog << "stoken: " << stoken << std::endl;;
   }
