@@ -1,3 +1,4 @@
+#include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
 
 #include <sdpa/daemon/Job.hpp>
@@ -7,6 +8,8 @@
 #include <sdpa/wf/Token.hpp>
 #include <sdpa/wf/Parameter.hpp>
 #include <sdpa/wf/Activity.hpp>
+
+#include <sdpa/wf/Serialization.hpp>
 
 #include <gwdl/WFSerialization.h>
 #include <gwdl/Token.h>
@@ -81,5 +84,46 @@ int main(int /* argc */, char ** /* argv */)
     sdpa::wf::Token stoken(gtoken);
     std::clog << "gtoken: " << gtoken << std::endl;;
     std::clog << "stoken: " << stoken << std::endl;;
+  }
+
+  {
+    std::stringstream sstr;
+    boost::archive::text_oarchive oa(sstr);
+    {
+      sdpa::wf::Token stoken(42);
+      stoken.properties().put("foo", "bar");
+      oa << stoken;
+      LOG(DEBUG, "serialized token " << stoken << " to: " << sstr.str());
+    }
+    {
+      sdpa::wf::Token stoken;
+      boost::archive::text_iarchive oa(sstr);
+      oa >> stoken;
+      LOG(DEBUG, "deserialized token " << stoken << " from: " << sstr.str());
+    }
+  }
+
+  {
+    std::stringstream sstr;
+    boost::archive::text_oarchive oa(sstr);
+    {
+      sdpa::wf::Activity activity("activity-1"
+          , sdpa::wf::Activity::Method("test.so", "loopStep")
+          , sdpa::wf::Activity::parameters_t());
+      activity.add_parameter(sdpa::wf::Parameter
+          ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
+          );
+      activity.add_parameter(sdpa::wf::Parameter
+          ("o", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token(""))
+          );
+      oa << activity;
+      LOG(DEBUG, "serialized activity " << activity << " to: " << sstr.str());
+    }
+    {
+      sdpa::wf::Activity activity;
+      boost::archive::text_iarchive oa(sstr);
+      oa >> activity;
+      LOG(DEBUG, "deserialized activity " << activity << " from: " << sstr.str());
+    }
   }
 }
