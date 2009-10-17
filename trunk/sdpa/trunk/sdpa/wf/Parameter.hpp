@@ -49,9 +49,11 @@ namespace sdpa { namespace wf {
       ~Parameter() {}
 
       inline const std::string & name() const { return name_; }
+      inline std::string & name() { return name_; }
       inline const Token & token() const { return token_; }
       inline Token & token() { return token_; }
-      inline EdgeType edge_type() const { return edge_type_; }
+      inline const EdgeType & edge_type() const { return edge_type_; }
+      inline EdgeType & edge_type() { return edge_type_; }
 
       void writeTo(std::ostream &) const;
     private:
