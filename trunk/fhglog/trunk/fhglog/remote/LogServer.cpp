@@ -21,6 +21,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include "LogServer.hpp"
+#include "Serialization.hpp"
 
 using namespace fhg::log::remote;
 using boost::asio::ip::udp;
@@ -33,7 +34,6 @@ LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
   , socket_(io_service, udp::endpoint(udp::v4(), port))
 {
   LOG(INFO, "log server listening on " << udp::endpoint(udp::v4(), port));
-  LOG(WARN, "FIXME: implement serialization/deserialization of LogEvents over UDP!");
   socket_.async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
       boost::bind(&LogServer::handle_receive_from, this,
         boost::asio::placeholders::error,
@@ -47,9 +47,9 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
   if (!error && bytes_recv > 0)
   {
     data_[bytes_recv] = 0;
-
-    // TODO: deserialize LogEvent
     std::string msg(data_);
+
+    DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
 
     if (msg == "QUIT deadbeef")
     {
@@ -57,8 +57,28 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
       return;
     }
 
-    std::clog << "got " << bytes_recv << " bytes from " << sender_endpoint_ << ": " << data_;
-    appender_->append(FHGLOG_MKEVENT_HERE(INFO, data_));
+    try
+    {
+      std::stringstream sstr(msg);
+      boost::archive::text_iarchive ia(sstr);
+
+      LogEvent evt;
+      ia >> evt;
+
+      {
+        // FIXME: think about a better way to introduce some kind of "trace"
+        // the following is only meaningful for a flat hierarchy of logservers
+        std::ostringstream ostr;
+        ostr << evt.logged_via() << "@" << sender_endpoint_;
+        evt.logged_via(ostr.str());
+      }
+
+      appender_->append(evt);
+    }
+    catch (const std::exception &ex)
+    {
+      LOG(WARN, "could not parse message!" << ex.what());
+    }
 
     socket_.async_receive_from(
         boost::asio::buffer(data_, max_length), sender_endpoint_,
