@@ -37,6 +37,10 @@ message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules"
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+    if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+      add_definitions("-DNDEBUG")
+    endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
+
     set(FHG_PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
 
     set(CMAKE_CXX_FLAGS "-W -Wall -Wextra")
