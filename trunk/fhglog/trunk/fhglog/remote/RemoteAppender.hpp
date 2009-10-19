@@ -28,15 +28,15 @@ namespace fhg { namespace log { namespace remote {
   class RemoteAppender : public Appender
   {
   public:
-    RemoteAppender(const std::string &name, const std::string &host, uint16_t port);
+    RemoteAppender(const std::string &name, const std::string &host, const std::string &service);
     virtual ~RemoteAppender();
 
     const std::string &host() const { return host_; }
-    const uint16_t &port() const { return port_; }
+    const std::string &service() const { return service_; }
     void append(const LogEvent &evt) const;
   private:
     std::string host_;
-    uint16_t port_;
+    std::string service_;
 
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint logserver_;
