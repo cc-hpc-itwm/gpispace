@@ -17,6 +17,7 @@
  */
 
 #include <boost/array.hpp>
+#include <sstream>
 
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <fhglog/remote/Serialization.hpp>
@@ -64,7 +65,9 @@ void RemoteAppender::close()
 void RemoteAppender::append(const LogEvent &evt) const
 {
   boost::system::error_code ignored_error;
-  std::string message(getFormat()->format(evt)); // FIXME: put serialized logeven here
-  socket_->send_to(boost::asio::buffer(message), logserver_, 0, ignored_error);
+  std::stringstream sstr;
+  boost::archive::text_oarchive oa(sstr);
+  oa << evt;
+  socket_->send_to(boost::asio::buffer(sstr.str()), logserver_, 0, ignored_error);
 }
 
