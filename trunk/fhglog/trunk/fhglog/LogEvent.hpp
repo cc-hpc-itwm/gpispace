@@ -46,13 +46,6 @@ namespace fhg { namespace log {
       inline const function_type &function() const { return function_; }
       inline const line_type &line() const { return line_; }
       inline const message_type &message() const { return message_; }
-      inline void finish() const
-      {
-        if (message_.empty())
-        {
-          const_cast<std::string&>(message_) = message_buffer_.str();
-        }
-      }
       inline const tstamp_type &tstamp() const { return tstamp_; }
       inline const pid_type &pid() const { return pid_; }
       inline const tid_type &tid() const { return tid_; }
@@ -60,6 +53,14 @@ namespace fhg { namespace log {
       inline void logged_via(const std::string &name) const
       {
         const_cast<std::string&>(logged_via_) = name;
+      }
+
+      inline void finish() const
+      {
+        if (message_.empty())
+        {
+          const_cast<std::string&>(message_) = message_buffer_.str();
+        }
       }
       inline std::ostream &stream() { return message_buffer_; }
     private:
