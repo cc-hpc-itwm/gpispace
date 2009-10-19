@@ -22,7 +22,7 @@
 #include <fhglog/fhglog-config.hpp>
 
 #if !defined(HAVE_SYSLOG_H) || (HAVE_SYSLOG_H == 0)
-#   error "I do not have syslog.h"
+#   error "I do not have syslog.h but SyslogAppender.hpp was requested."
 #endif
 
 #include <syslog.h>
