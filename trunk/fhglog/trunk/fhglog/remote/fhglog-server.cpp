@@ -64,9 +64,10 @@ int main(int argc, char **argv)
     if (mode == "start")
     {
       boost::asio::io_service io_service;
-      fhg::log::Appender::ptr_t null(new fhg::log::NullAppender());
 
-      fhg::log::remote::LogServer server(null, io_service, port);
+      fhg::log::Appender::ptr_t appender(new fhg::log::StreamAppender("console", std::cout));
+      appender->setFormat(fhg::log::Formatter::Full());
+      fhg::log::remote::LogServer server(appender, io_service, port);
 
       io_service.run();
       LOG(INFO, "done.");
