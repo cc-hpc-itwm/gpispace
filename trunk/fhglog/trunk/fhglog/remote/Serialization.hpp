@@ -37,6 +37,21 @@ namespace boost { namespace serialization {
   {
     ar & level.lvl();
   }
+
+  template <class Archive>
+  void serialize(Archive & ar, fhg::log::LogEvent & event, const unsigned int /* version */)
+  {
+    ar & event.severity();
+    ar & event.file();
+    ar & event.path();
+    ar & event.function();
+    ar & event.line();
+    ar & event.message();
+    ar & event.tstamp();
+    ar & event.pid();
+    ar & event.tid();
+    ar & event.logged_via();
+  }
 }}
 
 #endif
