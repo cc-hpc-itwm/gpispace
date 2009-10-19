@@ -19,6 +19,8 @@
 #ifndef FHGLOG_REMOTE_APPENDER_HPP
 #define FHGLOG_REMOTE_APPENDER_HPP 1
 
+#include <boost/asio.hpp>
+
 #include <fhglog/Appender.hpp>
 #include <stdint.h>
 
@@ -35,6 +37,10 @@ namespace fhg { namespace log { namespace remote {
   private:
     std::string host_;
     uint16_t port_;
+
+    boost::asio::io_service io_service_;
+    boost::asio::ip::udp::endpoint logserver_;
+    boost::asio::ip::udp::socket *socket_;
   };
 }}}
 
