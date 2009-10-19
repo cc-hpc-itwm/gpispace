@@ -28,10 +28,8 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
-#include <fhglog/Properties.hpp>
-#include <sdpa/wf/Token.hpp>
-#include <sdpa/wf/Parameter.hpp>
-#include <sdpa/wf/Activity.hpp>
+#include <fhglog/LogLevel.hpp>
+#include <fhglog/LogEvent.hpp>
 
 namespace boost { namespace serialization {
   template <class Archive>
