@@ -20,12 +20,19 @@
 
 using namespace fhg::log::remote;
 
-RemoteAppender::RemoteAppender(const std::string &name, const std::string &, uint16_t port)
-  : Appender(name)
+RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, uint16_t a_port)
+  : Appender(a_name)
+  , host_(a_host)
+  , port_(a_port)
   {
 
   }
 
 RemoteAppender::~RemoteAppender()
 {
+}
+
+void RemoteAppender::append(const LogEvent &/*evt*/) const
+{
+  // serialize event and send it
 }

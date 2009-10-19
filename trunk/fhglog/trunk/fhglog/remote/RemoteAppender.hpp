@@ -29,7 +29,12 @@ namespace fhg { namespace log { namespace remote {
     RemoteAppender(const std::string &name, const std::string &host, uint16_t port);
     virtual ~RemoteAppender();
 
+    const std::string &host() const { return host_; }
+    const uint16_t &port() const { return port_; }
     void append(const LogEvent &evt) const;
+  private:
+    std::string host_;
+    uint16_t port_;
   };
 }}}
 
