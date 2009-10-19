@@ -23,6 +23,19 @@ LogEvent::LogEvent(const severity_type &a_severity
 {
 }
 
+LogEvent::LogEvent()
+  : severity_()
+  , path_()
+  , file_()
+  , function_()
+  , line_()
+  , message_()
+  , tstamp_()
+  , pid_()
+  , tid_()
+{
+}
+
 LogEvent::LogEvent(const LogEvent &e)
   : severity_(e.severity())
   , path_(e.path())
