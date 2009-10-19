@@ -26,6 +26,7 @@ int main (int argc, char **argv)
 
   int errcount(0);
 
+  std::string message("hello server!");
   std::string server("localhost");
   short port(FHGLOG_DEFAULT_PORT);
 
@@ -46,15 +47,17 @@ int main (int argc, char **argv)
     port = atoi(argv[2]);
   }
 
+  if (argc > 3)
+  {
+    message = argv[3];
+  }
+
   logger_t log(getLogger());
   log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server, port)))->setFormat(Formatter::Full());
 
   {
     std::clog << "** testing remote logging (TODO: create server socket)...";
-    for (size_t i(0); i < 5; ++i)
-    {
-      log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello server!"));
-    }
+    log.log(FHGLOG_MKEVENT_HERE(DEBUG, message));
     std::clog << "OK!" << std::endl;
   }
 
