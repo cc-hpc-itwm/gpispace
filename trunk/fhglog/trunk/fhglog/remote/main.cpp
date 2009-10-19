@@ -17,26 +17,40 @@
  */
 
 #include <sstream>
+#include <cstdlib>
+
 #include <fhglog/remote/LogServer.hpp>
 #include <fhglog/NullAppender.hpp>
 #include <fhglog/Configuration.hpp>
 
 int main(int argc, char **argv)
 {
-  fhg::log::Configurator::configure();
-
   try
   {
+    std::string mode("start");
     short port(FHGLOG_DEFAULT_PORT);
     if (argc > 1)
     {
-      if (std::string(argv[1]) == "-h")
+      const std::string a1(argv[1]);
+      if (a1 == "-h")
       {
-        std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [{start|stop} port]" << std::endl;
         std::cerr << "\tport - udp port to listen on (default:" << FHGLOG_DEFAULT_PORT << ")" << std::endl;
         return 1;
       }
-      std::istringstream isstr(argv[1]);
+      else if (a1 == "stop")
+      {
+        mode = a1;
+      }
+      else if (a1 == "start")
+      {
+        mode = a1;
+      }
+    }
+    
+    if (argc > 2)
+    {
+      std::istringstream isstr(argv[2]);
       isstr >> port;
       if (isstr.bad())
       {
@@ -45,14 +59,27 @@ int main(int argc, char **argv)
       }
     }
 
-    boost::asio::io_service io_service;
-    fhg::log::Appender::ptr_t null(new fhg::log::NullAppender());
+    fhg::log::Configurator::configure();
 
-    fhg::log::remote::LogServer server(null, io_service, port);
+    if (mode == "start")
+    {
+      boost::asio::io_service io_service;
+      fhg::log::Appender::ptr_t null(new fhg::log::NullAppender());
 
-    LOG(INFO, "entering event loop...");
-    io_service.run();
-    LOG(INFO, "done.");
+      fhg::log::remote::LogServer server(null, io_service, port);
+
+      io_service.run();
+      LOG(INFO, "done.");
+      return 0;
+    }
+    else if (mode == "stop")
+    {
+      std::cerr << "stopping server on port " << port << std::endl;
+      std::cerr << "\tFIXME: implement me correctly" << std::endl;
+      std::ostringstream cmd;
+      cmd << "echo -n QUIT deadbeef | nc -q 0 -u localhost " << port;
+      return system(cmd.str().c_str());
+    }
   }
   catch (std::exception& e)
   {
