@@ -11,13 +11,13 @@ using namespace sdpa::events;
 using namespace sdpa::fsm::bsc;
 
 
-void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { process_event(*pEvt); }
-void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { process_event(*pEvt); }
+void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
+void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
+void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
+void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
+void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt); }
+void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
+void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
 void JobFSM::Dispatch() { process_event(EvtBSCDispatch()); }
 
 //Pending event reactions

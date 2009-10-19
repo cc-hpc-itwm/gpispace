@@ -3,7 +3,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
-#include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
 #include <sdpa/uuid.hpp>
@@ -21,13 +20,15 @@ using namespace sdpa::fsm::smc;
 
 //Provide ptr to an implementation of Sdpa2Gwes
 GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
-	: Strategy(name), output_stage_(outputStage), SDPA_INIT_LOGGER(name),
-	ptr_job_man_(new JobManager()), ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes))
+	: Strategy(name),
+	  SDPA_INIT_LOGGER(name),
+	  ptr_job_man_(new JobManager()),
+	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes)),
+	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
+	  output_stage_(outputStage),
+	  master_("")
 {
-	master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
-
-	// provide some dummy implementation (for testing) or use the real impl. from the gwes library
-	ptr_Sdpa2Gwes_ = pArgSdpa2Gwes;
+	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
 }
 
 GenericDaemon::~GenericDaemon()
@@ -55,7 +56,8 @@ GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  cons
 
 void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 {
-	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon) );
+	// The stage uses 2 threads
+	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 2) );
 	ptr_daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
 
@@ -64,9 +66,9 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-	/*ostringstream os;
+	ostringstream os;
 	os<<"Perform: Handling event " <<typeid(*pEvent.get()).name();
-	SDPA_LOG_DEBUG(os.str());*/
+	SDPA_LOG_DEBUG(os.str());
 
 	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
 		handleDaemonEvent(pEvent);
@@ -80,6 +82,13 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 		}
 		else
 			cout<<"Throw an exception here!"<<std::endl;
+
+	// if I'm not the orchestrator (i.e. either aggregator or nre)
+	// if the job queue's length is less than twice the number of workers
+	// and the elapased time since the last request is > polling_interval_time
+	// post a request to the master
+	// else, if time since the last_contact_time of the master > LS time
+	// send a life-sign to the master
 }
 
 void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
@@ -497,7 +506,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 	ostringstream os;
 
 	try {
-		SDPA_LOG_DEBUG("New activity submitted by GWES ...");
+		SDPA_LOG_DEBUG("GWES submitted new activity ...");
 
 		job_id_t job_id(activity.getID());
 
@@ -551,6 +560,7 @@ void GenericDaemon::cancelActivity(const gwes::activity_id_t &activityId) throw 
 	// Job& job = job_map_[job_id];
 	// call job.CancelJob(event);
 
+	SDPA_LOG_DEBUG("GWES asked SDPA to cancel the activity "<<activityId<<" ...");
 	job_id_t job_id(activityId);
 	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
 	sendEvent(pEvtCancelJob);
@@ -570,7 +580,7 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
 	// Job& job = job_map_[job_id];
 	// call job.JobFinished(event);
 
-
+	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
 	job_id_t job_id(workflowId);
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id));
 	sendEvent(pEvtJobFinished);
@@ -593,6 +603,7 @@ void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw 
 	// kill the siblings and the master job, else kill the master job
 	// The master process (User, Orch, Agg) should be informed that the job failed or  was canceled
 
+	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" failed!");
 	job_id_t job_id(workflowId);
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), job_id ));
 	sendEvent(pEvtJobFailed);
@@ -608,6 +619,7 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) thro
 	// identify the job with the job_id == workflow_id_t
 	// trigger a CancelJobAck for that job
 
+	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" was cancelled!");
 	job_id_t job_id(workflowId);
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), job_id));
 	sendEvent(pEvtCancelJobAck);

@@ -5,6 +5,7 @@
 #include <sdpa/daemon/daemonFSM/SMC/DaemonFSM_sm.h>
 #include <sdpa/logging.hpp>
 #include <sdpa/memory.hpp>
+#include <boost/thread.hpp>
 
 namespace sdpa {
 	namespace fsm {
@@ -12,6 +13,9 @@ namespace sdpa {
 			class DaemonFSM : public sdpa::daemon::GenericDaemon {
 				public:
 					typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
+
+			        typedef boost::recursive_mutex mutex_type;
+			      	typedef boost::unique_lock<mutex_type> lock_type;
 
 					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
 						GenericDaemon(name, outputStage, pGwes),
@@ -31,6 +35,7 @@ namespace sdpa {
 				protected:
 					SDPA_DECLARE_LOGGER();
 					DaemonFSMContext m_fsmContext;
+					mutex_type mtx_;
 			};
 }}}
 

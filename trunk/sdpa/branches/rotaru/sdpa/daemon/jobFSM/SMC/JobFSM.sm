@@ -52,6 +52,12 @@ Running
         {
 			action_cancel_job(*pEvent);
         }
+        
+	CancelJobAck(pEvent: const sdpa::events::CancelJobAckEvent*)
+    	Cancelled
+    	{
+    		//action_cancel_job_ack(*pEvent);
+    	}
 
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
@@ -150,6 +156,12 @@ Cancelled
         {
         	action_query_job_status(*pEvent); 
         }
+        
+    RetrieveJobResults(pEvent: const sdpa::events::RetrieveJobResultsEvent*)
+		nil
+		{
+			action_retrieve_job_results(*pEvent); 
+		}       
 }
 
 %%

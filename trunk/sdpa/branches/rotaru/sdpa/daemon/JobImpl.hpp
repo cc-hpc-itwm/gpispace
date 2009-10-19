@@ -6,12 +6,17 @@
 #include <sdpa/daemon/ISendEvent.hpp>
 #include <sdpa/common.hpp>
 #include <map>
+#include <boost/thread.hpp>
+
 
 namespace sdpa { namespace daemon {
     class JobImpl : public Job, public sdpa::fsm::JobFSMActions  {
     public:
         typedef std::map<sdpa::job_id_t, Job::ptr_t> job_list_t;
         typedef sdpa::shared_ptr<JobImpl> ptr_t;
+
+        typedef boost::recursive_mutex mutex_type;
+      	typedef boost::unique_lock<mutex_type> lock_type;
 
         JobImpl(const sdpa::job_id_t &id,
                 const sdpa::job_desc_t &desc,
@@ -65,6 +70,7 @@ namespace sdpa { namespace daemon {
         SDPA_DECLARE_LOGGER();
     protected:
        	mutable IComm* pComm;
+        mutex_type mtx_;
     };
 }}
 

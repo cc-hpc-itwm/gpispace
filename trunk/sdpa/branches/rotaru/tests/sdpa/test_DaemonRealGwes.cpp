@@ -28,18 +28,16 @@
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
 
-
 #include <iostream>
 #include <fstream>
-
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
+using namespace sdpa::fsm::smc;
 
-
-const int NITER = 1;
+const int NITER = 1000;
 
 class TestStrategy : public seda::Strategy
 {
@@ -202,7 +200,7 @@ void DaemonRealGwesTest::setUp() { //initialize and start the finite state machi
 	m_ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
 
 	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", m_ptrTestStrategy) );
-	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes));
+	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM(sdpa::daemon::ORCHESTRATOR, "output_stage", m_ptrSdpa2Gwes));
 
 	DaemonFSM::start(m_ptrDaemonFSM);
 
@@ -248,14 +246,15 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -380,14 +379,15 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -456,8 +456,9 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 		// wait for a JobStatusReplyEvent
 		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pTestStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 
-		if( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
-			pJobStatusReplyEvent->status().find("Failed") == std::string::npos )
+		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Failed") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Cancelled") == std::string::npos )
 		{
 			QueryJobStatusEvent::Ptr pEvtQueryStNew(new QueryJobStatusEvent(strFromUp, strDaemon, job_id_user));
 			m_ptrDaemonFSM->daemon_stage()->send(pEvtQueryStNew);
@@ -512,14 +513,17 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -618,14 +622,16 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -653,8 +659,8 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 		m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
 
 		// the user expects now a CancelJobAckEvent
-		//CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
-		//SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+		CancelJobAckEvent::Ptr pCancelAckEvt = pTestStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
+		SDPA_LOG_DEBUG("User: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
 	}
 
 	sleep(2);

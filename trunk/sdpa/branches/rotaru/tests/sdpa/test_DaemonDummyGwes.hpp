@@ -7,8 +7,6 @@
 #include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 
-using namespace sdpa::fsm::smc;
-
 namespace sdpa {
 		namespace tests {
 			class DaemonDummyGwesTest: public CPPUNIT_NS::TestFixture {
@@ -37,7 +35,7 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  DaemonFSM::ptr_t m_ptrDaemonFSM;
+			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrDaemonFSM;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrOutputStage;
 			  seda::Strategy::Ptr m_ptrTestStrategy;

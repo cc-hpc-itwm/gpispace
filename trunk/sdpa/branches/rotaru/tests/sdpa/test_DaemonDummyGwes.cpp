@@ -32,8 +32,10 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
+using namespace sdpa::fsm::smc;
 
-const int NITER = 10000;
+
+const int NITER = 1000;
 
 class TestStrategy : public seda::Strategy
 {
@@ -194,7 +196,7 @@ void DaemonDummyGwesTest::setUp() { //initialize and start the finite state mach
 	m_ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
 
 	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", m_ptrTestStrategy) );
-	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM("orchestrator","output_stage", m_ptrSdpa2Gwes));
+	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM(sdpa::daemon::ORCHESTRATOR,"output_stage", m_ptrSdpa2Gwes));
 
 	DaemonFSM::start(m_ptrDaemonFSM);
 
@@ -239,9 +241,11 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -372,9 +376,11 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -505,9 +511,11 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
@@ -611,9 +619,11 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
 
+	sleep(1);
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
 
+	sleep(1);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
 	pTestStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
