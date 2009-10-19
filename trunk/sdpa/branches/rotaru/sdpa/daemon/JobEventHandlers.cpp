@@ -101,13 +101,13 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
 
 				// send the event to the master
-				sendEvent(output_stage_, pEvtJobFinished);
+				sendEvent(ptr_output_stage_, pEvtJobFinished);
 				// delete it from the map when you receive a JobFinishedAckEvent!
 			}
 			catch(QueueFull)
 			{
 				os.str("");
-				os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+				os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
 				SDPA_LOG_DEBUG(os.str());
 			}
 			catch(seda::StageNotFound)
@@ -158,7 +158,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
 				// send the event to the master
-				sendEvent(output_stage_, pEvtJobFinishedAckEvt);
+				sendEvent(ptr_output_stage_, pEvtJobFinishedAckEvt);
 
 				//delete it also from job_map_
 				ptr_job_man_->deleteJob(pEvt->job_id());
@@ -230,14 +230,14 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
 
 			// send the event to the master
-			sendEvent(output_stage_, pEvtJobFailedEvent);
+			sendEvent(ptr_output_stage_, pEvtJobFailedEvent);
 
 			// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
 			{
 				os.str("");
-				os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+				os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
 				SDPA_LOG_DEBUG(os.str());
 			}
 			catch(seda::StageNotFound)
@@ -288,7 +288,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
 
 				// send the event to the master
-				sendEvent(output_stage_, pEvtJobFailedAckEvt);
+				sendEvent(ptr_output_stage_, pEvtJobFailedAckEvt);
 
 				//delete it also from job_map_
 				ptr_job_man_->deleteJob(pEvt->job_id());

@@ -267,8 +267,7 @@ namespace sdpa { namespace daemon {
     	// attach to this event the results!
 
     	// send the event
-    	const std::string outstage = pComm->output_stage();
-    	pComm->sendEvent(outstage, pResReply);
+    	pComm->sendEvent(pComm->output_stage(), pResReply);
 
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG(os.str());

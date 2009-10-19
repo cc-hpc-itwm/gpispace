@@ -7,6 +7,8 @@
 #include <gwes/Gwes2Sdpa.h>
 #include <sdpa/Sdpa2Gwes.hpp>
 
+#include <seda/Stage.hpp>
+
 namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;
@@ -16,8 +18,8 @@ const std::string USER("user") ;
 
   class IComm{
   public:
-	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual const std::string output_stage() const = 0;
+	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual seda::Stage* output_stage() const = 0;
 
 	  // only for testing with DummyGwes, change it
 	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;

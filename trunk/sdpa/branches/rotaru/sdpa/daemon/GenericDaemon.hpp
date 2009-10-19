@@ -7,7 +7,6 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/exception_translator.hpp>
 
-#include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
 #include <sdpa/daemon/SchedulerImpl.hpp>
@@ -15,6 +14,7 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
+#include <sdpa/Config.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 
@@ -30,7 +30,7 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static ptr_t create( const std::string &name_prefix, const std::string &outputStage, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
+	  static ptr_t create( const std::string &name_prefix, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
 	  static void start(GenericDaemon::ptr_t daemon );
 
 	  virtual void perform(const seda::IEvent::Ptr&);
@@ -64,7 +64,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
 	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
-	  virtual void sendEvent(const std::string& stageName, const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e);
 
       // Gwes2Sdpa interface implementation
 	  //virtual workflow_id_t submitWorkflow(const workflow_t &workflow);
@@ -87,14 +87,14 @@ namespace sdpa { namespace daemon {
 	  //only for testing purposes!
 	  //friend class sdpa::tests::DaemonFSMTest;
 
-	  virtual const std::string output_stage() const { return output_stage_ ; }
+	  virtual seda::Stage* output_stage() const { return ptr_output_stage_ ; }
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::Sdpa2Gwes*  pSdpa2Gwes);
+	  GenericDaemon(const std::string &name, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes*  pSdpa2Gwes);
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
@@ -106,9 +106,12 @@ namespace sdpa { namespace daemon {
 		  daemon_stage_ = stage;
 	  }
 
-	  const std::string output_stage_;
+	  seda::Stage* ptr_output_stage_;
 	  seda::Stage* daemon_stage_;
 	  std::string master_;
+
+	  sdpa::config::Config::ptr_t ptr_daemon_cfg_;
+	  sdpa::util::time_type last_request_time;
   };
 
   /*

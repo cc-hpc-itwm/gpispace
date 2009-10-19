@@ -37,7 +37,7 @@ using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::smc;
 
-const int NITER = 1000;
+const int NITER = 10;
 
 class TestStrategy : public seda::Strategy
 {
@@ -194,13 +194,11 @@ string DaemonRealGwesTest::read_workflow(string strFileName)
 
 
 void DaemonRealGwesTest::setUp() { //initialize and start the finite state machine
-	SDPA_LOG_DEBUG("setUP");
-
 	m_ptrSdpa2Gwes = new gwes::GWES();
 	m_ptrTestStrategy = seda::Strategy::Ptr( new TestStrategy("test") );
 
-	m_ptrOutputStage = shared_ptr<seda::Stage>( new seda::Stage("output_stage", m_ptrTestStrategy) );
-	m_ptrDaemonFSM = shared_ptr<DaemonFSM>(new DaemonFSM(sdpa::daemon::ORCHESTRATOR, "output_stage", m_ptrSdpa2Gwes));
+	m_ptrOutputStage = seda::Stage::Ptr(new seda::Stage("output_stage", m_ptrTestStrategy) );
+	m_ptrDaemonFSM = DaemonFSM::ptr_t(new DaemonFSM(sdpa::daemon::ORCHESTRATOR, m_ptrOutputStage.get(), m_ptrSdpa2Gwes));
 
 	DaemonFSM::start(m_ptrDaemonFSM);
 
@@ -208,7 +206,7 @@ void DaemonRealGwesTest::setUp() { //initialize and start the finite state machi
 	seda::StageRegistry::instance().insert(m_ptrOutputStage);
 	m_ptrOutputStage->start();
 
-	m_strWorkflow = read_workflow("workflows/simple-sdpa-test.gwdl");
+	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
@@ -217,13 +215,14 @@ void DaemonRealGwesTest::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
-	seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
+	//seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
 	seda::StageRegistry::instance().lookup(m_ptrOutputStage->name())->stop();
 	seda::StageRegistry::instance().clear();
 
-	m_ptrOutputStage.reset();
-	m_ptrDaemonFSM.reset();
+	//delete m_ptrOutputStage;
 	delete m_ptrSdpa2Gwes;
+
+	m_ptrDaemonFSM.reset();
 }
 
 

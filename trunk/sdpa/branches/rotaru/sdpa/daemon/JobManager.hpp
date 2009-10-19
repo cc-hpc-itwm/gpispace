@@ -24,6 +24,8 @@ namespace sdpa { namespace daemon {
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
 
+	  long number_of_jobs() { return job_map_.size(); }
+
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;

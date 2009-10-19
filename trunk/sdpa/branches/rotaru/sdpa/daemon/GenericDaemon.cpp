@@ -19,16 +19,24 @@ using namespace sdpa::fsm::smc;
 
 
 //Provide ptr to an implementation of Sdpa2Gwes
-GenericDaemon::GenericDaemon(const std::string &name, const std::string &outputStage, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+GenericDaemon::GenericDaemon(const std::string &name, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes)),
 	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
-	  output_stage_(outputStage),
+	  ptr_output_stage_(ptrOutStage),
 	  master_("")
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
+
+	// initialize last request time
+	last_request_time = 0;
+
+	ptr_daemon_cfg_ = sdpa::config::Config::create();
+
+	// use for now as below, later read from config file
+	ptr_daemon_cfg_->put("polling interval", 1);
 }
 
 GenericDaemon::~GenericDaemon()
@@ -37,14 +45,16 @@ GenericDaemon::~GenericDaemon()
 	os<<"GenericDaemon destructor called ...";
 	SDPA_LOG_DEBUG(os.str());
 
+	seda::StageRegistry::instance().lookup(name())->stop();
+
 	// Allocated outside and passed as a parameter
 	daemon_stage_ = NULL;
 }
 
-GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix,  const std::string &outputStage, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes )
+GenericDaemon::ptr_t GenericDaemon::create(const std::string &name_prefix, seda::Stage* pOutStage, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes )
 {
 	// warning: we introduce a cycle here, we have to resolve it during shutdown!
-	GenericDaemon::ptr_t daemon( new GenericDaemon(name_prefix, outputStage, pArgSdpa2Gwes) );
+	GenericDaemon::ptr_t daemon( new GenericDaemon(name_prefix, pOutStage, pArgSdpa2Gwes) );
 	seda::Stage::Ptr daemon_stage( new seda::Stage(name_prefix + "", daemon) );
 	daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
@@ -86,7 +96,26 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	// if I'm not the orchestrator (i.e. either aggregator or nre)
 	// if the job queue's length is less than twice the number of workers
 	// and the elapased time since the last request is > polling_interval_time
+
+	 sdpa::util::time_type current_time = sdpa::util::now();
+	 sdpa::util::time_type difftime = current_time - last_request_time;
+
+	 if( sdpa::daemon::ORCHESTRATOR != name() &&  ptr_job_man_->number_of_jobs() < 1 //fix it later
+		 &&  difftime > ptr_daemon_cfg_->get<long long>("polling interval") )
+	 {
+		 // post a new request to the master
+		 // the slave posts a job request
+		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master()) );
+		sendEvent(ptr_output_stage_, pEvtReq);
+		last_request_time = current_time;
+	 }
+
+
+		// if the job queue's length is less than twice the number of workers
+		// and the elapased time since the last request is > polling_interval_time
 	// post a request to the master
+
+
 	// else, if time since the last_contact_time of the master > LS time
 	// send a life-sign to the master
 }
@@ -109,11 +138,11 @@ void GenericDaemon::onStageStart(const std::string &stageName)
 
 void GenericDaemon::onStageStop(const std::string &stageName)
 {
-	daemon_stage_ = NULL;
 	// stop the scheduler thread
 
 	ptr_scheduler_->stop();
 	ptr_Sdpa2Gwes_ = NULL;
+	ptr_output_stage_ = NULL;
 }
 
 void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
@@ -134,10 +163,10 @@ void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
 	}
 }
 
-void GenericDaemon::sendEvent(const std::string& stageName, const SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
 	try {
-		seda::Stage::send(stageName, pEvt);
+		ptrOutStage->send(pEvt);
 
 		ostringstream os;
 		os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
@@ -301,7 +330,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description()));
 
 			// Post a SubmitJobEvent to the slave who made the reques
-			sendEvent(output_stage_, pSubmitEvt);
+			sendEvent(ptr_output_stage_, pSubmitEvt);
 
 			//inform GWES
 			gwes::activity_id_t actId = ptrJob->id().str();
@@ -319,7 +348,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
 
 			// Post a SubmitJobEvent to the slave who made the reques
-			sendEvent(output_stage_, pErrorEvt);
+			sendEvent(ptr_output_stage_, pErrorEvt);
 		}
 
 	}
@@ -332,7 +361,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
 
 		// Post a SubmitJobEvent to the slave who made the reques
-		sendEvent(output_stage_, pErrorEvt);
+		sendEvent(ptr_output_stage_, pErrorEvt);
 	}
 	catch(WorkerNotFoundException)
 	{	os.str("");
@@ -343,12 +372,12 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
 
 		// Post a SubmitJobEvent to the slave who made the reques
-		sendEvent(output_stage_, pErrorEvt);
+		sendEvent(ptr_output_stage_, pErrorEvt);
 	}
 	catch(QueueFull)
 	{
 		os.str("");
-		os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+		os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
 		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(seda::StageNotFound)
@@ -407,7 +436,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
 
 			// There is a problem with this if uncommented
-			sendEvent(output_stage_, pSubmitJobAckEvt);
+			sendEvent(ptr_output_stage_, pSubmitJobAckEvt);
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException) {
@@ -419,7 +448,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	catch(QueueFull)
 	{
 		os.str("");
-		os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobAckEvt for the job "<<job_id;
+		os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id;
 		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(seda::StageNotFound)
@@ -448,7 +477,7 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 	 */
 
 	ConfigReplyEvent::Ptr pCfgReplyEvt( new ConfigReplyEvent( name(), e.from()) );
-	sendEvent(output_stage_, pCfgReplyEvt);
+	sendEvent(ptr_output_stage_, pCfgReplyEvt);
 }
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
@@ -467,12 +496,12 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		SDPA_LOG_DEBUG(os.str());
 		// send back an acknowledgement
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-		sendEvent(output_stage_, pWorkerRegAckEvt);
+		sendEvent(ptr_output_stage_, pWorkerRegAckEvt);
 	}
 	catch(QueueFull)
 	{
 		os.str("");
-		os<<"Failed to send to the output stage "<<output_stage_<<" a WorkerRegistrationEvent";
+		os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a WorkerRegistrationEvent";
 		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(seda::StageNotFound)
@@ -533,7 +562,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 	catch(QueueFull)
 		{
 			os.str("");
-			os<<"Failed to send to the output stage "<<output_stage_<<" a SubmitJobEvent";
+			os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
 			SDPA_LOG_DEBUG(os.str());
 		}
 		catch(seda::StageNotFound)

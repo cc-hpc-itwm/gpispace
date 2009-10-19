@@ -17,8 +17,8 @@ namespace sdpa {
 			        typedef boost::recursive_mutex mutex_type;
 			      	typedef boost::unique_lock<mutex_type> lock_type;
 
-					DaemonFSM(const std::string& name, const std::string& outputStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
-						GenericDaemon(name, outputStage, pGwes),
+					DaemonFSM(const std::string& name, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
+						GenericDaemon(name, ptrOutStage, pGwes),
 						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
 						m_fsmContext(*this)
 						{
