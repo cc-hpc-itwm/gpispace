@@ -23,25 +23,42 @@
 
 using namespace fhg::log::remote;
 
-RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, const std::string &a_service)
+RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, short a_port)
   : Appender(a_name)
   , host_(a_host)
-  , service_(a_service)
+  , port_(a_port)
+  , socket_(NULL)
 {
-  using boost::asio::ip::udp;
-
-  udp::resolver resolver(io_service_);
-  udp::resolver::query query(udp::v4(), a_host.c_str(), a_service);
-  logserver_ = *resolver.resolve(query);
-  socket_ = new udp::socket(io_service_);
-  socket_->open(udp::v4());
+  open();
 }
 
 RemoteAppender::~RemoteAppender()
 {
+  close();
+}
+
+void RemoteAppender::open()
+{
+  close();
+
+  using boost::asio::ip::udp;
+
+  udp::resolver resolver(io_service_);
+  udp::resolver::query query(udp::v4(), host().c_str(), "0");
+  logserver_ = *resolver.resolve(query);
+  logserver_.port(port());
+  socket_ = new udp::socket(io_service_);
+  socket_->open(udp::v4());
+}
+
+void RemoteAppender::close()
+{
   if (socket_)
+  {
+    socket_->close();
     delete socket_;
-  socket_ = NULL;
+    socket_ = NULL;
+  }
 }
 
 void RemoteAppender::append(const LogEvent &evt) const

@@ -22,25 +22,39 @@
 #include <boost/asio.hpp>
 
 #include <fhglog/Appender.hpp>
-#include <stdint.h>
+
+#if ! defined(FHGLOG_DEFAULT_PORT)
+// ascii codes of fhgl: 102 104 103 108
+#define FHGLOG_DEFAULT_PORT  2438
+#endif
+
+#if ! defined(FHGLOG_DEFAULT_HOST)
+#define FHGLOG_DEFAULT_HOST  "localhost"
+#endif
 
 namespace fhg { namespace log { namespace remote {
   class RemoteAppender : public Appender
   {
   public:
-    RemoteAppender(const std::string &name, const std::string &host, const std::string &service);
+    explicit
+    RemoteAppender(const std::string &name
+                 , const std::string &host = FHGLOG_DEFAULT_HOST
+                 , short port = FHGLOG_DEFAULT_PORT);
     virtual ~RemoteAppender();
 
     const std::string &host() const { return host_; }
-    const std::string &service() const { return service_; }
+    const short &port() const { return port_; }
     void append(const LogEvent &evt) const;
   private:
-    std::string host_;
-    std::string service_;
+    void open();
+    void close();
 
+    std::string host_;
+    short port_;
+
+    boost::asio::ip::udp::socket *socket_;
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint logserver_;
-    boost::asio::ip::udp::socket *socket_;
   };
 }}}
 
