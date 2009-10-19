@@ -22,10 +22,13 @@ set (hdrs RemoteAppender.hpp LogServer.hpp Serialization.hpp)
 set (srcs RemoteAppender.cpp LogServer.cpp)
 
 ADD_LIBRARY(fhglog_remote ${hdrs} ${srcs})
-add_executable(fhglog-server main.cpp)
-target_link_libraries(fhglog-server fhglog)
-target_link_libraries(fhglog-server fhglog_remote)
+add_executable(fhglog-server fhglog-server.cpp)
+add_executable(fhglog-client fhglog-client.cpp)
+
+target_link_libraries(fhglog-server fhglog fhglog_remote)
+target_link_libraries(fhglog-client fhglog fhglog_remote)
 
 install(FILES ${hdrs} DESTINATION include/fhglog/remote)
 install(TARGETS fhglog_remote DESTINATION lib)
 install(TARGETS fhglog-server DESTINATION bin)
+install(TARGETS fhglog-client DESTINATION bin)

@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     {
       std::istringstream isstr(argv[2]);
       isstr >> port;
-      if (isstr.bad())
+      if (! isstr)
       {
         std::cerr << "invalid port specified: " << argv[1] << std::endl;
         return 2;
