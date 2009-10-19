@@ -11,3 +11,7 @@ foreach (tc_src ${tc_srcs})
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
+
+if (WITH_REMOTE_LOGGING)
+  add_subdirectory(remote)
+endif (WITH_REMOTE_LOGGING)
