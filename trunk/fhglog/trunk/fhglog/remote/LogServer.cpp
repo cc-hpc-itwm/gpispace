@@ -32,7 +32,7 @@ LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
   , io_service_(io_service)
   , socket_(io_service, udp::endpoint(udp::v4(), port))
 {
-  LOG(INFO, "log server initialized");
+  LOG(INFO, "log server listening on " << udp::endpoint(udp::v4(), port));
   LOG(WARN, "FIXME: implement serialization/deserialization of LogEvents over UDP!");
   socket_.async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
       boost::bind(&LogServer::handle_receive_from, this,
@@ -47,8 +47,15 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
   if (!error && bytes_recv > 0)
   {
     data_[bytes_recv] = 0;
+
     // TODO: deserialize LogEvent
     std::string msg(data_);
+
+    if (msg == "QUIT deadbeef")
+    {
+      LOG(INFO, "got QUIT message, shutting down.");
+      return;
+    }
 
     std::clog << "got " << bytes_recv << " bytes from " << sender_endpoint_ << ": " << data_;
     appender_->append(FHGLOG_MKEVENT_HERE(INFO, data_));
