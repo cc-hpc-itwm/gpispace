@@ -16,13 +16,16 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
+link_libraries(${Boost_LIBRARIES})
 
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+set (hdrs RemoteAppender.hpp LogServer.hpp Serialization.hpp)
+set (srcs RemoteAppender.cpp LogServer.cpp)
 
 ADD_LIBRARY(fhglog_remote ${hdrs} ${srcs})
+add_executable(fhglog-server main.cpp)
+target_link_libraries(fhglog-server fhglog)
+target_link_libraries(fhglog-server fhglog_remote)
 
 install(FILES ${hdrs} DESTINATION include/fhglog/remote)
-install(TARGETS fhglog_remote DESTINATION lib
-  EXPORT ${PROJECT_NAME}Exports
-)
+install(TARGETS fhglog_remote DESTINATION lib)
+install(TARGETS fhglog-server DESTINATION bin)
