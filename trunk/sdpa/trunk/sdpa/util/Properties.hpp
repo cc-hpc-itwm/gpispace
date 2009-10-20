@@ -6,7 +6,7 @@
 #include <sdpa/SDPAException.hpp>
 #include <sstream>
 
-namespace sdpa {
+namespace sdpa { namespace util {
     class PropertyLookupFailed : public sdpa::SDPAException {
     public:
         PropertyLookupFailed(const std::string &a_key)
@@ -111,8 +111,8 @@ namespace sdpa {
     private:
         map_t properties_;
     };
-}
+}}
 
-extern std::ostream & operator<<(std::ostream &, const sdpa::Properties &);
+extern std::ostream & operator<<(std::ostream &, const sdpa::util::Properties &);
 
 #endif // ! SDPA_PROPERTIES_HPP

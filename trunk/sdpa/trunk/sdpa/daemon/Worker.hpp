@@ -3,7 +3,7 @@
 
 #include <list>
 #include <string>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>

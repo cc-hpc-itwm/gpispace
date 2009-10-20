@@ -1,20 +1,20 @@
 #include "Properties.hpp"
 
-void sdpa::Properties::put(const std::string &key, const std::string &val) {
+void sdpa::util::Properties::put(const std::string &key, const std::string &val) {
     del(key);
     properties_.insert(std::make_pair(key, val));
 }
 
-std::size_t sdpa::Properties::del(const std::string &key) {
+std::size_t sdpa::util::Properties::del(const std::string &key) {
     return properties_.erase(key);
 }
 
-bool sdpa::Properties::has_key(const std::string &key) const throw() {
+bool sdpa::util::Properties::has_key(const std::string &key) const throw() {
     map_t::const_iterator it(properties_.find(key));
     return (it != properties_.end());
 }
 
-const std::string &sdpa::Properties::get(const std::string &key) const throw(PropertyLookupFailed) {
+const std::string &sdpa::util::Properties::get(const std::string &key) const throw(PropertyLookupFailed) {
     map_t::const_iterator it(properties_.find(key));
     if (it != properties_.end()) {
         return it->second;
@@ -23,7 +23,7 @@ const std::string &sdpa::Properties::get(const std::string &key) const throw(Pro
     }
 }
 
-const std::string &sdpa::Properties::get(const std::string &key, const std::string &def) const throw() {
+const std::string &sdpa::util::Properties::get(const std::string &key, const std::string &def) const throw() {
     try {
         return get(key);
     } catch(...) {
@@ -31,15 +31,15 @@ const std::string &sdpa::Properties::get(const std::string &key, const std::stri
     }
 }
 
-void sdpa::Properties::clear() {
+void sdpa::util::Properties::clear() {
     properties_.clear();
 }
 
-bool sdpa::Properties::empty() const {
+bool sdpa::util::Properties::empty() const {
     return properties_.empty();
 }
 
-void sdpa::Properties::writeTo(std::ostream &os) const
+void sdpa::util::Properties::writeTo(std::ostream &os) const
 {
   os << "[";
   map_t::const_iterator it(properties_.begin());
@@ -64,7 +64,7 @@ void sdpa::Properties::writeTo(std::ostream &os) const
   os << "]";
 }
 
-std::ostream &operator<<(std::ostream &os, const sdpa::Properties &props)
+std::ostream &operator<<(std::ostream &os, const sdpa::util::Properties &props)
 {
   props.writeTo(os);
   return os;
