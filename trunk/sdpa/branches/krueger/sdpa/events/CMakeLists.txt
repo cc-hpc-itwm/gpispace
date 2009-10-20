@@ -1,14 +1,15 @@
-add_protocol_buffers(sdpa-msg)
+# -*- mode: cmake; -*-
 
-SET_SOURCE_FILES_PROPERTIES(sdpa-msg.pb.h PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(sdpa-msg.pb.cc PROPERTIES GENERATED 1)
+add_protocol_buffers(SDPA_MSG_PB_CPP SDPA_MSG_PB_H sdpa-msg)
 
-file(GLOB hdrs "*.hpp" "sdpa-msg.pb.h")
-file(GLOB srcs "*.cpp" "sdpa-msg.pb.cc")
+file(GLOB hdrs "*.hpp")
+file(GLOB srcs "*.cpp")
+
+set(hdrs ${SDPA_MSG_PB_H} ${hdrs} )
+set(srcs ${SDPA_MSG_PB_CPP} ${srcs} )
 
 include_directories(${PB_INCLUDE_DIR})
-ADD_LIBRARY(sdpa-messages ${hdrs} ${srcs})
-ADD_DEPENDENCIES(sdpa-messages sdpa-msg.pb.h sdpa-msg.pb.cc)
+ADD_LIBRARY(sdpa-events ${hdrs} ${srcs})
 
-install(FILES ${hdrs} DESTINATION include/sdpa/messages)
-install(TARGETS sdpa-messages ARCHIVE DESTINATION lib)
+install(FILES ${hdrs} DESTINATION include/sdpa/events)
+install(TARGETS sdpa-events ARCHIVE DESTINATION lib)

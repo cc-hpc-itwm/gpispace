@@ -39,7 +39,7 @@ if(@UPPER_PROJECT_NAME@_WITH_LOG4CPP)
   require(Logging "@LOG4CPP_HOME@" 1.0)
 endif(@UPPER_PROJECT_NAME@_WITH_LOG4CPP)
 
-require(Boost "@BOOST_ROOT@" 1.36)
+#require(Boost "@BOOST_ROOT@" 1.36)
 
 
 # Make sure to load the exported targets only once

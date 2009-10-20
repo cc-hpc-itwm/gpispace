@@ -99,7 +99,7 @@ endif ( PKG_CONFIG_FOUND )
 
 ## logging
 if (ENABLE_LOGGING)
-  message(STATUS "Prject: '${PROJECT_NAME}'")
+  message(STATUS "Project: '${PROJECT_NAME}'")
   set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
   if (WITH_LOG4CPP)

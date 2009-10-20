@@ -1,4 +1,5 @@
 # -*- mode: cmake; -*-
+
 add_protocol_buffers(SDPA_MSG_PB_CPP SDPA_MSG_PB_H sdpa-msg)
 
 file(GLOB hdrs "*.hpp")
