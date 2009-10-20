@@ -9,7 +9,7 @@ std::size_t sdpa::Properties::del(const std::string &key) {
     return properties_.erase(key);
 }
 
-bool sdpa::Properties::has_key(const std::string &key) const {
+bool sdpa::Properties::has_key(const std::string &key) const throw() {
     map_t::const_iterator it(properties_.find(key));
     return (it != properties_.end());
 }

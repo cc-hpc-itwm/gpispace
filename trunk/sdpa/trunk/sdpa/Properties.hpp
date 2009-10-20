@@ -68,7 +68,7 @@ namespace sdpa {
         }
         std::size_t del(const std::string &key);
 
-        bool has_key(const std::string &key) const;
+        bool has_key(const std::string &key) const throw();
         const std::string &get(const std::string &key) const throw(PropertyLookupFailed);
         const std::string &get(const std::string &key, const std::string &def) const throw();
 
