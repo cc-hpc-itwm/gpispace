@@ -54,9 +54,9 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer ")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
     if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 2)
+      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Werror -Wreturn-type -Wshadow")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
@@ -65,9 +65,9 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
           message(STATUS "Additional warnings for Debug-Build activated (gcc >= 4.3 detected)")
         endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
       elseif (${CMAKE_CXX_COMPILER_MINOR} GREATER 0)
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wreturn-type")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wreturn-type -Wno-unused-parameter")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 2)
+      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
     endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
 
     # gprof and gcov support
