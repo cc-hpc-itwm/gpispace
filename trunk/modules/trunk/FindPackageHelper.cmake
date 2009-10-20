@@ -115,7 +115,7 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
 
   if(${_NAME_UPPER}_LIBRARY) 
     set(${_name}_IN_CACHE true)
-    message(STATUS "  Package ${_NAME_UPPER} allready '${${_NAME_UPPER}_LIBRARY}' loaded")
+    message(STATUS "  Package ${_NAME_UPPER} already '${${_NAME_UPPER}_LIBRARY}' loaded")
   endif(${_NAME_UPPER}_LIBRARY) 
 
   check_package_search_path(${_NAME_UPPER} ${INCLUDE_FILE} ${LIBNAME} ${LIBVERSION}
@@ -186,7 +186,7 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
       set(${_NAME_UPPER}_LIBRARY ${_name} PARENT_SCOPE)
     endif(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
   else( NOT ${_name}_IN_CACHE )
-    message(STATUS "    package ${NAME} was allready in loaded. Do not perform dependencies.")
+    message(STATUS "    package ${NAME} was already in loaded. Do not perform dependencies.")
   endif( NOT ${_name}_IN_CACHE )
 
 
@@ -210,7 +210,7 @@ function(require PACKAGE ADD_SEARCH_PATH VERSION)
   string(TOUPPER ${PACKAGE} UPPER_PACKAGE)
 
   if( ${UPPER_PACKAGE}_FOUND )
-    message(STATUS "   Package ${UPPER_PACKAGE} allready loaded")
+    message(STATUS "   Package ${UPPER_PACKAGE} already loaded")
   endif( ${UPPER_PACKAGE}_FOUND )
   message(STATUS "    Variable ENV{${UPPER_PACKAGE}_HOME} = '$ENV{${UPPER_PACKAGE}_HOME}'")
   message(STATUS "    Variable ${UPPER_PACKAGE}_HOME      = '${${UPPER_PACKAGE}_HOME}'")
