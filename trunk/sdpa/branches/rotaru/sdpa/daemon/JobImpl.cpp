@@ -1,5 +1,4 @@
 #include "JobImpl.hpp"
-#include <sstream>
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
@@ -12,6 +11,7 @@
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
 
+#include <sdpa/util/Properties.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 using namespace std;
@@ -86,18 +86,13 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_run_job()
     {
-    	ostringstream os;
-    	os<<"Process 'action_run_job'";
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_run_job'");
     }
 
     // transition from Pending to Cancelled
 	void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& evt)
 	{
-		ostringstream os;
-		os<<"Process 'action_cancel_job_from_pending'";
-		SDPA_LOG_DEBUG(os.str());
-
+		SDPA_LOG_DEBUG("Process 'action_cancel_job_from_pending'");
 
 		// the message comes from GWES, should identify the worker to which the activity was assigned
 		// and send him a CancelJob
@@ -113,14 +108,10 @@ namespace sdpa { namespace daemon {
 
 				pComm->gwes()->activityCanceled( wfId, actId );
 
-			} catch(sdpa::PropertyLookupFailed& ) {
-				os.str("");
-				os<<"The job was not assigned to a worker!";
-				SDPA_LOG_DEBUG(os.str());
+			} catch(sdpa::util::PropertyLookupFailed& ) {
+				SDPA_LOG_DEBUG("The job was not assigned to a worker!");
 			} catch(...) {
-				os.str("");
-				os<<"Unexpected exception occurred!";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			} //handle here NoSuchWorkflow,NoSuchActivity exceptions
 		}
 		else //the master sent a Cancel message -> forward it to the workflow engine
@@ -142,10 +133,8 @@ namespace sdpa { namespace daemon {
 	// transition from Cancelling to Cancelled
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& evt)
     {
-    	ostringstream os;
-    	os<<"Process 'action_cancel_job'";
     	// cancel the job
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_cancel_job'");
 
     	/*else // the message comes from GWES, should identify the worker to which the activity was assigned
 		 * and send him a CancelJob
@@ -158,21 +147,14 @@ namespace sdpa { namespace daemon {
 				sdpa::worker_id_t worker_id = get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
 				// else, forward the cancel to the worker
-				os.str("");
-				os<<"Send CancelJobEvent for the job "<<evt.job_id()<<" to the worker "<<worker_id;
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Send CancelJobEvent for the job "<<evt.job_id()<<" to the worker "<<worker_id);
 
 				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
 				pComm->sendEvent(pComm->output_stage(), pCancelEvt);
-
-			} catch(sdpa::PropertyLookupFailed& ) {
-				os.str("");
-				os<<"The job was not assigned to a worker!";
-				SDPA_LOG_DEBUG(os.str());
+			} catch(sdpa::util::PropertyLookupFailed& ) {
+				SDPA_LOG_WARN("The job was not assigned to a worker!");
 			} catch(...) {
-				os.str("");
-				os<<"Unexpected exception occurred!";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			}
 		}
 		else // /the upper level sent a Cancel message -> inform Gwes
@@ -183,45 +165,35 @@ namespace sdpa { namespace daemon {
 			}
 			catch(gwes::Gwes2Sdpa::NoSuchWorkflow)
 			{
-				os.str("");
-				os<<"No such workflow exception occured!";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_ERROR("No such workflow exception occured!");
 			}
 			catch(...) {
-				os.str("");
-				os<<"Unexpected exception occurred!";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			}
 		}
     }
 
-    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& event)
+    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& /* evt */)
     {
-    	ostringstream os;
-    	os<<"Process 'action_cancel_job_ack'" ;
     	// Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
 
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_cancel_job_ack'");
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
-    	ostringstream os;
-    	os<<"Process 'action_delete_job'" ;
     	b_marked_for_del_ = true;
 
     	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id()) );
     	//send the event
     	pComm->sendEvent(pComm->output_stage(), pDelJobReply);
 
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_delete_job'");
     }
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
-    	ostringstream os;
-    	os<<"Process 'action_query_job_status'";
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_query_job_status'");
 
     	JobStatusReplyEvent::status_t status = getStatus();
 
@@ -231,34 +203,25 @@ namespace sdpa { namespace daemon {
 		// send the event
 		pComm->sendEvent(pComm->output_stage(), pStatReply);
 
-    	os.str("");
-    	os<<"Posted an event of type StatusReplyEvent";
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Posted an event of type StatusReplyEvent");
     }
 
-    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& event)
+    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& /* evt */)
     {
-    	ostringstream os;
-    	os <<"Process 'action_job_finished'";
     	// inform WFE (send a JobFinishedEvent event to the stage WFE)
     	// obsolete: post a JobFinishedAckEvent to e.from()
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_job_finished'");
     }
 
-    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& event)
+    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& /* evt */)
     {
-    	ostringstream os;
-    	os <<"Process 'action_job_failed'";
     	// inform WFE (send a JobFailedEvent event to the stage WFE)
     	// obsolete: post a JobFailedAckEvent to e.from()
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_job_failed'");
     }
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
-    	ostringstream os;
-    	os <<"Process 'action_retrieve_results'";
-
     	// fill it here with real results
     	JobResultsReplyEvent::result_t results("");
 
@@ -270,6 +233,6 @@ namespace sdpa { namespace daemon {
     	pComm->sendEvent(pComm->output_stage(), pResReply);
 
     	// Post a JobResultsReplyEvent to e.from()
-    	SDPA_LOG_DEBUG(os.str());
+    	SDPA_LOG_DEBUG("Process 'action_retrieve_results'");
     }
 }}

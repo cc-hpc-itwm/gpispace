@@ -6,7 +6,7 @@
 #include <utility>
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 
 #include <boost/statechart/event_base.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -28,7 +28,7 @@ namespace sdpa { namespace daemon {
      * The interface to the generic job description we keep around in all
      * components.
      */
-    class Job : public Properties {
+    class Job : public sdpa::util::Properties {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
@@ -58,7 +58,7 @@ namespace sdpa { namespace daemon {
 
         virtual bool is_local()=0;
         virtual void set_local(bool)=0;
-        virtual void process_event( const boost::statechart::event_base & e) {}
+        virtual void process_event( const boost::statechart::event_base &) {}
 
         //transitions
 		virtual void CancelJob(const sdpa::events::CancelJobEvent*);

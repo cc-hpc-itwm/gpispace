@@ -1,55 +1,65 @@
 #include "Activity.hpp"
 
+#include <fhglog/fhglog.hpp>
+
 using namespace sdpa::wf;
 
-Activity::Activity(const std::string &name)
-  : name_(name) {
-}
-
-Activity::Activity(const std::string &name, const Method &method)
-  : name_(name), method_(method) {
-}
-
-Activity::Activity(const std::string &name, const Method &method, const parameter_list & input)
-  : name_(name), method_(method), input_(input) {
-}
-
-Activity::Activity(const std::string &name, const Method &method, const parameter_list & input, const parameter_list & output)
-  : name_(name), method_(method), input_(input), output_(output) {
+Activity::Activity(const std::string &a_name, const Method &a_method, const parameters_t & params)
+  : name_(a_name)
+  , method_(a_method)
+  , params_(params)
+{
 }
 
 Activity::Activity(const Activity &other)
-  : name_(other.name()), method_(other.method()), input_(other.input()), output_(other.output()) {
+  : name_(other.name())
+  , method_(other.method())
+  , params_(other.parameters())
+  , properties_(other.properties())
+{
 }
 
-const Activity & Activity::operator=(const Activity &rhs) {
-  name_ = rhs.name();
-  method_ = rhs.method();
-  input_ = rhs.input();
-  output_ = rhs.output();
+Activity& Activity::operator=(const Activity &rhs) {
+  if (this != &rhs)
+  {
+    name_ = rhs.name();
+    method_ = rhs.method();
+    params_ = rhs.parameters();
+    properties_ = rhs.properties();
+  }
+  return *this;
 }
 
-void Activity::add_input(const Parameter &p) {
-  input_.push_back(p);
-}
-
-void Activity::add_output(const Parameter &p) {
-  output_.push_back(p);
+void Activity::add_parameter(const Parameter &p) {
+  params_.insert(std::make_pair(p.name(), p));
 }
 
 void Activity::writeTo(std::ostream &os) const {
-  os << name() << ":" << method().module() << "::" << method().name();
-
-  os << "(";
-  for (parameter_list::const_iterator p(input().begin()); p != input().end(); p++) {
-    os << *p;
+  os << "{"
+     << "act"
+     << ","
+     << name()
+     << ","
+     << method()
+     << ","
+     << "{" << "params"
+     << ","
+     << "[";
+  for (parameters_t::const_iterator p(parameters().begin());;) {
+    os << p->second;
+    ++p;
+    if (p == parameters().end())
+    {
+      break;
+    }
+    else
+    {
+      os << ",";
+    }
   }
-  os << ")->[";
-
-  for (parameter_list::const_iterator p(output().begin()); p != output().end(); p++) {
-    os << *p;
-  }
-  os << "]";
+  os << "]"
+     << "}"
+     << "}";
 }
 
 std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a) {
@@ -57,3 +67,7 @@ std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a) {
   return os;
 }
 
+std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity::Method &m) {
+  m.writeTo(os);
+  return os;
+}

@@ -4,7 +4,7 @@
 #include <sdpa/modules/ModuleLoader.hpp>
 
 namespace sdpa { namespace modules {
-  ModuleLoader::Ptr createModuleLoader() {
+  ModuleLoader::ptr_t createModuleLoader() {
     return ModuleLoader::create();
   }  
 }}

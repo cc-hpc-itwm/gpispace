@@ -1,41 +1,36 @@
 #ifndef SDPA_SubmitJobEvent_HPP
 #define SDPA_SubmitJobEvent_HPP
 
-#include <iostream>
 #include <boost/statechart/event.hpp>
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
 
 namespace sc = boost::statechart;
 
-namespace sdpa {
-namespace events {
-    class SubmitJobEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::SubmitJobEvent> {
+namespace sdpa { namespace events {
+  class SubmitJobEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::SubmitJobEvent> {
     public:
-        typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
+      typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
 
-        SubmitJobEvent( const address_t& from,
-						const address_t& to,
-        		        const sdpa::job_id_t& job_id = sdpa::job_id_t(""),
-        		        const job_desc_t& description = sdpa::job_desc_t(""),
-        		        const sdpa::job_id_t& parent_id = sdpa::job_id_t("")) :
-        	sdpa::events::JobEvent( from, to, job_id ), desc_(description), parent_(parent_id) {
-			//std::cout << "Create event 'SubmitJobEvent'"<< std::endl;
-        }
+      SubmitJobEvent( const address_t& a_from
+          , const address_t& a_to
+          , const sdpa::job_id_t& a_job_id = sdpa::job_id_t("")
+          , const job_desc_t& a_description = sdpa::job_desc_t("")
+          , const sdpa::job_id_t& a_parent_id = sdpa::job_id_t("")) 
+        : sdpa::events::JobEvent( a_from, a_to, a_job_id ), desc_(a_description), parent_(a_parent_id)
+        { }
+        
+      const sdpa::job_id_t &parent_id() const { return parent_; }
 
-        sdpa::job_id_t parent_id() const { return parent_; }
+      virtual ~SubmitJobEvent() { }
 
-    	virtual ~SubmitJobEvent() {
-    		//std::cout << "Delete event 'SubmitJobEvent'"<< std::endl;
-    	}
+      std::string str() const { return "SubmitJobEvent"; }
 
-    	std::string str() const { return "SubmitJobEvent"; }
-
-    	const sdpa::job_desc_t & description() const {return desc_;}
+      const sdpa::job_desc_t & description() const {return desc_;}
     private:
-    	sdpa::job_desc_t desc_;
-    	sdpa::job_id_t parent_;
-    };
+      sdpa::job_desc_t desc_;
+      sdpa::job_id_t parent_;
+  };
 }}
 
 #endif

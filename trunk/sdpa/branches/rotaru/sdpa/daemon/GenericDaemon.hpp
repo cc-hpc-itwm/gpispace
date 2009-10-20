@@ -9,12 +9,12 @@
 
 #include <seda/Strategy.hpp>
 
+#include <sdpa/Config.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
 #include <sdpa/daemon/ISendEvent.hpp>
-#include <sdpa/Config.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 

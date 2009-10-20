@@ -17,13 +17,16 @@ distclean: clean
 	@-find . -name "*~" -delete
 
 clean:
-	make -C $(BUILD_DIR) clean
+	-make -C $(BUILD_DIR) clean
 
 doc-api: config
 	make -C build doc
 
 doc:
 	make -C doc
+
+dist: test
+	make -C $(BUILD_DIR) package
 
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)

@@ -3,11 +3,11 @@
 using namespace sdpa::daemon;
 
 
-void Job::CancelJob(const sdpa::events::CancelJobEvent* pEvt) { }
-void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { }
-void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { }
-void Job::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { }
-void Job::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) { }
-void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { }
-void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { }
+void Job::CancelJob(const sdpa::events::CancelJobEvent*) { }
+void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent*) { }
+void Job::DeleteJob(const sdpa::events::DeleteJobEvent*) { }
+void Job::JobFailed(const sdpa::events::JobFailedEvent*) { }
+void Job::JobFinished(const sdpa::events::JobFinishedEvent*) { }
+void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent*) { }
+void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*) { }
 void Job::Dispatch() { }

@@ -1,12 +1,10 @@
 #include "SchedulerTestImpl.hpp"
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 
 using namespace sdpa::daemon;
 
-SchedulerTestImpl::SchedulerTestImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes):
+SchedulerTestImpl::SchedulerTestImpl(sdpa::Sdpa2Gwes* /* ptr_Sdpa2Gwes */):
 	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerTestImpl")
 {
 }
@@ -18,9 +16,7 @@ SchedulerTestImpl::~SchedulerTestImpl()
 
 void SchedulerTestImpl::schedule(Job::ptr_t& pJob)
 {
-	ostringstream os;
-	os<<"Handle job "<<pJob->id();
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Handle job "<<pJob->id());
 
 	jobs_to_be_scheduled.push(pJob);
 }
@@ -30,7 +26,7 @@ Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_i
 	throw WorkerNotFoundException(worker_id);
 }
 
-void SchedulerTestImpl::addWorker(const Worker::ptr_t& pWorker)
+void SchedulerTestImpl::addWorker(const Worker::ptr_t& /* worker */)
 {
 }
 

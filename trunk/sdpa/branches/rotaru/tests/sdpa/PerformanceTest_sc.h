@@ -19,14 +19,14 @@ namespace sdpa { namespace tests {
   struct S0 : sc::simple_state<S0, PerformanceTestBSC> {
     typedef sc::custom_reaction< PerformanceTestBSCEvent > reactions;
 
-    sc::result react(const PerformanceTestBSCEvent &e) {
+    sc::result react(const PerformanceTestBSCEvent &) {
       return transit< S1 >();
     }
   };
   struct S1 : sc::simple_state<S1, PerformanceTestBSC> {
     typedef sc::custom_reaction< PerformanceTestBSCEvent > reactions;
 
-    sc::result react(const PerformanceTestBSCEvent &e) {
+    sc::result react(const PerformanceTestBSCEvent &) {
       return transit< S0 >();
     }
   };

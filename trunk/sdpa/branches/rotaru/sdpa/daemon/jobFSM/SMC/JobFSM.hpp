@@ -1,6 +1,7 @@
 #ifndef JOB_FSM_SMC_HPP
 #define JOB_FSM_SMC_HPP 1
 
+#include <sdpa/daemon/ISendEvent.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM_sm.h>
 #include <sdpa/logging.hpp>

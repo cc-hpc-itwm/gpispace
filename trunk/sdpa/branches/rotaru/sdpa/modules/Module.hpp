@@ -5,7 +5,7 @@
 #include <list>
 
 #include <sdpa/memory.hpp>
-#include <sdpa/wf/Token.hpp>
+#include <sdpa/wf/Activity.hpp>
 #include <sdpa/modules/exceptions.hpp>
 
 namespace sdpa {
@@ -26,16 +26,13 @@ namespace modules {
    */
   class Module {
     public:
-      typedef sdpa::shared_ptr<Module> Ptr;
+      typedef shared_ptr<Module> ptr_t;
 
       typedef void* handle_t;
       typedef void (*InitFunction)(Module*);
 
-      typedef std::list<sdpa::wf::Token> data_t;
-      typedef data_t input_data_t;
-      typedef data_t output_data_t;
-
-      typedef void (*GenericFunction)(const input_data_t&, output_data_t&);
+      typedef sdpa::wf::Activity::parameters_t data_t;
+      typedef void (*GenericFunction)(data_t&);
 
       typedef std::map<std::string, GenericFunction> call_table_t;
     public:
@@ -46,9 +43,12 @@ namespace modules {
       const std::string &name() const { return name_; }
       handle_t handle() { return handle_; }
 
-      void call(const std::string &function, const input_data_t&, output_data_t&) const throw (FunctionNotFound, BadFunctionArgument, FunctionException);
+      void call(const std::string &function, data_t&) const throw (FunctionNotFound, BadFunctionArgument, FunctionException, std::exception);
       void add_function(const std::string &function, GenericFunction) throw (DuplicateFunction, FunctionException);
     private:
+      Module(const Module&);
+      Module &operator=(const Module &);
+
       std::string name_;
       handle_t handle_;
       call_table_t call_table_;

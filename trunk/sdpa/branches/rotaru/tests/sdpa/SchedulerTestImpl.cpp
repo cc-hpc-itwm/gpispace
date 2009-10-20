@@ -27,10 +27,9 @@ Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_i
 	throw WorkerNotFoundException(worker_id);
 }
 
-void SchedulerTestImpl::addWorker(const Worker::ptr_t& pWorker)
+void SchedulerTestImpl::addWorker(const Worker::ptr_t&)
 {
 }
-
 
 void SchedulerTestImpl::start()
 {

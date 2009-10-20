@@ -12,7 +12,7 @@ Worker::Worker(const worker_id_t &name, const location_t &location)
 
 }
 
-void Worker::update(const sdpa::events::SDPAEvent &event) {
+void Worker::update(const sdpa::events::SDPAEvent &) {
   tstamp_ = sdpa::util::now();
 }
 

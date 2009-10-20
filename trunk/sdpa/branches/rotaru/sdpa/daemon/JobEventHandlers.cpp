@@ -3,10 +3,8 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
-//#include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
-#include <sstream>
 #include <map>
 
 #include <sdpa/daemon/exceptions.hpp>

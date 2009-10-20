@@ -4,7 +4,7 @@
 #include <list>
 #include <sdpa/memory.hpp>
 #include <time.h>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <fstream>
 
 using namespace std;
@@ -29,13 +29,13 @@ void JobFSMTest_SMC::tearDown() { //stop the finite state machine
 
 void JobFSMTest_SMC::testJobFSM_SMC()
 {
-	list<sdpa::shared_ptr<sc::event_base> > listEvents;
+	//list<sdpa::shared_ptr<sc::event_base> > listEvents;
 
-	string strFrom("");
-	string strTo("");
-	string strJobID = m_JobFSM.id().str();
+	//string strFrom("");
+	//string strTo("");
+	//string strJobID = m_JobFSM.id().str();
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
 
 	/*m_JobFSM.GetContext().QueryJobStatus();
 

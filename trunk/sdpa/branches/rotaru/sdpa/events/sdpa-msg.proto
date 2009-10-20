@@ -55,29 +55,6 @@ message Error {
   required string error_description = 2;
 }
 
-message Task {
-  required bytes workflow = 2;
-  repeated Token input = 3;
-}
-
-message FunctionCall {
-  required string module = 1;
-  required string method = 2;
-  repeated Token input = 3;
-  repeated Token output = 4;
-}
-
-message Activity {
-  required bytes id = 1;
-  optional Task task = 2;
-  optional FunctionCall function = 3;
-}
-
-message Token {
-  required bytes place = 1;
-  required bytes token = 2;
-}
-
 message Properties {
   message Property {
     required string key = 1;
@@ -88,7 +65,6 @@ message Properties {
 
 message SubmitJob {
   required bytes workflow = 1;
-  repeated Token input = 2;
 }
 message SubmitJobAck {
   required bytes id = 1;
@@ -118,7 +94,6 @@ message RetrieveResults {
 message Results {
   required bytes id = 1;
   required int32 exit_code = 2;
-  repeated Token output_token = 3;
 }
 
 message DeleteJob {
@@ -134,7 +109,6 @@ message Request {
 
 message JobFinished {
   required bytes id = 1;
-  repeated Token output = 2;
 }
 message JobFinishedAck {
   required bytes id = 1;

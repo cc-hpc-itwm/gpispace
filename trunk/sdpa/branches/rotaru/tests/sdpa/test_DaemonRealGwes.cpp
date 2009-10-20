@@ -5,7 +5,7 @@
 #include <list>
 #include <sdpa/memory.hpp>
 #include <time.h>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <fstream>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -114,10 +114,10 @@ public:
 		 eventQueue.push(pEvt);
 	 }
 
-	 std::string str()
+	 std::string str() const
 	 {
 		std::ostringstream ostream(std::ostringstream::out);
-		eventQueue_t::iterator it;
+		eventQueue_t::const_iterator it;
 		for (it = eventQueue.begin(); it != eventQueue.end(); it++) {
 			ostream <<typeid(*(it->get())).name() << std::endl;
 		}

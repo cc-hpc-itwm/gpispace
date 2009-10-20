@@ -30,8 +30,8 @@ namespace sdpa { namespace events {
           SDPA_EAGAIN
       };
 
-      ErrorEvent(const address_t &from, const address_t &to, const error_code_t &error_code, const std::string& reason = "unknown reason")
-      : MgmtEvent(from, to), error_code_(error_code), reason_(reason)
+      ErrorEvent(const address_t &a_from, const address_t &a_to, const error_code_t &a_error_code, const std::string& a_reason = "unknown reason")
+      : MgmtEvent(a_from, a_to), error_code_(a_error_code), reason_(a_reason)
       {
       }
 
@@ -39,8 +39,8 @@ namespace sdpa { namespace events {
       {
       }
 
-      const std::string& reason() const { return reason_; }
-      const error_code_t error_code() const { return error_code_; }
+      const std::string &reason() const { return reason_; }
+      const error_code_t &error_code() const { return error_code_; }
 
       std::string str() const { return "ErrorEvent"; }
     private:

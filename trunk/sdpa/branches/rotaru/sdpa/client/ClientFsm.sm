@@ -1,14 +1,24 @@
-//%{
+%{
 //
 // Finite state machine for the SDPA client
 //
-//%}
+
+#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1)
+#  pragma GCC diagnostic ignored "-Wall"
+#  pragma GCC diagnostic ignored "-Wunused"
+#  pragma GCC diagnostic ignored "-Weffc++"
+#  pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
+%}
 
 %package sdpa::client
 %class Client
 %header Client.hpp
 
+
 %include <sdpa/types.hpp>
+%include <seda/IEvent.hpp>
 
 %start ClientFsm::Unconfigured
 
@@ -16,68 +26,105 @@
 %%
 Unconfigured
 {
-  Start(/* Config cfg*/)
+  Start(cfg: const std::string &)
     Configuring
     {
-      action_configure(/* cfg */);
+      action_configure(cfg);
     }
 
   Default
     nil
-    { }
+    {
+    }
 }
 
 Configuring
 {
-  ConfigOk()
+  ConfigOk(evt: const seda::IEvent::Ptr &)
     Configured
     {
       action_config_ok();
+      action_store_reply(evt);
     }
 
-  ConfigNok()
+  ConfigNok(evt: const seda::IEvent::Ptr &)
     Unconfigured
     {
       action_config_nok(); // exit
+      action_store_reply(evt);
+    }
+
+  Default
+    nil
+    {
     }
 }
 
 Configured
 {
-  Submit(desc: const job_desc_t &)
+  // client side api
+  Submit(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_submit(desc);
+      action_submit(evt);
     }
 
-  Cancel(job_id: const job_id_t &)
+  Cancel(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_cancel(job_id);
+      action_cancel(evt);
     }
 
-  Query(job_id: const job_id_t &)
+  Query(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_query(job_id);
+      action_query(evt);
     }
 
-  Retrieve(job_id: const job_id_t &)
+  Retrieve(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_retrieve(job_id);
+      action_retrieve(evt);
     }
 
-  Delete(job_id: const job_id_t &)
+  Delete(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_delete(job_id);
+      action_delete(evt);
     }
 
   Shutdown
     nil
     {
       action_shutdown();
+    }
+
+  // replies (i.e. pseudo callbacks) from daemon
+  SubmitAck(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt);
+    }
+  CancelAck(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt);
+    }
+  DeleteAck(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt);
+    }
+  Results(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt);
+    }
+
+  StatusReply(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt);
     }
 }
 

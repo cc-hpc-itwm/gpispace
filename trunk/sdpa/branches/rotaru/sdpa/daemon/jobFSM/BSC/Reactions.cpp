@@ -21,7 +21,7 @@ void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEv
 void JobFSM::Dispatch() { process_event(EvtBSCDispatch()); }
 
 //Pending event reactions
-sc::result Pending::react(const EvtBSCDispatch& e)
+sc::result Pending::react(const EvtBSCDispatch&)
 {
 	//eventually, start WFE
 	return transit<Running>();//(&JobFSM::action_run_job, e);
@@ -38,7 +38,7 @@ sc::result Pending::react(const CancelJobEvent& e)
 }
 */
 
-sc::result Pending::react(const sc::exception_thrown & e)
+sc::result Pending::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -78,7 +78,7 @@ sc::result Running::react(const CancelJobEvent& e)
    	return transit<Running>(&JobFSM::action_query_job_status, e);
 }*/
 
-sc::result Running::react(const sc::exception_thrown & e)
+sc::result Running::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -94,7 +94,7 @@ sc::result Running::react(const sc::exception_thrown & e)
 	}
 }
 
-sc::result Cancel::react(const sc::exception_thrown & e)
+sc::result Cancel::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -134,7 +134,7 @@ sc::result Cancelling::react(const JobFailedEvent& e)
 	return transit<Cancelled>(&JobFSM::action_job_failed, e);
 }
 
-sc::result Cancelling::react(const sc::exception_thrown & e)
+sc::result Cancelling::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -162,7 +162,7 @@ sc::result Cancelled::react(const DeleteJobEvent& e)
 	return transit<Cancelled>(&JobFSM::action_delete_job, e);
 }
 
-sc::result Cancelled::react(const sc::exception_thrown & e)
+sc::result Cancelled::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -196,7 +196,7 @@ sc::result Failed::react(const RetrieveJobResultsEvent& e)
 	return transit<Finished>(&JobFSM::action_retrieve_job_results, e);
 }
 
-sc::result Failed::react(const sc::exception_thrown & e)
+sc::result Failed::react(const sc::exception_thrown &)
 {
 	try
 	{
@@ -231,7 +231,7 @@ sc::result Finished::react(const RetrieveJobResultsEvent& e)
 	return transit<Finished>(&JobFSM::action_retrieve_job_results, e);
 }
 
-sc::result Finished::react(const sc::exception_thrown & e)
+sc::result Finished::react(const sc::exception_thrown &)
 {
 	try
 	{

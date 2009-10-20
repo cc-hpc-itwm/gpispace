@@ -1,6 +1,8 @@
 #include "Token.hpp"
 
-std::ostream & operator<<(std::ostream &os, const sdpa::wf::Token &t) {
+using namespace sdpa::wf;
+
+std::ostream & operator<<(std::ostream &os, const Token &t) {
   t.writeTo(os);
   return os;
 }

@@ -2,12 +2,10 @@
 
 using namespace sdpa::events;
 
-SDPAEvent::SDPAEvent(const address_t & from, const address_t &to)
-    : from_(from), to_(to) {
-
-}
+SDPAEvent::SDPAEvent(const address_t & a_from, const address_t &a_to)
+ : from_(a_from), to_(a_to)
+{ }
 
 SDPAEvent::SDPAEvent(const SDPAEvent &other)
-    : from_(other.from()), to_(other.to()) {
-}
-
+  : IEvent(), from_(other.from()), to_(other.to())
+{ }

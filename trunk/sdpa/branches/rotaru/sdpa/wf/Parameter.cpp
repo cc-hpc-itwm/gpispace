@@ -2,21 +2,44 @@
 
 using namespace sdpa::wf;
 
-Parameter::Parameter(const Token &token, const std::string &name, EdgeType edge_type)
-  : token_(token), name_(name), edge_type_(edge_type) {
-  }
+Parameter::Parameter()
+  : name_("unknown")
+  , edge_type_(OUTPUT_EDGE)
+  , token_()
+{
 
-Parameter::Parameter(const Parameter &other)
-  : token_(other.token()), name_(other.name()), edge_type_(other.edge_type()) {
+}
+Parameter::Parameter(const std::string &a_name, EdgeType a_edge_type, const Token &a_token)
+  : name_(a_name)
+  , edge_type_(a_edge_type)
+  , token_(a_token)
+{
 }
 
-const Parameter& Parameter::operator=(const Parameter &rhs) {
-  token_ = rhs.token();
-  name_ = rhs.name();
-  edge_type_ = rhs.edge_type();
+Parameter::Parameter(const Parameter &other)
+  : name_(other.name())
+  , edge_type_(other.edge_type())
+  , token_(other.token())
+{
+}
+
+Parameter& Parameter::operator=(const Parameter &rhs)
+{
+  if (this != &rhs)
+  {
+    name_ = rhs.name();
+    edge_type_ = rhs.edge_type();
+    token_ = rhs.token();
+  }
+  return *this;
 }
 
 void Parameter::writeTo(std::ostream &os) const {
+  os << "{"
+     << "param"
+     << ","
+     << name()
+     << ",";
   switch (edge_type()) {
     case INPUT_EDGE:
       os << "i";
@@ -37,8 +60,9 @@ void Parameter::writeTo(std::ostream &os) const {
       os << "u";
       break;
   }
-  os << ":";
-  os << name() << "=" << token();
+  os << ","
+     << token()
+     << "}";
 }
 
 std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p) {

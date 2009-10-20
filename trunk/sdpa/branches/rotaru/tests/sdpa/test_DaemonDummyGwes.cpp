@@ -5,7 +5,7 @@
 #include <list>
 #include <sdpa/memory.hpp>
 #include <time.h>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -111,10 +111,10 @@ public:
 		 eventQueue.push(pEvt);
 	 }
 
-	 std::string str()
+	 std::string str() const
 	 {
 		std::ostringstream ostream(std::ostringstream::out);
-		eventQueue_t::iterator it;
+		eventQueue_t::const_iterator it;
 		for (it = eventQueue.begin(); it != eventQueue.end(); it++) {
 			ostream <<typeid(*(it->get())).name() << std::endl;
 		}
@@ -236,7 +236,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+//    sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
@@ -371,7 +371,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
@@ -506,7 +506,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
@@ -614,7 +614,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 
 	TestStrategy* pTestStr = dynamic_cast<TestStrategy*>(m_ptrTestStrategy.get());
 
-    sdpa::util::time_type start(sdpa::util::now());
+    //sdpa::util::time_type start(sdpa::util::now());
     //start-up the orchestrator
     StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);

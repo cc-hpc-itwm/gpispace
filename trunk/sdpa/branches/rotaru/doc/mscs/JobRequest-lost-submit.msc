@@ -1,0 +1,27 @@
+msc {
+  hscale = "1.0";
+
+  Orch, Sched, Agg, devnull;
+
+  |||;
+  Orch box Agg [ label = "request for a new job (submit gets lost)" ];
+  |||;
+
+  --- [ label = "initial request" ];
+
+  Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
+  --- [ label = "the scheduler leaves the job in the pending queue" ];
+  Sched>>Orch [ label="Job(1)" ];
+  --- [ label = "the submitJob message gets lost" ];
+  Orch->devnull [ label="submitJob(job_id=1)" ];
+  ...;
+  Agg->Orch [ label="requestJob(last_job_id=\"-\")" ];
+  Orch=>Sched [ label="get_next_job(worker_id=Agg, last_job_id)" ];
+  --- [ label = "the job is still at the front of the pending queue" ];
+  Sched>>Orch [ label="Job(1)" ];
+  Orch->Agg [ label="submitJob(job_id=1)" ];
+  Agg->Orch [ label="submitJobAck(job_id=1)" ];
+  --- [ label = "now it is safe to move the job from the pending into the submitted queue" ];
+  Orch=>Sched [ label="acknowledge(worker_id=Agg, job_id=1)" ];
+}

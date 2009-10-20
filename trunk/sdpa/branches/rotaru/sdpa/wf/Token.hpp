@@ -1,27 +1,13 @@
 #ifndef SDPA_TOKEN_HPP
 #define SDPA_TOKEN_HPP 1
-/***********************************************************************/
-/** @file Token.hpp
- *
- * $Id:$
- *
- *
- *
- *
- *  @author Kai Krueger
- *  @date   2009-05-25
- *  @email  kai.krueger@itwm.fhg.de
- *
- * (C) Fraunhofer ITWM Kaiserslautern
- **/
-/*---------------------------------------------------------------------*/
 
 #include <cassert> // assert
-#include <cstring> // memcpy
 #include <ostream>
+#include <stdexcept> // logic_error
 
-#include <boost/any.hpp>
-#include <sdpa/Properties.hpp>
+#include <sdpa/sdpa-config.hpp>
+#include <sdpa/memory.hpp>
+#include <sdpa/util/Properties.hpp>
 
 namespace sdpa { namespace wf {
   /**
@@ -29,79 +15,141 @@ namespace sdpa { namespace wf {
 
     A Token just transports arbitrary data through a workflow.
    */
-  class Token : public sdpa::Properties {
+  class Token {
     public:
-      typedef boost::any any_t; //!< the storage type we use for the transported data
+      typedef std::string data_t;
+      typedef sdpa::util::Properties properties_t;
 
-      /**
-        Assigns different data to this token.
-
-        @param [in] the new data
-       */
-      void reset(const any_t & data) {
-        data_ = data;
-        initialized_ = true;
-      }
-
-      /**
-        Returns true iff the Token has been initialized.
-      */
-      inline bool initialized() const {
-        return initialized_;
-      }
+      virtual ~Token() {}
 
       /**
         Retrieve the data of the token.
         @return the stored data
       */
-      const any_t & data() const {
+      inline const data_t & data() const {
         return data_;
+      }
+      inline data_t & data()
+      {
+        return data_;
+      }
+
+      inline void data(const data_t &d)
+      {
+        data_ = d;
+        properties().put("datatype", typeid(d).name());
+      }
+
+      template <typename T> inline void data(const T &some_data)
+      {
+        std::ostringstream ostr;
+        ostr << some_data;
+        data_ = ostr.str();
+        properties().put("datatype", typeid(T).name());
+      }
+
+      data_t data_as() const throw (std::logic_error)
+      {
+        return data();
       }
 
       /**
         Try to convert the stored data to the given type.
         */
-      template<typename T> inline T as() const {
-        return boost::any_cast<T>(data_);
+      template<typename T> inline T data_as() const throw (std::logic_error) {
+#if defined(ENABLE_TYPE_CHECKING) && (ENABLE_TYPE_CHECKING == 1)
+        if (this->properties().get("datatype", "") != typeid(T).name()) {
+          throw std::logic_error(std::string("type mismatch occured: expected:")+this->properties().get("datatype", "")+ " got:"+typeid(T).name() + " data:"+data_);
+        }
+#endif
+        T val;
+        std::istringstream istr(data());
+        istr >> val;
+        if (! istr) throw std::logic_error(std::string("could not convert data to type: ") + (typeid(T).name()));
+        return val;
       }
-
-      /**
-        Store a new value into the storage space.
-      */
-      template<typename T> inline void store_data(T val) {
-        data_ = val;
-      }
-
-      virtual ~Token() {}
 
     public:
       Token()
-        : data_(any_t()), initialized_(false) {}
-      Token(const any_t & data)
-        : data_(data), initialized_(true) { }
+        : data_("")
+      {
+        properties().put("datatype", "unknown");
+      }
+
+      explicit
+      Token(const data_t & some_data)
+        : data_(some_data)
+      {
+        properties().put("datatype", typeid(some_data).name());
+      }
+
       template <typename T>
-      Token(T data)
-        : data_(data), initialized_(true) { }
+      explicit
+      Token(T some_data)
+        : data_("")
+      {
+        std::ostringstream ostr;
+        ostr << some_data;
+        data_ = ostr.str();
+        properties().put("datatype", typeid(some_data).name());
+      }
 
       Token(const Token & other)
-        : data_(other.data()), initialized_(true) {
+        : data_(other.data())
+        , properties_(other.properties())
+      {
       }
 
       const Token & operator=(const Token & rhs) {
-        reset(rhs.data());
+        if (this != &rhs)
+        {
+          data(rhs.data());
+          properties_ = rhs.properties();
+        }
         return *this;
       }
 
+      inline properties_t & properties() { return properties_; }
+      inline const properties_t & properties() const { return properties_; }
       void writeTo(std::ostream &os) const {
-        if (data_.empty()) {
-          os << "<empty>";
-        } else {
-          os << "<replace me with token data>";
+        os << "{";
+        os << "token,";
+        os << "{";
+        if (properties().get<std::string>("datatype", "unknown") == ("control"))
+        {
+          os << "{";
+          os << "control";
+          os << ",";
+          os << std::ios::boolalpha;
+          os << properties().get<bool>("control");
+          os << std::ios::boolalpha;
+          os << "}";
         }
+        else
+        {
+          os << "{"
+             << "data"
+             << ","
+             << "\""
+             << properties().get("datatype")
+             << "\""
+             << ","
+             << "\""
+             << data()
+             << "\""
+             << "}";
+        }
+        os << ",";
+        os << "{"
+           << "props"
+           << ","
+           << properties()
+           << "}";
+        os << "}";
       }
     private:
-      any_t data_;
-      bool initialized_;
+      data_t data_;
+      properties_t properties_;
   };
 }}
 

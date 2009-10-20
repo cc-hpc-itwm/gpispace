@@ -1,7 +1,6 @@
 #ifndef SDPA_CONFIGREQUESTEVENT_HPP
 #define SDPA_CONFIGREQUESTEVENT_HPP 1
 
-#include <iostream>
 #include <boost/statechart/event.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 
@@ -13,13 +12,9 @@ namespace events {
     public:
         typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
 
-        ConfigRequestEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) {
-        	//std::cout << "Create event 'ConfigRequestEvent'"<< std::endl;
-        }
+        ConfigRequestEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
 
-    	virtual ~ConfigRequestEvent() {
-    		//std::cout << "Delete event 'ConfigRequestEvent'"<< std::endl;
-    	}
+    	virtual ~ConfigRequestEvent() { }
 
     	std::string str() const { return "ConfigRequestEvent"; }
     };

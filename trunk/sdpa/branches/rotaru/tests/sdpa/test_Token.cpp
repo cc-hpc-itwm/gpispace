@@ -38,26 +38,27 @@ void TokenTest::tearDown() {
 }
 
 void TokenTest::testTokenDataTypes() {
-  Token token(std::string("foo"));
+  Token token("foo");
 
-  CPPUNIT_ASSERT_EQUAL(typeid(std::string).name(), token.data().type().name());
+  CPPUNIT_ASSERT_EQUAL(std::string("foo"), token.data());
 
   try {
-    std::string s(token.as<std::string>());
-  } catch (const boost::bad_any_cast &bac) {
+    std::string s(token.data());
+  } catch (const std::exception &) {
     CPPUNIT_ASSERT_MESSAGE("Token contained a string but could not be interpreted as one!", false);
   }
 
   try {
-    int tmp(token.as<int>());
-    CPPUNIT_ASSERT_MESSAGE("Token contained a non-integer string and could be casted to int!", false);
-  } catch (const boost::bad_any_cast &bac) {
+    token.data_as<int>();
+    CPPUNIT_ASSERT_MESSAGE("Token contained a non-integer string but could be casted to one!", false);
+  } catch (const std::exception &) {
+    // ok
   }
 }
 
 void TokenTest::testPropertyPut() {
   Token t;
-  std::string expected("bar");
-  t.put("foo", expected);
-  CPPUNIT_ASSERT_EQUAL(expected, t.get<std::string>("foo"));
+  const std::string expected("bar");
+  t.properties().put("foo", expected);
+  CPPUNIT_ASSERT_EQUAL(expected, t.properties().get<std::string>("foo"));
 }

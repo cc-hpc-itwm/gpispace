@@ -6,18 +6,17 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
-namespace sdpa {
-namespace events {
-    class MgmtEvent : public sdpa::events::SDPAEvent {
+namespace sdpa { namespace events {
+  class MgmtEvent : public sdpa::events::SDPAEvent {
     public:
-        typedef sdpa::shared_ptr<MgmtEvent> Ptr;
+      typedef sdpa::shared_ptr<MgmtEvent> Ptr;
 
-        MgmtEvent(const address_t &from, const address_t &to)
-          : SDPAEvent(from, to) {}
-        ~MgmtEvent() {}
+      MgmtEvent(const address_t &a_from, const address_t &a_to)
+        : SDPAEvent(a_from, a_to) {}
+      ~MgmtEvent() {}
 
-        virtual std::string str() const = 0;
-    };
+      virtual std::string str() const = 0;
+  };
 }}
 
 #endif // SDPA_MGMT_EVENT_HPP

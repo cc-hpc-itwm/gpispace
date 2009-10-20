@@ -9,8 +9,8 @@ namespace sdpa
     class SDPAException : public std::exception {
     public:
         explicit
-        SDPAException(const std::string& reason)
-            : _reason(reason) {}
+        SDPAException(const std::string& a_reason)
+            : _reason(a_reason) {}
         virtual ~SDPAException() throw() {}
 
         virtual const char* what() const throw() { return reason().c_str(); }

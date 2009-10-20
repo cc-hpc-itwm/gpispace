@@ -28,13 +28,13 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Wno-unknown-pragma")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-    set(CMAKE_CXX_FLAGS_DEBUG "-Werror -pedantic -O0 -g -ggdb -Wreturn-type -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS_DEBUG "-Werror -O0 -g -ggdb -Wreturn-type -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
+
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
@@ -48,35 +48,21 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-# add a path where some libraries might be stored
-set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
-
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
+OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
-set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
-
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror -fno-omit-frame-pointer")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
-  # gprof and gcov support
-  set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-unused-variable")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+# Make sure all subdirectories include correctly
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH})
 
 # threads
 include(FindThreads)
@@ -124,6 +110,22 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
+## find xerces-c
+Include(FindXercesC)
+IF(NOT XERCESC_FOUND)
+  message(FATAL_ERROR "No Xerces-c found, cannot continue.")
+ENDIF(NOT XERCESC_FOUND)
+include_directories(${XERCERC_INCLUDE_DIRS})
+link_libraries(${XERCESC_LIBRARIES})
+
+## find libxml2
+Include(FindXml2)
+IF(NOT LIBXML2_FOUND)
+  message(FATAL_ERROR "No libxml2 found, cannot continue.")
+ENDIF(NOT LIBXML2_FOUND)
+include_directories(${LIBXML2_INCLUDE_DIRS})
+link_libraries(${LIBXML2_LIBRARIES})
+
 # GWES/GWDL
 include(FindGwes)
 # check for gwes/gwdl
@@ -156,12 +158,11 @@ if (USE_SMC)
 endif (USE_SMC)
 
 ## check for boost
-set(BOOST_ROOT "${CMAKE_ADDITIONAL_PATH}" CACHE PATH "Where to find the Boost libraries")
 set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0" "1.40" "1.40.0")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
-find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem serialization)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
     message(FATAL_ERROR "At least Boost 1.36 is required")
@@ -170,6 +171,7 @@ if (Boost_MINOR_VERSION LESS 36)
     message(FATAL_ERROR "At least Boost 1.36 is required")
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
 # logging
@@ -197,14 +199,20 @@ else (ENABLE_LOGGING)
     set(ENABLE_LOGGING 0)
 endif (ENABLE_LOGGING)
 
+# check for Fraunhofer Virtual Machine
+message(STATUS "****** FIXME: Checking for Fraunhofer Virtual Machine...")
+include(FindFVM OPTIONAL)
+if (FVM_FOUND)
+  # this should actually be specific to the sdpa/modules/ directory (i think)
+  include_directories(${FVM_INCLUDE_DIR})
+  link_directories(${FVM_LIBRARY})
+  set (HAVE_FVM 1)
+else (FVM_FOUND)
+  set (HAVE_FVM 0)
+endif (FVM_FOUND)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
-
-# Make sure all subdirectories include correctly
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${CMAKE_INCLUDE_PATH})
-include_directories(${Boost_INCLUDE_DIRS})
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})

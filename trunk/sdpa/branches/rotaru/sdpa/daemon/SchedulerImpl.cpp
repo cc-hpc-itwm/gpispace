@@ -4,8 +4,6 @@
 #include <tests/sdpa/DummyGwes.hpp>
 #include <gwdl/WFSerialization.h>
 
-#include <sstream>
-
 using namespace sdpa::daemon;
 using namespace std;
 
@@ -21,11 +19,10 @@ SchedulerImpl::~SchedulerImpl()
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
 }
 
-void SchedulerImpl::acknowledge(const sdpa::job_id_t& job_id ) {
-}
+void SchedulerImpl::acknowledge(const sdpa::job_id_t& ) { }
 
-Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &worker_id, const sdpa::job_id_t &last_job) {
-
+Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &, const sdpa::job_id_t & /*last_job*/) {
+  throw std::runtime_error("SchedulerImpl::get_next_job() not implemented yet");
 }
 
 /*

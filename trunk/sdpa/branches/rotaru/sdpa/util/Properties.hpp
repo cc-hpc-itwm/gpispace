@@ -1,16 +1,16 @@
-#ifndef SDPA_PROPERTIES_HPP
-#define SDPA_PROPERTIES_HPP 1
+#ifndef SDPA_UTIL_PROPERTIES_HPP
+#define SDPA_UTIL_PROPERTIES_HPP 1
 
 #include <string>
 #include <map>
 #include <sdpa/SDPAException.hpp>
 #include <sstream>
 
-namespace sdpa {
+namespace sdpa { namespace util {
     class PropertyLookupFailed : public sdpa::SDPAException {
     public:
-        PropertyLookupFailed(const std::string &key)
-            : sdpa::SDPAException(std::string("property not found: ") + key), _key(key) {}
+        PropertyLookupFailed(const std::string &a_key)
+            : sdpa::SDPAException(std::string("property not found: ") + a_key), _key(a_key) {}
         virtual ~PropertyLookupFailed() throw() {}
 
         const std::string &key() const { return _key; }
@@ -20,8 +20,8 @@ namespace sdpa {
 
     class PropertyConversionFailed : public sdpa::SDPAException {
     public:
-        PropertyConversionFailed(const std::string &key, const std::string &value)
-            : sdpa::SDPAException(std::string("property {"+key+","+value+"} could not be converted!")), _key(key), _value(value) {}
+        PropertyConversionFailed(const std::string &a_key, const std::string &a_value)
+            : sdpa::SDPAException(std::string("property {"+a_key+","+a_value+"} could not be converted!")), _key(a_key), _value(a_value) {}
         virtual ~PropertyConversionFailed() throw() {}
 
         const std::string &key() const { return _key; }
@@ -38,8 +38,27 @@ namespace sdpa {
      */
     class Properties {
     public:
-        Properties() {}
+        typedef std::map<std::string, std::string> map_t;
+
+        Properties()
+          : properties_()
+        {
+        }
         virtual ~Properties() {}
+
+        Properties(const Properties &other)
+          : properties_(other.properties_)
+        {
+        }
+
+        Properties &operator=(const Properties &rhs)
+        {
+          if (this != &rhs)
+          {
+            properties_ = rhs.properties_;
+          }
+          return *this;
+        }
 
         void put(const std::string &key, const std::string &value);
         template <typename T> void put(const std::string &key, const T &value) throw(PropertyConversionFailed) {
@@ -49,7 +68,7 @@ namespace sdpa {
         }
         std::size_t del(const std::string &key);
 
-        bool has_key(const std::string &key) const;
+        bool has_key(const std::string &key) const throw();
         const std::string &get(const std::string &key) const throw(PropertyLookupFailed);
         const std::string &get(const std::string &key, const std::string &def) const throw();
 
@@ -84,9 +103,16 @@ namespace sdpa {
 
         void clear();
         bool empty() const;
-    private:
-        std::map<std::string, std::string> _properties;
-    };
-}
 
-#endif // ! SDPA_PROPERTIES_HPP
+        void writeTo(std::ostream &) const;
+
+        const map_t & map() const { return properties_; }
+        map_t & map() { return properties_; }
+    private:
+        map_t properties_;
+    };
+}}
+
+extern std::ostream & operator<<(std::ostream &, const sdpa::util::Properties &);
+
+#endif // ! SDPA_UTIL_PROPERTIES_HPP

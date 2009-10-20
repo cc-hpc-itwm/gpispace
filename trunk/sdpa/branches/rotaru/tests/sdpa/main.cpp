@@ -21,11 +21,13 @@
 #include <cppunit/Message.h>
 
 #include <sdpa/LoggingConfigurator.hpp>
+#include <fhglog/Configuration.hpp>
 #include <tests/sdpa/Suite.hpp>
 
-int main(int argc, char **argv)
+int main(int /* argc */, char ** /* argv */)
 {
   sdpa::logging::Configurator::configure();
+  fhg::log::Configurator::configure();
 
   // Informiert Test-Listener ueber Testresultate
   CPPUNIT_NS::TestResult                   testresult;

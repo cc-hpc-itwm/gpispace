@@ -6,7 +6,7 @@
 #include "PerformanceTestBSCEvent.hpp"
 #include "PerformanceTest_sm.h"
 #include "PerformanceTest_sc.h"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 
 using namespace sdpa;
 using namespace sdpa::tests;
@@ -62,11 +62,11 @@ void FSMPerformanceTest::testSMCException() {
   CPPUNIT_ASSERT_EQUAL(0, fsm.getState().getId());
 }
 
-void FSMPerformanceTest::do_s0_s1(const PerformanceTestFSMEvent &e) {
+void FSMPerformanceTest::do_s0_s1(const PerformanceTestFSMEvent &) {
 //  std::cout << "FSM: " << "S0" << " --" << e.tag() << "--> " << "S1" << std::endl;
 }
 
-void FSMPerformanceTest::do_s1_s0(const PerformanceTestFSMEvent &e) {
+void FSMPerformanceTest::do_s1_s0(const PerformanceTestFSMEvent &) {
 //  std::cout << "FSM: "<< "S1" << "--" << e.tag() << "-->" << "S0" << std::endl;
 }
 

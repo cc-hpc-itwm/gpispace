@@ -2,17 +2,14 @@
 #define SDPA_ACTIVITY_HPP 1
 
 #include <string>
-#include <list>
+#include <map>
+#include <istream>
 #include <ostream>
 
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
 
 namespace sdpa { namespace wf {
-
-class Activity;
-typedef Activity activity_t;
-typedef std::string activity_id_t;
   /**
     This class describes an abstract activity to be executed.
 
@@ -20,11 +17,12 @@ typedef std::string activity_id_t;
     method name.  In addition to that, an activity may have an arbitrary  number
     of input parameters and predefined output parameters.
     */
-  class Activity : public sdpa::Properties
-  {
+  class Activity {
   public:
-	typedef Activity activity_t;
-    typedef std::list<Parameter> parameter_list; //!< the type of our parameters @see sdpa::wf::Parameter
+    typedef std::string activity_id_t;
+    typedef shared_ptr<Activity> ptr_t;
+    typedef std::map<std::string, Parameter> parameters_t; //!< the type of our parameters @see sdpa::wf::Parameter
+    typedef sdpa::util::Properties properties_t;
 
     /**
       This class encapsulates a method call to a generic method.
@@ -38,90 +36,113 @@ typedef std::string activity_id_t;
      */
     class Method {
       public:
-    	Method() :  module_(""), name_("") {}
+        Method(const std::string & module_at_method)
+          : module_()
+          , name_()
+        {
+          deserialize(module_at_method);
+        }
 
-        Method(const std::string & module, const std::string & method_name)
-          : module_(module), name_(method_name) {}
+        Method(const std::string & a_module, const std::string & a_method_name)
+          : module_(a_module)
+          , name_(a_method_name) {}
 
-        void operator()(const parameter_list & in, parameter_list & out) {
+        Method(const Method& other)
+          : module_(other.module())
+          , name_(other.name())
+        {}
+
+        Method &operator=(const Method &rhs)
+        {
+          if (this != &rhs)
+          {
+            module_ = rhs.module();
+            name_ = rhs.name();
+          }
+          return *this;
+        }
+
+        void operator()(const parameters_t &) {
           // \todo{implement me}
         }
 
         const std::string & module() const { return module_; }
+        std::string & module() { return module_; }
         const std::string & name() const { return name_; }
+        std::string & name() { return name_; }
+
+        std::string serialize() const
+        {
+          return module() + "@" + name();
+        }
+
+        void deserialize(const std::string &bytes)
+        {
+          const std::string::size_type pos_of_at(bytes.find_first_of('@'));
+          module_ = bytes.substr(0,           pos_of_at);
+          name_   = bytes.substr(pos_of_at+1, std::string::npos);
+        }
+
+        void writeTo(std::ostream &os) const
+        {
+          os << "{" << "method" << "," << module() << "," << name()  << "}";
+        }
+
+        void readFrom(std::istream &is)
+        {
+          std::string tmp;
+          is >> tmp;
+          deserialize(tmp);
+        }
       private:
         std::string module_;
         std::string name_;
     };
 
     /**
-         Create a new activity using the given method.
-
-         @param name the name of this activity
-         @param method the method to be used
-        */
-       Activity(const std::string &name);
-
-    /**
-      Create a new activity using the given method.
-
-      @param name the name of this activity
-      @param method the method to be used
-     */
-    Activity(const std::string &name, const Method & m);
-
-    /**
       Create a new activity with the given parameters.
 
-      @param name the name of this activity
-      @param method the method to be called
-      @param input a generic list of input parameters
-     */
-    Activity(const std::string &name, const Method & m, const parameter_list & input);
-
-    /**
-      Create a new activity with the given parameters.
-
-      @param name the name of this activity
+      @param id the id of this activity
       @param method the method to be called
       @param input a generic list of input parameters
       @param output a generic list of predefined output parameters
      */
-    Activity(const std::string &name, const Method & m, const parameter_list & input, const parameter_list & output);
+    Activity(const activity_id_t &id, const Method & m, const parameters_t & params);
+
+    Activity()
+      : name_("")
+      , method_("")
+    { }
 
     Activity(const Activity &);
-    const Activity & operator=(const Activity &);
+    Activity & operator=(const Activity &);
 
     ~Activity() {}
-
+    
     inline const std::string & name() const { return name_; }
+    inline std::string & name() { return name_; }
+
     inline const Method& method() const { return method_; }
+    inline Method& method() { return method_; }
 
-    inline parameter_list & input() { return input_; }
-    inline parameter_list & output() { return output_; }
-    inline const parameter_list & input() const { return input_; }
-    inline const parameter_list & output() const { return output_; }
+    inline const parameters_t & parameters() const { return params_; }
+    inline parameters_t & parameters() { return params_; }
 
-    void add_input(const Parameter &);
-    void add_output(const Parameter &);
+    inline const properties_t &properties() const { return properties_; }
+    inline properties_t &properties() { return properties_; }
+
+    void add_parameter(const Parameter &);
 
     void writeTo(std::ostream &) const;
-
-	activity_id_t getId() const { return id; }
-	void setId(const activity_id_t& activity_id) { id = activity_id; }
-
-
-	std::string serialize() const { return "dummy workflow"; }
-
   private:
-	activity_id_t id;
     std::string name_;
     Method method_;
-    parameter_list input_;
-    parameter_list output_;
+    parameters_t params_;
+    properties_t properties_;
   };
 }}
 
 extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a);
+extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity::Method &m);
 
 #endif

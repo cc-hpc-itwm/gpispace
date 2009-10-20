@@ -7,8 +7,8 @@ namespace sdpa { namespace tests {
   class PerformanceTestFSMEvent {
   public:
     explicit
-    PerformanceTestFSMEvent(const std::string &tag)
-      : tag_(tag) {}
+    PerformanceTestFSMEvent(const std::string &a_tag)
+      : tag_(a_tag) {}
 
     const std::string &tag() const { return tag_; }
   private:

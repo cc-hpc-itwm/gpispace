@@ -4,7 +4,7 @@
 #include <map>
 
 #include "test_UUID.hpp"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
 
@@ -23,7 +23,7 @@ void UUIDTest::testGenerate() {
   sdpa::uuid id;
   sdpa::uuidgen gen;
   gen(id);
-  CPPUNIT_ASSERT_EQUAL(std::size_t(32), id.str().size());
+  CPPUNIT_ASSERT_EQUAL(std::size_t(36), id.str().size());
 }
 
 void UUIDTest::testUniqueness()
@@ -47,7 +47,7 @@ void UUIDTest::testLength() {
   sdpa::uuid id;
   sdpa::uuidgen gen;
   const std::size_t SAMPLES(10000);
-  const std::size_t EXPECTED_LENGTH(32);
+  const std::size_t EXPECTED_LENGTH(36);
   for (std::size_t sample = 0; sample < SAMPLES; sample++)
   {
     gen(id);

@@ -4,7 +4,7 @@
 #include <list>
 #include <sdpa/memory.hpp>
 #include <time.h>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <fstream>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 

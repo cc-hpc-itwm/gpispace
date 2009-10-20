@@ -10,8 +10,8 @@ namespace modules {
     */
   class ModuleException : public sdpa::SDPAException {
   public:
-    ModuleException(const std::string &reason, const std::string &module)
-    : sdpa::SDPAException(reason), module_(module) {}
+    ModuleException(const std::string &a_reason, const std::string &a_module)
+    : sdpa::SDPAException(a_reason), module_(a_module) {}
 
     virtual ~ModuleException() throw() {}
     const std::string &module() const { return module_; }
@@ -22,16 +22,16 @@ namespace modules {
   class ModuleNotLoaded : public ModuleException {
   public:
     explicit
-    ModuleNotLoaded(const std::string &module)
-      : ModuleException("the desired module is not loaded", module) {}
+    ModuleNotLoaded(const std::string &a_module)
+      : ModuleException("the desired module is not loaded", a_module) {}
     virtual ~ModuleNotLoaded() throw() {}
   };
 
   class ModuleLoadFailed : public ModuleException {
   public:
     explicit
-    ModuleLoadFailed(const std::string &reason, const std::string &module, const std::string &file)
-      : ModuleException(reason, module), file_(file) {}
+    ModuleLoadFailed(const std::string &a_reason, const std::string &a_module, const std::string &a_file)
+      : ModuleException(a_reason, a_module), file_(a_file) {}
     virtual ~ModuleLoadFailed() throw() {}
 
     const std::string &file() const { return file_; }
@@ -44,8 +44,8 @@ namespace modules {
     */
   class FunctionException : public ModuleException {
   public:
-    FunctionException(const std::string &reason, const std::string &module, const std::string &function)
-      : ModuleException(reason, module), function_(function) {}
+    FunctionException(const std::string &a_reason, const std::string &a_module, const std::string &a_function)
+      : ModuleException(a_reason, a_module), function_(a_function) {}
 
     virtual ~FunctionException() throw() {}
 
@@ -56,25 +56,25 @@ namespace modules {
 
   class FunctionNotFound : public FunctionException {
   public:
-    FunctionNotFound(const std::string &module, const std::string &function)
-      : FunctionException("function could not be found", module, function) {}
+    FunctionNotFound(const std::string &a_module, const std::string &a_function)
+      : FunctionException("function could not be found", a_module, a_function) {}
     virtual ~FunctionNotFound() throw() {}
   };
 
   class DuplicateFunction : public FunctionException {
   public:
-    DuplicateFunction(const std::string &module, const std::string &function)
-      : FunctionException("duplicate function detected", module, function) {}
+    DuplicateFunction(const std::string &a_module, const std::string &a_function)
+      : FunctionException("duplicate function detected", a_module, a_function) {}
     virtual ~DuplicateFunction() throw() {}
   };
 
   class BadFunctionArgument : public FunctionException {
   public:
-    BadFunctionArgument(const std::string &module, const std::string &function,
-                        const std::string &expected, const std::string &actual,
-                        const std::string &value="")
-      : FunctionException("bad function argument", module, function),
-        expected_(expected), actual_(actual), value_(value) {}
+    BadFunctionArgument(const std::string &a_module, const std::string &a_function,
+                        const std::string &a_expected, const std::string &a_actual,
+                        const std::string &a_value="")
+      : FunctionException("bad function argument", a_module, a_function),
+        expected_(a_expected), actual_(a_actual), value_(a_value) {}
     virtual ~BadFunctionArgument() throw() {}
 
     const std::string &expected() const { return expected_; }

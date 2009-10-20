@@ -7,7 +7,6 @@
 
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
-#include <sstream>
 #include <map>
 
 #include <sdpa/daemon/exceptions.hpp>
@@ -42,9 +41,7 @@ GenericDaemon::GenericDaemon(const std::string &name, seda::Stage* ptrOutStage, 
 
 GenericDaemon::~GenericDaemon()
 {
-	ostringstream os;
-	os<<"GenericDaemon destructor called ...";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 
 	seda::StageRegistry::instance().lookup(name())->stop();
 
@@ -77,9 +74,7 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-	ostringstream os;
-	os<<"Perform: Handling event " <<typeid(*pEvent.get()).name();
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Perform: Handling event " <<typeid(*pEvent.get()).name());
 
 	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
 		handleDaemonEvent(pEvent);
@@ -127,12 +122,10 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 
 void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 {
-	ostringstream os;
-	os<<"Handle Management Event "<<typeid(*pEvent).name();
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Handle Management Event "<<typeid(*pEvent).name());
 }
 
-void GenericDaemon::onStageStart(const std::string &stageName)
+void GenericDaemon::onStageStart(const std::string & /* stageName */)
 {
 	// start the scheduler thread
 	if(ptr_Sdpa2Gwes_)
@@ -141,7 +134,7 @@ void GenericDaemon::onStageStart(const std::string &stageName)
 	ptr_scheduler_->start();
 }
 
-void GenericDaemon::onStageStop(const std::string &stageName)
+void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
 	// stop the scheduler thread
 
@@ -157,9 +150,7 @@ void GenericDaemon::sendEvent(const SDPAEvent::Ptr& pEvt)
 		{
 			daemon_stage_->send(pEvt);
 
-			ostringstream os;
-			os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
-			SDPA_LOG_DEBUG(os.str());
+			SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
 		}
 	}
 	catch(QueueFull)
@@ -173,9 +164,7 @@ void GenericDaemon::sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPA
 	try {
 		ptrOutStage->send(pEvt);
 
-		ostringstream os;
-		os<<"Sent " <<pEvt->str()<<" to "<<pEvt->to();
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
 	catch(QueueFull)
 	{
@@ -199,39 +188,29 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 }
 
 //actions
-void GenericDaemon::action_configure(const StartUpEvent& e)
+void GenericDaemon::action_configure(const StartUpEvent&)
 {
-	ostringstream os;
-	os<<"Call 'action_configure'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_configure'");
 }
 
-void GenericDaemon::action_config_ok(const ConfigOkEvent& e)
+void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
-	ostringstream os;
-	os<<"Call 'action_config_ok'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_config_ok'");
 }
 
-void GenericDaemon::action_config_nok(const ConfigNokEvent& e)
+void GenericDaemon::action_config_nok(const ConfigNokEvent&)
 {
-	ostringstream os;
-	os<<"Call 'action_config_nok'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_config_nok'");
 }
 
-void GenericDaemon::action_interrupt(const InterruptEvent& e)
+void GenericDaemon::action_interrupt(const InterruptEvent&)
 {
-	ostringstream os;
-	os<<"Call 'action_interrupt'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-	ostringstream os;
-	os<<"Call 'action_lifesign'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_lifesign'");
     /*
     o timestamp, load, other probably useful information
     o last_job_id the id of the last received job identification
@@ -244,17 +223,11 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	try {
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update(e);
-		os.str("");
-		os<<"Received LS from the worker "<<worker_id<<" Updated the time-stamp";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
 	} catch(WorkerNotFoundException) {
-		os.str("");
-		os<<"Worker "<<worker_id<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 	} catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Unexpected exception occurred!");
 	}
 }
 

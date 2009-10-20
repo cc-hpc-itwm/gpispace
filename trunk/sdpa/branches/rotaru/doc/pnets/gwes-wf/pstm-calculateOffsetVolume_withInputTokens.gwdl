@@ -1,0 +1,98 @@
+<workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass"
+          xmlns="http://www.gridworkflow.org/gworkflowdl"
+          xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd"
+          ID="No_ID">
+
+    <!-- $Id: pstm-calculateOffsetVolume.gwdl 85 2009-06-05 16:28:43Z SVN_andreas_hohe $ -->
+    
+    <description>Pre-Stack Time Migration - calculate offset volume for one offset class (NRE)</description>
+	
+	<property name="simulation">true</property>
+    <property name="occurrence.sequence" />
+
+    <!-- workflow input places (will be filled with tokens by parent pstm-1 workflow) -->
+    <place ID="OffsetClass">
+     <property name="workflowInputPlace"/>
+     <token>
+      <data><OffsetClass>file:///home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/test/getNextOffsetClass_offsetclass.dat</OffsetClass></data>
+     </token>
+    </place>
+
+    <place ID="NumberPoints">
+     <property name="workflowInputPlace"/>
+     <token>
+      <data><NumberPoints>file:///home/poseidon/hoheisel/Projekte/SPA/svn-spa/gwes/trunk/applications/dummy/test/getNumberOfPoints_numberpoints.dat</NumberPoints></data>
+     </token>
+    </place>
+
+    <!-- intermediate places -->
+    <place ID="NumberTraces">
+        <token><data><numberTraces xmlns="" xsd:type="int">0</numberTraces></data></token>
+    </place>
+
+    <place ID="Traces"/>
+
+    <place ID="ContinueLoop">
+        <token><control>true</control></token>
+    </place>
+
+    <!-- workflow output places -->
+    <place ID="OffsetVolume">
+        <property name="workflowOutputPlace"/>
+    </place>
+
+    <!-- transitions -->
+    <transition ID="createVolume">
+        <description>Creates an empty offset volume</description>
+        <inputPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <outputPlace placeID="OffsetVolume" edgeExpression="Volume"/>
+        <operation>
+            <oc:operationClass name="createVolume">
+                <oc:operationCandidate type="cli" operationName="createVolume.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/createVolume.sh" selected="true"/>
+                <oc:operationCandidate type="sdpa" operationName="createVolume" resourceName="orchestrator1/aggregator5/NRE2"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="getNextTrace">
+        <description>get next trace for given offset class</description>
+        <readPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <inputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+		<inputPlace placeID="NumberTraces" edgeExpression="i"/>
+		<outputPlace placeID="NumberTraces" edgeExpression="$i + 1"/>
+        <outputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+        <outputPlace placeID="Traces" edgeExpression="Trace"/>
+        <condition>$hasNext = 'true'</condition>
+ 		<operation>
+      		<oc:operationClass name="getNextTrace">
+                <oc:operationCandidate type="cli" operationName="getNextTrace.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/getNextTrace.sh" selected="true"/>
+                <oc:operationCandidate type="sdpa" operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE1"/>
+                <oc:operationCandidate type="sdpa" operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE2"/>
+                <oc:operationCandidate type="sdpa" operationName="getNextTrace" resourceName="orchestrator1/aggregator5/NRE3"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="endLoop">
+        <inputPlace placeID="ContinueLoop" edgeExpression="hasNext"/>
+        <condition>$hasNext = 'false'</condition>
+    </transition>
+
+    <transition ID="addTraceContribution">
+        <description>Adds the contribution of one trace to the offset volume</description>
+        <readPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <inputPlace placeID="Traces" edgeExpression="Trace"/>
+        <writePlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <operation>
+            <oc:operationClass name="addTraceContribution">
+                <oc:operationCandidate type="cli" operationName="addTraceContribution.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/addTraceContribution.sh" selected="true"/>
+                <oc:operationCandidate type="sdpa" operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE1"/>
+                <oc:operationCandidate type="sdpa" operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE2"/>
+                <oc:operationCandidate type="sdpa" operationName="addTraceContribution" resourceName="orchestrator1/aggregator5/NRE3"/>
+                <oc:operationCandidate type="workflow" operationName="pstm-addTraceContribution.gwdl" resourceName="orchestrator1/aggregator5"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+</workflow>
