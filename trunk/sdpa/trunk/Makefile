@@ -17,7 +17,7 @@ distclean: clean
 	@-find . -name "*~" -delete
 
 clean:
-	make -C $(BUILD_DIR) clean
+	-make -C $(BUILD_DIR) clean
 
 doc-api: config
 	make -C build doc
