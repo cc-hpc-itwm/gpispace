@@ -88,6 +88,25 @@ int main(int /* argc */, char ** /* argv */)
   }
 
   {
+    try
+    {
+      gwdl::Properties props;
+      props.put("datatype", typeid(int).name());
+      gwdl::Data *data(new gwdl::Data("<data>42</data>"));
+      gwdl::Token gtoken(props, data);
+      sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
+      std::clog << "gtoken: " << gtoken << std::endl;;
+      std::clog << "stoken: " << stoken << std::endl;;
+      std::clog << "\tas int: " << stoken.data_as<int>() << std::endl;
+    }
+    catch (const gwdl::WorkflowFormatException &wfe)
+    {
+      std::clog << "could not instantiate token-data" << std::endl;
+    }
+  }
+
+
+  {
     std::stringstream sstr;
     boost::archive::text_oarchive oa(sstr);
     {
