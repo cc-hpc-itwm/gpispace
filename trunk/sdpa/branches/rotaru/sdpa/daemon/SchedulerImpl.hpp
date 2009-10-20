@@ -64,6 +64,8 @@ namespace sdpa {
     Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t &);
 
+    int numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+
     // thread related functions
    void start();
    void stop();

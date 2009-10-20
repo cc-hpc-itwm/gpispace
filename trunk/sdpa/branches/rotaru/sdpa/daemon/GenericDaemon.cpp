@@ -36,7 +36,8 @@ GenericDaemon::GenericDaemon(const std::string &name, seda::Stage* ptrOutStage, 
 	ptr_daemon_cfg_ = sdpa::config::Config::create();
 
 	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put("polling interval", 1);
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 100000); //100 ms
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
 GenericDaemon::~GenericDaemon()
@@ -100,24 +101,28 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - last_request_time;
 
-	 if( sdpa::daemon::ORCHESTRATOR != name() &&  ptr_job_man_->number_of_jobs() < 1 //fix it later
-		 &&  difftime > ptr_daemon_cfg_->get<long long>("polling interval") )
+	 if( sdpa::daemon::ORCHESTRATOR != name() )
 	 {
-		 // post a new request to the master
-		 // the slave posts a job request
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master()) );
-		sendEvent(ptr_output_stage_, pEvtReq);
-		last_request_time = current_time;
+		 // post job request if number_of_jobs() < 2 * #registered workers
+		 if( ptr_job_man_->number_of_jobs() < 2 * ptr_scheduler_->numberOfWorkers() )
+		 {
+			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("polling interval") )
+			 {
+				 // post a new request to the master
+				 // the slave posts a job request
+				RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master()) );
+				sendEvent(ptr_output_stage_, pEvtReq);
+				last_request_time = current_time;
+			 }
+		 } else {
+			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("life-sign interval") )
+			 {
+				 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( name(), master()) );
+				 sendEvent(ptr_output_stage_, pEvtLS);
+				 last_request_time = current_time;
+			 }
+		 }
 	 }
-
-
-		// if the job queue's length is less than twice the number of workers
-		// and the elapased time since the last request is > polling_interval_time
-	// post a request to the master
-
-
-	// else, if time since the last_contact_time of the master > LS time
-	// send a life-sign to the master
 }
 
 void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)

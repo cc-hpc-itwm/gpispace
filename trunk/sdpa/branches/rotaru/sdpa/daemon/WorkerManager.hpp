@@ -20,6 +20,7 @@ namespace sdpa { namespace daemon {
 	  Worker::ptr_t &findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const Worker::ptr_t &pWorker);
 	  Worker::ptr_t &getNextWorker() throw (NoWorkerFoundException);
+	  int numberOfWorkers() { return worker_map_.size(); }
 
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;

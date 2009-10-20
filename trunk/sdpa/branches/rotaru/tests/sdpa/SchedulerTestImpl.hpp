@@ -21,6 +21,7 @@ class SchedulerTestImpl : public Scheduler {
     void schedule(Job::ptr_t& pJob);
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
+    int numberOfWorkers() { return 1; }
 
     // thread related functions
     void start();

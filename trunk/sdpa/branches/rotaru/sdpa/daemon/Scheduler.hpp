@@ -14,6 +14,7 @@ namespace daemon {
 
 	 virtual Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException) = 0;
 	 virtual void addWorker(const  Worker::ptr_t& ) = 0;
+	 virtual int  numberOfWorkers() = 0;
 	 virtual void schedule(Job::ptr_t& pJob) = 0;
 	 virtual void start()=0;
 	 virtual void stop()=0;
