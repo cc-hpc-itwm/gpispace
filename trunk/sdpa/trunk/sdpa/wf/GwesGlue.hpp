@@ -41,9 +41,19 @@ namespace sdpa { namespace wf { namespace glue {
     gwdl::Token &gtok(const_cast<gwdl::Token&>(gwdl_token));
     if (gtok.isData())
     {
+      typedef std::map<std::string, std::string> gtok_properties_t;
+
       wrapped.data(*gtok.getData()->getText());
-      // fix the type information
-      wrapped.properties().put("datatype", typeid(std::string).name());
+      for (gtok_properties_t::const_iterator prop(gtok.getProperties().begin()); prop != gtok.getProperties().end(); ++prop)
+      {
+        wrapped.properties().put(prop->first, prop->second);
+      }
+      if (! wrapped.properties().has_key("datatype"))
+      {
+        DLOG(DEBUG, "fixing datatype information of Token, assuming string type");
+        // fix the type information
+        wrapped.properties().put("datatype", typeid(std::string).name());
+      }
     }
     else
     {
