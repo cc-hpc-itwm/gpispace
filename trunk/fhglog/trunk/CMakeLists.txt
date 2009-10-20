@@ -36,6 +36,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH})
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
@@ -55,18 +56,18 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer ")
     if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 2)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Werror -Wreturn-type -Wshadow")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
         if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-          message(STATUS "Additional warnings for Debug-Build activated (compiler version >= 4.4)")
+          message(STATUS "Additional warnings for Debug-Build activated (gcc >= 4.3 detected)")
         endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
       elseif (${CMAKE_CXX_COMPILER_MINOR} GREATER 0)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wreturn-type")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 2)
     endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
 
     # gprof and gcov support
@@ -81,8 +82,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-
-include_directories(${CMAKE_INCLUDE_PATH})
 
 # threads
 include(FindThreads)
