@@ -1,9 +1,11 @@
+# -*- mode: cmake; -*-
+add_protocol_buffers(SEDA_MSG_PB_CPP SEDA_MSG_PB_H seda-msg)
+
 file(GLOB hdrs "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 file(GLOB srcs "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-add_protocol_buffers(seda-msg)
-list(APPEND srcs "${CMAKE_CURRENT_SOURCE_DIR}/seda-msg.pb.cc")
-list(APPEND hdrs "${CMAKE_CURRENT_SOURCE_DIR}/seda-msg.pb.h")
+set(hdrs ${SEDA_MSG_PB_H} ${hdrs})
+set(srcs ${SEDA_MSG_PB_H} ${srcs})
 
 
 ADD_LIBRARY(sedaComm ${hdrs} ${srcs})
