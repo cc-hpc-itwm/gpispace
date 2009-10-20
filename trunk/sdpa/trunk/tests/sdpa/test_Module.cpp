@@ -5,7 +5,7 @@
 #include <sdpa/modules/modules.hpp>
 #include <sdpa/modules/Module.hpp>
 #include <sdpa/modules/ModuleLoader.hpp>
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 
 using namespace sdpa;
 using namespace sdpa::tests;

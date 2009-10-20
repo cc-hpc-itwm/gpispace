@@ -2,11 +2,11 @@
 #define SDPA_CLIENT_CONFIG_HPP 1
 
 #include <sdpa/memory.hpp>
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 #include <boost/filesystem.hpp>
 
 namespace sdpa { namespace config {
-  class Config : public sdpa::Properties {
+  class Config : public sdpa::util::Properties {
     public:
       typedef sdpa::shared_ptr<Config> ptr_t;
 

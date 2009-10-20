@@ -6,7 +6,7 @@
 #include <istream>
 #include <ostream>
 
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
 
 namespace sdpa { namespace wf {
@@ -22,7 +22,7 @@ namespace sdpa { namespace wf {
     typedef std::string activity_id_t;
     typedef shared_ptr<Activity> ptr_t;
     typedef std::map<std::string, Parameter> parameters_t; //!< the type of our parameters @see sdpa::wf::Parameter
-    typedef sdpa::Properties properties_t;
+    typedef sdpa::util::Properties properties_t;
 
     /**
       This class encapsulates a method call to a generic method.

@@ -7,7 +7,7 @@
 
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/memory.hpp>
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 
 namespace sdpa { namespace wf {
   /**
@@ -18,7 +18,7 @@ namespace sdpa { namespace wf {
   class Token {
     public:
       typedef std::string data_t;
-      typedef sdpa::Properties properties_t;
+      typedef sdpa::util::Properties properties_t;
 
       virtual ~Token() {}
 

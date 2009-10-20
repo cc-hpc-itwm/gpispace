@@ -4,7 +4,7 @@
 #include <map>
 
 #include "test_UUID.hpp"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
 

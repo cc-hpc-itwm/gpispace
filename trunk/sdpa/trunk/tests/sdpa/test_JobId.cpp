@@ -2,7 +2,7 @@
 #include <sstream>
 
 #include "test_JobId.hpp"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/JobId.hpp>
 
 using namespace sdpa;

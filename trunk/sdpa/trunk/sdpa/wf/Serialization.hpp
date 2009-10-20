@@ -28,14 +28,14 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
-#include <sdpa/Properties.hpp>
+#include <sdpa/util/Properties.hpp>
 #include <sdpa/wf/Token.hpp>
 #include <sdpa/wf/Parameter.hpp>
 #include <sdpa/wf/Activity.hpp>
 
 namespace boost { namespace serialization {
   template <class Archive>
-  void serialize(Archive & ar, sdpa::Properties & props, const unsigned int /* version */)
+  void serialize(Archive & ar, sdpa::util::Properties & props, const unsigned int /* version */)
   {
     ar & props.map();
   }

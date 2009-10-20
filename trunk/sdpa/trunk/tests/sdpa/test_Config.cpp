@@ -2,7 +2,7 @@
 #include <sstream>
 
 #include "test_Config.hpp"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/Config.hpp>
 
 using namespace sdpa;
