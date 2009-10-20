@@ -33,9 +33,16 @@ Data::Data(DOMElement* element)
 Data::Data(const string& xmlstring) throw(WorkflowFormatException)
 {
 	DOMDocument* doc = XMLUtils::Instance()->deserialize(xmlstring);
-    assert(doc);
+    if (doc == NULL)
+    {
+      throw WorkflowFormatException("could not parse xml-data string to document");
+    }
 	DOMElement* element = doc->getDocumentElement();
-    assert(element);
+    if (element == NULL)
+    {
+      doc->release();
+      throw WorkflowFormatException("could not parse xml-data string to element");
+    }
 	char* name = XMLString::transcode(element->getTagName()); 
 	if (strcmp(name,"data")) {
 		ostringstream message; 
