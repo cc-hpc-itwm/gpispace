@@ -45,9 +45,6 @@ namespace sdpa { namespace wf {
         std::ostringstream ostr;
         ostr << some_data;
         data_ = ostr.str();
-#ifdef ENABLE_TYPE_CHECKING
-        type_ = typeid(T).name();
-#endif
         properties().put("datatype", typeid(T).name());
       }
 
@@ -61,8 +58,8 @@ namespace sdpa { namespace wf {
         */
       template<typename T> inline T data_as() const throw (std::logic_error) {
 #if defined(ENABLE_TYPE_CHECKING) && (ENABLE_TYPE_CHECKING == 1)
-        if (typeid(T).name() != type_) {
-          throw std::logic_error(std::string("type mismatch occured: expected:")+type_+ " got:"+typeid(T).name() + " data:"+data_);
+        if (this->properties().get("datatype", "") != typeid(T).name()) {
+          throw std::logic_error(std::string("type mismatch occured: expected:")+this->properties().get("datatype", "")+ " got:"+typeid(T).name() + " data:"+data_);
         }
 #endif
         T val;
@@ -82,9 +79,6 @@ namespace sdpa { namespace wf {
       explicit
       Token(const data_t & some_data)
         : data_(some_data)
-#ifdef ENABLE_TYPE_CHECKING
-        , type_(typeid(some_data).name())
-#endif
       {
         properties().put("datatype", typeid(some_data).name());
       }
@@ -97,17 +91,11 @@ namespace sdpa { namespace wf {
         std::ostringstream ostr;
         ostr << some_data;
         data_ = ostr.str();
-#ifdef ENABLE_TYPE_CHECKING
-        type_ = typeid(T).name();
-#endif
         properties().put("datatype", typeid(some_data).name());
       }
 
       Token(const Token & other)
         : data_(other.data())
-#ifdef ENABLE_TYPE_CHECKING
-        , type_(other.type_)
-#endif
         , properties_(other.properties())
       {
       }
@@ -116,9 +104,6 @@ namespace sdpa { namespace wf {
         if (this != &rhs)
         {
           data(rhs.data());
-#ifdef ENABLE_TYPE_CHECKING
-          type_ = rhs.type_;
-#endif
           properties_ = rhs.properties();
         }
         return *this;
@@ -164,9 +149,6 @@ namespace sdpa { namespace wf {
       }
     private:
       data_t data_;
-#ifdef ENABLE_TYPE_CHECKING
-      std::string type_;
-#endif
       properties_t properties_;
   };
 }}
