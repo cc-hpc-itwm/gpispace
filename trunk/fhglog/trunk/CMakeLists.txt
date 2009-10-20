@@ -1,5 +1,9 @@
 # -*- mode: cmake; -*-
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
 
 project(libfhglog)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
@@ -28,12 +32,14 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${CMAKE_INCLUDE_PATH})
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
+
+include(CheckCompiler)
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
@@ -48,11 +54,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Werror -Wreturn-type -Wshadow")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-
+    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
+      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+        message(STATUS "Additional warnings for Debug-Build activated (compiler version >= 4.4)")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Werror -Wreturn-type -Wshadow")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
+    
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers")
@@ -65,6 +76,8 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+
+include_directories(${CMAKE_INCLUDE_PATH})
 
 # threads
 include(FindThreads)
