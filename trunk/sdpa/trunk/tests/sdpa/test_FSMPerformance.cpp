@@ -13,7 +13,7 @@
 #endif
 #include "PerformanceTest_sm.h"
 #include "PerformanceTest_sc.h"
-#include <sdpa/util.hpp>
+#include <sdpa/util/util.hpp>
 
 using namespace sdpa;
 using namespace sdpa::tests;

@@ -1,3 +1,4 @@
+add_subdirectory(util)
 add_subdirectory(events)
 add_subdirectory(wf)
 add_subdirectory(modules)
