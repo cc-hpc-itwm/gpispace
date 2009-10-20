@@ -56,14 +56,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
     if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
       if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
-        message(STATUS "Additional warnings for Debug-Build activated (compiler version >= 4.4)")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Werror -Wreturn-type -Wshadow")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+        if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+          message(STATUS "Additional warnings for Debug-Build activated (compiler version >= 4.4)")
+        endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
       endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
     endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-    
+
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers")
@@ -107,8 +109,11 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
   message(STATUS "Build type: default (not-set)")
+  message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS}")
 else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
   message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+  string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
+  message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
