@@ -39,8 +39,8 @@ include(FindDoxygen)
 include(FindMscgen)
 
 ## find the StateMachineCompiler (SMC)
-Include(FindSMC)
-Include(SMCMacros)
+#include(FindSMC)
+#include(SMCMacros)
 
 ## find xerces-c
 Include(FindXercesC)
