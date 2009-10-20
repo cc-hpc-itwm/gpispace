@@ -1,8 +1,9 @@
-add_state_machine(example)
+# -*- mode: cmake; -*-
+
+add_state_machine(EXAMPLE_FSM_CPP EXAMPLE_FSM_H example)
 
 
-set(example_src example.cpp
-  example_sm.h example_sm.cpp
+set(example_src ${EXAMPLE_FSM_CPP} ${EXAMPLE_FSM_H} example.cpp
   )
 
 ADD_LIBRARY(example ${example_src})

@@ -1,14 +1,15 @@
 # -*- mode: cmake; -*-
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_state_machine(PERFORMANCETEST_FSM_CPP PERFORMANCETEST_FSM_H PerformanceTest)
+
 file(GLOB test_srcs "test_*.cpp" SchedulerTestImpl.cpp)
 file(GLOB test_hdrs "*.hpp")
 
-
-set(test_hdrs "${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.h" ${test_hdrs}) 
-set(test_srcs "${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.cpp" ${test_srcs})
-add_state_machine(PerformanceTest)
-#SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.h PROPERTIES GENERATED 1)
-#SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_SOURCE_DIR}/PerformanceTest_sm.cpp PROPERTIES GENERATED 1)
+set(test_hdrs ${PERFORMANCETEST_FSM_H} ${test_hdrs})
+set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
 #add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${test_hdrs} ${test_srcs})

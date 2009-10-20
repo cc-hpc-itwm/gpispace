@@ -10,7 +10,13 @@
 #
 # Use the SMC_HOME environment variable to define the installation directory of SMC
 
-cmake_minimum_required(VERSION "2.6.2" FATAL_ERROR)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.6.2)
+   message(FATAL_ERROR "CMake >= 2.6.2 required")
+endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.6.2)
+cmake_policy(PUSH)
+cmake_policy(VERSION 2.6.2)
+
+#cmake_minimum_required(VERSION "2.6.2" FATAL_ERROR)
 Include(FindJava)
 
 # set defaults
@@ -82,3 +88,7 @@ MARK_AS_ADVANCED(
   SMC_INCLUDE_DIR
   SMC_HOME
 )
+
+# Commands beyond this point should not need to know the version.
+SET(CMAKE_IMPORT_FILE_VERSION)
+CMAKE_POLICY(POP)

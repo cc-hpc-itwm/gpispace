@@ -1,9 +1,15 @@
+# -*- mode: cmake; -*-
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_state_machine(CLIENT_FSM_CPP CLIENT_FSM_H ClientFsm)
+
 file(GLOB hdrs "*.hpp")
 file(GLOB srcs "*.cpp")
 
-add_state_machine(ClientFsm)
-set(hdrs ${hdrs} ${ClientFsm_H})
-set(srcs ${srcs} ${ClientFsm_C})
+set(hdrs ${CLIENT_FSM_H} ${hdrs} )
+set(srcs ${CLIENT_FSM_CPP} ${srcs} )
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
