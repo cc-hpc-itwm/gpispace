@@ -1,6 +1,7 @@
 # -*- mode: cmake; -*-
 
 file(GLOB tc_srcs "test_*.cpp")
+list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})
   # get the filename without extension
   string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" tc_name ${tc_src})
