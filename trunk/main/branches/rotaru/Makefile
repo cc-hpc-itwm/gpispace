@@ -3,6 +3,7 @@ CMAKE_CONFIG=
 CTEST_CONFIG=
 BUILD_DIR=build
 top_srcdir=${CURDIR}
+GWES_CPP_HOME=$(shell pwd)/gwes
 
 default: compile
 $(BUILD_DIR):
@@ -32,7 +33,7 @@ dist: test
 
 test: ctest
 ctest: config
-	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage ${CTEST_CONFIG}
+	cd $(BUILD_DIR) && GWES_CPP_HOME=${GWES_CPP_HOME} ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage ${CTEST_CONFIG}
 
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
