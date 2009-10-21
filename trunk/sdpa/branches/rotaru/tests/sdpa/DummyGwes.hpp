@@ -63,7 +63,7 @@ class DummyActivity : public gwes::activity_t
 
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
 
-    gwdl::IWorkflow::ptr_t transform2Workflow() const
+    gwdl::IWorkflow::ptr_t transform2Workflow() const throw (std::exception)
     {
       gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
       return pWf;
