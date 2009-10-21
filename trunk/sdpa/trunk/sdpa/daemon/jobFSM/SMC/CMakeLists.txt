@@ -3,9 +3,9 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(hdrs JobFSM_sm.h JobFSM.hpp )
-
 add_state_machine(JOBFSM_CPP JOBFSM_H JobFSM)
+
+set(hdrs ${JOBFSM_H} JobFSM.hpp )
 
 file(GLOB job_fsm_smc_src *.cpp *.hpp)
 
