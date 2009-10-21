@@ -19,6 +19,7 @@
 #ifndef GWES_IACTIVITY_H
 #define GWES_IACTIVITY_H 1
 
+#include <exception>
 #include <string>
 #include <gwes/memory.hpp>
 
@@ -37,7 +38,7 @@ namespace gwes
 
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const = 0;
 
-    virtual gwdl::IWorkflow::ptr_t transform2Workflow() const = 0;
+    virtual gwdl::IWorkflow::ptr_t transform2Workflow() const throw(std::exception) = 0;
   };
   
   typedef IActivity activity_t;

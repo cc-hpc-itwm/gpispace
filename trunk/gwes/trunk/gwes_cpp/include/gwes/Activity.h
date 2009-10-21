@@ -118,7 +118,7 @@ public:
     /** 
      * Generates workflow object that corresponds to this activity.
      */
-    gwdl::IWorkflow::ptr_t transform2Workflow() const;
+    gwdl::IWorkflow::ptr_t transform2Workflow() const throw( std::exception );
     
     /**
 	 * Get the ID of the owning workflog

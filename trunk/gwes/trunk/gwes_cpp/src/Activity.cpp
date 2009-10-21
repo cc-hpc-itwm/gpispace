@@ -43,7 +43,7 @@ Activity::~Activity() {
 /** 
  * Generates workflow object that corresponds to this activity.
  */
-gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const {
+gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const throw(std::exception) {
 	LOG_INFO(_logger, "transforming activity " << _id << " to workflow object...");
 
 	gwdl::Workflow* subworkflowP = NULL;
