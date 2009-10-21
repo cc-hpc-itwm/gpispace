@@ -322,7 +322,8 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 
 		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
-			pJobStatusReplyEvent->status().find("Failed") == std::string::npos )
+			pJobStatusReplyEvent->status().find("Failed") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Cancelled") == std::string::npos )
 		{
 			SDPA_LOG_DEBUG("User: ask the "<<strDaemon<<" for the status of the job "<<job_id_user);
 			QueryJobStatusEvent::Ptr pEvtQueryStNew(new QueryJobStatusEvent(strFromUp, strDaemon, job_id_user));

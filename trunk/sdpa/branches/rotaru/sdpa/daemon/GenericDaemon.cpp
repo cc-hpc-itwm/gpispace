@@ -55,7 +55,6 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 	daemon_stage->start();
 
-
 	//start-up the the daemon
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(ptr_daemon->name(), ptr_daemon->name()));
 	ptr_daemon->daemon_stage()->send(pEvtStartUp);
@@ -73,6 +72,13 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(ptr_daemon->name(), ptr_daemon->name()));
 	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
 
+	if( ptr_daemon->name() == sdpa::daemon::AGGREGATOR || ptr_daemon->name() == sdpa::daemon::NRE )
+	{
+		ptr_daemon->setMaster( ptr_daemon->to_master_stage()->name() );
+
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_daemon->name(), ptr_daemon->master()));
+		ptr_daemon->to_master_stage()->send(pEvtWorkerReg);
+	}
 }
 
 void GenericDaemon::stop()
@@ -104,7 +110,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - last_request_time;
 
-	 if( sdpa::daemon::ORCHESTRATOR != name() )
+	 if( sdpa::daemon::ORCHESTRATOR != name() && !master().empty() )
 	 {
 		 // post job request if number_of_jobs() < 2 * #registered workers
 		 if( ptr_job_man_->number_of_jobs() < 2 * ptr_scheduler_->numberOfWorkers() )

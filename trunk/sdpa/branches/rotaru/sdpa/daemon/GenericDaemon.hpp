@@ -80,6 +80,8 @@ namespace sdpa { namespace daemon {
 	  void addWorker(const  Worker::ptr_t );
 
 	  std::string master()const { return master_;}
+	  void setMaster( std::string masterName ){ master_=masterName;}
+
 	  const std::string& name() const { return Strategy::name(); }
 
 	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
@@ -89,6 +91,9 @@ namespace sdpa { namespace daemon {
 
 	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
 	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }
+
+	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
+
 
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
