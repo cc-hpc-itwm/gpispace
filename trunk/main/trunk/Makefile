@@ -15,7 +15,8 @@ compile: config
 	make -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
-	cd $(BUILD_DIR) && $(CMAKE) ${CMAKE_CONFIG} $(top_srcdir)
+	@echo "make BUILD_DIR=${BUILD_DIR} CMAKE_CONFIG=${CMAKE_CONFIG}"
+	(cd $(BUILD_DIR) && $(CMAKE) ${CMAKE_CONFIG} $(top_srcdir))
 
 distclean: clean
 	@-rm -rf $(BUILD_DIR)
