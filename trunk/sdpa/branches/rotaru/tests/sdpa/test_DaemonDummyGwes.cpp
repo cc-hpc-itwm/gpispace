@@ -644,7 +644,6 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrMasterStrategy.get());
 	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrSlaveStrategy.get());
 
-	sdpa::util::time_type start(sdpa::util::now());
 	//start-up the orchestrator
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);

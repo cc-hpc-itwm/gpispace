@@ -13,6 +13,7 @@
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 #include <tests/sdpa/test_DaemonDummyGwes.hpp>
 #include <tests/sdpa/test_DaemonRealGwes.hpp>
+//#include <tests/sdpa/test_D2DDummyGwes.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
@@ -31,6 +32,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
+
+     // suiteOfTests->addTest( D2DDummyGwesTest::suite() );
       return suiteOfTests;
     }
   };
