@@ -4,10 +4,11 @@
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
+#include <sdpa/events/StartUpEvent.hpp>
+#include <sdpa/events/ConfigOkEvent.hpp>
 
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
-#include <map>
 
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -35,12 +36,6 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 
 	// initialize last request time
 	last_request_time = 0;
-
-	ptr_daemon_cfg_ = sdpa::config::Config::create();
-
-	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 100000); //100 ms
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
 GenericDaemon::~GenericDaemon()
@@ -59,6 +54,25 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	seda::StageRegistry::instance().insert(daemon_stage);
 
 	daemon_stage->start();
+
+
+	//start-up the the daemon
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(ptr_daemon->name(), ptr_daemon->name()));
+	ptr_daemon->daemon_stage()->send(pEvtStartUp);
+
+	sleep(1);
+
+	// you should read the configuration file here!
+	ptr_daemon->ptr_daemon_cfg_ = sdpa::config::Config::create();
+
+	// use for now as below, later read from config file
+	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 100000); //100 ms
+	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
+
+	// configuration done
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(ptr_daemon->name(), ptr_daemon->name()));
+	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
+
 }
 
 void GenericDaemon::stop()
@@ -219,7 +233,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update(e);
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
-	} catch(WorkerNotFoundException) {
+	} catch(WorkerNotFoundException&) {
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 	} catch(...) {
 		SDPA_LOG_DEBUG("Unexpected exception occurred!");
@@ -245,15 +259,15 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 			ptr_job_man_->markJobForDeletion(e.job_id(), pJob);
 			ptr_job_man_->deleteJob(e.job_id());
 		}
-	} catch(JobNotFoundException){
+	} catch(JobNotFoundException&){
 		os.str("");
 		os<<"Job "<<e.job_id()<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
-	} catch(JobNotMarkedException ){
+	} catch(JobNotMarkedException& ){
 		os.str("");
 		os<<"Job "<<e.job_id()<<" not marked for deletion!";
 		SDPA_LOG_DEBUG(os.str());
-	}catch(JobNotDeletedException ){
+	}catch(JobNotDeletedException& ){
 		os.str("");
 		os<<"Job "<<e.job_id()<<" not deleted!";
 		SDPA_LOG_DEBUG(os.str());
@@ -325,7 +339,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		}
 
 	}
-	catch(NoJobScheduledException)
+	catch(NoJobScheduledException&)
 	{
 		os.str("");
 		os<<"No job was scheduled to be executed on the worker '"<<worker_id<<"'";
@@ -336,7 +350,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		// Post a SubmitJobEvent to the slave who made the request
 		sendEvent(ptr_to_slave_stage_, pErrorEvt);
 	}
-	catch(WorkerNotFoundException)
+	catch(WorkerNotFoundException&)
 	{	os.str("");
 		os<<"Worker "<<worker_id<<" not found!";
 		SDPA_LOG_DEBUG(os.str());
@@ -347,13 +361,13 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		// Post a SubmitJobEvent to the slave who made the request
 		sendEvent(ptr_to_slave_stage_, pErrorEvt);
 	}
-	catch(QueueFull)
+	catch(QueueFull&)
 	{
 		os.str("");
 		os<<"Failed to send to the slave output stage "<<ptr_to_slave_stage_->name()<<" a SubmitJobEvent";
 		SDPA_LOG_DEBUG(os.str());
 	}
-	catch(seda::StageNotFound)
+	catch(seda::StageNotFound&)
 	{
 		os.str("");
 		os<<"Stage not found when trying to send SubmitJobEvent";
@@ -414,19 +428,19 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			sendEvent(ptr_to_master_stage_, pSubmitJobAckEvt);
 		}
 		//catch also workflow exceptions
-	}catch(JobNotAddedException) {
+	}catch(JobNotAddedException&) {
 		os.str("");
 		os<<"Job "<<job_id<<" could not be added!";
 		SDPA_LOG_DEBUG(os.str());
 		//send back an ErrorEvent
 	}
-	catch(QueueFull)
+	catch(QueueFull&)
 	{
 		os.str("");
 		os<<"Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id;
 		SDPA_LOG_DEBUG(os.str());
 	}
-	catch(seda::StageNotFound)
+	catch(seda::StageNotFound&)
 	{
 		os.str("");
 		os<<"Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id;
@@ -473,13 +487,13 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);
 	}
-	catch(QueueFull)
+	catch(QueueFull&)
 	{
 		os.str("");
 		os<<"Failed to send to the slave output stage "<<ptr_to_slave_stage_->name()<<" a WorkerRegistrationEvent";
 		SDPA_LOG_DEBUG(os.str());
 	}
-	catch(seda::StageNotFound)
+	catch(seda::StageNotFound&)
 	{
 		os.str("");
 		os<<"Stage not found when trying to submit WorkerRegistrationEvent";
@@ -534,18 +548,26 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc, parent_id));
 		sendEvent(pEvtSubmitJob);
 	}
-	catch(QueueFull)
-		{
-			os.str("");
-			os<<"Failed to send to the daemon stage a SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(seda::StageNotFound)
-		{
-			os.str("");
-			os<<"Stage not found when trying to submit SubmitJobEvent";
-			SDPA_LOG_DEBUG(os.str());
-		}
+	catch(QueueFull&)
+	{
+		os.str("");
+		os<<"Failed to send to the daemon stage a SubmitJobEvent";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(seda::StageNotFound&)
+	{
+		os.str("");
+		os<<"Stage not found when trying to submit SubmitJobEvent";
+		SDPA_LOG_DEBUG(os.str());
+	}
+	catch(std::exception&)
+	{
+		SDPA_LOG_DEBUG("transform2Workflow failed! Cancel the activity.");
+		// inform immediately GWES that the corresponding activity was cancelled
+		gwes::activity_id_t actId = activity.getID();
+		gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
+		gwes()->activityCanceled( wfId, actId );
+	}
 
 	return activity.getID();
 }
