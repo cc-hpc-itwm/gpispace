@@ -292,6 +292,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
+				sleep(1);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
@@ -422,6 +423,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
+		sleep(1);
 		// the slave posts a job request
 		SDPA_LOG_DEBUG("Slave: post new job request to "<<strDaemon);
 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
@@ -584,6 +586,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
+				sleep(1);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);

@@ -294,6 +294,7 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
+				sleep(1);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
@@ -438,6 +439,7 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
+				sleep(1);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
@@ -584,6 +586,7 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
+				sleep(1);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
