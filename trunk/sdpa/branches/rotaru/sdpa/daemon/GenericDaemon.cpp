@@ -47,8 +47,6 @@ GenericDaemon::~GenericDaemon()
 {
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 
-	seda::StageRegistry::instance().lookup(name())->stop();
-
 	// Allocated outside and passed as a parameter
 	daemon_stage_ = NULL;
 }

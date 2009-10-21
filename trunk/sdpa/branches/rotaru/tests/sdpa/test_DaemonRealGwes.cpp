@@ -221,11 +221,12 @@ void DaemonRealGwesTest::tearDown()
 
 	seda::StageRegistry::instance().lookup(m_ptrToMasterStage->name())->stop();
 	seda::StageRegistry::instance().lookup(m_ptrToSlaveStage->name())->stop();
+	seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
+
 	seda::StageRegistry::instance().clear();
 
-	delete m_ptrSdpa2Gwes;
-
 	m_ptrDaemonFSM.reset();
+	delete m_ptrSdpa2Gwes;
 }
 
 void DaemonRealGwesTest::testDaemonFSM_JobFinished()
