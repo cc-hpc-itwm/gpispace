@@ -60,7 +60,7 @@ namespace sdpa { namespace client {
 
     job_id_t submitJob(const job_desc_t &);
     void cancelJob(const job_id_t &);
-    int queryJob(const job_id_t &);
+    std::string queryJob(const job_id_t &);
     void deleteJob(const job_id_t &);
     result_t retrieveResults(const job_id_t &);
 

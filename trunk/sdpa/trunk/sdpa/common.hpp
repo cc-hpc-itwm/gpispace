@@ -5,4 +5,6 @@
 #include <sdpa/sdpa-config.hpp>
 #endif
 
+#include <sdpa/logging.hpp>
+
 #endif

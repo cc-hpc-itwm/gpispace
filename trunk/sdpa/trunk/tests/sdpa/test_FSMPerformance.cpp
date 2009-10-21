@@ -4,13 +4,6 @@
 #include "test_FSMPerformance.hpp"
 #include "PerformanceTestFSMEvent.hpp"
 #include "PerformanceTestBSCEvent.hpp"
-
-#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1)
-#  pragma GCC diagnostic ignored "-Wall"
-#  pragma GCC diagnostic ignored "-Wunused"
-#  pragma GCC diagnostic ignored "-Weffc++"
-#  pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
 #include "PerformanceTest_sm.h"
 #include "PerformanceTest_sc.h"
 #include <sdpa/util/util.hpp>
@@ -69,11 +62,11 @@ void FSMPerformanceTest::testSMCException() {
   CPPUNIT_ASSERT_EQUAL(0, fsm.getState().getId());
 }
 
-void FSMPerformanceTest::do_s0_s1(const PerformanceTestFSMEvent &e) {
+void FSMPerformanceTest::do_s0_s1(const PerformanceTestFSMEvent &) {
 //  std::cout << "FSM: " << "S0" << " --" << e.tag() << "--> " << "S1" << std::endl;
 }
 
-void FSMPerformanceTest::do_s1_s0(const PerformanceTestFSMEvent &e) {
+void FSMPerformanceTest::do_s1_s0(const PerformanceTestFSMEvent &) {
 //  std::cout << "FSM: "<< "S1" << "--" << e.tag() << "-->" << "S0" << std::endl;
 }
 

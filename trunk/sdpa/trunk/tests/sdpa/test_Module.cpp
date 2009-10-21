@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib> // malloc,free
 
 #include "test_Module.hpp"
 #include <sdpa/modules/modules.hpp>
@@ -191,4 +190,3 @@ void ModuleTest::testUpdate() {
     // OK - free detected a double-free ;-)
   }
 }
-

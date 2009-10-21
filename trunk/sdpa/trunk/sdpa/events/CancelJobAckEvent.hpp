@@ -15,8 +15,7 @@ namespace events {
           :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
 		}
 
-		virtual ~CancelJobAckEvent() {
-		}
+		virtual ~CancelJobAckEvent() { }
 
 		std::string str() const { return "CancelJobAckEvent"; }
 	};

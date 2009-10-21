@@ -23,10 +23,11 @@ namespace sdpa { namespace events {
       typedef sdpa::shared_ptr<ErrorEvent> Ptr;
 
       enum error_code_t {
-          SDPA_ENOERROR = 0
-        , SDPA_ENOJOBAVAIL
-        , SDPA_EBUSY
-        , SDPA_EAGAIN
+          SDPA_ENOERROR = 0,
+          SDPA_ENOJOBAVAIL,
+          SDPA_EWORKERNOTREG,
+          SDPA_EBUSY,
+          SDPA_EAGAIN
       };
 
       ErrorEvent(const address_t &a_from, const address_t &a_to, const error_code_t &a_error_code, const std::string& a_reason = "unknown reason")
@@ -38,8 +39,8 @@ namespace sdpa { namespace events {
       {
       }
 
-      const std::string& reason() const { return reason_; }
-      const error_code_t& error_code() const { return error_code_; }
+      const std::string &reason() const { return reason_; }
+      const error_code_t &error_code() const { return error_code_; }
 
       std::string str() const { return "ErrorEvent"; }
     private:

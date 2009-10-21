@@ -1,5 +1,5 @@
-#ifndef SDPA_PROPERTIES_HPP
-#define SDPA_PROPERTIES_HPP 1
+#ifndef SDPA_UTIL_PROPERTIES_HPP
+#define SDPA_UTIL_PROPERTIES_HPP 1
 
 #include <string>
 #include <map>
@@ -115,4 +115,4 @@ namespace sdpa { namespace util {
 
 extern std::ostream & operator<<(std::ostream &, const sdpa::util::Properties &);
 
-#endif // ! SDPA_PROPERTIES_HPP
+#endif // ! SDPA_UTIL_PROPERTIES_HPP

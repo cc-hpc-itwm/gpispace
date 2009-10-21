@@ -48,7 +48,7 @@ namespace sdpa { namespace client {
       return pimpl->cancelJob(jid);
     }
 
-    int queryJob(const job_id_t &jid)
+    std::string queryJob(const job_id_t &jid)
     {
       return pimpl->queryJob(jid);
     }

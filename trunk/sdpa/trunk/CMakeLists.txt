@@ -34,6 +34,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
@@ -90,8 +91,6 @@ if (SEDA_FOUND)
   include_directories(${SEDA_INCLUDE_DIR})
   link_directories(${SEDA_LIBRARY_DIR})
   link_libraries(${SEDA_LIBRARY})
-else (SEDA_FOUND)
-  message(FATAL_ERROR "Seda could not be found!")
 endif(SEDA_FOUND)
 
 # google protocol buffers
@@ -99,10 +98,8 @@ include(FindProtocolBuffers)
 if (PB_FOUND)
     include_directories(${PB_INCLUDE_DIR})
     link_libraries(${PB_LIBRARY})
-    include(PBMacros)
-else (PB_FOUND)
-  message(FATAL_ERROR "ProtocolBuffers could not be found!")
 endif (PB_FOUND)
+include(PBMacros)
 
 # uuid library
 include(FindUUID)
@@ -183,8 +180,6 @@ if (FHGLOG_FOUND)
   message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
   include_directories(${FHGLOG_INCLUDE_DIR})
   link_libraries(${FHGLOG_LIBRARY})
-else (FHGLOG_FOUND)
-  message(FATAL_ERROR "we currently require fhglog!")
 endif(FHGLOG_FOUND)
 
 if (ENABLE_LOGGING)

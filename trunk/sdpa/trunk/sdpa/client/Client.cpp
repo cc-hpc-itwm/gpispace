@@ -174,7 +174,7 @@ void Client::cancelJob(const job_id_t &jid)
   }
 }
 
-int Client::queryJob(const job_id_t &jid)
+std::string Client::queryJob(const job_id_t &jid)
 {
   MLOG(INFO,"querying status of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()

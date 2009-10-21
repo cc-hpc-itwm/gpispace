@@ -45,10 +45,7 @@
 
 #include <fhglog/Configuration.hpp>
 
-int main(
-  int argc,
-  char **argv
-  )
+int main(int /* argc */, char ** /*argv*/)
 {
   fhg::log::Configurator::configure();
 
@@ -59,7 +56,6 @@ int main(
 
   // Test-Suite ueber die Registry im Test-Runner einfuegen
   CPPUNIT_NS :: TestRunner runner;
-//  runner.addTest (CPPUNIT_NS::TestFactoryRegistry :: getRegistry ().makeTest ());
   runner.addTest ( sdpa::tests::Suite::suite() );
 
   std::cout << "running testsuite" << std::endl;
@@ -74,4 +70,3 @@ int main(
 
   return collectedresults.wasSuccessful () ? 0 : 1;
 }
-

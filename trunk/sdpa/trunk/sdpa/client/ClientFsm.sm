@@ -99,7 +99,6 @@ Configured
       action_shutdown();
     }
 
-
   // replies (i.e. pseudo callbacks) from daemon
   SubmitAck(evt: const seda::IEvent::Ptr &)
     nil

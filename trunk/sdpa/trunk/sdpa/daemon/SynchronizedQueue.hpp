@@ -21,13 +21,14 @@
 
 #include <boost/thread.hpp>
 #include <sdpa/SDPAException.hpp>
+#include <iostream>
 
 namespace sdpa { namespace daemon {
   class QueueException : public SDPAException
   {
     public:
       explicit
-      QueueException(const std::string &a_reason) : SDPAException(a_reason) {} 
+      QueueException(const std::string &reason) : SDPAException(reason) {}
   };
 
   class QueueFull : public QueueException
@@ -53,9 +54,6 @@ namespace sdpa { namespace daemon {
   public:
     typedef Container container_type;
     typedef typename container_type::value_type value_type;
-    typedef typename container_type::reference reference;
-    typedef typename container_type::const_reference const_reference;
-
     typedef typename container_type::size_type size_type;
     typedef typename container_type::iterator iterator;
     typedef typename container_type::const_iterator const_iterator;
@@ -63,14 +61,9 @@ namespace sdpa { namespace daemon {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
 
-    SynchronizedQueue()
-      : mtx_()
-      , not_empty_()
-      , container_()
-    {
-    }
-    ~SynchronizedQueue() {}
-    
+    SynchronizedQueue() : stopped_(false) {}
+    ~SynchronizedQueue() { }
+
     inline value_type pop() throw (QueueEmpty)
     {
       lock_type lock(mtx_);
@@ -81,20 +74,27 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop_and_wait() throw (boost::thread_interrupted)
+    inline void stop()
+    {
+    	lock_type lock(mtx_);
+    	stopped_ = true;
+    	not_empty_.notify_all();
+    }
+    inline value_type pop_and_wait() throw (boost::thread_interrupted, QueueEmpty)
     {
       lock_type lock(mtx_);
-      while (container_.empty())
+      while (container_.empty() && !stopped_)
       {
         not_empty_.wait(lock);
       }
+      if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
       return item;
     }
 
-    inline void push(const_reference item)
+    inline void push(value_type item)
     {
       lock_type lock(mtx_);
       container_.push_back(item);
@@ -130,7 +130,19 @@ namespace sdpa { namespace daemon {
       // WARN: make sure you hold a lock to the mutex!
       return container_.begin();
     }
+
+    inline const_iterator begin() const
+    {
+      // WARN: make sure you hold a lock to the mutex!
+      return container_.begin();
+    }
+
     inline iterator end()
+    {
+      // WARN: make sure you hold a lock to the mutex!
+      return container_.end();
+    }
+    inline const_iterator end() const
     {
       // WARN: make sure you hold a lock to the mutex!
       return container_.end();
@@ -147,6 +159,7 @@ namespace sdpa { namespace daemon {
     mutable mutex_type mtx_;
     condition_type not_empty_;
     container_type container_;
+    bool stopped_;
   };
 }}
 #endif

@@ -55,7 +55,7 @@ namespace sdpa { namespace client {
           seda::IEvent::Ptr(new se::JobStatusReplyEvent("orchestrator"
                                                        , name()
                                                        , q->job_id()
-                                                       , 42)));
+                                                       , "42")));
       } else if (se::CancelJobEvent *cancel = dynamic_cast<se::CancelJobEvent*>(event.get())) {
         DMLOG(DEBUG,"kill");
         seda::StageRegistry::instance().lookup(reply_)->send(

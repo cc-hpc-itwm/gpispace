@@ -62,4 +62,3 @@ extern "C" {
     SDPA_REGISTER_FUN(mod, Update);
   }
 }
-

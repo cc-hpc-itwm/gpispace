@@ -5,22 +5,22 @@
 
 using namespace sdpa;
 
-  uuid::uuid(const uuid &other)
-: dirty_(true)
+uuid::uuid(const uuid &other)
+  : dirty_(true)
   , str_tmp_("")
 {
   set(other.data());
 }
 
-  uuid::uuid(const uuid_t &some_data)
-: dirty_(true)
+uuid::uuid(const uuid_t &some_data)
+  : dirty_(true)
   , str_tmp_("")
 {
   set(some_data);
 }
 
-  uuid::uuid()
-: dirty_(true)
+uuid::uuid()
+  : dirty_(true)
   , str_tmp_("")
 {
 }
