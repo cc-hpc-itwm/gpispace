@@ -147,7 +147,7 @@ namespace sdpa { namespace daemon {
 				sdpa::worker_id_t worker_id = get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
 				// else, forward the cancel to the worker
-				SDPA_LOG_DEBUG("Send CancelJobEvent for the job "<<evt.job_id()<<" to the worker "<<worker_id);
+				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
 
 				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
 				pComm->sendEvent(pComm->to_slave_stage(), pCancelEvt);

@@ -306,7 +306,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			gwes::activity_id_t actId = ptrJob->id().str();
 			gwes::workflow_id_t wfId  = ptrJob->parent().str();
 
-			SDPA_LOG_DEBUG("Call ptr_Sdpa2Gwes_->activityDispatched( "<<wfId<<", "<<actId<<" )");
+			SDPA_LOG_DEBUG("Call activityDispatched( "<<wfId<<", "<<actId<<" )");
 			ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
 		}
 		else // send an error event

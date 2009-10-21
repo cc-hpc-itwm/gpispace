@@ -20,17 +20,17 @@ namespace sdpa { namespace tests {
   public:
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
-      suiteOfTests->addTest( ModuleTest::suite() );
+      /*suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
-      suiteOfTests->addTest( SchedulerTest::suite() );
+      suiteOfTests->addTest( SchedulerTest::suite() );*/
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
-      suiteOfTests->addTest( JobFSMTest_SMC::suite() );
+      //suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       return suiteOfTests;
     }
   };
