@@ -4,6 +4,8 @@ CTEST_CONFIG=
 BUILD_DIR=build
 top_srcdir=${CURDIR}
 GWES_CPP_HOME=$(shell pwd)/gwes
+# CTEST_TAG2=`head -1 ${BUILD_DIR}/Testing/TAG`
+LOGDIR=${BUILD_DIR}/Testing/Temporary
 
 default: compile
 $(BUILD_DIR):
