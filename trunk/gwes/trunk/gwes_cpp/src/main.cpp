@@ -99,8 +99,8 @@ int main(int argc, char* argv[]) {
                 delete observerP;
                 delete wfP;
 	}
-	catch(WorkflowFormatException e) {
-		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+	catch(const WorkflowFormatException &e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 	}
 
 	//	//ToDo: return 0, 1, ...

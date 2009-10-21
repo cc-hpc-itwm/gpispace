@@ -58,9 +58,9 @@ gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const throw(std::exception
 		// parse workflow file
 		try {
 			subworkflowP = new gwdl::Workflow(subworkflowFilename);
-		} catch (gwdl::WorkflowFormatException e) {
+		} catch (const gwdl::WorkflowFormatException &e) {
 			ostringstream message; 
-			message << "Not able to build subworkflow activity: " << e.message;
+			message << "Not able to build subworkflow activity: " << e.what();
 			LOG_ERROR(_logger, message.str());
 			throw ActivityException(message.str()); 
 		}
@@ -83,9 +83,9 @@ gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const throw(std::exception
 					continue;
 				}
 			}
-		} catch (gwdl::NoSuchWorkflowElement e) {
+		} catch (const gwdl::NoSuchWorkflowElement &e) {
 			ostringstream message; 
-			message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+			message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.what();
 			LOG_ERROR(_logger, message.str());
 			throw ActivityException(message.str()); 
 		}

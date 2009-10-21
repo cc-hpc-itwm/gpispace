@@ -19,13 +19,10 @@ namespace gwes
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
 class ActivityException : public std::runtime_error {
-	
 	public:
-		std::string message;
-		ActivityException(const std::string& _message) 
-          : std::runtime_error(message)
+		ActivityException(const std::string& a_message) 
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
 
         virtual ~ActivityException() throw() {}

@@ -262,15 +262,15 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 				enabledTransitions = _wfP->getEnabledTransitions();
 			if (modification)
 				step++;
-		} catch (ActivityException e) {
+		} catch (const ActivityException &e) {
 			ostringstream oss;
-			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
-		}  catch (WorkflowFormatException e) {
+		}  catch (const WorkflowFormatException &e) {
 			ostringstream oss;
-			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
 			_wfP->getProperties().put(createNewErrorID(), oss.str());
@@ -554,10 +554,10 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	try {
 		toP->writeWriteTokens();
 		toP->putOutputTokens();
-	} catch (CapacityException e) {
-		LOG_ERROR(_logger, "exception: " << e.message);
+	} catch (const CapacityException &e) {
+		LOG_ERROR(_logger, "exception: " << e.what());
 		_abort = true;
-		_wfP->getProperties().put(createNewErrorID(), e.message);
+		_wfP->getProperties().put(createNewErrorID(), e.what());
 	}
 	
     // store occurrence sequence
@@ -611,10 +611,10 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 				toP->writeWriteTokens();
 				//  put new token on each output place
 				toP->putOutputTokens();
-			} catch (CapacityException e) {
-				LOG_ERROR(_logger, "CapacityException:" << e.message);;
+			} catch (const CapacityException &e) {
+				LOG_ERROR(_logger, "CapacityException:" << e.what());;
 				_abort = true;
-				_wfP->getProperties().put(createNewErrorID(), e.message);
+				_wfP->getProperties().put(createNewErrorID(), e.what());
 			}
 			
 			modification = true;

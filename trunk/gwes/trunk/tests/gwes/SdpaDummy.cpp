@@ -140,8 +140,8 @@ void SdpaDummy::executeSubWorkflow(
 			break;
 		}
 
-	} catch (NoSuchWorkflowElement e) {
-		LOG_ERROR(logger, "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message);
+	} catch (const NoSuchWorkflowElement &e) {
+		LOG_ERROR(logger, "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.what());
 		_gwesP->activityFailed(workflowId, activityId, *parameters);
 	}
 
@@ -181,9 +181,9 @@ void SdpaDummy::executeAtomicActivity(
 		// notify gwes that activity finished and include parameter list
 		_gwesP->activityFinished(workflowId, activityId, *parameters);
 	} catch (const NoSuchWorkflowException &e) {
-		LOG_ERROR(logger, "exception: " << e.message);
+		LOG_ERROR(logger, "exception: " << e.what());
 	} catch (const NoSuchActivityException &e) {
-		LOG_ERROR(logger, "exception: " << e.message);
+		LOG_ERROR(logger, "exception: " << e.what());
 	}
 }
 

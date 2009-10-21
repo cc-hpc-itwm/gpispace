@@ -213,8 +213,8 @@ Workflow& TestWorkflows::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
     LOG_DEBUG(logger, *wfP);
     LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
     return *wfP;
-  } catch (WorkflowFormatException e) {
-    LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+  } catch (const WorkflowFormatException &e) {
+    LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 	throw;
   }
   

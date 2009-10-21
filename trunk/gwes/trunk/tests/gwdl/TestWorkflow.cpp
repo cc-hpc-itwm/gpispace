@@ -106,9 +106,9 @@ void WorkflowTest::testWorkflow()
 	{
 		wf->getTransition("t1");
 	}
-	catch (NoSuchWorkflowElement e)
+	catch (const NoSuchWorkflowElement &e)
 	{	
-		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -119,9 +119,9 @@ void WorkflowTest::testWorkflow()
 	{
 		wf->getPlace("p5");
 	}
-	catch (NoSuchWorkflowElement e)
+	catch (const NoSuchWorkflowElement &e)
 	{	
-		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -132,9 +132,9 @@ void WorkflowTest::testWorkflow()
 	{
 		wf->removePlace(2);
 	}
-	catch (NoSuchWorkflowElement e)
+	catch (const NoSuchWorkflowElement &e)
 	{	
-		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -145,9 +145,9 @@ void WorkflowTest::testWorkflow()
 	{
 		wf->removeTransition(1);
 	}
-	catch (NoSuchWorkflowElement e)
+	catch (const NoSuchWorkflowElement &e)
 	{	
-		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.message);
+		LOG_INFO(logger, "NoSuchWorkflowElement: " << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);

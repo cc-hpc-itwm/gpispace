@@ -119,8 +119,8 @@ void DataTest::testData()
 	try {
 		Data data3(str3);
         LOG_INFO(logger, data3);
-    } catch(WorkflowFormatException e) {
-   	    LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+    } catch(const WorkflowFormatException &e) {
+   	    LOG_INFO(logger, "WorkflowFormatException: " << e.what());
    	    test = true;
     } catch (...) {
         LOG_INFO(logger, "another exception");

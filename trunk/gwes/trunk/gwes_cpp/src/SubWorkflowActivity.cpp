@@ -56,10 +56,10 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 			_subworkflowP->getProperties().put("simulation","true");
 		}
 		setStatus(STATUS_INITIATED);
-	} catch (WorkflowFormatException e) {
+	} catch (const WorkflowFormatException &e) {
 		setStatus(STATUS_TERMINATED);
 		ostringstream message; 
-		message << "Not able to build subworkflow activity: " << e.message;
+		message << "Not able to build subworkflow activity: " << e.what();
 		throw ActivityException(message.str()); 
 	}
 }
@@ -96,10 +96,10 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 				continue;
 			}
 		}
-	} catch (NoSuchWorkflowElement e) {
+	} catch (const NoSuchWorkflowElement &e) {
 		setStatus(STATUS_TERMINATED);
 		ostringstream message; 
-		message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+		message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.what();
 		throw WorkflowFormatException(message.str()); 
 	}
 
@@ -202,10 +202,10 @@ void SubWorkflowActivity::update(const Event& event) {
 							break;
 						}
 					}
-				} catch (NoSuchWorkflowElement e) {
+				} catch (const NoSuchWorkflowElement &e) {
 					setStatus(STATUS_TERMINATED);
 					ostringstream message; 
-					message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.message;
+					message << "Subworkflow does not contain place that matches edgeExpression \"" << edgeExpression << "\": " << e.what();
 					throw WorkflowFormatException(message.str()); 
 				}
 				setStatus(Activity::STATUS_COMPLETED);

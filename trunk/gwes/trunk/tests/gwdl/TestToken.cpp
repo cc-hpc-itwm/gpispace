@@ -77,9 +77,9 @@ void TokenTest::testToken()
 	    LOG_INFO(logger, "  token4str:" << *token4str);
 	//    delete data4;
 		delete token4;
-	} catch (WorkflowFormatException e) {
-		LOG_ERROR(logger, e.message);	
-	} catch (DOMException e) {
+	} catch (const WorkflowFormatException &e) {
+		LOG_ERROR(logger, e.what());	
+	} catch (const DOMException &e) {
 		char* message = XMLString::transcode(e.msg);
         LOG_FATAL(logger, "DOMException: " << message);
         XMLString::release(&message);
@@ -103,9 +103,9 @@ void TokenTest::testToken()
 		test = true;
 		delete str;
 		delete token5;
-	} catch (WorkflowFormatException e) {
-		LOG_ERROR(logger, e.message);	
-	} catch (DOMException e) {
+	} catch (const WorkflowFormatException &e) {
+		LOG_ERROR(logger, e.what());	
+	} catch (const DOMException &e) {
 		char* message = XMLString::transcode(e.msg);
         LOG_ERROR(logger, "DOMException: " << message);
         XMLString::release(&message);

@@ -45,8 +45,8 @@ void TestTransformAtomicActivityToWorkflow::testTransform() {
 	Workflow* wfP;
 	try {
 		wfP = new Workflow(fn);
-	} catch (WorkflowFormatException e) {
-		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
 	}
 	// start workflow

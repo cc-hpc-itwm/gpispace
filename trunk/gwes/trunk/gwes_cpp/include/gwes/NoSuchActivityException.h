@@ -6,6 +6,7 @@
  */
 #ifndef NOSUCHACTIVITYEXCEPTION_H_
 #define NOSUCHACTIVITYEXCEPTION_H_
+#include <stdexcept>
 #include <string>
 
 namespace gwes
@@ -16,14 +17,15 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class NoSuchActivityException {
+class NoSuchActivityException : public std::runtime_error {
 	
 	public:
-		std::string message;
-		NoSuchActivityException(const std::string& _message) 
+		NoSuchActivityException(const std::string& a_message) 
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
+
+        ~NoSuchActivityException() throw() {}
 }; // end class NoSuchActivityException
 
 } // end namespace gwes

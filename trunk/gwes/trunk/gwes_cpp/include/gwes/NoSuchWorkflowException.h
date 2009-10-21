@@ -7,6 +7,7 @@
 #ifndef NOSUCHWORKFLOWEXCEPTION_H_
 #define NOSUCHWORKFLOWEXCEPTION_H_
 // std
+#include <stdexcept>
 #include <string>
 
 namespace gwes
@@ -17,14 +18,15 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class NoSuchWorkflowException {
+class NoSuchWorkflowException : public std::runtime_error {
 	
 	public:
-		std::string message;
-		NoSuchWorkflowException(const std::string& _message) 
+		NoSuchWorkflowException(const std::string& a_message) 
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
+
+        ~NoSuchWorkflowException() throw() {}
 }; // end class NoSuchWorkflowException
 
 } // end namespace gwes

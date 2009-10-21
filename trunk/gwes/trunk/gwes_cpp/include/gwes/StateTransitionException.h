@@ -7,6 +7,7 @@
 #ifndef STATETRANSITIONEXCEPTION_H_
 #define STATETRANSITIONEXCEPTION_H_
 // std
+#include <stdexcept>
 #include <string>
 
 namespace gwes
@@ -19,15 +20,15 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class StateTransitionException {
+class StateTransitionException : public std::runtime_error {
 	
 	public:
-		std::string message;
-		
-		StateTransitionException(const std::string& _message) 
+		StateTransitionException(const std::string& a_message) 
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
+
+        ~StateTransitionException() throw() {}
 }; // end class StateTransitionException
 
 } // end namespace gwes

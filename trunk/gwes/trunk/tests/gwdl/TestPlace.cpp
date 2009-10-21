@@ -103,8 +103,8 @@ void PlaceTest::testPlace()
 	try {
 		gwdl::Token* token4 = new Token(true);
 		place->addToken(token4);
-	} catch(gwdl::CapacityException e) {
-		LOG_INFO(logger, "CapacityException:" << e.message);
+	} catch(const gwdl::CapacityException &e) {
+		LOG_INFO(logger, "CapacityException:" << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -112,8 +112,8 @@ void PlaceTest::testPlace()
 	test = false;
 	try {
 		place->setCapacity(0);
-	} catch(gwdl::CapacityException e) {
-		LOG_INFO(logger, "CapacityException:" << e.message);
+	} catch(const gwdl::CapacityException &e) {
+		LOG_INFO(logger, "CapacityException:" << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -168,9 +168,9 @@ void PlaceTest::testPlace()
 		delete props1;
 		delete place1;
 	}
-	catch (WorkflowFormatException e) 
+	catch (const WorkflowFormatException &e) 
 	{
-		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+		LOG_INFO(logger, "WorkflowFormatException: " << e.what());
 	}
 
 	// lock token

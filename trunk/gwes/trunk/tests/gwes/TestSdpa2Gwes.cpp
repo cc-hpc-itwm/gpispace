@@ -41,8 +41,8 @@ void TestSdpa2Gwes::testWorkflowWithSdpaActivity() {
 	Workflow* wfP;
 	try {
 		wfP = new Workflow(fn);
-	} catch (WorkflowFormatException e) {
-		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
 	}
 
@@ -114,11 +114,11 @@ void TestSdpa2Gwes::testWorkflowWithSdpaSubWorkflow() {
 		CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 		// ToDo check output!
 
-	} catch (WorkflowFormatException e) {
-		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
-	} catch (NoSuchWorkflowElement e) {
-		LOG_ERROR(logger, "NoSuchWorkflowElement: " << e.message);
+	} catch (const NoSuchWorkflowElement &e) {
+		LOG_ERROR(logger, "NoSuchWorkflowElement: " << e.what());
 		throw;
 	}
 	
