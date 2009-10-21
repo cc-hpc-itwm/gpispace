@@ -13,7 +13,7 @@
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 #include <tests/sdpa/test_DaemonDummyGwes.hpp>
 #include <tests/sdpa/test_DaemonRealGwes.hpp>
-#include <tests/sdpa/test_D2DDummyGwes.hpp>
+//#include <tests/sdpa/test_D2DDummyGwes.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
