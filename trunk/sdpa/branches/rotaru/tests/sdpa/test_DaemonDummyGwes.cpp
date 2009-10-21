@@ -222,7 +222,7 @@ void DaemonDummyGwesTest::tearDown()
 
 	seda::StageRegistry::instance().clear();
 
-	m_ptrDaemonFSM.reset();
+	//m_ptrDaemonFSM.reset();
 	delete m_ptrSdpa2Gwes;
 }
 
