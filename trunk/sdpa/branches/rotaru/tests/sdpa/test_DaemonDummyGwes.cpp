@@ -218,7 +218,7 @@ void DaemonDummyGwesTest::tearDown()
 
 	seda::StageRegistry::instance().lookup(m_ptrToMasterStage->name())->stop();
 	seda::StageRegistry::instance().lookup(m_ptrToSlaveStage->name())->stop();
-	seda::StageRegistry::instance().lookup(m_ptrDaemonFSM->name())->stop();
+	m_ptrDaemonFSM->stop();
 
 	seda::StageRegistry::instance().clear();
 

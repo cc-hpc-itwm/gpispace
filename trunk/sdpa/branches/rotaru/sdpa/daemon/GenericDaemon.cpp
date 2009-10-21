@@ -61,6 +61,11 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	daemon_stage->start();
 }
 
+void GenericDaemon::stop()
+{
+	seda::StageRegistry::instance().lookup(name())->stop();
+}
+
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
 	SDPA_LOG_DEBUG("Perform: Handling event " <<typeid(*pEvent.get()).name());
