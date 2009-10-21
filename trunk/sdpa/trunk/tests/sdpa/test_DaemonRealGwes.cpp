@@ -244,15 +244,6 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrMasterStrategy.get());
 	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrSlaveStrategy.get());
 
-    //start-up the orchestrator
-    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
-
-	sleep(1);
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
-
-	sleep(1);
 	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<strDaemon);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
@@ -389,15 +380,6 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrMasterStrategy.get());
 	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrSlaveStrategy.get());
 
-    //start-up the orchestrator
-    StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
-
-	sleep(1);
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
-
-	sleep(1);
 	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<strDaemon);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
@@ -536,15 +518,6 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled()
 	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrMasterStrategy.get());
 	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrSlaveStrategy.get());
 
-	//start-up the orchestrator
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
-
-	sleep(1);
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
-
-	sleep(1);
 	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<strDaemon);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
@@ -648,15 +621,6 @@ void DaemonRealGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrMasterStrategy.get());
 	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrSlaveStrategy.get());
 
-	//start-up the orchestrator
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtStartUp);
-
-	sleep(1);
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(strDaemon, strDaemon));
-	m_ptrDaemonFSM->daemon_stage()->send(pEvtConfigOk);
-
-	sleep(1);
 	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<strDaemon);
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromDown, strDaemon));
 	m_ptrDaemonFSM->daemon_stage()->send(pEvtWorkerReg);
