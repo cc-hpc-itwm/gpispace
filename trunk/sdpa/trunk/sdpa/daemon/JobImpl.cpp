@@ -121,7 +121,7 @@ namespace sdpa { namespace daemon {
 				// clearly, I'm into the Pending state here
 				// return back to the master a CancelJobAckEvent
 				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id()) );
-				pComm->sendEvent( pComm->output_stage(), pCancelAckEvt );
+				pComm->sendEvent( pComm->to_master_stage(), pCancelAckEvt );
 
 				// delete the job
 				if( GenericDaemon* pDaemon = dynamic_cast<GenericDaemon*>(pComm))
@@ -147,10 +147,10 @@ namespace sdpa { namespace daemon {
 				sdpa::worker_id_t worker_id = get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
 				// else, forward the cancel to the worker
-				SDPA_LOG_DEBUG("Send CancelJobEvent for the job "<<evt.job_id()<<" to the worker "<<worker_id);
+				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
 
 				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-				pComm->sendEvent(pComm->output_stage(), pCancelEvt);
+				pComm->sendEvent(pComm->to_slave_stage(), pCancelEvt);
 			} catch(sdpa::util::PropertyLookupFailed& ) {
 				SDPA_LOG_WARN("The job was not assigned to a worker!");
 			} catch(...) {
@@ -185,8 +185,8 @@ namespace sdpa { namespace daemon {
     	b_marked_for_del_ = true;
 
     	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id()) );
-    	//send the event
-    	pComm->sendEvent(pComm->output_stage(), pDelJobReply);
+    	//send ack to master
+    	pComm->sendEvent(pComm->to_master_stage(), pDelJobReply);
 
     	SDPA_LOG_DEBUG("Process 'action_delete_job'");
     }
@@ -200,8 +200,8 @@ namespace sdpa { namespace daemon {
     	// Post a JobStatusReplyEvent to e.from()
 		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));
 
-		// send the event
-		pComm->sendEvent(pComm->output_stage(), pStatReply);
+		// send status reply to master
+		pComm->sendEvent(pComm->to_master_stage(), pStatReply);
 
     	SDPA_LOG_DEBUG("Posted an event of type StatusReplyEvent");
     }
@@ -229,8 +229,8 @@ namespace sdpa { namespace daemon {
 
     	// attach to this event the results!
 
-    	// send the event
-    	pComm->sendEvent(pComm->output_stage(), pResReply);
+    	// reply the results to master
+    	pComm->sendEvent(pComm->to_master_stage(), pResReply);
 
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG("Process 'action_retrieve_results'");
