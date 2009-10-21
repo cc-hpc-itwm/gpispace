@@ -14,7 +14,7 @@
         <outputPlace placeID="master-output" edgeExpression="sub-output"/>
  		<operation>
       		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="subworkflow-sdpa-test">
-        		<oc:operationCandidate type="sdpa/workflow" operationName="${GWES_CPP_HOME}/workflows/subworkflow-sdpa-test.gwdl" resourceName="nre#1" selected="true"/>
+        		<oc:operationCandidate type="sdpa/workflow" operationName="workflows/subworkflow-sdpa-test.gwdl" resourceName="nre#1" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>
