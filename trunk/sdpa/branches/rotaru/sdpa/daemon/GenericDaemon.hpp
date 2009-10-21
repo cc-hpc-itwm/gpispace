@@ -30,7 +30,6 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static ptr_t create( const std::string &name_prefix, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL);
 	  static void start(GenericDaemon::ptr_t daemon );
 
 	  virtual void perform(const seda::IEvent::Ptr&);
@@ -87,14 +86,16 @@ namespace sdpa { namespace daemon {
 	  //only for testing purposes!
 	  //friend class sdpa::tests::DaemonFSMTest;
 
-	  virtual seda::Stage* output_stage() const { return ptr_output_stage_ ; }
+	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
+	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }
+
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string &name, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes*  pSdpa2Gwes);
+	  GenericDaemon(const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes*);
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
@@ -106,7 +107,9 @@ namespace sdpa { namespace daemon {
 		  daemon_stage_ = stage;
 	  }
 
-	  seda::Stage* ptr_output_stage_;
+	  seda::Stage* ptr_to_master_stage_;
+	  seda::Stage* ptr_to_slave_stage_;
+
 	  seda::Stage* daemon_stage_;
 	  std::string master_;
 

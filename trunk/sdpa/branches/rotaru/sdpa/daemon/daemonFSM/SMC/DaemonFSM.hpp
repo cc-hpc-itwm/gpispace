@@ -17,13 +17,16 @@ namespace sdpa {
 			        typedef boost::recursive_mutex mutex_type;
 			      	typedef boost::unique_lock<mutex_type> lock_type;
 
-					DaemonFSM(const std::string& name, seda::Stage* ptrOutStage, sdpa::Sdpa2Gwes* pGwes = NULL) :
-						GenericDaemon(name, ptrOutStage, pGwes),
-						SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
-						m_fsmContext(*this)
-						{
-							SDPA_LOG_DEBUG("Daemon state machine created");
-						}
+					DaemonFSM(	const std::string &name,
+								seda::Stage* ptrToMasterStage,
+								seda::Stage* ptrToSlaveStage,
+								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+						:GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
+						 SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
+						 m_fsmContext(*this)
+					{
+						SDPA_LOG_DEBUG("Daemon state machine created");
+					}
 
 					virtual ~DaemonFSM() {
 						SDPA_LOG_DEBUG("Daemon State machine destroyed");

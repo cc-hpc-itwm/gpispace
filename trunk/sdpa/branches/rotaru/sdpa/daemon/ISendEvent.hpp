@@ -19,7 +19,8 @@ const std::string USER("user") ;
   class IComm{
   public:
 	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual seda::Stage* output_stage() const = 0;
+	  virtual seda::Stage* to_master_stage() const = 0;
+	  virtual seda::Stage* to_slave_stage() const = 0;
 
 	  // only for testing with DummyGwes, change it
 	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;

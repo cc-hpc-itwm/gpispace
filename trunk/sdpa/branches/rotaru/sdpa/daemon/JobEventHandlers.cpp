@@ -98,14 +98,15 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				// forward it up
 				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
 
+				// assert( master() == ptr_to_master_stage_->name() );
 				// send the event to the master
-				sendEvent(ptr_output_stage_, pEvtJobFinished);
+				sendEvent(ptr_to_master_stage_, pEvtJobFinished);
 				// delete it from the map when you receive a JobFinishedAckEvent!
 			}
 			catch(QueueFull)
 			{
 				os.str("");
-				os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
+				os<<"Failed to send to "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent";
 				SDPA_LOG_DEBUG(os.str());
 			}
 			catch(seda::StageNotFound)
@@ -155,8 +156,8 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 				// send a JobFinishedAckEvent back down to the worker/slave
 				JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
-				// send the event to the master
-				sendEvent(ptr_output_stage_, pEvtJobFinishedAckEvt);
+				// send the event to the slave
+				sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
 
 				//delete it also from job_map_
 				ptr_job_man_->deleteJob(pEvt->job_id());
@@ -227,15 +228,17 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// forward it up
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
 
+			// assert( master() == ptr_to_master_stage_->name() );
+
 			// send the event to the master
-			sendEvent(ptr_output_stage_, pEvtJobFailedEvent);
+			sendEvent(ptr_to_master_stage_, pEvtJobFailedEvent);
 
 			// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
 			{
 				os.str("");
-				os<<"Failed to send to the output stage "<<ptr_output_stage_->name()<<" a SubmitJobEvent";
+				os<<"Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent";
 				SDPA_LOG_DEBUG(os.str());
 			}
 			catch(seda::StageNotFound)
@@ -285,8 +288,8 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				//delete it also from job_map_
 				JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
 
-				// send the event to the master
-				sendEvent(ptr_output_stage_, pEvtJobFailedAckEvt);
+				// send the event to the slave
+				sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
 
 				//delete it also from job_map_
 				ptr_job_man_->deleteJob(pEvt->job_id());
@@ -421,7 +424,7 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
 			// only if the job was already submitted
-			sendEvent(output_stage(), pCancelAckEvt);
+			sendEvent(to_master_stage(), pCancelAckEvt);
 			os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
 			SDPA_LOG_DEBUG(os.str());
 		}
@@ -472,8 +475,8 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 				os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
 				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
 
-				// only if the job was already submitted
-				sendEvent(output_stage(), pCancelAckEvt);
+				// only if the job was already submitted, send ack to master
+				sendEvent(to_master_stage(), pCancelAckEvt);
 
 				// if I'm not the orchestrator delete effectively the job
 				ptr_job_man_->deleteJob(pEvt->job_id());
@@ -490,6 +493,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		activity_id_t actId = pJob->id();
     		workflow_id_t wfId  = pJob->parent();
 
+    		// inform gwes that the activity was canceled
     		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
     	}
 

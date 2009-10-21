@@ -14,7 +14,7 @@ namespace sdpa {
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
 			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
 			  CPPUNIT_TEST_SUITE_END();
@@ -36,8 +36,10 @@ namespace sdpa {
 			  SDPA_DECLARE_LOGGER();
 			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrDaemonFSM;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
-			  seda::Stage::Ptr m_ptrOutputStage;
-			  seda::Strategy::Ptr m_ptrTestStrategy;
+			  seda::Stage::Ptr m_ptrToMasterStage;
+			  seda::Stage::Ptr m_ptrToSlaveStage;
+			  seda::Strategy::Ptr m_ptrMasterStrategy;
+			  seda::Strategy::Ptr m_ptrSlaveStrategy;
 			  std::string m_strWorkflow;
 			};
 		}
