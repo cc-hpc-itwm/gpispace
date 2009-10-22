@@ -293,6 +293,15 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
         SDPA_LOG_ERROR("SDPA has unregistered ...");
     }
 
+    gwdl::IWorkflow* deserializeWorkflow(const std::string&) throw (std::runtime_error)
+    {
+      return NULL;
+    }
+
+    std::string serializeWorkflow(const gwdl::IWorkflow&) throw (std::runtime_error)
+    {
+      return "";
+    }
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
     bimap_t bimap_wf_act_ids_;

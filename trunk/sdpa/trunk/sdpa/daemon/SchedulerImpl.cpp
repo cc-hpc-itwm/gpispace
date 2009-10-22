@@ -2,7 +2,6 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 
 #include <tests/sdpa/DummyGwes.hpp>
-#include <gwdl/WFSerialization.h>
 
 using namespace sdpa::daemon;
 using namespace std;
@@ -38,7 +37,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	// IBuilder or a workflow fabric should be invoked here intstead of this!!!
 	try {
 		//ptrWorkflow = new DummyWorkflow(pJob->description());
-		ptrWorkflow = gwdl::deserializeWorkflow( pJob->description() ) ;
+		ptrWorkflow = ptr_Sdpa2Gwes_->deserializeWorkflow( pJob->description() ) ;
 		ptrWorkflow->setID(wf_id);
 	} catch(std::runtime_error&){
 		SDPA_LOG_ERROR("GWES could not deserialize the input string!");

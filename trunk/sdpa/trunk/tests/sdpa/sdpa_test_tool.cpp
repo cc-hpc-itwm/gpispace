@@ -12,7 +12,6 @@
 #include <sdpa/wf/GwesGlue.hpp>
 #include <sdpa/wf/Serialization.hpp>
 
-#include <gwdl/WFSerialization.h>
 #include <gwdl/Token.h>
 
 #include <iostream>
@@ -53,14 +52,6 @@ int main(int /* argc */, char ** /* argv */)
   std::clog << "activity = " << activity << std::endl;
 
   std::clog << sdpa::wf::Activity::Method("test.so@loopStep") << std::endl;
-
-  try
-  {
-    gwdl::deserializeWorkflow("foo");
-  } catch (const std::runtime_error &re)
-  {
-    std::clog << "at least it throws now" << std::endl;  
-  }
 
   {
     sdpa::wf::Token iToken((int)42);
