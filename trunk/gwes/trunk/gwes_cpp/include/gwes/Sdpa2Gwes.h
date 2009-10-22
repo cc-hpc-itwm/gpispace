@@ -138,6 +138,9 @@ public:
 	 * callback method Gwes2Sdpa::workflowCanceled.  
 	 */
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception) = 0;
+
+    virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error) = 0;
+    virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error) = 0;
 };
 }
 

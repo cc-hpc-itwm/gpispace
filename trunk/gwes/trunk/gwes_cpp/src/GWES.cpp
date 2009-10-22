@@ -8,6 +8,8 @@
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Workflow.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;
@@ -388,6 +390,27 @@ void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
     {
       throw NoSuchWorkflow(workflowId);
     }
+}
+
+gwdl::IWorkflow *GWES::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error)
+{
+  XERCES_CPP_NAMESPACE::DOMElement* element = (gwdl::XMLUtils::Instance()->deserialize(bytes))->getDocumentElement();
+  if (element)
+  {
+    return new gwdl::Workflow(element);
+  }
+  else
+  {
+    throw std::runtime_error("could not deserialize input string");
+  }
+}
+
+std::string GWES::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std::runtime_error)
+{
+  gwdl::Workflow &real_workflow = static_cast<gwdl::Workflow&>(const_cast<IWorkflow&>(workflow));
+  std::ostringstream ostr;
+  ostr << real_workflow;
+  return ostr.str();
 }
 
 } // end namespace gwes

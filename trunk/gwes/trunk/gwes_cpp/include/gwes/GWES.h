@@ -296,6 +296,8 @@ public:
 
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
 
+    virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error);
+    virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error);
 };
 
 }
