@@ -28,13 +28,13 @@ int main (int argc, char **argv) {
   if (idx == argc)
   {
     usage(argv[0]);
-    exit(1);
+    return (1);
   }
 
   if (argv[idx] == std::string("-h"))
   {
     usage(argv[0]);
-    exit(0);
+    return (0);
   }
 
   fhg::log::getLogger().addAppender(
@@ -54,90 +54,98 @@ int main (int argc, char **argv) {
   if (idx == argc)
   {
     usage(argv[0]);
-    exit(0);
+    return (0);
   }  
 
-  sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
-  if (argv[idx] == std::string("-V"))
+  try
   {
-    std::cerr << "           "
-              << "SDPA - Seismic Data Processing Architecture" << std::endl;
-    std::cerr << "           "
-              << "===========================================" << std::endl;
-    std::cerr << "                            "
-              << "v" << api->version()
-              << std::endl
-              << "                 "
-              << " " << api->copyright()
-              << std::endl;
-    std::cerr << "       "
-              << api->contact()
-              << std::endl;
-    exit(0);
-  }
-
-  LOG(INFO, "***************************************************");
-  LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
-  LOG(INFO, "***************************************************");
-
-  if (argv[idx] == std::string("submit"))
-  {
-    if ((idx+1) == argc)
+    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
+    if (argv[idx] == std::string("-V"))
     {
-      std::cerr << "submit requires an argument" << std::endl;
-      exit(1);
+      std::cerr << "           "
+                << "SDPA - Seismic Data Processing Architecture" << std::endl;
+      std::cerr << "           "
+                << "===========================================" << std::endl;
+      std::cerr << "                            "
+                << "v" << api->version()
+                << std::endl
+                << "                 "
+                << " " << api->copyright()
+                << std::endl;
+      std::cerr << "       "
+                << api->contact()
+                << std::endl;
+      return 0;
     }
 
-    std::ifstream ifs(argv[idx+1]);
-    if (! ifs.good())
-    {
-      std::cerr << "could not open: " << argv[idx+1] << std::endl;
-      exit(2);
-    }
+    LOG(INFO, "***************************************************");
+    LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
+    LOG(INFO, "***************************************************");
 
-    std::stringstream sstr;
-    ifs >> sstr.rdbuf();
-    std::cout << api->submitJob(sstr.str()) << std::endl;
-  }
-  else if (argv[idx] == std::string("cancel"))
-  {
-    if ((idx+1) == argc)
+    if (argv[idx] == std::string("submit"))
     {
-      std::cerr << "cancel requires an argument" << std::endl;
-      exit(1);
+      if ((idx+1) == argc)
+      {
+        std::cerr << "submit requires an argument" << std::endl;
+        return (1);
+      }
+
+      std::ifstream ifs(argv[idx+1]);
+      if (! ifs.good())
+      {
+        std::cerr << "could not open: " << argv[idx+1] << std::endl;
+        return (2);
+      }
+
+      std::stringstream sstr;
+      ifs >> sstr.rdbuf();
+      std::cout << api->submitJob(sstr.str()) << std::endl;
     }
-    api->cancelJob(argv[idx+1]);
-  }
-  else if (argv[idx] == std::string("status"))
-  {
-    if ((idx+1) == argc)
+    else if (argv[idx] == std::string("cancel"))
     {
-      std::cerr << "status requires an argument" << std::endl;
-      exit(1);
+      if ((idx+1) == argc)
+      {
+        std::cerr << "cancel requires an argument" << std::endl;
+        return (1);
+      }
+      api->cancelJob(argv[idx+1]);
     }
-    std::cout << api->queryJob(argv[idx+1]) << std::endl;
-  }
-  else if (argv[idx] == std::string("results"))
-  {
-    if ((idx+1) == argc)
+    else if (argv[idx] == std::string("status"))
     {
-      std::cerr << "results requires an argument" << std::endl;
-      exit(1);
+      if ((idx+1) == argc)
+      {
+        std::cerr << "status requires an argument" << std::endl;
+        return (1);
+      }
+      std::cout << api->queryJob(argv[idx+1]) << std::endl;
     }
-    std::cout << api->retrieveResults(argv[idx+1]) << std::endl;
-  }
-  else if (argv[idx] == std::string("delete"))
-  {
-    if ((idx+1) == argc)
+    else if (argv[idx] == std::string("results"))
     {
-      std::cerr << "delete requires an argument" << std::endl;
-      exit(1);
+      if ((idx+1) == argc)
+      {
+        std::cerr << "results requires an argument" << std::endl;
+        return (1);
+      }
+      std::cout << api->retrieveResults(argv[idx+1]) << std::endl;
     }
-    api->deleteJob(argv[idx+1]);
+    else if (argv[idx] == std::string("delete"))
+    {
+      if ((idx+1) == argc)
+      {
+        std::cerr << "delete requires an argument" << std::endl;
+        return (1);
+      }
+      api->deleteJob(argv[idx+1]);
+    }
+    else
+    {
+      std::cerr << "illegal command: " << argv[idx] << std::endl;
+      return (1);
+    }
   }
-  else
+  catch (const sdpa::client::ClientException &ce)
   {
-    std::cerr << "illegal command: " << argv[idx] << std::endl;
-    exit(1);
+    std::cerr << "failed: " << ce.what() << std::endl;
+    return 3;
   }
 }

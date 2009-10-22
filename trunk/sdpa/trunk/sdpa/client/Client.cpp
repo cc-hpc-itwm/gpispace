@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
 
@@ -85,7 +87,7 @@ void Client::perform(const seda::IEvent::Ptr &event)
   }
 }
 
-void Client::start(const Client::config_t & config)
+void Client::start(const Client::config_t & config) throw (ClientException)
 {
   DMLOG(DEBUG, "starting up with config: " << config);
 //  fhg::log::Configurator::configure(/*use default config for now*/);
@@ -93,143 +95,206 @@ void Client::start(const Client::config_t & config)
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
   DMLOG(DEBUG, "waiting until configuration is done.");
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (dynamic_cast<ConfigOK*>(reply.get()))
+  try
   {
-    MLOG(INFO,"configuration was ok");
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (dynamic_cast<ConfigOK*>(reply.get()))
+    {
+      MLOG(INFO,"configuration was ok");
+    }
+    else if (dynamic_cast<ConfigNOK*>(reply.get()))
+    {
+      throw ConfigError("configuration was not ok");
+    }
+    else
+    {
+      throw ClientException("startup failed");
+    }
   }
-  else if (dynamic_cast<ConfigNOK*>(reply.get()))
+  catch (const Timedout &)
   {
-    throw std::runtime_error("configuration was not ok");
-  }
-  else
-  {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("start", "this call should never timeout!");
   }
 }
 
-void Client::shutdown()
+void Client::shutdown() throw (ClientException)
 {
   client_stage_->send(seda::IEvent::Ptr(new Shutdown()));
-  wait_for_reply();
-
-  client_stage_->stop();
-  seda::StageRegistry::instance().remove(client_stage_);
-  client_stage_.reset();
+  try
+  {
+    wait_for_reply();
+    client_stage_->stop();
+    seda::StageRegistry::instance().remove(client_stage_);
+    client_stage_.reset();
+  }
+  catch (const Timedout &)
+  {
+    throw ApiCallFailed("shutdown", "this call should never timeout!");
+  }
 }
 
-seda::IEvent::Ptr Client::wait_for_reply(const timeout_t timeout)
+seda::IEvent::Ptr Client::wait_for_reply(const timeout_t &timeout) throw (Timedout)
 {
   boost::unique_lock<boost::mutex> lock(mtx_);
   while (reply_.get() == NULL)
   {
-    cond_.wait(lock);
+    const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(timeout));
+    if (! cond_.timed_wait(lock, to)) {
+      if (reply_.get() != NULL)
+      {
+        break;
+      }
+      else
+      {
+        throw Timedout("did not receive reply");
+      }
+    }
   }
   seda::IEvent::Ptr ret(reply_);
   reply_.reset();
   return ret;
 }
 
-sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
+sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
   MLOG(INFO,"submitting job with description = " << desc);
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), /* config.get("sdpa.topology.orchestrator") */ "orchestrator", desc)));
   DMLOG(DEBUG,"waiting for a reply");
   // TODO: wait_for_reply(config.get<timeout_t>("sdpa.network.timeout")
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
+  try
   {
-    DMLOG(DEBUG,"got an acknowledge: "
-        << sj_ack->from()
-        << " -> "
-        << sj_ack->to()
-        << " job_id: "
-        << sj_ack->job_id());
-    return sj_ack->job_id();
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"got an acknowledge: "
+          << sj_ack->from()
+          << " -> "
+          << sj_ack->to()
+          << " job_id: "
+          << sj_ack->job_id());
+      return sj_ack->job_id();
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
   }
-  else
+  catch (const Timedout &)
   {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("submitJob");
   }
 }
 
-void Client::cancelJob(const job_id_t &jid)
+void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent(name()
                                                              , "orchestrator"
                                                              , jid)));
   DMLOG(DEBUG,"waiting for a reply");
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (/* se::CancelJobAckEvent *ack = */ dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
+  try
   {
-    DMLOG(DEBUG,"cancellation has been acknowledged");
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (/* se::CancelJobAckEvent *ack = */ dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"cancellation has been acknowledged");
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
   }
-  else
+  catch(const Timedout &)
   {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("cancelJob");
   }
 }
 
-std::string Client::queryJob(const job_id_t &jid)
+std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"querying status of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                                  , "orchestrator"
                                                                  , jid)));
   DMLOG(DEBUG,"waiting for a reply");
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (se::JobStatusReplyEvent *status = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
+  try
   {
-    DMLOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
-    return status->status();
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::JobStatusReplyEvent *status = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
+      return status->status();
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
   }
-  else
+  catch (const Timedout &)
   {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("queryJob");
   }
 }
 
-void Client::deleteJob(const job_id_t &jid)
+void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name()
                                                              , "orchestrator"
                                                              , jid)));
   DMLOG(DEBUG,"waiting for a reply");
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
+  try
   {
-    DMLOG(DEBUG,"deletion of job has been acknowledged");
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"deletion of job has been acknowledged");
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
   }
-  else
+  catch (const Timedout &)
   {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("deleteJob");
   }
 }
 
-sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid)
+sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , "orchestrator"
                                                                       , jid)));
   DMLOG(DEBUG,"waiting for a reply");
-  seda::IEvent::Ptr reply(wait_for_reply());
-  // check event type
-  if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
+  try
   {
-    DMLOG(DEBUG,"results: " << res->result());
-    return res->result();
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"results: " << res->result());
+      return res->result();
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
   }
-  else
+  catch (const Timedout &)
   {
-    throw std::runtime_error("timedout/failed");
+    throw ApiCallFailed("retrieveResults");
   }
 }
 

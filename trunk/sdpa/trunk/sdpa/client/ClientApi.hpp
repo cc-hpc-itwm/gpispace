@@ -2,6 +2,7 @@
 #define SDPA_CLIENT_CLIENT_API_HPP 1
 
 #include <sdpa/memory.hpp>
+#include <fhglog/fhglog.hpp>
 #include <sdpa/client/Client.hpp>
 
 namespace sdpa { namespace client {
@@ -12,7 +13,7 @@ namespace sdpa { namespace client {
 
     static ClientApi::ptr_t create(const Client::config_t &cfg
                                   ,const std::string &name_prefix="sdpa.apps.client"
-                                  ,const std::string &output_stage="sdpa.apps.client.out")
+                                  ,const std::string &output_stage="sdpa.apps.client.out") throw (ClientException)
     {
       ClientApi::ptr_t api(new ClientApi(Client::create(name_prefix, output_stage)));
       api->pimpl->start(cfg);
@@ -20,7 +21,18 @@ namespace sdpa { namespace client {
     }
 
     ~ClientApi() {
-      pimpl->shutdown();
+      try
+      {
+        pimpl->shutdown();
+      }
+      catch (std::exception &ex)
+      {
+        LOG(FATAL, "client->shutdown() failed!" << ex.what());
+      }
+      catch (...)
+      {
+        LOG(FATAL, "client->shutdown() failed due to an unknown reason!");
+      }
     }
 
     const std::string &version() const
@@ -38,27 +50,27 @@ namespace sdpa { namespace client {
       return pimpl->contact();
     }
 
-    job_id_t submitJob(const job_desc_t &desc)
+    job_id_t submitJob(const job_desc_t &desc) throw (ClientException)
     {
       return pimpl->submitJob(desc);
     }
 
-    void cancelJob(const job_id_t &jid)
+    void cancelJob(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->cancelJob(jid);
     }
 
-    std::string queryJob(const job_id_t &jid)
+    std::string queryJob(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->queryJob(jid);
     }
 
-    void deleteJob(const job_id_t &jid)
+    void deleteJob(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->deleteJob(jid);
     }
 
-    Client::result_t retrieveResults(const job_id_t &jid)
+    Client::result_t retrieveResults(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->retrieveResults(jid);
     }
