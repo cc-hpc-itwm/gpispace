@@ -14,6 +14,7 @@
 #include <gwdl/AbstractionLevel.h>
 //std
 #include <unistd.h>
+#include <list>
 #include <map>
 
 using namespace std;
@@ -577,6 +578,10 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 	bool modification = false;
 	status_t tempworkflowstatus = STATUS_RUNNING;
+
+    // FIXME: maybe that helps
+    std::list<std::string> toRemove;
+
 	// loop through activities
 	for (map<string,Activity*>::iterator it=_activityTable.begin(); it
 			!=_activityTable.end(); ++it) {
@@ -631,7 +636,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 		    // cleanup
 		    delete toP;
-		    _activityTable.remove(activityID);
+            toRemove.push_back(activityID);
 
 		    ///ToDo: fault management regarding the fault management policy property
 		    if (activityStatus == Activity::STATUS_TERMINATED) {
@@ -651,6 +656,11 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		}
 
 	}
+    while (! toRemove.empty())
+    {
+      _activityTable.remove(toRemove.front());
+      toRemove.pop_front();
+    }
 	
 	///ToDo: annotate transitions with transition status
 

@@ -54,7 +54,7 @@ void ActivityTable::remove(const string& id) {
 	     throw NoSuchActivityException(message.str());
 	}
 	delete iter->second;
-	erase(id);
+	erase(iter);
 }
 
 }
