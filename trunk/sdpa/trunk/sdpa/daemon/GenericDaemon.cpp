@@ -534,7 +534,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		}
 
 		// serialize workflow
-		job_desc_t job_desc = pWf->serialize();
+		job_desc_t job_desc = ptr_Sdpa2Gwes_->serializeWorkflow(*pWf);
 		SDPA_LOG_DEBUG("activity_id = "<<activity.getID()<<", workflow_id = "<<pWf->getID());
 
 		gwes::workflow_id_t parent_id = activity.getOwnerWorkflowID();
