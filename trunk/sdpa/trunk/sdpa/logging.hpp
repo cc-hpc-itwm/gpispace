@@ -16,11 +16,11 @@
 #    define SDPA_DEFINE_LOGGER(hierarchy) SDPA_LDEFINE_LOGGER(sdpa_logger, hierarchy)
 #    define SDPA_INIT_LOGGER(hierarchy)   SDPA_LINIT_LOGGER(sdpa_logger, hierarchy)
 
-#    define SDPA_LLOG_DEBUG(logger, msg) LOG(DEBUG, msg)
-#    define SDPA_LLOG_INFO(logger, msg)  LOG(INFO,  msg)
-#    define SDPA_LLOG_WARN(logger, msg)  LOG(WARN,  msg)
-#    define SDPA_LLOG_ERROR(logger, msg) LOG(ERROR, msg)
-#    define SDPA_LLOG_FATAL(logger, msg) LOG(FATAL, msg)
+#    define SDPA_LLOG_DEBUG(logger, msg) LLOG(DEBUG, logger, msg)
+#    define SDPA_LLOG_INFO(logger, msg)  LLOG(INFO,  logger, msg)
+#    define SDPA_LLOG_WARN(logger, msg)  LLOG(WARN,  logger, msg)
+#    define SDPA_LLOG_ERROR(logger, msg) LLOG(ERROR, logger, msg)
+#    define SDPA_LLOG_FATAL(logger, msg) LLOG(FATAL, logger, msg)
 
 #    define SDPA_LOG_DEBUG(msg) SDPA_LLOG_DEBUG(sdpa_logger, msg)
 #    define SDPA_LOG_INFO(msg)  SDPA_LLOG_INFO(sdpa_logger, msg) 

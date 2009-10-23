@@ -20,6 +20,7 @@ int main(int /* argc */, char ** /* argv */)
   using namespace sdpa;
   fhg::log::Configurator::configure();
 
+  SDPA_DEFINE_LOGGER("test");
   SDPA_LOG_ERROR("test");
 
   sdpa::daemon::Job::ptr_t job(new sdpa::daemon::JobImpl("job-1234", "<job></job>"));
