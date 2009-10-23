@@ -144,7 +144,7 @@ public:
 	 * Set the current status of this activity.
 	 * @param status The status (refer to STATUS_*).
 	 */
-	void setStatus(status_t status);
+	void setStatus(status_t status) throw (StateTransitionException);
 
 	/**
 	 * Get the current status code of this activity.

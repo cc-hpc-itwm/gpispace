@@ -167,9 +167,35 @@ const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const {
 // GWES internal methods 
 /////////////////////////////////////////
 
-void Activity::setStatus(Activity::status_t status) {
+void Activity::setStatus(Activity::status_t status) throw (StateTransitionException) {
 	if (status == _status) return; 
 	LOG_DEBUG(_logger, "status of activity " << _id << " changing from " << getStatusAsString(_status) << " to " << getStatusAsString(status));
+
+    // StateMachine:
+    // UNDEFINED -> any
+    // RUNNING -> TERMINATED | 
+    const status_t from_state(_status);
+    const status_t to_state(status);
+
+    if (from_state == STATUS_UNDEFINED)
+    {
+    }
+    else if (from_state == STATUS_RUNNING)
+    {
+      if (to_state == STATUS_UNDEFINED) throw StateTransitionException("RUNNING -> UNDEFINED");
+    }
+    else if (from_state == STATUS_INITIATED)
+    {
+    }
+    else if (from_state == STATUS_COMPLETED
+          || from_state == STATUS_TERMINATED
+          || from_state == STATUS_FAILED)
+    {
+      // we are done and that's it
+      throw StateTransitionException(std::string("final state -> ") + getStatusAsString(to_state));
+    }
+
+
 	_status = status;
 	
 	// notify observers
