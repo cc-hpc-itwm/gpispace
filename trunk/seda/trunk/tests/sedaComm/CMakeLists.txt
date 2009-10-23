@@ -2,7 +2,7 @@
 
 set(sedaCommTest_src main.cpp
   EncoderTest.cpp
-  ZMQConnectionTest.cpp
+  UDPConnectionTest.cpp
 )
 set(msg_listener_src msg_listener.cpp)
 set(msg_sender_src   msg_sender.cpp)

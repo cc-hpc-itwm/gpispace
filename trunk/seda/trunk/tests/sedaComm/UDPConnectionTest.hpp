@@ -1,0 +1,30 @@
+#ifndef SEDA_TESTS_COMM_ZMQCONN_HPP
+#define SEDA_TESTS_COMM_ZMQCONN_HPP 1
+
+#include <cppunit/extensions/HelperMacros.h>
+#include <seda/logging.hpp>
+#include <stdint.h>
+#include <unistd.h>
+
+namespace seda { namespace comm { namespace tests {
+  class UDPConnectionTest : public CppUnit::TestFixture {
+    CPPUNIT_TEST_SUITE( seda::comm::tests::UDPConnectionTest );
+    CPPUNIT_TEST( testStartStop );
+    CPPUNIT_TEST( testSendReceive );
+    CPPUNIT_TEST_SUITE_END();
+
+    private:
+    public:
+    UDPConnectionTest();
+    ~UDPConnectionTest();
+    void setUp();
+    void tearDown();
+
+    protected:
+
+    void testSendReceive();
+    void testStartStop();
+  };
+}}}
+
+#endif

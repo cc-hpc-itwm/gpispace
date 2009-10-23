@@ -691,7 +691,7 @@ string WorkflowHandler::createNewWarnID() const {
  */
 void *startWorkflowAsThread(void *workflowHandlerP) {
 	gwes::WorkflowHandler* wfhP = (gwes::WorkflowHandler*) workflowHandlerP;
-	LOG_DEBUG(logger_t(getLogger("gwes")), "start workflow as new thread...");
+	LOG_DEBUG(getLogger("gwes"), "start workflow as new thread...");
 	wfhP->executeWorkflow();
 	return 0;
 }

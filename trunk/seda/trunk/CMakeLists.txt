@@ -142,7 +142,7 @@ set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
-find_package(Boost 1.36 REQUIRED COMPONENTS thread)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
     message(FATAL_ERROR "At least Boost 1.36 is required")
@@ -156,14 +156,14 @@ link_directories(${Boost_LIBRARY_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
 if (WITH_COMM)
-  # we need zeromq
-  include (FindZeroMQ)
-  if (ZMQ_FOUND)
-    include_directories(${ZMQ_INCLUDE_DIR})
-    link_libraries(${ZMQ_LIBRARY})
-  else (ZMQ_FOUND)
-    message(FATAL_ERROR "ZeroMQ could not be found!")
-  endif (ZMQ_FOUND)
+  #  # we need zeromq
+  #  include (FindZeroMQ)
+  #  if (ZMQ_FOUND)
+  #    include_directories(${ZMQ_INCLUDE_DIR})
+  #    link_libraries(${ZMQ_LIBRARY})
+  #  else (ZMQ_FOUND)
+  #    message(FATAL_ERROR "ZeroMQ could not be found!")
+  #  endif (ZMQ_FOUND)
 
   # google protocol buffers
   include(FindProtocolBuffers)

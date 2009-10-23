@@ -43,10 +43,13 @@ namespace seda { namespace comm {
   public:
     ConnectionParameters(const std::string &transport
                        , const std::string &host_and_port
-                       , const std::string &logical_name)
+                       , const std::string &logical_name
+                       , const short &a_port = 0
+                       )
       : transport_(transport)
       , host_and_port_(host_and_port)
       , logical_name_(logical_name)
+      , port_(a_port)
     {
     }
 
@@ -76,10 +79,12 @@ namespace seda { namespace comm {
     const std::string &transport() const { return transport_; }
     const std::string &host() const { return host_and_port_; }
     const std::string &name() const { return logical_name_; }
+    const short &port() const { return port_; }
   private:
     std::string transport_;
     std::string host_and_port_;
     std::string logical_name_;
+    short port_;
     std::map<std::string, std::string> props_;
   };
 
