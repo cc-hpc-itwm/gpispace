@@ -23,6 +23,7 @@
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
 #include <boost/shared_ptr.hpp>
+
 #include "DummyGwes.hpp"
 
 #include <seda/Stage.hpp>
@@ -35,6 +36,7 @@ using namespace sdpa::daemon;
 using namespace sdpa::fsm::smc;
 
 const int NITER = 1;
+const int sleep_interval = 10000;
 
 class TestStrategy : public seda::Strategy
 {
@@ -198,6 +200,7 @@ void DaemonDummyGwesTest::setUp() { //initialize and start the finite state mach
 	m_ptrDaemonFSM = DaemonFSM::ptr_t(new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrToMasterStage.get(),
 													 m_ptrToSlaveStage.get(), m_ptrSdpa2Gwes));
 
+	DaemonFSM::create_daemon_stage(m_ptrDaemonFSM);
 	DaemonFSM::start(m_ptrDaemonFSM);
 
 	//create output stage
@@ -284,7 +287,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
-				sleep(1);
+				usleep(sleep_interval);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
@@ -318,6 +321,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 
 		// wait for a JobStatusReplyEvent
 		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
 
 		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
 			pJobStatusReplyEvent->status().find("Failed") == std::string::npos )
@@ -328,12 +332,9 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
-			sleep(1);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+			usleep(sleep_interval);
 		}
-
-		os.str("");
-		os<<"The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status();
-		SDPA_LOG_DEBUG(os.str());
 
 		// if the job is in the finished or failed state, one is allowed
 		// to retriieve the results now
@@ -405,7 +406,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
-		sleep(1);
+		usleep(sleep_interval);
 		// the slave posts a job request
 		SDPA_LOG_DEBUG("Slave: post new job request to "<<strDaemon);
 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromDown, strDaemon) );
@@ -454,6 +455,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 
 		// wait for a JobStatusReplyEvent
 		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
 
 		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
 			pJobStatusReplyEvent->status().find("Failed") == std::string::npos &&
@@ -465,12 +467,9 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
-			sleep(1);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+			usleep(sleep_interval);
 		}
-
-		os.str("");
-		os<<"The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status();
-		SDPA_LOG_DEBUG(os.str());
 
 		// if the job is in the finished or failed state, one is allowed
 		// to retriieve the results now
@@ -558,7 +557,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 				os<<"No job available! Try again ...";
 				SDPA_LOG_DEBUG(os.str());
 
-				sleep(1);
+				usleep(sleep_interval);
 				//Post new reqest and wait
 				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromDown, strDaemon) );
 				m_ptrDaemonFSM->daemon_stage()->send(pEvtReqNew);
@@ -576,6 +575,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave) );
 		m_ptrDaemonFSM->daemon_stage()->send(pSubmitJobAck);
 
+		usleep(sleep_interval);
 		// Now, the user sends a CancelJob  message
 		CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUp, strDaemon, job_id_user) );
 		m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);
@@ -646,6 +646,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
+		usleep(sleep_interval);
 		// Now, the user sends a CancelJob  message
 		CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUp, strDaemon, job_id_user) );
 		m_ptrDaemonFSM->daemon_stage()->send(pCancelJobEvt);

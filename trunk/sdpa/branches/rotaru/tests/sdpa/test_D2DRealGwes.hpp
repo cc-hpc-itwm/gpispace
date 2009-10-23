@@ -1,5 +1,5 @@
-#ifndef DAEMON_DUMMY_REAL_TEST_HPP_
-#define DAEMON_DUMMY_REAL_TEST_HPP_
+#ifndef D2D_REAL_GWES_TEST_HPP_
+#define D2D_REAL_GWES_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
@@ -9,27 +9,23 @@
 
 namespace sdpa {
 		namespace tests {
-			class DaemonRealGwesTest: public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonRealGwesTest );
+			class D2DRealGwesTest: public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::D2DRealGwesTest );
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-
-			  // Caution: GWES blocks the calling thread! Even if the daemon stage uses more than 1 thread
-			  // don't use it, wait for AH to fix it
-			  // it may happen that the daemon hangs because its threads are blocked by GWES
 			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
 			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
-
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-			  DaemonRealGwesTest();
-			  ~DaemonRealGwesTest();
+			  D2DRealGwesTest();
+			  ~D2DRealGwesTest();
 			  void setUp();
 			  void tearDown();
 
 			  std::string read_workflow(std::string strFileName);
+
 			protected:
 			  void testDaemonFSM_JobFinished();
 			  void testDaemonFSM_JobFailed();
@@ -38,12 +34,18 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrDaemonFSM;
-			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
-			  seda::Stage::Ptr m_ptrToMasterStage;
-			  seda::Stage::Ptr m_ptrToSlaveStage;
-			  seda::Strategy::Ptr m_ptrMasterStrategy;
-			  seda::Strategy::Ptr m_ptrSlaveStrategy;
+			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrOrch;
+			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrAgg;
+
+			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
+			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
+
+			  seda::Stage::Ptr m_ptrToUserStage;
+			  seda::Stage::Ptr m_ptrToNreStage;
+
+			  seda::Strategy::Ptr m_ptrUserStrategy;
+			  seda::Strategy::Ptr m_ptrNreStrategy;
+
 			  std::string m_strWorkflow;
 			};
 		}

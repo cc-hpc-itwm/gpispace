@@ -17,6 +17,8 @@
 #include <sdpa/daemon/ISendEvent.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/ConfigReplyEvent.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -30,6 +32,7 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
+	  static void create_daemon_stage(GenericDaemon::ptr_t ptr_daemon );
 	  static void start(GenericDaemon::ptr_t daemon );
 	  void stop();
 
@@ -51,6 +54,10 @@ namespace sdpa { namespace daemon {
 	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
+
+	  // management event handlers
+	  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
+	  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
 
 	  // job event handlers
 	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* pEvent);
@@ -89,14 +96,14 @@ namespace sdpa { namespace daemon {
 	  //only for testing purposes!
 	  //friend class sdpa::tests::DaemonFSMTest;
 
+	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
 	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }
 
 	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
 
-
-	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
+	  virtual bool is_registered() const { return m_bRegistered;}
 
   protected:
 	  SDPA_DECLARE_LOGGER();
@@ -121,6 +128,7 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::config::Config::ptr_t ptr_daemon_cfg_;
 	  sdpa::util::time_type last_request_time;
+	  bool m_bRegistered;
   };
 
   /*

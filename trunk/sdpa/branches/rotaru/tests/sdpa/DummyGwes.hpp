@@ -16,14 +16,19 @@
 #include <boost/config.hpp>
 #include <iostream>
 
-#include <boost/bimap.hpp>
+//#include <boost/bimap.hpp>
+#include <map>
+#include <boost/thread.hpp>
 
 
 using namespace sdpa;
 using namespace gwes;
 
-typedef boost::bimap< std::string, std::string > bimap_t;
-typedef bimap_t::value_type id_pair;
+//typedef boost::bimap< std::string, std::string > bimap_t;
+//typedef bimap_t::value_type id_pair;
+
+typedef std::map< std::string, std::string > map_t;
+typedef map_t::value_type id_pair;
 
 /*namespace gwdl
   {
@@ -79,6 +84,9 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
   private:
     SDPA_DECLARE_LOGGER();
   public:
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+
     DummyGwes() : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
   {
     ptr_Gwes2SdpaHandler = NULL;
@@ -115,9 +123,12 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       if(ptr_Gwes2SdpaHandler)
       {
         // find the corresponding workflow
-        workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch);
-        bimap_wf_act_ids_.left.erase(wf_id_orch);
+        //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+        ptr_Gwes2SdpaHandler->workflowFailed(workflowId);
+
+        lock_type lock(mtx_);
+        map_wf_act_ids_.erase(workflowId);
+        //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -140,9 +151,12 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       if(ptr_Gwes2SdpaHandler)
       {
         // find the corresponding workflow
-        workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch);
-        bimap_wf_act_ids_.left.erase(wf_id_orch);
+        //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+        ptr_Gwes2SdpaHandler->workflowFinished(workflowId);
+
+        lock_type lock(mtx_);
+        map_wf_act_ids_.erase(workflowId);
+        //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -169,9 +183,12 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
         if(ptr_Gwes2SdpaHandler)
         {
           // find the corresponding workflow
-          workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-          ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch);
-          bimap_wf_act_ids_.left.erase(wf_id_orch);
+          //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+          ptr_Gwes2SdpaHandler->workflowCanceled(workflowId);
+
+          lock_type lock(mtx_);
+          map_wf_act_ids_.erase(workflowId);
+          //bimap_wf_act_ids_.left.erase(wf_id_orch);
         }
         else
           SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -258,7 +275,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
 
       //bimap_wf_act_ids_[wf_id_orch] = act_id;
-      bimap_wf_act_ids_.insert( id_pair(wf_id_orch, act_id) );
+      lock_type lock(mtx_);
+      map_wf_act_ids_.insert(id_pair(wf_id_orch,act_id));
 
 
       if(ptr_Gwes2SdpaHandler)
@@ -286,16 +304,30 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       if(ptr_Gwes2SdpaHandler)
       {
         SDPA_LOG_DEBUG("Gwes cancels the activities related to the workflow "<<workflowId);
-        activity_id_t act_id = bimap_wf_act_ids_.left.at(workflowId);
-        ptr_Gwes2SdpaHandler->cancelActivity(act_id);
+        //activity_id_t act_id = bimap_wf_act_ids_.left.at(workflowId);
+        activity_id_t activityId = map_wf_act_ids_.at(workflowId);
+        ptr_Gwes2SdpaHandler->cancelActivity(activityId);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
     }
 
+
+    gwdl::IWorkflow *deserializeWorkflow(const std::string& strJobDesc ) throw (std::runtime_error)
+	{
+    	 gwdl::IWorkflow* ptrWorkflow = new DummyWorkflow(strJobDesc);
+    	 return ptrWorkflow;
+	}
+
+    std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error)
+	{
+    	return "dummy_workflow_serialization";
+	}
+
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
-    bimap_t bimap_wf_act_ids_;
+    map_t map_wf_act_ids_;
+    mutex_type mtx_;
     //use here a bidirectional map!
     /*workflow_id_t wf_id_orch;
       activity_id_t act_id;*/
