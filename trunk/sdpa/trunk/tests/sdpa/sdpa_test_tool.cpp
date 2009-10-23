@@ -29,14 +29,10 @@ int main(int /* argc */, char ** /* argv */)
   sdpa::logging::Configurator::configure(LogConfig());
   fhg::log::Configurator::configure();
 
-  SDPA_DEFINE_LOGGER("tests.test-tool");
-
   SDPA_LOG_ERROR("test");
 
   sdpa::daemon::Job::ptr_t job(new sdpa::daemon::JobImpl("job-1234", "<job></job>"));
   std::clog << "logging enabled = " << SDPA_ENABLE_LOGGING << std::endl;
-  std::clog << "log4cpp = " << SDPA_HAVE_LOG4CPP << std::endl;
-  std::clog << "sdpa_logger = " << sdpa_logger.getName() << std::endl;
   std::clog << "id = " << job->id() << std::endl;
   std::clog << "desc = " << job->description() << std::endl;
 

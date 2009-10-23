@@ -1,11 +1,13 @@
 #ifndef SDPA_CONFIG_H
 #define SDPA_CONFIG_H
 
-#define SDPA_ENABLE_LOGGING @ENABLE_LOGGING@
-#define SDPA_HAVE_LOG4CPP @HAVE_LOG4CPP@
-#define SDPA_HAVE_PTHREAD_H @HAVE_PTHREAD_H@
-
 #cmakedefine USE_STL_TR1 1
+#cmakedefine ENABLE_TYPE_CHECKING 1
+#cmakedefine HAVE_FVM 1
+#cmakedefine HAVE_PTHREAD_H 1
+
+#cmakedefine SDPA_ENABLE_LOGGING 1
+#cmakedefine SDPA_HAVE_FHGLOG 1
 
 #define SDPA_VERSION     "@PROJECT_VERSION@"
 #define SDPA_VERSION_MAJOR @V_MAJOR@
@@ -17,8 +19,5 @@
 #define SDPA_COPYRIGHT   "@PROJECT_COPYRIGHT@"
 #define SDPA_README      "@PROJECT_README@"
 #define SDPA_COPYING     "@PROJECT_COPYING@"
-
-#cmakedefine ENABLE_TYPE_CHECKING 1
-#cmakedefine HAVE_FVM 1
 
 #endif
