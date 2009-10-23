@@ -169,11 +169,8 @@ const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const {
 
 void Activity::setStatus(Activity::status_t status) {
 	if (status == _status) return; 
-//	int oldStatus = _status;
+	LOG_DEBUG(_logger, "status of activity " << _id << " changing from " << getStatusAsString(_status) << " to " << getStatusAsString(status));
 	_status = status;
-//	LOG_DEBUG(_logger, "gwes::Activity: status of activity \"" << _id
-//			<< "\" changed from " << getStatusAsString(oldStatus) << " to "
-//			<< getStatusAsString());
 	
 	// notify observers
 	if (_observers.size()>0) {
