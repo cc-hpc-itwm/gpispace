@@ -3,7 +3,6 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/LoggingConfigurator.hpp>
 
 #include <sdpa/wf/Token.hpp>
 #include <sdpa/wf/Parameter.hpp>
@@ -16,17 +15,9 @@
 
 #include <iostream>
 
-struct LogConfig {
-  void operator()() {
-    sdpa::logging::DefaultConfiguration()();
-    std::clog << "private config stuff here." << std::endl;
-  }
-};
-
 int main(int /* argc */, char ** /* argv */)
 {
   using namespace sdpa;
-  sdpa::logging::Configurator::configure(LogConfig());
   fhg::log::Configurator::configure();
 
   SDPA_LOG_ERROR("test");
