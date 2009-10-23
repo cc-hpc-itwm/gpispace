@@ -178,7 +178,7 @@ if (ENABLE_LOGGING)
   set(SDPA_ENABLE_LOGGING 1)
 else (ENABLE_LOGGING)
   set(SDPA_ENABLE_LOGGING 0)
-endif (SDPA_ENABLE_LOGGING)
+endif (ENABLE_LOGGING)
 
 # logging
 include(FindFhgLog)
