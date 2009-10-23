@@ -22,9 +22,27 @@ using boost::asio::ip::udp;
 
 namespace seda { namespace comm {
   UDPConnection::UDPConnection(const Locator::ptr_t &a_locator
+                             , const std::string &a_logical_name)
+    : Connection()
+    , locator_(a_locator)
+    , logical_name_(a_logical_name)
+    , host_()
+    , port_()
+    , io_service_()
+    , sender_endpoint_()
+    , socket_(NULL)
+    , service_thread_(NULL)
+    , recv_waiting_(0)
+  {
+    Locator::location_t my_loc(a_locator->lookup(name()));
+    host_ = my_loc.first;
+    port_ = my_loc.second;
+  }
+
+  UDPConnection::UDPConnection(const Locator::ptr_t &a_locator
                              , const std::string &a_logical_name
-                             , const std::string &a_host
-                             , short a_port)
+                             , const Locator::host_t &a_host
+                             , const Locator::port_t &a_port)
     : Connection()
     , locator_(a_locator)
     , logical_name_(a_logical_name)
@@ -33,7 +51,6 @@ namespace seda { namespace comm {
     , io_service_()
     , sender_endpoint_()
     , socket_(NULL)
-    , socket_out_(NULL)
     , service_thread_(NULL)
     , recv_waiting_(0)
   {}
@@ -67,14 +84,17 @@ namespace seda { namespace comm {
     DLOG(DEBUG, "host = " << host() << " port = " << port());
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
     LOG(INFO, "starting UDPConnection(" << name() << ") on " << my_endpoint);
+
     socket_ = new udp::socket(io_service_, my_endpoint);
-    socket_out_ = new udp::socket(io_service_);
-    socket_out_->open(udp::v4());
+    udp::endpoint real_endpoint = socket_->local_endpoint();
+
+    LOG(INFO, "listening on " << real_endpoint);
+
     socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
         boost::bind(&UDPConnection::handle_receive_from, this,
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
-    locator_->insert(name(), host(), port());
+    locator_->insert(name(), real_endpoint.address().to_string(), real_endpoint.port());
 
     DLOG(DEBUG, "starting service thread");
     service_thread_ = new boost::thread(boost::ref(*this));
@@ -103,12 +123,6 @@ namespace seda { namespace comm {
       delete socket_;
       socket_ = NULL;
     }
-    if (socket_out_)
-    {
-      socket_out_->close();
-      delete socket_out_;
-      socket_out_ = NULL;
-    }
   }
 
   void UDPConnection::handle_receive_from(const boost::system::error_code &error
@@ -123,6 +137,11 @@ namespace seda { namespace comm {
         seda::comm::SedaMessage msg;
         std::string data(data_, bytes_recv);
         msg.decode(data);
+
+        {
+          // update location
+          locator_->insert(msg.from(), sender_endpoint_.address().to_string(), sender_endpoint_.port());
+        }
         
         if (listener_list_.empty())
         {
@@ -178,7 +197,7 @@ namespace seda { namespace comm {
 
     boost::system::error_code ignored_error;
     const std::string msgdata(m.encode());
-    socket_out_->send_to(boost::asio::buffer(msgdata), dst, 0, ignored_error);
+    socket_->send_to(boost::asio::buffer(msgdata), dst, 0, ignored_error);
     LOG(INFO, "error = " << ignored_error);
   }
 

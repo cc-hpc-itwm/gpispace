@@ -156,15 +156,6 @@ link_directories(${Boost_LIBRARY_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
 if (WITH_COMM)
-  #  # we need zeromq
-  #  include (FindZeroMQ)
-  #  if (ZMQ_FOUND)
-  #    include_directories(${ZMQ_INCLUDE_DIR})
-  #    link_libraries(${ZMQ_LIBRARY})
-  #  else (ZMQ_FOUND)
-  #    message(FATAL_ERROR "ZeroMQ could not be found!")
-  #  endif (ZMQ_FOUND)
-
   # google protocol buffers
   include(FindProtocolBuffers)
   if (PB_FOUND)

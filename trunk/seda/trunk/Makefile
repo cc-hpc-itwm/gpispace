@@ -12,7 +12,9 @@ compile: config
 config: $(BUILD_DIR) CMakeLists.txt
 	cd $(BUILD_DIR) && $(CMAKE) $(top_srcdir)
 
-distclean:
+clean:
+	@-make -C $(BUILD_DIR) clean
+distclean: clean
 	@-rm -rf $(BUILD_DIR)
 	@-find . -name "*~" -delete
 

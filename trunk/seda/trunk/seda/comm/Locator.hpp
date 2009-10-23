@@ -29,10 +29,11 @@ namespace seda { namespace comm {
   {
   public:
     typedef shared_ptr<Locator> ptr_t;
-    typedef std::pair<std::string, short> location_t;
+    typedef unsigned short port_t;
+    typedef std::string host_t;
+    typedef std::pair<host_t, port_t> location_t;
     typedef std::map<std::string, location_t> location_map_t;
     
-
     const location_t &lookup(const std::string &name) const throw (std::exception)
     {
       DLOG(DEBUG, "looking up " << name);
@@ -50,7 +51,11 @@ namespace seda { namespace comm {
       }
     }
 
-    void insert(const std::string &name, const std::string &h, short p)
+    void insert(const std::string &name, const std::string &val)
+    {
+      insert(name, split_host_port(val));
+    }
+    void insert(const std::string &name, const host_t &h, port_t p)
     {
       insert(name, std::make_pair(h,p));
     }
@@ -66,6 +71,26 @@ namespace seda { namespace comm {
     }
   private:
     location_map_t locations_;    
+
+    location_t split_host_port(const std::string &val) const
+    {
+      std::string::size_type colon_pos(val.find(':'));
+      if (colon_pos != std::string::npos)
+      {
+        const host_t host_s(val.substr(0, colon_pos));
+        const std::string port_s(val.substr(colon_pos+1));
+        port_t port;
+
+        std::stringstream sstr(port_s);
+        sstr >> port;
+
+        if (! sstr)
+          throw std::runtime_error("invalid port: " + port_s);
+        else
+          return std::make_pair(host_s, port);
+      }
+      throw std::runtime_error("splitting of " + val + " into host and port failed");
+    }
   };
 }}
 

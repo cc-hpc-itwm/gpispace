@@ -31,18 +31,6 @@ ConnectionParameters ConnectionFactory::parse_uri(const std::string &uri)
 
 Connection::ptr_t ConnectionFactory::createConnection(const ConnectionParameters &params)
 {
-//  if (params.transport() == "zmq")
-//  {
-//    return Connection::ptr_t(
-//      new ZMQConnection(
-//          params.host()
-//        , params.name()
-//        , params.get("iface_in")
-//        , params.get("iface_out")
-//      )
-//    );
-//  }
-
   if (params.transport() == "udp")
   {
     Locator::ptr_t locator(new Locator());
@@ -55,5 +43,5 @@ Connection::ptr_t ConnectionFactory::createConnection(const ConnectionParameters
       )
     );
   }
-  throw std::runtime_error(std::string("no suitable connection found for protocol: ") + params.get("proto"));
+  throw std::runtime_error(std::string("no suitable connection found for protocol: ") + params.transport());
 }

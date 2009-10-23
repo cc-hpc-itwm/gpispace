@@ -19,6 +19,7 @@
 
 #include <iostream> // std::cout
 #include <cstdlib>
+#include <fhglog/Configuration.hpp>
 #include <seda/comm/ConnectionFactory.hpp>
 #include <seda/comm/SedaMessage.hpp>
 
@@ -26,6 +27,7 @@ using namespace seda::comm;
 
 int main(int argc, char **argv)
 {
+  fhg::log::Configurator::configure();
   if (argc < 2)
   {
     std::cerr << "usage: " << argv[0] << " name" << std::endl;
@@ -33,9 +35,7 @@ int main(int argc, char **argv)
     std::exit(1);
   }
   ConnectionFactory::ptr_t cFactory(new ConnectionFactory());
-  ConnectionParameters params("zmq", "localhost", argv[1]);
-  params.put("iface_in",  "*");
-  params.put("iface_out", "*");
+  ConnectionParameters params("udp", "127.0.0.1", argv[1], 5222);
   
   Connection::ptr_t conn(cFactory->createConnection(params));
   std::cerr << "I: starting connection" << std::endl;

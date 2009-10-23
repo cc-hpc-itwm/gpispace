@@ -184,6 +184,50 @@ UDPConnectionTest::testSendReceive() {
 }
 
 void
+UDPConnectionTest::testSendReceiveNetwork() {
+  seda::comm::Locator::ptr_t locator(new seda::comm::Locator());
+  locator->insert("test1", "127.0.0.1:0");
+  locator->insert("test2", "127.0.0.1:0");
+  locator->insert("test3", "127.0.0.1:0");
+
+  seda::comm::UDPConnection conn1(locator, "test1");
+  seda::comm::UDPConnection conn2(locator, "test2");
+  seda::comm::UDPConnection conn3(locator, "test3");
+
+  conn1.start(); conn2.start(); conn3.start();
+  {
+    for (std::size_t cnt(0); cnt < 10000; ++cnt)
+    {
+      seda::comm::SedaMessage msg12("test1", "test2", "test-1-2");
+      conn1.send(msg12);
+      {
+        seda::comm::SedaMessage msg;
+        conn2.recv(msg);
+        CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg12.payload() == msg.payload());
+      }
+
+      seda::comm::SedaMessage msg23("test2", "test3", "test-2-3");
+      conn2.send(msg23);
+      {
+        seda::comm::SedaMessage msg;
+        conn3.recv(msg);
+        CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg23.payload() == msg.payload());
+      }
+
+      seda::comm::SedaMessage msg31("test3", "test1", "test-3-1");
+      conn3.send(msg31);
+      {
+        seda::comm::SedaMessage msg;
+        conn1.recv(msg);
+        CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg31.payload() == msg.payload());
+      }
+    }
+  }
+
+  conn1.stop(); conn2.stop(); conn3.stop();
+}
+
+void
 UDPConnectionTest::testStartStop() {
   seda::comm::Locator::ptr_t locator(new seda::comm::Locator());
   seda::comm::UDPConnection conn(locator, "test", "127.0.0.1", 5222);

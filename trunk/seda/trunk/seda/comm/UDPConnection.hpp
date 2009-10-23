@@ -29,15 +29,19 @@ namespace seda { namespace comm {
   {
   public:
     UDPConnection(const Locator::ptr_t &locator
+                , const std::string &logical_name);
+
+    UDPConnection(const Locator::ptr_t &locator
                 , const std::string &logical_name
-                , const std::string &host
-                , short port);
+                , const Locator::host_t &host
+                , const Locator::port_t &port);
 
     virtual ~UDPConnection();
 
-    const short &port() const { return port_; }
+    const Locator::port_t &port() const { return port_; }
     const std::string &name() const { return logical_name_; }
-    const std::string &host() const { return host_; }
+    const Locator::host_t &host() const { return host_; }
+    const Locator::ptr_t &locator() const { return locator_; }
 
     void start();
     void stop();
@@ -52,12 +56,11 @@ namespace seda { namespace comm {
   private:
     Locator::ptr_t locator_;
     std::string logical_name_;
-    std::string host_;
-    short port_;
+    Locator::host_t host_;
+    Locator::port_t port_;
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint sender_endpoint_;
     boost::asio::ip::udp::socket *socket_;
-    boost::asio::ip::udp::socket *socket_out_;
 
     enum { max_length = ((2<<16 )-1) };
     char data_[max_length];

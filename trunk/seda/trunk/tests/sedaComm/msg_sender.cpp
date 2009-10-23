@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <fhglog/Configuration.hpp>
 #include <seda/comm/ConnectionFactory.hpp>
 #include <seda/comm/SedaMessage.hpp>
 
@@ -27,6 +28,7 @@ using namespace seda::comm;
 
 int main(int argc, char **argv)
 {
+  fhg::log::Configurator::configure();
   if (argc < 3)
   {
     std::cerr << "usage: " << argv[0] << " from to [payload]" << std::endl;
@@ -43,12 +45,11 @@ int main(int argc, char **argv)
   }
 
   ConnectionFactory::ptr_t cFactory(new ConnectionFactory());
-  ConnectionParameters params("zmq", "localhost", from);
-  params.put("iface_in",  "*");
-  params.put("iface_out", "*");
+  ConnectionParameters params("udp", "127.0.0.1", from, 5223);
   
-  std::cerr << "I: starting connection" << std::endl;
   Connection::ptr_t conn(cFactory->createConnection(params));
+  conn->locator()->insert("foo", "127.0.0.1:5222");
+  std::cerr << "I: starting connection" << std::endl;
   conn->start();
 
   // build the payload
@@ -56,17 +57,18 @@ int main(int argc, char **argv)
   if (payload_src == "-") {
     std::cerr << "D: reading payload from stdin" << std::endl;
     std::stringstream istr;
-    std::cin.get(*istr.rdbuf());
+    std::cin >> istr.rdbuf();
     payload = istr.str();
   } else {
     std::ifstream ifs(payload_src.c_str(), std::ios::in | std::ios::binary);
-    if (ifs.good()) {
-      std::cerr << "D: reading payload from " << payload_src << std::endl;
-      std::istringstream istr;
-      std::cin.get(*istr.rdbuf());
-      payload = istr.str();
-    } else {
+    if (! ifs.good()) {
       std::cerr << "E: could not read from payload-file " << payload_src << std::endl;
+      return 1;
+    } else {
+      std::cerr << "D: reading payload from " << payload_src << std::endl;
+      std::stringstream istr;
+      ifs >> istr.rdbuf();
+      payload = istr.str();
     }
   }
   std::cerr << "D: payload = " << payload << std::endl;

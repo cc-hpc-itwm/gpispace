@@ -22,6 +22,7 @@
 #include <list>
 #include <seda/shared_ptr.hpp>
 #include <seda/comm/ConnectionListener.hpp>
+#include <seda/comm/Locator.hpp>
 #include <seda/comm/SedaMessage.hpp>
 
 namespace seda { namespace comm {
@@ -37,6 +38,7 @@ namespace seda { namespace comm {
     virtual void send(const seda::comm::SedaMessage &m) = 0;
     virtual bool recv(seda::comm::SedaMessage &m, const bool block = true) = 0;
 
+    virtual const Locator::ptr_t &locator() const = 0;
     void registerListener(ConnectionListener *);
     void removeListener(ConnectionListener *);
   protected:

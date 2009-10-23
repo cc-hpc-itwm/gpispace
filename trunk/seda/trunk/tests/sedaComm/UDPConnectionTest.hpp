@@ -11,6 +11,7 @@ namespace seda { namespace comm { namespace tests {
     CPPUNIT_TEST_SUITE( seda::comm::tests::UDPConnectionTest );
     CPPUNIT_TEST( testStartStop );
     CPPUNIT_TEST( testSendReceive );
+    CPPUNIT_TEST( testSendReceiveNetwork );
     CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -23,6 +24,7 @@ namespace seda { namespace comm { namespace tests {
     protected:
 
     void testSendReceive();
+    void testSendReceiveNetwork();
     void testStartStop();
   };
 }}}
