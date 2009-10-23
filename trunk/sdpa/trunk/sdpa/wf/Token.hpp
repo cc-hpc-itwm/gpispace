@@ -153,6 +153,10 @@ namespace sdpa { namespace wf {
   };
 }}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Token &t);
+inline std::ostream & operator<<(std::ostream & os, const sdpa::wf::Token &t)
+{
+  t.writeTo(os);
+  return os;
+}
 
 #endif // SDPA_TOKEN_HPP

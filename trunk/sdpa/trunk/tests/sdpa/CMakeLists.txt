@@ -18,7 +18,6 @@ add_dependencies(sdpa_test_suite generate_PerformanceTest)
 target_link_libraries(sdpa_test_suite sdpa-test)
 target_link_libraries(sdpa_test_suite sdpa)
 target_link_libraries(sdpa_test_suite sdpa-modules)
-target_link_libraries(sdpa_test_suite sdpa-wf)
 target_link_libraries(sdpa_test_suite sdpa-daemon)
 target_link_libraries(sdpa_test_suite sdpa-events)
 target_link_libraries(sdpa_test_suite sdpa-jobFSM_SMC)
@@ -31,7 +30,7 @@ target_link_libraries(sdpa_test_suite uuid)
 add_library(example-mod SHARED ExampleModule.cpp)
 
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
-target_link_libraries(sdpa_test_tool sdpa sdpa-wf sdpa-daemon sdpa-util dl)
+target_link_libraries(sdpa_test_tool sdpa sdpa-daemon sdpa-util dl)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)

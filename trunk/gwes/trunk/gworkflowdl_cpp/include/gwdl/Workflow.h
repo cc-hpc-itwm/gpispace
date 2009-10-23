@@ -375,16 +375,6 @@ public:
       }
       return enabledTransitions;
     }
-
-  void deserialize(const std::string &)
-  {
-    // FIXME: implement me
-  }
-
-  std::string serialize() const
-  {
-    return "FIXME: Workflow::serialize() not implemented";
-  }
 };
 
 }

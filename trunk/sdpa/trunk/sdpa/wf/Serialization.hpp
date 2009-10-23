@@ -56,7 +56,7 @@ namespace boost { namespace serialization {
   }
 
   template <class Archive>
-  void serialize(Archive & ar, sdpa::wf::Activity::Method & method, const unsigned int /* version */)
+  void serialize(Archive & ar, sdpa::wf::Method & method, const unsigned int /* version */)
   {
     ar & method.module();
     ar & method.name();

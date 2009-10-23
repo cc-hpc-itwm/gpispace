@@ -41,8 +41,7 @@ int main(int /* argc */, char ** /* argv */)
   std::clog << "desc = " << job->description() << std::endl;
 
   sdpa::wf::Activity activity("activity-1"
-      , sdpa::wf::Activity::Method("test.so", "loopStep")
-      , sdpa::wf::Activity::parameters_t());
+      , sdpa::wf::Method("test.so", "loopStep"));
   activity.add_parameter(sdpa::wf::Parameter
       ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
       );
@@ -51,7 +50,7 @@ int main(int /* argc */, char ** /* argv */)
       );
   std::clog << "activity = " << activity << std::endl;
 
-  std::clog << sdpa::wf::Activity::Method("test.so@loopStep") << std::endl;
+  std::clog << sdpa::wf::Method("test.so@loopStep") << std::endl;
 
   {
     sdpa::wf::Token iToken((int)42);
@@ -119,8 +118,7 @@ int main(int /* argc */, char ** /* argv */)
     boost::archive::text_oarchive oa(sstr);
     {
       sdpa::wf::Activity activity("activity-1"
-          , sdpa::wf::Activity::Method("test.so", "loopStep")
-          , sdpa::wf::Activity::parameters_t());
+          , sdpa::wf::Method("test.so", "loopStep"));
       activity.add_parameter(sdpa::wf::Parameter
           ("i", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(42))
           );

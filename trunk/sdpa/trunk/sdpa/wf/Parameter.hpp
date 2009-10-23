@@ -14,14 +14,14 @@ namespace sdpa { namespace wf {
     A Parameter can either be an input or an output  parameter  for  a  function
     call.  Parameters constist of  a  Token  transporting  the  actual  data,  a
     parameter-name   and   an   edge    type    for    further    optimizations.
-   */
+  */
   class Parameter {
     public:
       typedef shared_ptr<Parameter> ptr_t;
 
       /**
         The type of the edge this parameter belongs to.
-        
+
         \todo{should be moved to another file and maybe into an own class-hierarchy}
         */
       typedef enum {
@@ -39,12 +39,35 @@ namespace sdpa { namespace wf {
         @param token the Token holding the data, usually for input data
         @param name the parameter name (or edge description)
         @param edge_type the type of the edge this parameter belongs to
-       */
-      Parameter(const std::string &name, EdgeType edge_type, const Token & token);
+        */
+      Parameter(const std::string &a_name, EdgeType a_edge_type, const Token & a_token)
+        : name_(a_name)
+          , edge_type_(a_edge_type)
+          , token_(a_token)
+    { }
 
-      Parameter();
-      Parameter(const Parameter &);
-      Parameter & operator=(const Parameter &);
+      Parameter()
+        : name_("unknown")
+          , edge_type_(OUTPUT_EDGE)
+          , token_()
+    { }
+
+      Parameter(const Parameter &other)
+        : name_(other.name())
+          , edge_type_(other.edge_type())
+          , token_(other.token())
+    { }
+
+      Parameter & operator=(const Parameter &rhs)
+      {
+        if (this != &rhs)
+        {
+          name_ = rhs.name();
+          edge_type_ = rhs.edge_type();
+          token_ = rhs.token();
+        }
+        return *this;
+      }
 
       ~Parameter() {}
 
@@ -55,7 +78,37 @@ namespace sdpa { namespace wf {
       inline const EdgeType & edge_type() const { return edge_type_; }
       inline EdgeType & edge_type() { return edge_type_; }
 
-      void writeTo(std::ostream &) const;
+      void writeTo(std::ostream &os) const
+      {
+        os << "{"
+          << "param"
+          << ","
+          << name()
+          << ",";
+        switch (edge_type()) {
+          case INPUT_EDGE:
+            os << "i";
+            break;
+          case READ_EDGE:
+            os << "r";
+            break;
+          case OUTPUT_EDGE:
+            os << "o";
+            break;
+          case WRITE_EDGE:
+            os << "w";
+            break;
+          case EXCHANGE_EDGE:
+            os << "x";
+            break;
+          case UPDATE_EDGE:
+            os << "u";
+            break;
+        }
+        os << ","
+          << token()
+          << "}";
+      }
     private:
       std::string name_;
       EdgeType edge_type_;
@@ -63,5 +116,10 @@ namespace sdpa { namespace wf {
   };
 }}
 
-extern std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p);
+inline std::ostream & operator<<(std::ostream & os, const sdpa::wf::Parameter &p)
+{
+  p.writeTo(os);
+  return os;
+}
+
 #endif

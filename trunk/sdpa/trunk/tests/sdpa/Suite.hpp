@@ -4,6 +4,7 @@
 #include <cppunit/TestFixture.h>
 
 #include <tests/sdpa/test_Module.hpp>
+#include <tests/sdpa/test_ActivityExecutor.hpp>
 #include <tests/sdpa/test_Token.hpp>
 #include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_UUID.hpp>
@@ -20,7 +21,7 @@ namespace sdpa { namespace tests {
   public:
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
-     /* suiteOfTests->addTest( ModuleTest::suite() );
+      suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
@@ -29,10 +30,10 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
-      */
 
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
+      suiteOfTests->addTest( ActivityExecutorTest::suite() );
 
      // suiteOfTests->addTest( D2DDummyGwesTest::suite() );
       return suiteOfTests;

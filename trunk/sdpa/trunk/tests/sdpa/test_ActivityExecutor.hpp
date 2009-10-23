@@ -4,6 +4,8 @@ namespace sdpa {
   namespace tests {
     class ActivityExecutorTest : public CPPUNIT_NS::TestFixture {
       CPPUNIT_TEST_SUITE(sdpa::tests::ActivityExecutorTest);
+      CPPUNIT_TEST( testModuleNotLoaded );
+      CPPUNIT_TEST( testOneActivity );
       CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -14,6 +16,8 @@ namespace sdpa {
       void tearDown();
 
     protected:
+      void testModuleNotLoaded();
+      void testOneActivity();
     };
   }
 }

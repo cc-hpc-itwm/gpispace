@@ -35,9 +35,6 @@ namespace gwdl
     virtual const workflow_id_t &getID() const = 0;
     virtual void setID(const workflow_id_t &id) = 0;
 
-    virtual std::string serialize() const = 0;
-    virtual void deserialize(const std::string &) = 0;
-    
     virtual Place* getPlace(const std::string& id) = 0;
   };
 }
