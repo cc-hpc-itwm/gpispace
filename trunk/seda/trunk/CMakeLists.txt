@@ -181,6 +181,8 @@ if (CMAKE_USE_PTHREADS_INIT)
   link_libraries(-lpthread)
 endif(CMAKE_USE_PTHREADS_INIT)
 
+include(CTest)
+
 # Reflect the package structure
 add_subdirectory(seda)
 if (WITH_COMM)

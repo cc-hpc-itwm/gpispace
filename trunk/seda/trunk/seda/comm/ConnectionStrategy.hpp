@@ -33,14 +33,13 @@ namespace seda { namespace comm {
       , ConnectionListener()
       , conn_(a_conn)
     {
-      LOG(DEBUG, "use count = " << conn_.use_count());
-      LOG(DEBUG, "conn = " << conn_.get());
+      DLOG(DEBUG, "use count = " << conn_.use_count());
+      DLOG(DEBUG, "conn = " << conn_.get());
     }
 
     virtual ~ConnectionStrategy() {
-      conn_.reset();
       DLOG(DEBUG, "destructing connection strategy");
-      LOG(DEBUG, "underlying connection..." << connection().get() << " count = " << connection().use_count() );
+      DLOG(DEBUG, "underlying connection..." << connection().get() << " count = " << connection().use_count() );
     }
 
     void perform(const IEvent::Ptr &toSend);
@@ -48,17 +47,18 @@ namespace seda { namespace comm {
 
     const Connection::ptr_t &connection() { return conn_; }
 
-    virtual void onStageStart(const std::string &stageName)
+    virtual void onStageStart(const std::string &)
     {
-      LOG(DEBUG, "starting underlying connection..." << connection().get() << " count = " << connection().use_count() );
-      connection()->registerListener(this);
-      connection()->start();
+      DLOG(DEBUG, "starting underlying connection..." << connection().get() << " count = " << connection().use_count() );
+      conn_->registerListener(this);
+      conn_->start();
+      DLOG(DEBUG, "started");
     }
-    virtual void onStageStop(const std::string &stageName)
+    virtual void onStageStop(const std::string &)
     {
       DLOG(DEBUG, "stopping underlying connection...");
-      connection()->removeListener(this);
-      connection()->stop();
+      conn_->removeListener(this);
+      conn_->stop();
       DLOG(DEBUG, "stopped");
     }
   private:

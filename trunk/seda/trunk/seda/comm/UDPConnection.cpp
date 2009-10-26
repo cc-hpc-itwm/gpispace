@@ -201,7 +201,7 @@ namespace seda { namespace comm {
     boost::system::error_code ignored_error;
     const std::string msgdata(m.encode());
     socket_->send_to(boost::asio::buffer(msgdata), dst, 0, ignored_error);
-    LOG(INFO, "error = " << ignored_error);
+    DLOG(DEBUG, "error = " << ignored_error);
   }
 
   template <typename T> struct recv_waiting_mgr {
@@ -254,7 +254,7 @@ namespace seda { namespace comm {
 
   void UDPConnection::operator()()
   {
-    LOG(INFO, "thread started");
+    LOG(DEBUG, "thread started");
     barrier_.wait();
     io_service_.run();
   }

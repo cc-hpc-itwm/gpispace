@@ -13,9 +13,9 @@ namespace seda { namespace comm { namespace tests {
     CPPUNIT_TEST( testStartStop );
     CPPUNIT_TEST( testSendReceive );
     CPPUNIT_TEST( testSendReceiveNetwork );
-//    CPPUNIT_TEST( testConnectionStrategy );
+    CPPUNIT_TEST( testConnectionStrategy );
     CPPUNIT_TEST( testSharedPtr );
-//    CPPUNIT_TEST( testConnectionStrategyMinimal );
+    CPPUNIT_TEST( testConnectionStrategyMinimal );
     CPPUNIT_TEST( testConnectionSharedPointer );
     CPPUNIT_TEST_SUITE_END();
 

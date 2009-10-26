@@ -33,6 +33,23 @@ int main(int, char **)
 {
   fhg::log::Configurator::configure();
 
+  int errcount(0);
+
+  {
+    seda::comm::ConnectionFactory cFactory;
+    seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
+    seda::comm::Connection::ptr_t conn = cFactory.createConnection(params);
+    {
+      LOG(DEBUG, "use count = " << conn.use_count());
+      LOG(DEBUG, "conn = " << conn.get());
+      seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy("unknown", conn));
+      LOG(DEBUG, "use count = " << conn_s->connection().use_count());
+      LOG(DEBUG, "conn = " << conn_s->connection().get());
+      conn_s->onStageStart("foo");
+      conn_s->onStageStop("foo");
+    }
+  }
+
   {
     seda::comm::ConnectionFactory::ptr_t cFactory(new seda::comm::ConnectionFactory());
     seda::StageFactory::Ptr sFactory(new seda::StageFactory());
@@ -68,6 +85,8 @@ int main(int, char **)
     seda::AccumulateStrategy *p2_acc;
     // create the first "process"
     {
+      LOG(INFO, "creating process-1 stages...");
+
       seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1", 5000);
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
       conn->locator()->insert("process-2", "127.0.0.1:5001");
@@ -86,6 +105,8 @@ int main(int, char **)
 
     // process-2
     {
+      LOG(INFO, "creating process-2 stages...");
+
       seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-2", 5001);
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
       conn->locator()->insert("process-1", "127.0.0.1:5000");
@@ -105,12 +126,12 @@ int main(int, char **)
 
     // send an event to the p1-network stage
     seda::StageRegistry::instance().lookup("p1-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello 2"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello process 2"))
     );
 
     // send an event to the p2-network stage
     seda::StageRegistry::instance().lookup("p2-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello 1"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello process 1"))
     );
 
     // wait for both messages to be received
@@ -118,13 +139,44 @@ int main(int, char **)
     p2_ecs->wait(1, 1000);
 
     // inspect the received messages
-//    seda::comm::SedaMessage *p1_msg(dynamic_cast<seda::comm::SedaMessage*>(p1_acc->begin()->get()));
-//    seda::comm::SedaMessage *p2_msg(dynamic_cast<seda::comm::SedaMessage*>(p2_acc->begin()->get()));
+    seda::comm::SedaMessage *p1_msg(dynamic_cast<seda::comm::SedaMessage*>(p1_acc->begin()->get()));
+    if (p1_msg == NULL)
+    {
+      LOG(ERROR, "send from p2 to p1 failed, no message has been received");
+      ++errcount;
+    }
+    else
+    {
+      if (p1_msg->payload() != "hello process 1")
+      {
+        LOG(ERROR, "received message's payload does not match");
+        LOG(ERROR, "got: " << p1_msg->payload() << " expected: " << "hello process 1");
+        ++errcount;
+      }
+    }
+
+    seda::comm::SedaMessage *p2_msg(dynamic_cast<seda::comm::SedaMessage*>(p2_acc->begin()->get()));
+    if (p2_msg == NULL)
+    {
+      LOG(ERROR, "send from p1 to p2 failed, no message has been received");
+      ++errcount;
+    }
+    else
+    {
+      if (p2_msg->payload() != "hello process 2")
+      {
+        LOG(ERROR, "received message's payload does not match");
+        LOG(ERROR, "got: " << p2_msg->payload() << " expected: " << "hello process 2");
+        ++errcount;
+      }
+    }
 
     // shut everything down
     seda::StageRegistry::instance().stopAll();
     seda::StageRegistry::instance().clear();
   }
 
-  return 0;
+  LOG(INFO, "done.");
+
+  return errcount;
 }

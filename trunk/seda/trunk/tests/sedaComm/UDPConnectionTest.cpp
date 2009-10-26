@@ -113,17 +113,9 @@ void UDPConnectionTest::testConnectionSharedPointer()
 
 void UDPConnectionTest::testConnectionStrategyMinimal()
 {
-  seda::comm::ConnectionFactory::ptr_t cFactory(new seda::comm::ConnectionFactory());
-  seda::StageFactory::Ptr sFactory(new seda::StageFactory());
-//  seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
-//  seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
-//
-//  seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p1-final", conn));
-//  seda::Stage::Ptr net_stage(sFactory->createStage("p1-net", net));
-//  net_stage->start();
-//  net_stage->stop();
+  seda::comm::ConnectionFactory cFactory;
   seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
-  seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
+  seda::comm::Connection::ptr_t conn = cFactory.createConnection(params);
   {
     LOG(DEBUG, "use count = " << conn.use_count());
     LOG(DEBUG, "conn = " << conn.get());
@@ -133,16 +125,6 @@ void UDPConnectionTest::testConnectionStrategyMinimal()
     conn_s->onStageStart("foo");
     conn_s->onStageStop("foo");
   }
-
-//  seda::Stage::Ptr stage(sFactory->createStage("stage", conn_s));
-//  LOG(DEBUG, "use count = " << conn_s.use_count());
-//  LOG(DEBUG, "conn = " << conn_s.get());
-//
-//  stage->start();
-//  stage->stop();
-//
-//  seda::StageRegistry::instance().clear();
-  return;
 }
 
 void UDPConnectionTest::testConnectionStrategy() {
