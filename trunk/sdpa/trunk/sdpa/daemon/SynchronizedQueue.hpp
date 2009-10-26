@@ -99,8 +99,8 @@ namespace sdpa { namespace daemon {
       lock_type lock(mtx_);
       while (container_.empty() && !stopped_)
       {
-        const boost::system_time to = boost::get_system_time() + timeout;
-        if (not_empty_.timed_wait(lock, to))
+        const boost::system_time to(boost::get_system_time() + timeout);
+        if (! not_empty_.timed_wait(lock, to))
         {
           if (container_.empty()) throw QueueEmpty();
           else break;

@@ -59,9 +59,7 @@ if (WIN32)
   # make windows happy
 else(WIN32)
   if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-    # set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror")
     set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
-    #set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-unused-parameter")
 
     # Releases are made with the release build. Optimize code.
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -74,7 +72,7 @@ else(WIN32)
     endif (NOT ENABLE_LOGGING)
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wextra -Wreturn-type -fno-omit-frame-pointer -Wnon-virtual-dtor")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type -fno-omit-frame-pointer -Wnon-virtual-dtor")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused -Wunused-variable -Wunused-function")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
     # gprof and gcov support

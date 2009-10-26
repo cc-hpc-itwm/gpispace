@@ -106,5 +106,19 @@ void WorkerTest::testQueue() {
   std::cout << std::endl;
   std::cout << thrd_data.val << std::endl;
   CPPUNIT_ASSERT(thrd_data.val >= 42);
+
+  std::cout << "removing queue entries...";
+  while (! test_queue.empty()) test_queue.pop();
+  std::cout << "done." << std::endl;
+
+  try
+  {
+    std::cout << "popping from empty queue";
+    test_queue.pop_and_wait(boost::posix_time::milliseconds(10));
+    std::cout << "FAILED" << std::endl;
+  } catch (const QueueEmpty &)
+  {
+    std::cout << "OK" << std::endl;
+  }
 }
 
