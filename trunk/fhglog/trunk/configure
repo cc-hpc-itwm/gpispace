@@ -2,6 +2,14 @@
 # 
 # Bootstrap the project from a clean checkout.
 #
+
+case "$1" in
+  -h|--help)
+    echo "usage: $0 [-h|--help] -DCMAKE_BUILD_TYPE=Debug -DWITH_REMOTE_LOGGING=Yes other-cmake-options"
+    exit 1
+    ;;
+esac
+
 if test ! -d "build"; then
 	mkdir build
 fi

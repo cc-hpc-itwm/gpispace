@@ -15,7 +15,7 @@ set(V_MAJOR 1)
 set(V_MINOR 1)
 set(V_PATCH 0)
 
-option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" NO)
+option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(PROJECT_DESCRIPTION "FHG Logging Framework")
