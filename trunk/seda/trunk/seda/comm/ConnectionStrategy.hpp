@@ -16,34 +16,53 @@
  * =====================================================================================
  */
 
-#ifndef SEDA_COMM_CONNECITONSTRATEGY_HPP
-#define SEDA_COMM_CONNECITONSTRATEGY_HPP 1
+#ifndef SEDA_COMM_CONNECTION_STRATEGY_HPP
+#define SEDA_COMM_CONNECTION_STRATEGY_HPP 1
 
 #include <seda/ForwardStrategy.hpp>
 #include <seda/comm/Connection.hpp>
 #include <seda/comm/ConnectionListener.hpp>
 
 namespace seda { namespace comm {
-  class ConnectionStrategy : public seda::ForwardStrategy, seda::comm::ConnectionListener {
+  class ConnectionStrategy : public seda::ForwardStrategy, public seda::comm::ConnectionListener {
   public:
-    ConnectionStrategy(const std::string &targetStage, const seda::comm::Connection::ptr_t &conn)
-      : ForwardStrategy(targetStage), conn_(conn)
+    typedef shared_ptr<ConnectionStrategy> ptr_t;
+
+    ConnectionStrategy(const std::string &targetStage, const Connection::ptr_t &a_conn)
+      : ForwardStrategy(targetStage)
+      , ConnectionListener()
+      , conn_(a_conn)
     {
-      conn_->registerListener(this);
+      LOG(DEBUG, "use count = " << conn_.use_count());
+      LOG(DEBUG, "conn = " << conn_.get());
     }
-    ~ConnectionStrategy() {
-      conn_->removeListener(this); 
+
+    virtual ~ConnectionStrategy() {
+      conn_.reset();
+      DLOG(DEBUG, "destructing connection strategy");
+      LOG(DEBUG, "underlying connection..." << connection().get() << " count = " << connection().use_count() );
     }
 
     void perform(const IEvent::Ptr &toSend);
     void onMessage(const seda::comm::SedaMessage &);
 
-    Connection::ptr_t connection() { return conn_; }
+    const Connection::ptr_t &connection() { return conn_; }
 
-    void onStageStart(const std::string &stageName);
-    void onStageStop(const std::string &stageName);
+    virtual void onStageStart(const std::string &stageName)
+    {
+      LOG(DEBUG, "starting underlying connection..." << connection().get() << " count = " << connection().use_count() );
+      connection()->registerListener(this);
+      connection()->start();
+    }
+    virtual void onStageStop(const std::string &stageName)
+    {
+      DLOG(DEBUG, "stopping underlying connection...");
+      connection()->removeListener(this);
+      connection()->stop();
+      DLOG(DEBUG, "stopped");
+    }
   private:
-    Connection::ptr_t conn_;
+    seda::comm::Connection::ptr_t conn_;
   };
 }}
 

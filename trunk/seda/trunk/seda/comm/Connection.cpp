@@ -23,12 +23,14 @@ using namespace seda::comm;
 
 void Connection::registerListener(ConnectionListener *listener)
 {
+  boost::unique_lock<boost::recursive_mutex> lock(listener_mtx_);
   listener_list_.push_back(listener);
 }
 
 void Connection::removeListener(ConnectionListener *listener)
 {
-  listener_list_.push_back(listener);
+  boost::unique_lock<boost::recursive_mutex> lock(listener_mtx_);
+  listener_list_.remove(listener);
 }
 
 void Connection::notifyListener(const seda::comm::SedaMessage &msg) const

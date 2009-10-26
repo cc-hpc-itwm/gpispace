@@ -20,7 +20,9 @@
 #define SEDA_COMM_CONNECTION_HPP
 
 #include <list>
+#include <boost/thread.hpp>
 #include <seda/shared_ptr.hpp>
+#include <seda/comm/exception.hpp>
 #include <seda/comm/ConnectionListener.hpp>
 #include <seda/comm/Locator.hpp>
 #include <seda/comm/SedaMessage.hpp>
@@ -28,7 +30,7 @@
 namespace seda { namespace comm {
   class Connection {
   public:
-    typedef seda::shared_ptr<Connection> ptr_t;
+    typedef shared_ptr<Connection> ptr_t;
 
     virtual ~Connection() {}
 
@@ -43,6 +45,9 @@ namespace seda { namespace comm {
     void removeListener(ConnectionListener *);
   protected:
     void notifyListener(const seda::comm::SedaMessage &msg) const;
+    bool has_listeners() const { return (! listener_list_.empty()); }
+  private:
+    boost::recursive_mutex listener_mtx_;
     typedef std::list<ConnectionListener*> listener_list_t;
     listener_list_t listener_list_;
   };

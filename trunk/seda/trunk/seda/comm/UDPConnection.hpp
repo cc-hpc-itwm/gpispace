@@ -33,14 +33,14 @@ namespace seda { namespace comm {
 
     UDPConnection(const Locator::ptr_t &locator
                 , const std::string &logical_name
-                , const Locator::host_t &host
-                , const Locator::port_t &port);
+                , const Location::host_t &host
+                , const Location::port_t &port);
 
     virtual ~UDPConnection();
 
-    const Locator::port_t &port() const { return port_; }
+    const Locator::location_t::port_t &port() const { return port_; }
     const std::string &name() const { return logical_name_; }
-    const Locator::host_t &host() const { return host_; }
+    const Locator::location_t::host_t &host() const { return host_; }
     const Locator::ptr_t &locator() const { return locator_; }
 
     void start();
@@ -56,11 +56,14 @@ namespace seda { namespace comm {
   private:
     Locator::ptr_t locator_;
     std::string logical_name_;
-    Locator::host_t host_;
-    Locator::port_t port_;
+    Locator::location_t::host_t host_;
+    Locator::location_t::port_t port_;
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint sender_endpoint_;
     boost::asio::ip::udp::socket *socket_;
+    std::size_t recv_waiting_;
+    boost::thread *service_thread_;
+    boost::barrier barrier_;
 
     enum { max_length = ((2<<16 )-1) };
     char data_[max_length];
@@ -68,10 +71,8 @@ namespace seda { namespace comm {
     // asynchronous receive implementation
     boost::recursive_mutex mtx_;
     boost::condition_variable_any recv_cond_;
-    boost::thread *service_thread_;
 
     std::deque<seda::comm::SedaMessage> incoming_messages_;
-    std::size_t recv_waiting_;
   };
 }}
 

@@ -28,22 +28,12 @@ void ConnectionStrategy::perform(const IEvent::Ptr &toSend)
   }
   else
   {
-    SEDA_LOG_ERROR("could not send event (does not inherit SedaMessage): " << toSend->str());
+    LOG(ERROR,"could not send event (does not inherit SedaMessage): " << toSend->str());
   }
 }
 
 void ConnectionStrategy::onMessage(const seda::comm::SedaMessage &recvMsg)
 {
+  LOG(DEBUG, "got message: " << recvMsg.str());
   ForwardStrategy::perform(SedaMessage::Ptr(new SedaMessage(recvMsg)));
 }
-
-void ConnectionStrategy::onStageStart(const std::string &)
-{
-  conn_->start();
-}
-
-void ConnectionStrategy::onStageStop(const std::string &)
-{
-  conn_->stop();
-}
-

@@ -9,9 +9,14 @@
 namespace seda { namespace comm { namespace tests {
   class UDPConnectionTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE( seda::comm::tests::UDPConnectionTest );
+    CPPUNIT_TEST( testConnectionFactory );
     CPPUNIT_TEST( testStartStop );
     CPPUNIT_TEST( testSendReceive );
     CPPUNIT_TEST( testSendReceiveNetwork );
+//    CPPUNIT_TEST( testConnectionStrategy );
+    CPPUNIT_TEST( testSharedPtr );
+//    CPPUNIT_TEST( testConnectionStrategyMinimal );
+    CPPUNIT_TEST( testConnectionSharedPointer );
     CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -22,10 +27,14 @@ namespace seda { namespace comm { namespace tests {
     void tearDown();
 
     protected:
-
+    void testConnectionFactory();
     void testSendReceive();
     void testSendReceiveNetwork();
     void testStartStop();
+    void testConnectionStrategy();
+    void testConnectionStrategyMinimal();
+    void testConnectionSharedPointer();
+    void testSharedPtr();
   };
 }}}
 

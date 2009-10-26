@@ -11,8 +11,8 @@ file(GLOB srcs "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 set(hdrs ${SEDA_MSG_PB_H} ${hdrs})
 set(srcs ${SEDA_MSG_PB_CPP} ${srcs})
 
-ADD_LIBRARY(sedaComm ${hdrs} ${srcs})
+ADD_LIBRARY(seda-comm ${hdrs} ${srcs})
 
 install(FILES ${hdrs} DESTINATION include/seda/comm)
-install(TARGETS sedaComm 
+install(TARGETS seda-comm 
 	ARCHIVE DESTINATION lib)

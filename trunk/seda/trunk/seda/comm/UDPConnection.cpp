@@ -31,18 +31,19 @@ namespace seda { namespace comm {
     , io_service_()
     , sender_endpoint_()
     , socket_(NULL)
-    , service_thread_(NULL)
     , recv_waiting_(0)
+    , service_thread_(NULL)
+    , barrier_(2)
   {
     Locator::location_t my_loc(a_locator->lookup(name()));
-    host_ = my_loc.first;
-    port_ = my_loc.second;
+    host_ = my_loc.host();
+    port_ = my_loc.port();
   }
 
   UDPConnection::UDPConnection(const Locator::ptr_t &a_locator
                              , const std::string &a_logical_name
-                             , const Locator::host_t &a_host
-                             , const Locator::port_t &a_port)
+                             , const Locator::location_t::host_t &a_host
+                             , const Locator::location_t::port_t &a_port)
     : Connection()
     , locator_(a_locator)
     , logical_name_(a_logical_name)
@@ -51,8 +52,9 @@ namespace seda { namespace comm {
     , io_service_()
     , sender_endpoint_()
     , socket_(NULL)
-    , service_thread_(NULL)
     , recv_waiting_(0)
+    , service_thread_(NULL)
+    , barrier_(2)
   {}
 
   UDPConnection::~UDPConnection()
@@ -76,19 +78,17 @@ namespace seda { namespace comm {
     if (service_thread_)
     {
       LOG(DEBUG, "still running, cannot start again");
-      throw std::logic_error(name() + " still running, cannot start again");
+      return;
     }
 
     io_service_.reset();
 
     DLOG(DEBUG, "host = " << host() << " port = " << port());
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
-    LOG(INFO, "starting UDPConnection(" << name() << ") on " << my_endpoint);
+    LOG(DEBUG, "starting UDPConnection(" << name() << ") on " << my_endpoint);
 
     socket_ = new udp::socket(io_service_, my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
-
-    LOG(INFO, "listening on " << real_endpoint);
 
     socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
         boost::bind(&UDPConnection::handle_receive_from, this,
@@ -98,15 +98,17 @@ namespace seda { namespace comm {
 
     DLOG(DEBUG, "starting service thread");
     service_thread_ = new boost::thread(boost::ref(*this));
+    barrier_.wait();
+    LOG(INFO, "started UDPConnection(" << name() << ") on " << real_endpoint);
   }
 
   void UDPConnection::stop()
   {
-    LOG(INFO, "stopping UDPConnection(" << name() << ")");
-    locator_->remove(name());
-
     if (service_thread_)
     {
+      LOG(DEBUG, "stopping UDPConnection(" << name() << ")");
+      locator_->remove(name());
+
       DLOG(DEBUG, "interrupting service thread");
       service_thread_->interrupt(); 
       io_service_.stop();
@@ -115,13 +117,14 @@ namespace seda { namespace comm {
       DLOG(DEBUG, "service thread finished");
       delete service_thread_;
       service_thread_ = NULL;
-    }
 
-    if (socket_)
-    {
-      socket_->close();
-      delete socket_;
-      socket_ = NULL;
+      if (socket_)
+      {
+        socket_->close();
+        delete socket_;
+        socket_ = NULL;
+      }
+      LOG(INFO, "stopped UDPConnection(" << name() << ")");
     }
   }
 
@@ -143,7 +146,7 @@ namespace seda { namespace comm {
           locator_->insert(msg.from(), sender_endpoint_.address().to_string(), sender_endpoint_.port());
         }
         
-        if (listener_list_.empty())
+        if (! has_listeners())
         {
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
           incoming_messages_.push_back(msg);
@@ -190,9 +193,9 @@ namespace seda { namespace comm {
     const Locator::location_t &loc(locator_->lookup(m.to()));
 
     udp::resolver resolver(io_service_);
-    udp::resolver::query query(udp::v4(), loc.first, "0");
+    udp::resolver::query query(udp::v4(), loc.host(), "0");
     udp::endpoint dst = *resolver.resolve(query);
-    dst.port(loc.second);
+    dst.port(loc.port());
     LOG(DEBUG, "sending " << m.str() << " to " << dst);
 
     boost::system::error_code ignored_error;
@@ -252,6 +255,7 @@ namespace seda { namespace comm {
   void UDPConnection::operator()()
   {
     LOG(INFO, "thread started");
+    barrier_.wait();
     io_service_.run();
   }
 }}
