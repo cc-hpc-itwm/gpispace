@@ -142,6 +142,7 @@ void UDPConnectionTest::testConnectionStrategy() {
     {
       seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1", 5000);
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
+      conn->locator()->insert("process-2", "127.0.0.1:5001");
 
       // process-1 has two stages, a counting/discarding and the network
       seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p1-final", conn));
@@ -159,6 +160,7 @@ void UDPConnectionTest::testConnectionStrategy() {
     {
       seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-2", 5001);
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
+      conn->locator()->insert("process-1", "127.0.0.1:5000");
 
       // process-2 has two stages, a counting/discarding and the network
       seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p2-final", conn));

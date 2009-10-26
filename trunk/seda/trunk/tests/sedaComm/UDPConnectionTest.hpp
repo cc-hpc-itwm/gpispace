@@ -2,7 +2,7 @@
 #define SEDA_TESTS_COMM_ZMQCONN_HPP 1
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <seda/logging.hpp>
+#include <seda/common.hpp>
 #include <stdint.h>
 #include <unistd.h>
 
