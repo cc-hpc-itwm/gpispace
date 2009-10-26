@@ -1,6 +1,8 @@
 #ifndef SEDA_LOGGING_HPP
 #define SEDA_LOGGING_HPP 1
 
+#include <seda/seda-config.hpp>
+
 /* Logging */
 #if defined(LIBSEDA_ENABLE_LOGGING)
 
