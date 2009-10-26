@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include "comm.hpp"
 #include "ConnectionFactory.hpp"
 #include "UDPConnection.hpp"
 
@@ -31,9 +32,14 @@ ConnectionParameters ConnectionFactory::parse_uri(const std::string &uri)
 
 Connection::ptr_t ConnectionFactory::createConnection(const ConnectionParameters &params)
 {
+  return createConnection(params, globalLocator());
+}
+
+
+Connection::ptr_t ConnectionFactory::createConnection(const ConnectionParameters &params, const Locator::ptr_t &locator)
+{
   if (params.transport() == "udp")
   {
-    Locator::ptr_t locator(new Locator());
     return Connection::ptr_t(
       new UDPConnection(
           locator
@@ -45,3 +51,4 @@ Connection::ptr_t ConnectionFactory::createConnection(const ConnectionParameters
   }
   throw std::runtime_error(std::string("no suitable connection found for protocol: ") + params.transport());
 }
+

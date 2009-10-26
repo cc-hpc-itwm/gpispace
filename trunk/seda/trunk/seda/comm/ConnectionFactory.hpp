@@ -101,6 +101,7 @@ namespace seda { namespace comm {
       return createConnection(parse_uri(uri));
     }
     virtual Connection::ptr_t createConnection(const ConnectionParameters &params);
+    virtual Connection::ptr_t createConnection(const ConnectionParameters &params, const Locator::ptr_t &locator);
     virtual ~ConnectionFactory() {}
   protected:
     virtual ConnectionParameters parse_uri(const std::string &uri);

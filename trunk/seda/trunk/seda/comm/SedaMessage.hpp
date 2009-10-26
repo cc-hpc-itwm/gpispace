@@ -45,7 +45,7 @@ namespace seda {
           , valid_(other.is_valid()) {}
         virtual ~SedaMessage() {}
 
-        const SedaMessage &operator=(const SedaMessage &rhs) {
+        SedaMessage &operator=(const SedaMessage &rhs) {
           if (this != &rhs) {
             from_ = rhs.from();
             to_ = rhs.to();

@@ -24,6 +24,7 @@
 #include <seda/AccumulateStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 
+#include <seda/comm/comm.hpp>
 #include <seda/comm/Connection.hpp>
 #include <seda/comm/UDPConnection.hpp>
 #include <seda/comm/ConnectionFactory.hpp>
@@ -32,6 +33,7 @@
 int main(int, char **)
 {
   fhg::log::Configurator::configure();
+  seda::comm::initialize();
 
   int errcount(0);
 
@@ -178,5 +180,6 @@ int main(int, char **)
 
   LOG(INFO, "done.");
 
+  seda::comm::shutdown();
   return errcount;
 }

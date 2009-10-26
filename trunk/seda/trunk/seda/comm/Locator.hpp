@@ -19,10 +19,12 @@
 #ifndef SEDA_COMM_LOCATOR_HPP
 #define SEDA_COMM_LOCATOR_HPP 1
 
-#include <fhglog/fhglog.hpp>
-#include <seda/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <string>
 #include <map>
+
+#include <fhglog/fhglog.hpp>
+#include <seda/shared_ptr.hpp>
 
 namespace seda { namespace comm {
   class Location
@@ -109,6 +111,7 @@ namespace seda { namespace comm {
     
     const location_t &lookup(const std::string &name) const throw (std::exception)
     {
+      boost::unique_lock<boost::recursive_mutex> mtx_lock(mtx_);
       DLOG(DEBUG, "looking up " << name);
       location_map_t::const_iterator loc_it(locations_.find(name));
       if (loc_it != locations_.end())
@@ -134,19 +137,37 @@ namespace seda { namespace comm {
     }
     void insert(const std::string &name, const location_t &location)
     {
+      boost::unique_lock<boost::recursive_mutex> mtx_lock(mtx_);
       DLOG(DEBUG, "updating location of " << name << " to " << location.host() << ":" << location.port());
       locations_[name] = location;
     }
 
     void remove(const std::string &name)
     {
+      boost::unique_lock<boost::recursive_mutex> mtx_lock(mtx_);
       locations_.erase(name);
     }
 
+    // boost thread Lockable concept
+    void lock()
+    {
+      mtx_.lock();
+    }
+    bool try_lock()
+    {
+      return mtx_.try_lock();
+    }
+    void unlock()
+    {
+      mtx_.unlock();
+    }
+
+    // make sure you are the owner!
     const_iterator begin() const { return locations_.begin(); }
     const_iterator end() const { return locations_.end(); }
   private:
     location_map_t locations_;    
+    mutable boost::recursive_mutex mtx_;
   };
 }}
 
