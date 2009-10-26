@@ -91,6 +91,8 @@ if (SEDA_FOUND)
   include_directories(${SEDA_INCLUDE_DIR})
   link_directories(${SEDA_LIBRARY_DIR})
   link_libraries(${SEDA_LIBRARY})
+else (SEDA_FOUND)
+  message(FATAL_ERROR "SEDA library is required!")
 endif(SEDA_FOUND)
 
 # google protocol buffers

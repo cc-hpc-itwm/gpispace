@@ -9,10 +9,9 @@ namespace seda {
   namespace tests {
     class EventQueueTest : public CppUnit::TestFixture {
       CPPUNIT_TEST_SUITE( seda::tests::EventQueueTest );
-      //      CPPUNIT_TEST_EXCEPTION( testStart_illegal_URI_Throws, cms::CMSException );
       CPPUNIT_TEST( testPushPop );
-      CPPUNIT_TEST_EXCEPTION( testQueueEmpty_Throws, seda::QueueEmpty );
-      CPPUNIT_TEST_EXCEPTION( testQueueFull_Throws, seda::QueueFull );
+      CPPUNIT_TEST( testQueueEmpty );
+      CPPUNIT_TEST( testQueueFull );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -25,8 +24,8 @@ namespace seda {
     protected:
       SEDA_DECLARE_LOGGER();
       void testPushPop();
-      void testQueueEmpty_Throws();
-      void testQueueFull_Throws();
+      void testQueueEmpty();
+      void testQueueFull();
 
       seda::IEventQueue::Ptr _queue;
     };
