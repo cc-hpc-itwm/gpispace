@@ -22,7 +22,7 @@ namespace sdpa {
 								seda::Stage* ptrToSlaveStage,
 								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
 						:GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
-						 SDPA_INIT_LOGGER("sdpa.fsm.smc.DaemonFSM"),
+						 SDPA_INIT_LOGGER(name+"FSM"),
 						 m_fsmContext(*this)
 					{
 						SDPA_LOG_DEBUG("Daemon state machine created");

@@ -37,9 +37,9 @@ using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::smc;
 
-const int NITER = 1;
+const int NITER = 100;
 
-const int sleep_interval = 100000; //us
+const int sleep_interval = 1000; //us
 
 class TestStrategy : public seda::Strategy
 {

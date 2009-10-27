@@ -9,12 +9,10 @@
 
 #include <seda/Strategy.hpp>
 
-#include <sdpa/Config.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
-#include <sdpa/daemon/ISendEvent.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
@@ -105,6 +103,8 @@ namespace sdpa { namespace daemon {
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 	  virtual bool is_registered() const { return m_bRegistered;}
 
+	  sdpa::config::Config* cfg() const { return ptr_daemon_cfg_.get();}
+
   protected:
 	  SDPA_DECLARE_LOGGER();
 
@@ -127,7 +127,6 @@ namespace sdpa { namespace daemon {
 	  std::string master_;
 
 	  sdpa::config::Config::ptr_t ptr_daemon_cfg_;
-	  sdpa::util::time_type last_request_time;
 	  bool m_bRegistered;
   };
 

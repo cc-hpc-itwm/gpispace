@@ -1,25 +1,25 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
+#include <sdpa/events/RequestJobEvent.hpp>
+#include <sdpa/events/LifeSignEvent.hpp>
 
 using namespace sdpa::daemon;
+using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes, std::string strOwner):
+SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes, sdpa::daemon::IComm* pCommHandler) :
 	ptr_worker_man_(new WorkerManager()),
 	ptr_Sdpa2Gwes_(pSdpa2Gwes),
-	SDPA_INIT_LOGGER(strOwner + "::SchedulerImpl")
+	ptr_comm_handler_(pCommHandler),
+	SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
 {
+	m_timeout = boost::posix_time::milliseconds(100);//time_duration(0,0,0,10);
+	m_last_request_time = 0;
 }
 
 SchedulerImpl::~SchedulerImpl()
 {
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
-}
-
-void SchedulerImpl::acknowledge(const sdpa::job_id_t& ) { }
-
-Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &, const sdpa::job_id_t & /*last_job*/) {
-  throw std::runtime_error("SchedulerImpl::get_next_job() not implemented yet");
 }
 
 /*
@@ -74,7 +74,7 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-			SDPA_LOG_DEBUG("The next worker dispatches the job ...");
+			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 			pWorker->dispatch(pJob);
 		}
 	}
@@ -132,14 +132,50 @@ void SchedulerImpl::stop()
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 
+void SchedulerImpl::check_post_request()
+{
+	 sdpa::util::time_type current_time = sdpa::util::now();
+	 sdpa::util::time_type difftime = current_time - m_last_request_time;
+
+	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 {
+		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
+
+		 // post job request if number_of_jobs() < #registered workers +1
+		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 1 )
+		 {
+			 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
+			 {
+				 // post a new request to the master
+				 // the slave posts a job request
+				 SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
+				 RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+				 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
+				 m_last_request_time = current_time;
+			 }
+		 }
+		 else //send a LS
+		 {
+			 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
+			 {
+				 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+				 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
+				 m_last_request_time = current_time;
+			 }
+		 }
+	 }
+}
+
 void SchedulerImpl::run()
 {
 	SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 	while(!bStopRequested)
 	{
-		try {
-			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+		try
+		{
+			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
 			if( pJob.use_count() )
 			{
@@ -152,12 +188,13 @@ void SchedulerImpl::run()
 					// or has an Worker Manager and the workers are threads
 					schedule_remote(pJob);
 				}
+
+				// if I'm not the orchestrator (i.e. either aggregator or nre)
+				// if the job queue's length is less than twice the number of workers
+				// and the elapased time since the last request is > polling_interval_time
 			}
-			else
-			{
-				bStopRequested = true;
-				SDPA_LOG_DEBUG("Thread stops now!");
-			}
+
+			check_post_request();
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -166,8 +203,8 @@ void SchedulerImpl::run()
 		}
 		catch( const sdpa::daemon::QueueEmpty &)
 		{
-			SDPA_LOG_DEBUG("Queue empty exception");
-			bStopRequested = true;
+			//SDPA_LOG_DEBUG("Queue empty exception");
+			check_post_request();
 		}
 	}
 }

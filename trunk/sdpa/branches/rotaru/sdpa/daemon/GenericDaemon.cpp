@@ -26,7 +26,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
-	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes, name)),
+	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes, this)),
 	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
@@ -36,7 +36,6 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
 
 	// initialize last request time
-	last_request_time = 0;
 }
 
 GenericDaemon::~GenericDaemon()
@@ -49,7 +48,7 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::create_daemon_stage(GenericDaemon::ptr_t ptr_daemon )
 {
-	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 1) );
+	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 2) );
 	ptr_daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
 }
@@ -122,36 +121,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 		}
 		else
 			cout<<"Throw an exception here!"<<std::endl;
-
-	// if I'm not the orchestrator (i.e. either aggregator or nre)
-	// if the job queue's length is less than twice the number of workers
-	// and the elapased time since the last request is > polling_interval_time
-
-	 sdpa::util::time_type current_time = sdpa::util::now();
-	 sdpa::util::time_type difftime = current_time - last_request_time;
-
-	 if( sdpa::daemon::ORCHESTRATOR != name() && is_registered() )
-	 {
-		 // post job request if number_of_jobs() < 2 * #registered workers
-		 if( ptr_job_man_->number_of_jobs() < 2 * ptr_scheduler_->numberOfWorkers() )
-		 {
-			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("polling interval") )
-			 {
-				 // post a new request to the master
-				 // the slave posts a job request
-				RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master()) );
-				sendEvent(ptr_to_master_stage_, pEvtReq);
-				last_request_time = current_time;
-			 }
-		 } else {
-			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("life-sign interval") )
-			 {
-				 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( name(), master()) );
-				 sendEvent(ptr_to_master_stage_, pEvtLS);
-				 last_request_time = current_time;
-			 }
-		 }
-	 }
 }
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
@@ -512,13 +481,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
 		addWorker(pWorker);
 
-		ostringstream os;
-		os<<"Registered the worker "<<pWorker->name()<<" ...";
-		SDPA_LOG_DEBUG(os.str());
-
-		os.str("");
-		os<<"Send back registration acknowledgement to the worker "<<pWorker->name()<<" ...";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
 		// send back an acknowledgement
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);

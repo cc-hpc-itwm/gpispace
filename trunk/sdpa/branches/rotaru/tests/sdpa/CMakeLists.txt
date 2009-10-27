@@ -26,6 +26,7 @@ target_link_libraries(sdpa_test_suite sdpa-daemonFSM_SMC)
 target_link_libraries(sdpa_test_suite sdpa-util)
 target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
+target_link_libraries(sdpa_test_suite sdpa-client)
 
 # test module
 add_library(example-mod SHARED ExampleModule.cpp)

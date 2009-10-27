@@ -1,4 +1,4 @@
-#include "test_D2DDummyGwes.hpp"
+#include "test_D2D2DDummyGwes.hpp"
 
 #include <iostream>
 #include <string>
@@ -34,14 +34,91 @@ using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::smc;
 
-const int NITER = 100;
-const int sleep_interval = 1000;
+const int NITER = 1;
+const int user_user_sleep_interval = 10000;
 
-class TestStrategy : public seda::Strategy
+string answerStrategy = "";
+
+
+class SchedulerNRE : public SchedulerImpl
 {
 public:
-	 typedef std::tr1::shared_ptr<TestStrategy> Ptr;
-	 TestStrategy(const std::string& name): seda::Strategy(name), SDPA_INIT_LOGGER(name)  {}
+	SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler):
+		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler) {}
+
+	virtual ~SchedulerNRE() { }
+
+	void run()
+	{
+		SDPA_LOG_DEBUG("Scheduler thread running ...");
+
+		while(!bStopRequested)
+		{
+			try
+			{
+				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+
+				// execute the job and ...
+				// ... submit a JobFinishedEvent to the master
+				if( answerStrategy == "finished" )
+				{
+					SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<ptr_comm_handler_->master());
+					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFinEvt);
+				}
+				else if( answerStrategy == "failed" )
+				{
+					SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<ptr_comm_handler_->master());
+					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFailEvt);
+				}
+				else if( answerStrategy == "cancelled" )
+				{
+					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
+					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pCancelAckEvt);
+				}
+
+				check_post_request();
+			}
+			catch( const boost::thread_interrupted & )
+			{
+				SDPA_LOG_DEBUG("Thread interrupted ...");
+				bStopRequested = true;
+			}
+			catch( const sdpa::daemon::QueueEmpty &)
+			{
+				//SDPA_LOG_DEBUG("Queue empty exception");
+				check_post_request();
+			}
+		}
+	}
+};
+
+
+class NreDaemon : public DaemonFSM
+{
+public:
+	SDPA_DECLARE_LOGGER();
+	NreDaemon(	const std::string &name,
+							seda::Stage* ptrToMasterStage,
+							seda::Stage* ptrToSlaveStage,
+							sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: DaemonFSM( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
+	  SDPA_INIT_LOGGER(name)
+	{
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE(pArgSdpa2Gwes, this));
+	}
+
+	 virtual ~NreDaemon() {  }
+
+};
+
+class UserStrategy : public seda::Strategy
+{
+public:
+	 typedef std::tr1::shared_ptr<UserStrategy> Ptr;
+	 UserStrategy(const std::string& name): seda::Strategy(name), SDPA_INIT_LOGGER(name)  {}
 	 void perform(const seda::IEvent::Ptr& pEvt)
 	 {
 
@@ -158,18 +235,18 @@ public:
 	 SDPA_DECLARE_LOGGER();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( D2DDummyGwesTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyGwesTest );
 
-D2DDummyGwesTest::D2DDummyGwesTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.D2DDummyGwesTest")
+D2D2DDummyGwesTest::D2D2DDummyGwesTest() :
+	SDPA_INIT_LOGGER("sdpa.tests.D2D2DDummyGwesTest")
 {
 }
 
-D2DDummyGwesTest::~D2DDummyGwesTest()
+D2D2DDummyGwesTest::~D2D2DDummyGwesTest()
 {}
 
 
-string D2DDummyGwesTest::read_workflow(string strFileName)
+string D2D2DDummyGwesTest::read_workflow(string strFileName)
 {
 	ifstream f(strFileName.c_str());
 	ostringstream os;
@@ -186,57 +263,41 @@ string D2DDummyGwesTest::read_workflow(string strFileName)
 	return os.str();
 }
 
-void D2DDummyGwesTest::setUp() { //initialize and start the finite state machine
+void D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrSdpa2GwesAgg  = new DummyGwes();
 
-	m_ptrUserStrategy = seda::Strategy::Ptr( new TestStrategy("User") );
-	m_ptrToUserStage = seda::Stage::Ptr(new seda::Stage("to_master_stage", m_ptrUserStrategy) );
+	m_ptrUserStrategy = seda::Strategy::Ptr( new UserStrategy("User") );
+	m_ptrToUserStage  = seda::Stage::Ptr(new seda::Stage("to_master_stage", m_ptrUserStrategy) );
 
-	m_ptrNreStrategy = seda::Strategy::Ptr( new TestStrategy("Nre") );
-	m_ptrToNreStage = seda::Stage::Ptr(new seda::Stage("to_nre_stage", m_ptrNreStrategy) );
-
-	m_ptrOrch = DaemonFSM::ptr_t(new DaemonFSM( sdpa::daemon::ORCHESTRATOR,
+	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR,
 												m_ptrToUserStage.get(),
 												NULL,
-												m_ptrSdpa2GwesOrch));
+												m_ptrSdpa2GwesOrch) ); // Orchestrator gwes instance
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
 
 
-	m_ptrAgg = DaemonFSM::ptr_t(new DaemonFSM( sdpa::daemon::AGGREGATOR,
+	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR,
 								m_ptrOrch->daemon_stage(),
-								m_ptrToNreStage.get(),
-								m_ptrSdpa2GwesAgg));
+								NULL,
+								m_ptrSdpa2GwesAgg) ); // Aggregator gwes instance
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
 
-
-	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
-
-
-	DaemonFSM::start(m_ptrOrch);
-	DaemonFSM::start(m_ptrAgg);
-
-	//create output stage
-	seda::StageRegistry::instance().insert(m_ptrToUserStage);
-	m_ptrToUserStage->start();
-
-	seda::StageRegistry::instance().insert(m_ptrToNreStage);
-	m_ptrToNreStage->start();
 
 	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
-void D2DDummyGwesTest::tearDown()
+void D2D2DDummyGwesTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
 	seda::StageRegistry::instance().lookup(m_ptrToUserStage->name())->stop();
-	seda::StageRegistry::instance().lookup(m_ptrToNreStage->name())->stop();
 
+	m_ptrNRE->stop();
 	m_ptrAgg->stop();
 	m_ptrOrch->stop();
 
@@ -247,38 +308,35 @@ void D2DDummyGwesTest::tearDown()
 	delete m_ptrSdpa2GwesAgg;
 }
 
-void D2DDummyGwesTest::testDaemonFSM_JobFinished()
+void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFinished******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
+	answerStrategy = "finished";
 	string strFromUser(sdpa::daemon::USER);
-	string strFromNre(sdpa::daemon::NRE);
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+										m_ptrAgg->daemon_stage(),
+										NULL,
+										NULL) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	//create output stage
+	seda::StageRegistry::instance().insert(m_ptrToUserStage);
+	m_ptrToUserStage->start();
 
 	//ring strDaemon = strDaemon;
 	sdpa::events::ErrorEvent::Ptr pErrorEvt;
 
-	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrUserStrategy.get());
-	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrNreStrategy.get());
-
-
-	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<m_ptrAgg->name());
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtWorkerReg);
-	pSlaveStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: request configuration from "<<m_ptrAgg->name());
-	ConfigRequestEvent::Ptr pEvtCfgReq( new ConfigRequestEvent(strFromNre, m_ptrAgg->name() ));
-	m_ptrAgg->daemon_stage()->send(pEvtCfgReq);
-
-	// wait for a configuration reply event
-	pSlaveStr->WaitForEvent<sdpa::events::ConfigReplyEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: send LS to "<<m_ptrAgg->name());
-	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtLS);
+	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
 	for(int k=0; k<NITER;k++)
 	{
@@ -290,48 +348,6 @@ void D2DDummyGwesTest::testDaemonFSM_JobFinished()
 
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
-
-		// the slave posts a job request
-		SDPA_LOG_DEBUG("Slave: post new job request to "<<m_ptrAgg->name());
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-		m_ptrAgg->daemon_stage()->send(pEvtReq);
-
-		sdpa::job_id_t job_id_slave;
-		SubmitJobEvent::Ptr pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-		while( pErrorEvt.get() )
-		{
-			if(pErrorEvt->error_code() == ErrorEvent::SDPA_ENOJOBAVAIL)
-			{
-				os.str("");
-				os<<"No job available! Try again ...";
-				SDPA_LOG_DEBUG(os.str());
-
-				usleep(sleep_interval);
-				//Post new reqest and wait
-				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-				m_ptrAgg->daemon_stage()->send(pEvtReqNew);
-				// wait the master to reply to the job request
-				pErrorEvt.reset();
-				pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-			}
-		}
-
-		job_id_slave = pSubmitJobEvent->job_id();
-
-		// send a SubmitJobAckEvent to master
-		// the master should acknowledge the job then
-		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<m_ptrAgg->name());
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromNre, m_ptrAgg->name(), job_id_slave) );
-		m_ptrAgg->daemon_stage()->send(pSubmitJobAck);
-
-		// the slave computes the job ........
-
-		// submit a JobFinishedEvent to master
-		SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<m_ptrAgg->name());
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromNre, m_ptrAgg->name(), job_id_slave));
-		m_ptrAgg->daemon_stage()->send(pEvtJobFinished);
-
-		pSlaveStr->WaitForEvent<sdpa::events::JobFinishedAckEvent>(pErrorEvt);
 
 		// check if the job finished
 		SDPA_LOG_DEBUG("User: query "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
@@ -353,14 +369,10 @@ void D2DDummyGwesTest::testDaemonFSM_JobFinished()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(sleep_interval);
+			usleep(user_user_sleep_interval);
 		}
 
-		os.str("");
-		os<<"The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status();
-		SDPA_LOG_DEBUG(os.str());
-
-		// if the job is in the finished or failed state, one is allowed
+			// if the job is in the finished or failed state, one is allowed
 		// to retriieve the results now
 		SDPA_LOG_DEBUG("User: retrieve the results of the job "<<job_id_user);
 		RetrieveJobResultsEvent::Ptr pEvtRetrieveRes(new RetrieveJobResultsEvent(strFromUser, m_ptrOrch->name(), job_id_user));
@@ -378,53 +390,52 @@ void D2DDummyGwesTest::testDaemonFSM_JobFinished()
 		os.str("");
 		os<<"Successfully deleted the job "<<jobid;
 		SDPA_LOG_DEBUG(os.str());
+
 	}
 
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
 
 	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
 	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
-
 
 	// shutdown the orchestrator
 	InterruptEvent::Ptr pEvtIntOrch( new InterruptEvent(m_ptrOrch->name(), m_ptrOrch->name() ));
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
 	// you can leave now
-	SDPA_LOG_DEBUG("Slave: Finished!");
+	SDPA_LOG_DEBUG("User finished!");
 }
 
-void D2DDummyGwesTest::testDaemonFSM_JobFailed()
+void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFailed******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
+	answerStrategy = "failed";
 	string strFromUser(sdpa::daemon::USER);
-	string strFromNre(sdpa::daemon::NRE);
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+										m_ptrAgg->daemon_stage(),
+										NULL,
+										NULL) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	//create output stage
+	seda::StageRegistry::instance().insert(m_ptrToUserStage);
+	m_ptrToUserStage->start();
 
 	//ring strDaemon = strDaemon;
 	sdpa::events::ErrorEvent::Ptr pErrorEvt;
 
-	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrUserStrategy.get());
-	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrNreStrategy.get());
-
-
-	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<m_ptrAgg->name());
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtWorkerReg);
-	pSlaveStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: request configuration from "<<m_ptrAgg->name());
-	ConfigRequestEvent::Ptr pEvtCfgReq( new ConfigRequestEvent(strFromNre, m_ptrAgg->name() ));
-	m_ptrAgg->daemon_stage()->send(pEvtCfgReq);
-
-	// wait for a configuration reply event
-	pSlaveStr->WaitForEvent<sdpa::events::ConfigReplyEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: send LS to "<<m_ptrAgg->name());
-	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtLS);
+	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
 	for(int k=0; k<NITER;k++)
 	{
@@ -436,48 +447,6 @@ void D2DDummyGwesTest::testDaemonFSM_JobFailed()
 
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
-
-		// the slave posts a job request
-		SDPA_LOG_DEBUG("Slave: post new job request to "<<m_ptrAgg->name());
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-		m_ptrAgg->daemon_stage()->send(pEvtReq);
-
-		sdpa::job_id_t job_id_slave;
-		SubmitJobEvent::Ptr pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-		while( pErrorEvt.get() )
-		{
-			if(pErrorEvt->error_code() == ErrorEvent::SDPA_ENOJOBAVAIL)
-			{
-				os.str("");
-				os<<"No job available! Try again ...";
-				SDPA_LOG_DEBUG(os.str());
-
-				usleep(sleep_interval);
-				//Post new reqest and wait
-				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-				m_ptrAgg->daemon_stage()->send(pEvtReqNew);
-				// wait the master to reply to the job request
-				pErrorEvt.reset();
-				pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-			}
-		}
-
-		job_id_slave = pSubmitJobEvent->job_id();
-
-		// send a SubmitJobAckEvent to master
-		// the master should acknowledge the job then
-		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<m_ptrAgg->name());
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromNre, m_ptrAgg->name(), job_id_slave) );
-		m_ptrAgg->daemon_stage()->send(pSubmitJobAck);
-
-		// the slave computes the job ........
-
-		// submit a JobFinishedEvent to master
-		SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<m_ptrAgg->name());
-		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromNre, m_ptrAgg->name(), job_id_slave));
-		m_ptrAgg->daemon_stage()->send(pEvtJobFailed);
-
-		pSlaveStr->WaitForEvent<sdpa::events::JobFailedAckEvent>(pErrorEvt);
 
 		// check if the job finished
 		SDPA_LOG_DEBUG("User: query "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
@@ -499,10 +468,10 @@ void D2DDummyGwesTest::testDaemonFSM_JobFailed()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(sleep_interval);
+			usleep(user_user_sleep_interval);
 		}
 
-		// if the job is in the finished or failed state, one is allowed
+			// if the job is in the finished or failed state, one is allowed
 		// to retriieve the results now
 		SDPA_LOG_DEBUG("User: retrieve the results of the job "<<job_id_user);
 		RetrieveJobResultsEvent::Ptr pEvtRetrieveRes(new RetrieveJobResultsEvent(strFromUser, m_ptrOrch->name(), job_id_user));
@@ -520,7 +489,11 @@ void D2DDummyGwesTest::testDaemonFSM_JobFailed()
 		os.str("");
 		os<<"Successfully deleted the job "<<jobid;
 		SDPA_LOG_DEBUG(os.str());
+
 	}
+
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
 
 	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
 	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
@@ -530,41 +503,38 @@ void D2DDummyGwesTest::testDaemonFSM_JobFailed()
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
 	// you can leave now
-	SDPA_LOG_DEBUG("Slave: Finished!");
+	SDPA_LOG_DEBUG("User finished!");
 }
 
-void D2DDummyGwesTest::testDaemonFSM_JobCancelled()
+void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
+	answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
-	string strFromNre(sdpa::daemon::NRE);
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+										m_ptrAgg->daemon_stage(),
+										NULL,
+										NULL) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	//create output stage
+	seda::StageRegistry::instance().insert(m_ptrToUserStage);
+	m_ptrToUserStage->start();
 
 	//ring strDaemon = strDaemon;
 	sdpa::events::ErrorEvent::Ptr pErrorEvt;
 
-	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrUserStrategy.get());
-	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrNreStrategy.get());
-
-
-	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<m_ptrAgg->name());
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtWorkerReg);
-	pSlaveStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: request configuration from "<<m_ptrAgg->name());
-	ConfigRequestEvent::Ptr pEvtCfgReq( new ConfigRequestEvent(strFromNre, m_ptrAgg->name() ));
-	m_ptrAgg->daemon_stage()->send(pEvtCfgReq);
-
-	// wait for a configuration reply event
-	pSlaveStr->WaitForEvent<sdpa::events::ConfigReplyEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: send LS to "<<m_ptrAgg->name());
-	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtLS);
+	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
 	for(int k=0; k<NITER;k++)
 	{
@@ -577,61 +547,61 @@ void D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
-		// the slave posts a job request
-		SDPA_LOG_DEBUG("Slave: post new job request to "<<m_ptrAgg->name());
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-		m_ptrAgg->daemon_stage()->send(pEvtReq);
-
-		sdpa::job_id_t job_id_slave;
-		SubmitJobEvent::Ptr pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-		while( pErrorEvt.get() )
-		{
-			if(pErrorEvt->error_code() == ErrorEvent::SDPA_ENOJOBAVAIL)
-			{
-				os.str("");
-				os<<"No job available! Try again ...";
-				SDPA_LOG_DEBUG(os.str());
-
-				usleep(sleep_interval);
-				//Post new reqest and wait
-				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-				m_ptrAgg->daemon_stage()->send(pEvtReqNew);
-				// wait the master to reply to the job request
-				pErrorEvt.reset();
-				pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-			}
-		}
-
-		job_id_slave = pSubmitJobEvent->job_id();
-
-		// send a SubmitJobAckEvent to master
-		// the master should acknowledge the job then
-		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<m_ptrAgg->name());
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromNre, m_ptrAgg->name(), job_id_slave) );
-		m_ptrAgg->daemon_stage()->send(pSubmitJobAck);
-
-		// the slave computes the job ........
-
+		sleep(1);
 		// Now, the user sends a CancelJob  message
 		CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUser, m_ptrOrch->name(), job_id_user) );
 		m_ptrOrch->daemon_stage()->send(pCancelJobEvt);
 
-		// the worker expects a CancelJobEvent ...
-		CancelJobEvent::Ptr pCancelEvt = pSlaveStr->WaitForEvent<sdpa::events::CancelJobEvent>(pErrorEvt);
-
-		// the worker cancells the job
-		SDPA_LOG_DEBUG("SLAVE: Canceled the job "<<pCancelEvt->job_id()<<"!Sending ack to "<<pCancelEvt->from());
-
-		// ... and replies with a CancelJobAckEvent
-		CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
-		m_ptrAgg->daemon_stage()->send(pCancelJobAckEvt);
-
 		// the user expects now a CancelJobAckEvent
 		CancelJobAckEvent::Ptr pCancelAckEvt = pUserStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 		SDPA_LOG_DEBUG("USER: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+
+		// waits until the job was explicitely cancelled
+		SDPA_LOG_DEBUG("User: query "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
+		QueryJobStatusEvent::Ptr pEvtQueryStatus(new QueryJobStatusEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+		m_ptrOrch->daemon_stage()->send(pEvtQueryStatus);
+
+		// wait for a JobStatusReplyEvent
+		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+
+		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Failed") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Cancelled") == std::string::npos)
+		{
+			SDPA_LOG_DEBUG("User: ask the "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
+			QueryJobStatusEvent::Ptr pEvtQueryStNew(new QueryJobStatusEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+			m_ptrOrch->daemon_stage()->send(pEvtQueryStNew);
+
+			// wait for a JobStatusReplyEvent
+			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+			usleep(user_user_sleep_interval);
+		}
+
+			// if the job is in the finished or failed state, one is allowed
+		// to retriieve the results now
+		SDPA_LOG_DEBUG("User: retrieve the results of the job "<<job_id_user);
+		RetrieveJobResultsEvent::Ptr pEvtRetrieveRes(new RetrieveJobResultsEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+		m_ptrOrch->daemon_stage()->send(pEvtRetrieveRes);
+		// wait for a JobStatusReplyEvent
+		pUserStr->WaitForEvent<sdpa::events::JobResultsReplyEvent>(pErrorEvt);
+
+		// check the job status. if the job is in a final state, send a DeletJobEvent
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		DeleteJobEvent::Ptr pEvtDelJob( new DeleteJobEvent(strFromUser, m_ptrOrch->name(), job_id_user) );
+		m_ptrOrch->daemon_stage()->send(pEvtDelJob);
+
+		// wait for an acknowledgment from Orchestrator that job was deleted
+		sdpa::job_id_t jobid = pUserStr->WaitForEvent<sdpa::events::DeleteJobAckEvent>(pErrorEvt)->job_id();
+		os.str("");
+		os<<"Successfully deleted the job "<<jobid;
+		SDPA_LOG_DEBUG(os.str());
+
 	}
 
-	sleep(2);
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
 
 	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
 	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
@@ -641,42 +611,38 @@ void D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
 	// you can leave now
-	SDPA_LOG_DEBUG("Slave: Finished!");
+	SDPA_LOG_DEBUG("User finished!");
 }
 
-
-void D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
+void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
+	answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
-	string strFromNre(sdpa::daemon::NRE);
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+										m_ptrAgg->daemon_stage(),
+										NULL,
+										NULL) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	//create output stage
+	seda::StageRegistry::instance().insert(m_ptrToUserStage);
+	m_ptrToUserStage->start();
 
 	//ring strDaemon = strDaemon;
 	sdpa::events::ErrorEvent::Ptr pErrorEvt;
 
-	TestStrategy* pUserStr = dynamic_cast<TestStrategy*>(m_ptrUserStrategy.get());
-	TestStrategy* pSlaveStr = dynamic_cast<TestStrategy*>(m_ptrNreStrategy.get());
-
-
-	SDPA_LOG_DEBUG("Slave: send  WorkerRegistrationEvent to "<<m_ptrAgg->name());
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtWorkerReg);
-	pSlaveStr->WaitForEvent<sdpa::events::WorkerRegistrationAckEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: request configuration from "<<m_ptrAgg->name());
-	ConfigRequestEvent::Ptr pEvtCfgReq( new ConfigRequestEvent(strFromNre, m_ptrAgg->name() ));
-	m_ptrAgg->daemon_stage()->send(pEvtCfgReq);
-
-	// wait for a configuration reply event
-	pSlaveStr->WaitForEvent<sdpa::events::ConfigReplyEvent>(pErrorEvt);
-
-	SDPA_LOG_DEBUG("Slave: send LS to "<<m_ptrAgg->name());
-	LifeSignEvent::Ptr pEvtLS(new LifeSignEvent(strFromNre, m_ptrAgg->name()));
-	m_ptrAgg->daemon_stage()->send(pEvtLS);
+	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
 	for(int k=0; k<NITER;k++)
 	{
@@ -689,53 +655,61 @@ void D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 		// the user waits for an acknowledgment
 		sdpa::job_id_t job_id_user = pUserStr->WaitForEvent<sdpa::events::SubmitJobAckEvent>(pErrorEvt)->job_id();
 
-		// the slave posts a job request
-		SDPA_LOG_DEBUG("Slave: post new job request to "<<m_ptrAgg->name());
-		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-		m_ptrAgg->daemon_stage()->send(pEvtReq);
-
-		sdpa::job_id_t job_id_slave;
-		SubmitJobEvent::Ptr pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-		while( pErrorEvt.get() )
-		{
-			if(pErrorEvt->error_code() == ErrorEvent::SDPA_ENOJOBAVAIL)
-			{
-				os.str("");
-				os<<"No job available! Try again ...";
-				SDPA_LOG_DEBUG(os.str());
-
-				usleep(sleep_interval);
-				//Post new reqest and wait
-				RequestJobEvent::Ptr pEvtReqNew( new RequestJobEvent(strFromNre, m_ptrAgg->name()) );
-				m_ptrAgg->daemon_stage()->send(pEvtReqNew);
-				// wait the master to reply to the job request
-				pErrorEvt.reset();
-				pSubmitJobEvent = pSlaveStr->WaitForEvent<sdpa::events::SubmitJobEvent>(pErrorEvt);
-			}
-		}
-
-		job_id_slave = pSubmitJobEvent->job_id();
-
+		sleep(1);
 		// Now, the user sends a CancelJob  message
 		CancelJobEvent::Ptr pCancelJobEvt( new CancelJobEvent(strFromUser, m_ptrOrch->name(), job_id_user) );
 		m_ptrOrch->daemon_stage()->send(pCancelJobEvt);
 
-		// the worker expects a CancelJobEvent ...
-		CancelJobEvent::Ptr pCancelEvt = pSlaveStr->WaitForEvent<sdpa::events::CancelJobEvent>(pErrorEvt);
-
-		// the worker cancells the job
-		SDPA_LOG_DEBUG("SLAVE: Canceled the job "<<pCancelEvt->job_id()<<"!Sending ack to "<<pCancelEvt->from());
-
-		// ... and replies with a CancelJobAckEvent
-		CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
-		m_ptrAgg->daemon_stage()->send(pCancelJobAckEvt);
-
 		// the user expects now a CancelJobAckEvent
 		CancelJobAckEvent::Ptr pCancelAckEvt = pUserStr->WaitForEvent<sdpa::events::CancelJobAckEvent>(pErrorEvt);
 		SDPA_LOG_DEBUG("USER: The job "<<pCancelAckEvt->job_id()<<" has been successfully cancelled!");
+
+		// waits until the job was explicitely cancelled
+		SDPA_LOG_DEBUG("User: query "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
+		QueryJobStatusEvent::Ptr pEvtQueryStatus(new QueryJobStatusEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+		m_ptrOrch->daemon_stage()->send(pEvtQueryStatus);
+
+		// wait for a JobStatusReplyEvent
+		JobStatusReplyEvent::Ptr pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+
+		while( pJobStatusReplyEvent->status().find("Finished") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Failed") == std::string::npos &&
+			pJobStatusReplyEvent->status().find("Cancelled") == std::string::npos)
+		{
+			SDPA_LOG_DEBUG("User: ask the "<<m_ptrOrch->name()<<" for the status of the job "<<job_id_user);
+			QueryJobStatusEvent::Ptr pEvtQueryStNew(new QueryJobStatusEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+			m_ptrOrch->daemon_stage()->send(pEvtQueryStNew);
+
+			// wait for a JobStatusReplyEvent
+			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
+			usleep(user_user_sleep_interval);
+		}
+
+			// if the job is in the finished or failed state, one is allowed
+		// to retriieve the results now
+		SDPA_LOG_DEBUG("User: retrieve the results of the job "<<job_id_user);
+		RetrieveJobResultsEvent::Ptr pEvtRetrieveRes(new RetrieveJobResultsEvent(strFromUser, m_ptrOrch->name(), job_id_user));
+		m_ptrOrch->daemon_stage()->send(pEvtRetrieveRes);
+		// wait for a JobStatusReplyEvent
+		pUserStr->WaitForEvent<sdpa::events::JobResultsReplyEvent>(pErrorEvt);
+
+		// check the job status. if the job is in a final state, send a DeletJobEvent
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		DeleteJobEvent::Ptr pEvtDelJob( new DeleteJobEvent(strFromUser, m_ptrOrch->name(), job_id_user) );
+		m_ptrOrch->daemon_stage()->send(pEvtDelJob);
+
+		// wait for an acknowledgment from Orchestrator that job was deleted
+		sdpa::job_id_t jobid = pUserStr->WaitForEvent<sdpa::events::DeleteJobAckEvent>(pErrorEvt)->job_id();
+		os.str("");
+		os<<"Successfully deleted the job "<<jobid;
+		SDPA_LOG_DEBUG(os.str());
+
 	}
 
-	sleep(2);
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
 
 	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
 	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
@@ -745,5 +719,5 @@ void D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
 	// you can leave now
-	SDPA_LOG_DEBUG("Slave: Finished!");
+	SDPA_LOG_DEBUG("User finished!");
 }
