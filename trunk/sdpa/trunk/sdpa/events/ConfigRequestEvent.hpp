@@ -1,14 +1,21 @@
 #ifndef SDPA_CONFIGREQUESTEVENT_HPP
 #define SDPA_CONFIGREQUESTEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
 
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa {
 namespace events {
-    class ConfigRequestEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::ConfigRequestEvent> {
+#ifdef USE_BOOST_SC
+    class ConfigRequestEvent : public MgmtEvent, public sc::event<ConfigRequestEvent> {
+#else
+    class ConfigRequestEvent : public MgmtEvent {
+#endif
     public:
         typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
 
