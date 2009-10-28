@@ -13,7 +13,7 @@ namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
 	class LifeSignEvent : public MgmtEvent, public sc::event<LifeSignEvent> {
 #else
-	class LifeSignEvent : public MgmtEvent
+	class LifeSignEvent : public MgmtEvent {
 #endif
 	public:
 		typedef sdpa::shared_ptr<LifeSignEvent> Ptr;
