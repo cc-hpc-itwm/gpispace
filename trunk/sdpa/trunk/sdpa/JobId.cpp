@@ -28,11 +28,6 @@ JobId::JobId(const JobId &other)
 {
 }
 
-const std::string &JobId::str() const
-{
-  return id_;
-}
-
 JobId & JobId::operator=(const JobId &rhs)
 {
   if (this != &rhs) 

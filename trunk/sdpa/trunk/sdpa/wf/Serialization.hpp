@@ -19,9 +19,6 @@
 #ifndef SDPA_WF_SERIALIZATION_HPP
 #define SDPA_WF_SERIALIZATION_HPP 1
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/list.hpp>

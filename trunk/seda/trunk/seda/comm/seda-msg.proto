@@ -5,4 +5,5 @@ message Message {
     required string to      = 1;
     required string from    = 2;
     required bytes  payload = 3;
+    optional uint32 type    = 4 [default = 0];
 }

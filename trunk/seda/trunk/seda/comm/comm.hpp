@@ -22,7 +22,7 @@
 #include <seda/comm/Locator.hpp>
 
 namespace seda { namespace comm {
-  extern void initialize();
+  extern void initialize(int argc, char **argv);
   extern void shutdown();
 
   extern const Locator::ptr_t &globalLocator();

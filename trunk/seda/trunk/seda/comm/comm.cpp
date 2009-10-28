@@ -17,15 +17,17 @@
  */
 
 #include "comm.hpp"
+#include <fhglog/fhglog.hpp>
 
 namespace seda { namespace comm {
-  void initialize()
+  void initialize(int /* argc */, char **  /* argv */)
   {
-
+    DLOG(DEBUG, "initializing seda-comm library");
   }
 
   void shutdown()
   {
+    DLOG(DEBUG, "shutting seda-comm library down");
   }
 
   const Locator::ptr_t &globalLocator()

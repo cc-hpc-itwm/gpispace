@@ -21,6 +21,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include "LogServer.hpp"
+#include <boost/archive/text_iarchive.hpp>
 #include "Serialization.hpp"
 
 using namespace fhg::log::remote;

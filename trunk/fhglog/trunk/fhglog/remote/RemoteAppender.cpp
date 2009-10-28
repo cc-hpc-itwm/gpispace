@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include <fhglog/remote/RemoteAppender.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <fhglog/remote/Serialization.hpp>
 
 using namespace fhg::log::remote;

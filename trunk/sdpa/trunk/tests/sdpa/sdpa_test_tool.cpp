@@ -8,8 +8,13 @@
 #include <sdpa/wf/Parameter.hpp>
 #include <sdpa/wf/Activity.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include <sdpa/wf/GwesGlue.hpp>
 #include <sdpa/wf/Serialization.hpp>
+
+#include <sdpa/events/Serialization.hpp>
 
 #include <gwdl/Token.h>
 
@@ -103,8 +108,8 @@ int main(int /* argc */, char ** /* argv */)
 
   {
     std::stringstream sstr;
-    boost::archive::text_oarchive oa(sstr);
     {
+      boost::archive::text_oarchive oa(sstr);
       sdpa::wf::Activity activity("activity-1"
           , sdpa::wf::Method("test.so", "loopStep"));
       activity.add_parameter(sdpa::wf::Parameter
@@ -121,6 +126,21 @@ int main(int /* argc */, char ** /* argv */)
       boost::archive::text_iarchive oa(sstr);
       oa >> activity;
       LOG(DEBUG, "deserialized activity " << activity << " from: " << sstr.str());
+    }
+  }
+
+  {
+    std::stringstream sstr;
+    {
+      boost::archive::text_oarchive oa(sstr);
+      sdpa::events::SubmitJobEvent sj("foo", "bar", "job-1", "<xml></xml>", "parent-job-id");
+      oa << sj;
+      LOG(DEBUG, "serialized SubmitJob to: " << sstr.str());
+    }
+    {
+      boost::archive::text_iarchive ia(sstr);
+      sdpa::events::SubmitJobEvent sj;
+      ia >> sj;
     }
   }
 }

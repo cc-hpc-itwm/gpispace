@@ -15,19 +15,19 @@ void SedaMessage::decode(const std::string &s) throw(DecodingError) {
   to_ = m.to();
   from_ = m.from();
   payload_ = m.payload();
-  valid_ = true;
+  type_code_ = m.type();
   encode_buf_.clear();
   strrep_buf_.clear();
 }
 
 const std::string &SedaMessage::encode() const throw(EncodingError) {
-  if (! is_valid()) throw EncodingError("trying to encode an invalid message!");
   if (encode_buf_.empty())
   {
     Message m;
     m.set_to(to());
     m.set_from(from());
     m.set_payload(payload());
+    m.set_type(type_code());
 
     m.SerializeToString(&encode_buf_);
   }
@@ -38,7 +38,7 @@ std::string SedaMessage::str() const {
   if (strrep_buf_.empty())
   {
     std::ostringstream os;
-    os << "SedaMessage: " << from() << " --> " << to() << ": '" << payload() << "'";
+    os << "SedaMessage (type=" << type_code() << "): " << from() << " --> " << to() << ": '" << payload() << "'";
     strrep_buf_ = os.str();
   }
   return strrep_buf_;

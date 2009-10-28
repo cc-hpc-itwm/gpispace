@@ -67,7 +67,8 @@ namespace sdpa {
 
     ~JobId();
 
-    const std::string &str() const;
+    const std::string &str() const { return id_; }
+    std::string &str() { return id_; }
   private:
     std::string id_;
   };

@@ -18,6 +18,13 @@
 
 #include "UDPConnection.hpp"
 #include <fhglog/fhglog.hpp>
+#include <sstream>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include "Serialization.hpp"
+
 using boost::asio::ip::udp;
 
 namespace seda { namespace comm {
@@ -133,13 +140,18 @@ namespace seda { namespace comm {
   {
     if (!error && bytes_recv > 0)
     {
+      data_[bytes_recv] = 0;
+      std::string tmp(data_, bytes_recv);
+
       DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
 
       try
       {
+        std::stringstream sstr(tmp);
+        boost::archive::text_iarchive ia(sstr);
+
         seda::comm::SedaMessage msg;
-        std::string data(data_, bytes_recv);
-        msg.decode(data);
+        ia >> msg;
 
         {
           // update location
@@ -199,8 +211,12 @@ namespace seda { namespace comm {
     LOG(DEBUG, "sending " << m.str() << " to " << dst);
 
     boost::system::error_code ignored_error;
-    const std::string msgdata(m.encode());
-    socket_->send_to(boost::asio::buffer(msgdata), dst, 0, ignored_error);
+
+    std::stringstream sstr;
+    boost::archive::text_oarchive oa(sstr);
+    oa << m;
+
+    socket_->send_to(boost::asio::buffer(sstr.str()), dst, 0, ignored_error);
     DLOG(DEBUG, "error = " << ignored_error);
   }
 

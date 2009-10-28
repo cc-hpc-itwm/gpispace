@@ -30,10 +30,10 @@
 #include <seda/comm/ConnectionFactory.hpp>
 #include <seda/comm/ConnectionStrategy.hpp>
 
-int main(int, char **)
+int main(int argc, char **argv)
 {
   fhg::log::Configurator::configure();
-  seda::comm::initialize();
+  seda::comm::initialize(argc, argv);
 
   int errcount(0);
 

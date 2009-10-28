@@ -31,9 +31,17 @@ namespace seda {
 
         explicit
           SedaMessage()
-          : from_(address_type()), to_(address_type()), payload_(payload_type()), valid_(false) {}
-        SedaMessage(const address_type & a_from, const address_type & a_to, const payload_type & a_payload)
-          : from_(a_from), to_(a_to), payload_(a_payload), valid_(true) { }
+          : from_(address_type())
+          , to_(address_type())
+          , payload_(payload_type())
+          , type_code_(0)
+        {}
+        SedaMessage(const address_type & a_from, const address_type & a_to, const payload_type & a_payload, unsigned int a_type_code = 0)
+          : from_(a_from)
+          , to_(a_to)
+          , payload_(a_payload)
+          , type_code_(a_type_code)
+        {}
 
         SedaMessage(const SedaMessage &other)
           : UserEvent()
@@ -42,7 +50,9 @@ namespace seda {
           , from_(other.from())
           , to_(other.to())
           , payload_(other.payload())
-          , valid_(other.is_valid()) {}
+          , type_code_(other.type_code())
+        {}
+
         virtual ~SedaMessage() {}
 
         SedaMessage &operator=(const SedaMessage &rhs) {
@@ -50,7 +60,7 @@ namespace seda {
             from_ = rhs.from();
             to_ = rhs.to();
             payload_ = rhs.payload();
-            valid_ = rhs.is_valid();
+            type_code_ = rhs.type_code();
             encode_buf_ = rhs.encode_buf_;
             strrep_buf_ = rhs.strrep_buf_;
           }
@@ -62,13 +72,18 @@ namespace seda {
         virtual const std::string &encode() const throw(EncodingError);
 
         const address_type & from() const { return from_; }
+        address_type & from() { return from_; }
         const address_type & to() const { return to_; }
+        address_type & to() { return to_; }
         const payload_type & payload() const { return payload_; }
-        bool is_valid() const { return valid_; }
+        payload_type & payload() { return payload_; }
+        const unsigned int & type_code() const { return type_code_; }
+        unsigned int & type_code() { return type_code_; }
 
         void from(const address_type &new_from) { from_ = new_from; reset_buffers(); }
         void to(const address_type &new_to) { to_ = new_to; reset_buffers(); }
         void payload(const payload_type &new_payload) { payload_ = new_payload; reset_buffers(); }
+        void type_code(const unsigned int &new_type_code) { type_code_ = new_type_code; reset_buffers(); }
       private:
         void reset_buffers()
         {
@@ -79,7 +94,7 @@ namespace seda {
         address_type from_;
         address_type to_;
         payload_type payload_;
-        bool valid_;
+        unsigned int type_code_;
         mutable std::string encode_buf_;
         mutable std::string strrep_buf_;
     };    
