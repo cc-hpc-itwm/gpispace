@@ -5,7 +5,6 @@
 
 #include <seda/IEvent.hpp>
 #include <sdpa/memory.hpp>
-#include <sdpa/events/sdpa-msg.pb.h>
 
 namespace sdpa { namespace events {
   class SDPAEvent : public seda::IEvent {
