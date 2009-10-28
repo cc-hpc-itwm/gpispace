@@ -1,16 +1,27 @@
 #ifndef SDPA_JOB_FINISHED_EVENT_HPP
 #define SDPA_JOB_FINISHED_EVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sc = boost::statechart;
-
 namespace sdpa { namespace events {
-  class JobFinishedEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::JobFinishedEvent> {
+#ifdef USE_BOOST_SC
+  class JobFinishedEvent : public JobEvent, public sc::event<JobFinishedEvent>
+#else
+  class JobFinishedEvent : public JobEvent
+#endif
+  {
     public:
       typedef sdpa::shared_ptr<JobFinishedEvent> Ptr;
 
+      JobFinishedEvent()
+        : JobEvent("", "", "")
+      {}
       JobFinishedEvent(const address_t &a_from
                      , const address_t &a_to
                      , const sdpa::job_id_t &a_job_id = sdpa::job_id_t())

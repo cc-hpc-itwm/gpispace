@@ -1,15 +1,29 @@
 #ifndef SDPA_RESULTS_REPLY_EVENT_HPP
 #define SDPA_RESULTS_REPLY_EVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/JobEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sdpa { namespace events {
-  class JobResultsReplyEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::JobResultsReplyEvent> {
+#ifdef USE_BOOST_SC
+  class JobResultsReplyEvent : public JobEvent, public sc::event<JobResultsReplyEvent>
+#else
+  class JobResultsReplyEvent : public JobEvent
+#endif
+  {
     public:
       typedef sdpa::shared_ptr<JobResultsReplyEvent> Ptr;
       typedef std::string result_t;
+
+      JobResultsReplyEvent()
+        : JobEvent("", "", "")
+        , result_("")
+      {}
 
       JobResultsReplyEvent(const address_t &a_from
                          , const address_t &a_to
@@ -22,6 +36,7 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "JobResultsReplyEvent"; }
       const result_t &result() const { return result_; }
+      result_t &result() { return result_; }
     private:
       result_t result_;
   };

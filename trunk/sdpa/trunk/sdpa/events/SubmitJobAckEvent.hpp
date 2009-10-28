@@ -1,13 +1,21 @@
 #ifndef SDPA_SubmitJobAckEvent_HPP
 #define SDPA_SubmitJobAckEvent_HPP
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sc = boost::statechart;
-
 namespace sdpa { namespace events {
-  class SubmitJobAckEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::SubmitJobAckEvent> {
+#ifdef USE_BOOST_SC
+  class SubmitJobAckEvent : public JobEvent, public sc::event<SubmitJobAckEvent>
+#else
+  class SubmitJobAckEvent : public JobEvent
+#endif
+  {
     public:
       typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
 

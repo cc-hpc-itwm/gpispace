@@ -1,14 +1,17 @@
 #ifndef SDPA_INTERRUPTEVENT_HPP
 #define SDPA_INTERRUPTEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
+
 #include <sdpa/events/MgmtEvent.hpp>
 
-namespace sc = boost::statechart;
-
-namespace sdpa {
-namespace events {
-    class InterruptEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::InterruptEvent> {
+namespace sdpa { namespace events {
+    class InterruptEvent : public MgmtEvent, public sc::event<InterruptEvent> {
     public:
         typedef sdpa::shared_ptr<InterruptEvent> Ptr;
 
