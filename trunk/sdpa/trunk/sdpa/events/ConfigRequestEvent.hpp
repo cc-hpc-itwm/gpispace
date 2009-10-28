@@ -19,7 +19,14 @@ namespace events {
     public:
         typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
 
-        ConfigRequestEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
+        ConfigRequestEvent()
+          : MgmtEvent()
+        {}
+
+        ConfigRequestEvent(const address_t& from
+                         , const address_t& to)
+          : MgmtEvent(from, to)
+        {}
 
     	virtual ~ConfigRequestEvent() { }
 
