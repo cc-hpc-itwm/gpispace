@@ -38,6 +38,36 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	// initialize last request time
 }
 
+GenericDaemon::GenericDaemon(	const std::string &name,
+								std::string& toMasterStageName,
+								std::string& toSlaveStageName,
+								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: Strategy(name),
+	  SDPA_INIT_LOGGER(name),
+	  ptr_job_man_(new JobManager()),
+	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes, this)),
+	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
+	  master_(""),
+	  m_bRegistered(false)
+{
+	if(!toMasterStageName.empty())
+	{
+		seda::Stage::Ptr pshToMasterStage = seda::StageRegistry::instance().lookup(toMasterStageName);
+		ptr_to_master_stage_ = pshToMasterStage.get();
+	}
+	else
+		ptr_to_master_stage_ = NULL;
+
+
+	if(!toSlaveStageName.empty())
+	{
+		seda::Stage::Ptr pshToSlaveStage = seda::StageRegistry::instance().lookup(toSlaveStageName);
+		ptr_to_slave_stage_ = pshToSlaveStage.get();
+	}
+	else
+		ptr_to_slave_stage_ = NULL;
+}
+
 GenericDaemon::~GenericDaemon()
 {
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
@@ -259,11 +289,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
 		pJob->DeleteJob(&e);
 
-		if( pJob->is_marked_for_deletion() )
-		{
-			ptr_job_man_->markJobForDeletion(e.job_id(), pJob);
-			ptr_job_man_->deleteJob(e.job_id());
-		}
+		ptr_job_man_->deleteJob(e.job_id());
 	} catch(JobNotFoundException&){
 		os.str("");
 		os<<"Job "<<e.job_id()<<" not found!";

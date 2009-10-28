@@ -17,7 +17,7 @@ namespace sdpa {
 			        typedef boost::recursive_mutex mutex_type;
 			      	typedef boost::unique_lock<mutex_type> lock_type;
 
-					DaemonFSM(	const std::string &name,
+			      	DaemonFSM(	const std::string &name,
 								seda::Stage* ptrToMasterStage,
 								seda::Stage* ptrToSlaveStage,
 								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
@@ -35,7 +35,9 @@ namespace sdpa {
 					void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
 
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
+
 				protected:
+
 					SDPA_DECLARE_LOGGER();
 					DaemonFSMContext m_fsmContext;
 					mutex_type mtx_;

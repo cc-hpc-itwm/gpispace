@@ -2,7 +2,7 @@
 #define SDPA_DeleteJobAckEvent_HPP 1
 
 #include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sc = boost::statechart;
 

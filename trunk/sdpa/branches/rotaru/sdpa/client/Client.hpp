@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread.hpp> // condition variables
 
 #include <seda/Stage.hpp>
@@ -14,14 +15,8 @@
 #include <sdpa/types.hpp>
 #include <sdpa/client/ClientActions.hpp>
 
-
-#if __GNUC__ >4 || ( __GNUC__==4 && __GNUC_MINOR__ > 1)
-#  pragma GCC diagnostic ignored "-Wall"
-#  pragma GCC diagnostic ignored "-Wunused"
-#  pragma GCC diagnostic ignored "-Weffc++"
-#  pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
 #include <sdpa/client/ClientFsm_sm.h>
+#include <sdpa/client/exceptions.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
 namespace sdpa { namespace client {
@@ -55,14 +50,14 @@ namespace sdpa { namespace client {
       return contact_;
     }
 
-    void start(const config_t &cfg);
-    void shutdown();
+    void start(const config_t &cfg) throw(ClientException);
+    void shutdown() throw(ClientException);
 
-    job_id_t submitJob(const job_desc_t &);
-    void cancelJob(const job_id_t &);
-    std::string queryJob(const job_id_t &);
-    void deleteJob(const job_id_t &);
-    result_t retrieveResults(const job_id_t &);
+    job_id_t submitJob(const job_desc_t &) throw (ClientException);
+    void cancelJob(const job_id_t &) throw (ClientException);
+    std::string queryJob(const job_id_t &) throw (ClientException);
+    void deleteJob(const job_id_t &) throw (ClientException);
+    result_t retrieveResults(const job_id_t &) throw (ClientException);
 
     // Action implementations
     void action_configure(const config_t &);
@@ -97,8 +92,7 @@ namespace sdpa { namespace client {
     }
 
     typedef unsigned long long timeout_t;
-    seda::IEvent::Ptr wait_for_reply(timeout_t timeout = 0);
-    bool waitForReply();
+    seda::IEvent::Ptr wait_for_reply(const timeout_t &timeout = timeout_t(5000)) throw (Timedout);
 
     std::string version_;
     std::string copyright_;

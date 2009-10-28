@@ -6,6 +6,8 @@
 #include "sdpa/logging.hpp"
 #include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
+#include <sdpa/client/ClientApi.hpp>
+
 
 namespace sdpa {
 		namespace tests {
@@ -15,7 +17,6 @@ namespace sdpa {
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
 			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -30,7 +31,6 @@ namespace sdpa {
 			  void testDaemonFSM_JobFinished();
 			  void testDaemonFSM_JobFailed();
 			  void testDaemonFSM_JobCancelled();
-			  void testDaemonFSM_JobCancelled_from_Pending();
 
 			private:
 			  SDPA_DECLARE_LOGGER();
@@ -41,8 +41,7 @@ namespace sdpa {
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
 
-			  seda::Stage::Ptr m_ptrToUserStage;
-			  seda::Strategy::Ptr m_ptrUserStrategy;
+			  sdpa::client::ClientApi::ptr_t m_ptrUser;
 
 			  std::string m_strWorkflow;
 			};
