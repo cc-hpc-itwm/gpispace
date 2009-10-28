@@ -19,7 +19,14 @@ namespace sdpa { namespace events {
     public:
         typedef sdpa::shared_ptr<ConfigReplyEvent> Ptr;
 
-        ConfigReplyEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
+        ConfigReplyEvent()
+          : MgmtEvent()
+        {}
+
+        ConfigReplyEvent(const address_t& from
+                       , const address_t& to)
+          : MgmtEvent(from, to)
+        {}
 
     	virtual ~ConfigReplyEvent() { }
 
