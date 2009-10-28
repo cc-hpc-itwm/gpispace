@@ -19,8 +19,6 @@
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 
-#include "ServerMock.hpp"
-
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
@@ -304,14 +302,6 @@ void Client::action_configure(const Client::config_t &cfg)
   // configure logging according to config
   //   TODO: do something
 
-  DMLOG(DEBUG, "creating server mock stage");
-  {
-    seda::Strategy::Ptr server_strat(new ServerMock(name()));
-    seda::Stage::Ptr server(new seda::Stage(output_stage_, server_strat));
-    seda::StageRegistry::instance().insert(server);
-    server->start();
-  }
-
   // send event to myself
   if (cfg == "config-nok") client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
   else client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
@@ -330,13 +320,6 @@ void Client::action_config_nok()
 void Client::action_shutdown()
 {
   MLOG(INFO,"shutting down");
-
-  DMLOG(DEBUG, "removing server mock");
-  {
-    seda::StageRegistry::instance().lookup(output_stage_)->stop();
-    seda::StageRegistry::instance().remove(output_stage_);
-  }
-
   DMLOG(DEBUG,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
 }
