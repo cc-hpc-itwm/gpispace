@@ -40,6 +40,19 @@ namespace boost { namespace serialization {
   // ***********
   // Mgmt events
   // ***********
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::MgmtEvent & e, unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::events::SDPAEvent>(e);
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::ErrorEvent & e, unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+    ar & e.error_code();
+    ar & e.reason();
+  }
 
   // ***********
   // Job events
