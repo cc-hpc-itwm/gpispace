@@ -1,6 +1,8 @@
 #ifndef SDPA_UTIL_HPP
 #define SDPA_UTIL_HPP 1
 
+#include <sdpa/types.hpp>
+
 namespace sdpa { namespace util {
   typedef long long time_type;
 

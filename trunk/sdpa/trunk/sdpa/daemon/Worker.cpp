@@ -1,5 +1,6 @@
 #include "Worker.hpp"
 #include <stdexcept>
+#include <sdpa/util/util.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
 using namespace sdpa::daemon;
@@ -73,7 +74,7 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 Job::ptr_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	  // acknowledge a previous job
-	  if(last_job_id != sdpa::daemon::Job::invalid_job_id())
+	  if(last_job_id != sdpa::job_id_t::invalid_job_id())
 		  acknowledge(last_job_id);
 
 	  try {

@@ -21,12 +21,12 @@ namespace sdpa { namespace events {
 
       RequestJobEvent()
         : MgmtEvent("", "")
-        , last_job_id_("")
+        , last_job_id_(sdpa::job_id_t::invalid_job_id())
       {}
 
       RequestJobEvent(const address_t &a_from
                     , const address_t &a_to
-                    , const sdpa::job_id_t &a_job_id = sdpa::daemon::Job::invalid_job_id())
+                    , const sdpa::job_id_t &a_job_id = sdpa::job_id_t::invalid_job_id())
         : MgmtEvent(a_from, a_to)
         , last_job_id_(a_job_id)
       {
