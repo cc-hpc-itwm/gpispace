@@ -27,6 +27,10 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
+#include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/ConfigRequestEvent.hpp>
+#include <sdpa/events/ConfigReplyEvent.hpp>
+
 #include <sdpa/events/SubmitJobEvent.hpp>
 
 namespace boost { namespace serialization {
@@ -52,6 +56,18 @@ namespace boost { namespace serialization {
     ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
     ar & e.error_code();
     ar & e.reason();
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::ConfigReplyEvent & e, unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::ConfigRequestEvent & e, unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
   }
 
   // ***********
