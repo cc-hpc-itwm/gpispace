@@ -1,17 +1,26 @@
 #ifndef SDPA_STARTUPEVENT_HPP
 #define SDPA_STARTUPEVENT_HPP
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
 
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
+
+#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/memory.hpp>
 
 namespace sdpa { namespace events {
-  class StartUpEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::StartUpEvent> {
+#ifdef USE_BOOST_SC
+  class StartUpEvent : public MgmtEvent, public sc::event<sdpa::events::StartUpEvent> {
+#else
+  class StartUpEvent : public MgmtEvent {
+#endif
     public:
       typedef sdpa::shared_ptr<StartUpEvent> Ptr;
 
-      StartUpEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
+      StartUpEvent() : MgmtEvent("","") { }
 
       virtual ~StartUpEvent() { }
 
