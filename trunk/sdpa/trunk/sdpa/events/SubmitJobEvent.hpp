@@ -43,9 +43,6 @@ namespace sdpa { namespace events {
 
       const sdpa::job_id_t &parent_id() const { return parent_; }
       sdpa::job_id_t &parent_id() { return parent_; }
-
-      std::string encode() const;
-      void decode(const std::string &);
     private:
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;

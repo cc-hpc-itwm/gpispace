@@ -157,7 +157,7 @@ seda::IEvent::Ptr Client::wait_for_reply(const timeout_t &timeout) throw (Timedo
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
   MLOG(INFO,"submitting job with description = " << desc);
-  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), /* config.get("sdpa.topology.orchestrator") */ "orchestrator", desc)));
+  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), /* config.get("sdpa.topology.orchestrator") */ "orchestrator", "", desc)));
   DMLOG(DEBUG,"waiting for a reply");
   // TODO: wait_for_reply(config.get<timeout_t>("sdpa.network.timeout")
   try
