@@ -3,36 +3,41 @@ option optimize_for = SPEED;
 
 message SDPAMessage {
   required bytes message_id = 1;
+  
+  optional JobMessage    job_message = 2;
+  optional MgmtMessage   mgmt_message = 3;
+}
 
-  // common message types
-  optional Error     error = 2;
+message MgmtMessage {
+  optional Error      error = 1;
+  optional Request    request = 2;
+  optional LifeSignal life_signal = 3;
+  optional ConfigRequest config_request = 4;
+  optional ConfigReply   config_reply = 5;
+}
 
-  optional SubmitJob submit_job = 3;
-  optional SubmitJobAck submit_job_ack = 4;
+message JobMessage {
+  required bytes job_id = 1;
 
-  optional CancelJob cancel_job = 5;
-  optional CancelJobAck cancel_job_ack = 6;
+  optional SubmitJob submit_job = 2;
+  optional SubmitJobAck submit_job_ack = 3;
 
-  optional QueryStatus query_status = 7;
-  optional StatusReply status_reply = 8;
+  optional CancelJob cancel_job = 4;
+  optional CancelJobAck cancel_job_ack = 5;
 
-  optional RetrieveResults retrieve_results = 9;
-  optional Results results = 10;
+  optional QueryStatus query_status = 6;
+  optional StatusReply status_reply = 7;
 
-  optional DeleteJob delete_job = 11;
-  optional DeleteJobAck delete_job_ack = 12;
+  optional RetrieveResults retrieve_results = 8;
+  optional Results results = 9;
 
-  optional Request request = 13;
+  optional DeleteJob delete_job = 10;
+  optional DeleteJobAck delete_job_ack = 11;
 
-  optional JobFinished job_finished = 15;
-  optional JobFinishedAck job_finished_ack = 16;
-  optional JobFailed   job_failed = 17;
-  optional JobFailedAck job_failed_ack = 18;
-
-  optional LifeSignal life_signal = 19;
-
-  optional ConfigRequest config_request = 20;
-  optional ConfigReply   config_reply = 21;
+  optional JobFinished    job_finished = 12;
+  optional JobFinishedAck job_finished_ack = 13;
+  optional JobFailed      job_failed = 14;
+  optional JobFailedAck   job_failed_ack = 15;
 }
 
 enum ErrorCode {
