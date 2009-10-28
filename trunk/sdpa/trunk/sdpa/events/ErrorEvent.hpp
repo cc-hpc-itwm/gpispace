@@ -26,20 +26,26 @@ namespace sdpa { namespace events {
           SDPA_ENOJOBAVAIL,
           SDPA_EWORKERNOTREG,
           SDPA_EBUSY,
-          SDPA_EAGAIN
+          SDPA_EAGAIN,
+          SDPA_EUNKNOWN
       };
+
+      ErrorEvent()
+        : MgmtEvent()
+        , error_code_(SDPA_EUNKNOWN)
+        , reason_("")
+      {}
 
       ErrorEvent(const address_t &a_from, const address_t &a_to, const error_code_t &a_error_code, const std::string& a_reason = "unknown reason")
       : MgmtEvent(a_from, a_to), error_code_(a_error_code), reason_(a_reason)
-      {
-      }
+      { }
 
-      ~ErrorEvent()
-      {
-      }
+      ~ErrorEvent() { }
 
       const std::string &reason() const { return reason_; }
+      std::string &reason() { return reason_; }
       const error_code_t &error_code() const { return error_code_; }
+      error_code_t &error_code() { return error_code_; }
 
       std::string str() const { return "ErrorEvent"; }
     private:
