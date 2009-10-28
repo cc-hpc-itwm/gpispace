@@ -8,8 +8,8 @@ namespace seda {
   class StringEvent : public UserEvent {
   public:
     explicit
-    StringEvent(const std::string& text)
-      : _text(text) {}
+    StringEvent(const std::string& a_text)
+      : _text(a_text) {}
 
     std::string str() const { return _text; }
     const std::string& text() const { return _text; }

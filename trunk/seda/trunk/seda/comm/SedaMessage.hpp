@@ -2,8 +2,6 @@
 #define SEDA_COMM_MESSAGE_HPP 1
 
 #include <seda/UserEvent.hpp>
-#include <seda/comm/Decodeable.hpp>
-#include <seda/comm/Encodeable.hpp>
 
 #include <string>
 
@@ -25,7 +23,7 @@ namespace seda {
         address_type val;
     };
 
-    class SedaMessage : public seda::UserEvent, public seda::comm::Encodeable, public seda::comm::Decodeable {
+    class SedaMessage : public seda::UserEvent {
       public:
         typedef std::tr1::shared_ptr<SedaMessage> Ptr;
 
@@ -45,8 +43,6 @@ namespace seda {
 
         SedaMessage(const SedaMessage &other)
           : UserEvent()
-          , Encodeable()
-          , Decodeable()
           , from_(other.from())
           , to_(other.to())
           , payload_(other.payload())
@@ -68,8 +64,6 @@ namespace seda {
         }
 
         std::string str() const;
-        virtual void decode(const std::string&) throw(DecodingError);
-        virtual const std::string &encode() const throw(EncodingError);
 
         const address_type & from() const { return from_; }
         address_type & from() { return from_; }

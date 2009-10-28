@@ -52,35 +52,49 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 
-# Definitions for different compilations.
-# Debug is the default development mode. Warn as much as possible, but
-# CPPUnit raises some errors about virtual functions - suppress them.
-if (WIN32)
-  # make windows happy
-else(WIN32)
-  if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
+include(CheckCompiler)
 
-    # Releases are made with the release build. Optimize code.
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     if (${CMAKE_BUILD_TYPE} MATCHES "Release")
       add_definitions("-DNDEBUG")
     endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
-    if (NOT ENABLE_LOGGING)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-    endif (NOT ENABLE_LOGGING)
+    set(FHG_PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
 
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type -fno-omit-frame-pointer -Wnon-virtual-dtor")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused -Wunused-variable -Wunused-function")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
+
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
+    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
+      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wreturn-type -Wshadow")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+        if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+          message(STATUS "Additional warnings for Debug-Build activated (gcc >= 4.3 detected)")
+        endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+      elseif (${CMAKE_CXX_COMPILER_MINOR} GREATER 0)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
+    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
+
     # gprof and gcov support
     set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
-  endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-endif(WIN32)
+    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers")
+    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} ${FHG_PROFILE_FLAGS}")
+  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+
+  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
+  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
+  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## add doxygen support
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -156,17 +170,6 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 link_libraries(${Boost_LIBRARIES})
-
-if (WITH_COMM)
-  # google protocol buffers
-  include(FindProtocolBuffers)
-  if (PB_FOUND)
-      message(STATUS "Found Protocol Buffers: ${PB_PROTOC_CMD}")
-      include_directories(${PB_INCLUDE_DIR})
-      link_libraries(${PB_LIBRARY})
-  endif (PB_FOUND)
-  include(PBMacros)
-endif (WITH_COMM)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)

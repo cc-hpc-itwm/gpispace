@@ -41,14 +41,14 @@ namespace seda { namespace comm {
    */
   class ConnectionParameters {
   public:
-    ConnectionParameters(const std::string &transport
+    ConnectionParameters(const std::string &a_transport
                        , const std::string &host_and_port
-                       , const std::string &logical_name
+                       , const std::string &a_logical_name
                        , const short &a_port = 0
                        )
-      : transport_(transport)
+      : transport_(a_transport)
       , host_and_port_(host_and_port)
-      , logical_name_(logical_name)
+      , logical_name_(a_logical_name)
       , port_(a_port)
     {
     }

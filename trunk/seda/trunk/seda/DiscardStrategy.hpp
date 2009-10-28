@@ -9,8 +9,8 @@ namespace seda {
     class DiscardStrategy : public Strategy {
         public:
             explicit
-                DiscardStrategy(const std::string &name = "discard")
-                : Strategy(name) {}
+                DiscardStrategy(const std::string &a_name = "discard")
+                : Strategy(a_name) {}
             ~DiscardStrategy() {}
 
             void perform(const IEvent::Ptr& e) {
