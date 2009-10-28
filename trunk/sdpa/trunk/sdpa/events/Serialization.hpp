@@ -32,6 +32,7 @@
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
+#include <sdpa/events/RequestJobEvent.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 
@@ -74,6 +75,13 @@ namespace boost { namespace serialization {
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::LifeSignEvent & e, unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+    ar & e.last_job_id();
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::RequestJobEvent & e, unsigned int /* version */)
   {
     ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
     ar & e.last_job_id();
