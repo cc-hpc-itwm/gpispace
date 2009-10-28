@@ -1,15 +1,28 @@
 #ifndef SDPA_REQUESTJOBEVENT_HPP
 #define SDPA_REQUESTJOBEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa { namespace events {
-  class RequestJobEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::RequestJobEvent>
+#ifdef USE_BOOST_SC
+  class RequestJobEvent : public MgmtEvent, public sc::event<RequestJobEvent>
+#else
+  class RequestJobEvent : public MgmtEvent
+#endif
   {
     public:
       typedef sdpa::shared_ptr<RequestJobEvent> Ptr;
+
+      RequestJobEvent()
+        : MgmtEvent("", "")
+        , last_job_id_("")
+      {}
 
       RequestJobEvent(const address_t &a_from
                     , const address_t &a_to
@@ -22,6 +35,7 @@ namespace sdpa { namespace events {
       virtual ~RequestJobEvent() { }
 
       const sdpa::job_id_t & last_job_id() const { return last_job_id_; }
+      sdpa::job_id_t & last_job_id() { return last_job_id_; }
 
       std::string str() const { return "RequestJobEvent"; }
     private:
