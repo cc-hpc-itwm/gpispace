@@ -1,19 +1,27 @@
 #ifndef SDPA_SubmitJobEvent_HPP
 #define SDPA_SubmitJobEvent_HPP
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
+
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
 
-namespace sc = boost::statechart;
-
 namespace sdpa { namespace events {
-  class SubmitJobEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::SubmitJobEvent> {
+#ifdef USE_BOOST_SC
+  class SubmitJobEvent : public JobEvent, public sc::event<sdpa::events::SubmitJobEvent> {
+#else
+  class SubmitJobEvent : public JobEvent {
+#endif
     public:
       typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
 
       SubmitJobEvent()
-        : sdpa::events::JobEvent("", "", sdpa::job_id_t())
+        : JobEvent("", "", sdpa::job_id_t())
         , desc_()
         , parent_()
       {}
@@ -35,6 +43,9 @@ namespace sdpa { namespace events {
 
       const sdpa::job_id_t &parent_id() const { return parent_; }
       sdpa::job_id_t &parent_id() { return parent_; }
+
+      std::string encode() const;
+      void decode(const std::string &);
     private:
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;

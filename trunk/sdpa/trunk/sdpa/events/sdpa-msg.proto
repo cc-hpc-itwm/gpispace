@@ -70,42 +70,34 @@ message Properties {
 
 message SubmitJob {
   required bytes workflow = 1;
+  optional bytes parent_id = 2;
 }
 message SubmitJobAck {
-  required bytes id = 1;
 }
 
 message CancelJob {
-  required bytes id = 1;
   optional string reason = 2;
 }
 message CancelJobAck {
-  required bytes id = 1;
 }
 
 message QueryStatus {
-  required bytes id = 1;
 }
 
 message StatusReply {
-  required bytes id = 1;
   required JobState state = 2;
   optional Properties properties = 3;
 }
 
 message RetrieveResults {
-  required bytes id = 1;
 }
 message Results {
-  required bytes id = 1;
   required int32 exit_code = 2;
 }
 
 message DeleteJob {
-  required bytes id = 1;
 }
 message DeleteJobAck {
-  required bytes id = 1;
 }
 
 message Request {
@@ -113,16 +105,12 @@ message Request {
 }
 
 message JobFinished {
-  required bytes id = 1;
 }
 message JobFinishedAck {
-  required bytes id = 1;
 }
 message JobFailed {
-  required bytes id = 1;
 }
 message JobFailedAck {
-  required bytes id = 1;
 }
 message LifeSignal {
   required fixed64 timestamp = 1;
