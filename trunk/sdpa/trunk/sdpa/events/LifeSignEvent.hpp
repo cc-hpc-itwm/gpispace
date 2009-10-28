@@ -18,11 +18,22 @@ namespace sdpa { namespace events {
 	public:
 		typedef sdpa::shared_ptr<LifeSignEvent> Ptr;
 
-		LifeSignEvent(const address_t& from, const address_t& to ) :  sdpa::events::MgmtEvent(from, to) {}
+        LifeSignEvent()
+          : MgmtEvent()
+          , last_job_id_("")
+        {}
+
+		LifeSignEvent(const address_t& from
+                    , const address_t& to
+                    , const sdpa::job_id_t &the_last_job = "")
+          : MgmtEvent(from, to)
+          , last_job_id_(the_last_job)
+        {}
 
 		virtual ~LifeSignEvent() { }
 
 		const sdpa::job_id_t & last_job_id() const { return last_job_id_; }
+		sdpa::job_id_t & last_job_id() { return last_job_id_; }
 
 		std::string str() const { return "LifeSignEvent"; }
 	private:
