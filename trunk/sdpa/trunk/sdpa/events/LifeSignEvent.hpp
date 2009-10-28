@@ -1,14 +1,20 @@
 #ifndef SDPA_LIFESIGNEVENT_HPP
 #define SDPA_LIFESIGNEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
 #include <sdpa/events/MgmtEvent.hpp>
 
-namespace sc = boost::statechart;
-
-namespace sdpa {
-namespace events {
-	class LifeSignEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::LifeSignEvent> {
+namespace sdpa { namespace events {
+#ifdef USE_BOOST_SC
+	class LifeSignEvent : public MgmtEvent, public sc::event<LifeSignEvent> {
+#else
+	class LifeSignEvent : public MgmtEvent
+#endif
 	public:
 		typedef sdpa::shared_ptr<LifeSignEvent> Ptr;
 
