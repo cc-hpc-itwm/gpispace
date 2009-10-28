@@ -11,6 +11,9 @@ namespace sdpa { namespace events {
     public:
       typedef sdpa::shared_ptr<MgmtEvent> Ptr;
 
+      MgmtEvent()
+        : SDPAEvent()
+      {}
       MgmtEvent(const address_t &a_from, const address_t &a_to)
         : SDPAEvent(a_from, a_to) {}
       ~MgmtEvent() {}
