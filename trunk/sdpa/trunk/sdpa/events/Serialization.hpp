@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  Codec.hpp
+ *       Filename:  Serialization.hpp
  *
  *    Description:  implements serialization/deserialization
  *
@@ -36,6 +36,14 @@ namespace boost { namespace serialization {
     ar & e.from();
     ar & e.to();
   }
+
+  // ***********
+  // Mgmt events
+  // ***********
+
+  // ***********
+  // Job events
+  // ***********
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::job_id_t & job_id, unsigned int /* version */)
