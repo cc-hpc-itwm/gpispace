@@ -109,7 +109,7 @@ namespace sdpa { namespace daemon {
 	  SDPA_DECLARE_LOGGER();
 
 	  GenericDaemon(const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes*);
-	  GenericDaemon(const std::string &name, std::string&, std::string&,sdpa::Sdpa2Gwes*);
+	  GenericDaemon(const std::string &name, const std::string&, const std::string&,sdpa::Sdpa2Gwes*);
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;

@@ -39,8 +39,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 }
 
 GenericDaemon::GenericDaemon(	const std::string &name,
-								std::string& toMasterStageName,
-								std::string& toSlaveStageName,
+								const std::string& toMasterStageName,
+								const std::string& toSlaveStageName,
 								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),

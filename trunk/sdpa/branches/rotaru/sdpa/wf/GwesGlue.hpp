@@ -74,7 +74,7 @@ namespace sdpa { namespace wf { namespace glue {
     gwes::Activity &act = const_cast<gwes::Activity&>(gwes_activity);
     if (act.getOperationCandidate())
     {
-      wrapped.method() = Activity::Method(act.getOperationCandidate()->getOperationName());
+      wrapped.method() = Method(act.getOperationCandidate()->getOperationName());
       if (wrapped.method().module().empty() || wrapped.method().name().empty())
       {
         throw std::runtime_error("could not parse operation name into Method description: " + act.getOperationCandidate()->getOperationName());

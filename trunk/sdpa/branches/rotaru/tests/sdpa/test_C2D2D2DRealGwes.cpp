@@ -6,7 +6,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( C2D2D2DRealGwesTest );
 
 C2D2D2DRealGwesTest::C2D2D2DRealGwesTest() :
 	SDPA_INIT_LOGGER("sdpa.tests.C2D2D2DRealGwesTest"),
-	m_nITER(100),
+	m_nITER(1),
 	m_sleep_interval(10000)
 {
 }

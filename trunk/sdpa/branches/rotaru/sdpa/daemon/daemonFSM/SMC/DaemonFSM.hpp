@@ -28,6 +28,17 @@ namespace sdpa {
 						SDPA_LOG_DEBUG("Daemon state machine created");
 					}
 
+			      	DaemonFSM(  const std::string &name,
+								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+								const std::string& toMasterStageName,
+								const std::string& toSlaveStageName = std::string(""))
+						: GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
+						  SDPA_INIT_LOGGER(name+"FSM"),
+						  m_fsmContext(*this)
+					{
+						SDPA_LOG_DEBUG("Daemon state machine created");
+					}
+
 					virtual ~DaemonFSM() {
 						SDPA_LOG_DEBUG("Daemon State machine destroyed");
 					}
