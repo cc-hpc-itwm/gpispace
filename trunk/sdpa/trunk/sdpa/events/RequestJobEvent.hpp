@@ -38,6 +38,11 @@ namespace sdpa { namespace events {
       sdpa::job_id_t & last_job_id() { return last_job_id_; }
 
       std::string str() const { return "RequestJobEvent"; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitRequestJobEvent(this);
+      }
     private:
       sdpa::job_id_t last_job_id_;
   };

@@ -31,6 +31,11 @@ namespace sdpa { namespace events {
     	virtual ~DeleteJobAckEvent() { }
 
     	std::string str() const { return "DeleteJobAckEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitDeleteJobAckEvent(this);
+        }
     };
 }}
 

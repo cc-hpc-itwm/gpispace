@@ -96,14 +96,6 @@ else (SEDA_FOUND)
   message(FATAL_ERROR "SEDA library is required!")
 endif(SEDA_FOUND)
 
-# google protocol buffers
-include(FindProtocolBuffers)
-if (PB_FOUND)
-    include_directories(${PB_INCLUDE_DIR})
-    link_libraries(${PB_LIBRARY})
-endif (PB_FOUND)
-include(PBMacros)
-
 # uuid library
 include(FindUUID)
 if (UUID_FOUND)
@@ -220,7 +212,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 # Reflect the package structure
 add_subdirectory(sdpa)
 add_subdirectory(apps)
-enable_testing()
+include(CTest)
 add_subdirectory(tests)
 
 

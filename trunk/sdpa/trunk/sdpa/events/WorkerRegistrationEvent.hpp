@@ -28,6 +28,11 @@ namespace sdpa { namespace events {
       virtual ~WorkerRegistrationEvent() { }
 
       std::string str() const { return "WorkerRegistrationEvent"; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitWorkerRegistrationEvent(this);
+      }
   };
 }}
 

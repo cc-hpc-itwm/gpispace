@@ -33,6 +33,11 @@ namespace sdpa { namespace events {
 		}
 
 		std::string str() const { return "JobFailedEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitJobFailedEvent(this);
+        }
 	};
 }}
 

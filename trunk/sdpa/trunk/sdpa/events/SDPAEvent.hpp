@@ -5,6 +5,7 @@
 
 #include <seda/IEvent.hpp>
 #include <sdpa/memory.hpp>
+#include <sdpa/events/EventVisitor.hpp>
 
 namespace sdpa { namespace events {
   class SDPAEvent : public seda::IEvent {
@@ -22,6 +23,8 @@ namespace sdpa { namespace events {
 
       virtual std::string str() const = 0;
 
+      virtual void accept(EventVisitor *) = 0;
+    protected:
       SDPAEvent()
         : IEvent()
         , from_()

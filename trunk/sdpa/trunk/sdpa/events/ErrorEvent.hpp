@@ -9,6 +9,7 @@ namespace sc = boost::statechart;
 #endif
 
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/EventVisitor.hpp>
 
 namespace sdpa { namespace events {
 // this could be replaced by a small macro
@@ -53,6 +54,11 @@ namespace sdpa { namespace events {
       error_code_t &error_code() { return error_code_; }
 
       std::string str() const { return "ErrorEvent"; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitErrorEvent(this);
+      }
     private:
       error_code_t error_code_;
       std::string reason_;

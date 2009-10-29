@@ -20,7 +20,7 @@ clean:
 	-make -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C build doc
+	make -C $(BUILD_DIR) doc
 
 doc:
 	make -C doc
@@ -28,7 +28,15 @@ doc:
 dist: test
 	make -C $(BUILD_DIR) package
 
+ctest: test
+test: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest
+cover: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage
+memchk: config
+	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalMemCheck
+
 .DEFAULT:
 	make -C $(BUILD_DIR) $(MAKECMDGOALS)
 
-.PHONY: clean distclean all default doc
+.PHONY: clean distclean all default doc test ctest cover memchk

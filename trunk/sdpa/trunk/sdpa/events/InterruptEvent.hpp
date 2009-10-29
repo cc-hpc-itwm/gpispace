@@ -20,6 +20,11 @@ namespace sdpa { namespace events {
     	virtual ~InterruptEvent() { }
 
     	std::string str() const { return "InterruptEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitInterruptEvent(this);
+        }
     };
 }}
 

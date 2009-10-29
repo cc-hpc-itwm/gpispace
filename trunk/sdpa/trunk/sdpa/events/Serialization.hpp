@@ -213,6 +213,11 @@ namespace boost { namespace serialization {
     ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
     ar & e.status();
   }
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::JobEvent)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::MgmtEvent)
+
 }}
 
 #endif

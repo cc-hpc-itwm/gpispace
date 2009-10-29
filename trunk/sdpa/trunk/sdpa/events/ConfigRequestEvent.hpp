@@ -31,6 +31,11 @@ namespace events {
     	virtual ~ConfigRequestEvent() { }
 
     	std::string str() const { return "ConfigRequestEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitConfigRequestEvent(this);
+        }
     };
 }}
 

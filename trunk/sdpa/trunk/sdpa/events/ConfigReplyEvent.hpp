@@ -31,6 +31,11 @@ namespace sdpa { namespace events {
     	virtual ~ConfigReplyEvent() { }
 
     	std::string str() const { return "ConfigReplyEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitConfigReplyEvent(this);
+        }
     };
 }}
 

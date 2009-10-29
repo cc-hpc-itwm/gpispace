@@ -8,6 +8,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
+#include <sdpa/events/EventVisitor.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -31,6 +32,11 @@ namespace sdpa { namespace events {
       virtual ~QueryJobStatusEvent() { }
 
       std::string str() const { return "QueryJobStatusEvent"; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitQueryJobStatusEvent(this);
+      }
   };
 }}
 

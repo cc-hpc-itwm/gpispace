@@ -15,6 +15,7 @@
 #include <sdpa/wf/Serialization.hpp>
 
 #include <sdpa/events/Serialization.hpp>
+#include <sdpa/events/CodecStrategy.hpp>
 
 #include <gwdl/Token.h>
 
@@ -141,6 +142,31 @@ int main(int /* argc */, char ** /* argv */)
       boost::archive::text_iarchive ia(sstr);
       sdpa::events::SubmitJobEvent sj;
       ia >> sj;
+    }
+  }
+
+  {
+    std::stringstream sstr;
+    {
+      boost::archive::text_oarchive ar(sstr);
+      sdpa::events::SDPAEvent *evt = new sdpa::events::SubmitJobEvent("foo", "bar", "job-1", "<xml></xml>", "parent-job-id");
+      ar.register_type(static_cast<sdpa::events::SubmitJobEvent*>(NULL));
+      ar << evt;
+      LOG(DEBUG, "serialized container to: " << sstr.str());
+    }
+    {
+      boost::archive::text_iarchive ar(sstr);
+      sdpa::events::SDPAEvent *evt(NULL);
+      ar.register_type(static_cast<sdpa::events::SubmitJobEvent*>(NULL));
+      ar >> evt;
+      if (dynamic_cast<sdpa::events::SubmitJobEvent*>(evt))
+      {
+        LOG(DEBUG, "deserialized SubmitJobEvent!");
+      }
+      else
+      {
+        LOG(ERROR, "deserialized something else");
+      }
     }
   }
 }

@@ -8,6 +8,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
+#include <sdpa/events/EventVisitor.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -19,6 +20,10 @@ namespace sdpa { namespace events {
     public:
       typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
 
+      SubmitJobAckEvent()
+        : JobEvent("", "", "")
+      { }
+
       SubmitJobAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t & a_job_id)
         : JobEvent(a_from, a_to, a_job_id)
       {
@@ -28,6 +33,11 @@ namespace sdpa { namespace events {
       }
 
       std::string str() const { return "SubmitJobAckEvent"; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitSubmitJobAckEvent(this);
+      }
   };
 }}
 

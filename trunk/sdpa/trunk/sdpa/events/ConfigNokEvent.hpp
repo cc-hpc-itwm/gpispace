@@ -25,6 +25,11 @@ namespace sdpa { namespace events {
     	virtual ~ConfigNokEvent() { }
 
     	std::string str() const { return "ConfigNokEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitConfigNokEvent(this);
+        }
     };
 }}
 

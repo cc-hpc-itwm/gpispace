@@ -37,6 +37,11 @@ namespace sdpa { namespace events {
 
       const status_t &status() const { return status_; }
       status_t &status() { return status_; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitJobStatusReplyEvent(this);
+      }
     private:
       status_t status_;
   };
