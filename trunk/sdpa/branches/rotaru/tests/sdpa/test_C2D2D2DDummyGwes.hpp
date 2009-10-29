@@ -44,6 +44,9 @@ namespace sdpa {
 			  sdpa::client::ClientApi::ptr_t m_ptrUser;
 
 			  std::string m_strWorkflow;
+
+			  int m_nITER;
+			  int m_sleep_interval ;
 			};
 		}
 }

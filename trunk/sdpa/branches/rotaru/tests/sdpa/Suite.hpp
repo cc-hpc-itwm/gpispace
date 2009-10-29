@@ -20,6 +20,7 @@
 #include <tests/sdpa/test_D2D2DRealGwes.hpp>
 
 #include <tests/sdpa/test_C2D2D2DDummyGwes.hpp>
+#include <tests/sdpa/test_C2D2D2DRealGwes.hpp>
 
 #include <tests/sdpa/test_Scheduler.hpp>
 
@@ -37,16 +38,17 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );*/
-      //suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
-      //suiteOfTests->addTest( DaemonRealGwesTest::suite() );
+      suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
+      suiteOfTests->addTest( DaemonRealGwesTest::suite() );
 
-      //suiteOfTests->addTest( D2DDummyGwesTest::suite() );
-      //suiteOfTests->addTest( D2DRealGwesTest::suite() );
+      suiteOfTests->addTest( D2DDummyGwesTest::suite() );
+      suiteOfTests->addTest( D2DRealGwesTest::suite() );
 
-      //suiteOfTests->addTest( D2D2DDummyGwesTest::suite() );
-      //suiteOfTests->addTest( D2D2DRealGwesTest::suite() );
+      suiteOfTests->addTest( D2D2DDummyGwesTest::suite() );
+      suiteOfTests->addTest( D2D2DRealGwesTest::suite() );
 
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
+      suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 
       return suiteOfTests;
     }

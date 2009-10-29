@@ -18,8 +18,8 @@ namespace sdpa {
 			  // Caution: GWES blocks the calling thread! Even if the daemon stage uses more than 1 thread
 			  // don't use it, wait for AH to fix it
 			  // it may happen that the daemon hangs because its threads are blocked by GWES
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
 			  CPPUNIT_TEST_SUITE_END();
 

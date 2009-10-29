@@ -14,8 +14,8 @@ namespace sdpa {
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -45,6 +45,8 @@ namespace sdpa {
 			  seda::Strategy::Ptr m_ptrUserStrategy;
 
 			  std::string m_strWorkflow;
+			  int m_nITER;
+			  int m_sleep_interval ;
 			};
 		}
 }

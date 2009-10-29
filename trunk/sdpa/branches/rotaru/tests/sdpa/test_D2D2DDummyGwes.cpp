@@ -1,244 +1,12 @@
 #include "test_D2D2DDummyGwes.hpp"
-
-#include <iostream>
-#include <string>
-#include <list>
-#include <sdpa/memory.hpp>
-#include <time.h>
-#include <sdpa/util/util.hpp>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/WorkerRegistrationEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/DeleteJobAckEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/ConfigRequestEvent.hpp>
-#include <sdpa/events/ConfigReplyEvent.hpp>
-
-#include <boost/shared_ptr.hpp>
-#include "DummyGwes.hpp"
-
-#include <seda/Stage.hpp>
-#include <seda/StageRegistry.hpp>
-
-using namespace std;
-using namespace sdpa::tests;
-using namespace sdpa::events;
-using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
-
-const int NITER = 1;
-const int user_user_sleep_interval = 10000;
-
-string answerStrategy = "";
-
-
-class SchedulerNRE : public SchedulerImpl
-{
-public:
-	SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler):
-		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler) {}
-
-	virtual ~SchedulerNRE() { }
-
-	void run()
-	{
-		SDPA_LOG_DEBUG("Scheduler thread running ...");
-
-		while(!bStopRequested)
-		{
-			try
-			{
-				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-
-				// execute the job and ...
-				// ... submit a JobFinishedEvent to the master
-				if( answerStrategy == "finished" )
-				{
-					SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<ptr_comm_handler_->master());
-					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFinEvt);
-				}
-				else if( answerStrategy == "failed" )
-				{
-					SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<ptr_comm_handler_->master());
-					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFailEvt);
-				}
-				else if( answerStrategy == "cancelled" )
-				{
-					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
-					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pCancelAckEvt);
-				}
-
-				check_post_request();
-			}
-			catch( const boost::thread_interrupted & )
-			{
-				SDPA_LOG_DEBUG("Thread interrupted ...");
-				bStopRequested = true;
-			}
-			catch( const sdpa::daemon::QueueEmpty &)
-			{
-				//SDPA_LOG_DEBUG("Queue empty exception");
-				check_post_request();
-			}
-		}
-	}
-};
-
-
-class NreDaemon : public DaemonFSM
-{
-public:
-	SDPA_DECLARE_LOGGER();
-	NreDaemon(	const std::string &name,
-							seda::Stage* ptrToMasterStage,
-							seda::Stage* ptrToSlaveStage,
-							sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
-	: DaemonFSM( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
-	  SDPA_INIT_LOGGER(name)
-	{
-		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE(pArgSdpa2Gwes, this));
-	}
-
-	 virtual ~NreDaemon() {  }
-
-};
-
-class UserStrategy : public seda::Strategy
-{
-public:
-	 typedef std::tr1::shared_ptr<UserStrategy> Ptr;
-	 UserStrategy(const std::string& name): seda::Strategy(name), SDPA_INIT_LOGGER(name)  {}
-	 void perform(const seda::IEvent::Ptr& pEvt)
-	 {
-
-		 if( dynamic_cast<WorkerRegistrationAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent!");
-		 }
-		 else if( dynamic_cast<ConfigReplyEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received ConfigReplyEvent!");
-		 }
-		 else if( dynamic_cast<SubmitJobAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received SubmitJobAckEvent!");
-		 }
-		 else if( dynamic_cast<SubmitJobEvent*>(pEvt.get())  )
-		 {
-		 	 SDPA_LOG_DEBUG("Received SubmitJobEvent!");
-		 }
-		 else if( dynamic_cast<JobFinishedAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobFinishedAckEvent!");
-		 }
-		 else if( dynamic_cast<JobFailedAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobFailedAckEvent!");
-		 }
-		 else if( dynamic_cast<JobStatusReplyEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobStatusReplyEvent!");
-		 }
-		 else if( dynamic_cast<JobResultsReplyEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobResultsReplyEvent!");
-		 }
-		 else if( dynamic_cast<JobFinishedEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobFinishedEvent!");
-		 }
-		 else if( dynamic_cast<DeleteJobAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received DeleteJobAckEvent!");
-		 }
-		 else if( dynamic_cast<JobResultsReplyEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received JobResultsReplyEvent!");
-		 }
-		 else if( dynamic_cast<CancelJobEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received CancelJobEvent!");
-		 }
-		 else if( dynamic_cast<CancelJobAckEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received CancelJobAckEvent!");
-		 }
-		 else if( dynamic_cast<ErrorEvent*>(pEvt.get())  )
-		 {
-			 SDPA_LOG_DEBUG("Received ErrorEvent!");
-		 }
-		 else
-		 {
-		     SDPA_LOG_DEBUG("Received unexpected event of type "<<typeid(*pEvt).name()<<"!");
-		 }
-
-		 eventQueue.push(pEvt);
-	 }
-
-	 std::string str() const
-	 {
-		std::ostringstream ostream(std::ostringstream::out);
-		eventQueue_t::const_iterator it;
-		for (it = eventQueue.begin(); it != eventQueue.end(); it++) {
-			ostream <<typeid(*(it->get())).name() << std::endl;
-		}
-		return ostream.str();
-	 }
-
-	 template <typename T>
-	 typename T::Ptr WaitForEvent(sdpa::events::ErrorEvent::Ptr& pErrorEvt )
-	 {
-		 seda::IEvent::Ptr pEvent;
-		 pErrorEvt.reset();
-
-		 ostringstream os;
-		 std::string strName("");
-		 os<<"Waiting for event "<<typeid(T).name()<<" ... ";
-		 SDPA_LOG_DEBUG(os.str());
-
-		 typename T::Ptr ptrT;
-		 do
-		 {
-			pEvent = eventQueue.pop_and_wait();
-			os.str("");
-			os<<"Slave: Popped-up event "<<typeid(*(pEvent.get())).name();
-			SDPA_LOG_DEBUG(os.str());
-
-#if USE_STL_TR1
-			ptrT = std::tr1::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
-			pErrorEvt = std::tr1::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#else
-			ptrT = boost::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
-			pErrorEvt = boost::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#endif
-
-		 }while( !ptrT.get() && !pErrorEvt.get());
-
-		 return  ptrT;
-	 }
-
-	 typedef SynchronizedQueue<std::list<seda::IEvent::Ptr> > eventQueue_t;
-
-	 eventQueue_t eventQueue;
-
-	 SDPA_DECLARE_LOGGER();
-};
+#include <DaemonTestUtil.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyGwesTest );
 
 D2D2DDummyGwesTest::D2D2DDummyGwesTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.D2D2DDummyGwesTest")
+	SDPA_INIT_LOGGER("sdpa.tests.D2D2DDummyGwesTest"),
+	m_nITER(1),
+	m_sleep_interval(10000)
 {
 }
 
@@ -314,12 +82,10 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 	os<<std::endl<<"************************************testDaemonFSM_JobFinished******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
-	answerStrategy = "finished";
+	string answerStrategy = "finished";
 	string strFromUser(sdpa::daemon::USER);
-	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
-										m_ptrAgg->daemon_stage(),
-										NULL,
-										NULL) ); // No gwes
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE, m_ptrAgg->daemon_stage(),
+												NULL, NULL, answerStrategy )); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
 	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
@@ -338,7 +104,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 
 	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
-	for(int k=0; k<NITER;k++)
+	for(int k=0; k<m_nITER;k++)
 	{
 		// the user submits a job
 		// no Jobid set!
@@ -369,7 +135,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(user_user_sleep_interval);
+			usleep(m_sleep_interval);
 		}
 
 			// if the job is in the finished or failed state, one is allowed
@@ -413,12 +179,13 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 	os<<std::endl<<"************************************testDaemonFSM_JobFailed******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
-	answerStrategy = "failed";
+	string answerStrategy = "failed";
 	string strFromUser(sdpa::daemon::USER);
 	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
 										m_ptrAgg->daemon_stage(),
 										NULL,
-										NULL) ); // No gwes
+										NULL,
+										answerStrategy) ); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
 	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
@@ -437,7 +204,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 
 	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
-	for(int k=0; k<NITER;k++)
+	for(int k=0; k<m_nITER;k++)
 	{
 		// the user submits a job
 		// no Jobid set!
@@ -468,7 +235,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(user_user_sleep_interval);
+			usleep(m_sleep_interval);
 		}
 
 			// if the job is in the finished or failed state, one is allowed
@@ -512,12 +279,13 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
-	answerStrategy = "cancelled";
+	string answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
 	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
 										m_ptrAgg->daemon_stage(),
 										NULL,
-										NULL) ); // No gwes
+										NULL,
+										answerStrategy) ); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
 	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
@@ -536,7 +304,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 
 	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
-	for(int k=0; k<NITER;k++)
+	for(int k=0; k<m_nITER;k++)
 	{
 		// the user submits a job
 		// no Jobid set!
@@ -576,7 +344,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(user_user_sleep_interval);
+			usleep(m_sleep_interval);
 		}
 
 			// if the job is in the finished or failed state, one is allowed
@@ -597,7 +365,6 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 		os.str("");
 		os<<"Successfully deleted the job "<<jobid;
 		SDPA_LOG_DEBUG(os.str());
-
 	}
 
 	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
@@ -620,12 +387,13 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;
 	SDPA_LOG_DEBUG(os.str());
 
-	answerStrategy = "cancelled";
+	string answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
 	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
 										m_ptrAgg->daemon_stage(),
 										NULL,
-										NULL) ); // No gwes
+										NULL,
+										answerStrategy) ); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
 	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
@@ -644,7 +412,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 
 	UserStrategy* pUserStr = dynamic_cast<UserStrategy*>(m_ptrUserStrategy.get());
 
-	for(int k=0; k<NITER;k++)
+	for(int k=0; k<m_nITER;k++)
 	{
 		// the user submits a job
 		// no Jobid set!
@@ -684,7 +452,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 			// wait for a JobStatusReplyEvent
 			pJobStatusReplyEvent = pUserStr->WaitForEvent<sdpa::events::JobStatusReplyEvent>(pErrorEvt);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<pJobStatusReplyEvent->status());
-			usleep(user_user_sleep_interval);
+			usleep(m_sleep_interval);
 		}
 
 			// if the job is in the finished or failed state, one is allowed

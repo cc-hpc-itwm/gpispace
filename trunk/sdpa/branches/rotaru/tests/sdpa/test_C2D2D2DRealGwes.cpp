@@ -1,21 +1,21 @@
-#include "test_C2D2D2DDummyGwes.hpp"
+#include "test_C2D2D2DRealGwes.hpp"
 #include <DaemonTestUtil.h>
+#include <gwes/GWES.h>
 
+CPPUNIT_TEST_SUITE_REGISTRATION( C2D2D2DRealGwesTest );
 
-CPPUNIT_TEST_SUITE_REGISTRATION( C2D2D2DDummyGwesTest );
-
-C2D2D2DDummyGwesTest::C2D2D2DDummyGwesTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.C2D2D2DDummyGwesTest"),
-    m_nITER(1000000),
-    m_sleep_interval(10000)
+C2D2D2DRealGwesTest::C2D2D2DRealGwesTest() :
+	SDPA_INIT_LOGGER("sdpa.tests.C2D2D2DRealGwesTest"),
+	m_nITER(100),
+	m_sleep_interval(10000)
 {
 }
 
-C2D2D2DDummyGwesTest::~C2D2D2DDummyGwesTest()
+C2D2D2DRealGwesTest::~C2D2D2DRealGwesTest()
 {}
 
 
-string C2D2D2DDummyGwesTest::read_workflow(string strFileName)
+string C2D2D2DRealGwesTest::read_workflow(string strFileName)
 {
 	ifstream f(strFileName.c_str());
 	ostringstream os;
@@ -32,11 +32,12 @@ string C2D2D2DDummyGwesTest::read_workflow(string strFileName)
 	return os.str();
 }
 
-void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machine
+void C2D2D2DRealGwesTest::setUp()
+{ //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	m_ptrSdpa2GwesOrch = new DummyGwes();
-	m_ptrSdpa2GwesAgg  = new DummyGwes();
+	m_ptrSdpa2GwesOrch = new gwes::GWES();
+	m_ptrSdpa2GwesAgg  = new gwes::GWES();
 
 	m_ptrUser = sdpa::client::ClientApi::create("empty config", sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
 
@@ -52,7 +53,7 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
-void C2D2D2DDummyGwesTest::tearDown()
+void C2D2D2DRealGwesTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
@@ -70,9 +71,10 @@ void C2D2D2DDummyGwesTest::tearDown()
 	delete m_ptrSdpa2GwesAgg;
 }
 
-void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
+void C2D2D2DRealGwesTest::testDaemonFSM_JobFinished()
 {
 	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobFinished******************************************"<<std::endl);
+
 	string strAnswer = "finished";
 	string noStage = "";
 
@@ -86,6 +88,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 	DaemonFSM::start(m_ptrAgg);
 	DaemonFSM::start(m_ptrNRE);
 
+
 	for(int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
@@ -126,9 +129,10 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
+void C2D2D2DRealGwesTest::testDaemonFSM_JobFailed()
 {
 	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobFailed******************************************"<<std::endl);
+
 	string strAnswer = "failed";
 	string noStage = "";
 
@@ -142,6 +146,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 	DaemonFSM::start(m_ptrAgg);
 	DaemonFSM::start(m_ptrNRE);
 
+
 	for(int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
@@ -183,10 +188,9 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 }
 
 
-void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
+void C2D2D2DRealGwesTest::testDaemonFSM_JobCancelled()
 {
 	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobCancelled******************************************"<<std::endl);
-
 	string strAnswer = "cancelled";
 	string noStage = "";
 
