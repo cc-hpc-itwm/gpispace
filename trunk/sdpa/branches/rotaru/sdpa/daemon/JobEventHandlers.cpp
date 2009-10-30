@@ -87,7 +87,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	if(pEvt->from() == pEvt->to() ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == sdpa::daemon::GWES) // sent by GWES
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
@@ -125,7 +125,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 			SDPA_LOG_DEBUG("Don't notify the user! He will periodically query for the job status!");
 			// no acknowledgement to be sent to GWES
 	}
-	else
+	else // event sent by a worker
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 		try {
@@ -216,7 +216,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG(os.str());
 	}
 
-	if(pEvt->from() == pEvt->to() ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
@@ -258,7 +258,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 		// no acknowledgement to be sent to GWES
 	}
-	else
+	else //event sent by a worker
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 		try {
@@ -455,7 +455,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
-    	if( pEvt->from() == pEvt->to()  ) // the message comes from GWES, forward it to the master
+    	if( pEvt->from() == sdpa::daemon::GWES  ) // the message comes from GWES, forward it to the master
 		{
 
 			/*Worker::worker_id_t worker_id = pJob->get("worker");

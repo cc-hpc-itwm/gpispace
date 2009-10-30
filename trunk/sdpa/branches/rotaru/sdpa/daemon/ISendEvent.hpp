@@ -15,8 +15,9 @@ namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;
 const std::string AGGREGATOR("aggregator") ;
-const std::string NRE("NRE") ;
-const std::string USER("user") ;
+const std::string NRE("NRE");
+const std::string GWES("GWES");
+const std::string USER("user");
 
   class IComm{
   public:
