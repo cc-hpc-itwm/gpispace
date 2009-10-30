@@ -1,16 +1,27 @@
 #ifndef SDPA_JOB_FAILED_EVENT_HPP
 #define SDPA_JOB_FAILED_EVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sc = boost::statechart;
-
-namespace sdpa {
-namespace events {
-	class JobFailedEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::JobFailedEvent> {
+namespace sdpa { namespace events {
+#ifdef USE_BOOST_SC
+	class JobFailedEvent : public JobEvent, public sc::event<JobFailedEvent>
+#else
+	class JobFailedEvent : public JobEvent
+#endif
+    {
 	public:
 		typedef sdpa::shared_ptr<JobFailedEvent> Ptr;
+
+        JobFailedEvent()
+          : JobEvent("", "", "")
+        {}
 
 		JobFailedEvent(	const address_t& a_from,
 						const address_t& a_to,
@@ -22,6 +33,11 @@ namespace events {
 		}
 
 		std::string str() const { return "JobFailedEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitJobFailedEvent(this);
+        }
 	};
 }}
 

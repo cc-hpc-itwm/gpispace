@@ -52,6 +52,7 @@ OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
+OPTION(USE_BOOST_SC "Build the project using boost statecharts" YES)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
@@ -91,15 +92,9 @@ if (SEDA_FOUND)
   include_directories(${SEDA_INCLUDE_DIR})
   link_directories(${SEDA_LIBRARY_DIR})
   link_libraries(${SEDA_LIBRARY})
+else (SEDA_FOUND)
+  message(FATAL_ERROR "SEDA library is required!")
 endif(SEDA_FOUND)
-
-# google protocol buffers
-include(FindProtocolBuffers)
-if (PB_FOUND)
-    include_directories(${PB_INCLUDE_DIR})
-    link_libraries(${PB_LIBRARY})
-endif (PB_FOUND)
-include(PBMacros)
 
 # uuid library
 include(FindUUID)
@@ -174,30 +169,22 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
+if (ENABLE_LOGGING)
+  set(SDPA_ENABLE_LOGGING 1)
+else (ENABLE_LOGGING)
+  set(SDPA_ENABLE_LOGGING 0)
+endif (ENABLE_LOGGING)
+
 # logging
 include(FindFhgLog)
 if (FHGLOG_FOUND)
   message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
   include_directories(${FHGLOG_INCLUDE_DIR})
   link_libraries(${FHGLOG_LIBRARY})
+  set(SDPA_HAVE_FHGLOG 1)
+else (FHGLOG_FOUND)
+  message(FATAL_ERROR "Sorry, FhgLog is required!")
 endif(FHGLOG_FOUND)
-
-if (ENABLE_LOGGING)
-    set(ENABLE_LOGGING 1)
-    include(FindLogging)
-
-    if (LOG4CPP_FOUND)
-        set(HAVE_LOG4CPP 1)
-        include_directories(${LOG4CPP_INCLUDE_DIRS})
-	link_directories(${LOG4CPP_LIBRARY_DIRS})
-        link_libraries(${LOG4CPP_LIBRARIES})
-    else(LOG4CPP_FOUND)
-        message(FATAL_ERROR "Logging was enabled but log4cpp could not be found!")
-    endif(LOG4CPP_FOUND)
-
-else (ENABLE_LOGGING)
-    set(ENABLE_LOGGING 0)
-endif (ENABLE_LOGGING)
 
 # check for Fraunhofer Virtual Machine
 message(STATUS "****** FIXME: Checking for Fraunhofer Virtual Machine...")
@@ -225,7 +212,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 # Reflect the package structure
 add_subdirectory(sdpa)
 add_subdirectory(apps)
-enable_testing()
+include(CTest)
 add_subdirectory(tests)
 
 

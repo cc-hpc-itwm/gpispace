@@ -42,7 +42,7 @@ void WorkerTest::testGetNextJob() {
 
   CPPUNIT_ASSERT(! worker.pending().empty());
 
-  Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
+  Job::ptr_t job(worker.get_next_job(sdpa::job_id_t::invalid_job_id()));
   CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty now
   CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted has one job
   CPPUNIT_ASSERT_EQUAL(sdpa::job_id_t("1"), job->id());
@@ -55,7 +55,7 @@ void WorkerTest::testAcknowledge() {
 
   CPPUNIT_ASSERT(! worker.pending().empty());
 
-  Job::ptr_t job(worker.get_next_job(Job::invalid_job_id()));
+  Job::ptr_t job(worker.get_next_job(sdpa::job_id_t::invalid_job_id()));
   CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty
   CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted is not empty anymore
 
@@ -106,5 +106,19 @@ void WorkerTest::testQueue() {
   std::cout << std::endl;
   std::cout << thrd_data.val << std::endl;
   CPPUNIT_ASSERT(thrd_data.val >= 42);
+
+  std::cout << "removing queue entries...";
+  while (! test_queue.empty()) test_queue.pop();
+  std::cout << "done." << std::endl;
+
+  try
+  {
+    std::cout << "popping from empty queue";
+    test_queue.pop_and_wait(boost::posix_time::milliseconds(10));
+    std::cout << "FAILED" << std::endl;
+  } catch (const QueueEmpty &)
+  {
+    std::cout << "OK" << std::endl;
+  }
 }
 

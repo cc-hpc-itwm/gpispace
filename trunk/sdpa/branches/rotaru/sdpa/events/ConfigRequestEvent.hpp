@@ -1,22 +1,41 @@
 #ifndef SDPA_CONFIGREQUESTEVENT_HPP
 #define SDPA_CONFIGREQUESTEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
 
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa {
 namespace events {
-    class ConfigRequestEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::ConfigRequestEvent> {
+#ifdef USE_BOOST_SC
+    class ConfigRequestEvent : public MgmtEvent, public sc::event<ConfigRequestEvent> {
+#else
+    class ConfigRequestEvent : public MgmtEvent {
+#endif
     public:
         typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
 
-        ConfigRequestEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
+        ConfigRequestEvent()
+          : MgmtEvent()
+        {}
+
+        ConfigRequestEvent(const address_t& from
+                         , const address_t& to)
+          : MgmtEvent(from, to)
+        {}
 
     	virtual ~ConfigRequestEvent() { }
 
     	std::string str() const { return "ConfigRequestEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitConfigRequestEvent(this);
+        }
     };
 }}
 

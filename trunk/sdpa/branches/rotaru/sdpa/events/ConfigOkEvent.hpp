@@ -1,22 +1,35 @@
 #ifndef SDPA_CONFIGOKEVENT_HPP
 #define SDPA_CONFIGOKEVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/sdpa-config.hpp>
 
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
 namespace sc = boost::statechart;
+#endif
 
-namespace sdpa {
-namespace events {
+#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/memory.hpp>
+
+namespace sdpa { namespace events {
+#ifdef USE_BOOST_SC
     class ConfigOkEvent : public sdpa::events::MgmtEvent, public sc::event<sdpa::events::ConfigOkEvent> {
+#else
+    class ConfigOkEvent : public sdpa::events::MgmtEvent {
+#endif
     public:
         typedef sdpa::shared_ptr<ConfigOkEvent> Ptr;
 
-        ConfigOkEvent(const address_t& from, const address_t& to) : MgmtEvent(from, to) { }
+        ConfigOkEvent() : MgmtEvent("","") { }
 
     	virtual ~ConfigOkEvent() { } 
 
     	std::string str() const { return "ConfigOkEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitConfigOkEvent(this);
+        }
     };
 }}
 

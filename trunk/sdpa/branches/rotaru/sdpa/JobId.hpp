@@ -67,7 +67,11 @@ namespace sdpa {
 
     ~JobId();
 
-    const std::string &str() const;
+    const std::string &str() const { return id_; }
+    std::string &str() { return id_; }
+
+    static JobId invalid_job_id() { return "-"; }
+    static bool is_invalid_job_id(const JobId &job_id) { return job_id == "-"; }
   private:
     std::string id_;
   };

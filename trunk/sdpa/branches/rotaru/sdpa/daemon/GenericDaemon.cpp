@@ -89,7 +89,7 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	ptr_daemon->daemon_stage()->start();
 
 	//start-up the the daemon
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(ptr_daemon->name(), ptr_daemon->name()));
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
 	ptr_daemon->daemon_stage()->send(pEvtStartUp);
 
 	sleep(1);
@@ -102,7 +102,7 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 
 	// configuration done
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(ptr_daemon->name(), ptr_daemon->name()));
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
 	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
 
 	// in fact the master name should be red from the configuration file

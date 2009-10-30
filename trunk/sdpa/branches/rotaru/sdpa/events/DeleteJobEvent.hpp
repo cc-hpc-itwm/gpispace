@@ -1,15 +1,27 @@
 #ifndef SDPA_DELETE_JOB_EVENT_HPP
 #define SDPA_DELETE_JOB_EVENT_HPP 1
 
-#include <boost/statechart/event.hpp>
-#include <sdpa/events/JobEvent.hpp>
-namespace sc = boost::statechart;
+#include <sdpa/sdpa-config.hpp>
 
-namespace sdpa {
-namespace events {
-	class DeleteJobEvent : public sdpa::events::JobEvent, public sc::event<sdpa::events::DeleteJobEvent> {
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/JobEvent.hpp>
+
+namespace sdpa { namespace events {
+#ifdef USE_BOOST_SC
+	class DeleteJobEvent : public JobEvent, public sc::event<DeleteJobEvent>
+#else
+	class DeleteJobEvent : public JobEvent
+#endif
+    {
 	public:
 		typedef sdpa::shared_ptr<DeleteJobEvent> Ptr;
+
+        DeleteJobEvent()
+          : JobEvent("","","")
+        {}
 
 		DeleteJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
           :  sdpa::events::JobEvent( from, to, job_id ) {
@@ -19,6 +31,11 @@ namespace events {
 		}
 
 		std::string str() const { return "DeleteJobEvent"; }
+
+        virtual void accept(EventVisitor *visitor)
+        {
+          visitor->visitDeleteJobEvent(this);
+        }
 	};
 }}
 
