@@ -141,7 +141,40 @@ public:
 
 	virtual ~SchedulerNREWithGwes() { }
 
-	void schedule_remote(const Job::ptr_t &pJob)
+
+	void run()
+	{
+		SDPA_LOG_DEBUG("Scheduler thread running ...");
+
+		while(!bStopRequested)
+		{
+			try
+			{
+				//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+
+
+				if(pJob->is_local())
+					schedule_local(pJob);
+				else
+					start_job(pJob);
+
+				check_post_request();
+			}
+			catch( const boost::thread_interrupted & )
+			{
+				SDPA_LOG_DEBUG("Thread interrupted ...");
+				bStopRequested = true;
+			}
+			catch( const sdpa::daemon::QueueEmpty &)
+			{
+				//SDPA_LOG_DEBUG("Queue empty exception");
+				check_post_request();
+			}
+		}
+	}
+
+	void start_job(const Job::ptr_t &pJob)
 	{
 		SDPA_LOG_DEBUG("Execute job ...");
 
