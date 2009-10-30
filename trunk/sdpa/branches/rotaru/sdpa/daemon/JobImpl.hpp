@@ -3,7 +3,7 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobFSMActions.hpp>
-#include <sdpa/daemon/ISendEvent.hpp>
+#include <sdpa/daemon/IComm.hpp>
 #include <sdpa/common.hpp>
 #include <map>
 #include <boost/thread.hpp>

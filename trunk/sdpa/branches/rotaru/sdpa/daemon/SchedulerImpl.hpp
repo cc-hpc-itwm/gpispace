@@ -7,7 +7,7 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/Sdpa2Gwes.hpp>
-#include <sdpa/daemon/ISendEvent.hpp>
+#include <sdpa/daemon/IComm.hpp>
 
 namespace sdpa {
 	namespace daemon {
