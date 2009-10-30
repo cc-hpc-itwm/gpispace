@@ -127,6 +127,80 @@ public:
 
 };
 
+class SchedulerNREWithGwes : public SchedulerImpl
+{
+public:
+	SDPA_DECLARE_LOGGER();
+	static string answerStrategy;
+
+	SchedulerNREWithGwes(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
+		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
+		SDPA_INIT_LOGGER("SchedulerNREWithGwes"),
+		m_answerStrategy(answerStrategy)
+		{}
+
+	virtual ~SchedulerNREWithGwes() { }
+
+	void schedule_remote(const Job::ptr_t &pJob)
+	{
+		SDPA_LOG_DEBUG("Execute job ...");
+
+		string worker = "unknown";
+
+		//first put the job into the running state
+		pJob->Dispatch();
+
+		// execute the job and ...
+		// ... submit a JobFinishedEvent to the master
+		if( m_answerStrategy == "finished" )
+		{
+			SDPA_LOG_DEBUG("Send JobFinishedEvent to "<<ptr_comm_handler_->name());
+			JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
+
+			//send message to self
+			ptr_comm_handler_->sendEvent(pJobFinEvt);
+		}
+		else if( m_answerStrategy == "failed" )
+		{
+			SDPA_LOG_DEBUG("Send JobFailedEvent to "<<ptr_comm_handler_->name());
+			JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
+			ptr_comm_handler_->sendEvent(pJobFailEvt);
+		}
+		else if( m_answerStrategy == "cancelled" )
+		{
+			SDPA_LOG_DEBUG("Send CancelJobAckEvent to "<<ptr_comm_handler_->name());
+			CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
+			ptr_comm_handler_->sendEvent(pCancelAckEvt);
+		}
+
+	}
+
+
+private:
+	 std::string m_answerStrategy;
+};
+
+
+class NreDaemonWithGwes : public DaemonFSM
+{
+public:
+	SDPA_DECLARE_LOGGER();
+
+	NreDaemonWithGwes(  const std::string &name,
+						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						const std::string& toMasterStageName,
+						const std::string& toSlaveStageName,
+						std::string& answerStrategy)
+	: DaemonFSM( name, pArgSdpa2Gwes, toMasterStageName, toSlaveStageName ),
+	  SDPA_INIT_LOGGER(name)
+	{
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes(pArgSdpa2Gwes, this, answerStrategy));
+	}
+
+	 virtual ~NreDaemonWithGwes() {  }
+
+};
+
 class UserStrategy : public seda::Strategy
 {
 public:
