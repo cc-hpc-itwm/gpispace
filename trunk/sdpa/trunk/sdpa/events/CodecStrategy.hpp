@@ -26,9 +26,7 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/logging.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <sdpa/events/Serialization.hpp>
+#include <sdpa/events/Codec.hpp>
 
 namespace sdpa { namespace events {
   class EncodeStrategy : public seda::StrategyDecorator
@@ -47,36 +45,11 @@ namespace sdpa { namespace events {
     {
       if (SDPAEvent * sdpa_evt = dynamic_cast<SDPAEvent*>(e.get()))
       {
-        std::ostringstream sstr;
-        boost::archive::text_oarchive ar(sstr);
-
-        ar.register_type(static_cast<CancelJobAckEvent*>(NULL));
-        ar.register_type(static_cast<CancelJobEvent*>(NULL));
-        ar.register_type(static_cast<ConfigReplyEvent*>(NULL));
-        ar.register_type(static_cast<ConfigRequestEvent*>(NULL));
-        ar.register_type(static_cast<DeleteJobAckEvent*>(NULL));
-        ar.register_type(static_cast<DeleteJobEvent*>(NULL));
-        ar.register_type(static_cast<ErrorEvent*>(NULL));
-        ar.register_type(static_cast<JobFailedAckEvent*>(NULL));
-        ar.register_type(static_cast<JobFailedEvent*>(NULL));
-        ar.register_type(static_cast<JobFinishedAckEvent*>(NULL));
-        ar.register_type(static_cast<JobFinishedEvent*>(NULL));
-        ar.register_type(static_cast<JobResultsReplyEvent*>(NULL));
-        ar.register_type(static_cast<JobStatusReplyEvent*>(NULL));
-        ar.register_type(static_cast<LifeSignEvent*>(NULL));
-        ar.register_type(static_cast<QueryJobStatusEvent*>(NULL));
-        ar.register_type(static_cast<RequestJobEvent*>(NULL));
-        ar.register_type(static_cast<RetrieveJobResultsEvent*>(NULL));
-        ar.register_type(static_cast<SubmitJobAckEvent*>(NULL));
-        ar.register_type(static_cast<SubmitJobEvent*>(NULL));
-        ar.register_type(static_cast<WorkerRegistrationAckEvent*>(NULL));
-        ar.register_type(static_cast<WorkerRegistrationEvent*>(NULL));
-
-        ar << sdpa_evt;
+        Codec codec;
         seda::comm::SedaMessage::Ptr seda_msg(new seda::comm::SedaMessage(
           sdpa_evt->from()
           , sdpa_evt->to()
-          , sstr.str()
+          , codec.encode(sdpa_evt)
         ));
 
         seda::StrategyDecorator::perform(seda_msg);
@@ -105,35 +78,8 @@ namespace sdpa { namespace events {
     {
       if (seda::comm::SedaMessage * seda_msg = dynamic_cast<seda::comm::SedaMessage*>(e.get()))
       {
-        std::istringstream sstr(seda_msg->payload());
-        boost::archive::text_iarchive ar(sstr);
-
-        ar.register_type(static_cast<CancelJobAckEvent*>(NULL));
-        ar.register_type(static_cast<CancelJobEvent*>(NULL));
-        ar.register_type(static_cast<ConfigReplyEvent*>(NULL));
-        ar.register_type(static_cast<ConfigRequestEvent*>(NULL));
-        ar.register_type(static_cast<DeleteJobAckEvent*>(NULL));
-        ar.register_type(static_cast<DeleteJobEvent*>(NULL));
-        ar.register_type(static_cast<ErrorEvent*>(NULL));
-        ar.register_type(static_cast<JobFailedAckEvent*>(NULL));
-        ar.register_type(static_cast<JobFailedEvent*>(NULL));
-        ar.register_type(static_cast<JobFinishedAckEvent*>(NULL));
-        ar.register_type(static_cast<JobFinishedEvent*>(NULL));
-        ar.register_type(static_cast<JobResultsReplyEvent*>(NULL));
-        ar.register_type(static_cast<JobStatusReplyEvent*>(NULL));
-        ar.register_type(static_cast<LifeSignEvent*>(NULL));
-        ar.register_type(static_cast<QueryJobStatusEvent*>(NULL));
-        ar.register_type(static_cast<RequestJobEvent*>(NULL));
-        ar.register_type(static_cast<RetrieveJobResultsEvent*>(NULL));
-        ar.register_type(static_cast<SubmitJobAckEvent*>(NULL));
-        ar.register_type(static_cast<SubmitJobEvent*>(NULL));
-        ar.register_type(static_cast<WorkerRegistrationAckEvent*>(NULL));
-        ar.register_type(static_cast<WorkerRegistrationEvent*>(NULL));
-
-        SDPAEvent *sdpa_evt(NULL);
-        ar >> sdpa_evt;
-
-        seda::IEvent::Ptr evt(sdpa_evt);
+        Codec codec;
+        seda::IEvent::Ptr evt(codec.decode(seda_msg->payload()));
         seda::StrategyDecorator::perform(evt);
       }
       else

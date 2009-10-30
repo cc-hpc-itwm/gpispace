@@ -6,3 +6,4 @@ link_directories(${CPPUNIT_LIBRARY_DIRS})
 link_libraries(${CPPUNIT_LIBRARIES})
 
 add_subdirectory(sdpa)
+add_subdirectory(bin)

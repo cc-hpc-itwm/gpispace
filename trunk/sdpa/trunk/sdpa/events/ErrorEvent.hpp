@@ -9,7 +9,6 @@ namespace sc = boost::statechart;
 #endif
 
 #include <sdpa/events/MgmtEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
 
 namespace sdpa { namespace events {
 // this could be replaced by a small macro
