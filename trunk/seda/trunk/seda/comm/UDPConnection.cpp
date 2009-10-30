@@ -202,6 +202,12 @@ namespace seda { namespace comm {
 
   void UDPConnection::send(const seda::comm::SedaMessage &m)
   {
+    if (service_thread_ == NULL)
+    {
+      LOG(ERROR, "the connection has not been started!");
+      throw std::runtime_error("Connection not started!");
+    }
+
     const Locator::location_t &loc(locator_->lookup(m.to()));
 
     udp::resolver resolver(io_service_);
