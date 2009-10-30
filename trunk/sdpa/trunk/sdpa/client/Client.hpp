@@ -104,8 +104,6 @@ namespace sdpa { namespace client {
     boost::mutex mtx_;
     boost::condition_variable cond_;
     seda::IEvent::Ptr reply_;
-    bool blocked_;
-    bool config_ok_;
 
     seda::Stage::Ptr client_stage_;
     ClientContext fsm_;
