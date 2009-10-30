@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 
 namespace sdpa {
@@ -34,9 +34,9 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrOrch;
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrAgg;
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrNRE;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrOrch;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrAgg;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrNRE;
 
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;

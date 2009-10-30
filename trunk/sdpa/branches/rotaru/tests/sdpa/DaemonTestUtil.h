@@ -32,7 +32,7 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
+using namespace sdpa::fsm::bsc;
 
 
 class SchedulerNRE : public SchedulerImpl

@@ -39,9 +39,9 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrOrch;
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrAgg;
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrNRE;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrOrch;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrAgg;
+			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrNRE;
 
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
