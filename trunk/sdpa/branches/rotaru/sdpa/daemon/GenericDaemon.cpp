@@ -453,8 +453,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			//send back to the user a SubmitJobAckEvent
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
 
-			//assert( e.from() == master || master == "" )
-
 			// There is a problem with this if uncommented
 			sendEvent(ptr_to_master_stage_, pSubmitJobAckEvt);
 		}

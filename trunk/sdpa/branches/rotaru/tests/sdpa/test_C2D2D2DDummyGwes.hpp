@@ -14,9 +14,9 @@ namespace sdpa {
 			class C2D2D2DDummyGwesTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::C2D2D2DDummyGwesTest );
 
-			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
+			  /*CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );*/
 			  CPPUNIT_TEST(testDaemonFSMWithGwes_JobFinished);
 			  CPPUNIT_TEST_SUITE_END();
 

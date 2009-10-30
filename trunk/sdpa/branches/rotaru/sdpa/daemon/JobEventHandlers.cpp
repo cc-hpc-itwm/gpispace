@@ -65,15 +65,14 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 	}
 }
 
-void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
+void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
 	ostringstream os;
-	os<<"Call 'handleJobFinishedEvent'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'handleJobFailedEvent'");
 
 	//put the job into the state Finished
 	Job::ptr_t pJob;
@@ -82,138 +81,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		pJob->JobFinished(pEvt);
 	}
 	catch(JobNotFoundException){
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
-	}
-
-	if(pEvt->from() == sdpa::daemon::GWES) // sent by GWES
-	{
-		// the message comes from GWES, this is a local job
-		// if I'm not the orchestrator
-		//send JobFinished event to the master if daemon == aggregator || NRE
-		if( name() != ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
-		{
-			try {
-				// forward it up
-				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
-
-				// assert( master() == ptr_to_master_stage_->name() );
-				// send the event to the master
-				sendEvent(ptr_to_master_stage_, pEvtJobFinished);
-				// delete it from the map when you receive a JobFinishedAckEvent!
-			}
-			catch(QueueFull)
-			{
-				os.str("");
-				os<<"Failed to send to "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent";
-				SDPA_LOG_DEBUG(os.str());
-			}
-			catch(seda::StageNotFound)
-			{
-				os.str("");
-				os<<"Stage not found when trying to submit SubmitJobEvent";
-				SDPA_LOG_DEBUG(os.str());
-			}
-			catch(...) {
-				os.str("");
-				os<<"Unexpected exception occurred!";
-				SDPA_LOG_DEBUG(os.str());
-			}
-		}
-		else
-			SDPA_LOG_DEBUG("Don't notify the user! He will periodically query for the job status!");
-			// no acknowledgement to be sent to GWES
-	}
-	else // event sent by a worker
-	{
-		Worker::worker_id_t worker_id = pEvt->from();
-		try {
-			// Should set the workflow_id here, or send it together with the workflow description
-			if(ptr_Sdpa2Gwes_)
-			{
-				// how this should be constructed
-				parameter_list_t output;
-
-				os.str("");
-				os<<"Inform GWES that the activity "<<pEvt->job_id().str()<<" finished";
-				SDPA_LOG_DEBUG(os.str());
-
-				activity_id_t actId = pJob->id().str();
-				workflow_id_t wfId  = pJob->parent().str();
-
-				ptr_Sdpa2Gwes_->activityFinished( wfId, actId, output );
-
-				Worker::ptr_t ptrWorker = findWorker(worker_id);
-				// delete job from worker's queues
-
-				os.str("");
-				os<<"Delete the job "<<pEvt->job_id()<<" from the worker's queues!";
-				SDPA_LOG_DEBUG(os.str());
-
-				ptrWorker->delete_job(pEvt->job_id());
-
-				// send a JobFinishedAckEvent back down to the worker/slave
-				JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
-
-				// send the event to the slave
-				sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
-
-				//delete it also from job_map_
-				ptr_job_man_->deleteJob(pEvt->job_id());
-			}
-			else
-				SDPA_LOG_ERROR("Gwes not initialized!");
-
-		} catch(WorkerNotFoundException) {
-			os.str("");
-			os<<"Worker "<<worker_id<<" not found!";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(gwes::Gwes2Sdpa::NoSuchWorkflow& )
-		{
-			SDPA_LOG_ERROR("NoSuchWorkflowException occurred!");
-		}
-		catch(gwes::Gwes2Sdpa::NoSuchActivity& )
-		{
-			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
-		}
-		catch(JobNotDeletedException&)
-		{
-			os.str("");
-			os<<"The JobManager could not delete the job "<<pEvt->job_id();
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(...) {
-			os.str("");
-			os<<"Unexpected exception occurred!";
-			SDPA_LOG_DEBUG(os.str());
-		}
-	}
-}
-
-
-
-void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
-{
-	// check if the message comes from outside/slave or from WFE
-	// if it comes from a slave, one should inform WFE -> subjob
-	// if it comes from WFE -> concerns the master job
-
-	ostringstream os;
-	os<<"Call 'handleJobFailedEvent'";
-	SDPA_LOG_DEBUG(os.str());
-
-	//put the job into the state Finished
-	Job::ptr_t pJob;
-	try {
-		pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->JobFailed(pEvt);
-	}
-	catch(JobNotFoundException){
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
 	if(pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
@@ -225,32 +93,23 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		if( name() != ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
 		{
 			try {
-			// forward it up
-			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
+				// forward it up
+				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
 
-			// assert( master() == ptr_to_master_stage_->name() );
-
-			// send the event to the master
-			sendEvent(ptr_to_master_stage_, pEvtJobFailedEvent);
-
-			// delete it from the map when you receive a JobFaileddAckEvent!
+				// send the event to the master
+				sendEvent(ptr_to_master_stage_, pEvtJobFinished);
+				// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
 			{
-				os.str("");
-				os<<"Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
 			}
 			catch(seda::StageNotFound)
 			{
-				os.str("");
-				os<<"Stage not found when trying to submit SubmitJobEvent";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
 			}
 			catch(...) {
-				os.str("");
-				os<<"Unexpected exception occurred!";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Unexpected exception occurred!");
 			}
 		}
 		else
@@ -273,53 +132,161 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				os<<"Inform GWES that the activity "<<actId<<" failed";
 				SDPA_LOG_DEBUG(os.str());
 
-				ptr_Sdpa2Gwes_->activityFailed(wfId, actId, output);
+				try {
+					ptr_Sdpa2Gwes_->activityFinished(wfId, actId, output);
+				}
+				catch(gwes::Gwes2Sdpa::NoSuchActivity& )
+				{
+					SDPA_LOG_ERROR("NoSuchActivityException occurred!");
+				}
 
-				Worker::ptr_t ptrWorker = findWorker(worker_id);
-				// delete job from worker's queues
+				try {
+					Worker::ptr_t ptrWorker = findWorker(worker_id);
+					// delete job from worker's queues
 
-				os.str("");
-				os<<"Delete the job "<<pEvt->job_id()<<" from the worker's queues!";
-				SDPA_LOG_DEBUG(os.str());
+					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
+					ptrWorker->delete_job(pEvt->job_id());
 
-				ptrWorker->delete_job(pEvt->job_id());
+					// send a JobFinishedAckEvent back to the worker/slave
+					//delete it also from job_map_
+					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), master(), pEvt->job_id()));
 
-				// send a JobFinishedAckEvent back to the worker/slave
-				//delete it also from job_map_
-				JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
+					// send the event to the slave
+					sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+				}
+				catch(WorkerNotFoundException)
+				{
+					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+				}
 
-				// send the event to the slave
-				sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
-
-				//delete it also from job_map_
-				ptr_job_man_->deleteJob(pEvt->job_id());
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(pEvt->job_id());
+				}
+				catch(JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
+				}
 			}
 			else
 				SDPA_LOG_ERROR("Gwes not initialized!");
 
-		} catch(WorkerNotFoundException) {
-			os.str("");
-			os<<"Worker "<<worker_id<<" not found!";
-			SDPA_LOG_DEBUG(os.str());
-		}
-		catch(gwes::Gwes2Sdpa::NoSuchWorkflow& )
-		{
-			SDPA_LOG_ERROR("NoSuchWorkflowException occurred!");
-		}
-		catch(gwes::Gwes2Sdpa::NoSuchActivity& )
-		{
-			SDPA_LOG_DEBUG("NoSuchActivityException occurred!");
-		}
-		catch(JobNotDeletedException&)
-		{
-			os.str("");
-			os<<"The JobManager could not delete the job "<<pEvt->job_id();
-			SDPA_LOG_DEBUG(os.str());
 		}
 		catch(...) {
-			os.str("");
-			os<<"Unexpected exception occurred!";
-			SDPA_LOG_DEBUG(os.str());
+			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		}
+	}
+}
+
+void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
+{
+	// check if the message comes from outside/slave or from WFE
+	// if it comes from a slave, one should inform WFE -> subjob
+	// if it comes from WFE -> concerns the master job
+
+	ostringstream os;
+	SDPA_LOG_DEBUG("Call 'handleJobFailedEvent'");
+
+	//put the job into the state Finished
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->JobFailed(pEvt);
+	}
+	catch(JobNotFoundException){
+		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+	}
+
+	if(pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	{
+		// the message comes from GWES, this is a local job
+		// if I'm not the orchestrator
+		//send JobFinished event to the master if daemon == aggregator || NRE
+
+		if( name() != ORCHESTRATOR ) // if I'm not an orchestrator forward the message up
+		{
+			try {
+				// forward it up
+				JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
+
+				// send the event to the master
+				sendEvent(ptr_to_master_stage_, pEvtJobFailedEvent);
+				// delete it from the map when you receive a JobFaileddAckEvent!
+			}
+			catch(QueueFull)
+			{
+				SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			}
+			catch(seda::StageNotFound)
+			{
+				SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			}
+			catch(...) {
+				SDPA_LOG_DEBUG("Unexpected exception occurred!");
+			}
+		}
+		else
+			SDPA_LOG_DEBUG("Don't notify the user! He will periodically query for the job status!");
+
+		// no acknowledgement to be sent to GWES
+	}
+	else //event sent by a worker
+	{
+		Worker::worker_id_t worker_id = pEvt->from();
+		try {
+			// Should set the workflow_id here, or send it together with the workflow description
+			if(ptr_Sdpa2Gwes_)
+			{
+				activity_id_t actId = pJob->id().str();
+				workflow_id_t wfId  = pJob->parent().str();
+				parameter_list_t output;
+
+				os.str("");
+				os<<"Inform GWES that the activity "<<actId<<" failed";
+				SDPA_LOG_DEBUG(os.str());
+
+				try {
+					ptr_Sdpa2Gwes_->activityFailed(wfId, actId, output);
+				}
+				catch(gwes::Gwes2Sdpa::NoSuchActivity& )
+				{
+					SDPA_LOG_ERROR("NoSuchActivityException occurred!");
+				}
+
+				try {
+					Worker::ptr_t ptrWorker = findWorker(worker_id);
+					// delete job from worker's queues
+
+					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
+					ptrWorker->delete_job(pEvt->job_id());
+
+					// send a JobFailedAckEvent back to the worker/slave
+					//delete it also from job_map_
+					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
+
+					// send the event to the slave
+					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+				}
+				catch(WorkerNotFoundException)
+				{
+					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+				}
+
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(pEvt->job_id());
+				}
+				catch(JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
+				}
+			}
+			else
+				SDPA_LOG_ERROR("Gwes not initialized!");
+
+		}
+		catch(...) {
+			SDPA_LOG_DEBUG("Unexpected exception occurred!");
 		}
 	}
 }
@@ -457,19 +424,6 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	// should send acknowlwdgement
     	if( pEvt->from() == sdpa::daemon::GWES  ) // the message comes from GWES, forward it to the master
 		{
-
-			/*Worker::worker_id_t worker_id = pJob->get("worker");
-
-			if(!worker_id.empty())
-			{
-				// delete the job from the pending queue of the worker
-				Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-				//  can be in submitted or
-				ptrWorker->delete_job(pEvt->job_id(), ptrWorker->pending());
-				ptrWorker->delete_job(pEvt->job_id(), ptrWorker->submitted());
-			}*/
-
     		if( name()!= ORCHESTRATOR )
     		{
 				os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
