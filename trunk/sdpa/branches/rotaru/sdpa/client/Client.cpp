@@ -6,6 +6,9 @@
 #include <fhglog/Configuration.hpp>
 
 #include <seda/StageRegistry.hpp>
+#include <seda/comm/comm.hpp>
+#include <seda/comm/ConnectionFactory.hpp>
+#include <seda/comm/ConnectionStrategy.hpp>
 #include <sdpa/client/ClientEvents.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -18,6 +21,8 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+
+#include <sdpa/events/CodecStrategy.hpp>
 
 namespace se = sdpa::events;
 using namespace sdpa::client;
@@ -301,11 +306,42 @@ void Client::action_configure(const Client::config_t &cfg)
   MLOG(INFO, "configuring my environment");
   // configure logging according to config
   //   TODO: do something
-
+  
+  // action_configure_network(cfg);
+  
   // send event to myself
   if (cfg == "config-nok") client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
   else client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
 }
+
+void Client::action_configure_network(const Client::config_t &)
+{
+  MLOG(INFO, "configuring network components...");
+  const std::string net_stage_name(client_stage_->name()+".from-net");
+  {
+    DMLOG(INFO, "setting up decoding...");
+    seda::ForwardStrategy::Ptr to_client(new seda::ForwardStrategy(client_stage_->name()));
+    sdpa::events::DecodeStrategy::ptr_t decode(new sdpa::events::DecodeStrategy(net_stage_name, to_client));
+    seda::Stage::Ptr from_net(new seda::Stage(net_stage_name, decode));
+    seda::StageRegistry::instance().insert(from_net);
+    from_net->start();
+  }
+
+  {
+    DMLOG(INFO, "setting up output stage...");
+    seda::comm::ConnectionFactory connFactory;
+    seda::comm::ConnectionParameters params("udp", "127.0.0.1", client_stage_->name());
+    seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
+    conn->locator()->insert("orchestrator", "127.0.0.1:5000");
+    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(net_stage_name, conn));
+    sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(net_stage_name, conn_s));
+
+    seda::Stage::Ptr output(new seda::Stage(output_stage_, encode));
+    seda::StageRegistry::instance().insert(output);
+    output->start();
+  }
+}
+
 
 void Client::action_config_ok()
 {
@@ -322,6 +358,16 @@ void Client::action_shutdown()
   MLOG(INFO,"shutting down");
   DMLOG(DEBUG,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
+}
+
+void Client::action_shutdown_network()
+{
+  DMLOG(INFO, "shutting network compents down...");
+  seda::StageRegistry::instance().lookup(output_stage_)->stop();
+  seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
+
+  seda::StageRegistry::instance().remove(output_stage_);
+  seda::StageRegistry::instance().remove(client_stage_->name() + ".from-net");
 }
 
 void Client::action_submit(const seda::IEvent::Ptr &e)

@@ -128,9 +128,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				workflow_id_t wfId  = pJob->parent().str();
 				parameter_list_t output;
 
-				os.str("");
-				os<<"Inform GWES that the activity "<<actId<<" finished";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" finished");
 
 				try {
 					ptr_Sdpa2Gwes_->activityFinished(wfId, actId, output);
@@ -241,9 +239,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				workflow_id_t wfId  = pJob->parent().str();
 				parameter_list_t output;
 
-				os.str("");
-				os<<"Inform GWES that the activity "<<actId<<" failed";
-				SDPA_LOG_DEBUG(os.str());
+				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" failed");
 
 				try {
 					ptr_Sdpa2Gwes_->activityFailed(wfId, actId, output);

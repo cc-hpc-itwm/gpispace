@@ -25,7 +25,7 @@ namespace modules {
       return const_cast<Module&>(const_cast<const FallBackModuleLoader*>(this)->get(module));
     }
 
-    Module& load(const std::string &module, const std::string &file) throw(ModuleLoadFailed);
+    Module& load(const std::string &file) throw(ModuleLoadFailed);
     void unload(const std::string &module);
   private:
     FallBackModuleLoader()

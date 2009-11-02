@@ -74,6 +74,26 @@ namespace sdpa { namespace client {
     {
       return pimpl->retrieveResults(jid);
     }
+
+    const std::string &input_stage() const
+    {
+      return pimpl->input_stage();
+    }
+
+    const std::string &output_stage() const
+    {
+      return pimpl->output_stage();
+    }
+
+    void configure_network(const Client::config_t &config)
+    {
+      pimpl->action_configure_network(config);
+    }
+
+    void shutdown_network(const Client::config_t &)
+    {
+      pimpl->action_shutdown_network();
+    }
   private:
     ClientApi(const Client::ptr_t &c)
       : pimpl(c)

@@ -179,7 +179,7 @@ public:
 	{
 		SDPA_LOG_DEBUG("Execute job ...");
 
-		string worker = "unknown";
+		string worker = "Scheduler";
 
 		//first put the job into the running state
 		pJob->Dispatch();
@@ -187,26 +187,11 @@ public:
 		// execute the job and ...
 		// ... submit a JobFinishedEvent to the master
 		if( m_answerStrategy == "finished" )
-		{
-			SDPA_LOG_DEBUG("Send JobFinishedEvent to "<<ptr_comm_handler_->name());
-			JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
-
-			//send message to self
-			ptr_comm_handler_->sendEvent(pJobFinEvt);
-		}
+			ptr_comm_handler_->jobFinished(worker, pJob->id());
 		else if( m_answerStrategy == "failed" )
-		{
-			SDPA_LOG_DEBUG("Send JobFailedEvent to "<<ptr_comm_handler_->name());
-			JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
-			ptr_comm_handler_->sendEvent(pJobFailEvt);
-		}
+			ptr_comm_handler_->jobFailed(worker, pJob->id());
 		else if( m_answerStrategy == "cancelled" )
-		{
-			SDPA_LOG_DEBUG("Send CancelJobAckEvent to "<<ptr_comm_handler_->name());
-			CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( worker, ptr_comm_handler_->name(), pJob->id() ) );
-			ptr_comm_handler_->sendEvent(pCancelAckEvt);
-		}
-
+			ptr_comm_handler_->jobCancelled(worker, pJob->id());
 	}
 
 

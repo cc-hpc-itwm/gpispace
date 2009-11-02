@@ -45,36 +45,56 @@ const Module& FallBackModuleLoader::get(const std::string &module) const throw(M
   }
 }
 
-Module& FallBackModuleLoader::load(const std::string &module, const std::string &file) throw (ModuleLoadFailed) {
-  LOG(DEBUG, "attempting to load module " << module << " from file " << file);
+Module& FallBackModuleLoader::load(const std::string &file) throw (ModuleLoadFailed) {
+  LOG(DEBUG, "attempting to load module from file " << file);
 
   char *error = 0;
 
   Module::handle_t handle = dlopen(file.c_str(), RTLD_LAZY);
   if (! handle) {
-    throw ModuleLoadFailed(dlerror(), module, file);
+    throw ModuleLoadFailed(dlerror(), "[name-not-set]", file);
   }
 
   // clear any errors
   dlerror();
 
-  Module::ptr_t mod(new Module(module, handle));
+  Module::ptr_t mod(new Module(handle));
 
   Module::InitFunction init = (Module::InitFunction)(dlsym(handle, "sdpa_mod_init"));
   if ( (error = dlerror()) != NULL) {
     dlclose(handle);
-    throw ModuleLoadFailed(error, module, file);
+    LOG(ERROR, "module not loaded: " << error);
+    throw ModuleLoadFailed(error, "[name-not-set]", file);
   }
 
   try {
     init(mod.get());
+  } catch (const std::exception &ex) {
+    dlclose(handle);
+    LOG(ERROR, "errors during initialization function: " << ex.what());
+    throw ModuleLoadFailed("error during mod-init function", mod->name(), file);
   } catch (...) {
     dlclose(handle);
-    throw ModuleLoadFailed("error during mod-init function", module, file);
+    LOG(ERROR, "unknown error during initialization function");
+    throw ModuleLoadFailed("error during mod-init function", mod->name(), file);
   }
 
-  module_table_.insert(std::make_pair(module, mod));
+  if (mod->name().empty())
+  {
+    dlclose(handle);
+    LOG(ERROR, "init function did not set module's name");
+    throw ModuleLoadFailed("the module's initialization function did not set the name of the module!", "[name-not-set]", file);
+  }
 
-  LOG(INFO, "sucessfully loaded: " << module);
+  std::pair<module_table_t::iterator, bool> insert_result = module_table_.insert(std::make_pair(mod->name(), mod));
+
+  if (! insert_result.second)
+  {
+    dlclose(handle);
+    LOG(ERROR, "the module \"" << mod->name() << "\" could not be inserted, a module with that name already exists!");
+    throw ModuleLoadFailed("module already registered", mod->name(), file);
+  }
+
+  LOG(INFO, "sucessfully loaded: " << mod->name() << " from file " << file);
   return *mod;
 }

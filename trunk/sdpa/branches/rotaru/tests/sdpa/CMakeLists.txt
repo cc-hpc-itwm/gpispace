@@ -26,9 +26,10 @@ target_link_libraries(sdpa_test_suite sdpa-util)
 target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
 target_link_libraries(sdpa_test_suite sdpa-client)
+target_link_libraries(sdpa_test_suite seda-comm)
 
 # test module
-add_library(example-mod SHARED ExampleModule.cpp)
+add_library(example-mod SHARED example-mod.cpp)
 
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
 target_link_libraries(sdpa_test_tool sdpa sdpa-daemon sdpa-util dl)

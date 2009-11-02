@@ -45,7 +45,7 @@ namespace sdpa {
 	 virtual void start_job(const Job::ptr_t &pJob);
 
 	 Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
-	 void addWorker(const  Worker::ptr_t &);
+	 void addWorker(const Worker::ptr_t &);
 
 	 int numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 	 void check_post_request();

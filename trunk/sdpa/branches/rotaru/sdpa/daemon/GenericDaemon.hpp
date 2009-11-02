@@ -18,6 +18,8 @@
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
+#include <sdpa/types.hpp>
+
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
@@ -80,6 +82,10 @@ namespace sdpa { namespace daemon {
 	  virtual void workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
 	  virtual void workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
 	  virtual void workflowCanceled(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+
+	  virtual void jobFinished(std::string workerName, const job_id_t &);
+	  virtual void jobFailed(std::string workerName, const job_id_t &);
+	  virtual void jobCancelled(std::string workerName, const job_id_t &);
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const  Worker::ptr_t );

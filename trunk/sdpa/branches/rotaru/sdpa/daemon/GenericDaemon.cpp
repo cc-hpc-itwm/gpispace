@@ -15,7 +15,6 @@
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
-//using namespace sdpa::fsm::bsc;
 
 
 //Provide ptr to an implementation of Sdpa2Gwes
@@ -675,4 +674,22 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) thro
 	sendEvent(pEvtCancelJobAck);
 }
 
+
+void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
+{
+	JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( workerName, name(), jobID.str() ) );
+	sendEvent(pJobFinEvt);
+}
+
+void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
+{
+	JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( workerName, name(), jobID.str() ) );
+	sendEvent(pJobFailEvt);
+}
+
+void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
+{
+	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str() ) );
+	sendEvent(pCancelAckEvt);
+}
 
