@@ -11,12 +11,7 @@ namespace sc = boost::statechart;
 #include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa { namespace events {
-#ifdef USE_BOOST_SC
-    class InterruptEvent : public MgmtEvent, public sc::event<InterruptEvent>
-#else
-    class InterruptEvent : public MgmtEvent
-#endif
-    {
+    class InterruptEvent : public MgmtEvent, public sc::event<InterruptEvent> {
     public:
         typedef sdpa::shared_ptr<InterruptEvent> Ptr;
 
