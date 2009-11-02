@@ -6,7 +6,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( C2D2D2DDummyGwesTest );
 
 C2D2D2DDummyGwesTest::C2D2D2DDummyGwesTest() :
 	SDPA_INIT_LOGGER("sdpa.tests.C2D2D2DDummyGwesTest"),
-    m_nITER(100),
+    m_nITER(1),
     m_sleep_interval(10000)
 {
 }
@@ -72,7 +72,7 @@ void C2D2D2DDummyGwesTest::tearDown()
 
 void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 {
-	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobFinished******************************************"<<std::endl);
+	SDPA_LOG_DEBUG("*****testDaemonFSM_JobFinished*****"<<std::endl);
 	string strAnswer = "finished";
 	string noStage = "";
 
@@ -90,7 +90,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
 
-		SDPA_LOG_DEBUG("***********JOB #"<<k<<"************");
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
 		std::string job_status =  m_ptrUser->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
@@ -128,7 +128,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 
 void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 {
-	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobFailed******************************************"<<std::endl);
+	SDPA_LOG_DEBUG("*****testDaemonFSM_JobFailed*****"<<std::endl);
 	string strAnswer = "failed";
 	string noStage = "";
 
@@ -142,11 +142,12 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 	DaemonFSM::start(m_ptrAgg);
 	DaemonFSM::start(m_ptrNRE);
 
+
 	for(int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
 
-		SDPA_LOG_DEBUG("***********JOB #"<<k<<"************");
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
 		std::string job_status =  m_ptrUser->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
@@ -185,7 +186,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 
 void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 {
-	SDPA_LOG_DEBUG("************************************testDaemonFSM_JobCancelled******************************************"<<std::endl);
+	SDPA_LOG_DEBUG("*****testDaemonFSM_JobCancelled*****"<<std::endl);
 
 	string strAnswer = "cancelled";
 	string noStage = "";
@@ -204,7 +205,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
 
-		SDPA_LOG_DEBUG("***********JOB #"<<k<<"************");
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
 		std::string job_status =  m_ptrUser->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
@@ -240,9 +241,11 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2D2D2DDummyGwesTest::testDaemonFSMWithGwes_JobFinished()
+
+
+void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished_WithGwes()
 {
-	SDPA_LOG_DEBUG("************************************testDaemonFSMWithGwes_JobFinished******************************************"<<std::endl);
+	SDPA_LOG_DEBUG("*****testDaemonFSMWithGwes_JobFinished*****"<<std::endl);
 	string strAnswer = "finished";
 	string noStage = "";
 
@@ -265,7 +268,7 @@ void C2D2D2DDummyGwesTest::testDaemonFSMWithGwes_JobFinished()
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
 
-		SDPA_LOG_DEBUG("***********JOB #"<<k<<"************");
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
 		std::string job_status =  m_ptrUser->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
@@ -302,3 +305,127 @@ void C2D2D2DDummyGwesTest::testDaemonFSMWithGwes_JobFinished()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
+
+void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed_WithGwes()
+{
+	SDPA_LOG_DEBUG("*****testDaemonFSM_JobFailed_WithGwes*****"<<std::endl);
+	string strAnswer = "failed";
+	string noStage = "";
+
+	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
+
+	m_ptrNRE = DaemonFSM::ptr_t( new NreDaemonWithGwes( sdpa::daemon::NRE,
+														pGwesNRE, sdpa::daemon::AGGREGATOR,
+														noStage,
+														strAnswer ) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
+
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	for(int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
+
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
+
+		std::string job_status =  m_ptrUser->queryJob(job_id_user);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = m_ptrUser->queryJob(job_id_user);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(m_sleep_interval);
+		}
+
+		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
+		m_ptrUser->retrieveResults(job_id_user);
+
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		m_ptrUser->deleteJob(job_id_user);
+	}
+
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
+
+	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
+	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
+
+	// shutdown the orchestrator
+	InterruptEvent::Ptr pEvtIntOrch( new InterruptEvent(m_ptrOrch->name(), m_ptrOrch->name() ));
+	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
+
+	// you can leave now
+	SDPA_LOG_DEBUG("User finished!");
+}
+
+
+void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_WithGwes()
+{
+	SDPA_LOG_DEBUG("*****testDaemonFSM_JobCancelled_WithGwes*****"<<std::endl);
+
+	string strAnswer = "cancelled";
+	string noStage = "";
+
+	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
+
+	m_ptrNRE = DaemonFSM::ptr_t( new NreDaemonWithGwes( sdpa::daemon::NRE,
+														pGwesNRE, sdpa::daemon::AGGREGATOR,
+														noStage,
+														strAnswer ) ); // No gwes
+	DaemonFSM::create_daemon_stage(m_ptrNRE);
+
+	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
+	m_ptrOrch->set_to_slave_stage(m_ptrAgg->daemon_stage());
+
+	DaemonFSM::start(m_ptrOrch);
+	DaemonFSM::start(m_ptrAgg);
+	DaemonFSM::start(m_ptrNRE);
+
+	for(int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
+
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
+
+		std::string job_status =  m_ptrUser->queryJob(job_id_user);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = m_ptrUser->queryJob(job_id_user);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(m_sleep_interval);
+		}
+
+		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
+		m_ptrUser->retrieveResults(job_id_user);
+
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		m_ptrUser->deleteJob(job_id_user);
+	}
+
+	InterruptEvent::Ptr pEvtIntNRE( new InterruptEvent(m_ptrNRE->name(), m_ptrNRE->name() ));
+	m_ptrNRE->daemon_stage()->send(pEvtIntNRE);
+
+	InterruptEvent::Ptr pEvtIntAgg( new InterruptEvent(m_ptrAgg->name(), m_ptrAgg->name() ));
+	m_ptrAgg->daemon_stage()->send(pEvtIntAgg);
+
+	// shutdown the orchestrator
+	InterruptEvent::Ptr pEvtIntOrch( new InterruptEvent(m_ptrOrch->name(), m_ptrOrch->name() ));
+	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
+
+	// you can leave now
+	SDPA_LOG_DEBUG("User finished!");
+}

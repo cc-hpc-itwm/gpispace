@@ -27,12 +27,13 @@
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::bsc;
+using namespace sdpa::fsm::smc;
 
 
 class SchedulerNRE : public SchedulerImpl

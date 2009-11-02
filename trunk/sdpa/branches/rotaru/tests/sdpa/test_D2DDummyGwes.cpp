@@ -32,7 +32,6 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
 
 const int NITER = 1;
 const int sleep_interval = 1000;

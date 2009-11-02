@@ -72,7 +72,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	// if it comes from WFE -> concerns the master job
 
 	ostringstream os;
-	SDPA_LOG_DEBUG("Call 'handleJobFailedEvent'");
+	SDPA_LOG_DEBUG("Call 'handleJobFinishedEvent'");
 
 	//put the job into the state Finished
 	Job::ptr_t pJob;
@@ -129,7 +129,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				parameter_list_t output;
 
 				os.str("");
-				os<<"Inform GWES that the activity "<<actId<<" failed";
+				os<<"Inform GWES that the activity "<<actId<<" finished";
 				SDPA_LOG_DEBUG(os.str());
 
 				try {
@@ -438,10 +438,18 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		}
     	else // the message comes from an worker, forward it to GWES
     	{
-    		Worker::ptr_t ptrWorker = findWorker(worker_id);
+    		try {
+    			Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-    		// in the message comes from a worker
-    		ptrWorker->delete_job(pEvt->job_id());
+				// in the message comes from a worker
+				ptrWorker->delete_job(pEvt->job_id());
+    		 }
+    		 catch(WorkerNotFoundException)
+    		 {
+    			os.str("");
+    			os<<"Worker "<<worker_id<<" not found!";
+    			SDPA_LOG_DEBUG(os.str());
+    		}
 
     		// tell to GWES that the activity ob_id() was cancelled
     		activity_id_t actId = pJob->id();
@@ -450,13 +458,6 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		// inform gwes that the activity was canceled
     		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
     	}
-
-	}
-	 catch(WorkerNotFoundException)
-	 {
-		os.str("");
-		os<<"Worker "<<worker_id<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
 	}
 	catch(JobNotFoundException)
 	{

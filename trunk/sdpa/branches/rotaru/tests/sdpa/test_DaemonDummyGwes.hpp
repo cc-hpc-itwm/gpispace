@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 
 namespace sdpa {
@@ -34,7 +34,7 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrDaemonFSM;
+			  dsm::DaemonFSM::ptr_t m_ptrDaemonFSM;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrToMasterStage;
 			  seda::Stage::Ptr m_ptrToSlaveStage;

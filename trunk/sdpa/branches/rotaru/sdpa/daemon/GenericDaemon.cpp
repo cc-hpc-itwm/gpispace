@@ -2,7 +2,7 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
@@ -15,7 +15,7 @@
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
-using namespace sdpa::fsm::bsc;
+//using namespace sdpa::fsm::bsc;
 
 
 //Provide ptr to an implementation of Sdpa2Gwes

@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
@@ -14,10 +14,12 @@ namespace sdpa {
 			class C2D2D2DDummyGwesTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::C2D2D2DDummyGwesTest );
 
-			  /*CPPUNIT_TEST( testDaemonFSM_JobFinished );
+			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );*/
-			  CPPUNIT_TEST(testDaemonFSMWithGwes_JobFinished);
+			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+			  CPPUNIT_TEST( testDaemonFSM_JobFinished_WithGwes );
+			  CPPUNIT_TEST( testDaemonFSM_JobFailed_WithGwes );
+			  CPPUNIT_TEST( testDaemonFSM_JobCancelled_WithGwes );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -33,13 +35,15 @@ namespace sdpa {
 			  void testDaemonFSM_JobFailed();
 			  void testDaemonFSM_JobCancelled();
 
-			  void testDaemonFSMWithGwes_JobFinished();
+			  void testDaemonFSM_JobFinished_WithGwes();
+			  void testDaemonFSM_JobFailed_WithGwes();
+			  void testDaemonFSM_JobCancelled_WithGwes();
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrOrch;
-			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrAgg;
-			  sdpa::fsm::bsc::DaemonFSM::ptr_t m_ptrNRE;
+			  dsm::DaemonFSM::ptr_t m_ptrOrch;
+			  dsm::DaemonFSM::ptr_t m_ptrAgg;
+			  dsm::DaemonFSM::ptr_t m_ptrNRE;
 
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
