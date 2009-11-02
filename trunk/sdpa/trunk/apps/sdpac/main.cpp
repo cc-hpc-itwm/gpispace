@@ -82,6 +82,8 @@ int main (int argc, char **argv) {
     LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
     LOG(INFO, "***************************************************");
 
+    api->configure_network("");
+
     if (argv[idx] == std::string("submit"))
     {
       if ((idx+1) == argc)
@@ -142,6 +144,8 @@ int main (int argc, char **argv) {
       std::cerr << "illegal command: " << argv[idx] << std::endl;
       return (1);
     }
+
+    api->shutdown_network("");
   }
   catch (const sdpa::client::ClientException &ce)
   {

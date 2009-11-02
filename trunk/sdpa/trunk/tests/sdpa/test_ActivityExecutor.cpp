@@ -43,7 +43,7 @@ void ActivityExecutorTest::testModuleNotLoaded()
 void ActivityExecutorTest::testOneActivity()
 {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
-  loader->load("example-mod", "./libexample-mod.so");
+  loader->load("./libexample-mod.so");
   sdpa::modules::ActivityExecutor executor(loader);
 
   sdpa::wf::Activity a1("activity-1", sdpa::wf::Method("example-mod@HelloWorld"));

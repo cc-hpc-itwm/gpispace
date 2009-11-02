@@ -27,7 +27,7 @@ target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
 
 # test module
-add_library(example-mod SHARED ExampleModule.cpp)
+add_library(example-mod SHARED example-mod.cpp)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)

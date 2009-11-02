@@ -309,6 +309,8 @@ void Client::action_configure(const Client::config_t &cfg)
   
   action_configure_network(cfg);
 
+  // action_configure_network(cfg);
+  
   // send event to myself
   if (cfg == "config-nok") client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
   else client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
@@ -365,6 +367,16 @@ void Client::action_shutdown()
   }
   DMLOG(DEBUG,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
+}
+
+void Client::action_shutdown_network()
+{
+  DMLOG(INFO, "shutting network compents down...");
+  seda::StageRegistry::instance().lookup(output_stage_)->stop();
+  seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
+
+  seda::StageRegistry::instance().remove(output_stage_);
+  seda::StageRegistry::instance().remove(client_stage_->name() + ".from-net");
 }
 
 void Client::action_submit(const seda::IEvent::Ptr &e)

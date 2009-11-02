@@ -23,7 +23,7 @@ void ModuleTest::testModuleLoad() {
 void ModuleTest::testModuleUnLoad() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -32,7 +32,7 @@ void ModuleTest::testModuleUnLoad() {
 void ModuleTest::testModuleFunctionCall() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -46,7 +46,7 @@ void ModuleTest::testModuleFunctionCall() {
 void ModuleTest::testModuleIllegalFunctionCall() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -67,7 +67,7 @@ void ModuleTest::testModuleIllegalFunctionCall() {
 void ModuleTest::testModuleLoopingCall() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -86,7 +86,7 @@ void ModuleTest::testModuleLoopingCall() {
 void ModuleTest::testAddFunctionCall() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -126,7 +126,7 @@ void ModuleTest::testAddFunctionCall() {
 void ModuleTest::testAlloc() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
@@ -156,7 +156,7 @@ void ModuleTest::testAlloc() {
 void ModuleTest::testUpdate() {
   sdpa::modules::ModuleLoader::ptr_t loader = sdpa::modules::ModuleLoader::create();
   try {
-    loader->load("example-mod", "./libexample-mod.so");
+    loader->load("./libexample-mod.so");
   } catch (const sdpa::modules::ModuleLoadFailed &mlf) {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }

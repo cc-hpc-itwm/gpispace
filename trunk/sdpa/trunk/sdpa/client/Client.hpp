@@ -74,6 +74,10 @@ namespace sdpa { namespace client {
     void action_store_reply(const seda::IEvent::Ptr &);
 
     void action_configure_network(const config_t &);
+    void action_shutdown_network();
+
+    const std::string &input_stage() const { return client_stage_->name(); }
+    const std::string &output_stage() const { return output_stage_; }
   private:
     Client(const std::string &a_name, const std::string &output_stage)
       : seda::Strategy(a_name)

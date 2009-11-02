@@ -52,13 +52,13 @@ void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
   *ptr = value;
 }
 
-extern "C" {
-  void sdpa_mod_init(Module *mod) {
-    SDPA_REGISTER_FUN(mod, HelloWorld);
-    SDPA_REGISTER_FUN(mod, DoNothing);
-    SDPA_REGISTER_FUN(mod, Add);
-    SDPA_REGISTER_FUN(mod, Malloc);
-    SDPA_REGISTER_FUN(mod, Free);
-    SDPA_REGISTER_FUN(mod, Update);
-  }
+SDPA_MOD_INIT_START(example-mod)
+{
+  SDPA_REGISTER_FUN(HelloWorld);
+  SDPA_REGISTER_FUN(DoNothing);
+  SDPA_REGISTER_FUN(Add);
+  SDPA_REGISTER_FUN(Malloc);
+  SDPA_REGISTER_FUN(Free);
+  SDPA_REGISTER_FUN(Update);
 }
+SDPA_MOD_INIT_END(example-mod)
