@@ -307,8 +307,6 @@ void Client::action_configure(const Client::config_t &cfg)
   // configure logging according to config
   //   TODO: do something
   
-  action_configure_network(cfg);
-
   // action_configure_network(cfg);
   
   // send event to myself
@@ -358,13 +356,6 @@ void Client::action_config_nok()
 void Client::action_shutdown()
 {
   MLOG(INFO,"shutting down");
-  {
-    seda::StageRegistry::instance().lookup(output_stage_)->stop();
-    seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
-
-    seda::StageRegistry::instance().remove(output_stage_);
-    seda::StageRegistry::instance().remove(client_stage_->name() + ".from-net");
-  }
   DMLOG(DEBUG,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
 }
