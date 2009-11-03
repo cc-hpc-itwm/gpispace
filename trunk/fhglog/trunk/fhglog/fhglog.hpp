@@ -11,4 +11,6 @@
 #include	<fhglog/SynchronizedAppender.hpp>
 #include	<fhglog/FileAppender.hpp>
 
+#include    <fhglog/Configuration.hpp>
+
 #endif   /* ----- #ifndef FHGLOG_INC  ----- */
