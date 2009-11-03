@@ -98,7 +98,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION "2.6" FATAL_ERROR)
 
 OPTION(Boost_USE_MULTITHREADED "Use the multithreaded versions of the boost libraries" ON)
 
-SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.35.0" "1.35" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" )
+SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.40.0" "1.40" "1.39.0" "1.39"
+	"1.38.0" "1.38" "1.37.0" "1.37" "1.36.0" "1.36"
+	"1.35.0" "1.35" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" )
 
 
 ############################################
