@@ -29,6 +29,10 @@ namespace fhg { namespace log {
       static void configure() {
         configure(DefaultConfiguration());
       }
+      static void configure(int , char **) {
+        // parameters currently ignored
+        configure();
+      }
       template<class CF> static void configure(CF cf) {
         (cf)();
       }
