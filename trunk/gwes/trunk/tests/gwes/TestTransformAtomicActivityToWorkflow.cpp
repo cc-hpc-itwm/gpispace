@@ -25,6 +25,7 @@ TestTransformAtomicActivityToWorkflow::TestTransformAtomicActivityToWorkflow() {
 	_gwesP = new GWES();
 	_gwesP->registerHandler(this);
 	_activityFinished = false;
+	_workflowCanceled = false;
 }
 
 TestTransformAtomicActivityToWorkflow::~TestTransformAtomicActivityToWorkflow() {
@@ -58,6 +59,10 @@ void TestTransformAtomicActivityToWorkflow::testTransform() {
 	}
 	
 	_gwesP->cancelWorkflow(_workflowId);
+	while (!_workflowCanceled) {
+		LOG_INFO(logger, "Waiting for workflow cancel notification...");
+		usleep(100000);
+	}
 	
 	LOG_INFO(logger, "============== END TestTransformAtomicActivityToWorkflow::testTransform =============");
 }
@@ -125,5 +130,6 @@ void TestTransformAtomicActivityToWorkflow::workflowFailed(const workflow_id_t &
  */ 
 void TestTransformAtomicActivityToWorkflow::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
+	_workflowCanceled = true;
 }
 

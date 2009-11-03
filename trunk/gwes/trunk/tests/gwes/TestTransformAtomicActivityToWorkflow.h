@@ -39,6 +39,7 @@ protected:
 	sdpa2gwes_t* _gwesP;
 	workflow_id_t _workflowId; 
 	bool _activityFinished;
+	bool _workflowCanceled;
 
 };
 

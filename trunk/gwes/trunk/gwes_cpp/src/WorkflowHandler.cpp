@@ -314,7 +314,8 @@ void WorkflowHandler::resumeWorkflow() throw (StateTransitionException) {
 }
 
 /**
- * Abort this workflow. Status should switch to TERMINATED.
+ * Abort this workflow. Status switches to TERMINATED afterwards.
+ * This method is asynchronous and does NOT wait until workflow has been aborted.
  */
 void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 	// you cannot abort an COMPLETED, or TERMINATED workflow
@@ -333,10 +334,7 @@ void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 		setStatus(STATUS_TERMINATED);
 	}
 
-	// Workflow is running or active
-	else {
-		waitForStatusChangeToCompletedOrTerminated();
-	}
+	// Notification about workflow abort is async.
 }
 
 WorkflowHandler::status_t WorkflowHandler::waitForStatusChangeFrom(WorkflowHandler::status_t oldStatus) {
