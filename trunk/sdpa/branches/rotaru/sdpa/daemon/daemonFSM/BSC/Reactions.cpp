@@ -30,6 +30,14 @@ DaemonFSM::DaemonFSM(  const std::string &name,
 	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
 }
 
+DaemonFSM::DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: GenericDaemon(name, pArgSdpa2Gwes),
+	  SDPA_INIT_LOGGER(name+"FSM")
+{
+	initiate();
+	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
+}
+
 DaemonFSM::~DaemonFSM() {
 	terminate();
 	SDPA_LOG_DEBUG("Daemon state machine destroyed ...");

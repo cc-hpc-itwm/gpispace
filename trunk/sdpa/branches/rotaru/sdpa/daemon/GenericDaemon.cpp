@@ -1,4 +1,8 @@
 #include <seda/StageRegistry.hpp>
+#include <seda/comm/comm.hpp>
+#include <seda/comm/ConnectionFactory.hpp>
+#include <seda/comm/ConnectionStrategy.hpp>
+#include <sdpa/events/CodecStrategy.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
@@ -67,6 +71,18 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 		ptr_to_slave_stage_ = NULL;
 }
 
+// with network scommunicatio
+GenericDaemon::GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: Strategy(name),
+	  SDPA_INIT_LOGGER(name),
+	  ptr_job_man_(new JobManager()),
+	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes, this)),
+	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
+	  master_(""),
+	  m_bRegistered(false)
+{
+}
+
 GenericDaemon::~GenericDaemon()
 {
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
@@ -77,9 +93,67 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::create_daemon_stage(GenericDaemon::ptr_t ptr_daemon )
 {
-	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 2) );
+	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 1) );
 	ptr_daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
+}
+
+
+void GenericDaemon::configure_network()
+{
+	SDPA_LOG_DEBUG("configuring network components...");
+	const std::string prefix(daemon_stage_->name()+".net");
+
+	SDPA_LOG_DEBUG("setting up decoding...");
+	seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
+	sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
+	seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
+	seda::StageRegistry::instance().insert(decode_stage);
+	decode_stage->start();
+
+	SDPA_LOG_DEBUG("setting up the network stage...");
+	seda::comm::ConnectionFactory connFactory;
+	seda::comm::ConnectionParameters params("udp", "127.0.0.1", daemon_stage_->name(), 5000);
+	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
+	// master known service: give the port as a parameter
+	//conn->locator()->insert("orchestrator", "127.0.0.1:5000");
+	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
+	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
+	seda::StageRegistry::instance().insert(network_stage);
+	network_stage->start();
+
+	SDPA_LOG_DEBUG("setting up the output/encoding stage...");
+	seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
+	sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
+	seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
+	seda::StageRegistry::instance().insert(encode_stage);
+
+	ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
+	encode_stage->start();
+}
+
+void GenericDaemon::shutdown_network()
+{
+	SDPA_LOG_DEBUG("shutting-down the network components...");
+	const std::string prefix(daemon_stage_->name()+".net");
+
+	SDPA_LOG_DEBUG("shutdown the decoding stage...");
+	std::string decode_stage_name = prefix+"-decode";
+	seda::Stage::Ptr decode_stage = seda::StageRegistry::instance().lookup(decode_stage_name);
+	decode_stage->stop();
+
+	SDPA_LOG_DEBUG("shutdown the network stage...");
+	std::string network_stage_name = prefix;
+	seda::Stage::Ptr network_stage = seda::StageRegistry::instance().lookup(network_stage_name);
+	network_stage->stop();
+
+	SDPA_LOG_DEBUG("shutdown the encoding stage...");
+	std::string encode_stage_name = prefix+"-encode";
+	seda::Stage::Ptr encode_stage = seda::StageRegistry::instance().lookup(encode_stage_name);
+
+	encode_stage->stop();
+
+	ptr_to_master_stage_ = ptr_to_slave_stage_ = NULL;
 }
 
 void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
@@ -413,8 +487,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
 	ostringstream os;
-	os<<"Call 'action_submit_job'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_submit_job' FROM "<<e.from());
 	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens

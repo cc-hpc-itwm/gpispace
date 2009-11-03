@@ -87,6 +87,9 @@ namespace sdpa { namespace daemon {
 	  virtual void jobFailed(std::string workerName, const job_id_t &);
 	  virtual void jobCancelled(std::string workerName, const job_id_t &);
 
+	  virtual void configure_network();
+	  virtual void shutdown_network();
+
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const  Worker::ptr_t );
 
@@ -116,6 +119,8 @@ namespace sdpa { namespace daemon {
 
 	  GenericDaemon(const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes*);
 	  GenericDaemon(const std::string &name, const std::string&, const std::string&,sdpa::Sdpa2Gwes*);
+
+	  GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes);
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;

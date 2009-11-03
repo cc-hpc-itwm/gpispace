@@ -317,14 +317,14 @@ void Client::action_configure(const Client::config_t &cfg)
 void Client::action_configure_network(const Client::config_t &)
 {
   MLOG(INFO, "configuring network components...");
-  const std::string net_stage_name(client_stage_->name()+".from-net");
+  const std::string prefix(client_stage_->name()+".net");
   {
     DMLOG(INFO, "setting up decoding...");
     seda::ForwardStrategy::Ptr to_client(new seda::ForwardStrategy(client_stage_->name()));
-    sdpa::events::DecodeStrategy::ptr_t decode(new sdpa::events::DecodeStrategy(net_stage_name, to_client));
-    seda::Stage::Ptr from_net(new seda::Stage(net_stage_name, decode));
-    seda::StageRegistry::instance().insert(from_net);
-    from_net->start();
+    sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", to_client));
+    seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
+    seda::StageRegistry::instance().insert(decode_stage);
+    decode_stage->start();
   }
 
   {
@@ -333,9 +333,13 @@ void Client::action_configure_network(const Client::config_t &)
     seda::comm::ConnectionParameters params("udp", "127.0.0.1", client_stage_->name());
     seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
     conn->locator()->insert("orchestrator", "127.0.0.1:5000");
-    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(net_stage_name, conn));
-    sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(net_stage_name, conn_s));
+    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
+    seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
+    seda::StageRegistry::instance().insert(network_stage);
+    network_stage->start();
 
+    seda::ForwardStrategy::Ptr to_network(new seda::ForwardStrategy(network_stage->name()));
+    sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(prefix+"-encode", to_network));
     seda::Stage::Ptr output(new seda::Stage(output_stage_, encode));
     seda::StageRegistry::instance().insert(output);
     output->start();

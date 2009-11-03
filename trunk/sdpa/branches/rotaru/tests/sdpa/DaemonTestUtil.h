@@ -33,17 +33,19 @@ using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
 
 
 class SchedulerNRE : public SchedulerImpl
 {
 public:
+
 	static string answerStrategy;
+	SDPA_DECLARE_LOGGER();
 
 	SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
 		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
-		m_answerStrategy(answerStrategy)
+		m_answerStrategy(answerStrategy),
+		SDPA_INIT_LOGGER("SchedulerNRE")
 		{}
 
 	virtual ~SchedulerNRE() { }
@@ -114,10 +116,10 @@ public:
 	}
 
 	NreDaemon(  const std::string &name,
-								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
-								const std::string& toMasterStageName,
-								const std::string& toSlaveStageName,
-								std::string& answerStrategy)
+				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				const std::string& toMasterStageName,
+				const std::string& toSlaveStageName,
+				std::string& answerStrategy)
 	: DaemonFSM( name, pArgSdpa2Gwes, toMasterStageName, toSlaveStageName ),
 	  SDPA_INIT_LOGGER(name)
 	{
@@ -217,6 +219,24 @@ public:
 	}
 
 	 virtual ~NreDaemonWithGwes() {  }
+
+};
+
+class TestDaemon : public DaemonFSM
+{
+public:
+	SDPA_DECLARE_LOGGER();
+
+	TestDaemon(  const  std::string &name,
+						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						std::string& answerStrategy)
+	: DaemonFSM( name, pArgSdpa2Gwes ),
+	  SDPA_INIT_LOGGER(name)
+	{
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes(pArgSdpa2Gwes, this, answerStrategy));
+	}
+
+	 virtual ~TestDaemon() {  }
 
 };
 

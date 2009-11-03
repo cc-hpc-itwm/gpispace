@@ -1,5 +1,5 @@
-#ifndef D2D2D_DUMMY_GWES_TEST_HPP_
-#define D22D_DUMMY_GWES_TEST_HPP_
+#ifndef C2D2D2D_DUMMY_GWES_TEST_HPP_
+#define C2D2D2D_DUMMY_GWES_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"

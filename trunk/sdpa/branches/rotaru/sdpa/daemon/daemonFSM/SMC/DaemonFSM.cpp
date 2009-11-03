@@ -6,6 +6,7 @@ using namespace sdpa::events;
 void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 {
 	lock_type lock(mtx_);
+
 	if( StartUpEvent* ptr = dynamic_cast<StartUpEvent*>(pEvent.get()) )
 		GetContext().StartUp(*ptr);
 	else if( ConfigOkEvent* ptr = dynamic_cast<ConfigOkEvent*>(pEvent.get()) )
