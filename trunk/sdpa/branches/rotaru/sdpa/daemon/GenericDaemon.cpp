@@ -99,7 +99,7 @@ void GenericDaemon::create_daemon_stage(GenericDaemon::ptr_t ptr_daemon )
 }
 
 
-void GenericDaemon::configure_network()
+void GenericDaemon::configure_network( std::string host, int port, std::string masterName, std::string masterUrl )
 {
 	SDPA_LOG_DEBUG("configuring network components...");
 	const std::string prefix(daemon_stage_->name()+".net");
@@ -113,10 +113,12 @@ void GenericDaemon::configure_network()
 
 	SDPA_LOG_DEBUG("setting up the network stage...");
 	seda::comm::ConnectionFactory connFactory;
-	seda::comm::ConnectionParameters params("udp", "127.0.0.1", daemon_stage_->name(), 5000);
+	seda::comm::ConnectionParameters params("udp", host, daemon_stage_->name(), port);
 	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
 	// master known service: give the port as a parameter
-	//conn->locator()->insert("orchestrator", "127.0.0.1:5000");
+	if( !masterName.empty() &&  !masterUrl.empty() )
+		conn->locator()->insert( masterName, masterUrl);
+
 	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
 	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
 	seda::StageRegistry::instance().insert(network_stage);

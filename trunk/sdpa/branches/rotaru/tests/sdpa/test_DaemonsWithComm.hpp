@@ -13,8 +13,11 @@ namespace sdpa {
 		namespace tests {
 			class C2DWithCommTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::C2DWithCommTest );
-			  CPPUNIT_TEST( testUserOrchComm );
-			  CPPUNIT_TEST( testUserOrchCommWithGwes );
+			  //CPPUNIT_TEST( testUserOrchCommDummyGwes );
+			  //CPPUNIT_TEST( testUserOrchCommRealGwes );
+			  //CPPUNIT_TEST( testUserOrchAggCommDummyGwes );
+			  //CPPUNIT_TEST( testUserOrchAggCommRealGwes );
+			  CPPUNIT_TEST( testUserOrchAggNRECommDummyGwes );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -26,17 +29,23 @@ namespace sdpa {
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
-			  void testUserOrchComm();
-			  void testUserOrchCommWithGwes();
+			  void testUserOrchCommDummyGwes();
+			  void testUserOrchCommRealGwes();
+			  void testUserOrchAggCommDummyGwes();
+			  void testUserOrchAggCommRealGwes();
+			  void testUserOrchAggNRECommDummyGwes();
+			  void testUserOrchAggNRECommRealGwes();
 
 			private:
 			  SDPA_DECLARE_LOGGER();
 			  dsm::DaemonFSM::ptr_t m_ptrOrch;
+			  dsm::DaemonFSM::ptr_t m_ptrAgg;
+			  dsm::DaemonFSM::ptr_t m_ptrNRE;
 
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
+			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
 
 			  sdpa::client::ClientApi::ptr_t m_ptrUser;
-
 			  std::string m_strWorkflow;
 
 			  int m_nITER;

@@ -87,7 +87,8 @@ namespace sdpa { namespace daemon {
 	  virtual void jobFailed(std::string workerName, const job_id_t &);
 	  virtual void jobCancelled(std::string workerName, const job_id_t &);
 
-	  virtual void configure_network();
+	  //virtual void configure_network();
+	  virtual void configure_network( std::string host, int port, std::string masterName = "", std::string masterUrl = "" );
 	  virtual void shutdown_network();
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
