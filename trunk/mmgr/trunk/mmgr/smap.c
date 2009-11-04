@@ -66,7 +66,7 @@ smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
 PValue_t
 smap_get (const SMap_t PCTree, const Key_t Key)
 {
-  PTree_t PTree = (PTree_t) PCTree;
+  PTree_t PTree = PCTree;
 
   while (PTree != NULL && Key != PTree->key)
     {
@@ -82,7 +82,7 @@ smap_get_atleast (const SMap_t PCTree, PKey_t PWantHave)
   if (PWantHave == NULL)
     return NULL;
 
-  PTree_t PTree = (PTree_t) PCTree;
+  PTree_t PTree = PCTree;
 
   while (PTree != NULL && *PWantHave > PTree->key)
     {
@@ -103,7 +103,7 @@ smap_get_atleast_minimal (const SMap_t PCTree, PKey_t PWantHave)
   if (PWantHave == NULL)
     return NULL;
 
-  PTree_t PTree = (PTree_t) PCTree;
+  PTree_t PTree = PCTree;
 
   if (PTree == NULL)
     return NULL;
@@ -243,7 +243,7 @@ void
 smap_work_inorder (const SMap_t PCTree, const fSMapWork_t fSMapWork,
                    void *Pdat)
 {
-  const PTree_t PTree = (PTree_t) PCTree;
+  const PTree_t PTree = PCTree;
 
   if (PTree == NULL)
     return;

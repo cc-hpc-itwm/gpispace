@@ -103,7 +103,7 @@ static void
 fWork (const Key_t Key, const PValue_t PVal, void *Pwd)
 {
   const pdata_t pdata = (pdata_t) (*PVal);
-  const pwork_dat_t pwd = (pwork_dat_t) Pwd;
+  const pwork_dat_t pwd = Pwd;
 
   pwd->fOStabWork (Key, pdata->offset, pdata->size, pwd->Pdat);
 }

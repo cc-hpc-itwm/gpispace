@@ -188,7 +188,7 @@ tmmgr_offset_size (const PTmmgr_t PTmmgr, const Handle_t Handle,
   if (PTmmgr == NULL)
     return RET_FAILURE;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   Bool_t was_there =
     ostab_get (ptmmgr->handle_to_offset_and_size, Handle, POffset, PMemSize);
@@ -365,7 +365,7 @@ tmmgr_memsize (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->mem_size;
 }
@@ -376,7 +376,7 @@ tmmgr_memfree (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->mem_free;
 }
@@ -387,7 +387,7 @@ tmmgr_memused (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->mem_size - ptmmgr->mem_free;
 }
@@ -398,7 +398,7 @@ tmmgr_minfree (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->min_free;
 }
@@ -409,7 +409,7 @@ tmmgr_highwater (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->high_water;
 }
@@ -420,7 +420,7 @@ tmmgr_numhandle (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ostab_size (ptmmgr->handle_to_offset_and_size);
 }
@@ -431,7 +431,7 @@ tmmgr_numalloc (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->num_alloc;
 }
@@ -442,7 +442,7 @@ tmmgr_numfree (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->num_free;
 }
@@ -453,7 +453,7 @@ tmmgr_sumalloc (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->sum_alloc;
 }
@@ -464,7 +464,7 @@ tmmgr_sumfree (const PTmmgr_t PTmmgr)
   if (PTmmgr == NULL)
     return 0;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   return ptmmgr->sum_free;
 }
@@ -582,7 +582,7 @@ tmmgr_info (const PTmmgr_t PTmmgr, const char *msg)
   if (PTmmgr == NULL)
     return;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   Count_t nhandle = tmmgr_numhandle (PTmmgr);
   Count_t nalloc = tmmgr_numalloc (PTmmgr);
@@ -619,7 +619,7 @@ tmmgr_status (const PTmmgr_t PTmmgr, const char *msg)
   if (PTmmgr == NULL)
     return;
 
-  ptmmgr_t ptmmgr = (ptmmgr_t) PTmmgr;
+  ptmmgr_t ptmmgr = PTmmgr;
 
   tmmgr_info (ptmmgr, msg);
 

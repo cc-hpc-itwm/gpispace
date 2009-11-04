@@ -20,7 +20,7 @@ heap_out (const Heap_t Heap)
 
   if (Heap != NULL)
     {
-      const pheap_t pheap = (pheap_t) Heap;
+      const pheap_t pheap = Heap;
 
       printf ("|" FMT_Size_t " " FMT_Size_t "|", pheap->pos, pheap->size);
 
@@ -39,7 +39,7 @@ heap_size (const Heap_t Heap)
   if (Heap == NULL)
     return 0;
 
-  const pheap_t pheap = (pheap_t) Heap;
+  const pheap_t pheap = Heap;
 
   return pheap->pos;
 }

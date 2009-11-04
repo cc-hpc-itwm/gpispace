@@ -74,7 +74,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 PValue_t
 trie_getany (const PTrieMap_t PCTrie)
 {
-  PTrie_t PTrie = (PTrie_t) PCTrie;
+  PTrie_t PTrie = PCTrie;
 
   while (PTrie != NULL && PTrie->data == NULL)
     {
@@ -100,7 +100,7 @@ trie_getany (const PTrieMap_t PCTrie)
 PValue_t
 trie_get (const PTrieMap_t PCTrie, Key_t Key)
 {
-  PTrie_t PTrie = (PTrie_t) PCTrie;
+  PTrie_t PTrie = PCTrie;
 
   while (PTrie != NULL && Key > 0)
     {
@@ -188,7 +188,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
 Size_t
 trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
 {
-  const PTrie_t PTrie = (PTrie_t) PCTrie;
+  const PTrie_t PTrie = PCTrie;
 
   if (PTrie == NULL)
     return 0;
