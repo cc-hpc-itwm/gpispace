@@ -1,21 +1,21 @@
-#include "test_C2DWithComm.hpp"
+#include "test_DaemonsWithComm.hpp"
 #include <DaemonTestUtil.h>
 #include <gwes/GWES.h>
 
-CPPUNIT_TEST_SUITE_REGISTRATION( C2DWithCommTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( DaemonsWithCommTest );
 
-C2DWithCommTest::C2DWithCommTest() :
-	SDPA_INIT_LOGGER("sdpa.tests.C2DWithCommTest"),
+DaemonsWithCommTest::DaemonsWithCommTest() :
+	SDPA_INIT_LOGGER("sdpa.tests.DaemonsWithCommTest"),
     m_nITER(1),
     m_sleep_interval(10000)
 {
 }
 
-C2DWithCommTest::~C2DWithCommTest()
+DaemonsWithCommTest::~DaemonsWithCommTest()
 {}
 
 
-string C2DWithCommTest::read_workflow(string strFileName)
+string DaemonsWithCommTest::read_workflow(string strFileName)
 {
 	ifstream f(strFileName.c_str());
 	ostringstream os;
@@ -32,7 +32,7 @@ string C2DWithCommTest::read_workflow(string strFileName)
 	return os.str();
 }
 
-void C2DWithCommTest::setUp() { //initialize and start the finite state machine
+void DaemonsWithCommTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
 	m_ptrUser = sdpa::client::ClientApi::create("empty config", sdpa::daemon::USER);
@@ -44,7 +44,7 @@ void C2DWithCommTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
-void C2DWithCommTest::tearDown()
+void DaemonsWithCommTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
@@ -56,7 +56,7 @@ void C2DWithCommTest::tearDown()
 	//m_ptrOrch.reset();
 }
 
-void C2DWithCommTest::testUserOrchCommDummyGwes()
+void DaemonsWithCommTest::testUserOrchCommDummyGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchCommDummyGwes*****"<<std::endl);
 	string strAnswer = "finished";
@@ -105,7 +105,7 @@ void C2DWithCommTest::testUserOrchCommDummyGwes()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2DWithCommTest::testUserOrchCommRealGwes()
+void DaemonsWithCommTest::testUserOrchCommRealGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchCommRealGwes*****"<<std::endl);
 	string strAnswer = "finished";
@@ -153,7 +153,7 @@ void C2DWithCommTest::testUserOrchCommRealGwes()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2DWithCommTest::testUserOrchAggCommDummyGwes()
+void DaemonsWithCommTest::testUserOrchAggCommDummyGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchAggCommDummyGwes*****"<<std::endl);
 	string strAnswer = "finished";
@@ -214,7 +214,7 @@ void C2DWithCommTest::testUserOrchAggCommDummyGwes()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2DWithCommTest::testUserOrchAggCommRealGwes()
+void DaemonsWithCommTest::testUserOrchAggCommRealGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchAggCommRealGwes*****"<<std::endl);
 	string strAnswer = "finished";
@@ -275,7 +275,7 @@ void C2DWithCommTest::testUserOrchAggCommRealGwes()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2DWithCommTest::testUserOrchAggNRECommDummyGwes()
+void DaemonsWithCommTest::testUserOrchAggNRECommDummyGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchAggNRECommDummyGwes*****"<<std::endl);
 	string strAnswer = "finished";
@@ -348,25 +348,25 @@ void C2DWithCommTest::testUserOrchAggNRECommDummyGwes()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void C2DWithCommTest::testUserOrchAggNRECommRealGwes()
+void DaemonsWithCommTest::testUserOrchAggNRECommRealGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchAggNRECommRealGwes*****"<<std::endl);
 	string strAnswer = "finished";
 	string noStage = "";
 
-	m_ptrSdpa2GwesOrch = new DummyGwes();
+	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
 	m_ptrOrch->configure_network("127.0.0.1", 5000);
 	DaemonFSM::start(m_ptrOrch);
 
-	m_ptrSdpa2GwesAgg = new DummyGwes();
+	m_ptrSdpa2GwesAgg =  new gwes::GWES();
 	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg ) );
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
 	m_ptrAgg->configure_network("127.0.0.1", 5001, sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
-	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
+	sdpa::Sdpa2Gwes* pGwesNRE =  new gwes::GWES();
 	m_ptrNRE = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::NRE, pGwesNRE, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 	m_ptrNRE->configure_network("127.0.0.1", 5002, sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");

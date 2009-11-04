@@ -22,7 +22,7 @@
 #include <tests/sdpa/test_C2D2D2DDummyGwes.hpp>
 #include <tests/sdpa/test_C2D2D2DRealGwes.hpp>
 
-#include <tests/sdpa/test_C2DWithComm.hpp>
+#include <tests/sdpa/test_DaemonsWithComm.hpp>
 
 #include <tests/sdpa/test_Scheduler.hpp>
 
@@ -53,7 +53,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );*/
 
-	  suiteOfTests->addTest( C2DWithCommTest::suite() );
+	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );
 
       return suiteOfTests;
     }
