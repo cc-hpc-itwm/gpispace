@@ -2,18 +2,19 @@
 #define SDPA_CLIENT_EVENTS_HPP 1
 
 #include <seda/IEvent.hpp>
+#include <sdpa/client/types.hpp>
 
 namespace sdpa { namespace client {
   class StartUp : public seda::IEvent
   {
     public:
       explicit
-      StartUp(const std::string &a_config) : config_(a_config) {}
+      StartUp(const config_t &a_config) : config_(a_config) {}
       std::string str() const { return "StartUp"; }
 
-      const std::string &config() const { return config_; }
+      const config_t &config() const { return config_; }
     private:
-      std::string config_;
+      config_t config_;
   };
 
   class Shutdown : public seda::IEvent

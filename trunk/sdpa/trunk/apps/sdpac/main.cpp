@@ -70,12 +70,12 @@ int main (int argc, char **argv) {
      "results: \tretrieve the results of a job, arg must specify the job-id\n"
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      )
-    ("arg", po::value<std::vector<std::string> >(),
-     "arguments to the command")
     ("output", po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
     ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
      "name of the orchestrator")
+    ("client", po::value<std::string>()->default_value("sdpa.app.client"),
+     "name of the client")
     ("config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
      "path to the configuration file")
     ("verbose,v", po::value<int>()->implicit_value(1),
@@ -83,11 +83,17 @@ int main (int argc, char **argv) {
     ("quiet,q", "be quiet")
     ;
 
+  po::options_description client_hidden;
+  client_hidden.add_options()
+    ("arg", po::value<std::vector<std::string> >(),
+     "arguments to the command")
+     ;
+
   po::options_description network_opts("Network related options");
   network_opts.add_options()
     ("network.timeout", po::value<unsigned int>()->default_value(30000),
      "maximum time to wait for a reply (in milliseconds)")
-    ("network.location", po::value< std::vector<std::string> >(),
+    ("network.location", po::value< std::vector<std::string> >()->composing(),
      "location information for a specific location (name:location)")
     ;
 
@@ -95,7 +101,7 @@ int main (int argc, char **argv) {
   visible_opts.add(general_opts).add(client_opts);
 
   po::options_description cmdline_opts;
-  cmdline_opts.add(visible_opts).add(network_opts).add(logging_opts);
+  cmdline_opts.add(visible_opts).add(client_hidden).add(network_opts).add(logging_opts);
 
   po::options_description config_opts;
   config_opts.add(client_opts).add(network_opts).add(logging_opts);
@@ -175,7 +181,7 @@ int main (int argc, char **argv) {
 
   try
   {
-    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create("empty config"));
+    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create(vm));
     if (vm.count("version"))
     {
       std::cout << "           "
@@ -217,7 +223,7 @@ int main (int argc, char **argv) {
     LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
     LOG(INFO, "***************************************************");
 
-    api->configure_network("");
+    api->configure_network(vm);
 
     if (command == "submit")
     {
@@ -282,7 +288,7 @@ int main (int argc, char **argv) {
       return (1);
     }
 
-    api->shutdown_network("");
+    api->shutdown_network();
   }
   catch (const sdpa::client::ClientException &ce)
   {
