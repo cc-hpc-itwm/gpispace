@@ -228,7 +228,7 @@ static void
 fMemmoveSwapped (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
                  const MemSize_t Size, void *PDat)
 {
-  pmemmoveswap_t pmemmoveswap = (pmemmoveswap_t) PDat;
+  pmemmoveswap_t pmemmoveswap = PDat;
 
   if (pmemmoveswap->fMemmove != NULL)
     pmemmoveswap->fMemmove (pmemmoveswap->MemSize - OffsetDest,
