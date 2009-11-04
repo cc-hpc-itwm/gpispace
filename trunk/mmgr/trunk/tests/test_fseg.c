@@ -77,7 +77,7 @@ get (const FSeg_t FSeg, const Key_t Key)
 int
 main ()
 {
-  FSeg_t FSeg = (FSeg_t) NULL;
+  FSeg_t FSeg = NULL;
 
   get (FSeg, 1 << 9);
   get (FSeg, 1 << 10);

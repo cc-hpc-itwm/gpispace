@@ -120,7 +120,7 @@ smap_print_max (const SMap_t sm, const Level_t MaxLevel)
 int
 main ()
 {
-  SMap_t sm = (SMap_t) NULL;
+  SMap_t sm = NULL;
 
   malloc_stats ();
 

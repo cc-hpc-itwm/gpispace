@@ -46,7 +46,7 @@ print (const OStab_t ostab)
 int
 main ()
 {
-  OStab_t ostab = (OStab_t) NULL;
+  OStab_t ostab = NULL;
 
   malloc_stats ();
 

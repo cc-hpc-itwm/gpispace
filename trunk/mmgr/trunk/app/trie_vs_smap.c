@@ -47,8 +47,8 @@ main (int argc, char **argv)
   int use_gen = (argv[2][0] == 'k') ? 1 : 0;
   Size_t size = atol (argv[3]);
 
-  SMap_t sm = (SMap_t) NULL;
-  TrieMap_t tm = (TrieMap_t) NULL;
+  SMap_t sm = NULL;
+  TrieMap_t tm = NULL;
   Word_t dups = 0;
 
   srand (31415926);

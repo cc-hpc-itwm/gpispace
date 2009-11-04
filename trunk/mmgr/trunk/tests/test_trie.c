@@ -83,7 +83,7 @@ print (const TrieMap_t tm)
 int
 main ()
 {
-  TrieMap_t tm = (TrieMap_t) NULL;
+  TrieMap_t tm = NULL;
 
   malloc_stats ();
 

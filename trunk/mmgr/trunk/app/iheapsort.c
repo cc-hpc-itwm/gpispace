@@ -7,7 +7,7 @@
 int
 main ()
 {
-  Heap_t h = (Heap_t) NULL;
+  Heap_t h = NULL;
 
   char buf[20];
 

@@ -128,7 +128,7 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 int
 main ()
 {
-  DTmmgr_t dtmmgr = (DTmmgr_t) NULL;
+  DTmmgr_t dtmmgr = NULL;
 
   dtmmgr_init (&dtmmgr, 45, 2);
 

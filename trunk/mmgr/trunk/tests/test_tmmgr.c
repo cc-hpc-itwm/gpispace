@@ -122,7 +122,7 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 int
 main ()
 {
-  Tmmgr_t tmmgr = (Tmmgr_t) NULL;
+  Tmmgr_t tmmgr = NULL;
 
   tmmgr_init (&tmmgr, 45, 1);
 
@@ -257,7 +257,7 @@ main ()
 
   malloc_stats ();
 
-  Tmmgr_t tmmgrAligned = (Tmmgr_t) NULL;
+  Tmmgr_t tmmgrAligned = NULL;
 
   tmmgr_init (&tmmgrAligned, 45, (1 << 4));
 

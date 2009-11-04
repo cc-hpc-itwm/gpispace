@@ -47,7 +47,7 @@ main (int argc, char **argv)
   Align_t align = atol (argv[3]);
   Count_t alloc = atol (argv[4]);
 
-  Tmmgr_t tmmgr = (Tmmgr_t) NULL;
+  Tmmgr_t tmmgr = NULL;
 
   tmmgr_init (&tmmgr, size, align);
 
