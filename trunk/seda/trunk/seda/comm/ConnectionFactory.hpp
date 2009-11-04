@@ -62,16 +62,21 @@ namespace seda { namespace comm {
       : transport_(a_transport)
       , logical_name_(a_logical_name)
     {
-      // try to split up host and port
-      const std::string h(host_and_port.substr(0, host_and_port.find(':')));
-      std::string p(host_and_port.substr(h.size()+1));
-      if (p.empty()) p = "0";
-      host_ = h;
-      std::stringstream sstr(p);
-      sstr >> port_;
-      if (! sstr)
+      std::string::size_type colon_pos = host_and_port.find_first_of(':');
+      if (colon_pos == std::string::npos)
       {
-        throw std::runtime_error("specified port could not be converted to short: " + p);
+        host_ = host_and_port;
+        port_ = 0;
+      }
+      else
+      {
+        host_ = host_and_port.substr(0, colon_pos);
+        std::stringstream sstr(host_and_port.substr(colon_pos+1));
+        sstr >> port_;
+        if (! sstr)
+        {
+          throw std::runtime_error("illegal argument: " + host_and_port);
+        }
       }
     }
 
