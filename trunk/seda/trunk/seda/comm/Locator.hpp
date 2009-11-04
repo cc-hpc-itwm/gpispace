@@ -22,6 +22,7 @@
 #include <boost/thread.hpp>
 #include <string>
 #include <map>
+#include <ostream>
 
 #include <fhglog/fhglog.hpp>
 #include <seda/shared_ptr.hpp>
@@ -94,11 +95,18 @@ namespace seda { namespace comm {
 
     const port_t &port() const { return port_; }
     port_t &port() { return port_; }
+
   private:
     std::string name_;
     host_t host_;
     port_t port_;
   };
+
+  inline std::ostream &operator<<(std::ostream &os, const Location &loc)
+  {
+    os << loc.name() << ":" << loc.host() << ":" << loc.port();
+    return os;
+  }
 
   class Locator
   {
