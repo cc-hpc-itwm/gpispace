@@ -1,6 +1,6 @@
 #include "Config.hpp"
 
-using namespace sdpa::config;
+using namespace sdpa::util;
 namespace fs = boost::filesystem;
 
 Config::ptr_t Config::create()

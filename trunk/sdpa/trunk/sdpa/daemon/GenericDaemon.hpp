@@ -9,7 +9,7 @@
 
 #include <seda/Strategy.hpp>
 
-#include <sdpa/Config.hpp>
+#include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -114,7 +114,7 @@ namespace sdpa { namespace daemon {
 	  seda::Stage* daemon_stage_;
 	  std::string master_;
 
-	  sdpa::config::Config::ptr_t ptr_daemon_cfg_;
+	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  sdpa::util::time_type last_request_time;
   };
 

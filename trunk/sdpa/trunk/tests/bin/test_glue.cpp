@@ -24,9 +24,9 @@
 
 #include <sdpa/wf/GwesGlue.hpp>
 
-int main(int argc, char **argv)
+int main(int , char **)
 {
-  fhg::log::Configurator::configure(argc, argv);
+  fhg::log::Configurator::configure();
   using namespace sdpa;
 
   {

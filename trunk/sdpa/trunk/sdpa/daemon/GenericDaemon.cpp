@@ -63,7 +63,7 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	sleep(1);
 
 	// you should read the configuration file here!
-	ptr_daemon->ptr_daemon_cfg_ = sdpa::config::Config::create();
+	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create();
 
 	// use for now as below, later read from config file
 	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 100000); //100 ms
