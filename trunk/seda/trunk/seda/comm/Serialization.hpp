@@ -34,7 +34,6 @@ namespace boost { namespace serialization {
     ar & msg.from();
     ar & msg.to();
     ar & msg.payload();
-    ar & msg.type_code();
   }
 }}
 

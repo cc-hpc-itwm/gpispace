@@ -32,13 +32,11 @@ namespace seda {
           : from_(address_type())
           , to_(address_type())
           , payload_(payload_type())
-          , type_code_(0)
         {}
-        SedaMessage(const address_type & a_from, const address_type & a_to, const payload_type & a_payload, unsigned int a_type_code = 0)
+        SedaMessage(const address_type & a_from, const address_type & a_to, const payload_type & a_payload)
           : from_(a_from)
           , to_(a_to)
           , payload_(a_payload)
-          , type_code_(a_type_code)
         {}
 
         SedaMessage(const SedaMessage &other)
@@ -46,7 +44,6 @@ namespace seda {
           , from_(other.from())
           , to_(other.to())
           , payload_(other.payload())
-          , type_code_(other.type_code())
         {}
 
         virtual ~SedaMessage() {}
@@ -56,7 +53,6 @@ namespace seda {
             from_ = rhs.from();
             to_ = rhs.to();
             payload_ = rhs.payload();
-            type_code_ = rhs.type_code();
             encode_buf_ = rhs.encode_buf_;
             strrep_buf_ = rhs.strrep_buf_;
           }
@@ -71,13 +67,10 @@ namespace seda {
         address_type & to() { return to_; }
         const payload_type & payload() const { return payload_; }
         payload_type & payload() { return payload_; }
-        const unsigned int & type_code() const { return type_code_; }
-        unsigned int & type_code() { return type_code_; }
 
         void from(const address_type &new_from) { from_ = new_from; reset_buffers(); }
         void to(const address_type &new_to) { to_ = new_to; reset_buffers(); }
         void payload(const payload_type &new_payload) { payload_ = new_payload; reset_buffers(); }
-        void type_code(const unsigned int &new_type_code) { type_code_ = new_type_code; reset_buffers(); }
       private:
         void reset_buffers()
         {
@@ -88,7 +81,6 @@ namespace seda {
         address_type from_;
         address_type to_;
         payload_type payload_;
-        unsigned int type_code_;
         mutable std::string encode_buf_;
         mutable std::string strrep_buf_;
     };    
