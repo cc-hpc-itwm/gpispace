@@ -26,6 +26,8 @@
 #include <seda/shared_ptr.hpp>
 #include <seda/comm/Connection.hpp>
 
+#include <sstream>
+
 namespace seda { namespace comm {
   /**
    * Holds information about connection parameters.
@@ -41,16 +43,36 @@ namespace seda { namespace comm {
    */
   class ConnectionParameters {
   public:
+//    ConnectionParameters(const std::string &a_transport
+//                       , const std::string &host
+//                       , const std::string &a_logical_name
+//                       , short port
+//                       )
+//      : transport_(a_transport)
+//      , host_(host)
+//      , logical_name_(a_logical_name)
+//      , port_(port)
+//    {
+//    }
+
     ConnectionParameters(const std::string &a_transport
                        , const std::string &host_and_port
                        , const std::string &a_logical_name
-                       , const short &a_port = 0
                        )
       : transport_(a_transport)
-      , host_and_port_(host_and_port)
       , logical_name_(a_logical_name)
-      , port_(a_port)
     {
+      // try to split up host and port
+      const std::string h(host_and_port.substr(0, host_and_port.find(':')));
+      std::string p(host_and_port.substr(h.size()+1));
+      if (p.empty()) p = "0";
+      host_ = h;
+      std::stringstream sstr(p);
+      sstr >> port_;
+      if (! sstr)
+      {
+        throw std::runtime_error("specified port could not be converted to short: " + p);
+      }
     }
 
     ~ConnectionParameters() {}
@@ -77,12 +99,12 @@ namespace seda { namespace comm {
     }
 
     const std::string &transport() const { return transport_; }
-    const std::string &host() const { return host_and_port_; }
+    const std::string &host() const { return host_; }
     const std::string &name() const { return logical_name_; }
     const short &port() const { return port_; }
   private:
     std::string transport_;
-    std::string host_and_port_;
+    std::string host_;
     std::string logical_name_;
     short port_;
     std::map<std::string, std::string> props_;

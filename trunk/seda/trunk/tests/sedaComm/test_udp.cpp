@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     {
       LOG(INFO, "creating process-1 stages...");
 
-      seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1", 5000);
+      seda::comm::ConnectionParameters params("udp", "127.0.0.1:5000", "process-1");
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
       conn->locator()->insert("process-2", "127.0.0.1:5001");
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     {
       LOG(INFO, "creating process-2 stages...");
 
-      seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-2", 5001);
+      seda::comm::ConnectionParameters params("udp", "127.0.0.1:5001", "process-2");
       seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
       conn->locator()->insert("process-1", "127.0.0.1:5000");
 

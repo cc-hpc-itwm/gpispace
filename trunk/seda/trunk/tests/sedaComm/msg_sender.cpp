@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   }
 
   ConnectionFactory::ptr_t cFactory(new ConnectionFactory());
-  ConnectionParameters params("udp", "127.0.0.1", from, 5223);
+  ConnectionParameters params("udp", "127.0.0.1:0", from);
   
   Connection::ptr_t conn(cFactory->createConnection(params));
   conn->locator()->insert("foo", "127.0.0.1:5222");
