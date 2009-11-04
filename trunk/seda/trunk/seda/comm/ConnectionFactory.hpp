@@ -46,7 +46,7 @@ namespace seda { namespace comm {
 //    ConnectionParameters(const std::string &a_transport
 //                       , const std::string &host
 //                       , const std::string &a_logical_name
-//                       , short port
+//                       , unsigned short port
 //                       )
 //      : transport_(a_transport)
 //      , host_(host)
@@ -106,12 +106,12 @@ namespace seda { namespace comm {
     const std::string &transport() const { return transport_; }
     const std::string &host() const { return host_; }
     const std::string &name() const { return logical_name_; }
-    const short &port() const { return port_; }
+    const unsigned short &port() const { return port_; }
   private:
     std::string transport_;
     std::string host_;
     std::string logical_name_;
-    short port_;
+    unsigned short port_;
     std::map<std::string, std::string> props_;
   };
 
