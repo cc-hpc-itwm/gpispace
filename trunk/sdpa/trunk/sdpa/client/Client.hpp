@@ -36,6 +36,23 @@ namespace sdpa { namespace client {
                               , const std::string &orchestrator_name="orchestrator"
                               , const std::string &client_location="0.0.0.0");
 
+    static config_t config()
+    {
+      using namespace sdpa::util;
+      config_t cfg("client", "SDPAC_");
+      cfg.specific_opts().add_options()
+        ("client.orchestrator", po::value<std::string>()->default_value("orchestrator"),
+         "name of the orchestrator")
+        ("client.location", po::value<std::string>()->default_value("0.0.0.0:0"),
+         "location of the client")
+        ("client.name", po::value<std::string>()->default_value("sdpa.app.client"),
+         "name of the client")
+        ("client.config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
+         "path to the configuration file")
+        ;
+      return cfg;
+    }
+
     const std::string &version() const
     {
       return version_;

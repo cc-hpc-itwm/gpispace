@@ -10,6 +10,11 @@ namespace sdpa { namespace client {
   public:
     typedef sdpa::shared_ptr<ClientApi> ptr_t;
 
+    static config_t config()
+    {
+      return Client::config();
+    }
+
     static ClientApi::ptr_t create(const config_t &cfg
                                   ,const std::string &name_prefix="sdpa.apps.client"
                                   ,const std::string &output_stage="sdpa.apps.client.out"
