@@ -49,6 +49,9 @@ int main (int argc, char **argv) {
      "show the help for a specific module")
     ("version,V", "print the version number")
     ("dumpversion", "print the version number (short)")
+    ("verbose,v", po::value<int>()->implicit_value(1),
+     "verbosity level")
+    ("quiet,q", "be quiet")
     ;
   
   po::options_description logging_opts("Logging related options");
@@ -60,8 +63,8 @@ int main (int argc, char **argv) {
      "standard logging level")
      ;
 
-  po::options_description client_opts("Client specific options");
-  client_opts.add_options()
+  po::options_description tool_opts("Command-line tool Options");
+  tool_opts.add_options()
     ("command,c", po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -70,17 +73,20 @@ int main (int argc, char **argv) {
      "results: \tretrieve the results of a job, arg must specify the job-id\n"
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      )
-    ("output", po::value<std::string>()->default_value("sdpac.out"),
-     "path to output file")
-    ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
+    ;
+
+  po::options_description client_opts("Client specific options");
+  client_opts.add_options()
+    ("client.orchestrator", po::value<std::string>()->default_value("orchestrator"),
      "name of the orchestrator")
-    ("client", po::value<std::string>()->default_value("sdpa.app.client"),
+    ("client.location", po::value<std::string>()->default_value("0.0.0.0:0"),
      "name of the client")
-    ("config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
+    ("client.name", po::value<std::string>()->default_value("sdpa.app.client"),
+     "name of the client")
+    ("client.config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
      "path to the configuration file")
-    ("verbose,v", po::value<int>()->implicit_value(1),
-     "verbosity level")
-    ("quiet,q", "be quiet")
+    ("client.output", po::value<std::string>()->default_value("sdpac.out"),
+     "path to output file")
     ;
 
   po::options_description client_hidden;
@@ -98,10 +104,10 @@ int main (int argc, char **argv) {
     ;
 
   po::options_description visible_opts("Allowed options");
-  visible_opts.add(general_opts).add(client_opts);
+  visible_opts.add(general_opts).add(tool_opts);
 
   po::options_description cmdline_opts;
-  cmdline_opts.add(visible_opts).add(client_hidden).add(network_opts).add(logging_opts);
+  cmdline_opts.add(visible_opts).add(client_opts).add(client_hidden).add(network_opts).add(logging_opts);
 
   po::options_description config_opts;
   config_opts.add(client_opts).add(network_opts).add(logging_opts);
@@ -114,12 +120,17 @@ int main (int argc, char **argv) {
             options(cmdline_opts).positional(p).run(), vm);
   po::store(po::parse_environment(config_opts, environment_variable_to_option("SDPAC_")) , vm);
   {
-    if (vm.count("config"))
+    if (vm.count("client.config"))
     {
-      std::ifstream cfg_s(vm["config"].as<std::string>().c_str());
+      const std::string cfg_file(vm["client.config"].as<std::string>());
+      if (vm.count("verbose"))
+      {
+        std::cerr << "I: using config file: " << cfg_file << std::endl;
+      }
+      std::ifstream cfg_s(cfg_file.c_str());
       if (! cfg_s)
       {
-        std::cerr << "W: could not open " << vm["config"].as<std::string>() << " for reading" << std::endl;
+        std::cerr << "W: could not open " << cfg_file << " for reading!" << std::endl;
       }
       else
       {
@@ -269,9 +280,9 @@ int main (int argc, char **argv) {
         return 4;
       }
       std::string results(api->retrieveResults(args.front()));
-      std::ofstream ofs(vm["output"].as<std::string>().c_str());
+      std::ofstream ofs(vm["client.output"].as<std::string>().c_str());
       ofs << results;
-      std::cout << "stored results in: " << vm["output"].as<std::string>() << std::endl;
+      std::cout << "stored results in: " << vm["client.output"].as<std::string>() << std::endl;
     }
     else if (command == "delete")
     {
