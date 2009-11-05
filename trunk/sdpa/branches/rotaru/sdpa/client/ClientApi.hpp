@@ -9,9 +9,8 @@ namespace sdpa { namespace client {
   class ClientApi {
   public:
     typedef sdpa::shared_ptr<ClientApi> ptr_t;
-    typedef std::string config_t;
 
-    static ClientApi::ptr_t create(const Client::config_t &cfg
+    static ClientApi::ptr_t create(const config_t &cfg
                                   ,const std::string &name_prefix="sdpa.apps.client"
                                   ,const std::string &output_stage="sdpa.apps.client.out") throw (ClientException)
     {
@@ -70,7 +69,7 @@ namespace sdpa { namespace client {
       return pimpl->deleteJob(jid);
     }
 
-    Client::result_t retrieveResults(const job_id_t &jid) throw (ClientException)
+    result_t retrieveResults(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->retrieveResults(jid);
     }
@@ -85,12 +84,12 @@ namespace sdpa { namespace client {
       return pimpl->output_stage();
     }
 
-    void configure_network(const Client::config_t &config)
+    void configure_network(const config_t &config)
     {
       pimpl->action_configure_network(config);
     }
 
-    void shutdown_network(const Client::config_t &)
+    void shutdown_network()
     {
       pimpl->action_shutdown_network();
     }

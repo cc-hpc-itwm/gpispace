@@ -15,6 +15,7 @@
 #include <sdpa/types.hpp>
 #include <sdpa/client/ClientActions.hpp>
 
+#include <sdpa/client/types.hpp>
 #include <sdpa/client/ClientFsm_sm.h>
 #include <sdpa/client/exceptions.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -23,8 +24,6 @@ namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
-    typedef std::string config_t;
-    typedef std::string result_t;
 
     ~Client();
 
@@ -87,6 +86,9 @@ namespace sdpa { namespace client {
       , name_(a_name)
       , output_stage_(output_stage)
       , fsm_(*this)
+      , timeout_(5000U)
+      , orchestrator_("")
+      , my_location_("0.0.0.0")
     {
     
     }
@@ -98,7 +100,7 @@ namespace sdpa { namespace client {
     }
 
     typedef unsigned long long timeout_t;
-    seda::IEvent::Ptr wait_for_reply(const timeout_t &timeout = timeout_t(5000)) throw (Timedout);
+    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
 
     std::string version_;
     std::string copyright_;
@@ -113,6 +115,11 @@ namespace sdpa { namespace client {
 
     seda::Stage::Ptr client_stage_;
     ClientContext fsm_;
+
+    // config variables
+    timeout_t timeout_;
+    std::string orchestrator_;
+    std::string my_location_;
   };
 }}
 

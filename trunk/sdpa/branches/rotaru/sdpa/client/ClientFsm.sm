@@ -18,6 +18,7 @@
 
 
 %include <sdpa/types.hpp>
+%include <sdpa/client/types.hpp>
 %include <seda/IEvent.hpp>
 
 %start ClientFsm::Unconfigured
@@ -26,10 +27,16 @@
 %%
 Unconfigured
 {
-  Start(cfg: const std::string &)
+  Start(cfg: const sdpa::client::config_t &)
     Configuring
     {
       action_configure(cfg);
+    }
+
+  Shutdown
+    nil
+    {
+      action_shutdown();
     }
 
   Default

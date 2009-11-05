@@ -90,10 +90,9 @@ void Client::perform(const seda::IEvent::Ptr &event)
   }
 }
 
-void Client::start(const Client::config_t & config) throw (ClientException)
+void Client::start(const config_t & config) throw (ClientException)
 {
-  DMLOG(DEBUG, "starting up with config: " << config);
-//  fhg::log::Configurator::configure(/*use default config for now*/);
+  DMLOG(DEBUG, "starting up");
 
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
@@ -106,13 +105,14 @@ void Client::start(const Client::config_t & config) throw (ClientException)
     {
       MLOG(INFO,"configuration was ok");
     }
-    else if (dynamic_cast<ConfigNOK*>(reply.get()))
+    else if (ConfigNOK *cfg_nok = dynamic_cast<ConfigNOK*>(reply.get()))
     {
-      throw ConfigError("configuration was not ok");
+      MLOG(INFO, "configuration had errors: " << cfg_nok->reason());
+      throw ConfigError(cfg_nok->reason());
     }
     else
     {
-      throw ClientException("startup failed");
+      throw ClientException("startup failed (got event: " + reply->str() + ")");
     }
   }
   catch (const Timedout &)
@@ -137,12 +137,12 @@ void Client::shutdown() throw (ClientException)
   }
 }
 
-seda::IEvent::Ptr Client::wait_for_reply(const timeout_t &timeout) throw (Timedout)
+seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 {
   boost::unique_lock<boost::mutex> lock(mtx_);
   while (reply_.get() == NULL)
   {
-    const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(timeout));
+    const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(timeout_));
     if (! cond_.timed_wait(lock, to)) {
       if (reply_.get() != NULL)
       {
@@ -162,7 +162,7 @@ seda::IEvent::Ptr Client::wait_for_reply(const timeout_t &timeout) throw (Timedo
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
   MLOG(INFO,"submitting job with description = " << desc);
-  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), /* config.get("sdpa.topology.orchestrator") */ "orchestrator", "", desc)));
+  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc)));
   DMLOG(DEBUG,"waiting for a reply");
   // TODO: wait_for_reply(config.get<timeout_t>("sdpa.network.timeout")
   try
@@ -195,7 +195,7 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent(name()
-                                                             , "orchestrator"
+                                                             , orchestrator_
                                                              , jid)));
   DMLOG(DEBUG,"waiting for a reply");
   try
@@ -222,7 +222,7 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"querying status of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
-                                                                 , "orchestrator"
+                                                                 , orchestrator_
                                                                  , jid)));
   DMLOG(DEBUG,"waiting for a reply");
   try
@@ -250,7 +250,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name()
-                                                             , "orchestrator"
+                                                             , orchestrator_
                                                              , jid)));
   DMLOG(DEBUG,"waiting for a reply");
   try
@@ -273,11 +273,11 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
   }
 }
 
-sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
+sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
   MLOG(INFO,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
-                                                                      , "orchestrator"
+                                                                      , orchestrator_
                                                                       , jid)));
   DMLOG(DEBUG,"waiting for a reply");
   try
@@ -301,45 +301,78 @@ sdpa::client::Client::result_t Client::retrieveResults(const job_id_t &jid) thro
   }
 }
 
-void Client::action_configure(const Client::config_t &cfg)
+void Client::action_configure(const config_t &cfg)
 {
   MLOG(INFO, "configuring my environment");
-  // configure logging according to config
-  //   TODO: do something
   
-  // action_configure_network(cfg);
-  
+  if (cfg.count("network.timeout"))
+  {
+    timeout_ = cfg["network.timeout"].as<unsigned int>();
+    MLOG(DEBUG, "set timeout to: " << timeout_);
+  }
+
+  if (cfg.count("client.orchestrator"))
+  {
+    orchestrator_ = cfg["client.orchestrator"].as<std::string>();
+    MLOG(DEBUG, "using orchestrator: " << orchestrator_);
+  }
+
+  if (cfg.count("client.location"))
+  {
+    my_location_ = cfg["client.location"].as<std::string>();
+    MLOG(DEBUG, "using location: " << my_location_);
+  }
+
+  if (cfg.count("network.enable"))
+  {
+    action_configure_network(cfg);
+  }
+
   // send event to myself
-  if (cfg == "config-nok") client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
-  else client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
+  if (orchestrator_.empty())
+  {
+    MLOG(ERROR, "no orchestrator specified!");
+    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
+  }
+  else
+  {
+    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
+  }
 }
 
-void Client::action_configure_network(const Client::config_t &)
+void Client::action_configure_network(const config_t &cfg)
 {
   MLOG(INFO, "configuring network components...");
-  const std::string prefix(client_stage_->name()+".net");
+  const std::string net_stage_name(client_stage_->name()+".from-net");
   {
     DMLOG(INFO, "setting up decoding...");
     seda::ForwardStrategy::Ptr to_client(new seda::ForwardStrategy(client_stage_->name()));
-    sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", to_client));
-    seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
-    seda::StageRegistry::instance().insert(decode_stage);
-    decode_stage->start();
+    sdpa::events::DecodeStrategy::ptr_t decode(new sdpa::events::DecodeStrategy(net_stage_name, to_client));
+    seda::Stage::Ptr from_net(new seda::Stage(net_stage_name, decode));
+    seda::StageRegistry::instance().insert(from_net);
+    from_net->start();
   }
 
   {
     DMLOG(INFO, "setting up output stage...");
     seda::comm::ConnectionFactory connFactory;
-    seda::comm::ConnectionParameters params("udp", "127.0.0.1", client_stage_->name());
+    seda::comm::ConnectionParameters params("udp", my_location_, client_stage_->name());
     seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
-    conn->locator()->insert("orchestrator", "127.0.0.1:5000");
-    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
-    seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
-    seda::StageRegistry::instance().insert(network_stage);
-    network_stage->start();
+    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(net_stage_name, conn));
+    sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(net_stage_name, conn_s));
 
-    seda::ForwardStrategy::Ptr to_network(new seda::ForwardStrategy(network_stage->name()));
-    sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(prefix+"-encode", to_network));
+    if (cfg.count("network.location"))
+    {
+      const std::vector<std::string> &locations(cfg["network.location"].as<std::vector<std::string> >());
+      for (std::vector<std::string>::const_iterator loc(locations.begin()); loc != locations.end(); ++loc)
+      {
+        const std::string n(loc->substr(0, loc->find(':')));
+        const std::string l(loc->substr(n.size()+1));
+        MLOG(DEBUG, "inserting location information: " << n << " -> " << l);
+        conn->locator()->insert(n, l);
+      }
+    }
+
     seda::Stage::Ptr output(new seda::Stage(output_stage_, encode));
     seda::StageRegistry::instance().insert(output);
     output->start();

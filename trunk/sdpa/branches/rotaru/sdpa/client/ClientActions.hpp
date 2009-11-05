@@ -2,12 +2,13 @@
 #define SDPA_CLIENT_ACTIONS_HPP 1
 
 #include <seda/IEvent.hpp>
+#include <sdpa/client/types.hpp>
 
 namespace sdpa { namespace client {
   class ClientActions {
     public:
       virtual ~ClientActions() { }
-      virtual void action_configure(const std::string &) = 0;
+      virtual void action_configure(const config_t &) = 0;
       virtual void action_config_ok() = 0;
       virtual void action_config_nok() = 0;
       virtual void action_shutdown() = 0;
