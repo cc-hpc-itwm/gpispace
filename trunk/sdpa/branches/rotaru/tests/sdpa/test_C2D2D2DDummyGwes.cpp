@@ -38,11 +38,20 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrSdpa2GwesAgg  = new DummyGwes();
 
-	m_ptrUser = sdpa::client::ClientApi::create("empty config", sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
+	const sdpa::client::config_t config;
+	/*
+	 * const config_t &cfg
+                                  ,const std::string &name_prefix="sdpa.apps.client"
+                                  ,const std::string &output_stage="sdpa.apps.client.out"
+                                  ,const std::string &orchestrator_name="orchestrator"
+                                  ,const std::string &client_location="0.0.0.0:0") throw (ClientException)
+	 * */
+	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR );
+	//m_ptrUser = sdpa::client::ClientApi::create( config );
 
-	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(sdpa::daemon::USER);
+	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
-	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, sdpa::daemon::USER ) ); // Orchestrator gwes instance
+	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, m_ptrUser->input_stage() )); // Orchestrator gwes instance
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
 
 	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg, sdpa::daemon::ORCHESTRATOR ) ); // Aggregator gwes instance

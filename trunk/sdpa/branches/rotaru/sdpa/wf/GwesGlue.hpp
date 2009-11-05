@@ -64,6 +64,32 @@ namespace sdpa { namespace wf { namespace glue {
     return wrapped;
   }
 
+  gwdl::Token *unwrap(const wf::Token &wf_token) throw (std::exception)
+  {
+    DLOG(DEBUG, "unwrapping wf::Token to gwdl::Token...");
+    if (wf_token.properties().has_key("control"))
+    {
+      gwdl::Token *tok = new gwdl::Token(wf_token.properties().get<bool>("control"));
+      for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
+      {
+        tok->getProperties()[prop->first] = prop->second;
+      }
+      return tok;
+    }
+    else
+    {
+      gwdl::Data *data(new gwdl::Data("<data>"+wf_token.data()+"</data>"));
+      gwdl::Token *tok = new gwdl::Token(data);
+
+      // update all known properties, this also includes the data type
+      for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
+      {
+        tok->getProperties()[prop->first] = prop->second;
+      }
+      return tok;
+    }
+  }
+
   Activity wrap(const gwes::Activity & gwes_activity) throw (std::exception)
   {
     DLOG(DEBUG, "wrapping an gwes::Activity");
@@ -86,7 +112,12 @@ namespace sdpa { namespace wf { namespace glue {
     for (gwes::parameter_list_t::iterator it(gwes_params->begin()); it != gwes_params->end(); ++it) {
       const std::string gwes_param_name(it->edgeP->getExpression());
 
-      Token tok(wrap(*it->tokenP));
+      Token tok;
+      if (it->tokenP)
+      {
+        DLOG(DEBUG, "wrapping gwdl::Token");
+        tok = wrap(*it->tokenP);
+      }
 
       switch (it->scope) {
         case (gwes::TokenParameter::SCOPE_READ):
@@ -125,6 +156,53 @@ namespace sdpa { namespace wf { namespace glue {
       }
     }
     return wrapped;
+  }
+
+  void unwrap(const wf::Activity &wf_activity, gwes::Activity &gwes_activity)
+  {
+    if (wf_activity.name() != gwes_activity.getID())
+    {
+      throw std::runtime_error("could not unwrap " + wf_activity.name() + ": does not match gwes::Activity::id");
+    }
+
+    DLOG(INFO, "unwrapping wf::Activity: " << wf_activity.name() << " to " << gwes_activity.getID());
+
+    gwes::parameter_list_t *gwes_params = gwes_activity.getTransitionOccurrence()->getTokens();
+    for (gwes::parameter_list_t::iterator param(gwes_params->begin()); param != gwes_params->end(); ++param)
+    {
+      const std::string gwes_param_name(param->edgeP->getExpression());
+      switch (param->scope)
+      {
+        case gwes::TokenParameter::SCOPE_READ:
+        {
+          // nothing to do
+          DLOG(DEBUG, "unwrapping read parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_INPUT):
+        {
+          // nothing to do
+          DLOG(DEBUG, "unwrapping input parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_WRITE):
+        {
+          DLOG(DEBUG, "unwrapping write parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_OUTPUT):
+        {
+          DLOG(DEBUG, "unwrapping output parameter: creating new token");
+          if (param->tokenP)
+          {
+            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
+            delete param->tokenP; param->tokenP = NULL;
+          }
+          param->tokenP = unwrap(wf_activity.parameters().at(gwes_param_name).token());
+          break;
+        }
+      }
+    }
   }
 }}}
 

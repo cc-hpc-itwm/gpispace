@@ -8,7 +8,7 @@
 #include <sdpa/Sdpa2Gwes.hpp>
 
 #include <seda/Stage.hpp>
-#include <sdpa/Config.hpp>
+#include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
 
 namespace sdpa { namespace daemon {
@@ -35,7 +35,7 @@ const std::string USER("user");
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
-	  virtual sdpa::config::Config* cfg() const = 0;
+	  virtual sdpa::util::Config* cfg() const = 0;
   };
 }}
 

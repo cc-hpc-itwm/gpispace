@@ -35,10 +35,11 @@ string DaemonsWithCommTest::read_workflow(string strFileName)
 void DaemonsWithCommTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	m_ptrUser = sdpa::client::ClientApi::create("empty config", sdpa::daemon::USER);
-	m_ptrUser->configure_network("");
+	const sdpa::client::config_t config;
+	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER );
+	m_ptrUser->configure_network(config);
 
-	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(sdpa::daemon::USER);
+	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
 	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
@@ -52,8 +53,6 @@ void DaemonsWithCommTest::tearDown()
 	m_ptrUser.reset();
 
 	seda::StageRegistry::instance().clear();
-
-	//m_ptrOrch.reset();
 }
 
 void DaemonsWithCommTest::testUserOrchCommDummyGwes()
@@ -65,7 +64,7 @@ void DaemonsWithCommTest::testUserOrchCommDummyGwes()
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrOrch = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network( "127.0.0.1", 5000 );
+	m_ptrOrch->configure_network( "127.0.0.1:5000" );
 	DaemonFSM::start(m_ptrOrch);
 
 
@@ -114,7 +113,7 @@ void DaemonsWithCommTest::testUserOrchCommRealGwes()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrOrch = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network( "127.0.0.1", 5000 );
+	m_ptrOrch->configure_network( "127.0.0.1:5000" );
 	DaemonFSM::start(m_ptrOrch);
 
 
@@ -162,13 +161,13 @@ void DaemonsWithCommTest::testUserOrchAggCommDummyGwes()
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network("127.0.0.1", 5000);
+	m_ptrOrch->configure_network("127.0.0.1:5000");
 	DaemonFSM::start(m_ptrOrch);
 
 	m_ptrSdpa2GwesAgg = new DummyGwes();
 	m_ptrAgg = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
-	m_ptrAgg->configure_network("127.0.0.1", 5001, sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	m_ptrAgg->configure_network("127.0.0.1:5001", sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
 	for(int k=0; k<m_nITER; k++ )
@@ -223,13 +222,13 @@ void DaemonsWithCommTest::testUserOrchAggCommRealGwes()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network("127.0.0.1", 5000);
+	m_ptrOrch->configure_network("127.0.0.1:5000");
 	DaemonFSM::start(m_ptrOrch);
 
 	m_ptrSdpa2GwesAgg = new gwes::GWES();
 	m_ptrAgg = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
-	m_ptrAgg->configure_network("127.0.0.1", 5001, sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	m_ptrAgg->configure_network("127.0.0.1:5001", sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
 	for(int k=0; k<m_nITER; k++ )
@@ -284,19 +283,19 @@ void DaemonsWithCommTest::testUserOrchAggNRECommDummyGwes()
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network("127.0.0.1", 5000);
+	m_ptrOrch->configure_network("127.0.0.1:5000");
 	DaemonFSM::start(m_ptrOrch);
 
 	m_ptrSdpa2GwesAgg = new DummyGwes();
 	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg ) );
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
-	m_ptrAgg->configure_network("127.0.0.1", 5001, sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	m_ptrAgg->configure_network("127.0.0.1:5001", sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
 	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
 	m_ptrNRE = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::NRE, pGwesNRE, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
-	m_ptrNRE->configure_network("127.0.0.1", 5002, sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");
+	m_ptrNRE->configure_network("127.0.0.1:5002", sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");
 	DaemonFSM::start(m_ptrNRE);
 
 	for(int k=0; k<m_nITER; k++ )
@@ -357,19 +356,19 @@ void DaemonsWithCommTest::testUserOrchAggNRECommRealGwes()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch ) );
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
-	m_ptrOrch->configure_network("127.0.0.1", 5000);
+	m_ptrOrch->configure_network("127.0.0.1:5000");
 	DaemonFSM::start(m_ptrOrch);
 
 	m_ptrSdpa2GwesAgg =  new gwes::GWES();
 	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg ) );
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
-	m_ptrAgg->configure_network("127.0.0.1", 5001, sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	m_ptrAgg->configure_network("127.0.0.1:5001", sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
 	sdpa::Sdpa2Gwes* pGwesNRE =  new gwes::GWES();
 	m_ptrNRE = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::NRE, pGwesNRE, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
-	m_ptrNRE->configure_network("127.0.0.1", 5002, sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");
+	m_ptrNRE->configure_network("127.0.0.1:5002", sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");
 	DaemonFSM::start(m_ptrNRE);
 
 	for(int k=0; k<m_nITER; k++ )

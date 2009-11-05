@@ -5,7 +5,7 @@
 #include <sdpa/util/Properties.hpp>
 #include <boost/filesystem.hpp>
 
-namespace sdpa { namespace config {
+namespace sdpa { namespace util {
   class Config : public ::sdpa::util::Properties {
     public:
       typedef sdpa::shared_ptr<Config> ptr_t;

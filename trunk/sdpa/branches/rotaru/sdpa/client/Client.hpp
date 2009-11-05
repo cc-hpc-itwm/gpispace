@@ -32,7 +32,9 @@ namespace sdpa { namespace client {
 
     // API
     static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
-                              , const std::string &output_stage="sdpa.apps.client.out");
+                              , const std::string &output_stage="sdpa.apps.client.out"
+                              , const std::string &orchestrator_name="orchestrator"
+                              , const std::string &client_location="0.0.0.0");
 
     const std::string &version() const
     {
@@ -78,7 +80,7 @@ namespace sdpa { namespace client {
     const std::string &input_stage() const { return client_stage_->name(); }
     const std::string &output_stage() const { return output_stage_; }
   private:
-    Client(const std::string &a_name, const std::string &output_stage)
+    Client(const std::string &a_name, const std::string &output_stage, const std::string &orchestrator_name, const std::string &client_location)
       : seda::Strategy(a_name)
       , version_(SDPA_VERSION)
       , copyright_(SDPA_COPYRIGHT)
@@ -87,8 +89,8 @@ namespace sdpa { namespace client {
       , output_stage_(output_stage)
       , fsm_(*this)
       , timeout_(5000U)
-      , orchestrator_("")
-      , my_location_("0.0.0.0")
+      , orchestrator_(orchestrator_name)
+      , my_location_(client_location)
     {
     
     }

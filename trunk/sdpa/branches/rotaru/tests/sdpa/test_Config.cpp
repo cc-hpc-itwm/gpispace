@@ -3,7 +3,7 @@
 
 #include "test_Config.hpp"
 #include <sdpa/util/util.hpp>
-#include <sdpa/Config.hpp>
+#include <sdpa/util/Config.hpp>
 
 using namespace sdpa;
 using namespace sdpa::tests;
@@ -17,8 +17,8 @@ void ConfigTest::tearDown() {
 }
 
 void ConfigTest::testPopulate() {
-  sdpa::config::Config::ptr_t cfg = sdpa::config::Config::create();
-  sdpa::config::CommonConfiguration()(*cfg);
+  sdpa::util::Config::ptr_t cfg = sdpa::util::Config::create();
+  sdpa::util::CommonConfiguration()(*cfg);
   cfg->parse_env();
   cfg->parse_file("...");
   cfg->parse("./program blah blah blah");

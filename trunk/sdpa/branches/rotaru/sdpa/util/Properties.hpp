@@ -39,6 +39,8 @@ namespace sdpa { namespace util {
     class Properties {
     public:
         typedef std::map<std::string, std::string> map_t;
+        typedef map_t::const_iterator const_iterator;
+        typedef map_t::iterator iterator;
 
         Properties()
           : properties_()
@@ -108,6 +110,12 @@ namespace sdpa { namespace util {
 
         const map_t & map() const { return properties_; }
         map_t & map() { return properties_; }
+
+        const_iterator begin() const { return properties_.begin(); }
+        iterator begin() { return properties_.begin(); }
+
+        const_iterator end() const { return properties_.end(); }
+        iterator end() { return properties_.end(); }
     private:
         map_t properties_;
     };

@@ -88,7 +88,7 @@ namespace sdpa { namespace daemon {
 	  virtual void jobCancelled(std::string workerName, const job_id_t &);
 
 	  //virtual void configure_network();
-	  virtual void configure_network( std::string host, int port, std::string masterName = "", std::string masterUrl = "" );
+	  virtual void configure_network( std::string daemonUrl, std::string masterName = "", std::string masterUrl = "" );
 	  virtual void shutdown_network();
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
@@ -101,9 +101,6 @@ namespace sdpa { namespace daemon {
 
 	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
-	  //only for testing purposes!
-	  //friend class sdpa::tests::DaemonFSMTest;
-
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
 	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }
@@ -113,7 +110,7 @@ namespace sdpa { namespace daemon {
 	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
 	  virtual bool is_registered() const { return m_bRegistered;}
 
-	  sdpa::config::Config* cfg() const { return ptr_daemon_cfg_.get();}
+	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
 
   protected:
 	  SDPA_DECLARE_LOGGER();
@@ -139,7 +136,7 @@ namespace sdpa { namespace daemon {
 	  seda::Stage* daemon_stage_;
 	  std::string master_;
 
-	  sdpa::config::Config::ptr_t ptr_daemon_cfg_;
+	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
   };
 

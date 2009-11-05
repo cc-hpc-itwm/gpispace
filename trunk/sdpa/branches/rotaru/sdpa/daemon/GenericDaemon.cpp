@@ -99,7 +99,7 @@ void GenericDaemon::create_daemon_stage(GenericDaemon::ptr_t ptr_daemon )
 }
 
 
-void GenericDaemon::configure_network( std::string host, int port, std::string masterName, std::string masterUrl )
+void GenericDaemon::configure_network( std::string daemonUrl, std::string masterName, std::string masterUrl )
 {
 	SDPA_LOG_DEBUG("configuring network components...");
 	const std::string prefix(daemon_stage_->name()+".net");
@@ -113,7 +113,7 @@ void GenericDaemon::configure_network( std::string host, int port, std::string m
 
 	SDPA_LOG_DEBUG("setting up the network stage...");
 	seda::comm::ConnectionFactory connFactory;
-	seda::comm::ConnectionParameters params("udp", host, daemon_stage_->name(), port);
+	seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
 	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
 	// master known service: give the port as a parameter
 	if( !masterName.empty() &&  !masterUrl.empty() )
@@ -170,7 +170,7 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 	sleep(1);
 
 	// you should read the configuration file here!
-	ptr_daemon->ptr_daemon_cfg_ = sdpa::config::Config::create();
+	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create();
 
 	// use for now as below, later read from config file
 	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000); //1ms

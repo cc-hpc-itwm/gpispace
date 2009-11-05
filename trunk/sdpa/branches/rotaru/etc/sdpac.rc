@@ -1,0 +1,8 @@
+[client]
+orchestrator = "orchestrator"
+location = "127.0.0.1"
+
+[network]
+timeout = 6000
+location = orchestrator:127.0.0.1:5000
+location = aggregator:127.0.0.1:5001

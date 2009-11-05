@@ -40,11 +40,12 @@ void C2D2D2DRealGwesTest::setUp()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrSdpa2GwesAgg  = new gwes::GWES();
 
-	m_ptrUser = sdpa::client::ClientApi::create("empty config", sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
+	const sdpa::client::config_t config;
+	m_ptrUser = sdpa::client::ClientApi::create(config, sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
 
-	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(sdpa::daemon::USER);
+	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
-	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, sdpa::daemon::USER ) ); // Orchestrator gwes instance
+	m_ptrOrch = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::ORCHESTRATOR, m_ptrSdpa2GwesOrch, m_ptrUser->input_stage() ) ); // Orchestrator gwes instance
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
 
 	m_ptrAgg = DaemonFSM::ptr_t( new DaemonFSM( sdpa::daemon::AGGREGATOR, m_ptrSdpa2GwesAgg, sdpa::daemon::ORCHESTRATOR ) ); // Aggregator gwes instance
