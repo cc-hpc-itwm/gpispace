@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   const std::string location(argv[2]);
 
   ConnectionFactory::ptr_t cFactory(new ConnectionFactory());
-  ConnectionParameters params("udp", location, name);
+  ConnectionParameters params("udp", "127.0.0.1:5000", argv[1]);
   
   Connection::ptr_t conn(cFactory->createConnection(params));
   std::cerr << "I: starting connection" << std::endl;
