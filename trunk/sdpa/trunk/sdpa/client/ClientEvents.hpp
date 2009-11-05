@@ -37,7 +37,13 @@ namespace sdpa { namespace client {
   class ConfigNOK : public seda::IEvent
   {
     public:
+      explicit ConfigNOK(const std::string &a_reason)
+        : reason_(a_reason)
+      { }
+      const std::string &reason() const { return reason_; }
       std::string str() const { return "ConfigNOK"; }
+    private:
+      std::string reason_;
   };
 }}
 

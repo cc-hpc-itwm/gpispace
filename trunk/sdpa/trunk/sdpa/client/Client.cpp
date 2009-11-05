@@ -93,7 +93,6 @@ void Client::perform(const seda::IEvent::Ptr &event)
 void Client::start(const config_t & config) throw (ClientException)
 {
   DMLOG(DEBUG, "starting up");
-//  fhg::log::Configurator::configure(/*use default config for now*/);
 
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
@@ -106,13 +105,14 @@ void Client::start(const config_t & config) throw (ClientException)
     {
       MLOG(INFO,"configuration was ok");
     }
-    else if (dynamic_cast<ConfigNOK*>(reply.get()))
+    else if (ConfigNOK *cfg_nok = dynamic_cast<ConfigNOK*>(reply.get()))
     {
-      throw ConfigError("configuration was not ok");
+      MLOG(INFO, "configuration had errors: " << cfg_nok->reason());
+      throw ConfigError(cfg_nok->reason());
     }
     else
     {
-      throw ClientException("startup failed");
+      throw ClientException("startup failed (got event: " + reply->str() + ")");
     }
   }
   catch (const Timedout &)
@@ -311,10 +311,16 @@ void Client::action_configure(const config_t &cfg)
     MLOG(DEBUG, "set timeout to: " << timeout_);
   }
 
-  if (cfg.count("orchestrator"))
+  if (cfg.count("client.orchestrator"))
   {
-    orchestrator_ = cfg["orchestrator"].as<std::string>();
+    orchestrator_ = cfg["client.orchestrator"].as<std::string>();
     MLOG(DEBUG, "using orchestrator: " << orchestrator_);
+  }
+
+  if (cfg.count("client.location"))
+  {
+    my_location_ = cfg["client.location"].as<std::string>();
+    MLOG(DEBUG, "using location: " << my_location_);
   }
 
   if (cfg.count("network.enable"))
@@ -322,14 +328,11 @@ void Client::action_configure(const config_t &cfg)
     action_configure_network(cfg);
   }
 
-  MLOG(DEBUG, "config: timeout = " << timeout_);
-  MLOG(DEBUG, "config: orchestrator = " << orchestrator_);
-  MLOG(DEBUG, "config: location = " << my_location_);
-  
   // send event to myself
   if (orchestrator_.empty())
   {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK()));
+    MLOG(ERROR, "no orchestrator specified!");
+    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
   }
   else
   {

@@ -33,6 +33,12 @@ Unconfigured
       action_configure(cfg);
     }
 
+  Shutdown
+    nil
+    {
+      action_shutdown();
+    }
+
   Default
     nil
     {
