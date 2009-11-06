@@ -1,0 +1,16 @@
+TOPROOT = $(PWD)
+
+CC=icc
+#CC=gcc #-prof-genx
+CFLAGS= -pedantic -g -DDEBUGALLOC -DDEBUG -DDEBUGCOMM  -DSHMEM -DUSE_STL_TR1 
+#CXX=g++
+CXX=icpc
+CXXFLAGS= -g  -DDEBUGALLOC -DDEBUG  -DDEBUGCOMM  -DSHMEM -DUSE_STL_TR1 
+#CXXFLAGS= -g   -DSHMEM -DUSE_STL_TR1 
+INCLUDE =-I/opt/cluster/PV-4D.pspro/include -I$(TOPROOT)/../tmmgr/mmgr -I$(TOPROOT)/src/datastructures  -I$(TOPROOT)/src/include
+LPATH= -L$(TOPROOT)/lib -L/opt/cluster/PV-4D.pspro/lib64
+LIBS= -libverbs12 -lPv4dVM4 -Wl,-rpath=/opt/cluster/PV-4D.pspro/lib64:/opt/cluster/Intel/cce/9.1.047/lib/ 
+OBJS= $(TOPROOT)/src/objs
+
+LIBSDIR=$(TOPROOT)/lib
+BINDIR=$(TOPROOT)/bin
