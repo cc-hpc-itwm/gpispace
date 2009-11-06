@@ -25,11 +25,14 @@ using namespace fhg::log;
 
 FileAppender::FileAppender(const std::string &a_name
                          , const std::string &a_path
+                         , int flush_interval
                          , const std::ios_base::openmode &a_mode) throw (std::exception)
   : Appender(a_name)
   , path_(a_path)
   , stream_()
   , mode_(a_mode)
+  , flush_interval_(flush_interval)
+  , event_count_(0)
 {
   stream_.exceptions(std::ios_base::badbit | std::ios_base::failbit);
   open();
@@ -60,6 +63,7 @@ void FileAppender::flush() throw ()
   {
     // ignore
   }
+  event_count_ = 0;
 }
 
 void FileAppender::close() throw (std::exception)
@@ -73,6 +77,7 @@ void FileAppender::open() throw (std::exception)
 #ifndef NDEBUG // FIXME: use a better marking message
 //  stream_ << "------ MARK (file opened)" << std::endl;
 #endif
+  event_count_ = 0;
 }
 
 void FileAppender::reopen() throw (std::exception)
@@ -85,4 +90,6 @@ void FileAppender::reopen() throw (std::exception)
 void FileAppender::append(const LogEvent &evt) const
 {
   const_cast<std::ofstream&>(stream_) << getFormat()->format(evt);
+  if (++event_count_ >= flush_interval_)
+    const_cast<FileAppender&>(*this).flush();
 }

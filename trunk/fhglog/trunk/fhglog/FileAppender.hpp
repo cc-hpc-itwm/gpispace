@@ -34,6 +34,7 @@ namespace fhg { namespace log {
 
     FileAppender(const std::string &a_name
                , const std::string &a_path
+               , int flush_interval = 50
                , const std::ios_base::openmode &a_mode = std::ios_base::out | std::ios_base::app | std::ios_base::binary) throw (std::exception);
     virtual ~FileAppender() throw();
 
@@ -67,6 +68,8 @@ namespace fhg { namespace log {
     std::string path_;
     std::ofstream stream_;
     std::ios_base::openmode mode_;
+    int flush_interval_;
+    mutable int event_count_;
   };
 }}
 
