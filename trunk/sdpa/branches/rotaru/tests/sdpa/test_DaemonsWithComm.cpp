@@ -35,7 +35,7 @@ string DaemonsWithCommTest::read_workflow(string strFileName)
 void DaemonsWithCommTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	const sdpa::client::config_t config;
+	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
 	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER );
 	m_ptrUser->configure_network(config);
 

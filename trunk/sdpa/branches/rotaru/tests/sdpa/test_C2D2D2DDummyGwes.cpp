@@ -38,7 +38,8 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrSdpa2GwesAgg  = new DummyGwes();
 
-	const sdpa::client::config_t config;
+	//const sdpa::client::config_t config;
+	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
 	/*
 	 * const config_t &cfg
                                   ,const std::string &name_prefix="sdpa.apps.client"

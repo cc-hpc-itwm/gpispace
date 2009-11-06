@@ -40,7 +40,7 @@ void C2D2D2DRealGwesTest::setUp()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrSdpa2GwesAgg  = new gwes::GWES();
 
-	const sdpa::client::config_t config;
+	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
 	m_ptrUser = sdpa::client::ClientApi::create(config, sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());

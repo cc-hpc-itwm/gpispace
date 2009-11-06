@@ -20,10 +20,10 @@
 #define SDPA_CLIENT_TYPES_HPP 1
 
 #include <string>
-#include <boost/program_options.hpp>
+#include <sdpa/util/Config.hpp>
 
 namespace sdpa { namespace client {
-  typedef boost::program_options::variables_map config_t;
+  typedef sdpa::util::NewConfig config_t;
   typedef std::string result_t;
 }}
 

@@ -10,62 +10,17 @@
 #include <fhglog/Configuration.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
-
-#include <boost/program_options.hpp>
-#include <algorithm> // std::transform
-#include <cctype> // std::tolower
-
-struct environment_variable_to_option
-{
-  environment_variable_to_option(const std::string prefix="SDPAC_")
-    : p(prefix) {}
-
-  std::string operator()(const std::string &var)
-  {
-    if (var.substr(0, p.size()) == p)
-    {
-      std::string option = var.substr(p.size());
-      std::transform(option.begin(), option.end(), option.begin(), tolower);
-      for (std::string::iterator c(option.begin()); c != option.end(); ++c)
-      {
-        if (*c == '_') *c = '.';
-      }
-      return option;
-    }
-    return "";
-  }
-
-  std::string p;
-};
+#include <sdpa/util/Config.hpp>
 
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
-  namespace po = boost::program_options;
+  namespace su = sdpa::util;
 
-  po::options_description general_opts("General options");
-  general_opts.add_options()
-    ("help,h", "show this help text")
-    ("help-module", po::value<std::string>()->implicit_value("help"),
-     "show the help for a specific module")
-    ("version,V", "print the version number")
-    ("dumpversion", "print the version number (short)")
-    ("verbose,v", po::value<int>()->implicit_value(1),
-     "verbosity level")
-    ("quiet,q", "be quiet")
-    ;
-  
-  po::options_description logging_opts("Logging related options");
-  logging_opts.add_options()
-    ("logging.file", po::value<std::string>()->default_value("sdpac.log"),
-     "redirect log output to this file")
-    ("logging.tostderr", "output to stderr")
-    ("logging.level", po::value<int>()->default_value(3),
-     "standard logging level")
-     ;
-
-  po::options_description tool_opts("Command-line tool Options");
-  tool_opts.add_options()
-    ("command,c", po::value<std::string>(),
+  sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
+  cfg.tool_opts().add_options()
+    ("output", su::po::value<std::string>()->default_value("sdpac.out"),
+     "path to output file")
+    ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
      "cancel: \tcancels a running job, arg must specify the job-id\n"
@@ -74,109 +29,43 @@ int main (int argc, char **argv) {
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      )
     ;
-
-  po::options_description client_opts("Client specific options");
-  client_opts.add_options()
-    ("client.orchestrator", po::value<std::string>()->default_value("orchestrator"),
-     "name of the orchestrator")
-    ("client.location", po::value<std::string>()->default_value("0.0.0.0:0"),
-     "name of the client")
-    ("client.name", po::value<std::string>()->default_value("sdpa.app.client"),
-     "name of the client")
-    ("client.config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
-     "path to the configuration file")
-    ("client.output", po::value<std::string>()->default_value("sdpac.out"),
-     "path to output file")
-    ;
-
-  po::options_description client_hidden;
-  client_hidden.add_options()
-    ("arg", po::value<std::vector<std::string> >(),
+  cfg.tool_hidden_opts().add_options()
+    ("arg", su::po::value<std::vector<std::string> >(),
      "arguments to the command")
-     ;
-
-  po::options_description network_opts("Network related options");
-  network_opts.add_options()
-    ("network.timeout", po::value<unsigned int>()->default_value(30000),
-     "maximum time to wait for a reply (in milliseconds)")
-    ("network.location", po::value< std::vector<std::string> >()->composing(),
-     "location information for a specific location (name:location)")
     ;
+  cfg.positional_opts().add("command", 1).add("arg", -1);
 
-  po::options_description visible_opts("Allowed options");
-  visible_opts.add(general_opts).add(tool_opts);
+  cfg.parse_command_line(argc, argv);
+  cfg.parse_environment();
+  cfg.parse_config_file();
+  cfg.notify();
 
-  po::options_description cmdline_opts;
-  cmdline_opts.add(visible_opts).add(client_opts).add(client_hidden).add(network_opts).add(logging_opts);
-
-  po::options_description config_opts;
-  config_opts.add(client_opts).add(network_opts).add(logging_opts);
-  
-  po::positional_options_description p;
-  p.add("command", 1);
-  p.add("arg", -1);
-  po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).
-            options(cmdline_opts).positional(p).run(), vm);
-  po::store(po::parse_environment(config_opts, environment_variable_to_option("SDPAC_")) , vm);
+  if (cfg.is_set("help"))
   {
-    if (vm.count("client.config"))
-    {
-      const std::string cfg_file(vm["client.config"].as<std::string>());
-      if (vm.count("verbose"))
-      {
-        std::cerr << "I: using config file: " << cfg_file << std::endl;
-      }
-      std::ifstream cfg_s(cfg_file.c_str());
-      if (! cfg_s)
-      {
-        std::cerr << "W: could not open " << cfg_file << " for reading!" << std::endl;
-      }
-      else
-      {
-        po::store(po::parse_config_file(cfg_s, config_opts), vm);
-      }
-    }
-  }
-  po::notify(vm);
-
-  if (vm.count("help"))
-  {
-    std::cout << visible_opts;
+    cfg.printHelp(std::cout);
     return 0;
   }
 
-  if (vm.count("help-module"))
+  if (cfg.is_set("help-module"))
   {
-    const std::string &mod(vm["help-module"].as<std::string>());
-    if (mod == "network") std::cout << network_opts;
-    else if (mod == "client" ) std::cout << client_opts;
-    else if (mod == "logging") std::cout << logging_opts;
-    else
-    {
-      std::cout << "Available modules are:" << std::endl
-                << "\t" << "network" << std::endl
-                << "\t" << "logging" << std::endl
-                << "\t" << "client" << std::endl
-                << "use --help-module=module to get more information" << std::endl;
-    }
+    cfg.printModuleHelp(std::cout);
     return 0;
   }
 
   fhg::log::getLogger().addAppender(
     fhg::log::Appender::ptr_t(
       new fhg::log::FileAppender("logfile"
-                               , "sdpac.log"
+                               , cfg.get<std::string>("logging.file")
                                , std::ios_base::app
                                | std::ios_base::binary
                                | std::ios_base::out)))->setFormat(fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
-  if (vm.count("logging.tostderr"))
+  if (cfg.is_set("logging.tostderr"))
   {
     fhg::log::getLogger().addAppender(
       fhg::log::Appender::ptr_t(
         new fhg::log::StreamAppender("console", std::cerr)))->setFormat(fhg::log::Formatter::Custom("%s: %p:%L - %m%n"));
   }
-  if (vm.count("quiet"))
+  if (cfg.is_set("quiet"))
   {
     fhg::log::getLogger().setLevel(fhg::log::LogLevel::ERROR);
   }
@@ -184,16 +73,17 @@ int main (int argc, char **argv) {
   {
     fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
   }
-  if (vm.count("verbose"))
+  if (cfg.is_set("verbose"))
   {
-    if (vm["verbose"].as<int>() > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
-    if (vm["verbose"].as<int>() > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
+    int lvl(cfg.get<int>("verbose"));
+    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
+    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
   }
 
   try
   {
-    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create(vm));
-    if (vm.count("version"))
+    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create(cfg));
+    if (cfg.is_set("version"))
     {
       std::cout << "           "
                 << "SDPA - Seismic Data Processing Architecture" << std::endl;
@@ -210,31 +100,31 @@ int main (int argc, char **argv) {
                 << std::endl;
       return 0;
     }
-    if (vm.count("dumpversion"))
+    if (cfg.is_set("dumpversion"))
     {
       std::cout << api->version() << std::endl;
       return 0;
     }
 
-    if (vm.count("command") == 0)
+    if (! cfg.is_set("command"))
     {
       std::cerr << "E: a command is required!" << std::endl;
       std::cerr << "E: type --help to get a list of available options!" << std::endl;
       return 1;
     }
-    const std::string &command(vm["command"].as<std::string>());
+    const std::string &command(cfg.get("command"));
 
     std::vector<std::string> args;
-    if (vm.count("arg"))
+    if (cfg.is_set("arg"))
     {
-      args = vm["arg"].as<std::vector<std::string> >();
+      args = cfg.get<std::vector<std::string> >("arg");
     }
 
     LOG(INFO, "***************************************************");
     LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
     LOG(INFO, "***************************************************");
 
-    api->configure_network(vm);
+    api->configure_network(cfg);
 
     if (command == "submit")
     {
@@ -280,9 +170,9 @@ int main (int argc, char **argv) {
         return 4;
       }
       std::string results(api->retrieveResults(args.front()));
-      std::ofstream ofs(vm["client.output"].as<std::string>().c_str());
+      std::ofstream ofs(cfg.get("output").c_str());
       ofs << results;
-      std::cout << "stored results in: " << vm["client.output"].as<std::string>() << std::endl;
+      std::cout << "stored results in: " << cfg.get("output") << std::endl;
     }
     else if (command == "delete")
     {

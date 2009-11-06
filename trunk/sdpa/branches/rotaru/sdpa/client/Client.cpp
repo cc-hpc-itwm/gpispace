@@ -305,25 +305,25 @@ void Client::action_configure(const config_t &cfg)
 {
   MLOG(INFO, "configuring my environment");
   
-  if (cfg.count("network.timeout"))
+  if (cfg.is_set("network.timeout"))
   {
-    timeout_ = cfg["network.timeout"].as<unsigned int>();
+    timeout_ = cfg.get<unsigned int>("network.timeout");
     MLOG(DEBUG, "set timeout to: " << timeout_);
   }
 
-  if (cfg.count("client.orchestrator"))
+  if (cfg.is_set("client.orchestrator"))
   {
-    orchestrator_ = cfg["client.orchestrator"].as<std::string>();
+    orchestrator_ = cfg.get<std::string>("client.orchestrator");
     MLOG(DEBUG, "using orchestrator: " << orchestrator_);
   }
 
-  if (cfg.count("client.location"))
+  if (cfg.is_set("client.location"))
   {
-    my_location_ = cfg["client.location"].as<std::string>();
+    my_location_ = cfg.get<std::string>("client.location");
     MLOG(DEBUG, "using location: " << my_location_);
   }
 
-  if (cfg.count("network.enable"))
+  if (cfg.is_set("network.enable"))
   {
     action_configure_network(cfg);
   }
@@ -361,9 +361,9 @@ void Client::action_configure_network(const config_t &cfg)
     seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(net_stage_name, conn));
     sdpa::events::EncodeStrategy::ptr_t encode(new sdpa::events::EncodeStrategy(net_stage_name, conn_s));
 
-    if (cfg.count("network.location"))
+    if (cfg.is_set("network.location"))
     {
-      const std::vector<std::string> &locations(cfg["network.location"].as<std::vector<std::string> >());
+      const std::vector<std::string> &locations(cfg.get<std::vector<std::string> >("network.location"));
       for (std::vector<std::string>::const_iterator loc(locations.begin()); loc != locations.end(); ++loc)
       {
         const std::string n(loc->substr(0, loc->find(':')));
