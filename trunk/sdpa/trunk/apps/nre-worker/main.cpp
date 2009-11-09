@@ -1,6 +1,15 @@
 #include <fhglog/fhglog.hpp>
+
+#include <cstring>
+
+// sdpa dependencies
+#include <sdpa/wf/Activity.hpp>
 #include <sdpa/modules/ModuleLoader.hpp>
+
+// fvm dependencies
 #include <fvm-pc/pc.hpp>
+
+#include "ActivityExecutor.hpp"
 
 namespace
 {
@@ -33,11 +42,24 @@ struct fvm_pc_connection_mgr
 
   ~fvm_pc_connection_mgr()
   {
-    if (do_leave_) fvmLeave();
+    if (do_leave_)
+    {
+      LOG(INFO, "disconnecting from FVM...");
+      fvmLeave();
+    }
   }
 
   bool do_leave_;
 };
+}
+
+const std::size_t MAX_PATH_LEN = 1024;
+int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg)
+{
+  LOG(DEBUG, "reading fvm-config from file: " << path);
+  strncpy(cfg.msqfile, path.c_str(), MAX_PATH_LEN);
+  strncpy(cfg.shmemfile, path.c_str(), MAX_PATH_LEN);
+  return 0;
 }
 
 int main(int ac, char **av)
@@ -49,8 +71,7 @@ int main(int ac, char **av)
   // read those from the config file!
   pc_cfg.shmemsize = 1073741824;
   pc_cfg.fvmsize   = 1073741824;
-  pc_cfg.msqfile   = "/tmp/nre-worker/keyfile";
-  pc_cfg.shmemfile = "/tmp/nre-worker/shmemkey";
+  read_fvm_config("/tmp/nre-worker/fvmconfig", pc_cfg);
 
   fvm_pc_connection_mgr fvm_pc;
   
@@ -70,4 +91,16 @@ int main(int ac, char **av)
   {
     loader->load(av[i]);
   }
+
+  sdpa::nre::worker::ActivityExecutor executor(loader, "127.0.0.1:8000");
+
+  // Activity act;
+  // while (true)
+  // {
+  //  in >> act;
+  //  execute(act);
+  //  out << act;
+  // }
+
+  executor.loop();
 }

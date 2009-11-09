@@ -19,7 +19,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
-include(CheckCompiler)
+#include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     if (${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -45,11 +45,8 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(SDPA_INCLUDE_DIR "/opt/sdpa/sdpa")
-
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
-include_directories(${SDPA_INCLUDE_DIR})
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
@@ -67,7 +64,7 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUG -DDEBUGCOMM  -DSHMEM -DUSE_STL_TR1)
 
 # Reflect the package structure
 add_subdirectory(fvm)
-add_subdirectory(pc)
+add_subdirectory(fvm-pc)
 
 include(CTest)
 add_subdirectory(tests)
