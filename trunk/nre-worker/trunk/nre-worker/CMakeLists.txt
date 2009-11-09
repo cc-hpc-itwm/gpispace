@@ -1,0 +1,6 @@
+set(srcs main.cpp ActivityExecutor.cpp)
+add_executable(nre_worker ${srcs})
+target_link_libraries(nre_worker ${FVM_PC_LIBRARY})
+target_link_libraries(nre_worker dl)
+target_link_libraries(nre_worker pthread)
+install(TARGETS nre_worker DESTINATION bin)
