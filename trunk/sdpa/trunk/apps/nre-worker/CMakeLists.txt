@@ -1,5 +1,0 @@
-if (FVM_FOUND)
-  set(srcs main.cpp ActivityExecutor.cpp)
-  add_executable(nre_worker ${srcs})
-  install(TARGETS nre_worker DESTINATION bin)
-endif (FVM_FOUND)
