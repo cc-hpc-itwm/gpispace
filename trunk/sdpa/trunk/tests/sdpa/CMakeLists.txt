@@ -1,4 +1,8 @@
 # -*- mode: cmake; -*-
+## add the CPPUNIT stuff
+include_directories(${CPPUNIT_INCLUDE_DIRS})
+link_directories(${CPPUNIT_LIBRARY_DIRS})
+link_libraries(${CPPUNIT_LIBRARIES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

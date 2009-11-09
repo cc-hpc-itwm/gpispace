@@ -66,7 +66,10 @@ int fvmConnect(fvm_pc_config_t config)
   //create queue
   pcQueueKey = ftok(config.msqfile,'b');
   if(pcQueueKey == -1)
+  {
+    perror("ftok failed");
     return -1;
+  }
 #ifdef DEBUG
   printf("Connecting to fvm with key %d\n",pcQueueKey);
 #endif

@@ -7,8 +7,8 @@
 typedef struct fvmPcConfig {
   size_t shmemsize;
   size_t fvmsize;
-  char * msqfile;
-  char * shmemfile;
+  const char * msqfile;
+  const char * shmemfile;
 } fvm_pc_config_t;
 
 int fvmConnect(fvm_pc_config_t);

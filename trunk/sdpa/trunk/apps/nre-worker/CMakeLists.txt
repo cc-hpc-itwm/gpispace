@@ -1,0 +1,5 @@
+if (FVM_FOUND)
+  add_executable(nre_worker main.cpp)
+  target_link_libraries(nre_worker sdpa-modules)
+  install(TARGETS nre_worker DESTINATION bin)
+endif (FVM_FOUND)

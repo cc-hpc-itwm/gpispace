@@ -1,9 +1,6 @@
 #ifndef SDPA_MODULE_MODULE_LOADER_HPP
 #define SDPA_MODULE_MODULE_LOADER_HPP 1
 
-#include <map>
-#include <string>
-
 #include <sdpa/sdpa-config.hpp>
 
 // choose the implementation depending on what we have available
