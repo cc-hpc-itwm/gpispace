@@ -226,6 +226,7 @@ add_subdirectory(tests)
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
   )
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp  DESTINATION include/sdpa)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
