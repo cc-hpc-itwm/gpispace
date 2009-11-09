@@ -28,10 +28,11 @@ namespace sdpa {
 				{
 					sdpa::daemon::Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
+					// schedule only jobs submitted by the master
 					if(pJob->is_local())
 						schedule_local(pJob);
 					else
-						start_job(pJob);
+						start_job(pJob); //only for testing purposes! In the real case the executor thread will take care
 
 					check_post_request();
 				}

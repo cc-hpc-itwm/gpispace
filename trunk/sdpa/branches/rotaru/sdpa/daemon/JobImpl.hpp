@@ -30,15 +30,6 @@ namespace sdpa { namespace daemon {
 
         virtual const sdpa::job_desc_t& description() const;
 
-        virtual const Job::data_t& input() const;
-        virtual const Job::data_t& output() const;
-
-        virtual void add_input(const Job::value_t & value);
-        virtual void add_output(const Job::value_t & value);
-
-        virtual void add_subjob(const Job::ptr_t & job);
-        virtual Job::ptr_t get_subjob(const job_id_t & id);
-
         virtual bool is_marked_for_deletion();
         virtual bool mark_for_deletion();
 
@@ -60,10 +51,6 @@ namespace sdpa { namespace daemon {
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
-
-        Job::data_t input_;
-        Job::data_t output_;
-        job_list_t  subjobs_;
 
         bool b_marked_for_del_;
         bool b_local_;
