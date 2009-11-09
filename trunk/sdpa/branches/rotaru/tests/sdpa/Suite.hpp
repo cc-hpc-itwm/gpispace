@@ -23,6 +23,7 @@
 #include <tests/sdpa/test_C2D2D2DRealGwes.hpp>
 
 #include <tests/sdpa/test_DaemonsWithComm.hpp>
+#include <tests/sdpa/test_Components.hpp>
 
 #include <tests/sdpa/test_Scheduler.hpp>
 
@@ -31,6 +32,7 @@ namespace sdpa { namespace tests {
   public:
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
+
       /*suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
@@ -39,7 +41,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
-      suiteOfTests->addTest( JobFSMTest_SMC::suite() );*/
+      suiteOfTests->addTest( JobFSMTest_SMC::suite() );
 
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
@@ -53,7 +55,9 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 
-	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );
+	  suiteOfTests->addTest( DaemonsWithCommTest::suite() ); */
+
+	  suiteOfTests->addTest( TestComponents::suite() );
 
       return suiteOfTests;
     }

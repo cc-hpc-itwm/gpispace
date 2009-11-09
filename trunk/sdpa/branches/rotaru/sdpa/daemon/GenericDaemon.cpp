@@ -91,7 +91,7 @@ GenericDaemon::~GenericDaemon()
 	daemon_stage_ = NULL;
 }
 
-void GenericDaemon::create_daemon_stage(GenericDaemon::ptr_t ptr_daemon )
+void GenericDaemon::create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon )
 {
 	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 1) );
 	ptr_daemon->setStage(daemon_stage.get());
@@ -158,8 +158,10 @@ void GenericDaemon::shutdown_network()
 	ptr_to_master_stage_ = ptr_to_slave_stage_ = NULL;
 }
 
-void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
+void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
 {
+	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create(); // initialize it with default options
+
 	// The stage uses 2 threads
 	ptr_daemon->daemon_stage()->start();
 
@@ -169,33 +171,28 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 	sleep(1);
 
-	// you should read the configuration file here!
-	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create();
+	// configuration done
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
+	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
+}
 
-	// use for now as below, later read from config file
-	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000); //1ms
-	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
+void GenericDaemon::start( const GenericDaemon::ptr_t& ptr_daemon,  sdpa::util::Config::ptr_t ptrConfig )
+{
+
+	ptr_daemon->ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
+
+	// The stage uses 2 threads
+	ptr_daemon->daemon_stage()->start();
+
+	//start-up the the daemon
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
+	ptr_daemon->daemon_stage()->send(pEvtStartUp);
+
+	sleep(1);
 
 	// configuration done
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
 	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
-
-	// in fact the master name should be red from the configuration file
-	if( ptr_daemon->name() == sdpa::daemon::AGGREGATOR )
-	{
-		ptr_daemon->setMaster(sdpa::daemon::ORCHESTRATOR);
-
-		cout<<"Send WorkerRegistrationEvent to "<<ptr_daemon->master()<<endl<<endl<<endl;
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_daemon->name(), ptr_daemon->master()));
-		ptr_daemon->to_master_stage()->send(pEvtWorkerReg);
-	} else if( ptr_daemon->name() == sdpa::daemon::NRE )
-	{
-		ptr_daemon->setMaster(sdpa::daemon::AGGREGATOR );
-
-		cout<<"Send WorkerRegistrationEvent to "<<ptr_daemon->master()<<endl<<endl<<endl;
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_daemon->name(), ptr_daemon->master()));
-		ptr_daemon->to_master_stage()->send(pEvtWorkerReg);
-	}
 }
 
 void GenericDaemon::stop()
@@ -309,12 +306,33 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 //actions
 void GenericDaemon::action_configure(const StartUpEvent&)
 {
+	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
+	// use for now as below, later read from config file
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000); //1ms
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
+	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+	// in fact the master name should be red from the configuration file
+	if( name() == sdpa::daemon::AGGREGATOR )
+	{
+		setMaster(sdpa::daemon::ORCHESTRATOR);
+
+		cout<<"Send WorkerRegistrationEvent to "<<master()<<endl<<endl<<endl;
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+		to_master_stage()->send(pEvtWorkerReg);
+	} else if( name() == sdpa::daemon::NRE )
+	{
+		setMaster(sdpa::daemon::AGGREGATOR );
+
+		cout<<"Send WorkerRegistrationEvent to "<<master()<<endl<<endl<<endl;
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+		to_master_stage()->send(pEvtWorkerReg);
+	}
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent&)

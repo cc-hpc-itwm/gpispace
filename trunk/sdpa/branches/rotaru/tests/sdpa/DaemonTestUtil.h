@@ -39,8 +39,7 @@ class SchedulerNRE : public SchedulerImpl
 {
 public:
 
-	static string answerStrategy;
-	SDPA_DECLARE_LOGGER();
+	//static string answerStrategy;
 
 	SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
 		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
@@ -98,6 +97,7 @@ public:
 
 private:
 	 std::string m_answerStrategy;
+	 SDPA_DECLARE_LOGGER();
 };
 
 class NreDaemon : public DaemonFSM

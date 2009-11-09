@@ -35,7 +35,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 				const std::string& toMasterStageName,
 				const std::string& toSlaveStageName = std::string(""));
 
-	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes);
+	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes );
 
 	virtual ~DaemonFSM();
 

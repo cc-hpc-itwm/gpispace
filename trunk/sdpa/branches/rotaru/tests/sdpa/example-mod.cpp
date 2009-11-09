@@ -15,6 +15,15 @@ void DoNothing(sdpa::modules::Module::data_t &)
 
 }
 
+// echos the input to the output
+void Echo(sdpa::modules::Module::data_t &params)
+{
+  const std::string in = params["input"].token().data();
+  const std::string out = in;
+
+  params["output"].token().data(out);
+}
+
 // add two integer parameters and store the result in "out"
 void Add(sdpa::modules::Module::data_t &params)
 {
@@ -60,5 +69,6 @@ SDPA_MOD_INIT_START(example-mod)
   SDPA_REGISTER_FUN(Malloc);
   SDPA_REGISTER_FUN(Free);
   SDPA_REGISTER_FUN(Update);
+  SDPA_REGISTER_FUN(Echo);
 }
 SDPA_MOD_INIT_END(example-mod)

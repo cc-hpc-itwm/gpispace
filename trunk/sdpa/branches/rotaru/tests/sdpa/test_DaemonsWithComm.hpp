@@ -13,12 +13,14 @@ namespace sdpa {
 		namespace tests {
 			class DaemonsWithCommTest: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::DaemonsWithCommTest );
-			  CPPUNIT_TEST( testUserOrchCommDummyGwes );
+			  CPPUNIT_TEST( testOrchestrator );
+
+			  /*CPPUNIT_TEST( testUserOrchCommDummyGwes );
 			  CPPUNIT_TEST( testUserOrchCommRealGwes );
 			  CPPUNIT_TEST( testUserOrchAggCommDummyGwes );
 			  CPPUNIT_TEST( testUserOrchAggCommRealGwes );
 			  CPPUNIT_TEST( testUserOrchAggNRECommDummyGwes );
-			  CPPUNIT_TEST( testUserOrchAggNRECommRealGwes );
+			  CPPUNIT_TEST( testUserOrchAggNRECommRealGwes );*/
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -30,6 +32,8 @@ namespace sdpa {
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
+			  void testOrchestrator();
+
 			  void testUserOrchCommDummyGwes();
 			  void testUserOrchCommRealGwes();
 			  void testUserOrchAggCommDummyGwes();
