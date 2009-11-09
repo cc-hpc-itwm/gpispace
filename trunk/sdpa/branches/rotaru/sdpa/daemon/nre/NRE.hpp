@@ -2,9 +2,6 @@
 #include "SchedulerNRE.hpp"
 #include <gwes/GWES.h>
 
-using namespace std;
-using namespace sdpa::daemon;
-
 namespace sdpa {
   class NRE : public dsm::DaemonFSM {
   public:
@@ -12,11 +9,11 @@ namespace sdpa {
 	SDPA_DECLARE_LOGGER();
 
 	NRE(const std::string &name, std::string& strAnswer )
-		: DaemonFSM( name,  new gwes::GWES() ),
+		: dsm::DaemonFSM( name,  new gwes::GWES() ),
 		  SDPA_INIT_LOGGER(name)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
-			ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE(ptr_Sdpa2Gwes_, this, strAnswer));
+			ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(ptr_Sdpa2Gwes_, this, strAnswer));
 		}
 
 

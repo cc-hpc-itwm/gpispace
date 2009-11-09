@@ -1,8 +1,6 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
 
-using namespace std;
-
 namespace sdpa {
   class Orchestrator : public dsm::DaemonFSM {
   public:

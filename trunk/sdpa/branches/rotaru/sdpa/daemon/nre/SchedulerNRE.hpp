@@ -1,17 +1,16 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 
 using namespace std;
-using namespace sdpa::daemon;
 
 namespace sdpa {
 
-	class SchedulerNRE : public SchedulerImpl
+	class SchedulerNRE : public sdpa::daemon::SchedulerImpl
 	{
 	public:
 		SDPA_DECLARE_LOGGER();
 
 		SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
-			SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
+			sdpa::daemon::SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
 			SDPA_INIT_LOGGER("SchedulerNRE"),
 			m_answerStrategy(answerStrategy)
 			{}
@@ -27,7 +26,7 @@ namespace sdpa {
 			{
 				try
 				{
-					Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+					sdpa::daemon::Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
 					if(pJob->is_local())
 						schedule_local(pJob);
@@ -49,7 +48,7 @@ namespace sdpa {
 			}
 		}
 
-		void start_job(const Job::ptr_t &pJob)
+		void start_job(const sdpa::daemon::Job::ptr_t &pJob)
 		{
 			SDPA_LOG_DEBUG("Execute job ...");
 

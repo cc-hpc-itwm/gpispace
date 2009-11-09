@@ -1,8 +1,6 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
 
-using namespace std;
-
 namespace sdpa {
   class Aggregator : public dsm::DaemonFSM {
   public:
