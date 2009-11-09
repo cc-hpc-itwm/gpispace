@@ -1,5 +1,5 @@
 set(srcs ActivityExecutor.cpp)
-set(hdrs ActivityExecutor.hpp ModuleLoader.hpp Module.hpp FallBackModuleLoader.hpp FVMModuleLoader.hpp)
+file(GLOB hdrs "*.hpp")
 
 ADD_LIBRARY(sdpa-modules ${srcs})
 target_link_libraries(sdpa-modules)
