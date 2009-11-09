@@ -107,21 +107,24 @@ dtmmgr_offset_size (const PDTmmgr_t PDTmmgr, const Handle_t Handle,
 
   pdtmmgr_t pdtmmgr = PDTmmgr;
 
-  MemSize_t Size;
+  MemSize_t Size = 0;
 
   HandleReturn_t HandleReturn =
     tmmgr_offset_size (pdtmmgr->arena[Arena], Handle, POffset, &Size);
 
-  // invert for the local arena
-  if (Arena == ARENA_LOCAL && POffset != NULL)
+  if (HandleReturn == HANDLE_SUCCESS)
     {
-      assert (pdtmmgr->mem_size >= *POffset + Size);
+      // invert for the local arena
+      if (Arena == ARENA_LOCAL && POffset != NULL)
+        {
+          assert (pdtmmgr->mem_size >= *POffset + Size);
+        
+          *POffset = pdtmmgr->mem_size - (*POffset + Size);
+        }
 
-      *POffset = pdtmmgr->mem_size - (*POffset + Size);
+      if (PMemSize != NULL)
+        *PMemSize = Size;
     }
-
-  if (PMemSize != NULL)
-    *PMemSize = Size;
 
   return HandleReturn;
 }
