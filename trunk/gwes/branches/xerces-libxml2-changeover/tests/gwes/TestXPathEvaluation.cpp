@@ -142,9 +142,9 @@ void XPathEvaluationTest::testXPathEvaluatorContextCache() {
     Edge *e1 = new Edge(p1,"input1");
     t0->addReadEdge(e0);
     t0->addInEdge(e1);
-    Token* d0 = new Token(true);
+    Token* d0 = new Token();
     p0->addToken(d0);
-    Token* d1 = new Token(false);
+    Token* d1 = new Token(Token::CONTROL_FALSE);
     p1->addToken(d1);
     
     TransitionOccurrence* toP = new TransitionOccurrence(t0);

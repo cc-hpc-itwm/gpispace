@@ -73,9 +73,9 @@ void ParserTest::testParser()
 			
 	// add token
 	LOG_INFO(logger, "  token...");
-	Token* d0 = new Token(true);
+	Token* d0 = new Token();
 	wf->getPlace("p0")->addToken(d0);
-	Token* d1 = new Token(true);
+	Token* d1 = new Token();
 	wf->getPlace("p0")->addToken(d1);
 
 	// transition is now enabled

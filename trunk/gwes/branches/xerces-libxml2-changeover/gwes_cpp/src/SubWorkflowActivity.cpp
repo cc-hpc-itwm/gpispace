@@ -82,6 +82,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	string edgeExpression;
 	try {
 		Place* placeP;
+		Token::ptr_t tokenCloneP;
 		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):
@@ -90,7 +91,9 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 				edgeExpression = it->edgeP->getExpression();
 			LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
 			placeP = _subworkflowP->getPlace(edgeExpression);
-			placeP->addToken(it->tokenP->deepCopy());
+			tokenCloneP = it->tokenP->deepCopy(); 
+			LOG_WARN(_logger, "///ToDo: refractoring to shared_ptr!");
+			placeP->addToken(tokenCloneP.get());
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	
 				continue;
@@ -196,7 +199,8 @@ void SubWorkflowActivity::update(const Event& event) {
 							edgeExpression = it->edgeP->getExpression();
 							if (edgeExpression.find("$")==edgeExpression.npos) { // ignore XPath expressions
 								Place* placeP = _subworkflowP->getPlace(edgeExpression);
-								it->tokenP = placeP->getTokens()[0]->deepCopy();
+								Token::ptr_t tokenCloneP = placeP->getTokens()[0]->deepCopy();
+								it->tokenP = tokenCloneP.get();
 								LOG_INFO(_logger, "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ...");
 							}
 							break;

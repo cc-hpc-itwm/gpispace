@@ -7,10 +7,9 @@
 #ifndef TOKEN_H_
 #define TOKEN_H_
 // gwdl
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/Properties.h>
 #include <gwdl/Data.h>
-// std
-#include <string>
 
 namespace gwdl
 {
@@ -58,46 +57,40 @@ class Transition;
  */ 
 class Token
 {
-	
-private:
-	long id;
-    Data* data;
-    Properties properties;
-    bool control;
-    Transition* p_lock;
-    
-    long generateID() {static long counter = 0; return counter++;}
-	
+
 public:
 	
-    typedef shared_ptr<Token> ptr_t;
+    typedef gwdl::shared_ptr<Token> ptr_t;
+    
+    enum control_t {
+    	CONTROL_FALSE = 0,
+    	CONTROL_TRUE = 1
+    };
 
 	/**
 	 * Construct a default control token with control = <code>true</code>.
 	 */ 
-	Token() {id = generateID(); data=NULL; control = true; p_lock = NULL;}
+	Token();
 	
 	/**
 	 * Constructor for control token with specified value.
 	 * @param _control Boolean value of the control token.
 	 */ 
-	explicit Token(bool _control){id = generateID(); data=NULL; control = _control; p_lock = NULL;}
+	explicit Token(control_t control);
 	
 	/**
 	 * Constructor for control token with specified value and properties.
 	 * @param _properties The properties of this token.
 	 * @param _control The control value of this token.
 	 */
-	explicit Token(Properties _properties, bool _control)
-	 {id = generateID(); data=NULL; control = _control; properties = _properties; p_lock = NULL;}
+	explicit Token(Properties properties, control_t control);
 	
 	/**
 	 * Constructor for data token.
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param _data XML content of the data token as data object.
 	 */  
-	explicit Token(Data* _data)
-	  {id = generateID(); data = _data;	p_lock = NULL;}
+	explicit Token(Data::ptr_t dataP);
 	
 	/**
 	 * Constructor for data token with specific properties.
@@ -105,47 +98,41 @@ public:
 	 * @param _properties The properties of this data token.
 	 * @param _data The data of this token.
 	 */
-	explicit Token(Properties _properties, Data* _data)
-	  {id = generateID(); properties = _properties; data = _data; p_lock = NULL;} 
+	explicit Token(Properties properties, Data::ptr_t dataP);
 	
 	/**
 	 * Destructor for data token.
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 */
-	virtual ~Token() {
-		try {
-			if (isData()) delete data;
-		} 
-		data = NULL;
-	}
+	virtual ~Token();
 	
 	/**
 	 * Get a reference to the properties of this token.
 	 * @return A reference to the properties of this token.
 	 */
-	Properties& getProperties() {return properties;}
+	Properties& getProperties() {return _properties;}
 	
 	/**
-	 * Get the data content of this data token.
+	 * Get a shared pointer to the data object of this data token.
 	 * @return The data of this token.
 	 */
-	Data* getData() {return data;}
+	const Data::ptr_t getData() const {return _dataP;}
 	
 	/**
 	 * Check, whether this token is a control or data token.
 	 * @return <code>true</code> if token is data token, false otherwise.
 	 */
-	bool isData() const {return (data!=NULL);}
+	bool isData() const {return (_dataP!=NULL);}
 	
 	/**
 	 * Get the control value of this control token.
 	 */
-	bool getControl() const {return control;}
+	bool getControl() const {return _control;}
 	
 	/**
 	 * Get internal id of this token.
 	 */
-	long getID() const {return id;}
+	long getID() const {return _id;}
 	
 	/**
 	 * Internal method to lock this token. Please use Place.lockToken() instead to keep track of the 
@@ -154,26 +141,26 @@ public:
      * The lock has no XML representation in the GWorkflowDL and is not propagated to distributed instances.
      * @param p_transition The transition that locked the token.
      */
-	void lock(Transition* p_transition) {p_lock = p_transition;}
+	void lock(Transition* p_transition) {_p_lock = p_transition;}
 	
 	/**
 	 * Internal method to unlock this token. Please use Place.unlockToken() instead to keep track of the 
 	 * next unlocked token.
 	 */
-	void unlock() {p_lock = NULL;}
+	void unlock() {_p_lock = NULL;}
 	
 	/**
 	 * Test if this token is locked.
      * @return returns <code>true</code> if the token is locked, <code>false</code> otherwise.
      */
-	bool isLocked() const {return p_lock != NULL;}
+	bool isLocked() const {return _p_lock != NULL;}
 	
 	/**
      * Test if this token is locked by a specific transition
      * @param p_transition
      * @return returns <code>true</code> if the token has been locked by the specific transition, <code>false</code> otherwise.
      */
-    bool isLockedBy(Transition* p_transition) const {return p_lock == p_transition;}
+    bool isLockedBy(Transition* p_transition) const {return _p_lock == p_transition;}
     
 	/**
 	 * Make a deep copy of this Token object and return a pointer to the new Token.
@@ -182,12 +169,19 @@ public:
 	 * Locks from transitions will be removed on the cloned token.
 	 * @return Pointer to the cloned Token object.
 	 */ 
-	Token* deepCopy();
+	Token::ptr_t deepCopy();
+	
+private:
+	long _id;
+    Data::ptr_t _dataP;
+    Properties _properties;
+    control_t _control;
+    Transition* _p_lock;
+    
+    long generateID() {static long counter = 0; return counter++;}
 	
 }; // end class Token
 
 } // end namespace gwdl
-
-std::ostream& operator<< (std::ostream &out, gwdl::Token &token);
 
 #endif /*TOKEN_H_*/

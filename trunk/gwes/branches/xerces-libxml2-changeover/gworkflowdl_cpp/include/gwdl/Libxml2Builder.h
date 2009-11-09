@@ -9,6 +9,8 @@
 
 // gwdl
 #include <gwdl/IBuilder.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 // libxml2
 #include <libxml/xpathInternals.h>
 
@@ -21,6 +23,13 @@ namespace gwdl
  */
 class Libxml2Builder : public IBuilder 
 {
+	
+private:
+	
+	 /**
+	  * Fhg Logger.
+	  */
+	 fhg::log::logger_t _logger;
 
 public:
 	
@@ -34,20 +43,28 @@ public:
 	 */
 	virtual ~Libxml2Builder();
 
-	// Data
+	// Data - Interface IBuilder
     const Data::ptr_t deserializeData(const std::string &) const;
     const std::string serializeData(const Data::ptr_t &) const;
-	
-	// Token
+  	// Data - libxml2-specific
+    const xmlNodePtr dataToElement(const Data &data) const; 
+
+    // Token - Interface IBuilder
 	const Token::ptr_t deserializeToken(const std::string&) const;
 	const std::string serializeToken(const Token::ptr_t &) const;
-	
-	// Place
-//	virtual Place deserializePlace(const std::string& xmlstring);
-//	virtual std::string serializePlace(const Place& place);
+	// Token - libxml2-specific
+	const std::string serializeToken(const Token &) const;
+	const Token::ptr_t elementToToken(const xmlNodePtr nodeP) const;
+	const xmlNodePtr tokenToElement(const Token &) const;
 	
 }; // end class IBuilder
 
 } // end namespace gwdl
+
+// Data
+std::ostream& operator<< (std::ostream &out, gwdl::Data &data);
+
+// Token
+std::ostream& operator<< (std::ostream &out, gwdl::Token &token);
 
 #endif /*GWDL_LIBXML2BUILDER_H_*/

@@ -1,5 +1,5 @@
-#ifndef GWDL_MEMORY_HPP
-#define GWDL_MEMORY_HPP 1
+#ifndef GWDL_MEMORY_H
+#define GWDL_MEMORY_H 1
 
 //#if HAVE_CONFIG_H
 //#include <gwdl/gwdl-config.hpp>

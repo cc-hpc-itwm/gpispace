@@ -16,6 +16,9 @@ using namespace gwdl;
 namespace gwdl
 {
 
+/**
+ * The xmlstring MUST NOT contain the parent <data> element.
+ */  
 Data::Data(const string& xmlstring, const int type) throw(WorkflowFormatException) {
 	_content = xmlstring;
 	XMLUtils::trim(_content);
@@ -23,26 +26,19 @@ Data::Data(const string& xmlstring, const int type) throw(WorkflowFormatExceptio
 	
 	if ( _content.empty()) {
 		_type = TYPE_EMPTY;
-	} else if ( XMLUtils::startsWith(_content,"<data") && XMLUtils::endsWith(_content,"</data>") ) {
-		_type = type;
 	} else {
-		ostringstream oss; 
-		oss << "XML for data object does not have parent element <data>! " << _content;
-		LOG_ERROR(logger_t(getLogger("gwdl")), oss.str());
-		throw WorkflowFormatException(oss.str());
+		_type = type;
 	}
 }
 
-Data::~Data() {}
+Data::~Data() {
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Data()");
+}
 
 Data::ptr_t Data::deepCopy() {
 	Data::ptr_t data(new Data(_content));
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "Data::deepCopy()");
 	return data;
 }
 
 } // end namespace gwdl
-
-ostream& operator<<(ostream &out, gwdl::Data &data) {
-	out << data.getContent();
-	return out;
-}

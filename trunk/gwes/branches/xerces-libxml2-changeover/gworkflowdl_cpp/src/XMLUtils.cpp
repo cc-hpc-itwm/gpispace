@@ -244,7 +244,6 @@ string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
 }
 
 string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
-//	LOG_INFO(_logger, "XMLUtils::serializeLibxml2() ...");
 	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
 	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
 	xmlDocSetRootElement(docP,nodecopy);

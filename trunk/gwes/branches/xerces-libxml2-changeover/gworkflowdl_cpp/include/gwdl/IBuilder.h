@@ -33,8 +33,6 @@ public:
 	virtual const std::string serializeToken(const Token::ptr_t &) const = 0;
 	
 	// Place
-//	virtual Place deserializePlace(const std::string& xmlstring) = 0;
-//	virtual std::string serializePlace(const Place& place) = 0;
 	
 	// Transition
 	

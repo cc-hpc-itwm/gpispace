@@ -20,7 +20,7 @@
 #define GWDL_WORKFLOW_H 1
 
 #include <string>
-#include <gwdl/memory.hpp>
+#include <gwdl/Memory.h>
 
 namespace gwdl
 {

@@ -36,7 +36,7 @@ void GWESTest::testGWES()
     Workflow *wf = new Workflow();
     // p0
     Place* p0 = new Place("p0");
-    Token* token0 = new Token(true);
+    Token* token0 = new Token();
 	p0->addToken(token0);
 	wf->addPlace(p0);
 	// p1
@@ -47,7 +47,7 @@ void GWESTest::testGWES()
 	wf->addPlace(p2);
 	// p3
 	Place* p3 = new Place("p3");
-	Data* da1 = new Data("<data><param>param</param></data>");
+	Data::ptr_t da1 = Data::ptr_t(new Data("<data><param>param</param></data>"));
 	Token* token1 = new Token(da1);
 	p3->addToken(token1);
 	wf->addPlace(p3);
