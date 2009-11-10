@@ -77,7 +77,6 @@ set(FVM_PC_LIBRARY "${FVM_PC_HOME}/lib/libfvm-pc.a")
 include_directories(${FVM_PC_INCLUDE_DIR})
 
 message(STATUS "*** Fixme: SDPA includes...")
-set(SDPA_INCLUDE_DIR "${SDPA_HOME}")
 include_directories(${SDPA_INCLUDE_DIR})
 
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
