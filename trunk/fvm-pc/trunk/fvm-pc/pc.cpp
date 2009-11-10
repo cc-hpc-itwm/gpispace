@@ -19,6 +19,8 @@ key_t pcShmKey;
 void * pcShm;
 #endif
 
+static int nodeRank;
+static int nodeCount;
 
 // ------ Internal functions for Process Container (not to be used by appllication)
 int doRequest(fvmRequest_t op_request)
@@ -62,6 +64,7 @@ int fvmConnect(fvm_pc_config_t config)
 {
   int ret=0;
   msgQueueMsg_t msg;
+  msgQueueConnectMsg_t connectMsg;
 
   //create queue
   pcQueueKey = ftok(config.msqfile,'b');
@@ -117,6 +120,14 @@ int fvmConnect(fvm_pc_config_t config)
 #else //qp
 
 #endif
+
+  if((msgrcv(pcQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t), CONNECTMSG, 0)) == -1){
+    perror("PC: error receiving connect msg");
+    return 0;
+  }
+
+  nodeRank = connectMsg.rank;
+  nodeCount = connectMsg.nodecount;
 
   return ret;
 }
@@ -356,4 +367,13 @@ void *fvmGetShmemPtr()
 #else
   return 0;
 #endif
+}
+
+int fvmGetRank()
+{
+  return nodeRank;
+}
+int fvmGetNodeCount()
+{
+  return nodeCount;
 }

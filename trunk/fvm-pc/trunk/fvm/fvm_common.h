@@ -6,7 +6,8 @@ typedef enum {
 	STARTMSG = 1,
 	REQUESTMSG,
 	ALLOCMSG,
-	ACKMSG
+	ACKMSG,
+	CONNECTMSG
 } fvmMsgType_t;
 
 /* #define STARTMSG 1 */
@@ -90,12 +91,15 @@ typedef struct msgQueueAllocMsg {
   fvmAllocHandle_t handle;
 } msgQueueAllocMsg_t;
 
+typedef struct msgQueueConnectMsg {
+  long mtype; /* always needed by msgqueue */
+  int rank;
+  int nodecount;
+} msgQueueConnectMsg_t;
+
 typedef struct msgq_ack {
   long mtype;
   int ret;
 } msgq_ack_t;
-
-
-
 
 #endif

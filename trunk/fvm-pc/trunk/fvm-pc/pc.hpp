@@ -14,6 +14,8 @@ typedef struct fvmPcConfig {
 int fvmConnect(fvm_pc_config_t);
 int fvmLeave();
 
+int fvmGetRank();
+int fvmGetNodeCount();
 
 fvmAllocHandle_t fvmGlobalAlloc(size_t size);
 int fvmGlobalFree(fvmAllocHandle_t ptr);
