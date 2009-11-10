@@ -1,5 +1,8 @@
 #include <fhglog/fhglog.hpp>
 
+#include <string>
+#include <fstream>
+#include <sstream>
 #include <cstring>
 
 // sdpa dependencies
@@ -54,24 +57,96 @@ struct fvm_pc_connection_mgr
 }
 
 const std::size_t MAX_PATH_LEN = 1024;
-int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg)
+int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::exception)
 {
   LOG(DEBUG, "reading fvm-config from file: " << path);
-  strncpy(cfg.msqfile, "/tmp/fvm_pc_msq", MAX_PATH_LEN);
-  strncpy(cfg.shmemfile, "/tmp/fvm_pc_key", MAX_PATH_LEN);
+  std::ifstream ifs(path.c_str());
+  if (! ifs)
+  {
+    throw std::runtime_error("could not open fvm-config file " + path + " for reading!");
+  }
+
+  cfg.shmemsize = 0;
+  cfg.fvmsize = 0;
+
+  while (ifs)
+  {
+    std::string line;
+    std::getline(ifs, line);
+    if (line.empty()) continue;
+    if (line[0] == '#') continue;
+
+    DLOG(DEBUG, "parsing line: " << line);
+
+    std::string::size_type split_pos(line.find_first_of(" "));
+    const std::string param_name(line.substr(0, split_pos));
+    const std::string param_value(line.substr(split_pos+1));
+    if (param_name.empty() || param_value.empty())
+    {
+      LOG(WARN, "ignoring invalid line: " << line);      
+    }
+    else
+    {
+      DLOG(DEBUG, "name=" << param_name << " value=" << param_value);
+      if (param_name == "SHMSZ")
+      {
+        std::istringstream istr(param_value);
+        istr >> cfg.shmemsize;
+        if (! istr)
+        {
+          LOG(FATAL, "could not parse " << param_name << " into std::size_t");
+          throw std::runtime_error("parser error in line " + line + ": could not parse std::size_t value!");
+        }
+        DLOG(DEBUG, "set shmemsize to \"" << cfg.shmemsize << "\"");
+      }
+      else if (param_name == "FVMSZ")
+      {
+        std::istringstream istr(param_value);
+        istr >> cfg.fvmsize;
+        if (! istr)
+        {
+          LOG(FATAL, "could not parse " << param_name << " into std::size_t");
+          throw std::runtime_error("parser error in line " + line + ": could not parse std::size_t value!");
+        }
+        DLOG(DEBUG, "set fvmsize to \"" << cfg.fvmsize << "\"");
+      }
+      else if (param_name == "MSQFILE")
+      {
+        DLOG(DEBUG, "setting msqfile to \"" << param_value << "\"");
+        strncpy(cfg.msqfile, param_value.c_str(), sizeof(cfg.msqfile));
+      }
+      else if (param_name == "SHMFILE")
+      {
+        DLOG(DEBUG, "setting shmemfile to \"" << param_value << "\"");
+        strncpy(cfg.shmemfile, param_value.c_str(), sizeof(cfg.shmemfile));
+      }
+      else
+      {
+        LOG(WARN, "ignoring invalid parameter: " << param_name);
+      }
+    }
+  }
+  if (!cfg.shmemsize || !cfg.fvmsize)
+  {
+    throw std::runtime_error("config file did not set reasonable values for SHMSZ and/or FVMSZ!");
+  }
   return 0;
 }
 
 int main(int ac, char **av)
 {
+  if (ac < 2)
+  {
+    std::cerr << "usage: " << av[0] << " path-to-fvm-config [modules...]" << std::endl;
+    return 1;
+  }
   fhg::log::Configurator::configure();
+
   // connect to FVM
   fvm_pc_config_t pc_cfg;
 
   // read those from the config file!
-  pc_cfg.shmemsize = 1073741824;
-  pc_cfg.fvmsize   = 1073741824;
-  read_fvm_config("/tmp/nre-worker/fvmconfig", pc_cfg);
+  read_fvm_config(av[1], pc_cfg);
 
   fvm_pc_connection_mgr fvm_pc;
   
@@ -87,7 +162,7 @@ int main(int ac, char **av)
   // create the module loader
   ModuleLoader::ptr_t loader(ModuleLoader::create());
 
-  for (int i = 1; i < ac; ++i)
+  for (int i = 2; i < ac; ++i)
   {
     loader->load(av[i]);
   }
