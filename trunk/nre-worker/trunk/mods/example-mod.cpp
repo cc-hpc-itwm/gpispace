@@ -53,7 +53,7 @@ void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
   *ptr = value;
 }
 
-void RunTest(sdpa::modules::Module::data_t &) throw (std::exception)
+void RunTest() throw (std::exception)
 {
   std::cout << "running RunTest example" << std::endl;
 }
@@ -66,10 +66,8 @@ SDPA_MOD_INIT_START(example-mod)
   SDPA_REGISTER_FUN(Malloc);
   SDPA_REGISTER_FUN(Free);
   SDPA_REGISTER_FUN(Update);
-  SDPA_REGISTER_FUN(RunTest);
 
   // run test cases
-  sdpa::modules::Module::data_t data;
-  RunTest(data);
+  RunTest();
 }
 SDPA_MOD_INIT_END(example-mod)
