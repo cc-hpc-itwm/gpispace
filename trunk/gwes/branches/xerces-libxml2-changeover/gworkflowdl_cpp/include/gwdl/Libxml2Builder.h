@@ -47,21 +47,30 @@ public:
 	// Data
 	//////////////////////////
 	// Interface IBuilder
-    const Data::ptr_t deserializeData(const std::string &) const;
-    const std::string serializeData(const Data::ptr_t &) const;
+    Data::ptr_t deserializeData(const std::string &) const throw (WorkflowFormatException);
+    std::string serializeData(const Data &) const;
   	// libxml2-specific
-    const xmlNodePtr dataToElement(const Data &data) const; 
+    Data::ptr_t elementToData(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+    xmlNodePtr dataToElement(const Data &data) const; 
 
     //////////////////////////
     // Token
     //////////////////////////
     // Interface IBuilder
-	const Token::ptr_t deserializeToken(const std::string&) const;
-	const std::string serializeToken(const Token::ptr_t &) const;
+	Token::ptr_t deserializeToken(const std::string&) const throw (WorkflowFormatException);
+	std::string serializeToken(const Token &) const;
 	// libxml2-specific
-	const std::string serializeToken(const Token &) const;
-	const Token::ptr_t elementToToken(const xmlNodePtr nodeP) const;
-	const xmlNodePtr tokenToElement(const Token &) const;
+	Token::ptr_t elementToToken(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr tokenToElement(const Token &) const;
+	
+private:
+	//////////////////////////
+	// private helper methods
+	//////////////////////////
+	static xmlNodePtr nextElementNode(xmlNodePtr curNodeP);
+	static xmlNodePtr nextTextNode(xmlNodePtr nodeP);
+	
+	static bool checkElementName(const xmlNodePtr nodeP,const char* name);
 	
 }; // end class IBuilder
 

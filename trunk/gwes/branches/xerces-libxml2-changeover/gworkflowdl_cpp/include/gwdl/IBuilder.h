@@ -13,6 +13,7 @@
 #include <gwdl/Place.h>
 #include <gwdl/Transition.h>
 #include <gwdl/Workflow.h>
+#include <gwdl/WorkflowFormatException.h>
 // std
 #include <string>
 
@@ -25,12 +26,12 @@ class IBuilder
 public:
 
 	// Data 
-    virtual const Data::ptr_t deserializeData(const std::string &) const = 0;
-    virtual const std::string serializeData(const Data::ptr_t &) const = 0;
+    virtual Data::ptr_t deserializeData(const std::string &) const throw (WorkflowFormatException) = 0;
+    virtual std::string serializeData(const Data &) const = 0;
 
     // Token
-	virtual const Token::ptr_t deserializeToken(const std::string &) const = 0;
-	virtual const std::string serializeToken(const Token::ptr_t &) const = 0;
+	virtual Token::ptr_t deserializeToken(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeToken(const Token &) const = 0;
 	
 	// Place
 	
