@@ -169,13 +169,14 @@ const gwdl::IWorkflow::workflow_id_t &Activity::getOwnerWorkflowID() const {
 
 void Activity::setStatus(Activity::status_t status) throw (StateTransitionException) {
 	if (status == _status) return; 
-	LOG_DEBUG(_logger, "status of activity " << _id << " changing from " << getStatusAsString(_status) << " to " << getStatusAsString(status));
 
     // StateMachine:
     // UNDEFINED -> any
     // RUNNING -> TERMINATED | 
     const status_t from_state(_status);
     const status_t to_state(status);
+
+	LOG_DEBUG(_logger, "attempting to change status of activity " << _id << " from " << getStatusAsString(from_state) << " to " << getStatusAsString(to_state));
 
     if (from_state == STATUS_UNDEFINED)
     {
@@ -192,11 +193,13 @@ void Activity::setStatus(Activity::status_t status) throw (StateTransitionExcept
           || from_state == STATUS_FAILED)
     {
       // we are done and that's it
+      LOG_WARN(_logger, "invalid state transition!");
       throw StateTransitionException(std::string("final state -> ") + getStatusAsString(to_state));
     }
 
-
 	_status = status;
+
+	LOG_DEBUG(_logger, "updated status of activity " << _id << " to: " << getStatusAsString(_status));
 	
 	// notify observers
 	if (_observers.size()>0) {
