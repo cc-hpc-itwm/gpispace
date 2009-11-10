@@ -99,6 +99,7 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM -DSHMEM -DUSE_STL_TR1)
 
 # Reflect the package structure
 add_subdirectory(nre-worker)
+add_subdirectory(mods)
 
 include(CTest)
 add_subdirectory(tests)
