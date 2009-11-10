@@ -63,7 +63,7 @@ bool unload(ModuleContainer mod)
 			return true;
 		}
 
-#ifdef DEBUG
+#ifndef NDEBUG
 	//clear out the referenced memory with zeros to hopefully provoke
 	//a segfault when accessing it
 #endif
