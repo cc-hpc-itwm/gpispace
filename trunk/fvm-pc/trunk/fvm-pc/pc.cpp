@@ -28,7 +28,7 @@ int doRequest(fvmRequest_t op_request)
   msg.mtype = REQUESTMSG;
   msg.request = op_request;
 
-#ifdef DEBUGMSG
+#ifndef NDEBUGMSG
   printf("PC: Sending msg on queue %d type 2 (doRequest)\n", pcQueueID);
 #endif
 	
@@ -44,7 +44,7 @@ static int getAck()
 {
   msgq_ack_t msg;
 
-#ifdef DEBUGMSG
+#ifndef NDEBUGMSG
   printf("PC: Receiving  msg on queue %d type 4 (doRequest)\n", pcQueueID);
 #endif
 
@@ -70,7 +70,7 @@ int fvmConnect(fvm_pc_config_t config)
     perror("ftok failed");
     return -1;
   }
-#ifdef DEBUG
+#ifndef NDEBUG
   printf("Connecting to fvm with key %d\n",pcQueueKey);
 #endif
 
@@ -84,7 +84,7 @@ int fvmConnect(fvm_pc_config_t config)
   msg.mtype = 1;
   msg.request.op = START;
 
-#ifdef DEBUGMSG
+#ifndef NDEBUGMSG
   printf("PC:Sending  msg on queue %d type 1 (fvmConnect)\n",pcQueueID);
 #endif
 
@@ -154,7 +154,7 @@ fvmAllocHandle_t fvmGlobalAlloc(size_t size)
   }
 
   //get result
-#ifdef DEBUGMSG
+#ifndef NDEBUGMSG
   printf("PC: Receiving msg on queue %d type 3 (globalalloc)\n",pcQueueID);
 #endif
 
@@ -180,7 +180,7 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 
 	ret =  getAck();
 
-#ifdef DEBUGALLOC
+#ifndef NDEBUGALLOC
       printf("PC: global free returns %d \n", ret);	
 #endif
 	return ret;
@@ -204,7 +204,7 @@ fvmAllocHandle_t fvmLocalAlloc(size_t size)
 
 
   //get result
-#ifdef DEBUGMSG
+#ifndef NDEBUGMSG
   printf("PC: Receiving msg on queue %d type 3 (localalloc)\n",pcQueueID);
 #endif
 
@@ -231,7 +231,7 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 
   ret = getAck();
 
-#ifdef DEBUGALLOC
+#ifndef NDEBUGALLOC
       printf("PC: local free returns %d \n", ret);	
 #endif
       return ret;
@@ -273,7 +273,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, GETGLOBAL);
 
-#ifdef DEBUGCOMM
+#ifndef NDEBUGCOMM
   printf("PC: GetGlobal received handle %d\n",commhandle);
 #endif
   
@@ -289,7 +289,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
   
-#ifdef DEBUGCOMM
+#ifndef NDEBUGCOMM
   printf("PC: PutGlobal received handle %d\n",commhandle);
 #endif
   
@@ -305,7 +305,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, PUTLOCAL);
   
-#ifdef DEBUGCOMM
+#ifndef NDEBUGCOMM
   printf("PC: PutLocal received handle %d\n",commhandle);
 #endif
   
@@ -321,7 +321,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
   
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, GETLOCAL);
   
-#ifdef DEBUGCOMM
+#ifndef NDEBUGCOMM
   printf("PC: GetLocal received handle %d\n",commhandle);
 #endif
   
@@ -348,7 +348,7 @@ void *fvmGetShmemPtr()
 {
 #ifdef SHMEM
 
-#ifdef DEBUG
+#ifndef NDEBUG
   printf("PC: return shmem pointer is %p\n", pcShm);
 #endif
 
