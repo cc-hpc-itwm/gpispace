@@ -112,7 +112,7 @@ dtmmgr_offset_size (const PDTmmgr_t PDTmmgr, const Handle_t Handle,
   HandleReturn_t HandleReturn =
     tmmgr_offset_size (pdtmmgr->arena[Arena], Handle, POffset, &Size);
 
-  if (HandleReturn == HANDLE_SUCCESS)
+  if (HandleReturn == RET_SUCCESS)
     {
       // invert for the local arena
       if (Arena == ARENA_LOCAL && POffset != NULL)
