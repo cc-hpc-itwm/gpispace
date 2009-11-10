@@ -1,0 +1,4 @@
+SHMSZ 1073741824
+FVMSZ 1073741824
+MSQFILE <path-to-msqfile>
+SHMFILE <path-to-shmemfile>
