@@ -52,7 +52,7 @@ namespace modules {
 
       char *error = 0;
 
-      Module::handle_t handle = dlopen(file.c_str(), RTLD_LAZY);
+      Module::handle_t handle = dlopen(file.c_str(), RTLD_LAZY | RTLD_GLOBAL);
       if (! handle) {
         throw ModuleLoadFailed(dlerror(), "[name-not-set]", file);
       }
