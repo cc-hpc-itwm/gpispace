@@ -4,7 +4,9 @@
 #include <vector>
 #include <unistd.h>
 
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
+#endif
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>

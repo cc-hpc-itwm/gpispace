@@ -1,7 +1,9 @@
 #ifndef SDPA_LOGGING_HPP
 #define SDPA_LOGGING_HPP 1
 
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
+#endif
 
 /* Logging */
 #if defined(SDPA_ENABLE_LOGGING)

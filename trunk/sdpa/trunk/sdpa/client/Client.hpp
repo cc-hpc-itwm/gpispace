@@ -9,7 +9,10 @@
 #include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
+#endif
+
 #include <sdpa/memory.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/types.hpp>
