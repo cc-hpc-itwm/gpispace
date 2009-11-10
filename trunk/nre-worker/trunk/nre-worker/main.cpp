@@ -57,8 +57,8 @@ const std::size_t MAX_PATH_LEN = 1024;
 int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg)
 {
   LOG(DEBUG, "reading fvm-config from file: " << path);
-  strncpy(cfg.msqfile, path.c_str(), MAX_PATH_LEN);
-  strncpy(cfg.shmemfile, path.c_str(), MAX_PATH_LEN);
+  strncpy(cfg.msqfile, "/tmp/fvm_pc_msq", MAX_PATH_LEN);
+  strncpy(cfg.shmemfile, "/tmp/fvm_pc_key", MAX_PATH_LEN);
   return 0;
 }
 
