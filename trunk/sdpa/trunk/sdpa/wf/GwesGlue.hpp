@@ -43,6 +43,31 @@ namespace sdpa { namespace wf { namespace glue {
     {
       typedef std::map<std::string, std::string> gtok_properties_t;
 
+      std::string gwdl_token_data(*gtok.getData()->getText());
+
+      {
+        // remove sdpa-tag...
+        const std::string sTag("<sdpa>");
+        const std::string eTag("</sdpa>");
+        if (gwdl_token_data.substr(0, sTag.size()) == sTag)
+        {
+          DLOG(DEBUG, "removing enclosing sdpa-tags...");
+          try
+          {
+            gwdl_token_data = gwdl_token_data.substr(sTag.size(), gwdl_token_data.size() - (sTag.size()+eTag.size()) );
+          }
+          catch (const std::exception &ex)
+          {
+            LOG(ERROR, "malformed token-data: could not remove enclosing sdpa-tags: " << ex.what());
+            throw;
+          }
+        }
+        else
+        {
+          DLOG(DEBUG, "no sdpa-tag found, taking data as it is: " << gwdl_token_data);
+        }
+      }
+
       wrapped.data(*gtok.getData()->getText());
       for (gtok_properties_t::const_iterator prop(gtok.getProperties().begin()); prop != gtok.getProperties().end(); ++prop)
       {
@@ -78,7 +103,7 @@ namespace sdpa { namespace wf { namespace glue {
     }
     else
     {
-      gwdl::Data *data(new gwdl::Data("<data>"+wf_token.data()+"</data>"));
+      gwdl::Data *data(new gwdl::Data("<data><sdpa>"+wf_token.data()+"</sdpa></data>"));
       gwdl::Token *tok = new gwdl::Token(data);
 
       // update all known properties, this also includes the data type
