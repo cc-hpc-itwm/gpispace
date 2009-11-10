@@ -154,6 +154,23 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 					it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
 					command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
 				}
+                                else
+                                  {
+                                    ostringstream oss;
+                                    oss << "<data><file>FILE://";
+
+                                    if (edgeExpression == "stdout")
+                                      oss << _stdoutfn;
+                                    else if (edgeExpression == "stderr")
+                                      oss << _stderrfn;
+                                    else if (edgeExpression == "exitcode")
+                                      oss << _exitcodefn;
+                                    else
+                                      oss << "STRANGE!";
+
+                                    oss << "</file></data>";
+                                    it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
+                                  }
 			break;
 			}
 		}
