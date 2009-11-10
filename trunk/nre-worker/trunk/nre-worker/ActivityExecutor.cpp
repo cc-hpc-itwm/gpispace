@@ -82,8 +82,10 @@ namespace sdpa { namespace nre { namespace worker {
           boost::archive::text_iarchive ar(sstr);
           init_archive(ar);
           ar >> rqst;
+          Reply *rply = rqst->execute(this);
+          delete rqst; rqst = NULL;
 
-          if (Reply *rply = rqst->execute(this))
+          if (rply)
           {
             std::ostringstream sstr;
             boost::archive::text_oarchive ar(sstr);
@@ -92,6 +94,8 @@ namespace sdpa { namespace nre { namespace worker {
             ar << rply;
 
             socket.send_to(boost::asio::buffer(sstr.str()), sender_endpoint);
+
+            delete rply; rply = NULL;
           }
           else
           {
