@@ -212,6 +212,94 @@ void test_remoteNode(Module::data_t &params)
 
 }
 
+// transfer is remote and scratch handle is global
+
+void test_remoteNode_scratchglobal(Module::data_t &params)
+{
+  printf("*******************************************************************************\n");
+  printf("--------- Test Communication remote node with global scratch ------------------\n");
+  printf("*******************************************************************************\n");
+
+  int *intPtr;
+  size_t transfer;
+  int numInts = ( 1 << 26 ) / sizeof(int);
+
+  fvmShmemOffset_t shmOff = 0;
+  fvmOffset_t fvmOff = ( 1 << 26);
+
+  fvmCommHandleState_t stt;
+  int ret;
+
+  fvmAllocHandle_t src = fvmGlobalAlloc(( 1 << 26 ));
+  assert(src > 0);
+
+  fvmAllocHandle_t src1 = fvmGlobalAlloc(( 1 << 26 ));
+  assert(src1 > 0);
+
+  fvmAllocHandle_t scratch = fvmGlobalAlloc(( 1 << 29));
+  assert(scratch > 0);
+
+  intPtr = (int *) fvmGetShmemPtr();
+  printf("received ptr is %p\n", intPtr);
+
+  for (int i=0; i < numInts; i++)
+    intPtr[i] = i;
+
+  transfer = numInts * sizeof(int);
+
+  fvmCommHandle_t commHandle = fvmPutGlobalData( src, fvmOff, transfer, shmOff, scratch);
+  stt =  waitComm(commHandle);
+  assert( stt == COMM_HANDLE_OK);
+
+  for (int i=0; i < numInts; i++)
+    intPtr[i] = 0;
+
+  commHandle = fvmGetGlobalData(src, fvmOff, transfer, shmOff, scratch);
+  stt = waitComm(commHandle);
+  assert( stt == COMM_HANDLE_OK);
+
+  for (int i=0; i < numInts; i++)
+    {
+      if( intPtr[ i ] != i)
+	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+    }
+
+  //with the other alloc handle
+  for (int i=0; i < numInts; i++)
+    intPtr[i] = i;
+
+  transfer = numInts * sizeof(int);
+
+  commHandle = fvmPutGlobalData( src1, fvmOff, transfer, shmOff, scratch);
+  stt =  waitComm(commHandle);
+  assert( stt == COMM_HANDLE_OK);
+
+  for (int i=0; i < numInts; i++)
+    intPtr[i] = 0;
+
+  commHandle = fvmGetGlobalData(src1, fvmOff, transfer, shmOff, scratch);
+  stt = waitComm(commHandle);
+  assert( stt == COMM_HANDLE_OK);
+
+  for (int i=0; i < numInts; i++)
+    {
+      if( intPtr[ i ] != i)
+	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+    }
+
+
+
+  ret = fvmGlobalFree(src);
+  assert(ret == 0);
+
+  ret = fvmGlobalFree(src1);
+  assert(ret == 0);
+
+  ret = fvmGlobalFree(scratch);
+  assert(ret == 0);
+
+}
+
 // transfer starts at own node but spreads over nodes
 void test_ownNodeSpread(Module::data_t &params)
 {
@@ -442,5 +530,6 @@ extern "C" {
     test_ownNodeSpread(params);
     test_remoteNodeSpread(params);
     test_localcomm(params);
+    test_remoteNode_scratchglobal(params);
   }
 }

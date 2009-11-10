@@ -9,6 +9,8 @@
 int fvmConnect(configFile_t);
 int fvmLeave();
 
+int fvmGetRank();
+int fvmGetNodeCount();
 
 fvmAllocHandle_t fvmGlobalAlloc(size_t size);
 int fvmGlobalFree(fvmAllocHandle_t ptr);

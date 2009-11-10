@@ -120,8 +120,10 @@ static int broadcast(fvmAllocRequest_t *request)
   int bytes;
 
 
-#ifndef NDEBUGALLOCCOMM
-  fvm_printf("Enter Broadcast\n");
+#ifdef NDEBUGALLOCCOMM
+  static int numBcast;
+  numBcast++;
+  fvm_printf("Enter Broadcast %d\n", numBcast);
 #endif
 
   /* taken from MPI, mvapich - modified to do simply a propagate, not a real broadcast */
@@ -138,8 +140,8 @@ static int broadcast(fvmAllocRequest_t *request)
       dst = myrank + mask;
       if(dst >= numnodes) dst -= numnodes;
 
-#ifndef NDEBUGALLOCCOMM
-      fvm_printf("Broadcast %lu to %d\n",request->type,dst);
+#ifdef NDEBUGALLOCCOMM
+      fvm_printf("Broadcast %s to %d\n",type2str(request->type),dst);
 #endif
 
       bytes= send(sockfd[dst],request,sizeof(fvmAllocRequest_t),0);
@@ -154,7 +156,7 @@ static int broadcast(fvmAllocRequest_t *request)
      
   }
 
-#ifndef NDEBUGALLOCCOMM
+#ifdef NDEBUGALLOCCOMM
   fvm_printf("Broadcast done\n");
 #endif
 
@@ -171,8 +173,10 @@ static int reduce(fvmAllocRequest_t *request)
   int relative_rank = (myrank >= request->root) ? myrank - request->root: myrank - request->root +numnodes;
   fvmAllocRequest_t recvReq;
 
-#ifndef NDEBUGALLOCCOMM
-  fvm_printf("Reducing request %lu\n",request->type);
+#ifdef NDEBUGALLOCCOMM
+  static int numReduce;
+  numReduce++;
+  fvm_printf("Reduce %d request %s\n", numReduce, type2str(request->type));
 #endif
 
   while(mask < numnodes){
@@ -189,7 +193,7 @@ static int reduce(fvmAllocRequest_t *request)
   	{
   	  dst = myrank + mask;
   	  if(dst >= numnodes) dst -= numnodes;
-#ifndef NDEBUGALLOCCOM
+#ifdef NDEBUGALLOCCOM
 	  fvm_printf("Receiving from %d\n",dst);
 #endif
   	  if((recv(sockfd[dst],&recvReq,sizeof(fvmAllocRequest_t),0)) == -1){
@@ -210,7 +214,7 @@ static int reduce(fvmAllocRequest_t *request)
     if(relative_rank & mask){
       src = myrank - mask;
       if(src < 0) src +=numnodes;
-#ifndef NDEBUGALLOCCOM
+#ifdef NDEBUGALLOCCOM
       fvm_printf("Sending to %d\n",src);
 #endif
       if((send(sockfd[src],request,sizeof(fvmAllocRequest_t),0)) == -1){
@@ -244,14 +248,14 @@ static HandleReturn_t fvmMMFreeInternal(fvmAllocHandle_t handle, Arena_t arena)
 	fvmMemFree += (size_t)(size);
       }
   }
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   else 
     {
       fvm_printf("FVM ALLOCATOR: free failed for handle %lu on arena %d \n", handle, arena);
     }
 #endif
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   dtmmgr_status (dtmmgr);
   fvm_printf("FVM ALLOCATOR: free returns %d \n", ret);
 #endif
@@ -262,7 +266,7 @@ static HandleReturn_t fvmMMFreeInternal(fvmAllocHandle_t handle, Arena_t arena)
 static void fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 		      const MemSize_t Size, void *PDat)
 {
-/* #ifndef NDEBUGALLOC */
+/* #ifdef NDEBUGALLOC */
 /*   printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t */
 /* 	  " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size, */
 /* 	  OffsetSrc, OffsetDest); */
@@ -276,7 +280,7 @@ static void fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
 /* with the dtmmgr we can have this in a single function for both local and global */
 static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Arena_t arena)
 {
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   fvm_printf("Allocation status:\n");
 #endif
 
@@ -290,7 +294,7 @@ static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Ar
   /* if necessary defragment */
   if(allocReturn == ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY)
     {
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
       fvm_printf("FVM ALLOCATOR: Need to do defragmentation\n");
 #endif
 
@@ -304,7 +308,7 @@ static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Ar
       fvmMemFree -= size;
     } 
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   dtmmgr_status (dtmmgr);
 #endif
 
@@ -324,6 +328,29 @@ int fvmGlobalMMFree(fvmAllocHandle_t handle)
   request.handle = handle;
   int ack = 0;
 
+  unsigned long currentAllocator ;
+  currentAllocator  = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
+  fvm_printf("FVM ALLOCATOR: current allocator at start is %lu\n", currentAllocator);
+  
+  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);  
+  if(currentAllocator  != 0)
+    {
+      do
+	{
+	  if(fvmCondWait(&fvmcond_global_alloc, &fvmmutex_global_alloc, hostnames[currentAllocator - 1]) < 0)
+	    {
+	      ack = 1;
+	      goto out;
+	    }
+	  //	  sleep(1);
+	  /* try to update current allocator to be me */
+	  currentAllocator = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
+	  fvm_printf("FVM ALLOCATOR: current allocator after signal %lu\n", currentAllocator);
+	  
+	} while(currentAllocator != 0);
+    }
+
+
   /* request to thread allocator */
   if((send(localsockpair[0],&request,sizeof(request),0)) == -1){
     fvm_printf("Could not send to thread allocator\n");
@@ -333,7 +360,12 @@ int fvmGlobalMMFree(fvmAllocHandle_t handle)
   if((recv(localsockpair[0],&ack,sizeof(ack),0)) == -1)
     fvm_printf("Could not ack from thread allocator\n");
 
+  currentAllocator = atomicCmpSwapCntVM(myrank + 1, 0, VMCounter7);
+
+  fvmCondSignal(&fvmcond_global_alloc);
+ out:
   return ack;
+
 }
 
 
@@ -343,7 +375,7 @@ static int sendMsg2GlobalAllocator(fvmAllocRequest_t *request, fvmAllocType_t  t
 
   if((send(localsockpair[0],request,sizeof(fvmAllocRequest_t),0)) == -1)
     {
-#ifndef NDEBUG
+#ifdef NDEBUG
       fvm_printf("Could not send to thread allocator\n");
 #endif
 
@@ -361,7 +393,7 @@ static int sendRequestMsg2GlobalAllocator(fvmAllocRequest_t *request, size_t siz
 
   if((send(localsockpair[0], request, sizeof(fvmAllocRequest_t), 0)) == -1)
     {
-#ifndef NDEBUG
+#ifdef NDEBUG
       fvm_printf("Could not send to thread allocator\n");
 #endif
 
@@ -376,7 +408,7 @@ static int recvMsg2GlobalAllocator(fvmAllocRequest_t *request)
   if((recv(localsockpair[0],request,sizeof(fvmAllocRequest_t),0)) == -1)
     {
 
-#ifndef NDEBUG
+#ifdef NDEBUG
       fvm_printf("Could not recv from thread allocator\n");
 #endif
 
@@ -391,23 +423,28 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 {
 
   fvmAllocRequest_t request;
-
-  unsigned long currentAllocator = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
+  unsigned long currentAllocator ;
+  currentAllocator  = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
+  fvm_printf("FVM ALLOCATOR: current allocator at start is %lu\n", currentAllocator);
+  
+  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);  
   if(currentAllocator  != 0)
     {
       do
 	{
-	  if(fvmCondWait(&fvmcond_global_alloc, &fvmmutex_global_alloc, hostnames[currentAllocator]) < 0)
+	  if(fvmCondWait(&fvmcond_global_alloc, &fvmmutex_global_alloc, hostnames[currentAllocator - 1]) < 0)
 	    {
 	      request.handle = 0;
 	      goto out;
 	    }
-
-	  /* update current allocator to be me */
+	  //	  sleep(1);
+	  /* try to update current allocator to be me */
 	  currentAllocator = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
+	  fvm_printf("FVM ALLOCATOR: current allocator after signal %lu\n", currentAllocator);
 	  
-	} while(currentAllocator != myrank + 1);
+	} while(currentAllocator != 0);
     }
+ fvm_printf("FVM ALLOCATOR: Proceding with allocation rank: %d \n", myrank);
 
   /* request to thread allocator */
   if ((sendRequestMsg2GlobalAllocator(&request, size)) == -1)
@@ -492,13 +529,18 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 	  }
       }
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
       fvm_printf("Allocation: received handle  %ld\n",request.handle);
 #endif
       
       
       /*release global allocation */
-      currentAllocator = atomicCmpSwapCntVM(myrank+1, 0, VMCounter7);
+      currentAllocator = atomicCmpSwapCntVM(myrank + 1, 0, VMCounter7);
+/*       fvm_printf("FVM ALLOCATOR: current allocator is %lu\n", currentAllocator); */
+
+/*       unsigned long c = atomicFetchAddCntVM(0, VMCounter7); */
+/*       fvm_printf("FVM ALLOCATOR: current allocator after is %lu\n", c); */
+
       fvmCondSignal(&fvmcond_global_alloc);
       
     out:
@@ -539,7 +581,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
     pthread_mutex_unlock(&mutex_alloc_in_progress);
 
   }
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   else 
     {
       fvm_printf("FVM ALLOCATOR: no free mem (%lu) or size (%lu) invalid \n", fvmMemFree, size);
@@ -548,7 +590,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
 
   pthread_mutex_unlock(&mutex_localAlloc);
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   fvm_printf("FVM ALLOCATOR: received handle  %lu\n",handle);
 #endif
 
@@ -632,7 +674,7 @@ void *allocator_thread_f(void * args)
 
   dtmmgr_init (&dtmmgr, fvmMem, 1); /* TODO: alignment? */
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
   dtmmgr_info (dtmmgr);
 #endif
 
@@ -707,7 +749,7 @@ void *allocator_thread_f(void * args)
   
   /************************************ now build topology ************************************/
   
-#ifndef NDEBUG
+#ifdef NDEBUG
   fvm_printf("************ Allocator thread: building topology *************\n");
 #endif
   
@@ -747,10 +789,10 @@ void *allocator_thread_f(void * args)
 		  if (connect(sockfd[j], p->ai_addr, p->ai_addrlen) == -1) 
 		    {
 		      close(sockfd[j]); 
-		      perror("client: connect");
+		      perror("thread allocator: connect");
 		      continue;
 		    }
-#ifndef NDEBUG
+#ifdef NDEBUG
 		  fvm_printf("Thread allocator: connected to node %d\n",j);						
 #endif
 		  break;
@@ -758,6 +800,9 @@ void *allocator_thread_f(void * args)
 	      
 	      if (p == NULL)
 		{
+#ifdef NDEBUG
+		  fvm_printf("Thread allocator: error\n");						
+#endif
 		  pthread_exit(NULL);
 		  
 		}			
@@ -823,19 +868,22 @@ void *allocator_thread_f(void * args)
 	    {
 	      fdmax = sockfd[pos];
 	    }
-#ifndef NDEBUG
+#ifdef NDEBUG
 	  fvm_printf("Thread allocator: connected to node %d\n",pos);
 #endif
 	}
     }
   /****************************** Topology done ************************************ */
+#ifdef NDEBUG
+  fvm_printf("************ Allocator thread: building topology *************\n");
+#endif
   
   /* now just wait for requests */
   for(;;)
     {
       read_fds= master;
       
-#ifndef NDEBUG
+#ifdef NDEBUGALLOC
       fvm_printf("Alloc thread: waiting in select\n");
 #endif
       
@@ -869,7 +917,7 @@ void *allocator_thread_f(void * args)
 	    else
 	      { 
 		
-#ifndef NDEBUG
+#ifdef NDEBUGALLOC
 		fvm_printf("------- New request %s\n",(char *) type2str(request.type));
 #endif
 		
@@ -883,22 +931,23 @@ void *allocator_thread_f(void * args)
 		      request.root = myrank;
 		    }
 		  
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
 
-		  /* tell other allocators to alloc with the handle */
-		  if(broadcast(&request))
-		    fvm_printf("broadcast failed for request type %s\n",(char *) type2str(request.type));
-		  
 		  /* make sure there is no running allocation */
 		  pthread_mutex_lock(&mutex_alloc_in_progress);
-		  
+	  
 		  while(local_alloc_in_progress > 0)
 		    pthread_cond_wait(&cond_alloc_in_progress,&mutex_alloc_in_progress);
 		  
 		  ++global_alloc_in_progress;
 		  pthread_mutex_unlock(&mutex_alloc_in_progress);
+
+		  /* tell other allocators to alloc with the handle */
+		  if(broadcast(&request))
+		    fvm_printf("broadcast failed for request type %s\n",(char *) type2str(request.type));
+		  
 		  
 		  if(fvmMemFree < request.size)
 		    {
@@ -911,7 +960,7 @@ void *allocator_thread_f(void * args)
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %s\n",(char *) type2str(request.type));
 		  
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
 		  
@@ -1022,9 +1071,12 @@ void *allocator_thread_f(void * args)
 		  ack = 0;
 		  if(local)
 		    request.root = myrank;
+
+
 		  /* tell other allocators to free handle */
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for %d\n",(int)request.type);	      
+
 		  
 		  deferCommunication();
 		  waitAllCommunication();
@@ -1036,6 +1088,7 @@ void *allocator_thread_f(void * args)
 		  request.type = GLOBALFREEACK;
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %d\n",(int)request.type);	      
+
 		  
 		  if(local)
 		    /* ack fvm process */

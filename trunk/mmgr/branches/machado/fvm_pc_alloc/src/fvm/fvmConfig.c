@@ -102,7 +102,7 @@ configFile_t readConfigFile(const char *filename, const int numOptions)
 	}
       
     }
-#ifndef NDEBUG
+#ifdef NDEBUG
   printf("SHMSZ: %ld\nFVMSZ: %ld\nMSQFILE: %s\nSHMFILE: %s\n",
 	 s->shmemsize,
 	 s->fvmsize,

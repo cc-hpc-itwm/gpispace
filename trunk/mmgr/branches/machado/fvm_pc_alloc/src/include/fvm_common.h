@@ -6,7 +6,8 @@ typedef enum {
 	STARTMSG = 1,
 	REQUESTMSG,
 	ALLOCMSG,
-	ACKMSG
+	ACKMSG,
+	CONNECTMSG
 } fvmMsgType_t;
 
 /* #define STARTMSG 1 */
@@ -43,7 +44,7 @@ typedef enum
     COMM_HANDLE_ERROR_SHMEM_BOUNDARY = -10,
 #endif
 
-#ifndef NDEBUG
+#ifdef NDEBUG
     COMM_HANDLE_ERROR_INVALID_HANDLE,
     COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE,
     COMM_HANDLE_ERROR_INVALID_SIZE,
@@ -89,6 +90,12 @@ typedef struct msgQueueAllocMsg {
   long mtype; /* always needed by msgqueue */
   fvmAllocHandle_t handle;
 } msgQueueAllocMsg_t;
+
+typedef struct msgQueueConnectMsg {
+  long mtype; /* always needed by msgqueue */
+  int rank;
+  int nodecount;
+} msgQueueConnectMsg_t;
 
 typedef struct msgq_ack {
   long mtype;

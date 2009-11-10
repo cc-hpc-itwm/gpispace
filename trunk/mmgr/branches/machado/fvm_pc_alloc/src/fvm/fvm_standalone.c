@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 
   char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
   int optionsParse = 4;
+
   configFile_t config;
 
   signal(SIGINT,signal_handler);
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
 
   for(i=0;i<nnodes;i++){	
     hosts[i] = getHostnameVM(i);
+    pv4d_printf("host name %d : %s\n", hosts[i]);
 
   }
 
@@ -66,17 +68,26 @@ int main(int argc, char *argv[])
   pv4d_printf("Waiting for pc...\n");
 
   //wait for PC to connect
-  if(!fvmWait4PC(config)) {
+  while(!fvmWait4PC(config)) {
 	  
     //loop waiting for requests
     fvmListenRequests();
+
+    pv4d_printf("Waiting for pc...\n");
+
+    //initialize to wait for another
+    if(fvmInit(config))
+      {
+	printf("error init\n");
+	return -1;
+      }
   
 	  
     /* 	  pv4d_printf("\nWaiting for the other nodes...\n"); */
     /* 	  pv4dBarrierVM(); */
   }
-  else
-    pv4d_printf("Error waiting for pc\n");
+/*   else */
+/*     pv4d_printf("Error waiting for pc\n"); */
 
 
   shutdownPv4dVM();

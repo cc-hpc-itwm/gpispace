@@ -6,7 +6,7 @@
 #define ACK_OK 1
 #define ACK_NOK 0
 
-#define ALLOCATOR_PORT_REMOTE "12000" 
+#define ALLOCATOR_PORT_REMOTE "14000" 
 #define BACKLOG 10
 
 /* ************* type definitions *************** */

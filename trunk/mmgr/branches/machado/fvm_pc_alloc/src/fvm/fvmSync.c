@@ -9,6 +9,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <Pv4dVM4.h>
+#include <Pv4dLogger.h>
+
 
 #include "fvmSync.h"
 
@@ -123,15 +125,21 @@ int fvmCondWait(fvmCondVar_t *fvm_var, fvmMutex_t *fvm_mutex, const char *sender
   struct sockaddr_in from_addr;
   unsigned int from_len = sizeof(from_addr);      
 
-  struct in_addr send_addr;
-  send_addr.s_addr = inet_addr(sender);
-
   struct hostent *host = gethostbyname(sender);
   struct in_addr h_addr;
+
   fd_set rfds;  
   int nbytes;
 
   char buf[MAXLEN+1];
+
+  static int recvSignals;
+
+  h_addr.s_addr = *((unsigned long *) host->h_addr_list[0]);
+
+  recvSignals++;
+  pv4d_printf("FVM: Waiting signal %d from %s\n", recvSignals, sender);
+
   memset(buf,0,MAXLEN+1);
 
   FD_ZERO(&rfds);
@@ -154,12 +162,12 @@ int fvmCondWait(fvmCondVar_t *fvm_var, fvmMutex_t *fvm_mutex, const char *sender
 	  return -1;
 	}
       
-      h_addr.s_addr = *((unsigned long *) host->h_addr_list[0]);
 
+      
     }
-
   while(from_addr.sin_addr.s_addr != h_addr.s_addr);
-
+  
+  pv4d_printf("FVM: Got signal!!\n");
   return 0;
 }
 
@@ -174,6 +182,12 @@ int fvmCondSignal(fvmCondVar_t *fvm_var)
 
   char message_to_send[MAXLEN];
   size_t send_len;
+
+  static int numSignals;
+
+  numSignals++;
+
+  pv4d_printf("FVM: Sending signal %d to waiting allocators\n", numSignals);
   
   sprintf(message_to_send, "%c", &buf);
 

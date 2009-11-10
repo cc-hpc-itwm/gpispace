@@ -19,6 +19,8 @@ key_t pcShmKey;
 void * pcShm;
 #endif
 
+static int nodeRank;
+static int nodeCount;
 
 // ------ Internal functions for Process Container (not to be used by appllication)
 int doRequest(fvmRequest_t op_request)
@@ -28,7 +30,7 @@ int doRequest(fvmRequest_t op_request)
   msg.mtype = REQUESTMSG;
   msg.request = op_request;
 
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   printf("PC: Sending msg on queue %d type 2 (doRequest)\n", pcQueueID);
 #endif
 	
@@ -44,7 +46,7 @@ static int getAck()
 {
   msgq_ack_t msg;
 
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   printf("PC: Receiving  msg on queue %d type 4 (doRequest)\n", pcQueueID);
 #endif
 
@@ -62,12 +64,13 @@ int fvmConnect(configFile_t config)
 {
   int ret=0;
   msgQueueMsg_t msg;
+  msgQueueConnectMsg_t connectMsg;
 
   //create queue
   pcQueueKey = ftok(config.msqfile,'b');
   if(pcQueueKey == -1)
     return -1;
-#ifndef NDEBUG
+#ifdef NDEBUG
   printf("Connecting to fvm with key %d\n",pcQueueKey);
 #endif
 
@@ -81,7 +84,7 @@ int fvmConnect(configFile_t config)
   msg.mtype = 1;
   msg.request.op = START;
 
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   printf("PC:Sending  msg on queue %d type 1 (fvmConnect)\n",pcQueueID);
 #endif
 
@@ -114,6 +117,14 @@ int fvmConnect(configFile_t config)
 #else //qp
 
 #endif
+
+  if((msgrcv(pcQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t), CONNECTMSG, 0)) == -1){
+    perror("PC: error receiving connect msg");
+    return 0;
+  }
+
+  nodeRank = connectMsg.rank;
+  nodeCount = connectMsg.nodecount;
 
   return ret;
 }
@@ -149,7 +160,7 @@ fvmAllocHandle_t fvmGlobalAlloc(size_t size)
   }
 
   //get result
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   printf("PC: Receiving msg on queue %d type 3 (globalalloc)\n",pcQueueID);
 #endif
 
@@ -175,7 +186,7 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 
 	ret =  getAck();
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
       printf("PC: global free returns %d \n", ret);	
 #endif
 	return ret;
@@ -199,7 +210,7 @@ fvmAllocHandle_t fvmLocalAlloc(size_t size)
 
 
   //get result
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   printf("PC: Receiving msg on queue %d type 3 (localalloc)\n",pcQueueID);
 #endif
 
@@ -226,7 +237,7 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 
   ret = getAck();
 
-#ifndef NDEBUGALLOC
+#ifdef NDEBUGALLOC
       printf("PC: local free returns %d \n", ret);	
 #endif
       return ret;
@@ -268,7 +279,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, GETGLOBAL);
 
-#ifndef NDEBUGCOMM
+#ifdef NDEBUGCOMM
   printf("PC: GetGlobal received handle %d\n",commhandle);
 #endif
   
@@ -284,7 +295,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
   
-#ifndef NDEBUGCOMM
+#ifdef NDEBUGCOMM
   printf("PC: PutGlobal received handle %d\n",commhandle);
 #endif
   
@@ -300,7 +311,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, PUTLOCAL);
   
-#ifndef NDEBUGCOMM
+#ifdef NDEBUGCOMM
   printf("PC: PutLocal received handle %d\n",commhandle);
 #endif
   
@@ -316,7 +327,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
   
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, GETLOCAL);
   
-#ifndef NDEBUGCOMM
+#ifdef NDEBUGCOMM
   printf("PC: GetLocal received handle %d\n",commhandle);
 #endif
   
@@ -341,10 +352,20 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 
 void *fvmGetShmemPtr()
 {
-#ifndef NDEBUG
+#ifdef NDEBUG
   printf("PC: return shmem pointer is %p\n", pcShm);
 #endif
 
   return pcShm;
+
+}
+
+int fvmGetRank()
+{
+  return nodeRank;
+}
+int fvmGetNodeCount()
+{
+  return nodeCount;
 
 }
