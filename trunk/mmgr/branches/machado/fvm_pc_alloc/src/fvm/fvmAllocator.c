@@ -120,7 +120,7 @@ static int broadcast(fvmAllocRequest_t *request)
   int bytes;
 
 
-#ifdef NDEBUGALLOCCOMM
+#ifndef NDEBUGALLOCCOMM
   static int numBcast;
   numBcast++;
   fvm_printf("Enter Broadcast %d\n", numBcast);
@@ -140,7 +140,7 @@ static int broadcast(fvmAllocRequest_t *request)
       dst = myrank + mask;
       if(dst >= numnodes) dst -= numnodes;
 
-#ifdef NDEBUGALLOCCOMM
+#ifndef NDEBUGALLOCCOMM
       fvm_printf("Broadcast %s to %d\n",type2str(request->type),dst);
 #endif
 
@@ -156,7 +156,7 @@ static int broadcast(fvmAllocRequest_t *request)
      
   }
 
-#ifdef NDEBUGALLOCCOMM
+#ifndef NDEBUGALLOCCOMM
   fvm_printf("Broadcast done\n");
 #endif
 
@@ -173,7 +173,7 @@ static int reduce(fvmAllocRequest_t *request)
   int relative_rank = (myrank >= request->root) ? myrank - request->root: myrank - request->root +numnodes;
   fvmAllocRequest_t recvReq;
 
-#ifdef NDEBUGALLOCCOMM
+#ifndef NDEBUGALLOCCOMM
   static int numReduce;
   numReduce++;
   fvm_printf("Reduce %d request %s\n", numReduce, type2str(request->type));
@@ -193,7 +193,7 @@ static int reduce(fvmAllocRequest_t *request)
   	{
   	  dst = myrank + mask;
   	  if(dst >= numnodes) dst -= numnodes;
-#ifdef NDEBUGALLOCCOM
+#ifndef NDEBUGALLOCCOM
 	  fvm_printf("Receiving from %d\n",dst);
 #endif
   	  if((recv(sockfd[dst],&recvReq,sizeof(fvmAllocRequest_t),0)) == -1){
@@ -214,7 +214,7 @@ static int reduce(fvmAllocRequest_t *request)
     if(relative_rank & mask){
       src = myrank - mask;
       if(src < 0) src +=numnodes;
-#ifdef NDEBUGALLOCCOM
+#ifndef NDEBUGALLOCCOM
       fvm_printf("Sending to %d\n",src);
 #endif
       if((send(sockfd[src],request,sizeof(fvmAllocRequest_t),0)) == -1){
@@ -248,14 +248,14 @@ static HandleReturn_t fvmMMFreeInternal(fvmAllocHandle_t handle, Arena_t arena)
 	fvmMemFree += (size_t)(size);
       }
   }
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   else 
     {
       fvm_printf("FVM ALLOCATOR: free failed for handle %lu on arena %d \n", handle, arena);
     }
 #endif
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   dtmmgr_status (dtmmgr);
   fvm_printf("FVM ALLOCATOR: free returns %d \n", ret);
 #endif
@@ -266,7 +266,7 @@ static HandleReturn_t fvmMMFreeInternal(fvmAllocHandle_t handle, Arena_t arena)
 static void fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 		      const MemSize_t Size, void *PDat)
 {
-/* #ifdef NDEBUGALLOC */
+/* #ifndef NDEBUGALLOC */
 /*   printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t */
 /* 	  " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size, */
 /* 	  OffsetSrc, OffsetDest); */
@@ -280,7 +280,7 @@ static void fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
 /* with the dtmmgr we can have this in a single function for both local and global */
 static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Arena_t arena)
 {
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   fvm_printf("Allocation status:\n");
 #endif
 
@@ -294,7 +294,7 @@ static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Ar
   /* if necessary defragment */
   if(allocReturn == ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY)
     {
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
       fvm_printf("FVM ALLOCATOR: Need to do defragmentation\n");
 #endif
 
@@ -308,7 +308,7 @@ static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Ar
       fvmMemFree -= size;
     } 
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   dtmmgr_status (dtmmgr);
 #endif
 
@@ -375,7 +375,7 @@ static int sendMsg2GlobalAllocator(fvmAllocRequest_t *request, fvmAllocType_t  t
 
   if((send(localsockpair[0],request,sizeof(fvmAllocRequest_t),0)) == -1)
     {
-#ifdef NDEBUG
+#ifndef NDEBUG
       fvm_printf("Could not send to thread allocator\n");
 #endif
 
@@ -393,7 +393,7 @@ static int sendRequestMsg2GlobalAllocator(fvmAllocRequest_t *request, size_t siz
 
   if((send(localsockpair[0], request, sizeof(fvmAllocRequest_t), 0)) == -1)
     {
-#ifdef NDEBUG
+#ifndef NDEBUG
       fvm_printf("Could not send to thread allocator\n");
 #endif
 
@@ -408,7 +408,7 @@ static int recvMsg2GlobalAllocator(fvmAllocRequest_t *request)
   if((recv(localsockpair[0],request,sizeof(fvmAllocRequest_t),0)) == -1)
     {
 
-#ifdef NDEBUG
+#ifndef NDEBUG
       fvm_printf("Could not recv from thread allocator\n");
 #endif
 
@@ -529,7 +529,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 	  }
       }
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
       fvm_printf("Allocation: received handle  %ld\n",request.handle);
 #endif
       
@@ -581,7 +581,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
     pthread_mutex_unlock(&mutex_alloc_in_progress);
 
   }
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   else 
     {
       fvm_printf("FVM ALLOCATOR: no free mem (%lu) or size (%lu) invalid \n", fvmMemFree, size);
@@ -590,7 +590,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
 
   pthread_mutex_unlock(&mutex_localAlloc);
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   fvm_printf("FVM ALLOCATOR: received handle  %lu\n",handle);
 #endif
 
@@ -674,7 +674,7 @@ void *allocator_thread_f(void * args)
 
   dtmmgr_init (&dtmmgr, fvmMem, 1); /* TODO: alignment? */
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   dtmmgr_info (dtmmgr);
 #endif
 
@@ -749,7 +749,7 @@ void *allocator_thread_f(void * args)
   
   /************************************ now build topology ************************************/
   
-#ifdef NDEBUG
+#ifndef NDEBUG
   fvm_printf("************ Allocator thread: building topology *************\n");
 #endif
   
@@ -792,7 +792,7 @@ void *allocator_thread_f(void * args)
 		      perror("thread allocator: connect");
 		      continue;
 		    }
-#ifdef NDEBUG
+#ifndef NDEBUG
 		  fvm_printf("Thread allocator: connected to node %d\n",j);						
 #endif
 		  break;
@@ -800,7 +800,7 @@ void *allocator_thread_f(void * args)
 	      
 	      if (p == NULL)
 		{
-#ifdef NDEBUG
+#ifndef NDEBUG
 		  fvm_printf("Thread allocator: error\n");						
 #endif
 		  pthread_exit(NULL);
@@ -868,13 +868,13 @@ void *allocator_thread_f(void * args)
 	    {
 	      fdmax = sockfd[pos];
 	    }
-#ifdef NDEBUG
+#ifndef NDEBUG
 	  fvm_printf("Thread allocator: connected to node %d\n",pos);
 #endif
 	}
     }
   /****************************** Topology done ************************************ */
-#ifdef NDEBUG
+#ifndef NDEBUG
   fvm_printf("************ Allocator thread: building topology *************\n");
 #endif
   
@@ -883,7 +883,7 @@ void *allocator_thread_f(void * args)
     {
       read_fds= master;
       
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
       fvm_printf("Alloc thread: waiting in select\n");
 #endif
       
@@ -917,7 +917,7 @@ void *allocator_thread_f(void * args)
 	    else
 	      { 
 		
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
 		fvm_printf("------- New request %s\n",(char *) type2str(request.type));
 #endif
 		
@@ -931,7 +931,7 @@ void *allocator_thread_f(void * args)
 		      request.root = myrank;
 		    }
 		  
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
 
@@ -960,7 +960,7 @@ void *allocator_thread_f(void * args)
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %s\n",(char *) type2str(request.type));
 		  
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
 		  

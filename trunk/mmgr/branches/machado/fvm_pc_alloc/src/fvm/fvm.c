@@ -72,7 +72,7 @@ int fvmInit(configFile_t config)
   fvmQueueKey = ftok(config.msqfile,'b');
   if(fvmQueueKey == -1)
     return -1;
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
   pv4d_printf("Starting queue  with key %d\n",fvmQueueKey);
 #endif
 
@@ -132,7 +132,7 @@ int fvmWait4PC(configFile_t config)
   msgQueueMsg_t msg;
   msgQueueConnectMsg_t connectMsg;
 
-#ifdef NDEBUGCMSG
+#ifndef NDEBUGCMSG
   pv4d_printf("FVM:Receiving  msg on queue %d type 1 (waitPC)\n",fvmQueueID);
 #endif
 
@@ -188,7 +188,7 @@ int fvmWait4PC(configFile_t config)
 static fvmAllocHandle_t fvmGlobalAllocInternal(unsigned int size)
 {
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   pv4d_printf("FVM: Global Allocation of %u bytes\n",size);
 #endif
 
@@ -198,7 +198,7 @@ static fvmAllocHandle_t fvmGlobalAllocInternal(unsigned int size)
 static fvmAllocHandle_t fvmLocalAllocInternal(unsigned int size)
 {
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
   pv4d_printf("FVM: Local Allocation of %u bytes\n",size);
 #endif
 
@@ -228,7 +228,7 @@ static int sendAck(int ret)
   msg.ret = ret;
   msg.mtype = ACKMSG;
 
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
   pv4d_printf("FVM: Sending msg on queue %d type 4 (sendAck) \n", fvmQueueID);
 #endif
 
@@ -301,7 +301,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	*freeHandle = num_handles;
     }    
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
   pv4d_printf("FVM: Global Comm: new handle for operation is %d\n", *freeHandle);
 #endif
 
@@ -325,7 +325,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #endif 
 
 
-#ifdef NDEBUGALLOC
+#ifndef NDEBUGALLOC
 
   if (handle <= 0 )
     {
@@ -380,7 +380,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	}
     }
 
-#ifdef NDEBUGCOMM 
+#ifndef NDEBUGCOMM 
   if(arena != ARENA_LOCAL && arena != ARENA_GLOBAL)
     {
       handles[*freeHandle] = COMM_HANDLE_ERROR_ARENA_UNKNOWN;
@@ -388,7 +388,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
     }
 #endif
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
   pv4d_printf("GLOBAL comm:handle %d starts with %d\n",*freeHandle,handles[*freeHandle]);
 #endif
 
@@ -398,7 +398,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   else
     globalSize = handleSize;
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
   pv4d_printf("GLOBAL comm: transferSize %lu  - globalsize %lu\n", 
 	      transferSize,
 	      globalSize);
@@ -447,7 +447,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	  if( (offsetRank) == myRank)
 	    {
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
 	      pv4d_printf("FVM: Offset is on my rank. Doing memcpy shm %lu fvm %lu of %lu size\n",
 			  (shmemInitialOffset),
 			  (fvmInitialOffset_Locally),
@@ -467,7 +467,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 		  /* make sure the scratch handle has enough space */
 		  if(currentTransferSize > scratchSize)
 		    {
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
 		      pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
 				  scratchSize,
 				  *freeHandle,
@@ -492,7 +492,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	      else
 		{
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
 		  pv4d_printf("FVM PUTGLOBAL: remote data %lu size with scratch size %lu\n",
 			      currentTransferSize,
 			      scratchSize);
@@ -502,7 +502,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 		  /* make sure the scratch handle has enough space */
 		  if(currentTransferSize > scratchSize)
 		    {
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
 		      pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
 				  scratchSize,
 				  *freeHandle,
@@ -600,7 +600,7 @@ static void waitCommInternal(fvmCommHandle_t handlecheck)
   //TODO: find best way for to wait for comm poll and passive
   int ret;
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
   pv4d_printf("FVM: WAITCOMM: handle %lu is  %d\n",handlecheck, handles[handlecheck]);
 #endif
 
@@ -612,7 +612,7 @@ static void waitCommInternal(fvmCommHandle_t handlecheck)
     case COMM_HANDLE_ERROR_SHMEM_BOUNDARY:
 #endif
 
-#ifdef NDEBUGCOMM
+#ifndef NDEBUGCOMM
     case COMM_HANDLE_ERROR_INVALID_HANDLE:
     case COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE:
     case COMM_HANDLE_ERROR_INVALID_SIZE:
@@ -663,7 +663,7 @@ int fvmListenRequests()
   do
     {
       
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
       pv4d_printf("FVM: Receiving  msg on queue %d type 2 (listenRequests)\n",fvmQueueID);
 #endif
       
@@ -672,7 +672,7 @@ int fvmListenRequests()
 	return (-1);
       }
     
-#ifdef NDEBUGMSG		
+#ifndef NDEBUGMSG		
       pv4d_printf("PARENT: Request was %s\n",op2str(msg.request.op));
 #endif
     
@@ -689,7 +689,7 @@ int fvmListenRequests()
 	/* this might in a function of its own to use different mechanism */
 	  allocmsg.mtype = ALLOCMSG;
 	  
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
 	  pv4d_printf("FVM: Sending  msg on queue %d type 3 (globalalloc)\n",fvmQueueID);
 #endif
 	  
@@ -708,7 +708,7 @@ int fvmListenRequests()
 	  allocmsg.handle= fvmLocalAllocInternal(op_request.args.arg_size);
 	  allocmsg.mtype = ALLOCMSG;
 	  
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
 	  pv4d_printf("FVM: Sending  msg on queue %d type 3 (localalloc)\n",fvmQueueID);
 #endif
 	  
