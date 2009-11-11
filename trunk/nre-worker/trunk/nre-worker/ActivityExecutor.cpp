@@ -17,6 +17,7 @@
  */
 
 #include <sstream>
+#include <stdexcept>
 
 #include <boost/asio.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -47,11 +48,28 @@ namespace sdpa { namespace nre { namespace worker {
   {
     LOG(DEBUG, "opening connection on: " << location());
 
-    std::string host = "0.0.0.0";
-    unsigned short port = 8000;
+    std::string host(location());
+    unsigned short port(0);
+
+    std::string::size_type sep_pos(location().find(":"));
+    if (sep_pos != std::string::npos)
+    {
+      host = location().substr(0, sep_pos);
+      std::stringstream sstr(location().substr(sep_pos+1));
+      sstr >> port;
+      if (! sstr)
+      {
+        throw std::runtime_error("could not parse port-information from location: " + location());
+      }
+    }
+
+    udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host), port);
 
     boost::asio::io_service io_service;
-    udp::socket socket(io_service, udp::endpoint(udp::v4(), port));
+    udp::socket socket(io_service, my_endpoint);
+
+    udp::endpoint real_endpoint = socket.local_endpoint();
+    LOG(INFO, "listening on " << real_endpoint);
 
     for (;;)
     {

@@ -135,9 +135,9 @@ int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::ex
 
 int main(int ac, char **av)
 {
-  if (ac < 2)
+  if (ac < 3)
   {
-    std::cerr << "usage: " << av[0] << " path-to-fvm-config [modules...]" << std::endl;
+    std::cerr << "usage: " << av[0] << " ip:port path-to-fvm-config [modules...]" << std::endl;
     return 1;
   }
   fhg::log::Configurator::configure();
@@ -146,7 +146,7 @@ int main(int ac, char **av)
   fvm_pc_config_t pc_cfg;
 
   // read those from the config file!
-  read_fvm_config(av[1], pc_cfg);
+  read_fvm_config(av[2], pc_cfg);
 
   fvm_pc_connection_mgr fvm_pc;
   
@@ -162,12 +162,12 @@ int main(int ac, char **av)
   // create the module loader
   ModuleLoader::ptr_t loader(ModuleLoader::create());
 
-  for (int i = 2; i < ac; ++i)
+  for (int i = 3; i < ac; ++i)
   {
     loader->load(av[i]);
   }
 
-  sdpa::nre::worker::ActivityExecutor executor(loader, "127.0.0.1:8000");
+  sdpa::nre::worker::ActivityExecutor executor(loader, av[1]);
 
   // Activity act;
   // while (true)
