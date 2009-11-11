@@ -12,4 +12,6 @@ clean:
 	make -C tests clean
 
 
-
+runfvm:
+	cp bin/fvm_standalone /opt/cluster/PV-4D.pspro/bin/rui/
+	 /opt/cluster/PV-4D.pspro/bin/rui/fvm_standalone &

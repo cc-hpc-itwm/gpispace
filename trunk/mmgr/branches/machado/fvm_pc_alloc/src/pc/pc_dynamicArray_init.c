@@ -19,6 +19,11 @@
 using namespace std;
 using namespace sdpa;
 
+
+//test that init the dynamic array
+//prints out the handle to be used by the Usage test
+// the handle returned can be used by the Usage test on different nodes
+
 static void usage(const char *argv0)
 {
     printf("Usage:\n");
@@ -35,6 +40,7 @@ int main(int argc, char *argv[])
   int ret;
   char *configpath = "fvmconfig"; //hard-coded default values
   int optionsParse = 4;
+  fvmAllocHandle_t handle;
 
   while (1) {
     int c;
@@ -57,7 +63,6 @@ int main(int argc, char *argv[])
     case 'o':     
       optionsParse = strtol(optarg, NULL, 0);
       break;
-
     case 'h':
       usage(argv[0]);
       return 1;
@@ -83,9 +88,6 @@ int main(int argc, char *argv[])
 
   sdpa::modules::Module  &mod = loader->get("pc-mod");
   sdpa::modules::Module::data_t params;
-
-
-
 
   params["path"] = sdpa::wf::Parameter("path", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(configpath));
   params["numoptions"] = sdpa::wf::Parameter("numoptions", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(optionsParse));
@@ -122,43 +124,31 @@ int main(int argc, char *argv[])
     }
 
   /* Start loading tests modules */
-/*   try */
-/*     { */
-/*       loader->load("testAllocation-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAllocation-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
-
-
-/*   try */
-/*     { */
-/*       loader->load("testCommunication-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testCommunication-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
-
-/*   try */
-/*     { */
-/*       loader->load("testAPI-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAPI-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
-
   try
     {
-      loader->load("testdistribute-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testdistribute-mod.so");
+      loader->load("testDynamicArrayInit-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testDynamicArrayInit-mod.so");
     }
   catch (sdpa::modules::ModuleLoadFailed &mlf)
     {
       std::cout << "An exception occurred while loading module" << endl;
     }
 
+  sdpa::modules::Module  &mod1 = loader->get("testDynamicArrayInit-mod");
+
+  sdpa::modules::Module::data_t params1;
+  try 
+    {
+      mod1.call("test_dynamicArrayInit", params1);
+    }
+  catch (const std::exception & ex) {
+	  std::cout << "exception calling test dynamic array init" << endl;
+  }
+
+  handle  = params1["out"].token().data_as<fvmAllocHandle_t>();
+  printf("Handle to use is %lu\n", handle);
+
+
+  // Leave...
 
   try 
     {

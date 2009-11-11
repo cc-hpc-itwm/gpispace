@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
   //TODO: think about command line option
   config = readConfigFile(configpath, optionsParse);
 
+
   if(fvmInit(config)){
     printf("error init\n");
     return -1;

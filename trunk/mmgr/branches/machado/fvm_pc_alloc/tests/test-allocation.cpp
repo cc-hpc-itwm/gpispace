@@ -168,10 +168,10 @@ extern "C" {
 
     //actually call the functions
     sdpa::modules::Module::data_t params;
-    test_GlobalMemory(params);
-    test_LocalMemory(params);
-    test_AllocComm(params);
-    test_Defrag(params);
+//     test_GlobalMemory(params);
+//     test_LocalMemory(params);
+//     test_AllocComm(params);
+//     test_Defrag(params);
   }
 }
 

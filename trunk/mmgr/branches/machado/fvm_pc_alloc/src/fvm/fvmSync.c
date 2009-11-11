@@ -14,7 +14,7 @@
 
 #include "fvmSync.h"
 
-static int commAllowed = 0;
+static int commAllowed = 1;
 
 //just send a byte
 #define MAXLEN 128

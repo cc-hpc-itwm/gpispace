@@ -72,7 +72,7 @@ int fvmInit(configFile_t config)
   fvmQueueKey = ftok(config.msqfile,'b');
   if(fvmQueueKey == -1)
     return -1;
-#ifndef NDEBUGMSG
+#ifdef NDEBUGMSG
   pv4d_printf("Starting queue  with key %d\n",fvmQueueKey);
 #endif
 
@@ -302,7 +302,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
     }    
 
 #ifndef NDEBUGCOMM
-  pv4d_printf("FVM: Global Comm: new handle for operation is %d\n", *freeHandle);
+  pv4d_printf("FVM: Global Comm %s: new handle for operation is %d\n",op2str(op), *freeHandle);
 #endif
 
   handles[*freeHandle] = COMM_HANDLE_NOT_FINISHED; /* invalidate while we're not finished */
@@ -404,7 +404,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	      globalSize);
 #endif
 
-   if(fvmOffset + transferSize <= globalSize) 
+  if(fvmOffset + transferSize <= globalSize) 
     {
 	    
       shmemInitialOffset = shmemOffset;
@@ -412,129 +412,156 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
       rest = transferSize;
 	 
       //only on global communication we need the scratch handle
-      if( op == PUTGLOBAL || op == GETGLOBAL)
-	{
+      /*       if( op == PUTGLOBAL || op == GETGLOBAL) */
+      /* 	{ */
 	  
-	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
-	    {
+      /* 	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize)) != RET_SUCCESS) */
+      /* 	    { */
 
-	      if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS) 
-		{
-		  handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
-		  goto out;    
-		}
-	    }
+      /* 	      if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)  */
+      /* 		{ */
+      /* 		  handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE; */
+      /* 		  goto out;     */
+      /* 		} */
+      /* 	    } */
+      /* 	} */
+
+      if(arena == ARENA_GLOBAL)
+	dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize);
+
+      if( op == GETLOCAL)
+	{
+	  pv4d_printf("GETLOCAL\n");
+
+	  memcpy(((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + fvmInitialOffset, transferSize);
+	  handles[*freeHandle] = COMM_HANDLE_OK;
 	}
 
-      while (rest > 0)
+      else if( op == PUTLOCAL)
+	{ 
+	  pv4d_printf("PUTLOCAL\n");
+	  
+	  memcpy(((char *)fvmAddress) + fvmInitialOffset, ((char *)shm) + shmemInitialOffset, transferSize);
+	  handles[*freeHandle] = COMM_HANDLE_OK;
+	}
+
+      else
 	{
-	  offsetRank = fvmInitialOffset / handleSize; 
-
-	  fvmInitialOffset_Locally = handleOffset + (fvmInitialOffset % handleSize);
-
-	  availableSpace = handleOffset + handleSize - fvmInitialOffset_Locally;
-
-	  if(availableSpace > rest) /* we can copy everything */
+	  while (rest > 0)
 	    {
-	      currentTransferSize = rest;
-	    }
-	  else /* only part of it */
-	    {
-	      currentTransferSize = availableSpace;
-	    }
-		
-	  /* if memory is on my memory part, just memcpy */
-	  if( (offsetRank) == myRank)
-	    {
+	      offsetRank = fvmInitialOffset / handleSize; 
 
-#ifndef NDEBUGCOMM
-	      pv4d_printf("FVM: Offset is on my rank. Doing memcpy shm %lu fvm %lu of %lu size\n",
-			  (shmemInitialOffset),
-			  (fvmInitialOffset_Locally),
-			  currentTransferSize);
-#endif
+	      fvmInitialOffset_Locally = handleOffset + (fvmInitialOffset % handleSize);
 
-	      if(op == GETGLOBAL || op == GETLOCAL)
-		memcpy(((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + fvmInitialOffset_Locally, currentTransferSize);
-	      else
-		memcpy(((char *)fvmAddress) + fvmInitialOffset_Locally, ((char *)shm) + shmemInitialOffset, currentTransferSize);
-	    }
-	  else /* is remote, use scratch space to do a dma and then memcpy it */
-	    {
+	      availableSpace = handleOffset + handleSize - fvmInitialOffset_Locally;
 
-	      if( op == GETGLOBAL) 
+	      if(availableSpace > rest) /* we can copy everything */
 		{
-		  /* make sure the scratch handle has enough space */
-		  if(currentTransferSize > scratchSize)
-		    {
-#ifndef NDEBUGCOMM
-		      pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
-				  scratchSize,
-				  *freeHandle,
-				  currentTransferSize);
-#endif
-
-		      handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;
-		      goto out;
-		    }
-
-		  readDmaVM(scratchOffset, 
-			    handleOffset + (fvmInitialOffset % handleSize), 
-			    currentTransferSize, 
-			    (fvmInitialOffset / handleSize),
-			    VMQueue0);
-
-		  waitDmaVM(VMQueue0);
-
-		  memcpy( ((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + scratchOffset, currentTransferSize);
+		  currentTransferSize = rest;
+		}
+	      else /* only part of it */
+		{
+		  currentTransferSize = availableSpace;
 		}
 
-	      else
+#ifndef NDEBUGCOMM
+	      pv4d_printf("FVM: Rank %u\n",
+			  offsetRank);
+#endif
+		
+	      /* if memory is on my memory part, just memcpy */
+	      if( (offsetRank) == myRank)
 		{
 
 #ifndef NDEBUGCOMM
-		  pv4d_printf("FVM PUTGLOBAL: remote data %lu size with scratch size %lu\n",
-			      currentTransferSize,
-			      scratchSize);
+		  pv4d_printf("FVM: Offset is on my rank. Doing memcpy shm %lu fvm %lu of %lu size\n",
+			      (shmemInitialOffset),
+			      (fvmInitialOffset_Locally),
+			      currentTransferSize);
+#endif
+
+		  if(op == GETGLOBAL || op == GETLOCAL)
+		    memcpy(((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + fvmInitialOffset_Locally, currentTransferSize);
+		  else
+		    memcpy(((char *)fvmAddress) + fvmInitialOffset_Locally, ((char *)shm) + shmemInitialOffset, currentTransferSize);
+		}
+	      else /* is remote, use scratch space to do a dma and then memcpy it */
+		{
+
+		  if( op == GETGLOBAL) 
+		    {
+		      /* make sure the scratch handle has enough space */
+		      if(currentTransferSize > scratchSize)
+			{
+#ifndef NDEBUGCOMM
+			  pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
+				      scratchSize,
+				      *freeHandle,
+				      currentTransferSize);
+#endif
+
+			  handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;
+			  goto out;
+			}
+
+		      readDmaVM(scratchOffset, 
+				handleOffset + (fvmInitialOffset % handleSize), 
+				currentTransferSize, 
+				(fvmInitialOffset / handleSize),
+				VMQueue0);
+
+		      waitDmaVM(VMQueue0);
+
+		      memcpy( ((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + scratchOffset, currentTransferSize);
+		    }
+
+		  else
+		    {
+
+#ifndef NDEBUGCOMM
+		      pv4d_printf("FVM PUTGLOBAL: remote data %lu size with scratch size %lu\n",
+				  currentTransferSize,
+				  scratchSize);
 #endif
 		
   
-		  /* make sure the scratch handle has enough space */
-		  if(currentTransferSize > scratchSize)
-		    {
+		      /* make sure the scratch handle has enough space */
+		      if(currentTransferSize > scratchSize)
+			{
 #ifndef NDEBUGCOMM
-		      pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
-				  scratchSize,
-				  *freeHandle,
-				  currentTransferSize);
+			  pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
+				      scratchSize,
+				      *freeHandle,
+				      currentTransferSize);
 #endif
 
-		      handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;	  
-		      goto out;
+			  handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;	  
+			  goto out;
+			}
+
+
+		      memcpy( ((char *)fvmAddress) + scratchOffset,  ((char *)shm) + shmemInitialOffset, currentTransferSize);
+
+		      writeDmaVM(scratchOffset, 
+				 handleOffset + (fvmInitialOffset % handleSize), 
+				 currentTransferSize, 
+				 (fvmInitialOffset / handleSize),
+				 VMQueue0);
+
+		      waitDmaVM(VMQueue0);
+
+
 		    }
-
-
-		  memcpy( ((char *)fvmAddress) + scratchOffset,  ((char *)shm) + shmemInitialOffset, currentTransferSize);
-
-		  writeDmaVM(scratchOffset, 
-			     handleOffset + (fvmInitialOffset % handleSize), 
-			     currentTransferSize, 
-			     (fvmInitialOffset / handleSize),
-			     VMQueue0);
-
-		  waitDmaVM(VMQueue0);
-
-
 		}
+		
+	      rest -= currentTransferSize;
+	      fvmInitialOffset += currentTransferSize;
+	      shmemInitialOffset += currentTransferSize;
+		
 	    }
-		
-	  rest -= currentTransferSize;
-	  fvmInitialOffset += currentTransferSize;
-	  shmemInitialOffset += currentTransferSize;
-		
-	}
 
-      handles[*freeHandle] = COMM_HANDLE_OK;
+	  handles[*freeHandle] = COMM_HANDLE_OK;
+	}
     }
   else 
     {

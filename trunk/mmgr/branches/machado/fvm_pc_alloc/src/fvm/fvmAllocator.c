@@ -1089,6 +1089,8 @@ void *allocator_thread_f(void * args)
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %d\n",(int)request.type);	      
 
+
+		  allowCommunication();
 		  
 		  if(local)
 		    /* ack fvm process */

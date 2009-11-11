@@ -86,7 +86,10 @@ void test_ownNode(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
   //do the same with the other alloc handle
@@ -109,7 +112,10 @@ void test_ownNode(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
+	{
 	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	break;
+	}
     }
 
 
@@ -173,7 +179,10 @@ void test_remoteNode(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
   //with the other alloc handle
@@ -196,7 +205,10 @@ void test_remoteNode(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
 
@@ -261,7 +273,10 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
   //with the other alloc handle
@@ -284,7 +299,10 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
 
@@ -348,7 +366,10 @@ void test_ownNodeSpread(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
 
@@ -372,7 +393,10 @@ void test_ownNodeSpread(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
 
@@ -432,7 +456,10 @@ void test_remoteNodeSpread(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
   ret = fvmGlobalFree(src);
@@ -510,7 +537,10 @@ void test_localcomm(Module::data_t &params)
   for (int i=0; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
-	printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	{
+	  printf("value is wrong %d: %d\n",i, intPtr[ i ] );
+	  break;
+	}
     }
 
   ret = fvmLocalFree(src);
@@ -530,6 +560,6 @@ extern "C" {
     test_ownNodeSpread(params);
     test_remoteNodeSpread(params);
     test_localcomm(params);
-    test_remoteNode_scratchglobal(params);
+    //    test_remoteNode_scratchglobal(params);
   }
 }
