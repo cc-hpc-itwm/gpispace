@@ -5,6 +5,7 @@
 using namespace std;
 
 namespace sdpa {
+	namespace daemon {
 
 	class SchedulerNRE : public sdpa::daemon::SchedulerImpl
 	{
@@ -13,8 +14,8 @@ namespace sdpa {
 
 		SDPA_DECLARE_LOGGER();
 
-		SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
-			sdpa::daemon::SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
+		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
+			sdpa::daemon::SchedulerImpl(pHandler->gwes(),  pHandler),
 			SDPA_INIT_LOGGER("SchedulerNRE"),
 			m_answerStrategy(answerStrategy)
 			{}
@@ -65,7 +66,7 @@ namespace sdpa {
 				try
 				{
 					gwes::activity_t* pAct = activities_to_be_executed.pop_and_wait(m_timeout);
-					execute_activity(*pAct);
+					execute(*pAct);
 
 					SDPA_LOG_DEBUG("Finished execute_activity ...");
 					check_post_request();
@@ -83,7 +84,7 @@ namespace sdpa {
 			}
 		}
 
-		void execute_activity(const gwes::activity_t& activity)
+		void execute(const gwes::activity_t& activity)
 		{
 			SDPA_LOG_DEBUG("Execute activity ...");
 
@@ -131,4 +132,4 @@ namespace sdpa {
 		std::string m_answerStrategy;
 		boost::thread m_threadExecutor;
 	};
-}
+}}

@@ -26,6 +26,7 @@ target_link_libraries(sdpa_test_suite sdpa-util)
 target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
 target_link_libraries(sdpa_test_suite sdpa-client)
+target_link_libraries(sdpa_test_suite sdpa-nre)
 target_link_libraries(sdpa_test_suite seda-comm)
 
 # test module

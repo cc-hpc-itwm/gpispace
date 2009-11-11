@@ -13,7 +13,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(1),
+    m_nITER(1000),
     m_sleep_interval(10000)
 {
 }
@@ -68,14 +68,14 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::Orchestrator::ptr_t ptrOrch = sdpa::Orchestrator::create(sdpa::daemon::ORCHESTRATOR);
-	sdpa::Orchestrator::start(ptrOrch, "127.0.0.1:5000");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(sdpa::daemon::ORCHESTRATOR);
+	sdpa::daemon::Orchestrator::start(ptrOrch, "127.0.0.1:5000");
 
-	sdpa::Aggregator::ptr_t ptrAgg = sdpa::Aggregator::create(sdpa::daemon::AGGREGATOR);
-	sdpa::Aggregator::start(ptrAgg, "127.0.0.1:5001", "127.0.0.1:5000");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create(sdpa::daemon::AGGREGATOR);
+	sdpa::daemon::Aggregator::start(ptrAgg, "127.0.0.1:5001", "127.0.0.1:5000");
 
-	sdpa::NRE::ptr_t ptrNRE = sdpa::NRE::create(sdpa::daemon::NRE, strAnswer );
-	sdpa::NRE::start(ptrNRE, "127.0.0.1:5002", "127.0.0.1:5001");
+	sdpa::daemon::NRE::ptr_t ptrNRE = sdpa::daemon::NRE::create(sdpa::daemon::NRE, strAnswer );
+	sdpa::daemon::NRE::start(ptrNRE, "127.0.0.1:5002", "127.0.0.1:5001");
 
 	for(int k=0; k<m_nITER; k++ )
 	{
@@ -103,9 +103,9 @@ void TestComponents::testComponents()
 		m_ptrUser->deleteJob(job_id_user);
 	}
 
-	sdpa::Orchestrator::shutdown(ptrOrch);
-	sdpa::Aggregator::shutdown(ptrAgg);
-	sdpa::NRE::shutdown(ptrNRE);
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
+	sdpa::daemon::NRE::shutdown(ptrNRE);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
