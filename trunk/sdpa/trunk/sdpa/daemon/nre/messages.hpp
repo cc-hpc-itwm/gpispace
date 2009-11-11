@@ -44,8 +44,8 @@ namespace sdpa { namespace nre { namespace worker {
       : key_("")
     {}
 
-    explicit PingReply(const std::string &key)
-      : key_(key)
+    explicit PingReply(const std::string &a_key)
+      : key_(a_key)
     {}
 
     std::string &key() { return key_; }
@@ -61,8 +61,8 @@ namespace sdpa { namespace nre { namespace worker {
       : key_("")
     {}
 
-    explicit PingRequest(const std::string &key)
-      : key_(key)
+    explicit PingRequest(const std::string &a_key)
+      : key_(a_key)
     {}
 
     std::string &key() { return key_; }
