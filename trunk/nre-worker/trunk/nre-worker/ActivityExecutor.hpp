@@ -25,6 +25,9 @@
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
+  class Request;
+  class Reply;
+
   class ActivityExecutor : public ExecutionContext
   {
   public:
@@ -41,6 +44,9 @@ namespace sdpa { namespace nre { namespace worker {
     // message context
     sdpa::modules::ModuleLoader &loader() { return *loader_; }
   private:
+    Request *decode(const std::string &);
+    std::string encode(Reply *);
+    
     sdpa::modules::ModuleLoader::ptr_t loader_;
     std::string location_;
   };

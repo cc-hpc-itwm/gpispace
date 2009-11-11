@@ -43,6 +43,29 @@ void init_archive(Archive & ar)
 namespace sdpa { namespace nre { namespace worker {
   enum { max_length = ((2<<16) - 1) };
 
+  Request *
+  ActivityExecutor::decode(const std::string &bytes)
+  {
+    Request *rqst(NULL);
+    std::stringstream sstr(bytes);
+    boost::archive::text_iarchive ar(sstr);
+    init_archive(ar);
+    ar >> rqst;
+
+    return rqst;
+  }
+
+  std::string
+  ActivityExecutor::encode(Reply *rply)
+  {
+    std::ostringstream sstr;
+    boost::archive::text_oarchive ar(sstr);
+    init_archive(ar);
+    ar << rply;
+
+    return sstr.str();
+  }
+
   void
   ActivityExecutor::loop()
   {
@@ -93,26 +116,15 @@ namespace sdpa { namespace nre { namespace worker {
         }
 #endif
 
-        Request *rqst = NULL;
         try
         {
-          std::stringstream sstr(msg);
-          boost::archive::text_iarchive ar(sstr);
-          init_archive(ar);
-          ar >> rqst;
+          Request *rqst = decode(msg);
           Reply *rply = rqst->execute(this);
           delete rqst; rqst = NULL;
 
           if (rply)
           {
-            std::ostringstream sstr;
-            boost::archive::text_oarchive ar(sstr);
-            init_archive(ar);
-
-            ar << rply;
-
-            socket.send_to(boost::asio::buffer(sstr.str()), sender_endpoint);
-
+            socket.send_to(boost::asio::buffer(encode(rply)), sender_endpoint);
             delete rply; rply = NULL;
           }
           else
