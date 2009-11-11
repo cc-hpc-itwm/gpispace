@@ -9,7 +9,9 @@ namespace fhg { namespace log {
     public:
       void operator() () throw() {
 #if FHGLOG_DISABLE_LOGGING != 1
+#ifndef NDEBUG
         std::clog << "I: performing default logging configuration" << std::endl;
+#endif
         try {
           getLogger().removeAllAppenders();
           getLogger().addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Default());
