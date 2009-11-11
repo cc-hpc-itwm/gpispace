@@ -535,7 +535,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		// check if the message comes from outside/slave or from WFE
 		// if it comes from outside set it as local
-		if(e.from() != name() ) //e.to())
+		if(e.from() != sdpa::daemon::GWES ) //e.to())
 			pJob->set_local(true);
 
 		ptr_scheduler_->schedule(pJob);
@@ -661,7 +661,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 
 		gwes::workflow_id_t parent_id = activity.getOwnerWorkflowID();
 
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc, parent_id));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(sdpa::daemon::GWES, name(), job_id, job_desc, parent_id));
 		sendEvent(pEvtSubmitJob);
 	}
 	catch(QueueFull&)

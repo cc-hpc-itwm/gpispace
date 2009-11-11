@@ -23,7 +23,9 @@ namespace sdpa {
 	 virtual ~SchedulerImpl();
 
 
-	 void schedule(Job::ptr_t& pJob);
+	 virtual void schedule(Job::ptr_t& pJob);
+
+	 virtual void schedule(gwes::activity_t& act) {};
 
 	 /**
       Scheduling a job locally means that it will not leave the executing node.
@@ -44,11 +46,11 @@ namespace sdpa {
 
 	 virtual void start_job(const Job::ptr_t &pJob);
 
-	 Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
-	 void addWorker(const Worker::ptr_t &);
+	 virtual Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
+	 virtual void addWorker(const Worker::ptr_t &);
 
-	 int numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
-	 void check_post_request();
+	 virtual int numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+	 virtual void check_post_request();
 
     // thread related functions
 	 void start();

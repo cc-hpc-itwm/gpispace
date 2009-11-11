@@ -1,5 +1,7 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
-
+#include <gwes/IActivity.h>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
+#include <sdpa/wf/GwesGlue.hpp>
 using namespace std;
 
 namespace sdpa {
@@ -7,6 +9,8 @@ namespace sdpa {
 	class SchedulerNRE : public sdpa::daemon::SchedulerImpl
 	{
 	public:
+		typedef sdpa::daemon::SynchronizedQueue<std::list<gwes::activity_t*> > ActivityQueue;
+
 		SDPA_DECLARE_LOGGER();
 
 		SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
@@ -16,7 +20,6 @@ namespace sdpa {
 			{}
 
 		virtual ~SchedulerNRE() { }
-
 
 		void run()
 		{
@@ -31,9 +34,40 @@ namespace sdpa {
 					// schedule only jobs submitted by the master
 					if(pJob->is_local())
 						schedule_local(pJob);
-					else
-						start_job(pJob); //only for testing purposes! In the real case the executor thread will take care
 
+					//check_post_request();
+				}
+				catch( const boost::thread_interrupted & )
+				{
+					SDPA_LOG_DEBUG("Thread interrupted ...");
+					bStopRequested = true;
+				}
+				catch( const sdpa::daemon::QueueEmpty &)
+				{
+					//SDPA_LOG_DEBUG("Queue empty exception");
+					//check_post_request();
+				}
+			}
+		}
+
+		void schedule(gwes::activity_t& act)
+		{
+			SDPA_LOG_DEBUG("Handle activity "<<act.getID());
+			activities_to_be_executed.push(&act);
+		}
+
+		void runExecutor()
+		{
+			SDPA_LOG_DEBUG("Executor thread running ...");
+
+			while(!bStopRequested)
+			{
+				try
+				{
+					gwes::activity_t* pAct = activities_to_be_executed.pop_and_wait(m_timeout);
+					execute_activity(*pAct);
+
+					SDPA_LOG_DEBUG("Finished execute_activity ...");
 					check_post_request();
 				}
 				catch( const boost::thread_interrupted & )
@@ -49,27 +83,52 @@ namespace sdpa {
 			}
 		}
 
-		void start_job(const sdpa::daemon::Job::ptr_t &pJob)
+		void execute_activity(const gwes::activity_t& activity)
 		{
-			SDPA_LOG_DEBUG("Execute job ...");
+			SDPA_LOG_DEBUG("Execute activity ...");
 
-			string worker = "Scheduler";
+			gwes::Activity& gwes_act = (gwes::Activity&)(activity);
+			sdpa::wf::Activity act = sdpa::wf::glue::wrap(gwes_act);
+			act.parameters()["output"].token().data("hello");
+			//alex will provide code
 
-			//first put the job into the running state
-			pJob->Dispatch();
+			sdpa::wf::glue::unwrap(act, gwes_act);
 
 			// execute the job and ...
-			// ... submit a JobFinishedEvent to the master
+			sdpa::parameter_list_t output; // = *gwes_act.getTransitionOccurrence()->getTokens();
+
+			gwes::activity_id_t act_id = activity.getID();
+			gwes::workflow_id_t wf_id  = activity.getOwnerWorkflowID();
+
+			SDPA_LOG_DEBUG("Finished activity execution: notify GWES ...");
 			if( m_answerStrategy == "finished" )
-				ptr_comm_handler_->jobFinished(worker, pJob->id());
+				ptr_Sdpa2Gwes_->activityFinished(wf_id, act_id, output);
 			else if( m_answerStrategy == "failed" )
-				ptr_comm_handler_->jobFailed(worker, pJob->id());
+				ptr_Sdpa2Gwes_->activityFailed(wf_id, act_id, output);
 			else if( m_answerStrategy == "cancelled" )
-				ptr_comm_handler_->jobCancelled(worker, pJob->id());
+				ptr_Sdpa2Gwes_->activityCanceled(wf_id, act_id);
+
 		}
 
+		void start()
+		{
+			SchedulerImpl::start();
+			m_threadExecutor = boost::thread(boost::bind(&SchedulerNRE::runExecutor, this));
+			SDPA_LOG_DEBUG("Executor thread started ...");
+		}
+
+		void stop()
+		{
+			SchedulerImpl::stop();
+			m_threadExecutor.interrupt();
+
+			SDPA_LOG_DEBUG("Executor thread before join ...");
+			m_threadExecutor.join();
+		}
 
 	private:
-		 std::string m_answerStrategy;
+		ActivityQueue activities_to_be_executed;
+		std::string m_answerStrategy;
+		boost::thread m_threadExecutor;
 	};
 }

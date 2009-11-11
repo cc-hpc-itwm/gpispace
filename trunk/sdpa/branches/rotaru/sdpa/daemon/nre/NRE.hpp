@@ -1,6 +1,7 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include "SchedulerNRE.hpp"
 #include <gwes/GWES.h>
+#include <gwes/IActivity.h>
 
 namespace sdpa {
   class NRE : public dsm::DaemonFSM {
@@ -44,5 +45,33 @@ namespace sdpa {
 		delete ptrNRE->ptr_Sdpa2Gwes_;
 		ptrNRE->ptr_Sdpa2Gwes_ = NULL;
 	}
+
+	gwes::activity_id_t submitActivity(gwes::activity_t &activity)
+	{
+		ostringstream os;
+		gwes::activity_id_t actId = activity.getID();
+		gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
+
+		try {
+			SDPA_LOG_DEBUG("NRE GWES submitted new activity ...");
+
+			// push the job into the executor thread's queue
+			//gwes::activity_t::ptr_t pAct(&activity);
+
+			SDPA_LOG_DEBUG("Notify NRE GWES that the activity was dispatched ...");
+
+			ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
+			ptr_scheduler_->schedule(activity);
+		}
+		catch(std::exception&)
+		{
+			SDPA_LOG_DEBUG("Cancel the activity!");
+			// inform immediately GWES that the corresponding activity was cancelled
+			gwes()->activityCanceled( wfId, actId );
+		}
+
+		return activity.getID();
+	}
+
   };
 }

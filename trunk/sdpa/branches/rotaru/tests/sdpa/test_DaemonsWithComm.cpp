@@ -102,46 +102,6 @@ void DaemonsWithCommTest::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-void DaemonsWithCommTest::testOrchestrator()
-{
-	SDPA_LOG_DEBUG("*****testUserOrchCommDummyGwes*****"<<std::endl);
-	string strAnswer = "finished";
-	string noStage = "";
-
-	sdpa::Orchestrator::ptr_t ptrOrch = sdpa::Orchestrator::create(sdpa::daemon::ORCHESTRATOR, strAnswer);
-	sdpa::Orchestrator::start(ptrOrch);
-
-	for(int k=0; k<m_nITER; k++ )
-	{
-		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
-
-		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
-
-		std::string job_status =  m_ptrUser->queryJob(job_id_user);
-		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
-
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			job_status = m_ptrUser->queryJob(job_id_user);
-			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
-
-			usleep(m_sleep_interval);
-		}
-
-		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
-		m_ptrUser->retrieveResults(job_id_user);
-
-		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
-		m_ptrUser->deleteJob(job_id_user);
-	}
-
-	sdpa::Orchestrator::shutdown(ptrOrch);
-    sleep(1);
-	SDPA_LOG_DEBUG("User finished!");
-}
-
 void DaemonsWithCommTest::testUserOrchCommDummyGwes()
 {
 	SDPA_LOG_DEBUG("*****testUserOrchCommDummyGwes*****"<<std::endl);

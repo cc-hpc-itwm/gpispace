@@ -4,6 +4,7 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <gwes/IActivity.h>
 
 namespace sdpa {
 namespace daemon {
@@ -16,6 +17,7 @@ namespace daemon {
 	 virtual void addWorker(const  Worker::ptr_t& ) = 0;
 	 virtual int  numberOfWorkers() = 0;
 	 virtual void schedule(Job::ptr_t& pJob) = 0;
+	 virtual void schedule(gwes::activity_t& act)=0;
 	 virtual void start()=0;
 	 virtual void stop()=0;
 	 virtual void run()=0;

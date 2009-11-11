@@ -11,6 +11,8 @@
 #include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
 
+#include <gwes/IActivity.h>
+
 namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;
@@ -29,6 +31,11 @@ const std::string USER("user");
 	  virtual void jobFinished(std::string workerName, const job_id_t &)=0;
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
 	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;
+
+	  virtual void activityFinished(	const gwes::workflow_id_t &wf_id
+									  , const gwes::activity_id_t &act_id
+									  , const sdpa::parameter_list_t &output)
+	  { gwes()->activityFinished(wf_id, act_id, output); }
 
 	  // only for testing with DummyGwes, change it
 	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;
