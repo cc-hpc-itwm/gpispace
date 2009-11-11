@@ -102,3 +102,5 @@ add_subdirectory(mods)
 
 include(CTest)
 add_subdirectory(tests)
+
+install(FILES README DESTINATION share/nre-worker)

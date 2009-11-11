@@ -155,7 +155,7 @@ int main(int ac, char **av)
   } catch (const std::exception &ex)
   {
     std::cerr << "could not connect to FVM: " << ex.what() << std::endl;
-    // return 2;
+    return 2;
   }
 
   using namespace sdpa::modules;

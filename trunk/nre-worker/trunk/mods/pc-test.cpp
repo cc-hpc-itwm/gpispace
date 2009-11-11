@@ -10,7 +10,6 @@ static void RunTest() throw (std::exception)
 {
   std::cout << "running RunTest example" << std::endl;
   fvmAllocHandle_t src = fvmGlobalAlloc((256*1024*1024));
-  fvmGlobalFree(src);
 }
 
 SDPA_MOD_INIT_START(pc-test)
