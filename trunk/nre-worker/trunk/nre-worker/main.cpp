@@ -76,7 +76,7 @@ int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::ex
     if (line.empty()) continue;
     if (line[0] == '#') continue;
 
-    DLOG(DEBUG, "parsing line: " << line);
+    DLOG(INFO, "parsing line: \"" << line << "\"");
 
     std::string::size_type split_pos(line.find_first_of(" "));
     const std::string param_name(line.substr(0, split_pos));
@@ -87,7 +87,6 @@ int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::ex
     }
     else
     {
-      DLOG(DEBUG, "name=" << param_name << " value=" << param_value);
       if (param_name == "SHMSZ")
       {
         std::istringstream istr(param_value);
@@ -155,27 +154,27 @@ int main(int ac, char **av)
     fvm_pc.init(pc_cfg);  
   } catch (const std::exception &ex)
   {
-    LOG(FATAL, "fvm-connection failed: " << ex.what());
+    std::cerr << "could not connect to FVM: " << ex.what() << std::endl;
+    // return 2;
   }
 
   using namespace sdpa::modules;
-  // create the module loader
   ModuleLoader::ptr_t loader(ModuleLoader::create());
 
-  for (int i = 3; i < ac; ++i)
+  try
   {
-    loader->load(av[i]);
+    for (int i = 3; i < ac; ++i)
+    {
+      loader->load(av[i]);
+    }
+  }
+  catch (const ModuleLoadFailed &mlf)
+  {
+    std::cerr << "could not load module: " << mlf.what() << std::endl;
+    return 3;
   }
 
   sdpa::nre::worker::ActivityExecutor executor(loader, av[1]);
-
-  // Activity act;
-  // while (true)
-  // {
-  //  in >> act;
-  //  execute(act);
-  //  out << act;
-  // }
-
   executor.loop();
+  return 0;
 }
