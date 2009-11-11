@@ -23,6 +23,11 @@
 
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
+#include <sdpa/modules/ModuleLoader.hpp>
+
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
   class Request;
@@ -31,24 +36,42 @@ namespace sdpa { namespace nre { namespace worker {
   class ActivityExecutor : public ExecutionContext
   {
   public:
-    ActivityExecutor(const sdpa::modules::ModuleLoader::ptr_t &mod_loader, const std::string &my_location)
-      : loader_(mod_loader)
+    explicit
+    ActivityExecutor(const std::string &my_location)
+      : loader_(sdpa::modules::ModuleLoader::create())
       , location_(my_location)
-    {
-    }
+      , socket_(NULL)
+      , barrier_(2)
+      , execution_thread_(NULL)
+    {}
 
     const std::string &location() const { return location_; }
 
-    void loop();
+    void start();
+    void stop();
 
     // message context
     sdpa::modules::ModuleLoader &loader() { return *loader_; }
+
+    void operator()();
   private:
     Request *decode(const std::string &);
     std::string encode(Reply *);
+
+    void handle_receive_from(const boost::system::error_code &error
+                           , size_t bytes_recv);
     
     sdpa::modules::ModuleLoader::ptr_t loader_;
     std::string location_;
+
+    boost::asio::io_service io_service_;
+    boost::asio::ip::udp::endpoint sender_endpoint_;
+    boost::asio::ip::udp::socket *socket_;
+    boost::barrier barrier_;
+    boost::thread *execution_thread_;
+
+    enum { max_length = ((2<<16 )-1) };
+    char data_[max_length];
   };
 }}}
 

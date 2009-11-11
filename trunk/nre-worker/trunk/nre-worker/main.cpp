@@ -4,15 +4,24 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
-
-// sdpa dependencies
-#include <sdpa/wf/Activity.hpp>
-#include <sdpa/modules/ModuleLoader.hpp>
+#include <csignal>
 
 // fvm dependencies
 #include <fvm-pc/pc.hpp>
 
 #include "ActivityExecutor.hpp"
+
+void cleanUp()
+{
+  fvmLeave();
+}
+
+void sig_handler(int sig)
+{
+  std::cout << "Lethal signal received (" << sig << ")" << " - I will do my best to save the world!" << std::endl;
+  cleanUp();
+  exit(127);
+}
 
 namespace
 {
@@ -155,17 +164,21 @@ int main(int ac, char **av)
   } catch (const std::exception &ex)
   {
     std::cerr << "could not connect to FVM: " << ex.what() << std::endl;
-    return 2;
+//    return 2;
   }
 
+  signal(SIGSEGV, &sig_handler);
+  signal(SIGABRT, &sig_handler);
+
   using namespace sdpa::modules;
-  ModuleLoader::ptr_t loader(ModuleLoader::create());
+
+  sdpa::nre::worker::ActivityExecutor executor(av[1]);
 
   try
   {
     for (int i = 3; i < ac; ++i)
     {
-      loader->load(av[i]);
+      executor.loader().load(av[i]);
     }
   }
   catch (const ModuleLoadFailed &mlf)
@@ -174,7 +187,42 @@ int main(int ac, char **av)
     return 3;
   }
 
-  sdpa::nre::worker::ActivityExecutor executor(loader, av[1]);
-  executor.loop();
+  executor.start();
+
+  LOG(DEBUG, "waiting for signals...");
+  sigset_t waitset;
+  int sig(0);
+  int result(0);
+  
+  sigfillset(&waitset);
+  sigprocmask(SIG_BLOCK, &waitset, NULL);
+
+  bool signal_ignored = true;
+  while (signal_ignored)
+  {
+
+    result = sigwait(&waitset, &sig);
+    if (result == 0)
+    {
+      LOG(DEBUG, "got signal: " << sig);
+      switch (sig)
+      {
+        case SIGTERM:
+        case SIGINT:
+          signal_ignored = false;
+          break;
+        default:
+          LOG(INFO, "ignoring signal: " << sig);
+          break;
+      }
+    }
+    else
+    {
+      LOG(ERROR, "error while waiting for signal: " << result);
+    }
+  }
+
+  executor.stop();
+
   return 0;
 }

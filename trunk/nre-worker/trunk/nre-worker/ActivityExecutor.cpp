@@ -67,8 +67,12 @@ namespace sdpa { namespace nre { namespace worker {
   }
 
   void
-  ActivityExecutor::loop()
+  ActivityExecutor::start()
   {
+    if (execution_thread_) return; // already started
+
+    io_service_.reset();
+
     LOG(DEBUG, "opening connection on: " << location());
 
     std::string host(location());
@@ -85,59 +89,106 @@ namespace sdpa { namespace nre { namespace worker {
         throw std::runtime_error("could not parse port-information from location: " + location());
       }
     }
-
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host), port);
 
-    boost::asio::io_service io_service;
-    udp::socket socket(io_service, my_endpoint);
+    socket_ = new udp::socket(io_service_, my_endpoint);
+    udp::endpoint real_endpoint = socket_->local_endpoint();
 
-    udp::endpoint real_endpoint = socket.local_endpoint();
+    socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&ActivityExecutor::handle_receive_from, this,
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+
     LOG(INFO, "listening on " << real_endpoint);
 
-    for (;;)
+    execution_thread_ = new boost::thread(boost::ref(*this));
+    barrier_.wait();
+  }
+
+  void
+  ActivityExecutor::stop()
+  {
+    if (! execution_thread_) return; // already stopped
+    execution_thread_->interrupt();
+    io_service_.stop();
+    execution_thread_->join();
+    delete execution_thread_; execution_thread_ = NULL;
+    delete socket_; socket_ = NULL;
+  }
+
+  void ActivityExecutor::operator()()
+  {
+    barrier_.wait();
+    io_service_.run();
+  }
+
+  void
+  ActivityExecutor::handle_receive_from(const boost::system::error_code &error
+                                      , size_t bytes_recv)
+  {
+    if (!error && bytes_recv > 0)
     {
-      char data[max_length];
-      udp::endpoint sender_endpoint;
+      data_[bytes_recv] = 0;
+      std::string msg(data_, bytes_recv);
 
-      size_t length = socket.receive_from(boost::asio::buffer(data, max_length), sender_endpoint);
+      DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << msg);
 
-      {
-        data[length] = 0;
-        std::string msg(data);
-        DLOG(DEBUG, sender_endpoint << " sent me " << length << " bytes of data: " << data);
-
-        // special commands in debug build
+      // special commands in debug build
 #ifndef NDEBUG
-        DLOG(DEBUG, "accepting the following \"special\" commands: " << "QUIT");
-        if (msg == "QUIT")
-        {
-          DLOG(INFO, "got QUIT request, returning from loop...");
-          return;
-        }
+      DLOG(DEBUG, "accepting the following \"special\" commands: " << "QUIT");
+      if (msg == "QUIT")
+      {
+        DLOG(INFO, "got QUIT request, returning from loop...");
+        return;
+      }
+      if (msg == "SEGV")
+      {
+        DLOG(INFO, "got SEGV request, returning from loop...");
+        int *i = 0;
+        *(i) = 0;
+        return;
+      }
 #endif
 
-        try
-        {
-          Request *rqst = decode(msg);
-          Reply *rply = rqst->execute(this);
-          delete rqst; rqst = NULL;
+      try
+      {
+        Request *rqst = decode(msg);
+        Reply *rply = rqst->execute(this);
+        delete rqst; rqst = NULL;
 
-          if (rply)
-          {
-            socket.send_to(boost::asio::buffer(encode(rply)), sender_endpoint);
-            delete rply; rply = NULL;
-          }
-          else
-          {
-            LOG(DEBUG, "nothing to reply, assuming shutdown...");
-            break;
-          }
-        }
-        catch (const std::exception &ex)
+        if (rply)
         {
-          LOG(ERROR, "could not execute the desired request: " << ex.what());
+          socket_->send_to(boost::asio::buffer(encode(rply)), sender_endpoint_);
+          delete rply; rply = NULL;
+        }
+        else
+        {
+          LOG(DEBUG, "nothing to reply, assuming shutdown...");
+          return;
         }
       }
+      catch (const std::exception &ex)
+      {
+        LOG(ERROR, "could not execute the desired request: " << ex.what());
+      }
+      catch (...) {
+        LOG(ERROR, "could not execute the desired request (unknown reason)");
+      }
+
+      socket_->async_receive_from(
+          boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&ActivityExecutor::handle_receive_from, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    }
+    else
+    {
+      LOG(ERROR, "error during receive: " << error);
+      socket_->async_receive_from(
+          boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&ActivityExecutor::handle_receive_from, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
     }
   }
 }}}
