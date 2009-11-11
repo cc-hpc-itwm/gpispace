@@ -53,7 +53,7 @@ void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
   *ptr = value;
 }
 
-void RunTest() throw (std::exception)
+static void RunTest() throw (std::exception)
 {
   std::cout << "running RunTest example" << std::endl;
 }
