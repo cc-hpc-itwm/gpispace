@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include <pthread.h>
+
 namespace gwes
 {
 
@@ -52,6 +54,7 @@ private:
 	  */
 	 fhg::log::logger_t _logger;
 	 
+    pthread_mutex_t monitor_lock_;
 public:
 	
 	/**
