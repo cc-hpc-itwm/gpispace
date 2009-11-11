@@ -52,7 +52,11 @@ namespace modules {
 
       char *error = 0;
 
+#if defined(SDPA_MODULE_LOADER_BIND_NOW)
+      Module::handle_t handle = dlopen(file.c_str(), RTLD_NOW | RTLD_GLOBAL);
+#else
       Module::handle_t handle = dlopen(file.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+#endif
       if (! handle) {
         throw ModuleLoadFailed(dlerror(), "[name-not-set]", file);
       }
