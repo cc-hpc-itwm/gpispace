@@ -52,11 +52,14 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string&
 }
 
 WorkflowHandler::~WorkflowHandler() {
-	// delete activities in activity table
-	for (ActivityTable::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
-		delete it->second;
-	}
-	_activityTable.clear();
+  // AP: this code is not required, when the _activityTable is deallocated, all
+  // activities will be removed anyways.
+
+//	// delete activities in activity table
+//	for (ActivityTable::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
+//		delete it->second;
+//	}
+//	_activityTable.clear();
 }
 
 void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
@@ -646,6 +649,8 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		} else if (activityStatus == Activity::STATUS_FAILED) {
 			///ToDo: implement fault management.
 			LOG_WARN(_logger, "Fault management not yet implemented!");
+            // AP: shouldn't the activity be removed here?
+            // fault management is a bonus, but the activity has failed, it should be deleted and the workflow too
 		} else {
 			// activity still not completed or terminated
 			tempworkflowstatus = STATUS_ACTIVE;
