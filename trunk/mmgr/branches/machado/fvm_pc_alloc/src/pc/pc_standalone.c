@@ -122,33 +122,33 @@ int main(int argc, char *argv[])
     }
 
   /* Start loading tests modules */
-/*   try */
-/*     { */
-/*       loader->load("testAllocation-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAllocation-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
+  try
+    {
+      loader->load("testAllocation-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAllocation-mod.so");
+    }
+  catch (sdpa::modules::ModuleLoadFailed &mlf)
+    {
+      std::cout << "An exception occurred while loading module" << endl;
+    }
 
 
-/*   try */
-/*     { */
-/*       loader->load("testCommunication-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testCommunication-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
+  try
+    {
+      loader->load("testCommunication-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testCommunication-mod.so");
+    }
+  catch (sdpa::modules::ModuleLoadFailed &mlf)
+    {
+      std::cout << "An exception occurred while loading module" << endl;
+    }
 
-/*   try */
-/*     { */
-/*       loader->load("testAPI-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAPI-mod.so"); */
-/*     } */
-/*   catch (sdpa::modules::ModuleLoadFailed &mlf) */
-/*     { */
-/*       std::cout << "An exception occurred while loading module" << endl; */
-/*     } */
+  try
+    {
+      loader->load("testAPI-mod", "/u/herc/machado/current_work/sdpa/fvm_pc_separated/tests/testAPI-mod.so");
+    }
+  catch (sdpa::modules::ModuleLoadFailed &mlf)
+    {
+      std::cout << "An exception occurred while loading module" << endl;
+    }
 
   try
     {

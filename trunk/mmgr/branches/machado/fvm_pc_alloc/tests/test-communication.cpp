@@ -560,6 +560,6 @@ extern "C" {
     test_ownNodeSpread(params);
     test_remoteNodeSpread(params);
     test_localcomm(params);
-    //    test_remoteNode_scratchglobal(params);
+    test_remoteNode_scratchglobal(params);
   }
 }
