@@ -6,8 +6,8 @@
  */
 #ifndef PROPERTIES_H_
 #define PROPERTIES_H_
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
+// gwdl
+#include <gwdl/Memory.h> // shared_ptr
 // std
 #include <string>
 #include <map>
@@ -17,6 +17,7 @@ namespace gwdl
 {
 	
 typedef std::map<std::string, std::string>::iterator ITR_Properties;
+typedef std::map<std::string, std::string>::const_iterator CITR_Properties;
 
 /**
  * The Properties class is a map used to store properties of Workflow, Transition, Place, and Token.
@@ -29,6 +30,9 @@ class Properties : public std::map<std::string,std::string>
 {
 	
 public:
+	
+    typedef gwdl::shared_ptr<Properties> ptr_t;
+	
 	/**
 	 * Constructor for properties.
 	 */
@@ -40,74 +44,45 @@ public:
 	virtual ~Properties() {clear();}
 	
 	/**
-	 * Constructor from XML.
-	 */
-	explicit Properties(XERCES_CPP_NAMESPACE::DOMNodeList* list);
-	
-	/**
-	 * Convert this into a DOMElement.
-	 * @param doc The master document this elements should belong to.
-	 * @return The vector of DOMElements.
-	 */
-	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> toElements(XERCES_CPP_NAMESPACE::DOMDocument* doc);
-	
-	/**
 	 * Put new name/value pair into properties.
 	 * Overwrites old property with same name.
 	 * @param name The name of the property.
 	 * @param value The value of the property.
 	 */
-	void put(const std::string& name, const std::string& value)
-	{
-		// key not yet in map
-		if (find(name)==end()) {
-		    insert(std::pair<std::string,std::string>(name,value));		
-		} 
-		// key already in map, remove old value!
-		else {
-			erase(name);
-		    insert(std::pair<std::string,std::string>(name,value));		
-		}
-    }
-	 
+	void put(const std::string& name, const std::string& value);
+
 	/**
 	 * Remove property with specific name from properties.
 	 * @param name The name of the property.
 	 */
-	void remove(const std::string& name)
-	{
-	  erase(name);
-	}
+	void remove(const std::string& name);
 	
 	/**
 	 * Get specific property value.
 	 * @param name The name of the property.
 	 * @return empty string "" if property with name not found.
 	 */
-	std::string get(const std::string& name)
-	{
-	  ITR_Properties it = find(name);
-      return it != end() ? it->second : "";
-	}
+	std::string get(const std::string& name);
 
 	/**
 	 * Test if the properties contain specific property name.
 	 * @param name The name of the property.
 	 */
-	bool contains(const std::string& name) 
-	{
-	  ITR_Properties it = find(name);
-	  return (it != end());
-	}
+	bool contains(const std::string& name); 
 	 
 	/*
 	 * Get number of properties.
 	 */
 	//int size(); map defines size()
-};
+	
+	/**
+	 * Make a deep copy of this object and return a shared pointer to the new object.
+	 * @return Shared pointer to the cloned Properties object.
+	 */ 
+	ptr_t deepCopy();
+	
+}; // end class Properties
 
-}
-
-std::ostream& operator<< (std::ostream &out, gwdl::Properties &props);
+} // end namespace gwdl
 
 #endif /*PROPERTIES_H_*/

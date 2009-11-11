@@ -35,7 +35,7 @@ XMLUtils* XMLUtils::Instance() {
 	return _instance;
 }
 
-XMLUtils::XMLUtils() : _logger(fhg::log::getLogger("gwes"))
+XMLUtils::XMLUtils() : _logger(fhg::log::getLogger("gwdl"))
 {
 	LOG_DEBUG(_logger, "XMLUtils() ...");
 	initializeXerces();
@@ -245,7 +245,8 @@ string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
 
 string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
 	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
-	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
+//	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
+	xmlNodePtr nodecopy = xmlDocCopyNodeList(docP,node);
 	xmlDocSetRootElement(docP,nodecopy);
 	string ret = serializeLibxml2(docP,pretty);
 	xmlFreeDoc(docP);

@@ -5,95 +5,72 @@
  * All rights reserved. 
  */
 
-// std
-#include <iostream>
-// xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
-//fhglog
-#include <fhglog/fhglog.hpp>
 // gwdl
 #include <gwdl/Properties.h>
-#include <gwdl/Defines.h>
-#include <gwdl/XMLUtils.h>
+//fhglog
+#include <fhglog/fhglog.hpp>
 
-#include <gwdl/XMLTranscode.hpp>
-
-using namespace fhg::log;
-XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
 namespace gwdl
 {
 
-Properties::Properties(DOMNodeList* list)
-{
-  for(unsigned int i=0; i < list->getLength(); ++i)
-  {
-	  DOMNode* node = (DOMNode*) list->item(i);
-	  if (node->getNodeType() == DOMNode::ELEMENT_NODE) {
-		  if (XMLString::equals(node->getNodeName(),X("property"))) {
-			  DOMElement* el = (DOMElement*) node;
-		      insert(pair<string,string>
-                             ( string(S(el->getAttribute(X("name"))))
-                             , string(S(el->getTextContent()))
-                             )
-                            );
-		  }
-	  }
-  }
+/**
+ * Put new name/value pair into properties.
+ * Overwrites old property with same name.
+ * @param name The name of the property.
+ * @param value The value of the property.
+ */
+void Properties::put(const string& name, const string& value) {
+	// key not yet in map
+	if (find(name)==end()) {
+	    insert(pair<string,string>(name,value));		
+	} 
+	// key already in map, remove old value!
+	else {
+		erase(name);
+	    insert(pair<string,string>(name,value));		
+	}
+}
+ 
+/**
+ * Remove property with specific name from properties.
+ * @param name The name of the property.
+ */
+void Properties::remove(const string& name) {
+  erase(name);
 }
 
-vector<DOMElement*> Properties::toElements(DOMDocument* doc)
-{
-	std::vector<XERCES_CPP_NAMESPACE::DOMElement*> _dom;
-	
-    // Initialize the XML4C2 system.
-    XMLUtils::Instance();
-  
-    XMLCh* ns = X(SCHEMA_wfSpace);
-    
-    {
-       int errorCode = 0;
-           try
-           {
-               DOMElement* el;      
-               for(ITR_Properties it = begin(); it != end(); ++it)
-               {
-        	     el = doc->createElementNS(ns, X("property"));
-                 el->setAttribute(X("name"), XS(it->first));
-                 el->setTextContent(XS(it->second));
-                 _dom.push_back(el);
-               }                 
-           }
-           catch (const OutOfMemoryException&)
-           {
-               LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
-               errorCode = 5;
-           }
-           catch (const DOMException& e)
-           {
-               LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
-               LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
-               errorCode = 2;
-           }
-           catch (...)
-           {
-               LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
-               errorCode = 3;
-           }
-   }
-
-   return _dom;
+/**
+ * Get specific property value.
+ * @param name The name of the property.
+ * @return empty string "" if property with name not found.
+ */
+string Properties::get(const string& name) {
+  ITR_Properties it = find(name);
+  return it != end() ? it->second : "";
 }
 
+/**
+ * Test if the properties contain specific property name.
+ * @param name The name of the property.
+ */
+bool Properties::contains(const string& name) {
+  ITR_Properties it = find(name);
+  return (it != end());
+}
+ 
+Properties::ptr_t Properties::deepCopy() {
+	Properties::ptr_t propP(new Properties());
+	propP->insert(begin(),end());
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "Properties::deepCopy()");
+	return propP;
 }
 
-ostream& operator<<(ostream &out, gwdl::Properties &props) 
-{	
-	vector<DOMElement*> elements = props.toElements(gwdl::XMLUtils::Instance()->createEmptyDocument(true));
-	for (unsigned int i=0; i<elements.size(); i++) 
-	{
-	    gwdl::XMLUtils::Instance()->serialize(out,elements[i],true);
-	}	
-	return out;
-}
+/*
+ * Get number of properties.
+ */
+//int size(); map defines size()
+
+} // end namespace gwdl
+

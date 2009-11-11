@@ -53,7 +53,8 @@ Workflow::Workflow(DOMElement* element)
 	DOMNodeList* le = element->getChildNodes();
 	if (le->getLength() >0) {
 		// properties
-		properties = Properties(le);
+		///ToDo: Migration to libxml2.
+//		properties = Properties(le);
 		// other nodes
 		for (XMLSize_t i = 0; i<le->getLength(); i++) {
 			DOMNode* node = le->item(i);
@@ -102,7 +103,8 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException)
 	DOMNodeList* le = element->getChildNodes();
 	if (le->getLength() >0) {
 		// properties
-		properties = Properties(le);
+		///ToDo: Migration to libxml2.
+//		properties = Properties(le);
 		// other nodes
 		for (XMLSize_t i = 0; i<le->getLength(); i++) {
 			DOMNode* node = le->item(i);
@@ -148,11 +150,12 @@ DOMDocument* Workflow::toDocument()
 		}
 
 		// properties
-		vector<DOMElement*> v = properties.toElements(doc);       
-		for (unsigned int i = 0; i < v.size(); i++)
-		{
-			wfe->appendChild(v[i]);
-		}
+		///ToDo: Migration to libxml2.
+//		vector<DOMElement*> v = properties.toElements(doc);       
+//		for (unsigned int i = 0; i < v.size(); i++)
+//		{
+//			wfe->appendChild(v[i]);
+//		}
 
 		// places
 		for (map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)

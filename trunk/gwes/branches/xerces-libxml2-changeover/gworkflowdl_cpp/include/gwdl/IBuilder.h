@@ -26,21 +26,24 @@ class IBuilder
 public:
 
 	// Data 
-    virtual Data::ptr_t deserializeData(const std::string &) const throw (WorkflowFormatException) = 0;
-    virtual std::string serializeData(const Data &) const = 0;
+	virtual Data::ptr_t deserializeData(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeData(const Data &) const = 0;
 
-    // Token
+	// Token
 	virtual Token::ptr_t deserializeToken(const std::string &) const throw (WorkflowFormatException) = 0;
 	virtual std::string serializeToken(const Token &) const = 0;
-	
+
+	// Properties
+	virtual std::string serializeProperties(const Properties&) const = 0;
+
 	// Place
-	
+
 	// Transition
-	
+
 	// Operation ...
-	
+
 	// Workflow
-	
+
 }; // end class IBuilder
 
 } // end namespace gwdl

@@ -30,6 +30,11 @@ private:
 	  * Fhg Logger.
 	  */
 	 fhg::log::logger_t _logger;
+	 
+	 /**
+	  * gworkflowdl namespace.
+	  */
+	 xmlNsPtr _nsP;
 
 public:
 	
@@ -46,6 +51,7 @@ public:
 	//////////////////////////
 	// Data
 	//////////////////////////
+
 	// Interface IBuilder
     Data::ptr_t deserializeData(const std::string &) const throw (WorkflowFormatException);
     std::string serializeData(const Data &) const;
@@ -56,20 +62,31 @@ public:
     //////////////////////////
     // Token
     //////////////////////////
+
     // Interface IBuilder
 	Token::ptr_t deserializeToken(const std::string&) const throw (WorkflowFormatException);
 	std::string serializeToken(const Token &) const;
 	// libxml2-specific
 	Token::ptr_t elementToToken(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr tokenToElement(const Token &) const;
+
+	//////////////////////////
+	// Properties
+	//////////////////////////
+
+    // Interface IBuilder
+	std::string serializeProperties(const Properties& props) const;
+
+	// libxml2-specific
+	Properties::ptr_t elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr propertiesToElements(const Properties& props) const;
 	
 private:
 	//////////////////////////
 	// private helper methods
 	//////////////////////////
-	static xmlNodePtr nextElementNode(xmlNodePtr curNodeP);
-	static xmlNodePtr nextTextNode(xmlNodePtr nodeP);
-	
+	static xmlNodePtr nextElementNode(const xmlNodePtr curNodeP);
+	static xmlNodePtr nextTextNode(const xmlNodePtr nodeP);
 	static bool checkElementName(const xmlNodePtr nodeP,const char* name);
 	
 }; // end class IBuilder
@@ -85,5 +102,8 @@ std::ostream& operator<< (std::ostream &out, gwdl::Data &data);
 
 // Token
 std::ostream& operator<< (std::ostream &out, gwdl::Token &token);
+
+// Properties
+std::ostream& operator<< (std::ostream &out, gwdl::Properties &props);
 
 #endif /*GWDL_LIBXML2BUILDER_H_*/

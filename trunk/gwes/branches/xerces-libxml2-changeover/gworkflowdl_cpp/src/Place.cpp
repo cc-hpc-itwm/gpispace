@@ -46,7 +46,8 @@ Place::Place(DOMElement* element) throw(CapacityException)
 	DOMNodeList* le = element->getChildNodes();
 	if (le->getLength() >0) {
 		// properties
-		properties = Properties(le);
+		///ToDo: Migration to libxml2.
+//		properties = Properties(le);
 		// other nodes
 		for (XMLSize_t i = 0; i<le->getLength(); i++) {
 			DOMNode* node = le->item(i);
@@ -101,11 +102,12 @@ DOMElement* Place::toElement(DOMDocument* doc)
 		}
 
 		// properties
-		vector<DOMElement*> v = properties.toElements(doc);       
-		for (unsigned int i = 0; i < v.size(); i++)
-		{
-			el->appendChild(v[i]);
-		}
+		///ToDo: Migration to libxml2.
+//		vector<DOMElement*> v = properties.toElements(doc);       
+//		for (unsigned int i = 0; i < v.size(); i++)
+//		{
+//			el->appendChild(v[i]);
+//		}
 
 		// tokenClass
 		if (tokenType.size()>0)

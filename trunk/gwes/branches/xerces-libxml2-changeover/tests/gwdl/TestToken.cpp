@@ -4,15 +4,17 @@
  * Technology (FIRST), Berlin, Germany 
  * All rights reserved. 
  */
-#include <iostream>
-#include <ostream>
-//gwdl
+// tests
+#include "TestToken.h"
+// gwdl
 #include <gwdl/Libxml2Builder.h>
 #include <gwdl/Transition.h>
-//fhglog
+// fhglog
 #include <fhglog/fhglog.hpp>
-//tests
-#include "TestToken.h"
+// std
+#include <iostream>
+#include <ostream>
+#include <time.h>
 
 using namespace std;
 using namespace gwdl;
@@ -27,40 +29,55 @@ void TokenTest::testToken()
 	LOG_INFO(logger, "============== BEGIN TOKEN TEST =============");
 	Libxml2Builder builder;
 	
-	LOG_INFO(logger, "test default constructor Token()...");
+	LOG_INFO(logger, "-------------- test default constructor Token()... --------------");
 	Token::ptr_t token = Token::ptr_t(new Token());
-	
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT_MESSAGE("control token1", !token->isData());
 	CPPUNIT_ASSERT_MESSAGE("control token1 true", token->getControl());
 	
-	LOG_INFO(logger, "test constructor Token(true)...");
+	LOG_INFO(logger, "-------------- test constructor Token(true)... --------------");
 	token.reset(new Token(Token::CONTROL_TRUE));
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT_MESSAGE("control token1", !token->isData());
 	CPPUNIT_ASSERT_MESSAGE("control token1 true", token->getControl());
 
-	LOG_INFO(logger, "test constructor Token(false)...");
+	LOG_INFO(logger, "-------------- test constructor Token(false)... --------------");
 	token.reset(new Token(Token::CONTROL_FALSE));
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT(!token->getControl());
 
-	LOG_INFO(logger, "test constructor Token(data)...");
+	LOG_INFO(logger, "-------------- test constructor Token(properties, control)... --------------");
+	Properties::ptr_t propsP(new Properties());
+	propsP->put("key1","value1");
+	propsP->put("key2","value2");
+	token.reset(new Token(propsP, Token::CONTROL_TRUE));
+	LOG_INFO(logger, "\n" << *token);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties()->size() );
+	CPPUNIT_ASSERT(token->getControl());
+	
+	LOG_INFO(logger, "-------------- test constructor Token(data)... --------------");
 	Data::ptr_t dataP = Data::ptr_t(new Data("<test>15</test>"));
 	token.reset(new Token(dataP));
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT(token->isData());
 	CPPUNIT_ASSERT_EQUAL(string("<test>15</test>"), token->getData()->getContent());
 	
-	LOG_INFO(logger, "testDeserializeSerialize() data...");
-	string str = string("<token><data><x>1</x></data></token>");
+	LOG_INFO(logger, "-------------- test constructor Token(properties, data)... --------------");
+	token.reset(new Token(propsP,dataP));
+	LOG_INFO(logger, "\n" << *token);
+	CPPUNIT_ASSERT(token->isData());
+	CPPUNIT_ASSERT_EQUAL(string("<test>15</test>"), token->getData()->getContent());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties()->size() );
+
+	LOG_INFO(logger, "-------------- testDeserializeSerialize() data... --------------");
+	string str = string("<token><property name=\"noText\"/><property name=\"key1\">value1</property><data><x>1</x></data></token>");
 	LOG_INFO(logger, "\n" << str);
 	Token::ptr_t tokenP = builder.deserializeToken(str);
 	LOG_INFO(logger, "\n" << *tokenP);
 	string str2 = builder.serializeToken(*tokenP);
-	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:data>\n    <x>1</x>\n  </gwdl:data>\n</token>\n"), str2);
+	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:property name=\"key1\">value1</gwdl:property>\n  <gwdl:property name=\"noText\"/>\n  <gwdl:data>\n    <x>1</x>\n  </gwdl:data>\n</token>\n"), str2);
 
-	LOG_INFO(logger, "testDeserializeSerialize() control...");
+	LOG_INFO(logger, "-------------- testDeserializeSerialize() control... --------------");
 	str = string("<token><control>true</control></token>");
 	LOG_INFO(logger, "\n" << str);
 	tokenP = builder.deserializeToken(str);
@@ -68,7 +85,7 @@ void TokenTest::testToken()
 	str2 = builder.serializeToken(*tokenP);
 	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:control>true</gwdl:control>\n</token>\n"), str2);
 
-	LOG_INFO(logger, "testDeserializeSerialize() control false...");
+	LOG_INFO(logger, "-------------- testDeserializeSerialize() control false... --------------");
 	str = string("<token><control>false</control></token>");
 	LOG_INFO(logger, "\n" << str);
 	tokenP = builder.deserializeToken(str);
@@ -76,7 +93,7 @@ void TokenTest::testToken()
 	str2 = builder.serializeToken(*tokenP);
 	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:control>false</gwdl:control>\n</token>\n"), str2);
 
-	LOG_INFO(logger, "testDeserialize with wrong xml: missing data element...");
+	LOG_INFO(logger, "-------------- testDeserialize with wrong xml: missing data element... --------------");
 	str = string("<token></token>");
 	LOG_INFO(logger, "\n" << str);
 	bool success = false;
@@ -90,7 +107,7 @@ void TokenTest::testToken()
 	}
 	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
 	
-	LOG_INFO(logger, "testDeserialize with wrong xml: too many child elements...");
+	LOG_INFO(logger, "-------------- testDeserialize with wrong xml: too many child elements... --------------");
 	str = string("<token><data><x>1</x><y>2</y></data></token>");
 	LOG_INFO(logger, "\n" << str);
 	success = false;
@@ -104,7 +121,7 @@ void TokenTest::testToken()
 	}
 	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
 
-	LOG_INFO(logger, "testDeserialize with wrong xml: wrong control content...");
+	LOG_INFO(logger, "-------------- testDeserialize with wrong xml: wrong control content... --------------");
 	str = string("<token><control>XXXtrue</control></token>");
 	LOG_INFO(logger, "\n" << str);
 	success = false;
@@ -118,14 +135,16 @@ void TokenTest::testToken()
 	}
 	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
 
-	//	LOG_INFO(logger, "testDeserializeSerialize() loop...");		
-//	for (unsigned int i=0; i<100; i++) {
-//		ostringstream oss;
-//		oss << "<i>" << i << "</i>";
-//		Data::ptr_t data2P = builder.deserializeData(oss.str());
-//		str2 = builder.serializeData(*data2P);
-//	}
-
+	LOG_INFO(logger, "-------------- testDeserializeSerialize() loop... --------------");
+	time_t before = time (NULL);
+	for (unsigned int i=0; i<10000; i++) {
+		ostringstream oss;
+		oss << "<token><data><i>" << i << "</i></data></token>";
+		tokenP = builder.deserializeToken(oss.str());
+		str2 = builder.serializeToken(*tokenP);
+	}
+	time_t after = time (NULL);
+	LOG_INFO(logger, "testDeserializeSerialize() loop... done in " << after-before << " seconds.");
 
 //	LOG_INFO(logger, "test control token with properties...");
 //	Properties *props = new Properties();
