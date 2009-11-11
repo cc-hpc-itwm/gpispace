@@ -19,7 +19,7 @@ namespace sdpa {
 	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 	 //typedef SynchronizedQueue<Job::ptr_t > JobQueue;
 
-	 SchedulerImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler);
+	 SchedulerImpl(sdpa::daemon::IComm* pHandler);
 	 virtual ~SchedulerImpl();
 
 
@@ -60,7 +60,6 @@ namespace sdpa {
   protected:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
-	  sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes_;
 
 	  bool bStopRequested;
 	  boost::thread m_thread;

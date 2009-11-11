@@ -41,8 +41,8 @@ public:
 
 	//static string answerStrategy;
 
-	SchedulerNRE(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
-		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
+	SchedulerNRE(sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
+		SchedulerImpl(pHandler),
 		m_answerStrategy(answerStrategy),
 		SDPA_INIT_LOGGER("SchedulerNRE")
 		{}
@@ -112,7 +112,7 @@ public:
 	: DaemonFSM( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
 	  SDPA_INIT_LOGGER(name)
 	{
-		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE(pArgSdpa2Gwes, this, answerStrategy));
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE( this, answerStrategy));
 	}
 
 	NreDaemon(  const std::string &name,
@@ -123,7 +123,7 @@ public:
 	: DaemonFSM( name, pArgSdpa2Gwes, toMasterStageName, toSlaveStageName ),
 	  SDPA_INIT_LOGGER(name)
 	{
-		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE(pArgSdpa2Gwes, this, answerStrategy));
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNRE( this, answerStrategy));
 	}
 
 	 virtual ~NreDaemon() {  }
@@ -136,8 +136,8 @@ public:
 	SDPA_DECLARE_LOGGER();
 	static string answerStrategy;
 
-	SchedulerNREWithGwes(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes, sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
-		SchedulerImpl(ptr_Sdpa2Gwes,  pHandler),
+	SchedulerNREWithGwes(sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
+		SchedulerImpl(pHandler),
 		SDPA_INIT_LOGGER("SchedulerNREWithGwes"),
 		m_answerStrategy(answerStrategy)
 		{}
@@ -215,7 +215,7 @@ public:
 	: DaemonFSM( name, pArgSdpa2Gwes, toMasterStageName, toSlaveStageName ),
 	  SDPA_INIT_LOGGER(name)
 	{
-		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes(pArgSdpa2Gwes, this, answerStrategy));
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes(this, answerStrategy));
 	}
 
 	 virtual ~NreDaemonWithGwes() {  }
@@ -233,7 +233,7 @@ public:
 	: DaemonFSM( name, pArgSdpa2Gwes ),
 	  SDPA_INIT_LOGGER(name)
 	{
-		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes(pArgSdpa2Gwes, this, answerStrategy));
+		ptr_scheduler_ =  Scheduler::ptr_t(new SchedulerNREWithGwes( this, answerStrategy));
 	}
 
 	 virtual ~TestDaemon() {  }

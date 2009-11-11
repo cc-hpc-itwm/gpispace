@@ -7,9 +7,8 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes, sdpa::daemon::IComm* pCommHandler) :
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler) :
 	ptr_worker_man_(new WorkerManager()),
-	ptr_Sdpa2Gwes_(pSdpa2Gwes),
 	ptr_comm_handler_(pCommHandler),
 	SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
 {
@@ -34,7 +33,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	// Use gwes workflow here!
 	// IBuilder should be invoked here instead of this!!!
 	try {
-		ptrWorkflow = ptr_Sdpa2Gwes_->deserializeWorkflow( pJob->description() ) ;
+		ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
 		ptrWorkflow->setID(wf_id);
 	} catch(std::runtime_error&){
 		SDPA_LOG_ERROR("GWES could not deserialize the job description!"<<std::endl<<pJob->description());
@@ -47,10 +46,10 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG(os.str());
 
 	try {
-		if(ptr_Sdpa2Gwes_ && ptrWorkflow )
+		if(ptr_comm_handler_->gwes() && ptrWorkflow )
 		{
 			pJob->Dispatch();
-			ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
+			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
 		}
 		else
 			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
@@ -124,13 +123,11 @@ void SchedulerImpl::start()
 void SchedulerImpl::stop()
 {
    m_thread.interrupt();
-   //jobs_to_be_scheduled.stop();
 
    bStopRequested = true;
    SDPA_LOG_DEBUG("Scheduler thread before join ...");
    m_thread.join();
 
-   ptr_Sdpa2Gwes_ = NULL;
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 

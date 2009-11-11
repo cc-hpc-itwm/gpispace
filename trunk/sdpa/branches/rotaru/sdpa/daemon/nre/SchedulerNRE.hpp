@@ -15,7 +15,7 @@ namespace sdpa {
 		SDPA_DECLARE_LOGGER();
 
 		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
-			sdpa::daemon::SchedulerImpl(pHandler->gwes(),  pHandler),
+			sdpa::daemon::SchedulerImpl(pHandler),
 			SDPA_INIT_LOGGER("SchedulerNRE"),
 			m_answerStrategy(answerStrategy)
 			{}
@@ -103,11 +103,11 @@ namespace sdpa {
 
 			SDPA_LOG_DEBUG("Finished activity execution: notify GWES ...");
 			if( m_answerStrategy == "finished" )
-				ptr_Sdpa2Gwes_->activityFinished(wf_id, act_id, output);
+				ptr_comm_handler_->gwes()->activityFinished(wf_id, act_id, output);
 			else if( m_answerStrategy == "failed" )
-				ptr_Sdpa2Gwes_->activityFailed(wf_id, act_id, output);
+				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
 			else if( m_answerStrategy == "cancelled" )
-				ptr_Sdpa2Gwes_->activityCanceled(wf_id, act_id);
+				ptr_comm_handler_->gwes()->activityCanceled(wf_id, act_id);
 
 		}
 
