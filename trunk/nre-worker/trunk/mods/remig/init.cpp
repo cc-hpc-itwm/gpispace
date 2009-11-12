@@ -25,6 +25,12 @@ void init (Module::data_t &params)
   fvmGlobalFree (memhandle_for_outputvolume);
   fvmGlobalFree (memhandle_for_configuration);
 
+  MLOG (DEBUG, "number_of_frequencies = " << number_of_frequencies);
+  MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
+  MLOG (DEBUG, "number_of_parallel_propagators = " << number_of_parallel_propagators);
+  MLOG (DEBUG, "memhandle_for_outputvolume = " << memhandle_for_outputvolume);
+  MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
+
   params["number_of_frequencies"].token().data(number_of_frequencies);
   params["number_of_depthlevels"].token().data(number_of_depthlevels);
   params["number_of_parallel_propagators"].token().data(number_of_parallel_propagators);
@@ -36,9 +42,5 @@ void init (Module::data_t &params)
 SDPA_MOD_INIT_START(init)
 {
   SDPA_REGISTER_FUN(init);
-
-  Module::data_t zero;
-
-  init (zero);
 }
 SDPA_MOD_INIT_END(init)
