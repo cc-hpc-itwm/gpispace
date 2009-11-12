@@ -1,0 +1,173 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+    <description>ReMigration</description>
+
+    <place ID="config file"><token><data><sdpa>file:///u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.config</sdpa></data></token></place>
+
+    <!-- global settings, set by the init function -->
+    <place ID="number_of_frequencies"/>
+    <place ID="number_of_depthlevels"/>
+    <place ID="number_of_parallel_propagators"/>
+    <place ID="memhandle_for_outputvolume"/>
+    <place ID="memhandle_for_configuration"/>
+
+    <!-- init -->
+
+    <place ID="seq after init"/>
+
+    <transition ID="init">
+      <inputPlace placeID="config file" edgeExpression="config_file"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="cli" operationName="init.sh" resourceName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/init.sh" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
+      <outputPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <outputPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <outputPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
+      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+      <outputPlace placeID="seq after init" edgeExpression="seq"/>
+    </transition>    
+
+    <place ID="seq after read input"/>
+
+    <transition ID="read input">
+      <inputPlace placeID="seq after init" edgeExpression="seq"/>
+      <outputPlace placeID="seq after read input" edgeExpression="$seq"/>
+    </transition>
+
+    <place ID="seq after read velocity"/>
+
+    <transition ID="read velocity">
+      <inputPlace placeID="seq after read input" edgeExpression="seq"/>
+      <outputPlace placeID="seq after read velocity" edgeExpression="$seq"/>
+    </transition>
+
+    <!-- the split/join pattern -->
+    <place ID="slice before work"/>
+    <place ID="slice after work"/>
+
+    <place ID="slices_queued"><token><data><sdpa>0</sdpa></data></token></place>
+    <place ID="slices_initialized"><token><data><sdpa>0</sdpa></data></token></place>
+    <place ID="slices_finalized"><token><data><sdpa>0</sdpa></data></token></place>
+
+    <transition ID="initialize a slice">
+      <readPlace placeID="seq after read velocity"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <inputPlace placeID="slices_initialized" edgeExpression="slices_initialized"/>
+
+      <condition>$slices_initialized &lt; $number_of_frequencies</condition>
+
+      <readPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
+      <inputPlace placeID="slices_queued" edgeExpression="slices_queued"/>
+
+      <condition>$slices_queued &lt; $number_of_parallel_propagators</condition>
+
+      <outputPlace placeID="slices_initialized" edgeExpression="$slices_initialized + 1"/>
+      <outputPlace placeID="slices_queued" edgeExpression="$slices_queued + 1"/>
+
+      <!-- produce a slice -->
+      <outputPlace placeID="slice before work" edgeExpression="$slices_initialized"/>
+    </transition>
+
+    <transition ID="all slices are initialized">
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <inputPlace placeID="slices_initialized" edgeExpression="slices_initialized"/>
+      <condition>$slices_initialized &gt;= $number_of_frequencies</condition>
+    </transition>
+
+    <transition ID="finalize a slice">
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <inputPlace placeID="slices_finalized" edgeExpression="slices_finalized"/>
+
+      <condition>$slices_finalized &lt; $number_of_frequencies</condition>
+
+      <inputPlace placeID="slices_queued" edgeExpression="slices_queued"/>
+
+      <outputPlace placeID="slices_queued" edgeExpression="$slices_queued - 1"/>
+      <outputPlace placeID="slices_finalized" edgeExpression="$slices_finalized + 1"/>
+
+      <!-- consume a slice -->
+      <inputPlace placeID="slice after work" edgeExpression="slice"/>
+    </transition>
+
+    <place ID="seq after calculation"/>
+
+    <transition ID="all slices are finalized">
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <inputPlace placeID="slices_finalized" edgeExpression="slices_finalized"/>
+      <condition>$slices_finalized &gt;= $number_of_frequencies</condition>
+      <inputPlace placeID="seq after read velocity" edgeExpression="seq"/>
+      <outputPlace placeID="seq after calculation" edgeExpression="$seq"/>
+    </transition>
+
+    <!-- the real work goes here -->
+
+    <place ID="slice_and_depth before calc one level"></place>
+    <place ID="slice_and_depth after calc one level"></place>
+    <place ID="slice_and_depth after update"></place>
+
+    <transition ID="tag slice with depth zero">
+      <inputPlace placeID="slice before work" edgeExpression="slice"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice * $number_of_frequencies"/>
+    </transition>
+
+    <!-- insert some real operationCandidate here -->
+    <transition ID="calc one level">
+      <inputPlace placeID="slice_and_depth before calc one level" edgeExpression="slice_and_depth"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="calc">
+          <oc:operationCandidate type="cli" operationName="calc.sh" resourceName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/calc.sh" selected="true"/>
+        </oc:operationClass>
+      </operation>
+    </transition>
+
+    <transition ID="update">
+      <inputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth"/>
+      <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <outputPlace placeID="slice_and_depth after update" edgeExpression="$slice_and_depth"/>
+      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="$memhandle_for_outputvolume"/>
+    </transition>
+
+    <transition ID="prepare slice for next depthlevel">
+      <inputPlace placeID="slice_and_depth after update" edgeExpression="slice_and_depth"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+
+      <condition>($slice_and_depth mod $number_of_frequencies) &lt; $number_of_depthlevels - 1</condition>
+
+      <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice_and_depth + 1"/>
+    </transition>
+
+    <transition ID="finish calculation for a slice">
+      <inputPlace placeID="slice_and_depth after update" edgeExpression="slice_and_depth"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+
+      <condition>($slice_and_depth mod $number_of_frequencies) &gt;= $number_of_depthlevels - 1</condition>
+
+      <outputPlace placeID="slice after work" edgeExpression="$slice_and_depth div $number_of_frequencies"/>
+    </transition>
+
+    <!-- works done, postprocessing -->
+ 
+    <place ID="seq after prefix sum"/>
+
+    <transition ID="prefix sum">
+      <inputPlace placeID="seq after calculation" edgeExpression="seq"/>
+      <outputPlace placeID="seq after prefix sum" edgeExpression="$seq"/>
+    </transition>
+
+    <place ID="seq after write output"/>
+
+    <transition ID="write output">
+      <inputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
+      <outputPlace placeID="seq after write output" edgeExpression="$seq"/>
+    </transition>
+
+</workflow>
