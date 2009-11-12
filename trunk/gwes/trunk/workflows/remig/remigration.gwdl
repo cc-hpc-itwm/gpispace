@@ -37,7 +37,7 @@
     <place ID="seq after read input"/>
 
     <transition ID="read input">
-      <inputPlace placeID="seq after init" edgeExpression="seq"/>
+      <inputPlace placeID="seq after init" edgeExpression="seq_IN"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -46,13 +46,13 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="seq after read input" edgeExpression="$seq"/>
+      <outputPlace placeID="seq after read input" edgeExpression="seq"/>
     </transition>
 
     <place ID="seq after read velocity"/>
 
     <transition ID="read velocity">
-      <inputPlace placeID="seq after read input" edgeExpression="seq"/>
+      <inputPlace placeID="seq after read input" edgeExpression="seq_IN"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -61,7 +61,7 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="seq after read velocity" edgeExpression="$seq"/>
+      <outputPlace placeID="seq after read velocity" edgeExpression="seq"/>
     </transition>
 
     <!-- the split/join pattern -->
@@ -146,7 +146,7 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
+      <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth_OUT"/>
     </transition>
 
     <transition ID="update">
@@ -163,8 +163,8 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="slice_and_depth after update" edgeExpression="$slice_and_depth"/>
-      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="$memhandle_for_outputvolume"/>
+      <outputPlace placeID="slice_and_depth after update" edgeExpression="slice_and_depth_OUT"/>
+      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume_OUT"/>
     </transition>
 
     <transition ID="prepare slice for next depthlevel">
@@ -192,7 +192,7 @@
     <place ID="seq after prefix sum"/>
 
     <transition ID="prefix sum">
-      <inputPlace placeID="seq after calculation" edgeExpression="seq"/>
+      <inputPlace placeID="seq after calculation" edgeExpression="seq_IN"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -201,13 +201,13 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="seq after prefix sum" edgeExpression="$seq"/>
+      <outputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
     </transition>
 
     <place ID="seq after write output"/>
 
     <transition ID="write output">
-      <inputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
+      <inputPlace placeID="seq after prefix sum" edgeExpression="seq_IN"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -216,19 +216,21 @@
         </oc:operationClass>
       </operation>
 
-      <outputPlace placeID="seq after write output" edgeExpression="$seq"/>
+      <outputPlace placeID="seq after write output" edgeExpression="seq"/>
     </transition>
 
     <place ID="seq after finalize"/>
 
     <transition ID="finalize">
+      <inputPlace placeID="seq after write output" edgeExpression="seq_IN"/>
+      <inputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
       <!-- consume all the global variable tokens, not strictly necessary -->
       <inputPlace placeID="number_of_frequencies"/>
       <inputPlace placeID="number_of_depthlevels"/>
       <inputPlace placeID="number_of_parallel_propagators"/>
       <inputPlace placeID="memhandle_for_outputvolume"/>
       <inputPlace placeID="memhandle_for_configuration"/>
-      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
@@ -236,8 +238,7 @@
         </oc:operationClass>
       </operation>
 
-      <inputPlace placeID="seq after write output" edgeExpression="seq"/>
-      <outputPlace placeID="seq after finalize" edgeExpression="$seq"/>
+      <outputPlace placeID="seq after finalize" edgeExpression="seq"/>
     </transition>
 
     <!-- give control back to master workflow -->
