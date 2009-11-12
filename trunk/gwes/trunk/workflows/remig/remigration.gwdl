@@ -43,7 +43,7 @@
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="readinp">
           <oc:operationCandidate type="sdpa" operationName="readinp@readinp" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -59,7 +59,7 @@
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="readvelo">
           <oc:operationCandidate type="sdpa" operationName="readvelo@readvelo" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -150,7 +150,7 @@
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="calc">
           <oc:operationCandidate type="sdpa" operationName="calc@calc" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -167,7 +167,7 @@
       <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -206,7 +206,7 @@
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="prefsum">
           <oc:operationCandidate type="sdpa" operationName="prefsum@prefsum" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -222,7 +222,7 @@
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="writeoutp">
           <oc:operationCandidate type="sdpa" operationName="writeoutp@writeoutp" selected="true"/>
         </oc:operationClass>
       </operation>
@@ -245,7 +245,7 @@
       <inputPlace placeID="memhandle_for_configuration"/>
 
       <operation>
-        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="finalize">
           <oc:operationCandidate type="sdpa" operationName="finalize@finalize" selected="true"/>
         </oc:operationClass>
       </operation>
