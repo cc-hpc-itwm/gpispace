@@ -27,6 +27,7 @@
 #include <sdpa/wf/Activity.hpp>
 
 // gwes
+#include <gwdl/Workflow.h>
 #include <gwdl/Token.h>
 #include <gwes/TransitionOccurrence.h>
 #include <gwes/Activity.h>
@@ -228,6 +229,51 @@ namespace sdpa { namespace wf { namespace glue {
         }
       }
     }
+  }
+
+  // extract tokens from workflow
+  // returns a map of place-id to list-of-tokens
+  typedef std::list<sdpa::wf::Token> token_list_t;
+  typedef std::map<std::string, token_list_t> workflow_result_t;
+  typedef std::vector<gwdl::Token*> gwdl_token_list_t;
+
+  workflow_result_t get_workflow_results(const gwdl::Workflow &const_workflow)
+  {
+    DLOG(INFO, "retrieving results from workflow: " << const_workflow.getID());
+
+    LOG(WARN, "FIXME: removing const, this should not be necessary!");
+    gwdl::Workflow &workflow = const_cast<gwdl::Workflow&>(const_workflow);
+    
+    workflow_result_t result;
+
+    // iterate over all places
+    typedef std::vector<std::string> place_names_t;
+    place_names_t place_names = workflow.getPlaceIDs();
+    for (place_names_t::const_iterator p_name(place_names.begin()); p_name != place_names.end(); ++p_name)
+    {
+      try
+      {
+        gwdl::Place *place = workflow.getPlace(*p_name);
+        DLOG(DEBUG, "getting tokens from place: " << *p_name);
+        token_list_t tokens;
+        {
+          gwdl_token_list_t gwdl_tokens = place->getTokens();
+          for (gwdl_token_list_t::const_iterator gwdl_token(gwdl_tokens.begin()); gwdl_token != gwdl_tokens.end(); ++gwdl_token)
+          {
+            tokens.push_back(wrap(**gwdl_token));
+          }
+        }
+        DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << *p_name);
+
+        result[*p_name] = tokens;
+      }
+      catch (const gwdl::NoSuchWorkflowElement &)
+      {
+        LOG(WARN, "Inconsistencey detected: the workflow does not contain place: " << *p_name);
+      }
+    }
+
+    return result;
   }
 }}}
 
