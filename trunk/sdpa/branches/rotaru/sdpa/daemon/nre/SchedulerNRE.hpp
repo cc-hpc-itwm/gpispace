@@ -1,6 +1,7 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <gwes/IActivity.h>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
+#include <sdpa/daemon/nre/NreWorkerClient.hpp>
 #include <sdpa/wf/GwesGlue.hpp>
 using namespace std;
 
@@ -17,7 +18,8 @@ namespace sdpa {
 		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
 			sdpa::daemon::SchedulerImpl(pHandler),
 			SDPA_INIT_LOGGER("SchedulerNRE"),
-			m_answerStrategy(answerStrategy)
+			m_answerStrategy(answerStrategy),
+	        m_worker_("127.0.0.1:8000")
 			{}
 
 		virtual ~SchedulerNRE() { }
@@ -90,26 +92,27 @@ namespace sdpa {
 
 			gwes::Activity& gwes_act = (gwes::Activity&)(activity);
 			sdpa::wf::Activity act = sdpa::wf::glue::wrap(gwes_act);
-			act.parameters()["output"].token().data("hello");
+//			act.parameters()["output"].token().data("hello");
 			//alex will provide code
+            sdpa::wf::Activity result = m_worker_.execute(act);
 
-
-			sdpa::wf::glue::unwrap(act, gwes_act);
+            sdpa::wf::glue::unwrap(result, gwes_act);
 
 			// execute the job and ...
-			sdpa::parameter_list_t output; // = *gwes_act.getTransitionOccurrence()->getTokens();
+			sdpa::parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
 
 			gwes::activity_id_t act_id = activity.getID();
 			gwes::workflow_id_t wf_id  = activity.getOwnerWorkflowID();
 
 			SDPA_LOG_DEBUG("Finished activity execution: notify GWES ...");
-			if( m_answerStrategy == "finished" )
+			if( result.state() == sdpa::wf::Activity::ACTIVITY_FINISHED )
 				ptr_comm_handler_->gwes()->activityFinished(wf_id, act_id, output);
-			else if( m_answerStrategy == "failed" )
+			else if( result.state() == sdpa::wf::Activity::ACTIVITY_FAILED )
 				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
-			else if( m_answerStrategy == "cancelled" )
+			else if( result.state() == sdpa::wf::Activity::ACTIVITY_CANCELED )
 				ptr_comm_handler_->gwes()->activityCanceled(wf_id, act_id);
-
+			else
+				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
 		}
 
 		void start()
@@ -117,6 +120,9 @@ namespace sdpa {
 			SchedulerImpl::start();
 			m_threadExecutor = boost::thread(boost::bind(&SchedulerNRE::runExecutor, this));
 			SDPA_LOG_DEBUG("Executor thread started ...");
+
+			SDPA_LOG_DEBUG("Starting nre-worker-client ...");
+			m_worker_.start();
 		}
 
 		void stop()
@@ -126,11 +132,15 @@ namespace sdpa {
 
 			SDPA_LOG_DEBUG("Executor thread before join ...");
 			m_threadExecutor.join();
+
+			SDPA_LOG_DEBUG("Stopping nre-worker-client ...");
+			m_worker_.stop();
 		}
 
 	private:
 		ActivityQueue activities_to_be_executed;
 		std::string m_answerStrategy;
 		boost::thread m_threadExecutor;
+		sdpa::nre::worker::NreWorkerClient m_worker_;
 	};
 }}

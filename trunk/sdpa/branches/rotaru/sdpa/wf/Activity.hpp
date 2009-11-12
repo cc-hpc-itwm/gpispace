@@ -108,6 +108,13 @@ namespace sdpa { namespace wf {
     typedef shared_ptr<Activity> ptr_t;
     typedef sdpa::util::Properties properties_t;
 
+    enum state_t {
+      ACTIVITY_UNKNOWN
+    , ACTIVITY_FINISHED
+    , ACTIVITY_FAILED
+    , ACTIVITY_CANCELED
+    };
+
     /**
       Create a new activity with the given parameters.
 
@@ -120,11 +127,13 @@ namespace sdpa { namespace wf {
       : name_(a_name)
       , method_(a_method)
       , params_(params)
+      , state_(ACTIVITY_UNKNOWN)
     { }
 
     Activity()
       : name_("")
       , method_("")
+      , state_(ACTIVITY_UNKNOWN)
     { }
 
     Activity(const Activity &other)
@@ -132,6 +141,7 @@ namespace sdpa { namespace wf {
       , method_(other.method())
       , params_(other.parameters())
       , properties_(other.properties())
+      , state_(other.state())
     { }
 
     Activity& operator=(const Activity &rhs) {
@@ -141,6 +151,7 @@ namespace sdpa { namespace wf {
         method_ = rhs.method();
         params_ = rhs.parameters();
         properties_ = rhs.properties();
+        state_ = rhs.state();
       }
       return *this;
     }
@@ -158,6 +169,9 @@ namespace sdpa { namespace wf {
 
     inline const properties_t &properties() const { return properties_; }
     inline properties_t &properties() { return properties_; }
+
+    inline const state_t &state() const { return state_; }
+    inline state_t &state() { return state_; }
 
     void add_parameter(const Parameter &p)
     {
@@ -197,6 +211,7 @@ namespace sdpa { namespace wf {
     Method method_;
     parameters_t params_;
     properties_t properties_;
+    state_t state_;
   };
 }}
 

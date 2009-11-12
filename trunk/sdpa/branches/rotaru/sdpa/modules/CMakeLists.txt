@@ -1,4 +1,4 @@
-set(srcs ActivityExecutor.cpp                             FallBackModuleLoader.cpp)
+set(srcs ActivityExecutor.cpp)
 set(hdrs ActivityExecutor.hpp ModuleLoader.hpp Module.hpp FallBackModuleLoader.hpp)
 
 ADD_LIBRARY(sdpa-modules ${srcs})

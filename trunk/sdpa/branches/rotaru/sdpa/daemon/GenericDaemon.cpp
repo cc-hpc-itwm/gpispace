@@ -309,7 +309,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
 	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000); //1ms
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000000); //1ms
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 

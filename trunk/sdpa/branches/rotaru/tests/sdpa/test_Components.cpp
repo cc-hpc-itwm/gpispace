@@ -13,7 +13,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(100),
+    m_nITER(1),
     m_sleep_interval(10000)
 {
 }
@@ -48,7 +48,8 @@ void TestComponents::setUp() { //initialize and start the finite state machine
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
-	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+//	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+	m_strWorkflow = read_workflow("workflows/remig.master.gwdl");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
