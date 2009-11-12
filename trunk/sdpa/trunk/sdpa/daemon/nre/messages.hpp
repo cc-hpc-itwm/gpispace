@@ -89,29 +89,18 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     typedef sdpa::wf::Activity result_t;
-    enum status_t
-    {
-      ST_FINISHED = 0
-    , ST_FAILED = 1
-    , ST_UNKNOWN = 2
-    };
 
     ExecuteReply() {}
 
     explicit
-    ExecuteReply(const result_t & execution_result, status_t exec_status)
+    ExecuteReply(const result_t & execution_result)
       : result_(execution_result)
-      , status_(exec_status)
     {}
 
     result_t &result() { return result_; }
     const result_t &result() const { return result_; }
-
-    status_t &status() { return status_; }
-    const status_t &status() const { return status_; }
   private:
     result_t result_;
-    status_t status_;
   };
 
   class ExecuteRequest : public Request
@@ -135,17 +124,20 @@ namespace sdpa { namespace nre { namespace worker {
       {
         ctxt->loader().get(mod_name).call(fun_name, activity().parameters());
         LOG(INFO, "execution of activity finished");
-        return new ExecuteReply(activity(), ExecuteReply::ST_FINISHED);
+        activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
+        return new ExecuteReply(activity());
       }
       catch (const std::exception &ex)
       {
         LOG(WARN, "execution of activity failed: " << ex.what());
-        return new ExecuteReply(activity(), ExecuteReply::ST_FAILED);
+        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        return new ExecuteReply(activity());
       }
       catch (...)
       {
         LOG(WARN, "execution of activity failed: ");
-        return new ExecuteReply(activity(), ExecuteReply::ST_FAILED);
+        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        return new ExecuteReply(activity());
       }
     }
 
