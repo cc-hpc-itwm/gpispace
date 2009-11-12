@@ -140,6 +140,7 @@
     <transition ID="tag slice with depth zero">
       <inputPlace placeID="slice before work" edgeExpression="slice"/>
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+
       <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice * $number_of_frequencies"/>
     </transition>
 
