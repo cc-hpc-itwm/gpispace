@@ -1,0 +1,25 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+
+  <description>ReMigration, Master workflow</description>
+
+  <!-- insert some real location, accessible by all nodes -->
+  <place ID="config file">
+    <token><data><sdpa>file:///u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.config</sdpa></data></token>
+  </place>
+
+  <!-- back from the subworkflow -->	
+  <place ID="done"/>
+
+  <!-- the real call to the subworkflow, insert the real sdpa/workflow and the -->
+  <!-- real operation candidate -->
+  <transition ID="remigration">
+    <inputPlace placeID="config file" edgeExpression="config file"/>
+    <outputPlace placeID="done" edgeExpression="done"/>
+    <operation>
+      <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="subworkflow-sdpa-test">
+        <oc:operationCandidate type="workflow" operationName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.gwdl" resourceName="agg" selected="true"/>
+      </oc:operationClass>
+    </operation>
+  </transition>
+
+</workflow>

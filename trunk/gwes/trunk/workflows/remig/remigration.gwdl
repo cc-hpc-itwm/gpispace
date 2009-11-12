@@ -1,7 +1,9 @@
 <workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+
     <description>ReMigration</description>
 
-    <place ID="config file"><token><data><sdpa>file:///u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.config</sdpa></data></token></place>
+    <!-- set by master workflow -->
+    <place ID="config file"/>
 
     <!-- global settings, set by the init function -->
     <place ID="number_of_frequencies"/>
@@ -12,6 +14,7 @@
 
     <!-- init -->
 
+    <!-- insert some real operationCandidate here -->
     <place ID="seq after init"/>
 
     <transition ID="init">
@@ -33,6 +36,7 @@
 
     <place ID="seq after read input"/>
 
+    <!-- insert some real operationCandidate here -->
     <transition ID="read input">
       <inputPlace placeID="seq after init" edgeExpression="seq"/>
       <outputPlace placeID="seq after read input" edgeExpression="$seq"/>
@@ -40,12 +44,14 @@
 
     <place ID="seq after read velocity"/>
 
+    <!-- insert some real operationCandidate here -->
     <transition ID="read velocity">
       <inputPlace placeID="seq after read input" edgeExpression="seq"/>
       <outputPlace placeID="seq after read velocity" edgeExpression="$seq"/>
     </transition>
 
     <!-- the split/join pattern -->
+    <!-- works without capacities, later use capacities! -->
     <place ID="slice before work"/>
     <place ID="slice after work"/>
 
@@ -105,9 +111,9 @@
 
     <!-- the real work goes here -->
 
-    <place ID="slice_and_depth before calc one level"></place>
-    <place ID="slice_and_depth after calc one level"></place>
-    <place ID="slice_and_depth after update"></place>
+    <place ID="slice_and_depth before calc one level"/>
+    <place ID="slice_and_depth after calc one level"/>
+    <place ID="slice_and_depth after update"/>
 
     <transition ID="tag slice with depth zero">
       <inputPlace placeID="slice before work" edgeExpression="slice"/>
@@ -119,17 +125,23 @@
     <transition ID="calc one level">
       <inputPlace placeID="slice_and_depth before calc one level" edgeExpression="slice_and_depth"/>
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
-      <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="calc">
           <oc:operationCandidate type="cli" operationName="calc.sh" resourceName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/calc.sh" selected="true"/>
         </oc:operationClass>
       </operation>
+
+      <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
     </transition>
 
+    <!-- insert some real operationCandidate here -->
     <transition ID="update">
       <inputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth"/>
+      <!-- exclusive access to the outputvolume -->
       <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+
       <outputPlace placeID="slice_and_depth after update" edgeExpression="$slice_and_depth"/>
       <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="$memhandle_for_outputvolume"/>
     </transition>
@@ -158,6 +170,7 @@
  
     <place ID="seq after prefix sum"/>
 
+    <!-- insert some real operationCandidate here -->
     <transition ID="prefix sum">
       <inputPlace placeID="seq after calculation" edgeExpression="seq"/>
       <outputPlace placeID="seq after prefix sum" edgeExpression="$seq"/>
@@ -165,9 +178,33 @@
 
     <place ID="seq after write output"/>
 
+    <!-- insert some real operationCandidate here -->
     <transition ID="write output">
       <inputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
       <outputPlace placeID="seq after write output" edgeExpression="$seq"/>
+    </transition>
+
+    <place ID="seq after finalize"/>
+
+    <!-- insert some real operationCandidate here -->
+    <transition ID="finalize">
+      <!-- consume all the global variable tokens, not strictly necessary -->
+      <inputPlace placeID="number_of_frequencies"/>
+      <inputPlace placeID="number_of_depthlevels"/>
+      <inputPlace placeID="number_of_parallel_propagators"/>
+      <inputPlace placeID="memhandle_for_outputvolume"/>
+      <inputPlace placeID="memhandle_for_configuration"/>
+
+      <inputPlace placeID="seq after write output" edgeExpression="seq"/>
+      <outputPlace placeID="seq after finalize" edgeExpression="$seq"/>
+    </transition>
+
+    <!-- give control back to master workflow -->
+    <place ID="done"/>
+
+    <transition ID="done">
+      <inputPlace placeID="seq after finalize" edgeExpression="seq"/>
+      <outputPlace placeID="done" edgeExpression="$seq"/>
     </transition>
 
 </workflow>

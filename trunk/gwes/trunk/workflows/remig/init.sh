@@ -32,6 +32,7 @@ done
 
 # attention! using the commandline activities, there will be
 # *a lot* of files created, when using high numbers here!
+
 echo "<data><sdpa>10</sdpa></data>" > ${number_of_frequencies}
 echo "<data><sdpa>5</sdpa></data>" > ${number_of_depthlevels}
 echo "<data><sdpa>3</sdpa></data>" > ${number_of_parallel_propagators}
