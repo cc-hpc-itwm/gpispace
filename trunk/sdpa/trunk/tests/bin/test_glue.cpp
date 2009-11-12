@@ -81,8 +81,8 @@ int main(int , char **)
       using namespace sdpa::wf::glue;
 
       gwdl::Workflow gwdl_workflow(path_to_desc);
-      workflow_result_t result = get_workflow_results(gwdl_workflow);
-      for (workflow_result_t::const_iterator r(result.begin()); r != result.end(); ++r)
+      sdpa::job_result_t result = get_workflow_results(gwdl_workflow);
+      for (sdpa::job_result_t::const_iterator r(result.begin()); r != result.end(); ++r)
       {
         std::clog << "tokens on place " << r->first << ":" << std::endl;
         for (token_list_t::const_iterator token(r->second.begin()); token != r->second.end(); ++token)

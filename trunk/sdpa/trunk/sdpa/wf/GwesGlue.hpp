@@ -23,6 +23,8 @@
 
 #include <stdexcept>
 
+#include <sdpa/types.hpp>
+
 #include <sdpa/wf/Token.hpp>
 #include <sdpa/wf/Activity.hpp>
 
@@ -237,19 +239,17 @@ namespace sdpa { namespace wf { namespace glue {
 
   // extract tokens from workflow
   // returns a map of place-id to list-of-tokens
-  typedef std::list<sdpa::wf::Token> token_list_t;
-  typedef std::map<std::string, token_list_t> workflow_result_t;
   typedef std::vector<gwdl::Token*> gwdl_token_list_t;
 
   inline
-  workflow_result_t get_workflow_results(const gwdl::Workflow &const_workflow)
+  job_result_t get_workflow_results(const gwdl::Workflow &const_workflow)
   {
     DLOG(INFO, "retrieving results from workflow: " << const_workflow.getID());
 
     LOG(WARN, "FIXME: removing const, this should not be necessary!");
     gwdl::Workflow &workflow = const_cast<gwdl::Workflow&>(const_workflow);
     
-    workflow_result_t result;
+    job_result_t result;
 
     // iterate over all places
     typedef std::vector<std::string> place_names_t;

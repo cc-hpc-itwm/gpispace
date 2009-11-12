@@ -354,7 +354,7 @@ int main(int, char **)
   {
     std::clog << "testing JobFinishedEvent...";
 
-    JobFinishedEvent::result_t result;
+    sdpa::job_result_t result;
     JobFinishedEvent e("foo", "bar", "job-id-1", result);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);

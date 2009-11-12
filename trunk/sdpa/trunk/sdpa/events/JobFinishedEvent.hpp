@@ -21,7 +21,6 @@ namespace sdpa { namespace events {
   {
     public:
       typedef sdpa::shared_ptr<JobFinishedEvent> Ptr;
-      typedef sdpa::wf::glue::workflow_result_t result_t;
 
       JobFinishedEvent()
         : JobEvent("", "", "")
@@ -29,7 +28,7 @@ namespace sdpa { namespace events {
       JobFinishedEvent(const address_t &a_from
                      , const address_t &a_to
                      , const sdpa::job_id_t &a_job_id
-                     , const result_t &job_result)
+                     , const job_result_t &job_result)
         : sdpa::events::JobEvent( a_from, a_to, a_job_id )
         , result_(job_result)
       { }
@@ -43,10 +42,10 @@ namespace sdpa { namespace events {
         visitor->visitJobFinishedEvent(this);
       }
 
-      const result_t &result() const { return result_; }
-      result_t &result() { return result_; }
+      const job_result_t &result() const { return result_; }
+      job_result_t &result() { return result_; }
     private:
-      result_t result_;
+      job_result_t result_;
   };
 }}
 

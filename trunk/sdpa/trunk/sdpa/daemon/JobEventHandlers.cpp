@@ -96,7 +96,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		{
 			try {
 				// forward it up
-                JobFinishedEvent::result_t result;
+                job_result_t result;
                 SDPA_LOG_DEBUG("TODO: fill in the results...");
 				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), result));
 

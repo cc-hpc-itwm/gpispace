@@ -308,7 +308,7 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 
 		// submit a JobFinishedEvent to master
 		SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<strDaemon);
-        JobFinishedEvent::result_t result;
+        job_result_t result;
 		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strDaemon, job_id_slave, result));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtJobFinished);
 
