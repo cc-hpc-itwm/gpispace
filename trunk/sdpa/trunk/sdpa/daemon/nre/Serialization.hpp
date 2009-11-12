@@ -52,6 +52,7 @@ namespace boost { namespace serialization {
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.key();
+    ar & rply.pid();
   }
 
   template <class Archive>

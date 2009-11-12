@@ -45,16 +45,22 @@ namespace sdpa { namespace nre { namespace worker {
   public:
     PingReply()
       : key_("")
+      , pid_(0)
     {}
 
-    explicit PingReply(const std::string &a_key)
+    PingReply(const std::string &a_key, const pid_t &my_pid)
       : key_(a_key)
+      , pid_(my_pid)
     {}
 
     std::string &key() { return key_; }
     const std::string &key() const { return key_; }
+
+    pid_t &pid() { return pid_; }
+    const pid_t &pid() const { return pid_; }
   private:
     std::string key_;
+    pid_t pid_;
   };
 
   class PingRequest : public Request
@@ -73,7 +79,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual Reply *execute(ExecutionContext *)
     {
-      return new PingReply(key());
+      return new PingReply(key(), getpid());
     }
   private:
     std::string key_;
