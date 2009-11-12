@@ -72,7 +72,7 @@ Workflow::Workflow(DOMElement* element)
 	}
 }
 
-Workflow::Workflow(const string& filename) throw (WorkflowFormatException) 
+Workflow::Workflow(const string& filename) throw (WorkflowFormatException, NoSuchWorkflowElement)
 {
 	// read file
 	ifstream file(filename.c_str());

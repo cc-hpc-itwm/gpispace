@@ -159,7 +159,7 @@ public:
 	 * Construct workflow from file.
 	 * @param filename The filename of the GWorkflowDL file including its path. 
 	 */
-	explicit Workflow(const std::string& filename) throw (WorkflowFormatException);
+	explicit Workflow(const std::string& filename) throw (WorkflowFormatException, NoSuchWorkflowElement);
 
 	/**
 	 * Destructor.
