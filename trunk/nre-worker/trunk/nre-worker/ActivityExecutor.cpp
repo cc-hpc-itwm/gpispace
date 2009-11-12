@@ -56,12 +56,13 @@ namespace sdpa { namespace nre { namespace worker {
   }
 
   std::string
-  ActivityExecutor::encode(Reply *rply)
+  ActivityExecutor::encode(const Reply &rply)
   {
     std::ostringstream sstr;
     boost::archive::text_oarchive ar(sstr);
     init_archive(ar);
-    ar << rply;
+    const Reply *rply_ptr = &rply;
+    ar << rply_ptr;
 
     return sstr.str();
   }
@@ -69,7 +70,9 @@ namespace sdpa { namespace nre { namespace worker {
   void
   ActivityExecutor::start()
   {
-    if (execution_thread_) return; // already started
+    boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+
+    if (service_thread_) return; // already started
 
     io_service_.reset();
 
@@ -101,25 +104,125 @@ namespace sdpa { namespace nre { namespace worker {
 
     LOG(INFO, "listening on " << real_endpoint);
 
-    execution_thread_ = new boost::thread(boost::ref(*this));
+    service_thread_ = new boost::thread(boost::ref(*this));
+    execution_thread_ = new boost::thread(boost::bind(&ActivityExecutor::execution_thread, this));
     barrier_.wait();
   }
 
   void
   ActivityExecutor::stop()
   {
-    if (! execution_thread_) return; // already stopped
-    execution_thread_->interrupt();
-    io_service_.stop();
-    execution_thread_->join();
-    delete execution_thread_; execution_thread_ = NULL;
-    delete socket_; socket_ = NULL;
+    {
+      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+      if (! service_thread_) return; // already stopped
+      // FIXME: how to stop the execution thread?
+
+      service_thread_->interrupt();
+      io_service_.stop();
+      service_thread_->join();
+      delete service_thread_; service_thread_ = NULL;
+    }
+
+    if (execution_thread_)
+    {
+      execution_thread_->interrupt();
+      execution_thread_->join();
+      delete execution_thread_; execution_thread_ = NULL;
+    }
+
+    {
+      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+      if (socket_)
+      {
+        delete socket_; socket_ = NULL;
+      }
+    }
   }
 
   void ActivityExecutor::operator()()
   {
     barrier_.wait();
     io_service_.run();
+  }
+
+  void ActivityExecutor::execution_thread()
+  {
+    for (;;)
+    {
+      sdpa::shared_ptr<Request> rqst;
+      udp::endpoint reply_to;
+
+      {
+        // wait for a request
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+        while (requests_.empty())
+        {
+          try
+          {
+            request_avail_.wait(lock);
+          }
+          catch (const boost::thread_interrupted &)
+          {
+            LOG(DEBUG, "execution thread has been interrupted...");
+            return;
+          }
+        }
+        request_t r = requests_.front(); requests_.pop_front();
+        rqst.reset(r.second);
+        reply_to = r.first;
+      } // release lock
+
+      try
+      {
+        boost::this_thread::interruption_point();
+      }
+      catch (const boost::thread_interrupted &)
+      {
+        LOG(DEBUG, "execution thread has been interrupted...");
+        return;
+      }
+
+      sdpa::shared_ptr<Reply> rply(rqst->execute(this));
+
+      try
+      {
+        boost::this_thread::interruption_point();
+      }
+      catch (const boost::thread_interrupted &)
+      {
+        LOG(DEBUG, "execution thread has been interrupted...");
+        return;
+      }
+
+      {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+        if (rply)
+        {
+          if (socket_)
+          {
+            socket_->send_to(boost::asio::buffer(encode(*rply)), reply_to);
+          }
+        }
+        else
+        {
+          LOG(FATAL, "an execution request should always return a reply, shutting down");
+          trigger_shutdown();
+          return;
+        }
+
+        if (! socket_)
+        {
+          // i am late with terminating, everyone else is waiting for me
+          return;
+        }
+      }
+    }
+  }
+
+  void
+  ActivityExecutor::trigger_shutdown()
+  {
+    LOG(ERROR, "implement me (send a TERM signal to myself or something like that)");
   }
 
   void
@@ -141,11 +244,11 @@ namespace sdpa { namespace nre { namespace worker {
         DLOG(INFO, "got QUIT request, returning from loop...");
         return;
       }
-      if (msg == "SEGV")
+      else if (msg == "SEGV")
       {
-        DLOG(INFO, "got SEGV request, returning from loop...");
-        int *i = 0;
-        *(i) = 0;
+        DLOG(INFO, "got SEGV request, obeying...");
+        int *segv(0);
+        *segv = 0;
         return;
       }
 #endif
@@ -153,18 +256,29 @@ namespace sdpa { namespace nre { namespace worker {
       try
       {
         Request *rqst = decode(msg);
-        Reply *rply = rqst->execute(this);
-        delete rqst; rqst = NULL;
-
-        if (rply)
+        if (rqst->would_block())
         {
-          socket_->send_to(boost::asio::buffer(encode(rply)), sender_endpoint_);
-          delete rply; rply = NULL;
+          LOG(DEBUG, "enqueing blocking request to execution thread...");
+          boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+          requests_.push_back(std::make_pair(sender_endpoint_, rqst));
+          request_avail_.notify_one();
         }
         else
         {
-          LOG(DEBUG, "nothing to reply, assuming shutdown...");
-          return;
+          LOG(DEBUG, "directly executing request...");
+          sdpa::shared_ptr<Reply> rply(rqst->execute(this));
+          delete rqst; rqst = NULL;
+
+          if (rply)
+          {
+            socket_->send_to(boost::asio::buffer(encode(*rply)), sender_endpoint_);
+          }
+          else
+          {
+            LOG(DEBUG, "nothing to reply, assuming shutdown...");
+            trigger_shutdown();
+            return;
+          }
         }
       }
       catch (const std::exception &ex)

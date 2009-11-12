@@ -20,6 +20,7 @@
 #define SDPA_APP_NRE_ACTIVITY_EXECUTOR_HPP 1
 
 #include <iostream>
+#include <list>
 
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
@@ -42,6 +43,7 @@ namespace sdpa { namespace nre { namespace worker {
       , location_(my_location)
       , socket_(NULL)
       , barrier_(2)
+      , service_thread_(NULL)
       , execution_thread_(NULL)
     {}
 
@@ -56,10 +58,12 @@ namespace sdpa { namespace nre { namespace worker {
     void operator()();
   private:
     Request *decode(const std::string &);
-    std::string encode(Reply *);
+    std::string encode(const Reply &);
 
     void handle_receive_from(const boost::system::error_code &error
                            , size_t bytes_recv);
+    void execution_thread();
+    void trigger_shutdown();
     
     sdpa::modules::ModuleLoader::ptr_t loader_;
     std::string location_;
@@ -68,7 +72,14 @@ namespace sdpa { namespace nre { namespace worker {
     boost::asio::ip::udp::endpoint sender_endpoint_;
     boost::asio::ip::udp::socket *socket_;
     boost::barrier barrier_;
+    boost::thread *service_thread_;
+
     boost::thread *execution_thread_;
+    typedef std::pair<boost::asio::ip::udp::endpoint, Request *> request_t;
+    typedef std::list<request_t> request_list_t;
+    boost::recursive_mutex mtx_;
+    boost::condition_variable_any request_avail_;
+    request_list_t requests_;
 
     enum { max_length = ((2<<16 )-1) };
     char data_[max_length];
