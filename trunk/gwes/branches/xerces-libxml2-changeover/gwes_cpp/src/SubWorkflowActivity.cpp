@@ -81,7 +81,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	// copy read/input/write tokens to places in sub workflow regarding the edge expressions of the parent workflow
 	string edgeExpression;
 	try {
-		Place* placeP;
+		Place::ptr_t placeP;
 		Token::ptr_t tokenCloneP;
 		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 			switch (it->scope) {
@@ -92,8 +92,8 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 			LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
 			placeP = _subworkflowP->getPlace(edgeExpression);
 			tokenCloneP = it->tokenP->deepCopy(); 
-			LOG_WARN(_logger, "///ToDo: refractoring to shared_ptr!");
-			placeP->addToken(tokenCloneP.get());
+			LOG_WARN(_logger, "///ToDo: refractoring to shared_ptr!///");
+//			placeP->addToken(tokenCloneP.get());
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	
 				continue;
@@ -198,9 +198,9 @@ void SubWorkflowActivity::update(const Event& event) {
 						case (TokenParameter::SCOPE_OUTPUT):	
 							edgeExpression = it->edgeP->getExpression();
 							if (edgeExpression.find("$")==edgeExpression.npos) { // ignore XPath expressions
-								Place* placeP = _subworkflowP->getPlace(edgeExpression);
+								Place::ptr_t placeP = _subworkflowP->getPlace(edgeExpression);
 								Token::ptr_t tokenCloneP = placeP->getTokens()[0]->deepCopy();
-								it->tokenP = tokenCloneP.get();
+								it->tokenP = tokenCloneP;
 								LOG_INFO(_logger, "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ...");
 							}
 							break;
@@ -219,11 +219,11 @@ void SubWorkflowActivity::update(const Event& event) {
 				// print sub workflow
 				LOG_DEBUG(_logger, *_subworkflowP);
 				// ToDo: generate fault tokens
-//				for (map<string,gwdl::Token*>::iterator it=_outputs.begin(); it !=_outputs.end(); ++it) {
+//				for (map<string,gwdl::Token::ptr_t>::iterator it=_outputs.begin(); it !=_outputs.end(); ++it) {
 //					edgeExpression = it->first;
 //					// find corresponding place in subworkflow and add token with data on this place
 //					LOG_INFO(_logger, "gwes::SubWorkflowActivity::startActivity(" << _id << ") copy token to place \"" << edgeExpression << "\" ..."); 
-//					Place* placeP = _subworkflowP->getPlace(edgeExpression);
+//					Place::ptr_t placeP = _subworkflowP->getPlace(edgeExpression);
 //					placeP->addToken(it->second);
 //				}
 				setStatus(Activity::STATUS_TERMINATED);

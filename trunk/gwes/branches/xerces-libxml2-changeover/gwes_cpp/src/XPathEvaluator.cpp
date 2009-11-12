@@ -276,7 +276,7 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
     }
 }
 
-void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* tokenP) throw (gwdl::WorkflowFormatException) {
+void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token::ptr_t tokenP) throw (gwdl::WorkflowFormatException) {
 	xmlNodePtr cur;
 	
 	// data token

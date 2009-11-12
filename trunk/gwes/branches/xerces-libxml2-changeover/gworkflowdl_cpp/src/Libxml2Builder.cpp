@@ -38,6 +38,21 @@ Libxml2Builder::~Libxml2Builder() {
 //////////////////////////
 // Data
 //////////////////////////
+//                <xs:element name="data">
+//                    <xs:annotation>
+//                        <xs:documentation>
+//The data element can hold one single child element with arbitrary XML representing data (e.g., SOAP parameters) or
+//references to data (e.g., filenames).
+//                        </xs:documentation>
+//                    </xs:annotation>
+//                    <xs:complexType>
+//                        <xs:sequence>
+//                            <xs:any namespace="##any" processContents="lax" minOccurs="0"
+//                                    maxOccurs="unbounded"/>
+//                        </xs:sequence>
+//                    </xs:complexType>
+//                </xs:element>
+//////////////////////////
 Data::ptr_t Libxml2Builder::deserializeData(const string &xmlstring) const throw (WorkflowFormatException) {
 	Data::ptr_t data(new Data(xmlstring));
 	return data;
@@ -68,6 +83,29 @@ xmlNodePtr Libxml2Builder::dataToElement(const Data &data) const {
 //////////////////////////
 // Token
 //////////////////////////
+//<xs:element name="token" minOccurs="0" maxOccurs="unbounded">
+//    <xs:annotation>
+//        <xs:documentation>
+//A token represents state information, such as true/false (control token) or arbitrary XML (data token).
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:sequence>
+//            <xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:choice minOccurs="0">
+//                ===> refer to data <====
+//                <xs:element name="control" type="xs:boolean">
+//                    <xs:annotation>
+//                        <xs:documentation>
+//A control token can either be "true" or "false", reflecting the exit status of the previous transition.
+//                        </xs:documentation>
+//                    </xs:annotation>
+//                </xs:element>
+//            </xs:choice>
+//        </xs:sequence>
+//    </xs:complexType>
+//</xs:element>
+//////////////////////////
 Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const throw (WorkflowFormatException) {
 	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
 	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
@@ -77,11 +115,9 @@ Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const thr
 }
 
 string Libxml2Builder::serializeToken(const Token &token) const {
-//	LOG_DEBUG(_logger, "serializeToken(Token[" << token.getID() << "]) ...");
 	xmlNodePtr nodeP = tokenToElement(token);
 	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
 	xmlFreeNode(nodeP);
-//	LOG_DEBUG(_logger, "serializeToken(Token[" << token.getID() << "]) ... done.");
 	return ret;
 }
 
@@ -141,7 +177,7 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
         	throw WorkflowFormatException("Element <data> or <control> not found as child of <token>!");
         }
     } else {
-    	LOG_WARN(_logger, "Element <token> not found!");
+    	LOG_ERROR(_logger, "Element <token> not found!");
     	throw WorkflowFormatException("Element <token> not found!"); 
     }
 
@@ -180,6 +216,22 @@ xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 //////////////////////////
 // Properties
 //////////////////////////
+//<xs:element name="property">
+//    <xs:annotation>
+//        <xs:documentation>
+//Generic property. The attribute "name" specifies the property name,
+//the element contents its value.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:simpleContent>
+//            <xs:extension base="xs:string">
+//                <xs:attribute name="name" use="required" type="xs:string"/>
+//            </xs:extension>
+//        </xs:simpleContent>
+//    </xs:complexType>
+//</xs:element>
+//////////////////////////
 
 string Libxml2Builder::serializeProperties(const Properties& props) const {
 	xmlNodePtr nodeP = propertiesToElements(props);
@@ -189,7 +241,7 @@ string Libxml2Builder::serializeProperties(const Properties& props) const {
 }
 
 /**
- * Returns NULL if there are now properties.
+ * Returns NULL if there are no properties.
  */
 Properties::ptr_t Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
     xmlNodePtr curNodeP = nodeP;
@@ -209,6 +261,8 @@ Properties::ptr_t Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) c
     			LOG_INFO(_logger, "generating property with name \"" << name << "\" and value \"" << text << "\"");
         		propP->put( name, text ); 
     		}
+    	} else if (propP) { // there MUST NOT be any other element between property elements!
+    		break;
     	}
     	curNodeP = nextElementNode(curNodeP->next);
     }
@@ -238,6 +292,155 @@ xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
 	}
 	
 	return firstNodeP;
+}
+
+//////////////////////////
+// Place
+//////////////////////////
+//<xs:element name="place" minOccurs="0" maxOccurs="unbounded">
+//    <xs:annotation>
+//        <xs:documentation>
+//A place is a placeholder for tokens that represent the data and the state of the workflow.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:sequence>
+//            <xs:element ref="description" minOccurs="0"/>
+//            <xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="tokenClass" minOccurs="0">
+//                <xs:annotation>
+//                    <xs:documentation>
+//Description of the class of tokens hold by a place.
+//                    </xs:documentation>
+//                </xs:annotation>
+//                <xs:complexType>
+//                    <xs:sequence>
+//                        <xs:element ref="owl" minOccurs="0" maxOccurs="unbounded"/>
+//                    </xs:sequence>
+//                    <xs:attribute name="type" type="xs:string"/>
+//                </xs:complexType>
+//            </xs:element>
+//            ====> refer to token <====
+//        </xs:sequence>
+//        <xs:attribute name="ID" use="required" type="xs:ID"/>
+//        <xs:attribute name="capacity" type="xs:integer"/>
+//    </xs:complexType>
+//////////////////////////
+
+Place::ptr_t Libxml2Builder::deserializePlace(const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const Place::ptr_t ret = elementToPlace(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+string Libxml2Builder::serializePlace(const Place &place) const {
+	xmlNodePtr nodeP = placeToElement(place);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// 	std::string _id;                   -> from attribute <place ID="">
+    //  unsigned int _capacity;            -> from attribute <place capacity="">
+    //  std::string _description;          -> from child element <description>
+    //  Properties::ptr_t _propertiesP;    -> from child elements <property>
+	//  std::string _tokenType;            -> from attribute of child element <tokenClass type="">
+	//  std::vector<Token::ptr_t> _tokens; -> from child elements <token>
+    //  Token::ptr_t _nextUnlockedTokenP;  -> ignored (calculated on demand)
+	///////////////////
+	
+	Place::ptr_t placeP;
+    xmlNodePtr curNodeP = nodeP;
+    xmlNodePtr textNodeP;
+    
+    curNodeP = nextElementNode(curNodeP);
+
+    if (checkElementName(curNodeP, "place")) {                             // <place>
+		string id((const char*) xmlGetProp(curNodeP, BAD_CAST "ID"));      // <place ID="">
+		placeP = Place::ptr_t(new Place(id));
+		xmlChar* xmlCharP = xmlGetProp(curNodeP, BAD_CAST "capacity");     // <place capacity="">
+		placeP->setCapacity((xmlCharP) ? atoi((const char*) xmlCharP) : Place_DEFAULT_CAPACITY);
+		curNodeP = nextElementNode(curNodeP->children);
+		// extract all property elements
+		Properties::ptr_t propsP = elementsToProperties(curNodeP);         //   <property>
+		if (propsP) placeP->setProperties(propsP);
+		while(curNodeP) {
+		    if (checkElementName(curNodeP, "description")) {               //   <description>
+		    	textNodeP = nextTextNode(curNodeP->children);
+		    	if (textNodeP) {
+		    		placeP->setDescription(string( (const char*) textNodeP->content)); 
+		    	}
+		    } else if (checkElementName(curNodeP, "property")) {           //   (<property>)
+		    	// do nothing, properties have already been extracted before
+		    } else if (checkElementName(curNodeP, "tokenClass")) {         //   <tokenClass>
+				xmlCharP = xmlGetProp(curNodeP, BAD_CAST "type"); //   <tokenClass type="">
+		    	if (xmlCharP) {
+		    		placeP->setTokenType(string((const char*) xmlCharP)); 
+		    	}
+		    } else if (checkElementName(curNodeP, "token")) {              //   <token>
+	    		placeP->addToken(elementToToken(curNodeP));
+		    } else {
+		    	ostringstream oss;
+		    	oss << "Unknown element <" << curNodeP->name << ">";
+		    	LOG_ERROR(_logger, oss.str());
+		    	throw WorkflowFormatException(oss.str()); 
+		    }
+		    // next element
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <place> not found!");
+    	throw WorkflowFormatException("Element <place> not found!"); 
+    }
+    
+	return placeP;
+}
+
+xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
+	xmlNodePtr nodeP = xmlNewNode(_nsP, BAD_CAST "place");
+	xmlNodePtr curNodeP;
+	
+	// <place ID="">
+    xmlNewProp(nodeP, BAD_CAST "ID", BAD_CAST place.getID().c_str());
+    
+    // <place capacity="">
+    if (place.getCapacity() != Place_DEFAULT_CAPACITY) {
+    	ostringstream oss;
+    	oss << place.getCapacity(); 
+        xmlNewProp(nodeP, BAD_CAST "capacity", BAD_CAST oss.str().c_str());
+    }
+    
+    //   <description>
+    if (place.getDescription().size()>0) {
+		xmlNewChild(nodeP,_nsP, BAD_CAST "description",BAD_CAST place.getDescription().c_str());
+    }
+
+    //   <property>
+	Properties::ptr_t propsP = place.readProperties();
+	if (propsP) {
+		curNodeP = propertiesToElements(*propsP);
+		if (curNodeP) {
+			xmlAddChildList(nodeP, curNodeP); 
+		}
+	}
+	
+	//   <tokenClass type="">
+	if (place.getTokenType().size() > 0) {
+		curNodeP = xmlNewChild(nodeP,_nsP, BAD_CAST "tokenClass",NULL);
+		xmlNewProp(curNodeP, BAD_CAST "type", BAD_CAST place.getTokenType().c_str());
+	}
+	
+	//   <token>
+	std::vector<Token::ptr_t> tokens = place.getTokens();
+	for (size_t i = 0; i < tokens.size(); i++) {
+		xmlAddChild(nodeP, tokenToElement(*tokens[i]));
+	}
+	
+	return nodeP;
 }
 
 //////////////////////////
@@ -284,9 +487,16 @@ ostream& operator<<(ostream &out, gwdl::Token &token) {
 }
 
 // Properties
-ostream& operator<<(ostream &out, gwdl::Properties &props) 
-{	
+ostream& operator<<(ostream &out, gwdl::Properties &props) {	
 	gwdl::Libxml2Builder builder;
 	out << builder.serializeProperties(props);
 	return out;
 }
+
+// Place
+ostream& operator<<(ostream &out, gwdl::Place &place) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializePlace(place);
+	return out;
+}
+

@@ -39,18 +39,20 @@ Transition::~Transition()
 		delete operationP;
 		operationP = NULL;
 	}
-	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) delete *it;
+	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) (*it).reset();
 	readEdges.clear();
-	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) delete *it;
+	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) (*it).reset();
 	inEdges.clear();
-	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) delete *it;
+	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) (*it).reset();
 	writeEdges.clear();
-	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) delete *it;
+	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) (*it).reset();
 	outEdges.clear();
 }
 
 Transition::Transition(Workflow* wf, DOMElement* element)
 {
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "Transition() of workflow "<< wf->getID());
+	
 	// default values
 	description = "";
 	operationP = NULL; 
@@ -79,42 +81,44 @@ Transition::Transition(Workflow* wf, DOMElement* element)
 			else if (XMLString::equals(name,X("condition"))) {
 				conditions.push_back(string(S((node)->getTextContent())));
 			} 
-			// readPlace
-			else if (XMLString::equals(name,X("readPlace"))) {
-				DOMElement* el = (DOMElement*)node;
-				addReadEdge(
-						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
-								string(S(el->getAttribute(X("edgeExpression")))))
-				); 
-			}
-			// inputPlace
-			else if (XMLString::equals(name,X("inputPlace"))) {
-				DOMElement* el = (DOMElement*)node;
-				addInEdge(
-						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
-								string(S(el->getAttribute(X("edgeExpression")))))
-				); 
-			}
-			// writePlace
-			else if (XMLString::equals(name,X("writePlace"))) {
-				DOMElement* el = (DOMElement*)node;
-				addWriteEdge(
-						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
-								string(S(el->getAttribute(X("edgeExpression")))))
-				); 
-			}
-			// outputPlace
-			else if (XMLString::equals(name,X("outputPlace"))) {
-				DOMElement* el = (DOMElement*)node;
-				addOutEdge(
-						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
-								string(S(el->getAttribute(X("edgeExpression")))))
-				); 
-			}
-			// operation
-			else if (XMLString::equals(name,X("operation"))) {
-				operationP = new Operation((DOMElement*)node);
-			}
+			
+			LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: Migration to libxml2 and shared_ptr///");
+//			// readPlace
+//			else if (XMLString::equals(name,X("readPlace"))) {
+//				DOMElement* el = (DOMElement*)node;
+//				addReadEdge(
+//						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
+//								string(S(el->getAttribute(X("edgeExpression")))))
+//				); 
+//			}
+//			// inputPlace
+//			else if (XMLString::equals(name,X("inputPlace"))) {
+//				DOMElement* el = (DOMElement*)node;
+//				addInEdge(
+//						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
+//								string(S(el->getAttribute(X("edgeExpression")))))
+//				); 
+//			}
+//			// writePlace
+//			else if (XMLString::equals(name,X("writePlace"))) {
+//				DOMElement* el = (DOMElement*)node;
+//				addWriteEdge(
+//						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
+//								string(S(el->getAttribute(X("edgeExpression")))))
+//				); 
+//			}
+//			// outputPlace
+//			else if (XMLString::equals(name,X("outputPlace"))) {
+//				DOMElement* el = (DOMElement*)node;
+//				addOutEdge(
+//						new Edge(wf->getPlace(string(S(el->getAttribute(X("placeID"))))),
+//								string(S(el->getAttribute(X("edgeExpression")))))
+//				); 
+//			}
+//			// operation
+//			else if (XMLString::equals(name,X("operation"))) {
+//				operationP = new Operation((DOMElement*)node);
+//			}
 		}
 	}
 }
@@ -219,17 +223,18 @@ bool Transition::isEnabled()
 	// check input edges
 	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
 	{
-		vector<Token*> v = (*it)->getPlace()->getTokens();
-		if(v.size() == 0) return false;
-		else
-		{
-			vector<Token*>::size_type nTokens = v.size(), nLockedTokens = 0;
-			for(vector<Token*>::size_type i=0; i<nTokens; ++i)
-			{	
-				if(v[i]->isLocked()) ++nLockedTokens;  
-			}
-			if(nLockedTokens >= nTokens) return false;
-		}
+		LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: migration to libxml2///");
+//		vector<Token::ptr_t> v = (*it)->getPlace()->getTokens();
+//		if(v.size() == 0) return false;
+//		else
+//		{
+//			vector<Token::ptr_t>::size_type nTokens = v.size(), nLockedTokens = 0;
+//			for(vector<Token::ptr_t>::size_type i=0; i<nTokens; ++i)
+//			{	
+//				if(v[i]->isLocked()) ++nLockedTokens;  
+//			}
+//			if(nLockedTokens >= nTokens) return false;
+//		}
 	}
 	// check write edges
 	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
@@ -239,7 +244,7 @@ bool Transition::isEnabled()
 	// check output edges
 	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
 	{
-		Place* p = (*it)->getPlace();
+		Place::ptr_t p = (*it)->getPlace();
 		if(p->getTokenNumber() == p->getCapacity()) return false;
 	}
 	// else      

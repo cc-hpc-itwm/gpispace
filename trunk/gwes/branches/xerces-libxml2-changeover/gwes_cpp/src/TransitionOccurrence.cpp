@@ -21,7 +21,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	activityP = NULL;
 	hasXPathEdgeExpressions=false;
 	simulation=false;
-	vector<Edge*> edges;
+	vector<Edge::ptr_t> edges;
 
 	// identifier
 	ostringstream id;
@@ -30,7 +30,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
     // read tokens
 	edges = transitionP->getReadEdges();
 	for (size_t i=0; i<edges.size(); i++) {
-		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
+		Token::ptr_t tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
 			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
@@ -45,7 +45,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	// input tokens
 	edges = transitionP->getInEdges();
 	for (size_t i=0; i<edges.size(); i++) {
-		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
+		Token::ptr_t tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
 			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
@@ -60,7 +60,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 	// write tokens 
 	edges = transitionP->getWriteEdges();
 	for (size_t i=0; i<edges.size(); i++) {
-		Token* tokenP = edges[i]->getPlace()->getNextUnlockedToken();
+		Token::ptr_t tokenP = edges[i]->getPlace()->getNextUnlockedToken();
 		if (tokenP == NULL) {
 			LOG_ERROR(_logger, "ERROR: There is no unlocked Token on place '" << edges[i]->getPlace()->getID() << "' available!");
 		} else {
@@ -84,7 +84,7 @@ TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg
 			if (edgeExpression.find("$")!=edgeExpression.npos) hasXPathEdgeExpressions=true; 
 		}
 		LOG_DEBUG(_logger, transitionP->getID() << ": building parameter from dummy output token");
-		parameter_t* tpP = new TokenParameter(NULL, edges[i], TokenParameter::SCOPE_OUTPUT); 
+		parameter_t* tpP = new TokenParameter(edges[i], TokenParameter::SCOPE_OUTPUT); 
 		tokens.push_back(*tpP); 
                 delete tpP;
 	}
@@ -161,8 +161,9 @@ void TransitionOccurrence::removeInputTokens() {
 			continue;
 		case (TokenParameter::SCOPE_INPUT):
 			LOG_DEBUG(_logger, "removeInputTokens[" << getID() << "] removing token 'i" << it->tokenP->getID() << "' from place '" << it->edgeP->getPlace()->getID() << "'");
-			it->edgeP->getPlace()->removeToken(it->tokenP);
-			it->tokenP = NULL;
+			LOG_WARN(_logger, "///ToDo: migration to libxml2 and shared_ptr///");
+///			it->edgeP->getPlace()->removeToken(it->tokenP);
+			it->tokenP.reset();
 			break;
 		case (TokenParameter::SCOPE_WRITE):	
 		case (TokenParameter::SCOPE_OUTPUT):	
@@ -185,9 +186,9 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 			if (it->tokenP == NULL) {
 				if (it->edgeP->getExpression().empty()) {             // missing output token without edge expression
 					if (activityP != NULL) {
-						it->tokenP = new Token((Token::control_t) (activityP->getStatus()==Activity::STATUS_COMPLETED));
+						it->tokenP = Token::ptr_t(new Token((Token::control_t) (activityP->getStatus()==Activity::STATUS_COMPLETED)));
 					} else {
-						it->tokenP = new Token(Token::CONTROL_TRUE);
+						it->tokenP = Token::ptr_t(new Token(Token::CONTROL_TRUE));
 					}
 				} else {                                                  // missing output token with edge expression
 					///put SOAP Fault if there is no data for edge expression
@@ -204,7 +205,7 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 					fault << "'</soapenv:Detail>";
 					fault << "</soapenv:Fault></data>";
 					LOG_WARN(_logger, "///ToDo: refractoring from xerces-c to libxml2!");
-					it->tokenP = new Token(Data::ptr_t(new Data(fault.str())));
+					it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(fault.str()))));
 				}
 			}
 			// put token to output place
@@ -216,8 +217,8 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 }
 
 void TransitionOccurrence::writeWriteTokens() throw (CapacityException) {
-	Place* placeP;
-	Token* oldTokenP;
+	Place::ptr_t placeP;
+	Token::ptr_t oldTokenP;
 	for (parameter_list_t::iterator it=tokens.begin(); it!=tokens.end(); ++it) {
 		switch (it->scope) {
 		case (TokenParameter::SCOPE_READ):
@@ -266,7 +267,7 @@ void TransitionOccurrence::evaluateXPathEdgeExpressions(int step) {
 			string edgeExpression = it->edgeP->getExpression(); 
 			if (edgeExpression.find("$")!=edgeExpression.npos) {  // XPath expression
 				string str = xpathEvaluatorP->evalExpression2Xml(edgeExpression);
-				it->tokenP = new Token( Data::ptr_t(new Data(str)) );
+				it->tokenP = Token::ptr_t(new Token( Data::ptr_t(new Data(str)) ));
 			}
 			break;
 		}

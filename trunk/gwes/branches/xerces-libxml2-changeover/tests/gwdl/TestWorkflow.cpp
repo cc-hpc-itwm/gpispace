@@ -38,8 +38,8 @@ void WorkflowTest::testWorkflow()
 	
 	// add places
 	LOG_INFO(logger, "  places...");
-	Place* p0 = new Place("p0");
-	Place* p1 = new Place("p1");
+	Place::ptr_t p0 = Place::ptr_t(new Place("p0"));
+	Place::ptr_t p1 = Place::ptr_t(new Place("p1"));
 	wf->addPlace(p0);
 	wf->addPlace(p1);
 	CPPUNIT_ASSERT(wf->placeCount()==2);
@@ -49,11 +49,11 @@ void WorkflowTest::testWorkflow()
 	Transition* t0 = new Transition("t0");
 	// input edge from p0 to t0
 	LOG_INFO(logger, "  input edge...");
-	Edge* arc0 = new Edge(wf->getPlace("p0"));
+	Edge::ptr_t arc0 = Edge::ptr_t(new Edge(wf->getPlace("p0")));
 	t0->addInEdge(arc0);
 	// output edge from t0 to p1
 	LOG_INFO(logger, "  output edge...");
-	Edge* arc1 = new Edge(wf->getPlace("p1"));
+	Edge::ptr_t arc1 = Edge::ptr_t(new Edge(wf->getPlace("p1")));
 	t0->addOutEdge(arc1);
 	
 	// add  transition	
@@ -64,7 +64,7 @@ void WorkflowTest::testWorkflow()
 			
 	// add token
 	LOG_INFO(logger, "  token...");
-	Token* d0 = new Token(Token::CONTROL_TRUE);
+	Token::ptr_t d0 = Token::ptr_t(new Token(Token::CONTROL_TRUE));
 	wf->getPlace("p0")->addToken(d0);
 
 	// transition is now enabled

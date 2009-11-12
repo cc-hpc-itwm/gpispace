@@ -81,6 +81,17 @@ public:
 	Properties::ptr_t elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr propertiesToElements(const Properties& props) const;
 	
+    //////////////////////////
+    // Place
+    //////////////////////////
+
+    // Interface IBuilder
+	Place::ptr_t deserializePlace(const std::string&) const throw (WorkflowFormatException);
+	std::string serializePlace(const Place &) const;
+	// libxml2-specific
+	Place::ptr_t elementToPlace(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr placeToElement(const Place &) const;
+	
 private:
 	//////////////////////////
 	// private helper methods
@@ -105,5 +116,8 @@ std::ostream& operator<< (std::ostream &out, gwdl::Token &token);
 
 // Properties
 std::ostream& operator<< (std::ostream &out, gwdl::Properties &props);
+
+// Place
+std::ostream& operator<< (std::ostream &out, gwdl::Place &place);
 
 #endif /*GWDL_LIBXML2BUILDER_H_*/

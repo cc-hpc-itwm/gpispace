@@ -7,261 +7,141 @@
 //gwdl
 #include <gwdl/Place.h>
 #include <gwdl/Defines.h>
-#include <gwdl/XMLUtils.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
-//xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
-
-#include <gwdl/XMLTranscode.hpp>
 
 using namespace fhg::log;
-XERCES_CPP_NAMESPACE_USE
 using namespace std;
 
 namespace gwdl
 {
 
-Place::Place(const string& _id) : capacity(INT_MAX)
-{
-	if (_id == "") id=generateID();
-	else id = _id;
-	capacity = Place_DEFAULT_CAPACITY;
-	nextUnlockedToken = NULL;
+Place::Place(const string& id) : _capacity(INT_MAX) {
+	if (id == "") _id=generateID();
+	else _id = id;
+	_capacity = Place_DEFAULT_CAPACITY;
+	// _nextUnlockedTokenP = NULL; // is NULL by default because of shared_ptr
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "Place[" << _id << "]");
 }
 
-
-Place::Place(DOMElement* element) throw(CapacityException)
-{
-	//XMLCh* ns = X(SCHEMA_wfSpace);
-
-	// ID
-	id = S(element->getAttribute(X("ID")));
-
-	// capacity
-	const XMLCh* res = element->getAttribute(X("capacity"));
-	capacity = XMLString::stringLen(res) != 0 ? atoi(S(res)) : Place_DEFAULT_CAPACITY;
-
-	// loop child nodes
-	DOMNodeList* le = element->getChildNodes();
-	if (le->getLength() >0) {
-		// properties
-		///ToDo: Migration to libxml2.
-//		properties = Properties(le);
-		// other nodes
-		for (XMLSize_t i = 0; i<le->getLength(); i++) {
-			DOMNode* node = le->item(i);
-			const XMLCh* name = node->getNodeName(); 
-			if (XMLString::equals(name,X("description"))) {
-				description = string(XMLString::transcode(node->getTextContent()));
-			} else if (XMLString::equals(name,X("tokenClass"))) {
-				tokenType = S(((DOMElement*) node)->getAttribute(X("type")));
-			} else if (XMLString::equals(name,X("token"))) {
-				if (tokens.size() >= capacity) {
-					throw CapacityException("Trying to put too many tokens on place"); 
-				}
-				LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: refractoring from xerces-c to libxml2!");
-//				tokens.push_back(new Token((DOMElement*) node));
-			}
-		}
-	}
-	
-	nextUnlockedToken = ( getTokenNumber() > 0 ) ? tokens[0] : NULL;
-}
-
-Place::~Place()
-{
+Place::~Place() {
 	removeAllTokens();
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Place[" << _id << "]");
 }
 
-DOMElement* Place::toElement(DOMDocument* doc)
-{
-	DOMElement* el = NULL;
-	// Initialize the XML4C2 system.
-	XMLUtils::Instance();
+const string& Place::getID() const {
+	return _id;
+}
 
-	XMLCh* ns = X(SCHEMA_wfSpace);
+void Place::setTokenType(const string& tokenType) {
+	_tokenType = tokenType;
+}
 
-	try
-	{   
-		el = doc->createElementNS(ns, X("place"));
-		el->setAttribute(X("ID"), XS(id));
-		if (capacity!=Place_DEFAULT_CAPACITY)
-		{
-			ostringstream oss;
-			oss << capacity; 
-			el->setAttribute(X("capacity"), XS(string(oss.str())));
-		}
+const string& Place::getTokenType() const {
+	return _tokenType;	
+}
 
-		// description
-		if (description.size()>0)
-		{
-			DOMElement* el1 = doc->createElementNS(ns, X("description"));
-			el1->setTextContent(XS(description));
-			el->appendChild(el1);
-		}
+bool Place::isEmpty() const {
+	return (_tokens.empty());
+}
 
-		// properties
-		///ToDo: Migration to libxml2.
-//		vector<DOMElement*> v = properties.toElements(doc);       
-//		for (unsigned int i = 0; i < v.size(); i++)
-//		{
-//			el->appendChild(v[i]);
-//		}
-
-		// tokenClass
-		if (tokenType.size()>0)
-		{       
-			DOMElement* el2 = doc->createElementNS(ns, X("tokenClass"));
-			el2->setAttribute(X("type"), XS(tokenType));
-			el->appendChild(el2);
-		}
-
-		///ToDo: Migration to libxml2.
-//		for (unsigned int i = 0; i < tokens.size(); i++)
-//		{
-//			el->appendChild(tokens[i]->toElement(doc));
-//		}                   
+void Place::addToken(Token::ptr_t tokenP) throw(CapacityException) {
+	if (_tokens.size() >= _capacity) {
+		ostringstream oss; 
+		oss << "Trying to put too many tokens on place \"" << _id << "\"";
+		throw CapacityException(oss.str()); 
 	}
-	catch (const OutOfMemoryException&)
-	{
-		LOG_FATAL(logger_t(getLogger("gwdl")), "OutOfMemoryException" );
-	}
-	catch (const DOMException& e)
-	{
-		LOG_ERROR(logger_t(getLogger("gwdl")), "DOMException code is:  " << e.code );
-		LOG_ERROR(logger_t(getLogger("gwdl")), "Message: " << S(e.msg) );
-	}
-	catch (...)
-	{
-		LOG_ERROR(logger_t(getLogger("gwdl")), "An error occurred creating the document" );
-	}
-
-	return el;
+	_tokens.push_back(tokenP);
+	_nextUnlockedTokenP.reset();
 }
 
-const string& Place::getID() const
-{
-	return id;
+void Place::removeToken(int i) {
+	_tokens[i].reset();
+	_tokens.erase(_tokens.begin()+i);
+	_nextUnlockedTokenP.reset();
 }
 
-void Place::setTokenType(const string& _type)
-{
-	tokenType = _type;
+const vector<Token::ptr_t>& Place::getTokens() const {
+	return _tokens;	
 }
 
-const string& Place::getTokenType() const
-{
-	return tokenType;	
-}
-
-bool Place::isEmpty() const
-{
-	return (tokens.empty());
-}
-
-void Place::addToken(Token* token) throw(CapacityException) 
-{
-	if (tokens.size() >= capacity) {
-		throw CapacityException("Trying to put too many tokens on place"); 
-	}
-	tokens.push_back(token);
-	nextUnlockedToken = NULL;
-}
-
-void Place::removeToken(int i)
-{
-	delete tokens[i];
-	tokens.erase(tokens.begin()+i);
-	nextUnlockedToken = NULL;
-}
-
-const vector<Token*>& Place::getTokens() const 
-{
-	return tokens;	
-}
-
-void Place::removeToken(Token* _token) 
-{
-	for(vector<Token*>::iterator it=tokens.begin(); it != tokens.end(); ++it)
-	{
-		if ((*it)->getID() == _token->getID()) {
-			delete *it; *it = NULL;
-			tokens.erase(it);
-			nextUnlockedToken = NULL;
+void Place::removeToken(Token::ptr_t tokenP) {
+	for(vector<Token::ptr_t>::iterator it=_tokens.begin(); it != _tokens.end(); ++it) {
+		if ((*it)->getID() == tokenP->getID()) {
+			(*it).reset();
+			_tokens.erase(it);
+			_nextUnlockedTokenP.reset();
 			break;	
 		}	
 	}	
 }
 
 void Place::removeAllTokens() {
-	for(vector<Token*>::iterator it=tokens.begin(); it != tokens.end(); ++it) delete *it;
-	tokens.clear();	
-	nextUnlockedToken = NULL;
+	for(vector<Token::ptr_t>::iterator it=_tokens.begin(); it != _tokens.end(); ++it) (*it).reset();
+	_tokens.clear();	
+	_nextUnlockedTokenP.reset();
 }
 
-void Place::setCapacity(unsigned int _capacity) throw(CapacityException) 
-{
-	if (_capacity < tokens.size()) {
-		throw CapacityException("There are too many tokens on the place for setting capacity");
+void Place::setCapacity(unsigned int capacity) throw(CapacityException) {
+	if (capacity < _tokens.size()) {
+		ostringstream oss; 
+		oss << "There are too many tokens on the place \"" << _id << "\" for setting capacity";
+		throw CapacityException(oss.str());
 	}
-	capacity = _capacity;
+	_capacity = capacity;
 }
 
-int Place::getCapacity() const
-{
-	return capacity;
+int Place::getCapacity() const {
+	return _capacity;
 }
 
-int Place::getTokenNumber() const
-{
-	return tokens.size();
+int Place::getTokenNumber() const {
+	return _tokens.size();
 }
 
-void Place::setDescription(const string& d) 
-{
-	description = d;
+void Place::setDescription(const string& d) {
+	_description = d;
 }
 
-const string& Place::getDescription() const 
-{
-	return description;	
+const string& Place::getDescription() const {
+	return _description;	
 }
 
-void Place::setProperties(Properties& _props) 
-{
-	properties = _props;
+void Place::setProperties(Properties::ptr_t propertiesP) {
+	_propertiesP = propertiesP;
 }
 
-Properties& Place::getProperties() 
-{
-	return properties;	
+Properties::ptr_t Place::getProperties() {
+	return _propertiesP;	
 }
 
-void Place::lockToken(Token* p_token, Transition* p_transition) {
-	nextUnlockedToken = NULL;
-	p_token->lock(p_transition);
+const Properties::ptr_t Place::readProperties() const {
+	return _propertiesP;
 }
 
-void Place::unlockToken(Token* p_token) {
-	nextUnlockedToken = NULL;
-	p_token->unlock();
+void Place::lockToken(Token::ptr_t tokenP, Transition* transitionP) {
+	_nextUnlockedTokenP.reset();
+	tokenP->lock(transitionP);
 }
 
-Token* Place::getNextUnlockedToken() {
-	if ( nextUnlockedToken == NULL) {
-		for (size_t i=0; i<tokens.size(); i++) {
-			if (!tokens[i]->isLocked()) {
-				nextUnlockedToken = tokens[i];
+void Place::unlockToken(Token::ptr_t tokenP) {
+	_nextUnlockedTokenP.reset();
+	tokenP->unlock();
+}
+
+Token::ptr_t Place::getNextUnlockedToken() {
+	if ( _nextUnlockedTokenP == NULL) {
+		for (size_t i=0; i<_tokens.size(); i++) {
+			if (!_tokens[i]->isLocked()) {
+				_nextUnlockedTokenP = _tokens[i];
 				break;
 			}
 		}
 	}
-	return nextUnlockedToken;
+	return _nextUnlockedTokenP;
 }
 
-string Place::generateID() const
-{
+string Place::generateID() const {
 	static long counter = 0; 
 	ostringstream oss; 
 	oss << "p" << counter++;
@@ -269,11 +149,3 @@ string Place::generateID() const
 }
 
 } // end namespace gwdl
-
-ostream& operator<<(ostream &out, gwdl::Place &place) 
-{	
-	DOMNode* node = place.toElement(gwdl::XMLUtils::Instance()->createEmptyDocument(true));
-	gwdl::XMLUtils::Instance()->serialize(out,node,true);
-	return out;
-}
-

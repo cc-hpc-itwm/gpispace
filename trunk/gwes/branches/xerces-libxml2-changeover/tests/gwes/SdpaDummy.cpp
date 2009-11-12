@@ -55,7 +55,7 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 			case (TokenParameter::SCOPE_WRITE):
 				continue;
 			case (TokenParameter::SCOPE_OUTPUT):
-				it->tokenP = new Token(Data::ptr_t(new Data(string("<data><output xmlns=\"\">15</output></data>"))));
+				it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(string("<data><output xmlns=\"\">15</output></data>")))));
 				LOG_INFO(logger_t(getLogger("gwes")), "Generated dummy output token: " << *it->tokenP);
 				break;
 			}

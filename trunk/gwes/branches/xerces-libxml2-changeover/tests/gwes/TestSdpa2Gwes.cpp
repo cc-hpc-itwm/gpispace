@@ -55,7 +55,7 @@ void Sdpa2GwesAPITest::testWorkflowWithSdpaActivity() {
 	LOG_INFO(log, "Finished workflow:\n" << wf);
 	
 	// get and check output
-	std::vector<Token*> outputTokens = wf.getPlace("output")->getTokens();
+	std::vector<Token::ptr_t> outputTokens = wf.getPlace("output")->getTokens();
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 	
 	LOG_INFO(log, "============== END testWorkflowWithSdpaActivity =============");
