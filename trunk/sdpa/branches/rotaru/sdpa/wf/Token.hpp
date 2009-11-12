@@ -5,7 +5,10 @@
 #include <ostream>
 #include <stdexcept> // logic_error
 
+#ifdef HAVE_CONFIG_H
 #include <sdpa/sdpa-config.hpp>
+#endif
+
 #include <sdpa/memory.hpp>
 #include <sdpa/util/Properties.hpp>
 

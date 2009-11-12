@@ -126,7 +126,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			{
 				activity_id_t actId = pJob->id().str();
 				workflow_id_t wfId  = pJob->parent().str();
-				parameter_list_t output;
+				parameter_list_t output; // = *gwes_act.getTransitionOccurrence()->getTokens(); !!!
 
 				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" finished");
 
@@ -140,7 +140,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 				try {
 					Worker::ptr_t ptrWorker = findWorker(worker_id);
-					// delete job from worker's queues
+					// delete job from the worker's queues
 
 					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());

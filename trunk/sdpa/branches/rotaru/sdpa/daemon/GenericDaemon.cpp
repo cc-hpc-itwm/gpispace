@@ -16,6 +16,8 @@
 
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <gwes/GWES.h>
+
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
@@ -723,6 +725,9 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
 	// call job.JobFinished(event);
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
+	gwdl::Workflow* wf = ((gwes::GWES*)gwes())->getWorkflowHandlerTable().get(workflowId)->getWorkflow();
+	SDPA_LOG_DEBUG("******* completed workflow (filled with tokens): "<< *wf);
+
 	job_id_t job_id(workflowId);
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::GWES, name(), job_id));
 	sendEvent(pEvtJobFinished);
