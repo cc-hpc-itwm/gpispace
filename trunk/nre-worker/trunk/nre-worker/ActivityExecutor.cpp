@@ -112,22 +112,22 @@ namespace sdpa { namespace nre { namespace worker {
   void
   ActivityExecutor::stop()
   {
+    if (execution_thread_)
+    {
+      // FIXME: how to stop the execution thread (while it executes something)?
+      execution_thread_->interrupt();
+      execution_thread_->join();
+      delete execution_thread_; execution_thread_ = NULL;
+    }
+
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       if (! service_thread_) return; // already stopped
-      // FIXME: how to stop the execution thread?
 
       service_thread_->interrupt();
       io_service_.stop();
       service_thread_->join();
       delete service_thread_; service_thread_ = NULL;
-    }
-
-    if (execution_thread_)
-    {
-      execution_thread_->interrupt();
-      execution_thread_->join();
-      delete execution_thread_; execution_thread_ = NULL;
     }
 
     {
@@ -222,7 +222,12 @@ namespace sdpa { namespace nre { namespace worker {
   void
   ActivityExecutor::trigger_shutdown()
   {
-    LOG(ERROR, "implement me (send a TERM signal to myself or something like that)");
+    LOG(DEBUG, "committing suicide...");
+    // i guess this will only work on Linux:
+    kill(getpid(), SIGTERM);
+    // the alternative would be
+    //   raise(SIGTERM);
+    // but (regardless what the manpage says) it has not the exact same effect (sighandler in main is not triggered) ;-(
   }
 
   void
@@ -242,6 +247,7 @@ namespace sdpa { namespace nre { namespace worker {
       if (msg == "QUIT")
       {
         DLOG(INFO, "got QUIT request, returning from loop...");
+        trigger_shutdown();
         return;
       }
       else if (msg == "SEGV")

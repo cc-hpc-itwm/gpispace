@@ -47,6 +47,17 @@ namespace sdpa { namespace nre { namespace worker {
       , execution_thread_(NULL)
     {}
 
+    ~ActivityExecutor() throw()
+    {
+      try
+      {
+        stop();
+      }
+      catch (...)
+      {
+        LOG(ERROR, "error while stopping executor...");
+      }
+    }
     const std::string &location() const { return location_; }
 
     void start();
