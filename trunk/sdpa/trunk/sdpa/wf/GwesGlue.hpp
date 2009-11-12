@@ -33,6 +33,7 @@
 #include <gwes/Activity.h>
 
 namespace sdpa { namespace wf { namespace glue {
+  inline
   Token wrap(const gwdl::Token & gwdl_token) throw (std::exception)
   {
     Token wrapped;
@@ -90,6 +91,7 @@ namespace sdpa { namespace wf { namespace glue {
     return wrapped;
   }
 
+  inline
   gwdl::Token *unwrap(const wf::Token &wf_token) throw (std::exception)
   {
     DLOG(DEBUG, "unwrapping wf::Token to gwdl::Token...");
@@ -116,6 +118,7 @@ namespace sdpa { namespace wf { namespace glue {
     }
   }
 
+  inline
   Activity wrap(const gwes::Activity & gwes_activity) throw (std::exception)
   {
     DLOG(DEBUG, "wrapping an gwes::Activity");
@@ -184,6 +187,7 @@ namespace sdpa { namespace wf { namespace glue {
     return wrapped;
   }
 
+  inline
   void unwrap(const wf::Activity &wf_activity, gwes::Activity &gwes_activity)
   {
     if (wf_activity.name() != gwes_activity.getID())
@@ -237,6 +241,7 @@ namespace sdpa { namespace wf { namespace glue {
   typedef std::map<std::string, token_list_t> workflow_result_t;
   typedef std::vector<gwdl::Token*> gwdl_token_list_t;
 
+  inline
   workflow_result_t get_workflow_results(const gwdl::Workflow &const_workflow)
   {
     DLOG(INFO, "retrieving results from workflow: " << const_workflow.getID());
