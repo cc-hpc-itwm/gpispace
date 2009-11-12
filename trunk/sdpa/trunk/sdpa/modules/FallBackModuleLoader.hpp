@@ -78,11 +78,11 @@ namespace modules {
       } catch (const std::exception &ex) {
         dlclose(handle);
         LOG(ERROR, "errors during initialization function: " << ex.what());
-        throw ModuleLoadFailed("error during mod-init function", mod->name(), file);
+        throw ModuleLoadFailed("error during mod-init function: " + std::string(ex.what()), mod->name(), file);
       } catch (...) {
         dlclose(handle);
         LOG(ERROR, "unknown error during initialization function");
-        throw ModuleLoadFailed("error during mod-init function", mod->name(), file);
+        throw ModuleLoadFailed("unknown error during mod-init function", mod->name(), file);
       }
 
       if (mod->name().empty())
