@@ -628,7 +628,9 @@ void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw 
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" failed!");
 	job_id_t job_id(workflowId);
-	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), job_id ));
+    SDPA_LOG_DEBUG("TODO: fill in job results...");
+    job_result_t result;
+	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), job_id, result));
 	sendEvent(pEvtJobFailed);
 }
 

@@ -228,7 +228,8 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		{
 			try {
 			// forward it up
-			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id()));
+            job_result_t result;
+			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), result));
 
 			// assert( master() == ptr_to_master_stage_->name() );
 

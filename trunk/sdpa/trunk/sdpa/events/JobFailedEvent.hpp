@@ -25,9 +25,11 @@ namespace sdpa { namespace events {
 
 		JobFailedEvent(	const address_t& a_from,
 						const address_t& a_to,
-						const sdpa::job_id_t& a_job_id)
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
-		}
+						const sdpa::job_id_t& a_job_id
+                      , const job_result_t &job_result)
+          :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
+          , result_(job_result)
+        { }
 
 		virtual ~JobFailedEvent() {
 		}
@@ -38,6 +40,11 @@ namespace sdpa { namespace events {
         {
           visitor->visitJobFailedEvent(this);
         }
+
+      const job_result_t &result() const { return result_; }
+      job_result_t &result() { return result_; }
+    private:
+      job_result_t result_;
 	};
 }}
 
