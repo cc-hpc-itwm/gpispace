@@ -35,6 +35,9 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     virtual Reply *execute(ExecutionContext *context) = 0;
+
+    // indicate a long-running execution request
+    virtual bool would_block() const { return false; }
   };
 
   class PingReply : public Reply
@@ -114,6 +117,9 @@ namespace sdpa { namespace nre { namespace worker {
     explicit ExecuteRequest(const sdpa::wf::Activity &act)
       : activity_(act)
     {}
+
+    virtual bool would_block() const { return true; }
+
     virtual Reply *execute(ExecutionContext *ctxt)
     {
       const std::string mod_name(activity().method().module());
