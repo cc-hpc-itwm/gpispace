@@ -80,10 +80,18 @@ namespace modules {
       {
         os << "{mod, " << name() << ", ";
         os << "[";
+        {
+          call_table_t::const_iterator fun(call_table_.begin());
+          while (fun != call_table_.end())
+          {
+            os << fun->first;
+            fun++;
+            if (fun != call_table_.end()) os << ",";
+          }
+        }
+
         for (call_table_t::const_iterator fun(call_table_.begin()); fun != call_table_.end(); ++fun)
         {
-          os << fun->first;
-          os << ",";
         }
         os << "]";
         os << "}";
