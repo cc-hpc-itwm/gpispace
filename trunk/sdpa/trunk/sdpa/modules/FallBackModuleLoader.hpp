@@ -103,6 +103,7 @@ namespace modules {
       }
 
       LOG(INFO, "sucessfully loaded: " << mod->name() << " from file " << file);
+      DLOG(DEBUG, mod);
       return *mod;
     }
 

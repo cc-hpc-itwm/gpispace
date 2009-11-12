@@ -46,6 +46,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     void start() throw (std::exception)
     {
+      // FIXME: synchronize!
       if (socket_) return;
 
       DLOG(DEBUG, "starting connection to nre-worker process at: " << worker_location());
@@ -74,24 +75,46 @@ namespace sdpa { namespace nre { namespace worker {
 
       socket_ = new udp::socket(io_service_, udp::endpoint(udp::v4(), 0));
 
+      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
     }
 
     void stop() throw (std::exception)
     {
+      // FIXME: synchronize!
+      if (! socket_) return;
+
+      delete socket_; socket_ = NULL;
 
     }
 
     void cancel() throw (std::exception)
     {
-
+      throw std::runtime_error("not implemented");
     }
 
     sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity)
     {
-      return in_activity;
+      sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity));
+      if (msg)
+      {
+        // check if it is a ExecuteReply
+        ExecuteReply *exec_reply = dynamic_cast<ExecuteReply*>(msg.get());
+        if (exec_reply)
+        {
+          return exec_reply->result();
+        }
+        else
+        {
+          throw std::runtime_error("did not receive an ExecuteReply message!");
+        }
+      }
+      else
+      {
+        throw std::runtime_error("did not get a response from worker!");
+      }
     }
   private:
-    Message *request(const Message &m)
+    sdpa::shared_ptr<Message> request(const Message &m)
     {
       assert(socket_);
 
@@ -105,7 +128,7 @@ namespace sdpa { namespace nre { namespace worker {
       size_t reply_length = socket_->receive_from(boost::asio::buffer(data_, max_length), sender_endpoint);
       std::string data(data_, reply_length);
       LOG(DEBUG, "got " << reply_length << " bytes of data from " << sender_endpoint << ": " << data);
-      return codec_.decode(data);
+      return sdpa::shared_ptr<Message>(codec_.decode(data));
     }
 
     std::string nre_worker_location_;

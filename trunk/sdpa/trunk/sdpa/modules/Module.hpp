@@ -1,6 +1,7 @@
 #ifndef SDPA_MODULES_MODULE_HPP
 #define SDPA_MODULES_MODULE_HPP 1
 
+#include <iostream>
 #include <string>
 #include <list>
 
@@ -74,6 +75,19 @@ namespace modules {
           throw DuplicateFunction(name(), function);
         }
       }
+      
+      void writeTo(std::ostream &os) const
+      {
+        os << "{mod, " << name() << ", ";
+        os << "[";
+        for (call_table_t::const_iterator fun(call_table_.begin()); fun != call_table_.end(); ++fun)
+        {
+          os << fun->first;
+          os << ",";
+        }
+        os << "]";
+        os << "}";
+      }
     private:
       // currently we do not want copy operations, thus, define them, but don't
       // implement them
@@ -85,5 +99,11 @@ namespace modules {
       call_table_t call_table_;
   };
 }}
+
+inline std::ostream &operator<<(std::ostream &os, const sdpa::modules::Module &mod)
+{
+  mod.writeTo(os);
+  return os;
+}
 
 #endif
