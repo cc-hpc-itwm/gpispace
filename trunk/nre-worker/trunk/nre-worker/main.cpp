@@ -164,7 +164,11 @@ int main(int ac, char **av)
   } catch (const std::exception &ex)
   {
     std::cerr << "could not connect to FVM: " << ex.what() << std::endl;
-//    return 2;
+#if defined(FVM_REQUIRED)
+    return 2;
+#else
+    std::cerr << "**** ignoring this error (enable it with -DFVM_REQUIRED)!" << std::endl;
+#endif
   }
 
   signal(SIGSEGV, &sig_handler);

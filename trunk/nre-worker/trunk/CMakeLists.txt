@@ -93,6 +93,9 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM -DSHMEM -DUSE_STL_TR1)
+if (FVM_REQUIRED)
+  add_definitions(-DFVM_REQUIRED)
+endif (FVM_REQUIRED)
 
 # Reflect the package structure
 add_subdirectory(nre-worker)
