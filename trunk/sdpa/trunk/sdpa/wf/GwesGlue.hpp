@@ -280,6 +280,87 @@ namespace sdpa { namespace wf { namespace glue {
 
     return result;
   }
+
+  inline
+  void put_results_to_activity(const sdpa::job_result_t &result, gwes::Activity &gwes_activity)
+  {
+    DLOG(INFO, "putting results back to activity: " << gwes_activity.getID());
+
+    gwes::parameter_list_t *gwes_params = gwes_activity.getTransitionOccurrence()->getTokens();
+    for (gwes::parameter_list_t::iterator param(gwes_params->begin()); param != gwes_params->end(); ++param)
+    {
+      const std::string gwes_param_name(param->edgeP->getExpression());
+      switch (param->scope)
+      {
+        case gwes::TokenParameter::SCOPE_READ:
+        {
+          // nothing to do
+          DLOG(DEBUG, "putting read parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_INPUT):
+        {
+          // nothing to do
+          DLOG(DEBUG, "putting input parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_WRITE):
+        {
+          DLOG(DEBUG, "putting write parameter: replacing token");
+          if (param->tokenP)
+          {
+            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
+            delete param->tokenP; param->tokenP = NULL;
+          }
+          // looking up tokens in result
+          // TODO: check for existence!
+          const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
+          if (result_tokens.size() == 1)
+          {
+            param->tokenP = unwrap(result_tokens.front());
+          }
+          else if (result_tokens.size() > 1)
+          {
+            LOG(ERROR, "more than one result token is currently not supported!");
+            throw std::runtime_error("more than one result token is currently not supported");
+          }
+          else
+          {
+            LOG(ERROR, "expected a token on write edge: " << gwes_param_name);
+            throw std::runtime_error("expected a token on " + gwes_param_name);
+          }
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_OUTPUT):
+        {
+          DLOG(DEBUG, "putting output parameter: creating new token");
+          if (param->tokenP)
+          {
+            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
+            delete param->tokenP; param->tokenP = NULL;
+          }
+          // looking up tokens in result
+          // TODO: check for existence!
+          const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
+          if (result_tokens.size() == 1)
+          {
+            param->tokenP = unwrap(result_tokens.front());
+          }
+          else if (result_tokens.size() > 1)
+          {
+            LOG(ERROR, "more than one result token is currently not supported!");
+            throw std::runtime_error("more than one result token is currently not supported");
+          }
+          else
+          {
+            LOG(ERROR, "expected a token on output edge: " << gwes_param_name);
+            throw std::runtime_error("expected a token on " + gwes_param_name);
+          }
+          break;
+        }
+      }
+    }
+  }
 }}}
 
 #endif
