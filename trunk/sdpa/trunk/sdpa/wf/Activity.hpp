@@ -24,6 +24,7 @@ namespace sdpa { namespace wf {
    */
   class Method {
     public:
+      explicit
       Method(const std::string & module_at_method)
         : module_()
         , name_()
@@ -50,10 +51,6 @@ namespace sdpa { namespace wf {
         return *this;
       }
 
-      void operator()(const parameters_t &) {
-        // \todo{implement me}
-      }
-
       const std::string & module() const { return module_; }
       std::string & module() { return module_; }
       const std::string & name() const { return name_; }
@@ -67,8 +64,15 @@ namespace sdpa { namespace wf {
       void deserialize(const std::string &bytes)
       {
         const std::string::size_type pos_of_at(bytes.find_first_of('@'));
-        module_ = bytes.substr(0,           pos_of_at);
-        name_   = bytes.substr(pos_of_at+1, std::string::npos);
+        if (pos_of_at != std::string::npos)
+        {
+          module_ = bytes.substr(0,           pos_of_at);
+          name_   = bytes.substr(pos_of_at+1, std::string::npos);
+        }
+        else
+        {
+          throw std::runtime_error("could not deserialize method: " + bytes + " did not contain @ separator");
+        }
       }
 
       void writeTo(std::ostream &os) const
