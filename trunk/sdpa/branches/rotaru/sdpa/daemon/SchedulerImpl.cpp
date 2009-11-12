@@ -131,6 +131,46 @@ void SchedulerImpl::stop()
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 
+bool SchedulerImpl::post_request()
+{
+	bool bReqPosted = false;
+	sdpa::util::time_type current_time = sdpa::util::now();
+	sdpa::util::time_type difftime = current_time - m_last_request_time;
+
+	if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	{
+		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
+		{
+			// post a new request to the master
+			// the slave posts a job request
+			SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
+			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+			ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
+			m_last_request_time = current_time;
+			bReqPosted = true;
+		}
+	}
+
+	return bReqPosted;
+}
+
+void SchedulerImpl::send_life_sign()
+{
+	 sdpa::util::time_type current_time = sdpa::util::now();
+	 sdpa::util::time_type difftime = current_time - m_last_request_time;
+
+	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 {
+		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
+		 {
+			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+			 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
+			 m_last_request_time = current_time;
+		 }
+	 }
+}
+
+
 void SchedulerImpl::check_post_request()
 {
 	 sdpa::util::time_type current_time = sdpa::util::now();
@@ -139,31 +179,14 @@ void SchedulerImpl::check_post_request()
 	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 {
 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
-
 		 // post job request if number_of_jobs() < #registered workers +1
 		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 1 )
-		 {
-			 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
-			 {
-				 // post a new request to the master
-				 // the slave posts a job request
-				 SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
-				 RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-				 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
-				 m_last_request_time = current_time;
-			 }
-		 }
+			 post_request();
 		 else //send a LS
-		 {
-			 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
-			 {
-				 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-				 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
-				 m_last_request_time = current_time;
-			 }
-		 }
+			 send_life_sign();
 	 }
 }
+
 
 void SchedulerImpl::run()
 {

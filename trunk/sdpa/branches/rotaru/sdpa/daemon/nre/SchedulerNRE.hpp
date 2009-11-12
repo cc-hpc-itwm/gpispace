@@ -68,8 +68,8 @@ namespace sdpa {
 					gwes::activity_t* pAct = activities_to_be_executed.pop_and_wait(m_timeout);
 					execute(*pAct);
 
-					SDPA_LOG_DEBUG("Finished execute_activity ...");
-					check_post_request();
+					SDPA_LOG_DEBUG("Finished executing the activity activity "<<pAct->getID());
+					post_request();
 				}
 				catch( const boost::thread_interrupted & )
 				{
@@ -79,7 +79,7 @@ namespace sdpa {
 				catch( const sdpa::daemon::QueueEmpty &)
 				{
 					//SDPA_LOG_DEBUG("Queue empty exception");
-					check_post_request();
+					post_request();
 				}
 			}
 		}
