@@ -23,6 +23,7 @@
 #include <sdpa/wf/Activity.hpp>
 
 #include <sdpa/wf/GwesGlue.hpp>
+#include <fstream>
 
 int main(int , char **)
 {
@@ -60,7 +61,7 @@ int main(int , char **)
     {
       gwdl::Properties props;
       props.put("datatype", typeid(int).name());
-      gwdl::Data *data(new gwdl::Data("<data>42</data>"));
+      gwdl::Data *data(new gwdl::Data("<data><sdpa>42</sdpa></data>"));
       gwdl::Token gtoken(props, data);
       sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
       std::clog << "gtoken: " << gtoken << std::endl;;
@@ -70,6 +71,29 @@ int main(int , char **)
     catch (const gwdl::WorkflowFormatException &wfe)
     {
       std::clog << "could not instantiate token-data" << std::endl;
+    }
+  }
+
+  {
+    std::string path_to_desc("../sdpa/workflows/workflow-result-test.gwdl");
+    try
+    {
+      using namespace sdpa::wf::glue;
+
+      gwdl::Workflow gwdl_workflow(path_to_desc);
+      workflow_result_t result = get_workflow_results(gwdl_workflow);
+      for (workflow_result_t::const_iterator r(result.begin()); r != result.end(); ++r)
+      {
+        std::clog << "tokens on place " << r->first << ":" << std::endl;
+        for (token_list_t::const_iterator token(r->second.begin()); token != r->second.end(); ++token)
+        {
+          std::clog << "\t" << *token << std::endl;
+        }
+      }
+    }
+    catch (const std::exception &ex)
+    {
+      std::clog << "could not parse workflow: " << ex.what() << std::endl;
     }
   }
 
