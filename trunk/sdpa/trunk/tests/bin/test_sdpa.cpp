@@ -1,5 +1,4 @@
 #include <fhglog/fhglog.hpp>
-#include <fhglog/Configuration.hpp>
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
