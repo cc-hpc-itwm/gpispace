@@ -50,6 +50,8 @@
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 
+#include <sdpa/wf/Serialization.hpp>
+
 namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SDPAEvent & e, unsigned int /* version */)
@@ -183,6 +185,7 @@ namespace boost { namespace serialization {
   void serialize(Archive & ar, sdpa::events::JobFinishedEvent & e, unsigned int /* version */)
   {
     ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+    ar & e.result();
   }
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::JobFinishedAckEvent & e, unsigned int /* version */)

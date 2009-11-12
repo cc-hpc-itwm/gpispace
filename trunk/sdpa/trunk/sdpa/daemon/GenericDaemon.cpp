@@ -602,7 +602,10 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
 	job_id_t job_id(workflowId);
-	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id));
+
+    JobFinishedEvent::result_t result;
+    SDPA_LOG_DEBUG("TODO: fill in the results...");
+	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id, result));
 	sendEvent(pEvtJobFinished);
 }
 

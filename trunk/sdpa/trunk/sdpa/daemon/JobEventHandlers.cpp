@@ -96,7 +96,9 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt)
 		{
 			try {
 				// forward it up
-				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id()));
+                JobFinishedEvent::result_t result;
+                SDPA_LOG_DEBUG("TODO: fill in the results...");
+				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), result));
 
 				// assert( master() == ptr_to_master_stage_->name() );
 				// send the event to the master
