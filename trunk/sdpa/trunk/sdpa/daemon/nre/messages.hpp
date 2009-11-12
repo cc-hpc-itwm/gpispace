@@ -24,20 +24,36 @@
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
-  class Reply
+  class Message
+  {
+  public:
+    Message()
+    {}
+    virtual ~Message() {}
+
+    virtual Message *execute(ExecutionContext *context) = 0;
+
+    // indicate a long-running execution request
+    virtual bool would_block() const { return false; }
+  };
+
+  class Reply : public Message
   {
   public:
     Reply() {}
     virtual ~Reply() {}
+
+    virtual Message *execute(ExecutionContext *)
+    {
+      return NULL;
+    }
   };
 
-  class Request
+  class Request : public Message
   {
   public:
-    virtual Reply *execute(ExecutionContext *context) = 0;
-
-    // indicate a long-running execution request
-    virtual bool would_block() const { return false; }
+    Request() {}
+    virtual ~Request() {}
   };
 
   class PingReply : public Reply

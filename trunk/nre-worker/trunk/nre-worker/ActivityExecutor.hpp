@@ -24,6 +24,7 @@
 
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
+#include <sdpa/daemon/nre/Codec.hpp>
 #include <sdpa/modules/ModuleLoader.hpp>
 
 #include <boost/bind.hpp>
@@ -31,9 +32,6 @@
 #include <boost/thread.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
-  class Request;
-  class Reply;
-
   class ActivityExecutor : public ExecutionContext
   {
   public:
@@ -68,9 +66,6 @@ namespace sdpa { namespace nre { namespace worker {
 
     void operator()();
   private:
-    Request *decode(const std::string &);
-    std::string encode(const Reply &);
-
     void handle_receive_from(const boost::system::error_code &error
                            , size_t bytes_recv);
     void execution_thread();
@@ -86,7 +81,7 @@ namespace sdpa { namespace nre { namespace worker {
     boost::thread *service_thread_;
 
     boost::thread *execution_thread_;
-    typedef std::pair<boost::asio::ip::udp::endpoint, Request *> request_t;
+    typedef std::pair<boost::asio::ip::udp::endpoint, Message *> request_t;
     typedef std::list<request_t> request_list_t;
     boost::recursive_mutex mtx_;
     boost::condition_variable_any request_avail_;
@@ -94,6 +89,8 @@ namespace sdpa { namespace nre { namespace worker {
 
     enum { max_length = ((2<<16 )-1) };
     char data_[max_length];
+
+    sdpa::nre::worker::Codec codec_;
   };
 }}}
 

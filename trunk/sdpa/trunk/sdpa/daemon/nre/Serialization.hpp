@@ -30,15 +30,21 @@
 
 namespace boost { namespace serialization {
   template <class Archive>
-  void serialize(Archive &, sdpa::nre::worker::Reply &, const unsigned int /* version */)
+  void serialize(Archive &, sdpa::nre::worker::Message &, const unsigned int /* version */)
   {
     // nothing
   }
 
   template <class Archive>
-  void serialize(Archive &, sdpa::nre::worker::Request &, const unsigned int /* version */)
+  void serialize(Archive &ar, sdpa::nre::worker::Reply &r, const unsigned int /* version */)
   {
-    // nothing
+    ar & boost::serialization::base_object<sdpa::nre::worker::Message>(r);
+  }
+
+  template <class Archive>
+  void serialize(Archive &ar, sdpa::nre::worker::Request &r, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Message>(r);
   }
 
   template <class Archive>
@@ -88,6 +94,7 @@ namespace boost { namespace serialization {
     ar & rply.reason();
   }
 
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Message)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Request)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Reply)
 

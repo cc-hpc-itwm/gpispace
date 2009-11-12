@@ -20,56 +20,13 @@
 #include <stdexcept>
 
 #include <boost/asio.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-
-#include <sdpa/daemon/nre/messages.hpp>
-#include <sdpa/daemon/nre/Serialization.hpp>
 
 #include "ActivityExecutor.hpp"
 
 using boost::asio::ip::udp;
 
-template <class Archive>
-void init_archive(Archive & ar)
-{
-  ar.register_type(static_cast<sdpa::nre::worker::PingRequest*>(NULL));
-  ar.register_type(static_cast<sdpa::nre::worker::PingReply*>(NULL));
-
-  ar.register_type(static_cast<sdpa::nre::worker::ExecuteRequest*>(NULL));
-  ar.register_type(static_cast<sdpa::nre::worker::ExecuteReply*>(NULL));
-
-  ar.register_type(static_cast<sdpa::nre::worker::ModuleLoaded*>(NULL));
-  ar.register_type(static_cast<sdpa::nre::worker::ModuleNotLoaded*>(NULL));
-  ar.register_type(static_cast<sdpa::nre::worker::LoadModuleRequest*>(NULL));
-}
-
 namespace sdpa { namespace nre { namespace worker {
   enum { max_length = ((2<<16) - 1) };
-
-  Request *
-  ActivityExecutor::decode(const std::string &bytes)
-  {
-    Request *rqst(NULL);
-    std::stringstream sstr(bytes);
-    boost::archive::text_iarchive ar(sstr);
-    init_archive(ar);
-    ar >> rqst;
-
-    return rqst;
-  }
-
-  std::string
-  ActivityExecutor::encode(const Reply &rply)
-  {
-    std::ostringstream sstr;
-    boost::archive::text_oarchive ar(sstr);
-    init_archive(ar);
-    const Reply *rply_ptr = &rply;
-    ar << rply_ptr;
-
-    return sstr.str();
-  }
 
   void
   ActivityExecutor::start()
@@ -153,7 +110,7 @@ namespace sdpa { namespace nre { namespace worker {
   {
     for (;;)
     {
-      sdpa::shared_ptr<Request> rqst;
+      sdpa::shared_ptr<Message> rqst;
       udp::endpoint reply_to;
 
       {
@@ -186,7 +143,7 @@ namespace sdpa { namespace nre { namespace worker {
         return;
       }
 
-      sdpa::shared_ptr<Reply> rply(rqst->execute(this));
+      sdpa::shared_ptr<Message> rply(rqst->execute(this));
 
       try
       {
@@ -204,7 +161,7 @@ namespace sdpa { namespace nre { namespace worker {
         {
           if (socket_)
           {
-            socket_->send_to(boost::asio::buffer(encode(*rply)), reply_to);
+            socket_->send_to(boost::asio::buffer(codec_.encode(*rply)), reply_to);
           }
         }
         else
@@ -265,7 +222,7 @@ namespace sdpa { namespace nre { namespace worker {
 
       try
       {
-        Request *rqst = decode(msg);
+        Message *rqst = codec_.decode(msg);
         if (rqst->would_block())
         {
           LOG(DEBUG, "enqueing blocking request to execution thread...");
@@ -276,12 +233,12 @@ namespace sdpa { namespace nre { namespace worker {
         else
         {
           LOG(DEBUG, "directly executing request...");
-          sdpa::shared_ptr<Reply> rply(rqst->execute(this));
+          sdpa::shared_ptr<Message> rply(rqst->execute(this));
           delete rqst; rqst = NULL;
 
           if (rply)
           {
-            socket_->send_to(boost::asio::buffer(encode(*rply)), sender_endpoint_);
+            socket_->send_to(boost::asio::buffer(codec_.encode(*rply)), sender_endpoint_);
           }
           else
           {
