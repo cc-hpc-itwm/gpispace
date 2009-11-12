@@ -148,6 +148,73 @@ namespace sdpa { namespace nre { namespace worker {
   private:
     sdpa::wf::Activity activity_;
   };
+
+  class ModuleLoaded : public Reply
+  {
+  public:
+    ModuleLoaded()
+    {}
+
+    ModuleLoaded(const std::string &path_to_module)
+      : path_(path_to_module)
+    {}
+
+    const std::string &path() const { return path_; }
+    std::string &path() { return path_; }
+  private:
+    std::string path_;
+  };
+
+  class ModuleNotLoaded : public Reply
+  {
+  public:
+    ModuleNotLoaded()
+    {}
+
+    ModuleNotLoaded(const std::string &path_to_module, const std::string &reason_for_failure)
+      : path_(path_to_module)
+      , reason_(reason_for_failure)
+    {}
+
+    const std::string &path() const { return path_; }
+    std::string &path() { return path_; }
+
+    const std::string &reason() const { return reason_; }
+    std::string &reason() { return reason_; }
+  private:
+    std::string path_;
+    std::string reason_;
+  };
+
+  class LoadModuleRequest : public Request
+  {
+  public:
+    LoadModuleRequest()
+    {}
+
+    explicit LoadModuleRequest(const std::string &path_to_module)
+      : path_(path_to_module)
+    { }
+
+    virtual Reply *execute(ExecutionContext *ctxt)
+    {
+      try
+      {
+        ctxt->loader().load(path());
+        return new ModuleLoaded(path());
+      }
+      catch (const std::exception &ex)
+      {
+        LOG(WARN, "execution of activity failed: " << ex.what());
+        return new ModuleNotLoaded(path(), ex.what());
+      }
+    }
+
+    const std::string &path() const { return path_; }
+    std::string &path() { return path_; }
+  private:
+    std::string path_;
+  };
 }}}
 
 #endif

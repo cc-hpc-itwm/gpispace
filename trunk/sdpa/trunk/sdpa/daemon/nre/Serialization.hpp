@@ -68,6 +68,26 @@ namespace boost { namespace serialization {
     ar & rply.status();
   }
 
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::LoadModuleRequest &rqst, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Request>(rqst);
+    ar & rqst.path();
+  }
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::ModuleLoaded &rply, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
+    ar & rply.path();
+  }
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::ModuleNotLoaded &rply, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
+    ar & rply.path();
+    ar & rply.reason();
+  }
+
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Request)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Reply)
 
