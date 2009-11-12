@@ -38,6 +38,7 @@
 
     <transition ID="read input">
       <inputPlace placeID="seq after init" edgeExpression="seq"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
@@ -52,6 +53,7 @@
 
     <transition ID="read velocity">
       <inputPlace placeID="seq after read input" edgeExpression="seq"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
@@ -149,6 +151,9 @@
 
     <transition ID="update">
       <inputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth"/>
+      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
       <!-- exclusive access to the outputvolume -->
       <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
 
@@ -188,6 +193,7 @@
 
     <transition ID="prefix sum">
       <inputPlace placeID="seq after calculation" edgeExpression="seq"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
@@ -202,6 +208,7 @@
 
     <transition ID="write output">
       <inputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
@@ -221,6 +228,7 @@
       <inputPlace placeID="number_of_parallel_propagators"/>
       <inputPlace placeID="memhandle_for_outputvolume"/>
       <inputPlace placeID="memhandle_for_configuration"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
