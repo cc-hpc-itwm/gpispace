@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <list>
 #include <cassert>
 #include <dlfcn.h>
 
@@ -111,6 +112,16 @@ namespace modules {
       if (mod != module_table_.end()) {
         unload(mod);
       }
+    }
+
+    std::list<std::string> loaded_modules() const
+    {
+      std::list<std::string> mods;
+      for (module_table_t::const_iterator m(module_table_.begin()); m != module_table_.end(); ++m)
+      {
+        mods.push_back(m->first);
+      }
+      return mods;
     }
   private:
     FallBackModuleLoader()
