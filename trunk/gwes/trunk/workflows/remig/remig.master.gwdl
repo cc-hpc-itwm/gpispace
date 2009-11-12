@@ -11,6 +11,9 @@
     <token><data><sdpa>file:///u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.config</sdpa></data></token>
   </place>
 
+  <!-- back from the subworkflow -->
+  <place ID="done"/>
+
   <!-- WORK HERE! -->
   <!-- the call to the subworkflow, insert the real operation candidate -->
   <transition ID="remigration">
@@ -24,8 +27,5 @@
 
     <outputPlace placeID="done" edgeExpression="done"/>
   </transition>
-
-  <!-- back from the subworkflow -->
-  <place ID="done"/>
 
 </workflow>
