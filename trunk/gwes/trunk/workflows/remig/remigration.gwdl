@@ -14,6 +14,7 @@
 
     <!-- init -->
 
+    <!-- the seq tokens are for sequentializing different activities -->
     <place ID="seq after init"/>
 
     <transition ID="init">
@@ -32,12 +33,13 @@
       <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <outputPlace placeID="seq after init" edgeExpression="seq"/>
-    </transition>    
+    </transition>
 
     <place ID="seq after read input"/>
 
     <transition ID="read input">
-      <inputPlace placeID="seq after init" edgeExpression="seq_IN"/>
+      <inputPlace placeID="seq after init"/>
+
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -52,7 +54,8 @@
     <place ID="seq after read velocity"/>
 
     <transition ID="read velocity">
-      <inputPlace placeID="seq after read input" edgeExpression="seq_IN"/>
+      <inputPlace placeID="seq after read input"/>
+
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -75,6 +78,7 @@
 
     <transition ID="initialize a slice">
       <readPlace placeID="seq after read velocity"/>
+
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <inputPlace placeID="slices_initialized" edgeExpression="slices_initialized"/>
 
@@ -95,6 +99,7 @@
     <transition ID="all slices are initialized">
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <inputPlace placeID="slices_initialized" edgeExpression="slices_initialized"/>
+
       <condition>$slices_initialized &gt;= $number_of_frequencies</condition>
     </transition>
 
@@ -116,10 +121,13 @@
     <place ID="seq after calculation"/>
 
     <transition ID="all slices are finalized">
+      <inputPlace placeID="seq after read velocity" edgeExpression="seq"/>
+
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <inputPlace placeID="slices_finalized" edgeExpression="slices_finalized"/>
+
       <condition>$slices_finalized &gt;= $number_of_frequencies</condition>
-      <inputPlace placeID="seq after read velocity" edgeExpression="seq"/>
+
       <outputPlace placeID="seq after calculation" edgeExpression="$seq"/>
     </transition>
 
@@ -192,7 +200,8 @@
     <place ID="seq after prefix sum"/>
 
     <transition ID="prefix sum">
-      <inputPlace placeID="seq after calculation" edgeExpression="seq_IN"/>
+      <inputPlace placeID="seq after calculation"/>
+
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -207,7 +216,8 @@
     <place ID="seq after write output"/>
 
     <transition ID="write output">
-      <inputPlace placeID="seq after prefix sum" edgeExpression="seq_IN"/>
+      <inputPlace placeID="seq after prefix sum"/>
+
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -222,7 +232,8 @@
     <place ID="seq after finalize"/>
 
     <transition ID="finalize">
-      <inputPlace placeID="seq after write output" edgeExpression="seq_IN"/>
+      <inputPlace placeID="seq after write output"/>
+
       <inputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <!-- consume all the global variable tokens, not strictly necessary -->
@@ -246,6 +257,7 @@
 
     <transition ID="done">
       <inputPlace placeID="seq after finalize" edgeExpression="seq"/>
+
       <outputPlace placeID="done" edgeExpression="$seq"/>
     </transition>
 
