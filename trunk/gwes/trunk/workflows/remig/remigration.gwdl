@@ -5,30 +5,60 @@
     <!-- set by master workflow -->
     <place ID="config file"/>
 
-    <!-- global settings, normally set by the init function -->
-    <place ID="number_of_frequencies"><token><data><sdpa>100</sdpa></data></token></place>
-    <place ID="number_of_depthlevels"><token><data><sdpa>50</sdpa></data></token></place>
-    <place ID="number_of_parallel_propagators"><token><data><sdpa>3</sdpa></data></token></place>
-    <place ID="memhandle_for_outputvolume"><token><data><sdpa>0xdeadbeef</sdpa></data></token></place>
-    <place ID="memhandle_for_configuration"><token><data><sdpa>0x47110815</sdpa></data></token></place>
+    <!-- global settings, set by the init function -->
+    <place ID="number_of_frequencies"/>
+    <place ID="number_of_depthlevels"/>
+    <place ID="number_of_parallel_propagators"/>
+    <place ID="memhandle_for_outputvolume"/>
+    <place ID="memhandle_for_configuration"/>
 
     <!-- init -->
-    <place ID="seq after init"><token><data><sdpa>SEQ</sdpa></data></token></place>
 
+    <place ID="seq after init"/>
+
+    <transition ID="init">
+      <inputPlace placeID="config file" edgeExpression="config_file"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="init@init" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
+      <outputPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <outputPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <outputPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
+      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <outputPlace placeID="seq after init" edgeExpression="seq"/>
+    </transition>    
 
     <place ID="seq after read input"/>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="read input">
       <inputPlace placeID="seq after init" edgeExpression="seq"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="readinp@readinp" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="seq after read input" edgeExpression="$seq"/>
     </transition>
 
     <place ID="seq after read velocity"/>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="read velocity">
       <inputPlace placeID="seq after read input" edgeExpression="seq"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="readvelo@readvelo" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="seq after read velocity" edgeExpression="$seq"/>
     </transition>
 
@@ -103,19 +133,30 @@
       <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice * $number_of_frequencies"/>
     </transition>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="calc one level">
       <inputPlace placeID="slice_and_depth before calc one level" edgeExpression="slice_and_depth"/>
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="calc@calc" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
     </transition>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="update">
       <inputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth"/>
       <!-- exclusive access to the outputvolume -->
       <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+        </oc:operationClass>
+      </operation>
 
       <outputPlace placeID="slice_and_depth after update" edgeExpression="$slice_and_depth"/>
       <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="$memhandle_for_outputvolume"/>
@@ -145,23 +186,34 @@
  
     <place ID="seq after prefix sum"/>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="prefix sum">
       <inputPlace placeID="seq after calculation" edgeExpression="seq"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="prefsum@prefsum" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="seq after prefix sum" edgeExpression="$seq"/>
     </transition>
 
     <place ID="seq after write output"/>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="write output">
       <inputPlace placeID="seq after prefix sum" edgeExpression="seq"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="writeoutp@writeoutp" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="seq after write output" edgeExpression="$seq"/>
     </transition>
 
     <place ID="seq after finalize"/>
 
-    <!-- insert some real operationCandidate here -->
     <transition ID="finalize">
       <!-- consume all the global variable tokens, not strictly necessary -->
       <inputPlace placeID="number_of_frequencies"/>
@@ -169,6 +221,12 @@
       <inputPlace placeID="number_of_parallel_propagators"/>
       <inputPlace placeID="memhandle_for_outputvolume"/>
       <inputPlace placeID="memhandle_for_configuration"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="sdpa" operationName="finalize@finalize" selected="true"/>
+        </oc:operationClass>
+      </operation>
 
       <inputPlace placeID="seq after write output" edgeExpression="seq"/>
       <outputPlace placeID="seq after finalize" edgeExpression="$seq"/>

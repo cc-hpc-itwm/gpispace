@@ -2,6 +2,8 @@
 
   <description>ReMigration, master workflow to be executed on the orchestrator</description>
 
+  <!-- NOTE! REAL PATHS TO BE INSERTED -->
+
   <!-- insert some real location, accessible by all nodes, remember that init -->
   <!-- is executed somewhere -->
   <place ID="config file">
@@ -17,8 +19,8 @@
     <inputPlace placeID="config file" edgeExpression="config file"/>
     <outputPlace placeID="done" edgeExpression="done"/>
     <operation>
-      <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration.without_bashcalls">
-        <oc:operationCandidate type="workflow" operationName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.gwdl" resourceName="agg" selected="true"/>
+      <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration">
+        <oc:operationCandidate type="sdpa/workflow" operationName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.gwdl" resourceName="agg" selected="true"/>
       </oc:operationClass>
     </operation>
   </transition>
