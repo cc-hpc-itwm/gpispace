@@ -18,6 +18,8 @@ void finalize (Module::data_t &params)
   MLOG (DEBUG, "fvmGlobalfree(memhandle_for_configuration) = " << ret);
 
   // at the moment: do nothing
+
+  params["seq"].token().data("SEQ");
 }
 
 SDPA_MOD_INIT_START(finalize)

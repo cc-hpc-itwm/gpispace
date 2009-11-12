@@ -36,6 +36,7 @@ void init (Module::data_t &params)
   params["number_of_parallel_propagators"].token().data(number_of_parallel_propagators);
   params["memhandle_for_outputvolume"].token().data(memhandle_for_outputvolume);
   params["memhandle_for_configuration"].token().data(memhandle_for_configuration);
+
   params["seq"].token().data("SEQ");
 }
 

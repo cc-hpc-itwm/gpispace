@@ -26,6 +26,8 @@ void calc (Module::data_t &params)
 
   MLOG (DEBUG, "slice = " << slice);
   MLOG (DEBUG, "depth = " << depth);
+
+  params["slice_and_depth_OUT"].token().data(slice_and_depth);
 }
 
 SDPA_MOD_INIT_START(calc)

@@ -14,6 +14,8 @@ void readvelo (Module::data_t &params)
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
   // at the moment: do nothing
+
+  params["seq"].token().data("SEQ");
 }
 
 SDPA_MOD_INIT_START(readvelo)
