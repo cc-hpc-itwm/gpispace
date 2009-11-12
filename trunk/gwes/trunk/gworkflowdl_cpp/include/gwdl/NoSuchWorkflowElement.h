@@ -21,6 +21,7 @@ namespace gwdl
  */ 
 class NoSuchWorkflowElement : public std::runtime_error {
 public:
+        explicit
 		NoSuchWorkflowElement(const std::string& a_message) 
           : std::runtime_error(a_message)
 		{
