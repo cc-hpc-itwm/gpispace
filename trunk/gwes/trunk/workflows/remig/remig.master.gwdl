@@ -17,7 +17,7 @@
     <inputPlace placeID="config file" edgeExpression="config file"/>
     <outputPlace placeID="done" edgeExpression="done"/>
     <operation>
-      <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration">
+      <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration.without_bashcalls">
         <oc:operationCandidate type="workflow" operationName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/remigration.gwdl" resourceName="agg" selected="true"/>
       </oc:operationClass>
     </operation>

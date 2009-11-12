@@ -5,16 +5,35 @@
     <!-- set by master workflow -->
     <place ID="config file"/>
 
-    <!-- global settings, normally set by the init function -->
-    <place ID="number_of_frequencies"><token><data><sdpa>100</sdpa></data></token></place>
-    <place ID="number_of_depthlevels"><token><data><sdpa>50</sdpa></data></token></place>
-    <place ID="number_of_parallel_propagators"><token><data><sdpa>3</sdpa></data></token></place>
-    <place ID="memhandle_for_outputvolume"><token><data><sdpa>0xdeadbeef</sdpa></data></token></place>
-    <place ID="memhandle_for_configuration"><token><data><sdpa>0x47110815</sdpa></data></token></place>
+    <!-- global settings, set by the init function -->
+    <place ID="number_of_frequencies"/>
+    <place ID="number_of_depthlevels"/>
+    <place ID="number_of_parallel_propagators"/>
+    <place ID="memhandle_for_outputvolume"/>
+    <place ID="memhandle_for_configuration"/>
 
     <!-- init -->
-    <place ID="seq after init"><token><data><sdpa>SEQ</sdpa></data></token></place>
 
+    <place ID="seq after init"/>
+
+    <!-- insert some real operationCandidate here -->
+    <transition ID="init">
+      <inputPlace placeID="config file" edgeExpression="config_file"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
+          <oc:operationCandidate type="cli" operationName="init.sh" resourceName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/init.sh" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
+      <outputPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <outputPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <outputPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
+      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <outputPlace placeID="seq after init" edgeExpression="seq"/>
+    </transition>    
 
     <place ID="seq after read input"/>
 
@@ -108,6 +127,13 @@
       <inputPlace placeID="slice_and_depth before calc one level" edgeExpression="slice_and_depth"/>
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="calc">
+          <oc:operationCandidate type="cli" operationName="calc.sh" resourceName="/u/r/rahn/SDPA/trunk/main/trunk/gwes/workflows/remig/calc.sh" selected="true"/>
+        </oc:operationClass>
+      </operation>
+
       <outputPlace placeID="slice_and_depth after calc one level" edgeExpression="$slice_and_depth"/>
     </transition>
 
