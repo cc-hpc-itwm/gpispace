@@ -18,9 +18,9 @@ void cleanUp()
 
 void sig_handler(int sig)
 {
-  std::cout << "Lethal signal received (" << sig << ")" << " - I will do my best to save the world!" << std::endl;
+  std::cout << "Lethal signal (" << sig << ") received" << " - I will do my best to save the world!" << std::endl;
   cleanUp();
-  exit(127);
+  exit(666);
 }
 
 namespace
@@ -172,13 +172,13 @@ int main(int ac, char **av)
 
   using namespace sdpa::modules;
 
-  sdpa::nre::worker::ActivityExecutor executor(av[1]);
+  sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(av[1]));
 
   try
   {
     for (int i = 3; i < ac; ++i)
     {
-      executor.loader().load(av[i]);
+      executor->loader().load(av[i]);
     }
   }
   catch (const ModuleLoadFailed &mlf)
@@ -187,7 +187,15 @@ int main(int ac, char **av)
     return 3;
   }
 
-  executor.start();
+  try
+  {
+    executor->start();
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "could not start executor: " << ex.what() << std::endl;
+    return 4;
+  }
 
   LOG(DEBUG, "waiting for signals...");
   sigset_t waitset;
@@ -222,7 +230,8 @@ int main(int ac, char **av)
     }
   }
 
-  executor.stop();
+  LOG(INFO, "terminating...");
+  executor->stop();
 
   return 0;
 }
