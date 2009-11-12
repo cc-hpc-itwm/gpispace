@@ -13,7 +13,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(1000),
+    m_nITER(100),
     m_sleep_interval(10000)
 {
 }

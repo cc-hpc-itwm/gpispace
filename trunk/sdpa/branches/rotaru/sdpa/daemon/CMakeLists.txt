@@ -9,7 +9,7 @@ add_subdirectory(jobFSM)
 add_subdirectory(daemonFSM)
 
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
-target_link_libraries(sdpa-daemon sdpa sdpa-events sdpa-jobFSM_SMC seda-comm)
+target_link_libraries(sdpa-daemon sdpa sdpa-events sdpa-jobFSM_SMC seda-comm sdpa-util)
 
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon)
 install(TARGETS sdpa-daemon ARCHIVE DESTINATION lib)

@@ -14,6 +14,7 @@ set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
+add_dependencies(sdpa_test_suite sdpa-client sdpa-orchestrator sdpa-aggregator sdpa-nre)
 add_dependencies(sdpa_test_suite generate_PerformanceTest)
 target_link_libraries(sdpa_test_suite sdpa-test)
 target_link_libraries(sdpa_test_suite sdpa)

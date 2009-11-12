@@ -41,7 +41,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
-      suiteOfTests->addTest( JobFSMTest_SMC::suite() ); */
+      suiteOfTests->addTest( JobFSMTest_SMC::suite() );
+      */
 
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
@@ -51,7 +52,6 @@ namespace sdpa { namespace tests {
 
       suiteOfTests->addTest( D2D2DDummyGwesTest::suite() );
       suiteOfTests->addTest( D2D2DRealGwesTest::suite() );
-
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 
