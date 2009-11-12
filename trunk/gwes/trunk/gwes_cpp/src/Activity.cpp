@@ -127,7 +127,7 @@ gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const throw(std::exception
 		gwdl::Edge* edgeP;
 		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 			edgeExpression = it->edgeP->getExpression();
-			placeP = new gwdl::Place("");
+			placeP = new gwdl::Place(it->edgeP->getPlaceID());
 			if (it->tokenP != NULL)	placeP->addToken(it->tokenP->deepCopy());
 			subworkflowP->addPlace(placeP);
 			edgeP = new gwdl::Edge(placeP,edgeExpression);
