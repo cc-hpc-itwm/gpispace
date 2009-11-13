@@ -209,7 +209,7 @@ public:
 	 * Locks from transitions will be removed on the cloned token.
 	 * @return Pointer to the cloned Token object.
 	 */ 
-	Token* deepCopy();
+	Token* deepCopy() const;
 	
 }; // end class Token
 

@@ -120,7 +120,7 @@ DOMElement* Token::toElement(DOMDocument * doc)
    return el;
 }
 
-Token* Token::deepCopy() {
+Token* Token::deepCopy() const {
 	Token* ret = NULL; 
 	// data token
 	if (isData()) {
