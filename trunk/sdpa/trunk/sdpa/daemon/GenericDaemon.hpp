@@ -72,9 +72,10 @@ namespace sdpa { namespace daemon {
 
 	  //virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
 	  virtual void cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity);
-	  virtual void workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
-	  virtual void workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
-	  virtual void workflowCanceled(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+
+	  virtual void workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+	  virtual void workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+	  virtual void workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  void addWorker(const  Worker::ptr_t );

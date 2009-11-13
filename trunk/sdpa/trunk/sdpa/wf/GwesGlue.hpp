@@ -237,47 +237,35 @@ namespace sdpa { namespace wf { namespace glue {
     }
   }
 
-  // extract tokens from workflow
-  // returns a map of place-id to list-of-tokens
-  typedef std::vector<gwdl::Token*> gwdl_token_list_t;
-
   inline
-  job_result_t get_workflow_results(const gwdl::Workflow &const_workflow)
+  sdpa::job_result_t wrap(const gwdl::workflow_result_t &workflow_results)
   {
-    DLOG(INFO, "retrieving results from workflow: " << const_workflow.getID());
-
-    LOG(WARN, "FIXME: removing const, this should not be necessary!");
-    gwdl::Workflow &workflow = const_cast<gwdl::Workflow&>(const_workflow);
-    
+    DLOG(INFO, "wrapping workflow results...");
     job_result_t result;
 
-    // iterate over all places
-    typedef std::vector<std::string> place_names_t;
-    place_names_t place_names = workflow.getPlaceIDs();
-    for (place_names_t::const_iterator p_name(place_names.begin()); p_name != place_names.end(); ++p_name)
+    for (gwdl::workflow_result_t::const_iterator place_to_tokens(workflow_results.begin()); place_to_tokens != workflow_results.end(); ++place_to_tokens)
     {
-      try
+      const std::string place_name(place_to_tokens->first);
+      const gwdl::token_list_t &gwdl_tokens(place_to_tokens->second);
+
+      DLOG(DEBUG, "wrapping " << gwdl_tokens.size() << " token(s) on place " << place_name);
+
+      sdpa::token_list_t tokens;
+      for (gwdl::token_list_t::const_iterator a_token(gwdl_tokens.begin()); a_token != gwdl_tokens.end(); ++a_token)
       {
-        gwdl::Place *place = workflow.getPlace(*p_name);
-        DLOG(DEBUG, "getting tokens from place: " << *p_name);
-        token_list_t tokens;
+        gwdl::Token *gwdl_token = dynamic_cast<gwdl::Token*>(*a_token);
+        if (gwdl_token)
         {
-          gwdl_token_list_t gwdl_tokens = place->getTokens();
-          for (gwdl_token_list_t::const_iterator gwdl_token(gwdl_tokens.begin()); gwdl_token != gwdl_tokens.end(); ++gwdl_token)
-          {
-            tokens.push_back(wrap(**gwdl_token));
-          }
+          tokens.push_back(wrap(*gwdl_token));
         }
-        DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << *p_name);
+        else
+        {
+          LOG(ERROR, "the gwdl::token_list did not contain gwdl::Token, ignoring this one.");
+        }
+      }
 
-        result[*p_name] = tokens;
-      }
-      catch (const gwdl::NoSuchWorkflowElement &)
-      {
-        LOG(WARN, "Inconsistencey detected: the workflow does not contain place: " << *p_name);
-      }
+      result.insert(std::make_pair(place_name, tokens));
     }
-
     return result;
   }
 

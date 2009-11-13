@@ -590,7 +590,7 @@ void GenericDaemon::cancelActivity(const gwes::activity_id_t &activityId) throw 
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -607,13 +607,16 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
     SDPA_LOG_DEBUG("TODO: fill in the results...");
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id, result));
 	sendEvent(pEvtJobFinished);
+
+    // deallocate the results
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 /**
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -632,13 +635,16 @@ void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw 
     job_result_t result;
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), job_id, result));
 	sendEvent(pEvtJobFailed);
+
+    // deallocate the results
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 /**
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobCancelledEvent for self!
 	// identify the job with the job_id == workflow_id_t
@@ -648,6 +654,9 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) thro
 	job_id_t job_id(workflowId);
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), job_id));
 	sendEvent(pEvtCancelJobAck);
+
+    // deallocate the results
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 

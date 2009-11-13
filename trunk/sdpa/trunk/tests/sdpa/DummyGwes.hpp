@@ -44,6 +44,10 @@ class DummyWorkflow : public gwes::workflow_t
     void deserialize(const std::string &) {}
     gwdl::Place* getPlace(const std::string& /* id */) { return NULL; }
 
+    gwdl::workflow_result_t getResults() const
+    {
+      return gwdl::workflow_result_t();
+    }
   private:
     gwes::workflow_id_t wf_id_;
 };
@@ -116,7 +120,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       {
         // find the corresponding workflow
         workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch);
+        gwdl::workflow_result_t result;
+        ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch, result);
         bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
@@ -141,7 +146,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       {
         // find the corresponding workflow
         workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch);
+        gwdl::workflow_result_t result;
+        ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch, result);
         bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
@@ -170,7 +176,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
         {
           // find the corresponding workflow
           workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-          ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch);
+          gwdl::workflow_result_t result;
+          ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch, result);
           bimap_wf_act_ids_.left.erase(wf_id_orch);
         }
         else
@@ -301,6 +308,15 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     std::string serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std::runtime_error)
     {
       return "serialized DummyWorkflow (id:"+workflow.getID()+")";
+    }
+
+    gwes::workflow_t &getWorkflow(const workflow_id_t &id) throw (NoSuchWorkflow)
+    {
+      throw NoSuchWorkflow("cannot look up workflow " + id);
+    }
+    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchWorkflow)
+    {
+      throw NoSuchActivity("cannot look up activity " + aid + " in workflow " + wid);
     }
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
