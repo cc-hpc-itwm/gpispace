@@ -214,12 +214,7 @@ public:
       return placeids;
     }
 
-    virtual workflow_result_t getResults() const
-    {
-      workflow_result_t results;
-
-      return results;
-    }
+    virtual gwdl::workflow_result_t getResults() const;
 
     /**
      * retrieve a place by its identifier ID.

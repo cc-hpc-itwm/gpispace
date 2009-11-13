@@ -6,6 +6,8 @@
  */
 //gwdl
 #include <gwdl/Workflow.h>
+#include <gwdl/Token.h>
+
 #include <gwdl/XMLUtils.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
@@ -193,6 +195,42 @@ void Workflow::saveToFile(const string& filename) {
 	} else {
 		LOG_ERROR(logger_t(getLogger("gwdl")), "Unable to open file " << filename << ": " << strerror(errno));
 	}
+}
+
+gwdl::workflow_result_t Workflow::getResults() const
+{
+  gwdl::workflow_result_t results;
+
+  // iterate over all places
+  typedef std::map<std::string, Place*> place_map_t;
+  for (place_map_t::const_iterator a_place(places.begin()); a_place != places.end(); ++a_place)
+  {
+    const std::string &place_name = a_place->first;
+    const Place * place = a_place->second;
+
+    try
+    {
+      gwdl::token_list_t tokens;
+
+      DLOG(DEBUG, "getting tokens from place: " << place_name);
+      typedef std::vector<Token*> place_token_list_t;
+
+      place_token_list_t place_tokens = place->getTokens();
+
+      for (place_token_list_t::const_iterator gwdl_token(place_tokens.begin()); gwdl_token != place_tokens.end(); ++gwdl_token)
+      {
+        tokens.push_back((*gwdl_token)->deepCopy());
+      }
+      DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << place_name);
+
+      results.insert(std::make_pair(place_name, tokens));
+    }
+    catch (const gwdl::NoSuchWorkflowElement &)
+    {
+      LOG(WARN, "Inconsistencey detected: the workflow does not contain place: " << place_name);
+    }
+  }
+  return results;
 }
 
 Place* Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement)
