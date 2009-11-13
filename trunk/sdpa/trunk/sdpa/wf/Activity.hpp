@@ -32,6 +32,11 @@ namespace sdpa { namespace wf {
         deserialize(module_at_method);
       }
 
+      Method()
+        : module_()
+        , name_()
+      { }
+
       Method(const std::string & a_module, const std::string & a_method_name)
         : module_(a_module)
         , name_(a_method_name) {}
@@ -69,10 +74,12 @@ namespace sdpa { namespace wf {
           module_ = bytes.substr(0,           pos_of_at);
           name_   = bytes.substr(pos_of_at+1, std::string::npos);
         }
+/*
         else
         {
-          throw std::runtime_error("could not deserialize method: " + bytes + " did not contain @ separator");
+          throw std::runtime_error("could not deserialize method: \"" + bytes + "\" did not contain @ separator");
         }
+*/
       }
 
       void writeTo(std::ostream &os) const
