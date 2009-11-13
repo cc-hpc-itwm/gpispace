@@ -112,7 +112,7 @@ void TestTransformAtomicActivityToWorkflow::cancelActivity(const activity_id_t &
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void TestTransformAtomicActivityToWorkflow::workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+void TestTransformAtomicActivityToWorkflow::workflowFinished(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFinished(" << workflowId << ").");
 }
 
@@ -120,7 +120,7 @@ void TestTransformAtomicActivityToWorkflow::workflowFinished(const workflow_id_t
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void TestTransformAtomicActivityToWorkflow::workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+void TestTransformAtomicActivityToWorkflow::workflowFailed(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFailed(" << workflowId << ").");
 }
 
@@ -128,7 +128,7 @@ void TestTransformAtomicActivityToWorkflow::workflowFailed(const workflow_id_t &
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */ 
-void TestTransformAtomicActivityToWorkflow::workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+void TestTransformAtomicActivityToWorkflow::workflowCanceled(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
 	_workflowCanceled = true;
 }

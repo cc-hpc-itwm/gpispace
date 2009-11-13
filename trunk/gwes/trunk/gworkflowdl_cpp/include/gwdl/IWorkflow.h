@@ -20,11 +20,18 @@
 #define GWDL_WORKFLOW_H 1
 
 #include <string>
+#include <list>
+#include <map>
+
 #include <gwdl/memory.hpp>
+#include <gwdl/IToken.h>
 
 namespace gwdl
 {
   class Place;
+
+  typedef std::list<IToken*> token_list_t;
+  typedef std::map<std::string, token_list_t> workflow_result_t;
 
   class IWorkflow
   {
@@ -36,6 +43,7 @@ namespace gwdl
     virtual void setID(const workflow_id_t &id) = 0;
 
     virtual Place* getPlace(const std::string& id) = 0;
+    virtual workflow_result_t getResults() const = 0;
   };
 }
 

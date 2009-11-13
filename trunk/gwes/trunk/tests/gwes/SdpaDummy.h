@@ -35,9 +35,9 @@ public:
 	// from interface Gwes2Sdpa
 	virtual gwes::activity_id_t submitActivity(gwes::activity_t &activity); 
 	virtual void cancelActivity(const gwes::activity_id_t &activityId)  throw (NoSuchActivity);
-	virtual void workflowFinished(const gwes::workflow_id_t &workflowId) throw (NoSuchWorkflow);
-	virtual void workflowFailed(const gwes::workflow_id_t &workflowId) throw (NoSuchWorkflow);
-	virtual void workflowCanceled(const gwes::workflow_id_t &workflowId) throw (NoSuchWorkflow);
+	virtual void workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow);
+	virtual void workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow);
+	virtual void workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow);
 	
 	// helper method
 	gwes::workflow_id_t submitWorkflow(gwes::workflow_t &workflow);

@@ -8,6 +8,7 @@
 #define TOKEN_H_
 // gwdl
 #include <gwdl/Properties.h>
+#include <gwdl/IToken.h>
 #include <gwdl/Data.h>
 // xerces-c
 #include <xercesc/dom/DOM.hpp>
@@ -62,7 +63,7 @@ class Transition;
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  * 
  */ 
-class Token
+class Token : public IToken
 {
 	
 private:

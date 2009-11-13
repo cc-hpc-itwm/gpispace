@@ -79,14 +79,14 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 		case (STATUS_ACTIVE): 
 			break;
 		case (STATUS_COMPLETED):
-			sdpaP->workflowFinished(_id);
+			sdpaP->workflowFinished(_id, _wfP->getResults());
 			break;
 		case (STATUS_TERMINATED):
 			if (_userabort) {
-				sdpaP->workflowCanceled(_id);
+				sdpaP->workflowCanceled(_id, _wfP->getResults());
 			} else {
 				// internal abort by system is handled as failure
-				sdpaP->workflowFailed(_id);
+				sdpaP->workflowFailed(_id, _wfP->getResults());
 			}
 			break;
 		case (STATUS_FAILED):

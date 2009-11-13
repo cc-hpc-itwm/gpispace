@@ -72,7 +72,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */
-	virtual void workflowFinished(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+	virtual void workflowFinished(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow failed (state transition
@@ -80,7 +80,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */
-	virtual void workflowFailed(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+	virtual void workflowFailed(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) = 0;
 	
 	/**
 	 * Notify the SDPA that a workflow has been canceled (state
@@ -88,7 +88,7 @@ public:
 	 * This is a callback listener method to monitor workflows submitted 
 	 * to the GWES using the method Spda2Gwes.submitWorkflow().
 	 */ 
-	virtual void workflowCanceled(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+	virtual void workflowCanceled(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) = 0;
 };
 
 } // end gwes namespace 
