@@ -301,6 +301,9 @@ public:
 
     virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error);
     virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error);
+
+    virtual workflow_t &getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+    virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity);
 };
 
 }

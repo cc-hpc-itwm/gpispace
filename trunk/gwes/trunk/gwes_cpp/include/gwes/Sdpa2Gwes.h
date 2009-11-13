@@ -139,8 +139,15 @@ public:
 	 */
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception) = 0;
 
+    /* deserialize a workflow from a byte array */
     virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error) = 0;
+    /* serialize a workflow to a byte array */
     virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error) = 0;
+
+    /* retrieve a workflow */
+    virtual workflow_t &getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+    /* retrieve an activity */
+    virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity) = 0;
 };
 }
 

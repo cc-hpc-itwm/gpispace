@@ -441,4 +441,14 @@ std::string GWES::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std:
   return ostr.str();
 }
 
+workflow_t &GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
+{
+  throw NoSuchWorkflow("i don't have a workflow with id " + workflowId);
+}
+
+activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity)
+{
+  throw NoSuchActivity("i don't have an activity with wfid=" + workflowId + " aid="+activityId);
+}
+
 } // end namespace gwes
