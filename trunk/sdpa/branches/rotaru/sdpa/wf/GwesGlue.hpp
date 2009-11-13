@@ -23,15 +23,19 @@
 
 #include <stdexcept>
 
+#include <sdpa/types.hpp>
+
 #include <sdpa/wf/Token.hpp>
 #include <sdpa/wf/Activity.hpp>
 
 // gwes
+#include <gwdl/Workflow.h>
 #include <gwdl/Token.h>
 #include <gwes/TransitionOccurrence.h>
 #include <gwes/Activity.h>
 
 namespace sdpa { namespace wf { namespace glue {
+  inline
   Token wrap(const gwdl::Token & gwdl_token) throw (std::exception)
   {
     Token wrapped;
@@ -89,6 +93,7 @@ namespace sdpa { namespace wf { namespace glue {
     return wrapped;
   }
 
+  inline
   gwdl::Token *unwrap(const wf::Token &wf_token) throw (std::exception)
   {
     DLOG(DEBUG, "unwrapping wf::Token to gwdl::Token...");
@@ -115,6 +120,7 @@ namespace sdpa { namespace wf { namespace glue {
     }
   }
 
+  inline
   Activity wrap(const gwes::Activity & gwes_activity) throw (std::exception)
   {
     DLOG(DEBUG, "wrapping an gwes::Activity");
@@ -125,6 +131,7 @@ namespace sdpa { namespace wf { namespace glue {
     gwes::Activity &act = const_cast<gwes::Activity&>(gwes_activity);
     if (act.getOperationCandidate())
     {
+      DLOG(DEBUG, "method to be wrapped: " << act.getOperationCandidate()->getOperationName());
       wrapped.method() = Method(act.getOperationCandidate()->getOperationName());
       if (wrapped.method().module().empty() || wrapped.method().name().empty())
       {
@@ -136,6 +143,13 @@ namespace sdpa { namespace wf { namespace glue {
     gwes::parameter_list_t *gwes_params = act.getTransitionOccurrence()->getTokens();
     for (gwes::parameter_list_t::iterator it(gwes_params->begin()); it != gwes_params->end(); ++it) {
       const std::string gwes_param_name(it->edgeP->getExpression());
+
+      if (gwes_param_name.empty())
+      {
+         LOG(WARN, "cannot wrap a parameter with an empty name!");
+         //throw std::runtime_error("cannot wrap a parameter with an empty name!");
+         continue;
+      }
 
       Token tok;
       if (it->tokenP)
@@ -183,6 +197,7 @@ namespace sdpa { namespace wf { namespace glue {
     return wrapped;
   }
 
+  inline
   void unwrap(const wf::Activity &wf_activity, gwes::Activity &gwes_activity)
   {
     if (wf_activity.name() != gwes_activity.getID())
@@ -224,6 +239,120 @@ namespace sdpa { namespace wf { namespace glue {
             delete param->tokenP; param->tokenP = NULL;
           }
           param->tokenP = unwrap(wf_activity.parameters().at(gwes_param_name).token());
+          break;
+        }
+      }
+    }
+  }
+
+  inline
+  sdpa::job_result_t wrap(const gwdl::workflow_result_t &workflow_results)
+  {
+    DLOG(INFO, "wrapping workflow results...");
+    job_result_t result;
+
+    for (gwdl::workflow_result_t::const_iterator place_to_tokens(workflow_results.begin()); place_to_tokens != workflow_results.end(); ++place_to_tokens)
+    {
+      const std::string place_name(place_to_tokens->first);
+      const gwdl::token_list_t &gwdl_tokens(place_to_tokens->second);
+
+      DLOG(DEBUG, "wrapping " << gwdl_tokens.size() << " token(s) on place " << place_name);
+
+      sdpa::token_list_t tokens;
+      for (gwdl::token_list_t::const_iterator a_token(gwdl_tokens.begin()); a_token != gwdl_tokens.end(); ++a_token)
+      {
+        gwdl::Token *gwdl_token = dynamic_cast<gwdl::Token*>(*a_token);
+        if (gwdl_token)
+        {
+          tokens.push_back(wrap(*gwdl_token));
+        }
+        else
+        {
+          LOG(ERROR, "the gwdl::token_list did not contain gwdl::Token, ignoring this one.");
+        }
+      }
+
+      result.insert(std::make_pair(place_name, tokens));
+    }
+    return result;
+  }
+
+  inline
+  void put_results_to_activity(const sdpa::job_result_t &result, gwes::Activity &gwes_activity)
+  {
+    DLOG(INFO, "putting results back to activity: " << gwes_activity.getID());
+
+    gwes::parameter_list_t *gwes_params = gwes_activity.getTransitionOccurrence()->getTokens();
+    for (gwes::parameter_list_t::iterator param(gwes_params->begin()); param != gwes_params->end(); ++param)
+    {
+      const std::string gwes_param_name(param->edgeP->getExpression());
+      switch (param->scope)
+      {
+        case gwes::TokenParameter::SCOPE_READ:
+        {
+          // nothing to do
+          DLOG(DEBUG, "putting read parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_INPUT):
+        {
+          // nothing to do
+          DLOG(DEBUG, "putting input parameter: nothing to do");
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_WRITE):
+        {
+          DLOG(DEBUG, "putting write parameter: replacing token");
+          if (param->tokenP)
+          {
+            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
+            delete param->tokenP; param->tokenP = NULL;
+          }
+          // looking up tokens in result
+          // TODO: check for existence!
+          const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
+          if (result_tokens.size() == 1)
+          {
+            param->tokenP = unwrap(result_tokens.front());
+          }
+          else if (result_tokens.size() > 1)
+          {
+            LOG(ERROR, "more than one result token is currently not supported!");
+            throw std::runtime_error("more than one result token is currently not supported");
+          }
+          else
+          {
+            LOG(ERROR, "expected a token on write edge: " << gwes_param_name);
+            throw std::runtime_error("expected a token on " + gwes_param_name);
+          }
+          break;
+        }
+        case (gwes::TokenParameter::SCOPE_OUTPUT):
+        {
+          DLOG(DEBUG, "putting output parameter: creating new token");
+          if (param->tokenP)
+          {
+            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
+            delete param->tokenP; param->tokenP = NULL;
+          }
+          // looking up tokens in result
+          // TODO: check for existence!
+          DLOG(DEBUG, "putting token on place: " << param->edgeP->getPlaceID() << " with expression " << param->edgeP->getExpression());
+          const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
+          if (result_tokens.size() == 1)
+          {
+            param->tokenP = unwrap(result_tokens.front());
+          }
+          else if (result_tokens.size() > 1)
+          {
+            LOG(ERROR, "more than one result token is currently not supported!");
+            throw std::runtime_error("more than one result token is currently not supported");
+          }
+          else
+          {
+            LOG(ERROR, "expected a token on output edge: " << gwes_param_name);
+            throw std::runtime_error("expected a token on " + gwes_param_name);
+          }
           break;
         }
       }

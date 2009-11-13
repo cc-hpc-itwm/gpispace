@@ -327,7 +327,8 @@ void D2DDummyGwesTest::testDaemonFSM_JobFinished()
 
 		// submit a JobFinishedEvent to master
 		SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<m_ptrAgg->name());
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromNre, m_ptrAgg->name(), job_id_slave));
+		sdpa::job_result_t result;
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromNre, m_ptrAgg->name(), job_id_slave, result));
 		m_ptrAgg->daemon_stage()->send(pEvtJobFinished);
 
 		pSlaveStr->WaitForEvent<sdpa::events::JobFinishedAckEvent>(pErrorEvt);
@@ -473,7 +474,8 @@ void D2DDummyGwesTest::testDaemonFSM_JobFailed()
 
 		// submit a JobFinishedEvent to master
 		SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<m_ptrAgg->name());
-		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromNre, m_ptrAgg->name(), job_id_slave));
+		sdpa::job_result_t result;
+		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromNre, m_ptrAgg->name(), job_id_slave, result));
 		m_ptrAgg->daemon_stage()->send(pEvtJobFailed);
 
 		pSlaveStr->WaitForEvent<sdpa::events::JobFailedAckEvent>(pErrorEvt);

@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace sdpa::daemon;
+using namespace sdpa::events;
 
 
 Aggregator::Aggregator(const std::string &name )

@@ -58,19 +58,20 @@ public:
 			try
 			{
 				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				sdpa::job_result_t results;
 
 				// execute the job and ...
 				// ... submit a JobFinishedEvent to the master
 				if( m_answerStrategy == "finished" )
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<ptr_comm_handler_->master());
-					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
 					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFinEvt);
 				}
 				else if( m_answerStrategy == "failed" )
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<ptr_comm_handler_->master());
-					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
 					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFailEvt);
 				}
 				else if( m_answerStrategy == "cancelled" )

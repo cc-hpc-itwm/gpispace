@@ -47,15 +47,12 @@ namespace sdpa { namespace tests {
       /*
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
-
       suiteOfTests->addTest( D2DDummyGwesTest::suite() );
       suiteOfTests->addTest( D2DRealGwesTest::suite() );
-
       suiteOfTests->addTest( D2D2DDummyGwesTest::suite() );
       suiteOfTests->addTest( D2D2DRealGwesTest::suite() );
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
-
 	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );
 	  */
 

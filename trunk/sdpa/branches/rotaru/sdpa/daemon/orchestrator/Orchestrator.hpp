@@ -15,6 +15,7 @@ namespace daemon {
 		static Orchestrator::ptr_t create(const std::string& name );
 		static void start(Orchestrator::ptr_t ptrOrch, std::string orchUrl = "127.0.0.1:5000" );
 		static void shutdown(Orchestrator::ptr_t ptrOrch);
+
 	  };
 	}
 }

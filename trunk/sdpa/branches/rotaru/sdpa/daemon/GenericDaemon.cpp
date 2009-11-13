@@ -17,6 +17,7 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <gwes/GWES.h>
+#include <sdpa/wf/GwesGlue.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -600,7 +601,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		addWorker(pWorker);
 
 		SDPA_LOG_DEBUG("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
-		// send back an acknowledgement
+		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);
 	}
@@ -641,15 +642,16 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 	ostringstream os;
 
 	try {
-		SDPA_LOG_DEBUG("GWES submitted new activity ...");
+		SDPA_LOG_DEBUG("GWES submitted the activity "<<activity.getID());
 
 		job_id_t job_id(activity.getID());
 
 		// transform activity to workflow
 		gwdl::IWorkflow::ptr_t pWf = activity.transform2Workflow();
+		//SDPA_LOG_DEBUG("Transformed activity into an workflow: "<<(gwdl::Workflow&)(*pWf));
 
 		// check if the generated workflow has the same id as the activity_id
-		// if not, set explicitely
+		// if not, set explicitly
 		if(activity.getID() != pWf->getID() )
 		{
 			SDPA_LOG_DEBUG("The transformed workflow does not have an id already set. Set this to the activity_id ...");
@@ -714,7 +716,7 @@ void GenericDaemon::cancelActivity(const gwes::activity_id_t &activityId) throw 
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -725,19 +727,24 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId) thro
 	// call job.JobFinished(event);
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
-	gwdl::Workflow* wf = ((gwes::GWES*)gwes())->getWorkflowHandlerTable().get(workflowId)->getWorkflow();
-	SDPA_LOG_DEBUG("******* completed workflow (filled with tokens): "<< *wf);
+	//gwdl::Workflow* wf = ((gwes::GWES*)gwes())->getWorkflowHandlerTable().get(workflowId)->getWorkflow();
+	//SDPA_LOG_DEBUG("******* completed workflow (filled with tokens): "<< *wf);
 
 	job_id_t job_id(workflowId);
-	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::GWES, name(), job_id));
+
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
+	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::GWES, name(), job_id, sdpa_result));
 	sendEvent(pEvtJobFinished);
+
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
 /**
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -752,15 +759,20 @@ void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId) throw 
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" failed!");
 	job_id_t job_id(workflowId);
-	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::GWES, name(), job_id ));
+
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
+	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::GWES, name(), job_id, sdpa_result ));
 	sendEvent(pEvtJobFailed);
+
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
 /**
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobCancelledEvent for self!
 	// identify the job with the job_id == workflow_id_t
@@ -768,20 +780,27 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId) thro
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" was cancelled!");
 	job_id_t job_id(workflowId);
+
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id));
 	sendEvent(pEvtCancelJobAck);
+
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
 
 void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
 {
-	JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( workerName, name(), jobID.str() ) );
+	sdpa::job_result_t results;
+	JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( workerName, name(), jobID.str(), results ) );
 	sendEvent(pJobFinEvt);
 }
 
 void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
 {
-	JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( workerName, name(), jobID.str() ) );
+	sdpa::job_result_t results;
+	JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( workerName, name(), jobID.str(), results ) );
 	sendEvent(pJobFailEvt);
 }
 

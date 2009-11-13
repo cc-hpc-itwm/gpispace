@@ -312,7 +312,8 @@ void DaemonRealGwesTest::testDaemonFSM_JobFinished()
 
 		// submit a JobFinishedEvent to master
 		SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<strDaemon);
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strDaemon, job_id_slave));
+		sdpa::job_result_t result;
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(strFromDown, strDaemon, job_id_slave, result));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtJobFinished);
 
 		pSlaveStr->WaitForEvent<sdpa::events::JobFinishedAckEvent>(pErrorEvt);
@@ -446,8 +447,9 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 		// the slave computes the job ........
 
 		// submit a JobFinishedEvent to master
+		sdpa::job_result_t result;
 		SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<strDaemon);
-		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromDown, strDaemon, job_id_slave));
+		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromDown, strDaemon, job_id_slave, result));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtJobFailed);
 
 		pSlaveStr->WaitForEvent<sdpa::events::JobFailedAckEvent>(pErrorEvt);

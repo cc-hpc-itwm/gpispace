@@ -49,6 +49,12 @@ class DummyWorkflow : public gwes::workflow_t
     void deserialize(const std::string &) {}
     gwdl::Place* getPlace(const std::string& /* id */) { return NULL; }
 
+    gwdl::workflow_result_t getResults() const
+	{
+	  return gwdl::workflow_result_t();
+	}
+
+
   private:
     gwes::workflow_id_t wf_id_;
 };
@@ -122,13 +128,14 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
       if(ptr_Gwes2SdpaHandler)
       {
-        // find the corresponding workflow
-        //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFailed(workflowId);
+    	  // find the corresponding workflow
+    	  //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+    	  gwdl::workflow_result_t result;
+    	  ptr_Gwes2SdpaHandler->workflowFailed(workflowId, result);
 
-        lock_type lock(mtx_);
-        map_wf_act_ids_.erase(workflowId);
-        //bimap_wf_act_ids_.left.erase(wf_id_orch);
+    	  lock_type lock(mtx_);
+    	  map_wf_act_ids_.erase(workflowId);
+    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -150,13 +157,15 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
       if(ptr_Gwes2SdpaHandler)
       {
-        // find the corresponding workflow
-        //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        ptr_Gwes2SdpaHandler->workflowFinished(workflowId);
+    	  // find the corresponding workflow
+    	  //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
 
-        lock_type lock(mtx_);
-        map_wf_act_ids_.erase(workflowId);
-        //bimap_wf_act_ids_.left.erase(wf_id_orch);
+    	  gwdl::workflow_result_t result;
+    	  ptr_Gwes2SdpaHandler->workflowFinished(workflowId, result);
+
+    	  lock_type lock(mtx_);
+    	  map_wf_act_ids_.erase(workflowId);
+    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -182,13 +191,14 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       {
         if(ptr_Gwes2SdpaHandler)
         {
-          // find the corresponding workflow
-          //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-          ptr_Gwes2SdpaHandler->workflowCanceled(workflowId);
+        	// find the corresponding workflow
+        	//workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+        	gwdl::workflow_result_t result;
+        	ptr_Gwes2SdpaHandler->workflowCanceled(workflowId, result);
 
-          lock_type lock(mtx_);
-          map_wf_act_ids_.erase(workflowId);
-          //bimap_wf_act_ids_.left.erase(wf_id_orch);
+        	lock_type lock(mtx_);
+        	map_wf_act_ids_.erase(workflowId);
+        	//bimap_wf_act_ids_.left.erase(wf_id_orch);
         }
         else
           SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -209,8 +219,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
      */
     virtual void registerHandler(Gwes2Sdpa *pSdpa)
     {
-      ptr_Gwes2SdpaHandler = pSdpa;
-      SDPA_LOG_DEBUG("Called registerHandler ...");
+    	ptr_Gwes2SdpaHandler = pSdpa;
+    	SDPA_LOG_DEBUG("Called registerHandler ...");
     }
 
     /**
@@ -223,10 +233,10 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
      */
     virtual void unregisterHandler(Gwes2Sdpa *pSdpa)
     {
-      if( pSdpa == ptr_Gwes2SdpaHandler)
-        ptr_Gwes2SdpaHandler = NULL;
+    	if( pSdpa == ptr_Gwes2SdpaHandler)
+    		ptr_Gwes2SdpaHandler = NULL;
 
-      SDPA_LOG_DEBUG("SDPA has unregistered ...");
+    	SDPA_LOG_DEBUG("SDPA has unregistered ...");
     }
 
     /*
@@ -323,6 +333,16 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 	{
     	return "dummy_workflow_serialization";
 	}
+
+    gwes::workflow_t &getWorkflow(const workflow_id_t &id) throw (NoSuchWorkflow)
+    {
+      throw NoSuchWorkflow("cannot look up workflow " + id);
+    }
+
+    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchWorkflow)
+    {
+      throw NoSuchActivity("cannot look up activity " + aid + " in workflow " + wid);
+    }
 
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;

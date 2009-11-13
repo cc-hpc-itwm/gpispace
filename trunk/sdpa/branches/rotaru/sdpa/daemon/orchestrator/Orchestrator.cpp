@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace sdpa::daemon;
+using namespace sdpa::events;
 
 Orchestrator::Orchestrator(  const std::string &name )
 	: DaemonFSM( name, new gwes::GWES() ),
@@ -39,3 +40,4 @@ void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 	delete ptrOrch->ptr_Sdpa2Gwes_;
 	ptrOrch->ptr_Sdpa2Gwes_ = NULL;
 }
+
