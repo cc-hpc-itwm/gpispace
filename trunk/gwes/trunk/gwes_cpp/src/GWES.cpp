@@ -443,12 +443,12 @@ std::string GWES::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std:
 
 workflow_t &GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
 {
-  throw NoSuchWorkflow("i don't have a workflow with id " + workflowId);
+  return *_wfht.get(workflowId)->getWorkflow();
 }
 
 activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity)
 {
-  throw NoSuchActivity("i don't have an activity with wfid=" + workflowId + " aid="+activityId);
+  return *_wfht.get(workflowId)->getActivity(activityId);
 }
 
 } // end namespace gwes

@@ -438,6 +438,11 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 	_activityTable.get(activityId)->activityCanceled();
 }
 
+Activity * WorkflowHandler::getActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
+{
+  return _activityTable.get(activityId);
+}
+
 ///////////////////////////////////////////////
 /////////// PRIVATE METHODS
 ///////////////////////////////////////////////

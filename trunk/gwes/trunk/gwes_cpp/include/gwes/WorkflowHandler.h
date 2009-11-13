@@ -256,6 +256,8 @@ public:
 	// transition from * to canceled
 	void activityCanceled(const activity_id_t &activityId) throw (NoSuchActivityException);
 
+    Activity *getActivity(const activity_id_t &activityId) throw (NoSuchActivityException);
+
 private:
 
 	/**
