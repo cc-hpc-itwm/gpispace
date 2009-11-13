@@ -200,33 +200,36 @@ void SdpaDummy::cancelActivity(const activity_id_t &activityId)  throw (NoSuchAc
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void SdpaDummy::workflowFinished(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
+void SdpaDummy::workflowFinished(const workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFinished(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FINISHED));
 	logWorkflowStatus();
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 /**
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void SdpaDummy::workflowFailed(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
+void SdpaDummy::workflowFailed(const workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowFailed(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,FAILED));
 	logWorkflowStatus();
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 /**
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */ 
-void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId, const gwdl::workflow_result_t &) throw (NoSuchWorkflow) {
+void SdpaDummy::workflowCanceled(const workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (NoSuchWorkflow) {
 	LOG_INFO(logger_t(getLogger("gwes")), "workflowCanceled(" << workflowId << ").");
 	_wfStatusMap.erase(workflowId);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,CANCELED));
 	logWorkflowStatus();
+    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
 }
 
 /////////////////////////////
