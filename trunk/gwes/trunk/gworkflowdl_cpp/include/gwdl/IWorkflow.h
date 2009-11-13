@@ -43,8 +43,25 @@ namespace gwdl
     virtual void setID(const workflow_id_t &id) = 0;
 
     virtual Place* getPlace(const std::string& id) = 0;
+
+    // one has to explicitly deallocate the memory!
+    // all tokens contained in the result are copies!
     virtual workflow_result_t getResults() const = 0;
   };
+
+  // convenience deallocation method
+  inline void deallocate_workflow_result(workflow_result_t &result)
+  {
+    for (workflow_result_t::iterator place(result.begin()); place != result.end(); ++place)
+    {
+      for (token_list_t::iterator token(place->second.begin()); token != place->second.end(); ++token)
+      {
+        delete (*token);
+      }
+      place->second.clear();
+    }
+    result.clear();
+  }
 }
 
 #endif
