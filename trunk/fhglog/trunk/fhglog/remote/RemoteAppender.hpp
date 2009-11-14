@@ -32,14 +32,17 @@
 #define FHGLOG_DEFAULT_HOST  "localhost"
 #endif
 
+#if ! defined(FHGLOG_DEFAULT_LOCATION)
+#define FHGLOG_DEFAULT_LOCATION "localhost:2438"
+#endif
+
 namespace fhg { namespace log { namespace remote {
   class RemoteAppender : public Appender
   {
   public:
     explicit
     RemoteAppender(const std::string &name
-                 , const std::string &host = FHGLOG_DEFAULT_HOST
-                 , unsigned short port = FHGLOG_DEFAULT_PORT);
+                 , const std::string &location = FHGLOG_DEFAULT_LOCATION);
     virtual ~RemoteAppender();
 
     const std::string &host() const { return host_; }

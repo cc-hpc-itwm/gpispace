@@ -19,18 +19,28 @@
 #include <boost/array.hpp>
 #include <sstream>
 
+#include <fhglog/util.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <fhglog/remote/Serialization.hpp>
 
 using namespace fhg::log::remote;
 
-RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, unsigned short a_port)
+RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &location)
   : Appender(a_name)
-  , host_(a_host)
-  , port_(a_port)
   , socket_(NULL)
 {
+  std::pair<std::string, std::string> host_port = fhg::log::split_string(location, ":");
+  host_ = host_port.first;
+  if (host_port.second.empty()) host_port.second = "0";
+  {
+    std::stringstream sstr(host_port.second);
+    sstr >> port_;
+    if (!sstr)
+    {
+      throw std::runtime_error("could not parse port information: " + host_port.second);
+    }
+  }
   open();
 }
 

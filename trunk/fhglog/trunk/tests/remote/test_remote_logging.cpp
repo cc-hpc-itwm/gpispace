@@ -20,40 +20,18 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
-int main (int argc, char **argv)
+int main ()
 {
   using namespace fhg::log;
 
   int errcount(0);
 
   std::string message("hello server!");
-  std::string server("localhost");
-  short port(FHGLOG_DEFAULT_PORT);
-
-  if (argc > 1)
-  {
-    if (std::string(argv[1]) == "-h")
-    {
-      std::cerr << "usage: " << argv[0] << " [-h] [server [port]]" << std::endl;
-      std::cerr << "\tserver - server to use (default: " << server << ")" << std::endl;
-      std::cerr << "\tport   - port to send events to (default: " << port << ")" << std::endl;
-      return 0;
-    }
-    server = argv[1];
-  }
-
-  if (argc > 2)
-  {
-    port = atoi(argv[2]);
-  }
-
-  if (argc > 3)
-  {
-    message = argv[3];
-  }
+  std::string server(FHGLOG_DEFAULT_LOCATION);
 
   logger_t log(getLogger());
-  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server, port)))->setFormat(Formatter::Full());
+//  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)))->setFormat(Formatter::Full());
+  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
 
   {
     std::clog << "** testing remote logging (TODO: create server socket)...";

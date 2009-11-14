@@ -22,10 +22,9 @@
 
 void usage()
 {
-  std::cerr << "usage: fhglog-client [-h] message [server [port]]" << std::endl;
+  std::cerr << "usage: fhglog-client [-h] ip:port message..." << std::endl;
+  std::cerr << "\thost:port - server to use (default: " << FHGLOG_DEFAULT_HOST << ")" << std::endl;
   std::cerr << "\tmessage - the message to log" << std::endl;
-  std::cerr << "\tserver - server to use (default: " << FHGLOG_DEFAULT_HOST << ")" << std::endl;
-  std::cerr << "\tport   - port to send events to (default: " << FHGLOG_DEFAULT_PORT << ")" << std::endl;
 }
 
 int main (int argc, char **argv)
@@ -33,8 +32,7 @@ int main (int argc, char **argv)
   using namespace fhg::log;
 
   std::string message("hello server!");
-  std::string server(FHGLOG_DEFAULT_HOST);
-  short port(FHGLOG_DEFAULT_PORT);
+  std::string server(FHGLOG_DEFAULT_LOCATION);
 
   if (argc <= 1)
   {
@@ -49,28 +47,24 @@ int main (int argc, char **argv)
       usage();
       return 0;
     }
-    message = argv[1];
-  }
-
-  if (argc > 2)
-  {
-    server = argv[2];
-  }
-
-  if (argc > 3)
-  {
-    std::istringstream isstr(argv[3]);
-    isstr >> port;
-    if (! isstr)
-    {
-      usage();
-      std::cerr << "invalid port specified: " << argv[3] << std::endl;
-      return 1;
-    }
+    server = argv[1];
   }
 
   logger_t log(getLogger());
-  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server, port)))->setFormat(Formatter::Custom("%m%n"));
-  log.log(FHGLOG_MKEVENT_HERE(INFO, message));
+  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
+
+  std::ostringstream msg;
+  for (int i = 2; ;)
+  {
+    if (i == argc) break;
+
+    msg << argv[i];
+    ++i;
+
+    if (i < argc)
+      msg << " ";
+  }
+
+  log.log(FHGLOG_MKEVENT_HERE(INFO, msg.str()));
   return 0;
 }
