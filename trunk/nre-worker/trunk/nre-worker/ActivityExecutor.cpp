@@ -221,10 +221,10 @@ namespace sdpa { namespace nre { namespace worker {
         *segv = 0;
         return;
       }
-      else if (msg == "LS")
+      else if (msg == "STATUS")
       {
-        DLOG(INFO, "got LS request, obeying...");
-        DLOG(INFO, "my module loader: " << loader());
+        DLOG(INFO, "got STATUS request...");
+        DLOG(INFO, "my modules: " << loader());
 
         goto cont;
       }

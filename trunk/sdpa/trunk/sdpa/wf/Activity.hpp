@@ -1,10 +1,13 @@
 #ifndef SDPA_ACTIVITY_HPP
 #define SDPA_ACTIVITY_HPP 1
 
+#include <stdexcept>
 #include <string>
 #include <map>
 #include <istream>
 #include <ostream>
+
+#include <fhglog/fhglog.hpp>
 
 #include <sdpa/util/Properties.hpp>
 #include <sdpa/wf/Parameter.hpp>
@@ -74,12 +77,6 @@ namespace sdpa { namespace wf {
           module_ = bytes.substr(0,           pos_of_at);
           name_   = bytes.substr(pos_of_at+1, std::string::npos);
         }
-/*
-        else
-        {
-          throw std::runtime_error("could not deserialize method: \"" + bytes + "\" did not contain @ separator");
-        }
-*/
       }
 
       void writeTo(std::ostream &os) const
@@ -189,34 +186,75 @@ namespace sdpa { namespace wf {
       params_.insert(std::make_pair(p.name(), p));
     }
 
-    void writeTo(std::ostream &os) const
+    void writeTo(std::ostream &os, bool verbose = true) const
     {
-      os << "{"
-         << "act"
-         << ","
-         << name()
-         << ","
-         << method()
-         << ","
-         << "{" << "params"
-         << ","
-         << "[";
-      for (parameters_t::const_iterator p(parameters().begin());;) {
-        os << p->second;
-        ++p;
-        if (p == parameters().end())
+      if (verbose)
+      {
+        os << "{"
+           << "act"
+           << ","
+           << name()
+           << ","
+           << method()
+           << ","
+           << "{" << "params"
+           << ","
+           << "[";
+
+        parameters_t::const_iterator p(parameters().begin());
+        while (p != parameters().end())
         {
-          break;
+          os << p->second;
+          ++p;
+          if (p != parameters().end())
+            os << ",";
         }
-        else
+
+        os << "]"
+           << "}"
+         << "}";
+      }
+      else
+      {
+        os << method().module() << "." << method().name()
+           << "(";
+        parameters_t::const_iterator p(parameters().begin());
+        while (p != parameters().end())
         {
-          os << ",";
+          p->second.writeTo(os, false);
+
+          ++p;
+          if (p != parameters().end())
+            os << ",";
+        }
+        
+        os << ").";
+      }
+    }
+
+    // match parameter names with map entries
+    // TODO: this should not be need, but creating a parameter by
+    //     param["foo"].token().data(...)
+    //
+    // results in a parameter with name "unknown", but it is mapped at the
+    // correct place -> those occurrences do actually point to an inconsistency
+    // within the workflow.
+    //
+    void check_parameters(bool relaxed) const throw (std::exception)
+    {
+      for (parameters_t::const_iterator p(parameters().begin()); p != parameters().end(); ++p)
+      {
+        if (p->first != p->second.name())
+        {
+          LOG(FATAL, "Discovered an inconsistency between workflow and activity-implementation: \"" << p->first << "\" expected, got \"" << p->second.name() << "\"");
+          if (! relaxed)
+          {
+            throw std::runtime_error("workflow/object-code mismatch: " + p->first + " =/= " + p->second.name());
+          }
         }
       }
-      os << "]"
-         << "}"
-         << "}";
     }
+
   private:
     std::string name_;
     Method method_;
@@ -228,7 +266,7 @@ namespace sdpa { namespace wf {
 
 inline std::ostream & operator<<(std::ostream & os, const sdpa::wf::Activity &a)
 {
-  a.writeTo(os);
+  a.writeTo(os, false); // no verbose output
   return os;
 }
 

@@ -123,10 +123,10 @@ namespace modules {
       while (m != module_table_.end())
       {
         os << (*(m->second));
+        ++m;
+
         if (m != module_table_.end())
           os << ", ";
-
-        ++m;
       }
 
       os << "]";

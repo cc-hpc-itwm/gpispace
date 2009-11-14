@@ -162,7 +162,9 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "ExecuteReqst";
+      os << "Execute(";
+      activity().writeTo(os, false);
+      os << ")";
     }
 
     virtual Reply *execute(ExecutionContext *ctxt)
@@ -172,9 +174,10 @@ namespace sdpa { namespace nre { namespace worker {
 
       try
       {
-        LOG(INFO, "executing activity: " << activity());
+        LOG(INFO, "executing: " << activity());
 
         ctxt->loader().get(mod_name).call(fun_name, activity().parameters());
+        activity().check_parameters(true /* relaxed */);
 
         LOG(INFO, "execution of activity finished");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
