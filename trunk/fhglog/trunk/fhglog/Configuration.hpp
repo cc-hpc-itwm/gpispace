@@ -1,7 +1,12 @@
 #ifndef FHGLOG_CONFIGURATION_HPP
 #define FHGLOG_CONFIGURATION_HPP 1
 
+#if defined(HAVE_CONFIG_H)
+#  include <fhglog/fhglog-config.hpp>
+#endif
+
 #include <fhglog/fhglog.hpp>
+
 #include <iostream>
 
 namespace fhg { namespace log {
