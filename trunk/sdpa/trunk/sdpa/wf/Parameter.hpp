@@ -71,6 +71,8 @@ namespace sdpa { namespace wf {
 
       ~Parameter() {}
 
+      Parameter &set_name(const std::string &new_name) { name_ = new_name; return *this; }
+
       inline const std::string & name() const { return name_; }
       inline std::string & name() { return name_; }
       inline const Token & token() const { return token_; }
