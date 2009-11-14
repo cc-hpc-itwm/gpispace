@@ -24,18 +24,20 @@
 #define SDPA_MOD_INIT_START(modname)\
   extern "C"\
   {\
-    void sdpa_mod_init(Module *mod)\
+    void sdpa_mod_init(::sdpa::modules::Module *mod)\
     {\
       mod->name(#modname);
 
 #define SDPA_REGISTER_FUN_START(fun)\
-      ::sdpa::modules::Module::names_list_t params
+      {\
+        ::sdpa::modules::Module::names_list_t params
 
 #define SDPA_ADD_INP(p, typ) params.push_back(p)
 #define SDPA_ADD_OUT(p, typ) params.push_back(p)
 
 #define SDPA_REGISTER_FUN_END(fun)\
-      mod->add_function(#fun, &fun, params)
+        mod->add_function(#fun, &fun, params);\
+      }
 
 #define SDPA_REGISTER_FUN(fun)\
       mod->add_function(#fun, &fun)
