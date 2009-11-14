@@ -75,7 +75,7 @@ namespace sdpa { namespace nre { namespace worker {
 
       socket_ = new udp::socket(io_service_, udp::endpoint(udp::v4(), 0));
 
-      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
+      ping();
     }
 
     void stop() throw (std::exception)
@@ -92,6 +92,12 @@ namespace sdpa { namespace nre { namespace worker {
       throw std::runtime_error("not implemented");
     }
 
+    void ping(/* timeout */)
+    {
+      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
+      LOG(DEBUG, "got reply to ping: " << *msg);
+    }
+
     sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity)
     {
       sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity));
@@ -99,6 +105,9 @@ namespace sdpa { namespace nre { namespace worker {
       {
         // check if it is a ExecuteReply
         ExecuteReply *exec_reply = dynamic_cast<ExecuteReply*>(msg.get());
+
+        ping();
+
         if (exec_reply)
         {
           return exec_reply->result();
