@@ -23,8 +23,8 @@ ADD_LIBRARY(fhglog_remote ${hdrs} ${srcs})
 add_executable(fhglog-server fhglog-server.cpp)
 add_executable(fhglog-client fhglog-client.cpp)
 
-target_link_libraries(fhglog-server fhglog fhglog_remote)
-target_link_libraries(fhglog-client fhglog fhglog_remote)
+target_link_libraries(fhglog-server fhglog_remote fhglog)
+target_link_libraries(fhglog-client fhglog_remote fhglog)
 
 install(FILES ${hdrs} DESTINATION include/fhglog/remote)
 install(TARGETS fhglog_remote DESTINATION lib)
