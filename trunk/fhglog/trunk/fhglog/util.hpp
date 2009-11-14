@@ -68,30 +68,6 @@ namespace fhg { namespace log {
     }
   }
 
-  inline environment_t get_environment_variables()
-  {
-      environment_t env;
-      char ** env_p = environ;
-      while (env_p != NULL && (*env_p != NULL))
-      {
-        const std::string env_entry(*env_p);
-        // split at =
-        std::string::size_type split_pos = env_entry.find("=");
-
-        const std::string key = env_entry.substr(0, split_pos);
-        if (split_pos != std::string::npos)
-        {
-          env.push_back(std::make_pair(key, env_entry.substr(split_pos+1)));
-        }
-        else
-        {
-          env.push_back(std::make_pair(key, ""));
-        }
-        ++env_p;
-      }
-      return env;
-  }
-
   inline std::pair<std::string, std::string> split_string(const std::string &val
                                                         , const std::string &sep)
   {
@@ -107,6 +83,18 @@ namespace fhg { namespace log {
     {
       return std::make_pair(first, "");
     }
+  }
+
+  inline environment_t get_environment_variables()
+  {
+      environment_t env;
+      char ** env_p = environ;
+      while (env_p != NULL && (*env_p != NULL))
+      {
+        env.push_back(split_string(*env_p, "="));
+        ++env_p;
+      }
+      return env;
   }
 }}
 
