@@ -19,6 +19,3 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
 
-add_executable(nre-worker-test nre-worker-test.cpp)
-target_link_libraries(nre-worker-test sdpa)
-target_link_libraries(nre-worker-test sdpa-modules)
