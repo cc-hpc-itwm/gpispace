@@ -9,16 +9,16 @@ using namespace sdpa::modules;
 void update (Module::data_t &params)
 {
   const unsigned long slice_and_depth
-    (params["slice_and_depth"].token().data_as<unsigned long>());
+    (params.at("slice_and_depth").token().data_as<unsigned long>());
 
   const unsigned long number_of_frequencies 
-    (params["number_of_frequencies"].token().data_as<unsigned long>());
+    (params.at("number_of_frequencies").token().data_as<unsigned long>());
 
   const fvmAllocHandle_t memhandle_for_configuration 
-    (params["memhandle_for_configuration"].token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
 
   const fvmAllocHandle_t memhandle_for_outputvolume 
-    (params["memhandle_for_outputvolume"].token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_outputvolume").token().data_as<fvmAllocHandle_t>());
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
   MLOG (DEBUG, "memhandle_for_outputvolume = " << memhandle_for_outputvolume);

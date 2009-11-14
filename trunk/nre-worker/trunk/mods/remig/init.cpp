@@ -8,7 +8,7 @@ using namespace sdpa::modules;
 
 void init (Module::data_t &params)
 {
-  const std::string config_file (params["config_file"].token().data());
+  const std::string config_file (params.at("config_file").token().data());
 
   // read config file, parse, setup everything
 
