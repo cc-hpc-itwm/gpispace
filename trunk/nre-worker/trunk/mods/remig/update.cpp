@@ -31,6 +31,8 @@ void update (Module::data_t &params)
   MLOG (DEBUG, "slice = " << slice);
   MLOG (DEBUG, "depth = " << depth);
 
+  sleep(2);
+
   params["slice_and_depth_OUT"].token().data(slice_and_depth);
   params["memhandle_for_outputvolume_OUT"].token().data(memhandle_for_outputvolume);
 }
