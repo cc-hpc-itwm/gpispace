@@ -7,7 +7,6 @@ foreach (tc_src ${tc_srcs})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name} fhglog_remote)
   target_link_libraries(${tc_name} fhglog)
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
   get_target_property(LOC ${tc_name} LOCATION_)

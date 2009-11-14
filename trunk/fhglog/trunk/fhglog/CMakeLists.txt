@@ -9,9 +9,12 @@ endif (HAVE_SYSLOG_H)
 
 if (WITH_REMOTE_LOGGING)
   add_subdirectory(remote)
+  file(GLOB remote_srcs "remote/*.cpp")
+  file(GLOB remote_hdrs "remote/*.hpp")
+  install(FILES ${remote_hdrs} DESTINATION include/fhglog/remote)
 endif (WITH_REMOTE_LOGGING)
 
-ADD_LIBRARY(fhglog ${hdrs} ${srcs})
+ADD_LIBRARY(fhglog ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
 
 install(FILES ${hdrs} DESTINATION include/fhglog)
 install(TARGETS fhglog DESTINATION lib
