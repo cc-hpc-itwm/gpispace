@@ -20,10 +20,11 @@ void usage();
 string getUserName();
 
 int main(int argc, char* argv[]) {
+    // default configuration
+    fhg::log::Configurator::configure();
+
 	// logger
 	logger_t logger(getLogger("gwes"));
-	logger.setLevel(LogLevel::INFO);
-	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 
 	string workflowfn;
 
