@@ -18,10 +18,18 @@
 
 #include <sstream>
 #include <cstdlib>
+#include <csignal>
 
 #include <fhglog/remote/LogServer.hpp>
 #include <fhglog/NullAppender.hpp>
 #include <fhglog/Configuration.hpp>
+
+boost::asio::io_service io_service;
+
+void signal_handler(int)
+{
+  io_service.stop();
+}
 
 int main(int argc, char **argv)
 {
@@ -59,12 +67,17 @@ int main(int argc, char **argv)
       }
     }
 
-    fhg::log::Configurator::configure();
+//    fhg::log::Configurator::configure();
 
     if (mode == "start")
     {
-      boost::asio::io_service io_service;
+      signal(SIGINT, signal_handler);
+      signal(SIGTERM, signal_handler);
 
+      // my own output goes to stderr
+      fhg::log::getLogger().addAppender(fhg::log::Appender::ptr_t(new fhg::log::StreamAppender("console", std::cerr)))->setFormat(fhg::log::Formatter::Default());
+
+      // remote messages go to stdout
       fhg::log::Appender::ptr_t appender(new fhg::log::StreamAppender("console", std::cout));
       appender->setFormat(fhg::log::Formatter::Full());
       fhg::log::remote::LogServer server(appender, io_service, port);
