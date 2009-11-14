@@ -91,6 +91,23 @@ namespace fhg { namespace log {
       }
       return env;
   }
+
+  inline std::pair<std::string, std::string> split_string(const std::string &val
+                                                        , const std::string &sep)
+  {
+    std::string::size_type split_pos = val.find(sep);
+
+    const std::string first = val.substr(0, split_pos);
+    if (split_pos != std::string::npos)
+    {
+      const std::string second = val.substr(split_pos+1);
+      return std::make_pair(first, second);
+    }
+    else
+    {
+      return std::make_pair(first, "");
+    }
+  }
 }}
 
 #endif
