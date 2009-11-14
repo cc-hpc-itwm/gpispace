@@ -29,7 +29,7 @@ using boost::asio::ip::udp;
 
 LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
                    , boost::asio::io_service &io_service
-                   , short port)
+                   , unsigned short port)
   : appender_(appender)
   , io_service_(io_service)
   , socket_(io_service, udp::endpoint(udp::v4(), port))

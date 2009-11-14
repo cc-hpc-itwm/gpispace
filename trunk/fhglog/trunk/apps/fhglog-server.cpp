@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   try
   {
     std::string mode("start");
-    short port(FHGLOG_DEFAULT_PORT);
+    std::string port_string(FHGLOG_DEFAULT_PORT);
     if (argc > 1)
     {
       const std::string a1(argv[1]);
@@ -58,13 +58,16 @@ int main(int argc, char **argv)
     
     if (argc > 2)
     {
-      std::istringstream isstr(argv[2]);
-      isstr >> port;
-      if (! isstr)
-      {
-        std::cerr << "invalid port specified: " << argv[1] << std::endl;
-        return 2;
-      }
+      port_string = argv[2];
+    }
+
+    unsigned short port;
+    std::istringstream isstr(port_string);
+    isstr >> port;
+    if (! isstr)
+    {
+      std::cerr << "invalid port specified: " << argv[1] << std::endl;
+      return 2;
     }
 
 //    fhg::log::Configurator::configure();

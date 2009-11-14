@@ -32,15 +32,18 @@ RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &loc
 {
   std::pair<std::string, std::string> host_port = fhg::log::split_string(location, ":");
   host_ = host_port.first;
-  if (host_port.second.empty()) host_port.second = "0";
+  if (host_port.second.empty())
   {
-    std::stringstream sstr(host_port.second);
-    sstr >> port_;
-    if (!sstr)
-    {
-      throw std::runtime_error("could not parse port information: " + host_port.second);
-    }
+    host_port.second = FHGLOG_DEFAULT_PORT;
   }
+
+  std::stringstream sstr(host_port.second);
+  sstr >> port_;
+  if (!sstr)
+  {
+    throw std::runtime_error("could not parse port information: " + host_port.second);
+  }
+
   open();
 }
 
