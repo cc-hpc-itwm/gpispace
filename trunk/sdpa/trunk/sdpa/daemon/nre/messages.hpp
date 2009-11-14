@@ -187,14 +187,14 @@ namespace sdpa { namespace nre { namespace worker {
       {
         LOG(ERROR, "execution of activity failed: " << ex.what());
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().properties().put("reason", ex.what());
+        activity().reason() = ex.what();
         return new ExecuteReply(activity());
       }
       catch (...)
       {
         LOG(ERROR, "execution of activity failed: ");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().properties().put("reason", "unknown");
+        activity().reason() = ex.what();
         return new ExecuteReply(activity());
       }
     }

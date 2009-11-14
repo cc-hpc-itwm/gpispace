@@ -136,12 +136,14 @@ namespace sdpa { namespace wf {
       , method_(a_method)
       , params_(params)
       , state_(ACTIVITY_UNKNOWN)
+      , reason_("")
     { }
 
     Activity()
       : name_("")
       , method_("")
       , state_(ACTIVITY_UNKNOWN)
+      , reason_("")
     { }
 
     Activity(const Activity &other)
@@ -150,6 +152,7 @@ namespace sdpa { namespace wf {
       , params_(other.parameters())
       , properties_(other.properties())
       , state_(other.state())
+      , reason_(other.reason())
     { }
 
     Activity& operator=(const Activity &rhs) {
@@ -160,6 +163,7 @@ namespace sdpa { namespace wf {
         params_ = rhs.parameters();
         properties_ = rhs.properties();
         state_ = rhs.state();
+        reason_ = rhs.reason();
       }
       return *this;
     }
@@ -180,6 +184,9 @@ namespace sdpa { namespace wf {
 
     inline const state_t &state() const { return state_; }
     inline state_t &state() { return state_; }
+
+    inline const std::string &reason() const { return reason_; }
+    inline std::string &reason() { return reason_; }
 
     void add_parameter(const Parameter &p)
     {
@@ -261,6 +268,7 @@ namespace sdpa { namespace wf {
     parameters_t params_;
     properties_t properties_;
     state_t state_;
+    std::string reason_;
   };
 }}
 

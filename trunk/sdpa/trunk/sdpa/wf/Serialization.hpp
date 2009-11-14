@@ -67,6 +67,7 @@ namespace boost { namespace serialization {
     ar & act.parameters();
     ar & act.properties();
     ar & act.state();
+    ar & act.reason();
   }
 }}
 
