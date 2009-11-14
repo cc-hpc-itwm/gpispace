@@ -12,7 +12,7 @@ string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 1)
-set(V_MINOR 1)
+set(V_MINOR 2)
 set(V_PATCH 0)
 
 option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
