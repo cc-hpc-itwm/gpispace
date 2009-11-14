@@ -1,10 +1,7 @@
 #ifndef  FHGLOG_INC
 #define  FHGLOG_INC
 
-#if defined(HAVE_CONFIG_H)
-#  include <fhglog/fhglog-config.hpp>
-#endif
-
+#include    <fhglog/fhglog-config.hpp>
 #include	<fhglog/LogMacros.hpp>
 #include	<fhglog/LoggerApi.hpp>
 #include	<fhglog/Appender.hpp>
