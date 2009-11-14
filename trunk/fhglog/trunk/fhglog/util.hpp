@@ -23,7 +23,15 @@
 #include <algorithm> // std::transform
 #include <cctype> // std::tolower
 
+#include <list>
+#include <string>
+#include <utility> // std::pair
+#include <unistd.h> // char **environ
+
 namespace fhg { namespace log {
+  typedef std::pair<std::string, std::string> env_value_t;
+  typedef std::list<env_value_t> environment_t;
+
   inline std::string get_filename_from_path(const std::string &a_path)
   {
     // TODO: the following should be coded with boost::filesystem due to platform
@@ -58,6 +66,30 @@ namespace fhg { namespace log {
       // split the filename and return everything up to the last "."
       return filename.substr(0, ext_start_idx);
     }
+  }
+
+  inline environment_t get_environment_variables()
+  {
+      environment_t env;
+      char ** env_p = environ;
+      while (env_p != NULL && (*env_p != NULL))
+      {
+        const std::string env_entry(*env_p);
+        // split at =
+        std::string::size_type split_pos = env_entry.find("=");
+
+        const std::string key = env_entry.substr(0, split_pos);
+        if (split_pos != std::string::npos)
+        {
+          env.push_back(std::make_pair(key, env_entry.substr(split_pos+1)));
+        }
+        else
+        {
+          env.push_back(std::make_pair(key, ""));
+        }
+        ++env_p;
+      }
+      return env;
   }
 }}
 
