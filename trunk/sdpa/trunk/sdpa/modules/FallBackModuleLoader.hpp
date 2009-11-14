@@ -115,14 +115,21 @@ namespace modules {
       }
     }
 
-    std::list<std::string> loaded_modules() const
+    void writeTo(std::ostream &os) const
     {
-      std::list<std::string> mods;
-      for (module_table_t::const_iterator m(module_table_.begin()); m != module_table_.end(); ++m)
+      os << "[";
+
+      module_table_t::const_iterator m(module_table_.begin());
+      while (m != module_table_.end())
       {
-        mods.push_back(m->first);
+        os << (*(m->second));
+        if (m != module_table_.end())
+          os << ", ";
+
+        ++m;
       }
-      return mods;
+
+      os << "]";
     }
   private:
     FallBackModuleLoader()
@@ -149,5 +156,11 @@ namespace modules {
     module_table_t module_table_;
   };
 }}
+
+inline std::ostream &operator<<(std::ostream &os, const sdpa::modules::FallBackModuleLoader &loader)
+{
+  loader.writeTo(os);
+  return os;
+}
 
 #endif
