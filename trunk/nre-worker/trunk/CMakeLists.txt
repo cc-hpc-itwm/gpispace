@@ -15,6 +15,9 @@ set(V_MAJOR 0)
 set(V_MINOR 1)
 set(V_PATCH 0)
 
+option(LOADER_BIND_NOW "when loading modules, try to locate all symbols" Yes)
+option(FVM_REQUIRED    "when loading modules, try to locate all symbols" Yes)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
@@ -96,6 +99,10 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM -DSHMEM -DUSE_STL_TR1)
 if (FVM_REQUIRED)
   add_definitions(-DFVM_REQUIRED)
 endif (FVM_REQUIRED)
+
+if (LOADER_BIND_NOW)
+  add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
+endif (LOADER_BIND_NOW)
 
 # Reflect the package structure
 add_subdirectory(nre-worker)
