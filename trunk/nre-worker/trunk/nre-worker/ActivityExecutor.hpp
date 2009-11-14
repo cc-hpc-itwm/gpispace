@@ -42,7 +42,6 @@ namespace sdpa { namespace nre { namespace worker {
       , socket_(NULL)
       , barrier_(2)
       , service_thread_(NULL)
-      , execution_thread_(NULL)
     {}
 
     ~ActivityExecutor() throw()
@@ -80,7 +79,8 @@ namespace sdpa { namespace nre { namespace worker {
     boost::barrier barrier_;
     boost::thread *service_thread_;
 
-    boost::thread *execution_thread_;
+    typedef std::list<boost::thread *> thread_list_t;
+    thread_list_t execution_threads_;
     typedef std::pair<boost::asio::ip::udp::endpoint, Message *> request_t;
     typedef std::list<request_t> request_list_t;
     boost::recursive_mutex mtx_;

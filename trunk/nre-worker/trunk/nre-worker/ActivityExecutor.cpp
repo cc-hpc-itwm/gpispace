@@ -66,20 +66,22 @@ namespace sdpa { namespace nre { namespace worker {
     LOG(INFO, "listening on " << real_endpoint);
 
     service_thread_ = new boost::thread(boost::ref(*this));
-    execution_thread_ = new boost::thread(boost::bind(&ActivityExecutor::execution_thread, this));
+    execution_threads_.push_back(new boost::thread(boost::bind(&ActivityExecutor::execution_thread, this)));
+
     barrier_.wait();
   }
 
   void
   ActivityExecutor::stop()
   {
-    if (execution_thread_)
+    for (thread_list_t::iterator thrd(execution_threads_.begin()); thrd != execution_threads_.end(); ++thrd)
     {
       // FIXME: how to stop the execution thread (while it executes something)?
-      execution_thread_->interrupt();
-      execution_thread_->join();
-      delete execution_thread_; execution_thread_ = NULL;
+      (*thrd)->interrupt();
+      (*thrd)->join();
+      delete (*thrd); (*thrd) = NULL;
     }
+    execution_threads_.clear();
 
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
@@ -129,6 +131,7 @@ namespace sdpa { namespace nre { namespace worker {
           }
         }
         request_t r = requests_.front(); requests_.pop_front();
+        LOG(DEBUG, "removed execution request from queue (" << requests_.size() << " waiting)");
         rqst.reset(r.second);
         reply_to = r.first;
       } // release lock
@@ -218,6 +221,13 @@ namespace sdpa { namespace nre { namespace worker {
         *segv = 0;
         return;
       }
+      else if (msg == "LS")
+      {
+        DLOG(INFO, "got LS request, obeying...");
+        DLOG(INFO, "my module loader: " << loader());
+
+        goto cont;
+      }
 #endif
 
       try
@@ -225,9 +235,9 @@ namespace sdpa { namespace nre { namespace worker {
         Message *rqst = codec_.decode(msg);
         if (rqst->would_block())
         {
-          LOG(DEBUG, "enqueing blocking request to execution thread...");
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
           requests_.push_back(std::make_pair(sender_endpoint_, rqst));
+          LOG(DEBUG, "enqued blocking request to execution thread (" << requests_.size() << " waiting)");
           request_avail_.notify_one();
         }
         else
@@ -255,6 +265,11 @@ namespace sdpa { namespace nre { namespace worker {
       catch (...) {
         LOG(ERROR, "could not execute the desired request (unknown reason)");
       }
+
+#ifndef NDEBUG
+cont:
+#endif
+
 
       socket_->async_receive_from(
           boost::asio::buffer(data_, max_length), sender_endpoint_,
