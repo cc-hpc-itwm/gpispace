@@ -5,9 +5,14 @@
 #include <sstream>
 #include <cstring>
 #include <csignal>
+#include <boost/program_options.hpp>
 
 // fvm dependencies
 #include <fvm-pc/pc.hpp>
+
+#if ! defined(NRE_PCD_DEFAULT_CFG)
+#   define NRE_PCD_DEFAULT_CFG "/etc/fvm/fvm.rc"
+#endif
 
 #include "ActivityExecutor.hpp"
 
@@ -143,18 +148,65 @@ int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::ex
 
 int main(int ac, char **av)
 {
-  if (ac < 3)
+  namespace po = boost::program_options;
+
+  po::options_description opts("Available Options");
+  // fill in defaults
+  opts.add_options()
+    ("help,h", "show this help text")
+    ("location,l", po::value<std::string>()->default_value("127.0.0.1:8000"), "where to listen")
+    ("config,c" , po::value<std::string>()->default_value(NRE_PCD_DEFAULT_CFG), "input parameter to the activity")
+    ("load" , po::value<std::vector<std::string> >(), "shared modules that shall be loaded")
+    ("keep-going,k", "keep going, even if the FVM is not there")
+  ;
+
+  po::positional_options_description positional; // positional parameters used for command line parsing
+  positional.add("load", -1);
+
+  po::variables_map vm;
+  try
   {
-    std::cerr << "usage: " << av[0] << " ip:port path-to-fvm-config [modules...]" << std::endl;
+    po::store(po::command_line_parser(ac, av).options(opts)
+                                             .positional(positional)
+                                             .run()
+            , vm);
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "E: could not parse command line: " << ex.what() << std::endl;
+    std::cerr << opts << std::endl;
+    return 2;
+  }
+
+  if (vm.count("help"))
+  {
+    std::cerr << "usage: nre-pcd [options] module...." << std::endl;
+    std::cerr << opts << std::endl;
     return 1;
   }
+
   fhg::log::Configurator::configure();
 
   // connect to FVM
   fvm_pc_config_t pc_cfg;
 
   // read those from the config file!
-  read_fvm_config(av[2], pc_cfg);
+  try
+  {
+    read_fvm_config(vm["config"].as<std::string>(), pc_cfg);
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "E: could not read config file: " << ex.what() << std::endl;
+    if (vm.count("keep-going"))
+    {
+      std::cerr << "**** ignoring this error (keep going=true)" << std::endl;
+    }
+    else
+    {
+      return 2;
+    }
+  }
 
   fvm_pc_connection_mgr fvm_pc;
   
@@ -163,12 +215,15 @@ int main(int ac, char **av)
     fvm_pc.init(pc_cfg);  
   } catch (const std::exception &ex)
   {
-    std::cerr << "could not connect to FVM: " << ex.what() << std::endl;
-#if defined(FVM_REQUIRED)
-    return 2;
-#else
-    std::cerr << "**** ignoring this error (enable it with -DFVM_REQUIRED)!" << std::endl;
-#endif
+    std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
+    if (vm.count("keep-going"))
+    {
+      std::cerr << "**** ignoring this error (keep going=true)" << std::endl;
+    }
+    else
+    {
+      return 2;
+    }
   }
 
   signal(SIGSEGV, &sig_handler);
@@ -176,18 +231,29 @@ int main(int ac, char **av)
 
   using namespace sdpa::modules;
 
-  sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(av[1]));
+  std::clog << "I: starting on location: " << vm["location"].as<std::string>() << "..." << std::endl;
+  sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>()));
 
   try
   {
-    for (int i = 3; i < ac; ++i)
+    typedef std::vector<std::string> mod_list;
+    if (vm.count("load"))
     {
-      executor->loader().load(av[i]);
+      const mod_list &mods(vm["load"].as<std::vector<std::string> >());
+      for (mod_list::const_iterator mod(mods.begin()); mod != mods.end(); ++mod)
+      {
+        executor->loader().load(*mod);
+      }
     }
   }
   catch (const ModuleLoadFailed &mlf)
   {
     std::cerr << "could not load module: " << mlf.what() << std::endl;
+    return 3;
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "could not load module: " << ex.what() << std::endl;
     return 3;
   }
 
