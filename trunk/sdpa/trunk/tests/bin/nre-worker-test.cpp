@@ -38,8 +38,12 @@ int main(int ac, char **av)
   sdpa::nre::worker::NreWorkerClient client(worker_location);
   client.start();
 
+  client.ping();
+
   // try to execute an activity
-  sdpa::wf::Activity a_in("activity-1", sdpa::wf::Method(function_call));
+  sdpa::wf::parameters_t params;
+  params["config_file"].token().data("/etc/passwd");
+  sdpa::wf::Activity a_in("activity-1", sdpa::wf::Method(function_call), params);
   sdpa::wf::Activity a_ou(client.execute(a_in));
   LOG(INFO, "got reply: " << a_ou);
 
