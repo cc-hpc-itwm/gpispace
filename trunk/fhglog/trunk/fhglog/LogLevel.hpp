@@ -19,6 +19,7 @@
 #ifndef  FHG_LOG_LOGLEVEL_INC
 #define  FHG_LOG_LOGLEVEL_INC
 
+#include <iostream>
 #include <string>
 #include <stdexcept>
 
@@ -48,6 +49,9 @@ namespace fhg { namespace log {
           throw std::runtime_error("the specified log-level is out of range!");
         }
       }
+
+      explicit
+      LogLevel(const std::string &level_name);
 
       LogLevel(const LogLevel &other)
         : lvl_(other.lvl_) {}
@@ -79,4 +83,11 @@ namespace fhg { namespace log {
       Level lvl_;
   };
 }}
+
+inline std::ostream &operator<<(std::ostream &os, const fhg::log::LogLevel &lvl)
+{
+  os << lvl.str();
+  return os;
+}
+
 #endif   /* ----- #ifndef FHG_LOG_LOGLEVEL_INC  ----- */

@@ -37,3 +37,17 @@ const std::string &LogLevel::str() const
   assert(lvl_ >= 0 && lvl_ < static_cast<int>(sizeof(LevelToStringMap_)));
   return LevelToStringMap_[lvl_];
 }
+
+LogLevel::LogLevel(const std::string &name)
+{
+  // TODO: make this better
+  if      (name == "TRACE") lvl_ = TRACE;
+  else if (name == "DEBUG") lvl_ = DEBUG;
+  else if (name == "INFO")  lvl_ = INFO;
+  else if (name == "WARN")  lvl_ = WARN;
+  else if (name == "ERROR") lvl_ = ERROR;
+  else if (name == "FATAL") lvl_ = ERROR;
+  else if (name == "MIN")   lvl_ = MIN_LEVEL;
+  else if (name == "MAX")   lvl_ = MAX_LEVEL;
+  else                      lvl_ = DEF_LEVEL;
+}
