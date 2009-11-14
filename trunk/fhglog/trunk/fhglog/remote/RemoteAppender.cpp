@@ -25,7 +25,7 @@
 
 using namespace fhg::log::remote;
 
-RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, short a_port)
+RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &a_host, unsigned short a_port)
   : Appender(a_name)
   , host_(a_host)
   , port_(a_port)

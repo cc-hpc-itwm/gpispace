@@ -39,18 +39,18 @@ namespace fhg { namespace log { namespace remote {
     explicit
     RemoteAppender(const std::string &name
                  , const std::string &host = FHGLOG_DEFAULT_HOST
-                 , short port = FHGLOG_DEFAULT_PORT);
+                 , unsigned short port = FHGLOG_DEFAULT_PORT);
     virtual ~RemoteAppender();
 
     const std::string &host() const { return host_; }
-    const short &port() const { return port_; }
+    const unsigned short &port() const { return port_; }
     void append(const LogEvent &evt) const;
   private:
     void open();
     void close();
 
     std::string host_;
-    short port_;
+    unsigned short port_;
 
     boost::asio::ip::udp::socket *socket_;
     boost::asio::io_service io_service_;
