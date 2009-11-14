@@ -15,7 +15,7 @@
 #include	<fhglog/SynchronizedAppender.hpp>
 #include	<fhglog/FileAppender.hpp>
 
-#if FHGLOG_WITH_REMOTE_LOGGING
+#if defined(FHGLOG_WITH_REMOTE_LOGGING)
 #   include <fhglog/remote/RemoteAppender.hpp>
 #endif
 
