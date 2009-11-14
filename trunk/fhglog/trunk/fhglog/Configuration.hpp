@@ -140,7 +140,6 @@ namespace fhg { namespace log {
 
       void fallback_configuration()
       {
-        level_ = LogLevel::DEF_LEVEL;
         to_console_ = "stderr";
         to_file_ = "";
         to_server_ = "";
