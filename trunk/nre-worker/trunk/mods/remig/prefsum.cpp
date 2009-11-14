@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -20,6 +20,10 @@ void prefsum (Module::data_t &params)
 
 SDPA_MOD_INIT_START(prefsum)
 {
-  SDPA_REGISTER_FUN(prefsum);
+  SDPA_REGISTER_FUN_START(prefsum);
+    SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
+
+    SDPA_ADD_OUT("seq", char *);
+  SDPA_REGISTER_FUN_END(prefsum);
 }
 SDPA_MOD_INIT_END(prefsum)

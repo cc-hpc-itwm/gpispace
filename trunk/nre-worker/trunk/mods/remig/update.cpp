@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -39,6 +39,15 @@ void update (Module::data_t &params)
 
 SDPA_MOD_INIT_START(update)
 {
-  SDPA_REGISTER_FUN(update);
+  SDPA_REGISTER_FUN_START(update);
+    SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
+
+    SDPA_ADD_INP( "memhandle_for_outputvolume", fvmAllocHandle_t );
+    SDPA_ADD_INP( "slice_and_depth", unsigned long );
+    SDPA_ADD_INP( "number_of_frequencies", unsigned long );
+
+    SDPA_ADD_OUT("slice_and_depth_OUT", unsigned long );
+    SDPA_ADD_OUT("memhandle_for_outputvolume_OUT", fvmAllocHandle_t );
+  SDPA_REGISTER_FUN_END(update);
 }
 SDPA_MOD_INIT_END(update)

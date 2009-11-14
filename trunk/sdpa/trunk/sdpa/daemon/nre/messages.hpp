@@ -176,11 +176,23 @@ namespace sdpa { namespace nre { namespace worker {
       {
         LOG(INFO, "executing: " << activity());
 
-        ctxt->loader().get(mod_name).call(fun_name, activity().parameters());
-        activity().check_parameters(true /* relaxed */);
+        bool keep_going = activity().properties().get<bool>("keep_going", false);
+
+        ctxt->loader().get(mod_name).call(fun_name
+                                        , activity().parameters()
+                                        , keep_going);
+        activity().check_parameters(keep_going);
 
         LOG(INFO, "execution of activity finished");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
+        return new ExecuteReply(activity());
+      }
+      catch (const sdpa::modules::MissingFunctionArgument &mfa)
+      {
+        LOG(ERROR, "function " << mfa.module() << "." << mfa.function()
+                               << " expected argument " << mfa.arguments());
+        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        activity().reason() = mfa.what();
         return new ExecuteReply(activity());
       }
       catch (const std::exception &ex)
@@ -194,7 +206,7 @@ namespace sdpa { namespace nre { namespace worker {
       {
         LOG(ERROR, "execution of activity failed: ");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().reason() = ex.what();
+        activity().reason() = "unknown reason";
         return new ExecuteReply(activity());
       }
     }

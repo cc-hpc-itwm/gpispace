@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -24,6 +24,9 @@ void finalize (Module::data_t &params)
 
 SDPA_MOD_INIT_START(finalize)
 {
-  SDPA_REGISTER_FUN(finalize);
+  SDPA_REGISTER_FUN_START(finalize);
+    SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
+    SDPA_ADD_OUT( "seq", char * );
+  SDPA_REGISTER_FUN_END(finalize);
 }
 SDPA_MOD_INIT_END(finalize)

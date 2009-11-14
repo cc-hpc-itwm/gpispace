@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 #include <iostream>
 #include <string>
 #include <cstdlib> // malloc, free

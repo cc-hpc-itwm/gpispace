@@ -71,6 +71,8 @@ int main(int ac, char **av)
 
   // try to execute an activity
   sdpa::wf::Activity req("activity-1", sdpa::wf::Method(function_call), params);
+  req.properties().put("keep_going", true);
+
   std::cout << "sending ";
   req.writeTo(std::cout, false);
   std::cout << std::endl;

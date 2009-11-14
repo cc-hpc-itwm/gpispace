@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -42,6 +42,16 @@ void init (Module::data_t &params)
 
 SDPA_MOD_INIT_START(init)
 {
-  SDPA_REGISTER_FUN(init);
+  SDPA_REGISTER_FUN_START(init);
+    SDPA_ADD_INP( "config_file", char * );
+
+    SDPA_ADD_OUT( "number_of_frequencies", unsigned long );
+    SDPA_ADD_OUT( "number_of_depthlevels", unsigned long );
+    SDPA_ADD_OUT( "number_of_parallel_propagators", unsigned long );
+    SDPA_ADD_OUT( "memhandle_for_outputvolume", fvmAllocHandle_t );
+    SDPA_ADD_OUT( "memhandle_for_configuration", fvmAllocHandle_t );
+
+    SDPA_ADD_OUT("seq", char *);
+  SDPA_REGISTER_FUN_END(init);
 }
 SDPA_MOD_INIT_END(init)

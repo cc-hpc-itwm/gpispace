@@ -23,7 +23,7 @@ namespace modules {
   public:
     explicit
     ModuleNotLoaded(const std::string &a_module)
-      : ModuleException("the desired module is not loaded", a_module) {}
+      : ModuleException("the desired module is not loaded: " + a_module, a_module) {}
     virtual ~ModuleNotLoaded() throw() {}
   };
 
@@ -57,15 +57,31 @@ namespace modules {
   class FunctionNotFound : public FunctionException {
   public:
     FunctionNotFound(const std::string &a_module, const std::string &a_function)
-      : FunctionException("function could not be found", a_module, a_function) {}
+      : FunctionException("function could not be found: "+a_function, a_module, a_function) {}
     virtual ~FunctionNotFound() throw() {}
   };
 
   class DuplicateFunction : public FunctionException {
   public:
     DuplicateFunction(const std::string &a_module, const std::string &a_function)
-      : FunctionException("duplicate function detected", a_module, a_function) {}
+      : FunctionException("duplicate function detected: " + a_module+"."+a_function, a_module, a_function) {}
     virtual ~DuplicateFunction() throw() {}
+  };
+
+  class MissingFunctionArgument : public FunctionException {
+  public:
+    MissingFunctionArgument(const std::string &a_module
+                          , const std::string &a_function
+                          , const std::string &expected_arguments)
+      : FunctionException("missing argument(s): " + expected_arguments, a_module, a_function)
+      , arguments_(expected_arguments)
+    { }
+
+    virtual ~MissingFunctionArgument() throw() {}
+
+    const std::string &arguments() const { return arguments_; }
+  private:
+    std::string arguments_;
   };
 
   class BadFunctionArgument : public FunctionException {

@@ -27,7 +27,6 @@ namespace sdpa { namespace wf {
    */
   class Method {
     public:
-      explicit
       Method(const std::string & module_at_method)
         : module_()
         , name_()
@@ -247,14 +246,14 @@ namespace sdpa { namespace wf {
     // correct place -> those occurrences do actually point to an inconsistency
     // within the workflow.
     //
-    void check_parameters(bool relaxed) const throw (std::exception)
+    void check_parameters(bool keep_going) const throw (std::exception)
     {
       for (parameters_t::const_iterator p(parameters().begin()); p != parameters().end(); ++p)
       {
         if (p->first != p->second.name())
         {
           LOG(FATAL, "Discovered an inconsistency between workflow and activity-implementation: \"" << p->first << "\" expected, got \"" << p->second.name() << "\"");
-          if (! relaxed)
+          if (! keep_going)
           {
             throw std::runtime_error("workflow/object-code mismatch: " + p->first + " =/= " + p->second.name());
           }

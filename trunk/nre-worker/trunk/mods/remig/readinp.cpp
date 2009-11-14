@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -20,6 +20,10 @@ void readinp (Module::data_t &params)
 
 SDPA_MOD_INIT_START(readinp)
 {
-  SDPA_REGISTER_FUN(readinp);
+  SDPA_REGISTER_FUN_START(readinp);
+    SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
+
+    SDPA_ADD_OUT("seq", char *);
+  SDPA_REGISTER_FUN_END(readinp);
 }
 SDPA_MOD_INIT_END(readinp)

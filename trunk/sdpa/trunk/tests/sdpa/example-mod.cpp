@@ -1,4 +1,4 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 #include <string>
 #include <cstdlib> // malloc, free
 
@@ -56,7 +56,12 @@ SDPA_MOD_INIT_START(example-mod)
 {
   SDPA_REGISTER_FUN(HelloWorld);
   SDPA_REGISTER_FUN(DoNothing);
-  SDPA_REGISTER_FUN(Add);
+
+  SDPA_REGISTER_FUN_START(Add);
+    SDPA_ADD_INP("size", std::size_t);
+    SDPA_ADD_OUT("out", void*);
+  SDPA_REGISTER_FUN_END(Add);
+
   SDPA_REGISTER_FUN(Malloc);
   SDPA_REGISTER_FUN(Free);
   SDPA_REGISTER_FUN(Update);
