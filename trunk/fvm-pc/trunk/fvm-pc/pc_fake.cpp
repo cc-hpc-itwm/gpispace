@@ -5,7 +5,9 @@
 // #include <sys/msg.h>
 
 #include "pc.hpp"
-#define MAX_SHMEM (50*1024*1024UL)
+#if ! defined(MAX_SHMEM_SIZE)
+#error "MAX_SHMEM_SIZE must be defined!"
+#endif
 
 // ------ Internal functions for Process Container (not to be used by appllication)
 int doRequest(fvmRequest_t /* op_request */ ) { return 0; }
@@ -20,9 +22,9 @@ int fvmConnect(fvm_pc_config_t cfg)
     return -1;
   }
   
-  if (cfg.shmemsize > MAX_SHMEM)
+  if (cfg.shmemsize > MAX_SHMEM_SIZE)
   {
-    fprintf(stderr, "fvm-pc: sorry, the configured shared-memory size is too large for me! maximum: %lu, wanted: %lu\n", MAX_SHMEM, cfg.shmemsize);
+    fprintf(stderr, "fvm-pc: sorry, the configured shared-memory size is too large for me! maximum: %lu, wanted: %lu\n", (fvmSize_t)(MAX_SHMEM_SIZE), cfg.shmemsize);
     return -1;
   }
   else
