@@ -98,11 +98,17 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM -DSHMEM -DUSE_STL_TR1)
 if (FVM_REQUIRED)
   add_definitions(-DFVM_REQUIRED)
+  include_directories(${PV4D_INCLUDE_DIR})
 endif (FVM_REQUIRED)
+add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
 
 if (LOADER_BIND_NOW)
   add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
 endif (LOADER_BIND_NOW)
+
+if (NRE_PCD_DEFAULT_CFG)
+  add_definitions(-DNRE_PCD_DEFAULT_CFG="${NRE_PCD_DEFAULT_CFG}")
+endif (NRE_PCD_DEFAULT_CFG)
 
 # Reflect the package structure
 add_subdirectory(nre-worker)
