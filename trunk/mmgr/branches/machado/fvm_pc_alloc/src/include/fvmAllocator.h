@@ -35,10 +35,11 @@ typedef enum {
 } fvmAllocType_t;
 
 typedef unsigned long fvmAllocHandle_t;
+typedef unsigned long fvmAllocSize_t;
 
 typedef struct {
   fvmAllocType_t type;
-  unsigned long size;
+  fvmAllocSize_t size;
   int root;
   fvmAllocHandle_t handle;
 } fvmAllocRequest_t;
@@ -50,9 +51,9 @@ int fvmMMInit(void * ptr, size_t length, int rank, int nnodes,const char **hosts
 
 int fvmMMFinalize(void);
 
-fvmAllocHandle_t fvmGlobalMMAlloc(size_t size);
+fvmAllocHandle_t fvmGlobalMMAlloc(fvmAllocSize_t size);
 int fvmGlobalMMFree(fvmAllocHandle_t handle);
-fvmAllocHandle_t fvmLocalMMAlloc(size_t size);
-int fvmLocalMMFree(unsigned long size);
+fvmAllocHandle_t fvmLocalMMAlloc(fvmAllocSize_t size);
+int fvmLocalMMFree(fvmAllocHandle_t handle);
 
 #endif
