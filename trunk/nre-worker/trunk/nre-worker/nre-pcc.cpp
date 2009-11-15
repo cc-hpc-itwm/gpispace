@@ -24,6 +24,8 @@
 #include <boost/program_options.hpp>
 
 typedef std::vector<std::string>::const_iterator param_iterator;
+bool verbose(false);
+
 void parse_parameters(param_iterator begin, param_iterator end, sdpa::wf::parameters_t & params, sdpa::wf::Parameter::EdgeType edge_type)
 {
   for (param_iterator p_it(begin); p_it != end; ++p_it)
@@ -50,25 +52,27 @@ void parse_parameters(param_iterator begin, param_iterator end, sdpa::wf::parame
     params[p_name] = p;
     p.token().properties().put("datatype", datatype);
 
-    std::cout << "added ";
-    switch (edge_type)
+    if (verbose)
     {
-      case sdpa::wf::Parameter::INPUT_EDGE:
-        std::cout << "input"; break;
-      case sdpa::wf::Parameter::READ_EDGE:
-        std::cout << "read"; break;
-      case sdpa::wf::Parameter::OUTPUT_EDGE:
-        std::cout << "output"; break;
-      case sdpa::wf::Parameter::WRITE_EDGE:
-        std::cout << "write"; break;
-      case sdpa::wf::Parameter::EXCHANGE_EDGE:
-        std::cout << "exchange"; break;
-      case sdpa::wf::Parameter::UPDATE_EDGE:
-        std::cout << "update"; break;
-        break;
-    } 
-    std::cout << " parameter: " << p << std::endl;
-
+      std::cout << "added ";
+      switch (edge_type)
+      {
+        case sdpa::wf::Parameter::INPUT_EDGE:
+          std::cout << "input"; break;
+        case sdpa::wf::Parameter::READ_EDGE:
+          std::cout << "read"; break;
+        case sdpa::wf::Parameter::OUTPUT_EDGE:
+          std::cout << "output"; break;
+        case sdpa::wf::Parameter::WRITE_EDGE:
+          std::cout << "write"; break;
+        case sdpa::wf::Parameter::EXCHANGE_EDGE:
+          std::cout << "exchange"; break;
+        case sdpa::wf::Parameter::UPDATE_EDGE:
+          std::cout << "update"; break;
+          break;
+      } 
+      std::cout << " parameter: " << p << std::endl;
+    }
   }
 }
 
@@ -91,6 +95,7 @@ int main(int ac, char **av)
 
     ("wparam" , po::value<std::vector<std::string> >(), "write parameter to the activity")
     ("keep-going,k", "keep going")
+    ("verbose,v", "verbose output")
     ("function,f", po::value<std::string>(), "the function to be called")
   ;
 
@@ -120,6 +125,7 @@ int main(int ac, char **av)
     std::cerr << "E: function to be called is missing!" << std::endl;
     return 2;
   }
+  verbose = vm.count("verbose") > 0;
   std::string function_call(vm["function"].as<std::string>());
 
   std::string worker_location(vm["worker"].as<std::string>());
@@ -160,14 +166,17 @@ int main(int ac, char **av)
   sdpa::wf::Activity req("activity-1", sdpa::wf::Method(function_call), params);
   if (vm.count("keep-going")) req.properties().put("keep_going", true);
 
-  std::cout << "sending ";
+  std::cout << "executing ";
   req.writeTo(std::cout, false);
-  std::cout << std::endl;
+  std::cout << "..." << std::endl;
 
   sdpa::wf::Activity res(client.execute(req));
-  std::cout << "got ";
-  res.writeTo(std::cout, false);
-  std::cout << std::endl;
+  if (verbose)
+  {
+    std::cout << "got ";
+    res.writeTo(std::cout, false);
+    std::cout << std::endl;
+  }
 
   std::cout << std::endl;
   std::cout << "========= " << ((res.state() == sdpa::wf::Activity::ACTIVITY_FINISHED) ? ("finished") : ("failed")) << " ========" << std::endl;

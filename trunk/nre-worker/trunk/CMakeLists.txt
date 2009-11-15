@@ -74,7 +74,13 @@ endif(FHGLOG_FOUND)
 
 message(STATUS "*** Fixme: FVM includes...")
 set(FVM_PC_INCLUDE_DIR "${FVM_PC_HOME}/include")
-set(FVM_PC_LIBRARY "${FVM_PC_HOME}/lib/libfvm-pc.a")
+
+if (FVM_PC_STATIC)
+  set(FVM_PC_LIBRARY "${FVM_PC_HOME}/lib/libfvm-pc.a")
+else (FVM_PC_STATIC)
+  set(FVM_PC_LIBRARY "${FVM_PC_HOME}/lib/libfvm-pc.so")
+endif (FVM_PC_STATIC)
+
 include_directories(${FVM_PC_INCLUDE_DIR})
 
 message(STATUS "*** Fixme: SDPA includes...")
