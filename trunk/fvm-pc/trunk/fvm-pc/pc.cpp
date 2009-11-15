@@ -149,7 +149,7 @@ int fvmLeave()
 }
 
 
-fvmAllocHandle_t fvmGlobalAlloc(size_t size)
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 {
   fvmAllocHandle_t ptr=0;
 
@@ -166,7 +166,7 @@ fvmAllocHandle_t fvmGlobalAlloc(size_t size)
 
   //get result
 #ifndef NDEBUGMSG
-  printf("PC: Receiving msg on queue %d type 3 (globalalloc)\n",pcQueueID);
+  printf("PC: Receiving msg on queue %d type 3 (globalalloc, size: %lu)\n", pcQueueID, size);
 #endif
 
   if((msgrcv(pcQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t),ALLOCMSG,0)) == -1){
@@ -198,7 +198,7 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 }
 
 
-fvmAllocHandle_t fvmLocalAlloc(size_t size)
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 {
   fvmAllocHandle_t ptr=0;
 
@@ -251,7 +251,7 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 
 static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 				   const fvmOffset_t fvmOffset,
-				   const size_t size,
+				   const fvmSize_t size,
 				   const fvmShmemOffset_t shmemOffset,
 				   const fvmAllocHandle_t scratchHandle,
 				   const fvmOperation_t op)
@@ -277,7 +277,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
  
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
-				 const size_t size,
+				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t scratchHandle)
 {
@@ -293,7 +293,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
-				 const size_t size,
+				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t scratchHandle)
 {
@@ -310,7 +310,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				const fvmOffset_t fvmOffset,
-				const size_t size,
+				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
 
@@ -326,7 +326,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmOffset_t fvmOffset,
-				const size_t size,
+				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
   

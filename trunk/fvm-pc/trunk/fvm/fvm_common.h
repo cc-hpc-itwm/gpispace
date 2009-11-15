@@ -1,6 +1,8 @@
 
-#ifndef _FVM_C_H_
-#define _FVM_C_H_
+#ifndef _FVM_COMMON_H_
+#define _FVM_COMMON_H_
+
+#include <fvm/fvmAllocatorTypes.h>
 
 typedef enum {
 	STARTMSG = 1,
@@ -40,16 +42,13 @@ typedef int fvmCommHandle_t;
 
 typedef enum 
   {
-#ifndef NBOUNDCHECK
     COMM_HANDLE_ERROR_SHMEM_BOUNDARY = -10,
-#endif
 
-#ifndef NDEBUG
     COMM_HANDLE_ERROR_INVALID_HANDLE,
     COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE,
     COMM_HANDLE_ERROR_INVALID_SIZE,
     COMM_HANDLE_ERROR_ARENA_UNKNOWN,
-#endif
+
     /* error states */
     COMM_HANDLE_ERROR_TOO_MANY,
     COMM_HANDLE_ERROR_HANDLE_UNKNOWN,
@@ -67,7 +66,7 @@ typedef struct fvmRequestArgs
 {
   fvmOffset_t arg_fvmOffset;
   fvmShmemOffset_t arg_shmOffset;
-  unsigned int arg_size;
+  fvmSize_t arg_size;
   fvmCommHandle_t arg_handle;
   fvmAllocHandle_t arg_allochandle;
   fvmAllocHandle_t arg_scratchhandle;

@@ -1,5 +1,5 @@
-#ifndef _FVM_ALLOCATOR_H_
-#define _FVM_ALLOCATOR_H_
+#ifndef _FVM_ALLOCATOR_TYPES_H_
+#define _FVM_ALLOCATOR_TYPES_H_
 
 /* ************* Macros **************** */
 #define IN_MB(X) (X / 1024 /1024)
@@ -8,14 +8,6 @@
 
 #define ALLOCATOR_PORT_REMOTE "14000" 
 #define BACKLOG 10
-
-/* ************* type definitions *************** */
-typedef struct fvmMemPointer
-{
-	void *fvmAddress;
-	unsigned long long offset;
-	unsigned int size;
-}fvmMemPointer_t;
 
 typedef enum {
   QUERYGLOBALLOC,
@@ -34,10 +26,11 @@ typedef enum {
 } fvmAllocType_t;
 
 typedef unsigned long fvmAllocHandle_t;
+typedef unsigned long fvmSize_t;
 
 typedef struct {
   fvmAllocType_t type;
-  unsigned long size;
+  fvmSize_t size;
   int root;
   fvmAllocHandle_t handle;
 } fvmAllocRequest_t;
