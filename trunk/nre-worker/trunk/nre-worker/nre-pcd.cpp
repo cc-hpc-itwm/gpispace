@@ -56,6 +56,7 @@ struct fvm_pc_connection_mgr
       LOG(FATAL, "Could not open connection to FVM: " << err);
       throw std::runtime_error("Could not open connection to the FVM!");
     }
+    LOG(INFO, "successfully connected to FVM!");
     do_leave_ = true;
   }
 
