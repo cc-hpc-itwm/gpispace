@@ -68,3 +68,7 @@ add_subdirectory(fvm-pc)
 
 include(CTest)
 add_subdirectory(tests)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg
+              ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
+              ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile DESTINATION etc/)
