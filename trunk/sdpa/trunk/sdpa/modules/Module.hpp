@@ -60,6 +60,7 @@ namespace modules {
 #ifndef NDEBUG
           DLOG(INFO, "checking passed data against my expected parameters...");
           const param_names_list_t &expected_input = fun->second.second;
+          std::string missing;
           for (param_names_list_t::const_iterator exp_inp(expected_input.begin()); exp_inp != expected_input.end(); ++exp_inp)
           {
             // locate if the expected input parameter is in the data also
@@ -67,11 +68,13 @@ namespace modules {
             if (act_inp == data.end())
             {
               DLOG(ERROR, name() << "." << function << " without required parameter " << *exp_inp);
-              if (! keep_going)
-              {
-                throw MissingFunctionArgument(name(), function, *exp_inp);
-              }
+              missing += ", " + *exp_inp;
             }
+          }
+
+          if (! keep_going && (! missing.empty()))
+          {
+            throw MissingFunctionArgument(name(), function, missing.substr(2)); // substr() -> remove leading ", "
           }
 #endif
 
