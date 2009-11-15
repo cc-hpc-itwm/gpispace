@@ -64,7 +64,7 @@ typedef struct fvmRequestArgs
 {
   fvmOffset_t arg_fvmOffset;
   fvmShmemOffset_t arg_shmOffset;
-  size_t arg_size;
+  fvmSize_t arg_size;
   fvmCommHandle_t arg_handle;
   fvmAllocHandle_t arg_allochandle;
   fvmAllocHandle_t arg_scratchhandle;
