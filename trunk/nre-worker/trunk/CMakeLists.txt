@@ -100,7 +100,6 @@ if (FVM_REQUIRED)
   add_definitions(-DFVM_REQUIRED)
   include_directories(${PV4D_INCLUDE_DIR})
 endif (FVM_REQUIRED)
-add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
 
 if (LOADER_BIND_NOW)
   add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
