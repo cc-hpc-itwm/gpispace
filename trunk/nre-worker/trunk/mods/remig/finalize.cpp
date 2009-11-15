@@ -6,7 +6,7 @@
 
 using namespace sdpa::modules;
 
-void finalize (Module::data_t &params)
+void finalize (data_t &params)
 {
   const fvmAllocHandle_t memhandle_for_configuration
     (params["memhandle_for_configuration"].token().data_as<fvmAllocHandle_t>());

@@ -10,11 +10,9 @@
 #include <fhglog/fhglog.hpp>
 
 #include <sdpa/util/Properties.hpp>
-#include <sdpa/wf/Parameter.hpp>
+#include <sdpa/wf/types.hpp>
 
 namespace sdpa { namespace wf {
-  typedef std::map<std::string, Parameter> parameters_t; //!< the type of our parameters @see sdpa::wf::Parameter
-
   /**
     This class encapsulates a method call to a generic method.
 
@@ -187,7 +185,7 @@ namespace sdpa { namespace wf {
     inline const std::string &reason() const { return reason_; }
     inline std::string &reason() { return reason_; }
 
-    void add_parameter(const Parameter &p)
+    void add_parameter(const parameter_t &p)
     {
       params_.insert(std::make_pair(p.name(), p));
     }

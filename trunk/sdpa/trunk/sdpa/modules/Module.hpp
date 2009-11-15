@@ -8,17 +8,12 @@
 #include <list>
 
 #include <sdpa/memory.hpp>
-#include <sdpa/wf/Activity.hpp>
+#include <sdpa/modules/types.hpp>
+#include <sdpa/modules/IModule.hpp>
 #include <sdpa/modules/exceptions.hpp>
 
 namespace sdpa {
 namespace modules {
-  class IModule
-  {
-  public:
-    virtual ~IModule() throw () {}
-  };
-
   /**
     @brief
     This class describes a loaded module, it keeps a mapping of function names
@@ -29,20 +24,13 @@ namespace modules {
     cannot be modified, the latter list represents an output list and the
     function is able to modify it.
    */
-  class Module {
+  class Module : public IModule {
     public:
       typedef shared_ptr<Module> ptr_t;
 
       typedef void* handle_t;
-      typedef void (*InitFunction)(Module*);
 
-      typedef sdpa::wf::parameters_t data_t;
-      typedef void (*GenericFunction)(data_t&);
-
-      typedef std::list<std::string> names_list_t;
-      typedef std::pair<GenericFunction, names_list_t> parameterized_function_t;
       typedef std::map<std::string, parameterized_function_t> call_table_t;
-
     public:
       /* the init function has to set should set the module's name! */
       explicit
@@ -71,8 +59,8 @@ namespace modules {
 
 #ifndef NDEBUG
           DLOG(INFO, "checking passed data against my expected parameters...");
-          const names_list_t &expected_input = fun->second.second;
-          for (names_list_t::const_iterator exp_inp(expected_input.begin()); exp_inp != expected_input.end(); ++exp_inp)
+          const param_names_list_t &expected_input = fun->second.second;
+          for (param_names_list_t::const_iterator exp_inp(expected_input.begin()); exp_inp != expected_input.end(); ++exp_inp)
           {
             // locate if the expected input parameter is in the data also
             data_t::const_iterator act_inp(data.find(*exp_inp));
@@ -93,14 +81,14 @@ namespace modules {
 
       void add_function(const std::string &function, GenericFunction f) throw (DuplicateFunction, FunctionException)
       {
-        return add_function(function, f, names_list_t());
+        return add_function(function, f, param_names_list_t());
       }
-      void add_function(const std::string &function, GenericFunction f, const names_list_t &parameters) throw (DuplicateFunction, FunctionException)
+      void add_function(const std::string &function, GenericFunction f, const param_names_list_t &parameters) throw (DuplicateFunction, FunctionException)
       {
 #ifndef NDEBUG
         {
           std::ostringstream ostr;
-          names_list_t::const_iterator exp_inp(parameters.begin());
+          param_names_list_t::const_iterator exp_inp(parameters.begin());
           while (exp_inp != parameters.end())
           {
             ostr << *exp_inp;
@@ -127,7 +115,7 @@ namespace modules {
             os << fun->first; // function name
             os << "( ";
 
-            names_list_t::const_iterator exp_inp(fun->second.second.begin());
+            param_names_list_t::const_iterator exp_inp(fun->second.second.begin());
             while (exp_inp != fun->second.second.end())
             {
               os << *exp_inp;

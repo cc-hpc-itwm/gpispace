@@ -12,6 +12,8 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/util/Properties.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 namespace sdpa { namespace wf {
   /**
     A class representing a Token.

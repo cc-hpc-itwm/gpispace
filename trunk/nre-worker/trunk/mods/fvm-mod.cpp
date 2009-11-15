@@ -6,7 +6,7 @@
 
 using namespace sdpa::modules;
 
-static void global_alloc(Module::data_t &params) throw (std::exception)
+static void global_alloc(data_t &params) throw (std::exception)
 {
   const fvmSize_t number_of_bytes = params.at("bytes").token().data_as<fvmSize_t>();
   DMLOG(INFO, "allocating (global) " << number_of_bytes << " bytes of data");
@@ -23,7 +23,7 @@ static void global_alloc(Module::data_t &params) throw (std::exception)
   params["handle"].token().data(memhandle);
 }
 
-static void global_free(Module::data_t &params) throw (std::exception)
+static void global_free(data_t &params) throw (std::exception)
 {
   fvmAllocHandle_t memhandle = params.at("handle").token().data_as<fvmAllocHandle_t>();
   DMLOG(INFO, "de-allocating global handle " << memhandle);
@@ -40,7 +40,7 @@ static void global_free(Module::data_t &params) throw (std::exception)
   params["error_code"].token().data(result);
 }
 
-static void local_alloc(Module::data_t &params) throw (std::exception)
+static void local_alloc(data_t &params) throw (std::exception)
 {
   const fvmSize_t number_of_bytes = params.at("bytes").token().data_as<fvmSize_t>();
   DMLOG(INFO, "locally allocating " << number_of_bytes << " bytes of data");
@@ -57,7 +57,7 @@ static void local_alloc(Module::data_t &params) throw (std::exception)
   params["handle"].token().data(memhandle);
 }
 
-static void local_free(Module::data_t &params) throw (std::exception)
+static void local_free(data_t &params) throw (std::exception)
 {
   fvmAllocHandle_t memhandle = params.at("handle").token().data_as<fvmAllocHandle_t>();
   DMLOG(INFO, "de-allocating local handle " << memhandle);

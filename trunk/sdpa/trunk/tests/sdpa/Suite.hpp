@@ -4,7 +4,6 @@
 #include <cppunit/TestFixture.h>
 
 #include <tests/sdpa/test_Module.hpp>
-#include <tests/sdpa/test_ActivityExecutor.hpp>
 #include <tests/sdpa/test_Token.hpp>
 #include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_UUID.hpp>
@@ -33,7 +32,6 @@ namespace sdpa { namespace tests {
 
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
-      suiteOfTests->addTest( ActivityExecutorTest::suite() );
 
      // suiteOfTests->addTest( D2DDummyGwesTest::suite() );
       return suiteOfTests;

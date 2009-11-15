@@ -6,7 +6,7 @@
 
 using namespace sdpa::modules;
 
-void update (Module::data_t &params)
+void update (data_t &params)
 {
   const unsigned long slice_and_depth
     (params.at("slice_and_depth").token().data_as<unsigned long>());

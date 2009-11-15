@@ -9,7 +9,6 @@ foreach (tc_src ${tc_srcs})
 
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name} sdpa)
-  target_link_libraries(${tc_name} sdpa-modules)
   target_link_libraries(${tc_name} sdpa-daemon)
   target_link_libraries(${tc_name} sdpa-events)
   target_link_libraries(${tc_name} sdpa-util)

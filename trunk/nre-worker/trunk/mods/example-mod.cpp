@@ -6,18 +6,18 @@
 using namespace sdpa::modules;
 
 // module function implementations
-void HelloWorld(sdpa::modules::Module::data_t &params)
+void HelloWorld(data_t &params)
 {
   params["out"].token().data("hello world");
 }
 
-void DoNothing(sdpa::modules::Module::data_t &)
+void DoNothing(data_t &)
 {
 
 }
 
 // add two integer parameters and store the result in "out"
-void Add(sdpa::modules::Module::data_t &params)
+void Add(data_t &params)
 {
   const long long a = params["a"].token().data_as<long long>();
   const long long b = params["b"].token().data_as<long long>();
@@ -25,7 +25,7 @@ void Add(sdpa::modules::Module::data_t &params)
   params["out"].token().data(a+b);
 }
 
-void Malloc(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Malloc(data_t &p) throw (std::exception)
 {
   const std::size_t bytes = p["size"].token().data_as<std::size_t>();
   void *ptr = std::malloc(bytes);
@@ -35,7 +35,7 @@ void Malloc(sdpa::modules::Module::data_t &p) throw (std::exception)
   p["out"].token().data(ptr);
 }
 
-void Free(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Free(data_t &p) throw (std::exception)
 {
   void *ptr = p["ptr"].token().data_as<void*>();
   if (ptr) {
@@ -46,7 +46,7 @@ void Free(sdpa::modules::Module::data_t &p) throw (std::exception)
   }
 }
 
-void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Update(data_t &p) throw (std::exception)
 {
   int *ptr = (int*)p["ptr"].token().data_as<void*>();
   unsigned int value= p["value"].token().data_as<unsigned int>();

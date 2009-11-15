@@ -7,6 +7,8 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/wf/Token.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 namespace sdpa { namespace wf {
   /**
     This class describes the parameter to an activity.

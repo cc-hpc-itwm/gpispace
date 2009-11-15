@@ -19,18 +19,18 @@
 #ifndef SDPA_MODULES_MACROS_HPP
 #define SDPA_MODULES_MACROS_HPP 1
 
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/IModule.hpp>
 
 #define SDPA_MOD_INIT_START(modname)\
   extern "C"\
   {\
-    void sdpa_mod_init(::sdpa::modules::Module *mod)\
+    void sdpa_mod_init(::sdpa::modules::IModule *mod)\
     {\
       mod->name(#modname);
 
 #define SDPA_REGISTER_FUN_START(fun)\
       {\
-        ::sdpa::modules::Module::names_list_t params
+        ::sdpa::modules::param_names_list_t params
 
 #define SDPA_ADD_INP(p, typ) params.push_back(p)
 #define SDPA_ADD_OUT(p, typ) params.push_back(p)

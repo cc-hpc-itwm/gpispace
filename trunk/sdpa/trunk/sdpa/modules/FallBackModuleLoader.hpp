@@ -9,6 +9,7 @@
 
 #include <sdpa/memory.hpp>
 #include <sdpa/modules/exceptions.hpp>
+#include <sdpa/modules/types.hpp>
 #include <sdpa/modules/Module.hpp>
 
 #include <fhglog/fhglog.hpp>
@@ -67,7 +68,7 @@ namespace modules {
 
       Module::ptr_t mod(new Module(handle));
 
-      Module::InitFunction init = (Module::InitFunction)(dlsym(handle, "sdpa_mod_init"));
+      InitFunction init = (InitFunction)(dlsym(handle, "sdpa_mod_init"));
       if ( (error = dlerror()) != NULL) {
         dlclose(handle);
         LOG(ERROR, "module not loaded: " << error);

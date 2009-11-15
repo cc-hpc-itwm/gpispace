@@ -6,7 +6,7 @@
 
 using namespace sdpa::modules;
 
-void init (Module::data_t &params)
+void init (data_t &params)
 {
   const std::string config_file (params.at("config_file").token().data());
 

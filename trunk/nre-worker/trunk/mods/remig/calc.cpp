@@ -6,7 +6,7 @@
 
 using namespace sdpa::modules;
 
-void calc (Module::data_t &params)
+void calc (data_t &params)
 {
   const unsigned long slice_and_depth
     (params["slice_and_depth"].token().data_as<unsigned long>());
