@@ -6,7 +6,7 @@
 #include <sys/shm.h>
 #endif
 
-#include "pc.h"
+#include <pc.h>
 
 //msgqueue
 int pcQueueID; 
@@ -143,7 +143,7 @@ int fvmLeave()
   return 0;
 }
 
-
+/* TODO: do the check for size already here */
 fvmAllocHandle_t fvmGlobalAlloc(size_t size)
 {
   fvmAllocHandle_t ptr=0;
@@ -161,7 +161,7 @@ fvmAllocHandle_t fvmGlobalAlloc(size_t size)
 
   //get result
 #ifndef NDEBUGMSG
-  printf("PC: Receiving msg on queue %d type 3 (globalalloc)\n",pcQueueID);
+  printf("PC: Receiving msg on queue %d type 3 (globalalloc, size: %lu)\n", pcQueueID, size);
 #endif
 
   if((msgrcv(pcQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t),ALLOCMSG,0)) == -1){

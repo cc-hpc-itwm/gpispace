@@ -40,7 +40,6 @@ typedef int fvmCommHandle_t;
 
 typedef enum 
   {
-
     COMM_HANDLE_ERROR_SHMEM_BOUNDARY = -10,
 
     COMM_HANDLE_ERROR_INVALID_HANDLE,
@@ -65,7 +64,7 @@ typedef struct fvmRequestArgs
 {
   fvmOffset_t arg_fvmOffset;
   fvmShmemOffset_t arg_shmOffset;
-  unsigned int arg_size;
+  size_t arg_size;
   fvmCommHandle_t arg_handle;
   fvmAllocHandle_t arg_allochandle;
   fvmAllocHandle_t arg_scratchhandle;

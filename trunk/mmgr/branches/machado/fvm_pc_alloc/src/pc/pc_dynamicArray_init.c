@@ -23,7 +23,6 @@ using namespace sdpa;
 //test that init the dynamic array
 //prints out the handle to be used by the Usage test
 // the handle returned can be used by the Usage test on different nodes
-
 static void usage(const char *argv0)
 {
     printf("Usage:\n");

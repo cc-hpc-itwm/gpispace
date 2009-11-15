@@ -160,6 +160,22 @@ void test_LocalMemory(Module::data_t &params)
 }
 
 
+void test_GlobalMemoryOverflow(Module::data_t &params)
+{
+  printf("*******************************************************************************\n");
+  printf("*********************** Test global memory overflow ***************************\n");
+  printf("*******************************************************************************\n");
+  int ret;
+  unsigned long gb =  1073741824;
+  fvmAllocHandle_t src = fvmGlobalAlloc(128 * gb);
+  assert(src == 0);
+
+
+  ret = fvmGlobalFree(src);
+  assert(ret == -1);
+
+}
+
 
 // The init function will call all tests implemented
 extern "C" {
@@ -172,6 +188,7 @@ extern "C" {
     test_LocalMemory(params);
     test_AllocComm(params);
     test_Defrag(params);
+    test_GlobalMemoryOverflow(params);
   }
 }
 

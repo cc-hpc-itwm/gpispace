@@ -32,13 +32,13 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmAllocHandle_t scratchHandle);
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const size_t size,
-				 const fvmShmemOffset_t shmemOffset);
+				const fvmOffset_t fvmOffset,
+				const size_t size,
+				const fvmShmemOffset_t shmemOffset);
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
-				 const fvmOffset_t fvmOffset,
-				 const size_t size,
+				const fvmOffset_t fvmOffset,
+				const size_t size,
 				const fvmShmemOffset_t shmemOffset);
 				 
 		 

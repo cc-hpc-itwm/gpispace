@@ -20,8 +20,9 @@ using namespace std;
 using namespace sdpa;
 
 
-// test that uses the handle returned from the Init test
-// the handle is simply passed via command line option
+//test that cleans the memory of a handle given by the -d option
+//to be used after running the pc_dynamicArrayInit/Usage
+
 static void usage(const char *argv0)
 {
     printf("Usage:\n");

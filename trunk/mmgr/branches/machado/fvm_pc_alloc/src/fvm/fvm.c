@@ -413,19 +413,19 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	 
       //only on global communication we need the scratch handle
       if( op == PUTGLOBAL || op == GETGLOBAL)
-	{
-		      
-	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
-	    {
-	      
-	      if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
-		{
-		  handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
-		  goto out;
-		}
-	    }
-	}
-      
+      	{
+	  
+      	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
+      	    {
+
+      	      if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
+      		{
+      		  handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
+      		  goto out;
+      		}
+      	    }
+      	}
+
 /*       if(arena == ARENA_GLOBAL) */
 /* 	dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize); */
 

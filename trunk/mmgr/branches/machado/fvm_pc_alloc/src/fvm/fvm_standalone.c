@@ -32,10 +32,11 @@ int main(int argc, char *argv[])
   const char *hosts[1024];
 
 #ifdef FVM_CONFIG_PATH
-  char * configpath = FVM_CONFIG_PATH; //hardcoded default
+	-  char * configpath = FVM_CONFIG_PATH; //hardcoded default
 #else
-  char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
+	char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
 #endif
+
   int optionsParse = 4;
 
   configFile_t config;

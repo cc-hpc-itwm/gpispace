@@ -12,7 +12,7 @@
 
 #define PORT_LOGGER	17823
 
-// MR: is'nt there a ready made port logger somewhere?
+/* TODO: move all loggin to fhglog */
 
 extern int myrank;
 static pthread_mutex_t loggerLock = PTHREAD_MUTEX_INITIALIZER;

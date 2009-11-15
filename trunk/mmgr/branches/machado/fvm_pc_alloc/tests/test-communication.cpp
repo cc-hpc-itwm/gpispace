@@ -236,7 +236,9 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   size_t transfer;
   int numInts = ( 1 << 26 ) / sizeof(int);
 
-  fvmShmemOffset_t shmOff = 0;
+  fvmShmemOffset_t shmOff = 1024;
+  int shmPos = shmOff / sizeof(int);
+
   fvmOffset_t fvmOff = ( 1 << 26);
 
   fvmCommHandleState_t stt;
@@ -254,7 +256,7 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   intPtr = (int *) fvmGetShmemPtr();
   printf("received ptr is %p\n", intPtr);
 
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     intPtr[i] = i;
 
   transfer = numInts * sizeof(int);
@@ -263,14 +265,14 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   stt =  waitComm(commHandle);
   assert( stt == COMM_HANDLE_OK);
 
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     intPtr[i] = 0;
 
   commHandle = fvmGetGlobalData(src, fvmOff, transfer, shmOff, scratch);
   stt = waitComm(commHandle);
   assert( stt == COMM_HANDLE_OK);
 
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
 	{
@@ -280,7 +282,7 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
     }
 
   //with the other alloc handle
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     intPtr[i] = i;
 
   transfer = numInts * sizeof(int);
@@ -289,14 +291,14 @@ void test_remoteNode_scratchglobal(Module::data_t &params)
   stt =  waitComm(commHandle);
   assert( stt == COMM_HANDLE_OK);
 
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     intPtr[i] = 0;
 
   commHandle = fvmGetGlobalData(src1, fvmOff, transfer, shmOff, scratch);
   stt = waitComm(commHandle);
   assert( stt == COMM_HANDLE_OK);
 
-  for (int i=0; i < numInts; i++)
+  for (int i=shmPos; i < numInts; i++)
     {
       if( intPtr[ i ] != i)
 	{

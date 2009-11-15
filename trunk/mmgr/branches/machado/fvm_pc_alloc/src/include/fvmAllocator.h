@@ -10,12 +10,13 @@
 #define BACKLOG 10
 
 /* ************* type definitions *************** */
-typedef struct fvmMemPointer
-{
-	void *fvmAddress;
-	unsigned long long offset;
-	unsigned int size;
-}fvmMemPointer_t;
+/* typedef struct fvmMemPointer */
+/* { */
+/* 	void *fvmAddress; */
+/* 	unsigned long long offset; */
+/* 	unsigned int size; */
+/* }fvmMemPointer_t; */
+
 
 typedef enum {
   QUERYGLOBALLOC,
@@ -49,9 +50,9 @@ int fvmMMInit(void * ptr, size_t length, int rank, int nnodes,const char **hosts
 
 int fvmMMFinalize(void);
 
-fvmAllocHandle_t fvmGlobalMMAlloc(unsigned long size);
+fvmAllocHandle_t fvmGlobalMMAlloc(size_t size);
 int fvmGlobalMMFree(fvmAllocHandle_t handle);
-fvmAllocHandle_t fvmLocalMMAlloc(unsigned long size);
+fvmAllocHandle_t fvmLocalMMAlloc(size_t size);
 int fvmLocalMMFree(unsigned long size);
 
 #endif

@@ -949,9 +949,9 @@ void *allocator_thread_f(void * args)
 		    fvm_printf("broadcast failed for request type %s\n",(char *) type2str(request.type));
 		  
 		  
-		  if(fvmMemFree < request.size)
+		  if(fvmMemFree < request.size || request.size == 0)
 		    {
-		      fvm_printf("NOT enough memory\n");
+		      fvm_printf("NOT enough memory or request of size zero\n");
 		      request.handle = 0;
 		    }
 		  
