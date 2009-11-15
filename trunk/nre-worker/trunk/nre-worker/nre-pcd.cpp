@@ -16,6 +16,8 @@
 
 #include "ActivityExecutor.hpp"
 
+bool verbose(false);
+
 void cleanUp()
 {
   fvmLeave();
@@ -90,7 +92,7 @@ int read_fvm_config(const std::string &path, fvm_pc_config_t &cfg) throw(std::ex
     if (line.empty()) continue;
     if (line[0] == '#') continue;
 
-    DLOG(INFO, "parsing line: \"" << line << "\"");
+    DLOG(DEBUG, "parsing line: \"" << line << "\"");
 
     std::string::size_type split_pos(line.find_first_of(" "));
     const std::string param_name(line.substr(0, split_pos));
@@ -157,6 +159,7 @@ int main(int ac, char **av)
     ("location,l", po::value<std::string>()->default_value("127.0.0.1:8000"), "where to listen")
     ("config,c" , po::value<std::string>()->default_value(NRE_PCD_DEFAULT_CFG), "input parameter to the activity")
     ("load" , po::value<std::vector<std::string> >(), "shared modules that shall be loaded")
+    ("verbose,v", "verbose output")
     ("keep-going,k", "keep going, even if the FVM is not there")
   ;
 
@@ -177,6 +180,7 @@ int main(int ac, char **av)
     std::cerr << opts << std::endl;
     return 2;
   }
+  verbose = (vm.count("verbose") > 0);
 
   if (vm.count("help"))
   {
