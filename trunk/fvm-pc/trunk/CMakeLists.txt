@@ -64,7 +64,7 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUG -DDEBUGCOMM  -DSHMEM -DUSE_STL_TR1)
 if (MAX_SHMEM_SIZE)
 else (MAX_SHMEM_SIZE)
   set (MAX_SHMEM_SIZE 536870912) # 512 MB
-endif (not MAX_SHMEM_SIZE)
+endif (MAX_SHMEM_SIZE)
 add_definitions(-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
 
 # Reflect the package structure
