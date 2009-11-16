@@ -19,8 +19,11 @@
 #ifndef SEDA_COMM_UDP_CONNECTION_HPP
 #define SEDA_COMM_UDP_CONNECTION_HPP 1
 
+#include <list>
+
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+
 #include <seda/comm/Locator.hpp>
 #include <seda/comm/Connection.hpp>
 
@@ -72,7 +75,8 @@ namespace seda { namespace comm {
     boost::recursive_mutex mtx_;
     boost::condition_variable_any recv_cond_;
 
-    std::deque<seda::comm::SedaMessage> incoming_messages_;
+    typedef std::list<seda::comm::SedaMessage> message_list_t;
+    message_list_t incoming_messages_;
   };
 }}
 
