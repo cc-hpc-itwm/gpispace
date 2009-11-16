@@ -92,7 +92,7 @@
 #
 
 # this module required CMake 2.5 for the Boost_FIND_VERSION stuff
-CMAKE_MINIMUM_REQUIRED(VERSION "2.6" FATAL_ERROR)
+#CMAKE_MINIMUM_REQUIRED(VERSION "2.6" FATAL_ERROR)
 
 #MESSAGE(STATUS "Finding Boost libraries.... ")
 
