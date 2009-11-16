@@ -16,7 +16,7 @@ set(V_MINOR 1)
 set(V_PATCH 0)
 
 option(LOADER_BIND_NOW "when loading modules, try to locate all symbols" Yes)
-option(FVM_REQUIRED    "when loading modules, try to locate all symbols" Yes)
+option(FVM_REQUIRED    "the FVM is required by default (nre-pcd refuses to start without --keep-going)" Yes)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
