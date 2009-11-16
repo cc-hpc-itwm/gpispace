@@ -78,8 +78,6 @@ void parse_parameters(param_iterator begin, param_iterator end, sdpa::wf::parame
 
 int main(int ac, char **av)
 {
-  fhg::log::Configurator::configure();
-
   namespace po = boost::program_options;
 
   po::options_description opts("Available Options");
@@ -125,6 +123,9 @@ int main(int ac, char **av)
     std::cerr << "E: function to be called is missing!" << std::endl;
     return 2;
   }
+
+  fhg::log::Configurator::configure();
+
   verbose = vm.count("verbose") > 0;
   std::string function_call(vm["function"].as<std::string>());
 
