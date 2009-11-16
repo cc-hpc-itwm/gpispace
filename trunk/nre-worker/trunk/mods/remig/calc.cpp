@@ -5,7 +5,6 @@
 
 #include <fvm-pc/pc.hpp>
 
-
 using namespace sdpa::modules;
 
 void calc (data_t &params) throw (std::exception)
