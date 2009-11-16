@@ -1,0 +1,55 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  check_handles.hpp
+ *
+ *    Description:  defines some functions that check memory handles
+ *
+ *        Version:  1.0
+ *        Created:  11/16/2009 12:53:55 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
+
+#ifndef SDPA_MODULES_ASSERT_HPP
+#define SDPA_MODULES_ASSERT_HPP 1
+
+#include <fhglog/fhglog.hpp>
+#include <fvm-pc/pc.hpp>
+#include <stdexcept>
+
+namespace sdpa { namespace modules {
+  inline void assert_valid_handle(const fvmAllocHandle_t hdl, const std::string &hdl_name, const std::string &tag) throw (std::exception)
+  {
+    if (! hdl)
+    {
+      const std::string error("invalid memory handle ("+tag+"): " + hdl_name);
+      MLOG (ERROR, error);
+      throw std::runtime_error(error);
+    }
+  }
+
+  inline void assert_success(const int return_value, const std::string &tag) throw (std::exception)
+  {
+    if (return_value != 0)
+    {
+      char return_value_string[64];
+      snprintf( return_value_string, sizeof(return_value_string), "%d", return_value);
+
+      const std::string error("operation failed ("+tag+"): " + return_value_string);
+      MLOG (ERROR, error);
+      throw std::runtime_error(error);
+    }
+  }
+
+#define ASSERT_ALLOC(hdl, tag) assert_valid_handle(hdl, #hdl, tag)
+#define ASSERT_HANDLE(hdl) assert_valid_handle(hdl, #hdl, "pointer")
+#define ASSERT_SUCCESS(retval, tag) assert_success(retval, tag)
+}}
+
+#endif
