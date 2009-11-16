@@ -14,9 +14,11 @@ void init (data_t &params)
 
   MLOG(DEBUG, "config_file = " << config_file);
 
-  const unsigned long number_of_frequencies (10);
-  const unsigned long number_of_depthlevels (5);
-  const unsigned long number_of_parallel_propagators (3);
+//  const unsigned long number_of_frequencies (10);
+//  const unsigned long number_of_depthlevels (5);
+  const unsigned long number_of_frequencies (2);
+  const unsigned long number_of_depthlevels (2);
+  const unsigned long number_of_parallel_propagators (2);
   const fvmAllocHandle_t memhandle_for_outputvolume (fvmGlobalAlloc(1<<20));
   const fvmAllocHandle_t memhandle_for_configuration (fvmGlobalAlloc(1<<10));
 
