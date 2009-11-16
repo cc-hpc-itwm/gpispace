@@ -38,11 +38,22 @@ namespace gwes
 /**
  * Constructor for GWES.
  */
-GWES::GWES() : _logger(fhg::log::getLogger("gwes")) 
+GWES::GWES(const std::string &a_workflow_directory)
+  : _sdpaHandler(NULL)
+  , workflow_directory_(a_workflow_directory)
+  , _logger(fhg::log::getLogger("gwes")) 
 {
-	_sdpaHandler = NULL;
 	Utils::setEnvironmentVariables();
     pthread_mutex_init(&monitor_lock_, NULL);
+    if (workflow_directory_.empty())
+    {
+      workflow_directory_ = getenv("GWES_CPP_HOME");
+      LOG(DEBUG, "falling back to GWES_CPP_HOME value for workflow-directory: " << workflow_directory_);
+    }
+    else
+    {
+      LOG(DEBUG, "looking for sub-workflows in: " << workflow_directory_);
+    }
 }
 
 /**

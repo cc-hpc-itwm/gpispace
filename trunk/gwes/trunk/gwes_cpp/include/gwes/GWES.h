@@ -49,6 +49,8 @@ private:
 	  */
 	 Gwes2Sdpa* _sdpaHandler;
 
+    std::string workflow_directory_; // where to find sub-workflows
+
 	 /**
 	  * Fhg Logger.
 	  */
@@ -60,7 +62,8 @@ public:
 	/**
 	 * Constructor for GWES.
 	 */
-	GWES();
+    explicit
+	GWES(const std::string &workflow_directory = "");
 	
 	/**
 	 * Destructor for GWES
@@ -280,6 +283,8 @@ public:
      */
     Gwes2Sdpa* getSdpaHandler() {return _sdpaHandler; }
     
+    const std::string &workflow_directory() const { return workflow_directory_; }
+
     ///////////////////////////////////
     // Interface Spda2Gwes           //
     ///////////////////////////////////

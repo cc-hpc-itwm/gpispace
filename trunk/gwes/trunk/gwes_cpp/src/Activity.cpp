@@ -8,6 +8,9 @@
 #include <gwes/Activity.h>
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>
+// we need the real GWES now -> workflow_directory function
+#include <gwes/GWES.h>
+
 //gwdl
 #include <gwdl/WorkflowFormatException.h>
 #include <gwdl/NoSuchWorkflowElement.h>
@@ -50,20 +53,41 @@ gwdl::IWorkflow::ptr_t Activity::transform2Workflow() const throw(std::exception
 	
 	string type = _operation->getType();
 	if (type == "workflow" || type == "sdpa/workflow") {  // activity of type workflow
+        const std::string original_path(_operation->getOperationName());
+        typedef std::list<std::string> path_list_t;
+        path_list_t search_path;
 
-		// set workflow file 
-		string subworkflowFilename = Utils::expandEnv(_operation->getOperationName());
-		LOG_INFO(_logger, "trying to read file " << subworkflowFilename);
+        search_path.push_back(original_path);
+        search_path.push_back(_wfhP->getGWES()->workflow_directory() + "/" + original_path);
+        search_path.push_back(Utils::expandEnv(original_path));
 
-		// parse workflow file
-		try {
-			subworkflowP = new gwdl::Workflow(subworkflowFilename);
-		} catch (const gwdl::WorkflowFormatException &e) {
-			ostringstream message; 
-			message << "Not able to build subworkflow activity: " << e.what();
-			LOG_ERROR(_logger, message.str());
-			throw ActivityException(message.str()); 
-		}
+        for (path_list_t::const_iterator path(search_path.begin()); path != search_path.end(); ++path)
+        {
+          DLLOG(DEBUG, _logger, "trying to load sub-workflow from file: " << *path);
+
+          // parse workflow file
+          try {
+              subworkflowP = new gwdl::Workflow(*path);
+              if (subworkflowP == NULL)
+              {
+                throw gwdl::WorkflowFormatException("gwd::Workflow("+*path+") returned NULL pointer");
+              }
+              break; // take the first valid sub-workflow for now...
+          } catch (const gwdl::WorkflowFormatException &e) {
+              ostringstream message; 
+              message << "Unable to build subworkflow activity: " << e.what();
+              LOG_WARN(_logger, message.str());
+          } catch (const std::exception &ex) {
+              LOG_WARN(_logger, "Unable to build subworkflow activity: " << ex.what());
+          } catch (...) {
+              LOG_WARN(_logger, "Unable to build subworkflow activity (unknown reason)");
+          }
+        }
+        if (subworkflowP == NULL)
+        {
+          LOG_FATAL(_logger, "Could not build subworkflow activity, giving up.");
+          throw ActivityException("Could not build subworkflow activity (check the logs for more information)"); 
+        }
 
 		// copy read/input/write tokens to places in sub workflow regarding the edge expressions of the parent workflow
 		string edgeExpression;
