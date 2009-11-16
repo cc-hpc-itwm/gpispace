@@ -72,6 +72,11 @@ else (FHGLOG_FOUND)
   message(FATAL_ERROR "Sorry, FhgLog is required!")
 endif(FHGLOG_FOUND)
 
+if (FHGLOG_DYNAMIC)
+  set(FHGLOG_LIBRARY "${FHGLOG_HOME}/lib/libfhglog.so")
+  message(STATUS "setting FhgLog library to: ${FHGLOG_LIBRARY}")
+endif (FHGLOG_DYNAMIC)
+
 message(STATUS "*** Fixme: FVM includes...")
 set(FVM_PC_INCLUDE_DIR "${FVM_PC_HOME}/include")
 
