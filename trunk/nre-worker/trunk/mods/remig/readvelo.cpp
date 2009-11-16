@@ -1,4 +1,5 @@
 #include <sdpa/modules/Macros.hpp>
+#include <sdpa/modules/assert.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -10,7 +11,8 @@ void readvelo (data_t &params)
 {
   const fvmAllocHandle_t memhandle_for_configuration
     (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
-
+  ASSERT_HANDLE(memhandle_for_configuration);
+  
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
   // at the moment: do nothing

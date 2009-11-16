@@ -1,4 +1,5 @@
 #include <sdpa/modules/Macros.hpp>
+#include <sdpa/modules/assert.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -6,7 +7,7 @@
 
 using namespace sdpa::modules;
 
-void init (data_t &params)
+void init (data_t &params) throw (std::exception)
 {
   const std::string config_file (params.at("config_file").token().data());
 
@@ -20,12 +21,19 @@ void init (data_t &params)
   const unsigned long number_of_depthlevels (2);
   const unsigned long number_of_parallel_propagators (2);
   const fvmAllocHandle_t memhandle_for_outputvolume (fvmGlobalAlloc(1<<20));
+  ASSERT_ALLOC(memhandle_for_outputvolume, "global alloc");
+
   const fvmAllocHandle_t memhandle_for_configuration (fvmGlobalAlloc(1<<10));
+  ASSERT_ALLOC(memhandle_for_configuration, "global alloc");
 
   // for now, just free the mem immediately
+  int ret (0);
 
-  fvmGlobalFree (memhandle_for_outputvolume);
-  fvmGlobalFree (memhandle_for_configuration);
+  ret = fvmGlobalFree (memhandle_for_outputvolume);
+  ASSERT_SUCCESS(ret, "global free");
+
+  ret = fvmGlobalFree (memhandle_for_configuration);
+  ASSERT_SUCCESS(ret, "global free");
 
   MLOG (DEBUG, "number_of_frequencies = " << number_of_frequencies);
   MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);

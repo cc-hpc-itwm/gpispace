@@ -1,4 +1,5 @@
 #include <sdpa/modules/Macros.hpp>
+#include <sdpa/modules/assert.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -16,14 +17,17 @@ void update (data_t &params)
 
   const fvmAllocHandle_t memhandle_for_configuration 
     (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
+  ASSERT_HANDLE(memhandle_for_configuration);
 
   const fvmAllocHandle_t memhandle_for_outputvolume 
     (params.at("memhandle_for_outputvolume").token().data_as<fvmAllocHandle_t>());
+  ASSERT_HANDLE(memhandle_for_outputvolume);
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
   MLOG (DEBUG, "memhandle_for_outputvolume = " << memhandle_for_outputvolume);
   MLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
   MLOG (DEBUG, "number_of_frequencies = " << number_of_frequencies);
+
 
   const unsigned long slice = slice_and_depth / number_of_frequencies;
   const unsigned long depth = slice_and_depth % number_of_frequencies;

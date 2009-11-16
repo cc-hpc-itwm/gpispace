@@ -1,4 +1,5 @@
 #include <sdpa/modules/Macros.hpp>
+#include <sdpa/modules/assert.hpp>
 
 #include <fhglog/fhglog.hpp>
 
@@ -6,14 +7,16 @@
 
 using namespace sdpa::modules;
 
-void finalize (data_t &params)
+void finalize (data_t &params) throw (std::exception)
 {
   const fvmAllocHandle_t memhandle_for_configuration
     (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
+  ASSERT_HANDLE(memhandle_for_configuration);
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
   int ret (fvmGlobalFree (memhandle_for_configuration));
+  ASSERT_SUCCESS(ret, "global free");
 
   MLOG (DEBUG, "fvmGlobalfree(memhandle_for_configuration) = " << ret);
 
