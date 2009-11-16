@@ -9,7 +9,7 @@ using namespace sdpa::modules;
 void readinp (data_t &params)
 {
   const fvmAllocHandle_t memhandle_for_configuration
-    (params["memhandle_for_configuration"].token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
