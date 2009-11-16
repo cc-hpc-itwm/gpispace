@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  check_handles.hpp
+ *       Filename:  assert.hpp
  *
  *    Description:  defines some functions that check memory handles
  *
