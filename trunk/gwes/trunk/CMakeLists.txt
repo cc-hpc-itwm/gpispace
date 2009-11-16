@@ -69,13 +69,10 @@ if (FHGLOG_FOUND)
   link_libraries(${FHGLOG_LIBRARY})
 endif(FHGLOG_FOUND)
 
-include(FindBoost)
-
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
-include(FindBoost)
 find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)

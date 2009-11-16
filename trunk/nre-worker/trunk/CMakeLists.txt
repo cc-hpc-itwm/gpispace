@@ -51,7 +51,6 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
-include(FindBoost)
 find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
