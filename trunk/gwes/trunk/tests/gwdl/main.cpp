@@ -44,10 +44,10 @@ int testBuilder();
 
 int main() 
 {
+    fhg::log::Configurator::configure();
+
 	// logger
 	logger_t logger(getLogger("gwdl"));
-	logger.setLevel(LogLevel::INFO);
-	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 	
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWDL TESTS ###########################");
 	
