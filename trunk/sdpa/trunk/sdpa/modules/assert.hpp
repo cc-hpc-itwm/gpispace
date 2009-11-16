@@ -24,11 +24,21 @@
 #include <stdexcept>
 
 namespace sdpa { namespace modules {
-  inline void assert_valid_handle(const fvmAllocHandle_t hdl, const std::string &hdl_name, const std::string &tag) throw (std::exception)
+  inline void assert_alloc(const fvmAllocHandle_t hdl, const std::string &hdl_name, const std::string &tag) throw (std::exception)
   {
     if (! hdl)
     {
-      const std::string error("invalid memory handle ("+tag+"): " + hdl_name);
+      const std::string error("allocation ("+tag+") for handle " + hdl_name + " failed!");
+      MLOG (ERROR, error);
+      throw std::runtime_error(error);
+    }
+  }
+
+  inline void assert_valid_handle(const fvmAllocHandle_t hdl, const std::string &hdl_name) throw (std::exception)
+  {
+    if (! hdl)
+    {
+      const std::string error("invalid memory handle: " + hdl_name);
       MLOG (ERROR, error);
       throw std::runtime_error(error);
     }
@@ -47,8 +57,12 @@ namespace sdpa { namespace modules {
     }
   }
 
-#define ASSERT_ALLOC(hdl, tag) assert_valid_handle(hdl, #hdl, tag)
-#define ASSERT_HANDLE(hdl) assert_valid_handle(hdl, #hdl, "pointer")
+#define ASSERT_ALLOC(hdl, tag) assert_alloc(hdl, #hdl, tag)
+#define ASSERT_GALLOC(hdl, tag) ASSERT_ALLOC(hdl, "global")
+#define ASSERT_LALLOC(hdl, tag) ASSERT_ALLOC(hdl, "local")
+
+#define ASSERT_HANDLE(hdl) assert_valid_handle(hdl, #hdl)
+
 #define ASSERT_SUCCESS(retval, tag) assert_success(retval, tag)
 }}
 
