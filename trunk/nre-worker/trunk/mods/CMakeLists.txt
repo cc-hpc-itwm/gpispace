@@ -12,7 +12,18 @@ add_library(dummy SHARED dummy.cpp)
 # fvm
 add_library(fvm-mod  SHARED fvm-mod.cpp)
 
-install(TARGETS example-mod pc-test mod-a mod-b log-test fvm-mod DESTINATION libexec)
+install(
+  TARGETS
+    example-mod
+    pc-test
+    mod-a
+    mod-b
+    log-test
+    fvm-mod
+    dummy
+  DESTINATION
+    libexec
+)
 
 add_subdirectory(remig)
 
