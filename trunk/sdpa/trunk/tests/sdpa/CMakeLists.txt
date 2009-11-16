@@ -16,6 +16,8 @@ set(test_hdrs ${PERFORMANCETEST_FSM_H} ${test_hdrs})
 set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
+add_dependencies(sdpa-test sdpa-daemon sdpa-jobFSM_SMC sdpa-daemonFSM_SMC)
+
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_dependencies(sdpa_test_suite generate_PerformanceTest)

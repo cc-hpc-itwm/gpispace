@@ -52,7 +52,7 @@ OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
 OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
-OPTION(USE_BOOST_SC "Build the project using boost statecharts" YES)
+OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 

@@ -11,21 +11,26 @@ namespace sc = boost::statechart;
 #include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa { namespace events {
-    class InterruptEvent : public MgmtEvent, public sc::event<InterruptEvent> {
-    public:
-        typedef sdpa::shared_ptr<InterruptEvent> Ptr;
+#ifdef USE_BOOST_SC
+  class InterruptEvent : public MgmtEvent, public sc::event<InterruptEvent>
+#else
+  class InterruptEvent : public MgmtEvent
+#endif
+  {
+  public:
+    typedef sdpa::shared_ptr<InterruptEvent> Ptr;
 
-        InterruptEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
+    InterruptEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
 
-    	virtual ~InterruptEvent() { }
+    virtual ~InterruptEvent() { }
 
-    	std::string str() const { return "InterruptEvent"; }
+    std::string str() const { return "InterruptEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
-        {
-          visitor->visitInterruptEvent(this);
-        }
-    };
+    virtual void accept(EventVisitor *visitor)
+    {
+      visitor->visitInterruptEvent(this);
+    }
+  };
 }}
 
 #endif
