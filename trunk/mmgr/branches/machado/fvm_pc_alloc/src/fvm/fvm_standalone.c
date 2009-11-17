@@ -18,7 +18,18 @@ void signal_handler(int sig){
 	killProcsVM();
 	shutdownPv4dVM(); 
 	fvmLeave();
-	exit(0);                          
+	switch (sig)
+	{
+		case SIGTERM:
+		case SIGINT:
+		case SIGHUP:
+			exit(0);
+			break;
+		default:
+			printf("Aborted (signal %d)\n", sig);
+			exit(sig);
+			break;
+	}
 }
 
 
@@ -41,7 +52,11 @@ int main(int argc, char *argv[])
 
   configFile_t config;
 
-  signal(SIGINT,signal_handler);
+  signal( SIGINT, signal_handler );
+  signal( SIGTERM, signal_handler );
+  signal( SIGHUP, signal_handler );
+  signal( SIGSEGV, signal_handler );
+  signal( SIGABRT, signal_handler );
 
   //TODO: think about command line option
   config = readConfigFile(configpath, optionsParse);
@@ -70,6 +85,7 @@ int main(int argc, char *argv[])
   //initialize allocator
   fvmMMInit(getDmaMemPtrVM(), config.fvmsize, getRankVM(), nnodes, &(hosts[0]));
 
+  pv4dBarrierVM();
 
   pv4d_printf("Waiting for pc...\n");
 
@@ -96,7 +112,9 @@ int main(int argc, char *argv[])
 /*     pv4d_printf("Error waiting for pc\n"); */
 
 
+  killProcsVM();
   shutdownPv4dVM();
+  fvmLeave();
 
   return 0;
 }
