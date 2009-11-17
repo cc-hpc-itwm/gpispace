@@ -35,12 +35,12 @@ public:
 	/**
 	 * Constructor for properties.
 	 */
-	Properties() {}
+	Properties();
 	
 	/**
 	 * Destructor for properties.
 	 */
-	virtual ~Properties() {clear();}
+	virtual ~Properties();
 	
 	/**
 	 * Put new name/value pair into properties.

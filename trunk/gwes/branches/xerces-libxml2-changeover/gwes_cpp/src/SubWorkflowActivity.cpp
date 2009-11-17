@@ -21,7 +21,7 @@ using namespace gwdl;
 namespace gwes
 {
 
-SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP) : Activity(handler, toP, "SubWorkflowActivity", operationP)
+SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP) : Activity(handler, toP, "SubWorkflowActivity", operationP)
 {
 	_gwesP = handler->getGWES();
 	_subworkflowP = NULL;

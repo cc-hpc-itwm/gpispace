@@ -7,15 +7,10 @@
 #ifndef OPERATIONCANDIDATE_H_
 #define OPERATIONCANDIDATE_H_
 //gwdl
-#include <gwdl/XMLUtils.h>
-#include <gwdl/Defines.h>
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/AbstractionLevel.h>
-//xerces-c
-#include <xercesc/util/OutOfMemoryException.hpp>
-#include <xercesc/dom/DOM.hpp>
 //std
 #include <string>
-#include <iostream>
 
 namespace gwdl
 {
@@ -31,25 +26,22 @@ class OperationCandidate
 	
 private:
 	
-	long id;
+	long _id;
 	long generateID() {static long counter = 0; return counter++;}
-	bool selected;
-	std::string type;
-	std::string operationName;
-	std::string resourceName;
-	float quality;
+	bool _selected;
+	std::string _type;
+	std::string _operationName;
+	std::string _resourceName;
+	float _quality;
 	
 public:
+	
+    typedef gwdl::shared_ptr<OperationCandidate> ptr_t;
 	
 	/**
 	 * Constructor.
 	 */
 	OperationCandidate();
-	
-	/**
-	 * Constructor for operation candidate to be build from DOMElement.
-	 */
-	explicit OperationCandidate(XERCES_CPP_NAMESPACE::DOMElement* element); 
 	
 	/**
 	 * Destructor.
@@ -59,73 +51,66 @@ public:
 	/**
 	 * get the unique identifier of this operation candidate.
 	 */
-	long getID() const { return id; }
+	long getID() const { return _id; }
 	
 	/**
 	 * set selection state of this operation candidate.
 	 * @param _selected Set to <code>true</code> if candidate has been selected. 
 	 */
-	void setSelected(bool _selected) { selected = _selected; }
+	void setSelected(bool selected) { _selected = selected; }
 	
 	/**
 	 * set selection state to <code>true</code>
 	 */
-	void setSelected() { selected = true; }
+	void setSelected() { _selected = true; }
 	
 	/**
 	 * Test if this candidate has been selected.
 	 * @return <code>true</code> if candidate has been selected, <code>false</code> otherwise. 
 	 */
-	bool isSelected() const { return selected; }
+	bool isSelected() const { return _selected; }
 	
 	/**
 	 * Set operation type. The supported types depend on the implementation of the workflow handler.
 	 */
-	void setType(const std::string& _type) { type = _type; }
+	void setType(const std::string& type) { _type = type; }
 	
 	/**
 	 * Get the operation type.
 	 */
-	const std::string& getType() const { return type; }
+	const std::string& getType() const { return _type; }
 	
 	/**
 	 * Set operation name.
 	 */
-	void setOperationName(const std::string& name) { operationName = name; }
+	void setOperationName(const std::string& name) { _operationName = name; }
 	
 	/**
 	 * Get the operation name.
 	 */
-	const std::string& getOperationName() const { return operationName; }
+	const std::string& getOperationName() const { return _operationName; }
 	
 	/**
 	 * Set resource name.
 	 */
-	void setResourceName(const std::string& name) {resourceName = name; }
+	void setResourceName(const std::string& name) {_resourceName = name; }
 	
 	/**
 	 * Get resource name.
 	 */
-	const std::string& getResourceName() const { return resourceName; }
+	const std::string& getResourceName() const { return _resourceName; }
 	
 	/**
 	 * Set quality of this candidate.
 	 * @param _quality Quality as float value ranging from 0 to 1.
 	 */
-	void setQuality(float _quality) { quality = _quality; }
+	void setQuality(float quality) { _quality = quality; }
 	
 	/**
 	 * Get quality of this candidate.
 	 * @return Quality as float value ranging from 0 to 1.
 	 */
-	float getQuality() const { return quality; }
-	
-	/**
-	 * Convert this into a DOMElement.
-	 * @param doc The master document this element should belong to.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
+	float getQuality() const { return _quality; }
 	
     /**
      * get abstraction degree of operation
@@ -133,8 +118,8 @@ public:
      */
 	AbstractionLevel::abstraction_t getAbstractionLevel() const;		
     
-};
+}; // end class OperationCandidate
 
-}
+} // end namespace gwdl
 
 #endif /*OPERATIONCANDIDATE_H_*/

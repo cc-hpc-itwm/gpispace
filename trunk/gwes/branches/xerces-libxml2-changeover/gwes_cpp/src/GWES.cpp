@@ -8,6 +8,8 @@
 #include <gwes/GWES.h>
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>
+// gwdl
+#include <gwdl/XMLUtils.h>
 
 XERCES_CPP_NAMESPACE_USE
 using namespace std;

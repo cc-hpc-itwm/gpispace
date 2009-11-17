@@ -34,7 +34,12 @@ private:
 	 /**
 	  * gworkflowdl namespace.
 	  */
-	 xmlNsPtr _nsP;
+	 xmlNsPtr _nsGworkflowdlP;
+	 
+	 /**
+	  * operationclass namespace.
+	  */
+	 xmlNsPtr _nsOperationclassP;
 
 public:
 	
@@ -92,6 +97,39 @@ public:
 	Place::ptr_t elementToPlace(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr placeToElement(const Place &) const;
 	
+    //////////////////////////
+    // OperationCandidate
+    //////////////////////////
+
+    // Interface IBuilder
+	OperationCandidate::ptr_t deserializeOperationCandidate(const std::string&) const throw (WorkflowFormatException);
+	std::string serializeOperationCandidate(const OperationCandidate &) const;
+	// libxml2-specific
+	OperationCandidate::ptr_t elementToOperationCandidate(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr operationCandidateToElement(const OperationCandidate &) const;
+
+    //////////////////////////
+    // OperationClass
+    //////////////////////////
+
+    // Interface IBuilder
+	OperationClass::ptr_t deserializeOperationClass(const std::string&) const throw (WorkflowFormatException);
+	std::string serializeOperationClass(const OperationClass &) const;
+	// libxml2-specific
+	OperationClass::ptr_t elementToOperationClass(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr operationClassToElement(const OperationClass &) const;
+
+    //////////////////////////
+    // Operation
+    //////////////////////////
+
+    // Interface IBuilder
+	Operation::ptr_t deserializeOperation(const std::string&) const throw (WorkflowFormatException);
+	std::string serializeOperation(const Operation &) const;
+	// libxml2-specific
+	Operation::ptr_t elementToOperation(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr operationToElement(const Operation &) const;
+
 private:
 	//////////////////////////
 	// private helper methods
@@ -119,5 +157,14 @@ std::ostream& operator<< (std::ostream &out, gwdl::Properties &props);
 
 // Place
 std::ostream& operator<< (std::ostream &out, gwdl::Place &place);
+
+// OperationCandidate
+std::ostream& operator<< (std::ostream &out, gwdl::OperationCandidate &ocand);
+
+// OperationClass
+std::ostream& operator<< (std::ostream &out, gwdl::OperationClass &oclass);
+
+// Operation
+std::ostream& operator<< (std::ostream &out, gwdl::Operation &operation);
 
 #endif /*GWDL_LIBXML2BUILDER_H_*/

@@ -16,7 +16,7 @@ using namespace std;
 
 namespace gwes {
 
-Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const string& activityImpl, gwdl::OperationCandidate* operationP) : _logger(fhg::log::getLogger("gwes")) {
+Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const string& activityImpl, gwdl::OperationCandidate::ptr_t operationP) : _logger(fhg::log::getLogger("gwes")) {
 	_status=STATUS_UNDEFINED;
 	_wfhP = handler;
 	_toP = toP;

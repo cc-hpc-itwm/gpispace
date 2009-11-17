@@ -73,20 +73,20 @@ void WorkflowTest::testWorkflow()
 	// add operation to transition
 	LOG_INFO(logger, "  operation...");
 	LOG_INFO(logger, "  set operation...");
-	Operation* op = new Operation();
+	Operation::ptr_t op = Operation::ptr_t(new Operation());
 	wf->getTransition("t0")->setOperation(op);	
 	LOG_INFO(logger, "  set operation class...");
-	OperationClass* opc = new OperationClass();
+	OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
 	opc->setName("mean-value");
 	wf->getTransition("t0")->getOperation()->setOperationClass(opc);
 	LOG_INFO(logger, "  add operation candidate...");
-	OperationCandidate* opcand1 = new OperationCandidate();
+	OperationCandidate::ptr_t opcand1 = OperationCandidate::ptr_t(new OperationCandidate());
 	opcand1->setType("psp");
 	opcand1->setOperationName("alg-mean-value");
 	opcand1->setResourceName("phastgrid");
 	opcand1->setSelected(true);
 	wf->getTransition("t0")->getOperation()->getOperationClass()->addOperationCandidate(opcand1);
-	OperationCandidate* opcand2 = new OperationCandidate();
+	OperationCandidate::ptr_t opcand2 = OperationCandidate::ptr_t(new OperationCandidate());
 	opcand2->setType("cli");
 	opcand2->setOperationName("mean");
 	opcand2->setResourceName("/usr/bin/mean");

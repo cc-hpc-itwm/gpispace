@@ -58,14 +58,14 @@ void TransitionTest::testTransition()
 
    // link this transtion with an operation
    LOG_INFO(logger, "test operation class...");
-   Operation* op = new Operation(); 
-   OperationClass* opc = new OperationClass();
+   Operation::ptr_t op = Operation::ptr_t(new Operation()); 
+   OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
    opc->setName("calculateEverything");
    op->setOperationClass(opc);
    t0->setOperation(op);
    CPPUNIT_ASSERT(t0->getAbstractionLevel()==AbstractionLevel::YELLOW);
      
-   OperationCandidate* opcand1 = new OperationCandidate();
+   OperationCandidate::ptr_t opcand1 = OperationCandidate::ptr_t(new OperationCandidate());
    opcand1->setType("psp");
    opcand1->setOperationName("calculate1");
    opcand1->setResourceName("big_machine");

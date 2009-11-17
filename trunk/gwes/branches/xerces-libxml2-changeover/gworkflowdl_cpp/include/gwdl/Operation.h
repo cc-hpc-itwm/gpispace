@@ -8,10 +8,9 @@
 #define OPERATION_H_
 
 // gwdl
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/OperationClass.h>
 #include <gwdl/AbstractionLevel.h>
-// xerces-c
-#include <xercesc/dom/DOM.hpp>
 // std
 #include <string>
 
@@ -30,12 +29,12 @@ namespace gwdl
  * <p>Code Example:</p>
  * <pre>
  * // create red operation
- * Operation* op = new Operation();
+ * Operation::ptr_t op = Operation::ptr_t(new Operation());
  * cout << *op << endl;
  * assert(op->getAbstractionLevel()==Operation::RED);
  *   
  * // create yellow operation
- * OperationClass* opc = new OperationClass();
+ * OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
  * opc->setName("calculateEverything");
  * op->setOperationClass(opc);
  * cout << *op << endl;
@@ -81,20 +80,16 @@ class Operation
 {
 	
 private:
-	OperationClass* operationClass;
+	OperationClass::ptr_t _operationClassP;
 	
 public:
 
+    typedef gwdl::shared_ptr<Operation> ptr_t;
+	
 	/**
 	 * Constructor for empty (red) operation.
 	 */
 	Operation();
-	
-	/**
-	 * Construct Operation from DOMElement.
-	 * @param element The DOMElement to build the operation from.
-	 */
-	explicit Operation(XERCES_CPP_NAMESPACE::DOMElement* element);
 	
 	/**
 	 * Desctructor for operation.
@@ -102,25 +97,23 @@ public:
 	~Operation();
 	
 	/**
-	 * Convert this into a DOMElement.
-	 * @param doc The master document this element should belong to.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
-
-	/**
 	 * Set the operation class for this operation.
 	 * (allocated OperationClass is deleted)
 	 * @param oc The operation class assosiated with this operation.
 	 */
-    void setOperationClass(OperationClass* oc)
-    {if(operationClass != NULL){delete operationClass;} operationClass = oc;}
+    void setOperationClass(OperationClass::ptr_t oc) {_operationClassP = oc;}
 
     /**
      * Get the operation class of this operation.
-     * @return A reference to the operation class.
+     * @return A shared pointer to the operation class.
      */
-    OperationClass* getOperationClass() {return operationClass;}
+    OperationClass::ptr_t getOperationClass() {return _operationClassP;}
+
+    /**
+     * Get the operation class of this operation read-only.
+     * @return A shared pointer to the operation class.
+     */
+    const OperationClass::ptr_t readOperationClass() const {return _operationClassP;}
 
     /**
      * Get level of abstraction.
@@ -132,7 +125,5 @@ public:
 };
 
 }
-
-std::ostream& operator<< (std::ostream &out, gwdl::Operation &operation);
 
 #endif /*OPERATION_H_*/

@@ -58,8 +58,8 @@ class Workflow;
  * assert(t0->getAbstractionLevel()==Operation::BLACK);
  *
  * // link this transtion with an operation
- * Operation* op = new Operation(); 
- * OperationClass* opc = new OperationClass();
+ * Operation::ptr_t op = Operation::ptr_t(new Operation()); 
+ * OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
  * opc->setName("calculateEverything");
  * op->setOperationClass(opc);
  * t0->setOperation(op);
@@ -115,7 +115,7 @@ private:
 	TransitionStatus status;
     std::string description;
     Properties properties;
-    Operation* operationP;
+    Operation::ptr_t operationP;
     std::vector<std::string> conditions;
     std::vector<Edge::ptr_t> readEdges;
     std::vector<Edge::ptr_t> inEdges;
@@ -286,14 +286,13 @@ public:
      * (allocated operation is deleted)
      * @param _operation Operation to be set
      */
-    void setOperation(Operation* p_operation)
-    {if(operationP != NULL){ delete operationP;} operationP = p_operation;}
+    void setOperation(Operation::ptr_t p_operation) {operationP = p_operation;}
 
     /**
      * get Transitions Operation.
      * @return operation Operation of the transition
      */
-    Operation* getOperation() { return operationP;}
+    Operation::ptr_t getOperation() { return operationP;}
 
     /**
      * set transition's condition.

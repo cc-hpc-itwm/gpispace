@@ -11,6 +11,8 @@
 #include <gwdl/Data.h>
 #include <gwdl/Token.h>
 #include <gwdl/Place.h>
+#include <gwdl/OperationCandidate.h>
+#include <gwdl/OperationClass.h>
 #include <gwdl/Transition.h>
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
@@ -40,9 +42,19 @@ public:
 	virtual Place::ptr_t deserializePlace(const std::string &) const throw (WorkflowFormatException) = 0;
 	virtual std::string serializePlace(const Place &) const = 0;
 
-	// Transition
+	// OperationCandidate
+	virtual OperationCandidate::ptr_t deserializeOperationCandidate(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeOperationCandidate(const OperationCandidate &) const = 0;
+	
+	// OperationClass
+	virtual OperationClass::ptr_t deserializeOperationClass(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeOperationClass(const OperationClass &) const = 0;
+	
+	// Operation
+	virtual Operation::ptr_t deserializeOperation(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeOperation(const Operation &) const = 0;
 
-	// Operation ...
+	// Transition
 
 	// Workflow
 

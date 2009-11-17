@@ -6,6 +6,7 @@
  */
 //gwdl
 #include <gwdl/Libxml2Builder.h>
+#include <gwdl/XMLUtils.h>
 
 using namespace std;
 
@@ -23,7 +24,8 @@ Libxml2Builder::Libxml2Builder() : _logger(fhg::log::getLogger("gwdl")) {
 	
 	// create gworkflowdl namespace
 	// ToDo: namespace should be without prefix.
-	_nsP = xmlNewNs(NULL, BAD_CAST "http://www.gridworkflow.org/gworkflowdl", BAD_CAST "gwdl");
+	_nsGworkflowdlP = xmlNewNs(NULL, BAD_CAST "http://www.gridworkflow.org/gworkflowdl", BAD_CAST "gwdl");
+	_nsOperationclassP = xmlNewNs(NULL, BAD_CAST "http://www.gridworkflow.org/gworkflowdl/operationclass", BAD_CAST "oc");
 }
 
 /**
@@ -185,7 +187,7 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
 }
 
 xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
-	xmlNodePtr nodeP = xmlNewNode(_nsP, BAD_CAST "token");
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "token");
 	xmlNodePtr curNodeP;
 	
 	// properties
@@ -199,15 +201,15 @@ xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 	
 	// data 
 	if (token.isData()) {
-		curNodeP = xmlNewChild(nodeP,_nsP, BAD_CAST "data",NULL);
+		curNodeP = xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "data",NULL);
 		xmlAddChildList(curNodeP, dataToElement(* token.getData())); 
 	} 
 	// control
 	else {
 		if (token.getControl()) {
-			xmlNewChild(nodeP,_nsP, BAD_CAST "control",BAD_CAST "true");
+			xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "control",BAD_CAST "true");
 		} else {
-			xmlNewChild(nodeP,_nsP, BAD_CAST "control",BAD_CAST "false");
+			xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "control",BAD_CAST "false");
 		}
 	}
 	return nodeP;
@@ -276,7 +278,7 @@ xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
 	xmlNodePtr textNodeP;
 	bool first = true;
 	for(CITR_Properties it = props.begin(); it != props.end(); ++it) {
-		curNodeP = xmlNewNode(_nsP, BAD_CAST "property");
+		curNodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "property");
 	    xmlNewProp(curNodeP, BAD_CAST "name", BAD_CAST it->first.c_str());
 	    if (!it->second.empty()) {
 	    	textNodeP = xmlNewText(BAD_CAST it->second.c_str());
@@ -401,7 +403,7 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 }
 
 xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
-	xmlNodePtr nodeP = xmlNewNode(_nsP, BAD_CAST "place");
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "place");
 	xmlNodePtr curNodeP;
 	
 	// <place ID="">
@@ -416,7 +418,7 @@ xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
     
     //   <description>
     if (place.getDescription().size()>0) {
-		xmlNewChild(nodeP,_nsP, BAD_CAST "description",BAD_CAST place.getDescription().c_str());
+		xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "description",BAD_CAST place.getDescription().c_str());
     }
 
     //   <property>
@@ -430,7 +432,7 @@ xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
 	
 	//   <tokenClass type="">
 	if (place.getTokenType().size() > 0) {
-		curNodeP = xmlNewChild(nodeP,_nsP, BAD_CAST "tokenClass",NULL);
+		curNodeP = xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "tokenClass",NULL);
 		xmlNewProp(curNodeP, BAD_CAST "type", BAD_CAST place.getTokenType().c_str());
 	}
 	
@@ -438,6 +440,290 @@ xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
 	std::vector<Token::ptr_t> tokens = place.getTokens();
 	for (size_t i = 0; i < tokens.size(); i++) {
 		xmlAddChild(nodeP, tokenToElement(*tokens[i]));
+	}
+	
+	return nodeP;
+}
+
+//////////////////////////
+// OperationCandidate
+//////////////////////////
+//					<xsd:element name = "operationCandidate">
+//						<xsd:complexType>
+//							<xsd:sequence>
+//								<xsd:element ref = "owl" minOccurs = "0" maxOccurs = "unbounded"/>
+//							</xsd:sequence>
+//                          <xsd:attribute name = "type" type = "xsd:string"/>
+//							<xsd:attribute name = "operationName" type = "xsd:string"/>
+//							<xsd:attribute name = "resourceName" type = "xsd:string"/>
+//							<xsd:attribute name = "quality" type = "xsd:float"/>
+//                          <xsd:attribute name = "selected" default = "false" type = "xsd:boolean"/>
+//						</xsd:complexType>
+//					</xsd:element>
+//////////////////////////
+
+OperationCandidate::ptr_t Libxml2Builder::deserializeOperationCandidate(const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const OperationCandidate::ptr_t ret = elementToOperationCandidate(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+string Libxml2Builder::serializeOperationCandidate(const OperationCandidate &operationCandidate) const {
+	xmlNodePtr nodeP = operationCandidateToElement(operationCandidate);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+OperationCandidate::ptr_t Libxml2Builder::elementToOperationCandidate(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// long _id;                       -> generated by constructor
+	// bool _selected;                 -> from attribute <operationCandidate selected="">
+	// std::string _type;              -> from attribute <operationCandidate type=""> 
+	// std::string _operationName;     -> from attribute <operationCandidate operationName="">
+	// std::string _resourceName;      -> from attribute <operationCandidate resourceName="">
+	// float _quality;                 -> from attribute <operationCandidate quality="">
+	///////////////////
+	
+	OperationCandidate::ptr_t operationCandidateP;
+    xmlNodePtr curNodeP = nodeP;
+    xmlChar* xmlCharP;
+    
+    curNodeP = nextElementNode(curNodeP);
+    if (checkElementName(curNodeP, "operationCandidate")) {                             // <operationCandidate>
+    	operationCandidateP = OperationCandidate::ptr_t(new OperationCandidate());
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "selected");                           // <operationCandidate selected="">
+		if (xmlCharP) {
+			if ( xmlStrcmp(xmlCharP,BAD_CAST "true")==0 ) {
+				operationCandidateP->setSelected(true);
+			} else if ( xmlStrcmp(xmlCharP,BAD_CAST "false")==0 ) {
+				operationCandidateP->setSelected(false);
+			} else {
+				LOG_ERROR(_logger, "Invalid value for attribute <selected>! MUST be \"true\" or \"false\" but is \"" << xmlCharP << "\"");
+				throw WorkflowFormatException("Invalid value for attribute <selected>! MUST be \"true\" or \"false\"");
+			}
+		} else {
+			operationCandidateP->setSelected(false);
+		}
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "type");                               // <operationCandidate type="">
+		if (xmlCharP) {
+			operationCandidateP->setType( string( (const char*)xmlCharP ) );
+		}
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "operationName");                      // <operationCandidate operationName="">
+		if (xmlCharP) {
+			operationCandidateP->setOperationName( string( (const char*)xmlCharP ) );
+		}
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "resourceName");                       // <operationCandidate resourceName="">
+		if (xmlCharP) {
+			operationCandidateP->setResourceName( string( (const char*)xmlCharP ) );
+		}
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "quality");                            // <operationCandidate quality="">
+		if (xmlCharP) {
+			operationCandidateP->setQuality( atof( (const char*)xmlCharP ) );
+		} else {
+			operationCandidateP->setQuality( -1 );
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <operationCandidate> not found!");
+    	throw WorkflowFormatException("Element <operationCandidate> not found!"); 
+    }
+    
+	return operationCandidateP;
+}
+
+xmlNodePtr Libxml2Builder::operationCandidateToElement(const OperationCandidate &operationCandidate) const {
+	// <operationCandidate>
+	xmlNodePtr nodeP = xmlNewNode(_nsOperationclassP, BAD_CAST "operationCandidate");
+
+	// <operationCandidate selected="">
+	if (operationCandidate.isSelected()) {
+	    xmlNewProp(nodeP, BAD_CAST "selected", BAD_CAST "true");
+	}
+	// <operationCandidate type="">
+    if (operationCandidate.getType().size()>0) {
+    	xmlNewProp(nodeP, BAD_CAST "type", BAD_CAST operationCandidate.getType().c_str());
+    }
+    // <operationCandidate operationName="">
+    if (operationCandidate.getOperationName().size()>0) {
+    	xmlNewProp(nodeP, BAD_CAST "operationName", BAD_CAST operationCandidate.getOperationName().c_str());
+    }
+    // <operationCandidate resourceName="">
+    if (operationCandidate.getResourceName().size()>0) {
+    	xmlNewProp(nodeP, BAD_CAST "resourceName", BAD_CAST operationCandidate.getResourceName().c_str());
+    }
+    // <operationCandidate quality="">
+    if (operationCandidate.getQuality()>-1.0) {
+    	ostringstream oss;
+    	oss << operationCandidate.getQuality();
+        xmlNewProp(nodeP, BAD_CAST "quality", BAD_CAST oss.str().c_str());
+    }
+	
+	return nodeP;
+}
+
+//////////////////////////
+// OperationClass
+//////////////////////////
+//	<xsd:element name = "operationClass">
+//		<xsd:complexType>
+//			<xsd:sequence>
+//				<xsd:element ref = "owl" minOccurs = "0" maxOccurs = "unbounded"/>
+//				<xsd:choice minOccurs = "0" maxOccurs = "unbounded">
+//              ===> refer to operation candidate <====
+//				</xsd:choice>
+//			</xsd:sequence>
+//			<xsd:attribute name = "name" type = "xsd:string"/>
+//		</xsd:complexType>
+//	</xsd:element>
+//	<xsd:element name = "owl" type = "xsd:string"/>
+//////////////////////////
+
+OperationClass::ptr_t Libxml2Builder::deserializeOperationClass(const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const OperationClass::ptr_t ret = elementToOperationClass(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+string Libxml2Builder::serializeOperationClass(const OperationClass &operationClass) const {
+	xmlNodePtr nodeP = operationClassToElement(operationClass);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+OperationClass::ptr_t Libxml2Builder::elementToOperationClass(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// std::vector<OperationCandidate::ptr_t> _operationCandidates;   -> child elements <operationCandidate>
+    // std::string _name;                                             -> attribute <operationClass name="">
+	///////////////////
+	
+	OperationClass::ptr_t operationClassP;
+    xmlNodePtr curNodeP = nodeP;
+    xmlChar* xmlCharP;
+    
+    curNodeP = nextElementNode(curNodeP);
+    if (checkElementName(curNodeP, "operationClass")) {                             // <operationClass>
+    	operationClassP = OperationClass::ptr_t(new OperationClass());
+		xmlCharP = xmlGetProp(curNodeP, BAD_CAST "name");                           // <operationClass name="">
+		if (xmlCharP) {
+			operationClassP->setName( string( (const char*)xmlCharP ) );
+		}
+		// children
+		curNodeP = nextElementNode(curNodeP->children);
+		while(curNodeP) {
+		    if (checkElementName(curNodeP, "operationCandidate")) {              //   <operationCandidate>
+	    		operationClassP->addOperationCandidate(elementToOperationCandidate(curNodeP));
+		    } else {
+		    	ostringstream oss;
+		    	oss << "Unknown element <" << curNodeP->name << ">. Expected <operationCandidate>";
+		    	LOG_ERROR(_logger, oss.str());
+		    	throw WorkflowFormatException(oss.str()); 
+		    }
+		    // next element
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <operationClass> not found!");
+    	throw WorkflowFormatException("Element <operationClass> not found!"); 
+    }
+    
+	return operationClassP;
+}
+
+xmlNodePtr Libxml2Builder::operationClassToElement(const OperationClass &operationClass) const {
+	// <operationClass>
+	xmlNodePtr nodeP = xmlNewNode(_nsOperationclassP, BAD_CAST "operationClass");
+	
+	// <operationClass name="">
+    if (operationClass.getName().size()>0) {
+    	xmlNewProp(nodeP, BAD_CAST "name", BAD_CAST operationClass.getName().c_str());
+    }
+    
+    //   <operationCandidate>
+	std::vector<OperationCandidate::ptr_t> operationCandidates = operationClass.getOperationCandidates();
+	for (size_t i = 0; i < operationCandidates.size(); i++) {
+		xmlAddChild(nodeP, operationCandidateToElement(*operationCandidates[i]));
+	}
+	
+	return nodeP;
+}
+
+//////////////////////////
+// Operation
+//////////////////////////
+//<xs:element name="operation" minOccurs="0">
+//    <xs:annotation>
+//        <xs:documentation>
+//The element "operation" links transitions with (external) operations. As operations may be platform-specific, they are
+//specified in a separate XML Schema using different namespace.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:sequence>
+//            <xs:any namespace="##any" processContents="lax" minOccurs="0"/>
+//            ===> refer to <operationClass> <==
+//        </xs:sequence>
+//    </xs:complexType>
+//</xs:element>
+//////////////////////////
+
+Operation::ptr_t Libxml2Builder::deserializeOperation(const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const Operation::ptr_t ret = elementToOperation(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+string Libxml2Builder::serializeOperation(const Operation &operation) const {
+	xmlNodePtr nodeP = operationToElement(operation);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+Operation::ptr_t Libxml2Builder::elementToOperation(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// 	OperationClass::ptr_t _operationClassP;            -> from child element <operationClass>
+	///////////////////
+	
+	Operation::ptr_t operationP;
+    xmlNodePtr curNodeP = nodeP;
+    
+    curNodeP = nextElementNode(curNodeP);
+    if (checkElementName(curNodeP, "operation")) {                             // <operation>
+    	operationP = Operation::ptr_t(new Operation());
+		// children
+		curNodeP = nextElementNode(curNodeP->children);
+		if (curNodeP) {
+			if (checkElementName(curNodeP, "operationClass")) {                    //   <operationClass>
+				operationP->setOperationClass(elementToOperationClass(curNodeP));
+			} else {
+		    	ostringstream oss;
+		    	oss << "Unknown element <" << curNodeP->name << ">. Expected <operationClass>";
+		    	LOG_ERROR(_logger, oss.str());
+		    	throw WorkflowFormatException(oss.str()); 
+			}
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <operation> not found!");
+    	throw WorkflowFormatException("Element <operation> not found!"); 
+    }
+    
+	return operationP;
+}
+
+xmlNodePtr Libxml2Builder::operationToElement(const Operation &operation) const {
+	// <operation>
+	xmlNodePtr nodeP = xmlNewNode(_nsOperationclassP, BAD_CAST "operation");
+
+    //   <operationClass>
+	if (operation.readOperationClass()) {
+		xmlAddChild(nodeP, operationClassToElement(*operation.readOperationClass()));
 	}
 	
 	return nodeP;
@@ -500,3 +786,23 @@ ostream& operator<<(ostream &out, gwdl::Place &place) {
 	return out;
 }
 
+// OperationCandidate
+ostream& operator<<(ostream &out, gwdl::OperationCandidate &ocand) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeOperationCandidate(ocand);
+	return out;
+}
+
+// OperationClass
+ostream& operator<<(ostream &out, gwdl::OperationClass &oclass) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeOperationClass(oclass);
+	return out;
+}
+
+// Operation
+ostream& operator<<(ostream &out, gwdl::Operation &oper) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeOperation(oper);
+	return out;
+}

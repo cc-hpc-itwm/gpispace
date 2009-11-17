@@ -69,12 +69,12 @@ void GWESTest::testGWES()
 	t1->addOutEdge(arc3);
 	wf->addTransition(t1);
 	// operations
-	Operation* op = new Operation();
+	Operation::ptr_t op = Operation::ptr_t(new Operation());
 	wf->getTransition("t1")->setOperation(op);	
-	OperationClass* opc = new OperationClass();
+	OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
 	opc->setName("date");
 	wf->getTransition("t1")->getOperation()->setOperationClass(opc);
-	OperationCandidate* opcand = new OperationCandidate();
+	OperationCandidate::ptr_t opcand = OperationCandidate::ptr_t(new OperationCandidate());
 	opcand->setType("cli");
 	opcand->setOperationName("date");
 	opcand->setResourceName("/bin/date");

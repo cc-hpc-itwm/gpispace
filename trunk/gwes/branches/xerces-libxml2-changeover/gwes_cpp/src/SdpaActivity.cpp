@@ -19,7 +19,7 @@ using namespace std;
 namespace gwes
 {
 
-SdpaActivity::SdpaActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP) : Activity(handler, toP, "SdpaActivity", operationP)
+SdpaActivity::SdpaActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP) : Activity(handler, toP, "SdpaActivity", operationP)
 {
 }
 

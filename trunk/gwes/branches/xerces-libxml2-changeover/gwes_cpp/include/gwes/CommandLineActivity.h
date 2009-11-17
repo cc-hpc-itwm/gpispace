@@ -39,7 +39,7 @@ private:
 	std::string execute(const std::string& commandline);
 
 public:
-	explicit CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP);
+	explicit CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP);
 	
 	virtual ~CommandLineActivity();
 
