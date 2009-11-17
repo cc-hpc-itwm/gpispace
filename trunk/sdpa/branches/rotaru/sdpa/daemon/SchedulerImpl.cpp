@@ -131,13 +131,13 @@ void SchedulerImpl::stop()
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
 
-bool SchedulerImpl::post_request()
+bool SchedulerImpl::post_request(bool force)
 {
 	bool bReqPosted = false;
 	sdpa::util::time_type current_time = sdpa::util::now();
 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	if(force || (sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered()) )
 	{
 		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
 		{
@@ -173,9 +173,6 @@ void SchedulerImpl::send_life_sign()
 
 void SchedulerImpl::check_post_request()
 {
-	 sdpa::util::time_type current_time = sdpa::util::now();
-	 sdpa::util::time_type difftime = current_time - m_last_request_time;
-
 	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 {
 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");

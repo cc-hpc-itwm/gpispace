@@ -1,5 +1,6 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
+#include <SchedulerAgg.hpp>
 #include <Aggregator.hpp>
 
 using namespace std;
@@ -16,6 +17,7 @@ Aggregator::Aggregator( const std::string& name, const std::string& url,
 	  masterUrl_(masterUrl)
 {
 	SDPA_LOG_DEBUG("Aggregator constructor called ...");
+	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerAgg(this));
 }
 
 Aggregator::~Aggregator()
@@ -151,7 +153,7 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 					// send a JobFinishedAckEvent back to the worker/slave
 					//delete it also from job_map_
-					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), master(), pEvt->job_id()));
+					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
 
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
@@ -265,7 +267,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 					// send a JobFailedAckEvent back to the worker/slave
 					//delete it also from job_map_
-					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
+					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
 
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);

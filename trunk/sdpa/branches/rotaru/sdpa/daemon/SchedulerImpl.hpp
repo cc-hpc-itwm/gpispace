@@ -48,17 +48,17 @@ namespace sdpa {
 
 	 virtual Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
 	 virtual void addWorker(const Worker::ptr_t &);
-	 virtual int numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+	 virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 
 	 virtual void check_post_request();
-	 virtual bool post_request();
+	 virtual bool post_request(bool force = false);
 	 virtual void send_life_sign();
 	 void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
     // thread related functions
-	 void start();
-	 void stop();
-	 void run();
+	 virtual void start();
+	 virtual void stop();
+	 virtual void run();
 
   protected:
 	  JobQueue jobs_to_be_scheduled;

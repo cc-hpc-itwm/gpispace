@@ -81,11 +81,10 @@ void TestComponents::testComponents()
 																	"127.0.0.1:8000" );
 	sdpa::daemon::NRE::start(ptrNRE_0);
 
-	sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
+	/*sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
 																	"aggregator_1", "127.0.0.1:5001",
 																	"127.0.0.1:8001" );
-
-	sdpa::daemon::NRE::start(ptrNRE_1);
+	sdpa::daemon::NRE::start(ptrNRE_1);*/
 
 	for(int k=0; k<m_nITER; k++ )
 	{
@@ -116,7 +115,7 @@ void TestComponents::testComponents()
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::NRE::shutdown(ptrNRE_0);
-	sdpa::daemon::NRE::shutdown(ptrNRE_1);
+	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");

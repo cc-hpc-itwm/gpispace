@@ -1,5 +1,6 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
+#include <SchedulerOrch.hpp>
 #include <Orchestrator.hpp>
 
 using namespace std;
@@ -12,6 +13,7 @@ Orchestrator::Orchestrator(  const std::string &name,  const std::string& url )
 	  url_(url)
 {
 	SDPA_LOG_DEBUG("Orchestrator constructor called ...");
+	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 }
 
 Orchestrator::~Orchestrator()
