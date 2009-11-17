@@ -189,7 +189,7 @@ int fvmCondSignal(fvmCondVar_t *fvm_var)
 
   pv4d_printf("FVM: Sending signal %d to waiting allocators\n", numSignals);
   
-  sprintf(message_to_send, "%c", &buf);
+  snprintf(message_to_send, sizeof(message_to_send), "%c", buf);
 
   send_len = strlen(message_to_send);
   
