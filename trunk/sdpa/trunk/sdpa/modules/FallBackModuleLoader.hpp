@@ -118,8 +118,7 @@ namespace modules {
         throw ModuleLoadFailed("module already registered", mod->name(), file);
       }
 
-      LOG(INFO, "sucessfully loaded: " << mod->name() << " from file " << file);
-      DLOG(DEBUG, *mod);
+      LOG(INFO, "sucessfully loaded file: " << file << " with module: " << *mod);
       return *mod;
     }
 
