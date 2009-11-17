@@ -14,7 +14,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
     m_nITER(1),
-    m_sleep_interval(10000)
+    m_sleep_interval(1000000)
 {
 }
 
@@ -69,14 +69,23 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(sdpa::daemon::ORCHESTRATOR);
-	sdpa::daemon::Orchestrator::start(ptrOrch, "127.0.0.1:5000");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create(sdpa::daemon::AGGREGATOR);
-	sdpa::daemon::Aggregator::start(ptrAgg, "127.0.0.1:5001", "127.0.0.1:5000");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( sdpa::daemon::AGGREGATOR,  "127.0.0.1:5001",
+																			   sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
-	sdpa::daemon::NRE::ptr_t ptrNRE = sdpa::daemon::NRE::create(sdpa::daemon::NRE, strAnswer );
-	sdpa::daemon::NRE::start(ptrNRE, "127.0.0.1:5002", "127.0.0.1:5001");
+	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create( "NRE_0",  "127.0.0.1:5002",
+																	sdpa::daemon::AGGREGATOR, "127.0.0.1:5001",
+																	"127.0.0.1:8000" );
+	sdpa::daemon::NRE::start(ptrNRE_0);
+
+	sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
+																	sdpa::daemon::AGGREGATOR, "127.0.0.1:5001",
+																	"127.0.0.1:8001" );
+
+	sdpa::daemon::NRE::start(ptrNRE_1);
 
 	for(int k=0; k<m_nITER; k++ )
 	{
@@ -106,7 +115,8 @@ void TestComponents::testComponents()
 
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::NRE::shutdown(ptrNRE);
+	sdpa::daemon::NRE::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");

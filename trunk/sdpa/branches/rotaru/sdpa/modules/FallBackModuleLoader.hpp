@@ -9,6 +9,7 @@
 
 #include <sdpa/memory.hpp>
 #include <sdpa/modules/exceptions.hpp>
+#include <sdpa/modules/types.hpp>
 #include <sdpa/modules/Module.hpp>
 
 #include <fhglog/fhglog.hpp>
@@ -67,7 +68,7 @@ namespace modules {
 
       Module::ptr_t mod(new Module(handle));
 
-      Module::InitFunction init = (Module::InitFunction)(dlsym(handle, "sdpa_mod_init"));
+      InitFunction init = (InitFunction)(dlsym(handle, "sdpa_mod_init"));
       if ( (error = dlerror()) != NULL) {
         dlclose(handle);
         LOG(ERROR, "module not loaded: " << error);
@@ -115,14 +116,21 @@ namespace modules {
       }
     }
 
-    std::list<std::string> loaded_modules() const
+    void writeTo(std::ostream &os) const
     {
-      std::list<std::string> mods;
-      for (module_table_t::const_iterator m(module_table_.begin()); m != module_table_.end(); ++m)
+      os << "[";
+
+      module_table_t::const_iterator m(module_table_.begin());
+      while (m != module_table_.end())
       {
-        mods.push_back(m->first);
+        os << (*(m->second));
+        ++m;
+
+        if (m != module_table_.end())
+          os << ", ";
       }
-      return mods;
+
+      os << "]";
     }
   private:
     FallBackModuleLoader()
@@ -149,5 +157,11 @@ namespace modules {
     module_table_t module_table_;
   };
 }}
+
+inline std::ostream &operator<<(std::ostream &os, const sdpa::modules::FallBackModuleLoader &loader)
+{
+  loader.writeTo(os);
+  return os;
+}
 
 #endif

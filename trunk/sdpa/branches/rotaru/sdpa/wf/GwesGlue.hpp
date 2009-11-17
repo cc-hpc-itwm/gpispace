@@ -131,7 +131,6 @@ namespace sdpa { namespace wf { namespace glue {
     gwes::Activity &act = const_cast<gwes::Activity&>(gwes_activity);
     if (act.getOperationCandidate())
     {
-      DLOG(DEBUG, "method to be wrapped: " << act.getOperationCandidate()->getOperationName());
       wrapped.method() = Method(act.getOperationCandidate()->getOperationName());
       if (wrapped.method().module().empty() || wrapped.method().name().empty())
       {
@@ -143,13 +142,6 @@ namespace sdpa { namespace wf { namespace glue {
     gwes::parameter_list_t *gwes_params = act.getTransitionOccurrence()->getTokens();
     for (gwes::parameter_list_t::iterator it(gwes_params->begin()); it != gwes_params->end(); ++it) {
       const std::string gwes_param_name(it->edgeP->getExpression());
-
-      if (gwes_param_name.empty())
-      {
-         LOG(WARN, "cannot wrap a parameter with an empty name!");
-         //throw std::runtime_error("cannot wrap a parameter with an empty name!");
-         continue;
-      }
 
       Token tok;
       if (it->tokenP)
@@ -337,7 +329,6 @@ namespace sdpa { namespace wf { namespace glue {
           }
           // looking up tokens in result
           // TODO: check for existence!
-          DLOG(DEBUG, "putting token on place: " << param->edgeP->getPlaceID() << " with expression " << param->edgeP->getExpression());
           const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
           if (result_tokens.size() == 1)
           {

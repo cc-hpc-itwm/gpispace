@@ -37,8 +37,9 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location)
+    NreWorkerClient(const std::string &nre_worker_location, unsigned short my_port=0)
       : nre_worker_location_(nre_worker_location)
+      , my_reply_port_(my_port)
       , socket_(NULL)
     { }
 
@@ -52,7 +53,7 @@ namespace sdpa { namespace nre { namespace worker {
       DLOG(DEBUG, "starting connection to nre-worker process at: " << worker_location());
       {
         std::string worker_host(worker_location());
-        unsigned short worker_port(0);
+        unsigned short worker_port(8000); // default port
 
         std::string::size_type sep_pos(worker_location().find(":"));
         if (sep_pos != std::string::npos)
@@ -73,9 +74,17 @@ namespace sdpa { namespace nre { namespace worker {
       }
       DLOG(INFO, "connecting to nre-worker process at: " << nre_worker_endpoint_);
 
-      socket_ = new udp::socket(io_service_, udp::endpoint(udp::v4(), 0));
+      try
+      {
+        socket_ = new udp::socket(io_service_, udp::endpoint(udp::v4(), my_reply_port_));
+      }
+      catch (const std::exception &ex)
+      {
+        LOG(ERROR, "could not create my sending socket: " << ex.what());
+        throw;
+      }
 
-      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
+      ping();
     }
 
     void stop() throw (std::exception)
@@ -92,6 +101,12 @@ namespace sdpa { namespace nre { namespace worker {
       throw std::runtime_error("not implemented");
     }
 
+    void ping(/* timeout */)
+    {
+      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
+      LOG(DEBUG, "got reply to ping: " << *msg);
+    }
+
     sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity)
     {
       sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity));
@@ -99,6 +114,9 @@ namespace sdpa { namespace nre { namespace worker {
       {
         // check if it is a ExecuteReply
         ExecuteReply *exec_reply = dynamic_cast<ExecuteReply*>(msg.get());
+
+        ping();
+
         if (exec_reply)
         {
           return exec_reply->result();
@@ -132,6 +150,7 @@ namespace sdpa { namespace nre { namespace worker {
     }
 
     std::string nre_worker_location_;
+    unsigned short my_reply_port_;
     boost::asio::io_service io_service_;
     udp::socket *socket_;
     udp::endpoint nre_worker_endpoint_;

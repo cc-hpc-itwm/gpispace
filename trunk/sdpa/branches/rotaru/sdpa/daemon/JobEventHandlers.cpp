@@ -127,27 +127,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				activity_id_t actId = pJob->id().str();
 				workflow_id_t wfId  = pJob->parent().str();
 
-				gwes::Activity& gwes_act = (gwes::Activity&)ptr_Sdpa2Gwes_->getActivity(wfId, actId);
-
-				for (sdpa::job_result_t::const_iterator r(pEvt->result().begin()); r != pEvt->result().end(); ++r)
-				{
-				   SDPA_LOG_DEBUG("tokens on place " << r->first << ":");
-				   for (token_list_t::const_iterator token(r->second.begin()); token != r->second.end(); ++token)
-				   {
-					   SDPA_LOG_DEBUG("\t" << *token);
-				   }
-				}
-
-				try
-				{
-					sdpa::wf::glue::put_results_to_activity(pEvt->result(), gwes_act);
-				}
-				catch (const std::exception &ex)
-				{
-					SDPA_LOG_ERROR("could not put results back to activity: "<< ex.what());
-				}
-
-				parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
+				parameter_list_t output;
 
 				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" finished");
 
@@ -259,11 +239,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				activity_id_t actId = pJob->id().str();
 				workflow_id_t wfId  = pJob->parent().str();
 
-				gwes::Activity& gwes_act = (gwes::Activity&)ptr_Sdpa2Gwes_->getActivity(wfId, actId);
-
-				sdpa::wf::glue::put_results_to_activity(pEvt->result(), gwes_act);
-
-				parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
+				parameter_list_t output;
 
 				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" failed");
 

@@ -339,7 +339,7 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       throw NoSuchWorkflow("cannot look up workflow " + id);
     }
 
-    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchWorkflow)
+    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchActivity)
     {
       throw NoSuchActivity("cannot look up activity " + aid + " in workflow " + wid);
     }

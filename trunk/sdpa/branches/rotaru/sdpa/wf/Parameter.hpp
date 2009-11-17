@@ -7,6 +7,8 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/wf/Token.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 namespace sdpa { namespace wf {
   /**
     This class describes the parameter to an activity.
@@ -71,6 +73,8 @@ namespace sdpa { namespace wf {
 
       ~Parameter() {}
 
+      Parameter &set_name(const std::string &new_name) { name_ = new_name; return *this; }
+
       inline const std::string & name() const { return name_; }
       inline std::string & name() { return name_; }
       inline const Token & token() const { return token_; }
@@ -78,41 +82,51 @@ namespace sdpa { namespace wf {
       inline const EdgeType & edge_type() const { return edge_type_; }
       inline EdgeType & edge_type() { return edge_type_; }
 
-      void writeTo(std::ostream &os) const
+      void writeTo(std::ostream &os, bool verbose = true) const
       {
-        os << "{"
-          << "param"
-          << ","
-          << name()
-          << ",";
-        switch (edge_type()) {
-          case INPUT_EDGE:
-            os << "i";
-            break;
-          case READ_EDGE:
-            os << "r";
-            break;
-          case OUTPUT_EDGE:
-            os << "o";
-            break;
-          case WRITE_EDGE:
-            os << "w";
-            break;
-          case EXCHANGE_EDGE:
-            os << "x";
-            break;
-          case UPDATE_EDGE:
-            os << "u";
-            break;
+        if (verbose)
+        {
+          os << "{"
+             << "param"
+             << ","
+             << name()
+             << ","
+             << edge_type_to_char_code(edge_type())
+             << ","
+             << token()
+             << "}";
         }
-        os << ","
-          << token()
-          << "}";
+        else
+        {
+          os << edge_type_to_char_code(edge_type())
+             << ":"
+             << name()
+             << "="
+             << token().data();
+        }
       }
     private:
       std::string name_;
       EdgeType edge_type_;
       Token token_;
+
+      char edge_type_to_char_code(EdgeType etype) const
+      {
+        switch (etype)
+        {
+          case INPUT_EDGE:
+            return 'i';
+          case READ_EDGE:
+            return 'r';
+          case OUTPUT_EDGE:
+            return 'o';
+          case WRITE_EDGE:
+            return 'w';
+          default:
+            LOG(ERROR, "got a strange edge type: " << etype);
+            throw std::runtime_error("unhandled edge type");
+        }
+      }
   };
 }}
 

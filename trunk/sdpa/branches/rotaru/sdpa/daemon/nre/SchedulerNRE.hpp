@@ -15,11 +15,10 @@ namespace sdpa {
 
 		SDPA_DECLARE_LOGGER();
 
-		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string& answerStrategy):
+		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string workerUrl ):
 			sdpa::daemon::SchedulerImpl(pHandler),
 			SDPA_INIT_LOGGER("SchedulerNRE"),
-			m_answerStrategy(answerStrategy),
-	        m_worker_("127.0.0.1:8000")
+	        m_worker_(workerUrl)
 			{}
 
 		virtual ~SchedulerNRE() { }
@@ -92,9 +91,16 @@ namespace sdpa {
 
 			gwes::Activity& gwes_act = (gwes::Activity&)(activity);
 			sdpa::wf::Activity act = sdpa::wf::glue::wrap(gwes_act);
-//			act.parameters()["output"].token().data("hello");
-			//alex will provide code
-            sdpa::wf::Activity result = m_worker_.execute(act);
+
+			sdpa::wf::Activity result(act);
+			try
+			{
+              result = m_worker_.execute(act);
+			} catch(const std::exception& val)
+			{
+				result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
+				result.reason() = val.what();
+			}
 
             sdpa::wf::glue::unwrap(result, gwes_act);
 
@@ -139,7 +145,6 @@ namespace sdpa {
 
 	private:
 		ActivityQueue activities_to_be_executed;
-		std::string m_answerStrategy;
 		boost::thread m_threadExecutor;
 		sdpa::nre::worker::NreWorkerClient m_worker_;
 	};

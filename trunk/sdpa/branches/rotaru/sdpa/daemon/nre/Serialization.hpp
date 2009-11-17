@@ -54,11 +54,40 @@ namespace boost { namespace serialization {
     ar & rqst.key();
   }
   template <class Archive>
+  void serialize(Archive &ar, struct timeval &tv, const unsigned int /* version */)
+  {
+    ar & tv.tv_sec;
+    ar & tv.tv_usec;
+  }
+
+  template <class Archive>
+  void serialize(Archive &ar, sdpa::nre::worker::PingReply::usage_t &u, const unsigned int /* version */)
+  {
+    ar & u.ru_utime; /* user time used */
+    ar & u.ru_stime; /* system time used */
+    ar & u.ru_maxrss;        /* maximum resident set size */
+    ar & u.ru_ixrss;         /* integral shared memory size */
+    ar & u.ru_idrss;         /* integral unshared data size */
+    ar & u.ru_isrss;         /* integral unshared stack size */
+    ar & u.ru_minflt;        /* page reclaims */
+    ar & u.ru_majflt;        /* page faults */
+    ar & u.ru_nswap;         /* swaps */
+    ar & u.ru_inblock;       /* block input operations */
+    ar & u.ru_oublock;       /* block output operations */
+    ar & u.ru_msgsnd;        /* messages sent */
+    ar & u.ru_msgrcv;        /* messages received */
+    ar & u.ru_nsignals;      /* signals received */
+    ar & u.ru_nvcsw;         /* voluntary context switches */
+    ar & u.ru_nivcsw;        /* involuntary context switches */
+  }
+
+  template <class Archive>
   void serialize(Archive & ar, sdpa::nre::worker::PingReply &rply, const unsigned int /* version */)
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.key();
     ar & rply.pid();
+    ar & rply.usage();
   }
 
   template <class Archive>

@@ -37,7 +37,7 @@ void ModuleTest::testModuleFunctionCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t params;
+  sdpa::modules::data_t params;
   params["out"] = sdpa::wf::Parameter("out", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token());
   mod.call("HelloWorld", params);
   CPPUNIT_ASSERT_EQUAL(std::string("hello world"), params["out"].token().data());
@@ -51,7 +51,7 @@ void ModuleTest::testModuleIllegalFunctionCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t data;
+  sdpa::modules::data_t data;
 
   try {
     mod.call("NonExistingFunction", data);
@@ -72,7 +72,7 @@ void ModuleTest::testModuleLoopingCall() {
     CPPUNIT_ASSERT_MESSAGE(std::string("module loading failed:") + mlf.what(), false);
   }
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t data;
+  sdpa::modules::data_t data;
 
   sdpa::util::time_type start = sdpa::util::now();
   for (std::size_t i = 0; i < 100000; ++i) {
@@ -92,7 +92,7 @@ void ModuleTest::testAddFunctionCall() {
   }
 
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t params;
+  sdpa::modules::data_t params;
   long long sum(0);
   const long long max(100000);
   const long long expected( (max*max) / 2 - (max / 2));
@@ -132,7 +132,7 @@ void ModuleTest::testAlloc() {
   }
 
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t params;
+  sdpa::modules::data_t params;
 
   std::clog << "allocating " << sizeof(int) << " bytes" << std::endl;
   params["size"] = sdpa::wf::Parameter("size", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(sizeof(int)));
@@ -162,7 +162,7 @@ void ModuleTest::testUpdate() {
   }
 
   sdpa::modules::Module &mod = loader->get("example-mod");
-  sdpa::modules::Module::data_t params;
+  sdpa::modules::data_t params;
 
   std::clog << "allocating " << sizeof(int) << " bytes" << std::endl;
   params["size"] = sdpa::wf::Parameter("size", sdpa::wf::Parameter::INPUT_EDGE, sdpa::wf::Token(sizeof(int)));

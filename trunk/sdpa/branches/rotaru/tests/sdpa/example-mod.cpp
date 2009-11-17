@@ -1,31 +1,22 @@
-#include <sdpa/modules/Module.hpp>
+#include <sdpa/modules/Macros.hpp>
 #include <string>
 #include <cstdlib> // malloc, free
 
 using namespace sdpa::modules;
 
 // module function implementations
-void HelloWorld(sdpa::modules::Module::data_t &params)
+void HelloWorld(sdpa::modules::data_t &params)
 {
   params["out"].token().data("hello world");
 }
 
-void DoNothing(sdpa::modules::Module::data_t &)
+void DoNothing(sdpa::modules::data_t &)
 {
 
-}
-
-// echos the input to the output
-void Echo(sdpa::modules::Module::data_t &params)
-{
-  const std::string in = params["input"].token().data();
-  const std::string out = in;
-
-  params["output"].token().data(out);
 }
 
 // add two integer parameters and store the result in "out"
-void Add(sdpa::modules::Module::data_t &params)
+void Add(sdpa::modules::data_t &params)
 {
   const long long a = params["a"].token().data_as<long long>();
   const long long b = params["b"].token().data_as<long long>();
@@ -33,7 +24,7 @@ void Add(sdpa::modules::Module::data_t &params)
   params["out"].token().data(a+b);
 }
 
-void Malloc(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Malloc(sdpa::modules::data_t &p) throw (std::exception)
 {
   const std::size_t bytes = p["size"].token().data_as<std::size_t>();
   void *ptr = std::malloc(bytes);
@@ -43,7 +34,7 @@ void Malloc(sdpa::modules::Module::data_t &p) throw (std::exception)
   p["out"].token().data(ptr);
 }
 
-void Free(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Free(sdpa::modules::data_t &p) throw (std::exception)
 {
   void *ptr = p["ptr"].token().data_as<void*>();
   if (ptr) {
@@ -54,7 +45,7 @@ void Free(sdpa::modules::Module::data_t &p) throw (std::exception)
   }
 }
 
-void Update(sdpa::modules::Module::data_t &p) throw (std::exception)
+void Update(sdpa::modules::data_t &p) throw (std::exception)
 {
   int *ptr = (int*)p["ptr"].token().data_as<void*>();
   unsigned int value= p["value"].token().data_as<unsigned int>();
@@ -65,10 +56,14 @@ SDPA_MOD_INIT_START(example-mod)
 {
   SDPA_REGISTER_FUN(HelloWorld);
   SDPA_REGISTER_FUN(DoNothing);
-  SDPA_REGISTER_FUN(Add);
+
+  SDPA_REGISTER_FUN_START(Add);
+    SDPA_ADD_INP("size", std::size_t);
+    SDPA_ADD_OUT("out", void*);
+  SDPA_REGISTER_FUN_END(Add);
+
   SDPA_REGISTER_FUN(Malloc);
   SDPA_REGISTER_FUN(Free);
   SDPA_REGISTER_FUN(Update);
-  SDPA_REGISTER_FUN(Echo);
 }
 SDPA_MOD_INIT_END(example-mod)

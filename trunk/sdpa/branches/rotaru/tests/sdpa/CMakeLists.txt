@@ -18,7 +18,6 @@ add_dependencies(sdpa_test_suite sdpa-client sdpa-orchestrator sdpa-aggregator s
 add_dependencies(sdpa_test_suite generate_PerformanceTest)
 target_link_libraries(sdpa_test_suite sdpa-test)
 target_link_libraries(sdpa_test_suite sdpa)
-target_link_libraries(sdpa_test_suite sdpa-modules)
 target_link_libraries(sdpa_test_suite sdpa-daemon)
 target_link_libraries(sdpa_test_suite sdpa-events)
 target_link_libraries(sdpa_test_suite sdpa-jobFSM_SMC)
@@ -33,7 +32,7 @@ target_link_libraries(sdpa_test_suite sdpa-orchestrator)
 target_link_libraries(sdpa_test_suite seda-comm)
 
 # test module
-add_library(example-mod SHARED example-mod.cpp)
+#add_library(example-mod SHARED example-mod.cpp)
 
 add_executable(sdpa_test_tool sdpa_test_tool.cpp)
 target_link_libraries(sdpa_test_tool sdpa sdpa-daemon sdpa-util dl)

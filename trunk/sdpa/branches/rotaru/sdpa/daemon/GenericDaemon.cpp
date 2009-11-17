@@ -120,7 +120,10 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
 	// master known service: give the port as a parameter
 	if( !masterName.empty() &&  !masterUrl.empty() )
+	{
+		setMaster(masterName);
 		conn->locator()->insert( masterName, masterUrl);
+	}
 
 	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
 	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
@@ -323,16 +326,18 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	// in fact the master name should be red from the configuration file
 	if( name() == sdpa::daemon::AGGREGATOR )
 	{
-		setMaster(sdpa::daemon::ORCHESTRATOR);
+		if(master().empty())
+			setMaster(sdpa::daemon::ORCHESTRATOR);
 
-		cout<<"Send WorkerRegistrationEvent to "<<master()<<endl<<endl<<endl;
+		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
 		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 		to_master_stage()->send(pEvtWorkerReg);
 	} else if( name() == sdpa::daemon::NRE )
 	{
-		setMaster(sdpa::daemon::AGGREGATOR );
+		if(master().empty())
+			setMaster(sdpa::daemon::AGGREGATOR );
 
-		cout<<"Send WorkerRegistrationEvent to "<<master()<<endl<<endl<<endl;
+		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
 		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 		to_master_stage()->send(pEvtWorkerReg);
 	}
