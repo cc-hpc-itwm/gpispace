@@ -76,11 +76,11 @@ namespace modules {
       {
         struct {
           union {
-            int symbol;
+            void *symbol;
             InitFunction function;
           };
         } func_ptr;
-        func_ptr.symbol = (int) dlsym(handle, "sdpa_mod_init");
+        func_ptr.symbol = dlsym(handle, "sdpa_mod_init");
         init = func_ptr.function;
       }
 
