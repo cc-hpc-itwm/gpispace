@@ -1,15 +1,15 @@
 include make.defines
 
 all:
-	make -C src 
+	$(MAKE) -C src 
 
 testmods:
-	make -C tests
+	$(MAKE) -C tests
 
 clean:
 	rm -rf bin/* lib/*.so *~ \#_*
-	make -C src clean
-	make -C tests clean
+	$(MAKE) -C src clean
+	$(MAKE) -C tests clean
 
 
 runfvm:

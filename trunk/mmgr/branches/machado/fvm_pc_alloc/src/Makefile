@@ -1,13 +1,13 @@
 all:
-	make -C datastructures
-	make -C fvm
-	make -C modules
-	make -C pc
+	$(MAKE) -C datastructures
+	$(MAKE) -C fvm
+	$(MAKE) -C modules
+	$(MAKE) -C pc
 
 clean:
 	rm -rf objs/*.o
-	make -C datastructures clean
-	make -C fvm clean
-	make -C modules clean
-	make -C pc clean
+	$(MAKE) -C datastructures clean
+	$(MAKE) -C fvm clean
+	$(MAKE) -C modules clean
+	$(MAKE) -C pc clean
 
