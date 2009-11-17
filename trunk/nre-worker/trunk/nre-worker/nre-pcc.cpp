@@ -132,9 +132,15 @@ int main(int ac, char **av)
   std::string worker_location(vm["worker"].as<std::string>());
   sdpa::nre::worker::NreWorkerClient client(worker_location);
 
-  client.start();
-
-  client.ping();
+  try
+  {
+    client.start();
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "E: could not connect to nre-pcd: " << ex.what() << std::endl;
+    return 3;
+  }
 
   sdpa::wf::parameters_t params;
   {
@@ -171,7 +177,17 @@ int main(int ac, char **av)
   req.writeTo(std::cout, false);
   std::cout << "..." << std::endl;
 
-  sdpa::wf::Activity res(client.execute(req));
+  sdpa::wf::Activity res;
+  try
+  {
+    res = client.execute(req);
+  }
+  catch (const std::exception &ex)
+  {
+    std::cerr << "E: activity execution failed: " << ex.what() << std::endl;
+    return 3;
+  }
+
   if (verbose)
   {
     std::cout << "got ";
