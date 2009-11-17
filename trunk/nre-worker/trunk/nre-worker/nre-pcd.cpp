@@ -299,6 +299,7 @@ int main(int ac, char **av)
       switch (sig)
       {
         case SIGTERM:
+        case SIGHUP:
         case SIGINT:
           signal_ignored = false;
           break;
@@ -312,6 +313,7 @@ int main(int ac, char **av)
       LOG(ERROR, "error while waiting for signal: " << result);
     }
   }
+  fvm_pc.leave();
   LOG(INFO, "terminating...");
   executor->stop();
 
