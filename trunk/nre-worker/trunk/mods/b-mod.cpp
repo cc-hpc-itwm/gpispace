@@ -3,8 +3,8 @@
 #include <string>
 #include <cstdlib> // malloc, free
 
-#include "mod-a.hpp"
-#include "mod-b.hpp"
+#include "a-mod.hpp"
+#include "b-mod.hpp"
 
 int fun_b(int p)
 {
@@ -20,9 +20,9 @@ static void RunTest() throw (std::exception)
   fun_b(42);
 }
 
-SDPA_MOD_INIT_START(mod-b)
+SDPA_MOD_INIT_START(b-mod)
 {
   // run test cases
   RunTest();
 }
-SDPA_MOD_INIT_END(mod-b)
+SDPA_MOD_INIT_END(b-mod)
