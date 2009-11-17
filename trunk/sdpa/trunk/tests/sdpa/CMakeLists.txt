@@ -16,18 +16,10 @@ set(test_hdrs ${PERFORMANCETEST_FSM_H} ${test_hdrs})
 set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
-add_dependencies(sdpa-test sdpa-daemon sdpa-jobFSM_SMC sdpa-daemonFSM_SMC)
+target_link_libraries(sdpa-test sdpa sdpa-daemon sdpa-events sdpa-util)
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-
-add_dependencies(sdpa_test_suite generate_PerformanceTest)
 target_link_libraries(sdpa_test_suite sdpa-test)
-target_link_libraries(sdpa_test_suite sdpa)
-target_link_libraries(sdpa_test_suite sdpa-daemon)
-target_link_libraries(sdpa_test_suite sdpa-events)
-target_link_libraries(sdpa_test_suite sdpa-jobFSM_SMC)
-target_link_libraries(sdpa_test_suite sdpa-daemonFSM_SMC)
-target_link_libraries(sdpa_test_suite sdpa-util)
 target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
 
