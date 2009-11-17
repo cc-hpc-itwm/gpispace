@@ -1,0 +1,2 @@
+#!/bin/bash
+"@CMAKE_INSTALL_PREFIX@"/bin/nre-pcd -k -c "@CMAKE_INSTALL_PREFIX@"/etc/fvm.cfg.tpl $@
