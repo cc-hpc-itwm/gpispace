@@ -1,29 +1,15 @@
 # -*- mode: cmake; -*-
 
-# example module
-add_library(example-mod SHARED example-mod.cpp)
-add_library(pc-test SHARED pc-test.cpp)
-add_library(mod-a SHARED mod-a.cpp)
-add_library(mod-b SHARED mod-b.cpp)
-add_library(log-test SHARED log-test.cpp)
-add_library(dummy SHARED dummy.cpp)
+file(GLOB mod_srcs "*-mod.cpp")
+list(SORT mod_srcs)
+set(mods)
+foreach (mod_src ${mod_srcs})
+  # get the filename without extension
+  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" mod_name ${mod_src})
+  message(STATUS "adding module ${mod_name} (using ${mod_src})")
 
-
-# fvm
-add_library(fvm-mod  SHARED fvm-mod.cpp)
-
-install(
-  TARGETS
-    example-mod
-    pc-test
-    mod-a
-    mod-b
-    log-test
-    fvm-mod
-    dummy
-  DESTINATION
-    libexec
-)
+  add_library(${mod_name} SHARED ${mod_src})
+  install(TARGETS ${mod_name} DESTINATION libexec)
+endforeach(mod_src ${mod_srcs})
 
 add_subdirectory(remig)
-
