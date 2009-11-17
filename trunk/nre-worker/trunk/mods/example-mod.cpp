@@ -19,8 +19,8 @@ void DoNothing(data_t &)
 // add two integer parameters and store the result in "out"
 void Add(data_t &params)
 {
-  const long long a = params["a"].token().data_as<long long>();
-  const long long b = params["b"].token().data_as<long long>();
+  const long a = params.at("a").token().data_as<long>();
+  const long b = params.at("b").token().data_as<long>();
 
   params["out"].token().data(a+b);
 }

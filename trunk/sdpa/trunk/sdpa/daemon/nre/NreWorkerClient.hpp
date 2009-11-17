@@ -147,12 +147,6 @@ namespace sdpa { namespace nre { namespace worker {
       throw std::runtime_error("not implemented");
     }
 
-    void ping(/* timeout */)
-    {
-      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
-      LOG(DEBUG, "got reply to ping: " << *msg);
-    }
-
     sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity)
     {
       sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity));
@@ -178,6 +172,12 @@ namespace sdpa { namespace nre { namespace worker {
       }
     }
   private:
+    void ping(/* timeout */)
+    {
+      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
+      LOG(DEBUG, "got reply to ping: " << *msg);
+    }
+
     sdpa::shared_ptr<Message> request(const Message &m)
     {
       // send
@@ -185,7 +185,11 @@ namespace sdpa { namespace nre { namespace worker {
         boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
         std::string encoded_message(codec_.encode(m));
         LOG(DEBUG, "sending " << encoded_message.size() << " bytes of data to " << nre_worker_endpoint_ << ": " << encoded_message);
-        socket_->send_to(boost::asio::buffer(encoded_message), nre_worker_endpoint_);
+        socket_->async_send_to(boost::asio::buffer(encoded_message)
+                             , nre_worker_endpoint_
+                             , boost::bind(&NreWorkerClient::handle_send_to, this
+                             , boost::asio::placeholders::error
+                             , boost::asio::placeholders::bytes_transferred));
       }
 
       // recv
@@ -222,6 +226,12 @@ namespace sdpa { namespace nre { namespace worker {
           boost::bind(&NreWorkerClient::handle_receive_from, this,
             boost::asio::placeholders::error,
             boost::asio::placeholders::bytes_transferred));
+    }
+
+    void handle_send_to(const boost::system::error_code &error
+                      , size_t bytes_sent)
+    {
+      DLOG(DEBUG, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
     }
 
     void handle_receive_from(const boost::system::error_code &error
