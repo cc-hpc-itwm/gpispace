@@ -25,6 +25,6 @@ void *listGetData(list_t *item,
 
 list_t *listDelete(list_t *item);
 
-void *listDeleteNext(list_t *item);
+void listDeleteNext(list_t *item);
 
 void listDestroy(list_t **list);

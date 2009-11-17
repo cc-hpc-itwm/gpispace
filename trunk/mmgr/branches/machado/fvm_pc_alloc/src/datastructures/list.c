@@ -120,7 +120,7 @@ list_t *listDelete(list_t *item)
   return next;
 }
 
-void *listDeleteNext(list_t *item)
+void listDeleteNext(list_t *item)
 {
   if(item != NULL && item->next != NULL)
     {
