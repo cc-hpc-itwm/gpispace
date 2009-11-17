@@ -72,17 +72,17 @@ void TestComponents::testComponents()
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( sdpa::daemon::AGGREGATOR,  "127.0.0.1:5001",
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_1",  "127.0.0.1:5001",
 																			   sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create( "NRE_0",  "127.0.0.1:5002",
-																	sdpa::daemon::AGGREGATOR, "127.0.0.1:5001",
+																	"aggregator_1", "127.0.0.1:5001",
 																	"127.0.0.1:8000" );
 	sdpa::daemon::NRE::start(ptrNRE_0);
 
 	sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
-																	sdpa::daemon::AGGREGATOR, "127.0.0.1:5001",
+																	"aggregator_1", "127.0.0.1:5001",
 																	"127.0.0.1:8001" );
 
 	sdpa::daemon::NRE::start(ptrNRE_1);

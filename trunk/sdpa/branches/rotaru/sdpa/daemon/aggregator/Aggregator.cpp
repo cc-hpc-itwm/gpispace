@@ -269,18 +269,14 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
-				}
-				catch(WorkerNotFoundException)
-				{
+				} catch(WorkerNotFoundException) {
 					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
 				}
 
 				try {
 					//delete it also from job_map_
 					ptr_job_man_->deleteJob(pEvt->job_id());
-				}
-				catch(JobNotDeletedException&)
-				{
+				}catch(JobNotDeletedException&){
 					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
 				}
 			}
