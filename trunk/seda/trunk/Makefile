@@ -7,7 +7,7 @@ default: compile
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
-compile: config
+compile: $(BUILD_DIR)/Makefile depend
 	$(MAKE) -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
@@ -37,7 +37,10 @@ cover: config
 memchk: config
 	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalMemCheck
 
+depend:
+	$(MAKE) -C $(BUILD_DIR) depend
+
 .DEFAULT:
-	@cd $(BUILD_DIR) && $(MAKE) -$(MAKEFLAGS) $(MAKECMDGOALS)
+	@$(MAKE) -C $(BUILD_DIR) -$(MAKEFLAGS) $(MAKECMDGOALS)
 
 .PHONY: clean distclean all default doc tags ctest test cover memchk

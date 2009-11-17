@@ -7,7 +7,7 @@ default: compile
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
-compile: $(BUILD_DIR)/Makefile
+compile: $(BUILD_DIR)/Makefile depend
 	$(MAKE) -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
@@ -36,6 +36,9 @@ cover: config
 	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalTest -D ExperimentalCoverage
 memchk: config
 	cd $(BUILD_DIR) && ctest -D ExperimentalStart -D ExperimentalConfigure -D ExperimentalBuild -D ExperimentalMemCheck
+
+depend:
+	$(MAKE) -C $(BUILD_DIR) depend
 
 .DEFAULT:
 	@$(MAKE) -C $(BUILD_DIR) -$(MAKEFLAGS) $(MAKECMDGOALS)
