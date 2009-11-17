@@ -16,20 +16,6 @@
 
 #include "ActivityExecutor.hpp"
 
-bool verbose(false);
-
-void cleanUp()
-{
-  fvmLeave();
-}
-
-void sig_handler(int sig)
-{
-  std::cout << "Lethal signal (" << sig << ") received" << " - I will do my best to save the world!" << std::endl;
-  cleanUp();
-  exit(666);
-}
-
 namespace
 {
 struct fvm_pc_connection_mgr
@@ -60,17 +46,41 @@ struct fvm_pc_connection_mgr
     do_leave_ = true;
   }
 
-  ~fvm_pc_connection_mgr()
+  void leave()
   {
     if (do_leave_)
     {
       LOG(INFO, "disconnecting from FVM...");
       fvmLeave();
+      do_leave_ = false;
     }
+  }
+
+  ~fvm_pc_connection_mgr() throw()
+  {
+    try
+    {
+      leave();
+    }
+    catch (...) { }
   }
 
   bool do_leave_;
 };
+}
+
+bool verbose(false);
+  
+void cleanUp()
+{
+  fvmLeave();
+}
+
+void sig_handler(int sig)
+{
+  std::cout << "Lethal signal (" << sig << ") received" << " - I will do my best to save the world!" << std::endl;
+  cleanUp();
+  exit(666);
 }
 
 const std::size_t MAX_PATH_LEN = 1024;
@@ -214,7 +224,6 @@ int main(int ac, char **av)
   }
 
   fvm_pc_connection_mgr fvm_pc;
-  
   try
   {
     fvm_pc.init(pc_cfg);  
@@ -283,7 +292,6 @@ int main(int ac, char **av)
   bool signal_ignored = true;
   while (signal_ignored)
   {
-
     result = sigwait(&waitset, &sig);
     if (result == 0)
     {
@@ -304,7 +312,6 @@ int main(int ac, char **av)
       LOG(ERROR, "error while waiting for signal: " << result);
     }
   }
-
   LOG(INFO, "terminating...");
   executor->stop();
 
