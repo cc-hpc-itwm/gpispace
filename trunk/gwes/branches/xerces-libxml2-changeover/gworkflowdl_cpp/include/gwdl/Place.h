@@ -35,17 +35,6 @@ namespace gwdl
 class Place
 {
 	
-private: 
-	std::string _id;
-	std::string _tokenType;
-	std::vector<Token::ptr_t> _tokens;
-    unsigned int _capacity;
-    std::string _description;
-    Properties::ptr_t _propertiesP;
-    Token::ptr_t _nextUnlockedTokenP;
-    
-    std::string generateID() const;
-	
 public:
 	
     typedef gwdl::shared_ptr<Place> ptr_t;
@@ -168,7 +157,7 @@ public:
      * @param p_token The token to lock
      * @param p_transition The transition that locked the token.
      */
-	void lockToken(Token::ptr_t tokenP, Transition* p_transition);
+	void lockToken(Token::ptr_t tokenP, Transition* transitionP);
 	
 	/**
 	 * Unlock a token.
@@ -180,6 +169,17 @@ public:
 	 * Returns NULL if there is no unlocked token on this place.
 	 */ 
 	Token::ptr_t getNextUnlockedToken();
+	
+private: 
+	std::string _id;
+	std::string _tokenType;
+	std::vector<Token::ptr_t> _tokens;
+    unsigned int _capacity;
+    std::string _description;
+    Properties::ptr_t _propertiesP;
+    Token::ptr_t _nextUnlockedTokenP;
+    
+    std::string generateID() const;
 	
 }; // end class Place
 

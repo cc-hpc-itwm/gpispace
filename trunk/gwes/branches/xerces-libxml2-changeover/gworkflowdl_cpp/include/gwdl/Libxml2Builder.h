@@ -130,6 +130,38 @@ public:
 	Operation::ptr_t elementToOperation(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr operationToElement(const Operation &) const;
 
+    //////////////////////////
+    // Edge
+    //////////////////////////
+
+	// libxml2-specific
+	Edge::ptr_t elementToEdge(Workflow::ptr_t, const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr edgeToElement(const Edge &) const;
+
+	//////////////////////////
+    // Transition
+    //////////////////////////
+
+    // Interface IBuilder
+	Transition::ptr_t deserializeTransition(Workflow::ptr_t, const std::string&) const throw (WorkflowFormatException);
+	std::string serializeTransition(const Transition &) const;
+	// libxml2-specific
+	Transition::ptr_t elementToTransition(Workflow::ptr_t, const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr transitionToElement(const Transition &) const;
+	
+    //////////////////////////
+    // Workflow
+    //////////////////////////
+
+    // Interface IBuilder
+	Workflow::ptr_t deserializeWorkflow(const std::string&) const throw (WorkflowFormatException);
+	Workflow::ptr_t deserializeWorkflowFromFile(const std::string& filename) const throw (WorkflowFormatException);
+	std::string serializeWorkflow(const Workflow &) const;
+	void serializeWorkflowToFile(const Workflow &, const std::string& filename) const;
+	// libxml2-specific
+	Workflow::ptr_t elementToWorkflow(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	xmlNodePtr workflowToElement(const Workflow &) const;
+	
 private:
 	//////////////////////////
 	// private helper methods
@@ -166,5 +198,11 @@ std::ostream& operator<< (std::ostream &out, gwdl::OperationClass &oclass);
 
 // Operation
 std::ostream& operator<< (std::ostream &out, gwdl::Operation &operation);
+
+// Transition
+std::ostream& operator<< (std::ostream &out, gwdl::Transition &transition);
+
+// Workflow
+std::ostream& operator<< (std::ostream &out, gwdl::Workflow &workflow);
 
 #endif /*GWDL_LIBXML2BUILDER_H_*/

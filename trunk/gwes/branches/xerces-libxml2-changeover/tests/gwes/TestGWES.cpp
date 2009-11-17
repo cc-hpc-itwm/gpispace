@@ -7,6 +7,8 @@
 // gwes
 #include <gwes/Utils.h>
 #include <gwes/WorkflowObserver.h>
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // std
@@ -33,7 +35,7 @@ void GWESTest::testGWES()
 	LOG_INFO(logger, "============== BEGIN GWES TEST =============");
 	LOG_INFO(logger, "create workflow ...");
    
-    Workflow *wf = new Workflow();
+    Workflow::ptr_t wf = Workflow::ptr_t(new Workflow(""));
     // p0
     Place::ptr_t p0 = Place::ptr_t(new Place("p0"));
     Token::ptr_t token0 = Token::ptr_t(new Token());
@@ -52,21 +54,21 @@ void GWESTest::testGWES()
 	p3->addToken(token1);
 	wf->addPlace(p3);
 	// t0
-	Transition* t0 = new Transition("t0");
-	Edge::ptr_t arc0 = Edge::ptr_t(new Edge( wf->getPlace("p0")));
-	t0->addInEdge(arc0);
-	Edge::ptr_t arc1 = Edge::ptr_t(new Edge( wf->getPlace("p1")));
-    t0->addOutEdge(arc1);
+	Transition::ptr_t t0 = Transition::ptr_t(new Transition("t0"));
+	Edge::ptr_t arc0 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, wf->getPlace("p0")));
+	t0->addEdge(arc0);
+	Edge::ptr_t arc1 = Edge::ptr_t(new Edge(Edge::SCOPE_OUTPUT, wf->getPlace("p1")));
+    t0->addEdge(arc1);
 	wf->addTransition(t0);
 	// t1
-	Transition* t1 = new Transition("t1");
-	Edge::ptr_t arc2 = Edge::ptr_t(new Edge( wf->getPlace("p1")));
-	t1->addInEdge(arc2);
-	Edge::ptr_t arc4 = Edge::ptr_t(new Edge( wf->getPlace("p3")));
+	Transition::ptr_t t1 = Transition::ptr_t(new Transition("t1"));
+	Edge::ptr_t arc2 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, wf->getPlace("p1")));
+	t1->addEdge(arc2);
+	Edge::ptr_t arc4 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, wf->getPlace("p3")));
 	//arc4->setExpression("input");
-	t1->addInEdge(arc4);
-	Edge::ptr_t arc3 = Edge::ptr_t(new Edge( wf->getPlace("p2")));
-	t1->addOutEdge(arc3);
+	t1->addEdge(arc4);
+	Edge::ptr_t arc3 = Edge::ptr_t(new Edge(Edge::SCOPE_OUTPUT, wf->getPlace("p2")));
+	t1->addEdge(arc3);
 	wf->addTransition(t1);
 	// operations
 	Operation::ptr_t op = Operation::ptr_t(new Operation());
@@ -81,11 +83,11 @@ void GWESTest::testGWES()
 	opcand->setSelected(true);
 	wf->getTransition("t1")->getOperation()->getOperationClass()->addOperationCandidate(opcand);
 	
-	wf->getProperties().put("occurrence.sequence","");
+	wf->getProperties()->put("occurrence.sequence","");
 
 	LOG_INFO(logger, "initiate workflow ...");
     GWES m_gwes;
-	string id = m_gwes.initiate(*wf, "test");
+	string id = m_gwes.initiate(wf, "test");
 	
 	// print workflow to stdout	
 	LOG_DEBUG(logger, *wf);
@@ -95,7 +97,7 @@ void GWESTest::testGWES()
 	CPPUNIT_ASSERT(wfht.get(id)->getID()==id);
 	
 	LOG_INFO(logger, "execute workflow ...");
-	m_gwes.execute(*wf);
+	m_gwes.execute(wf);
 	// print workflow to stdout	
 	LOG_DEBUG(logger, *wf);
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(id)=="COMPLETED");

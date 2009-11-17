@@ -12,6 +12,7 @@
 #include <gwes/Utils.h>
 //gwdl
 #include <gwdl/AbstractionLevel.h>
+#include <gwdl/Libxml2Builder.h>
 //std
 #include <unistd.h>
 #include <map>
@@ -22,7 +23,7 @@ using namespace gwes;
 
 namespace gwes {
 
-WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;
@@ -40,7 +41,7 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string&
 	_suspend = false;
 	_sleepTime = SLEEP_TIME_MIN;
 	_simulation = false;
-	if (workflowP->getProperties().contains("simulation") && (workflowP->getProperties().get("simulation")).compare("false") != 0) {
+	if (workflowP->readProperties()->contains("simulation") && (workflowP->readProperties()->get("simulation")).compare("false") != 0) {
 		_simulation = true;
 		LOG_INFO(_logger, getID() << ": Simulation is ON");
 		LOG_DEBUG(_logger, *workflowP);
@@ -62,7 +63,7 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 	status_t oldStatus = _status;
 	_status = status;
 	if (_status != STATUS_UNDEFINED) {
-		_wfP->getProperties().put("status", getStatusAsString(_status));
+		_wfP->getProperties()->put("status", getStatusAsString(_status));
 	}
 	
 	LOG_DEBUG(_logger, "status of workflow \"" << getID() << "\" changed from " << getStatusAsString(oldStatus) << " to " << getStatusAsString());
@@ -147,7 +148,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	bool modification = true;
 
 	//get enabled transitions
-	vector<Transition*>& enabledTransitions = _wfP->getEnabledTransitions();
+	vector<Transition::ptr_t>& enabledTransitions = _wfP->getEnabledTransitions();
 	if (enabledTransitions.size() <= 0) {
 		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
 	}
@@ -179,18 +180,18 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 
 			//suspend if breakpoint has been reached
 			if (!_abort && !_suspend && selectedToP != NULL) {
-				Properties transprops = selectedToP->transitionP->getProperties();
-				if (transprops.contains("breakpoint")) {
-					string breakstring = transprops.get("breakpoint");
+				Properties::ptr_t transprops = selectedToP->transitionP->getProperties();
+				if (transprops->contains("breakpoint")) {
+					string breakstring = transprops->get("breakpoint");
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
 						LOG_INFO(_logger, "released breakpoint at transition "
 						<< selectedToP->transitionP->getID());
-						transprops.put("breakpoint", "RELEASED");
+						transprops->put("breakpoint", "RELEASED");
 					} else {
 						LOG_INFO(_logger, "reached breakpoint at transition "
 						<< selectedToP->transitionP->getID());
-						transprops.put("breakpoint", "REACHED");
+						transprops->put("breakpoint", "REACHED");
 						_suspend = true;
 					}
 				}
@@ -242,7 +243,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
 				modification = true;
 				LOG_INFO(_logger, "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!" );
-				_wfP->getProperties().put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
+				_wfP->getProperties()->put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
 				_suspend = true;
 			}
 
@@ -268,13 +269,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
-			_wfP->getProperties().put(createNewErrorID(), oss.str());
+			_wfP->getProperties()->put(createNewErrorID(), oss.str());
 		}  catch (WorkflowFormatException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
-			_wfP->getProperties().put(createNewErrorID(), oss.str());
+			_wfP->getProperties()->put(createNewErrorID(), oss.str());
 		}
 	}
 
@@ -407,7 +408,7 @@ void WorkflowHandler::update(const Event& event) {
  * Get the workflow which is handled by this WorkflowHandler.
  * @return A pointer to the workflow.
  */
-gwdl::Workflow* WorkflowHandler::getWorkflow() {
+gwdl::Workflow::ptr_t WorkflowHandler::getWorkflow() {
 	return _wfP;
 }
 
@@ -445,11 +446,11 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
  * ToDo: include support of data.group
  * ToDo: include support for transition priority
  */
-TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::Transition*>& enabledTransitions,int step) {
+TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::Transition::ptr_t>& enabledTransitions,int step) {
 	if (enabledTransitions.size()<= 0)
 		return NULL;
 	else {
-		for (vector<gwdl::Transition*>::iterator it = enabledTransitions.begin(); it != enabledTransitions.end(); ++it) {
+		for (vector<gwdl::Transition::ptr_t>::iterator it = enabledTransitions.begin(); it != enabledTransitions.end(); ++it) {
 			TransitionOccurrence* toP = new TransitionOccurrence(*it);
 			if (toP->checkConditions(step)) {
 				toP->lockTokens();
@@ -556,15 +557,15 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	} catch (CapacityException e) {
 		LOG_ERROR(_logger, "exception: " << e.message);
 		_abort = true;
-		_wfP->getProperties().put(createNewErrorID(), e.message);
+		_wfP->getProperties()->put(createNewErrorID(), e.message);
 	}
 	
     // store occurrence sequence
-    if (_wfP->getProperties().contains("occurrence.sequence")) {
-    	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
+    if (_wfP->readProperties()->contains("occurrence.sequence")) {
+    	string occurrenceSequence = _wfP->getProperties()->get("occurrence.sequence");
     	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
     	occurrenceSequence += toP->transitionP->getID();
-    	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
+    	_wfP->getProperties()->put("occurrence.sequence",occurrenceSequence);
     }
 	
     // cleanup
@@ -596,7 +597,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 						<< "\" related to transition occurrence \""
 						<< toP->getID() << "\": " << faultMessage
 						<< endl;
-				_wfP->getProperties().put(createNewWarnID(), oss.str());
+				_wfP->getProperties()->put(createNewWarnID(), oss.str());
 			}
 			
 			// process XPath edge expressions
@@ -613,17 +614,17 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			} catch (CapacityException e) {
 				LOG_ERROR(_logger, "CapacityException:" << e.message);;
 				_abort = true;
-				_wfP->getProperties().put(createNewErrorID(), e.message);
+				_wfP->getProperties()->put(createNewErrorID(), e.message);
 			}
 			
 			modification = true;
 
 		    // store occurrence sequence
-		    if (_wfP->getProperties().contains("occurrence.sequence")) {
-		    	string occurrenceSequence = _wfP->getProperties().get("occurrence.sequence");
+		    if (_wfP->readProperties()->contains("occurrence.sequence")) {
+		    	string occurrenceSequence = _wfP->getProperties()->get("occurrence.sequence");
 		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
 		    	occurrenceSequence += toP->transitionP->getID();
-		    	_wfP->getProperties().put("occurrence.sequence",occurrenceSequence);
+		    	_wfP->getProperties()->put("occurrence.sequence",occurrenceSequence);
 		    }
 
 		    ///ToDo: set transition status

@@ -70,7 +70,7 @@ public:
      * @param userId      The ID of the user who owns the workflow.
      * @return The reference to the workflow.
      */
-    gwdl::Workflow& initiate(const std::string& gworkflowdl, const std::string& userId) throw(gwdl::WorkflowFormatException,StateTransitionException);
+    gwdl::Workflow::ptr_t initiate(const std::string& gworkflowdl, const std::string& userId) throw(gwdl::WorkflowFormatException,StateTransitionException);
 
 	/**
  	 * Initiates a Grid workflow.
@@ -80,7 +80,7 @@ public:
      * @param userId The ID of the user who owns the workflow.
  	 * @return The unique workflow ID.
  	 */
-    std::string initiate(gwdl::Workflow& workflow, const std::string& userId) throw(StateTransitionException);
+    std::string initiate(gwdl::Workflow::ptr_t workflowP, const std::string& userId) throw(StateTransitionException);
     
     /**
      * Connect a communication channel to a specific workflow handler of this GWES.
@@ -88,7 +88,7 @@ public:
      * @param channel The communication channel containing the source Observer.
      * @param workflow A reference to the workflow.
      */ 
-    void connect(Channel* channel, gwdl::Workflow& workflow);
+    void connect(Channel* channel, gwdl::Workflow::ptr_t workflowP);
 
     /**
      * Connect a communication channel to a specific workflow handler of this GWES.
@@ -105,7 +105,7 @@ public:
      *
      * @param workflow The reference of the workflow to start.
      */
-    void start(gwdl::Workflow& workflow) throw(StateTransitionException,NoSuchWorkflowException);
+    void start(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException,NoSuchWorkflowException);
     
     /**
      * Start a certain workflow. 
@@ -122,7 +122,7 @@ public:
      * 
      * @param workflow The reference of the workflow to start.
      */
-    void execute(gwdl::Workflow& workflow) throw(StateTransitionException,gwdl::WorkflowFormatException);
+    void execute(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException,gwdl::WorkflowFormatException);
 
     /**
      * Execute the whole workflow.
@@ -138,7 +138,7 @@ public:
      *
      * @param workflow The reference to the workflow.
      */
-    void suspend(gwdl::Workflow& workflow) throw(StateTransitionException);
+    void suspend(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException);
 
     /**
      * Suspend a certain workflow.
@@ -153,7 +153,7 @@ public:
      *
      * @param workflow The reference to the workflow.
      */
-    void resume(gwdl::Workflow& workflow) throw(StateTransitionException);
+    void resume(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException);
 
     /**
      * Resume a certain workflow that has been suspended before.
@@ -169,7 +169,7 @@ public:
      *
      * @param workflow The reference to the workflow.
      */
-    void abort(gwdl::Workflow& workflow) throw(StateTransitionException);
+    void abort(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException);
 
     /**
      * Abort a certain workflow.
@@ -186,7 +186,7 @@ public:
      * @param workflow The reference to the workflow.
      * @return A reference to the current workflow description as std::string.
      */
-    std::string& getWorkflowDescription(gwdl::Workflow& workflow);
+    std::string getSerializedWorkflow(gwdl::Workflow::ptr_t workflowP);
 
     /**
      * Get the current GWorkflowDL document of the workflow specified by its reference.
@@ -194,7 +194,7 @@ public:
      * @param workflowId The identifier of the workflow.
      * @return A reference to the current workflow description as string.
      */
-    std::string& getWorkflowDescription(const std::string& workflowId);
+    std::string getSerializedWorkflow(const std::string& workflowId);
 
     /**
      * Get the current status code of the workflow specified by its reference.
@@ -212,7 +212,7 @@ public:
      * @param workflow The reference to the workflow.
      * @return The current state of the workflow.
      */
-    unsigned int getStatus(gwdl::Workflow& workflow);
+    unsigned int getStatus(gwdl::Workflow::ptr_t workflowP);
 
     /**
      * Get the current status code of the workflow specified by its identifier.
@@ -238,7 +238,7 @@ public:
      * @param workflow The reference to the workflow.
      * @return The current state of the workflow as string.
      */
-    std::string getStatusAsString(gwdl::Workflow& workflow);
+    std::string getStatusAsString(gwdl::Workflow::ptr_t workflowP);
 
     /**
      * Get the current status string of the workflow specified by its identifier.
@@ -263,7 +263,7 @@ public:
      * Remove a specific workflow from gwes.
      * @param workflow Reference to workflow.
      */
-    void remove(gwdl::Workflow& workflow);
+    void remove(gwdl::Workflow::ptr_t workflowP);
 
     /**
      * Remove a specific workflow from gwes.
@@ -290,7 +290,7 @@ public:
 
 	virtual void registerHandler(Gwes2Sdpa *sdpa);
 
-	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (gwdl::WorkflowFormatException);
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException);
 
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
 

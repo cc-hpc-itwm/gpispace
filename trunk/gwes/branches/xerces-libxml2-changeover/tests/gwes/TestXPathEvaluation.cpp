@@ -135,13 +135,13 @@ void XPathEvaluationTest::testXPathEvaluatorContextCache() {
 	LIBXML_TEST_VERSION
     
 	// create transition with input places and input tokens
-    Transition *t0 = new Transition("");
+    Transition::ptr_t t0 = Transition::ptr_t(new Transition(""));
     Place::ptr_t p0 = Place::ptr_t(new Place(""));
     Place::ptr_t p1 = Place::ptr_t(new Place(""));
-    Edge::ptr_t e0 = Edge::ptr_t(new Edge(p0,"input0"));
-    Edge::ptr_t e1 = Edge::ptr_t(new Edge(p1,"input1"));
-    t0->addReadEdge(e0);
-    t0->addInEdge(e1);
+    Edge::ptr_t e0 = Edge::ptr_t(new Edge(Edge::SCOPE_READ, p0,"input0"));
+    Edge::ptr_t e1 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, p1,"input1"));
+    t0->addEdge(e0);
+    t0->addEdge(e1);
     Token::ptr_t d0 = Token::ptr_t(new Token());
     p0->addToken(d0);
     Token::ptr_t d1 = Token::ptr_t(new Token(Token::CONTROL_FALSE));

@@ -31,7 +31,7 @@ public:
 	 * Constructor.
 	 * Uses next unlocked tokens on input/read places to build maps for input/read tokens.
 	 */
-	explicit TransitionOccurrence(gwdl::Transition* transition);
+	explicit TransitionOccurrence(gwdl::Transition::ptr_t transition);
 
 	/**
 	 * Destructor. 
@@ -41,7 +41,7 @@ public:
 	/**
 	 * pointer to transition
 	 */
-	gwdl::Transition* transitionP;
+	gwdl::Transition::ptr_t transitionP;
 	
 	/**
 	 * pointer to activity

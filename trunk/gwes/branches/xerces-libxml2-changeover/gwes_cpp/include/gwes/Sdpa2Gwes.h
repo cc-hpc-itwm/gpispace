@@ -85,7 +85,7 @@ public:
 	 * asynchronously and notifiy the SPDA about status transitions
 	 * using the callback methods of the Gwes2Sdpa handler.  
 	 */
-	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (gwdl::WorkflowFormatException) = 0;
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException) = 0;
 
 	/**
 	 * Cancel a workflow asynchronously.

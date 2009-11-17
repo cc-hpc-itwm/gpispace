@@ -6,6 +6,8 @@
  */
 // tests
 #include "TestWorkflow.h"
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
@@ -22,8 +24,7 @@ void WorkflowTest::testWorkflow()
 
 	LOG_INFO(logger, "============== BEGIN WORKFLOW TEST =============");
 	// create empty workflow
-	Workflow *wf = new Workflow();
-	wf->setID("test-workflow");
+	Workflow::ptr_t wf = Workflow::ptr_t(new Workflow("test-workflow"));
 
 	// add description
 	LOG_INFO(logger, "  description...");
@@ -32,9 +33,9 @@ void WorkflowTest::testWorkflow()
 
 	// add properties
 	LOG_INFO(logger, "  properties...");
-	wf->getProperties().put("b_name1","value1");	
-	wf->getProperties().put("a_name2","value2");	
-	CPPUNIT_ASSERT(wf->getProperties().get("b_name1")=="value1");
+	wf->getProperties()->put("b_name1","value1");	
+	wf->getProperties()->put("a_name2","value2");	
+	CPPUNIT_ASSERT(wf->getProperties()->get("b_name1")=="value1");
 	
 	// add places
 	LOG_INFO(logger, "  places...");
@@ -46,15 +47,15 @@ void WorkflowTest::testWorkflow()
 	
 	// create transition
 	LOG_INFO(logger, "  transition...");
-	Transition* t0 = new Transition("t0");
+	Transition::ptr_t t0 = Transition::ptr_t(new Transition("t0"));
 	// input edge from p0 to t0
 	LOG_INFO(logger, "  input edge...");
-	Edge::ptr_t arc0 = Edge::ptr_t(new Edge(wf->getPlace("p0")));
-	t0->addInEdge(arc0);
+	Edge::ptr_t arc0 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, wf->getPlace("p0")));
+	t0->addEdge(arc0);
 	// output edge from t0 to p1
 	LOG_INFO(logger, "  output edge...");
-	Edge::ptr_t arc1 = Edge::ptr_t(new Edge(wf->getPlace("p1")));
-	t0->addOutEdge(arc1);
+	Edge::ptr_t arc1 = Edge::ptr_t(new Edge(Edge::SCOPE_OUTPUT, wf->getPlace("p1")));
+	t0->addEdge(arc1);
 	
 	// add  transition	
 	wf->addTransition(t0);
@@ -148,14 +149,15 @@ void WorkflowTest::testWorkflow()
 	CPPUNIT_ASSERT(test);
 	
 	LOG_INFO(logger, "safe to file ...");
-	wf->saveToFile("/tmp/wf.xml");
+	Libxml2Builder builder;
+	builder.serializeWorkflowToFile(*wf,"/tmp/wf.xml");
 	
 	LOG_INFO(logger, "load from file ...");
-	Workflow* wf2 = new Workflow("/tmp/wf.xml");
+	Workflow::ptr_t wf2 = builder.deserializeWorkflowFromFile("/tmp/wf.xml");
 	LOG_INFO(logger, *wf2);
 
-	delete wf;
-	delete wf2;
+	wf.reset();
+	wf2.reset();
 	
 	LOG_INFO(logger, "============== END WORKFLOW TEST =============");
 	

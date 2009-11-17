@@ -7,6 +7,9 @@
 //gwdl
 #include <gwdl/Libxml2Builder.h>
 #include <gwdl/XMLUtils.h>
+//std
+#include <fstream>
+#include <errno.h>
 
 using namespace std;
 
@@ -129,7 +132,7 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
     // Data::ptr_t _dataP;      -> set from element <data>
     // Properties _properties;  -> set from elements <property>
     // bool _control;           -> set from element <control>
-    // Transition* _p_lock;     -> ignored.
+    // Transition::ptr_t _p_lock;     -> ignored.
 	///////////////////
 	
 	Token::ptr_t tokenP;
@@ -360,39 +363,56 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
     xmlNodePtr textNodeP;
     
     curNodeP = nextElementNode(curNodeP);
-
-    if (checkElementName(curNodeP, "place")) {                             // <place>
-		string id((const char*) xmlGetProp(curNodeP, BAD_CAST "ID"));      // <place ID="">
+    
+    // <place>
+    if (checkElementName(curNodeP, "place")) {
+    	// <place ID="">
+		string id((const char*) xmlGetProp(curNodeP, BAD_CAST "ID"));      
 		placeP = Place::ptr_t(new Place(id));
-		xmlChar* xmlCharP = xmlGetProp(curNodeP, BAD_CAST "capacity");     // <place capacity="">
+		// <place capacity="">
+		xmlChar* xmlCharP = xmlGetProp(curNodeP, BAD_CAST "capacity");     
 		placeP->setCapacity((xmlCharP) ? atoi((const char*) xmlCharP) : Place_DEFAULT_CAPACITY);
 		curNodeP = nextElementNode(curNodeP->children);
-		// extract all property elements
-		Properties::ptr_t propsP = elementsToProperties(curNodeP);         //   <property>
-		if (propsP) placeP->setProperties(propsP);
-		while(curNodeP) {
-		    if (checkElementName(curNodeP, "description")) {               //   <description>
-		    	textNodeP = nextTextNode(curNodeP->children);
-		    	if (textNodeP) {
-		    		placeP->setDescription(string( (const char*) textNodeP->content)); 
-		    	}
-		    } else if (checkElementName(curNodeP, "property")) {           //   (<property>)
-		    	// do nothing, properties have already been extracted before
-		    } else if (checkElementName(curNodeP, "tokenClass")) {         //   <tokenClass>
-				xmlCharP = xmlGetProp(curNodeP, BAD_CAST "type"); //   <tokenClass type="">
-		    	if (xmlCharP) {
-		    		placeP->setTokenType(string((const char*) xmlCharP)); 
-		    	}
-		    } else if (checkElementName(curNodeP, "token")) {              //   <token>
-	    		placeP->addToken(elementToToken(curNodeP));
-		    } else {
-		    	ostringstream oss;
-		    	oss << "Unknown element <" << curNodeP->name << ">";
-		    	LOG_ERROR(_logger, oss.str());
-		    	throw WorkflowFormatException(oss.str()); 
-		    }
-		    // next element
+		
+		//   <description>
+	    if (checkElementName(curNodeP, "description")) {               
+	    	textNodeP = nextTextNode(curNodeP->children);
+	    	if (textNodeP) {
+	    		placeP->setDescription(string( (const char*) textNodeP->content)); 
+	    	}
 			curNodeP = nextElementNode(curNodeP->next);
+	    }
+	    
+		// <property>
+		// extract all property elements
+		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
+		if (propsP) placeP->setProperties(propsP);
+		while(checkElementName(curNodeP, "property")) {           
+			// do nothing, properties have already been extracted before
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+	    
+		//   <tokenClass>
+	    if (checkElementName(curNodeP, "tokenClass")) {       
+	    	//   <tokenClass type="">
+	    	xmlCharP = xmlGetProp(curNodeP, BAD_CAST "type"); 
+	    	if (xmlCharP) {
+	    		placeP->setTokenType(string((const char*) xmlCharP)); 
+	    	}
+			curNodeP = nextElementNode(curNodeP->next);
+	    }
+	    
+	    //   <token>
+	    while(checkElementName(curNodeP, "token")) {              
+	    	placeP->addToken(elementToToken(curNodeP));
+			curNodeP = nextElementNode(curNodeP->next);
+	    }
+
+		if (curNodeP) {
+			ostringstream oss;
+			oss << "Unknown element <" << curNodeP->name << "> as child of <place ID=\"" << id << "\">";
+			LOG_ERROR(_logger, oss.str());
+			throw WorkflowFormatException(oss.str()); 
 		}
     } else {
     	LOG_ERROR(_logger, "Element <place> not found!");
@@ -730,6 +750,475 @@ xmlNodePtr Libxml2Builder::operationToElement(const Operation &operation) const 
 }
 
 //////////////////////////
+// Edge
+//////////////////////////
+//<xs:complexType name="placeRef">
+//    <xs:annotation>
+//        <xs:documentation>
+//Reference to a place within the same GWorkflowDL document.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:attribute name="placeID" use="required" type="xs:string">
+//        <xs:annotation>
+//            <xs:documentation>
+//The attribute "placeRef" denotes a place ID.
+//            </xs:documentation>
+//        </xs:annotation>
+//    </xs:attribute>
+//    <xs:attribute name="edgeExpression" type="xs:string">
+//        <xs:annotation>
+//            <xs:documentation>
+//The attribute edgeExpression is used as value assignement for input and read places and as functional statement for
+//output places using the XPath 1.0 standard.
+//            </xs:documentation>
+//        </xs:annotation>
+//    </xs:attribute>
+//</xs:complexType>
+//////////////////////////
+
+Edge::ptr_t Libxml2Builder::elementToEdge(Workflow::ptr_t wfP, const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	Edge::scope_t scope;
+	if (checkElementName(nodeP, "readPlace")) {
+		scope = Edge::SCOPE_READ;
+	} else if (checkElementName(nodeP, "inputPlace")) {
+		scope = Edge::SCOPE_INPUT;
+	} else if (checkElementName(nodeP, "writePlace")) {
+		scope = Edge::SCOPE_WRITE;
+	} else if (checkElementName(nodeP, "outputPlace")) {
+		scope = Edge::SCOPE_OUTPUT;
+	} else {
+		ostringstream oss;
+		oss << "Invalid name of element \"" << nodeP->name << "\""; 
+		LOG_ERROR(_logger, oss.str());
+		throw WorkflowFormatException(oss.str()); 
+	}
+
+	string placeID((const char*) xmlGetProp(nodeP, BAD_CAST "placeID"));
+	xmlChar* xmlCharP = xmlGetProp(nodeP, BAD_CAST "edgeExpression");
+	string edgeExpression = xmlCharP ? string((const char*) xmlCharP) : string();
+	Place::ptr_t placeP;
+	try {
+		placeP = wfP->getPlace(placeID);
+	} catch (NoSuchWorkflowElement e) {
+		ostringstream oss;
+		oss << "placeID \"" << placeID << "\" defined as edge within a transition is not available in workflow \"" << wfP->getID() << "\"!";
+		LOG_ERROR(_logger, oss.str());
+		throw WorkflowFormatException(oss.str()); 
+	}
+	
+	Edge::ptr_t edgeP = Edge::ptr_t(new Edge(scope, placeP, edgeExpression));
+	return edgeP;
+}
+
+xmlNodePtr Libxml2Builder::edgeToElement(const Edge &edge) const {
+
+	// <readPlace>, <inputPlace>, <writePlace>, <outputPlace>
+	const char* elementName;
+	switch(edge.getScope()) {
+	case(Edge::SCOPE_READ):
+		elementName = "readPlace";
+	break;
+	case(Edge::SCOPE_INPUT):
+		elementName = "inputPlace";
+	break;
+	case(Edge::SCOPE_WRITE):
+		elementName = "writePlace";
+	break;
+	case(Edge::SCOPE_OUTPUT):
+		elementName = "outputPlace";
+	break;
+	}
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST elementName);
+	
+	// <*Place placeID="">
+    xmlNewProp(nodeP, BAD_CAST "placeID", BAD_CAST edge.getPlace()->getID().c_str());
+    
+    // <*Place edgeExpression="">
+    if (edge.getExpression().size() > 0) {
+        xmlNewProp(nodeP, BAD_CAST "edgeExpression", BAD_CAST edge.getExpression().c_str());
+    }
+    
+    return nodeP;
+}
+
+//////////////////////////
+// Transition
+//////////////////////////
+//<xs:element name="transition" minOccurs="0" maxOccurs="unbounded">
+//    <xs:annotation>
+//        <xs:documentation>
+//The ocurrence of a transition alters the state of the Petri net. A transition may be linked
+//to an (external) operation. Petri net arcs are directed edges that are represented by read places, input places,
+//write places and output places.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:sequence>
+//            <xs:element ref="description" minOccurs="0"/>
+//            <xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="readPlace" type="placeRef" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="inputPlace" type="placeRef" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="writePlace" type="placeRef" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="outputPlace" type="placeRef" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element name="condition" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+//                <xs:annotation>
+//                    <xs:documentation>
+//The optional element "condition" specifies a pre condition expression that must evaluate to "true" for a transition to
+//be enabled. The syntax for conditions is XPath 1.0. The context for the evaluation is the contents of the input and
+//read tokens which can be referred to by means of a "$" concatenated with the corresponding edgeExpression (e.g., 
+//"$input".
+//                    </xs:documentation>
+//                </xs:annotation>
+//            </xs:element>
+//            ===> refer to element operation <===
+//        </xs:sequence>
+//        <xs:attribute name="ID" use="required" type="xs:ID"/>
+//    </xs:complexType>
+//</xs:element>
+//////////////////////////
+
+Transition::ptr_t Libxml2Builder::deserializeTransition(Workflow::ptr_t wfP, const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const Transition::ptr_t ret = elementToTransition(wfP, nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+string Libxml2Builder::serializeTransition(const Transition &transition) const {
+	xmlNodePtr nodeP = transitionToElement(transition);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// std::string _id;                      -> from attribute <transition ID="">
+	// TransitionStatus _status;             -> ignored.
+    // std::string _description;             -> from child element <description>
+    // Properties::ptr_t _propertiesP;       -> from child elements <property>
+    // std::vector<Edge::ptr_t> _readEdges;  -> from child elements <readPlace>
+    // std::vector<Edge::ptr_t> _inEdges;    -> from child elements <inputPlace>
+    // std::vector<Edge::ptr_t> _writeEdges; -> from child elements <writePlace>
+    // std::vector<Edge::ptr_t> _outEdges;   -> from child elements <outputPlace>
+    // std::vector<std::string> _conditions; -> from child elements <condition>
+    // Operation::ptr_t _operationP;         -> from child element <operation>
+	///////////////////
+	
+	Transition::ptr_t transitionP;
+    xmlNodePtr curNodeP = nodeP;
+    xmlNodePtr textNodeP;
+    
+    curNodeP = nextElementNode(curNodeP);
+    // <transition>
+    if (checkElementName(curNodeP, "transition")) {                        
+    	// <transition ID="">
+		string id((const char*) xmlGetProp(curNodeP, BAD_CAST "ID"));      
+		transitionP = Transition::ptr_t(Transition::ptr_t(new Transition(id)));
+		// children
+		curNodeP = nextElementNode(curNodeP->children);
+		// <description>
+		if (checkElementName(curNodeP, "description")) {               
+			textNodeP = nextTextNode(curNodeP->children);
+			if (textNodeP) {
+				transitionP->setDescription(string( (const char*) textNodeP->content)); 
+			}
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <property>
+		// extract all property elements
+		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
+		if (propsP) transitionP->setProperties(propsP);
+		while(checkElementName(curNodeP, "property")) {           
+			// do nothing, properties have already been extracted before
+			curNodeP = nextElementNode(curNodeP->next);
+		} 
+		// <readPlace>
+		while(checkElementName(curNodeP, "readPlace")) {
+			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <inputPlace>
+		while(checkElementName(curNodeP, "inputPlace")) {
+			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <writePlace>
+		while(checkElementName(curNodeP, "writePlace")) {
+			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <outputPlace>
+		while(checkElementName(curNodeP, "outputPlace")) {
+			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <condition>
+		while(checkElementName(curNodeP, "condition")) {
+			textNodeP = nextTextNode(curNodeP->children);
+			if (textNodeP) {
+				transitionP->addCondition(string( (const char*) textNodeP->content)); 
+			}
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <operation>
+		if(checkElementName(curNodeP, "operation")) {
+			transitionP->setOperation(elementToOperation(curNodeP));
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		
+		if (curNodeP) {
+			ostringstream oss;
+			oss << "Unknown element <" << curNodeP->name << "> as child of <transition ID=\"" << id << "\">";
+			LOG_ERROR(_logger, oss.str());
+			throw WorkflowFormatException(oss.str()); 
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <transition> not found!");
+    	throw WorkflowFormatException("Element <transition> not found!"); 
+    }
+    
+	return transitionP;
+}
+
+xmlNodePtr Libxml2Builder::transitionToElement(const Transition &transition) const {
+	// <transition>
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "transition");
+	xmlNodePtr curNodeP;
+	
+	// <transition ID="">
+    xmlNewProp(nodeP, BAD_CAST "ID", BAD_CAST transition.getID().c_str());
+
+    //   <description>
+    if (transition.getDescription().size()>0) {
+		xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "description",BAD_CAST transition.getDescription().c_str());
+    }
+	
+    //   <property>
+	Properties::ptr_t propsP = transition.readProperties();
+	if (propsP) {
+		curNodeP = propertiesToElements(*propsP);
+		if (curNodeP) {
+			xmlAddChildList(nodeP, curNodeP); 
+		}
+	}
+
+	// <readPlace>
+	std::vector<Edge::ptr_t> edges = transition.getReadEdges();
+	for (size_t i = 0; i < edges.size(); i++) {
+		xmlAddChild(nodeP, edgeToElement(*edges[i]));
+	}
+
+	// <inputPlace>
+	edges = transition.getInEdges();
+	for (size_t i = 0; i < edges.size(); i++) {
+		xmlAddChild(nodeP, edgeToElement(*edges[i]));
+	}
+
+	// <writePlace>
+	edges = transition.getWriteEdges();
+	for (size_t i = 0; i < edges.size(); i++) {
+		xmlAddChild(nodeP, edgeToElement(*edges[i]));
+	}
+
+	// <outputPlace>
+	edges = transition.getOutEdges();
+	for (size_t i = 0; i < edges.size(); i++) {
+		xmlAddChild(nodeP, edgeToElement(*edges[i]));
+	}
+	
+	// <condition>
+	std::vector<std::string> conditions = transition.getConditions();
+	for (size_t i = 0; i < conditions.size(); i++) {
+		xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "condition",BAD_CAST conditions[i].c_str());		
+	}
+
+	// <operation>
+	if (transition.readOperation()) {
+		xmlAddChild(nodeP, operationToElement(*transition.readOperation()));
+	}
+	
+	return nodeP;
+}
+
+//////////////////////////
+// Workflow
+//////////////////////////
+//<xs:element name="workflow">
+//    <xs:annotation>
+//        <xs:documentation>
+//Representation of a workflow by means of a High-level Petri net, mainly composed of places and transitions. The
+//"workflow" element is the root element of each GWorkflowDL document. The arcs are represented as child elements of
+//transitions, the tokens are child elements of places.
+//        </xs:documentation>
+//    </xs:annotation>
+//    <xs:complexType>
+//        <xs:sequence>
+//            <xs:element ref="owl" minOccurs="0" maxOccurs="unbounded"/>
+//            <xs:element ref="description" minOccurs="0"/>
+//            ===> refer to <property> <===
+//            ===> refer to <place> <===
+//            ===> refer to <transition> <===
+//        </xs:sequence>
+//        <xs:attribute name="ID" use="required" type="xs:ID"/>
+//    </xs:complexType>
+//</xs:element>
+//////////////////////////
+
+Workflow::ptr_t Libxml2Builder::deserializeWorkflow(const string &xmlstring) const throw (WorkflowFormatException) {
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const Workflow::ptr_t ret = elementToWorkflow(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
+}
+
+/**
+ * Construct workflow from file.
+ * @param filename The filename of the GWorkflowDL file including its path. 
+ */
+Workflow::ptr_t Libxml2Builder::deserializeWorkflowFromFile(const std::string& filename) const throw (WorkflowFormatException) {
+	// read file
+	ifstream file(filename.c_str());
+	ostringstream workflowS;
+	if (file.is_open()) {
+		char c;
+		while (file.get(c)) {
+			workflowS << c;
+		}
+		file.close();
+	} else {
+		ostringstream message; 
+		message << "Unable to open file " << filename << ": " << strerror(errno);
+		LOG_ERROR(logger_t(getLogger("gwdl")), message);
+		throw WorkflowFormatException(message.str());
+	}
+	
+	return deserializeWorkflow(workflowS.str());
+}
+
+string Libxml2Builder::serializeWorkflow(const Workflow &workflow) const {
+	xmlNodePtr nodeP = workflowToElement(workflow);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+void Libxml2Builder::serializeWorkflowToFile(const Workflow &workflow, const string& filename) const {
+	// write file
+	ofstream file(filename.c_str());
+	if (file.is_open()) {
+		file << serializeWorkflow(workflow);
+		file.close();
+	} else {
+		LOG_ERROR(logger_t(getLogger("gwdl")), "Unable to open file " << filename << ": " << strerror(errno));
+	}
+}
+
+Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// std::string _id;                                     -> from attribute <workflow ID="">
+	// std::string _description;                            -> from child element <description>
+	// Properties::ptr_t _propertiesP;                      -> from child elements <property>
+	// std::map<std::string, Place::ptr_t> _places;         -> from child elements <place>
+	// std::vector<Transition::ptr_t> _transitions;         -> from child elements <transition>
+	// std::vector<Transition::ptr_t> _enabledTransitions;  -> calculated on demand.
+	///////////////////
+	
+	Workflow::ptr_t workflowP;
+    xmlNodePtr curNodeP = nodeP;
+    xmlNodePtr textNodeP;
+    
+    curNodeP = nextElementNode(curNodeP);
+    
+    // <workflow>
+    if (checkElementName(curNodeP, "workflow")) {
+    	// <workflow ID="">
+		string id((const char*) xmlGetProp(curNodeP, BAD_CAST "ID"));      
+		workflowP = Workflow::ptr_t(new Workflow(id));
+		// children
+		curNodeP = nextElementNode(curNodeP->children);
+		// <description>
+		if (checkElementName(curNodeP, "description")) {               
+			textNodeP = nextTextNode(curNodeP->children);
+			if (textNodeP) {
+				workflowP->setDescription(string( (const char*) textNodeP->content)); 
+			}
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		// <property>
+		// extract all property elements
+		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
+		if (propsP) workflowP->setProperties(propsP);
+		while(checkElementName(curNodeP, "property")) {           
+			// do nothing, properties have already been extracted before
+			curNodeP = nextElementNode(curNodeP->next);
+		} 
+		
+		// <place>
+		while(checkElementName(curNodeP, "place")) {
+			workflowP->addPlace(elementToPlace(curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		
+		// <transition>
+		while(checkElementName(curNodeP, "transition")) {
+			workflowP->addTransition(elementToTransition(workflowP,curNodeP)); 
+			curNodeP = nextElementNode(curNodeP->next);
+		}
+		
+		if (curNodeP) {
+			ostringstream oss;
+			oss << "Unknown element <" << curNodeP->name << "> as child of <workflow ID=\"" << id << "\">";
+			LOG_ERROR(_logger, oss.str());
+			throw WorkflowFormatException(oss.str()); 
+		}
+    } else {
+    	LOG_ERROR(_logger, "Element <workflow> not found!");
+    	throw WorkflowFormatException("Element <workflow> not found!"); 
+    }
+    
+	return workflowP;
+}
+
+xmlNodePtr Libxml2Builder::workflowToElement(const Workflow &workflow) const {
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "workflow");
+	xmlNodePtr curNodeP;
+	
+	// <workflow ID="">
+    xmlNewProp(nodeP, BAD_CAST "ID", BAD_CAST workflow.getID().c_str());
+    
+    //   <description>
+    if (workflow.getDescription().size()>0) {
+		xmlNewChild(nodeP,_nsGworkflowdlP, BAD_CAST "description",BAD_CAST workflow.getDescription().c_str());
+    }
+
+    //   <property>
+	Properties::ptr_t propsP = workflow.readProperties();
+	if (propsP) {
+		curNodeP = propertiesToElements(*propsP);
+		if (curNodeP) {
+			xmlAddChildList(nodeP, curNodeP); 
+		}
+	}
+	
+	//  <place>
+	std::map<std::string, Place::ptr_t> places = workflow.readPlaces();
+	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it) {
+		xmlAddChild(nodeP, placeToElement(*(it->second)));
+	}
+	
+	// <transition>
+	std::vector<Transition::ptr_t> transitions = workflow.readTransitions();
+	for (size_t i = 0; i < transitions.size(); i++) {
+		xmlAddChild(nodeP, transitionToElement(*transitions[i]));
+	}
+
+	return nodeP;
+}
+
+//////////////////////////
 // private helper methods
 //////////////////////////
 
@@ -804,5 +1293,19 @@ ostream& operator<<(ostream &out, gwdl::OperationClass &oclass) {
 ostream& operator<<(ostream &out, gwdl::Operation &oper) {
 	gwdl::Libxml2Builder builder;
 	out << builder.serializeOperation(oper);
+	return out;
+}
+
+// Transition
+ostream& operator<<(ostream &out, gwdl::Transition &transition) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeTransition(transition);
+	return out;
+}
+
+// Workflow
+ostream& operator<<(ostream &out, gwdl::Workflow &workflow) {
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeWorkflow(workflow);
 	return out;
 }

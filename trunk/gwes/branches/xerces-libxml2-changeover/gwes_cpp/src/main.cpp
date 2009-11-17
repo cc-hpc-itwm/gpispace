@@ -8,6 +8,8 @@
 #include <gwes/GWES.h>
 #include <gwes/WorkflowObserver.h>
 #include <gwes/Channel.h>
+//gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
@@ -72,11 +74,12 @@ int main(int argc, char* argv[]) {
 	try {
 		GWES gwes;
 		LOG_INFO(logger, "### BEGIN EXECUTION " << workflowfn);
-		Workflow* wfP = new Workflow(workflowfn);
+		Libxml2Builder builder;
+		Workflow::ptr_t wfP = builder.deserializeWorkflowFromFile(workflowfn);
 
 		// initiate workflow
 		LOG_DEBUG(logger, "initiating workflow ...");
-		string workflowId = gwes.initiate(*wfP, getUserName());
+		string workflowId = gwes.initiate(wfP, getUserName());
 
 		// register channel with source observer
 		WorkflowObserver* observerP = new WorkflowObserver();
@@ -97,7 +100,7 @@ int main(int argc, char* argv[]) {
                 // gwes is deleted, so delete the channel and the obersever and the workflow
                 delete channelP;
                 delete observerP;
-                delete wfP;
+                wfP.reset();
 	}
 	catch(WorkflowFormatException e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);

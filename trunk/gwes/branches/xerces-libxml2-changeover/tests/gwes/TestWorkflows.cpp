@@ -37,11 +37,11 @@ TestWorkflows::~TestWorkflows()
  */
 void TestWorkflows::testWorkflowSimpleGwdl() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("t") == 0 );
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT( workflow->getProperties()->get("occurrence.sequence").compare("t") == 0 );
 }
 
 /**
@@ -49,35 +49,35 @@ void TestWorkflows::testWorkflowSimpleGwdl()
  */
 void TestWorkflows::testWorkflowSplitToken() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
 
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/split-token.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("joinSplitTokens") == 0 );
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/split-token.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT( workflow->getProperties()->get("occurrence.sequence").compare("joinSplitTokens") == 0 );
 
-  gwdl::Place::ptr_t placeP = workflow.getPlace("value"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  gwdl::Token::ptr_t tokenP = placeP->getTokens().front();
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  // ToDo: improve pretty printing (too much spaces).
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <value>\n          <x>15</x>\n          <y>23</y>\n        </value>\n  <value>\n          <x>16</x>\n          <y>24</y>\n        </value>\n</data>"),
-		  tokenP->getData()->getContent());
+	gwdl::Place::ptr_t placeP = workflow->getPlace("value"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	gwdl::Token::ptr_t tokenP = placeP->getTokens().front();
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	// ToDo: improve pretty printing (too much spaces).
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <value>\n          <x>15</x>\n          <y>23</y>\n        </value>\n  <value>\n          <x>16</x>\n          <y>24</y>\n        </value>\n</data>"),
+			tokenP->getData()->getContent());
 
-  placeP = workflow.getPlace("x"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  tokenP = placeP->getTokens().front();
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>15</x>\n  <x>16</x>\n</data>"), tokenP->getData()->getContent());
+	placeP = workflow->getPlace("x"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	tokenP = placeP->getTokens().front();
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>15</x>\n  <x>16</x>\n</data>"), tokenP->getData()->getContent());
 
-  placeP = workflow.getPlace("y"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  tokenP = placeP->getTokens().front();
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <y>23</y>\n  <y>24</y>\n</data>"), tokenP->getData()->getContent());
+	placeP = workflow->getPlace("y"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	tokenP = placeP->getTokens().front();
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <y>23</y>\n  <y>24</y>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -85,17 +85,17 @@ void TestWorkflows::testWorkflowSplitToken()
  */
 void TestWorkflows::testWorkflowExclusiveChoice() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/exclusive-choice.gwdl"), m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("B") == 0 );
-  CPPUNIT_ASSERT(workflow.getPlace("end_A")->getTokenNumber() == 0);
-  Place::ptr_t placeP = workflow.getPlace("end_B"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  Token::ptr_t tokenP = placeP->getTokens().front();
-  CPPUNIT_ASSERT(!tokenP->isData());
-  CPPUNIT_ASSERT(tokenP->getControl());
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/exclusive-choice.gwdl"), m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT( workflow->getProperties()->get("occurrence.sequence").compare("B") == 0 );
+	CPPUNIT_ASSERT(workflow->getPlace("end_A")->getTokenNumber() == 0);
+	Place::ptr_t placeP = workflow->getPlace("end_B"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	Token::ptr_t tokenP = placeP->getTokens().front();
+	CPPUNIT_ASSERT(!tokenP->isData());
+	CPPUNIT_ASSERT(tokenP->getControl());
 }
 
 /**
@@ -103,29 +103,29 @@ void TestWorkflows::testWorkflowExclusiveChoice()
  */
 void TestWorkflows::testWorkflowConditionTest() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/condition-test.gwdl"), m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("B A A") == 0 );
-		
-  Place::ptr_t placeP = workflow.getPlace("end_A"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 2);
-  Token::ptr_t tokenP = placeP->getTokens()[0];
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>6</x>\n</data>"), tokenP->getData()->getContent());
-  tokenP = placeP->getTokens()[1];
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>7</x>\n</data>") , tokenP->getData()->getContent());
-		
-  placeP = workflow.getPlace("end_B"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  tokenP = placeP->getTokens()[0];
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>5</x>\n</data>"), tokenP->getData()->getContent());
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/condition-test.gwdl"), m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT( workflow->getProperties()->get("occurrence.sequence").compare("B A A") == 0 );
+
+	Place::ptr_t placeP = workflow->getPlace("end_A"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 2);
+	Token::ptr_t tokenP = placeP->getTokens()[0];
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>6</x>\n</data>"), tokenP->getData()->getContent());
+	tokenP = placeP->getTokens()[1];
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>7</x>\n</data>") , tokenP->getData()->getContent());
+
+	placeP = workflow->getPlace("end_B"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	tokenP = placeP->getTokens()[0];
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>5</x>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -133,17 +133,17 @@ void TestWorkflows::testWorkflowConditionTest()
  */
 void TestWorkflows::testWorkflowControlLoop() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/control-loop.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
-  Place::ptr_t placeP = workflow.getPlace("end"); 
-  CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  Token::ptr_t tokenP = placeP->getTokens()[0];
-  CPPUNIT_ASSERT(tokenP->isData());
-  LOG_INFO(logger, *(tokenP->getData()));
-  CPPUNIT_ASSERT_EQUAL(string("<data>\n  <a>10</a>\n</data>"), tokenP->getData()->getContent());
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/control-loop.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT( workflow->getProperties()->get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
+	Place::ptr_t placeP = workflow->getPlace("end"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	Token::ptr_t tokenP = placeP->getTokens()[0];
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<data>\n  <a>10</a>\n</data>"), tokenP->getData()->getContent());
 }
 
 /**
@@ -152,11 +152,11 @@ void TestWorkflows::testWorkflowControlLoop()
  */
 void TestWorkflows::testWorkflowConcatenateIt() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(workflow.getProperties().get("status")=="COMPLETED");
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(workflow->getProperties()->get("status")=="COMPLETED");
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 }
 
 /**
@@ -165,10 +165,10 @@ void TestWorkflows::testWorkflowConcatenateIt()
  */
 void TestWorkflows::testWorkflowConcatenateItFail() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt_fail.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="TERMINATED");
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt_fail.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="TERMINATED");
 }
 
 /**
@@ -176,50 +176,52 @@ void TestWorkflows::testWorkflowConcatenateItFail()
  */
 void TestWorkflows::testWorkflowPstm0() 
 {
-  logger_t logger(getLogger("gwes"));
-  Workflow workflow;
-  CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
-  CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-  CPPUNIT_ASSERT(workflow.getProperties().get("occurrence.sequence").compare("preStackTimeMigration") == 0);
+	logger_t logger(getLogger("gwes"));
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT(workflow->getProperties()->get("occurrence.sequence").compare("preStackTimeMigration") == 0);
 }
 
 ////////////////////////////////////////////////
 // helper methods
 ////////////////////////////////////////////////
 
-Workflow& TestWorkflows::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
-  logger_t logger(getLogger("gwes"));
+Workflow::ptr_t TestWorkflows::_testWorkflow(string workflowfn, gwes::GWES &gwes) {
+	logger_t logger(getLogger("gwes"));
 
-  LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
+	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 
-  try {
-    Workflow* wfP = new Workflow(workflowfn);
+	try {
 
-    // initiate workflow
-    LOG_INFO(logger, "initiating workflow ...");
-    string workflowId = gwes.initiate(*wfP,"test");
+		Libxml2Builder builder;
+		Workflow::ptr_t wfP = builder.deserializeWorkflowFromFile(workflowfn);
 
-    // register channel with source observer
-    WorkflowObserver* observerP = new WorkflowObserver();
-    Channel* channelP = new Channel(observerP);
-    gwes.connect(channelP, workflowId);
+		// initiate workflow
+		LOG_INFO(logger, "initiating workflow ...");
+		string workflowId = gwes.initiate(wfP,"test");
 
-    // start workflow
-    gwes.start(workflowId);
+		// register channel with source observer
+		WorkflowObserver* observerP = new WorkflowObserver();
+		Channel* channelP = new Channel(observerP);
+		gwes.connect(channelP, workflowId);
 
-    // wait for workflow to end
-    WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
-    _monitorWorkflow(WorkflowHandler::STATUS_INITIATED, wfhP);
-    
-    // print workflow
-    LOG_DEBUG(logger, *wfP);
-    LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
-    return *wfP;
-  } catch (WorkflowFormatException e) {
-    LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
-	throw;
-  }
- 
+		// start workflow
+		gwes.start(workflowId);
+
+		// wait for workflow to end
+		WorkflowHandler* wfhP = gwes.getWorkflowHandlerTable().get(workflowId);
+		_monitorWorkflow(WorkflowHandler::STATUS_INITIATED, wfhP);
+
+		// print workflow
+		LOG_DEBUG(logger, *wfP);
+		LOG_INFO(logger, "============== END EXECUTION " << workflowfn << "==============");
+		return wfP;
+	} catch (WorkflowFormatException e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+		throw;
+	}
+
 }
 
 WorkflowHandler::status_t TestWorkflows::_monitorWorkflow(WorkflowHandler::status_t oldStatus, WorkflowHandler* wfhP) {

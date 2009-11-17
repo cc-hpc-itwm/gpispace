@@ -7,11 +7,10 @@
 #ifndef TRANSITION_H_
 #define TRANSITION_H_
 //gwdl
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/Edge.h>
 #include <gwdl/Operation.h>
 #include <gwdl/Properties.h>
-//xerces-c
-#include <xercesc/dom/DOM.hpp>
 //std
 #include <vector>
 #include <string>
@@ -30,7 +29,7 @@ class Workflow;
  * <p>Code Example:
  * <pre>
  * // create empty transition
- * Transition *t0 = new Transition("");
+ * Transition *t0 = Transition::ptr_t(new Transition(""));
  * cout << *t0 << endl;
  *   
  * // set description
@@ -41,15 +40,15 @@ class Workflow;
  * Place *p0 = new Place("");
  * Place *p1 = new Place("");
  * Place *p2 = new Place("");
- * Edge *e0 = new Edge(p0,"input0");
- * Edge *e1 = new Edge(p1,"input1");
- * Edge *e2 = new Edge(p2,"output");
- * t0->addReadEdge(e0);
- * t0->addInEdge(e1);
- * t0->addOutEdge(e2);
+ * Edge *e0 = new Edge(Edge::SCOPE_INPUT, p0,"input0");
+ * Edge *e1 = new Edge(Edge::SCOPE_INPUT, p1,"input1");
+ * Edge *e2 = new Edge(Edge::SCOPE_OUTPUT, p2,"output");
+ * t0->addEdge(e0);
+ * t0->addEdge(e1);
+ * t0->addEdge(e2);
  *
  * // add a property  
- * t0->getProperties().put("key1","value1");
+ * t0->getProperties()->put("key1","value1");
  *
  * // add a condition  
  * t0->addCondition("true");
@@ -103,6 +102,8 @@ class Workflow;
 class Transition
 {
 public:
+	
+    typedef gwdl::shared_ptr<Transition> ptr_t;
 
     enum TransitionStatus
     {
@@ -111,16 +112,16 @@ public:
 
 private:
 
-	std::string id;
-	TransitionStatus status;
-    std::string description;
-    Properties properties;
-    Operation::ptr_t operationP;
-    std::vector<std::string> conditions;
-    std::vector<Edge::ptr_t> readEdges;
-    std::vector<Edge::ptr_t> inEdges;
-    std::vector<Edge::ptr_t> writeEdges;
-    std::vector<Edge::ptr_t> outEdges;
+	std::string _id;
+	TransitionStatus _status;
+    std::string _description;
+    Properties::ptr_t _propertiesP;
+    Operation::ptr_t _operationP;
+    std::vector<std::string> _conditions;
+    std::vector<Edge::ptr_t> _readEdges;
+    std::vector<Edge::ptr_t> _inEdges;
+    std::vector<Edge::ptr_t> _writeEdges;
+    std::vector<Edge::ptr_t> _outEdges;
 	
 	std::string generateID() const;
 	
@@ -134,182 +135,121 @@ public:
 	explicit Transition(const std::string& id);
 	
 	/**
-	 * Construct transition from DOMElement.
-	 */
-	explicit Transition(Workflow* wf, XERCES_CPP_NAMESPACE::DOMElement* element);
-
-	/**
 	 * Destructor.
 	 */
 	virtual ~Transition();
-	
-	/**
-	 * Convert this into a DOMElement.
-	 * @param doc The master document this element should belong to.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
     /**
      * get transition ID.
      * @return transition ID
      */
-    const std::string& getID() const {return id;}
+    const std::string& getID() const {return _id;}
 
     /**
      * set transition description.
      * @param _description AnalysisTransition Description
      */
-    void setDescription(const std::string& _description){description = _description;}
+    void setDescription(const std::string& description){_description = description;}
 
     /**
      * get transition description.
      * before setDescription getDescription returns DEFAULT_DESCRIPTION
      * @return description
      */
-    const std::string& getDescription() const {return description;}
+    const std::string& getDescription() const {return _description;}
 
 	/**
 	 * Set all the properties of this transition.
 	 * @param props The properties object.
 	 */
-    void setProperties(Properties& _properties) {properties = _properties;}
+    void setProperties(Properties::ptr_t propertiesP) {_propertiesP = propertiesP;}
 
 	/**
-	 * Get a reference to the properties of this transition.
-	 * @return A reference to the properties.
+	 * Get a shared pointer to the properties of this transition.
+	 * @return A shared pointer to the properties.
 	 */
-    Properties& getProperties() {return properties;}
+    Properties::ptr_t getProperties() {return _propertiesP;}
+
+	/**
+	 * Get a read-only shared pointer to the properties of this transition.
+	 * @return A read-only shared pointer to the properties.
+	 */
+    const Properties::ptr_t readProperties() const {return _propertiesP;}
 
     /**
-     * add an read Edge.
-     * @param edge read Edge to be added
+     * add an Edge.
+     * @param edge Edge to be added
      */
-    void addReadEdge(Edge::ptr_t edgeP) {readEdges.push_back(edgeP);}
+    void addEdge(Edge::ptr_t edgeP);
 
-    void removeReadEdge(int i)
-    {
-    	(*(readEdges.begin()+i)).reset();
-    	readEdges.erase(readEdges.begin()+i);
-    }
+    void removeReadEdge(int i) { (*(_readEdges.begin()+i)).reset();	_readEdges.erase(_readEdges.begin()+i);}
 
-    /**
-     * add an input Edge.
-     * @param edge input Edge to be added
-     */
-    void addInEdge(Edge::ptr_t edgeP) {inEdges.push_back(edgeP);}
+    void removeInEdge(int i) {(*(_inEdges.begin()+i)).reset(); _inEdges.erase(_inEdges.begin()+i);}
 
-    void removeInEdge(int i) {(*(inEdges.begin()+i)).reset(); inEdges.erase(inEdges.begin()+i);}
+    void removeWriteEdge(int i) { (*(_writeEdges.begin()+i)).reset(); _writeEdges.erase(_writeEdges.begin()+i);}
 
-    /**
-     * add an write Edge.
-     * @param edge write Edge to be added
-     */
-    void addWriteEdge(Edge::ptr_t edgeP) {writeEdges.push_back(edgeP);}
-
-    void removeWriteEdge(int i)
-    {
-    	(*(writeEdges.begin()+i)).reset();
-    	writeEdges.erase(writeEdges.begin()+i);
-    }
-
-    /**
-     * add an output Edge.
-     * @param edge output Edge to be added
-     */
-    void addOutEdge(Edge::ptr_t edgeP) {outEdges.push_back(edgeP);}
-
-    void removeOutEdge(int i) {(*(outEdges.begin()+i)).reset(); outEdges.erase(inEdges.begin()+i);}
-
-    /**
-     * clear read Edges and add array's Edges to read Edges.
-     * @param edges array of Edges to set
-     */
-    void setReadEdges(std::vector<Edge::ptr_t> edges){
-    	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) (*it).reset();
-    	readEdges.clear();
-    	readEdges.insert(readEdges.end(), edges.begin(), edges.end());}
+    void removeOutEdge(int i) {(*(_outEdges.begin()+i)).reset(); _outEdges.erase(_inEdges.begin()+i);}
 
     /**
      * get array of read Edges.
      * @return read Edges
      */
-    const std::vector<Edge::ptr_t>& getReadEdges() const {return readEdges;}
-
-    /**
-     * clear input Edges and add array's Edges to input Edges.
-     * @param edges array of Edges to set
-     */
-    void setInEdges(std::vector<Edge::ptr_t> edges){
-    	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) (*it).reset();
-    	inEdges.clear();
-    	inEdges.insert(inEdges.end(), edges.begin(), edges.end());}
+    const std::vector<Edge::ptr_t>& getReadEdges() const {return _readEdges;}
 
     /**
      * get array of input Edges.
      * @return input Edges
      */
-    std::vector<Edge::ptr_t>& getInEdges() {return inEdges;}
-
-    /**
-     * clear write Edges and add array's Edges to write Edges.
-     * @param edges array of Edges to set
-     */
-    void setWriteEdges(std::vector<Edge::ptr_t> edges){
-    	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) (*it).reset();
-    	writeEdges.clear();
-    	writeEdges.insert(writeEdges.end(), edges.begin(), edges.end());}
+    const std::vector<Edge::ptr_t>& getInEdges() const {return _inEdges;}
 
     /**
      * get array of write Edges.
      * @return write Edges
      */
-    const std::vector<Edge::ptr_t>& getWriteEdges() const {return writeEdges;}
-
-    /**
-     * clear output Edges and add array's Edges to output Edges.
-     * @param edges array of output Edges to be set
-     */
-    void setOutEdges(std::vector<Edge::ptr_t> edges) {
-    	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) (*it).reset();
-    	outEdges.clear();
-    	outEdges.insert(outEdges.end(), edges.begin(), edges.end());}
+    const std::vector<Edge::ptr_t>& getWriteEdges() const {return _writeEdges;}
 
     /**
      * get array of output Edges.
      * @return output edges
      */
-    const std::vector<Edge::ptr_t>& getOutEdges() const {return outEdges;}
+    const std::vector<Edge::ptr_t>& getOutEdges() const {return _outEdges;}
 
     /**
      * set transition's Operation.
      * (allocated operation is deleted)
      * @param _operation Operation to be set
      */
-    void setOperation(Operation::ptr_t p_operation) {operationP = p_operation;}
+    void setOperation(Operation::ptr_t operationP) {_operationP = operationP;}
 
     /**
      * get Transitions Operation.
+     * You may use this operation to modify the operation object.
      * @return operation Operation of the transition
      */
-    Operation::ptr_t getOperation() { return operationP;}
+    Operation::ptr_t getOperation() { return _operationP;}
+
+    /**
+     * get a read-only shared pointer to transitions Operation.
+     * @return operation Operation of the transition
+     */
+    const Operation::ptr_t readOperation() const { return _operationP;}
 
     /**
      * set transition's condition.
      * @param _conditions condition to be set
      */
-    void setConditions(std::vector<std::string> _conditions) {conditions.clear();
-    	conditions.insert(conditions.end(), _conditions.begin(), _conditions.end());}
+    void setConditions(std::vector<std::string> conditions) {_conditions.clear();
+    	_conditions.insert(_conditions.end(), conditions.begin(), conditions.end());}
 
-    void addCondition(std::string condition) {conditions.push_back(condition);}
+    void addCondition(std::string condition) {_conditions.push_back(condition);}
 
-    void removeCondition(int i) {conditions.erase(conditions.begin()+i);}
+    void removeCondition(int i) {_conditions.erase(_conditions.begin()+i);}
 
     /**
      * get transition's condition.
      * @return condition condition of the transition
      */
-    const std::vector<std::string>& getConditions() const {return conditions;}
+    const std::vector<std::string>& getConditions() const {return _conditions;}
 
     // advanced methods that make life easier
 
@@ -317,14 +257,14 @@ public:
      * set transition's status.
      * @param _status transition status
      */
-    void setStatus(const TransitionStatus& _status) {status = _status;}
+    void setStatus(const TransitionStatus& status) {_status = status;}
 
     /**
      * get status of the transition.
      * before setStatus getStatus returns DEFAULT_STATUS
      * @return status of Transition
      */
-    const TransitionStatus& getStatus() const {return status;}
+    const TransitionStatus& getStatus() const {return _status;}
 
     /**
      * remove read edge by place ID.
@@ -332,8 +272,8 @@ public:
      */
     void removeReadEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){(*it).reset(); readEdges.erase(it); break;}
+      for(ITR_Edges it=_readEdges.begin(); it!=_readEdges.end(); ++it)
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); _readEdges.erase(it); break;}
     }
 
     /**
@@ -342,8 +282,8 @@ public:
      */
     void removeInEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){(*it).reset(); inEdges.erase(it); break;}
+      for(ITR_Edges it=_inEdges.begin(); it!=_inEdges.end(); ++it)
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); _inEdges.erase(it); break;}
     }
 
     /**
@@ -352,8 +292,8 @@ public:
      */
     void removeWriteEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){(*it).reset(); writeEdges.erase(it); break;}
+      for(ITR_Edges it=_writeEdges.begin(); it!=_writeEdges.end(); ++it)
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); _writeEdges.erase(it); break;}
     }
 
     /**
@@ -362,8 +302,8 @@ public:
      */
     void removeOutEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){(*it).reset(); outEdges.erase(it); break;}
+      for(ITR_Edges it=_outEdges.begin(); it!=_outEdges.end(); ++it)
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); _outEdges.erase(it); break;}
     }
 
     /**
@@ -374,7 +314,7 @@ public:
      */
     Edge::ptr_t getReadEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
+      for(ITR_Edges it=_readEdges.begin(); it!=_readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
       return Edge::ptr_t();
     }
@@ -387,7 +327,7 @@ public:
      */
     Edge::ptr_t getInEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
+      for(ITR_Edges it=_inEdges.begin(); it!=_inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
       return Edge::ptr_t();
     }
@@ -400,7 +340,7 @@ public:
      */
     Edge::ptr_t getWriteEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
+      for(ITR_Edges it=_writeEdges.begin(); it!=_writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
       return Edge::ptr_t();
     }
@@ -413,7 +353,7 @@ public:
      */
     Edge::ptr_t getOutEdge(const std::string& placeID)
     {
-      for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
+      for(ITR_Edges it=_outEdges.begin(); it!=_outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
       return Edge::ptr_t();
     }
@@ -426,10 +366,8 @@ public:
      */
     bool isEnabled();
     
-};
+}; // end class Transition
 
-}
-
-std::ostream& operator<< (std::ostream &out, gwdl::Transition &trans);
+} // end namespace gwdl
 
 #endif /*TRANSITION_H_*/

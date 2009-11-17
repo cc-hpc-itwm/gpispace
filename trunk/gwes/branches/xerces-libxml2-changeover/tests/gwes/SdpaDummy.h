@@ -39,7 +39,7 @@ public:
 	virtual void workflowCanceled(const gwes::workflow_id_t &workflowId) throw (NoSuchWorkflow);
 	
 	// helper method
-	gwes::workflow_id_t submitWorkflow(gwes::workflow_t &workflow);
+	gwes::workflow_id_t submitWorkflow(gwes::workflow_t::ptr_t workflowP);
 	ogsa_bes_status_t getWorkflowStatus(gwes::workflow_id_t workflowId);
 
 private:

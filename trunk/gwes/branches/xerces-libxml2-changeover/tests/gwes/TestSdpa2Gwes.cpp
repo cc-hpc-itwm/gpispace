@@ -10,6 +10,7 @@
 #include "TestGWES.h"
 // gwdl
 #include <gwdl/Workflow.h>
+#include <gwdl/Libxml2Builder.h>
 // gwes
 #include <gwes/Utils.h>
 #include <gwes/Types.h>
@@ -37,11 +38,12 @@ void Sdpa2GwesAPITest::testWorkflowWithSdpaActivity() {
 	// create workflow_t object from file
 	string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple-sdpa-test.gwdl"); 
 	LOG_INFO(log, "reading workflow '"+fn+"'...");
-	workflow_t wf = (Workflow) fn;
-	CPPUNIT_ASSERT(wf.getEnabledTransitions().size() == 1);
+	Libxml2Builder builder;
+	workflow_t::ptr_t wfP = builder.deserializeWorkflowFromFile(fn);
+	CPPUNIT_ASSERT(wfP->getEnabledTransitions().size() == 1);
 			
 	// start workflow
-	workflow_id_t wfId = sdpa.submitWorkflow(wf);
+	workflow_id_t wfId = sdpa.submitWorkflow(wfP);
 	
 	// poll for completion of workflow
 	SdpaDummy::ogsa_bes_status_t status = sdpa.getWorkflowStatus(wfId);
@@ -52,10 +54,10 @@ void Sdpa2GwesAPITest::testWorkflowWithSdpaActivity() {
 	}
 	
 	// print out workflow XML of finished workflow.
-	LOG_INFO(log, "Finished workflow:\n" << wf);
+	LOG_INFO(log, "Finished workflow:\n" << wfP);
 	
 	// get and check output
-	std::vector<Token::ptr_t> outputTokens = wf.getPlace("output")->getTokens();
+	std::vector<Token::ptr_t> outputTokens = wfP->getPlace("output")->getTokens();
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 	
 	LOG_INFO(log, "============== END testWorkflowWithSdpaActivity =============");
@@ -87,7 +89,7 @@ void Sdpa2GwesAPITest::testSdpa2Gwes() {
 //		// todo: this should be replaced by a waiting monitor on SdpaDummy
 //		usleep(1000000);
 //
-//		string status = wf.getProperties().get("status");
+//		string status = wf.getProperties()->get("status");
 //		LOG_INFO(logger, "TEST " << status);
 //		CPPUNIT_ASSERT(status == "COMPLETED");
 //	} catch (WorkflowFormatException e) {
@@ -119,7 +121,7 @@ void Sdpa2GwesAPITest::testGwes2Sdpa() {
 //
 //		// ToDo: the following line results in segfault!
 //		//LOG_INFO(logger, wf);
-//		string status = wf.getProperties().get("status");
+//		string status = wf.getProperties()->get("status");
 //		LOG_INFO(logger, "TEST " << status);
 //		CPPUNIT_ASSERT(status == "COMPLETED");
 //	} catch (WorkflowFormatException e) {

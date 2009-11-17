@@ -24,7 +24,7 @@ Token::Token() {
 	_id = generateID(); 
 	//_dataP=NULL; 
 	_control = CONTROL_TRUE; 
-	_p_lock = NULL;
+	//_lockP = NULL; // default for shared pointer
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
@@ -36,7 +36,7 @@ Token::Token(control_t control) {
 	_id = generateID(); 
 	//_dataP=NULL; 
 	_control = control; 
-	_p_lock = NULL;
+	// _lockP = NULL; // default for shared pointer
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
@@ -50,7 +50,7 @@ Token::Token(Properties::ptr_t propertiesP, control_t control) {
 	//_dataP=NULL; 
 	_control = control; 
 	_propertiesP = propertiesP; 
-	_p_lock = NULL;
+	// _lockP = NULL; // default for shared pointer
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "] with " << _propertiesP->size() << " properties.");
 }
 
@@ -62,7 +62,7 @@ Token::Token(Properties::ptr_t propertiesP, control_t control) {
 Token::Token(Data::ptr_t dataP) {
 	_id = generateID(); 
 	_dataP = dataP;	
-	_p_lock = NULL;
+	// _lockP = NULL; // default for shared pointer
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
@@ -76,7 +76,7 @@ Token::Token(Properties::ptr_t propertiesP, Data::ptr_t dataP) {
 	_id = generateID(); 
 	_propertiesP = propertiesP; 
 	_dataP = dataP; 
-	_p_lock = NULL;
+	// _lockP = NULL; // default for shared pointer
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "] with " << _propertiesP->size() << " properties.");
 } 
 

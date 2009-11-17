@@ -10,6 +10,7 @@
 #include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/Properties.h>
 #include <gwdl/Data.h>
+//#include <gwdl/Transition.h>
 
 namespace gwdl
 {
@@ -147,28 +148,28 @@ public:
 	 * next unlocked token.
 	 * Locked tokens will not be regarded in the decision whether a transition is enabled or not.
      * The lock has no XML representation in the GWorkflowDL and is not propagated to distributed instances.
-     * @param p_transition The transition that locked the token.
+     * @param transitionP The transition that locked the token.
      */
-	void lock(Transition* p_transition) {_p_lock = p_transition;}
+	void lock(Transition* transitionP) {_lockP = transitionP;}
 	
 	/**
 	 * Internal method to unlock this token. Please use Place.unlockToken() instead to keep track of the 
 	 * next unlocked token.
 	 */
-	void unlock() {_p_lock = NULL;}
+	void unlock() {_lockP = NULL; }
 	
 	/**
 	 * Test if this token is locked.
      * @return returns <code>true</code> if the token is locked, <code>false</code> otherwise.
      */
-	bool isLocked() const {return _p_lock != NULL;}
+	bool isLocked() const {return _lockP != NULL;}
 	
 	/**
      * Test if this token is locked by a specific transition
-     * @param p_transition
+     * @param transitionP
      * @return returns <code>true</code> if the token has been locked by the specific transition, <code>false</code> otherwise.
      */
-    bool isLockedBy(Transition* p_transition) const {return _p_lock == p_transition;}
+    bool isLockedBy(Transition* transitionP) const {return _lockP == transitionP;}
     
 	/**
 	 * Make a deep copy of this Token object and return a pointer to the new Token.
@@ -184,7 +185,7 @@ private:
     Data::ptr_t _dataP;
     Properties::ptr_t _propertiesP;
     control_t _control;
-    Transition* _p_lock;
+    Transition* _lockP;
     
     long generateID() {static long counter = 0; return counter++;}
 	

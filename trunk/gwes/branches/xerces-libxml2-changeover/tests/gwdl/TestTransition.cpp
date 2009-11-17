@@ -8,6 +8,7 @@
 #include <sstream>
 // gwdl
 #include <gwdl/OperationCandidate.h>
+#include <gwdl/Libxml2Builder.h>
 // tests
 #include "TestTransition.h"
 //fhglog
@@ -26,7 +27,7 @@ void TransitionTest::testTransition()
    LOG_INFO(logger, "============== BEGIN TRANSITION TEST =============");
    
    LOG_INFO(logger, "test empty transition...");
-   Transition *t0 = new Transition("");
+   Transition::ptr_t t0 = Transition::ptr_t(new Transition(""));
    LOG_INFO(logger, *t0);
    
    LOG_INFO(logger, "test description...");
@@ -38,17 +39,17 @@ void TransitionTest::testTransition()
    Place::ptr_t p1 = Place::ptr_t(new Place(""));
    Place::ptr_t p2 = Place::ptr_t(new Place(""));
    Place::ptr_t p3 = Place::ptr_t(new Place(""));
-   Edge::ptr_t e0 = Edge::ptr_t(new Edge( p0,"input0"));
-   Edge::ptr_t e1 = Edge::ptr_t(new Edge( p1,"input1"));
-   Edge::ptr_t e2 = Edge::ptr_t(new Edge( p2,"output0"));
-   Edge::ptr_t e3 = Edge::ptr_t(new Edge( p3,"output1"));
-   t0->addReadEdge(e0);
-   t0->addInEdge(e1);
-   t0->addWriteEdge(e2);
-   t0->addOutEdge(e3);
+   Edge::ptr_t e0 = Edge::ptr_t(new Edge(Edge::SCOPE_READ, p0,"input0"));
+   Edge::ptr_t e1 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, p1,"input1"));
+   Edge::ptr_t e2 = Edge::ptr_t(new Edge(Edge::SCOPE_WRITE, p2,"output0"));
+   Edge::ptr_t e3 = Edge::ptr_t(new Edge(Edge::SCOPE_OUTPUT, p3,"output1"));
+   t0->addEdge(e0);
+   t0->addEdge(e1);
+   t0->addEdge(e2);
+   t0->addEdge(e3);
    
    LOG_INFO(logger, "test properties...");
-   t0->getProperties().put("key1","value1");
+   t0->getProperties()->put("key1","value1");
    
    LOG_INFO(logger, "test condition...");
    t0->addCondition("true");
@@ -95,6 +96,6 @@ void TransitionTest::testTransition()
 
    LOG_INFO(logger, *t0);
    		
-   delete t0;
+   t0.reset();
    LOG_INFO(logger, "============== END TRANSITION TEST =============");
 }
