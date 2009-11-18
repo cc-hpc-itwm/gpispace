@@ -17,6 +17,7 @@ set(V_PATCH 0)
 
 option(LOADER_BIND_NOW "when loading modules, try to locate all symbols" Yes)
 option(FVM_REQUIRED    "the FVM is required by default (nre-pcd refuses to start without --keep-going)" Yes)
+option(BUILD_WITH_WERROR "build with -Werror" Yes)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
@@ -31,9 +32,12 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(FHG_PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
 
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
+    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra")
+    if (BUILD_WITH_WERROR)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    endif (BUILD_WITH_WERROR)
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
     if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
