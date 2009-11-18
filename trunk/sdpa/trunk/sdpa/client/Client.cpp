@@ -27,9 +27,15 @@
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
-Client::ptr_t Client::create(const std::string &name_prefix, const std::string &output_stage, const std::string &orchestrator_name, const std::string &client_location) {
+Client::ptr_t Client::create(const std::string &name_prefix
+                           , const std::string &orchestrator_name
+                           , const std::string &output_stage
+                           , const std::string &client_location) {
   // warning: we introduce a cycle here, we have to resolve it during shutdown!
-  Client::ptr_t client(new Client(name_prefix, output_stage, orchestrator_name, client_location));
+  Client::ptr_t client(new Client(name_prefix
+                                , orchestrator_name
+                                , output_stage
+                                , client_location));
   seda::Stage::Ptr client_stage(new seda::Stage(name_prefix, client));
   client->setStage(client_stage);
   seda::StageRegistry::instance().insert(client_stage);
