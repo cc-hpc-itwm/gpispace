@@ -51,13 +51,49 @@ int main (int argc, char **argv)
 
 	std::cout <<"Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<std::endl
 			  <<" having the master "<<orchName<<"("<<orchUrl<<")"<<std::endl;
+	fhg::log::Configurator::configure();
 
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( aggName, aggUrl, orchName, orchUrl );
 		sdpa::daemon::Aggregator::start(ptrAgg);
-	} catch ( std::exception& ){
-		std::cout<<"Could not start the Aggregator!"<<std::endl;
-	}
 
-	//sdpa::daemon::Aggregator::shutdown(ptrAgg);
+		LOG(DEBUG, "waiting for signals...");
+		sigset_t waitset;
+		int sig(0);
+		int result(0);
+
+		sigfillset(&waitset);
+		sigprocmask(SIG_BLOCK, &waitset, NULL);
+
+		bool signal_ignored = true;
+		while (signal_ignored)
+		{
+			result = sigwait(&waitset, &sig);
+			if (result == 0)
+			{
+				LOG(DEBUG, "got signal: " << sig);
+				switch (sig)
+				{
+				case SIGTERM:
+				case SIGINT:
+					signal_ignored = false;
+					break;
+				default:
+					LOG(INFO, "ignoring signal: " << sig);
+					break;
+				}
+			}
+			else
+			{
+				LOG(ERROR, "error while waiting for signal: " << result);
+			}
+		}
+
+		LOG(INFO, "terminating...");
+
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
+	} catch ( std::exception& ){
+			std::cout<<"Could not start the Aggregator!"<<std::endl;
+		}
+
 }

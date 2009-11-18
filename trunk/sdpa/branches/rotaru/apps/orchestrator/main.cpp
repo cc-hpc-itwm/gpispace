@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <csignal>
 
 #include <sdpa/sdpa-config.hpp>
 
@@ -44,13 +45,48 @@ int main (int argc, char **argv)
 	}
 
 	std::cout <<"Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl<<std::endl;
+	fhg::log::Configurator::configure();
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl );
 		sdpa::daemon::Orchestrator::start(ptrOrch);
-	} catch( std::exception& ) {
-		std::cout<<"Could not start the Orchestrator!"<<std::endl;
-	}
 
-	//sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		LOG(DEBUG, "waiting for signals...");
+		sigset_t waitset;
+		int sig(0);
+		int result(0);
+
+		sigfillset(&waitset);
+		sigprocmask(SIG_BLOCK, &waitset, NULL);
+
+		bool signal_ignored = true;
+		while (signal_ignored)
+		{
+			result = sigwait(&waitset, &sig);
+			if (result == 0)
+			{
+				LOG(DEBUG, "got signal: " << sig);
+				switch (sig)
+				{
+				case SIGTERM:
+				case SIGINT:
+					signal_ignored = false;
+					break;
+				default:
+					LOG(INFO, "ignoring signal: " << sig);
+					break;
+				}
+			}
+			else
+			{
+				LOG(ERROR, "error while waiting for signal: " << result);
+			}
+		}
+
+		LOG(INFO, "terminating...");
+
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	} catch( std::exception& ) {
+			std::cout<<"Could not start the Orchestrator!"<<std::endl;
+		}
 }

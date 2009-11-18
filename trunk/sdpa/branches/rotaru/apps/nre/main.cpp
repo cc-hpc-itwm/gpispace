@@ -54,12 +54,49 @@ int main (int argc, char **argv)
 			  <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
 			  <<" with the nre-worker running at "<<workerUrl<<std::endl;
 
+	fhg::log::Configurator::configure();
+
 	try {
 		sdpa::daemon::NRE::ptr_t ptrNRE = sdpa::daemon::NRE::create( nreName, nreUrl, aggName, aggUrl, workerUrl );
 		sdpa::daemon::NRE::start(ptrNRE);
-	} catch( std::exception& ) {
-		std::cout<<"Could not start the NRE!"<<std::endl;
-	}
 
-	//sdpa::daemon::NRE::shutdown(ptrNRE_0);
+		LOG(DEBUG, "waiting for signals...");
+		sigset_t waitset;
+		int sig(0);
+		int result(0);
+
+		sigfillset(&waitset);
+		sigprocmask(SIG_BLOCK, &waitset, NULL);
+
+		bool signal_ignored = true;
+		while (signal_ignored)
+		{
+			result = sigwait(&waitset, &sig);
+			if (result == 0)
+			{
+				LOG(DEBUG, "got signal: " << sig);
+				switch (sig)
+				{
+				case SIGTERM:
+				case SIGINT:
+					signal_ignored = false;
+					break;
+				default:
+					LOG(INFO, "ignoring signal: " << sig);
+					break;
+				}
+			}
+			else
+			{
+				LOG(ERROR, "error while waiting for signal: " << result);
+			}
+		}
+
+		LOG(INFO, "terminating...");
+
+		sdpa::daemon::NRE::shutdown(ptrNRE);
+	} catch( std::exception& ) {
+			std::cout<<"Could not start the NRE!"<<std::endl;
+		}
+
 }
