@@ -108,16 +108,14 @@ if [ $index -gt $maxindex ]; then
 fi
 
 if [ $index -lt $maxindex ]; then
-  echo "<data><hasnext>true</hasnext></data>" > $hasnext
+  echo "<hasnext>true</hasnext>" > $hasnext
 else 
-  echo "<data><hasnext>false</hasnext></data>" > $hasnext
+  echo "<hasnext>false</hasnext>" > $hasnext
 fi
 
-echo "<data>" > $tracefn
-echo "$offsetclass" >> $tracefn
+echo "$offsetclass" > $tracefn
 echo "<traceindex>$index</traceindex>" >> $tracefn
 echo "<simulation><memory><fvm>$memory</fvm></memory></simulation>" >> $tracefn
-echo "</data>" >> $tracefn
 
 if [ -n "$simulation" ]; then
   echo "<simulation><duration><cpu>$cpu<cpu><io>$io</io><memory><fvm edgeExpression=\"$edgeExpression\">$memory</fvm></memory></simulation>" > $simulation

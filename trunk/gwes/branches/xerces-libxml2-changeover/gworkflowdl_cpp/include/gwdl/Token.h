@@ -110,17 +110,25 @@ public:
 	/**
 	 * Get a shared pointer to the properties of this token. 
 	 * Returns NULL if there are no properties. 
-	 * @return A shared pointer to the properties of this token.
+	 * @return A shared pointer to the Token properties or NULL if there are no properties.
 	 */
 	Properties::ptr_t getProperties() {return _propertiesP;}
 	
 	/**
 	 * Get a read-only pointer to the properties of this token.
 	 * Returns NULL if there are no properties. 
-	 * @return A read-only pointer to the properties of this token.
+	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
 	const Properties::ptr_t readProperties() const {return _propertiesP;}
 
+	/**
+	 * Put new name/value pair into properties.
+	 * Overwrites old property with same name. Generates new Property map if required. 
+	 * @param name The name of the property.
+	 * @param value The value of the property.
+	 */
+	void putProperty(const std::string& name, const std::string& value);
+	
 	/**
 	 * Get a shared pointer to the data object of this data token.
 	 * @return The data of this token.

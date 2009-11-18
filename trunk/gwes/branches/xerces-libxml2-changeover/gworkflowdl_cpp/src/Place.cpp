@@ -111,6 +111,13 @@ void Place::setProperties(Properties::ptr_t propertiesP) {
 	_propertiesP = propertiesP;
 }
 
+void Place::putProperty(const string& name, const string& value) {
+	if (_propertiesP == NULL) {
+		_propertiesP = Properties::ptr_t(new Properties());
+	}
+	_propertiesP->put(name,value);
+}
+
 Properties::ptr_t Place::getProperties() {
 	return _propertiesP;	
 }

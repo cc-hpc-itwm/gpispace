@@ -68,21 +68,21 @@ void XPathEvaluationTest::testXPathEvaluator() {
     // test eval expression 2 xml
 
     // node set
-	str = "/data/x"; str2 = "<data>\n  <x><a>5</a></x>\n</data>";
-    CPPUNIT_ASSERT( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
+	str = "/data/x"; str2 = "  <x><a>5</a></x>\n";
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("/data/x", str2, xpathP->evalExpression2Xml(str));
 
     // boolean
-	str = "/data/x/a = 5";	str2 = "<data><boolean xmlns=\"\">true</boolean></data>";
+	str = "/data/x/a = 5";	str2 = "<boolean xmlns=\"\">true</boolean>";
     CPPUNIT_ASSERT( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
-    str = "/data/x/a = 4";	str2 = "<data><boolean xmlns=\"\">false</boolean></data>";
+    str = "/data/x/a = 4";	str2 = "<boolean xmlns=\"\">false</boolean>";
     CPPUNIT_ASSERT( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
     
     // number
-	str = "number(/data/x/a)"; 	str2 = "<data><number xmlns=\"\">5</number></data>";
+	str = "number(/data/x/a)"; 	str2 = "<number xmlns=\"\">5</number>";
     CPPUNIT_ASSERT( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
 	
 	// string
-	str = "normalize-space(/data/bla)";	str2 = "<data><string xmlns=\"\">wörter</string></data>";
+	str = "normalize-space(/data/bla)";	str2 = "<string xmlns=\"\">wörter</string>";
     CPPUNIT_ASSERT( xpathP->evalExpression2Xml(str).compare(str2) == 0 );
     
     delete xpathP;

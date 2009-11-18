@@ -9,10 +9,8 @@
 #include <gwes/WorkflowHandler.h>
 #include <gwes/Utils.h>
 // gwdl
-#include <gwdl/XMLUtils.h>
 #include <gwdl/Libxml2Builder.h> 
 
-XERCES_CPP_NAMESPACE_USE
 using namespace std;
 using namespace gwdl;
 using namespace gwes;

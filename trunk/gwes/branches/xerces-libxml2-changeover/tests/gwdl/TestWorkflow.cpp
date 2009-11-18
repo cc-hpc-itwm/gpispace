@@ -27,18 +27,18 @@ void WorkflowTest::testWorkflow()
 	Workflow::ptr_t wf = Workflow::ptr_t(new Workflow("test-workflow"));
 
 	// add description
-	LOG_INFO(logger, "  description...");
+	LOG_INFO(logger, "-------------- description... --------------");
 	wf->setDescription("This is the description of the workflow");
 	CPPUNIT_ASSERT(wf->getDescription()=="This is the description of the workflow") ;
 
 	// add properties
-	LOG_INFO(logger, "  properties...");
-	wf->getProperties()->put("b_name1","value1");	
-	wf->getProperties()->put("a_name2","value2");	
-	CPPUNIT_ASSERT(wf->getProperties()->get("b_name1")=="value1");
+	LOG_INFO(logger, "-------------- properties... --------------");
+	wf->putProperty("b_name1","value1");	
+	wf->putProperty("a_name2","value2");	
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("properties", string("value1"), wf->getProperties()->get("b_name1"));
 	
 	// add places
-	LOG_INFO(logger, "  places...");
+	LOG_INFO(logger, "-------------- places... --------------");
 	Place::ptr_t p0 = Place::ptr_t(new Place("p0"));
 	Place::ptr_t p1 = Place::ptr_t(new Place("p1"));
 	wf->addPlace(p0);
@@ -46,7 +46,7 @@ void WorkflowTest::testWorkflow()
 	CPPUNIT_ASSERT(wf->placeCount()==2);
 	
 	// create transition
-	LOG_INFO(logger, "  transition...");
+	LOG_INFO(logger, "-------------- transition... --------------");
 	Transition::ptr_t t0 = Transition::ptr_t(new Transition("t0"));
 	// input edge from p0 to t0
 	LOG_INFO(logger, "  input edge...");
@@ -61,18 +61,21 @@ void WorkflowTest::testWorkflow()
 	wf->addTransition(t0);
 
 	// transition is not enabled
+	LOG_INFO(logger, "isEnabled=" << wf->getTransition("t0")->isEnabled());
 	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==false);	
 			
 	// add token
-	LOG_INFO(logger, "  token...");
+	LOG_INFO(logger, "-------------- token... --------------");
 	Token::ptr_t d0 = Token::ptr_t(new Token(Token::CONTROL_TRUE));
 	wf->getPlace("p0")->addToken(d0);
 
 	// transition is now enabled
+	LOG_INFO(logger, "isEnabled=" << wf->getTransition("t0")->isEnabled());
+	LOG_INFO(logger, "\n" << *wf);
 	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==true);
 	
 	// add operation to transition
-	LOG_INFO(logger, "  operation...");
+	LOG_INFO(logger, "-------------- operation... --------------");
 	LOG_INFO(logger, "  set operation...");
 	Operation::ptr_t op = Operation::ptr_t(new Operation());
 	wf->getTransition("t0")->setOperation(op);	
@@ -96,6 +99,7 @@ void WorkflowTest::testWorkflow()
 	// print workflow to stdout	
 	LOG_INFO(logger, *wf);
 	
+	LOG_INFO(logger, "-------------- test no such workflow element getTransition... --------------");
 	// test no such workflow element getTransition
 	bool test = false;
 	try 
@@ -109,7 +113,7 @@ void WorkflowTest::testWorkflow()
 	}
 	CPPUNIT_ASSERT(test);
 		
-	// test no such workflow element getPlace
+	LOG_INFO(logger, "-------------- test no such workflow element getPlace... --------------");
 	test = false;
 	try 
 	{
@@ -122,7 +126,7 @@ void WorkflowTest::testWorkflow()
 	}
 	CPPUNIT_ASSERT(test);
 
-	// test no such workflow element removePlace
+	LOG_INFO(logger, "-------------- test no such workflow element removePlace... --------------");
 	test = false;
 	try 
 	{
@@ -135,7 +139,7 @@ void WorkflowTest::testWorkflow()
 	}
 	CPPUNIT_ASSERT(test);
 
-	// test no such workflow element removeTransition
+	LOG_INFO(logger, "-------------- test no such workflow element removeTransition... --------------");
 	test = false;
 	try 
 	{
@@ -148,13 +152,17 @@ void WorkflowTest::testWorkflow()
 	}
 	CPPUNIT_ASSERT(test);
 	
-	LOG_INFO(logger, "safe to file ...");
+	LOG_INFO(logger, "-------------- serialize to file ... --------------");
 	Libxml2Builder builder;
 	builder.serializeWorkflowToFile(*wf,"/tmp/wf.xml");
 	
-	LOG_INFO(logger, "load from file ...");
+	LOG_INFO(logger, "-------------- deserialize from file ... --------------");
 	Workflow::ptr_t wf2 = builder.deserializeWorkflowFromFile("/tmp/wf.xml");
 	LOG_INFO(logger, *wf2);
+	
+	string str = builder.serializeWorkflow(*wf);
+	string str2 = builder.serializeWorkflow(*wf2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("deserialize/serialize", str, str2);
 
 	wf.reset();
 	wf2.reset();

@@ -16,6 +16,7 @@
 //std
 #include <unistd.h>
 #include <map>
+#include <pthread.h>
 
 using namespace std;
 using namespace gwdl;
@@ -41,7 +42,8 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 	_suspend = false;
 	_sleepTime = SLEEP_TIME_MIN;
 	_simulation = false;
-	if (workflowP->readProperties()->contains("simulation") && (workflowP->readProperties()->get("simulation")).compare("false") != 0) {
+	const Properties::ptr_t props = workflowP->readProperties();
+	if (props && props->contains("simulation") && (props->get("simulation")).compare("false") != 0) {
 		_simulation = true;
 		LOG_INFO(_logger, getID() << ": Simulation is ON");
 		LOG_DEBUG(_logger, *workflowP);
@@ -63,7 +65,7 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 	status_t oldStatus = _status;
 	_status = status;
 	if (_status != STATUS_UNDEFINED) {
-		_wfP->getProperties()->put("status", getStatusAsString(_status));
+		_wfP->putProperty("status", getStatusAsString(_status));
 	}
 	
 	LOG_DEBUG(_logger, "status of workflow \"" << getID() << "\" changed from " << getStatusAsString(oldStatus) << " to " << getStatusAsString());
@@ -181,16 +183,14 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			//suspend if breakpoint has been reached
 			if (!_abort && !_suspend && selectedToP != NULL) {
 				Properties::ptr_t transprops = selectedToP->transitionP->getProperties();
-				if (transprops->contains("breakpoint")) {
+				if (transprops && transprops->contains("breakpoint")) {
 					string breakstring = transprops->get("breakpoint");
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
-						LOG_INFO(_logger, "released breakpoint at transition "
-						<< selectedToP->transitionP->getID());
+						LOG_INFO(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
 						transprops->put("breakpoint", "RELEASED");
 					} else {
-						LOG_INFO(_logger, "reached breakpoint at transition "
-						<< selectedToP->transitionP->getID());
+						LOG_INFO(_logger, "reached breakpoint at transition " << selectedToP->transitionP->getID());
 						transprops->put("breakpoint", "REACHED");
 						_suspend = true;
 					}
@@ -243,7 +243,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
 				modification = true;
 				LOG_INFO(_logger, "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!" );
-				_wfP->getProperties()->put(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
+				_wfP->putProperty(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
 				_suspend = true;
 			}
 
@@ -269,13 +269,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
-			_wfP->getProperties()->put(createNewErrorID(), oss.str());
+			_wfP->putProperty(createNewErrorID(), oss.str());
 		}  catch (WorkflowFormatException e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
 			LOG_ERROR(_logger, oss.str());
 			_abort = true;
-			_wfP->getProperties()->put(createNewErrorID(), oss.str());
+			_wfP->putProperty(createNewErrorID(), oss.str());
 		}
 	}
 
@@ -557,15 +557,16 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	} catch (CapacityException e) {
 		LOG_ERROR(_logger, "exception: " << e.message);
 		_abort = true;
-		_wfP->getProperties()->put(createNewErrorID(), e.message);
+		_wfP->putProperty(createNewErrorID(), e.message);
 	}
 	
     // store occurrence sequence
-    if (_wfP->readProperties()->contains("occurrence.sequence")) {
-    	string occurrenceSequence = _wfP->getProperties()->get("occurrence.sequence");
+	Properties::ptr_t props = _wfP->getProperties();
+    if (props && props->contains("occurrence.sequence")) {
+    	string occurrenceSequence = props->get("occurrence.sequence");
     	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
     	occurrenceSequence += toP->transitionP->getID();
-    	_wfP->getProperties()->put("occurrence.sequence",occurrenceSequence);
+    	props->put("occurrence.sequence",occurrenceSequence);
     }
 	
     // cleanup
@@ -597,7 +598,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 						<< "\" related to transition occurrence \""
 						<< toP->getID() << "\": " << faultMessage
 						<< endl;
-				_wfP->getProperties()->put(createNewWarnID(), oss.str());
+				_wfP->putProperty(createNewWarnID(), oss.str());
 			}
 			
 			// process XPath edge expressions
@@ -614,17 +615,18 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			} catch (CapacityException e) {
 				LOG_ERROR(_logger, "CapacityException:" << e.message);;
 				_abort = true;
-				_wfP->getProperties()->put(createNewErrorID(), e.message);
+				_wfP->putProperty(createNewErrorID(), e.message);
 			}
 			
 			modification = true;
 
 		    // store occurrence sequence
-		    if (_wfP->readProperties()->contains("occurrence.sequence")) {
-		    	string occurrenceSequence = _wfP->getProperties()->get("occurrence.sequence");
+			Properties::ptr_t props = _wfP->getProperties();
+		    if (props && props->contains("occurrence.sequence")) {
+		    	string occurrenceSequence = props->get("occurrence.sequence");
 		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
 		    	occurrenceSequence += toP->transitionP->getID();
-		    	_wfP->getProperties()->put("occurrence.sequence",occurrenceSequence);
+		    	props->put("occurrence.sequence",occurrenceSequence);
 		    }
 
 		    ///ToDo: set transition status

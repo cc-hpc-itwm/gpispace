@@ -72,7 +72,7 @@ Data::ptr_t Libxml2Builder::elementToData(const xmlNodePtr nodeP) const throw (W
 	// int _type;               -> ignored/set by constructor
     // content_t _content;      -> set from element contents
 	///////////////////
-	string contents = XMLUtils::Instance()->serializeLibxml2(nodeP, false); 
+	string contents = XMLUtils::Instance()->serializeLibxml2NodeList(nodeP, false); 
 	Data::ptr_t dataP(new Data(contents));
 	return dataP;
 }
@@ -121,7 +121,7 @@ Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const thr
 
 string Libxml2Builder::serializeToken(const Token &token) const {
 	xmlNodePtr nodeP = tokenToElement(token);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -195,9 +195,9 @@ xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 	
 	// properties
 	Properties::ptr_t propsP = token.readProperties();
-	if (propsP != NULL) {
+	if (propsP) {
 		curNodeP = propertiesToElements(*propsP);
-		if (curNodeP != NULL) {
+		if (curNodeP) {
 			xmlAddChildList(nodeP, curNodeP); 
 		}
 	}
@@ -240,7 +240,7 @@ xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 
 string Libxml2Builder::serializeProperties(const Properties& props) const {
 	xmlNodePtr nodeP = propertiesToElements(props);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2NodeList(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -259,11 +259,9 @@ Properties::ptr_t Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) c
     		string name = string((const char*) xmlGetProp(curNodeP, BAD_CAST "name")); 
     		textNodeP = nextTextNode(curNodeP->children);
     		if (textNodeP == NULL) {
-    			LOG_INFO(_logger, "generating empty property with name \"" << name << "\"");
     			propP->put( name, string("") );
     		} else {
     			string text = string( (const char*) textNodeP->content);
-    			LOG_INFO(_logger, "generating property with name \"" << name << "\" and value \"" << text << "\"");
         		propP->put( name, text ); 
     		}
     	} else if (propP) { // there MUST NOT be any other element between property elements!
@@ -342,7 +340,7 @@ Place::ptr_t Libxml2Builder::deserializePlace(const string &xmlstring) const thr
 
 string Libxml2Builder::serializePlace(const Place &place) const {
 	xmlNodePtr nodeP = placeToElement(place);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -375,7 +373,7 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 		curNodeP = nextElementNode(curNodeP->children);
 		
 		//   <description>
-	    if (checkElementName(curNodeP, "description")) {               
+	    if (curNodeP && checkElementName(curNodeP, "description")) {               
 	    	textNodeP = nextTextNode(curNodeP->children);
 	    	if (textNodeP) {
 	    		placeP->setDescription(string( (const char*) textNodeP->content)); 
@@ -387,13 +385,13 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 		// extract all property elements
 		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
 		if (propsP) placeP->setProperties(propsP);
-		while(checkElementName(curNodeP, "property")) {           
+		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 	    
 		//   <tokenClass>
-	    if (checkElementName(curNodeP, "tokenClass")) {       
+	    if (curNodeP && checkElementName(curNodeP, "tokenClass")) {       
 	    	//   <tokenClass type="">
 	    	xmlCharP = xmlGetProp(curNodeP, BAD_CAST "type"); 
 	    	if (xmlCharP) {
@@ -403,7 +401,7 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 	    }
 	    
 	    //   <token>
-	    while(checkElementName(curNodeP, "token")) {              
+	    while(curNodeP && checkElementName(curNodeP, "token")) {              
 	    	placeP->addToken(elementToToken(curNodeP));
 			curNodeP = nextElementNode(curNodeP->next);
 	    }
@@ -492,7 +490,7 @@ OperationCandidate::ptr_t Libxml2Builder::deserializeOperationCandidate(const st
 
 string Libxml2Builder::serializeOperationCandidate(const OperationCandidate &operationCandidate) const {
 	xmlNodePtr nodeP = operationCandidateToElement(operationCandidate);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -610,7 +608,7 @@ OperationClass::ptr_t Libxml2Builder::deserializeOperationClass(const string &xm
 
 string Libxml2Builder::serializeOperationClass(const OperationClass &operationClass) const {
 	xmlNodePtr nodeP = operationClassToElement(operationClass);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -701,7 +699,7 @@ Operation::ptr_t Libxml2Builder::deserializeOperation(const string &xmlstring) c
 
 string Libxml2Builder::serializeOperation(const Operation &operation) const {
 	xmlNodePtr nodeP = operationToElement(operation);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -739,7 +737,7 @@ Operation::ptr_t Libxml2Builder::elementToOperation(const xmlNodePtr nodeP) cons
 
 xmlNodePtr Libxml2Builder::operationToElement(const Operation &operation) const {
 	// <operation>
-	xmlNodePtr nodeP = xmlNewNode(_nsOperationclassP, BAD_CAST "operation");
+	xmlNodePtr nodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "operation");
 
     //   <operationClass>
 	if (operation.readOperationClass()) {
@@ -887,7 +885,7 @@ Transition::ptr_t Libxml2Builder::deserializeTransition(Workflow::ptr_t wfP, con
 
 string Libxml2Builder::serializeTransition(const Transition &transition) const {
 	xmlNodePtr nodeP = transitionToElement(transition);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -919,7 +917,7 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 		// children
 		curNodeP = nextElementNode(curNodeP->children);
 		// <description>
-		if (checkElementName(curNodeP, "description")) {               
+		if (curNodeP && checkElementName(curNodeP, "description")) {               
 			textNodeP = nextTextNode(curNodeP->children);
 			if (textNodeP) {
 				transitionP->setDescription(string( (const char*) textNodeP->content)); 
@@ -930,32 +928,32 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 		// extract all property elements
 		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
 		if (propsP) transitionP->setProperties(propsP);
-		while(checkElementName(curNodeP, "property")) {           
+		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
 		} 
 		// <readPlace>
-		while(checkElementName(curNodeP, "readPlace")) {
+		while(curNodeP && checkElementName(curNodeP, "readPlace")) {
 			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <inputPlace>
-		while(checkElementName(curNodeP, "inputPlace")) {
+		while(curNodeP && checkElementName(curNodeP, "inputPlace")) {
 			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <writePlace>
-		while(checkElementName(curNodeP, "writePlace")) {
+		while(curNodeP && checkElementName(curNodeP, "writePlace")) {
 			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <outputPlace>
-		while(checkElementName(curNodeP, "outputPlace")) {
+		while(curNodeP && checkElementName(curNodeP, "outputPlace")) {
 			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <condition>
-		while(checkElementName(curNodeP, "condition")) {
+		while(curNodeP && checkElementName(curNodeP, "condition")) {
 			textNodeP = nextTextNode(curNodeP->children);
 			if (textNodeP) {
 				transitionP->addCondition(string( (const char*) textNodeP->content)); 
@@ -963,7 +961,7 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <operation>
-		if(checkElementName(curNodeP, "operation")) {
+		if(curNodeP && checkElementName(curNodeP, "operation")) {
 			transitionP->setOperation(elementToOperation(curNodeP));
 			curNodeP = nextElementNode(curNodeP->next);
 		}
@@ -1100,7 +1098,7 @@ Workflow::ptr_t Libxml2Builder::deserializeWorkflowFromFile(const std::string& f
 
 string Libxml2Builder::serializeWorkflow(const Workflow &workflow) const {
 	xmlNodePtr nodeP = workflowToElement(workflow);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	const string ret = XMLUtils::Instance()->serializeLibxml2Node(nodeP, true); 
 	xmlFreeNode(nodeP);
 	return ret;
 }
@@ -1140,7 +1138,7 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 		// children
 		curNodeP = nextElementNode(curNodeP->children);
 		// <description>
-		if (checkElementName(curNodeP, "description")) {               
+		if (curNodeP && checkElementName(curNodeP, "description")) {               
 			textNodeP = nextTextNode(curNodeP->children);
 			if (textNodeP) {
 				workflowP->setDescription(string( (const char*) textNodeP->content)); 
@@ -1151,19 +1149,19 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 		// extract all property elements
 		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
 		if (propsP) workflowP->setProperties(propsP);
-		while(checkElementName(curNodeP, "property")) {           
+		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
 		} 
 		
 		// <place>
-		while(checkElementName(curNodeP, "place")) {
+		while(curNodeP && checkElementName(curNodeP, "place")) {
 			workflowP->addPlace(elementToPlace(curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		
 		// <transition>
-		while(checkElementName(curNodeP, "transition")) {
+		while(curNodeP && checkElementName(curNodeP, "transition")) {
 			workflowP->addTransition(elementToTransition(workflowP,curNodeP)); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}

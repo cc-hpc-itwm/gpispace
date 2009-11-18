@@ -139,17 +139,26 @@ public:
 
 	/**
 	 * Get a shared pointer to the properties of this place.
-	 * @return A shared pointer to the properties of this place.
+	 * Returns NULL if there are no properties. 
+	 * @return A shared pointer to the place properties or NULL if there are no properties.
 	 */
 	Properties::ptr_t getProperties();
 	
 	/**
 	 * Get a read-only pointer to the properties of this place.
 	 * Returns NULL if there are no properties. 
-	 * @return A read-only pointer to the properties of this place.
+	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
 	const Properties::ptr_t readProperties() const;
 
+	/**
+	 * Put new name/value pair into properties.
+	 * Overwrites old property with same name. Generates new Property map if required. 
+	 * @param name The name of the property.
+	 * @param value The value of the property.
+	 */
+	void putProperty(const std::string& name, const std::string& value);
+	
 	/**
 	 * Lock a token. 
 	 * Locked tokens will not be regarded in the decision whether a transition is enabled or not.

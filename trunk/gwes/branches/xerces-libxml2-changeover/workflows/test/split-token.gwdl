@@ -5,22 +5,12 @@
   <property name="occurrence.sequence" />
   <place ID="value1">
     <token>
-      <data>
-        <value1 xmlns="">
-          <x>15</x>
-          <y>23</y>
-        </value1>
-      </data>
+      <data><value1 xmlns=""><x>15</x><y>23</y></value1></data>
     </token>
   </place>
   <place ID="value2">
     <token>
-      <data>
-        <value2 xmlns="">
-          <x>16</x>
-          <y>24</y>
-        </value2>
-      </data>
+      <data><value2 xmlns=""><x>16</x><y>24</y></value2></data>
     </token>
   </place>
   <place ID="x" />
