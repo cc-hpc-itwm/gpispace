@@ -315,7 +315,10 @@ int main(int ac, char **av)
   }
   fvm_pc.leave();
   LOG(INFO, "terminating...");
-  executor->stop();
+  if (! executor->stop())
+  {
+    LOG(WARN, "executor did not stop correctly...");
+  }
 
   return 0;
 }
