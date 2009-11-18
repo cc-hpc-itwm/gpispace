@@ -1,0 +1,14 @@
+add_executable(nre main.cpp)
+add_dependencies(nre sdpa-nre)
+
+target_link_libraries(nre sdpa-nre)
+target_link_libraries(nre sdpa-events)
+target_link_libraries(nre sdpa-daemon)
+target_link_libraries(nre sdpa-util)
+target_link_libraries(nre sdpa)
+target_link_libraries(nre seda)
+target_link_libraries(nre seda-comm)
+target_link_libraries(nre ${Boost_LIBRARIES})
+
+
+install(TARGETS nre DESTINATION bin)

@@ -77,6 +77,10 @@ namespace sdpa {
   };
 }
 
-extern std::ostream & operator<<(std::ostream &, const sdpa::JobId &);
+inline std::ostream & operator<<(std::ostream &os, const sdpa::JobId &jid)
+{
+  os << jid.str();
+  return os;
+}
 
 #endif

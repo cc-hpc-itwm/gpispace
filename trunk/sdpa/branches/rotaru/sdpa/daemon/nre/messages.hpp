@@ -33,7 +33,14 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     Message()
+      : id_("unset id")
     {}
+
+    explicit
+    Message(const std::string &msg_id)
+      : id_(msg_id)
+    {}
+
     virtual ~Message() {}
 
     virtual Message *execute(ExecutionContext *context) = 0;
@@ -41,12 +48,23 @@ namespace sdpa { namespace nre { namespace worker {
 
     // indicate a long-running execution request
     virtual bool would_block() const { return false; }
+
+    const std::string &id() const { return id_; }
+    std::string &id() { return id_; }
+  private:
+    std::string id_;
   };
 
   class Reply : public Message
   {
   public:
     Reply() {}
+
+    explicit
+    Reply(const std::string &a_id)
+      : Message(a_id)
+    {}
+
     virtual ~Reply() {}
 
     virtual Message *execute(ExecutionContext *)
@@ -59,6 +77,12 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     Request() {}
+
+    explicit
+    Request (const std::string &a_id)
+      : Message(a_id)
+    {}
+
     virtual ~Request() {}
   };
 
@@ -68,24 +92,23 @@ namespace sdpa { namespace nre { namespace worker {
     typedef struct rusage  usage_t;
 
     PingReply()
-      : key_("")
-      , pid_(0)
-    {}
+      : pid_(getpid())
+    {
+      getrusage(RUSAGE_SELF, &usage_);
+    }
 
-    PingReply(const std::string &a_key, const pid_t &my_pid)
-      : key_(a_key)
-      , pid_(my_pid)
+    explicit
+    PingReply(const std::string &a_id)
+      : Reply(a_id)
+      , pid_(getpid())
     {
       getrusage(RUSAGE_SELF, &usage_);
     }
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "PingReply: key=" << key() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
+      os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
     }
-
-    std::string &key() { return key_; }
-    const std::string &key() const { return key_; }
 
     pid_t &pid() { return pid_; }
     const pid_t &pid() const { return pid_; }
@@ -93,7 +116,6 @@ namespace sdpa { namespace nre { namespace worker {
     const usage_t &usage() const { return usage_; }
     usage_t &usage() { return usage_; }
   private:
-    std::string key_;
     pid_t pid_;
     usage_t usage_;
   };
@@ -105,21 +127,18 @@ namespace sdpa { namespace nre { namespace worker {
       : key_("")
     {}
 
-    explicit PingRequest(const std::string &a_key)
-      : key_(a_key)
+    explicit PingRequest(const std::string &a_msg_id)
+      : Request(a_msg_id)
     {}
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "PingRequest: key="<< key();
+      os << "PingRequest: id=" << id();
     }
-
-    std::string &key() { return key_; }
-    const std::string &key() const { return key_; }
 
     virtual Reply *execute(ExecutionContext *)
     {
-      return new PingReply(key(), getpid());
+      return new PingReply(id());
     }
   private:
     std::string key_;
@@ -154,7 +173,7 @@ namespace sdpa { namespace nre { namespace worker {
     ExecuteRequest()
     {}
 
-    explicit ExecuteRequest(const sdpa::wf::Activity &act)
+    ExecuteRequest(const sdpa::wf::Activity &act)
       : activity_(act)
     {}
 
@@ -172,8 +191,14 @@ namespace sdpa { namespace nre { namespace worker {
       const std::string mod_name(activity().method().module());
       const std::string fun_name(activity().method().name());
 
+      Reply *reply(NULL);
       try
       {
+        if (mod_name.empty() || fun_name.empty())
+        {
+          throw std::runtime_error("empty module or function: mod="+mod_name+" fun="+fun_name);
+        }
+
         LOG(INFO, "executing: " << activity());
 
         bool keep_going = activity().properties().get<bool>("keep_going", false);
@@ -185,7 +210,8 @@ namespace sdpa { namespace nre { namespace worker {
 
         LOG(INFO, "execution of activity finished");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
-        return new ExecuteReply(activity());
+
+        reply = new ExecuteReply(activity());
       }
       catch (const sdpa::modules::MissingFunctionArgument &mfa)
       {
@@ -193,22 +219,26 @@ namespace sdpa { namespace nre { namespace worker {
                                << " expected argument " << mfa.arguments());
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
         activity().reason() = mfa.what();
-        return new ExecuteReply(activity());
+        reply = new ExecuteReply(activity());
       }
       catch (const std::exception &ex)
       {
         LOG(ERROR, "execution of activity failed: " << ex.what());
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
         activity().reason() = ex.what();
-        return new ExecuteReply(activity());
+        reply = new ExecuteReply(activity());
       }
       catch (...)
       {
         LOG(ERROR, "execution of activity failed: ");
         activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
         activity().reason() = "unknown reason";
-        return new ExecuteReply(activity());
+        reply = new ExecuteReply(activity());
       }
+
+      assert(reply);
+      reply->id() = id();
+      return reply;
     }
 
     sdpa::wf::Activity &activity() { return activity_; }

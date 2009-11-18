@@ -9,7 +9,10 @@
 #include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
+#endif
+
 #include <sdpa/memory.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/types.hpp>
@@ -32,8 +35,8 @@ namespace sdpa { namespace client {
 
     // API
     static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
-                              , const std::string &output_stage="sdpa.apps.client.out"
                               , const std::string &orchestrator_name="orchestrator"
+                              , const std::string &output_stage="sdpa.apps.client.out"
                               , const std::string &client_location="0.0.0.0");
 
     static config_t config()

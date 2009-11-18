@@ -23,7 +23,11 @@ namespace sdpa {
 			sdpa::daemon::SchedulerImpl(pHandler),
 			SDPA_INIT_LOGGER("Scheduler "+pHandler->name()),
 	        m_worker_(workerUrl)
-			{}
+			{
+				m_worker_.set_ping_interval(60);
+				m_worker_.set_ping_timeout(3);
+				m_worker_.set_ping_trials(3);
+			}
 
 		virtual ~SchedulerNRE() { }
 
@@ -99,7 +103,7 @@ namespace sdpa {
 			sdpa::wf::Activity result(act);
 			try
 			{
-              result = m_worker_.execute(act);
+              result = m_worker_.execute(act, 0 /*walltime forever*/);
 			} catch(const std::exception& val)
 			{
 				result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
@@ -125,14 +129,22 @@ namespace sdpa {
 				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
 		}
 
-		void start()
+		void start()throw (std::exception)
 		{
 			SchedulerImpl::start();
 			m_threadExecutor = boost::thread(boost::bind(&SchedulerNRE::runExecutor, this));
 			SDPA_LOG_DEBUG("Executor thread started ...");
 
 			SDPA_LOG_DEBUG("Starting nre-worker-client ...");
-			m_worker_.start();
+
+			try {
+				m_worker_.start();
+			}catch(const std::exception& val)
+			{
+				SDPA_LOG_ERROR("Could not start the nre-worker-client ...");
+				throw;
+			}
+
 		}
 
 		void stop()
@@ -185,7 +197,6 @@ namespace sdpa {
 				 }
 			 }
 		 }
-
 
 		 void check_post_request()
 		 {

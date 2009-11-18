@@ -290,12 +290,9 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 				// in the message comes from a worker
 				ptrWorker->delete_job(pEvt->job_id());
-    		 }
-    		 catch(WorkerNotFoundException)
-    		 {
-    			os.str("");
-    			os<<"Worker "<<worker_id<<" not found!";
-    			SDPA_LOG_DEBUG(os.str());
+    		}
+    		catch(WorkerNotFoundException) {
+    			SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
     		}
 
     		// tell to GWES that the activity ob_id() was cancelled

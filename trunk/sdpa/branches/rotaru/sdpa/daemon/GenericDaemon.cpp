@@ -469,7 +469,6 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			// Post a SubmitJobEvent to the slave who made the reques
 			sendEvent(ptr_to_slave_stage_, pErrorEvt);
 		}
-
 	}
 	catch(NoJobScheduledException&)
 	{

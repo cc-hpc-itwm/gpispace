@@ -43,7 +43,7 @@ void TestComponents::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
 	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
-	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER );
+	m_ptrUser = sdpa::client::ClientApi::create( config, "orchestrator_0" );
 	m_ptrUser->configure_network(config);
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
@@ -69,21 +69,21 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000");
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_1",  "127.0.0.1:5001",
-																			   sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_0",  "127.0.0.1:5001",
+																			   "orchestrator_0", "127.0.0.1:5000");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create( "NRE_0",  "127.0.0.1:5002",
-																	"aggregator_1", "127.0.0.1:5001",
-																	"127.0.0.1:8000" );
+																   "aggregator_0", "127.0.0.1:5001",
+																   "127.0.0.1:8000" );
 	sdpa::daemon::NRE::start(ptrNRE_0);
 
 	/*sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
-																	"aggregator_1", "127.0.0.1:5001",
-																	"127.0.0.1:8001" );
+																	 "aggregator_0", "127.0.0.1:5001",
+																	 "127.0.0.1:8001" );
 	sdpa::daemon::NRE::start(ptrNRE_1);*/
 
 	for(int k=0; k<m_nITER; k++ )

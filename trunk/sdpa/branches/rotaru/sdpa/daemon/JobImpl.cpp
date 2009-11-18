@@ -94,7 +94,7 @@ namespace sdpa { namespace daemon {
 		}
 		else //the master sent a Cancel message -> forward it to the workflow engine
 		{
-			if( pComm->name()!= sdpa::daemon::ORCHESTRATOR )
+			if( !pComm->master().empty() )
 			{
 				// clearly, I'm into the Pending state here
 				// return back to the master a CancelJobAckEvent
