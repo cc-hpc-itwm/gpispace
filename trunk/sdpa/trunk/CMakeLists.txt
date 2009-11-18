@@ -160,7 +160,6 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(${Boost_LIBRARIES})
 
 if (ENABLE_LOGGING)
   set(SDPA_ENABLE_LOGGING 1)

@@ -2,7 +2,6 @@
 ## add the CPPUNIT stuff
 include_directories(${CPPUNIT_INCLUDE_DIRS})
 link_directories(${CPPUNIT_LIBRARY_DIRS})
-link_libraries(${CPPUNIT_LIBRARIES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -17,6 +16,9 @@ set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
 target_link_libraries(sdpa-test sdpa sdpa-daemon sdpa-events sdpa-util)
+target_link_libraries(sdpa-test ${CPPUNIT_LIBRARIES})
+target_link_libraries(sdpa-test ${FHGLOG_LIBRARY})
+target_link_libraries(sdpa-test ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 target_link_libraries(sdpa_test_suite sdpa-test)
