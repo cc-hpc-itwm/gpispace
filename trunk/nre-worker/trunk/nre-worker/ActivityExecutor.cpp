@@ -77,9 +77,28 @@ namespace sdpa { namespace nre { namespace worker {
     for (thread_list_t::iterator thrd(execution_threads_.begin()); thrd != execution_threads_.end(); ++thrd)
     {
       // FIXME: how to stop the execution thread (while it executes something)?
-      (*thrd)->interrupt();
-      (*thrd)->join();
-      delete (*thrd); (*thrd) = NULL;
+      const std::size_t max_trials(3);
+      const unsigned int timeout(1); // 1 sec
+      bool stopped(false);
+      for (std::size_t trial(1); trial < max_trials+1; ++trial)
+      {
+        DLOG(TRACE, "trying to interrupt execution thread (trial " << trial << "/" << max_trials << ")");
+        (*thrd)->interrupt();
+        if ((*thrd)->timed_join(boost::posix_time::seconds(timeout)))
+        {
+          stopped = true; break;
+        }
+      }
+
+      if (stopped)
+      {
+        LOG(TRACE, "thread stopped");
+        delete (*thrd); (*thrd) = NULL;
+      }
+      else
+      {
+        LOG(WARN, "possible memory leak created, could not delete blocked thread: " << (*thrd)->get_id());
+      }
     }
     execution_threads_.clear();
 
@@ -126,12 +145,12 @@ namespace sdpa { namespace nre { namespace worker {
           }
           catch (const boost::thread_interrupted &)
           {
-            LOG(DEBUG, "execution thread has been interrupted...");
+            DLOG(TRACE, "execution thread has been interrupted...");
             return;
           }
         }
         request_t r = requests_.front(); requests_.pop_front();
-        LOG(DEBUG, "removed execution request from queue (" << requests_.size() << " waiting)");
+        LOG(INFO, "removed execution request from queue (" << requests_.size() << " waiting)");
         rqst.reset(r.second);
         reply_to = r.first;
       } // release lock
@@ -142,7 +161,7 @@ namespace sdpa { namespace nre { namespace worker {
       }
       catch (const boost::thread_interrupted &)
       {
-        LOG(DEBUG, "execution thread has been interrupted...");
+        DLOG(TRACE, "execution thread has been interrupted...");
         return;
       }
 
@@ -154,7 +173,7 @@ namespace sdpa { namespace nre { namespace worker {
       }
       catch (const boost::thread_interrupted &)
       {
-        LOG(DEBUG, "execution thread has been interrupted...");
+        DLOG(TRACE, "execution thread has been interrupted...");
         return;
       }
 
@@ -203,11 +222,11 @@ namespace sdpa { namespace nre { namespace worker {
       data_[bytes_recv] = 0;
       std::string msg(data_, bytes_recv);
 
-      DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << msg);
+      DLOG(TRACE, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << msg);
 
       // special commands in debug build
 #ifndef NDEBUG
-      DLOG(DEBUG, "accepting the following \"special\" commands: " << "QUIT");
+      DLOG(TRACE, "accepting the following \"special\" commands: " << "QUIT SEGV STATUS");
       if (msg == "QUIT")
       {
         DLOG(INFO, "got QUIT request, returning from loop...");
@@ -237,12 +256,12 @@ namespace sdpa { namespace nre { namespace worker {
         {
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
           requests_.push_back(std::make_pair(sender_endpoint_, rqst));
-          LOG(DEBUG, "enqued blocking request to execution thread (" << requests_.size() << " waiting)");
+          LOG(INFO, "enqued blocking request to execution thread (" << requests_.size() << " waiting)");
           request_avail_.notify_one();
         }
         else
         {
-          LOG(DEBUG, "directly executing request...");
+          DLOG(DEBUG, "directly executing request...");
           sdpa::shared_ptr<Message> rply(rqst->execute(this));
           delete rqst; rqst = NULL;
 
@@ -269,8 +288,6 @@ namespace sdpa { namespace nre { namespace worker {
 #ifndef NDEBUG
 cont:
 #endif
-
-
       socket_->async_receive_from(
           boost::asio::buffer(data_, max_length), sender_endpoint_,
           boost::bind(&ActivityExecutor::handle_receive_from, this,
