@@ -14,14 +14,14 @@ void sleep (data_t &params)
   int retval = usleep(usec);
   LOG(INFO, "woke up: " << retval);
 
-  params["exit_code"].token().data(retval);
+  params["error_code"].token().data(retval);
 }
 
 SDPA_MOD_INIT_START(sleep)
 {
   SDPA_REGISTER_FUN_START(sleep);
     SDPA_ADD_INP("usec", useconds_t );
-    SDPA_ADD_OUT("exit_code", int);
+    SDPA_ADD_OUT("error_code", int);
   SDPA_REGISTER_FUN_END(sleep);
 }
 SDPA_MOD_INIT_END(sleep)
