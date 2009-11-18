@@ -71,9 +71,11 @@ namespace sdpa { namespace nre { namespace worker {
     barrier_.wait();
   }
 
-  void
+  bool
   ActivityExecutor::stop()
   {
+    bool all_stopped(true);
+
     for (thread_list_t::iterator thrd(execution_threads_.begin()); thrd != execution_threads_.end(); ++thrd)
     {
       // FIXME: how to stop the execution thread (while it executes something)?
@@ -93,18 +95,19 @@ namespace sdpa { namespace nre { namespace worker {
       if (stopped)
       {
         LOG(TRACE, "thread stopped");
-        delete (*thrd); (*thrd) = NULL;
       }
       else
       {
-        LOG(WARN, "possible memory leak created, could not delete blocked thread: " << (*thrd)->get_id());
+        LOG(WARN, "possible memory corruption created, could not terminate blocked thread cleanly: " << (*thrd)->get_id());
+        all_stopped = false;
       }
+      delete (*thrd); (*thrd) = NULL;
     }
     execution_threads_.clear();
 
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      if (! service_thread_) return; // already stopped
+      if (! service_thread_) return true; // already stopped
 
       service_thread_->interrupt();
       io_service_.stop();
@@ -119,6 +122,7 @@ namespace sdpa { namespace nre { namespace worker {
         delete socket_; socket_ = NULL;
       }
     }
+    return all_stopped;
   }
 
   void ActivityExecutor::operator()()
@@ -179,27 +183,25 @@ namespace sdpa { namespace nre { namespace worker {
 
       {
         boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        if (rply)
+        if (! socket_)
         {
-          if (socket_)
-          {
-            socket_->send_to(boost::asio::buffer(codec_.encode(*rply)), reply_to);
-          }
+          DLOG(TRACE, "I am late with terminating, everyone else is waiting for me...");
+          return;
         }
         else
         {
-          LOG(FATAL, "an execution request should always return a reply, shutting down");
-          trigger_shutdown();
-          return;
-        }
-
-        if (! socket_)
-        {
-          // i am late with terminating, everyone else is waiting for me
-          return;
+          if (rply)
+          {
+            socket_->send_to(boost::asio::buffer(codec_.encode(*rply)), reply_to);
+          }
+          else
+          {
+            LOG(ERROR, "an execution request should always return a reply!");
+          }
         }
       }
-    }
+
+    } // end for(;;)
   }
 
   void

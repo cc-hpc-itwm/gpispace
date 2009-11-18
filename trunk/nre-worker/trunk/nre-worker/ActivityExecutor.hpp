@@ -58,7 +58,7 @@ namespace sdpa { namespace nre { namespace worker {
     const std::string &location() const { return location_; }
 
     void start();
-    void stop();
+    bool stop();
 
     // message context
     sdpa::modules::ModuleLoader &loader() { return *loader_; }
