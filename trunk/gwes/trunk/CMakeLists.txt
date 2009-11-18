@@ -66,7 +66,6 @@ include(FindFhgLog)
 if (FHGLOG_FOUND)
   message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
   include_directories(${FHGLOG_INCLUDE_DIR})
-  link_libraries(${FHGLOG_LIBRARY})
 endif(FHGLOG_FOUND)
 
 ## check for boost
@@ -83,14 +82,12 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(${Boost_LIBRARIES})
 
 # uuid library
 Include(FindUUID)
 IF(UUID_FOUND)
   message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
   include_directories(${UUID_INCLUDE_DIR})
-  link_libraries(${UUID_LIBRARY})
 ELSE(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 ENDIF(UUID_FOUND)
