@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_worker.cpp
+ *       Filename:  nre-pcc.cpp
  *
  *    Description:  tests the nre worker component
  *
@@ -85,6 +85,10 @@ int main(int ac, char **av)
   opts.add_options()
     ("help,h", "show this help text")
     ("worker", po::value<std::string>()->default_value("127.0.0.1:8000"), "location of the nre-pcd")
+    ("walltime", po::value<unsigned long>()->default_value(0UL), "walltime of the function call in seconds (0 == forever)")
+    ("ping-interval", po::value<unsigned long>()->default_value(10UL), "how often shall the nre-pcd be pinged (seconds)")
+    ("ping-timeout", po::value<unsigned long>()->default_value(5UL), "time for the nre-pcd to answer to pings")
+    ("ping-trials", po::value<std::size_t>()->default_value(3UL), "maximum pings that might be lost")
 
     ("iparam,i", po::value<std::vector<std::string> >(), "input  parameter to the activity")
     ("oparam,o", po::value<std::vector<std::string> >(), "output parameter to the activity")
@@ -132,6 +136,9 @@ int main(int ac, char **av)
   std::string worker_location(vm["worker"].as<std::string>());
   sdpa::nre::worker::NreWorkerClient client(worker_location);
 
+  client.set_ping_interval(vm["ping-interval"].as<unsigned long>());
+  client.set_ping_timeout(vm["ping-timeout"].as<unsigned long>());
+  client.set_ping_trials(vm["ping-trials"].as<std::size_t>());
   try
   {
     client.start();
@@ -180,7 +187,7 @@ int main(int ac, char **av)
   sdpa::wf::Activity res;
   try
   {
-    res = client.execute(req);
+    res = client.execute(req, vm["walltime"].as<unsigned long>());
   }
   catch (const std::exception &ex)
   {
