@@ -1,4 +1,4 @@
-CMAKE=cmake
+CMAKE=c$(MAKE)
 CMAKE_CONFIG=
 CTEST_CONFIG=
 BUILD_DIR=build
@@ -12,7 +12,7 @@ $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
 compile: config
-	make -C $(BUILD_DIR)
+	$(MAKE) -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
 	cd $(BUILD_DIR) && $(CMAKE) ${CMAKE_CONFIG} $(top_srcdir)
@@ -22,16 +22,16 @@ distclean: clean
 	@-find . -name "*~" -delete
 
 clean:
-	make -C $(BUILD_DIR) clean
+	$(MAKE) -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C ${BUILD_DIR} doc
+	$(MAKE) -C ${BUILD_DIR} doc
 
 doc:
-	make -C doc
+	$(MAKE) -C doc
 
 dist: test
-	make -C $(BUILD_DIR) package
+	$(MAKE) -C $(BUILD_DIR) package
 
 test: ctest
 ctest: config
@@ -47,6 +47,6 @@ unify:
 ##	mv -i ${LOGDIR}/LastTestsFailed_$${CTEST_TAG}.log ${LOGDIR}/LastTestsFailed.log
 
 .DEFAULT:
-	make -C $(BUILD_DIR) $(MAKECMDGOALS)
+	$(MAKE) -C $(BUILD_DIR) $(MAKECMDGOALS)
 
 .PHONY: clean distclean all default doc test
