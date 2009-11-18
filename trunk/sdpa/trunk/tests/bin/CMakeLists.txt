@@ -13,8 +13,8 @@ foreach (tc_src ${tc_srcs})
   target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
   target_link_libraries(${tc_name} sdpa-events)
   target_link_libraries(${tc_name} sdpa-util)
-  target_link_libraries(${tc_name} seda)
-  target_link_libraries(${tc_name} seda-comm)
+  # gwes xml stuff
+
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
