@@ -37,6 +37,25 @@
 namespace sdpa { namespace nre { namespace worker {
   using boost::asio::ip::udp;
 
+  class NrePcdIsDead : public std::runtime_error
+  {
+  public:
+    NrePcdIsDead()
+      : std::runtime_error("nre-pcd is probably dead")
+    {}
+
+    virtual ~NrePcdIsDead() throw () {}
+  };
+
+  class WalltimeExceeded : public std::runtime_error
+  {
+  public:
+    WalltimeExceeded()
+      : std::runtime_error("execution did not finish within the specified walltime")
+    {}
+    virtual ~WalltimeExceeded() throw () {}
+  };
+
   class NreWorkerClient
   {
   public:
@@ -47,6 +66,15 @@ namespace sdpa { namespace nre { namespace worker {
       , barrier_(2)
       , service_thread_(NULL)
       , socket_(NULL)
+      , timer_timeout_(5)
+      , timer_active_(false)
+      , timer_(io_service_)
+      , ping_interval_(10) // 10 seconds
+      , ping_interval_timer_(io_service_)
+      , not_responded_to_ping_(0)
+      , ping_trials_(3)
+      , num_waiting_receiver_(0)
+      , started_(false)
     { }
 
     ~NreWorkerClient() throw ()
@@ -66,6 +94,24 @@ namespace sdpa { namespace nre { namespace worker {
     }
 
     const std::string &worker_location() const { return nre_worker_location_; }
+
+    void set_ping_interval(unsigned long seconds)
+    {
+      ping_interval_ = seconds;
+    }
+    void set_ping_timeout(unsigned long seconds)
+    {
+      timer_timeout_ = seconds;
+    }
+    void set_ping_trials(std::size_t max_tries)
+    {
+      ping_trials_ = max_tries;
+    }
+
+    bool is_pcd_dead() const
+    {
+      return not_responded_to_ping_ >= ping_trials_;
+    }
 
     void start() throw (std::exception)
     {
@@ -107,7 +153,7 @@ namespace sdpa { namespace nre { namespace worker {
       }
       catch (const std::exception &ex)
       {
-        LOG(ERROR, "could not create my sending socket: " << ex.what());
+        LOG(FATAL, "could not create my sending socket: " << ex.what());
         throw;
       }
 
@@ -116,9 +162,13 @@ namespace sdpa { namespace nre { namespace worker {
       service_thread_ = new boost::thread(boost::bind(&NreWorkerClient::service_thread, this));
       barrier_.wait();
 
-      ping();
+      ping (); // send a synchronous ping
 
+      started_ = true;
+      not_responded_to_ping_ = 0;
       LOG(INFO, "started connection to nre-pcd");
+
+      start_ping_interval_timer();
     }
 
     void stop() throw (std::exception)
@@ -127,11 +177,11 @@ namespace sdpa { namespace nre { namespace worker {
       {
         return;
       }
-      LOG(DEBUG, "stopping nre-pcd connection");
+      LOG(TRACE, "stopping nre-pcd connection");
       service_thread_->interrupt(); 
       io_service_.stop();
       service_thread_->join();
-      DLOG(DEBUG, "service thread finished");
+      DLOG(TRACE, "service thread finished");
       delete service_thread_; service_thread_ = NULL;
 
       if (socket_)
@@ -139,7 +189,8 @@ namespace sdpa { namespace nre { namespace worker {
         socket_->close();
         delete socket_; socket_ = NULL;
       }
-      LOG(DEBUG, "connection to nre-pcd stopped.");
+      started_ = false;
+      LOG(INFO, "connection to nre-pcd stopped.");
     }
 
     void cancel() throw (std::exception)
@@ -147,15 +198,13 @@ namespace sdpa { namespace nre { namespace worker {
       throw std::runtime_error("not implemented");
     }
 
-    sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity)
+    sdpa::wf::Activity execute(const sdpa::wf::Activity &in_activity, unsigned long walltime = 0) throw (WalltimeExceeded, std::exception)
     {
-      sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity));
+      sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity), walltime);
       if (msg)
       {
         // check if it is a ExecuteReply
         ExecuteReply *exec_reply = dynamic_cast<ExecuteReply*>(msg.get());
-
-        ping();
 
         if (exec_reply)
         {
@@ -172,51 +221,99 @@ namespace sdpa { namespace nre { namespace worker {
       }
     }
   private:
-    void ping(/* timeout */)
+    void ping() throw (NrePcdIsDead)
     {
-      sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"));
-      LOG(DEBUG, "got reply to ping: " << *msg);
+      try
+      {
+        sdpa::shared_ptr<Message> msg = request(PingRequest("tag-1"), timer_timeout_);
+        LOG(TRACE, "got reply to ping: " << *msg);
+      }
+      catch (...)
+      {
+        throw NrePcdIsDead();
+      }
     }
 
-    sdpa::shared_ptr<Message> request(const Message &m)
+    void send(const Message &m)
     {
-      // send
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
-        std::string encoded_message(codec_.encode(m));
-        LOG(DEBUG, "sending " << encoded_message.size() << " bytes of data to " << nre_worker_endpoint_ << ": " << encoded_message);
-        socket_->async_send_to(boost::asio::buffer(encoded_message)
-                             , nre_worker_endpoint_
-                             , boost::bind(&NreWorkerClient::handle_send_to, this
-                             , boost::asio::placeholders::error
-                             , boost::asio::placeholders::bytes_transferred));
-      }
+      boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+      std::string encoded_message(codec_.encode(m));
+      DLOG(TRACE, "sending " << encoded_message.size() << " bytes of data to " << nre_worker_endpoint_ << ": " << encoded_message);
+      socket_->async_send_to(boost::asio::buffer(encoded_message)
+                           , nre_worker_endpoint_
+                           , boost::bind(&NreWorkerClient::handle_send_to, this
+                           , boost::asio::placeholders::error
+                           , boost::asio::placeholders::bytes_transferred));
+    }
 
-      // recv
+    template <class T> struct counter_mgr
+    {
+      counter_mgr(T *counter)
+        : counter_(counter)
+      { *counter_++; }
+
+      ~counter_mgr() { *counter_--; }
+
+      T *counter_;
+    };
+    typedef counter_mgr<unsigned int> waiter_mgr;
+
+    Message *recv(unsigned long timeout)
+    {
+
       Message *msg(NULL);
+      boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+
+      waiter_mgr waiter(&num_waiting_receiver_);
+
+      while (incoming_messages_.empty())
       {
-        boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
-        while (incoming_messages_.empty())
+        bool notified_(false);
+
+        if (timeout)
         {
-          const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(5000));
-          if (! msg_avail_.timed_wait(lock, to))
+          const boost::system_time to(boost::get_system_time() + boost::posix_time::seconds(timeout));
+          notified_ = msg_avail_.timed_wait(lock, to);
+        }
+        else
+        {
+          msg_avail_.wait(lock);
+        }
+
+        if (! notified_)
+        {
+          if (! incoming_messages_.empty())
           {
-            if (! incoming_messages_.empty())
+            break;
+          }
+          else
+          {
+            if (is_pcd_dead())
             {
-              break;
+              throw NrePcdIsDead();
             }
             else
             {
-              throw std::runtime_error("did not receive a message (timeout)");
+              throw WalltimeExceeded();
             }
           }
         }
-
-        msg = incoming_messages_.front();
-        incoming_messages_.pop_front();
+        DLOG(TRACE, "receiver woke up...");
+        if (started_ && is_pcd_dead())
+        {
+          throw NrePcdIsDead();
+        }
       }
+      msg = incoming_messages_.front();
+      incoming_messages_.pop_front();
 
-      return sdpa::shared_ptr<Message>(msg);
+      return msg;
+    }
+
+    sdpa::shared_ptr<Message> request(const Message &m, unsigned long timeout)
+    {
+      send(m);
+      return sdpa::shared_ptr<Message>(recv(timeout));
     }
 
     void schedule_receive()
@@ -228,10 +325,75 @@ namespace sdpa { namespace nre { namespace worker {
             boost::asio::placeholders::bytes_transferred));
     }
 
+    void start_timeout_timer()
+    {
+      if (! timer_active_)
+      {
+        timer_.expires_from_now(boost::posix_time::seconds(timer_timeout_));
+        timer_.async_wait(boost::bind(&NreWorkerClient::timer_timedout, this, boost::asio::placeholders::error));
+        DLOG(TRACE, "started timeout timer (expires in: "<< timer_.expires_from_now() <<")");
+        timer_active_ = true;
+      }
+      else
+      {
+        DLOG(TRACE, "timeout timer still active (expires in: "<< timer_.expires_from_now() <<")");
+      }
+    }
+
+    void start_ping_interval_timer()
+    {
+      DLOG(TRACE, "starting ping timer ("<<ping_interval_<<"s)");
+      // schedule next ping
+      ping_interval_timer_.expires_from_now(boost::posix_time::seconds(ping_interval_));
+      ping_interval_timer_.async_wait(boost::bind(&NreWorkerClient::send_ping, this, boost::asio::placeholders::error));
+    }
+
+    void send_ping(const boost::system::error_code &error)
+    {
+      if (! error)
+      {
+        DLOG(DEBUG, "checking if pcd is alive...");
+        send (PingRequest("tag-1"));
+        // start the timeout timer
+        start_timeout_timer();
+        start_ping_interval_timer();
+      }
+      {
+        DLOG(TRACE, "ping timer cancelled");
+      }
+    }
+
+    void ping_reply_received(const sdpa::shared_ptr<PingReply> &ping_reply)
+    {
+      not_responded_to_ping_ = 0;
+
+      DLOG(DEBUG, "got ping reply from pid=" << ping_reply->pid());
+      timer_.cancel();
+      DLOG(TRACE, "timeout timer cancelled");
+    }
+
+    void timer_timedout(const boost::system::error_code &error)
+    {
+      if (! error)
+      {
+        ++not_responded_to_ping_;
+        DLOG(WARN, "nre-pcd is not responding... (" << not_responded_to_ping_ << "/" << ping_trials_ << ")");
+
+        // wake up any thread waiting for some execution
+        if (is_pcd_dead())
+        {
+          LOG(ERROR, "nre-pcd is probably dead, waking blocked threads...");
+          boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+          msg_avail_.notify_all();
+        }
+      }
+      timer_active_ = false;
+    }
+
     void handle_send_to(const boost::system::error_code &error
                       , size_t bytes_sent)
     {
-      DLOG(DEBUG, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
+      DLOG(TRACE, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
     }
 
     void handle_receive_from(const boost::system::error_code &error
@@ -240,13 +402,39 @@ namespace sdpa { namespace nre { namespace worker {
       if (!error && bytes_recv > 0)
       {
         std::string tmp(data_, bytes_recv);
-        DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << tmp);
+        DLOG(TRACE, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << tmp);
         try
         {
           Message *msg(codec_.decode(tmp));
-          boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
-          incoming_messages_.push_back(msg);
-          msg_avail_.notify_one();
+          if (started_)
+          {
+            if (PingReply *pong = dynamic_cast<PingReply*>(msg))
+            {
+              // handle internal pings
+              sdpa::shared_ptr<PingReply> ping_reply(pong);
+              ping_reply_received(ping_reply);
+            }
+            else
+            {
+              boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+              incoming_messages_.push_back(msg);
+              msg_avail_.notify_one();
+            }
+          }
+          else
+          {
+            if (dynamic_cast<PingReply*>(msg))
+            {
+              boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+              // notify initial start() synchronous ping request
+              incoming_messages_.push_back(msg);
+              msg_avail_.notify_one();
+            }
+            else
+            {
+              LOG(WARN, "ignoring message (not completely started yet): " << *msg);
+            }
+          }
         } catch (const std::exception &ex) {
           LOG(ERROR, "could not decode message: " << ex.what());
         } catch (...) {
@@ -277,15 +465,28 @@ namespace sdpa { namespace nre { namespace worker {
     boost::barrier barrier_;
     boost::thread *service_thread_;
     udp::socket *socket_;
+
+    unsigned long timer_timeout_;
+    bool timer_active_;
+    boost::asio::deadline_timer timer_;
+
+    unsigned long ping_interval_;
+    boost::asio::deadline_timer ping_interval_timer_;
+    size_t not_responded_to_ping_;
+    size_t ping_trials_;
+
     udp::endpoint nre_worker_endpoint_;
     udp::endpoint sender_endpoint_;
 
     // asynchronous receive implementation
     boost::recursive_mutex msg_mtx_;
     boost::condition_variable_any msg_avail_;
-
     typedef std::list<Message*> message_list_t;
     message_list_t incoming_messages_;
+    unsigned int num_waiting_receiver_;
+
+    bool started_;
+    bool timeout_timer_active_;
 
     enum { max_length = ((2<<16) - 1) };
     char data_[max_length];
