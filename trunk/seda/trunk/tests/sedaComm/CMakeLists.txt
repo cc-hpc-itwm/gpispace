@@ -19,6 +19,7 @@ add_test(sedaCommTestsuite ${CMAKE_CURRENT_BINARY_DIR}/sedaCommTestsuite)
 target_link_libraries(sedaCommTestsuite seda)
 target_link_libraries(sedaCommTestsuite seda-comm)
 target_link_libraries(sedaCommTestsuite ${CPPUNIT_LIBRARIES})
+target_link_libraries(dl)
 target_link_libraries(msg_listener seda seda-comm)
 target_link_libraries(msg_sender seda seda-comm)
 
