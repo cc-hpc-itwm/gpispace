@@ -103,7 +103,12 @@ void TestComponents::testComponents()
     catch (const std::exception &ex)
     {
       LOG(FATAL, "could not start NRE: " << ex.what());
-      CPPUNIT_ASSERT_MESSAGE("could not start NRE", false);
+      LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+      /* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
+      sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+      sdpa::daemon::Aggregator::shutdown(ptrAgg);
+      sdpa::daemon::NRE::shutdown(ptrNRE_0);
+      return;
     }
 
 	/*sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
