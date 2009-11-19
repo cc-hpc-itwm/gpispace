@@ -33,7 +33,7 @@ int main(int ac, char **av)
 
   typedef NotificationService gui_service;
   gui_service notify_gui("SDPA", gui_location);
-  for (size_t i = 0; ; ++i)
+  for (size_t i = 0; i < 1000 ; ++i)
   {
     std::ostringstream ostr;
     ostr << "activity-" << i;
