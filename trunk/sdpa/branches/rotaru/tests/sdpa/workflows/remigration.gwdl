@@ -236,12 +236,12 @@
       <inputPlace placeID="seq after write output"/>
 
       <inputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+      <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume" />
 
       <!-- consume all the global variable tokens, not strictly necessary -->
       <inputPlace placeID="number_of_frequencies"/>
       <inputPlace placeID="number_of_depthlevels"/>
       <inputPlace placeID="number_of_parallel_propagators"/>
-      <inputPlace placeID="memhandle_for_outputvolume"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="finalize">

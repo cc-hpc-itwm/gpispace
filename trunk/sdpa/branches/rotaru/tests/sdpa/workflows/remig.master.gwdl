@@ -21,7 +21,7 @@
 
     <operation>
       <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration">
-        <oc:operationCandidate type="sdpa/workflow" operationName="workflows/remigration.gwdl" resourceName="agg" selected="true"/>
+        <oc:operationCandidate type="sdpa/workflow" operationName="remigration.gwdl" resourceName="agg" selected="true"/>
       </oc:operationClass>
     </operation>
 
