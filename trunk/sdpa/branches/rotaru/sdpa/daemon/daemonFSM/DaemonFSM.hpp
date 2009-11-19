@@ -23,7 +23,7 @@
 #ifdef USE_BOOST_SC
 #   include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
 namespace dsm = sdpa::fsm::bsc;
-#elif USE_SMC
+#elif USE_SMC_SC
 #   include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 namespace dsm = sdpa::fsm::smc;
 #else

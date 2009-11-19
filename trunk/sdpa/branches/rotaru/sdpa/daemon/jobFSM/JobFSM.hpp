@@ -23,7 +23,7 @@
 #ifdef USE_BOOST_SC
 #   include <sdpa/daemon/jobFSM/BSC/JobFSM.hpp>
 namespace jsm = sdpa::fsm::bsc;
-#elif USE_SMC
+#elif USE_SMC_SC
 #   include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 namespace jsm = sdpa::fsm::smc;
 #else
