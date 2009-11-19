@@ -203,7 +203,8 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 					fault << "' has no output parameter related to the edge expression '" << it->edgeP->getExpression();
 					fault << "'</soapenv:Detail>";
 					fault << "</soapenv:Fault></data>";
-					it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(fault.str()))));
+					Data::ptr_t dataP = Data::ptr_t(new Data(fault.str()));
+					it->tokenP = Token::ptr_t(new Token(dataP));
 				}
 			}
 			// put token to output place
@@ -265,7 +266,8 @@ void TransitionOccurrence::evaluateXPathEdgeExpressions(int step) {
 			string edgeExpression = it->edgeP->getExpression(); 
 			if (edgeExpression.find("$")!=edgeExpression.npos) {  // XPath expression
 				string str = xpathEvaluatorP->evalExpression2Xml(edgeExpression);
-				it->tokenP = Token::ptr_t(new Token( Data::ptr_t(new Data(str)) ));
+				Data::ptr_t dataP = Data::ptr_t(new Data(str));
+				it->tokenP = Token::ptr_t(new Token( dataP ));
 			}
 			break;
 		}

@@ -92,6 +92,7 @@ gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception)
 		string edgeExpression;
 		try {
 			gwdl::Place::ptr_t placeP;
+			gwdl::Token::ptr_t tokenCloneP;
 			for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 				switch (it->scope) {
 				case (TokenParameter::SCOPE_READ):
@@ -100,7 +101,8 @@ gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception)
 					edgeExpression = it->edgeP->getExpression();
 					LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from activity to sub workflow ..."); 
 					placeP = subworkflowP->getPlace(edgeExpression);
-					placeP->addToken(it->tokenP->deepCopy());
+					tokenCloneP = it->tokenP->deepCopy();
+					placeP->addToken(tokenCloneP);
 					break;
 				case (TokenParameter::SCOPE_OUTPUT):	
 					continue;
@@ -151,7 +153,11 @@ gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception)
 		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 			edgeExpression = it->edgeP->getExpression();
 			placeP = gwdl::Place::ptr_t(new gwdl::Place(it->edgeP->getPlaceID()));
-			if (it->tokenP)	placeP->addToken(it->tokenP->deepCopy());
+			if (it->tokenP) {
+				gwdl::Token::ptr_t tokenCloneP = it->tokenP->deepCopy();
+				placeP->addToken(tokenCloneP);
+			}
+
 			subworkflowP->addPlace(placeP);
 
 			switch (it->scope) {

@@ -92,14 +92,14 @@ public:
 	 * @param _properties The properties of this token.
 	 * @param _control The control value of this token.
 	 */
-	explicit Token(Properties::ptr_t propertiesP, control_t control);
+	explicit Token(Properties::ptr_t& propertiesP, control_t control);
 	
 	/**
 	 * Constructor for data token.
 	 * Note: When the token is deleted, then also the data object will be deleted! 
 	 * @param _data XML content of the data token as data object.
 	 */  
-	explicit Token(Data::ptr_t dataP);
+	explicit Token(const Data::ptr_t& dataP);
 	
 	/**
 	 * Constructor for data token with specific properties.
@@ -107,7 +107,7 @@ public:
 	 * @param _properties The properties of this data token.
 	 * @param _data The data of this token.
 	 */
-	explicit Token(Properties::ptr_t propertiesP, Data::ptr_t dataP);
+	explicit Token(Properties::ptr_t& propertiesP, const Data::ptr_t& dataP);
 	
 	/**
 	 * Destructor for data token.
@@ -120,14 +120,14 @@ public:
 	 * Returns NULL if there are no properties. 
 	 * @return A shared pointer to the Token properties or NULL if there are no properties.
 	 */
-	Properties::ptr_t getProperties() {return _propertiesP;}
+	Properties::ptr_t& getProperties() {return _propertiesP;}
 	
 	/**
 	 * Get a read-only pointer to the properties of this token.
 	 * Returns NULL if there are no properties. 
 	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
-	const Properties::ptr_t readProperties() const {return _propertiesP;}
+	const Properties::ptr_t& readProperties() const {return _propertiesP;}
 
 	/**
 	 * Put new name/value pair into properties.
@@ -141,7 +141,7 @@ public:
 	 * Get a shared pointer to the data object of this data token.
 	 * @return The data of this token.
 	 */
-	const Data::ptr_t getData() const {return _dataP;}
+	const Data::ptr_t& getData() const {return _dataP;}
 	
 	/**
 	 * Check, whether this token is a control or data token.

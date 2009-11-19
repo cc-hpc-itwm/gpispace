@@ -153,19 +153,19 @@ public:
     /**
      * get workflow id.
      */
-    const workflow_id_t & getID() const {return _id;}
+    const workflow_id_t& getID() const {return _id;}
     
     /**
      * set workflow id.
      */
-    void setID(const workflow_id_t &id) {_id = id;}
+    void setID(const workflow_id_t& id) {_id = id;}
 
     /**
      * Appends a place to the registered places.
      * Note that a copy of this place will added and not a reference or pointer!
      * @param place to add
      */
-    void addPlace(Place::ptr_t placeP) {_places.insert(std::pair<std::string, Place::ptr_t>(placeP->getID(),placeP));}
+    void addPlace(Place::ptr_t& placeP) {_places.insert(std::pair<std::string, Place::ptr_t>(placeP->getID(),placeP));}
     
     /**
      * Return the map of places of the workflow.
@@ -184,14 +184,14 @@ public:
     /**
      * Get the ith place.
      */
-    Place::ptr_t getPlace(unsigned int i) throw (NoSuchWorkflowElement);
+    Place::ptr_t& getPlace(unsigned int i) throw (NoSuchWorkflowElement);
     
     /**
      * retrieve a place by its identifier ID.
      * @param id place ID
      * @return place  place to find
      */
-    Place::ptr_t getPlace(const std::string& id) throw (NoSuchWorkflowElement);
+    Place::ptr_t& getPlace(const std::string& id) throw (NoSuchWorkflowElement);
 
     /**
      * Get the index of a specific place.
@@ -217,7 +217,7 @@ public:
      * (allocated transition is deleted)
      * @param transition The transition to add.
      */
-    void addTransition(Transition::ptr_t transitionP) {_transitions.push_back(transitionP);}
+    void addTransition(Transition::ptr_t& transitionP) {_transitions.push_back(transitionP);}
 
 	/**
 	 * Remove a transition specified by its index.
@@ -231,7 +231,7 @@ public:
      * @param id The transition ID.
      * @return A reference to the transition.
      */
-    Transition::ptr_t getTransition(const std::string& id) throw (NoSuchWorkflowElement);
+    Transition::ptr_t& getTransition(const std::string& id) throw (NoSuchWorkflowElement);
     
     /**
      * Get the index of a specific transition.
@@ -245,7 +245,7 @@ public:
 	 * @param i The transition index.
 	 * @return A reference to the transition.
 	 */
-    Transition::ptr_t getTransition(unsigned int i) throw (NoSuchWorkflowElement);
+    Transition::ptr_t& getTransition(unsigned int i) throw (NoSuchWorkflowElement);
 
 	/**
 	 * Get the total number of transitions within this workflow.
@@ -291,14 +291,14 @@ public:
 	 * Returns NULL if there are no properties. 
 	 * @return A shared pointer to the workflow properties or NULL if there are no properties.
 	 */
-    Properties::ptr_t getProperties() {return _propertiesP;}
+    Properties::ptr_t& getProperties() {return _propertiesP;}
 
 	/**
 	 * Get the properties of this workflow for read-only.
 	 * Returns NULL if there are no properties. 
 	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
-    const Properties::ptr_t readProperties() const {return _propertiesP;}
+    const Properties::ptr_t& readProperties() const {return _propertiesP;}
 
 	/**
 	 * Put new name/value pair into properties.
@@ -312,7 +312,7 @@ public:
 	 * Set all the properties of this workflow.
 	 * @param _properties The workflow properties.
 	 */
-    void setProperties(Properties::ptr_t propertiesP){_propertiesP = propertiesP;}
+    void setProperties(Properties::ptr_t& propertiesP){_propertiesP = propertiesP;}
 
 private:
     std::string _id;

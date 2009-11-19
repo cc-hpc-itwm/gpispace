@@ -136,7 +136,8 @@ void PlaceTest::testPlace()
 		Properties::ptr_t propsP = Properties::ptr_t(new Properties());
 		propsP->put("k1","v1");
 		propsP->put("k2","v2");
-		placeP->setProperties(propsP->deepCopy());
+		Properties::ptr_t propsCloneP = propsP->deepCopy(); 
+		placeP->setProperties(propsCloneP);
 		Properties::ptr_t propsPb = placeP->getProperties();
 		propsP->put("k3", "v3");  // should be ignored!
 		propsPb->put("k3b","v3b"); // should change the properties!

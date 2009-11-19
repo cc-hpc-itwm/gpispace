@@ -401,8 +401,9 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 	    }
 	    
 	    //   <token>
-	    while(curNodeP && checkElementName(curNodeP, "token")) {              
-	    	placeP->addToken(elementToToken(curNodeP));
+	    while(curNodeP && checkElementName(curNodeP, "token")) { 
+	    	Token::ptr_t token = elementToToken(curNodeP); 
+	    	placeP->addToken(token);
 			curNodeP = nextElementNode(curNodeP->next);
 	    }
 
@@ -634,7 +635,8 @@ OperationClass::ptr_t Libxml2Builder::elementToOperationClass(const xmlNodePtr n
 		curNodeP = nextElementNode(curNodeP->children);
 		while(curNodeP) {
 		    if (checkElementName(curNodeP, "operationCandidate")) {              //   <operationCandidate>
-	    		operationClassP->addOperationCandidate(elementToOperationCandidate(curNodeP));
+		    	OperationCandidate::ptr_t ocand = elementToOperationCandidate(curNodeP);
+	    		operationClassP->addOperationCandidate(ocand);
 		    } else {
 		    	ostringstream oss;
 		    	oss << "Unknown element <" << curNodeP->name << ">. Expected <operationCandidate>";
@@ -719,7 +721,8 @@ Operation::ptr_t Libxml2Builder::elementToOperation(const xmlNodePtr nodeP) cons
 		curNodeP = nextElementNode(curNodeP->children);
 		if (curNodeP) {
 			if (checkElementName(curNodeP, "operationClass")) {                    //   <operationClass>
-				operationP->setOperationClass(elementToOperationClass(curNodeP));
+				OperationClass::ptr_t ocP = elementToOperationClass(curNodeP);
+				operationP->setOperationClass(ocP);
 			} else {
 		    	ostringstream oss;
 		    	oss << "Unknown element <" << curNodeP->name << ">. Expected <operationClass>";
@@ -934,35 +937,41 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 		} 
 		// <readPlace>
 		while(curNodeP && checkElementName(curNodeP, "readPlace")) {
-			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			Edge::ptr_t edge = elementToEdge(wfP, curNodeP);
+			transitionP->addEdge(edge); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <inputPlace>
 		while(curNodeP && checkElementName(curNodeP, "inputPlace")) {
-			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			Edge::ptr_t edge = elementToEdge(wfP, curNodeP);
+			transitionP->addEdge(edge); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <writePlace>
 		while(curNodeP && checkElementName(curNodeP, "writePlace")) {
-			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			Edge::ptr_t edge = elementToEdge(wfP, curNodeP);
+			transitionP->addEdge(edge); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <outputPlace>
 		while(curNodeP && checkElementName(curNodeP, "outputPlace")) {
-			transitionP->addEdge(elementToEdge(wfP, curNodeP)); 
+			Edge::ptr_t edge = elementToEdge(wfP, curNodeP);
+			transitionP->addEdge(edge); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <condition>
 		while(curNodeP && checkElementName(curNodeP, "condition")) {
 			textNodeP = nextTextNode(curNodeP->children);
 			if (textNodeP) {
-				transitionP->addCondition(string( (const char*) textNodeP->content)); 
+				string condition = string( (const char*) textNodeP->content);
+				transitionP->addCondition(condition); 
 			}
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <operation>
 		if(curNodeP && checkElementName(curNodeP, "operation")) {
-			transitionP->setOperation(elementToOperation(curNodeP));
+			Operation::ptr_t oper = elementToOperation(curNodeP);
+			transitionP->setOperation(oper);
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		
@@ -1156,13 +1165,15 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 		
 		// <place>
 		while(curNodeP && checkElementName(curNodeP, "place")) {
-			workflowP->addPlace(elementToPlace(curNodeP)); 
+			Place::ptr_t place = elementToPlace(curNodeP); 
+			workflowP->addPlace(place); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		
 		// <transition>
 		while(curNodeP && checkElementName(curNodeP, "transition")) {
-			workflowP->addTransition(elementToTransition(workflowP,curNodeP)); 
+			Transition::ptr_t trans = elementToTransition(workflowP,curNodeP); 
+			workflowP->addTransition(trans); 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		

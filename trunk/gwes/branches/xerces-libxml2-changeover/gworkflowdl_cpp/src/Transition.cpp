@@ -44,7 +44,7 @@ Transition::~Transition() {
  * add an Edge considering its scope.
  * @param edge Edge to be added.
  */
-void Transition::addEdge(Edge::ptr_t edgeP) {
+void Transition::addEdge(Edge::ptr_t& edgeP) {
 	switch(edgeP->getScope()) {
 	case(Edge::SCOPE_READ):
 		_readEdges.push_back(edgeP);

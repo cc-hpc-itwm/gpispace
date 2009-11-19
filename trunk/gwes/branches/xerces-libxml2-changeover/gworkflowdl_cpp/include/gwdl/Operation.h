@@ -101,19 +101,19 @@ public:
 	 * (allocated OperationClass is deleted)
 	 * @param oc The operation class assosiated with this operation.
 	 */
-    void setOperationClass(OperationClass::ptr_t oc) {_operationClassP = oc;}
+    void setOperationClass(OperationClass::ptr_t& oc) {_operationClassP = oc;}
 
     /**
      * Get the operation class of this operation.
      * @return A shared pointer to the operation class.
      */
-    OperationClass::ptr_t getOperationClass() {return _operationClassP;}
+    OperationClass::ptr_t& getOperationClass() {return _operationClassP;}
 
     /**
      * Get the operation class of this operation read-only.
      * @return A shared pointer to the operation class.
      */
-    const OperationClass::ptr_t readOperationClass() const {return _operationClassP;}
+    const OperationClass::ptr_t& readOperationClass() const {return _operationClassP;}
 
     /**
      * Get level of abstraction.
