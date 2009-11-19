@@ -27,14 +27,6 @@ void init (data_t &params) throw (std::exception)
   ASSERT_ALLOC(memhandle_for_configuration, "global alloc");
 
   // for now, just free the mem immediately
-  int ret (0);
-
-  ret = fvmGlobalFree (memhandle_for_outputvolume);
-  ASSERT_SUCCESS(ret, "global free");
-
-  ret = fvmGlobalFree (memhandle_for_configuration);
-  ASSERT_SUCCESS(ret, "global free");
-
   MLOG (DEBUG, "number_of_frequencies = " << number_of_frequencies);
   MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
   MLOG (DEBUG, "number_of_parallel_propagators = " << number_of_parallel_propagators);
