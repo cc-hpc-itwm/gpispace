@@ -1,0 +1,4 @@
+make 
+make test
+cd build
+make install
