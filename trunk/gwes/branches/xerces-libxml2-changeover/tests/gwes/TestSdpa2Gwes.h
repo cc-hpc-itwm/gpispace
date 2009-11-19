@@ -12,19 +12,17 @@
 namespace gwes {
 namespace tests {
 
-class Sdpa2GwesAPITest : public CPPUNIT_NS::TestFixture {
-	CPPUNIT_TEST_SUITE( gwes::tests::Sdpa2GwesAPITest );
+class TestSdpa2Gwes : public CPPUNIT_NS::TestFixture {
+	CPPUNIT_TEST_SUITE( gwes::tests::TestSdpa2Gwes );
 	CPPUNIT_TEST( testWorkflowWithSdpaActivity );
-	//CPPUNIT_TEST( testSdpa2Gwes );
-	//CPPUNIT_TEST( testGwes2Sdpa );
+	CPPUNIT_TEST( testWorkflowWithSdpaSubWorkflow );
 	CPPUNIT_TEST_SUITE_END();
 
 protected:
 	void testWorkflowWithSdpaActivity();
-	void testSdpa2Gwes();
-	void testGwes2Sdpa();
+	void testWorkflowWithSdpaSubWorkflow();
 	
-}; // end class Sdpa2GwesAPITest  
+}; // end class TestSdpa2Gwes  
 
 } // end namespace tests
 } // end namespace gwes

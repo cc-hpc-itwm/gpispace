@@ -8,6 +8,7 @@
 #define NOSUCHWORKFLOWELEMENT_H_
 // std
 #include <string>
+#include <stdexcept>
 
 namespace gwdl
 {
@@ -18,14 +19,15 @@ namespace gwdl
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class NoSuchWorkflowElement
-{
+class NoSuchWorkflowElement : public std::runtime_error {
 public:
-		std::string message;
-		NoSuchWorkflowElement(const std::string& _message) 
+        explicit
+		NoSuchWorkflowElement(const std::string& a_message) 
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
+
+        ~NoSuchWorkflowElement() throw () {}
 };
 
 }

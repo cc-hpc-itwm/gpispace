@@ -8,6 +8,7 @@
 #define WORKFLOWFORMATEXCEPTION_H_
 
 //std
+#include <stdexcept>
 #include <string>
 
 namespace gwdl
@@ -19,14 +20,15 @@ namespace gwdl
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class WorkflowFormatException
+class WorkflowFormatException : public std::runtime_error
 {
 public:
-		std::string message;
-		WorkflowFormatException(const std::string& _message) 
+		WorkflowFormatException(const std::string& a_message)
+          : std::runtime_error(a_message)
 		{
-			message = _message;					
 		}
+
+        ~WorkflowFormatException() throw() {}
 };
 
 }

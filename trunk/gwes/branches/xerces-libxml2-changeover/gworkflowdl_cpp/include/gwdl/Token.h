@@ -9,6 +9,7 @@
 // gwdl
 #include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/Properties.h>
+#include <gwdl/IToken.h>
 #include <gwdl/Data.h>
 //#include <gwdl/Transition.h>
 
@@ -56,7 +57,7 @@ class Transition;
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  * 
  */ 
-class Token
+class Token : public IToken
 {
 
 public:
@@ -76,6 +77,13 @@ public:
 	/**
 	 * Constructor for control token with specified value.
 	 * @param _control Boolean value of the control token.
+     *
+     * FIXME: C++ automatically converts nearly everything to bool
+     *        which means that code like 'Token("foo")' compiles,
+     *        it just creates a Control-Token with control==true
+     *
+     * TODO: remove this constructor and replace it with explicit
+     *       factory method
 	 */ 
 	explicit Token(control_t control);
 	
@@ -186,7 +194,7 @@ public:
 	 * Locks from transitions will be removed on the cloned token.
 	 * @return Pointer to the cloned Token object.
 	 */ 
-	Token::ptr_t deepCopy();
+	ptr_t deepCopy() const;
 	
 private:
 	long _id;

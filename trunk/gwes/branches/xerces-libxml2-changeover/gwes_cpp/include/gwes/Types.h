@@ -2,6 +2,7 @@
 #define TYPES_H_
 // gwes
 #include <gwes/TokenParameter.h>
+#include <gwes/IActivity.h>
 // gwdl
 #include <gwdl/Workflow.h>
 // std
@@ -10,9 +11,6 @@
 
 namespace gwes
 {
-
-class Activity;
-
 /**
  * Type for referencing to a GWorkflowDL workflow.
  * @todo: It could be better to use a reference to the corresponding WorkflowHandler instead!
@@ -22,18 +20,18 @@ typedef gwdl::Workflow workflow_t;
 /**
  * Type of the workflow identifier.
  */
-typedef std::string workflow_id_t;
+typedef gwdl::Workflow::workflow_id_t workflow_id_t;
 
 /**
  * Type for referencing to a SPDA activity.
  * ToDo: replace by specific SPDA activity class. Meanwhile using gwes::Activity.
  */
-typedef Activity activity_t;
+typedef IActivity activity_t;
 
 /**
  * Type fo the activity identifier.
  */
-typedef std::string activity_id_t;
+typedef IActivity::activity_id_t activity_id_t;
 
 /**
  * Type of read/input/write/output parameters.

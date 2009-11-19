@@ -19,24 +19,30 @@
 #ifndef GWES_IACTIVITY_H
 #define GWES_IACTIVITY_H 1
 
+#include <exception>
 #include <string>
 #include <gwes/memory.hpp>
 
-#include <gwdl/IWorkflow.h>
+#include <gwdl/Workflow.h>
 
 namespace gwes
 {
   class IActivity
   {
   public:
-    typedef gwes::shared_ptr<IActivity> ptr_t;
+    typedef shared_ptr<IActivity> ptr_t;
     typedef std::string activity_id_t;
 
     virtual void  setID(const activity_id_t &) = 0;
     virtual const activity_id_t &getID() const = 0;
 
-    virtual gwdl::IWorkflow::ptr_t transform_to_workflow() const = 0;
+    virtual const gwdl::Workflow::workflow_id_t &getOwnerWorkflowID() const = 0;
+
+    virtual gwdl::Workflow::ptr_t transform2Workflow() const throw(std::exception) = 0;
   };
+  
+  typedef IActivity activity_t;
+  typedef activity_t::activity_id_t activity_id_t;
 }
 
 #endif

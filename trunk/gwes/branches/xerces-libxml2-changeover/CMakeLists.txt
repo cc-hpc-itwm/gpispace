@@ -12,7 +12,7 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 2)
 set(V_MINOR 0)
-set(V_PATCH 2)
+set(V_PATCH 3)
 
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
@@ -39,8 +39,8 @@ include(FindDoxygen)
 include(FindMscgen)
 
 ## find the StateMachineCompiler (SMC)
-Include(FindSMC)
-Include(SMCMacros)
+#include(FindSMC)
+#include(SMCMacros)
 
 ## find libxml2
 Include(FindXml2)
@@ -60,15 +60,28 @@ include(FindFhgLog)
 if (FHGLOG_FOUND)
   message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
   include_directories(${FHGLOG_INCLUDE_DIR})
-  link_libraries(${FHGLOG_LIBRARY})
 endif(FHGLOG_FOUND)
+
+## check for boost
+set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
+set(Boost_FIND_QUIETLY false)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization)
+# we need at least 1.36 so check for it
+if (Boost_MAJOR_VERSION LESS 1)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif(Boost_MAJOR_VERSION LESS 1)
+if (Boost_MINOR_VERSION LESS 36)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif (Boost_MINOR_VERSION LESS 36)
+message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
 
 # uuid library
 Include(FindUUID)
 IF(UUID_FOUND)
   message(STATUS "Found UUID library: Inc:${UUID_INCLUDE_DIR} Lib:${UUID_LIBRARY}")
   include_directories(${UUID_INCLUDE_DIR})
-  link_libraries(${UUID_LIBRARY})
 ELSE(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 ENDIF(UUID_FOUND)
@@ -102,7 +115,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -pg -fprofile-arcs -ftest-coverage")
   # gprof and gcov support
   set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
   set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
@@ -114,9 +126,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ### does not work for automatic build! ###
+### not supported for ctest yet. will need cmake 2.8
 ## set GWES_CPP_HOME
 #set( ENV{GWES_CPP_HOME} ${PROJECT_SOURCE_DIR})
-#message(STATUS "ENV GWES_CPP_HOME=${PROJECT_SOURCE_DIR}")
+#message(STATUS "ENV GWES_CPP_HOME=$ENV{GWES_CPP_HOME}")
 
 # Reflect the package structure
 add_subdirectory(gworkflowdl_cpp)

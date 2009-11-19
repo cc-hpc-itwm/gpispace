@@ -6,6 +6,7 @@
  */
 #ifndef CAPACITYEXCEPTION_H_
 #define CAPACITYEXCEPTION_H_
+#include <stdexcept>
 #include <string>
 
 namespace gwdl
@@ -16,14 +17,17 @@ namespace gwdl
  * @version $Id$
  * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */
-class CapacityException {
+class CapacityException : public std::runtime_error {
 	
 	public:
-		std::string message;
-		CapacityException(const std::string& _message) 
+		CapacityException(const std::string& a_message)
+          : std::runtime_error(a_message)
+
 		{
-			message = _message;					
 		}
+
+        ~CapacityException() throw() { }
+
 }; // end class CapacityException
 
 } // end namespace gwdl

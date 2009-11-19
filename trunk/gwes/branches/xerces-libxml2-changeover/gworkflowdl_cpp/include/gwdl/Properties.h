@@ -78,7 +78,7 @@ public:
 	 * Make a deep copy of this object and return a shared pointer to the new object.
 	 * @return Shared pointer to the cloned Properties object.
 	 */ 
-	ptr_t deepCopy();
+	ptr_t deepCopy() const;
 	
 }; // end class Properties
 

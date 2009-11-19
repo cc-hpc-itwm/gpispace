@@ -255,6 +255,8 @@ public:
 	// transition from * to canceled
 	void activityCanceled(const activity_id_t &activityId) throw (NoSuchActivityException);
 
+    Activity *getActivity(const activity_id_t &activityId) throw (NoSuchActivityException);
+
 private:
 
 	/**
@@ -316,9 +318,16 @@ private:
 	status_t _status;
 
 	/**
-	 * Set _abort to <code>true</code> in order to abort the execution of the workflow.
+	 * Set _userabort to <code>true</code> if the execution of the workflow should be aborted because
+	 * of an external request.
 	 */
-	bool _abort;
+	bool _userabort;
+
+	/**
+	 * Set _systemabort to <code>true</code> if the execution of the workflow should be aborted because
+	 * of an internal system event (failure).
+	 */
+	bool _systemabort;
 
 	/**
 	 * Set _suspend to <code>true</code> in order to suspend the execution of the workflow.

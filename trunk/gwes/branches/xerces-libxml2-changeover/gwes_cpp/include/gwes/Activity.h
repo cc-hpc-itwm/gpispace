@@ -101,6 +101,10 @@ public:
 	 */
 	virtual ~Activity();
 
+	/////////////////////////////////////////
+	// IActivity interface methods 
+	/////////////////////////////////////////
+
 	/**
 	 * Get activity ID.
 	 */
@@ -111,15 +115,26 @@ public:
      */
     void setID(const activity_id_t &id) { _id = id; }
 
-
     /** 
-     * TODO: implement me
+     * Generates workflow object that corresponds to this activity.
      */
-    gwdl::IWorkflow::ptr_t transform_to_workflow() const
-    {
-      return gwdl::IWorkflow::ptr_t((gwdl::IWorkflow*)NULL);
-    }
+    gwdl::Workflow::ptr_t transform2Workflow() const throw( std::exception );
+    
+    /**
+	 * Get the ID of the owning workflog
+	 */
+	const gwdl::Workflow::workflow_id_t &getOwnerWorkflowID() const;
 
+	/////////////////////////////////////////
+	// GWES internal methods 
+	/////////////////////////////////////////
+
+	/**
+	 * Get the operation candidate which contains information
+	 * about operation name and resource name.
+	 */
+	gwdl::OperationCandidate::ptr_t getOperationCandidate() { return _operation; }
+	
 	/**
 	 * Get activity class.
 	 */
@@ -129,7 +144,7 @@ public:
 	 * Set the current status of this activity.
 	 * @param status The status (refer to STATUS_*).
 	 */
-	void setStatus(status_t status);
+	void setStatus(status_t status) throw (StateTransitionException);
 
 	/**
 	 * Get the current status code of this activity.

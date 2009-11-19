@@ -6,6 +6,9 @@
  */
 #ifndef TOKENPARAMETER_H_
 #define TOKENPARAMETER_H_
+
+#include <gwes/ITokenParameter.h>
+
 //gwdl
 #include <gwdl/Token.h>
 #include <gwdl/Edge.h>
@@ -13,7 +16,7 @@
 namespace gwes 
 {
 
-class TokenParameter 
+class TokenParameter : public ITokenParameter
 {
 
 public:

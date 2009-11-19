@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 // gwdl
+#include <gwdl/Token.h>
+#include <gwdl/Place.h>
 #include <gwdl/OperationCandidate.h>
 #include <gwdl/Libxml2Builder.h>
 // tests

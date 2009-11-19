@@ -35,7 +35,7 @@ Data::~Data() {
 //	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Data()");
 }
 
-Data::ptr_t Data::deepCopy() {
+Data::ptr_t Data::deepCopy() const {
 	Data::ptr_t data(new Data(_content));
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "Data::deepCopy()");
 	return data;

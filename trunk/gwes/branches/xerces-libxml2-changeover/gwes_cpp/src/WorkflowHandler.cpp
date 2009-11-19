@@ -15,6 +15,7 @@
 #include <gwdl/Libxml2Builder.h>
 //std
 #include <unistd.h>
+#include <list>
 #include <map>
 #include <pthread.h>
 
@@ -38,7 +39,8 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 	// set pointer to workflow
 	_wfP = workflowP;
 	// set switches
-	_abort = false;
+	_userabort = false;
+	_systemabort = false;
 	_suspend = false;
 	_sleepTime = SLEEP_TIME_MIN;
 	_simulation = false;
@@ -53,11 +55,14 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 }
 
 WorkflowHandler::~WorkflowHandler() {
-	// delete activities in activity table
-	for (ActivityTable::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
-		delete it->second;
-	}
-	_activityTable.clear();
+  // AP: this code is not required, when the _activityTable is deallocated, all
+  // activities will be removed anyways.
+
+//	// delete activities in activity table
+//	for (ActivityTable::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
+//		delete it->second;
+//	}
+//	_activityTable.clear();
 }
 
 void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
@@ -77,13 +82,14 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 		case (STATUS_ACTIVE): 
 			break;
 		case (STATUS_COMPLETED):
-			sdpaP->workflowFinished(_id);
+			sdpaP->workflowFinished(_id, _wfP->getResults());
 			break;
 		case (STATUS_TERMINATED):
-			if (_abort) {
-				sdpaP->workflowCanceled(_id);
+			if (_userabort) {
+				sdpaP->workflowCanceled(_id, _wfP->getResults());
 			} else {
-				sdpaP->workflowFailed(_id);
+				// internal abort by system is handled as failure
+				sdpaP->workflowFailed(_id, _wfP->getResults());
 			}
 			break;
 		case (STATUS_FAILED):
@@ -155,10 +161,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
 	}
 
-	//loop while workflow is not to abort and ( there exists enabled transitions or this workflow is still active )
-	while ( !_abort 
-			&& (enabledTransitions.size()> 0 || _status == WorkflowHandler::STATUS_ACTIVE) 
-			){
+	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
+	while ((!_userabort && !_systemabort && enabledTransitions.size()> 0) 
+			|| _status == WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
 			LOG_INFO(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 			<< ") --- " << enabledTransitions.size()
@@ -181,7 +186,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
 
 			//suspend if breakpoint has been reached
-			if (!_abort && !_suspend && selectedToP != NULL) {
+			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
 				Properties::ptr_t transprops = selectedToP->transitionP->getProperties();
 				if (transprops && transprops->contains("breakpoint")) {
 					string breakstring = transprops->get("breakpoint");
@@ -200,7 +205,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			///ToDo: prorate blue transtions related to program executions
 
 			//process selected transition.
-			if (!_abort && !_suspend && selectedToP != NULL) {
+			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
 				int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
 				LOG_INFO(_logger, "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
 				<< selectedToP->getID() << "\" (level "
@@ -248,7 +253,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			}
 
 			//if no modification occurred this step, wait some time
-			if (!modification && !_abort) {
+			if (!modification && !_userabort && !_systemabort) {
 				usleep(_sleepTime);
 				// set dynamic sleep time
 				_sleepTime *= 2;
@@ -260,27 +265,27 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 				_sleepTime = WorkflowHandler::SLEEP_TIME_MIN;
 
 			//update enabled transitions
-			if (!_abort)
+			if (!_userabort && !_systemabort)
 				enabledTransitions = _wfP->getEnabledTransitions();
 			if (modification)
 				step++;
-		} catch (ActivityException e) {
+		} catch (const ActivityException &e) {
 			ostringstream oss;
-			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.message;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
-			_abort = true;
+			_systemabort = true;
 			_wfP->putProperty(createNewErrorID(), oss.str());
-		}  catch (WorkflowFormatException e) {
+		}  catch (const WorkflowFormatException &e) {
 			ostringstream oss;
-			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.message;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
-			_abort = true;
+			_systemabort = true;
 			_wfP->putProperty(createNewErrorID(), oss.str());
 		}
 	}
 
 	//set exit status
-	setStatus((_abort) ? WorkflowHandler::STATUS_TERMINATED : WorkflowHandler::STATUS_COMPLETED);
+	setStatus((_userabort || _systemabort) ? WorkflowHandler::STATUS_TERMINATED : WorkflowHandler::STATUS_COMPLETED);
 }
 
 /**
@@ -315,7 +320,8 @@ void WorkflowHandler::resumeWorkflow() throw (StateTransitionException) {
 }
 
 /**
- * Abort this workflow. Status should switch to TERMINATED.
+ * Abort this workflow. Status switches to TERMINATED afterwards.
+ * This method is asynchronous and does NOT wait until workflow has been aborted.
  */
 void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 	// you cannot abort an COMPLETED, or TERMINATED workflow
@@ -326,7 +332,7 @@ void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 		throw StateTransitionException(oss.str());
 	}
 
-	_abort = true;
+	_userabort = true;
 
 	// Workflow is NOT running nor active
 	if (_status == STATUS_INITIATED || _status == STATUS_SUSPENDED || _status
@@ -334,10 +340,7 @@ void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
 		setStatus(STATUS_TERMINATED);
 	}
 
-	// Workflow is running or active
-	else {
-		waitForStatusChangeToCompletedOrTerminated();
-	}
+	// Notification about workflow abort is async.
 }
 
 WorkflowHandler::status_t WorkflowHandler::waitForStatusChangeFrom(WorkflowHandler::status_t oldStatus) {
@@ -436,6 +439,11 @@ void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (N
 	_activityTable.get(activityId)->activityCanceled();
 }
 
+Activity * WorkflowHandler::getActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
+{
+  return _activityTable.get(activityId);
+}
+
 ///////////////////////////////////////////////
 /////////// PRIVATE METHODS
 ///////////////////////////////////////////////
@@ -506,6 +514,8 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 	string operationType = operationP->getType();
 	if (operationType == "sdpa") {
 		activityP = new SdpaActivity(this, toP, operationP);
+	} else if (operationType == "sdpa/workflow") {
+		activityP = new SdpaActivity(this, toP, operationP);
 	} else if (operationType == "cli") {
 		activityP = new CommandLineActivity(this, toP, operationP);
 	} else if (operationType == "workflow") {
@@ -554,10 +564,10 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	try {
 		toP->writeWriteTokens();
 		toP->putOutputTokens();
-	} catch (CapacityException e) {
-		LOG_ERROR(_logger, "exception: " << e.message);
-		_abort = true;
-		_wfP->putProperty(createNewErrorID(), e.message);
+	} catch (const CapacityException &e) {
+		LOG_ERROR(_logger, "exception: " << e.what());
+		_systemabort = true;
+		_wfP->putProperty(createNewErrorID(), e.what());
 	}
 	
     // store occurrence sequence
@@ -578,6 +588,10 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 	bool modification = false;
 	status_t tempworkflowstatus = STATUS_RUNNING;
+
+    // FIXME: maybe that helps
+    std::list<std::string> toRemove;
+
 	// loop through activities
 	for (map<string,Activity*>::iterator it=_activityTable.begin(); it
 			!=_activityTable.end(); ++it) {
@@ -612,10 +626,10 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 				toP->writeWriteTokens();
 				//  put new token on each output place
 				toP->putOutputTokens();
-			} catch (CapacityException e) {
-				LOG_ERROR(_logger, "CapacityException:" << e.message);;
-				_abort = true;
-				_wfP->putProperty(createNewErrorID(), e.message);
+			} catch (const CapacityException &e) {
+				LOG_ERROR(_logger, "CapacityException:" << e.what());;
+				_systemabort = true;
+				_wfP->putProperty(createNewErrorID(), e.what());
 			}
 			
 			modification = true;
@@ -633,26 +647,33 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 
 		    // cleanup
 		    delete toP;
-		    _activityTable.remove(activityID);
+            toRemove.push_back(activityID);
 
 		    ///ToDo: fault management regarding the fault management policy property
 		    if (activityStatus == Activity::STATUS_TERMINATED) {
-		    	_abort = true;
+		    	_systemabort = true;
 		    }
 
 		} else if (activityStatus == Activity::STATUS_FAILED) {
 			///ToDo: implement fault management.
 			LOG_WARN(_logger, "Fault management not yet implemented!");
+            // AP: shouldn't the activity be removed here?
+            // fault management is a bonus, but the activity has failed, it should be deleted and the workflow too
 		} else {
 			// activity still not completed or terminated
 			tempworkflowstatus = STATUS_ACTIVE;
 			// abort active activities if workflow is to abort
-			if (_abort) {
+			if (_userabort || _systemabort) {
 				activityP->abortActivity();
 			}
 		}
 
 	}
+    while (! toRemove.empty())
+    {
+      _activityTable.remove(toRemove.front());
+      toRemove.pop_front();
+    }
 	
 	///ToDo: annotate transitions with transition status
 
@@ -682,7 +703,8 @@ string WorkflowHandler::createNewWarnID() const {
  * @param workflowHandlerP Pointer to the WorkflowHandler.
  */
 void *startWorkflowAsThread(void *workflowHandlerP) {
-	WorkflowHandler* wfhP = (WorkflowHandler*) workflowHandlerP;
+	gwes::WorkflowHandler* wfhP = (gwes::WorkflowHandler*) workflowHandlerP;
+	LOG_DEBUG(getLogger("gwes"), "start workflow as new thread...");
 	wfhP->executeWorkflow();
 	return 0;
 }

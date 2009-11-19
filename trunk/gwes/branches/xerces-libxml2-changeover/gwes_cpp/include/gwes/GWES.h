@@ -20,8 +20,11 @@
 #include <gwes/WorkflowHandlerTable.h>
 #include <gwes/Channel.h>
 //std
+#include <list>
 #include <string>
 #include <vector>
+
+#include <pthread.h>
 
 namespace gwes
 {
@@ -31,7 +34,7 @@ namespace gwes
  * @version $Id$
  * @author Andreas Hoheisel &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
  */ 
-class GWES : public Sdpa2Gwes
+class GWES : public Sdpa2Gwes<gwes::TokenParameter>
 {
 	
 private:
@@ -46,17 +49,21 @@ private:
 	  */
 	 Gwes2Sdpa* _sdpaHandler;
 
+    std::string workflow_directory_; // where to find sub-workflows
+
 	 /**
 	  * Fhg Logger.
 	  */
 	 fhg::log::logger_t _logger;
 	 
+    pthread_mutex_t monitor_lock_;
 public:
 	
 	/**
 	 * Constructor for GWES.
 	 */
-	GWES();
+    explicit
+	GWES(const std::string &workflow_directory = "");
 	
 	/**
 	 * Destructor for GWES
@@ -276,24 +283,32 @@ public:
      */
     Gwes2Sdpa* getSdpaHandler() {return _sdpaHandler; }
     
+    const std::string &workflow_directory() const { return workflow_directory_; }
+
     ///////////////////////////////////
     // Interface Spda2Gwes           //
     ///////////////////////////////////
     
-	virtual void activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity);
 
-	virtual void activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException);
+	virtual void activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity);
 
 	virtual void registerHandler(Gwes2Sdpa *sdpa);
+	virtual void unregisterHandler(Gwes2Sdpa *sdpa);
 
-	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException);
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception);
 
-	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
 
+    virtual gwdl::Workflow::ptr_t deserializeWorkflow(const std::string &) throw (std::runtime_error);
+    virtual std::string serializeWorkflow(const gwdl::Workflow &) throw (std::runtime_error);
+
+    virtual workflow_t::ptr_t getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+    virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity);
 };
 
 }

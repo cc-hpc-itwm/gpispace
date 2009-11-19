@@ -1,30 +1,63 @@
 #ifndef SDPA2GWES_H_
 #define SDPA2GWES_H_
-// gwes
-#include <gwes/Types.h> 
-#include <gwes/NoSuchWorkflowException.h>
-#include <gwes/NoSuchActivityException.h>
-// gwdl
-#include <gwdl/WorkflowFormatException.h>
+
+#include <stdexcept>
+#include <list>
+
+#include <gwdl/Workflow.h>
+#include <gwes/IActivity.h>
 
 namespace gwes
 {
 
 class Gwes2Sdpa;
 
+typedef gwdl::Workflow workflow_t;
+typedef gwdl::Workflow::workflow_id_t workflow_id_t;
+typedef gwes::IActivity activity_t;
+typedef gwes::IActivity::activity_id_t activity_id_t;
+
 /**
  * Interface class for the communication from SDPA to GWES.
  */
-class Sdpa2Gwes {
+template <class ParameterT> class Sdpa2Gwes {
 	
 public:
+    typedef ParameterT parameter_t;
+    typedef std::list<parameter_t> parameter_list_t;
+
+    typedef Gwes2Sdpa callback_handler_t;
+
+    // exceptions
+    class Sdpa2GwesException : public std::runtime_error
+    {
+    public:
+      explicit Sdpa2GwesException(const std::string &a_reason)
+        : std::runtime_error(a_reason)
+      {
+      }
+    };
+
+    class NoSuchWorkflow : public Sdpa2GwesException
+    {
+    public:
+      explicit NoSuchWorkflow(const workflow_id_t &wid)
+        : Sdpa2GwesException(std::string("no such workflow: ") + wid) {}
+    };
+
+    class NoSuchActivity : public Sdpa2GwesException
+    {
+    public:
+      explicit NoSuchActivity(const activity_id_t &aid)
+        : Sdpa2GwesException(std::string("no such activity: ") + aid) {}
+    };
 
 	// typedefs have been moved to Types.h
 
 	/**
 	 * Virtual destructor because of virtual methods.
 	 */
-	virtual ~Sdpa2Gwes();
+	virtual ~Sdpa2Gwes() {}
 
 	/**
 	 * Notify the GWES that an activity has been dispatched
@@ -33,8 +66,8 @@ public:
 	 * This is a callback listener method to monitor activities submitted 
 	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	virtual void activityDispatched(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
+	virtual void activityDispatched(const workflow_id_t &workflowId
+                                  , const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) = 0;
 
 	/**
 	 * Notify the GWES that an activity has failed
@@ -43,9 +76,9 @@ public:
 	 * This is a callback listener method to monitor activities submitted 
 	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	virtual void activityFailed(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
+	virtual void activityFailed(const workflow_id_t &workflowId
+                              , const activity_id_t &activityId
+                              , const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) = 0;
 
 	/**
 	 * Notify the GWES that an activity has finished
@@ -54,9 +87,9 @@ public:
 	 * This is a callback listener method to monitor activities submitted 
 	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	virtual void activityFinished(const workflow_id_t &workflowId,
-			const activity_id_t &activityId,
-			const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
+	virtual void activityFinished(const workflow_id_t &workflowId
+                                , const activity_id_t &activityId
+                                , const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) = 0;
 
 	/**
 	 * Notify the GWES that an activity has been canceled
@@ -65,8 +98,8 @@ public:
 	 * This is a callback listener method to monitor activities submitted 
 	 * to the SDPA using the method Gwes2Sdpa.submitActivity().
 	 */
-	virtual void activityCanceled(const workflow_id_t &workflowId,
-			const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) = 0;
+	virtual void activityCanceled(const workflow_id_t &workflowId
+                                , const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) = 0;
 
 	/**
 	 * Register a SDPA handler that implements the Gwes2Sdpa
@@ -76,7 +109,17 @@ public:
 	 * sub workflows to the SDPA. 
 	 * Currently you can only register ONE handler for a GWES.
 	 */
-	virtual void registerHandler(Gwes2Sdpa *sdpa) = 0;
+	virtual void registerHandler(callback_handler_t *sdpa) = 0;
+
+	/**
+	 * UnRegister a SDPA handler that implements the Gwes2Sdpa
+	 * interface. This handler is notified on each status
+	 * transitions of each workflow. This handler is also used
+	 * by the GWES to delegate the execution of activities or 
+	 * sub workflows to the SDPA. 
+	 * Currently you can only register ONE handler for a GWES.
+	 */
+	virtual void unregisterHandler(callback_handler_t *sdpa) = 0;
 
 	/**
 	 * Submit a workflow to the GWES.
@@ -85,7 +128,7 @@ public:
 	 * asynchronously and notifiy the SPDA about status transitions
 	 * using the callback methods of the Gwes2Sdpa handler.  
 	 */
-	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException) = 0;
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) = 0;
 
 	/**
 	 * Cancel a workflow asynchronously.
@@ -94,10 +137,18 @@ public:
 	 * completion of the cancelling process by calling the 
 	 * callback method Gwes2Sdpa::workflowCanceled.  
 	 */
-	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) = 0;
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception) = 0;
 
+    /* deserialize a workflow from a byte array */
+    virtual gwdl::Workflow::ptr_t deserializeWorkflow(const std::string &) throw (std::runtime_error) = 0;
+    /* serialize a workflow to a byte array */
+    virtual std::string serializeWorkflow(const gwdl::Workflow &) throw (std::runtime_error) = 0;
+
+    /* retrieve a workflow */
+    virtual workflow_t::ptr_t getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+    /* retrieve an activity */
+    virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity) = 0;
 };
-
 }
 
 #endif /*SDPA2GWES_H_*/

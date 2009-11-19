@@ -6,6 +6,7 @@
  */
 //gwdl
 #include <gwdl/Workflow.h>
+#include <gwdl/Token.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
@@ -14,7 +15,7 @@ using namespace std;
 
 namespace gwdl {
 
-Workflow::Workflow(const string& id) {
+Workflow::Workflow(const workflow_id_t& id) {
 	_id = (id == "") ? WORKFLOW_DEFAULT_ID : id;
 	_description = WORKFLOW_DEFAULT_DESCRIPTION;
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "Workflow[" << _id << "]");
@@ -27,6 +28,41 @@ Workflow::~Workflow() {
 	for(map<string,Place::ptr_t>::iterator it=_places.begin(); it!=_places.end(); ++it) (it->second).reset();
 	_places.clear();
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Workflow[" << _id << "]");
+}
+
+gwdl::workflow_result_t Workflow::getResults() const
+{
+  gwdl::workflow_result_t results;
+
+  // iterate over all places
+  for (place_map_t::const_iterator a_place(_places.begin()); a_place != _places.end(); ++a_place)
+  {
+    const std::string &place_name = a_place->first;
+    const Place::ptr_t place = a_place->second;
+
+    try
+    {
+      gwdl::token_list_t tokens;
+
+      DLOG(DEBUG, "getting tokens from place: " << place_name);
+      typedef std::vector<Token::ptr_t> place_token_list_t;
+
+      place_token_list_t place_tokens = place->getTokens();
+
+      for (place_token_list_t::const_iterator gwdl_token(place_tokens.begin()); gwdl_token != place_tokens.end(); ++gwdl_token)
+      {
+        tokens.push_back((*gwdl_token)->deepCopy());
+      }
+      DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << place_name);
+
+      results.insert(std::make_pair(place_name, tokens));
+    }
+    catch (const gwdl::NoSuchWorkflowElement &)
+    {
+      LOG(WARN, "Inconsistencey detected: the workflow does not contain place: " << place_name);
+    }
+  }
+  return results;
 }
 
 Place::ptr_t Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement) {

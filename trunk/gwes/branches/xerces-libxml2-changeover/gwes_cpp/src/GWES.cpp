@@ -18,12 +18,35 @@ using namespace gwes;
 namespace gwes
 {
 
+  struct mutex_lock {
+    mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) {
+      pthread_mutex_lock(&mtx);
+    }
+    ~mutex_lock() {
+      pthread_mutex_unlock(&mtx);
+    }
+
+    pthread_mutex_t &mtx;
+  };
+
 /**
  * Constructor for GWES.
  */
-GWES::GWES() : _logger(fhg::log::getLogger("gwes")) {
-	_sdpaHandler = NULL;
+GWES::GWES(const std::string &a_workflow_directory)
+  : _sdpaHandler(NULL)
+  , workflow_directory_(a_workflow_directory)
+  , _logger(fhg::log::getLogger("gwes")) {
 	Utils::setEnvironmentVariables();
+    pthread_mutex_init(&monitor_lock_, NULL);
+    if (workflow_directory_.empty())
+    {
+      workflow_directory_ = getenv("GWES_CPP_HOME");
+      LOG(DEBUG, "falling back to GWES_CPP_HOME value for workflow-directory: " << workflow_directory_);
+    }
+    else
+    {
+      LOG(DEBUG, "looking for sub-workflows in: " << workflow_directory_);
+    }
 }
 
 /**
@@ -31,10 +54,7 @@ GWES::GWES() : _logger(fhg::log::getLogger("gwes")) {
  */
 GWES::~GWES()
 {
-}
-
-Sdpa2Gwes::~Sdpa2Gwes()
-{
+  pthread_mutex_destroy(&monitor_lock_);
 }
 
 /**
@@ -321,28 +341,32 @@ void GWES::remove(const string& workflowId) {
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
+    mutex_lock lock(monitor_lock_);
 	_wfht.get(workflowId)->activityDispatched(activityId);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
+    mutex_lock lock(monitor_lock_);
 	_wfht.get(workflowId)->activityFailed(activityId,output);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
+    mutex_lock lock(monitor_lock_);
 	_wfht.get(workflowId)->activityFinished(activityId,output);
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
-void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflowException,NoSuchActivityException) {
+void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
+    mutex_lock lock(monitor_lock_);
 	_wfht.get(workflowId)->activityCanceled(activityId);
 }
 
@@ -350,13 +374,27 @@ void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t
  * Register the SDPA handler. 
  */
 void GWES::registerHandler(Gwes2Sdpa *sdpa) {
+    mutex_lock lock(monitor_lock_);
 	_sdpaHandler = sdpa;
+}
+
+/**
+ * UnRegister the SDPA handler. 
+ */
+void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
+    mutex_lock lock(monitor_lock_);
+    if (_sdpaHandler == sdpa) {
+    	_sdpaHandler = NULL;
+    } else {
+	  LOG_ERROR(_logger, "tried to unregister a not-registered handler!");
+    }
 }
 
 /**
  * Initiate and start a workflow.
  */
-workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (WorkflowFormatException) {
+workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) { //(WorkflowFormatException) {
+    mutex_lock lock(monitor_lock_);
 	string workflowId = initiate(workflowP,"sdpa");
 	start(workflowId);
 	return workflowId;
@@ -365,8 +403,35 @@ workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (WorkflowF
 /**
  * Cancel a workflow.
  */
-void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException) {
-	abort(workflowId);
+void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+    mutex_lock lock(monitor_lock_);
+    try {
+    	abort(workflowId);
+    } catch (const NoSuchWorkflowException &nswfe) {
+    	throw NoSuchWorkflow(workflowId);
+    }
+}
+
+gwdl::Workflow::ptr_t GWES::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error) {
+    mutex_lock lock(monitor_lock_);
+	Libxml2Builder builder;
+	Workflow::ptr_t workflowP = builder.deserializeWorkflow(bytes);
+	return workflowP;
+}
+
+std::string GWES::serializeWorkflow(const gwdl::Workflow &workflow) throw (std::runtime_error) {
+	mutex_lock lock(monitor_lock_);
+//	gwdl::Workflow &real_workflow = static_cast<gwdl::Workflow&>(const_cast<IWorkflow&>(workflow));
+	Libxml2Builder builder;
+	return builder.serializeWorkflow(workflow);
+}
+
+workflow_t::ptr_t GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+  return _wfht.get(workflowId)->getWorkflow();
+}
+
+activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity) {
+  return *_wfht.get(workflowId)->getActivity(activityId);
 }
 
 } // end namespace gwes

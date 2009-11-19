@@ -114,8 +114,8 @@ void TokenTest::testToken()
 	try {
 		tokenP = builder.deserializeToken(str);
 		LOG_INFO(logger, "\n" << *tokenP);
-	} catch (WorkflowFormatException e) {
-		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_INFO(logger, e.what());
 		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
 		success = true;
 	}
@@ -128,8 +128,8 @@ void TokenTest::testToken()
 	try {
 		tokenP = builder.deserializeToken(str);
 		LOG_INFO(logger, "\n" << *tokenP);
-	} catch (WorkflowFormatException e) {
-		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_INFO(logger, "WorkflowFormatException: " << e.what());
 		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
 		success = true;
 	}
@@ -142,8 +142,8 @@ void TokenTest::testToken()
 	try {
 		tokenP = builder.deserializeToken(str);
 		LOG_INFO(logger, "\n" << *tokenP);
-	} catch (WorkflowFormatException e) {
-		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+	} catch (const WorkflowFormatException &e) {
+		LOG_INFO(logger, e.what());
 		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
 		success = true;
 	}

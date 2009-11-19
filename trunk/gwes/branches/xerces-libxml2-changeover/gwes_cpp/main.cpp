@@ -22,10 +22,11 @@ void usage();
 string getUserName();
 
 int main(int argc, char* argv[]) {
+	// default configuration
+	fhg::log::Configurator::configure();
+
 	// logger
 	logger_t logger(getLogger("gwes"));
-	logger.setLevel(LogLevel::INFO);
-	logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 
 	string workflowfn;
 
@@ -52,19 +53,19 @@ int main(int argc, char* argv[]) {
 				LOG_FATAL(logger, "Unknown option `-" << optopt << "'.");
 			else
 				LOG_FATAL(logger, "Unknown option character `\\x" << optopt << "'.");
-		    usage();
-		    exit(1);
+			usage();
+			exit(1);
 		default:
-		    usage();
-		    exit(1);
+			usage();
+			exit(1);
 		}
 	}
-	
-    for (int index = optind; index < argc; index++) {
-       LOG_DEBUG(logger, "Non-option argument " << argv[index]);
-       workflowfn = argv[index];
-    }
-	
+
+	for (int index = optind; index < argc; index++) {
+		LOG_DEBUG(logger, "Non-option argument " << argv[index]);
+		workflowfn = argv[index];
+	}
+
 	if (workflowfn.empty()) {
 		LOG_FATAL(logger, "ERROR: workflow not specified!");
 		usage();
@@ -97,13 +98,13 @@ int main(int argc, char* argv[]) {
 		LOG_DEBUG(logger, *wfP);
 		LOG_INFO(logger, "### END EXECUTION " << workflowfn);
 
-                // gwes is deleted, so delete the channel and the obersever and the workflow
-                delete channelP;
-                delete observerP;
-                wfP.reset();
+		// gwes is deleted, so delete the channel and the obersever and the workflow
+		delete channelP;
+		delete observerP;
+		wfP.reset();
 	}
-	catch(WorkflowFormatException e) {
-		LOG_ERROR(logger, "WorkflowFormatException: " << e.message);
+	catch(const WorkflowFormatException &e) {
+		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 	}
 
 	//	//ToDo: return 0, 1, ...
