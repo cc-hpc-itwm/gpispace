@@ -51,7 +51,7 @@ namespace sdpa { namespace daemon {
   protected:
     void notifyObservers(const boost::any &event) const
     {
-      lock_t lock(mtx_);
+      lock_t lock(const_cast<mutex_t&>(mtx_));
       for (observer_list_t::const_iterator o(observers_.begin()); o != observers_.end(); ++o)
       {
         (*o)->update(event);
