@@ -36,7 +36,11 @@ namespace gwes
     virtual void  setID(const activity_id_t &) = 0;
     virtual const activity_id_t &getID() const = 0;
 
-    virtual const std::string &getName() const { return "activity-name-placeholder"; }
+    virtual const std::string &getName() const
+    {
+      static std::string place_holder("activity-name-placeholder");
+      return place_holder;
+    }
 
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const = 0;
 
