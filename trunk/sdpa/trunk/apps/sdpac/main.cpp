@@ -22,7 +22,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
-    ("wait,w", "wait until job is finished")
+    ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -150,6 +150,7 @@ int main (int argc, char **argv) {
       std::cout << job_id << std::endl;
       if (cfg.is_set("wait"))
       {
+        const int poll_interval = cfg.get<int>("wait");
         std::cout << "waiting...";
         int exit_code(4);
         for (;;)
@@ -169,6 +170,7 @@ int main (int argc, char **argv) {
           }
           else
           {
+            sleep(poll_interval);
             std::cout << ".";
           }
         }
