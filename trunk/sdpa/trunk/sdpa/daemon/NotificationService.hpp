@@ -22,6 +22,8 @@
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <sdpa/memory.hpp>
 
+#include <sdpa/daemon/Observer.hpp>
+
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
@@ -72,7 +74,7 @@ namespace sdpa { namespace daemon {
 
 
   template <class EventType>
-  class BasicNotificationService
+  class BasicNotificationService : public Observer
   {
   public:
     typedef EventType event_t;
@@ -87,6 +89,18 @@ namespace sdpa { namespace daemon {
     notify_helper<BasicNotificationService> operator()() const
     {
       return notify_helper<BasicNotificationService>(*this);
+    }
+
+    void update(const boost::any &arg)
+    {
+      try
+      {
+        notify(boost::any_cast<event_t>(arg));
+      }
+      catch (const boost::bad_any_cast &)
+      {
+
+      }
     }
 
     ~BasicNotificationService() {}
