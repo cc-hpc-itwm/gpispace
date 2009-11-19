@@ -77,6 +77,11 @@ namespace sdpa {
 			}
 		}
 
+        void schedule(Job::ptr_t & pJob)
+        {
+          return SchedulerImpl::schedule(pJob);
+        }
+
 		void schedule(gwes::activity_t& act)
 		{
 			SDPA_LOG_DEBUG("Handle activity "<<act.getID());

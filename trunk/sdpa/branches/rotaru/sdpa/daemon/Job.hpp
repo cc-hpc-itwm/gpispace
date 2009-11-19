@@ -41,7 +41,10 @@ namespace sdpa { namespace daemon {
 
         virtual bool is_local()=0;
         virtual void set_local(bool)=0;
+
+#ifdef USE_BOOST_SC
         virtual void process_event( const boost::statechart::event_base &) {}
+#endif
 
         //transitions
 		virtual void CancelJob(const sdpa::events::CancelJobEvent*);

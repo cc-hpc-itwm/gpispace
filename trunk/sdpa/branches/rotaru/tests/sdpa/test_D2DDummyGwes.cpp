@@ -39,7 +39,6 @@
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include "DummyGwes.hpp"
 
 #include <seda/Stage.hpp>
@@ -56,7 +55,7 @@ const int sleep_interval = 1000;
 class TestStrategy : public seda::Strategy
 {
 public:
-	 typedef std::tr1::shared_ptr<TestStrategy> Ptr;
+	 typedef sdpa::shared_ptr<TestStrategy> Ptr;
 	 TestStrategy(const std::string& name): seda::Strategy(name), SDPA_INIT_LOGGER(name)  {}
 	 void perform(const seda::IEvent::Ptr& pEvt)
 	 {

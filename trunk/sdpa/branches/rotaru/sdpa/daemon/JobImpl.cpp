@@ -32,7 +32,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 using namespace std;
-using namespace boost::statechart;
 using namespace sdpa::events;
 
 namespace sdpa { namespace daemon {

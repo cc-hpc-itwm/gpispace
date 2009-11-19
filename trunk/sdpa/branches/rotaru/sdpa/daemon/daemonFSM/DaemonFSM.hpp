@@ -17,10 +17,19 @@
  */
 #ifndef DAEMONFSM_HPP_
 #define DAEMONFSM_HPP_
-#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
-#include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
+namespace dsm = sdpa::fsm::bsc;
+#elif USE_SMC
+#   include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
 namespace dsm = sdpa::fsm::smc;
+#else
+#   error "No state machine variant defined!"
+#endif
+
 using namespace dsm;
 
 #endif /* DAEMONFSM_HPP_ */

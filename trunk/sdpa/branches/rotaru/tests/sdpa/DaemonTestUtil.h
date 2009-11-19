@@ -20,12 +20,14 @@
 #include <iostream>
 #include <string>
 #include <list>
-#include <sdpa/memory.hpp>
 #include <time.h>
-#include <sdpa/util/util.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+#include <sdpa/sdpa-config.hpp>
+#include <sdpa/memory.hpp>
+#include <sdpa/util/util.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
@@ -39,12 +41,11 @@
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include "DummyGwes.hpp"
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
-#include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
+#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 
 using namespace std;
 using namespace sdpa::tests;

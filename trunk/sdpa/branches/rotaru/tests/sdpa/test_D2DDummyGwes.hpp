@@ -19,9 +19,10 @@
 #define D2D_DUMMY_GWES_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
+#include <sdpa/sdpa-config.hpp>
+#include <sdpa/memory.hpp>
+#include <sdpa/logging.hpp>
+#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <seda/Strategy.hpp>
 
 namespace sdpa {

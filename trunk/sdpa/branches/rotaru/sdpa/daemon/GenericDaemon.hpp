@@ -18,13 +18,9 @@
 #ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
-#include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/statechart/transition.hpp>
-#include <boost/statechart/exception_translator.hpp>
-
 #include <seda/Strategy.hpp>
+
+#include <sdpa/sdpa-config.hpp>
 
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
@@ -36,6 +32,15 @@
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
 #include <sdpa/types.hpp>
+
+#ifdef USE_BOOST_SC
+#  error "I will not"
+#  include <boost/statechart/state_machine.hpp>
+#  include <boost/statechart/simple_state.hpp>
+#  include <boost/statechart/custom_reaction.hpp>
+#  include <boost/statechart/transition.hpp>
+#  include <boost/statechart/exception_translator.hpp>
+#endif
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
