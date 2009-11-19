@@ -221,7 +221,7 @@ public:
 	 * Get the workflow which is handled by this WorkflowHandler.
 	 * @return A pointer to the workflow.
 	 */
-	gwdl::Workflow::ptr_t getWorkflow();
+	workflow_t::ptr_t& getWorkflow();
 
 	/**
 	 * Get the parent GWES.

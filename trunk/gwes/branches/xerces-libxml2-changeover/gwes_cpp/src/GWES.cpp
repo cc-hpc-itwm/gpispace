@@ -426,7 +426,7 @@ std::string GWES::serializeWorkflow(const gwdl::Workflow &workflow) throw (std::
 	return builder.serializeWorkflow(workflow);
 }
 
-workflow_t::ptr_t GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+workflow_t::ptr_t &GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
   return _wfht.get(workflowId)->getWorkflow();
 }
 
