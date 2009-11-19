@@ -4,7 +4,9 @@
 #include <vector>
 #include <unistd.h>
 
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
+#endif
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
@@ -20,6 +22,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
+    ("wait,w", "wait until job is finished")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -142,7 +145,35 @@ int main (int argc, char **argv) {
 
       std::stringstream sstr;
       ifs >> sstr.rdbuf();
-      std::cout << api->submitJob(sstr.str()) << std::endl;
+      
+      const std::string job_id(api->submitJob(sstr.str()));
+      std::cout << job_id << std::endl;
+      if (cfg.is_set("wait"))
+      {
+        std::cout << "waiting...";
+        int exit_code(4);
+        for (;;)
+        {
+          std::string status(api->queryJob(job_id));
+          if (status == "SDPA::Finished")
+          {
+            std::cout << "finished!" << std::endl;
+            exit_code = 0;
+            break;
+          }
+          else if (status == "SDPA::Failed")
+          {
+            std::cout << "failed!" << std::endl;
+            exit_code = 1;
+            break;
+          }
+          else
+          {
+            std::cout << ".";
+          }
+        }
+        std::cout << "retrieve the results with: '" << argv[0] << " results " << job_id << "'" << std::endl;
+      }
     }
     else if (command == "cancel")
     {
