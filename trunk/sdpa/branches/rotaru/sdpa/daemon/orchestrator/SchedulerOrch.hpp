@@ -1,3 +1,21 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SchedulerOrch.hpp
+ *
+ *    Description:  The orchestrator's scheduler
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
+
 #ifndef SDPA_SchedulerOrch_HPP
 #define SDPA_SchedulerOrch_HPP 1
 

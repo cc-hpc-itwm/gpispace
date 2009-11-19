@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_D2D2DRealGwes.hpp
+ *
+ *    Description:  test 3 generic daemons, each with a real gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef D2D2D_REAL_GWES_TEST_HPP_
 #define D2D2D_REAL_GWES_TEST_HPP_
 

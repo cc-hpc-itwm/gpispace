@@ -30,7 +30,7 @@ int main (int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
-	   ("name,n", po::value<std::string>(&orchName), "Orchestrator's logical name")
+	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator_0"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url");
 
 	po::variables_map vm;

@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_DaemonRealGwes.hpp
+ *
+ *    Description:  test a generic daemons with a real gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DAEMON_DUMMY_REAL_TEST_HPP_
 #define DAEMON_DUMMY_REAL_TEST_HPP_
 

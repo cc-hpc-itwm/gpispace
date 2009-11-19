@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_D2D2DRealGwes.cpp
+ *
+ *    Description:  test 3 generic daemons, each with a real gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include "test_D2D2DRealGwes.hpp"
 #include <DaemonTestUtil.h>
 #include <gwes/GWES.h>

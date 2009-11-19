@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_C2D2D2DDummyGwes.hpp
+ *
+ *    Description:  test 3 generic daemons, each with a dummy gwes, using a real user client
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef C2D2D2D_DUMMY_GWES_TEST_HPP_
 #define C2D2D2D_DUMMY_GWES_TEST_HPP_
 

@@ -32,7 +32,7 @@ int main (int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help,h", "Display this message")
-	   ("name,n", po::value<std::string>(&nreName), "NRE's logical name")
+	   ("name,n", po::value<std::string>(&nreName)->default_value("NRE_0"), "NRE's logical name")
 	   ("url,u",  po::value<std::string>(&nreUrl)->default_value("127.0.0.1:5002"), "NRE's url")
 	   ("agg_name,m",  po::value<std::string>(&aggName)->default_value("aggregator_1"), "Aggregator's logical name")
 	   ("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")

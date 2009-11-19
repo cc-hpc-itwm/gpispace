@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  Orchestrator.hpp
+ *
+ *    Description:  Contains the Orchestrator class
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
 

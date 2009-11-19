@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_Components.cpp
+ *
+ *    Description:  test all components, each with a real gwes, using a real user client
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include "test_Components.hpp"
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>

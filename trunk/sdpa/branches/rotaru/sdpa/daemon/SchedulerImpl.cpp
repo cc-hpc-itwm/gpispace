@@ -1,4 +1,21 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SchedulerImpl.hpp
+ *
+ *    Description:  Implements a simple scheduler
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>

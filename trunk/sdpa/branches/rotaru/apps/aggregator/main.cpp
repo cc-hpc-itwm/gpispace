@@ -29,11 +29,10 @@ int main (int argc, char **argv)
 	string orchName("orchestrator_0");
 	string orchUrl("127.0.0.1:5000");
 
-
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
-	   ("name,n", po::value<std::string>(&aggName), "Aggregator's logical name")
+	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator_0"), "Aggregator's logical name")
 	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator_0"), "Orchestrator's logical name")
 	   ("orch_url,p",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url");

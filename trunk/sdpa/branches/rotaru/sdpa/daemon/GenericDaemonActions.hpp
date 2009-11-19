@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  GenericDaemonActions.hpp
+ *
+ *    Description:  Interface for the daemon's actions
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_DAEMON_GENERIC_DAEMON_ACTIONS
 #define SDPA_DAEMON_GENERIC_DAEMON_ACTIONS 1
 

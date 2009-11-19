@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SchedulerNRE.hpp
+ *
+ *    Description:  The NRE's scheduler
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <gwes/IActivity.h>
 #include <sdpa/daemon/SynchronizedQueue.hpp>

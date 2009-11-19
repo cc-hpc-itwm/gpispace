@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  GenericDaemon.cpp
+ *
+ *    Description:  Generic daemon implementation file
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <seda/StageRegistry.hpp>
 #include <seda/comm/comm.hpp>
 #include <seda/comm/ConnectionFactory.hpp>
@@ -233,12 +250,13 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
+	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
 	m_bRegistered = true;
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
 {
-
+	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
 void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)

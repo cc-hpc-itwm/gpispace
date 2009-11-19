@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SchedulerImpl.hpp
+ *
+ *    Description:  Defines scheduler class
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_SCHEDULERIMPL_HPP
 #define SDPA_SCHEDULERIMPL_HPP 1
 
@@ -25,7 +42,7 @@ namespace sdpa {
 
 	 virtual void schedule(Job::ptr_t& pJob);
 
-	 virtual void schedule(gwes::activity_t& act) {};
+	 virtual void schedule(gwes::activity_t& ) {};
 
 	 /**
       Scheduling a job locally means that it will not leave the executing node.

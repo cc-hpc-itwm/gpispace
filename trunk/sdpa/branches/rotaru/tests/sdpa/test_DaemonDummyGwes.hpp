@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_DaemonDummyGwes.hpp
+ *
+ *    Description:  test a generic daemons with a dummy gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DAEMON_DUMMY_GWES_TEST_HPP_
 #define DAEMON_DUMMY_GWES_TEST_HPP_
 

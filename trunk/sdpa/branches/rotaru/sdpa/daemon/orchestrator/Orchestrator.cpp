@@ -1,3 +1,21 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  Orchestrator.cpp
+ *
+ *    Description:  Specific Implementation for the orchestrator
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
+
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <gwes/GWES.h>
 #include <SchedulerOrch.hpp>
@@ -118,7 +136,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 					// send a JobFinishedAckEvent back to the worker/slave
 					//delete it also from job_map_
-					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), master(), pEvt->job_id()));
+					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
 
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
@@ -208,7 +226,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 					// send a JobFailedAckEvent back to the worker/slave
 					//delete it also from job_map_
-					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), master(), pEvt->job_id()));
+					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
 
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
