@@ -19,7 +19,7 @@ class SchedulerTestImpl : public Scheduler {
 	 virtual ~SchedulerTestImpl();
 
     void schedule(Job::ptr_t& pJob);
-    virtual void schedule(gwes::activity_t& act) {};
+    virtual void schedule(gwes::activity_t& ) {}
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
     size_t numberOfWorkers() { return 1; }

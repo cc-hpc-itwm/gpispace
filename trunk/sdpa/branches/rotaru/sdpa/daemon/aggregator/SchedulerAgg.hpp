@@ -39,7 +39,7 @@ namespace sdpa {
 
 	 virtual ~SchedulerAgg() {};
 
-	 bool post_request( bool force=false )
+	 bool post_request(bool force = false)
 	 {
 	 	bool bReqPosted = false;
 	 	sdpa::util::time_type current_time = sdpa::util::now();
@@ -47,7 +47,7 @@ namespace sdpa {
 
 	 	if( ptr_comm_handler_->is_registered() )
 	 	{
-	 		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
+	 		if(force || difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
 	 		{
 	 			// post a new request to the master
 	 			// the slave posts a job request

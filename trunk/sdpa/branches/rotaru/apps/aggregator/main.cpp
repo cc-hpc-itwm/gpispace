@@ -16,14 +16,8 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-void outputUsage(const po::options_description& desc)
-{
-   std::cout << "<binary> -n <name> -u <url> -m <orch_name> -p <orch_url> "<<std::endl;
-}
-
 int main (int argc, char **argv)
 {
-
 	string aggName("aggregator_0");
 	string aggUrl("127.0.0.1:5001");
 	string orchName("orchestrator_0");

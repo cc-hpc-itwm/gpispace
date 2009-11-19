@@ -22,6 +22,7 @@
 
 #include <sdpa/sdpa-config.hpp>
 
+#include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -34,7 +35,6 @@
 #include <sdpa/types.hpp>
 
 #ifdef USE_BOOST_SC
-#  error "I will not"
 #  include <boost/statechart/state_machine.hpp>
 #  include <boost/statechart/simple_state.hpp>
 #  include <boost/statechart/custom_reaction.hpp>
@@ -163,12 +163,6 @@ namespace sdpa { namespace daemon {
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
   };
-
-  /*
-  class Orchestrator : public GenericDaemon {
-
-  };
-  */
 }}
 
 #endif

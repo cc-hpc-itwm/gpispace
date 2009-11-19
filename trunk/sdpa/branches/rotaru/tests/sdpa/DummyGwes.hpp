@@ -70,8 +70,6 @@ class DummyWorkflow : public gwes::workflow_t
 	{
 	  return gwdl::workflow_result_t();
 	}
-
-
   private:
     gwes::workflow_id_t wf_id_;
 };
@@ -338,7 +336,6 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
     }
-
 
     gwdl::IWorkflow *deserializeWorkflow(const std::string& strJobDesc ) throw (std::runtime_error)
 	{

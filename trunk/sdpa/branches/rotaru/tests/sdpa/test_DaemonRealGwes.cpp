@@ -462,8 +462,8 @@ void DaemonRealGwesTest::testDaemonFSM_JobFailed()
 		// the slave computes the job ........
 
 		// submit a JobFinishedEvent to master
-		sdpa::job_result_t result;
 		SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<strDaemon);
+        sdpa::job_result_t result;
 		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(strFromDown, strDaemon, job_id_slave, result));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtJobFailed);
 

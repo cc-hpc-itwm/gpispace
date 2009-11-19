@@ -17,11 +17,6 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-void outputUsage(const po::options_description& desc)
-{
-   std::cout << "<binary> -n <name> -u <url>"<<std::endl;
-}
-
 int main (int argc, char **argv)
 {
 	string orchName("orchestrator_0");

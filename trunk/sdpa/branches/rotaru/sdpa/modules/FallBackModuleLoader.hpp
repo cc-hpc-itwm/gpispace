@@ -68,8 +68,23 @@ namespace modules {
 
       Module::ptr_t mod(new Module(handle));
 
-      InitFunction init = (InitFunction)(dlsym(handle, "sdpa_mod_init"));
-      if ( (error = dlerror()) != NULL) {
+      /*
+       * this does not work with -pedantic i think, so we'll work around it
+       *    sdpa::modules::InitFunction init = reinterpret_cast<sdpa::modules::InitFunction>((dlsym(handle, "sdpa_mod_init")));
+       */
+      sdpa::modules::InitFunction init (NULL);
+      {
+        struct {
+          union {
+            void *symbol;
+            InitFunction function;
+          };
+        } func_ptr;
+        func_ptr.symbol = dlsym(handle, "sdpa_mod_init");
+        init = func_ptr.function;
+      }
+
+      if ( (error = dlerror()) != NULL || init == NULL) {
         dlclose(handle);
         LOG(ERROR, "module not loaded: " << error);
         throw ModuleLoadFailed(error, "[name-not-set]", file);
@@ -103,8 +118,7 @@ namespace modules {
         throw ModuleLoadFailed("module already registered", mod->name(), file);
       }
 
-      LOG(INFO, "sucessfully loaded: " << mod->name() << " from file " << file);
-      DLOG(DEBUG, *mod);
+      LOG(INFO, "sucessfully loaded file: " << file << " with module: " << *mod);
       return *mod;
     }
 

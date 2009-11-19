@@ -68,7 +68,7 @@ void Aggregator::shutdown(Aggregator::ptr_t ptrAgg)
 }
 
 //actions
-void Aggregator::action_configure(const StartUpEvent& evt)
+void Aggregator::action_configure(const StartUpEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
@@ -77,7 +77,7 @@ void Aggregator::action_configure(const StartUpEvent& evt)
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
-void Aggregator::action_config_ok(const ConfigOkEvent& evt)
+void Aggregator::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");

@@ -42,7 +42,7 @@ namespace sdpa {
 
 	 virtual void schedule(Job::ptr_t& pJob);
 
-	 virtual void schedule(gwes::activity_t& ) {};
+	 virtual void schedule(gwes::activity_t& ) { throw std::runtime_error("scheduling of activities not supported here"); }
 
 	 /**
       Scheduling a job locally means that it will not leave the executing node.

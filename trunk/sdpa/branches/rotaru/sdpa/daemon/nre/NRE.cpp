@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
-#include "SchedulerNRE.hpp"
 #include <gwes/GWES.h>
-#include <NRE.hpp>
+#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/nre/SchedulerNRE.hpp>
+#include <sdpa/daemon/nre/NRE.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -69,7 +69,7 @@ void NRE ::shutdown(NRE::ptr_t ptrNRE)
 }
 
 //actions
-void NRE::action_configure(const StartUpEvent& evt)
+void NRE::action_configure(const StartUpEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
@@ -78,7 +78,7 @@ void NRE::action_configure(const StartUpEvent& evt)
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
-void NRE::action_config_ok(const ConfigOkEvent& evt)
+void NRE::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");

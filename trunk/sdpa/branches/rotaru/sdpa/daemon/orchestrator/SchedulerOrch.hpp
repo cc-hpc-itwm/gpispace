@@ -38,7 +38,7 @@ namespace sdpa {
 
 	 virtual ~SchedulerOrch() {};
 
-	 bool post_request( bool force=false) { return false; }
+	 bool post_request( bool ) { return false; }
 	 void send_life_sign() {}
 	 void check_post_request() {}
 

@@ -33,7 +33,7 @@ namespace sdpa { namespace tests {
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
 
-      /*suiteOfTests->addTest( ModuleTest::suite() );
+      suiteOfTests->addTest( ModuleTest::suite() );
       suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
@@ -42,7 +42,6 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
-      */
 
       /*
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );

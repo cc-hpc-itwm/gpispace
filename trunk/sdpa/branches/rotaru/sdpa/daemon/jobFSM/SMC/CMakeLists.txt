@@ -9,7 +9,7 @@ file(GLOB srcs *.cpp)
 file(GLOB hdrs *.hpp)
 
 # Make sure the state machine gets incorporated.
-set(hdrs ${JOBFSMFSM_H}   ${hdrs})
+set(hdrs ${JOBFSM_H}   ${hdrs})
 set(srcs ${JOBFSM_CPP}    ${srcs})
 
 ADD_LIBRARY(sdpa-jobFSM_SMC ${srcs})

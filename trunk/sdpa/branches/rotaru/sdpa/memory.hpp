@@ -1,7 +1,7 @@
 #ifndef SDPA_MEMORY_HPP
 #define SDPA_MEMORY_HPP 1
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
 #endif
 

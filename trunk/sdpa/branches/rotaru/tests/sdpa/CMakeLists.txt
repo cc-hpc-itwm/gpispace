@@ -2,7 +2,6 @@
 ## add the CPPUNIT stuff
 include_directories(${CPPUNIT_INCLUDE_DIRS})
 link_directories(${CPPUNIT_LIBRARY_DIRS})
-link_libraries(${CPPUNIT_LIBRARIES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -27,6 +26,7 @@ target_link_libraries(sdpa-test
 	 sdpa
 	 seda
 	 seda-comm
+     ${CPPUNIT_STATIC_LIBRARIES}
 	 ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
@@ -35,7 +35,7 @@ target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
 
 # test module
-#add_library(example-mod SHARED example-mod.cpp)
+add_library(example-mod SHARED example-mod.cpp)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)

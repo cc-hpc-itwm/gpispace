@@ -21,7 +21,7 @@ void Add(sdpa::modules::data_t &params)
   const long long a = params["a"].token().data_as<long long>();
   const long long b = params["b"].token().data_as<long long>();
 
-  params["out"].token().data(a+b);
+  params["sum"].token().data(a+b);
 }
 
 void Malloc(sdpa::modules::data_t &p) throw (std::exception)
@@ -58,8 +58,9 @@ SDPA_MOD_INIT_START(example-mod)
   SDPA_REGISTER_FUN(DoNothing);
 
   SDPA_REGISTER_FUN_START(Add);
-    SDPA_ADD_INP("size", std::size_t);
-    SDPA_ADD_OUT("out", void*);
+    SDPA_ADD_INP("a", std::size_t);
+    SDPA_ADD_INP("b", std::size_t);
+    SDPA_ADD_OUT("sum", void*);
   SDPA_REGISTER_FUN_END(Add);
 
   SDPA_REGISTER_FUN(Malloc);

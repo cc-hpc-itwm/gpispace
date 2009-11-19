@@ -21,8 +21,8 @@ class SchedulerTestImpl : public Scheduler {
 	 SchedulerTestImpl(sdpa::Sdpa2Gwes* ptr_Sdpa2Gwes=NULL);
 	 virtual ~SchedulerTestImpl();
 
-    void schedule(Job::ptr_t& pJob);
-    virtual void schedule(gwes::activity_t::ptr_t& pAct) {};
+    virtual void schedule(Job::ptr_t& pJob);
+    virtual void schedule(gwes::activity_t& ) { throw std::runtime_error("scheduling of activities not supported here"); }
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
 

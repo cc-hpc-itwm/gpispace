@@ -3,3 +3,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/simple-sdpa-test.gwdl          ${CMAK
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/subworkflow-sdpa-test.gwdl     ${CMAKE_CURRENT_BINARY_DIR}/subworkflow-sdpa-test.gwdl    COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/remig.master.gwdl              ${CMAKE_CURRENT_BINARY_DIR}/remig.master.gwdl             COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/remigration.gwdl               ${CMAKE_CURRENT_BINARY_DIR}/remigration.gwdl              COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/workflow-result-test.gwdl      ${CMAKE_CURRENT_BINARY_DIR}/workflow-result-test.gwdl     COPYONLY)

@@ -582,20 +582,14 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	}
 	catch(QueueFull&)
 	{
-		os.str("");
-		os<<"Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id;
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id);
 	}
 	catch(seda::StageNotFound&)
 	{
-		os.str("");
-		os<<"Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id;
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
 	}
 	catch(...) {
-		os.str("");
-		os<<"Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
 		//send back an ErrorEvent
 	}
 }
@@ -681,8 +675,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		}
 
 		// serialize workflow
-		job_desc_t job_desc =  ptr_Sdpa2Gwes_->serializeWorkflow(*pWf.get());
-
+		job_desc_t job_desc =  ptr_Sdpa2Gwes_->serializeWorkflow(*pWf);
 		SDPA_LOG_DEBUG("activity_id = "<<activity.getID()<<", workflow_id = "<<pWf->getID());
 
 		gwes::workflow_id_t parent_id = activity.getOwnerWorkflowID();

@@ -96,7 +96,15 @@ void TestComponents::testComponents()
 	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create( "NRE_0",  "127.0.0.1:5002",
 																   "aggregator_0", "127.0.0.1:5001",
 																   "127.0.0.1:8000" );
-	sdpa::daemon::NRE::start(ptrNRE_0);
+    try
+    {
+	  sdpa::daemon::NRE::start(ptrNRE_0);
+    }
+    catch (const std::exception &ex)
+    {
+      LOG(FATAL, "could not start NRE: " << ex.what());
+      CPPUNIT_ASSERT_MESSAGE("could not start NRE", false);
+    }
 
 	/*sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
 																	 "aggregator_0", "127.0.0.1:5001",

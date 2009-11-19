@@ -46,7 +46,21 @@ namespace sdpa {
 				m_worker_.set_ping_trials(3);
 			}
 
-		virtual ~SchedulerNRE() { }
+		virtual ~SchedulerNRE()
+        {
+          try
+          {
+            stop();
+          }
+          catch (const std::exception &ex)
+          {
+            LOG(ERROR, "could not stop nre-scheduler: " << ex.what());
+          }
+          catch (...)
+          {
+            LOG(ERROR, "could not stop nre-scheduler (unknown error)");
+          }
+        }
 
 		void run()
 		{
@@ -96,7 +110,7 @@ namespace sdpa {
 			{
 				try
 				{
-					gwes::activity_t* pAct = activities_to_be_executed.pop_and_wait(m_timeout);
+					gwes::activity_t *pAct = activities_to_be_executed.pop_and_wait(m_timeout);
 					execute(*pAct);
 
 					SDPA_LOG_DEBUG("Finished executing the activity activity "<<pAct->getID());

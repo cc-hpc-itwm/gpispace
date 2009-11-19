@@ -62,17 +62,43 @@ namespace sdpa { namespace util {
           return *this;
         }
 
-        void put(const std::string &key, const std::string &value);
+        void put(const std::string &key, const std::string &val)
+        {
+          del(key);
+          properties_.insert(std::make_pair(key, val));
+        }
         template <typename T> void put(const std::string &key, const T &value) throw(PropertyConversionFailed) {
             std::stringstream sstr;
             sstr << value;
             put(key, sstr.str());
         }
-        std::size_t del(const std::string &key);
+        std::size_t del(const std::string &key)
+        {
+          return properties_.erase(key);
+        }
 
-        bool has_key(const std::string &key) const throw();
-        const std::string &get(const std::string &key) const throw(PropertyLookupFailed);
-        const std::string &get(const std::string &key, const std::string &def) const throw();
+        bool has_key(const std::string &key) const throw()
+        {
+          map_t::const_iterator it(properties_.find(key));
+          return (it != properties_.end());
+        }
+        const std::string &get(const std::string &key) const throw(PropertyLookupFailed)
+        {
+          map_t::const_iterator it(properties_.find(key));
+          if (it != properties_.end()) {
+              return it->second;
+          } else {
+              throw PropertyLookupFailed(key);
+          }
+        }
+        const std::string &get(const std::string &key, const std::string &def) const throw()
+        {
+          try {
+              return get(key);
+          } catch(...) {
+              return def;
+          }
+        }
 
         template <typename T> const T get(const std::string &key) const throw(PropertyConversionFailed, PropertyLookupFailed) {
             const std::string val(get(key));
@@ -103,10 +129,39 @@ namespace sdpa { namespace util {
             }
         }
 
-        void clear();
-        bool empty() const;
+        void clear()
+        {
+          properties_.clear();
+        }
+        bool empty() const
+        {
+          return properties_.empty();
+        }
 
-        void writeTo(std::ostream &) const;
+        void writeTo(std::ostream &os) const
+        {
+          os << "[";
+          map_t::const_iterator it(properties_.begin());
+          for (;;)
+          {
+            os << "{"
+               << it->first
+               << ","
+               << it->second
+               << "}";
+
+            ++it;
+            if (it == properties_.end())
+            {
+              break;
+            }
+            else
+            {
+              os << ",";
+            }
+          }
+          os << "]";
+        }
 
         const map_t & map() const { return properties_; }
         map_t & map() { return properties_; }
@@ -119,8 +174,13 @@ namespace sdpa { namespace util {
     private:
         map_t properties_;
     };
+
 }}
 
-extern std::ostream & operator<<(std::ostream &, const sdpa::util::Properties &);
+inline std::ostream &operator<<(std::ostream &os, const sdpa::util::Properties &props)
+{
+  props.writeTo(os);
+  return os;
+}
 
 #endif // ! SDPA_UTIL_PROPERTIES_HPP

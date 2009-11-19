@@ -102,7 +102,7 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 	}
 }
 
-void SchedulerImpl::start_job(const Job::ptr_t &pJob) {}
+void SchedulerImpl::start_job(const Job::ptr_t &) {}
 
 void SchedulerImpl::schedule(Job::ptr_t& pJob)
 {
