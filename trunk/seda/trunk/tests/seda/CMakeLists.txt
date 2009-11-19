@@ -15,5 +15,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/testsconfig.hpp.in ${CMAKE_CURRENT_BI
 add_executable(sedatestsuite ${sedatest_src})
 add_test(sedatestsuite ${CMAKE_CURRENT_BINARY_DIR}/sedatestsuite)
 target_link_libraries(sedatestsuite seda)
-target_link_libraries(sedatestsuite ${CPPUNIT_LIBRARIES})
-target_link_libraries(sedatestsuite dl)
+target_link_libraries(sedatestsuite ${CPPUNIT_STATIC_LIBRARIES})
+#target_link_libraries(sedatestsuite dl)
