@@ -1,27 +1,41 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SchedulerImpl.hpp
+ *
+ *    Description:  Implements a simple scheduler
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <sdpa/events/SubmitJobAckEvent.hpp>
-
-#include <tests/sdpa/DummyGwes.hpp>
+#include <sdpa/events/RequestJobEvent.hpp>
+#include <sdpa/events/LifeSignEvent.hpp>
 
 using namespace sdpa::daemon;
+using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::Sdpa2Gwes*  pSdpa2Gwes):
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler) :
 	ptr_worker_man_(new WorkerManager()),
-	ptr_Sdpa2Gwes_(pSdpa2Gwes),
-	SDPA_INIT_LOGGER("sdpa::daemon::SchedulerImpl")
+	ptr_comm_handler_(pCommHandler),
+	SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
 {
+	m_timeout = boost::posix_time::milliseconds(1000);//time_duration(0,0,0,10);
+	m_last_request_time = 0;
 }
 
 SchedulerImpl::~SchedulerImpl()
 {
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
-}
-
-void SchedulerImpl::acknowledge(const sdpa::job_id_t& ) { }
-
-Job::ptr_t SchedulerImpl::get_next_job(const Worker::worker_id_t &, const sdpa::job_id_t & /*last_job*/) {
-  throw std::runtime_error("SchedulerImpl::get_next_job() not implemented yet");
 }
 
 /*
@@ -34,13 +48,12 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	gwes::workflow_t* ptrWorkflow = NULL;
 
 	// Use gwes workflow here!
-	// IBuilder or a workflow fabric should be invoked here intstead of this!!!
+	// IBuilder should be invoked here instead of this!!!
 	try {
-		//ptrWorkflow = new DummyWorkflow(pJob->description());
-		ptrWorkflow = ptr_Sdpa2Gwes_->deserializeWorkflow( pJob->description() ) ;
+		ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
 		ptrWorkflow->setID(wf_id);
 	} catch(std::runtime_error&){
-		SDPA_LOG_ERROR("GWES could not deserialize the input string!");
+		SDPA_LOG_ERROR("GWES could not deserialize the job description!"<<std::endl<<pJob->description());
 		return;
 	}
 
@@ -50,10 +63,10 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG(os.str());
 
 	try {
-		if(ptr_Sdpa2Gwes_ && ptrWorkflow )
+		if(ptr_comm_handler_->gwes() && ptrWorkflow )
 		{
 			pJob->Dispatch();
-			ptr_Sdpa2Gwes_->submitWorkflow(*ptrWorkflow);
+			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
 		}
 		else
 			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
@@ -77,7 +90,7 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-			SDPA_LOG_DEBUG("The next worker dispatches the job ...");
+			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 			pWorker->dispatch(pJob);
 		}
 	}
@@ -88,6 +101,8 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
 	}
 }
+
+void SchedulerImpl::start_job(const Job::ptr_t &) {}
 
 void SchedulerImpl::schedule(Job::ptr_t& pJob)
 {
@@ -125,15 +140,67 @@ void SchedulerImpl::start()
 void SchedulerImpl::stop()
 {
    m_thread.interrupt();
-   //jobs_to_be_scheduled.stop();
 
    bStopRequested = true;
    SDPA_LOG_DEBUG("Scheduler thread before join ...");
    m_thread.join();
 
-   ptr_Sdpa2Gwes_ = NULL;
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
 }
+
+bool SchedulerImpl::post_request(bool force)
+{
+	bool bReqPosted = false;
+	sdpa::util::time_type current_time = sdpa::util::now();
+	sdpa::util::time_type difftime = current_time - m_last_request_time;
+
+	if(force || (sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered()) )
+	{
+		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
+		{
+			// post a new request to the master
+			// the slave posts a job request
+			SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
+			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+			ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
+			m_last_request_time = current_time;
+			bReqPosted = true;
+		}
+	}
+
+	return bReqPosted;
+}
+
+void SchedulerImpl::send_life_sign()
+{
+	 sdpa::util::time_type current_time = sdpa::util::now();
+	 sdpa::util::time_type difftime = current_time - m_last_request_time;
+
+	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 {
+		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
+		 {
+			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+			 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
+			 m_last_request_time = current_time;
+		 }
+	 }
+}
+
+
+void SchedulerImpl::check_post_request()
+{
+	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 {
+		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
+		 // post job request if number_of_jobs() < #registered workers +1
+		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
+			 post_request();
+		 else //send a LS
+			 send_life_sign();
+	 }
+}
+
 
 void SchedulerImpl::run()
 {
@@ -141,8 +208,10 @@ void SchedulerImpl::run()
 
 	while(!bStopRequested)
 	{
-		try {
-			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+		try
+		{
+			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
 			if( pJob.use_count() )
 			{
@@ -155,12 +224,13 @@ void SchedulerImpl::run()
 					// or has an Worker Manager and the workers are threads
 					schedule_remote(pJob);
 				}
+
+				// if I'm not the orchestrator (i.e. either aggregator or nre)
+				// if the job queue's length is less than twice the number of workers
+				// and the elapased time since the last request is > polling_interval_time
 			}
-			else
-			{
-				bStopRequested = true;
-				SDPA_LOG_DEBUG("Thread stops now!");
-			}
+
+			check_post_request();
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -169,8 +239,8 @@ void SchedulerImpl::run()
 		}
 		catch( const sdpa::daemon::QueueEmpty &)
 		{
-			SDPA_LOG_DEBUG("Queue empty exception");
-			bStopRequested = true;
+			//SDPA_LOG_DEBUG("Queue empty exception");
+			check_post_request();
 		}
 	}
 }

@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_Scheduler.hpp
+ *
+ *    Description:  test the scheduler thread
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SCHEDULER_TEST_HPP_
 #define SCHEDULER_TEST_HPP_
 

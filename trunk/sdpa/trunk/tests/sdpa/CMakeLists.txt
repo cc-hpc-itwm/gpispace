@@ -15,10 +15,19 @@ set(test_hdrs ${PERFORMANCETEST_FSM_H} ${test_hdrs})
 set(test_srcs ${PERFORMANCETEST_FSM_CPP} ${test_srcs})
 
 ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
-target_link_libraries(sdpa-test sdpa sdpa-daemon sdpa-events sdpa-util)
-target_link_libraries(sdpa-test ${CPPUNIT_LIBRARIES})
-target_link_libraries(sdpa-test ${FHGLOG_LIBRARY})
-target_link_libraries(sdpa-test ${Boost_LIBRARIES})
+target_link_libraries(sdpa-test
+	 sdpa-daemon
+	 sdpa-client
+	 sdpa-nre
+	 sdpa-aggregator
+	 sdpa-orchestrator
+	 sdpa-events
+	 sdpa-util
+	 sdpa
+	 seda
+	 seda-comm
+     ${CPPUNIT_STATIC_LIBRARIES}
+	 ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 target_link_libraries(sdpa_test_suite sdpa-test)

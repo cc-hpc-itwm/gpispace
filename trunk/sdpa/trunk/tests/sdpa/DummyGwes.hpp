@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  DummyGwes.hpp
+ *
+ *    Description:  Simulate simple gwes behavior
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DUMMY_WORKFLOW_HPP
 #define DUMMY_WORKFLOW_HPP 1
 
@@ -16,14 +33,19 @@
 #include <boost/config.hpp>
 #include <iostream>
 
-#include <boost/bimap.hpp>
+//#include <boost/bimap.hpp>
+#include <map>
+#include <boost/thread.hpp>
 
 
 using namespace sdpa;
 using namespace gwes;
 
-typedef boost::bimap< std::string, std::string > bimap_t;
-typedef bimap_t::value_type id_pair;
+//typedef boost::bimap< std::string, std::string > bimap_t;
+//typedef bimap_t::value_type id_pair;
+
+typedef std::map< std::string, std::string > map_t;
+typedef map_t::value_type id_pair;
 
 /*namespace gwdl
   {
@@ -45,9 +67,9 @@ class DummyWorkflow : public gwes::workflow_t
     gwdl::Place* getPlace(const std::string& /* id */) { return NULL; }
 
     gwdl::workflow_result_t getResults() const
-    {
-      return gwdl::workflow_result_t();
-    }
+	{
+	  return gwdl::workflow_result_t();
+	}
   private:
     gwes::workflow_id_t wf_id_;
 };
@@ -67,7 +89,7 @@ class DummyActivity : public gwes::activity_t
 
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
 
-    gwdl::IWorkflow::ptr_t transform2Workflow() const throw(std::exception)
+    gwdl::IWorkflow::ptr_t transform2Workflow() const throw (std::exception)
     {
       gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
       return pWf;
@@ -83,6 +105,9 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
   private:
     SDPA_DECLARE_LOGGER();
   public:
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+
     DummyGwes() : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
   {
     ptr_Gwes2SdpaHandler = NULL;
@@ -118,11 +143,14 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
       if(ptr_Gwes2SdpaHandler)
       {
-        // find the corresponding workflow
-        workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        gwdl::workflow_result_t result;
-        ptr_Gwes2SdpaHandler->workflowFailed(wf_id_orch, result);
-        bimap_wf_act_ids_.left.erase(wf_id_orch);
+    	  // find the corresponding workflow
+    	  //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+    	  gwdl::workflow_result_t result;
+    	  ptr_Gwes2SdpaHandler->workflowFailed(workflowId, result);
+
+    	  lock_type lock(mtx_);
+    	  map_wf_act_ids_.erase(workflowId);
+    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -144,11 +172,15 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
       if(ptr_Gwes2SdpaHandler)
       {
-        // find the corresponding workflow
-        workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-        gwdl::workflow_result_t result;
-        ptr_Gwes2SdpaHandler->workflowFinished(wf_id_orch, result);
-        bimap_wf_act_ids_.left.erase(wf_id_orch);
+    	  // find the corresponding workflow
+    	  //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+
+    	  gwdl::workflow_result_t result;
+    	  ptr_Gwes2SdpaHandler->workflowFinished(workflowId, result);
+
+    	  lock_type lock(mtx_);
+    	  map_wf_act_ids_.erase(workflowId);
+    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -174,11 +206,14 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       {
         if(ptr_Gwes2SdpaHandler)
         {
-          // find the corresponding workflow
-          workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
-          gwdl::workflow_result_t result;
-          ptr_Gwes2SdpaHandler->workflowCanceled(wf_id_orch, result);
-          bimap_wf_act_ids_.left.erase(wf_id_orch);
+        	// find the corresponding workflow
+        	//workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
+        	gwdl::workflow_result_t result;
+        	ptr_Gwes2SdpaHandler->workflowCanceled(workflowId, result);
+
+        	lock_type lock(mtx_);
+        	map_wf_act_ids_.erase(workflowId);
+        	//bimap_wf_act_ids_.left.erase(wf_id_orch);
         }
         else
           SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -199,8 +234,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
      */
     virtual void registerHandler(Gwes2Sdpa *pSdpa)
     {
-      ptr_Gwes2SdpaHandler = pSdpa;
-      SDPA_LOG_DEBUG("Called registerHandler ...");
+    	ptr_Gwes2SdpaHandler = pSdpa;
+    	SDPA_LOG_DEBUG("Called registerHandler ...");
     }
 
     /**
@@ -213,10 +248,10 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
      */
     virtual void unregisterHandler(Gwes2Sdpa *pSdpa)
     {
-      if( pSdpa == ptr_Gwes2SdpaHandler)
-        ptr_Gwes2SdpaHandler = NULL;
+    	if( pSdpa == ptr_Gwes2SdpaHandler)
+    		ptr_Gwes2SdpaHandler = NULL;
 
-      SDPA_LOG_DEBUG("SDPA has unregistered ...");
+    	SDPA_LOG_DEBUG("SDPA has unregistered ...");
     }
 
     /*
@@ -265,7 +300,8 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
 
       //bimap_wf_act_ids_[wf_id_orch] = act_id;
-      bimap_wf_act_ids_.insert( id_pair(wf_id_orch, act_id) );
+      lock_type lock(mtx_);
+      map_wf_act_ids_.insert(id_pair(wf_id_orch,act_id));
 
 
       if(ptr_Gwes2SdpaHandler)
@@ -293,34 +329,39 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       if(ptr_Gwes2SdpaHandler)
       {
         SDPA_LOG_DEBUG("Gwes cancels the activities related to the workflow "<<workflowId);
-        activity_id_t act_id = bimap_wf_act_ids_.left.at(workflowId);
-        ptr_Gwes2SdpaHandler->cancelActivity(act_id);
+        //activity_id_t act_id = bimap_wf_act_ids_.left.at(workflowId);
+        activity_id_t activityId = map_wf_act_ids_.at(workflowId);
+        ptr_Gwes2SdpaHandler->cancelActivity(activityId);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
     }
 
-    gwdl::IWorkflow* deserializeWorkflow(const std::string &bytes) throw (std::runtime_error)
-    {
-      return new DummyWorkflow(bytes);
-    }
+    gwdl::IWorkflow *deserializeWorkflow(const std::string& strJobDesc ) throw (std::runtime_error)
+	{
+    	 gwdl::IWorkflow* ptrWorkflow = new DummyWorkflow(strJobDesc);
+    	 return ptrWorkflow;
+	}
 
-    std::string serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std::runtime_error)
-    {
-      return "serialized DummyWorkflow (id:"+workflow.getID()+")";
-    }
+    std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error)
+	{
+    	return "dummy_workflow_serialization";
+	}
 
     gwes::workflow_t &getWorkflow(const workflow_id_t &id) throw (NoSuchWorkflow)
     {
       throw NoSuchWorkflow("cannot look up workflow " + id);
     }
-    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchWorkflow)
+
+    gwes::activity_t &getActivity(const workflow_id_t &wid, const activity_id_t &aid) throw (NoSuchActivity)
     {
       throw NoSuchActivity("cannot look up activity " + aid + " in workflow " + wid);
     }
+
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
-    bimap_t bimap_wf_act_ids_;
+    map_t map_wf_act_ids_;
+    mutex_type mtx_;
     //use here a bidirectional map!
     /*workflow_id_t wf_id_orch;
       activity_id_t act_id;*/

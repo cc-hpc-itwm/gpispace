@@ -18,15 +18,15 @@ void DoNothing(sdpa::modules::data_t &)
 // add two integer parameters and store the result in "out"
 void Add(sdpa::modules::data_t &params)
 {
-  const long long a = params.at("a").token().data_as<long long>();
-  const long long b = params.at("b").token().data_as<long long>();
+  const long long a = params["a"].token().data_as<long long>();
+  const long long b = params["b"].token().data_as<long long>();
 
-  params["out"].token().data(a+b);
+  params["sum"].token().data(a+b);
 }
 
 void Malloc(sdpa::modules::data_t &p) throw (std::exception)
 {
-  const std::size_t bytes = p.at("size").token().data_as<std::size_t>();
+  const std::size_t bytes = p["size"].token().data_as<std::size_t>();
   void *ptr = std::malloc(bytes);
   if (0 == ptr) {
     throw std::runtime_error("memory allocation failed");
@@ -36,7 +36,7 @@ void Malloc(sdpa::modules::data_t &p) throw (std::exception)
 
 void Free(sdpa::modules::data_t &p) throw (std::exception)
 {
-  void *ptr = p.at("ptr").token().data_as<void*>();
+  void *ptr = p["ptr"].token().data_as<void*>();
   if (ptr) {
     free(ptr);
     p["ptr"].token().data((void*)0);
@@ -47,7 +47,7 @@ void Free(sdpa::modules::data_t &p) throw (std::exception)
 
 void Update(sdpa::modules::data_t &p) throw (std::exception)
 {
-  int *ptr = (int*)p.at("ptr").token().data_as<void*>();
+  int *ptr = (int*)p["ptr"].token().data_as<void*>();
   unsigned int value= p["value"].token().data_as<unsigned int>();
   *ptr = value;
 }
@@ -58,9 +58,9 @@ SDPA_MOD_INIT_START(example-mod)
   SDPA_REGISTER_FUN(DoNothing);
 
   SDPA_REGISTER_FUN_START(Add);
-    SDPA_ADD_INP("a", long long);
-    SDPA_ADD_INP("b", long long);
-    SDPA_ADD_OUT("out", void*);
+    SDPA_ADD_INP("a", std::size_t);
+    SDPA_ADD_INP("b", std::size_t);
+    SDPA_ADD_OUT("sum", void*);
   SDPA_REGISTER_FUN_END(Add);
 
   SDPA_REGISTER_FUN(Malloc);

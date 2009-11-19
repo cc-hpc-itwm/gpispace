@@ -67,9 +67,3 @@ bool JobId::operator==(const JobId &rhs) const
 JobId::~JobId()
 {
 }
-
-std::ostream & operator<<(std::ostream &os, const sdpa::JobId &jid) {
-  os << jid.str();
-  return os;
-}
-

@@ -9,11 +9,12 @@ foreach (tc_src ${tc_srcs})
 
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name} sdpa-daemon)
+  target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
   target_link_libraries(${tc_name} sdpa-events)
   target_link_libraries(${tc_name} sdpa-util)
   target_link_libraries(${tc_name} sdpa)
-  # gwes xml stuff
-
+  target_link_libraries(${tc_name} seda)
+  target_link_libraries(${tc_name} seda-comm)
   target_link_libraries(${tc_name} ${FHGLOG_LIBRARY})
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
   get_target_property(LOC ${tc_name} LOCATION_)

@@ -1,10 +1,27 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_DaemonRealGwes.hpp
+ *
+ *    Description:  test a generic daemons with a real gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DAEMON_DUMMY_REAL_TEST_HPP_
 #define DAEMON_DUMMY_REAL_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 
 namespace sdpa {
@@ -14,7 +31,11 @@ namespace sdpa {
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
-			  CPPUNIT_TEST( testDaemonFSM_JobCancelled );
+
+			  // Caution: GWES blocks the calling thread! Even if the daemon stage uses more than 1 thread
+			  // don't use it, wait for AH to fix it
+			  // it may happen that the daemon hangs because its threads are blocked by GWES
+			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled );
 			  //CPPUNIT_TEST( testDaemonFSM_JobCancelled_from_Pending );
 
 			  CPPUNIT_TEST_SUITE_END();
@@ -34,7 +55,7 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrDaemonFSM;
+			  dsm::DaemonFSM::ptr_t m_ptrDaemonFSM;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrToMasterStage;
 			  seda::Stage::Ptr m_ptrToSlaveStage;

@@ -32,31 +32,19 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
-        typedef std::string token_t;
-        typedef std::string place_t;
-        typedef std::pair<place_t, token_t> value_t;
-        typedef std::vector<value_t> data_t;
-
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
-
         virtual const job_desc_t & description() const = 0;
-
-        virtual const data_t & input() const = 0;
-        virtual const data_t & output() const = 0;
-
-        virtual void add_input(const value_t & value) = 0;
-        virtual void add_output(const value_t & value) = 0;
-
-        virtual void add_subjob(const ptr_t & job) = 0;
-        virtual ptr_t get_subjob(const job_id_t & id) = 0;
 
         virtual bool is_marked_for_deletion() = 0;
         virtual bool mark_for_deletion() = 0;
 
         virtual bool is_local()=0;
         virtual void set_local(bool)=0;
+
+#ifdef USE_BOOST_SC
         virtual void process_event( const boost::statechart::event_base &) {}
+#endif
 
         //transitions
 		virtual void CancelJob(const sdpa::events::CancelJobEvent*);

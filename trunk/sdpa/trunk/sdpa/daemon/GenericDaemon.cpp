@@ -1,8 +1,29 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  GenericDaemon.cpp
+ *
+ *    Description:  Generic daemon implementation file
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include <seda/StageRegistry.hpp>
+#include <seda/comm/comm.hpp>
+#include <seda/comm/ConnectionFactory.hpp>
+#include <seda/comm/ConnectionStrategy.hpp>
+#include <sdpa/events/CodecStrategy.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
@@ -12,10 +33,12 @@
 
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <gwes/GWES.h>
+#include <sdpa/wf/GwesGlue.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
-using namespace sdpa::fsm::smc;
 
 
 //Provide ptr to an implementation of Sdpa2Gwes
@@ -26,16 +49,58 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
-	  ptr_scheduler_(new SchedulerImpl(pArgSdpa2Gwes)),
+	  ptr_scheduler_(new SchedulerImpl(this)),
 	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
-	  master_("")
+	  master_(""),
+	  m_bRegistered(false)
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
 
 	// initialize last request time
-	last_request_time = 0;
+}
+
+GenericDaemon::GenericDaemon(	const std::string &name,
+								const std::string& toMasterStageName,
+								const std::string& toSlaveStageName,
+								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: Strategy(name),
+	  SDPA_INIT_LOGGER(name),
+	  ptr_job_man_(new JobManager()),
+	  ptr_scheduler_(new SchedulerImpl(this)),
+	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
+	  master_(""),
+	  m_bRegistered(false)
+{
+	if(!toMasterStageName.empty())
+	{
+		seda::Stage::Ptr pshToMasterStage = seda::StageRegistry::instance().lookup(toMasterStageName);
+		ptr_to_master_stage_ = pshToMasterStage.get();
+	}
+	else
+		ptr_to_master_stage_ = NULL;
+
+
+	if(!toSlaveStageName.empty())
+	{
+		seda::Stage::Ptr pshToSlaveStage = seda::StageRegistry::instance().lookup(toSlaveStageName);
+		ptr_to_slave_stage_ = pshToSlaveStage.get();
+	}
+	else
+		ptr_to_slave_stage_ = NULL;
+}
+
+// with network scommunicatio
+GenericDaemon::GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: Strategy(name),
+	  SDPA_INIT_LOGGER(name),
+	  ptr_job_man_(new JobManager()),
+	  ptr_scheduler_(new SchedulerImpl(this)),
+	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
+	  master_(""),
+	  m_bRegistered(false)
+{
 }
 
 GenericDaemon::~GenericDaemon()
@@ -46,15 +111,82 @@ GenericDaemon::~GenericDaemon()
 	daemon_stage_ = NULL;
 }
 
-void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
+void GenericDaemon::create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon )
 {
-	// The stage uses 2 threads
-	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 2) );
+	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 1) );
 	ptr_daemon->setStage(daemon_stage.get());
 	seda::StageRegistry::instance().insert(daemon_stage);
+}
 
-	daemon_stage->start();
 
+void GenericDaemon::configure_network( std::string daemonUrl, std::string masterName, std::string masterUrl )
+{
+	SDPA_LOG_DEBUG("configuring network components...");
+	const std::string prefix(daemon_stage_->name()+".net");
+
+	SDPA_LOG_DEBUG("setting up decoding...");
+	seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
+	sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
+	seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
+	seda::StageRegistry::instance().insert(decode_stage);
+	decode_stage->start();
+
+	SDPA_LOG_DEBUG("setting up the network stage...");
+	seda::comm::ConnectionFactory connFactory;
+	seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
+	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
+	// master known service: give the port as a parameter
+	if( !masterName.empty() &&  !masterUrl.empty() )
+	{
+		setMaster(masterName);
+		conn->locator()->insert( masterName, masterUrl);
+	}
+
+	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
+	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
+	seda::StageRegistry::instance().insert(network_stage);
+	network_stage->start();
+
+	SDPA_LOG_DEBUG("setting up the output/encoding stage...");
+	seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
+	sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
+	seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
+	seda::StageRegistry::instance().insert(encode_stage);
+
+	ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
+	encode_stage->start();
+}
+
+void GenericDaemon::shutdown_network()
+{
+	SDPA_LOG_DEBUG("shutting-down the network components...");
+	const std::string prefix(daemon_stage_->name()+".net");
+
+	SDPA_LOG_DEBUG("shutdown the decoding stage...");
+	std::string decode_stage_name = prefix+"-decode";
+	seda::Stage::Ptr decode_stage = seda::StageRegistry::instance().lookup(decode_stage_name);
+	decode_stage->stop();
+
+	SDPA_LOG_DEBUG("shutdown the network stage...");
+	std::string network_stage_name = prefix;
+	seda::Stage::Ptr network_stage = seda::StageRegistry::instance().lookup(network_stage_name);
+	network_stage->stop();
+
+	SDPA_LOG_DEBUG("shutdown the encoding stage...");
+	std::string encode_stage_name = prefix+"-encode";
+	seda::Stage::Ptr encode_stage = seda::StageRegistry::instance().lookup(encode_stage_name);
+
+	encode_stage->stop();
+
+	ptr_to_master_stage_ = ptr_to_slave_stage_ = NULL;
+}
+
+void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
+{
+	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create(); // initialize it with default options
+
+	// The stage uses 2 threads
+	ptr_daemon->daemon_stage()->start();
 
 	//start-up the the daemon
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
@@ -62,17 +194,28 @@ void GenericDaemon::start(GenericDaemon::ptr_t ptr_daemon )
 
 	sleep(1);
 
-	// you should read the configuration file here!
-	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create();
+	// configuration done
+	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
+	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
+}
 
-	// use for now as below, later read from config file
-	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 100000); //100 ms
-	ptr_daemon->ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
+void GenericDaemon::start( const GenericDaemon::ptr_t& ptr_daemon,  sdpa::util::Config::ptr_t ptrConfig )
+{
+
+	ptr_daemon->ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
+
+	// The stage uses 2 threads
+	ptr_daemon->daemon_stage()->start();
+
+	//start-up the the daemon
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
+	ptr_daemon->daemon_stage()->send(pEvtStartUp);
+
+	sleep(1);
 
 	// configuration done
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
 	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
-
 }
 
 void GenericDaemon::stop()
@@ -85,7 +228,14 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	SDPA_LOG_DEBUG("Perform: Handling event " <<typeid(*pEvent.get()).name());
 
 	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
-		handleDaemonEvent(pEvent);
+	{
+		if( WorkerRegistrationAckEvent* pRegAckEvt = dynamic_cast<WorkerRegistrationAckEvent*>(pEvent.get()) )
+			handleWorkerRegistrationAckEvent(pRegAckEvt);
+		else if( ConfigReplyEvent* pCfgReplyEvt = dynamic_cast<ConfigReplyEvent*>(pEvent.get()) )
+			handleConfigReplyEvent(pCfgReplyEvt);
+		else
+			handleDaemonEvent(pEvent);
+	}
 	else
 		if(dynamic_cast<JobEvent*>(pEvent.get()))
 		{
@@ -96,36 +246,17 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 		}
 		else
 			cout<<"Throw an exception here!"<<std::endl;
+}
 
-	// if I'm not the orchestrator (i.e. either aggregator or nre)
-	// if the job queue's length is less than twice the number of workers
-	// and the elapased time since the last request is > polling_interval_time
+void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
+{
+	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
+	m_bRegistered = true;
+}
 
-	 sdpa::util::time_type current_time = sdpa::util::now();
-	 sdpa::util::time_type difftime = current_time - last_request_time;
-
-	 if( sdpa::daemon::ORCHESTRATOR != name() )
-	 {
-		 // post job request if number_of_jobs() < 2 * #registered workers
-		 if( ptr_job_man_->number_of_jobs() < 2 * ptr_scheduler_->numberOfWorkers() )
-		 {
-			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("polling interval") )
-			 {
-				 // post a new request to the master
-				 // the slave posts a job request
-				RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master()) );
-				sendEvent(ptr_to_master_stage_, pEvtReq);
-				last_request_time = current_time;
-			 }
-		 } else {
-			 if( difftime > ptr_daemon_cfg_->get<sdpa::util::time_type>("life-sign interval") )
-			 {
-				 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( name(), master()) );
-				 sendEvent(ptr_to_master_stage_, pEvtLS);
-				 last_request_time = current_time;
-			 }
-		 }
-	 }
+void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
+{
+	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
 void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
@@ -199,12 +330,35 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 //actions
 void GenericDaemon::action_configure(const StartUpEvent&)
 {
+	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
+	// use for now as below, later read from config file
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000000); //1ms
+	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
+	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+	// in fact the master name should be red from the configuration file
+	if( name() == sdpa::daemon::AGGREGATOR )
+	{
+		if(master().empty())
+			setMaster(sdpa::daemon::ORCHESTRATOR);
+
+		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+		to_master_stage()->send(pEvtWorkerReg);
+	} else if( name() == sdpa::daemon::NRE )
+	{
+		if(master().empty())
+			setMaster(sdpa::daemon::AGGREGATOR );
+
+		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+		to_master_stage()->send(pEvtWorkerReg);
+	}
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent&)
@@ -254,11 +408,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
 		pJob->DeleteJob(&e);
 
-		if( pJob->is_marked_for_deletion() )
-		{
-			ptr_job_man_->markJobForDeletion(e.job_id(), pJob);
-			ptr_job_man_->deleteJob(e.job_id());
-		}
+		ptr_job_man_->deleteJob(e.job_id());
 	} catch(JobNotFoundException&){
 		os.str("");
 		os<<"Job "<<e.job_id()<<" not found!";
@@ -316,15 +466,15 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			SDPA_LOG_DEBUG(os.str());
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description()));
 
-			// Post a SubmitJobEvent to the slave who made the request
-			sendEvent(ptr_to_slave_stage_, pSubmitEvt);
-
 			//inform GWES
 			gwes::activity_id_t actId = ptrJob->id().str();
 			gwes::workflow_id_t wfId  = ptrJob->parent().str();
 
 			SDPA_LOG_DEBUG("Call activityDispatched( "<<wfId<<", "<<actId<<" )");
 			ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
+
+			// Post a SubmitJobEvent to the slave who made the request
+			sendEvent(ptr_to_slave_stage_, pSubmitEvt);
 		}
 		else // send an error event
 		{
@@ -337,7 +487,6 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			// Post a SubmitJobEvent to the slave who made the reques
 			sendEvent(ptr_to_slave_stage_, pErrorEvt);
 		}
-
 	}
 	catch(NoJobScheduledException&)
 	{
@@ -383,8 +532,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
 	ostringstream os;
-	os<<"Call 'action_submit_job'";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Call 'action_submit_job' FROM "<<e.from());
 	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens
@@ -412,7 +560,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		// check if the message comes from outside/slave or from WFE
 		// if it comes from outside set it as local
-		if(e.from() != name() ) //e.to())
+		if(e.from() != sdpa::daemon::GWES ) //e.to())
 			pJob->set_local(true);
 
 		ptr_scheduler_->schedule(pJob);
@@ -421,8 +569,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		{
 			//send back to the user a SubmitJobAckEvent
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
-
-			//assert( e.from() == master || master == "" )
 
 			// There is a problem with this if uncommented
 			sendEvent(ptr_to_master_stage_, pSubmitJobAckEvt);
@@ -470,14 +616,8 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
 		addWorker(pWorker);
 
-		ostringstream os;
-		os<<"Registered the worker "<<pWorker->name()<<" ...";
-		SDPA_LOG_DEBUG(os.str());
-
-		os.str("");
-		os<<"Send back registration acknowledgement to the worker "<<pWorker->name()<<" ...";
-		SDPA_LOG_DEBUG(os.str());
-		// send back an acknowledgement
+		SDPA_LOG_DEBUG("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
+		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);
 	}
@@ -518,15 +658,16 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 	ostringstream os;
 
 	try {
-		SDPA_LOG_DEBUG("GWES submitted new activity ...");
+		SDPA_LOG_DEBUG("GWES submitted the activity "<<activity.getID());
 
 		job_id_t job_id(activity.getID());
 
 		// transform activity to workflow
 		gwdl::IWorkflow::ptr_t pWf = activity.transform2Workflow();
+		//SDPA_LOG_DEBUG("Transformed activity into an workflow: "<<(gwdl::Workflow&)(*pWf));
 
 		// check if the generated workflow has the same id as the activity_id
-		// if not, set explicitely
+		// if not, set explicitly
 		if(activity.getID() != pWf->getID() )
 		{
 			SDPA_LOG_DEBUG("The transformed workflow does not have an id already set. Set this to the activity_id ...");
@@ -534,12 +675,12 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		}
 
 		// serialize workflow
-		job_desc_t job_desc = ptr_Sdpa2Gwes_->serializeWorkflow(*pWf);
+		job_desc_t job_desc =  ptr_Sdpa2Gwes_->serializeWorkflow(*pWf);
 		SDPA_LOG_DEBUG("activity_id = "<<activity.getID()<<", workflow_id = "<<pWf->getID());
 
 		gwes::workflow_id_t parent_id = activity.getOwnerWorkflowID();
 
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(name(), name(), job_id, job_desc, parent_id));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(sdpa::daemon::GWES, name(), job_id, job_desc, parent_id));
 		sendEvent(pEvtSubmitJob);
 	}
 	catch(QueueFull&)
@@ -556,7 +697,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 	}
 	catch(std::exception&)
 	{
-		SDPA_LOG_DEBUG("transform2Workflow failed! Cancel the activity.");
+		SDPA_LOG_DEBUG("Either transform2Workflow or serializeWorkflow failed! Cancel the activity.");
 		// inform immediately GWES that the corresponding activity was cancelled
 		gwes::activity_id_t actId = activity.getID();
 		gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
@@ -590,7 +731,7 @@ void GenericDaemon::cancelActivity(const gwes::activity_id_t &activityId) throw 
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -601,22 +742,24 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, cons
 	// call job.JobFinished(event);
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
+	//gwdl::Workflow* wf = ((gwes::GWES*)gwes())->getWorkflowHandlerTable().get(workflowId)->getWorkflow();
+	//SDPA_LOG_DEBUG("******* completed workflow (filled with tokens): "<< *wf);
+
 	job_id_t job_id(workflowId);
 
-    job_result_t result;
-    SDPA_LOG_DEBUG("TODO: fill in the results...");
-	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), job_id, result));
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
+	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::GWES, name(), job_id, sdpa_result));
 	sendEvent(pEvtJobFinished);
 
-    // deallocate the results
-    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
 /**
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
@@ -631,20 +774,20 @@ void GenericDaemon::workflowFailed(const gwes::workflow_id_t &workflowId, const 
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" failed!");
 	job_id_t job_id(workflowId);
-    SDPA_LOG_DEBUG("TODO: fill in job results...");
-    job_result_t result;
-	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), job_id, result));
+
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
+	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::GWES, name(), job_id, sdpa_result ));
 	sendEvent(pEvtJobFailed);
 
-    // deallocate the results
-    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
 /**
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t &r) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
+void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t& gwes_result) throw (gwes::Gwes2Sdpa::NoSuchWorkflow)
 {
 	// generate a JobCancelledEvent for self!
 	// identify the job with the job_id == workflow_id_t
@@ -652,11 +795,33 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, cons
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" was cancelled!");
 	job_id_t job_id(workflowId);
-	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), job_id));
+
+	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
+	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id));
 	sendEvent(pEvtCancelJobAck);
 
-    // deallocate the results
-    gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(r));
+	// deallocate the results
+	gwdl::deallocate_workflow_result(const_cast<gwdl::workflow_result_t&>(gwes_result));
 }
 
+
+void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
+{
+	sdpa::job_result_t results;
+	JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( workerName, name(), jobID.str(), results ) );
+	sendEvent(pJobFinEvt);
+}
+
+void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
+{
+	sdpa::job_result_t results;
+	JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( workerName, name(), jobID.str(), results ) );
+	sendEvent(pJobFailEvt);
+}
+
+void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
+{
+	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str() ) );
+	sendEvent(pCancelAckEvt);
+}
 

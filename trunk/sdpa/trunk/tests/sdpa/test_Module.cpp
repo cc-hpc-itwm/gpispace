@@ -99,7 +99,7 @@ void ModuleTest::testAddFunctionCall() {
 
   std::cout << "summing from 0 to " << max << " ";
   std::cout.flush();
-  params["out"] = sdpa::wf::Parameter("out", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token((long long)0));
+  params["sum"] = sdpa::wf::Parameter("sum", sdpa::wf::Parameter::OUTPUT_EDGE, sdpa::wf::Token((long long)0));
 
   sdpa::util::time_type start = sdpa::util::now();
   for (long long i(0); i < max; ++i)
@@ -111,7 +111,7 @@ void ModuleTest::testAddFunctionCall() {
     } catch (const std::exception & ex) {
       CPPUNIT_ASSERT_MESSAGE(std::string("function call failed: ") + ex.what(), false);
     }
-    sum = params["out"].token().data_as<long long>();
+    sum = params["sum"].token().data_as<long long>();
     if ((i % 10000) == 0) { std::cout << "."; std::cout.flush(); }
   }
   sdpa::util::time_type end = sdpa::util::now();
@@ -120,7 +120,7 @@ void ModuleTest::testAddFunctionCall() {
   std::cout << "loop took " << (end - start) << "usec" << std::endl;
 
   CPPUNIT_ASSERT_EQUAL(expected, sum);
-  CPPUNIT_ASSERT_EQUAL(sum, params["out"].token().data_as<long long>());
+  CPPUNIT_ASSERT_EQUAL(sum, params["sum"].token().data_as<long long>());
 }
 
 void ModuleTest::testAlloc() {

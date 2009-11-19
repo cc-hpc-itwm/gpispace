@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobImpl.cpp
+ *
+ *    Description:  Job implementation
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include "JobImpl.hpp"
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -15,7 +32,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 using namespace std;
-using namespace boost::statechart;
 using namespace sdpa::events;
 
 namespace sdpa { namespace daemon {
@@ -45,28 +61,6 @@ namespace sdpa { namespace daemon {
         return desc_;
     }
 
-    const Job::data_t & JobImpl::input() const {
-        return input_;
-    }
-    const Job::data_t & JobImpl::output() const {
-        return output_;
-    }
-
-    void JobImpl::add_input(const Job::value_t & v) {
-        input_.push_back(v);
-    }
-
-    void JobImpl::add_output(const Job::value_t & v) {
-        output_.push_back(v);
-    }
-
-    void JobImpl::add_subjob(const Job::ptr_t & job) {
-        subjobs_.insert(std::make_pair(job->id(), job));
-    }
-
-    Job::ptr_t JobImpl::get_subjob(const job_id_t & jid) {
-        return subjobs_[jid];
-    }
 
     bool JobImpl::is_marked_for_deletion() {
     	return b_marked_for_del_;
@@ -116,7 +110,7 @@ namespace sdpa { namespace daemon {
 		}
 		else //the master sent a Cancel message -> forward it to the workflow engine
 		{
-			if( pComm->name()!= sdpa::daemon::ORCHESTRATOR )
+			if( !pComm->master().empty() )
 			{
 				// clearly, I'm into the Pending state here
 				// return back to the master a CancelJobAckEvent

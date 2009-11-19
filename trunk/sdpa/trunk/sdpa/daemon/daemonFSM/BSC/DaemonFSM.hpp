@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  DaemonFSM.hpp
+ *
+ *    Description:  Daemon state chart (boost)
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DAEMON_FSM_BSC_HPP
 #define DAEMON_FSM_BSC_HPP 1
 
@@ -29,6 +46,13 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 				seda::Stage* ptrToMasterStage,
 				seda::Stage* ptrToSlaveStage,
 				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes);
+
+	DaemonFSM(  const std::string &name,
+				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				const std::string& toMasterStageName,
+				const std::string& toSlaveStageName = std::string(""));
+
+	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes );
 
 	virtual ~DaemonFSM();
 

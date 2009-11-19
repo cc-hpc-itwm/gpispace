@@ -1,10 +1,27 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_DaemonDummyGwes.hpp
+ *
+ *    Description:  test a generic daemons with a dummy gwes
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef DAEMON_DUMMY_GWES_TEST_HPP_
 #define DAEMON_DUMMY_GWES_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
+#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 
 namespace sdpa {
@@ -34,7 +51,7 @@ namespace sdpa {
 
 			private:
 			  SDPA_DECLARE_LOGGER();
-			  sdpa::fsm::smc::DaemonFSM::ptr_t m_ptrDaemonFSM;
+			  dsm::DaemonFSM::ptr_t m_ptrDaemonFSM;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2Gwes;
 			  seda::Stage::Ptr m_ptrToMasterStage;
 			  seda::Stage::Ptr m_ptrToSlaveStage;

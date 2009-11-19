@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  DaemonFSM.cpp
+ *
+ *    Description:  Daemon state machine (state machine compiler)
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include "DaemonFSM.hpp"
 
 using namespace sdpa::fsm::smc;
@@ -6,6 +23,7 @@ using namespace sdpa::events;
 void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 {
 	lock_type lock(mtx_);
+
 	if( StartUpEvent* ptr = dynamic_cast<StartUpEvent*>(pEvent.get()) )
 		GetContext().StartUp(*ptr);
 	else if( ConfigOkEvent* ptr = dynamic_cast<ConfigOkEvent*>(pEvent.get()) )

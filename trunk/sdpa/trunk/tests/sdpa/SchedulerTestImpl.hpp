@@ -1,5 +1,5 @@
-#ifndef SDPA_SCHEDULERIMPL_HPP
-#define SDPA_SCHEDULERIMPL_HPP 1
+#ifndef SDPA_SCHEDULERTESTIMPL_HPP
+#define SDPA_SCHEDULERTESTIMPL_HPP 1
 
 #include <sdpa/daemon/Scheduler.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -19,9 +19,10 @@ class SchedulerTestImpl : public Scheduler {
 	 virtual ~SchedulerTestImpl();
 
     void schedule(Job::ptr_t& pJob);
+    virtual void schedule(gwes::activity_t& ) {}
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
-    int numberOfWorkers() { return 1; }
+    size_t numberOfWorkers() { return 1; }
 
     // thread related functions
     void start();

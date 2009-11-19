@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  Reactions.cpp
+ *
+ *    Description:  Daemon state chart reactions (boost)
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #include "DaemonFSM.hpp"
 #include "boost/cast.hpp"
 #include <iostream>
@@ -14,6 +31,25 @@ DaemonFSM::DaemonFSM(	const std::string &name,
 		sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
 	: GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
 	  SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM")
+{
+	initiate();
+	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
+}
+
+DaemonFSM::DaemonFSM(  const std::string &name,
+						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						const std::string& toMasterStageName,
+						const std::string& toSlaveStageName )
+				: GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
+				  SDPA_INIT_LOGGER(name+"FSM")
+{
+	initiate();
+	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
+}
+
+DaemonFSM::DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+	: GenericDaemon(name, pArgSdpa2Gwes),
+	  SDPA_INIT_LOGGER(name+"FSM")
 {
 	initiate();
 	SDPA_LOG_DEBUG("Daemon state machine initialized ...");

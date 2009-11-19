@@ -1,13 +1,28 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobImpl.hpp
+ *
+ *    Description:  Job implementation header
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_JOB_IMPL_HPP
 #define SDPA_JOB_IMPL_HPP 1
-
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobFSMActions.hpp>
-#include <sdpa/daemon/ISendEvent.hpp>
+#include <sdpa/daemon/IComm.hpp>
 #include <sdpa/common.hpp>
 #include <map>
 #include <boost/thread.hpp>
-
 
 namespace sdpa { namespace daemon {
     class JobImpl : public Job, public sdpa::fsm::JobFSMActions  {
@@ -30,15 +45,6 @@ namespace sdpa { namespace daemon {
 
         virtual const sdpa::job_desc_t& description() const;
 
-        virtual const Job::data_t& input() const;
-        virtual const Job::data_t& output() const;
-
-        virtual void add_input(const Job::value_t & value);
-        virtual void add_output(const Job::value_t & value);
-
-        virtual void add_subjob(const Job::ptr_t & job);
-        virtual Job::ptr_t get_subjob(const job_id_t & id);
-
         virtual bool is_marked_for_deletion();
         virtual bool mark_for_deletion();
 
@@ -60,10 +66,6 @@ namespace sdpa { namespace daemon {
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
-
-        Job::data_t input_;
-        Job::data_t output_;
-        job_list_t  subjobs_;
 
         bool b_marked_for_del_;
         bool b_local_;
