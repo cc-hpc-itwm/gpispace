@@ -152,7 +152,7 @@ int main (int argc, char **argv) {
       if (cfg.is_set("wait"))
       {
         const int poll_interval = cfg.get<int>("wait");
-        std::cout << "waiting...";
+        std::cout << "waiting for job to return...";
         int exit_code(4);
         for (;;)
         {
