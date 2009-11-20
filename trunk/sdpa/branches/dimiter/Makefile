@@ -80,7 +80,8 @@ utls.o: reGlbStructs.h utls.h utls.cpp
 cfg.o: reGlbStructs.h cfg.h cfg.cpp
 	$(CXX) $(CXXFLAGS) -c cfg.cpp
 
-cfg-test.o: reGlbStructs.h cfg.h reApplInit.h iReReadDat.h reReadVel.h cfg-test.cpp
+cfg-test.o: reGlbStructs.h cfg.h reApplInit.h reReadInp.h reReadVel.h \
+	calcOneLevl.h reUpdt.h cfg-test.cpp
 	$(CXX) $(CXXFLAGS) -c cfg-test.cpp
 
 pfafft.o: cwp.h pfafft.h pfafft.cpp

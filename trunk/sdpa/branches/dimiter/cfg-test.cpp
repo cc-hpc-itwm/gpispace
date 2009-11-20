@@ -12,7 +12,7 @@
 #include "cfg.h"
 
 #include "reApplInit.h"
-#include "iReReadDat.h"
+#include "reReadInp.h"
 #include "reReadVel.h"
 #include "calcOneLevl.h"
 #include "reUpdt.h"
@@ -135,6 +135,8 @@ void read_config(data_t &param) throw (std::exception)
      reCalcOneLevl(&(configs[rank]), iw, iz, pSlc, pOutpR);
 
      reUpdate(&(configs[rank]), pOutpR, pRslt);
+
+     //rePrefixSum(&(configs[rank]));
      //------ end dms --------
 
 
