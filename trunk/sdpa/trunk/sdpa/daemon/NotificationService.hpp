@@ -105,7 +105,7 @@ namespace sdpa { namespace daemon {
 
     ~BasicNotificationService() {}
   private:
-    void notify(const event_t &evt) const
+    void notify(const event_t &evt)
     {
       destination_.append(FHGLOG_MKEVENT_HERE(TRACE, encode(evt)));
     }
