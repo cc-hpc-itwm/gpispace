@@ -6,7 +6,7 @@
  *    Description:  Generic daemon implementation file
  *
  *        Version:  1.0
- *        Created:
+ *        Created:  2009
  *       Revision:  none
  *       Compiler:  gcc
  *

@@ -27,28 +27,36 @@ using namespace sdpa::events;
 
 NRE :: NRE(  const std::string& name, const std::string& url,
 			 const std::string& masterName, const std::string& masterUrl,
-			 const std::string& workerUrl  )
+			 const std::string& workerUrl,
+			 const std::string& guiUrl)
 		: dsm::DaemonFSM( name, new gwes::GWES() ),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url),
 		  masterName_(masterName),
-		  masterUrl_(masterUrl)
+		  masterUrl_(masterUrl),
+		  m_guiServ("SDPA", guiUrl)
 {
 	SDPA_LOG_DEBUG("NRE constructor called ...");
 	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
+
+	//attach gui observer
+	SDPA_LOG_DEBUG("Attach GUI observer ...");
+	attach_observer( &m_guiServ );
 }
 
 NRE :: ~NRE()
 {
 	SDPA_LOG_DEBUG("NRE destructor called ...");
 	daemon_stage_ = NULL;
+	detach_observer( &m_guiServ );
 }
 
 NRE::ptr_t NRE ::create( const std::string& name, const std::string& url,
 						 const std::string& masterName, const std::string& masterUrl,
-						 const std::string& workerUrl )
+						 const std::string& workerUrl,
+						 const std::string guiUrl)
 {
-	 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl ));
+	 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl ));
 }
 
 void NRE :: start(NRE::ptr_t ptrNRE)
@@ -183,6 +191,8 @@ gwes::activity_id_t  NRE ::submitActivity(gwes::activity_t &activity)
 	gwes::activity_id_t actId = activity.getID();
 	gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
 
+	activityCreated(activity);
+
 	try {
 
 		SDPA_LOG_DEBUG("Notify NRE GWES that the activity was dispatched ...");
@@ -194,16 +204,47 @@ gwes::activity_id_t  NRE ::submitActivity(gwes::activity_t &activity)
 		SDPA_LOG_DEBUG("Cancel the activity!");
 		// inform immediately GWES that the corresponding activity was cancelled
 		gwes()->activityCanceled( wfId, actId );
+		activityCancelled(activity);
 	}
 
 	return activity.getID();
 }
 
-void NRE ::cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity)
+/**
+ * Cancel an atomic activity that has previously been submitted to
+ * the SDPA.
+ */
+void NRE::cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity)
 {
 	SDPA_LOG_DEBUG("GWES asked SDPA to cancel the activity "<<activityId<<" ...");
-	job_id_t job_id(activityId);
+	/*job_id_t job_id(activityId);
+	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
+	sendEvent(pEvtCancelJob);*/
+}
 
-	//find a way to kill an activity!!!
+
+void NRE ::activityCreated(const gwes::activity_t& act)
+{
+	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CREATED));
+}
+
+void NRE ::activityStarted(const gwes::activity_t& act)
+{
+	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_STARTED));
+}
+
+void NRE ::activityFinished(const gwes::activity_t& act)
+{
+	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_FINISHED));
+}
+
+void NRE ::activityFailed(const gwes::activity_t& act)
+{
+	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_FAILED));
+}
+
+void NRE ::activityCancelled(const gwes::activity_t& act)
+{
+	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CANCELLED));
 }
 

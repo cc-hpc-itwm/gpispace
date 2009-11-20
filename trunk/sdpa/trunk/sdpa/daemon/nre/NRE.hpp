@@ -20,22 +20,29 @@
 #include <gwes/GWES.h>
 #include <gwes/IActivity.h>
 
+#include <sdpa/daemon/Observable.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
+
+typedef sdpa::daemon::NotificationService gui_service;
+
+
 namespace sdpa {
 	namespace daemon {
-	  class NRE : public dsm::DaemonFSM {
+	  class NRE : public dsm::DaemonFSM,  public sdpa::daemon::Observable {
 	  public:
 		typedef sdpa::shared_ptr<NRE> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
 		NRE( const std::string& name, const std::string& url,
 			 const std::string& masterName, const std::string& masterUrl,
-			 const std::string& workerUrl );
+			 const std::string& workerUrl,
+			 const std::string& guiUrl);
 
 		virtual ~NRE();
 
 		static NRE::ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl  );
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000");
 
 		static void start( NRE::ptr_t ptrNRE );
 		static void shutdown(NRE::ptr_t ptrNRE);
@@ -53,10 +60,17 @@ namespace sdpa {
 		const std::string& masterName() const { return masterName_; }
 		const std::string& masterUrl() const { return masterUrl_; }
 
+		void activityCreated(const gwes::activity_t& act);
+		void activityStarted(const gwes::activity_t& act);
+		void activityFinished(const gwes::activity_t& act);
+		void activityFailed(const gwes::activity_t& act);
+		void activityCancelled(const gwes::activity_t& act);
+
 	  private:
 		const std::string url_;
 		const std::string masterName_;
 		const std::string masterUrl_;
+		gui_service m_guiServ;
 	  };
 	}
 }
