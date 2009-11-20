@@ -17,6 +17,17 @@ using namespace std;
 namespace gwdl
 {
 
+struct mutex_lock {
+	mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) {
+		pthread_mutex_lock(&mtx);
+	}
+	~mutex_lock() {
+		pthread_mutex_unlock(&mtx);
+	}
+
+	pthread_mutex_t &mtx;
+};
+
 XMLUtils* XMLUtils::_instance=0;
 
 XMLUtils* XMLUtils::Instance() {
@@ -28,29 +39,19 @@ XMLUtils* XMLUtils::Instance() {
 
 XMLUtils::XMLUtils() : _logger(fhg::log::getLogger("gwdl"))
 {
+	pthread_mutex_init(&_lock, NULL);
 	LOG_DEBUG(_logger, "XMLUtils() ...");
-	initializeLibxml2();
+	// initialize libxml2 parser. This should only be called ONCE!
+	xmlInitParser();
+	LIBXML_TEST_VERSION
 }
 
 XMLUtils::~XMLUtils()
 {
 	LOG_DEBUG(_logger, "~XMLUtils() ...");
-	terminateLibxml2();
-	delete _instance;
-}
-
-int XMLUtils::initializeLibxml2()
-{
-	// init libxml2 parser
-	xmlInitParser();
-	LIBXML_TEST_VERSION
-	return 0;
-}
-
-void XMLUtils::terminateLibxml2()
-{
 	// cleanup xml parser
 	xmlCleanupParser();
+	pthread_mutex_destroy(&_lock);
 }
 
 string XMLUtils::serializeLibxml2Doc(const xmlDocPtr doc, bool pretty) {
@@ -60,6 +61,7 @@ string XMLUtils::serializeLibxml2Doc(const xmlDocPtr doc, bool pretty) {
 	//    xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, pretty);
 	int option = XML_SAVE_NO_DECL;
 	if (pretty) option += XML_SAVE_FORMAT;
+	mutex_lock lock(_lock);
 	xmlBufferPtr buffer = xmlBufferCreate();
 	xmlSaveCtxtPtr ctxt = xmlSaveToBuffer(buffer, "UTF-8", option);
 	xmlSaveDoc(ctxt, doc);
@@ -111,16 +113,37 @@ string XMLUtils::serializeLibxml2NodeList(const xmlNodePtr node, bool pretty) {
 }
 
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
+	LOG_DEBUG(_logger, "deserializeLibxml2(" << xmlstring << ")...");
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	xmlChar* duped(xmlCharStrdup(xmlstring.c_str()));
+	mutex_lock lock(_lock);
 	xmlDocPtr res(xmlParseDoc(duped));
 	xmlFree(duped);
+	xmlErrorPtr error = xmlGetLastError();
+	if (error) {
+		ostringstream message;
+		message << "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
+		xmlResetError(error);
+		LOG_ERROR(_logger, message.str() << "when parsing:\n" << xmlstring);
+		throw WorkflowFormatException(message.str());
+	} 
 	return res;
 }
 
 xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
-	return xmlParseFile(filename.c_str());
+	LOG_DEBUG(_logger, "xmlParseFile("<< filename.c_str() <<") ...");
+	mutex_lock lock(_lock);
+	xmlDocPtr docP = xmlParseFile(filename.c_str());
+	xmlErrorPtr error = xmlGetLastError();
+	if (error) {
+		ostringstream message;
+		message << "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
+		xmlResetError(error);
+		LOG_ERROR(_logger, message.str());
+		throw WorkflowFormatException(message.str());
+	} 
+	return docP;
 }
 
 void XMLUtils::trim(string& s) {
@@ -173,6 +196,7 @@ bool XMLUtils::startsWith(const string& str, const string& substr) {
 }
 
 string XMLUtils::readFile(const string& filename) throw (WorkflowFormatException) {
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "reading file '"<< filename << "'...");
 	// read file
 	ifstream file(filename.c_str());
 	ostringstream workflowS;

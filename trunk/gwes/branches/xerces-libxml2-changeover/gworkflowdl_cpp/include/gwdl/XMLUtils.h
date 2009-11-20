@@ -30,8 +30,7 @@ class XMLUtils
 private:
 	static XMLUtils* _instance;
 	fhg::log::logger_t _logger;
-	int initializeLibxml2();
-	void terminateLibxml2();
+	pthread_mutex_t _lock;
 
 protected:
 	XMLUtils();

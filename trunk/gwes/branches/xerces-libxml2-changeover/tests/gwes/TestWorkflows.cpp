@@ -193,10 +193,10 @@ void TestWorkflows::testWorkflowPstm0()
 {
 	logger_t logger(getLogger("gwes"));
 	LOG_WARN(logger, "///ToDo: FIX: testWorkflowPstm0() currently DEACTIVATED (segFault)///");
-//	Workflow::ptr_t workflow;
-//	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
-//	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-//	CPPUNIT_ASSERT(workflow->readProperties()->get("occurrence.sequence").compare("preStackTimeMigration") == 0);
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	CPPUNIT_ASSERT(workflow->readProperties()->get("occurrence.sequence").compare("preStackTimeMigration") == 0);
 }
 
 ////////////////////////////////////////////////

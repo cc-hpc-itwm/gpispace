@@ -104,19 +104,15 @@ void ParserTest::testParser()
 	
 	LOG_INFO(logger, "-------------- test deserialize invalid XML... --------------");
 	str = string("<element1>test1</element1>\n<element2>INVALID: ONLY ONE ROOT ELEMENT ALLOWED IN XML!</element2>");
-	xmlDocPtr xmlDocP = XMLUtils::Instance()->deserializeLibxml2(str);
-	xmlErrorPtr error = xmlGetLastError();
-	if (error) {
-		LOG_INFO(logger, "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message);
-		CPPUNIT_ASSERT_EQUAL_MESSAGE("error domain", (int) XML_FROM_PARSER, (int) error->domain);
-		xmlResetError(error);
-	} else {
+	bool test = false;
+	try {
+		XMLUtils::Instance()->deserializeLibxml2(str);
 		CPPUNIT_ASSERT(false);
+	} catch (const WorkflowFormatException &e) {
+		LOG_INFO(logger, "intentionally thrown WorkflowFormatException: " << e.what());
+		test = true;
 	}
-	
-	LOG_WARN(logger, "Serialize libxml2 DOM document...");
-	str = XMLUtils::Instance()->serializeLibxml2Doc(xmlDocP, true);
-	LOG_INFO(logger, "\n" << str);
+	CPPUNIT_ASSERT(test);
 	
 	LOG_INFO(logger, "============== END test PARSER =============");
 

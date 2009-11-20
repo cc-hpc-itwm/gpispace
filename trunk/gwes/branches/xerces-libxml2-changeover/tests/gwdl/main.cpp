@@ -82,6 +82,9 @@ int main()
 	// text mode
 	//CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
 	//compileroutputter.write ();
+	
+	LOG_INFO(logger, "deleting xmlutils singleton: " << xmlutils);;
+	delete xmlutils;
 
 	LOG_INFO(logger, "########################### END OF ALL GWDL TESTS ###########################");
 

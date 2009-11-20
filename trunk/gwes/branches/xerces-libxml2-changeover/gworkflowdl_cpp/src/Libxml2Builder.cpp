@@ -1086,7 +1086,11 @@ Workflow::ptr_t Libxml2Builder::deserializeWorkflow(const string &xmlstring) con
  * @param filename The filename of the GWorkflowDL file including its path. 
  */
 Workflow::ptr_t Libxml2Builder::deserializeWorkflowFromFile(const std::string& filename) const throw (WorkflowFormatException) {
-	return deserializeWorkflow(XMLUtils::readFile(filename));
+	xmlDocPtr docP = XMLUtils::Instance()->deserializeFileLibxml2(filename);
+	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
+	const Workflow::ptr_t ret = elementToWorkflow(nodeP);
+	xmlFreeDoc(docP);
+	return ret;
 }
 
 string Libxml2Builder::serializeWorkflow(const Workflow &workflow) const {
