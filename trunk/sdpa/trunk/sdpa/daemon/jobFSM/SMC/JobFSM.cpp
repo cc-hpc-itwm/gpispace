@@ -31,8 +31,8 @@ void JobFSM::Dispatch()
 void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt)
 {
 	lock_type lock(mtx_);
-	m_fsmContext.CancelJob(pEvt);
 	m_status_ = m_fsmContext.getState().getName();
+	m_fsmContext.CancelJob(pEvt);
 	m_status_ = m_fsmContext.getState().getName();
 }
 
@@ -47,6 +47,7 @@ void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
 void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt)
 {
 	lock_type lock(mtx_);
+	m_status_ = m_fsmContext.getState().getName();
 	m_fsmContext.DeleteJob(pEvt);
 	m_status_ = m_fsmContext.getState().getName();
 }

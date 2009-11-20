@@ -20,6 +20,7 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <gwdl/IWorkflow.h>
+#include <sdpa/types.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -56,6 +57,7 @@ namespace sdpa { namespace daemon {
 		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 		virtual void Dispatch();
 
+		virtual void setResult(const sdpa::job_result_t& ) =0;
 		virtual sdpa::status_t getStatus() { return "Undefined"; }
 
     };

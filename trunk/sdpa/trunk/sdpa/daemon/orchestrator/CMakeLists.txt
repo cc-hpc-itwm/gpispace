@@ -7,8 +7,11 @@ file(GLOB hdrs *.hpp)
 file(GLOB srcs *.cpp)
 
 ADD_LIBRARY(sdpa-orchestrator ${hdrs} ${srcs})
-add_dependencies(sdpa-orchestrator sdpa-daemon sdpa-daemonFSM_SMC)
-target_link_libraries(sdpa-orchestrator sdpa-daemon sdpa-daemonFSM_SMC) 
+
+if (USE_SMC_SC)
+	add_dependencies(sdpa-orchestrator sdpa-daemon sdpa-daemonFSM_SMC)
+	target_link_libraries(sdpa-orchestrator sdpa-daemon sdpa-daemonFSM_SMC) 
+endif (USE_SMC_SC)
 
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon/orchestrator)
 install(TARGETS sdpa-orchestrator ARCHIVE DESTINATION lib)

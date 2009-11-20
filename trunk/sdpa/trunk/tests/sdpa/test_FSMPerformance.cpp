@@ -20,6 +20,7 @@ void FSMPerformanceTest::tearDown() {
 }
 
 void FSMPerformanceTest::testSMCPerformance() {
+#ifdef USE_SMC_SC
   FSMPerformanceTestContext fsm(*this);
 
   const std::size_t numTransitions(1000000);
@@ -31,9 +32,11 @@ void FSMPerformanceTest::testSMCPerformance() {
   sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
 
   std::cout << "fsm: " << delta << "us" << std::endl;
+#endif
 }
 
 void FSMPerformanceTest::testBoostStatechartPerformance() {
+#ifdef USE_BOOST_SC
   PerformanceTestBSC fsm;
   fsm.initiate();
 
@@ -46,6 +49,7 @@ void FSMPerformanceTest::testBoostStatechartPerformance() {
   sdpa::util::time_type delta(sdpa::util::time_diff(start, sdpa::util::now()));
 
   std::cout << "bsc: " << delta << "us" << std::endl;
+#endif
 }
 
 void FSMPerformanceTest::testSMCException() {

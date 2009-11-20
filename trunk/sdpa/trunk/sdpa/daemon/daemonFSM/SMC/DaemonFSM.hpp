@@ -30,7 +30,6 @@ namespace sdpa {
 			class DaemonFSM : public sdpa::daemon::GenericDaemon {
 				public:
 					typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
-
 			        typedef boost::recursive_mutex mutex_type;
 			      	typedef boost::unique_lock<mutex_type> lock_type;
 

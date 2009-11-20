@@ -413,7 +413,8 @@ int main(int, char **)
   
   {
     std::clog << "testing JobResultsReplyEvent...";
-    JobResultsReplyEvent e("foo", "bar", "job-id-1", "result-set-1");
+    sdpa::job_result_t result;
+    JobResultsReplyEvent e("foo", "bar", "job-id-1", result);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -422,7 +423,6 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-       || e2->result() != e.result()
       )
       {
         ++errcount;

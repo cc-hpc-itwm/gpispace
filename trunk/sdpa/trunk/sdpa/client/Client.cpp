@@ -292,7 +292,6 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
     // check event type
     if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
     {
-      DMLOG(DEBUG,"results: " << res->result());
       return res->result();
     }
     else

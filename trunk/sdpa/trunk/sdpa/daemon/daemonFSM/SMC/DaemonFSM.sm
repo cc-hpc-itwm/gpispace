@@ -21,13 +21,13 @@
 Down
 {
     StartUp(event: sdpa::events::StartUpEvent&)
-        Configurring
+        Configuring
         {
         	action_configure(event); 
         }
 }
 
-Configurring
+Configuring
 {
     ConfigOk(event: sdpa::events::ConfigOkEvent&)
         Up

@@ -3,7 +3,9 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_state_machine(CLIENT_FSM_CPP CLIENT_FSM_H ClientFsm)
+if (USE_SMC_SC)
+	add_state_machine(CLIENT_FSM_CPP CLIENT_FSM_H ClientFsm)
+endif (USE_SMC_SC)	
 
 file(GLOB hdrs *.hpp)
 file(GLOB srcs *.cpp)
