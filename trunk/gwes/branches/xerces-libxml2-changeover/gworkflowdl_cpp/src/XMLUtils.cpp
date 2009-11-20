@@ -156,20 +156,39 @@ void XMLUtils::getText(ostringstream &out, xmlNodePtr nodeP)
 	}
 }
 
-bool XMLUtils::endsWith(const string& s1, const string& s2) {
-	if ( s2.size() > s1.size() ) return false;
-	if ( s1.compare(s1.size()-s2.size(),s2.size(),s2 ) == 0) {
+bool XMLUtils::endsWith(const string& str, const string& substr) {
+	if ( substr.size() > str.size() ) return false;
+	if ( str.compare(str.size()-substr.size(),substr.size(),substr ) == 0) {
 		return true;
 	}
 	return false;
 }
 
-bool XMLUtils::startsWith(const string& s1, const string& s2) {
-	if ( s2.size() > s1.size() ) return false;
-	if ( s1.compare(0,s2.size(),s2 ) == 0) {
+bool XMLUtils::startsWith(const string& str, const string& substr) {
+	if ( substr.size() > str.size() ) return false;
+	if ( str.compare(0,substr.size(),substr ) == 0) {
 		return true;
 	}
 	return false;
+}
+
+string XMLUtils::readFile(const string& filename) throw (WorkflowFormatException) {
+	// read file
+	ifstream file(filename.c_str());
+	ostringstream workflowS;
+	if (file.is_open()) {
+		char c;
+		while (file.get(c)) {
+			workflowS << c;
+		}
+		file.close();
+	} else {
+		ostringstream message; 
+		message << "Unable to open file " << filename << ": " << strerror(errno);
+		LOG_ERROR(logger_t(getLogger("gwdl")), message);
+		throw WorkflowFormatException(message.str());
+	}
+	return workflowS.str();
 }
 
 } // end namespace gwdl

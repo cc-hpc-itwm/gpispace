@@ -3,13 +3,13 @@
     <description>concatenate three files</description>
 
     <place ID="d25">
-        <token><data><file>file:///usr/local/gwes/cat/d25.dat</file></data></token>
+        <token><data><file>file://${GWES_CPP_HOME}/applications/test/data/d25.dat</file></data></token>
     </place>
     <place ID="d26">
-        <token><data><file>file:///usr/local/gwes/cat/d26.dat</file></data></token>
+        <token><data><file>file://${GWES_CPP_HOME}/applications/test/data/d26.dat</file></data></token>
     </place>
     <place ID="d27">
-        <token><data><file>file:///usr/local/gwes/cat/d27.dat</file></data></token>
+        <token><data><file>file://${GWES_CPP_HOME}/applications/test/data/d27.dat</file></data></token>
     </place>
     <place ID="d25-26"/>
     <place ID="d25-27"/>
@@ -23,7 +23,7 @@
         <outputPlace placeID="d25-26" edgeExpression="stdout"/>
  		<operation>
       		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="cat">
-        		<oc:operationCandidate type="cli" operationName="cat.sh" resourceName="/usr/local/gwes/cat/cat.sh" selected="true"/>
+                <oc:operationCandidate type="cli" operationName="cat.sh" resourceName="${GWES_CPP_HOME}/applications/test/cat.sh" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>
@@ -37,7 +37,7 @@
         <outputPlace placeID="exitcode" edgeExpression="exitcode"/>
  		<operation>
       		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="cat">
-        		<oc:operationCandidate type="cli" operationName="cat.sh" resourceName="/usr/local/gwes/cat/cat.sh" selected="true"/>
+                <oc:operationCandidate type="cli" operationName="cat.sh" resourceName="${GWES_CPP_HOME}/applications/test/cat.sh" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>

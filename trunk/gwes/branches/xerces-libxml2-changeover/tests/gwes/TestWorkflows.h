@@ -14,8 +14,8 @@ namespace gwes {
       CPPUNIT_TEST( testWorkflowExclusiveChoice );
       CPPUNIT_TEST( testWorkflowConditionTest );
       CPPUNIT_TEST( testWorkflowControlLoop ); 
-      // Test Currently deactiviated // CPPUNIT_TEST( testWorkflowConcatenateIt );
-      // Test Currently deactiviated // CPPUNIT_TEST( testWorkflowConcatenateItFail );
+      CPPUNIT_TEST( testWorkflowConcatenateIt );
+      CPPUNIT_TEST( testWorkflowConcatenateItFail );
       CPPUNIT_TEST( testWorkflowPstm0 ); 
       CPPUNIT_TEST_SUITE_END();
 

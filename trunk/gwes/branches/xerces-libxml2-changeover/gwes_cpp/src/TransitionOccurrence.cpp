@@ -192,7 +192,7 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 				} else {                                                  // missing output token with edge expression
 					///put SOAP Fault if there is no data for edge expression
 					ostringstream fault;
-					fault << "<data><soapenv:Fault xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">";
+					fault << "<soapenv:Fault xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">";
 					fault << "<soapenv:Code><soapenv:Value>env:Receive</soapenv:Value></soapenv:Code>";
 					fault << "<soapenv:Reason><soapenv:Text xml:lang=\"en\">";
 					if (activityP != NULL) {
@@ -202,7 +202,7 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 					fault << "<soapenv:Detail>The transition occurrence '" << getID();
 					fault << "' has no output parameter related to the edge expression '" << it->edgeP->getExpression();
 					fault << "'</soapenv:Detail>";
-					fault << "</soapenv:Fault></data>";
+					fault << "</soapenv:Fault>";
 					Data::ptr_t dataP = Data::ptr_t(new Data(fault.str()));
 					it->tokenP = Token::ptr_t(new Token(dataP));
 				}

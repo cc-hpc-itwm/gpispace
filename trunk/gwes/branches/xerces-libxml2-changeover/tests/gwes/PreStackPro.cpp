@@ -70,7 +70,7 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(500000);
 //		// generate faked output token
-//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
+//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data(<volume>THD_5</volume>"));
 //		outputs.insert(pair<string,gwdl::Token::ptr_t>("thd",outputToken));
 //	} 
 //
@@ -86,7 +86,7 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(1000000);
 //		// generate faked output data
-//		gwdl::Token::ptr_t outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
+//		gwdl::Token::ptr_t outputData = new gwdl::Token(new gwdl::Data("<volume>GRD_8</volume>"));
 //		outputs.insert(pair<string,gwdl::Token::ptr_t>("grd",outputData));
 //	} 
 //	else if (algName=="selectProjectData") {
@@ -102,7 +102,7 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(500000);
 //		// generate faked output data
-//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
+//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data("<volume>FRD_10</volume>"));
 //		outputs.insert(pair<string,gwdl::Token::ptr_t>("frd",outputToken));
 //	} 
 //	else {

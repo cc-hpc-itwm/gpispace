@@ -39,7 +39,7 @@ class Transition;
  *	cout << *token3 << endl;
  * 
  *	// create data token with data constructed from string
- *	string* str = new string("<data><x>1</x><y>2</y></data>");
+ *	string* str = new string("<x>1</x><y>2</y>");
  *	Data* data5 = new Data(*str);
  *	Token::ptr_t token5 = new Token(data5);
  *	cout << *token5 << endl;

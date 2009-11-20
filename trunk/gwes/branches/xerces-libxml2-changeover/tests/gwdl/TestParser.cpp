@@ -10,6 +10,7 @@
 // gwdl
 #include <gwdl/Workflow.h>
 #include <gwdl/Libxml2Builder.h>
+#include <gwdl/XMLUtils.h>
 //tests
 #include "TestParser.h"
 //fhglog
@@ -101,10 +102,22 @@ void ParserTest::testParser()
 	LOG_INFO(logger, "serialized/deserialized workflow:\n" << *wf2);
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("serialize/deserialize", str, str2);
 	
-	LOG_INFO(logger, "-------------- ///ToDo: test deserializeFromFile... --------------");
-	LOG_WARN(logger, "///ToDo Test fault management when deserializing invalid XML files!");
-	//deserializeFileLibxml2(fn);
-
+	LOG_INFO(logger, "-------------- test deserialize invalid XML... --------------");
+	str = string("<element1>test1</element1>\n<element2>INVALID: ONLY ONE ROOT ELEMENT ALLOWED IN XML!</element2>");
+	xmlDocPtr xmlDocP = XMLUtils::Instance()->deserializeLibxml2(str);
+	xmlErrorPtr error = xmlGetLastError();
+	if (error) {
+		LOG_INFO(logger, "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("error domain", (int) XML_FROM_PARSER, (int) error->domain);
+		xmlResetError(error);
+	} else {
+		CPPUNIT_ASSERT(false);
+	}
+	
+	LOG_WARN(logger, "Serialize libxml2 DOM document...");
+	str = XMLUtils::Instance()->serializeLibxml2Doc(xmlDocP, true);
+	LOG_INFO(logger, "\n" << str);
+	
 	LOG_INFO(logger, "============== END test PARSER =============");
 
 }

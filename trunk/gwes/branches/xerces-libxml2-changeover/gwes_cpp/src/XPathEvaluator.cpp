@@ -199,11 +199,9 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_UNDEFINED):
 		break;
 	case(XPATH_NODESET):
-//		xml << "<data>\n";
 		for (int i = 0; i < xpathObjP->nodesetval->nodeNr; i++) {
 			xml << "  " << XMLUtils::Instance()->serializeLibxml2Node(xpathObjP->nodesetval->nodeTab[i],false);
 		}
-//		xml << "</data>";
 		xmlResult = xml.str();
 		break;
 	case (XPATH_BOOLEAN): 
@@ -315,13 +313,11 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token::ptr_
 		
 		if (xmldoc != NULL) {
 			// copy children from one document to the other.
-			// search for <data> element
 			xmlNodePtr dataElementP = xmlDocGetRootElement(xmldoc); 
-//			while (dataElementP != NULL && dataElementP->type != XML_ELEMENT_NODE) dataElementP = dataElementP->next;
 			if (dataElementP == NULL) {
 				// missing data element
 				ostringstream message; 
-				message << "Missing <data> element on data token " << tokenP->getID() << "!";
+				message << "Missing data on data token " << tokenP->getID() << "!";
 				throw gwdl::WorkflowFormatException(message.str());
 			}
 			xmlNodePtr children = xmlDocCopyNodeList(_xmlContextDocP, dataElementP->children);
