@@ -36,7 +36,7 @@ namespace fhg { namespace log {
 
       virtual ~FilteringAppender() {}
 
-      virtual void append(const LogEvent &evt) const
+      virtual void append(const LogEvent &evt)
       {
         if (! (*filter_)(evt))
         {

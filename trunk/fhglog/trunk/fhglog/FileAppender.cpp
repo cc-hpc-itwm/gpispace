@@ -87,9 +87,9 @@ void FileAppender::reopen() throw (std::exception)
   open();
 }
 
-void FileAppender::append(const LogEvent &evt) const
+void FileAppender::append(const LogEvent &evt)
 {
-  const_cast<std::ofstream&>(stream_) << getFormat()->format(evt);
+  stream_ << getFormat()->format(evt);
   if (++event_count_ >= flush_interval_)
-    const_cast<FileAppender&>(*this).flush();
+    flush();
 }

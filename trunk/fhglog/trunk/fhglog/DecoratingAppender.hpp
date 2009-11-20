@@ -54,7 +54,7 @@ namespace fhg { namespace log {
         return real_appender_->getFormat();
       }
 
-      virtual void append(const LogEvent &evt) const
+      virtual void append(const LogEvent &evt)
       {
         real_appender_->append(evt);
       }

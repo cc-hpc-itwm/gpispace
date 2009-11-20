@@ -25,7 +25,7 @@ class FormattingNullAppender : public fhg::log::Appender
   public:
     FormattingNullAppender(const std::string &a_name) : fhg::log::Appender(a_name) {}
 
-    void append(const fhg::log::LogEvent &evt) const
+    void append(const fhg::log::LogEvent &evt)
     {
       fhg::log::Appender::getFormat()->format(evt);
     }

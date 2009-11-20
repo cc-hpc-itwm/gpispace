@@ -30,19 +30,19 @@ namespace fhg { namespace log {
     {
     public:
       explicit
-      Lock(const pthread_mutex_t *lock)
+      Lock(pthread_mutex_t *lock)
         : lock_(lock)
       {
-        pthread_mutex_lock(const_cast<pthread_mutex_t*>(lock_));
+        pthread_mutex_lock(lock_);
       }
 
       ~Lock()
       {
-        pthread_mutex_unlock(const_cast<pthread_mutex_t*>(lock_));
+        pthread_mutex_unlock(lock_);
       }
 
       private:
-        const pthread_mutex_t *lock_;
+        pthread_mutex_t *lock_;
     };
 
   public:
@@ -65,7 +65,7 @@ namespace fhg { namespace log {
       pthread_mutex_destroy(&mtx_);
     }
 
-    virtual void append(const LogEvent &evt) const
+    virtual void append(const LogEvent &evt)
     {
       Lock lock(&mtx_);
       DecoratingAppender::append(evt);

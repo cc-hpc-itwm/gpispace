@@ -11,7 +11,7 @@ namespace fhg { namespace log {
 
       virtual ~Appender() {}
 
-      virtual void append(const LogEvent &evt) const = 0;
+      virtual void append(const LogEvent &evt) = 0;
 
       virtual inline void setFormat(const Formatter::ptr_t &fmt) { fmt_ = fmt; }
       // takes ownership!
@@ -20,7 +20,7 @@ namespace fhg { namespace log {
 
       const std::string &name() const { return name_; }
 
-      const Appender &operator<<(const LogEvent &evt) const { this->append(evt); return *this; }
+      Appender &operator<<(const LogEvent &evt) { this->append(evt); return *this; }
     protected:
       explicit
       Appender(const std::string &a_name)

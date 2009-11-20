@@ -76,7 +76,7 @@ void RemoteAppender::close()
   }
 }
 
-void RemoteAppender::append(const LogEvent &evt) const
+void RemoteAppender::append(const LogEvent &evt)
 {
   boost::system::error_code ignored_error;
   std::stringstream sstr;
