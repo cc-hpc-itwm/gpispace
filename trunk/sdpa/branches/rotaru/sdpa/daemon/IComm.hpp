@@ -49,17 +49,19 @@ const std::string USER("user");
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
 	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;
 
-	  virtual void activityFinished(	const gwes::workflow_id_t &wf_id
-									  , const gwes::activity_id_t &act_id
-									  , const sdpa::parameter_list_t &output)
-	  { gwes()->activityFinished(wf_id, act_id, output); }
-
 	  // only for testing with DummyGwes, change it
 	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
 	  virtual sdpa::util::Config* cfg() const = 0;
+
+	  //GUI notification methods
+	  virtual void activityCreated(const gwes::activity_t& act)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityStarted(const gwes::activity_t& act)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFinished(const gwes::activity_t& act)  { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFailed(const gwes::activity_t& act)    { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCancelled(const gwes::activity_t& act) { throw std::runtime_error("not supported in this component"); }
   };
 }}
 

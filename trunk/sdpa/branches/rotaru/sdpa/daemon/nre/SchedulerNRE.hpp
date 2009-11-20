@@ -24,6 +24,7 @@
 #include <sdpa/events/LifeSignEvent.hpp>
 
 using namespace sdpa::events;
+using namespace sdpa::daemon;
 using namespace std;
 
 namespace sdpa {
@@ -137,9 +138,11 @@ namespace sdpa {
 			sdpa::wf::Activity act = sdpa::wf::glue::wrap(gwes_act);
 
 			sdpa::wf::Activity result(act);
+
 			try
 			{
-              result = m_worker_.execute(act, 0 /*walltime forever*/);
+				ptr_comm_handler_->activityStarted(gwes_act);
+				result = m_worker_.execute(act, 0 /*walltime forever*/);
 			} catch(const std::exception& val)
 			{
 				result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
@@ -156,13 +159,25 @@ namespace sdpa {
 
 			SDPA_LOG_DEBUG("Finished activity execution: notify GWES ...");
 			if( result.state() == sdpa::wf::Activity::ACTIVITY_FINISHED )
+			{
+				ptr_comm_handler_->activityFinished(gwes_act);
 				ptr_comm_handler_->gwes()->activityFinished(wf_id, act_id, output);
+			}
 			else if( result.state() == sdpa::wf::Activity::ACTIVITY_FAILED )
+			{
+				ptr_comm_handler_->activityFailed(gwes_act);
 				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
+			}
 			else if( result.state() == sdpa::wf::Activity::ACTIVITY_CANCELED )
+			{
+				ptr_comm_handler_->activityCancelled(gwes_act);
 				ptr_comm_handler_->gwes()->activityCanceled(wf_id, act_id);
+			}
 			else
+			{
+				ptr_comm_handler_->activityFailed(gwes_act);
 				ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
+			}
 		}
 
 		void start()throw (std::exception)

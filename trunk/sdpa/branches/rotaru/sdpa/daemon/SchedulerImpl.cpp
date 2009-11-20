@@ -36,6 +36,13 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler) :
 SchedulerImpl::~SchedulerImpl()
 {
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
+	try  {
+		stop();
+	}
+	catch (...)
+	{
+		SDPA_LOG_DEBUG("Scheduler NRE running ...");
+	}
 }
 
 /*
@@ -102,7 +109,9 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 	}
 }
 
-void SchedulerImpl::start_job(const Job::ptr_t &) {}
+void SchedulerImpl::start_job(const Job::ptr_t& pJob) {
+	SDPA_LOG_DEBUG("Start the job "<<pJob->id());
+}
 
 void SchedulerImpl::schedule(Job::ptr_t& pJob)
 {
