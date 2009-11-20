@@ -14,6 +14,54 @@
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/util/Config.hpp>
 
+/* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
+{
+  std::cout << "waiting for job to return..." << std::flush;
+  int exit_code(4);
+  std::size_t fail_count(0);
+  for (; fail_count < 3 ;)
+  {
+    std::string status;
+    try
+    {
+      status = api->queryJob(job_id);
+      fail_count = 0; // reset counter
+    }
+    catch (const sdpa::client::ClientException &ce)
+    {
+      std::cout << "-" << std::flush;
+      ++fail_count;
+      continue;
+    }
+
+    if (status == "SDPA::Finished")
+    {
+      std::cout << "finished!" << std::endl;
+      exit_code = 0;
+      break;
+    }
+    else if (status == "SDPA::Failed")
+    {
+      std::cout << "failed!" << std::endl;
+      exit_code = 1;
+      break;
+    }
+    else if (status == "SDPA::Cancelled")
+    {
+      std::cout << "cancelled!" << std::endl;
+      exit_code = 2;
+      break;
+    }
+    else
+    {
+      sleep(poll_interval);
+      std::cout << "." << std::flush;
+    }
+  }
+  return exit_code;
+}
+
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
   namespace su = sdpa::util;
@@ -152,40 +200,25 @@ int main (int argc, char **argv) {
       if (cfg.is_set("wait"))
       {
         const int poll_interval = cfg.get<int>("wait");
-        std::cout << "waiting for job to return...";
-        int exit_code(4);
-        for (;;)
-        {
-          std::string status(api->queryJob(job_id));
-          if (status == "SDPA::Finished")
-          {
-            std::cout << "finished!" << std::endl;
-            exit_code = 0;
-            break;
-          }
-          else if (status == "SDPA::Failed")
-          {
-            std::cout << "failed!" << std::endl;
-            exit_code = 1;
-            break;
-          }
-          else if (status == "SDPA::Cancelled")
-          {
-            std::cout << "cancelled!" << std::endl;
-            exit_code = 1;
-            break;
-          }
-          else
-          {
-            sleep(poll_interval);
-            std::cout << "." << std::flush;
-          }
-        }
+        int wait_code = command_wait(job_id, api, poll_interval);
 
-        std::cerr << "retrieve the results with:" << std::endl;
-        std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
-        std::cerr << "delete the job with:" << std::endl;
-        std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
+        switch (wait_code)
+        {
+          case 0: // finished
+          case 1: // failed
+          case 2: // cancelled
+          {
+            std::cerr << "retrieve the results with:" << std::endl;
+            std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
+            std::cerr << "delete the job with:" << std::endl;
+            std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
+            break;
+          }
+          default:
+            std::cerr << "could not get status information!" << std::endl;
+            break;
+        }
+        return wait_code;
       }
     }
     else if (command == "cancel")
@@ -226,6 +259,35 @@ int main (int argc, char **argv) {
         return 4;
       }
       api->deleteJob(args.front());
+    }
+    else if (command == "wait")
+    {
+      if (args.empty())
+      {
+        std::cerr << "E: job-id required!" << std::endl;
+        return 4;
+      }
+      const std::string &job_id(args.front());
+      const int poll_interval = cfg.get<int>("wait");
+      int wait_code = command_wait(job_id, api, poll_interval);
+
+      switch (wait_code)
+      {
+        case 0: // finished
+        case 1: // failed
+        case 2: // cancelled
+        {
+          std::cerr << "retrieve the results with:" << std::endl;
+          std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
+          std::cerr << "delete the job with:" << std::endl;
+          std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
+          break;
+        }
+        default:
+          std::cerr << "could not get status information!" << std::endl;
+          break;
+      }
+      return wait_code;
     }
     else
     {
