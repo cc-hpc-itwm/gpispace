@@ -1,6 +1,9 @@
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/masterworkflow-sdpa-test.gwdl  ${CMAKE_CURRENT_BINARY_DIR}/masterworkflow-sdpa-test.gwdl COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/simple-sdpa-test.gwdl          ${CMAKE_CURRENT_BINARY_DIR}/simple-sdpa-test.gwdl         COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/subworkflow-sdpa-test.gwdl     ${CMAKE_CURRENT_BINARY_DIR}/subworkflow-sdpa-test.gwdl    COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/remig.master.gwdl              ${CMAKE_CURRENT_BINARY_DIR}/remig.master.gwdl             COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/remigration.gwdl               ${CMAKE_CURRENT_BINARY_DIR}/remigration.gwdl              COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/workflow-result-test.gwdl      ${CMAKE_CURRENT_BINARY_DIR}/workflow-result-test.gwdl     COPYONLY)
+file (GLOB gwdls "*.gwdl")
+
+foreach (wf ${gwdls})
+  string(REGEX REPLACE "(.*/)?(.*).gwdl.*" "\\2" wf_name ${wf})
+  message(STATUS "adding workflow `${wf_name}' (using ${wf})")
+  configure_file(${wf}    ${CMAKE_CURRENT_BINARY_DIR}/${wf_name}.gwdl COPYONLY)
+endforeach (wf ${gwdls})
+
+install(FILES ${gwdls} DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/workflows)
