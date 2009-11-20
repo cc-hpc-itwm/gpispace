@@ -45,7 +45,7 @@ namespace fhg { namespace log {
       closelog();
     }
     
-    void append(const fhg::log::LogEvent &) const;
+    void append(const fhg::log::LogEvent &);
   private:
     int options_;
     int facility_;

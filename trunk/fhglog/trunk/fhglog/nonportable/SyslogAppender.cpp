@@ -20,7 +20,7 @@
 
 using namespace fhg::log;
 
-void SyslogAppender::append(const fhg::log::LogEvent &evt) const
+void SyslogAppender::append(const fhg::log::LogEvent &evt)
 {
   syslog(evt.severity().lvl(), "%s", getFormat()->format(evt).c_str());
 }
