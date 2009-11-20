@@ -12,7 +12,7 @@ $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
 compile: config
-	make -C $(BUILD_DIR)
+	$(MAKE) -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt
 	@echo "make BUILD_DIR=${BUILD_DIR} CMAKE_CONFIG=${CMAKE_CONFIG}"
@@ -23,22 +23,22 @@ distclean: clean
 	@-find . -name "*~" -delete
 
 clean-sdpa:
-	make -C $(BUILD_DIR)/sdpa clean
+	$(MAKE) -C $(BUILD_DIR)/sdpa clean
 
 distclean-sdpa: clean-sdpa
 	@-rm -rf $(BUILD_DIR)/sdpa
 
 clean:
-	make -C $(BUILD_DIR) clean
+	$(MAKE) -C $(BUILD_DIR) clean
 
 doc-api: config
-	make -C ${BUILD_DIR} doc
+	$(MAKE) -C ${BUILD_DIR} doc
 
 doc:
-	make -C doc
+	$(MAKE) -C doc
 
 dist: test
-	make -C $(BUILD_DIR) package
+	$(MAKE) -C $(BUILD_DIR) package
 
 ##test: 
 ##	make -C $(BUILD_DIR) -e GWES_CPP_HOME=${GWES_CPP_HOME} test
@@ -57,6 +57,6 @@ unify:
 ##	mv -i ${LOGDIR}/LastTestsFailed_$${CTEST_TAG}.log ${LOGDIR}/LastTestsFailed.log
 
 .DEFAULT:
-	make -C $(BUILD_DIR) $(MAKECMDGOALS)
+	$(MAKE) -C $(BUILD_DIR) $(MAKECMDGOALS)
 
 .PHONY: clean distclean all default doc test clean-sdpa distclean-sdpa
