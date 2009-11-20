@@ -79,8 +79,11 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "-wd383 -wd981")
-    message(STATUS "adding __aligned__=ignored to the list of definitions")
-    #add_definitions("-D__aligned__=ignored")
+    message(STATUS "compiler: ${CMAKE_CXX_COMPILER_MAJOR}.${CMAKE_CXX_COMPILER_MINOR}")
+    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
+      message(STATUS "Warning: adding __aligned__=ignored to the list of definitions")
+      add_definitions("-D__aligned__=ignored")
+    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
   endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
