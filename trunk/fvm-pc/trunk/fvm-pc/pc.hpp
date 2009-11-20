@@ -4,6 +4,7 @@
 #include <fvm/fvmAllocatorTypes.h>
 #include <fvm/fvm_common.h>
 
+
 typedef struct fvmPcConfig {
   fvmSize_t shmemsize;
   fvmSize_t fvmsize;
@@ -16,6 +17,8 @@ int fvmLeave();
 
 int fvmGetRank();
 int fvmGetNodeCount();
+
+fvmSize_t fvmGetShmemSize();
 
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size);
 int fvmGlobalFree(fvmAllocHandle_t ptr);

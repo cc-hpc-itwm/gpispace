@@ -12,6 +12,7 @@
 // ------ Internal functions for Process Container (not to be used by appllication)
 int doRequest(fvmRequest_t /* op_request */ ) { return 0; }
 void * pcShm(0);
+fvmSize_t pcShmSize(0);
 
 //-------------------- Interface for Process Container -----------------------
 int fvmConnect(fvm_pc_config_t cfg)
@@ -29,6 +30,7 @@ int fvmConnect(fvm_pc_config_t cfg)
   }
   else
   {
+    pcShmSize = cfg.shmemsize;
     fprintf(stderr, "fvm-pc: allocating %lu bytes of shared-memory\n", cfg.shmemsize);
     pcShm = malloc(cfg.shmemsize);
     return 0;
@@ -40,6 +42,7 @@ int fvmLeave()
   if (pcShm != 0)
   {
     free(pcShm); pcShm = 0;
+    pcShmSize = 0;
   }
   return 0;
 }
@@ -199,6 +202,11 @@ void *fvmGetShmemPtr()
 #else
   return 0;
 #endif
+}
+
+fvmSize_t fvmGetShmSize()
+{
+  return pcShmSize;
 }
 
 int fvmGetRank()

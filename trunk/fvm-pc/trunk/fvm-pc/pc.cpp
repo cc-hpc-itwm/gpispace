@@ -17,6 +17,7 @@ key_t pcQueueKey;
 int pcShmid;
 key_t pcShmKey;
 void * pcShm;
+fvmSize_t pcShmSize;
 #endif
 
 static int nodeRank;
@@ -62,6 +63,14 @@ static int getAck()
 //-------------------- Interface for Process Container -----------------------
 int fvmConnect(fvm_pc_config_t config)
 {
+  // initialize globals
+#ifdef SHMEM
+  pcShmid = 0;
+  pcShmKey = 0;
+  pcShm = 0;
+  pcShmSize = 0;
+#endif
+
   int ret=0;
   msgQueueMsg_t msg;
   msgQueueConnectMsg_t connectMsg;
@@ -116,6 +125,9 @@ int fvmConnect(fvm_pc_config_t config)
     perror("shmat");
     return -1;
   }
+
+  // set the size
+  pcShmSize = config.shmemsize;
 
 #else //qp
 
@@ -367,6 +379,14 @@ void *fvmGetShmemPtr()
 #else
   return 0;
 #endif
+}
+
+fvmSize_t fvmGetShmemSize()
+{
+#ifdef SHMEM
+  return pcShmSize;
+#endif
+  return 0;
 }
 
 int fvmGetRank()
