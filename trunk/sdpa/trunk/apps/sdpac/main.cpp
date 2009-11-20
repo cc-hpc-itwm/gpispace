@@ -148,6 +148,7 @@ int main (int argc, char **argv) {
       
       const std::string job_id(api->submitJob(sstr.str()));
       std::cout << job_id << std::endl;
+
       if (cfg.is_set("wait"))
       {
         const int poll_interval = cfg.get<int>("wait");
@@ -168,13 +169,23 @@ int main (int argc, char **argv) {
             exit_code = 1;
             break;
           }
+          else if (status == "SDPA::Cancelled")
+          {
+            std::cout << "cancelled!" << std::endl;
+            exit_code = 1;
+            break;
+          }
           else
           {
             sleep(poll_interval);
-            std::cout << ".";
+            std::cout << "." << std::flush;
           }
         }
-        std::cout << "retrieve the results with: '" << argv[0] << " results " << job_id << "'" << std::endl;
+
+        std::cerr << "retrieve the results with:" << std::endl;
+        std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
+        std::cerr << "delete the job with:" << std::endl;
+        std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
       }
     }
     else if (command == "cancel")
