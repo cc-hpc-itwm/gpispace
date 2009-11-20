@@ -46,6 +46,17 @@ all:libreInit.so   libreTst.so
 #	${LNKR}  -o libreMig.so $(CXXLIBS) \
 #	-shared -Wl,-soname,libreMig.so reMig.o utls.o
 
+
+# == short explanation  <sdpa-transition> - <obj. files>: ==
+# "init" : pfafft.o reApplInit.o 
+# "read input": utls.o reReadInp.o 
+# "read velocity": reReadVel.o
+# "calc one level": fft.o  propagatorsOpt.o  utilsOpt.o calcOneLevl.o 
+# "update": reUpdt.o
+# "prefix sum": rePrefixSum.o
+#
+# all of the transition modules linked (just for testing them) in libreInit.so
+
 libreInit.so: cfg.o cfg-test.o  pfafft.o reApplInit.o  utls.o reReadInp.o reReadVel.o \
 	calcOneLevl.o reUpdt.o
 	${LNKR}  -o libreInit.so $(CXXLIBS) \
