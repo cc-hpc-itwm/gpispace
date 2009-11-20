@@ -11,7 +11,7 @@ project(libsdpa)
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 0)
-set(V_MINOR 1)
+set(V_MINOR 2)
 set(V_PATCH 0)
 
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
