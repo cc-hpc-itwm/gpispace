@@ -57,11 +57,11 @@ const std::string USER("user");
 	  virtual sdpa::util::Config* cfg() const = 0;
 
 	  //GUI notification methods
-	  virtual void activityCreated(const gwes::activity_t& act)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityStarted(const gwes::activity_t& act)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFinished(const gwes::activity_t& act)  { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFailed(const gwes::activity_t& act)    { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityCancelled(const gwes::activity_t& act) { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCreated(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityStarted(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFinished(const gwes::activity_t&)  { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFailed(const gwes::activity_t&)    { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCancelled(const gwes::activity_t&) { throw std::runtime_error("not supported in this component"); }
   };
 }}
 
