@@ -20,11 +20,12 @@
 #define SDPA_CLIENT_TYPES_HPP 1
 
 #include <string>
+#include <sdpa/types.hpp>
 #include <sdpa/util/Config.hpp>
 
 namespace sdpa { namespace client {
   typedef sdpa::util::NewConfig config_t;
-  typedef std::string result_t;
+  typedef sdpa::job_result_t result_t;
 }}
 
 #endif

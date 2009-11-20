@@ -35,7 +35,7 @@ void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { lock_type loc
 void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt); }
 void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
 void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
-void JobFSM::Dispatch() { process_event(EvtBSCDispatch()); }
+void JobFSM::Dispatch() {lock_type lock(mtx_); process_event(EvtBSCDispatch()); }
 
 //Pending event reactions
 sc::result Pending::react(const EvtBSCDispatch&)
@@ -48,12 +48,6 @@ sc::result Pending::react(const CancelJobEvent& e)
 {
 	return transit<Cancelled>(&JobFSM::action_cancel_job_from_pending, e);
 }
-
-/*sc::result Pending::react(const QueryJobStatusEvent& e)
-{
-	return transit<Pending>(&JobFSM::action_query_job_status, e);
-}
-*/
 
 sc::result Pending::react(const sc::exception_thrown &)
 {
@@ -88,12 +82,6 @@ sc::result Running::react(const CancelJobEvent& e)
 {
 	return transit<Cancelled>(&JobFSM::action_cancel_job, e);
 }
-
-//Running
-/*sc::result Running::react(const QueryJobStatusEvent& e )
-{
-   	return transit<Running>(&JobFSM::action_query_job_status, e);
-}*/
 
 sc::result Running::react(const sc::exception_thrown &)
 {
@@ -133,12 +121,6 @@ sc::result Cancelling::react(const CancelJobAckEvent& e)
     return transit<Cancelled>(&JobFSM::action_cancel_job_ack, e);
 }
 
-//Cancelling
-/*sc::result Cancelling::react(const QueryJobStatusEvent& e)
-{
-  	return transit<Cancelling>(&JobFSM::action_query_job_status, e);
-}*/
-
 //Running event reactions
 sc::result Cancelling::react(const JobFinishedEvent& e )
 {
@@ -168,12 +150,6 @@ sc::result Cancelling::react(const sc::exception_thrown &)
 }
 
 //Cancelled
-/*sc::result Cancelled::react(const QueryJobStatusEvent& e)
-{
-	return transit<Cancelled>(&JobFSM::action_query_job_status, e);
-}*/
-
-//Cancelled
 sc::result Cancelled::react(const DeleteJobEvent& e)
 {
 	return transit<Cancelled>(&JobFSM::action_delete_job, e);
@@ -194,12 +170,6 @@ sc::result Cancelled::react(const sc::exception_thrown &)
 	  return forward_event();
 	}
 }
-
-//Failed
-/*sc::result Failed::react(const QueryJobStatusEvent& e)
-{
-	return transit<Failed>(&JobFSM::action_query_job_status, e);
-}*/
 
 //Cancelled
 sc::result Failed::react(const DeleteJobEvent& e)
@@ -229,18 +199,11 @@ sc::result Failed::react(const sc::exception_thrown &)
 	}
 }
 
-//Finished
-/*sc::result Finished::react(const QueryJobStatusEvent& e)
-{
-	return transit<Finished>(&JobFSM::action_query_job_status, e);
-}*/
-
 //Cancelled
 sc::result Finished::react(const DeleteJobEvent& e)
 {
 	return transit<Finished>(&JobFSM::action_delete_job, e);
 }
-
 
 //Finished
 sc::result Finished::react(const RetrieveJobResultsEvent& e)

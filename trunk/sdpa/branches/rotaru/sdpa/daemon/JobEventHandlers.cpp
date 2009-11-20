@@ -19,7 +19,7 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
 #include <map>

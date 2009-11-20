@@ -41,6 +41,8 @@ struct Up;
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
 	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
+	typedef boost::recursive_mutex mutex_type;
+	typedef boost::unique_lock<mutex_type> lock_type;
 
 	DaemonFSM(	const std::string &name,
 				seda::Stage* ptrToMasterStage,
@@ -65,6 +67,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();
+	mutex_type mtx_;
 };
 
 struct Down : sc::simple_state<Down, DaemonFSM>
@@ -72,22 +75,22 @@ struct Down : sc::simple_state<Down, DaemonFSM>
 	typedef mpl::list< sc::custom_reaction<sdpa::events::StartUpEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Down() : SDPA_INIT_LOGGER("sdpa.fsm.bsc.Down") { } // } // std::cout <<" enter state 'Down'" << std::endl; }
-	~Down() { } // } // std::cout <<" leave state 'Down'" << std::endl; }
+	Down() : SDPA_INIT_LOGGER("sdpa.fsm.bsc.Down") { }
+	~Down() { }
 
 	sc::result react( const sdpa::events::StartUpEvent& );
 	sc::result react( const sc::exception_thrown & e);
 	SDPA_DECLARE_LOGGER();
 };
 
-struct Configurring  : sc::simple_state<Configurring, DaemonFSM>
+struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::ConfigOkEvent>,
 					   sc::custom_reaction<sdpa::events::ConfigNokEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Configurring():  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Configurring") { } // } // std::cout <<" enter state 'Configuring'" << std::endl; }
-	~Configurring() { } // } // std::cout <<" leave state 'Configuring'" << std::endl; }
+	Configuring():  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Configuring") { }
+	~Configuring() { }
 
 	sc::result react( const sdpa::events::ConfigOkEvent& );
 	sc::result react( const sdpa::events::ConfigNokEvent& );
@@ -97,7 +100,7 @@ struct Configurring  : sc::simple_state<Configurring, DaemonFSM>
 
 struct Up : sc::simple_state<Up, DaemonFSM>
 {
-typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
+	typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
                    sc::custom_reaction<sdpa::events::LifeSignEvent>,
                    sc::custom_reaction<sdpa::events::DeleteJobEvent>,
                    sc::custom_reaction<sdpa::events::RequestJobEvent>,
@@ -106,8 +109,8 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
                    sc::custom_reaction<sdpa::events::WorkerRegistrationEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
-	Up() :  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Up") { } // } // std::cout << " enter state 'Up'" << std::endl; }
-	~Up() { } // std::cout << " leave state 'Up'" << std::endl; }
+	Up() :  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Up") { }
+	~Up() { }
 
 	sc::result react( const sdpa::events::InterruptEvent& );
 	sc::result react( const sdpa::events::LifeSignEvent& );

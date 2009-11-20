@@ -94,7 +94,11 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if(pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	{
+		pJob->setResult(pEvt->result());
+	}
+	else //	if(pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 		try {
@@ -184,7 +188,11 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	{
+		pJob->setResult(pEvt->result());
+	}
+	else //	if(pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 		try {
@@ -337,5 +345,17 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		os.str("");
 		os<<"Unexpected exception occurred!";
 		SDPA_LOG_DEBUG(os.str());
+	}
+}
+
+void Orchestrator::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pEvt )
+{
+	try {
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->RetrieveJobResults(pEvt);
+	}
+	catch(JobNotFoundException)
+	{
+		SDPA_LOG_DEBUG("The job "<<pEvt->job_id()<<" was not found by the JobManager");
 	}
 }

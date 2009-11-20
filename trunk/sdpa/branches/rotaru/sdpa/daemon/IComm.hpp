@@ -6,7 +6,7 @@
  *    Description:  Interface used for communication
  *
  *        Version:  1.0
- *        Created:
+ *        Created:  2004
  *       Revision:  none
  *       Compiler:  gcc
  *

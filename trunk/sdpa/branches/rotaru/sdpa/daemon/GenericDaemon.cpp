@@ -636,8 +636,6 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 }
 
 /* Implements Gwes2Sdpa */
-
-
 /**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GWES in order to delegate
@@ -742,9 +740,6 @@ void GenericDaemon::workflowFinished(const gwes::workflow_id_t &workflowId, cons
 	// call job.JobFinished(event);
 
 	SDPA_LOG_DEBUG("GWES notified SDPA that the workflow "<<workflowId<<" finished!");
-	//gwdl::Workflow* wf = ((gwes::GWES*)gwes())->getWorkflowHandlerTable().get(workflowId)->getWorkflow();
-	//SDPA_LOG_DEBUG("******* completed workflow (filled with tokens): "<< *wf);
-
 	job_id_t job_id(workflowId);
 
 	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;

@@ -6,7 +6,9 @@ link_directories(${CPPUNIT_LIBRARY_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_state_machine(PERFORMANCETEST_FSM_CPP PERFORMANCETEST_FSM_H PerformanceTest)
+if (USE_SMC_SC)
+	add_state_machine(PERFORMANCETEST_FSM_CPP PERFORMANCETEST_FSM_H PerformanceTest)
+endif (USE_SMC_SC)
 
 file(GLOB test_srcs "test_*.cpp" SchedulerTestImpl.cpp)
 file(GLOB test_hdrs "*.hpp")

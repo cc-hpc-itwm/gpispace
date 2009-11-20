@@ -202,7 +202,7 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return 4;
       }
-      std::string results(api->retrieveResults(args.front()));
+      sdpa::client::result_t results(api->retrieveResults(args.front()));
       std::ofstream ofs(cfg.get("output").c_str());
       ofs << results;
       std::cout << "stored results in: " << cfg.get("output") << std::endl;

@@ -216,12 +216,7 @@ namespace sdpa { namespace daemon {
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
-    	// fill it here with real results
-    	JobResultsReplyEvent::result_t results("");
-
-    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), results));
-
-    	// attach to this event the results!
+    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), result));
 
     	// reply the results to master
     	pComm->sendEvent(pComm->to_master_stage(), pResReply);

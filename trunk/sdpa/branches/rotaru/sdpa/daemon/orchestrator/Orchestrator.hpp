@@ -35,13 +35,15 @@ namespace daemon {
 		static void shutdown(Orchestrator::ptr_t ptrOrch);
 
 		void action_configure( const sdpa::events::StartUpEvent& );
-		void action_config_ok(const sdpa::events::ConfigOkEvent&);
+		void action_config_ok( const sdpa::events::ConfigOkEvent& );
 
-		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+		void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
+		void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
 
-		void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
-		void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
+		void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
+		void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
+
+		void handleRetrieveResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
 		const std::string& url() const {return url_;}
 

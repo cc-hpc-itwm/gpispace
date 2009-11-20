@@ -62,6 +62,7 @@ namespace sdpa { namespace daemon {
 		virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
+		virtual void setResult(const sdpa::job_result_t& arg_results) { result = arg_results; }
     private:
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
@@ -70,6 +71,7 @@ namespace sdpa { namespace daemon {
         bool b_marked_for_del_;
         bool b_local_;
         SDPA_DECLARE_LOGGER();
+        sdpa::job_result_t result;
     protected:
        	mutable IComm* pComm;
         mutex_type mtx_;

@@ -68,6 +68,8 @@ void DaemonFSM :: print_states()
 
 void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 {
+	lock_type lock(mtx_);
+
 	if( StartUpEvent* ptr = dynamic_cast<StartUpEvent*>(pEvent.get()) ){
 		SDPA_LOG_DEBUG("Process StartUpEvent");
 		SDPA_LOG_DEBUG("Call proces_event(e) ...");
@@ -111,10 +113,9 @@ void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 	}
 }
 
-
 sc::result Down::react(const StartUpEvent& e)
 {
-	return transit<Configurring>(&DaemonFSM::action_configure, e); // successfully configured and all services started-up
+	return transit<Configuring>(&DaemonFSM::action_configure, e); // successfully configured and all services started-up
 }
 
 sc::result Down::react(const sc::exception_thrown &)
@@ -133,20 +134,19 @@ sc::result Down::react(const sc::exception_thrown &)
 	}
 }
 
-
-sc::result Configurring::react( const ConfigOkEvent& e)
+sc::result Configuring::react( const ConfigOkEvent& e)
 {
 	SDPA_LOG_DEBUG("React to  ConfigOkEvent");
 	return transit<Up>(&DaemonFSM::action_config_ok, e);
 }
 
-sc::result Configurring::react( const ConfigNokEvent& e)
+sc::result Configuring::react( const ConfigNokEvent& e)
 {
 	SDPA_LOG_DEBUG("React to  ConfigNokEvent");
 	return transit<Down>(&DaemonFSM::action_config_nok, e);
 }
 
-sc::result Configurring::react(const sc::exception_thrown &)
+sc::result Configuring::react(const sc::exception_thrown &)
 {
 	try
 	{

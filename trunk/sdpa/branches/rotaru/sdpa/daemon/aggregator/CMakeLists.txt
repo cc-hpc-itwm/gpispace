@@ -8,8 +8,10 @@ file(GLOB srcs *.cpp)
 
 ADD_LIBRARY(sdpa-aggregator ${hdrs} ${srcs})
 
-add_dependencies(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC)
-target_link_libraries(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC ) 
+if (USE_SMC_SC)
+	add_dependencies(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC)
+	target_link_libraries(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC )
+endif (USE_SMC_SC) 
 
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon/aggregator)
 install(TARGETS sdpa-aggregator ARCHIVE DESTINATION lib)
