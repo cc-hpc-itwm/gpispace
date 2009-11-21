@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <sys/stat.h> // for stat, to check if file exists
 
 #if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
@@ -62,6 +63,16 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
   return exit_code;
 }
 
+bool file_exists(const std::string &path)
+{
+  struct stat file_info;
+  int error_code = stat(path.c_str(), &file_info);
+  if (error_code == 0)
+	return true;
+  else
+	return false;
+}
+
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
   namespace su = sdpa::util;
@@ -71,6 +82,7 @@ int main (int argc, char **argv) {
     ("output,o", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
     ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
+    ("force,f", "force the operation")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -246,9 +258,22 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return 4;
       }
-      sdpa::client::result_t results(api->retrieveResults(args.front()));
+
+	  if (file_exists(cfg.get("output")) && (! cfg.is_set("force")))
+	  {
+		std::cerr << "E: output-file " << cfg.get("output") << " does already exist!" << std::endl;
+		return 4;
+	  }
+
       std::ofstream ofs(cfg.get("output").c_str());
-      ofs << results;
+	  if (! ofs)
+	  {
+		std::cerr << "E: could not open " << cfg.get("output") << " for writing!" << std::endl;
+		return 4;
+	  }
+
+      sdpa::client::result_t results(api->retrieveResults(args.front()));
+      ofs << results << std::flush;
       std::cout << "stored results in: " << cfg.get("output") << std::endl;
     }
     else if (command == "delete")
