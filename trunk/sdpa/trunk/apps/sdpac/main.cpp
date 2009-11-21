@@ -68,7 +68,7 @@ int main (int argc, char **argv) {
 
   sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
   cfg.tool_opts().add_options()
-    ("output", su::po::value<std::string>()->default_value("sdpac.out"),
+    ("output,o", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
     ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
     ("command", su::po::value<std::string>(),
