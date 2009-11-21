@@ -90,9 +90,10 @@ void NewConfig::parse_command_line(const std::vector<std::string> &av)
 
 void NewConfig::parse_config_file()
 {
-  if (is_set(component_name_ + ".config"))
+  if (is_set("config"))
   {
-    parse_config_file(get<std::string>(component_name_ + ".config"));
+    const std::string &cfg_file = get("config");
+	parse_config_file(cfg_file);
   }
 }
 
@@ -103,17 +104,23 @@ void NewConfig::parse_config_file(const std::string &cfg_file)
     std::cerr << "I: using config file: " << cfg_file << std::endl;
   }
   std::ifstream cfg_s(cfg_file.c_str());
-  if (! cfg_s)
+  parse_config_file(cfg_s, cfg_file);
+}
+
+void NewConfig::parse_config_file(std::istream &stream, const std::string &cfg_file)
+{
+  if (! stream)
   {
-    std::cerr << "W: could not open " << cfg_file << " for reading!" << std::endl;
+	if (is_set("verbose"))
+	  std::cerr << "W: could not open " << cfg_file << " for reading!" << std::endl;
   }
   else
   {
-    po::options_description desc;
-    desc.add(logging_opts_)
-        .add(network_opts_)
-        .add(specific_opts_);
-    po::store(po::parse_config_file(cfg_s, desc), opts_);
+	po::options_description desc;
+	desc.add(logging_opts_)
+	   .add(network_opts_)
+	   .add(specific_opts_);
+	po::store(po::parse_config_file(stream, desc), opts_);
   }
 }
 

@@ -89,6 +89,7 @@ namespace sdpa { namespace util {
 
     void parse_config_file();
     void parse_config_file(const std::string &cfg_file_path);
+    void parse_config_file(std::istream &stream, const std::string &cfg_file);
 
     void parse_environment();
     void parse_environment(const std::string &prefix);
