@@ -316,15 +316,15 @@ void Client::action_configure(const config_t &cfg)
     MLOG(DEBUG, "set timeout to: " << timeout_);
   }
 
-  if (cfg.is_set("client.orchestrator"))
+  if (cfg.is_set("orchestrator"))
   {
-    orchestrator_ = cfg.get<std::string>("client.orchestrator");
+    orchestrator_ = cfg.get<std::string>("orchestrator");
     MLOG(DEBUG, "using orchestrator: " << orchestrator_);
   }
 
   if (cfg.is_set("client.location"))
   {
-    my_location_ = cfg.get<std::string>("client.location");
+    my_location_ = cfg.get<std::string>("location");
     MLOG(DEBUG, "using location: " << my_location_);
   }
 
