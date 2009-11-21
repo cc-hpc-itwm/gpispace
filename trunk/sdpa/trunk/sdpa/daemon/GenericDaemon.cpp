@@ -388,7 +388,9 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		ptrWorker->update(e);
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
 	} catch(WorkerNotFoundException&) {
-		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+		SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+		addWorker(Worker::ptr_t(new Worker(worker_id)));
+		SDPA_LOG_INFO("Registered a new worker: "<< worker_id);
 	} catch(...) {
 		SDPA_LOG_DEBUG("Unexpected exception occurred!");
 	}
@@ -616,7 +618,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
 		addWorker(pWorker);
 
-		SDPA_LOG_DEBUG("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
+		SDPA_LOG_INFO("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);
