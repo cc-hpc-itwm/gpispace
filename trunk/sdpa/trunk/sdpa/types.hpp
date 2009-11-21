@@ -24,11 +24,13 @@ inline std::ostream &operator<<(std::ostream &os, const sdpa::job_result_t &resu
 {
   for (sdpa::job_result_t::const_iterator r(result.begin()); r != result.end(); ++r)
   {
-    os << "tokens on place " << r->first << ":" << std::endl;
+	os << "{ " << r->first << ", ";
+	os << "[ ";
     for (sdpa::token_list_t::const_iterator token(r->second.begin()); token != r->second.end(); ++token)
     {
-      os << "\t" << *token << std::endl;
+      os << *token;
     }
+	os << " ]" << " }" << std::endl;
   }
   return os;
 }

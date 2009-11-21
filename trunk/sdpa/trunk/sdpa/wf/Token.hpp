@@ -117,40 +117,37 @@ namespace sdpa { namespace wf {
       inline properties_t & properties() { return properties_; }
       inline const properties_t & properties() const { return properties_; }
       void writeTo(std::ostream &os) const {
+		/* Token-Format:
+		 *
+		 * control:
+		 *    {token, true|false, []}
+		 * data:
+		 *    {token, {data, ""}, []}
+		 * */
+
         os << "{";
-        os << "token,";
-        os << "{";
+        os << "token, ";
         if (properties().get<std::string>("datatype", "unknown") == ("control"))
-        {
-          os << "{";
-          os << "control";
-          os << ",";
+		{
           os << std::ios::boolalpha;
           os << properties().get<bool>("control");
           os << std::ios::boolalpha;
-          os << "}";
         }
         else
         {
           os << "{"
              << "data"
-             << ","
-             << "\""
-             << properties().get("datatype")
-             << "\""
-             << ","
+             << ", "
              << "\""
              << data()
              << "\""
              << "}";
         }
-        os << ",";
-        os << "{"
-           << "props"
-           << ","
-           << properties()
-           << "}";
-        os << "}";
+		/*
+        os << ", ";
+		os << properties();
+	    */
+		os << "}";
       }
     private:
       data_t data_;

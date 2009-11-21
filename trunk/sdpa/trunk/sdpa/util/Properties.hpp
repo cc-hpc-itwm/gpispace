@@ -146,7 +146,7 @@ namespace sdpa { namespace util {
           {
             os << "{"
                << it->first
-               << ","
+               << ", "
                << it->second
                << "}";
 
@@ -157,7 +157,7 @@ namespace sdpa { namespace util {
             }
             else
             {
-              os << ",";
+              os << ", ";
             }
           }
           os << "]";
