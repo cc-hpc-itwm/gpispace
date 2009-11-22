@@ -27,7 +27,7 @@ lib%.so : %.o
 	@$(CXX) $(LDFLAGS) $^ -o $@
 
 # special dependencies
-libremig-mod.so: remig/propagatorsOpt.o remig/utilsOpt.o
+libremig-mod.so: remig/fft.o remig/propagatorsOpt.o remig/utilsOpt.o
 cfg.o: cfg.hpp
 libcfg-mod.so: cfg.o
 
