@@ -58,8 +58,8 @@ namespace sdpa { namespace modules {
   }
 
 #define ASSERT_ALLOC(hdl, tag) assert_alloc(hdl, #hdl, tag)
-#define ASSERT_GALLOC(hdl, tag) ASSERT_ALLOC(hdl, "global")
-#define ASSERT_LALLOC(hdl, tag) ASSERT_ALLOC(hdl, "local")
+#define ASSERT_GALLOC(hdl) ASSERT_ALLOC(hdl, "global")
+#define ASSERT_LALLOC(hdl) ASSERT_ALLOC(hdl, "local")
 
 #define ASSERT_HANDLE(hdl) assert_valid_handle(hdl, #hdl)
 
