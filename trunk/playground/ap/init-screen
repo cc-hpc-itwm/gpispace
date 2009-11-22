@@ -7,9 +7,11 @@ rename_master=0
 on_master=0
 master=
 node_name=`hostname`
+start_fhglog=0
+start_fvm=0
 
 if [ -r "$PBS_NODEFILE" ]; then
-	echo "Running on the master node..."
+	echo "Running on the initial master node..."
 	on_master=1
 	master="$node_name"
 else
@@ -22,8 +24,10 @@ if [ $on_master -eq 1 ]; then
 	echo "clearing .screen.env..."
 	rm -f "$env_file"
 	echo "writing environment info to $env_file..."
-	echo export PBS_SERVER="$PBS_SERVER" >> "$env_file"
+	echo export PBS_O_HOST="$PBS_O_HOST" >> "$env_file"
 	echo export FHGLOG_to_server="$node_name" >> "$env_file"
+	echo export FHGLOG_to_console="true" >> "$env_file"
+	echo export DISPLAY="$DISPLAY" >> "$env_file"
 fi
 
 if [ $# -gt 0 ]; then
@@ -35,14 +39,29 @@ else
 		nodes=`echo $master $nodes`
 		rename_master=1
 		switch_to_master=1
+		start_fhglog=1
+		start_fvm=1
 	fi
 fi
+
 if [ -z "$nodes" ]; then
 	echo "Nothing to do"
 	exit 0
 fi
 
-headnode="$PBS_SERVER"
+headnode="$PBS_O_HOST"
+
+if [ $start_fhglog -eq 1 ]; then
+	killall fhglog-server
+	echo "starting log-server on master node"
+	ssh -t "$headnode" screen -D -RR -X "screen -t log ssh $master" # fhglog-server short"
+fi
+
+if [ $start_fvm -eq 1 ]; then
+	echo "starting fvm-server on master node"
+	ssh -t "$headnode" screen -D -RR -X "screen -t fvm ssh $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
+fi
+
 
 if [ -z "$headnode" ]; then
 	echo "I don't know what my headnode is"
@@ -76,9 +95,9 @@ for n in $nodes; do
 	fi
 	echo -n " $n"
 	if [ x"$n" == x"$master" ]; then
-		ssh "$headnode" screen -X "screen -t "$title" ssh $n"
+		ssh -t "$headnode" screen -D -RR -X "screen -t $title ssh $n"
 	else
-		ssh "$headnode" screen -X "screen -t "$title" ssh $n" &
+		ssh -t "$headnode" screen -D -RR -X "screen -t $title ssh $n" &
 	fi
 done
 wait
@@ -86,5 +105,5 @@ echo
 
 if [ $switch_to_master -eq 1 ]; then
 	echo "switching to master-node screen"
-	ssh "$headnode" screen -X select "master"
+	ssh "$headnode" screen -X select master
 fi
