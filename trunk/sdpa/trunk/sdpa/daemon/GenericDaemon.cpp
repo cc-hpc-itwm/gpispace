@@ -388,9 +388,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		ptrWorker->update(e);
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
 	} catch(WorkerNotFoundException&) {
-		SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-		addWorker(Worker::ptr_t(new Worker(worker_id)));
-		SDPA_LOG_INFO("Registered a new worker: "<< worker_id);
+		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 	} catch(...) {
 		SDPA_LOG_DEBUG("Unexpected exception occurred!");
 	}
