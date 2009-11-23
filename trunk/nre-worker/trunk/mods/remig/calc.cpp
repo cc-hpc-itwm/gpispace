@@ -4,6 +4,8 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fvm-pc/pc.hpp>
+#include <cstdlib>
+#include <unistd.h>
 
 using namespace sdpa::modules;
 
@@ -12,8 +14,8 @@ void calc (data_t &params) throw (std::exception)
   const unsigned long slice_and_depth
     (params.at("slice_and_depth").token().data_as<unsigned long>());
 
-  const unsigned long number_of_frequencies 
-    (params.at("number_of_frequencies").token().data_as<unsigned long>());
+  const unsigned long number_of_depthlevels 
+    (params.at("number_of_depthlevels").token().data_as<unsigned long>());
 
   const fvmAllocHandle_t memhandle_for_configuration 
     (params.at("memhandle_for_configuration").token().data_as<fvmAllocHandle_t>());
@@ -22,10 +24,12 @@ void calc (data_t &params) throw (std::exception)
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
   MLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
-  MLOG (DEBUG, "number_of_frequencies = " << number_of_frequencies);
+  MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
 
-  const unsigned long slice = slice_and_depth / number_of_frequencies;
-  const unsigned long depth = slice_and_depth % number_of_frequencies;
+  usleep (rand() % 100);
+
+  const unsigned long slice = slice_and_depth / number_of_depthlevels;
+  const unsigned long depth = slice_and_depth % number_of_depthlevels;
 
   MLOG (DEBUG, "slice = " << slice);
   MLOG (DEBUG, "depth = " << depth);
@@ -35,9 +39,10 @@ void calc (data_t &params) throw (std::exception)
 
 SDPA_MOD_INIT_START(calc)
 {
+  srand((unsigned int)(fvmGetRank() << 8));
   SDPA_REGISTER_FUN_START(calc);
     SDPA_ADD_INP( "slice_and_depth", unsigned long );
-    SDPA_ADD_INP( "number_of_frequencies", unsigned long );
+    SDPA_ADD_INP( "number_of_depthlevels", unsigned long );
     SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
     SDPA_ADD_OUT( "slice_and_depth_OUT", unsigned long );
   SDPA_REGISTER_FUN_END(calc);

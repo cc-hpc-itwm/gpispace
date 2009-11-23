@@ -17,9 +17,9 @@ void init (data_t &params) throw (std::exception)
 
 //  const unsigned long number_of_frequencies (10);
 //  const unsigned long number_of_depthlevels (5);
-  const unsigned long number_of_frequencies (2);
-  const unsigned long number_of_depthlevels (2);
-  const unsigned long number_of_parallel_propagators (2);
+  const unsigned long number_of_frequencies (10);
+  const unsigned long number_of_depthlevels (100);
+  const unsigned long number_of_parallel_propagators (8);
   const fvmAllocHandle_t memhandle_for_outputvolume (fvmGlobalAlloc(1<<20));
   ASSERT_ALLOC(memhandle_for_outputvolume, "global alloc");
 

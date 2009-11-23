@@ -139,14 +139,14 @@
 
     <transition ID="tag slice with depth zero">
       <inputPlace placeID="slice before work" edgeExpression="slice"/>
-      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
 
-      <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice * $number_of_frequencies"/>
+      <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice * $number_of_depthlevels"/>
     </transition>
 
     <transition ID="calc one level">
       <inputPlace placeID="slice_and_depth before calc one level" edgeExpression="slice_and_depth"/>
-      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <operation>
@@ -160,7 +160,7 @@
 
     <transition ID="update">
       <inputPlace placeID="slice_and_depth after calc one level" edgeExpression="slice_and_depth"/>
-      <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <!-- exclusive access to the outputvolume -->
@@ -181,7 +181,7 @@
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
 
-      <condition>($slice_and_depth mod $number_of_frequencies) &lt; $number_of_depthlevels - 1</condition>
+      <condition>($slice_and_depth mod $number_of_depthlevels) &lt; $number_of_depthlevels - 1</condition>
 
       <outputPlace placeID="slice_and_depth before calc one level" edgeExpression="$slice_and_depth + 1"/>
     </transition>
@@ -191,9 +191,9 @@
       <readPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
 
-      <condition>($slice_and_depth mod $number_of_frequencies) &gt;= $number_of_depthlevels - 1</condition>
+      <condition>($slice_and_depth mod $number_of_depthlevels) &gt;= $number_of_depthlevels - 1</condition>
 
-      <outputPlace placeID="slice after work" edgeExpression="$slice_and_depth div $number_of_frequencies"/>
+      <outputPlace placeID="slice after work" edgeExpression="$slice_and_depth div $number_of_depthlevels"/>
     </transition>
 
     <!-- works done, postprocessing -->
