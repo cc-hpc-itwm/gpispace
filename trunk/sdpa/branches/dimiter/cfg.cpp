@@ -30,7 +30,7 @@ void c_read_config(cfg_t *pSdpaInit)
     int szY = 100;
     int szZ = 200;
 
-    fvmSize_t szGlbDat = 2*sizeof(TReGlbStruct);
+    fvmSize_t szGlbDat = sizeof(TReGlbStruct);
     fvmSize_t szInp = szX*szY*szZ*2*sizeof(float);
     fvmSize_t szVel = szX*szY*szZ*sizeof(float);
     fvmSize_t szOutp = szX*szY*szZ*sizeof(float);
