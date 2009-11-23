@@ -270,7 +270,7 @@ private:
 	 * Maximum time period in micro seconds for sleeping between two cycles if the workflow was not modified.
 	 * Default is 60000000 micro seconds = 1Minute
 	 */
-	const static long SLEEP_TIME_MAX=60000000;
+	const static long SLEEP_TIME_MAX=SLEEP_TIME_MIN; //60000000;
 	
 	/**
 	 * Fhg Logger
