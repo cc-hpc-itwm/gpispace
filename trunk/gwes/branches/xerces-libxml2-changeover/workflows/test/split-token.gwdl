@@ -13,16 +13,18 @@
       <data><value2 xmlns=""><x>16</x><y>24</y></value2></data>
     </token>
   </place>
-  <place ID="x" />
-  <place ID="y" />
-  <place ID="value" />
+  <place ID="x1" />
+  <place ID="y1" />
+  <place ID="x2" />
+  <place ID="y2" />
   <transition ID="joinSplitTokens">
     <description>join and split the tokens and put the results on the places x and y</description>
-    <inputPlace placeID="value1" edgeExpression="value" />
-    <inputPlace placeID="value2" edgeExpression="value" />
-    <outputPlace placeID="x" edgeExpression="$value/x" />
-    <outputPlace placeID="y" edgeExpression="$value/y" />
-    <outputPlace placeID="value" edgeExpression="$value" />
+    <inputPlace placeID="value1" edgeExpression="v1" />
+    <inputPlace placeID="value2" edgeExpression="v2" />
+    <outputPlace placeID="x1" edgeExpression="$v1/x" />
+    <outputPlace placeID="y1" edgeExpression="$v1/y" />
+    <outputPlace placeID="x2" edgeExpression="$v2/x" />
+    <outputPlace placeID="y2" edgeExpression="$v2/y" />
   </transition>
 </workflow>
 

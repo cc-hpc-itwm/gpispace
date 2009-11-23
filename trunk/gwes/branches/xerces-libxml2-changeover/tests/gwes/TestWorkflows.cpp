@@ -57,27 +57,34 @@ void TestWorkflows::testWorkflowSplitToken()
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("joinSplitTokens") == 0 );
 
-	gwdl::Place::ptr_t placeP = workflow->getPlace("value"); 
+	gwdl::Place::ptr_t placeP = workflow->getPlace("x1"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
 	gwdl::Token::ptr_t tokenP = placeP->getTokens().front();
 	CPPUNIT_ASSERT(tokenP->isData());
 	LOG_INFO(logger, *(tokenP->getData()));
-	CPPUNIT_ASSERT_EQUAL(string("<value><x>15</x><y>23</y></value>\n  <value><x>16</x><y>24</y></value>"),
-			tokenP->getData()->getContent());
+	CPPUNIT_ASSERT_EQUAL(string("<x>15</x>"), tokenP->getData()->getContent());
 
-	placeP = workflow->getPlace("x"); 
+	placeP = workflow->getPlace("y1"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
 	tokenP = placeP->getTokens().front();
 	CPPUNIT_ASSERT(tokenP->isData());
 	LOG_INFO(logger, *(tokenP->getData()));
-	CPPUNIT_ASSERT_EQUAL(string("<x>15</x>\n  <x>16</x>"), tokenP->getData()->getContent());
+	CPPUNIT_ASSERT_EQUAL(string("<y>23</y>"), tokenP->getData()->getContent());
 
-	placeP = workflow->getPlace("y"); 
+	placeP = workflow->getPlace("x2"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
 	tokenP = placeP->getTokens().front();
 	CPPUNIT_ASSERT(tokenP->isData());
 	LOG_INFO(logger, *(tokenP->getData()));
-	CPPUNIT_ASSERT_EQUAL(string("<y>23</y>\n  <y>24</y>"), tokenP->getData()->getContent());
+	CPPUNIT_ASSERT_EQUAL(string("<x>16</x>"), tokenP->getData()->getContent());
+
+	placeP = workflow->getPlace("y2"); 
+	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
+	tokenP = placeP->getTokens().front();
+	CPPUNIT_ASSERT(tokenP->isData());
+	LOG_INFO(logger, *(tokenP->getData()));
+	CPPUNIT_ASSERT_EQUAL(string("<y>24</y>"), tokenP->getData()->getContent());
+	
 }
 
 /**
