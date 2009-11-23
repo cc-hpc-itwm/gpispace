@@ -25,11 +25,11 @@ namespace daemon {
 		typedef sdpa::shared_ptr<Orchestrator> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
-		Orchestrator( const std::string &name,  const std::string& url );
+		Orchestrator( const std::string &name,  const std::string& url, const std::string &workflow_directory );
 
 		virtual ~Orchestrator();
 
-		static Orchestrator::ptr_t create( const std::string& name,  const std::string& url );
+		static Orchestrator::ptr_t create( const std::string& name,  const std::string& url, const std::string &workflow_directory );
 
 		static void start(Orchestrator::ptr_t ptrOrch);
 		static void shutdown(Orchestrator::ptr_t ptrOrch);

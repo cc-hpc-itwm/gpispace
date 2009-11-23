@@ -86,7 +86,7 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000", "");
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_0",  "127.0.0.1:5001",

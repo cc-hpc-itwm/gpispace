@@ -25,8 +25,8 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
-Orchestrator::Orchestrator(  const std::string &name,  const std::string& url )
-	: DaemonFSM( name, new gwes::GWES() ),
+Orchestrator::Orchestrator(  const std::string &name,  const std::string& url, const std::string &workflow_directory )
+	: DaemonFSM( name, new gwes::GWES(workflow_directory) ),
 	  SDPA_INIT_LOGGER(name),
 	  url_(url)
 {
@@ -40,9 +40,9 @@ Orchestrator::~Orchestrator()
 	daemon_stage_ = NULL;
 }
 
-Orchestrator::ptr_t Orchestrator::create( const std::string& name, const std::string& url )
+Orchestrator::ptr_t Orchestrator::create( const std::string& name, const std::string& url, const std::string &workflow_directory )
 {
-	return Orchestrator::ptr_t(new Orchestrator(name, url));
+	return Orchestrator::ptr_t(new Orchestrator(name, url, workflow_directory));
 }
 
 void Orchestrator::start( Orchestrator::ptr_t ptrOrch )

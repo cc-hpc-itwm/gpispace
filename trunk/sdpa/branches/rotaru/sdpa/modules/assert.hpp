@@ -57,13 +57,13 @@ namespace sdpa { namespace modules {
     }
   }
 
-#define ASSERT_ALLOC(hdl, tag) assert_alloc(hdl, #hdl, tag)
-#define ASSERT_GALLOC(hdl, tag) ASSERT_ALLOC(hdl, "global")
-#define ASSERT_LALLOC(hdl, tag) ASSERT_ALLOC(hdl, "local")
+#define ASSERT_ALLOC(hdl, tag) ::sdpa::modules::assert_alloc(hdl, #hdl, tag)
+#define ASSERT_GALLOC(hdl) ASSERT_ALLOC(hdl, "global")
+#define ASSERT_LALLOC(hdl) ASSERT_ALLOC(hdl, "local")
 
-#define ASSERT_HANDLE(hdl) assert_valid_handle(hdl, #hdl)
+#define ASSERT_HANDLE(hdl) ::sdpa::modules::assert_valid_handle(hdl, #hdl)
 
-#define ASSERT_SUCCESS(retval, tag) assert_success(retval, tag)
+#define ASSERT_SUCCESS(retval, tag) ::sdpa::modules::assert_success(retval, tag)
 }}
 
 #endif

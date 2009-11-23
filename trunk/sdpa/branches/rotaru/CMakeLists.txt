@@ -5,13 +5,13 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-project(libsdpa)
+project(sdpa)
 
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 0)
-set(V_MINOR 1)
+set(V_MINOR 2)
 set(V_PATCH 0)
 
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
@@ -217,6 +217,7 @@ INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
   share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
   )
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp  DESTINATION include/sdpa)
+INSTALL(FILES etc/sdpac.rc.example DESTINATION etc/sdpa)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

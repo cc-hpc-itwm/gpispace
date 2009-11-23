@@ -616,7 +616,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
 		addWorker(pWorker);
 
-		SDPA_LOG_DEBUG("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
+		SDPA_LOG_INFO("Registered the worker "<<pWorker->name()<<"!.Send back registration acknowledgement");
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEvent(ptr_to_slave_stage_, pWorkerRegAckEvt);

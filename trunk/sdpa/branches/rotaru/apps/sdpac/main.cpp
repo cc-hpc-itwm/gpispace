@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <sys/stat.h> // for stat, to check if file exists
 
 #if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
@@ -14,15 +15,74 @@
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/util/Config.hpp>
 
+/* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
+{
+  std::cout << "waiting for job to return..." << std::flush;
+  int exit_code(4);
+  std::size_t fail_count(0);
+  for (; fail_count < 3 ;)
+  {
+    std::string status;
+    try
+    {
+      status = api->queryJob(job_id);
+      fail_count = 0; // reset counter
+    }
+    catch (const sdpa::client::ClientException &ce)
+    {
+      std::cout << "-" << std::flush;
+      ++fail_count;
+      continue;
+    }
+
+    if (status == "SDPA::Finished")
+    {
+      std::cout << "finished!" << std::endl;
+      exit_code = 0;
+      break;
+    }
+    else if (status == "SDPA::Failed")
+    {
+      std::cout << "failed!" << std::endl;
+      exit_code = 1;
+      break;
+    }
+    else if (status == "SDPA::Cancelled")
+    {
+      std::cout << "cancelled!" << std::endl;
+      exit_code = 2;
+      break;
+    }
+    else
+    {
+      sleep(poll_interval);
+      std::cout << "." << std::flush;
+    }
+  }
+  return exit_code;
+}
+
+bool file_exists(const std::string &path)
+{
+  struct stat file_info;
+  int error_code = stat(path.c_str(), &file_info);
+  if (error_code == 0)
+	return true;
+  else
+	return false;
+}
+
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
   namespace su = sdpa::util;
 
   sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
   cfg.tool_opts().add_options()
-    ("output", su::po::value<std::string>()->default_value("sdpac.out"),
+    ("output,o", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
     ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
+    ("force,f", "force the operation")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -148,33 +208,29 @@ int main (int argc, char **argv) {
       
       const std::string job_id(api->submitJob(sstr.str()));
       std::cout << job_id << std::endl;
+
       if (cfg.is_set("wait"))
       {
         const int poll_interval = cfg.get<int>("wait");
-        std::cout << "waiting...";
-        int exit_code(4);
-        for (;;)
+        int wait_code = command_wait(job_id, api, poll_interval);
+
+        switch (wait_code)
         {
-          std::string status(api->queryJob(job_id));
-          if (status == "SDPA::Finished")
+          case 0: // finished
+          case 1: // failed
+          case 2: // cancelled
           {
-            std::cout << "finished!" << std::endl;
-            exit_code = 0;
+            std::cerr << "retrieve the results with:" << std::endl;
+            std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
+            std::cerr << "delete the job with:" << std::endl;
+            std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
             break;
           }
-          else if (status == "SDPA::Failed")
-          {
-            std::cout << "failed!" << std::endl;
-            exit_code = 1;
+          default:
+            std::cerr << "could not get status information!" << std::endl;
             break;
-          }
-          else
-          {
-            sleep(poll_interval);
-            std::cout << ".";
-          }
         }
-        std::cout << "retrieve the results with: '" << argv[0] << " results " << job_id << "'" << std::endl;
+        return wait_code;
       }
     }
     else if (command == "cancel")
@@ -202,9 +258,22 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return 4;
       }
-      sdpa::client::result_t results(api->retrieveResults(args.front()));
+
+	  if (file_exists(cfg.get("output")) && (! cfg.is_set("force")))
+	  {
+		std::cerr << "E: output-file " << cfg.get("output") << " does already exist!" << std::endl;
+		return 4;
+	  }
+
       std::ofstream ofs(cfg.get("output").c_str());
-      ofs << results;
+	  if (! ofs)
+	  {
+		std::cerr << "E: could not open " << cfg.get("output") << " for writing!" << std::endl;
+		return 4;
+	  }
+
+      sdpa::client::result_t results(api->retrieveResults(args.front()));
+      ofs << results << std::flush;
       std::cout << "stored results in: " << cfg.get("output") << std::endl;
     }
     else if (command == "delete")
@@ -215,6 +284,35 @@ int main (int argc, char **argv) {
         return 4;
       }
       api->deleteJob(args.front());
+    }
+    else if (command == "wait")
+    {
+      if (args.empty())
+      {
+        std::cerr << "E: job-id required!" << std::endl;
+        return 4;
+      }
+      const std::string &job_id(args.front());
+      const int poll_interval = cfg.get<int>("wait");
+      int wait_code = command_wait(job_id, api, poll_interval);
+
+      switch (wait_code)
+      {
+        case 0: // finished
+        case 1: // failed
+        case 2: // cancelled
+        {
+          std::cerr << "retrieve the results with:" << std::endl;
+          std::cout << "\t" << argv[0] << " results " << job_id << std::endl;
+          std::cerr << "delete the job with:" << std::endl;
+          std::cout << "\t" << argv[0] << " delete " << job_id << std::endl;
+          break;
+        }
+        default:
+          std::cerr << "could not get status information!" << std::endl;
+          break;
+      }
+      return wait_code;
     }
     else
     {
