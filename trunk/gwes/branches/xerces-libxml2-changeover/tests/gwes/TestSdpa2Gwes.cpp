@@ -113,8 +113,8 @@ void TestSdpa2Gwes::testWorkflowWithSdpaSubWorkflow() {
 		// get and check output
 		std::vector<Token::ptr_t> outputTokens = wfP->getPlace("master-output")->getTokens();
 		CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
-		// ToDo check output!
-
+		CPPUNIT_ASSERT_MESSAGE("is data", outputTokens[0]->isData());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("data contents", string("<output xmlns=\"\">15</output>"), outputTokens[0]->getData()->serialize());
 	} catch (const WorkflowFormatException &e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
