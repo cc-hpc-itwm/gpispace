@@ -115,7 +115,7 @@ private:
 	std::string _id;
 	TransitionStatus _status;
     std::string _description;
-    Properties::ptr_t _propertiesP;
+    Properties _properties;
     Operation::ptr_t _operationP;
     std::vector<std::string> _conditions;
     std::vector<Edge::ptr_t> _readEdges;
@@ -162,21 +162,19 @@ public:
 	 * Set all the properties of this transition.
 	 * @param props The properties object.
 	 */
-    void setProperties(Properties::ptr_t& propertiesP) {_propertiesP = propertiesP;}
+    void setProperties(Properties& properties) {_properties = properties;}
 
 	/**
-	 * Get a shared pointer to the properties of this transition.
-	 * Returns NULL if there are no properties. 
-	 * @return A shared pointer to the transition properties or NULL if there are no properties.
+	 * Get the properties of this transition.
+	 * @return The transition properties.
 	 */
-    Properties::ptr_t& getProperties() {return _propertiesP;}
+    Properties& getProperties() {return _properties;}
 
 	/**
-	 * Get a read-only shared pointer to the properties of this transition.
-	 * Returns NULL if there are no properties. 
-	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
+	 * Get a read-only version of the properties of this transition.
+	 * @return The properties.
 	 */
-    const Properties::ptr_t& readProperties() const {return _propertiesP;}
+    const Properties& readProperties() const {return _properties;}
     
 	/**
 	 * Put new name/value pair into properties.

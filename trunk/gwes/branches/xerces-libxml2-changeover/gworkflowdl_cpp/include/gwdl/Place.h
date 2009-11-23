@@ -132,24 +132,22 @@ public:
 	const std::string& getDescription() const;
 	
 	/**
-	 * Set all the properties of this place.
+	 * Set all the properties of this place overwriting the old ones.
 	 * @param props The properties object.
 	 */
-	void setProperties(Properties::ptr_t& propsP);
+	void setProperties(Properties& props);
 
 	/**
-	 * Get a shared pointer to the properties of this place.
-	 * Returns NULL if there are no properties. 
-	 * @return A shared pointer to the place properties or NULL if there are no properties.
+	 * Get the properties of this place.
+	 * @return The properties.
 	 */
-	Properties::ptr_t& getProperties();
+	Properties& getProperties();
 	
 	/**
-	 * Get a read-only pointer to the properties of this place.
-	 * Returns NULL if there are no properties. 
-	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
+	 * Get a read-only version of the properties of this place.
+	 * @return The properties.
 	 */
-	const Properties::ptr_t& readProperties() const;
+	const Properties& readProperties() const;
 
 	/**
 	 * Put new name/value pair into properties.
@@ -185,7 +183,7 @@ private:
 	std::vector<Token::ptr_t> _tokens;
     unsigned int _capacity;
     std::string _description;
-    Properties::ptr_t _propertiesP;
+    Properties _properties;
     Token::ptr_t _nextUnlockedTokenP;
     
     std::string generateID() const;

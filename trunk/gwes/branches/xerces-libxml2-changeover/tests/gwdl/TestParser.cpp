@@ -38,7 +38,7 @@ void ParserTest::testParser()
 	LOG_INFO(logger, "  properties...");
 	wf->putProperty("b_name1","value1");	
 	wf->putProperty("a_name2","value2");	
-	CPPUNIT_ASSERT(wf->getProperties()->get("b_name1")=="value1");
+	CPPUNIT_ASSERT(wf->getProperties().get("b_name1")=="value1");
 
 	// places
 	LOG_INFO(logger, "  places...");

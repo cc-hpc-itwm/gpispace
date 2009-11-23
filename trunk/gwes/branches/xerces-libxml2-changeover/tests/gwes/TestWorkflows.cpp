@@ -42,7 +42,7 @@ void TestWorkflows::testWorkflowSimpleGwdl()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("t") == 0 );
+	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("t") == 0 );
 }
 
 /**
@@ -55,7 +55,7 @@ void TestWorkflows::testWorkflowSplitToken()
 
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/split-token.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("joinSplitTokens") == 0 );
+	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("joinSplitTokens") == 0 );
 
 	gwdl::Place::ptr_t placeP = workflow->getPlace("x1"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
@@ -96,7 +96,7 @@ void TestWorkflows::testWorkflowExclusiveChoice()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/exclusive-choice.gwdl"), m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("B") == 0 );
+	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("B") == 0 );
 	CPPUNIT_ASSERT(workflow->getPlace("end_A")->getTokenNumber() == 0);
 	Place::ptr_t placeP = workflow->getPlace("end_B"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
@@ -114,7 +114,7 @@ void TestWorkflows::testWorkflowConditionTest()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/condition-test.gwdl"), m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("B A A") == 0 );
+	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("B A A") == 0 );
 
 	Place::ptr_t placeP = workflow->getPlace("end_A"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 2);
@@ -144,7 +144,7 @@ void TestWorkflows::testWorkflowControlLoop()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/control-loop.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT( workflow->readProperties()->get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
+	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
 	Place::ptr_t placeP = workflow->getPlace("end"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
 	Token::ptr_t tokenP = placeP->getTokens()[0];
@@ -162,7 +162,7 @@ void TestWorkflows::testWorkflowConcatenateIt()
 	logger_t logger(getLogger("gwes"));
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt.gwdl"),m_gwes));
-	CPPUNIT_ASSERT(workflow->readProperties()->get("status")=="COMPLETED");
+	CPPUNIT_ASSERT(workflow->getProperties().get("status")=="COMPLETED");
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 	// check result data.
 	Place::ptr_t place = workflow->getPlace("d25-27");
@@ -203,7 +203,7 @@ void TestWorkflows::testWorkflowPstm0()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
-	CPPUNIT_ASSERT(workflow->readProperties()->get("occurrence.sequence").compare("preStackTimeMigration") == 0);
+	CPPUNIT_ASSERT(workflow->getProperties().get("occurrence.sequence").compare("preStackTimeMigration") == 0);
 }
 
 ////////////////////////////////////////////////

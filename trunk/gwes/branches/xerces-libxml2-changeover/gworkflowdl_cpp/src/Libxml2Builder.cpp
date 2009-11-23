@@ -142,7 +142,7 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
 
     if (checkElementName(curNodeP, "token")) {            // <token>
         curNodeP = nextElementNode(curNodeP->children);
-    	Properties::ptr_t propsP = elementsToProperties(curNodeP); // <property> ...
+    	Properties props = elementsToProperties(curNodeP); // <property> ...
     	while (checkElementName(curNodeP, "property")) {
     		// skip all property elements, they have been already processed.
     		curNodeP = nextElementNode(curNodeP->next); 
@@ -152,12 +152,10 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
         	curNodeP = nextElementNode(curNodeP->children);
         	if (curNodeP == NULL) {                               // empty data
         		Data::ptr_t dataP = Data::ptr_t(new Data(""));
-        		if (propsP) tokenP.reset(new Token(propsP,dataP));
-        		else tokenP.reset(new Token(dataP));
+        		tokenP.reset(new Token(props,dataP));
         	} else {                                              // data with content element
         		Data::ptr_t dataP = elementToData(curNodeP);
-        		if (propsP) tokenP.reset(new Token(propsP,dataP));
-        		else tokenP.reset(new Token(dataP));
+        		tokenP.reset(new Token(props,dataP));
         		// check for multiple children of <data> (MUST be single child!)
         		curNodeP = nextElementNode(curNodeP->next);
         		if (curNodeP != NULL) {
@@ -168,11 +166,9 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
         } else if (checkElementName(curNodeP, "control")) {     // <control>
         	curNodeP = nextTextNode(curNodeP->children);
         	if ( xmlStrcmp(curNodeP->content,BAD_CAST "true")==0 ) {
-        		if (propsP) tokenP.reset(new Token(propsP,Token::CONTROL_TRUE));
-        		else tokenP.reset(new Token(Token::CONTROL_TRUE));
+        		tokenP.reset(new Token(props,Token::CONTROL_TRUE));
         	} else if ( xmlStrcmp(curNodeP->content,BAD_CAST "false")==0 ) {
-        		if (propsP) tokenP.reset(new Token(propsP,Token::CONTROL_FALSE));
-        		else tokenP.reset(new Token(Token::CONTROL_FALSE));
+        		tokenP.reset(new Token(props,Token::CONTROL_FALSE));
         	} else {
             	LOG_ERROR(_logger, "Invalid text content of element <control>! MUST be \"true\" or \"false\" but is \"" << curNodeP->content << "\"");
             	throw WorkflowFormatException("Invalid text content of element <control>! MUST be \"true\" or \"false\"");
@@ -194,9 +190,9 @@ xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 	xmlNodePtr curNodeP;
 	
 	// properties
-	Properties::ptr_t propsP = token.readProperties();
-	if (propsP) {
-		curNodeP = propertiesToElements(*propsP);
+	Properties props = token.readProperties();
+	if (!props.empty()) {
+		curNodeP = propertiesToElements(props);
 		if (curNodeP) {
 			xmlAddChildList(nodeP, curNodeP); 
 		}
@@ -245,31 +241,27 @@ string Libxml2Builder::serializeProperties(const Properties& props) const {
 	return ret;
 }
 
-/**
- * Returns NULL if there are no properties.
- */
-Properties::ptr_t Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+Properties Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
     xmlNodePtr curNodeP = nodeP;
     xmlNodePtr textNodeP;
     curNodeP = nextElementNode(curNodeP);
-    Properties::ptr_t propP;
+    Properties props;
     while(curNodeP) {
     	if (checkElementName(curNodeP, "property")) {
-    		if (propP == NULL) propP = Properties::ptr_t(new Properties());
     		string name = string((const char*) xmlGetProp(curNodeP, BAD_CAST "name")); 
     		textNodeP = nextTextNode(curNodeP->children);
     		if (textNodeP == NULL) {
-    			propP->put( name, string("") );
+    			props.put( name, string("") );
     		} else {
     			string text = string( (const char*) textNodeP->content);
-        		propP->put( name, text ); 
+        		props.put( name, text ); 
     		}
-    	} else if (propP) { // there MUST NOT be any other element between property elements!
+    	} else if (!props.empty()) { // there MUST NOT be any other element between property elements!
     		break;
     	}
     	curNodeP = nextElementNode(curNodeP->next);
     }
-    return propP;
+    return props;
 }
 
 xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
@@ -350,7 +342,7 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 	// 	std::string _id;                   -> from attribute <place ID="">
     //  unsigned int _capacity;            -> from attribute <place capacity="">
     //  std::string _description;          -> from child element <description>
-    //  Properties::ptr_t _propertiesP;    -> from child elements <property>
+    //  Properties _properties;    -> from child elements <property>
 	//  std::string _tokenType;            -> from attribute of child element <tokenClass type="">
 	//  std::vector<Token::ptr_t> _tokens; -> from child elements <token>
     //  Token::ptr_t _nextUnlockedTokenP;  -> ignored (calculated on demand)
@@ -383,8 +375,8 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 	    
 		// <property>
 		// extract all property elements
-		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
-		if (propsP) placeP->setProperties(propsP);
+		Properties props = elementsToProperties(curNodeP);         
+		if (!props.empty()) placeP->setProperties(props);
 		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
@@ -441,9 +433,9 @@ xmlNodePtr Libxml2Builder::placeToElement(const Place &place) const {
     }
 
     //   <property>
-	Properties::ptr_t propsP = place.readProperties();
-	if (propsP) {
-		curNodeP = propertiesToElements(*propsP);
+	Properties props = place.readProperties();
+	if (!props.empty()) {
+		curNodeP = propertiesToElements(props);
 		if (curNodeP) {
 			xmlAddChildList(nodeP, curNodeP); 
 		}
@@ -898,7 +890,7 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 	// std::string _id;                      -> from attribute <transition ID="">
 	// TransitionStatus _status;             -> ignored.
     // std::string _description;             -> from child element <description>
-    // Properties::ptr_t _propertiesP;       -> from child elements <property>
+    // Properties _properties;       -> from child elements <property>
     // std::vector<Edge::ptr_t> _readEdges;  -> from child elements <readPlace>
     // std::vector<Edge::ptr_t> _inEdges;    -> from child elements <inputPlace>
     // std::vector<Edge::ptr_t> _writeEdges; -> from child elements <writePlace>
@@ -929,8 +921,8 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 		}
 		// <property>
 		// extract all property elements
-		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
-		if (propsP) transitionP->setProperties(propsP);
+		Properties props = elementsToProperties(curNodeP);         
+		if (!props.empty()) transitionP->setProperties(props);
 		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
@@ -1003,9 +995,9 @@ xmlNodePtr Libxml2Builder::transitionToElement(const Transition &transition) con
     }
 	
     //   <property>
-	Properties::ptr_t propsP = transition.readProperties();
-	if (propsP) {
-		curNodeP = propertiesToElements(*propsP);
+	Properties props = transition.readProperties();
+	if (!props.empty()) {
+		curNodeP = propertiesToElements(props);
 		if (curNodeP) {
 			xmlAddChildList(nodeP, curNodeP); 
 		}
@@ -1115,7 +1107,7 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 	///////////////////
 	// std::string _id;                                     -> from attribute <workflow ID="">
 	// std::string _description;                            -> from child element <description>
-	// Properties::ptr_t _propertiesP;                      -> from child elements <property>
+	// Properties _properties;                      -> from child elements <property>
 	// place_map_t _places;         -> from child elements <place>
 	// transition_list_t _transitions;         -> from child elements <transition>
 	// transition_list_t _enabledTransitions;  -> calculated on demand.
@@ -1144,8 +1136,8 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 		}
 		// <property>
 		// extract all property elements
-		Properties::ptr_t propsP = elementsToProperties(curNodeP);         
-		if (propsP) workflowP->setProperties(propsP);
+		Properties props = elementsToProperties(curNodeP);         
+		if (!props.empty()) workflowP->setProperties(props);
 		while(curNodeP && checkElementName(curNodeP, "property")) {           
 			// do nothing, properties have already been extracted before
 			curNodeP = nextElementNode(curNodeP->next);
@@ -1192,9 +1184,9 @@ xmlNodePtr Libxml2Builder::workflowToElement(const Workflow &workflow) const {
     }
 
     //   <property>
-	Properties::ptr_t propsP = workflow.readProperties();
-	if (propsP) {
-		curNodeP = propertiesToElements(*propsP);
+	Properties props = workflow.readProperties();
+	if (!props.empty()) {
+		curNodeP = propertiesToElements(props);
 		if (curNodeP) {
 			xmlAddChildList(nodeP, curNodeP); 
 		}

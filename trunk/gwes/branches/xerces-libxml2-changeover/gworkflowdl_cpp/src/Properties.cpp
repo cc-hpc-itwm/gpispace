@@ -27,7 +27,7 @@ Properties::Properties() {
  * Destructor.
  */
 Properties::~Properties() {
-	clear();
+	//clear();
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Properties()");
 }
 
@@ -76,11 +76,11 @@ bool Properties::contains(const string& name) {
   return (it != end());
 }
  
-Properties::ptr_t Properties::deepCopy() const {
-	Properties::ptr_t propP(new Properties());
-	propP->insert(begin(),end());
+Properties* Properties::deepCopy() const {
+	Properties* propsP = new Properties();
+	propsP->insert(begin(),end());
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "Properties::deepCopy()");
-	return propP;
+	return propsP;
 }
 
 /*

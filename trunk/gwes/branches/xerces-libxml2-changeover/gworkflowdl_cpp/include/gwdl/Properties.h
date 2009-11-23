@@ -6,8 +6,6 @@
  */
 #ifndef PROPERTIES_H_
 #define PROPERTIES_H_
-// gwdl
-#include <gwdl/Memory.h> // shared_ptr
 // std
 #include <string>
 #include <map>
@@ -29,8 +27,6 @@ class Properties : public std::map<std::string,std::string>
 {
 	
 public:
-	
-    typedef gwdl::shared_ptr<Properties> ptr_t;
 	
 	/**
 	 * Constructor for properties.
@@ -75,10 +71,11 @@ public:
 	//int size(); map defines size()
 	
 	/**
-	 * Make a deep copy of this object and return a shared pointer to the new object.
-	 * @return Shared pointer to the cloned Properties object.
+	 * Make a deep copy of this object.
+	 * Caller must take care of destroying the object afterwards.
+	 * @return Pointer to cloned Properties.
 	 */ 
-	ptr_t deepCopy() const;
+	Properties* deepCopy() const;
 	
 }; // end class Properties
 
