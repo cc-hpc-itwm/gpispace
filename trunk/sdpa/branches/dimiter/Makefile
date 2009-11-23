@@ -51,20 +51,20 @@ all:libreInit.so   libreTst.so
 # "init" : pfafft.o reApplInit.o 
 # "read input": utls.o reReadInp.o 
 # "read velocity": reReadVel.o
-# "calc one level": fft.o  propagatorsOpt.o  utilsOpt.o calcOneLevl.o 
+# "calc one level": utls.o fft.o  propagatorsOpt.o  utilsOpt.o calcOneLevl.o 
 # "update": reUpdt.o
-# "prefix sum": rePrefixSum.o
+# "prefix sum": utls.o rePrefixSum.o
 #
 # all of the transition modules linked (just for testing them) in libreInit.so
 
 libreInit.so: cfg.o cfg-test.o  pfafft.o reApplInit.o  utls.o reReadInp.o reReadVel.o \
-	calcOneLevl.o reUpdt.o
+	calcOneLevl.o reUpdt.o rePrefxSum.o
 	${LNKR}  -o libreInit.so $(CXXLIBS) \
 	-shared -Wl,-soname,libreInit.so cfg-test.o cfg.o \
 	pfafft.o reApplInit.o \
 	utls.o reReadInp.o reReadVel.o \
 	fft.o  propagatorsOpt.o  utilsOpt.o calcOneLevl.o \
-	reUpdt.o
+	reUpdt.o rePrefxSum.o
 
 #libreProp.so: reProp.o
 #	${LNKR}  -o libreProp.so $(CXXLIBS) \
@@ -92,7 +92,7 @@ cfg.o: reGlbStructs.h cfg.h cfg.cpp
 	$(CXX) $(CXXFLAGS) -c cfg.cpp
 
 cfg-test.o: reGlbStructs.h cfg.h reApplInit.h reReadInp.h reReadVel.h \
-	calcOneLevl.h reUpdt.h cfg-test.cpp
+	calcOneLevl.h reUpdt.h rePrefxSum.h cfg-test.cpp
 	$(CXX) $(CXXFLAGS) -c cfg-test.cpp
 
 pfafft.o: cwp.h pfafft.h pfafft.cpp
@@ -115,6 +115,9 @@ calcOneLevl.o: reGlbStructs.h utls.h propagatorsOpt.h utilsOpt.h calcOneLevl.cpp
 
 reUpdt.o: reGlbStructs.h reUpdt.h reUpdt.cpp
 	$(CXX) $(CXXFLAGS) -c reUpdt.cpp
+
+rePrefxSum.o: reGlbStructs.h utls.h rePrefxSum.h rePrefxSum.cpp
+	$(CXX) $(CXXFLAGS) -c rePrefxSum.cpp
 
 reTst.o: reGlbStructs.h reTst.h reTst.cpp
 	$(CXX) $(CXXFLAGS) -c reTst.cpp

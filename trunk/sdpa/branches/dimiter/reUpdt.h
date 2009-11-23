@@ -15,7 +15,7 @@
 #include <time.h>
 
 
-#include <pthread.h>
+//#include <pthread.h>
 
 #include <signal.h>
 #include <unistd.h>   // usleep -> to keep my threads sleeping

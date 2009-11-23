@@ -39,10 +39,10 @@ typedef struct {
     fvmShmemOffset_t ofsInp;     // input data offset (should i use fvmOffset_t ?? should not matter)
     fvmShmemOffset_t ofsVel;     // vel field offset
     fvmShmemOffset_t ofsOutp;    // output data offset 
-    fvmShmemOffset_t ofsFree;    // output data offset 
     fvmShmemOffset_t ofsVmin;    // offs v-min vector 
     fvmShmemOffset_t ofsVmax;    // offs v-max vector 
 
+    fvmShmemOffset_t ofsFree;    // offs of the free space (space not used)
   
     int memOverflow; 
 

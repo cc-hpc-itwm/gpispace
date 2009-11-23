@@ -233,8 +233,13 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
        float *u1 = new float [2*4*roundUp4(pReGlb->nx_fft)];  // dms, roundUp4() -> martin, 2* -> complex !
        MKL_Complex8 *pWrk = new MKL_Complex8 [roundUp4(pReGlb->nx_fft) * roundUp4(pReGlb->ny_fft)];
 
-//=== to test: transfer iw-slice data from VM, the test passed OK ---
 
+       //------ copy the data to the blocked wrk array  -------
+       matrixToBlockedFloat4( (float*) pSlc, (float *)pWrk, pReGlb->nx_fft, 2*pReGlb->ny_fft, 2*roundUp4(pReGlb->ny_fft) );
+
+
+//=== to test: transfer iw-slice data from VM, the test passed OK ---
+/*
     transfrSZbytes= pReGlb->nx_fft * pReGlb->ny_fft * sizeof(MKL_Complex8);
     pSlc = new MKL_Complex8 [pReGlb->nx_fft * pReGlb->ny_fft];
     pOutpRe = new float [pReGlb->nx_out * pReGlb->ny_out];
@@ -267,7 +272,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
        
     fvmLocalFree(hScra);
     fvmLocalFree(hLclShMem); // free the local sh mem
-
+*/
 //=== end test-section, transfr iw-slice from VM. the test passed OK === 
 
 
@@ -278,6 +283,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
        ve = vMax[iz];  // max vel 
 
 
+ 
 //=== start test-section, print dat before propagate, the test passed OK ===
 /*
        int rank = fvmGetRank();

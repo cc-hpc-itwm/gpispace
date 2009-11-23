@@ -16,6 +16,7 @@
 #include "reReadVel.h"
 #include "calcOneLevl.h"
 #include "reUpdt.h"
+#include "rePrefxSum.h"
 
 using namespace sdpa::modules;
 
@@ -120,6 +121,7 @@ void read_config(data_t &param) throw (std::exception)
     //------ dms, add here my stuff -------
                           // this is to be executed only on node#0 /master
 
+
      reApplInit(&(configs[rank]));
 
      readAndDistributeInput(&(configs[rank]));
@@ -136,7 +138,7 @@ void read_config(data_t &param) throw (std::exception)
 
      reUpdate(&(configs[rank]), pOutpR, pRslt);
 
-     //rePrefixSum(&(configs[rank]));
+     rePrefixSum(&(configs[rank]));
      //------ end dms --------
 
 
