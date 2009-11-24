@@ -415,6 +415,15 @@ workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (std::exception) 
 }
 
 /**
+ * removes a workflow from gwes after it has reached one of the
+ * finished/failed/cancelled states
+ */ 
+void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
+{
+  remove(workflowId);
+}
+
+/**
  * Cancel a workflow.
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
