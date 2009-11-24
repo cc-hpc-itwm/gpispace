@@ -73,7 +73,7 @@ GWES::~GWES()
   */
 Workflow& GWES::initiate(const string& gworkflowdl, const string& userId) throw(WorkflowFormatException,StateTransitionException) 
 {
-	LOG_INFO(_logger, "initiate() ... ");
+	LOG_DEBUG(_logger, "initiate() ... ");
 	// deserialize string
     DOMElement* element = (XMLUtils::Instance()->deserialize(gworkflowdl))->getDocumentElement();
 	// create new workflow object
@@ -90,7 +90,7 @@ Workflow& GWES::initiate(const string& gworkflowdl, const string& userId) throw(
  */
 string GWES::initiate(gwdl::Workflow& workflow, const string& userId) throw(StateTransitionException)
 {
-	LOG_INFO(_logger, "initiate() ... ");
+	LOG_DEBUG(_logger, "initiate() ... ");
 	WorkflowHandler* wfhP = new WorkflowHandler(this,&workflow,userId);
 	return _wfht.put(wfhP);
 }
@@ -112,7 +112,7 @@ void GWES::connect(Channel* channel, gwdl::Workflow& workflow) {
  * @param workflowId The identifier of the workflow.
  */ 
 void GWES::connect(Channel* channel, const string& workflowId) {
-	LOG_INFO(_logger, "connect(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "connect(" << workflowId << ") ... ");
 	_wfht.get(workflowId)->connect(channel);
 }
 
@@ -136,7 +136,7 @@ void GWES::start(gwdl::Workflow& workflow) throw(StateTransitionException,NoSuch
  * @param workflowId The identifier of the workflow.
  */
 void GWES::start(const string& workflowId) throw(StateTransitionException,NoSuchWorkflowException) {
-	LOG_INFO(_logger, "start(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "start(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->startWorkflow();
 }
@@ -159,7 +159,7 @@ void GWES::execute(Workflow& workflow) throw(StateTransitionException, WorkflowF
  * @param workflowId The identifier of the workflow.
  */
 void GWES::execute(const string& workflowId) throw(StateTransitionException, WorkflowFormatException) {
-	LOG_INFO(_logger, "execute(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "execute(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->executeWorkflow();
 }
@@ -182,7 +182,7 @@ void GWES::suspend(Workflow& workflow) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::suspend(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "suspend(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "suspend(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->suspendWorkflow();
 }
@@ -203,7 +203,7 @@ void GWES::resume(Workflow& workflow) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::resume(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "resume(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "resume(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->resumeWorkflow();
 }
@@ -228,7 +228,7 @@ void GWES::abort(Workflow& workflow) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::abort(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "abort(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "abort(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->abortWorkflow();
 }
@@ -253,7 +253,7 @@ string& GWES::getWorkflowDescription(Workflow& workflow)
  * @return A reference to the current workflow description as string.
  */
 string& GWES::getWorkflowDescription(const string& workflowId) {
-	LOG_INFO(_logger, "getWorkflowDescription(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "getWorkflowDescription(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	gwdl::Workflow* wfP = wfhP->getWorkflow();
 	return getWorkflowDescription(*wfP);
@@ -287,7 +287,7 @@ unsigned int GWES::getStatus(Workflow& workflow)
  * @return The current state of the workflow.
  */
 unsigned int GWES::getStatus(const string& workflowId) {
-	LOG_INFO(_logger, "getStatus(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "getStatus(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return wfhP->getStatus();
 }
@@ -341,7 +341,7 @@ void GWES::remove(Workflow& workflow) {
  * @param workflowId The identifier of the workflow.
  */
 void GWES::remove(const string& workflowId) {
-	LOG_INFO(_logger, "remove(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "remove(" << workflowId << ") ... ");
 	_wfht.remove(workflowId);
 }
 

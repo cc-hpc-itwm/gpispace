@@ -162,7 +162,7 @@ string XPathEvaluator::evalExpression(string& xPathExprStr) {
     xmlXPathFreeObject(xpathObjP);
     
     //printXmlNodes(xpathObjP->nodesetval);
-	LOG_INFO(_logger, "evalExpression(" << xPathExprStr << ") = " << xmlResult);
+	LOG_DEBUG(_logger, "evalExpression(" << xPathExprStr << ") = " << xmlResult);
     
     return xmlResult;
 }
@@ -239,7 +239,7 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
 	
 	if(xmlXPathNodeSetIsEmpty(nodes)){
-		LOG_INFO(_logger, "No result");
+		LOG_DEBUG(_logger, "No result");
 		return;
 	}
 	
@@ -249,7 +249,7 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
     
     size = (nodes) ? nodes->nodeNr : 0;
     
-    LOG_INFO(_logger, "Result (" << size << "):");
+    LOG_DEBUG(_logger, "Result (" << size << "):");
     for(i = 0; i < size; ++i) {
 	
 	if(nodes->nodeTab[i]->type == XML_NAMESPACE_DECL) {
@@ -258,20 +258,20 @@ void XPathEvaluator::printXmlNodes(xmlNodeSetPtr nodes) {
 	    ns = (xmlNsPtr)nodes->nodeTab[i];
 	    cur = (xmlNodePtr)ns->next;
 	    if(cur->ns) { 
-	        LOG_INFO(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->ns->href << ":" << cur->name);
+	        LOG_DEBUG(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->ns->href << ":" << cur->name);
 	    } else {
-	        LOG_INFO(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->name);
+	        LOG_DEBUG(_logger, "= namespace \"" << ns->prefix << "\"=\"" << ns->href << "\" for node " << cur->name);
 	    }
 	} else if(nodes->nodeTab[i]->type == XML_ELEMENT_NODE) {
 	    cur = nodes->nodeTab[i];   	    
 	    if(cur->ns) { 
-    	        LOG_INFO(_logger, "<" << cur->ns->href << ":" << cur->name << "/>"); 
+    	        LOG_DEBUG(_logger, "<" << cur->ns->href << ":" << cur->name << "/>"); 
 	    } else {
-    	        LOG_INFO(_logger, "<" << cur->name << "/>"); 
+    	        LOG_DEBUG(_logger, "<" << cur->name << "/>"); 
 	    }
 	} else {
 	    cur = nodes->nodeTab[i];    
-	    LOG_INFO(_logger, "= node \"" << cur->name << "\": type " << cur->type);
+	    LOG_DEBUG(_logger, "= node \"" << cur->name << "\": type " << cur->type);
 	}
     }
 }
@@ -294,7 +294,7 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token* toke
 			LOG_DEBUG(_logger, "Adding file '" << fn << "' to context ...");
 			xmldoc = XMLUtils::Instance()->deserializeFileLibxml2(fn);
 			if (xmldoc == NULL) {      // file not in XML format
-				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in XML format.");
+				LOG_DEBUG(_logger, "file '" << fn << "' skipped because it is not in XML format.");
 			} 
 		}
 
