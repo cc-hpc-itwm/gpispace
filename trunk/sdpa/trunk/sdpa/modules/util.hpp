@@ -166,8 +166,9 @@ namespace fvm { namespace util {
 	{
 	  DLOG(DEBUG, "distributing data to node: " << node);
 	  fvmCommHandle_t comm_handle = fvmPutGlobalData(global, 0, transfer_size, 0, scratch);
-	  fvmCommHandleState_t state = waitComm(comm_hdl);
+	  fvmCommHandleState_t state = waitComm(comm_handle);
 	  DLOG(DEBUG, "comm state = " << state);
+	  // FIXME: check communication state!
 	}
   }
 
