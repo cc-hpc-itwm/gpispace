@@ -154,7 +154,7 @@ namespace sdpa { namespace nre { namespace worker {
           }
         }
         request_t r = requests_.front(); requests_.pop_front();
-        LOG(INFO, "removed execution request from queue (" << requests_.size() << " waiting)");
+        DLOG(DEBUG, "removed execution request from queue (" << requests_.size() << " waiting)");
         rqst.reset(r.second);
         reply_to = r.first;
       } // release lock
@@ -253,19 +253,19 @@ namespace sdpa { namespace nre { namespace worker {
 
       try
       {
-        Message *rqst = codec_.decode(msg);
+        Message *rqst_ptr = codec_.decode(msg);
         if (rqst->would_block())
         {
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-          requests_.push_back(std::make_pair(sender_endpoint_, rqst));
-          LOG(INFO, "enqued blocking request to execution thread (" << requests_.size() << " waiting)");
+          requests_.push_back(std::make_pair(sender_endpoint_, rqst_ptr));
+          DLOG(DEBUG, "enqueued blocking request to execution thread (" << requests_.size() << " waiting)");
           request_avail_.notify_one();
         }
         else
         {
+		  sdpa::shared_ptr<Message> rqst(rqst_ptr);
           DLOG(DEBUG, "directly executing request...");
           sdpa::shared_ptr<Message> rply(rqst->execute(this));
-          delete rqst; rqst = NULL;
 
           if (rply)
           {
