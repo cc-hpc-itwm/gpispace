@@ -15,14 +15,12 @@
 void c_read_config(const std::string &config_file, cfg_t *pSdpaInit)
 {
     fvmAllocHandle_t hndGlb, hndScr;
-    int rank = fvmGetRank();
     
 	const std::string prefix=config_file.substr(0, config_file.find_last_of("/"));
     fvmSize_t ndSharedSz =  750 * 1024 * 1024;
     fvmSize_t ndScratchSz =  50 * 1024 * 1024; 
-    //size_t glbVMsize = fvmGetNodeCount() * ndSharedSz;
 
-    hndGlb =  fvmGlobalAlloc(ndSharedSz);
+    hndGlb = fvmGlobalAlloc(ndSharedSz);
     hndScr = fvmGlobalAlloc(ndScratchSz);
 
     int szX = 100;
@@ -35,38 +33,28 @@ void c_read_config(const std::string &config_file, cfg_t *pSdpaInit)
     fvmSize_t szOutp = szX*szY*szZ*sizeof(float);
     fvmSize_t szVmax = szZ*sizeof(float);
 
-    
-  for (int ndI = 0; ndI < fvmGetNodeCount(); ++ndI)
-  {
-    LOG(DEBUG, "initializing config for node " << ndI);
-//    cfgs[node].velocity_field = velocity_field;
-	strncpy(pSdpaInit[ndI].prefix_path, prefix.c_str(), cfg_t::max_path_len);
-	strncpy(pSdpaInit[ndI].config_file, config_file.c_str(), cfg_t::max_path_len);
-	bzero(pSdpaInit[ndI].data_file, cfg_t::max_path_len);
-	bzero(pSdpaInit[ndI].velocity_file, cfg_t::max_path_len);
-	bzero(pSdpaInit[ndI].output_file, cfg_t::max_path_len);
+    LOG(DEBUG, "initializing config");
+	strncpy(pSdpaInit->prefix_path, prefix.c_str(), cfg_t::max_path_len);
+	strncpy(pSdpaInit->config_file, config_file.c_str(), cfg_t::max_path_len);
+	bzero(pSdpaInit->data_file, cfg_t::max_path_len);
+	bzero(pSdpaInit->velocity_file, cfg_t::max_path_len);
+	bzero(pSdpaInit->output_file, cfg_t::max_path_len);
 
-    pSdpaInit[ndI].nodalSharedSpaceSize = ndSharedSz;
-    pSdpaInit[ndI].nodalScratchSize = ndScratchSz;
+    pSdpaInit->nodalSharedSpaceSize = ndSharedSz;
+    pSdpaInit->nodalScratchSize = ndScratchSz;
 
-    pSdpaInit[ndI].hndGlbVMspace = hndGlb;
-    pSdpaInit[ndI].hndScratch = hndScr;
+    pSdpaInit->hndGlbVMspace = hndGlb;
+    pSdpaInit->hndScratch = hndScr;
 
-    //pSdpaInit[ndI].flGlbSet = 1;
-    //pSdpaInit[ndI].flShrdSet = 0;
+    pSdpaInit->ofsGlbDat = 0;
+    pSdpaInit->ofsInp  = pSdpaInit->ofsGlbDat + szGlbDat;
+    pSdpaInit->ofsVel  = pSdpaInit->ofsInp + szInp;  
+    pSdpaInit->ofsOutp = pSdpaInit->ofsVel + szVel;
+    pSdpaInit->ofsVmin = pSdpaInit->ofsOutp + szOutp;
+    pSdpaInit->ofsVmax = pSdpaInit->ofsVmin + szVmax;
 
-    
-    pSdpaInit[ndI].ofsGlbDat = 0;
-    pSdpaInit[ndI].ofsInp = pSdpaInit[ndI].ofsGlbDat + szGlbDat;
-    pSdpaInit[ndI].ofsVel = pSdpaInit[ndI].ofsInp + szInp;  
-    pSdpaInit[ndI].ofsOutp =  pSdpaInit[ndI].ofsVel + szVel;
-    pSdpaInit[ndI].ofsVmin = pSdpaInit[ndI].ofsOutp + szOutp;
-    pSdpaInit[ndI].ofsVmax = pSdpaInit[ndI].ofsVmin + szVmax;
+    pSdpaInit->ofsFree = pSdpaInit->ofsVmax + szVmax; 
 
-    pSdpaInit[ndI].ofsFree = pSdpaInit[ndI].ofsVmax + szVmax; 
-
-    pSdpaInit[ndI].memOverflow = 0;       
-    if(pSdpaInit[ndI].ofsFree > ndSharedSz) pSdpaInit[ndI].memOverflow = 1;
-
-  }
+    pSdpaInit->memOverflow = 0;       
+    if(pSdpaInit->ofsFree > ndSharedSz) pSdpaInit->memOverflow = 1;
 } 

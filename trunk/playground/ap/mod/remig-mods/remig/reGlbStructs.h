@@ -30,10 +30,6 @@ typedef struct {
     //  this is the glb shared space
     fvmAllocHandle_t hndGlbVMspace; // =fvmGetGlobalData(..)
 
-
-    // int flGlbSet, flShrdSet;
-
-
     fvmShmemOffset_t ofsGlbDat;  // offs of my glb structure -> i.e. re- "global" vars   
     fvmShmemOffset_t ofsInp;     // input data offset (should i use fvmOffset_t ?? should not matter)
     fvmShmemOffset_t ofsVel;     // vel field offset
