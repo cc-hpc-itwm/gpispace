@@ -18,6 +18,7 @@ set(V_PATCH 0)
 option(LOADER_BIND_NOW "when loading modules, try to locate all symbols" Yes)
 option(FVM_REQUIRED    "the FVM is required by default (nre-pcd refuses to start without --keep-going)" Yes)
 option(BUILD_WITH_WERROR "build with -Werror" Yes)
+option(ENABLE_SDPA_PARAM_CHECKS "enables parameter checking in SDPA" Yes)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
@@ -125,6 +126,10 @@ if (FVM_REQUIRED)
   add_definitions(-DFVM_REQUIRED)
   include_directories(${PV4D_INCLUDE_DIR})
 endif (FVM_REQUIRED)
+
+if (ENABLE_SDPA_PARAM_CHECKS)
+  add_definitions(-DENABLE_SDPA_PARAM_CHECKS)
+endif (ENABLE_SDPA_PARAM_CHECKS)
 
 if (LOADER_BIND_NOW)
   add_definitions(-DSDPA_MODULE_LOADER_BIND_NOW)
