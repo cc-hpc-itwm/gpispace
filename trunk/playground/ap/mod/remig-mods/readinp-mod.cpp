@@ -21,8 +21,11 @@ void readinp (data_t &params)
   cfg_t node_config;
   fvm::util::get_data(&node_config, memhandle_for_configuration);
 
-  int retval(1);
-  retval = readAndDistributeInput(&node_config);
+  int retval = readAndDistributeInput(&node_config);
+  if (retval != 1)
+  {
+	throw std::runtime_error("readAndDistributeInput failed!");
+  }
 
   params["seq"].token().data("SEQ");
 }
