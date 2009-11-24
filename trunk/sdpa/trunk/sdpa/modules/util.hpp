@@ -6,27 +6,70 @@
 #include <sdpa/modules/assert.hpp>
 
 namespace fvm { namespace util {
-  struct local_alloc
+  struct global_allocation
   {
-	explicit local_alloc(fvmSize_t alloc_size)
+	explicit global_allocation(fvmSize_t alloc_size)
 	  : handle(0)
 	  , size(alloc_size)
+	  , committed(false)
 	  {
-		handle = fvmLocalAlloc(size);
+		handle = fvmGlobalAlloc(size);
 	  }
 
-	~local_alloc()
+	~global_allocation()
 	{
-	  if (handle)
+	  if (!committed && handle)
 	  {
-		fvmLocalFree(handle); handle = 0;
+		DLOG(DEBUG, "auto-deallocating global allocation: " << handle);
+		fvmGlobalFree(handle); handle = 0;
 	  }
+	}
+
+	/* marks the memory as commited, i.e. will not be freed in destructor */
+	void commit()
+	{
+	  DLOG(DEBUG, "committed global allocation: " << handle);
+	  committed = true;
 	}
 	
 	operator fvmAllocHandle_t () { return handle; }
 
 	fvmAllocHandle_t handle;
 	fvmSize_t size;
+	bool committed;
+  };
+
+  struct local_allocation
+  {
+	explicit local_allocation(fvmSize_t alloc_size)
+	  : handle(0)
+	  , size(alloc_size)
+	  , committed(false)
+	  {
+		handle = fvmLocalAlloc(size);
+	  }
+
+	~local_allocation()
+	{
+	  if (!committed && handle)
+	  {
+		DLOG(DEBUG, "auto-deallocating local allocation: " << handle);
+		fvmLocalFree(handle); handle = 0;
+	  }
+	}
+
+	/* marks the memory as commited, i.e. will not be freed in destructor */
+	void commit()
+	{
+	  DLOG(DEBUG, "committed local allocation: " << handle);
+	  committed = true;
+	}
+	
+	operator fvmAllocHandle_t () { return handle; }
+
+	fvmAllocHandle_t handle;
+	fvmSize_t size;
+	bool committed;
   };
 
   /****************************************************************************************
@@ -62,7 +105,7 @@ namespace fvm { namespace util {
 	// copy to shared mem
 	memcpy(fvmGetShmemPtr(), data, sizeof(Type));
 
-	local_alloc scratch(transfer_size);
+	local_allocation scratch(transfer_size);
 	ASSERT_LALLOC(scratch);
 
 	DLOG(DEBUG, "putting data of node " << rank);
@@ -84,7 +127,7 @@ namespace fvm { namespace util {
   {
 	if (rank < 0) rank = fvmGetRank();
 
-	local_alloc scratch(sizeof(Type));
+	local_allocation scratch(sizeof(Type));
 	ASSERT_LALLOC(scratch);
 
 	DLOG(DEBUG, "getting data from node " << rank);
@@ -117,7 +160,7 @@ namespace fvm { namespace util {
 	DLOG(DEBUG, "copying " << transfer_size << " bytes to shmem: " << fvmGetShmemPtr());
 	memcpy(fvmGetShmemPtr(), data, transfer_size);
 
-	local_alloc scratch(transfer_size);
+	local_allocation scratch(transfer_size);
 	ASSERT_LALLOC(scratch);
 	for (size_t node(0); node < fvmGetNodeCount(); ++node)
 	{
@@ -146,7 +189,7 @@ namespace fvm { namespace util {
 	DLOG(DEBUG, "copying " << transfer_size << " bytes to shmem: " << fvmGetShmemPtr());
 	memcpy(fvmGetShmemPtr(), data, transfer_size);
 
-	local_alloc scratch(transfer_size);
+	local_allocation scratch(transfer_size);
 	ASSERT_LALLOC(scratch);
 
 	DLOG(DEBUG, "distributing data to all nodes");
