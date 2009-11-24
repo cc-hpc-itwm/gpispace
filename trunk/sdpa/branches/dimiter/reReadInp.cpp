@@ -246,7 +246,7 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 
 	//------ alloc shmem chunk, where to place the whole data cube ---
 	fvmSize_t shmemLclSz = szX*szY*szZ *sizeof(MKL_Complex8);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);   // not necessary
         unsigned char *pShMdatCube = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMdatCube, shmemLclSz);
 
@@ -500,7 +500,7 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
         //-------- end checks, the check is OK -----------
 
      fvmLocalFree(hScra);
-     fvmLocalFree(hLclShMem); // free the local sh mem
+     //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;
@@ -514,7 +514,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -542,7 +542,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;

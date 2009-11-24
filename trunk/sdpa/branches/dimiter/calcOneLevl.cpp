@@ -34,7 +34,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not neccessary
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -62,7 +62,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;
@@ -184,7 +184,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
           fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
           fvmSize_t shmemLclSz = pReGlb->nz * sizeof(float);
-          fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+          //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not neccessary
           unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
           bzero(pShMem, shmemLclSz);
 
@@ -225,7 +225,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
           memcpy(vMax, pShMem, transfrSZbytes);
 
           fvmLocalFree(hScra);
-          fvmLocalFree(hLclShMem); // free the local sh mem
+          //fvmLocalFree(hLclShMem); // free the local sh mem
 
        //------- alloc the work-array for the FFT ---
        //float* const       u1;       // temp space 4*roundUp4(nx) complex
@@ -247,7 +247,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
     hGlbVMspace = pCfg->hndGlbVMspace;	
     shmemLclSz = transfrSZbytes;
-    hLclShMem =fvmLocalAlloc(shmemLclSz);
+    //hLclShMem =fvmLocalAlloc(shmemLclSz);  // not necessary
     pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
     bzero(pShMem, shmemLclSz);
 
@@ -271,7 +271,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
     matrixToBlockedFloat4( (float*) pShMem, (float *)pWrk, pReGlb->nx_fft, 2*pReGlb->ny_fft, 2*roundUp4(pReGlb->ny_fft) );  
        
     fvmLocalFree(hScra);
-    fvmLocalFree(hLclShMem); // free the local sh mem
+    //fvmLocalFree(hLclShMem); // free the local sh mem
 */
 //=== end test-section, transfr iw-slice from VM. the test passed OK === 
 

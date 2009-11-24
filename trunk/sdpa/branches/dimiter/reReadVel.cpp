@@ -382,7 +382,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 	
         kSz = pReG->nz; iSz = pReG->nx_fft; jSz=pReG->ny_fft;
         fvmSize_t shmemLclSz = kSz*iSz*jSz*sizeof(float); // alloc a "big" cube, or try kSz = nz/size+1
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not necessary
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -577,7 +577,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
         //-------- end checks, the check is OK -----------
 
      fvmLocalFree(hScra);
-     fvmLocalFree(hLclShMem); // free the local sh mem
+     //fvmLocalFree(hLclShMem); // free the local sh mem
 
     return 1;
 }
@@ -590,7 +590,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -618,7 +618,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;

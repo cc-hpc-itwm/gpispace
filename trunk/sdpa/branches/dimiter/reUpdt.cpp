@@ -18,7 +18,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -46,7 +46,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;

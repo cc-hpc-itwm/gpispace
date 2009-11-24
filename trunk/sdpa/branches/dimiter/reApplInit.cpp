@@ -429,7 +429,7 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
        fvmShmemOffset_t shmemSrcOffs=0;
        
 
-       fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemSz);
+       //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemSz);   // not necessary 
        unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
 
 
@@ -453,7 +453,7 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
        } //for(iNd = 0; iNd < size; iNd++)
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
     return 1;
 }
