@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <fhglog/fhglog.hpp>
 
 
 #include <fvm-pc/pc.hpp>
@@ -240,10 +241,6 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 	float     **data;                           //!zero offset image
 	MKL_Complex8  **foutput1D_in; //, **foutput1D_out; //!for 1D FFT
 
-	char datafile[LEN]; 
-        //------ set here the hard-coded names (sdpa-demo only)
-        strcpy(datafile, "/scratch/dimiter/sdpa/Demig2000.bin");
-
 	//------ alloc shmem chunk, where to place the whole data cube ---
 	fvmSize_t shmemLclSz = szX*szY*szZ *sizeof(MKL_Complex8);
         //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);   // not necessary
@@ -278,7 +275,7 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
         if(utlAlloc2DfloatArray(&data, iSz, jSz) == 0) {  // C-indexing in data[][], 
                                                           // time (i.e. j-index) -fastest direction
 	   printf("\n [%d] Unable to allocate zero offset image cube \n", rank);
-	   //exit(0);
+	   return -1;
         } //end if
         utlSetToZero2DfloatArray(data, iSz, jSz); //data=0.0
 
@@ -313,10 +310,11 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 
         //------------------- open datafile ------
 	iz = pReG->nt*pReG->nx_out; // dms -> record size, to me - irrelevant  
-        if((pfData=fopen(datafile, "rb"))==NULL) {
-	     printf("\n [%d] Can not open %s", rank, datafile); 
-	     //exit (1);	   
+        if((pfData=fopen(pCfg->data_file, "rb"))==NULL) {
+	     printf("\n [%d] Can not open %s", rank, pCfg->data_file); 
+	     return -1;
         }
+		DLOG(DEBUG, "reading data from: " << pCfg->data_file);
 
         //------ another auxiliary array -----------
         jSz = pReG->nx_out; //+1; 
@@ -402,6 +400,8 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 
 
     int iNd;
+
+	DLOG(DEBUG, "distributing input data to the nodes...");
  
 	for(iNd=0; iNd < size; iNd++) {  
 
@@ -421,19 +421,21 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
            if(commStatus != COMM_HANDLE_OK) return (-1);
        } 
 
+	LOG(INFO, "input data has been read and distributed (executing node: " << rank << ")");
 
-        //-------- report that inp data has been read & distributed  ---
 
-        FILE *fp; 
-        char fn[100];
-        sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
-        if((fp=fopen(fn, "at")) != NULL) {
-            //--- 
-            fprintf(fp, "\n ------------------------------------------------------------------------");
-            fprintf(fp, "\n        input data read on #%d and distributed, the tests were OK      \n", rank);
- 
-            fclose(fp);
-	}
+//        //-------- report that inp data has been read & distributed  ---
+//
+//        FILE *fp; 
+//        char fn[100];
+//        sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
+//        if((fp=fopen(fn, "at")) != NULL) {
+//            //--- 
+//            fprintf(fp, "\n ------------------------------------------------------------------------");
+//            fprintf(fp, "\n        input data read on #%d and distributed, the tests were OK      \n", rank);
+// 
+//            fclose(fp);
+//	}
 	//--------- here you can do some checks, the check is OK !! ------
 /*
         //FILE *fp; 
