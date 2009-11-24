@@ -66,7 +66,7 @@ GWES::~GWES()
   */
 Workflow::ptr_t GWES::initiate(const string& gworkflowdl, const string& userId) throw(WorkflowFormatException,StateTransitionException) 
 {
-	LOG_INFO(_logger, "initiate() ... ");
+	LOG_DEBUG(_logger, "initiate() ... ");
 	// deserialize string
 	Libxml2Builder builder;
 	Workflow::ptr_t workflowP = builder.deserializeWorkflow(gworkflowdl);
@@ -82,7 +82,7 @@ Workflow::ptr_t GWES::initiate(const string& gworkflowdl, const string& userId) 
  */
 string GWES::initiate(gwdl::Workflow::ptr_t workflowP, const string& userId) throw(StateTransitionException)
 {
-	LOG_INFO(_logger, "initiate() ... ");
+	LOG_DEBUG(_logger, "initiate() ... ");
 	WorkflowHandler* wfhP = new WorkflowHandler(this,workflowP,userId);
 	return _wfht.put(wfhP);
 }
@@ -104,7 +104,7 @@ void GWES::connect(Channel* channel, gwdl::Workflow::ptr_t workflowP) {
  * @param workflowId The identifier of the workflow.
  */ 
 void GWES::connect(Channel* channel, const string& workflowId) {
-	LOG_INFO(_logger, "connect(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "connect(" << workflowId << ") ... ");
 	_wfht.get(workflowId)->connect(channel);
 }
 
@@ -128,7 +128,7 @@ void GWES::start(gwdl::Workflow::ptr_t workflowP) throw(StateTransitionException
  * @param workflowId The identifier of the workflow.
  */
 void GWES::start(const string& workflowId) throw(StateTransitionException,NoSuchWorkflowException) {
-	LOG_INFO(_logger, "start(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "start(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->startWorkflow();
 }
@@ -151,7 +151,7 @@ void GWES::execute(Workflow::ptr_t workflowP) throw(StateTransitionException, Wo
  * @param workflowId The identifier of the workflow.
  */
 void GWES::execute(const string& workflowId) throw(StateTransitionException, WorkflowFormatException) {
-	LOG_INFO(_logger, "execute(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "execute(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->executeWorkflow();
 }
@@ -174,7 +174,7 @@ void GWES::suspend(Workflow::ptr_t workflowP) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::suspend(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "suspend(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "suspend(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->suspendWorkflow();
 }
@@ -195,7 +195,7 @@ void GWES::resume(Workflow::ptr_t workflowP) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::resume(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "resume(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "resume(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->resumeWorkflow();
 }
@@ -220,7 +220,7 @@ void GWES::abort(Workflow::ptr_t workflowP) throw(StateTransitionException)
  * @param workflowId The identifier of the workflow.
  */
 void GWES::abort(const string& workflowId) throw(StateTransitionException) {
-	LOG_INFO(_logger, "abort(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "abort(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	wfhP->abortWorkflow();
 }
@@ -243,7 +243,7 @@ string GWES::getSerializedWorkflow(Workflow::ptr_t workflowP) {
  * @return A reference to the current workflow description as string.
  */
 string GWES::getSerializedWorkflow(const string& workflowId) {
-	LOG_INFO(_logger, "getSerializedWorkflow(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "getSerializedWorkflow(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return getSerializedWorkflow(wfhP->getWorkflow());
 }
@@ -276,7 +276,7 @@ unsigned int GWES::getStatus(Workflow::ptr_t workflowP)
  * @return The current state of the workflow.
  */
 unsigned int GWES::getStatus(const string& workflowId) {
-	LOG_INFO(_logger, "getStatus(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "getStatus(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return wfhP->getStatus();
 }
@@ -330,7 +330,7 @@ void GWES::remove(Workflow::ptr_t workflowP) {
  * @param workflowId The identifier of the workflow.
  */
 void GWES::remove(const string& workflowId) {
-	LOG_INFO(_logger, "remove(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "remove(" << workflowId << ") ... ");
 	_wfht.remove(workflowId);
 }
 
@@ -351,6 +351,7 @@ void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id
  */
 void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
     mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "activity failed: wid=" << workflowId << " aid=" << activityId);
 	_wfht.get(workflowId)->activityFailed(activityId,output);
 }
 
@@ -359,6 +360,7 @@ void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &
  */
 void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
     mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "activity finished: wid=" << workflowId << " aid=" << activityId);
 	_wfht.get(workflowId)->activityFinished(activityId,output);
 }
 
@@ -367,6 +369,7 @@ void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t
  */
 void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
     mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "activity cancelled: wid=" << workflowId << " aid=" << activityId);
 	_wfht.get(workflowId)->activityCanceled(activityId);
 }
 
@@ -375,6 +378,7 @@ void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t
  */
 void GWES::registerHandler(Gwes2Sdpa *sdpa) {
     mutex_lock lock(monitor_lock_);
+	LOG_DEBUG(_logger, "handler registered: " << sdpa);
 	_sdpaHandler = sdpa;
 }
 
@@ -384,6 +388,7 @@ void GWES::registerHandler(Gwes2Sdpa *sdpa) {
 void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
     mutex_lock lock(monitor_lock_);
     if (_sdpaHandler == sdpa) {
+	  LOG_DEBUG(_logger, "handler un-registered: " << sdpa);
     	_sdpaHandler = NULL;
     } else {
 	  LOG_ERROR(_logger, "tried to unregister a not-registered handler!");
@@ -396,6 +401,7 @@ void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
 workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) { //(WorkflowFormatException) {
     mutex_lock lock(monitor_lock_);
 	string workflowId = initiate(workflowP,"sdpa");
+	LOG_INFO(_logger, "workflow submitted: " << workflowId);
 	start(workflowId);
 	return workflowId;
 }
@@ -405,6 +411,7 @@ workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exce
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
     mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "request to cancel workflow " << workflowId << " received");
     try {
     	abort(workflowId);
     } catch (const NoSuchWorkflowException &nswfe) {

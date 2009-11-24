@@ -37,7 +37,7 @@ SubWorkflowActivity::~SubWorkflowActivity()
  * UNDEFINED before. 
  */
 void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "initiateActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "initiateActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
@@ -47,7 +47,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 	}
 	// set workflow file 
 	_subworkflowFilename = Utils::expandEnv(_operation->getOperationName());
-	LOG_INFO(_logger, "trying to read file " << _subworkflowFilename);
+	LOG_DEBUG(_logger, "trying to read file " << _subworkflowFilename);
 
 	// parse workflow file
 	try {
@@ -62,6 +62,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 		setStatus(STATUS_TERMINATED);
 		ostringstream message; 
 		message << "Not able to build subworkflow activity: " << e.what();
+		LOG_WARN(_logger, message.str());
 		throw ActivityException(message.str()); 
 	}
 }
@@ -70,7 +71,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
  * Start this activity. Status should switch to RUNNING. 
  */
 void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransitionException,WorkflowFormatException) {
-	LOG_INFO(_logger, "startActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "startActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
@@ -97,20 +98,20 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 			case (TokenParameter::SCOPE_INPUT):
 			case (TokenParameter::SCOPE_WRITE):
 				edgeExpression = it->edgeP->getExpression();
-				LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
+				LOG_DEBUG(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
 				placeP = _subworkflowP->getPlace(edgeExpression);
-				LOG_INFO(_logger, ".");
+				LOG_DEBUG(_logger, ".");
 				token = it->tokenP;
-				LOG_INFO(_logger, "token pointer: " << token);
-				LOG_INFO(_logger, *token);
+				LOG_DEBUG(_logger, "token pointer: " << token);
+				LOG_DEBUG(_logger, *token);
 				data = token->getData();
-				LOG_INFO(_logger, "data:\n" << *data);
+				LOG_DEBUG(_logger, "data:\n" << *data);
 				dataClone = data->deepCopy();
-				LOG_INFO(_logger, "dataClone:\n" << *dataClone);
+				LOG_DEBUG(_logger, "dataClone:\n" << *dataClone);
 				tokenClone = token->deepCopy();
-				LOG_INFO(_logger, "tokenClone: " << tokenClone);
+				LOG_DEBUG(_logger, "tokenClone: " << tokenClone);
 				placeP->addToken(tokenClone);
-				LOG_INFO(_logger, "..");
+				LOG_DEBUG(_logger, "..");
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	
 				continue;
@@ -143,7 +144,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
  * Suspend this activity. Status should switch to SUSPENDED. 
  */
 void SubWorkflowActivity::suspendActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "suspendActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "suspendActivity(" << _id << ") ... ");
 	///ToDo: Implement!
 	LOG_WARN(_logger, "suspendActivity() not yet implemented!");
 }
@@ -152,7 +153,7 @@ void SubWorkflowActivity::suspendActivity() throw (ActivityException,StateTransi
  * Resume this activity. Status should switch to RUNNING. 
  */
 void SubWorkflowActivity::resumeActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "resumeActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "resumeActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
@@ -168,7 +169,7 @@ void SubWorkflowActivity::resumeActivity() throw (ActivityException,StateTransit
  * Abort this activity. Status should switch to TERMINATED.
  */
 void SubWorkflowActivity::abortActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "abortActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "abortActivity(" << _id << ") ... ");
 	//check status
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
@@ -186,7 +187,7 @@ void SubWorkflowActivity::abortActivity() throw (ActivityException,StateTransiti
  * Restart this activity. Status should switch to INITIATED. 
  */
 void SubWorkflowActivity::restartActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "restartActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "restartActivity(" << _id << ") ... ");
 	///ToDo: Implement!
 	LOG_WARN(_logger, "restartActivity() not yet implemented!");
 }
@@ -218,7 +219,7 @@ void SubWorkflowActivity::update(const Event& event) {
 								Place::ptr_t placeP = _subworkflowP->getPlace(edgeExpression);
 								Token::ptr_t tokenCloneP = placeP->getTokens()[0]->deepCopy();
 								it->tokenP = tokenCloneP;
-								LOG_INFO(_logger, "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ...");
+								LOG_DEBUG(_logger, "gwes::SubWorkflowActivity::update(" << _id << ") copy token " << it->tokenP->getID() << " to parent workflow ...");
 							}
 							break;
 						}

@@ -47,7 +47,7 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 	Properties props = workflowP->readProperties();
 	if (props.contains("simulation") && (props.get("simulation")).compare("false") != 0) {
 		_simulation = true;
-		LOG_INFO(_logger, getID() << ": Simulation is ON");
+		LOG_DEBUG(_logger, getID() << ": Simulation is ON");
 		LOG_DEBUG(_logger, *workflowP);
 	}
 	// set status
@@ -165,7 +165,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 	while ((!_userabort && !_systemabort && enabledTransitions.size()> 0) 
 			|| _status == WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
-			LOG_INFO(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
+			LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 			<< ") --- " << enabledTransitions.size()
 			<< " enabled transition(s)");
 			modification = false;
@@ -192,10 +192,10 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 					string breakstring = transprops.get("breakpoint");
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
-						LOG_INFO(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
+						LOG_DEBUG(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
 						transprops.put("breakpoint", "RELEASED");
 					} else {
-						LOG_INFO(_logger, "reached breakpoint at transition " << selectedToP->transitionP->getID());
+						LOG_DEBUG(_logger, "reached breakpoint at transition " << selectedToP->transitionP->getID());
 						transprops.put("breakpoint", "REACHED");
 						_suspend = true;
 					}
@@ -207,7 +207,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			//process selected transition.
 			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
 				int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
-				LOG_INFO(_logger, "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
+				LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
 				<< selectedToP->getID() << "\" (level "
 				<< abstractionLevel << ") ...");
 				switch (abstractionLevel) {
@@ -388,7 +388,7 @@ void WorkflowHandler::connect(Channel* channel) {
 void WorkflowHandler::update(const Event& event) {
 	LOG_WARN(_logger, "update() is DEPRICATED!");
 	// logging
-	LOG_INFO(_logger, _id << ":update(" 
+	LOG_DEBUG(_logger, _id << ":update(" 
 			<< event._sourceId 
 			<< "," << event._eventType 
 			<< "," << event._message 
@@ -598,7 +598,7 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 		string activityID = it->first;
 		Activity* activityP = it->second;
 		int activityStatus = activityP->getStatus();
-		LOG_INFO(_logger, "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString());
+		LOG_DEBUG(_logger, "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString());
 
 		// activity has completed or terminated
 		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
