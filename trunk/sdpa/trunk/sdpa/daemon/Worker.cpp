@@ -62,11 +62,11 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
 
 	if( delete_(job_id, pending()))
-		SDPA_LOG_ERROR("Deleted " << job_id << " from the worker's the pending queue!");
+		SDPA_LOG_DEBUG("Deleted " << job_id << " from the worker's the pending queue!");
 	else if( delete_(job_id, submitted()))
-		SDPA_LOG_ERROR("Deleted " << job_id << " from the worker's the submitted queue!");
+		SDPA_LOG_DEBUG("Deleted " << job_id << " from the worker's the submitted queue!");
 	else if( delete_(job_id, acknowledged()))
-		SDPA_LOG_ERROR("Deleted " << job_id << " from the worker's the acknowledged queue!");
+		SDPA_LOG_DEBUG("Deleted " << job_id << " from the worker's the acknowledged queue!");
 	else
 		SDPA_LOG_ERROR("The job " << job_id << " could not be found into any of the worker's queues!");
 }
