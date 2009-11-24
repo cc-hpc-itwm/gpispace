@@ -20,7 +20,7 @@ namespace gwdl
  * Constructor.
  */
 Properties::Properties() {
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Properties()");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Properties()");
 }
 
 /**
@@ -28,7 +28,7 @@ Properties::Properties() {
  */
 Properties::~Properties() {
 	//clear();
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Properties()");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Properties()");
 }
 
 /**

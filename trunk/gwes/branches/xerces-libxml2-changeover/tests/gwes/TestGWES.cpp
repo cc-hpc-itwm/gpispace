@@ -106,6 +106,10 @@ void GWESTest::testGWES()
 	Token::ptr_t tokenP = placeP->getTokens()[0];
 	CPPUNIT_ASSERT(!tokenP->isData());
 	CPPUNIT_ASSERT(tokenP->getControl());
+	
+	// deallocate workflowHandler and workflow
+	m_gwes.remove(id);
+	wf.reset();
 
     LOG_INFO(logger, "============== END GWES TEST =============");
    

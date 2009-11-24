@@ -64,6 +64,7 @@ WorkflowHandler::~WorkflowHandler() {
 //		delete it->second;
 //	}
 //	_activityTable.clear();
+	_wfP.reset();
 	LOG_DEBUG(_logger, "~WorkflowHandler[" << _id << "]");
 }
 

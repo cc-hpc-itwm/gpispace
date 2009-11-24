@@ -16,7 +16,7 @@ namespace gwes {
       CPPUNIT_TEST( testWorkflowControlLoop ); 
       CPPUNIT_TEST( testWorkflowConcatenateIt );
       CPPUNIT_TEST( testWorkflowConcatenateItFail );
-//      CPPUNIT_TEST( testWorkflowPstm0 ); 
+      CPPUNIT_TEST( testWorkflowPstm0 ); 
       CPPUNIT_TEST_SUITE_END();
 
       public:

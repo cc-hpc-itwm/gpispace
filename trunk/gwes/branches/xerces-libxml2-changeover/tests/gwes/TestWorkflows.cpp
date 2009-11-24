@@ -43,6 +43,7 @@ void TestWorkflows::testWorkflowSimpleGwdl()
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 	CPPUNIT_ASSERT( workflow->getProperties().get("occurrence.sequence").compare("t") == 0 );
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -85,6 +86,7 @@ void TestWorkflows::testWorkflowSplitToken()
 	LOG_INFO(logger, *(tokenP->getData()));
 	CPPUNIT_ASSERT_EQUAL(string("<y>24</y>"), tokenP->getData()->getContent());
 	
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -103,6 +105,8 @@ void TestWorkflows::testWorkflowExclusiveChoice()
 	Token::ptr_t tokenP = placeP->getTokens().front();
 	CPPUNIT_ASSERT(!tokenP->isData());
 	CPPUNIT_ASSERT(tokenP->getControl());
+
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -133,6 +137,8 @@ void TestWorkflows::testWorkflowConditionTest()
 	CPPUNIT_ASSERT(tokenP->isData());
 	LOG_INFO(logger, *(tokenP->getData()));
 	CPPUNIT_ASSERT_EQUAL(string("<x>5</x>"), tokenP->getData()->getContent());
+
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -151,6 +157,8 @@ void TestWorkflows::testWorkflowControlLoop()
 	CPPUNIT_ASSERT(tokenP->isData());
 	LOG_INFO(logger, *(tokenP->getData()));
 	CPPUNIT_ASSERT_EQUAL(string("<a>10</a>"), tokenP->getData()->getContent());
+
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -179,6 +187,8 @@ void TestWorkflows::testWorkflowConcatenateIt()
 	string result = XMLUtils::readFile(filename);
 	LOG_INFO(logger, "result: \n" << result);
 	CPPUNIT_ASSERT_EQUAL(string("///d25//////////////////\n///d26///////////////////\n///d27////////////////////\n"), result);		
+
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -191,6 +201,8 @@ void TestWorkflows::testWorkflowConcatenateItFail()
 	Workflow::ptr_t workflow;
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt_fail.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="TERMINATED");
+
+	m_gwes.remove(workflow->getID());
 }
 
 /**
@@ -204,6 +216,8 @@ void TestWorkflows::testWorkflowPstm0()
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 	CPPUNIT_ASSERT(workflow->getProperties().get("occurrence.sequence").compare("preStackTimeMigration") == 0);
+
+	m_gwes.remove(workflow->getID());
 }
 
 ////////////////////////////////////////////////

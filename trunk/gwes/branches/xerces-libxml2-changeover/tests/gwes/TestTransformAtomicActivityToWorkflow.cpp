@@ -67,6 +67,8 @@ void TestTransformAtomicActivityToWorkflow::testTransform() {
 		usleep(100000);
 	}
 	
+	_gwesP->removeWorkflow(_workflowId);
+	
 	LOG_INFO(logger, "============== END TestTransformAtomicActivityToWorkflow::testTransform =============");
 }
 

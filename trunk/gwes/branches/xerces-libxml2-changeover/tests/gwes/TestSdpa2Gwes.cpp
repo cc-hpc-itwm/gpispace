@@ -71,6 +71,10 @@ void TestSdpa2Gwes::testWorkflowWithSdpaActivity() {
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 	CPPUNIT_ASSERT_MESSAGE("is data", outputTokens[0]->isData());
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("data contents", string("<output xmlns=\"\">15</output>"), outputTokens[0]->getData()->serialize());
+	
+	// deallocate workflowHandler and workflow
+	sdpa.removeWorkflow(wfId);
+	wfP.reset();
 
 	LOG_INFO(logger, "============== END testWorkflowWithSdpaActivity =============");
 }
@@ -115,6 +119,11 @@ void TestSdpa2Gwes::testWorkflowWithSdpaSubWorkflow() {
 		CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 		CPPUNIT_ASSERT_MESSAGE("is data", outputTokens[0]->isData());
 		CPPUNIT_ASSERT_EQUAL_MESSAGE("data contents", string("<output xmlns=\"\">15</output>"), outputTokens[0]->getData()->serialize());
+		
+		// deallocate workflowHandler and workflow
+		sdpa.removeWorkflow(wfId);
+		wfP.reset();
+		
 	} catch (const WorkflowFormatException &e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
