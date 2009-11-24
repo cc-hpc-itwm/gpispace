@@ -254,7 +254,7 @@ namespace sdpa { namespace nre { namespace worker {
       try
       {
         Message *rqst_ptr = codec_.decode(msg);
-        if (rqst->would_block())
+        if (rqst_ptr->would_block())
         {
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
           requests_.push_back(std::make_pair(sender_endpoint_, rqst_ptr));
