@@ -61,7 +61,7 @@ string XMLUtils::serializeLibxml2Doc(const xmlDocPtr doc, bool pretty) {
 	//    xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, pretty);
 	int option = XML_SAVE_NO_DECL;
 	if (pretty) option += XML_SAVE_FORMAT;
-	mutex_lock lock(_lock);
+//	mutex_lock lock(_lock);
 	xmlBufferPtr buffer = xmlBufferCreate();
 	xmlSaveCtxtPtr ctxt = xmlSaveToBuffer(buffer, "UTF-8", option);
 	xmlSaveDoc(ctxt, doc);
@@ -116,7 +116,7 @@ xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool valida
 	LOG_DEBUG(_logger, "deserializeLibxml2(" << xmlstring << ")...");
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	xmlChar* duped(xmlCharStrdup(xmlstring.c_str()));
-	mutex_lock lock(_lock);
+//	mutex_lock lock(_lock);
 	xmlDocPtr res(xmlParseDoc(duped));
 	xmlFree(duped);
 	if (!res) {
@@ -137,7 +137,7 @@ xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool valida
 xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	LOG_DEBUG(_logger, "xmlParseFile("<< filename.c_str() <<") ...");
-	mutex_lock lock(_lock);
+	// mutex_lock lock(_lock);
 	xmlDocPtr docP = xmlParseFile(filename.c_str());
 	if (!docP) {
 		xmlErrorPtr error = xmlGetLastError();

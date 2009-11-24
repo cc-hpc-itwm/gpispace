@@ -75,6 +75,14 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 	
 	LOG_DEBUG(_logger, "status of workflow \"" << getID() << "\" changed from " << getStatusAsString(oldStatus) << " to " << getStatusAsString());
 	
+	// ToDo: depricated - remove?
+	if (_channels.size()>0) {
+		Event event(_id,Event::EVENT_WORKFLOW,getStatusAsString());
+		for (size_t i = 0; i<_channels.size(); i++ ) {
+			_channels[i]->_sourceP->update(event);
+		}
+	}
+
 	// notify observers
 	Gwes2Sdpa* sdpaP = _gwesP->getSdpaHandler();
 	if (sdpaP != NULL) {
@@ -105,13 +113,6 @@ void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
 		}
 	}
 	
-	// ToDo: depricated - remove?
-	if (_channels.size()>0) {
-		Event event(_id,Event::EVENT_WORKFLOW,getStatusAsString());
-		for (size_t i = 0; i<_channels.size(); i++ ) {
-			_channels[i]->_sourceP->update(event);
-		}
-	}
 }
 
 string WorkflowHandler::getNewActivityID() const {
