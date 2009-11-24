@@ -32,7 +32,7 @@ SdpaActivity::~SdpaActivity()
  * UNDEFINED before. 
  */
 void SdpaActivity::initiateActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "initiateActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "initiateActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_UNDEFINED) {
 		ostringstream oss;
@@ -57,7 +57,7 @@ void SdpaActivity::initiateActivity() throw (ActivityException,StateTransitionEx
  * Start this activity. Status should switch to RUNNING. 
  */
 void SdpaActivity::startActivity() throw (ActivityException,StateTransitionException,gwdl::WorkflowFormatException) {
-	LOG_INFO(_logger, "startActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "startActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_INITIATED) {
 		ostringstream oss;
@@ -77,7 +77,7 @@ void SdpaActivity::startActivity() throw (ActivityException,StateTransitionExcep
  * Suspend this activity. Status should switch to SUSPENDED. 
  */
 void SdpaActivity::suspendActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "suspendActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "suspendActivity(" << _id << ") ... ");
 	///ToDo: Implement!
 	LOG_WARN(_logger, "suspendActivity() not yet implemented!");
 }
@@ -86,7 +86,7 @@ void SdpaActivity::suspendActivity() throw (ActivityException,StateTransitionExc
  * Resume this activity. Status should switch to RUNNING. 
  */
 void SdpaActivity::resumeActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "resumeActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "resumeActivity(" << _id << ") ... ");
 	//check status
 	if (_status != STATUS_SUSPENDED) {
 		ostringstream oss;
@@ -102,7 +102,7 @@ void SdpaActivity::resumeActivity() throw (ActivityException,StateTransitionExce
  * Abort this activity. Status should switch to TERMINATED.
  */
 void SdpaActivity::abortActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "abortActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "abortActivity(" << _id << ") ... ");
 	//check status
 	if (_status == STATUS_COMPLETED) {
 		ostringstream oss;
@@ -121,7 +121,7 @@ void SdpaActivity::abortActivity() throw (ActivityException,StateTransitionExcep
  * Restart this activity. Status should switch to INITIATED. 
  */
 void SdpaActivity::restartActivity() throw (ActivityException,StateTransitionException) {
-	LOG_INFO(_logger, "restartActivity(" << _id << ") ... ");
+	LOG_DEBUG(_logger, "restartActivity(" << _id << ") ... ");
 	///ToDo: Implement!
 	LOG_WARN(_logger, "restartActivity() not yet implemented!");
 }

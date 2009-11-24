@@ -197,7 +197,7 @@ namespace sdpa { namespace wf { namespace glue {
       throw std::runtime_error("could not unwrap " + wf_activity.name() + ": does not match gwes::Activity::id");
     }
 
-    DLOG(INFO, "unwrapping wf::Activity: " << wf_activity.name() << " to " << gwes_activity.getID());
+    DLOG(DEBUG, "unwrapping wf::Activity: " << wf_activity.name() << " to " << gwes_activity.getID());
 
     gwes::parameter_list_t *gwes_params = gwes_activity.getTransitionOccurrence()->getTokens();
     for (gwes::parameter_list_t::iterator param(gwes_params->begin()); param != gwes_params->end(); ++param)
@@ -240,7 +240,7 @@ namespace sdpa { namespace wf { namespace glue {
   inline
   sdpa::job_result_t wrap(const gwdl::workflow_result_t &workflow_results)
   {
-    DLOG(INFO, "wrapping workflow results...");
+    DLOG(DEBUG, "wrapping workflow results...");
     job_result_t result;
 
     for (gwdl::workflow_result_t::const_iterator place_to_tokens(workflow_results.begin()); place_to_tokens != workflow_results.end(); ++place_to_tokens)
@@ -272,7 +272,7 @@ namespace sdpa { namespace wf { namespace glue {
   inline
   void put_results_to_activity(const sdpa::job_result_t &result, gwes::Activity &gwes_activity)
   {
-    DLOG(INFO, "putting results back to activity: " << gwes_activity.getID());
+    DLOG(DEBUG, "putting results back to activity: " << gwes_activity.getID());
 
     gwes::parameter_list_t *gwes_params = gwes_activity.getTransitionOccurrence()->getTokens();
     for (gwes::parameter_list_t::iterator param(gwes_params->begin()); param != gwes_params->end(); ++param)
