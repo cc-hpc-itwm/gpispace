@@ -35,9 +35,11 @@ Activity::Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const st
 	_operation = operationP;
 	_abort = false;
 	_suspend = false;
+	LOG_DEBUG(_logger, "Activity[" << _id << "]");
 }
 
 Activity::~Activity() {
+	LOG_DEBUG(_logger, "~Activity[" << _id << "]");
 }
 
 /////////////////////////////////////////

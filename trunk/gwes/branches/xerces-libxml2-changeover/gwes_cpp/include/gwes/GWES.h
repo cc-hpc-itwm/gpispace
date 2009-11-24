@@ -302,6 +302,12 @@ public:
 
 	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception);
 
+	/**
+	 * removes a workflow from gwes after it has reached one of the
+	 * finished/failed/cancelled states
+	 */ 
+	virtual void removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
 
 	virtual workflow_t::ptr_t deserializeWorkflow(const std::string &) throw (std::runtime_error);

@@ -30,6 +30,14 @@ Workflow::~Workflow() {
 	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Workflow[" << _id << "]");
 }
 
+/**
+ * set workflow id.
+ */
+void Workflow::setID(const workflow_id_t& id) {
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "renaming Workflow[" << _id << "] -> Workflow[" << id << "]...");
+	_id = id;
+}
+
 gwdl::workflow_result_t Workflow::getResults() const
 {
   gwdl::workflow_result_t results;
