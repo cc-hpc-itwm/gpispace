@@ -22,7 +22,8 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //MR: not needed
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -50,7 +51,8 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
 
        fvmLocalFree(hScra);
-       fvmLocalFree(hLclShMem); // free the local sh mem
+       //MR: not needed
+       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;
@@ -350,7 +352,10 @@ int rePrefixSum(cfg_t *pCfg)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(szCube*sizeof(float));
-        fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        //MR: not needed
+        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);
+        // to make the signatures happy
+        fvmAllocHandle_t hLclShMem = 0;
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -380,7 +385,8 @@ int rePrefixSum(cfg_t *pCfg)
 
 
         //------- free the shMem allocated here --
-        fvmLocalFree(hLclShMem); // free the local sh mem
+        // MR: not needed
+        //fvmLocalFree(hLclShMem); // free the local sh mem
 
        //------- delete depth levl distr structs --- 
        delete [] izOffs;
