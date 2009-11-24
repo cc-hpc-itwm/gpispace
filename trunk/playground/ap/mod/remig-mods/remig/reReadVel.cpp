@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-
+#include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 
 //---------- include some definitions used here --------------
@@ -304,17 +304,15 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 
       //----- the vel file ---
         const int LEN = 100;
-	char velfile[LEN]; 
-        //------ set here the hard-coded names (sdpa-demo only)
-        strcpy(velfile, "/scratch/dimiter/sdpa/vmodGradz.bin");
-
     //---------- read on CPU#0 only -----
     //if(rank == 0) {
       
-        if((pfVel=fopen(velfile, "rb"))==NULL) {
-	     printf("\n [%d] Can not open %s", rank, velfile); 
-	     //exit (1);	   
+        if((pfVel=fopen(pCfg->velocity_file, "rb"))==NULL) {
+	     printf("\n [%d] Can not open %s", rank, pCfg->velocity_file);
+		  return -1;
         }	
+
+	  DLOG(DEBUG, "loading velocity field from: " << pCfg->velocity_file);
 
 
         iSz = pReG->nx_in; jSz=pReG->ny_in;
@@ -382,7 +380,6 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 	
         kSz = pReG->nz; iSz = pReG->nx_fft; jSz=pReG->ny_fft;
         fvmSize_t shmemLclSz = kSz*iSz*jSz*sizeof(float); // alloc a "big" cube, or try kSz = nz/size+1
-        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not necessary
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -403,6 +400,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
         unsigned char *pVelChnk; 
 
 
+	  DLOG(DEBUG, "distributing velocity field to the available nodes");
 
 
         for(iNd=0; iNd < size; iNd++) {
@@ -432,6 +430,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 
         } //for(iNd=0; iNd < size; iNd++) {
 
+	  DLOG(DEBUG, "filling min/max arrays");
 
         //========= find max & min vels on each depth levl ---------
         float minV, maxV, crrVel;
@@ -503,18 +502,19 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
         delete [] pVelCube; 
 
         //-------- report that inp data has been read & distributed  ---
+		LOG(INFO, "velocity field and min/max arrays successfully loaded and distributed!");
 
-        FILE *fp; 
-        char fn[100];
-        sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
-        if((fp=fopen(fn, "at")) != NULL) {
-            //--- 
-            fprintf(fp, "\n ------------------------------------------------------------------------");
-            fprintf(fp, "\n        velocity read on #%d and distributed, the tests were OK      \n", rank);
-            fprintf(fp, "\n        found vMin[] and vMax[] on #%d, also distributed             \n", rank);
- 
-            fclose(fp);
-	}
+//        FILE *fp; 
+//        char fn[100];
+//        sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
+//        if((fp=fopen(fn, "at")) != NULL) {
+//            //--- 
+//            fprintf(fp, "\n ------------------------------------------------------------------------");
+//            fprintf(fp, "\n        velocity read on #%d and distributed, the tests were OK      \n", rank);
+//            fprintf(fp, "\n        found vMin[] and vMax[] on #%d, also distributed             \n", rank);
+// 
+//            fclose(fp);
+//	}
 	//--------- here you can do some checks, the check is OK !! ------
 /*
         //FILE *fp; 
