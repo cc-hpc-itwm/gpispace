@@ -22,6 +22,7 @@
 #include <seda/StageRegistry.hpp>
 #include <gwes/GWES.h>
 
+ namespace po = boost::program_options;
 
 using namespace std;
 using namespace sdpa::tests;
@@ -59,13 +60,18 @@ string TestComponents::read_workflow(string strFileName)
 void TestComponents::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
-	m_ptrUser = sdpa::client::ClientApi::create( config, "orchestrator_0" );
-	m_ptrUser->configure_network(config);
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+    cav.push_back("--orchestrator=orchestrator_0");
+    cav.push_back("--network.location=orchestrator_0:127.0.0.1:5000");
+    config.parse_command_line(cav);
+
+	m_ptrUser = sdpa::client::ClientApi::create( config );
+	m_ptrUser->configure_network( config );
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
-//	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
 	m_strWorkflow = read_workflow("workflows/remig.master.gwdl");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
@@ -76,7 +82,6 @@ void TestComponents::tearDown()
 	//stop the finite state machine
 
 	m_ptrUser.reset();
-
 	seda::StageRegistry::instance().clear();
 }
 
@@ -86,7 +91,7 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000", "");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000", "workflows");
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_0",  "127.0.0.1:5001",

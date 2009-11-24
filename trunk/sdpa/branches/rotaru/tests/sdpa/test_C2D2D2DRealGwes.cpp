@@ -57,8 +57,15 @@ void C2D2D2DRealGwesTest::setUp()
 	m_ptrSdpa2GwesOrch = new gwes::GWES();
 	m_ptrSdpa2GwesAgg  = new gwes::GWES();
 
-	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
-	m_ptrUser = sdpa::client::ClientApi::create(config, sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR);
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	cav.push_back("--network.location=orchestrator_0:127.0.0.1:5000");
+	config.parse_command_line(cav);
+
+	m_ptrUser = sdpa::client::ClientApi::create( config );
+	m_ptrUser->configure_network( config );
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 

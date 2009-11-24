@@ -147,10 +147,6 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     	  //workflow_id_t wf_id_orch = bimap_wf_act_ids_.right.at(activityId);
     	  gwdl::workflow_result_t result;
     	  ptr_Gwes2SdpaHandler->workflowFailed(workflowId, result);
-
-    	  lock_type lock(mtx_);
-    	  map_wf_act_ids_.erase(workflowId);
-    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -177,10 +173,6 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
 
     	  gwdl::workflow_result_t result;
     	  ptr_Gwes2SdpaHandler->workflowFinished(workflowId, result);
-
-    	  lock_type lock(mtx_);
-    	  map_wf_act_ids_.erase(workflowId);
-    	  //bimap_wf_act_ids_.left.erase(wf_id_orch);
       }
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
@@ -211,8 +203,6 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
         	gwdl::workflow_result_t result;
         	ptr_Gwes2SdpaHandler->workflowCanceled(workflowId, result);
 
-        	lock_type lock(mtx_);
-        	map_wf_act_ids_.erase(workflowId);
         	//bimap_wf_act_ids_.left.erase(wf_id_orch);
         }
         else
@@ -357,6 +347,19 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     {
       throw NoSuchActivity("cannot look up activity " + aid + " in workflow " + wid);
     }
+
+
+    void removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
+	{
+    	try {
+			lock_type lock(mtx_);
+			map_wf_act_ids_.erase(workflowId);
+    	} catch( ... ) {
+    		throw NoSuchWorkflow(workflowId);
+    	}
+
+    	SDPA_LOG_ERROR("Removed the workflow ...");
+	}
 
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;

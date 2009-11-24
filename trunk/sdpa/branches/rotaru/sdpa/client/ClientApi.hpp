@@ -21,7 +21,7 @@ namespace sdpa { namespace client {
                                   ,const std::string &output_stage="sdpa.apps.client.out"
                                   ,const std::string &client_location="0.0.0.0:0") throw (ClientException)
     {
-      ClientApi::ptr_t api(new ClientApi(Client::create(name_prefix, output_stage, orchestrator_name, client_location)));
+      ClientApi::ptr_t api(new ClientApi(Client::create(name_prefix, orchestrator_name, output_stage, client_location)));
       api->pimpl->start(cfg);
       return api;
     }

@@ -100,7 +100,7 @@ namespace sdpa { namespace client {
     const std::string &input_stage() const { return client_stage_->name(); }
     const std::string &output_stage() const { return output_stage_; }
   private:
-    Client(const std::string &a_name, const std::string &output_stage, const std::string &orchestrator_name, const std::string &client_location)
+    Client(const std::string &a_name,  const std::string &orchestrator_name, const std::string &output_stage, const std::string &client_location)
       : seda::Strategy(a_name)
       , version_(SDPA_VERSION)
       , copyright_(SDPA_COPYRIGHT)

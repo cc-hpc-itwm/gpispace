@@ -100,6 +100,7 @@ namespace sdpa { namespace util {
     po::options_description &tool_opts() { return tool_opts_; }
     po::options_description &tool_hidden_opts() { return tool_hidden_opts_; }
     po::positional_options_description &positional_opts() { return positional_opts_; }
+    po::options_description& network_opts() { return network_opts_;} // network related options
 
     std::ostream &printHelp(std::ostream &) const;
     std::ostream &printModuleHelp(std::ostream &os) const;
