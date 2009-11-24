@@ -1,9 +1,12 @@
 #include <sdpa/modules/Macros.hpp>
 #include <sdpa/modules/assert.hpp>
+#include <sdpa/modules/util.hpp>
 
 #include <fhglog/fhglog.hpp>
 
 #include <fvm-pc/pc.hpp>
+
+#include <remig/reReadVel.h>
 
 using namespace sdpa::modules;
 
@@ -15,7 +18,14 @@ void readvelo (data_t &params)
   
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
-  // at the moment: do nothing
+  cfg_t node_config;
+  fvm::util::get_data(&node_config, memhandle_for_configuration);
+
+  int retval = readVelocity(&node_config);
+  if (retval != 1)
+  {
+	throw std::runtime_error("readVelocity failed!");
+  }
 
   params["seq"].token().data("SEQ");
 }
