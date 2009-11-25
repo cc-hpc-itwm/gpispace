@@ -184,7 +184,7 @@
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
       <outputPlace placeID="memhandle_for_temp_outputvolume_update_A" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
  
-      <condition>($slice_and_depth mod 4) == 0</condition>
+      <condition>($slice_and_depth mod 4) = 0</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
@@ -204,7 +204,7 @@
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
       <outputPlace placeID="memhandle_for_temp_outputvolume_update_B" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
  
-      <condition>($slice_and_depth mod 4) == 1</condition>
+      <condition>($slice_and_depth mod 4) = 1</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
@@ -224,7 +224,7 @@
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
       <outputPlace placeID="memhandle_for_temp_outputvolume_update_C" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
  
-      <condition>($slice_and_depth mod 4) == 2</condition>
+      <condition>($slice_and_depth mod 4) = 2</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
@@ -244,7 +244,7 @@
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
       <outputPlace placeID="memhandle_for_temp_outputvolume_update_D" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
  
-      <condition>($slice_and_depth mod 4) == 3</condition>
+      <condition>($slice_and_depth mod 4) = 3</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
