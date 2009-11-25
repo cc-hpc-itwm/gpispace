@@ -271,13 +271,13 @@ WorkflowHandler::status_t TestWorkflows::_monitorWorkflow(WorkflowHandler::statu
 	case WorkflowHandler::STATUS_RUNNING:
 	case WorkflowHandler::STATUS_ACTIVE:
 	case WorkflowHandler::STATUS_FAILED:
-		LOG_INFO(logger, "Transient status = " << WorkflowHandler::getStatusAsString(status));
-		_monitorWorkflow(status, wfhP);
+		LOG_DEBUG(logger, "Transient status [" << wfhP->getID() << "] = " << WorkflowHandler::getStatusAsString(status));
+		status = _monitorWorkflow(status, wfhP);
 		break;
 	case WorkflowHandler::STATUS_SUSPENDED:
 	case WorkflowHandler::STATUS_COMPLETED:
 	case WorkflowHandler::STATUS_TERMINATED:
-		LOG_INFO(logger, "Final status = " << WorkflowHandler::getStatusAsString(status));
+		LOG_DEBUG(logger, "Final status [" << wfhP->getID() << "] = " << WorkflowHandler::getStatusAsString(status));
 		return status;
 	}
 
