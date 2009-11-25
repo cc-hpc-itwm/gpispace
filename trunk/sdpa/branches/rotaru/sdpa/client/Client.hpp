@@ -2,6 +2,7 @@
 #define SDPA_CLIENT_HPP 1
 
 #include <string>
+#include <cstdlib>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread.hpp> // condition variables
@@ -35,14 +36,13 @@ namespace sdpa { namespace client {
 
     // API
     static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
-                              , const std::string &orchestrator_name="orchestrator"
-                              , const std::string &output_stage="sdpa.apps.client.out"
-                              , const std::string &client_location="0.0.0.0");
+                              , const std::string &output_stage="sdpa.apps.client.out");
 
     static config_t config()
     {
       using namespace sdpa::util;
       config_t cfg("client", "SDPAC_");
+	  std::string home(std::getenv("HOME"));
       cfg.specific_opts().add_options()
         ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
          "name of the orchestrator")
@@ -50,7 +50,7 @@ namespace sdpa { namespace client {
          "location of the client")
         ("name", po::value<std::string>()->default_value("sdpa.app.client"),
          "name of the client")
-        ("config,C", po::value<std::string>()->default_value(std::string(SDPA_PREFIX) + "/etc/sdpac.rc"),
+        ("config,C", po::value<std::string>()->default_value(home + "/.config/sdpa/sdpac.rc"),
          "path to the configuration file")
         ;
       return cfg;
@@ -100,7 +100,7 @@ namespace sdpa { namespace client {
     const std::string &input_stage() const { return client_stage_->name(); }
     const std::string &output_stage() const { return output_stage_; }
   private:
-    Client(const std::string &a_name,  const std::string &orchestrator_name, const std::string &output_stage, const std::string &client_location)
+    Client(const std::string &a_name, const std::string &output_stage)
       : seda::Strategy(a_name)
       , version_(SDPA_VERSION)
       , copyright_(SDPA_COPYRIGHT)
@@ -109,8 +109,6 @@ namespace sdpa { namespace client {
       , output_stage_(output_stage)
       , fsm_(*this)
       , timeout_(5000U)
-      , orchestrator_(orchestrator_name)
-      , my_location_(client_location)
     {
     
     }

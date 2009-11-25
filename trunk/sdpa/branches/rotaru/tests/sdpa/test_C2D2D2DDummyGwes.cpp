@@ -58,8 +58,8 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
-    cav.push_back("--orchestrator=orchestrator"); //=sdpa::daemon::ORCHESTRATOR
-    cav.push_back("--network.location=orchestrator:127.0.0.1:5000");
+    cav.push_back("--orchestrator="+sdpa::daemon::ORCHESTRATOR);
+    cav.push_back("--network.location="+sdpa::daemon::ORCHESTRATOR+":127.0.0.1:5000");
     config.parse_command_line(cav);
 
 	m_ptrUser = sdpa::client::ClientApi::create( config );

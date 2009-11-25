@@ -28,14 +28,9 @@ namespace se = sdpa::events;
 using namespace sdpa::client;
 
 Client::ptr_t Client::create(const std::string &name_prefix
-                           , const std::string &orchestrator_name
-                           , const std::string &output_stage
-                           , const std::string &client_location) {
+                           , const std::string &output_stage) {
   // warning: we introduce a cycle here, we have to resolve it during shutdown!
-  Client::ptr_t client(new Client(name_prefix
-                                , orchestrator_name
-                                , output_stage
-                                , client_location));
+  Client::ptr_t client(new Client(name_prefix, output_stage));
   seda::Stage::Ptr client_stage(new seda::Stage(name_prefix, client));
   client->setStage(client_stage);
   seda::StageRegistry::instance().insert(client_stage);
@@ -322,7 +317,7 @@ void Client::action_configure(const config_t &cfg)
     MLOG(DEBUG, "using orchestrator: " << orchestrator_);
   }
 
-  if (cfg.is_set("client.location"))
+  if (cfg.is_set("location"))
   {
     my_location_ = cfg.get<std::string>("location");
     MLOG(DEBUG, "using location: " << my_location_);

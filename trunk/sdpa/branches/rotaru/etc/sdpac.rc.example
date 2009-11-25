@@ -1,4 +1,4 @@
-orchestrator = "orchestrator_0"
+orchestrator = "orchestrator"
 location = "0.0.0.0"
 
 [network]

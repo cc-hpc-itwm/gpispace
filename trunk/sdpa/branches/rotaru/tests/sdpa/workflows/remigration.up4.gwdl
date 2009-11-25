@@ -9,7 +9,10 @@
     <place ID="number_of_frequencies"/>
     <place ID="number_of_depthlevels"/>
     <place ID="number_of_parallel_propagators"/>
-    <place ID="memhandle_for_temp_outputvolume_update"/>
+    <place ID="memhandle_for_temp_outputvolume_update_A"/>
+    <place ID="memhandle_for_temp_outputvolume_update_B"/>
+    <place ID="memhandle_for_temp_outputvolume_update_C"/>
+    <place ID="memhandle_for_temp_outputvolume_update_D"/>
     <place ID="memhandle_for_temp_outputvolume_calc"/>
     <place ID="memhandle_for_configuration"/>
 
@@ -45,7 +48,10 @@
       <outputPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <outputPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
       <outputPlace placeID="memhandle_for_temp_outputvolume_calc" edgeExpression="memhandle_for_temp_outputvolume_calc"/>
-      <outputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_update"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_A" edgeExpression="memhandle_for_temp_outputvolume_update_A"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_B" edgeExpression="memhandle_for_temp_outputvolume_update_B"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_C" edgeExpression="memhandle_for_temp_outputvolume_update_C"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_D" edgeExpression="memhandle_for_temp_outputvolume_update_D"/>
       <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <outputPlace placeID="seq_after_init" edgeExpression="seq"/>
@@ -166,18 +172,79 @@
       </operation>
     </transition>
 
-    <transition ID="update">
+    <transition ID="update_A">
       <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <inputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth"/>
 
       <!-- exclusive access to the outputvolume -->
-      <inputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume"/>
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_A" edgeExpression="memhandle_for_temp_outputvolume"/>
 
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
-      <outputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_A" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+ 
+      <condition>($slice_and_depth mod 4) = 0</condition>
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
+          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+        </oc:operationClass>
+      </operation>
+    </transition>
 
+    <transition ID="update_B">
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <inputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth"/>
+
+      <!-- exclusive access to the outputvolume -->
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_B" edgeExpression="memhandle_for_temp_outputvolume"/>
+
+      <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_B" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+ 
+      <condition>($slice_and_depth mod 4) = 1</condition>
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
+          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+        </oc:operationClass>
+      </operation>
+    </transition>
+
+    <transition ID="update_C">
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <inputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth"/>
+
+      <!-- exclusive access to the outputvolume -->
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_C" edgeExpression="memhandle_for_temp_outputvolume"/>
+
+      <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_C" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+ 
+      <condition>($slice_and_depth mod 4) = 2</condition>
+      <operation>
+        <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
+          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+        </oc:operationClass>
+      </operation>
+    </transition>
+
+    <transition ID="update_D">
+      <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
+      <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
+      <inputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth"/>
+
+      <!-- exclusive access to the outputvolume -->
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_D" edgeExpression="memhandle_for_temp_outputvolume"/>
+
+      <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update_D" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+ 
+      <condition>($slice_and_depth mod 4) = 3</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
           <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
@@ -241,7 +308,11 @@
       <inputPlace placeID="seq_after_write_output"/>
 
       <inputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
-      <inputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume" />
+                                                                <!-- rename the first only, ignore the rest -->
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_A" edgeExpression="memhandle_for_temp_outputvolume" />
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_B" edgeExpression="memhandle_for_temp_outputvolume_B" />
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_C" edgeExpression="memhandle_for_temp_outputvolume_C" />
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update_D" edgeExpression="memhandle_for_temp_outputvolume_D" />
 
       <!-- consume all the global variable tokens, not strictly necessary -->
       <inputPlace placeID="number_of_frequencies"/>
