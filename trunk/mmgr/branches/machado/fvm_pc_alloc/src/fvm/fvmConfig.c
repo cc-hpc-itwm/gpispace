@@ -78,7 +78,7 @@ configFile_t readConfigFile(const char *filename, const int numOptions)
 
       if(strcmp(words[0], "SHMSZ") == 0)
 	{
-	  s->shmemsize = atoi(words[1]);
+	  s->shmemsize = atol(words[1]);
 	  na++;
 	}
       else if(strcmp(words[0], "FVMSZ") == 0)
