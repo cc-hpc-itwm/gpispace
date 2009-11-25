@@ -95,7 +95,7 @@ namespace fvm { namespace util {
    *   
    * warning: it uses the shared memory pointer to transfer data
    */
-  template <typename Type> void put_data(Type *data, fvmAllocHandle_t global, int rank = -1)
+  template <typename Type> void put_data(const Type *data, fvmAllocHandle_t global, int rank = -1)
   {
 	if (rank < 0) rank = fvmGetRank();
 
@@ -165,7 +165,7 @@ namespace fvm { namespace util {
 	for (size_t node(0); node < fvmGetNodeCount(); ++node)
 	{
 	  DLOG(DEBUG, "distributing data to node: " << node);
-	  fvmCommHandle_t comm_handle = fvmPutGlobalData(global, 0, transfer_size, 0, scratch);
+	  fvmCommHandle_t comm_handle = fvmPutGlobalData(global, node * transfer_size, transfer_size, 0, scratch);
 	  fvmCommHandleState_t state = waitComm(comm_handle);
 	  DLOG(DEBUG, "comm state = " << state);
 	  // FIXME: check communication state!
