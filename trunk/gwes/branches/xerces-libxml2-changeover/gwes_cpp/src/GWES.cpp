@@ -18,16 +18,11 @@ using namespace gwes;
 namespace gwes
 {
 
-  struct mutex_lock {
-    mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) {
-      pthread_mutex_lock(&mtx);
-    }
-    ~mutex_lock() {
-      pthread_mutex_unlock(&mtx);
-    }
-
-    pthread_mutex_t &mtx;
-  };
+struct mutex_lock {
+	mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) { pthread_mutex_lock(&mtx); }
+	~mutex_lock() { pthread_mutex_unlock(&mtx); }
+	pthread_mutex_t &mtx;
+};
 
 /**
  * Constructor for GWES.

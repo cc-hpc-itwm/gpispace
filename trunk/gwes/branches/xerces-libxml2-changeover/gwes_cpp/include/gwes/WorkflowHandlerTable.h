@@ -53,6 +53,9 @@ public:
 	 */
 	void remove(const std::string& id);
 	
+private:
+	pthread_mutex_t _monitorLock;
+	
 };
 
 }

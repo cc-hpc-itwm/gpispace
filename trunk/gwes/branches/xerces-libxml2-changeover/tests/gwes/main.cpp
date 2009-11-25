@@ -54,8 +54,8 @@ int main()
 	// logger
     fhg::log::Configurator::configure();
 	logger_t logger(getLogger("gwes"));
-	logger.setLevel(LogLevel::DEBUG);
-	getLogger("gwdl").setLevel(LogLevel::DEBUG);
+//	logger.setLevel(LogLevel::DEBUG);
+//	getLogger("gwdl").setLevel(LogLevel::DEBUG);
 	//logger.addAppender(Appender::ptr_t(new StreamAppender("console")))->setFormat(Formatter::Short());
 
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
