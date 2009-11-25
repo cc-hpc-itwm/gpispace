@@ -28,7 +28,7 @@ void calc (data_t &params) throw (std::exception)
   ASSERT_HANDLE(memhandle_for_outputvolume);
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
-  MLOG (DEBUG, "memhandle_for_temp_outputvolume= " << memhandle_for_temp_outputvolume);
+  MLOG (DEBUG, "memhandle_for_temp_outputvolume= " << memhandle_for_outputvolume);
   MLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
   MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
 
