@@ -176,7 +176,7 @@
       <inputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume"/>
 
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
-      <outputPlace placeID="memhandle_for_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
