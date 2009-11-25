@@ -1,9 +1,11 @@
 #include <sdpa/modules/Macros.hpp>
 #include <sdpa/modules/assert.hpp>
+#include <sdpa/modules/util.hpp>
 
 #include <fhglog/fhglog.hpp>
 
 #include <fvm-pc/pc.hpp>
+#include <remig/rePrefxSum.h>
 
 using namespace sdpa::modules;
 
@@ -15,7 +17,15 @@ void prefsum (data_t &params)
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
 
-  // at the moment: do nothing
+  cfg_t node_config;
+  fvm::util::get_data(&node_config, memhandle_for_configuration);
+
+  int retval = rePrefixSum(&node_config);
+  if (retval != 1)
+  {
+	LOG(ERROR, "rePrefxSum failed!");
+	throw std::runtime_error("rePrefxSum failed!");
+  }
 
   params["seq"].token().data("SEQ");
 }

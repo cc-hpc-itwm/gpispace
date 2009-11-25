@@ -24,19 +24,19 @@ void update (data_t &params)
   ASSERT_HANDLE(memhandle_for_configuration);
 
   const fvmAllocHandle_t memhandle_for_temp_outputvolume 
-    (params.at("memhandle_for_temp_outputvolume_update").token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_temp_outputvolume").token().data_as<fvmAllocHandle_t>());
   ASSERT_HANDLE(memhandle_for_temp_outputvolume);
 
-  MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
-  MLOG (DEBUG, "memhandle_for_temp_outputvolume = " << memhandle_for_temp_outputvolume);
-  MLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
-  MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
+  DMLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
+  DMLOG (DEBUG, "memhandle_for_temp_outputvolume = " << memhandle_for_temp_outputvolume);
+  DMLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
+  DMLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
 
   const unsigned long slice = slice_and_depth / number_of_depthlevels;
   const unsigned long depth = slice_and_depth % number_of_depthlevels;
 
-  MLOG (DEBUG, "slice = " << slice);
-  MLOG (DEBUG, "depth = " << depth);
+  DMLOG (DEBUG, "slice = " << slice);
+  DMLOG (DEBUG, "depth = " << depth);
 
   cfg_t node_config;
   fvm::util::get_data(&node_config, memhandle_for_configuration);
@@ -123,7 +123,6 @@ void update (data_t &params)
 
 SDPA_MOD_INIT_START(update)
 {
-  srand((unsigned int)(fvmGetRank() << 8));
   SDPA_REGISTER_FUN_START(update);
     SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
 

@@ -5,8 +5,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fvm-pc/pc.hpp>
-#include <cstdlib>
-#include <unistd.h>
 
 #include <remig/calcOneLevl.h>
 #include "remig-helpers.hpp"
@@ -26,7 +24,7 @@ void calc (data_t &params) throw (std::exception)
   ASSERT_HANDLE(memhandle_for_configuration);
 
   const fvmAllocHandle_t memhandle_for_temp_outputvolume
-	(params.at("memhandle_for_temp_outputvolume_calc").token().data_as<fvmAllocHandle_t>());
+	(params.at("memhandle_for_temp_outputvolume").token().data_as<fvmAllocHandle_t>());
   ASSERT_HANDLE(memhandle_for_temp_outputvolume);
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
@@ -134,7 +132,7 @@ SDPA_MOD_INIT_START(calc)
     SDPA_ADD_INP( "slice_and_depth", unsigned long );
     SDPA_ADD_INP( "number_of_depthlevels", unsigned long );
     SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
-    SDPA_ADD_INP( "memhandle_for_temp_outputvolume_calc", fvmAllocHandle_t );
+    SDPA_ADD_INP( "memhandle_for_temp_outputvolume", fvmAllocHandle_t );
     SDPA_ADD_OUT( "slice_and_depth_OUT", unsigned long );
   SDPA_REGISTER_FUN_END(calc);
 }
