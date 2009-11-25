@@ -9,7 +9,8 @@
     <place ID="number_of_frequencies"/>
     <place ID="number_of_depthlevels"/>
     <place ID="number_of_parallel_propagators"/>
-    <place ID="memhandle_for_outputvolume"/>
+    <place ID="memhandle_for_temp_outputvolume_update"/>
+    <place ID="memhandle_for_temp_outputvolume_calc"/>
     <place ID="memhandle_for_configuration"/>
 
     <!-- the seq tokens are for serializing different activities -->
@@ -43,7 +44,8 @@
       <outputPlace placeID="number_of_frequencies" edgeExpression="number_of_frequencies"/>
       <outputPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <outputPlace placeID="number_of_parallel_propagators" edgeExpression="number_of_parallel_propagators"/>
-      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_calc" edgeExpression="memhandle_for_temp_outputvolume_calc"/>
+      <outputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_update"/>
       <outputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
 
       <outputPlace placeID="seq_after_init" edgeExpression="seq"/>
@@ -150,8 +152,9 @@
 
     <transition ID="calc_one_level">
       <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
-
+      <readPlace placeID="memhandle_for_temp_outputvolume_calc" edgeExpression="memhandle_for_temp_outputvolume"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+
       <inputPlace placeID="slice_and_depth_before_calc_one_level" edgeExpression="slice_and_depth"/>
 
       <outputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth_OUT"/>
@@ -170,10 +173,10 @@
       <inputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth"/>
 
       <!-- exclusive access to the outputvolume -->
-      <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume"/>
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume"/>
 
       <outputPlace placeID="slice_and_depth_after_update" edgeExpression="slice_and_depth_OUT"/>
-      <outputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume_OUT"/>
+      <outputPlace placeID="memhandle_for_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume_OUT"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
@@ -238,12 +241,13 @@
       <inputPlace placeID="seq_after_write_output"/>
 
       <inputPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
-      <inputPlace placeID="memhandle_for_outputvolume" edgeExpression="memhandle_for_outputvolume" />
+      <inputPlace placeID="memhandle_for_temp_outputvolume_update" edgeExpression="memhandle_for_temp_outputvolume" />
 
       <!-- consume all the global variable tokens, not strictly necessary -->
       <inputPlace placeID="number_of_frequencies"/>
       <inputPlace placeID="number_of_depthlevels"/>
       <inputPlace placeID="number_of_parallel_propagators"/>
+      <inputPlace placeID="memhandle_for_temp_outputvolume_calc"/>
 
       <outputPlace placeID="seq_after_finalize" edgeExpression="seq"/>
 
