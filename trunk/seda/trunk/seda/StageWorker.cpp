@@ -32,7 +32,7 @@ namespace seda {
             } catch (const seda::StageNotFound& snf) {
                 SEDA_LOG_ERROR("event not handled, stage `" << snf.stageName() << "' could not be found!");
             } catch (const boost::thread_interrupted &irq) {
-                SEDA_LOG_INFO("interrupted");
+                SEDA_LOG_DEUBUG("interrupted");
                 break;
             } catch (const std::exception& ex) {
                 SEDA_LOG_ERROR("strategy execution failed: " << ex.what());
