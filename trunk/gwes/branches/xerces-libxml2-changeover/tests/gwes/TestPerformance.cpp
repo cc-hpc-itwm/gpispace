@@ -16,6 +16,7 @@
 #include <boost/timer.hpp>
 // std
 #include <time.h>
+#include <vector>
 
 using namespace std;
 using namespace fhg::log;
@@ -97,36 +98,39 @@ void TestPerformance::testManySimpleWorkflows() {
 void TestPerformance::testManyConcurrentWorkflows() {
 	logger_t logger(getLogger("gwes"));
 	LOG_INFO(logger, "============== BEGIN TestPerformance::testManyConcurrentWorkflows() ==============");
-	_loggerShutup();
+//	_loggerShutup();
 
-	Libxml2Builder builder;
-	Workflow::ptr_t wfMasterP = builder.deserializeWorkflowFromFile(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt.gwdl"));
-	
-	time_t before = time (NULL);
-	boost::timer t;
-
-	const int imax = 200;
-	for (int i=0; i<imax; i++) {
-		// make copy of workflow object
-		string wfStr = builder.serializeWorkflow(*wfMasterP);
-		Workflow::ptr_t wfP = builder.deserializeWorkflow(wfStr);
-
-		// execute workflow
-		string workflowId = _executeWorkflow(wfP, m_gwes);
-		
-		// deallocate workflowHandler and workflow
-		m_gwes.remove(workflowId);
-		wfP.reset();
-	}
-
-	time_t after = time (NULL);
-	double duration = t.elapsed();
-
-	LOG_INFO(logger, "workflow.duration["<< imax << " x simple.gwdl] = " << after-before << "s (" << duration << "s)");
-	LOG_INFO(logger, "workflow.duration.expected = XXXs (XXXs) (r1504 on poseidon)");
-
-	wfMasterP.reset();
-	_loggerAsBefore();
+//	Libxml2Builder builder;
+//	Workflow::ptr_t wfMasterP = builder.deserializeWorkflowFromFile(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/sleep.gwdl"));
+//	
+//	vector wfIds;
+//	
+//	
+//	time_t before = time (NULL);
+//	boost::timer t;
+//
+//	const int imax = 200;
+//	for (int i=0; i<imax; i++) {
+//		// make copy of workflow object
+//		string wfStr = builder.serializeWorkflow(*wfMasterP);
+//		Workflow::ptr_t wfP = builder.deserializeWorkflow(wfStr);
+//
+//		// execute workflow
+//		string workflowId = _executeWorkflow(wfP, m_gwes);
+//		
+//		// deallocate workflowHandler and workflow
+//		m_gwes.remove(workflowId);
+//		wfP.reset();
+//	}
+//
+//	time_t after = time (NULL);
+//	double duration = t.elapsed();
+//
+//	LOG_INFO(logger, "workflow.duration["<< imax << " x simple.gwdl] = " << after-before << "s (" << duration << "s)");
+//	LOG_INFO(logger, "workflow.duration.expected = XXXs (XXXs) (r1504 on poseidon)");
+//
+//	wfMasterP.reset();
+//	_loggerAsBefore();
 	LOG_INFO(logger, "============== END TestPerformance::testManyConcurrentWorkflows() ==============");
 }
 

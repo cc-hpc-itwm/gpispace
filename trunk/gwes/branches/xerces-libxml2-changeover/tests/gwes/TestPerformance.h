@@ -23,7 +23,7 @@ namespace gwes {
     protected:
       void testWorkflowControlLoop();
       void testManySimpleWorkflows(); 
-      void testManyConcurrentWorkflows()
+      void testManyConcurrentWorkflows();
       
     private:
       gwdl::Workflow::ptr_t _testWorkflow(std::string workflowfn, gwes::GWES &gwes);
@@ -31,7 +31,7 @@ namespace gwes {
       WorkflowHandler::status_t _monitorWorkflow(WorkflowHandler::status_t oldStatus, WorkflowHandler* wfhP);
       void _loggerShutup();
       void _loggerAsBefore();
-      static gwes::GWES m_gwes;
+      gwes::GWES m_gwes;
       fhg::log::LogLevel _oldGwesLevel;
       fhg::log::LogLevel _oldGwdlLevel;
     };
