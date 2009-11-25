@@ -154,6 +154,13 @@
       <readPlace placeID="number_of_depthlevels" edgeExpression="number_of_depthlevels"/>
       <readPlace placeID="memhandle_for_temp_outputvolume_calc" edgeExpression="memhandle_for_temp_outputvolume"/>
       <readPlace placeID="memhandle_for_configuration" edgeExpression="memhandle_for_configuration"/>
+      <inputPlace placeID="slice_and_depth_before_calc_one_level" edgeExpression="slice_and_depth"/>
+
+      <outputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth_OUT"/>
+
+      <inputPlace placeID="slice_and_depth_before_calc_one_level" edgeExpression="slice_and_depth"/>
+
+      <outputPlace placeID="slice_and_depth_after_calc_one_level" edgeExpression="slice_and_depth_OUT"/>
 
       <inputPlace placeID="slice_and_depth_before_calc_one_level" edgeExpression="slice_and_depth"/>
 

@@ -55,17 +55,15 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrSdpa2GwesAgg  = new DummyGwes();
 
-	//const sdpa::client::config_t config;
-	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
-	/*
-	 * const config_t &cfg
-                                  ,const std::string &name_prefix="sdpa.apps.client"
-                                  ,const std::string &output_stage="sdpa.apps.client.out"
-                                  ,const std::string &orchestrator_name="orchestrator"
-                                  ,const std::string &client_location="0.0.0.0:0") throw (ClientException)
-	 * */
-	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER, sdpa::daemon::ORCHESTRATOR );
-	//m_ptrUser = sdpa::client::ClientApi::create( config );
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+    cav.push_back("--orchestrator=orchestrator"); //=sdpa::daemon::ORCHESTRATOR
+    cav.push_back("--network.location=orchestrator:127.0.0.1:5000");
+    config.parse_command_line(cav);
+
+	m_ptrUser = sdpa::client::ClientApi::create( config );
+	m_ptrUser->configure_network( config );
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 

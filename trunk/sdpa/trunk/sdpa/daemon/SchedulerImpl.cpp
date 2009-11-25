@@ -61,13 +61,16 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 		ptrWorkflow->setID(wf_id);
 	} catch(std::runtime_error&){
 		SDPA_LOG_ERROR("GWES could not deserialize the job description!"<<std::endl<<pJob->description());
+
+		//send a JobFailed event
+		sdpa::job_result_t sdpa_result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+		ptr_comm_handler_->sendEvent(pEvtJobFailed);
 		return;
 	}
 
 	// Should set the workflow_id here, or send it together with the workflow description
-	ostringstream os;
-	os<<"Submit the workflow attached to the job "<<wf_id<<" to GWES";
-	SDPA_LOG_DEBUG(os.str());
+	SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
 
 	try {
 		if(ptr_comm_handler_->gwes() && ptrWorkflow )
@@ -76,11 +79,21 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
 		}
 		else
+		{
 			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
+			//send a JobFailed event
+			sdpa::job_result_t sdpa_result;
+			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+			ptr_comm_handler_->sendEvent(pEvtJobFailed);
+		}
 	}
 	catch (std::exception& )
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+		//send a JobFailed event
+		sdpa::job_result_t sdpa_result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+		ptr_comm_handler_->sendEvent(pEvtJobFailed);
 	}
 }
 
