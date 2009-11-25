@@ -196,7 +196,15 @@ int main (int argc, char **argv) {
     LOG(INFO, "SDPA - Seismic Data Processing Architecture (" << api->version() << ")");
     LOG(INFO, "***************************************************");
 
-    api->configure_network(cfg);
+	try
+	{
+	  api->configure_network(cfg);
+	}
+	catch (const std::exception &ex)
+	{
+	  std::cerr << "F: network connection could not be set up: " << ex.what() << std::endl;
+	  return 2;
+	}
 
     if (command == "submit")
     {
