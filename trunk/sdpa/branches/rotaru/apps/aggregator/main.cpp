@@ -18,17 +18,17 @@ using namespace std;
 
 int main (int argc, char **argv)
 {
-	string aggName("aggregator_0");
-	string aggUrl("127.0.0.1:5001");
-	string orchName("orchestrator_0");
-	string orchUrl("127.0.0.1:5000");
+	string aggName;
+	string aggUrl;
+	string orchName;
+	string orchUrl;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
-	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator_0"), "Aggregator's logical name")
-	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
-	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator_0"), "Orchestrator's logical name")
+	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
+	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("0.0.0.0:5001"), "Aggregator's url")
+	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("orch_url,p",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url");
 
 	po::variables_map vm;

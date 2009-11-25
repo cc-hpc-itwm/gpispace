@@ -19,15 +19,15 @@ using namespace std;
 
 int main (int argc, char **argv)
 {
-	string orchName("orchestrator_0");
-	string orchUrl("127.0.0.1:5000");
-	string workflow_directory("/");
+	string orchName;
+	string orchUrl;
+	string workflow_directory;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
-	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator_0"), "Orchestrator's logical name")
-	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url")
+	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
+	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("0.0.0.0:5000"), "Orchestrator's url")
 	   ("workflow-directory", po::value<std::string>(&workflow_directory)->default_value("/"), "directory where workflows can be found")
 	   ;
 
