@@ -4,6 +4,7 @@
 #include <sstream>
 // tests
 #include "TestPerformance.h"
+#include "SdpaDummy.h"
 // gwes
 #include <gwes/Utils.h>
 #include <gwes/WorkflowObserver.h>
@@ -12,10 +13,7 @@
 #include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
-// boost
-#include <boost/timer.hpp>
 // std
-#include <time.h>
 #include <vector>
 
 using namespace std;
@@ -66,8 +64,7 @@ void TestPerformance::testManySimpleWorkflows() {
 	Libxml2Builder builder;
 	Workflow::ptr_t wfMasterP = builder.deserializeWorkflowFromFile(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple.gwdl"));
 	
-	time_t before = time (NULL);
-	boost::timer t;
+	_measureBefore();
 
 	const int imax = 200;
 	for (int i=0; i<imax; i++) {
@@ -83,11 +80,9 @@ void TestPerformance::testManySimpleWorkflows() {
 		wfP.reset();
 	}
 
-	time_t after = time (NULL);
-	double duration = t.elapsed();
-
+	string duration = _measureAfter();
 	_loggerAsBefore();
-	LOG_INFO(logger, "workflow.duration["<< imax << " x simple.gwdl] = " << after-before << "s (" << duration << "s)");
+	LOG_INFO(logger, "workflow.duration["<< imax << " x simple.gwdl] = " << duration);
 	LOG_INFO(logger, "workflow.duration.expected = 3s (0s) (r1504 on poseidon)");
 
 	wfMasterP.reset();
@@ -101,9 +96,7 @@ void TestPerformance::testManyConcurrentWorkflows() {
 	Libxml2Builder builder;
 	Workflow::ptr_t wfMasterP = builder.deserializeWorkflowFromFile(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/sleep2s.gwdl"));
 	
-	// start timers
-	time_t before = time (NULL);
-	boost::timer t;
+	_measureBefore();
 
 	// copy and initiate workflows
 	vector<string> wfIds;
@@ -138,15 +131,73 @@ void TestPerformance::testManyConcurrentWorkflows() {
 		m_gwes.remove(wfIds[i]);
 	}
 
-	// end timers
-	time_t after = time (NULL);
-	double duration = t.elapsed();
-
+	string duration = _measureAfter();
 	_loggerAsBefore();
-	LOG_INFO(logger, "workflow.duration["<< imax << " x sleep2s.gwdl] = " << after-before << "s (" << duration << "s)");
+	LOG_INFO(logger, "workflow.duration["<< imax << " x sleep2s.gwdl] = " << duration);
 	LOG_INFO(logger, "workflow.duration.expected = 4s (0.1s) (r1504 on poseidon)");
 
 	wfMasterP.reset();
+}
+
+void TestPerformance::testWorkflowWithManyActivities() 
+{
+	logger_t logger(getLogger("gwes"));
+	LOG_INFO(logger, "============== TestPerformance::testWorkflowWithManyActivities() ... ==============");
+	_loggerShutup();
+
+	Workflow::ptr_t workflow;
+	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/sleep3x2s.gwdl"),m_gwes));
+	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Number tokens on exitcode", (size_t) 3, workflow->getPlace("exitcode")->getTokens().size());
+	m_gwes.remove(workflow->getID());
+	
+	_loggerAsBefore();
+	LOG_INFO(logger, "workflow.duration.expected = 6s (0.01s) (r1504 on poseidon)");
+	LOG_WARN(logger, "Concurrent execution of local activities not yet implemented!");
+}
+
+/**
+ * ToDo: this test works well with 50 concurrent activities, but under eclipse I get an undefined error with 100 activities.
+ * Works well with 100 activities when executing "make test" on the command line.
+ */
+void TestPerformance::testWorkflowWithManySdpaActivities() 
+{
+	logger_t logger(getLogger("gwes"));
+	LOG_INFO(logger, "============== TestPerformance::testWorkflowWithManySdpaActivities() ... ==============");
+	_loggerShutup();
+
+	// create SDPA dummy. SDPA dummy creates own local gwes.
+	SdpaDummy sdpa;
+
+	// deserialize workflow
+	Libxml2Builder builder;
+	Workflow::ptr_t wfP = builder.deserializeWorkflowFromFile(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/parallel-sdpa-test.gwdl"));
+	
+	_measureBefore();
+	
+	// start workflow
+	workflow_id_t wfId = sdpa.submitWorkflow(wfP);
+
+	// poll for completion of workflow
+	int timeout = 100; // 10 Seconds
+	SdpaDummy::ogsa_bes_status_t status = sdpa.getWorkflowStatus(wfId);
+	while (timeout-- > 0 && (status == SdpaDummy::PENDING || status == SdpaDummy::RUNNING)) {
+		usleep(100000);
+		status = sdpa.getWorkflowStatus(wfId);
+		LOG_INFO(logger, "status " << wfId << " = " << status);
+	}
+	
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Number tokens on output", (size_t) 50, wfP->getPlace("output")->getTokens().size());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Exit status of workflow", SdpaDummy::FINISHED, status);
+	
+	sdpa.removeWorkflow(wfId);
+	wfP.reset();
+	
+	_loggerAsBefore();
+	string duration = _measureAfter();
+	LOG_INFO(logger, "workflow.duration[parallel-sdpa-test.gwdl] = " << duration);
+	LOG_INFO(logger, "workflow.duration.expected = XXXs (XXXs) (r1504 on poseidon)");
 }
 
 ////////////////////////////////////////////////
@@ -167,16 +218,14 @@ Workflow::ptr_t TestPerformance::_testWorkflow(string workflowfn, gwes::GWES &gw
 		Workflow::ptr_t wfP = builder.deserializeWorkflowFromFile(workflowfn);
 
 		// execute workflow
-		time_t before = time (NULL);
-		boost::timer t;
+		_measureBefore();
 		_executeWorkflow(wfP,gwes);
-		time_t after = time (NULL);
-		double duration = t.elapsed();
+		string duration = _measureAfter();
 
 		// print workflow
 		LOG_DEBUG(logger, *wfP);
 		LOG_INFO(logger, "executing workflow " << file << " ... done.");
-		LOG_WARN(logger, "workflow.duration[" << file << "] = " << after-before << "s (" << duration << "s)");
+		LOG_WARN(logger, "workflow.duration[" << file << "] = " << duration);
 		return wfP;
 	} catch (const WorkflowFormatException &e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
@@ -237,3 +286,21 @@ void TestPerformance::_loggerAsBefore() {
 	getLogger("gwes").setLevel(_oldGwesLevel);
 	getLogger("gwdl").setLevel(_oldGwdlLevel);
 }
+
+void TestPerformance::_measureBefore() {
+	_boosttimer.restart();
+	_timeBefore = time (NULL);
+	getrusage(RUSAGE_SELF, &_usageBefore);
+}
+
+string TestPerformance::_measureAfter() {
+	double boostduration = _boosttimer.elapsed();
+	_timeAfter = time (NULL);
+	getrusage(RUSAGE_SELF, &_usageAfter);
+	ostringstream oss;
+	oss << "time:" << _timeAfter-_timeBefore << "s; boost:" << boostduration << "s" 
+		<< "; stack:" << _usageAfter.ru_isrss - _usageBefore.ru_isrss << "kB"
+		<< "; data:" << _usageAfter.ru_idrss - _usageBefore.ru_idrss << "kB";
+	return oss.str();
+}
+

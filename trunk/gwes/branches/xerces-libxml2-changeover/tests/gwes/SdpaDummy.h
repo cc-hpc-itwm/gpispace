@@ -6,6 +6,8 @@
  */
 #ifndef SDPADUMMY_H_
 #define SDPADUMMY_H_
+// test
+#include "SdpaActivityExecutorDummy.h"
 // gwes
 #include <gwes/Types.h>
 #include <gwes/Gwes2Sdpa.h>
@@ -47,6 +49,7 @@ public:
 private:
 	sdpa2gwes_t* _gwesP;
 	std::map<gwes::workflow_id_t,ogsa_bes_status_t> _wfStatusMap;
+	std::vector<gwes::tests::SdpaActivityExecutorDummy*> _activities;
 	void logWorkflowStatus();
 	void executeSubWorkflow(
 			const activity_id_t &activityId, 

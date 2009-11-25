@@ -13,6 +13,7 @@
 //fhglog
 #include <fhglog/fhglog.hpp>
 
+using namespace gwes::tests;
 using namespace gwes;
 using namespace gwdl;
 using namespace fhg::log;
@@ -26,6 +27,10 @@ SdpaDummy::SdpaDummy() {
 
 SdpaDummy::~SdpaDummy() {
 	LOG_INFO(logger_t(getLogger("gwes")), "~SdpaDummy() ... ");
+	for (size_t i=0; i<_activities.size(); i++) {
+		delete _activities[i]; 
+	}
+
 	delete _gwesP;
 }
 
@@ -56,7 +61,9 @@ activity_id_t SdpaDummy::submitActivity(activity_t &activity) {
 	string operationType = static_cast<Activity&>(activity).getOperationCandidate()->getType();
 	if (operationType == "sdpa") {                 // atomic activity
 		parameter_list_t* parameters = static_cast<Activity&>(activity).getTransitionOccurrence()->getTokens();
-		executeAtomicActivity(activityId, workflowId, operationName, resourceName, parameters);
+		SdpaActivityExecutorDummy* saed = new SdpaActivityExecutorDummy(_gwesP, activityId, workflowId, operationName, resourceName, parameters);
+		saed->startActivity();
+		_activities.push_back(saed);
 	} else if (operationType == "sdpa/workflow") { // sub workflow
 		executeSubWorkflow(activityId, workflowId, activity);
 	}
