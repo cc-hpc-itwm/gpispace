@@ -11,6 +11,7 @@
 
 
 #include <fvm-pc/pc.hpp>
+#include <sdpa/modules/util.hpp>
 
 //---------- include some definitions used here --------------
 
@@ -39,8 +40,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         bzero(pShMem, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         fvmOffset_t vmOffs = pCfg->ofsGlbDat; //=0 //--- src: offs VM, see below, where the transfer occurs 
         fvmShmemOffset_t shmemOffs=0; // dest: lcl shmem offs (in the data cube)
@@ -59,11 +59,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         if(commStatus != COMM_HANDLE_OK) return (-1);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
-
-
-       fvmLocalFree(hScra);
-       //fvmLocalFree(hLclShMem); // free the local sh mem
-
 
     return 1;
 }
@@ -189,8 +184,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
           bzero(pShMem, shmemLclSz);
 
 	  //--- alloc scratzch handle, for now of the same size -- 
-          fvmAllocHandle_t hScra; 
-          hScra = fvmLocalAlloc(shmemLclSz);
+          fvm::util::local_allocation hScra(shmemLclSz);
 
           fvmShmemOffset_t shmemOffs=0; // dest: lcl shmem offs (in the data cube)
         
@@ -224,8 +218,6 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
           memcpy(vMax, pShMem, transfrSZbytes);
 
-          fvmLocalFree(hScra);
-          //fvmLocalFree(hLclShMem); // free the local sh mem
 
        //------- alloc the work-array for the FFT ---
        //float* const       u1;       // temp space 4*roundUp4(nx) complex

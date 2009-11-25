@@ -10,6 +10,7 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
+#include <sdpa/modules/util.hpp>
 
 //---------- include some definitions used here --------------
 
@@ -384,8 +385,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
         bzero(pShMem, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         fvmOffset_t vmOffs; // dest: = iNd*pCfg->ndSharedSz+pCfg->ofsVel; 
         fvmShmemOffset_t shmemOffs=0; // src: lcl shmem offs 
@@ -576,7 +576,6 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 */
         //-------- end checks, the check is OK -----------
 
-     fvmLocalFree(hScra);
      //fvmLocalFree(hLclShMem); // free the local sh mem
 
     return 1;
@@ -595,8 +594,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         bzero(pShMem, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         fvmOffset_t vmOffs = pCfg->ofsGlbDat; //=0 //--- src: offs VM, see below, where the transfer occurs 
         fvmShmemOffset_t shmemOffs=0; // dest: lcl shmem offs (in the data cube)
@@ -615,10 +613,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         if(commStatus != COMM_HANDLE_OK) return (-1);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
-
-
-       fvmLocalFree(hScra);
-       //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
     return 1;

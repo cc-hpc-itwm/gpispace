@@ -9,6 +9,8 @@
 #include <stdio.h>
 
 #include <fvm-pc/pc.hpp>
+#include <sdpa/modules/util.hpp>
+#include <fhglog/fhglog.hpp>
 
 #include "utls.h"
 
@@ -28,8 +30,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         bzero(pShMem, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         fvmOffset_t vmOffs = pCfg->ofsGlbDat; //=0 //--- src: offs VM, see below, where the transfer occurs 
         fvmShmemOffset_t shmemOffs=0; // dest: lcl shmem offs (in the data cube)
@@ -50,7 +51,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         memcpy(pReGlb, pShMem, transfrSZbytes);
 
 
-       fvmLocalFree(hScra);
        //MR: not needed
        //fvmLocalFree(hLclShMem); // free the local sh mem
 
@@ -147,14 +147,14 @@ static int tstDumpShMemSoln(cfg_t *pCfg, TReGlbStruct *pReG, fvmAllocHandle_t hL
 {
 
         FILE *fp; 
-        char fn[100];
+        char fn[cfg_t::max_path_len];
 
         int i, j, iz, offs;
          
        int rank = fvmGetRank();
        int size = fvmGetNodeCount();
 
-        sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
+        snprintf(fn, sizeof(fn), "%s/fTrace.%d.trace", pCfg->prefix_path, rank);
 
         if((fp=fopen(fn, "at")) != NULL) {
             //--- 
@@ -201,8 +201,7 @@ static int cpSolnCubeIntoSharedSpace(cfg_t *pCfg, TReGlbStruct *pReGlb, fvmAlloc
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(szCube*sizeof(float));
+		fvm::util::local_allocation hScra(szCube*sizeof(float));
 
         fvmOffset_t vmOffs;     //--- src: offs VM, 
         fvmShmemOffset_t shmemOffs; // dest: lcl shmem offs (in the data cube)
@@ -234,10 +233,6 @@ static int cpSolnCubeIntoSharedSpace(cfg_t *pCfg, TReGlbStruct *pReGlb, fvmAlloc
             
         } // for(iNd = 0; iNd < size; iNd++)
         
-	//-------- free the scratch ---
-        fvmLocalFree(hScra);
-
-
     return 1;
 }
 
@@ -284,8 +279,7 @@ static int ditributeShMemSolnOverTheNodes(cfg_t *pCfg, TReGlbStruct *pReGlb, fvm
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(szCube*sizeof(float));
+		fvm::util::local_allocation hScra(szCube*sizeof(float));
 
         fvmOffset_t vmOffs;     //--- dest: offs VM, 
         fvmShmemOffset_t shmemOffs; // src: lcl shmem offs (in the data cube)
@@ -316,9 +310,6 @@ static int ditributeShMemSolnOverTheNodes(cfg_t *pCfg, TReGlbStruct *pReGlb, fvm
             if(commStatus != COMM_HANDLE_OK) return (-1);
             
         } // for(iNd = 0; iNd < size; iNd++)
-        
-	//-------- free the scratch ---
-        fvmLocalFree(hScra);
 
     return 1;
 }

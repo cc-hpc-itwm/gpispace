@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fhglog/fhglog.hpp>
+#include <sdpa/modules/util.hpp>
 
 
 #include <fvm-pc/pc.hpp>
@@ -248,8 +249,7 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
         bzero(pShMdatCube, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         //fvmOffset_t vmDestOffs;  //--- dest offs VM, see below, where the transfer occurs 
         //fvmShmemOffset_t shmemSrcOffs; // lcl shmem src offs (in the data cube)
@@ -501,7 +501,6 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 */
         //-------- end checks, the check is OK -----------
 
-     fvmLocalFree(hScra);
      //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
@@ -521,8 +520,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         bzero(pShMem, shmemLclSz);
 
 	//--- alloc scratzch handle, for now of the same size -- 
-        fvmAllocHandle_t hScra; 
-        hScra = fvmLocalAlloc(shmemLclSz);
+        fvm::util::local_allocation hScra(shmemLclSz);
 
         fvmOffset_t vmOffs = pCfg->ofsGlbDat; //=0 //--- src: offs VM, see below, where the transfer occurs 
         fvmShmemOffset_t shmemOffs=0; // dest: lcl shmem offs (in the data cube)
@@ -542,8 +540,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 
-
-       fvmLocalFree(hScra);
        //fvmLocalFree(hLclShMem); // free the local sh mem
 
 
