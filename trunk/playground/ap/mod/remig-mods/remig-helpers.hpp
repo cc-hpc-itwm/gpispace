@@ -2,6 +2,8 @@
 #define SDPA_REMIG_HELPERS_HPP 1
 
 #include <fvm-pc/pc.hpp>
+#include <ostream>
+#include <remig/reGlbStructs.h>
 
 namespace remig { namespace detail {
   inline void calculateDistribution(int number_of_frequencies, int *nwHlocal, int *nwHdispls)
@@ -68,5 +70,40 @@ namespace remig { namespace detail {
 	return offset;
   }
 }}
+
+inline std::ostream &operator<<(std::ostream &os, const TReGlbStruct &cfg)
+{
+  os << "Image parameters:" << std::endl;
+  os << "\tnz ......" << cfg.nz     << std::endl;
+  os << "\tnx in ..." << cfg.nx_in  << std::endl;
+  os << "\tny in...." << cfg.ny_in  << std::endl;
+  os << "\tnx out..." << cfg.nx_out << std::endl;
+  os << "\tny out..." << cfg.ny_out << std::endl;
+  os << "\tnwH ....." << cfg.nwH    << std::endl;
+  os << "\tnz ......" << cfg.nz     << std::endl;
+  return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const cfg_t &cfg)
+{
+  os << "sizes:" << std::endl;
+  os << "\tshared=" << cfg.nodalSharedSpaceSize
+	 << " scratch=" << cfg.nodalScratchSize << std::endl;
+  os << "handels:" << std::endl;
+  os << "\tglobal=" << cfg.hndGlbVMspace << " scratch=" << cfg.hndScratch << std::endl;
+  os << "offsets:" << std::endl;
+  os << "\tglobal=" << cfg.ofsGlbDat << std::endl
+	 << "\tofsInp=" << cfg.ofsInp << std::endl
+	 << "\tofsVel=" << cfg.ofsVel << std::endl
+	 << "\tofsOutp=" << cfg.ofsOutp << std::endl
+	 << "\tofsVmin=" << cfg.ofsVmin << std::endl
+	 << "\tofsVmax=" << cfg.ofsVmax << std::endl;
+  os << "paths:" << std::endl
+	 << "\tconfig=" << cfg.config_file << std::endl
+	 << "\tdata=" << cfg.data_file << std::endl
+	 << "\tvelocity=" << cfg.velocity_file << std::endl
+	 << "\toutput=" << cfg.output_file << std::endl;
+  return os;
+}
 
 #endif

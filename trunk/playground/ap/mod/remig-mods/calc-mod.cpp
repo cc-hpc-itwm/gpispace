@@ -40,18 +40,37 @@ void calc (data_t &params) throw (std::exception)
 
   cfg_t node_config;
   fvm::util::get_data(&node_config, memhandle_for_configuration);
+//  DMLOG (DEBUG, "got node config: " << node_config);
 
   TReGlbStruct re_global_struct;
-  fvm::util::get_data(&re_global_struct, node_config.hndGlbVMspace);
+  fvm::util::get_data(&re_global_struct, node_config.hndGlbVMspace, 0);
+//  DMLOG (DEBUG, "got remig config: " << re_global_struct);
 
   std::size_t number_of_frequencies = re_global_struct.nwH;
   // calculate the slice distribution
   int nwHlocal [fvmGetNodeCount()+1];
+  std::fill(nwHlocal, nwHlocal + fvmGetNodeCount() + 1, -1);
   int nwHdispls[fvmGetNodeCount()+1+1];
+  std::fill(nwHdispls, nwHdispls + fvmGetNodeCount() + 1 + 1, -1);
   int pIWonND  [number_of_frequencies];
+  std::fill(pIWonND, nwHdispls + number_of_frequencies, -1);
 
   remig::detail::calculateDistribution(number_of_frequencies, nwHlocal, nwHdispls);
   remig::detail::fill_frequency_on_node_array(number_of_frequencies, pIWonND, nwHlocal, nwHdispls);
+
+//  std::stringstream sstr;
+//  sstr << "local =";
+//  for (std::size_t i(0); i < fvmGetNodeCount() + 1; ++i)
+//  {
+//	sstr << " " << nwHlocal[i];
+//  }
+//  sstr << ",";
+//  sstr << " displ =";
+//  for (std::size_t i(0); i < fvmGetNodeCount() + 1 + 1; ++i)
+//  {
+//	sstr << " " << nwHdispls[i];
+//  }
+//  DMLOG (DEBUG, "distribution: " << sstr.str());
 
   // get the input slice
   const std::size_t nx_in = re_global_struct.nx_fft;
@@ -64,11 +83,10 @@ void calc (data_t &params) throw (std::exception)
 	  , node_config.ofsInp
 	  , pIWonND
 	  , nwHdispls);
+  DMLOG(DEBUG, "getting input slice (" << input_slice_size << " bytes) from offset: " << input_slice_offset);
 
   MKL_Complex8 *input_slice = new MKL_Complex8[nx_in * ny_in];
 
-  DLOG(DEBUG, "input starts at: " << node_config.ofsInp);
-  DLOG(DEBUG, "input slice offset: " << input_slice_offset);
 
   fvmCommHandle_t comm_handle;
   fvmCommHandleState_t comm_status;
@@ -91,6 +109,7 @@ void calc (data_t &params) throw (std::exception)
   const std::size_t output_slice_size = nx_out * ny_out * sizeof(float);
   float *output_slice = new float[nx_out * ny_out];
 
+  DMLOG(DEBUG, "calculating one level");
   int retval = reCalcOneLevl(&node_config, slice, depth, input_slice, output_slice);
 
   {

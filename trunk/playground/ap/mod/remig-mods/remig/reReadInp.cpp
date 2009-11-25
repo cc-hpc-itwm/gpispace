@@ -221,6 +221,8 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 //  - distribute the freq inp array on all CPUs 
 //           (later on - the right partt of the whole array only)
 {
+	DLOG(DEBUG, "reading input data: " << pCfg->data_file);
+
     const float pi=3.1415926;
     const int LEN = 100;
 
@@ -314,7 +316,6 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 	     printf("\n [%d] Can not open %s", rank, pCfg->data_file); 
 	     return -1;
         }
-		DLOG(DEBUG, "reading data from: " << pCfg->data_file);
 
         //------ another auxiliary array -----------
         jSz = pReG->nx_out; //+1; 
@@ -584,10 +585,12 @@ int readAndDistributeInput(cfg_t *pCfg)
        int *nwHdispls = new int [cSize+1];
        //int wHlcl_startIndx, wHlcl_endIndx;
        
+	   DMLOG(DEBUG, "calculating load distribution....");
        calcLoadDistribution(pReGlb, nwHlocal, nwHdispls);
        allocAndSetLclFrqDistributionStructs(pReGlb, nwHlocal, nwHdispls, pIWonND);
     
        //------ readAnd DistributeInpData()
+	   DMLOG(DEBUG, "read and distribute...");
        readAndDistributeInputData(pCfg, pReGlb, nwHlocal, nwHdispls );
 
 

@@ -21,6 +21,9 @@ void readinp (data_t &params)
   cfg_t node_config;
   fvm::util::get_data(&node_config, memhandle_for_configuration);
 
+  MLOG (DEBUG, "got node configuration from FVM");
+  MLOG (DEBUG, "going to read and distribute the input data...");
+
   int retval = readAndDistributeInput(&node_config);
   if (retval != 1)
   {

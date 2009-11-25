@@ -35,7 +35,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
         fvmSize_t shmemLclSz = sizeof(TReGlbStruct);
-        //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not neccessary
         unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
         bzero(pShMem, shmemLclSz);
 
@@ -179,7 +178,6 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
           fvmAllocHandle_t hGlbVMspace = pCfg->hndGlbVMspace;
 	
           fvmSize_t shmemLclSz = pReGlb->nz * sizeof(float);
-          //fvmAllocHandle_t hLclShMem =fvmLocalAlloc(shmemLclSz);  // not neccessary
           unsigned char *pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
           bzero(pShMem, shmemLclSz);
 
@@ -239,12 +237,11 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
     hGlbVMspace = pCfg->hndGlbVMspace;	
     shmemLclSz = transfrSZbytes;
-    //hLclShMem =fvmLocalAlloc(shmemLclSz);  // not necessary
     pShMem = (unsigned char *) fvmGetShmemPtr(); // sh mem ptr
     bzero(pShMem, shmemLclSz);
 
        //--- alloc scratzch handle, for now of the same size -- 
-    hScra = fvmLocalAlloc(shmemLclSz);
+    fvm::util::local_allocation hScra(shmemLclSz);
 
     shmemOffs=0; // dest: lcl shmem offs (in the data cube)
         

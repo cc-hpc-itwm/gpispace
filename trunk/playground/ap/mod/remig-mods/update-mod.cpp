@@ -42,7 +42,7 @@ void update (data_t &params)
   fvm::util::get_data(&node_config, memhandle_for_configuration);
 
   TReGlbStruct re_global_struct;
-  fvm::util::get_data(&re_global_struct, node_config.hndGlbVMspace);
+  fvm::util::get_data(&re_global_struct, node_config.hndGlbVMspace, 0);
 
   std::size_t number_of_frequencies = re_global_struct.nwH;
   // calculate the slice distribution

@@ -33,8 +33,6 @@ libreadinp-mod.so: remig/cfg.o remig/reReadInp.o remig/utls.o remig/pfafft.o rem
 libreadvelo-mod.so: remig/cfg.o remig/reReadVel.o remig/utls.o remig/pfafft.o remig/fft.o -lfftw3f
 libcalc-mod.so: remig/cfg.o remig/calcOneLevl.o remig/utls.o remig/pfafft.o remig/fft.o remig/propagatorsOpt.o remig/utilsOpt.o -lfftw3f
 libprefsum-mod.so: remig/cfg.o remig/rePrefxSum.o remig/utls.o remig/pfafft.o remig/fft.o remig/propagatorsOpt.o remig/utilsOpt.o -lfftw3f
-remig/cfg.o: remig/cfg.h
-libcfg-mod.so: cfg.o
 
 clean:
 	rm -f *.o *.so
