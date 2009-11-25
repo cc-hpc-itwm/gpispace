@@ -22,7 +22,7 @@ void update (data_t &params)
   ASSERT_HANDLE(memhandle_for_configuration);
 
   const fvmAllocHandle_t memhandle_for_outputvolume 
-    (params.at("memhandle_for_outputvolume").token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_temp_outputvolume").token().data_as<fvmAllocHandle_t>());
   ASSERT_HANDLE(memhandle_for_outputvolume);
 
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
@@ -40,7 +40,7 @@ void update (data_t &params)
   usleep (rand() % 100);
 
   params["slice_and_depth_OUT"].token().data(slice_and_depth);
-  params["memhandle_for_outputvolume_OUT"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_OUT"].token().data(memhandle_for_outputvolume);
 }
 
 SDPA_MOD_INIT_START(update)
@@ -49,12 +49,12 @@ SDPA_MOD_INIT_START(update)
   SDPA_REGISTER_FUN_START(update);
     SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
 
-    SDPA_ADD_INP( "memhandle_for_outputvolume", fvmAllocHandle_t );
+    SDPA_ADD_INP( "memhandle_for_temp_outputvolume", fvmAllocHandle_t );
     SDPA_ADD_INP( "slice_and_depth", unsigned long );
     SDPA_ADD_INP( "number_of_depthlevels", unsigned long );
 
     SDPA_ADD_OUT("slice_and_depth_OUT", unsigned long );
-    SDPA_ADD_OUT("memhandle_for_outputvolume_OUT", fvmAllocHandle_t );
+    SDPA_ADD_OUT("memhandle_for_temp_outputvolume_OUT", fvmAllocHandle_t );
   SDPA_REGISTER_FUN_END(update);
 }
 SDPA_MOD_INIT_END(update)

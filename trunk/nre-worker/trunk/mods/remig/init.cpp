@@ -36,7 +36,8 @@ void init (data_t &params) throw (std::exception)
   params["number_of_frequencies"].token().data(number_of_frequencies);
   params["number_of_depthlevels"].token().data(number_of_depthlevels);
   params["number_of_parallel_propagators"].token().data(number_of_parallel_propagators);
-  params["memhandle_for_outputvolume"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_calc"].token().data(memhandle_for_outputvolume);
   params["memhandle_for_configuration"].token().data(memhandle_for_configuration);
 
   params["seq"].token().data("SEQ");
@@ -50,7 +51,8 @@ SDPA_MOD_INIT_START(init)
     SDPA_ADD_OUT( "number_of_frequencies", unsigned long );
     SDPA_ADD_OUT( "number_of_depthlevels", unsigned long );
     SDPA_ADD_OUT( "number_of_parallel_propagators", unsigned long );
-    SDPA_ADD_OUT( "memhandle_for_outputvolume", fvmAllocHandle_t );
+    SDPA_ADD_OUT( "memhandle_for_temp_outputvolume_update", fvmAllocHandle_t );
+    SDPA_ADD_OUT( "memhandle_for_temp_outputvolume_calc", fvmAllocHandle_t );
     SDPA_ADD_OUT( "memhandle_for_configuration", fvmAllocHandle_t );
 
     SDPA_ADD_OUT("seq", char *);

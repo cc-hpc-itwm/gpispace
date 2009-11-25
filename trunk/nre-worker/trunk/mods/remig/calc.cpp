@@ -22,7 +22,13 @@ void calc (data_t &params) throw (std::exception)
   // maybe enclose this in #ifdefs?
   ASSERT_HANDLE(memhandle_for_configuration);
 
+  const fvmAllocHandle_t memhandle_for_outputvolume
+    (params.at("memhandle_for_temp_outputvolume").token().data_as<fvmAllocHandle_t>());
+  // maybe enclose this in #ifdefs?
+  ASSERT_HANDLE(memhandle_for_outputvolume);
+
   MLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);
+  MLOG (DEBUG, "memhandle_for_temp_outputvolume= " << memhandle_for_temp_outputvolume);
   MLOG (DEBUG, "slice_and_depth = " << slice_and_depth);
   MLOG (DEBUG, "number_of_depthlevels = " << number_of_depthlevels);
 
@@ -44,6 +50,7 @@ SDPA_MOD_INIT_START(calc)
     SDPA_ADD_INP( "slice_and_depth", unsigned long );
     SDPA_ADD_INP( "number_of_depthlevels", unsigned long );
     SDPA_ADD_INP( "memhandle_for_configuration", fvmAllocHandle_t );
+    SDPA_ADD_INP( "memhandle_for_temp_outputvolume", fvmAllocHandle_t );
     SDPA_ADD_OUT( "slice_and_depth_OUT", unsigned long );
   SDPA_REGISTER_FUN_END(calc);
 }
