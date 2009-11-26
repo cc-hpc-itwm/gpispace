@@ -46,27 +46,20 @@ namespace sdpa {
 	 	sdpa::util::time_type current_time = sdpa::util::now();
 	 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	 	if( ptr_comm_handler_->is_registered() )
+	 	if(force || (difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") ))
 	 	{
-	 		if(force || (difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") ))
-	 		{
-	 			// post a new request to the master
-	 			// the slave posts a job request
-	 			SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
-	 			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-	 			ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
-	 			m_last_request_time = current_time;
-	 			bReqPosted = true;
-	 		}
-			else
-			{
-			  DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
-			}
+	 		// post a new request to the master
+	 		// the slave posts a job request
+	 		SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
+	 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
+	 		ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
+	 		m_last_request_time = current_time;
+	 		bReqPosted = true;
 	 	}
-		 else
-		 {
-		  DMLOG(DEBUG, "not posting request, i am not registered yet");
-		 }
+		else
+		{
+		  DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
+		}
 
 	 	return bReqPosted;
 	 }
