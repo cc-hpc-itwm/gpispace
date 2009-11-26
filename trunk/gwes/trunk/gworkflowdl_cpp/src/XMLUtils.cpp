@@ -211,6 +211,11 @@ DOMDocument* XMLUtils::deserialize (const string& xmlstring, bool validating) th
         XMLString::release(&message);
         throw WorkflowFormatException(message);
     }
+	catch (const std::exception &ex)
+	{
+        LOG_ERROR(_logger, "Unknown exception: " << ex.what());
+        throw WorkflowFormatException(ex.what());
+	}
     catch (...) {
         LOG_ERROR(_logger, "Unexpected Exception");
         throw WorkflowFormatException("Unexpected Exception");
