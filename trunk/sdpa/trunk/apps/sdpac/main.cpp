@@ -13,12 +13,14 @@
 #include <fhglog/Configuration.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
+#include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
 {
   std::cout << "waiting for job to return..." << std::flush;
+  sdpa::util::time_type poll_start(sdpa::util::now());
   int exit_code(4);
   std::size_t fail_count(0);
   for (; fail_count < 3 ;)
@@ -60,6 +62,8 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
       std::cout << "." << std::flush;
     }
   }
+  sdpa::util::time_type poll_end(sdpa::util::now());
+  std::cerr << "duration: " << ((poll_end - poll_start) / 1000) << "ms" << std::endl;
   return exit_code;
 }
 
