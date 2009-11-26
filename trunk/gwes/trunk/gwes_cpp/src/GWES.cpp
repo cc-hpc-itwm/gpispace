@@ -353,32 +353,76 @@ void GWES::remove(const string& workflowId) {
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
-    mutex_lock lock(monitor_lock_);
-	_wfht.get(workflowId)->activityDispatched(activityId);
+	try
+	{
+	  mutex_lock lock(monitor_lock_);
+	  _wfht.get(workflowId)->activityDispatched(activityId);
+	}
+	catch (const NoSuchWorkflowException&)
+	{
+	  throw NoSuchWorkflow(workflowId);
+	}
+	catch (const NoSuchActivityException &)
+	{
+	  throw NoSuchActivity(activityId);
+	}
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
-    mutex_lock lock(monitor_lock_);
-	_wfht.get(workflowId)->activityFailed(activityId,output);
+	try
+	{
+	  mutex_lock lock(monitor_lock_);
+	  _wfht.get(workflowId)->activityFailed(activityId,output);
+	}
+	catch (const NoSuchWorkflowException&)
+	{
+	  throw NoSuchWorkflow(workflowId);
+	}
+	catch (const NoSuchActivityException &)
+	{
+	  throw NoSuchActivity(activityId);
+	}
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
-    mutex_lock lock(monitor_lock_);
-	_wfht.get(workflowId)->activityFinished(activityId,output);
+	try
+	{
+	  mutex_lock lock(monitor_lock_);
+	  _wfht.get(workflowId)->activityFinished(activityId,output);
+	}
+	catch (const NoSuchWorkflowException&)
+	{
+	  throw NoSuchWorkflow(workflowId);
+	}
+	catch (const NoSuchActivityException &)
+	{
+	  throw NoSuchActivity(activityId);
+	}
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
-    mutex_lock lock(monitor_lock_);
-	_wfht.get(workflowId)->activityCanceled(activityId);
+	try
+	{
+	  mutex_lock lock(monitor_lock_);
+	  _wfht.get(workflowId)->activityCanceled(activityId);
+	}
+	catch (const NoSuchWorkflowException&)
+	{
+	  throw NoSuchWorkflow(workflowId);
+	}
+	catch (const NoSuchActivityException &)
+	{
+	  throw NoSuchActivity(activityId);
+	}
 }
 
 /**
@@ -420,7 +464,14 @@ workflow_id_t GWES::submitWorkflow(workflow_t &workflow) throw (std::exception) 
  */ 
 void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
 {
-  remove(workflowId);
+  try
+  {
+    remove(workflowId);
+  }
+  catch (const NoSuchWorkflowException &)
+  {
+   throw NoSuchWorkflow(workflowId);
+  }
 }
 
 /**
@@ -430,9 +481,9 @@ void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
     mutex_lock lock(monitor_lock_);
     try
     {
-  	abort(workflowId);
+    	abort(workflowId);
     }
-    catch (const NoSuchWorkflowException &nswfe)
+    catch (const NoSuchWorkflowException &)
     {
       throw NoSuchWorkflow(workflowId);
     }
@@ -463,12 +514,30 @@ std::string GWES::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std:
 
 workflow_t &GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
 {
-  return *_wfht.get(workflowId)->getWorkflow();
+  try
+  {
+	return *_wfht.get(workflowId)->getWorkflow();
+  }
+  catch (const NoSuchWorkflowException&)
+  {
+	throw NoSuchWorkflow(workflowId);
+  }
 }
 
 activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity)
 {
-  return *_wfht.get(workflowId)->getActivity(activityId);
+  try
+  {
+	return *_wfht.get(workflowId)->getActivity(activityId);
+  }
+  catch (const NoSuchWorkflowException&)
+  {
+	throw NoSuchWorkflow(workflowId);
+  }
+  catch (const NoSuchActivityException &)
+  {
+	throw NoSuchActivity(activityId);
+  }
 }
 
 } // end namespace gwes
