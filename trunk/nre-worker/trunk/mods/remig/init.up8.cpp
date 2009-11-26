@@ -34,7 +34,14 @@ void init (data_t &params) throw (std::exception)
   params["number_of_frequencies"].token().data(number_of_frequencies);
   params["number_of_depthlevels"].token().data(number_of_depthlevels);
   params["number_of_parallel_propagators"].token().data(number_of_parallel_propagators);
-  params["memhandle_for_temp_outputvolume_update"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_A"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_B"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_C"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_D"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_E"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_F"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_G"].token().data(memhandle_for_outputvolume);
+  params["memhandle_for_temp_outputvolume_update_H"].token().data(memhandle_for_outputvolume);
   params["memhandle_for_temp_outputvolume_calc"].token().data(memhandle_for_outputvolume);
   params["memhandle_for_configuration"].token().data(memhandle_for_configuration);
 
