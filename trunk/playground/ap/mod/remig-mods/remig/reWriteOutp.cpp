@@ -10,6 +10,7 @@
 
 #include <fvm-pc/pc.hpp>
 #include <fhglog/fhglog.hpp>
+#include <sdpa/modules/util.hpp>
 
 #include "utls.h"
 

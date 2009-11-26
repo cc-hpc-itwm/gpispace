@@ -33,6 +33,7 @@ libinit.up4-mod.so: remig/cfg.o remig/reApplInit.o remig/pfafft.o remig/utls.o
 libinit.up8-mod.so: remig/cfg.o remig/reApplInit.o remig/pfafft.o remig/utls.o
 libreadinp-mod.so: remig/cfg.o remig/reReadInp.o remig/utls.o remig/pfafft.o remig/fft.o -lfftw3f
 libreadvelo-mod.so: remig/cfg.o remig/reReadVel.o remig/utls.o remig/pfafft.o remig/fft.o -lfftw3f
+libwriteoutp-mod.so: remig/cfg.o remig/reWriteOutp.o remig/utls.o remig/pfafft.o remig/fft.o -lfftw3f
 libcalc-mod.so: remig/cfg.o remig/calcOneLevl.o remig/utls.o remig/pfafft.o remig/fft.o remig/propagatorsOpt.o remig/utilsOpt.o -lfftw3f
 libprefsum-mod.so: remig/cfg.o remig/rePrefxSum.o remig/utls.o remig/pfafft.o remig/fft.o remig/propagatorsOpt.o remig/utilsOpt.o -lfftw3f
 
