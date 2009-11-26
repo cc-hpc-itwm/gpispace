@@ -414,8 +414,14 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update(e);
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
-	} catch(WorkerNotFoundException&) {
+	}
+	catch(WorkerNotFoundException&)
+	{
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+		// the worker should register first, before posting a job request
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
+
+		sendEvent(ptr_to_slave_stage_, pErrorEvt);
 	} catch(...) {
 		SDPA_LOG_DEBUG("Unexpected exception occurred!");
 	}

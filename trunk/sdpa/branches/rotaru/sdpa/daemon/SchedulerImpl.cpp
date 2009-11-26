@@ -49,7 +49,7 @@ SchedulerImpl::~SchedulerImpl()
 /*
 	Schedule a job locally, send the job to GWES
 */
-void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
+/*void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
 	gwes::workflow_id_t wf_id = pJob->id().str();
@@ -91,6 +91,57 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	catch (std::exception& )
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+		//send a JobFailed event
+		sdpa::job_result_t sdpa_result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+		ptr_comm_handler_->sendEvent(pEvtJobFailed);
+	}
+}
+*/
+/*
+	Schedule a job locally, send the job to GWES
+*/
+void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
+	SDPA_LOG_DEBUG("Called schedule_local ...");
+
+	gwes::workflow_id_t wf_id = pJob->id().str();
+	gwes::workflow_t* ptrWorkflow = NULL;
+
+	// put the job into the running state
+	pJob->Dispatch();
+
+	try {
+		if( ptr_comm_handler_->gwes() )
+		{
+			// Use gwes workflow here!
+
+			ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
+			ptrWorkflow->setID(wf_id);
+
+			// Should set the workflow_id here, or send it together with the workflow description
+			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
+
+			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
+		}
+		else
+		{
+			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
+			//send a JobFailed event
+			sdpa::job_result_t sdpa_result;
+			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+			ptr_comm_handler_->sendEvent(pEvtJobFailed);
+		}
+	}
+	catch (std::exception& )
+	{
+		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+
+		if(ptrWorkflow)
+		{
+			delete ptrWorkflow;
+			ptrWorkflow = NULL;
+		}
+
 		//send a JobFailed event
 		sdpa::job_result_t sdpa_result;
 		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
