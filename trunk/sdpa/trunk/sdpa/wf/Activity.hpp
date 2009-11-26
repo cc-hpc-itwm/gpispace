@@ -25,6 +25,8 @@ namespace sdpa { namespace wf {
    */
   class Method {
     public:
+	  static const char seperator = '@';
+
       Method(const std::string & module_at_method)
         : module_()
         , name_()
@@ -63,22 +65,27 @@ namespace sdpa { namespace wf {
 
       std::string serialize() const
       {
-        return module() + "@" + name();
+        return module() + seperator + name();
       }
 
       void deserialize(const std::string &bytes)
       {
-        const std::string::size_type pos_of_at(bytes.find_first_of('@'));
+        const std::string::size_type pos_of_at(bytes.find_first_of(seperator));
         if (pos_of_at != std::string::npos)
         {
           module_ = bytes.substr(0,           pos_of_at);
           name_   = bytes.substr(pos_of_at+1, std::string::npos);
         }
+		else
+		{
+		  module_ = bytes;
+		  name_ = bytes;
+		}
       }
 
       void writeTo(std::ostream &os) const
       {
-        os << "{" << "method" << "," << module() << "," << name()  << "}";
+        os << module() << seperator << name(); //"{" << "method" << ", " << module() << ", " << name()  << "}";
       }
 
       void readFrom(std::istream &is)
@@ -97,6 +104,11 @@ inline std::ostream & operator<<(std::ostream & os, const sdpa::wf::Method &m)
 {
   m.writeTo(os);
   return os;
+}
+inline std::istream & operator>>(std::istream & is, sdpa::wf::Method &m)
+{
+  m.readFrom(is);
+  return is;
 }
 
 namespace sdpa { namespace wf {

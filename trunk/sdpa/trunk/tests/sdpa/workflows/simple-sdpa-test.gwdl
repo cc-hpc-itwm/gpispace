@@ -14,7 +14,7 @@
         <outputPlace placeID="output" edgeExpression="output"/>
  		<operation>
       		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="dummy">
-        		<oc:operationCandidate type="sdpa" operationName="example-mod@Echo" resourceName="nre#1" selected="true"/>
+        		<oc:operationCandidate type="sdpa" operationName="example-mod.Echo" resourceName="nre#1" selected="true"/>
      	 	</oc:operationClass>
     	</operation>
     </transition>
