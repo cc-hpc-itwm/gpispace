@@ -60,6 +60,10 @@ WorkflowHandler::~WorkflowHandler() {
 //		delete it->second;
 //	}
 //	_activityTable.clear();
+
+  DMLOG(TRACE, "cleaning up workflow handler thread...");
+  pthread_cancel(_thread);
+  pthread_join(_thread, NULL);
 }
 
 void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
