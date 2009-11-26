@@ -98,7 +98,7 @@ void update (data_t &params)
 
   // sum up
   float *output_slice   = (float*)(fvmGetShmemPtr()) + 0;
-  float *finished_slice = (float*)(fvmGetShmemPtr()) + output_slice_size;
+  float *finished_slice = (float*)(fvmGetShmemPtr()) + nx_out * ny_out;
 
   std::size_t slice_dim = nx_out * ny_out;
   for (std::size_t i(0); i < slice_dim; ++i)
