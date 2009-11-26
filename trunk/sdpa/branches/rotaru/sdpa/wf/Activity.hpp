@@ -25,17 +25,20 @@ namespace sdpa { namespace wf {
    */
   class Method {
     public:
-      Method(const std::string & module_at_method)
+	  static const char seperator = '.';
+
+	  explicit
+      Method(const std::string & module_dot_method)
         : module_()
         , name_()
       {
-        deserialize(module_at_method);
+        deserialize(module_dot_method);
       }
 
       Method()
         : module_()
         , name_()
-      { }
+      {}
 
       Method(const std::string & a_module, const std::string & a_method_name)
         : module_(a_module)
@@ -63,22 +66,32 @@ namespace sdpa { namespace wf {
 
       std::string serialize() const
       {
-        return module() + "@" + name();
+        return module() + seperator + name();
       }
 
-      void deserialize(const std::string &bytes)
+      void deserialize(const std::string &bytes) throw (std::exception)
       {
-        const std::string::size_type pos_of_at(bytes.find_first_of('@'));
+		DMLOG(TRACE, "deserializing \"" << bytes << "\" into Method object");
+		if (bytes.empty())
+		{
+		  throw std::runtime_error("cannot deserialize empty string into Method object");
+		}
+
+        const std::string::size_type pos_of_at(bytes.find_first_of(seperator));
         if (pos_of_at != std::string::npos)
         {
           module_ = bytes.substr(0,           pos_of_at);
           name_   = bytes.substr(pos_of_at+1, std::string::npos);
         }
+		else
+		{
+		  throw std::runtime_error("cannot deserialize bytes into Method object: " + bytes);
+		}
       }
 
       void writeTo(std::ostream &os) const
       {
-        os << "{" << "method" << "," << module() << "," << name()  << "}";
+        os << module() << seperator << name(); //"{" << "method" << ", " << module() << ", " << name()  << "}";
       }
 
       void readFrom(std::istream &is)
@@ -97,6 +110,11 @@ inline std::ostream & operator<<(std::ostream & os, const sdpa::wf::Method &m)
 {
   m.writeTo(os);
   return os;
+}
+inline std::istream & operator>>(std::istream & is, sdpa::wf::Method &m)
+{
+  m.readFrom(is);
+  return is;
 }
 
 namespace sdpa { namespace wf {
@@ -137,8 +155,8 @@ namespace sdpa { namespace wf {
     { }
 
     Activity()
-      : name_("")
-      , method_("")
+      : name_()
+      , method_()
       , state_(ACTIVITY_UNKNOWN)
       , reason_("")
     { }

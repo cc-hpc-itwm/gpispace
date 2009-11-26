@@ -4,7 +4,7 @@
 #include <sdpa/types.hpp>
 
 namespace sdpa { namespace util {
-  typedef long long time_type;
+  typedef unsigned long long time_type;
 
   /**
     Returns the current time in microseconds.

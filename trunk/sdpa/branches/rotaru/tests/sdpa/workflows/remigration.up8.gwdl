@@ -66,7 +66,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="init">
-          <oc:operationCandidate type="sdpa" operationName="init@init" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="init.init" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -80,7 +80,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="readinp">
-          <oc:operationCandidate type="sdpa" operationName="readinp@readinp" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="readinp.readinp" selected="true"/>
         </oc:operationClass>
       </operation>
 
@@ -95,7 +95,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="readvelo">
-          <oc:operationCandidate type="sdpa" operationName="readvelo@readvelo" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="readvelo.readvelo" selected="true"/>
         </oc:operationClass>
       </operation>
 
@@ -175,7 +175,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="calc">
-          <oc:operationCandidate type="sdpa" operationName="calc@calc" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="calc.calc" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -195,7 +195,7 @@
       <condition>($slice_and_depth mod 8) = 0</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -215,7 +215,7 @@
       <condition>($slice_and_depth mod 8) = 1</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -235,7 +235,7 @@
       <condition>($slice_and_depth mod 8) = 2</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -255,7 +255,7 @@
       <condition>($slice_and_depth mod 8) = 3</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -275,7 +275,7 @@
       <condition>($slice_and_depth mod 8) = 4</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -295,7 +295,7 @@
       <condition>($slice_and_depth mod 8) = 5</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -315,7 +315,7 @@
       <condition>($slice_and_depth mod 8) = 6</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -335,7 +335,7 @@
       <condition>($slice_and_depth mod 8) = 7</condition>
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="update">
-          <oc:operationCandidate type="sdpa" operationName="update@update" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="update.update" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -373,7 +373,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="prefsum">
-          <oc:operationCandidate type="sdpa" operationName="prefsum@prefsum" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="prefsum.prefsum" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -387,7 +387,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="writeoutp">
-          <oc:operationCandidate type="sdpa" operationName="writeoutp@writeoutp" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="writeoutp.writeoutp" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>
@@ -416,7 +416,7 @@
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="finalize">
-          <oc:operationCandidate type="sdpa" operationName="finalize@finalize" selected="true"/>
+          <oc:operationCandidate type="sdpa" operationName="finalize.finalize" selected="true"/>
         </oc:operationClass>
       </operation>
     </transition>

@@ -87,6 +87,7 @@ namespace sdpa {
 	  SDPA_DECLARE_LOGGER();
 	  boost::posix_time::time_duration m_timeout;
 	  sdpa::util::time_type m_last_request_time;
+	  sdpa::util::time_type m_last_life_sign_time;
   };
 }}
 

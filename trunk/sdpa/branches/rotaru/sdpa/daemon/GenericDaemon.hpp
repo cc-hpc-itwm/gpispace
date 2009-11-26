@@ -50,6 +50,17 @@ namespace sdpa { namespace daemon {
 						public seda::Strategy,
 						public gwes::Gwes2Sdpa {
   public:
+	  class DeleteWorkflowFromGWES : public seda::IEvent
+	  {
+		public:
+		  typedef shared_ptr<DeleteWorkflowFromGWES> Ptr;
+		 explicit DeleteWorkflowFromGWES(const gwes::workflow_id_t &wfid)
+		: id(wfid) {}
+		 gwes::workflow_id_t id;
+
+		std::string str() const { return "DeleteWorkflowFromGWES("+id+")"; }
+	  };
+
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
 
@@ -77,6 +88,7 @@ namespace sdpa { namespace daemon {
 	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
 	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
+	  virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
 	  // management event handlers
 	  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
@@ -95,6 +107,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendDeleteEvent(const gwes::workflow_id_t &wid);
 
       // Gwes2Sdpa interface implementation
 	  //virtual workflow_id_t submitWorkflow(const workflow_t &workflow);

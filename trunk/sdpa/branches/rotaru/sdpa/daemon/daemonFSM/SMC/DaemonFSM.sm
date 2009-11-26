@@ -25,6 +25,9 @@ Down
         {
         	action_configure(event); 
         }
+	Error(event: sdpa::events::ErrorEvent&)
+	  nil
+	  {}
 }
 
 Configuring
@@ -40,6 +43,10 @@ Configuring
         {
         	action_config_nok(event); 
         }
+
+	Error(event: sdpa::events::ErrorEvent&)
+	  nil
+	  {}
 }
 
 Up
@@ -89,6 +96,12 @@ Up
 	nil
 	{
 		action_config_request(event);
+	}
+
+	Error(event: sdpa::events::ErrorEvent&)
+	nil
+	{
+		action_error_event(event);
 	}
 }
 %%
