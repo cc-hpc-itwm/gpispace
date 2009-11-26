@@ -28,7 +28,7 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler)
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
-  , m_timeout(boost::posix_time::milliseconds(1000))
+  , m_timeout(boost::posix_time::milliseconds(100))
   , m_last_request_time(0)
   , m_last_life_sign_time(0)
 {
