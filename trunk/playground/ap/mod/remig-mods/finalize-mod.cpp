@@ -17,7 +17,7 @@ void finalize (data_t &params) throw (std::exception)
   ASSERT_HANDLE(memhandle_for_configuration);
 
   const fvmAllocHandle_t memhandle_for_outputvolume
-    (params.at("memhandle_for_temp_outputvolume_update").token().data_as<fvmAllocHandle_t>());
+    (params.at("memhandle_for_temp_outputvolume").token().data_as<fvmAllocHandle_t>());
   ASSERT_HANDLE(memhandle_for_outputvolume);
 
   DMLOG (DEBUG, "memhandle_for_configuration = " << memhandle_for_configuration);

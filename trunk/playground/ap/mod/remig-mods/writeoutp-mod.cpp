@@ -9,6 +9,7 @@
 #include <fvm-pc/pc.hpp>
 
 #include <remig/reGlbStructs.h>
+#include <remig/reWriteOutp.h>
 
 using namespace sdpa::modules;
 
@@ -23,8 +24,12 @@ void writeoutp (data_t &params)
   cfg_t node_config;
   fvm::util::get_data(&node_config, memhandle_for_configuration);
 
-  std::ofstream ofs(node_config.output_file);
-  ofs << "Some test output" << std::endl;
+  int retval = reWriteOutp(&node_config);
+  if (retval != 1)
+  {
+	MLOG(ERROR, "reWriteOutp failed!");
+	throw std::runtime_error("reWriteOutp failed!");
+  }
 
   params["seq"].token().data("SEQ");
 }
