@@ -47,6 +47,7 @@ LogEvent::LogEvent(const LogEvent &e)
   , pid_(e.pid())
   , tid_(e.tid())
   , logged_via_(e.logged_via())
+  , logged_on_(e.logged_on())
 {
 }
 
@@ -66,6 +67,8 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
     tstamp_ = e.tstamp();
     pid_ = e.pid();
     tid_ = e.tid();
+	logged_via_ = e.logged_via();
+	logged_on_ = e.logged_on();
   }
   return *this;
 }
@@ -83,6 +86,7 @@ bool LogEvent::operator==(const LogEvent &e) const
     && (tstamp() == e.tstamp())
     && (pid() == e.pid())
     && (tid() == e.tid())
+    && (logged_via() == e.logged_via())
     )
   {
     return true;

@@ -64,6 +64,9 @@ void RemoteAppender::open()
   logserver_.port(port());
   socket_ = new udp::socket(io_service_);
   socket_->open(udp::v4());
+  std::ostringstream osstr;
+  osstr << socket_->local_endpoint();
+  my_endpoint_string_ = osstr.str();
 }
 
 void RemoteAppender::close()
@@ -79,6 +82,7 @@ void RemoteAppender::close()
 void RemoteAppender::append(const LogEvent &evt)
 {
   boost::system::error_code ignored_error;
+  const_cast<LogEvent&>(evt).logged_on() = my_endpoint_string_;
   std::stringstream sstr;
   boost::archive::text_oarchive oa(sstr);
   oa << evt;

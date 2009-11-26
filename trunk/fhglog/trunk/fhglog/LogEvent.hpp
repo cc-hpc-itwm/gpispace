@@ -51,6 +51,7 @@ namespace fhg { namespace log {
       inline const pid_type &pid() const { return pid_; }
       inline const tid_type &tid() const { return tid_; }
       inline const std::string &logged_via() const { return logged_via_; }
+      inline const std::string &logged_on() const { return logged_on_; }
 
       inline severity_type &severity() { return severity_; }
       inline file_type &file() { return file_; }
@@ -62,6 +63,7 @@ namespace fhg { namespace log {
       inline pid_type &pid() { return pid_; }
       inline tid_type &tid() { return tid_; }
       inline std::string &logged_via() { return logged_via_; }
+      inline std::string &logged_on() { return logged_on_; }
 
       inline void logged_via(const std::string &name) const
       {
@@ -89,6 +91,7 @@ namespace fhg { namespace log {
       pid_type pid_;
       tid_type tid_;
       std::string logged_via_;
+      std::string logged_on_;
       std::ostringstream message_buffer_;
   };
 }}

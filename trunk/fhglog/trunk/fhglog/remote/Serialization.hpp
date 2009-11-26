@@ -48,6 +48,7 @@ namespace boost { namespace serialization {
     ar & event.pid();
     ar & event.tid();
     ar & event.logged_via();
+    ar & event.logged_on();
   }
 }}
 
