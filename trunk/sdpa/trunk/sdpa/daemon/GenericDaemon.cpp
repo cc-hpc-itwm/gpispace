@@ -246,7 +246,14 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	{
 	  if (gwes())
 	  {
-		gwes()->removeWorkflow(del->id);
+		try
+		{
+		  gwes()->removeWorkflow(del->id);
+		}
+		catch (const std::exception &ex)
+		{
+		  MLOG(ERROR, "could not remove workflow=" << del->id << ": " << ex.what());
+		}
 	  }
 	}
 	else
@@ -725,7 +732,14 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		// inform immediately GWES that the corresponding activity was cancelled
 		gwes::activity_id_t actId = activity.getID();
 		gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
-		gwes()->activityCanceled( wfId, actId );
+		try
+		{
+		  gwes()->activityCanceled( wfId, actId );
+		}
+		catch (...)
+		{
+		  LOG(ERROR, "call to GWES failed");
+		}
 	}
 
 	return activity.getID();
