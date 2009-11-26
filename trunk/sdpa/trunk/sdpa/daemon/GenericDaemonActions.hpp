@@ -52,6 +52,7 @@ namespace sdpa { namespace daemon {
 			virtual void action_submit_job(const sdpa::events::SubmitJobEvent& )=0;
 			virtual void action_config_request(const sdpa::events::ConfigRequestEvent& )=0;
 			virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& )=0;
+			virtual void action_error_event(const sdpa::events::ErrorEvent& )=0;
   };
 }}
 

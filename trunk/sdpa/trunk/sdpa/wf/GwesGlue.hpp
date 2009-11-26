@@ -138,6 +138,8 @@ namespace sdpa { namespace wf { namespace glue {
       }
     }
 
+	// TODO: wrap the properties!!!
+
     // build parameter list
     gwes::parameter_list_t *gwes_params = act.getTransitionOccurrence()->getTokens();
     for (gwes::parameter_list_t::iterator it(gwes_params->begin()); it != gwes_params->end(); ++it) {

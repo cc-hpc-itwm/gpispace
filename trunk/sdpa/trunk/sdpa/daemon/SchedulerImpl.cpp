@@ -24,13 +24,14 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler) :
-	ptr_worker_man_(new WorkerManager()),
-	ptr_comm_handler_(pCommHandler),
-	SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler)
+  : ptr_worker_man_(new WorkerManager())
+  , ptr_comm_handler_(pCommHandler)
+  , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
+  , m_timeout(boost::posix_time::milliseconds(1000))
+  , m_last_request_time(0)
+  , m_last_life_sign_time(0)
 {
-	m_timeout = boost::posix_time::milliseconds(1000);//time_duration(0,0,0,10);
-	m_last_request_time = 0;
 }
 
 SchedulerImpl::~SchedulerImpl()
@@ -114,7 +115,7 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 			pWorker->dispatch(pJob);
 		}
 	}
-	catch(NoWorkerFoundException&)
+	catch(const NoWorkerFoundException&)
 	{
 		// put the job back into the queue
 		jobs_to_be_scheduled.push(pJob);
@@ -196,7 +197,7 @@ bool SchedulerImpl::post_request(bool force)
 void SchedulerImpl::send_life_sign()
 {
 	 sdpa::util::time_type current_time = sdpa::util::now();
-	 sdpa::util::time_type difftime = current_time - m_last_request_time;
+	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
 	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 {
@@ -204,7 +205,7 @@ void SchedulerImpl::send_life_sign()
 		 {
 			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 			 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
-			 m_last_request_time = current_time;
+			 m_last_life_sign_time = current_time;
 		 }
 	 }
 }
@@ -232,10 +233,12 @@ void SchedulerImpl::run()
 	{
 		try
 		{
+			check_post_request();
+
 			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
 			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
-			if( pJob.use_count() )
+			if( pJob )
 			{
 				if(pJob->is_local())
 					schedule_local(pJob);
@@ -251,18 +254,20 @@ void SchedulerImpl::run()
 				// if the job queue's length is less than twice the number of workers
 				// and the elapased time since the last request is > polling_interval_time
 			}
-
-			check_post_request();
 		}
 		catch( const boost::thread_interrupted & )
 		{
-			SDPA_LOG_DEBUG("Thread interrupted ...");
-			bStopRequested = true;
+			DMLOG(DEBUG, "Thread interrupted ...");
+			bStopRequested = true; // FIXME: can probably be removed
+			break;
 		}
 		catch( const sdpa::daemon::QueueEmpty &)
 		{
-			//SDPA_LOG_DEBUG("Queue empty exception");
-			check_post_request();
+		  // ignore
+		}
+		catch ( const std::exception &ex )
+		{
+		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
 		}
 	}
 }

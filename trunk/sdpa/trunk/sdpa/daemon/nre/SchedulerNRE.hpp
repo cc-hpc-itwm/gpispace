@@ -71,13 +71,15 @@ namespace sdpa {
 			{
 				try
 				{
+					check_post_request();
 					sdpa::daemon::Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
 					// schedule only jobs submitted by the master
 					if(pJob->is_local())
+					{
+						post_request(true);
 						schedule_local(pJob);
-
-					send_life_sign();
+					}
 				}
 				catch( const boost::thread_interrupted & )
 				{
@@ -86,8 +88,10 @@ namespace sdpa {
 				}
 				catch( const sdpa::daemon::QueueEmpty &)
 				{
-					//SDPA_LOG_DEBUG("Queue empty exception");
-					send_life_sign();
+				}
+				catch (const std::exception &ex)
+				{
+				  SDPA_LOG_ERROR("unexpected exception in scheduler thread: " << ex.what());
 				}
 			}
 		}
@@ -112,10 +116,13 @@ namespace sdpa {
 				try
 				{
 					gwes::activity_t *pAct = activities_to_be_executed.pop_and_wait(m_timeout);
+					DMLOG(TRACE, "prefetching next activity...");
+					post_request(true); // prefetch
+
 					execute(*pAct);
 
 					SDPA_LOG_DEBUG("Finished executing the activity activity "<<pAct->getID());
-					post_request(true);
+					post_request(true); // check for more work
 				}
 				catch( const boost::thread_interrupted & )
 				{
@@ -124,34 +131,43 @@ namespace sdpa {
 				}
 				catch( const sdpa::daemon::QueueEmpty &)
 				{
-					//SDPA_LOG_DEBUG("Queue empty exception");
-					post_request(true /* force */);
+				  // ignore
+				}
+				catch (const std::exception &ex )
+				{
+				  SDPA_LOG_ERROR("unexpected exception during activity execution: " << ex.what());
 				}
 			}
 		}
 
-		void execute(const gwes::activity_t& activity)
+		void execute(const gwes::activity_t& activity) throw (std::exception)
 		{
 			SDPA_LOG_DEBUG("Execute activity ...");
 
 			gwes::Activity& gwes_act = (gwes::Activity&)(activity);
-			sdpa::wf::Activity act = sdpa::wf::glue::wrap(gwes_act);
-
-			sdpa::wf::Activity result(act);
-
+			sdpa::wf::Activity result;
 			try
 			{
-				ptr_comm_handler_->activityStarted(gwes_act);
-				result = m_worker_.execute(act, 0 /*walltime forever*/);
-			} catch(const std::exception& val)
+			  sdpa::wf::Activity act(sdpa::wf::glue::wrap(gwes_act));
+
+			  ptr_comm_handler_->activityStarted(gwes_act);
+			  result = m_worker_.execute(act, act.properties().get<unsigned long>("walltime", 0));
+
+			  sdpa::wf::glue::unwrap(result, gwes_act);
+			}
+			catch( const boost::thread_interrupted &)
 			{
-				result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
-				result.reason() = val.what();
+			  SDPA_LOG_ERROR("could not execute activity: interrupted" );
+			  result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
+			  result.reason() = "interrupted";
+			}
+			catch (const std::exception &ex)
+			{
+			  SDPA_LOG_ERROR("could not execute activity: " << ex.what());
+			  result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
+			  result.reason() = ex.what();
 			}
 
-            sdpa::wf::glue::unwrap(result, gwes_act);
-
-			// execute the job and ...
 			sdpa::parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
 
 			gwes::activity_id_t act_id = activity.getID();
@@ -212,6 +228,7 @@ namespace sdpa {
 
 		 bool post_request(bool force=false)
 		 {
+			DMLOG(TRACE, "post request: force=" << force);
 			bool bReqPosted = false;
 			sdpa::util::time_type current_time = sdpa::util::now();
 			sdpa::util::time_type difftime = current_time - m_last_request_time;
@@ -220,6 +237,7 @@ namespace sdpa {
 			{
 				if(force || (difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval")))
 				{
+					DMLOG(TRACE, "polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
 					// post a new request to the master
 					// the slave posts a job request
 					SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
@@ -228,7 +246,15 @@ namespace sdpa {
 					m_last_request_time = current_time;
 					bReqPosted = true;
 				}
-			}
+			  else
+			  {
+				DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
+			  }
+		  }
+		 else
+		 {
+		  DMLOG(DEBUG, "not posting request, i am not registered yet");
+		 }
 
 			return bReqPosted;
 		 }
@@ -236,15 +262,16 @@ namespace sdpa {
 		 void send_life_sign()
 		 {
 			 sdpa::util::time_type current_time = sdpa::util::now();
-			 sdpa::util::time_type difftime = current_time - m_last_request_time;
+			 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
 			 if( ptr_comm_handler_->is_registered() )
 			 {
-				 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
+				DMLOG(TRACE, "sending life-sign, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval"));
+  				 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
 				 {
 					 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 					 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
-					 m_last_request_time = current_time;
+					 m_last_life_sign_time = current_time;
 				 }
 			 }
 		 }

@@ -44,4 +44,6 @@ void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
 		GetContext().RequestJob(*ptr);
 	else if( ConfigRequestEvent* ptr = dynamic_cast<ConfigRequestEvent*>(pEvent.get()) )
 		GetContext().ConfigRequest(*ptr);
+	else if( ErrorEvent *ptr = dynamic_cast<ErrorEvent*>(pEvent.get()) )
+		GetContext().Error(*ptr);
 }

@@ -31,6 +31,7 @@ Orchestrator::Orchestrator(  const std::string &name,  const std::string& url, c
 	  url_(url)
 {
 	SDPA_LOG_DEBUG("Orchestrator constructor called ...");
+	// FIXME: maybe this should be a parameter to the constructor of the superclass
 	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 }
 
@@ -72,7 +73,6 @@ void Orchestrator::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
-
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -184,7 +184,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
-	catch(JobNotFoundException){
+	catch(const JobNotFoundException &){
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
@@ -239,7 +239,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 					// send the event to the slave
 					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
 				}
-				catch(WorkerNotFoundException)
+				catch(const WorkerNotFoundException&)
 				{
 					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
 				}
@@ -248,7 +248,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 					//delete it also from job_map_
 					ptr_job_man_->deleteJob(pEvt->job_id());
 				}
-				catch(JobNotDeletedException&)
+				catch(const JobNotDeletedException&)
 				{
 					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
 				}
@@ -317,7 +317,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 				// in the message comes from a worker
 				ptrWorker->delete_job(pEvt->job_id());
     		}
-    		catch(WorkerNotFoundException) {
+    		catch(const WorkerNotFoundException&) {
     			SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
     		}
 
@@ -329,22 +329,16 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
     	}
 	}
-	catch(JobNotFoundException)
+	catch(const JobNotFoundException&)
 	{
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("could not find job " << pEvt->job_id());
 	}
-	catch(JobNotDeletedException&)
+	catch(const JobNotDeletedException& ex)
 	{
-		os.str("");
-		os<<"The JobManager could not delete the job "<<pEvt->job_id();
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("could not delete job: " << ex.what());
 	}
 	catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_FATAL("an unexpected exception occured during job-deletion!");
 	}
 }
 
@@ -354,8 +348,9 @@ void Orchestrator::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pEv
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->RetrieveJobResults(pEvt);
 	}
-	catch(JobNotFoundException)
+	catch(const JobNotFoundException&)
 	{
-		SDPA_LOG_DEBUG("The job "<<pEvt->job_id()<<" was not found by the JobManager");
+		SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
+		// FIXME: shouldn't we reply with an error?
 	}
 }
