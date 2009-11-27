@@ -25,6 +25,7 @@ if [ $on_master -eq 1 ]; then
 	rm -f "$env_file"
 	echo "writing environment info to $env_file..."
 	echo export PBS_O_HOST="$PBS_O_HOST" >> "$env_file"
+	echo export SDPA_MASTER="$node_name" >> "$env_file"
 	echo export FHGLOG_to_server="$node_name" >> "$env_file"
 	echo export FHGLOG_to_console="true" >> "$env_file"
 	echo export DISPLAY="$DISPLAY" >> "$env_file"
@@ -35,7 +36,7 @@ if [ $# -gt 0 ]; then
 else
 	if [ -r "$PBS_NODEFILE" ]; then
 		echo "using nodes from $PBS_NODEFILE"
-		nodes=`cat $PBS_NODEFILE | grep -v "$master" | sort -n | uniq`
+		nodes=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
 		nodes=`echo $master $nodes`
 		rename_master=1
 		switch_to_master=1
@@ -60,6 +61,8 @@ fi
 if [ $start_fvm -eq 1 ]; then
 	echo "starting fvm-server on master node"
 	ssh -t "$headnode" screen -D -RR -X "screen -t fvm ssh $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
+	ssh -t "$headnode" screen -D -RR -X "screen -t orch ssh $master"
+	ssh -t "$headnode" screen -D -RR -X "screen -t agg ssh $master"
 fi
 
 
@@ -96,6 +99,7 @@ for n in $nodes; do
 	echo -n " $n"
 	if [ x"$n" == x"$master" ]; then
 		ssh -t "$headnode" screen -D -RR -X "screen -t $title ssh $n"
+		ssh -t "$headnode" screen -D -RR -X "screen -t $n ssh $n" &
 	else
 		ssh -t "$headnode" screen -D -RR -X "screen -t $title ssh $n" &
 	fi
