@@ -4,7 +4,9 @@ file(GLOB srcs "*.c")
 include_directories(${${PROJECT_NAME}_SOURCE_DIR}/mmgr)
 
 ADD_LIBRARY(mmgr ${hdrs} ${srcs})
-#TARGET_LINK_LIBRARIES(mmgr -pg)
+ADD_LIBRARY(mmgr.shared SHARED ${hdrs} ${srcs})
+set_target_properties(mmgr.shared PROPERTIES OUTPUT_NAME mmgr)
 
 install(FILES ${hdrs} DESTINATION include/mmgr)
-install(TARGETS mmgr ARCHIVE DESTINATION lib)
+install(TARGETS mmgr DESTINATION lib)
+install(TARGETS mmgr.shared DESTINATION lib)
