@@ -105,7 +105,6 @@ include_directories(${FVM_PC_INCLUDE_DIR})
 
 message(STATUS "*** Fixme: SDPA includes...")
 include_directories(${SDPA_INCLUDE_DIR})
-include_directories(${MMGR_INCLUDE_DIR})
 
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
