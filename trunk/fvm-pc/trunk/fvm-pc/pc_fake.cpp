@@ -157,6 +157,9 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_GLOBAL))
   {
 	case RET_SUCCESS:
+#ifndef NDEBUG
+	  dtmmgr_status (dtmmgr);
+#endif
 	  return 0;
 	case RET_HANDLE_UNKNOWN:
 	  return FVM_ESRCH;
@@ -207,6 +210,9 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_LOCAL))
   {
 	case RET_SUCCESS:
+#ifndef NDEBUG
+	  dtmmgr_status (dtmmgr);
+#endif
 	  return 0;
 	case RET_HANDLE_UNKNOWN:
 	  return FVM_ESRCH;
@@ -229,20 +235,50 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
   Offset_t BaseOffset = -1;
   switch (op)
   {
+	// FIXME: implement error handling (size mismatch)
+	//        return COMM_HANDLE_ERROR_SHMEM_BOUNDARY etc as handles
 	case GETGLOBAL:
 	  dtmmgr_offset_size (dtmmgr, handle, ARENA_GLOBAL, &BaseOffset, NULL);
+	  if ((BaseOffset + fvmOffset + size) > pcFVMSize)
+	  {
+#ifndef NDEBUG
+		fprintf(stderr, "fvm-pc: GetGlobalData out of range: offset=%lu size=%lu fvm-size=%lu\n", (BaseOffset + fvmOffset), size, pcFVMSize);
+#endif
+		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	  }
 	  memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
 	  break;
 	case PUTGLOBAL:
 	  dtmmgr_offset_size (dtmmgr, handle, ARENA_GLOBAL, &BaseOffset, NULL);
+	  if ((BaseOffset + fvmOffset + size) > pcFVMSize)
+	  {
+#ifndef NDEBUG
+		fprintf(stderr, "fvm-pc: PutGlobalData out of range: offset=%lu size=%lu fvm-size=%lu\n", (BaseOffset + fvmOffset), size, pcFVMSize);
+#endif
+		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	  }
 	  memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
 	  break;
 	case GETLOCAL:
 	  dtmmgr_offset_size (dtmmgr, handle, ARENA_LOCAL, &BaseOffset, NULL);
+	  if ((BaseOffset + fvmOffset + size) > pcShmSize)
+	  {
+#ifndef NDEBUG
+		fprintf(stderr, "fvm-pc: GetLocalData out of range: offset=%lu size=%lu shmem-size=%lu\n", (BaseOffset + fvmOffset), size, pcShmSize);
+#endif
+		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	  }
 	  memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
 	  break;
 	case PUTLOCAL:
 	  dtmmgr_offset_size (dtmmgr, handle, ARENA_LOCAL, &BaseOffset, NULL);
+	  if ((BaseOffset + fvmOffset + size) > pcShmSize)
+	  {
+#ifndef NDEBUG
+		fprintf(stderr, "fvm-pc: PutLocalData out of range: offset=%lu size=%lu shmem-size=%lu\n", (BaseOffset + fvmOffset), size, pcShmSize);
+#endif
+		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	  }
 	  memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
 	  break;
 	default:
@@ -250,7 +286,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	  return -1;
   }
 
-  return 0;
+  return COMM_HANDLE_OK;
 }
  
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
@@ -260,11 +296,6 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmAllocHandle_t scratchHandle)
 {
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, GETGLOBAL);
-
-#ifndef NDEBUGCOMM
-  fprintf(stderr, "fvm-pc: GetGlobal received handle %d\n",commhandle);
-#endif
-  
   return commhandle;
 }
 
@@ -276,11 +307,6 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
-  
-#ifndef NDEBUGCOMM
-  fprintf(stderr, "fvm-pc: PutGlobal received handle %d\n",commhandle);
-#endif
-  
   return commhandle;
   
 }
@@ -292,11 +318,6 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, PUTLOCAL);
-  
-#ifndef NDEBUGCOMM
-  fprintf(stderr, "fvm-pc: PutLocal received handle %d\n",commhandle);
-#endif
-  
   return commhandle;
 }
 
@@ -307,26 +328,21 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmShmemOffset_t shmemOffset)
 {
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, GETLOCAL);
-  
-#ifndef NDEBUGCOMM
-  fprintf(stderr, "fvm-pc: GetLocal received handle %d\n",commhandle);
-#endif
-  
   return commhandle;
 
 }
 
 // wait on communication between fvm and pc
-fvmCommHandleState_t waitComm(fvmCommHandle_t ) { return COMM_HANDLE_OK; }
+fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
+{
+  // this is done only in the fake module, the communication is always synchronous!
+  // error codes are encoded in the handle's value.
+  return (fvmCommHandleState_t)handle;
+}
 
 void *fvmGetShmemPtr()
 {
 #ifdef SHMEM
-
-#ifndef NDEBUG
-  fprintf(stderr, "fvm-pc: return shmem pointer is %p\n", pcShm);
-#endif
-
   return pcShm;
 #else
   return 0;
