@@ -9,8 +9,9 @@ set_target_properties(fvm-pc.shared PROPERTIES OUTPUT_NAME fvm-pc)
 
 ADD_LIBRARY(fvm-pc_fake ${hdrs} ${pc-fake-srcs})
 ADD_LIBRARY(fvm-pc_fake.shared SHARED ${hdrs} ${pc-fake-srcs})
-set_target_properties(fvm-pc_fake.shared PROPERTIES OUTPUT_NAME fvm-pc_fake)
 target_link_libraries(fvm-pc_fake ${MMGR_LIBRARY})
+target_link_libraries(fvm-pc_fake.shared ${MMGR_LIBRARY})
+set_target_properties(fvm-pc_fake.shared PROPERTIES OUTPUT_NAME fvm-pc_fake)
 
 install(FILES ${hdrs} DESTINATION include/fvm-pc)
 install(TARGETS fvm-pc DESTINATION lib)
