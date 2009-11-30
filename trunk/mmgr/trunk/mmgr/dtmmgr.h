@@ -22,7 +22,7 @@ extern "C"
 
   typedef enum
   { ARENA_GLOBAL = 0,
-    ARENA_LOCAL,
+    ARENA_LOCAL
   } Arena_t;
 
   extern AllocReturn_t dtmmgr_alloc (PDTmmgr_t, const Handle_t, const Arena_t,
