@@ -9,22 +9,22 @@
 #include "pc.hpp"
 
 //msgqueue
-int pcQueueID; 
-key_t pcQueueKey;
+static int pcQueueID; 
+static key_t pcQueueKey;
 
 //shmem vars
 #ifdef SHMEM
-int pcShmid;
-key_t pcShmKey;
-void * pcShm;
-fvmSize_t pcShmSize;
+static int pcShmid;
+static key_t pcShmKey;
+static void * pcShm;
+static fvmSize_t pcShmSize;
 #endif
 
 static int nodeRank;
 static int nodeCount;
 
 // ------ Internal functions for Process Container (not to be used by appllication)
-int doRequest(fvmRequest_t op_request)
+static int doRequest(fvmRequest_t op_request)
 {
 
   msgQueueMsg_t msg;

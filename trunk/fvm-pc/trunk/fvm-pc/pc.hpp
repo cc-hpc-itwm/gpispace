@@ -56,7 +56,7 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle);
 void *fvmGetShmemPtr();
 
 //for now is here for the LEAVE but should go away
-int doRequest(fvmRequest_t op_request);
+//int doRequest(fvmRequest_t op_request);
 
 #endif
 

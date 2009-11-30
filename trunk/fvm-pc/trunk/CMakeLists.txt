@@ -65,7 +65,15 @@ if (MAX_SHMEM_SIZE)
 else (MAX_SHMEM_SIZE)
   set (MAX_SHMEM_SIZE 536870912) # 512 MB
 endif (MAX_SHMEM_SIZE)
+if (MAX_FVM_SIZE)
+else (MAX_FVM_SIZE)
+  set (MAX_FVM_SIZE 536870912) # 512 MB
+endif (MAX_FVM_SIZE)
 add_definitions(-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
+add_definitions(-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
+
+message(STATUS "FIXME: make paths to mmgr configurable!")
+include_directories(${MMGR_INCLUDE_DIR})
 
 # Reflect the package structure
 add_subdirectory(fvm)

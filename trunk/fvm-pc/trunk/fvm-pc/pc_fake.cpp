@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <dtmmgr.h>
+
 // #include <unistd.h>
 // #include <errno.h>
 // #include <sys/msg.h>
@@ -8,11 +10,52 @@
 #if ! defined(MAX_SHMEM_SIZE)
 #error "MAX_SHMEM_SIZE must be defined!"
 #endif
+#if ! defined(MAX_FVM_SIZE)
+#error "MAX_FVM_SIZE must be defined!"
+#endif
+
+// global variables
+static void * pcShm(0);
+static fvmSize_t pcShmSize(0);
+
+static void * pcFVM(0);
+static fvmSize_t pcFVMSize(0);
+
+static DTmmgr_t dtmmgr(NULL);
+
+enum FVM_PC_API_ERRORS
+{
+	FVM_EGENERAL   = -1
+  , FVM_EINVALSZ   = -2
+  , FVM_EOUTOFMEM  = -3
+  , FVM_ETOOLARGE  = -4
+};
+
+static void cleanUp()
+{
+  if (pcShm)
+  {
+	fprintf (stderr, "fvm-pc: removing shared memory segment: %p\n", pcShm);
+	free(pcShm); pcShm = NULL;
+	pcShmSize = 0;
+  }
+  if (pcFVM)
+  {
+	fprintf (stderr, "fvm-pc: removing FVM segment: %p\n", pcFVM);
+	free(pcFVM); pcFVM = NULL;
+	pcFVMSize = 0;
+  }
+
+  if (dtmmgr)
+  {
+    fprintf (stderr, "fvm-pc: finalizing mmgr: %p %p\n", &dtmmgr, dtmmgr);
+    Size_t Bytes = dtmmgr_finalize (&dtmmgr);
+	fprintf (stderr, "fvm-pc: mmgr remaining bytes = %lu" "\n", Bytes);
+  }
+}
 
 // ------ Internal functions for Process Container (not to be used by appllication)
-int doRequest(fvmRequest_t /* op_request */ ) { return 0; }
-void * pcShm(0);
-fvmSize_t pcShmSize(0);
+//static int doRequest(fvmRequest_t /* op_request */ ) { return 0; }
 
 //-------------------- Interface for Process Container -----------------------
 int fvmConnect(fvm_pc_config_t cfg)
@@ -20,30 +63,52 @@ int fvmConnect(fvm_pc_config_t cfg)
   if (!cfg.shmemsize)
   {
     fprintf(stderr, "fvm-pc: shared-memory size (0) is illegal!\n");
-    return -1;
+    return FVM_EINVALSZ;
   }
   
   if (cfg.shmemsize > MAX_SHMEM_SIZE)
   {
     fprintf(stderr, "fvm-pc: sorry, the configured shared-memory size is too large for me! maximum: %lu, wanted: %lu\n", (fvmSize_t)(MAX_SHMEM_SIZE), cfg.shmemsize);
-    return -1;
+    return FVM_ETOOLARGE;
   }
+  if (cfg.fvmsize > MAX_FVM_SIZE)
+  {
+    fprintf(stderr, "fvm-pc: sorry, the configured vm-memory size is too large for me! maximum: %lu, wanted: %lu\n", (fvmSize_t)(MAX_FVM_SIZE), cfg.fvmsize);
+    return FVM_ETOOLARGE;
+  }
+
   else
   {
     pcShmSize = cfg.shmemsize;
-    fprintf(stderr, "fvm-pc: allocating %lu bytes of shared-memory\n", cfg.shmemsize);
-    pcShm = malloc(cfg.shmemsize);
+    fprintf(stderr, "fvm-pc: allocating %lu bytes of shared-memory\n", pcShmSize);
+    pcShm = malloc(pcShmSize);
+	if (! pcShm)
+	{
+	  fprintf(stderr, "fvm-pc: shared memory allocation failed!");
+	  return FVM_EOUTOFMEM;
+	}
+
+    pcFVMSize = cfg.fvmsize;
+    fprintf(stderr, "fvm-pc: allocating %lu bytes of VM\n", pcFVMSize);
+    pcFVM = malloc(pcFVMSize);
+	if (! pcFVM)
+	{
+	  fprintf(stderr, "fvm-pc: shared memory allocation failed!");
+	  return FVM_EOUTOFMEM;
+	}
+
+    fprintf(stderr, "fvm-pc: using %lu bytes of VM memory\n", cfg.fvmsize);
+
+    dtmmgr_init (&dtmmgr, cfg.fvmsize, 2);
+	dtmmgr_info (dtmmgr);
+
     return 0;
   }
 }
 
 int fvmLeave()
 {
-  if (pcShm != 0)
-  {
-    free(pcShm); pcShm = 0;
-    pcShmSize = 0;
-  }
+  cleanUp();
   return 0;
 }
 
