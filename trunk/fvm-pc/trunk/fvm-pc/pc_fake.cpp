@@ -52,7 +52,7 @@ static void cleanUp()
   {
     fprintf (stderr, "fvm-pc: finalizing mmgr: %p %p\n", &dtmmgr, dtmmgr);
     Size_t Bytes = dtmmgr_finalize (&dtmmgr);
-	fprintf (stderr, "fvm-pc: mmgr remaining bytes = %lu" "\n", Bytes);
+	fprintf (stderr, "fvm-pc: mmgr freed bytes = %lu" "\n", Bytes);
   }
 }
 
@@ -105,7 +105,7 @@ int fvmConnect(fvm_pc_config_t cfg)
 
     fprintf(stderr, "fvm-pc: using %lu bytes of VM memory\n", pcFVMSize);
 
-    dtmmgr_init (&dtmmgr, pcFVMSize, 2);
+    dtmmgr_init (&dtmmgr, pcFVMSize, 2 /* aligned to 2-byte boundary */);
 	dtmmgr_info (dtmmgr);
 
     return 0;
@@ -225,6 +225,42 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   }
 }
 
+static fvmCommHandleState_t check_bounds 
+( const fvmAllocHandle_t handle
+, const fvmOffset_t fvmOffset /* relative to handle */
+, const fvmSize_t size /* should stay inside the space allocated for handle */
+, const Arena_t Arena
+, POffset_t PBaseOffset
+, const char * descr
+)
+{
+  MemSize_t HandleSize = 0;
+
+  HandleReturn_t HandleReturn =
+    dtmmgr_offset_size (dtmmgr, handle, Arena, PBaseOffset, &HandleSize);
+
+  switch (HandleReturn)
+    {
+    case RET_SUCCESS:
+      if ((fvmOffset + size) > HandleSize)
+	{
+#ifndef NDEBUG
+	  fprintf( stderr
+		 , "fvm-pc: %s out of range: \
+                            handle=%lu offset=%lu size=%lu HandleSize=%lu\n"
+		 , descr, handle, fvmOffset, size, HandleSize
+		 );
+#endif
+	  return COMM_HANDLE_ERROR_INVALID_SIZE;
+	}
+      break;
+    case RET_HANDLE_UNKNOWN: return COMM_HANDLE_ERROR_INVALID_HANDLE; break;
+    default: return COMM_HANDLE_ERROR; break;
+    }
+
+  return COMM_HANDLE_OK;
+}
+
 static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 				   const fvmOffset_t fvmOffset,
 				   const fvmSize_t size,
@@ -232,54 +268,59 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 				   const fvmAllocHandle_t /* scratchHandle */,
 				   const fvmOperation_t op)
 {
-  Offset_t BaseOffset = -1;
+  Offset_t BaseOffset = 0;
   switch (op)
   {
 	// FIXME: implement error handling (size mismatch)
 	//        return COMM_HANDLE_ERROR_SHMEM_BOUNDARY etc as handles
 	case GETGLOBAL:
-	  dtmmgr_offset_size (dtmmgr, handle, ARENA_GLOBAL, &BaseOffset, NULL);
-	  if ((BaseOffset + fvmOffset + size) > pcFVMSize)
 	  {
-#ifndef NDEBUG
-		fprintf(stderr, "fvm-pc: GetGlobalData out of range: offset=%lu size=%lu fvm-size=%lu\n", (BaseOffset + fvmOffset), size, pcFVMSize);
-#endif
-		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	    fvmCommHandleState_t fvmCommHandleState =
+	      check_bounds (handle, fvmOffset, size, ARENA_GLOBAL, &BaseOffset, "GetGlobalData");
+
+	    if (fvmCommHandleState == COMM_HANDLE_OK)
+	      {
+		memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
+	      }
+	    /* FIXME: encode error into handle */
+	    return fvmCommHandleState;
 	  }
-	  memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
 	  break;
 	case PUTGLOBAL:
-	  dtmmgr_offset_size (dtmmgr, handle, ARENA_GLOBAL, &BaseOffset, NULL);
-	  if ((BaseOffset + fvmOffset + size) > pcFVMSize)
 	  {
-#ifndef NDEBUG
-		fprintf(stderr, "fvm-pc: PutGlobalData out of range: offset=%lu size=%lu fvm-size=%lu\n", (BaseOffset + fvmOffset), size, pcFVMSize);
-#endif
-		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	    fvmCommHandleState_t fvmCommHandleState =
+	      check_bounds (handle, fvmOffset, size, ARENA_GLOBAL, &BaseOffset, "PutGlobalData");
+	  
+	    if (fvmCommHandleState == COMM_HANDLE_OK)
+	      {
+		memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
+	      }
+	    return fvmCommHandleState;
 	  }
-	  memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
 	  break;
 	case GETLOCAL:
-	  dtmmgr_offset_size (dtmmgr, handle, ARENA_LOCAL, &BaseOffset, NULL);
-	  if ((BaseOffset + fvmOffset + size) > pcShmSize)
 	  {
-#ifndef NDEBUG
-		fprintf(stderr, "fvm-pc: GetLocalData out of range: offset=%lu size=%lu shmem-size=%lu\n", (BaseOffset + fvmOffset), size, pcShmSize);
-#endif
-		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	    fvmCommHandleState_t fvmCommHandleState =
+	      check_bounds (handle, fvmOffset, size, ARENA_LOCAL, &BaseOffset, "GetLocalData");
+
+	    if (fvmCommHandleState == COMM_HANDLE_OK)
+	      {
+		memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
+	      }
+	    return fvmCommHandleState;
 	  }
-	  memcpy((char*)(pcShm) + shmemOffset, (char*)(pcFVM) + BaseOffset + fvmOffset, size);
 	  break;
 	case PUTLOCAL:
-	  dtmmgr_offset_size (dtmmgr, handle, ARENA_LOCAL, &BaseOffset, NULL);
-	  if ((BaseOffset + fvmOffset + size) > pcShmSize)
 	  {
-#ifndef NDEBUG
-		fprintf(stderr, "fvm-pc: PutLocalData out of range: offset=%lu size=%lu shmem-size=%lu\n", (BaseOffset + fvmOffset), size, pcShmSize);
-#endif
-		return COMM_HANDLE_ERROR_INVALID_SIZE;
+	    fvmCommHandleState_t fvmCommHandleState =
+	      check_bounds (handle, fvmOffset, size, ARENA_LOCAL, &BaseOffset, "PutLocalData");
+
+	    if (fvmCommHandleState == COMM_HANDLE_OK)
+	      {
+		memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
+	      }
+	    return fvmCommHandleState;
 	  }
-	  memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
 	  break;
 	default:
 	  fprintf(stderr, "fvm-pc: fvmCommData() unsupported comm-operation:%d\n", op);
