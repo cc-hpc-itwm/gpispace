@@ -130,7 +130,7 @@ class GuiAppender : public fhg::log::Appender
 		event_t *evt(NULL);
 		{
 		    boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-		    boost::system_time timeout(boost::get_system_time() + boost::posix_time::milliseconds(10));
+		    boost::system_time timeout(boost::get_system_time() + boost::posix_time::milliseconds(5));
 		    event_available_.timed_wait(lock, timeout);
 		    if (! event_queue_.empty())
 		    {

@@ -36,4 +36,4 @@ unix:LIBS             +=
 		
 
 
-TARGET				        = ./prg
+TARGET				        = ./sdpa-gui
