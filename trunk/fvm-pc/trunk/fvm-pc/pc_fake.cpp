@@ -390,7 +390,7 @@ void *fvmGetShmemPtr()
 #endif
 }
 
-fvmSize_t fvmGetShmSize()
+fvmSize_t fvmGetShmemSize()
 {
   return pcShmSize;
 }
