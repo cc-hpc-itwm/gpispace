@@ -3,7 +3,7 @@
 
 #cmakedefine USE_STL_TR1 1
 #cmakedefine USE_SMC_SC 1
-#cmakedefine USE_BOOST_SC 1
+#cmakedefine USE_BOOST_SC 0
 #cmakedefine ENABLE_TYPE_CHECKING 1
 #cmakedefine HAVE_FVM 1
 #cmakedefine HAVE_PTHREAD_H 1

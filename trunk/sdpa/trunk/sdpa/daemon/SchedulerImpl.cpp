@@ -1,4 +1,3 @@
-#include <sdpa/daemon/SchedulerImpl.hpp>
 /*
  * =====================================================================================
  *
@@ -16,6 +15,7 @@
  *
  * =====================================================================================
  */
+#include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
@@ -55,28 +55,20 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	gwes::workflow_id_t wf_id = pJob->id().str();
 	gwes::workflow_t* ptrWorkflow = NULL;
 
-	// Use gwes workflow here!
-	// IBuilder should be invoked here instead of this!!!
-	try {
-		ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
-		ptrWorkflow->setID(wf_id);
-	} catch(std::runtime_error&){
-		SDPA_LOG_ERROR("GWES could not deserialize the job description!"<<std::endl<<pJob->description());
-
-		//send a JobFailed event
-		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
-		ptr_comm_handler_->sendEvent(pEvtJobFailed);
-		return;
-	}
-
-	// Should set the workflow_id here, or send it together with the workflow description
-	SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
+	// put the job into the running state
+	pJob->Dispatch();
 
 	try {
-		if(ptr_comm_handler_->gwes() && ptrWorkflow )
+		if( ptr_comm_handler_->gwes() )
 		{
-			pJob->Dispatch();
+			// Use gwes workflow here!
+
+			ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
+			ptrWorkflow->setID(wf_id);
+
+			// Should set the workflow_id here, or send it together with the workflow description
+			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
+
 			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
 		}
 		else
@@ -91,6 +83,13 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	catch (std::exception& )
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+
+		if(ptrWorkflow)
+		{
+			delete ptrWorkflow;
+			ptrWorkflow = NULL;
+		}
+
 		//send a JobFailed event
 		sdpa::job_result_t sdpa_result;
 		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );

@@ -118,6 +118,11 @@ sc::result Down::react(const StartUpEvent& e)
 	return transit<Configuring>(&DaemonFSM::action_configure, e); // successfully configured and all services started-up
 }
 
+sc::result Down::react(const ErrorEvent& e)
+{
+	return transit<Down>(&DaemonFSM::action_error_event, e); // successfully configured and all services started-up
+}
+
 sc::result Down::react(const sc::exception_thrown &)
 {
 	try
@@ -144,6 +149,11 @@ sc::result Configuring::react( const ConfigNokEvent& e)
 {
 	SDPA_LOG_DEBUG("React to  ConfigNokEvent");
 	return transit<Down>(&DaemonFSM::action_config_nok, e);
+}
+
+sc::result Configuring::react(const ErrorEvent& e)
+{
+	return transit<Configuring>(&DaemonFSM::action_error_event, e); // successfully configured and all services started-up
 }
 
 sc::result Configuring::react(const sc::exception_thrown &)
@@ -202,6 +212,11 @@ sc::result Up::react( const sdpa::events::WorkerRegistrationEvent& e)
 {
 	SDPA_LOG_DEBUG("React to  WorkerRegistrationEvent");
 	return transit<Up>(&DaemonFSM::action_register_worker, e);
+}
+
+sc::result Up::react(const ErrorEvent& e)
+{
+	return transit<Up>(&DaemonFSM::action_error_event, e); // successfully configured and all services started-up
 }
 
 sc::result Up::react(const sc::exception_thrown &)

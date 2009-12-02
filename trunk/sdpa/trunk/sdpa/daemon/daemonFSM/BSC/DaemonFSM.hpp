@@ -73,12 +73,14 @@ private:
 struct Down : sc::simple_state<Down, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::StartUpEvent>,
+					   sc::custom_reaction<sdpa::events::ErrorEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Down() : SDPA_INIT_LOGGER("sdpa.fsm.bsc.Down") { }
 	~Down() { }
 
 	sc::result react( const sdpa::events::StartUpEvent& );
+	sc::result react( const sdpa::events::ErrorEvent& );
 	sc::result react( const sc::exception_thrown & e);
 	SDPA_DECLARE_LOGGER();
 };
@@ -87,6 +89,7 @@ struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::ConfigOkEvent>,
 					   sc::custom_reaction<sdpa::events::ConfigNokEvent>,
+					   sc::custom_reaction<sdpa::events::ErrorEvent>,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Configuring():  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Configuring") { }
@@ -94,6 +97,7 @@ struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 
 	sc::result react( const sdpa::events::ConfigOkEvent& );
 	sc::result react( const sdpa::events::ConfigNokEvent& );
+	sc::result react( const sdpa::events::ErrorEvent& );
 	sc::result react( const sc::exception_thrown & e);
 	SDPA_DECLARE_LOGGER();
 };
@@ -107,6 +111,7 @@ struct Up : sc::simple_state<Up, DaemonFSM>
                    sc::custom_reaction<sdpa::events::SubmitJobEvent>,
                    sc::custom_reaction<sdpa::events::ConfigRequestEvent>,
                    sc::custom_reaction<sdpa::events::WorkerRegistrationEvent>,
+                   sc::custom_reaction<sdpa::events::ErrorEvent>,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Up() :  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Up") { }
@@ -119,6 +124,7 @@ struct Up : sc::simple_state<Up, DaemonFSM>
     sc::result react( const sdpa::events::SubmitJobEvent& );
     sc::result react( const sdpa::events::ConfigRequestEvent& );
     sc::result react( const sdpa::events::WorkerRegistrationEvent& );
+    sc::result react( const sdpa::events::ErrorEvent& );
     sc::result react( const sc::exception_thrown& );
     SDPA_DECLARE_LOGGER();
 };
