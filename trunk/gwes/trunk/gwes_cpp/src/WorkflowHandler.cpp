@@ -24,6 +24,7 @@ using namespace gwes;
 namespace gwes {
 
 WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow* workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
+	_thread = 0;
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;
@@ -62,8 +63,12 @@ WorkflowHandler::~WorkflowHandler() {
 //	_activityTable.clear();
 
   DMLOG(TRACE, "cleaning up workflow handler thread...");
-  pthread_cancel(_thread);
-  pthread_join(_thread, NULL);
+  if (_thread)
+  {
+	pthread_cancel(_thread);
+	pthread_join(_thread, NULL);
+	_thread = 0;
+  }
 }
 
 void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
