@@ -104,6 +104,7 @@ public:
 	/////////////////////////////////////////
 	// IActivity interface methods 
 	/////////////////////////////////////////
+	const std::string &getName() const;
 
 	/**
 	 * Get activity ID.
@@ -115,10 +116,6 @@ public:
      */
     void setID(const activity_id_t &id) { _id = id; }
 
-	const std::string &getName() const
-	{
-	  return _operation->getOperationName();
-	}
     /** 
      * Generates workflow object that corresponds to this activity.
      */

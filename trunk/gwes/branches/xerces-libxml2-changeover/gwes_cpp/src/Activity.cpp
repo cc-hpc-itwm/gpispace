@@ -232,27 +232,27 @@ void Activity::setStatus(Activity::status_t status) throw (StateTransitionExcept
 
 	LOG_DEBUG(_logger, "updated status of activity " << _id << " to: " << getStatusAsString(_status));
 	
-	// notify observers
-	if (_observers.size()>0) {
-		Event event(_id,Event::EVENT_ACTIVITY,getStatusAsString());
-		for (unsigned int i = 0; i<_observers.size(); i++ ) {
-			_observers[i]->update(event);
-		}
-	}
+//	// notify observers
+//	if (_observers.size()>0) {
+//		Event event(_id,Event::EVENT_ACTIVITY,getStatusAsString());
+//		for (unsigned int i = 0; i<_observers.size(); i++ ) {
+//			_observers[i]->update(event);
+//		}
+//	}
 }
 
 string Activity::getStatusAsString(Activity::status_t status) const {
 	switch (status) {
-	case (STATUS_UNDEFINED): return "UNDEFINED";
-	case (STATUS_RUNNING): return "RUNNING";
-	case (STATUS_INITIATED): return "INITIATED";
-	case (STATUS_SUSPENDED): return "SUSPENDED";
-	case (STATUS_ACTIVE): return "ACTIVE";
+	case (STATUS_UNDEFINED):  return "UNDEFINED";
+	case (STATUS_RUNNING):    return "RUNNING";
+	case (STATUS_INITIATED):  return "INITIATED";
+	case (STATUS_SUSPENDED):  return "SUSPENDED";
+	case (STATUS_ACTIVE):     return "ACTIVE";
 	case (STATUS_TERMINATED): return "TERMINATED";
-	case (STATUS_COMPLETED): return "COMPLETED";
-	case (STATUS_FAILED): return "FAILED";
+	case (STATUS_COMPLETED):  return "COMPLETED";
+	case (STATUS_FAILED):     return "FAILED";
+	default:                  return "UNDEFINED";
 	}
-	return "UNDEFINED";
 }
 
 Activity::status_t Activity::waitForStatusChangeFrom(Activity::status_t oldStatus) const {
