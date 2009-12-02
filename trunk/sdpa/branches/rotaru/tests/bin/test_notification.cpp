@@ -66,10 +66,22 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    for (int j = gui_service::event_t::STATE_MIN; j <= gui_service::event_t::STATE_MAX; ++j)
-    {
-      daemon.activityStateUpdate(aid, "function placeholder", static_cast<gui_service::event_t::state_t>(j));
-    }
+    daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_CREATED);
+    daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_STARTED);
+
+    int random_outcome = (int)(round(3 * drand48()));
+	switch (random_outcome)
+	{
+	  case 0:
+		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_FINISHED);
+		break;
+	  case 1:
+		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_FAILED);
+		break;
+	  case 2:
+		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_CANCELLED);
+		break;
+	}
 
     if ( (i % 10) == 0 ) sleep (1);
   }
@@ -80,7 +92,7 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    int random_state = round(gui_service::event_t::STATE_MAX * (int)drand48());
+    int random_state = (int)(round(gui_service::event_t::STATE_MAX * drand48()));
     gui_service::event_t::state_t state = static_cast<gui_service::event_t::state_t>(random_state);
     daemon.activityStateUpdate(aid, "function placeholder", state);
     if ( (i % 100) == 0 ) sleep (1);

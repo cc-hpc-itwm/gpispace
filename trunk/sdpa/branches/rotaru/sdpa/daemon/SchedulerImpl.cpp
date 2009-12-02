@@ -28,7 +28,7 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler)
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
-  , m_timeout(boost::posix_time::milliseconds(1000))
+  , m_timeout(boost::posix_time::milliseconds(100))
   , m_last_request_time(0)
   , m_last_life_sign_time(0)
 {
@@ -46,58 +46,6 @@ SchedulerImpl::~SchedulerImpl()
 	}
 }
 
-/*
-	Schedule a job locally, send the job to GWES
-*/
-/*void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
-	SDPA_LOG_DEBUG("Called schedule_local ...");
-
-	gwes::workflow_id_t wf_id = pJob->id().str();
-	gwes::workflow_t* ptrWorkflow = NULL;
-
-	// Use gwes workflow here!
-	// IBuilder should be invoked here instead of this!!!
-	try {
-		ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
-		ptrWorkflow->setID(wf_id);
-	} catch(std::runtime_error&){
-		SDPA_LOG_ERROR("GWES could not deserialize the job description!"<<std::endl<<pJob->description());
-
-		//send a JobFailed event
-		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
-		ptr_comm_handler_->sendEvent(pEvtJobFailed);
-		return;
-	}
-
-	// Should set the workflow_id here, or send it together with the workflow description
-	SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
-
-	try {
-		if(ptr_comm_handler_->gwes() && ptrWorkflow )
-		{
-			pJob->Dispatch();
-			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
-			//send a JobFailed event
-			sdpa::job_result_t sdpa_result;
-			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
-			ptr_comm_handler_->sendEvent(pEvtJobFailed);
-		}
-	}
-	catch (std::exception& )
-	{
-		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
-		//send a JobFailed event
-		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
-		ptr_comm_handler_->sendEvent(pEvtJobFailed);
-	}
-}
-*/
 /*
 	Schedule a job locally, send the job to GWES
 */

@@ -100,7 +100,7 @@ namespace fvm { namespace util {
 	if (rank < 0) rank = fvmGetRank();
 
 	const fvmSize_t transfer_size = sizeof(Type);
-	assert(transfer_size <= fvmGetShmSize());
+	assert(transfer_size <= fvmGetShmemSize());
 
 	// copy to shared mem
 	memcpy(fvmGetShmemPtr(), data, sizeof(Type));
@@ -119,7 +119,7 @@ namespace fvm { namespace util {
    * gets one data element from a global allocation
    *     data - where the retrieved shall be placed
    *   global - global allocation handle
-   *     rank - from which node to put the data (by default the calling node will be used)
+   *     rank - from which node to get the data (by default the calling node will be used)
    *   
    * warning: it uses the shared memory pointer to transfer data
    */
