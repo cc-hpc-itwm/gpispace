@@ -33,8 +33,15 @@ void Connection::removeListener(ConnectionListener *listener)
   listener_list_.remove(listener);
 }
 
-void Connection::notifyListener(const seda::comm::SedaMessage &msg) const
+bool Connection::has_listeners() const
 {
+  boost::unique_lock<boost::recursive_mutex> lock(const_cast<boost::recursive_mutex&>(listener_mtx_));
+  return ! listener_list_.empty();
+}
+
+void Connection::notifyListener(const seda::comm::SedaMessage &msg)
+{
+  boost::unique_lock<boost::recursive_mutex> lock(listener_mtx_);
   for (listener_list_t::const_iterator listener(listener_list_.begin())
      ; listener != listener_list_.end()
      ; ++listener)
@@ -43,9 +50,13 @@ void Connection::notifyListener(const seda::comm::SedaMessage &msg) const
     {
       (*listener)->onMessage(msg);
     }
+    catch (const std::exception &ex)
+    {
+	  LOG(ERROR, "connection listener onMessage() failed: " << ex.what());
+    }
     catch (...)
     {
-      std::cerr << "FIXME: connection listener bailed out, introduce error logging here: " << __FILE__ << ":" << __LINE__ << std::endl;
+	  LOG(ERROR, "connection listener onMessage() failed with an unknown reason!");
     }
   }
 }

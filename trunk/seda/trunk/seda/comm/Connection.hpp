@@ -44,8 +44,8 @@ namespace seda { namespace comm {
     void registerListener(ConnectionListener *);
     void removeListener(ConnectionListener *);
   protected:
-    void notifyListener(const seda::comm::SedaMessage &msg) const;
-    bool has_listeners() const { return (! listener_list_.empty()); }
+    void notifyListener(const seda::comm::SedaMessage &msg);
+    bool has_listeners() const;
   private:
     boost::recursive_mutex listener_mtx_;
     typedef std::list<ConnectionListener*> listener_list_t;

@@ -34,6 +34,6 @@ void ConnectionStrategy::perform(const IEvent::Ptr &toSend)
 
 void ConnectionStrategy::onMessage(const seda::comm::SedaMessage &recvMsg)
 {
-  LOG(DEBUG, "got message: " << recvMsg.str());
+  DMLOG(TRACE, "got message: " << recvMsg.str());
   ForwardStrategy::perform(SedaMessage::Ptr(new SedaMessage(recvMsg)));
 }
