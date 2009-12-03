@@ -29,9 +29,12 @@ static void dump_local_memory(data_t &params) throw (std::exception)
 
   fvmSize_t bytes_to_transfer = size;
   fvmSize_t bytes_transfered = 0;
+
+  const fvmSize_t max_chunk_size = (1 << 23); // 8 MB
+
   while (bytes_to_transfer > 0)
   {
-	const fvmSize_t transfer_size = std::min (bytes_to_transfer, fvmGetShmemSize());
+	const fvmSize_t transfer_size = std::min (bytes_to_transfer, max_chunk_size);
 	MLOG(TRACE, "transfering " << transfer_size << " bytes of memory");
 	fvmCommHandle_t comm = fvmGetLocalData (memory_handle, offset + bytes_transfered, transfer_size, 0);
 	fvmCommHandleState_t comm_state = waitComm(comm);
@@ -69,7 +72,7 @@ static void dump_global_memory(data_t &params) throw (std::exception)
   fvmSize_t bytes_to_transfer = size;
   fvmSize_t bytes_transfered = 0;
 
-  const fvmSize_t max_chunk_size = (2 << 23); // 8 MB
+  const fvmSize_t max_chunk_size = (1 << 23); // 8 MB
   fvm::util::local_allocation scratch(max_chunk_size);
   ASSERT_LALLOC(scratch);
 
