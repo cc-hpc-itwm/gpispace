@@ -49,6 +49,8 @@ static void dump_local_memory(data_t &params) throw (std::exception)
 	bytes_transfered  += transfer_size;
   }
   DMLOG(INFO, "dumped local memory");
+
+  params["error_code"].token().data(0);
 }
 
 static void dump_global_memory(data_t &params) throw (std::exception)
@@ -92,7 +94,9 @@ static void dump_global_memory(data_t &params) throw (std::exception)
 	bytes_to_transfer -= transfer_size;
 	bytes_transfered  += transfer_size;
   }
-  DMLOG(INFO, "dumped local memory");
+  DMLOG(INFO, "dumped global memory");
+
+  params["error_code"].token().data(0);
 }
 
 SDPA_MOD_INIT_START(debug)
