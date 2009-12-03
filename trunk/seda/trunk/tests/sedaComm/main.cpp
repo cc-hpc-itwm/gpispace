@@ -4,10 +4,10 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/CompilerOutputter.h>
 
-#ifdef LIBSEDA_ENABLE_LOGGING
-#  if defined(LIBSEDA_HAVE_FHGLOG)
+#ifdef SEDA_ENABLE_LOGGING
+#  if defined(SEDA_HAVE_FHGLOG)
 #    include <fhglog/Configuration.hpp>
-#  elif defined(LIBSEDA_HAVE_LOG4CPP)
+#  elif defined(SEDA_HAVE_LOG4CPP)
 #    include <log4cpp/BasicConfigurator.hh>
 #    include <log4cpp/Priority.hh>
 #  endif
@@ -15,10 +15,10 @@
 
 int
 main(int, char **) {
-#ifdef LIBSEDA_ENABLE_LOGGING
-#  if defined (LIBSEDA_HAVE_FHGLOG)
+#ifdef SEDA_ENABLE_LOGGING
+#  if defined (SEDA_HAVE_FHGLOG)
   ::fhg::log::Configurator::configure();  
-#  elif defined (LIBSEDA_HAVE_LOG4CPP)
+#  elif defined (SEDA_HAVE_LOG4CPP)
   ::log4cpp::BasicConfigurator::configure();
   ::log4cpp::Category::setRootPriority(::log4cpp::Priority::DEBUG);
 #  endif

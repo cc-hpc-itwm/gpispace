@@ -4,9 +4,9 @@
 #include <seda/seda-config.hpp>
 
 /* Logging */
-#if defined(LIBSEDA_ENABLE_LOGGING)
+#if defined(SEDA_ENABLE_LOGGING)
 
-#if defined(LIBSEDA_HAVE_FHGLOG)
+#if defined(SEDA_HAVE_FHGLOG)
 
 #include <fhglog/fhglog.hpp>
 
@@ -30,7 +30,7 @@
 #define SEDA_LOG_ERROR(msg) SEDA_LLOG_ERROR(seda_logger, msg)
 #define SEDA_LOG_FATAL(msg) SEDA_LLOG_FATAL(seda_logger, msg)
 
-#elif defined(LIBSEDA_HAVE_LOG4CPP)
+#elif defined(SEDA_HAVE_LOG4CPP)
 
 #include <log4cpp/Category.hh>
 #include <log4cpp/convenience.h>
@@ -56,13 +56,13 @@
 #define SEDA_LOG_FATAL(msg) SEDA_LLOG_FATAL(seda_logger, msg)
 
 #else
-#undef LIBSEDA_ENABLE_LOGGING
+#undef SEDA_ENABLE_LOGGING
 //#warning Logging has been enabled, but no usable logging mechanism available, disabling it!
 
 #endif // HAVE_FHGLOG
 #endif // ENABLE_LOGGING == 1
 
-#if not defined (LIBSEDA_ENABLE_LOGGING)
+#if not defined (SEDA_ENABLE_LOGGING)
 
 #define SEDA_LDECLARE_LOGGER(logger)   void* __seda_unused_##logger
 #define SEDA_LDEFINE_LOGGER(logger, h)
