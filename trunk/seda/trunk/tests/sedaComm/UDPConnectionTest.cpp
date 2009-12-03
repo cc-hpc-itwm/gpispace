@@ -335,3 +335,32 @@ UDPConnectionTest::testConnectionAddressAlreadyInUse()
 	// expected
   }
 }
+
+void
+UDPConnectionTest::testConnectionAddressAlreadyInUseStrategy()
+{
+  seda::comm::ConnectionFactory cFactory;
+  seda::comm::ConnectionParameters paramsA("udp", "127.0.0.1:5000", "testA");
+  seda::comm::Connection::ptr_t connA = cFactory.createConnection(paramsA);
+  seda::comm::ConnectionParameters paramsB("udp", "127.0.0.1:5000", "testB");
+  seda::comm::Connection::ptr_t connB = cFactory.createConnection(paramsB);
+
+  {
+    seda::comm::ConnectionStrategy::ptr_t conn_a(new seda::comm::ConnectionStrategy("test", connA));
+    seda::comm::ConnectionStrategy::ptr_t conn_b(new seda::comm::ConnectionStrategy("test", connB));
+    conn_a->onStageStart("foo");
+	try
+	{
+	  conn_b->onStageStart("foo");
+	  CPPUNIT_ASSERT_MESSAGE("strategy startup should fail with error!", false);
+	}
+	catch (const boost::system::system_error &ex)
+	{
+	  LOG(INFO, "expected system_error exception catched: " << ex.code() << ": " << ex.what());
+	}
+	catch (const std::exception &ex)
+	{
+	  LOG(INFO, "expected exception was: " << typeid(ex).name() << " with message: " << ex.what());
+	}
+  }
+}

@@ -18,6 +18,7 @@ namespace seda { namespace comm { namespace tests {
     CPPUNIT_TEST( testConnectionStrategyMinimal );
     CPPUNIT_TEST( testConnectionSharedPointer );
     CPPUNIT_TEST( testConnectionAddressAlreadyInUse );
+	CPPUNIT_TEST( testConnectionAddressAlreadyInUseStrategy );
     CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -36,6 +37,7 @@ namespace seda { namespace comm { namespace tests {
     void testConnectionStrategyMinimal();
     void testConnectionSharedPointer();
     void testConnectionAddressAlreadyInUse();
+	void testConnectionAddressAlreadyInUseStrategy();
     void testSharedPtr();
   };
 }}}
