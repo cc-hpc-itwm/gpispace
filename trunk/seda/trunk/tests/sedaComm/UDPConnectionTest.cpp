@@ -237,7 +237,7 @@ UDPConnectionTest::testSendReceive() {
     LOG(ERROR, "could not start/stop the udp-connection: " << ex.what());
     CPPUNIT_ASSERT_MESSAGE("udp connection could not be started", false);
   } catch(...) {
-    LOG(ERROR, "could not start/stop the zmq-connection (unknown)");
+    LOG(ERROR, "could not start/stop the udp-connection (unknown)");
     CPPUNIT_ASSERT_MESSAGE("udp connection could not be started", false);
   }
 }
@@ -309,5 +309,29 @@ UDPConnectionTest::testStartStop() {
   } catch(...) {
     LOG(ERROR, "could not start/stop the zmq-connection (unknown)");
     CPPUNIT_ASSERT_MESSAGE("udp connection could not be started", false);
+  }
+}
+
+void
+UDPConnectionTest::testConnectionAddressAlreadyInUse()
+{
+  seda::comm::Locator::ptr_t locator(new seda::comm::Locator());
+  seda::comm::UDPConnection connA(locator, "testA", "127.0.0.1", 5222);
+  seda::comm::UDPConnection connB(locator, "testB", "127.0.0.1", 5222);
+
+  try
+  {
+	connA.start();
+	connB.start();
+	CPPUNIT_ASSERT_MESSAGE("starting two connections on the same port, expected an exception!", false);
+  }
+  catch (const boost::system::system_error &ex)
+  {
+	LOG(INFO, "expected system_error exception catched: " << ex.code() << ": " << ex.what());
+  }
+  catch (const std::exception &ex)
+  {
+	LOG(INFO, "expected exception was: " << typeid(ex).name() << " with message: " << ex.what());
+	// expected
   }
 }
