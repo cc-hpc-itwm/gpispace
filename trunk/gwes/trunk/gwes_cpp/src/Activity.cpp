@@ -225,13 +225,13 @@ void Activity::setStatus(Activity::status_t status) throw (StateTransitionExcept
 
 	LOG_DEBUG(_logger, "updated status of activity " << _id << " to: " << getStatusAsString(_status));
 	
-	// notify observers
-	if (_observers.size()>0) {
-		Event event(_id,Event::EVENT_ACTIVITY,getStatusAsString());
-		for (unsigned int i = 0; i<_observers.size(); i++ ) {
-			_observers[i]->update(event);
-		}
-	}
+//	// notify observers
+//	if (_observers.size()>0) {
+//		Event event(_id,Event::EVENT_ACTIVITY,getStatusAsString());
+//		for (unsigned int i = 0; i<_observers.size(); i++ ) {
+//			_observers[i]->update(event);
+//		}
+//	}
 }
 
 string Activity::getStatusAsString(Activity::status_t status) const {
