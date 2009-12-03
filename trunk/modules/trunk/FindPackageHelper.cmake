@@ -115,7 +115,7 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
 
   if(${_NAME_UPPER}_LIBRARY) 
     set(${_name}_IN_CACHE true)
-    message(STATUS "  Package ${_NAME_UPPER} already '${${_NAME_UPPER}_LIBRARY}' loaded")
+    message(STATUS "  Package ${_NAME_UPPER} allready '${${_NAME_UPPER}_LIBRARY}' loaded")
   endif(${_NAME_UPPER}_LIBRARY) 
 
   check_package_search_path(${_NAME_UPPER} ${INCLUDE_FILE} ${LIBNAME} ${LIBVERSION}
@@ -142,6 +142,7 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
   # locate the library
   SET(${_NAME_UPPER}_LIBRARY_NAMES ${${_NAME_UPPER}_LIBRARY_NAMES} ${LIBNAME})
   IF(WIN32)
+    SET(${_NAME_UPPER}_LIBRARY_NAMES ${${_NAME_UPPER}_LIBRARY_NAMES} "lib${LIBNAME}")
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
   ELSE(WIN32)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -184,9 +185,10 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
       message(STATUS "    Include ${_NAME_UPPER} dependencies.")
       include(${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
       set(${_NAME_UPPER}_LIBRARY ${_name} PARENT_SCOPE)
+      set(${_NAME_UPPER}_INCLUDE_DIRS ${${_NAME_UPPER}_INCLUDE_DIRS} PARENT_SCOPE)
     endif(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
   else( NOT ${_name}_IN_CACHE )
-    message(STATUS "    package ${NAME} was already in loaded. Do not perform dependencies.")
+    message(STATUS "    package ${NAME} was allready in loaded. Do not perform dependencies.")
   endif( NOT ${_name}_IN_CACHE )
 
 
@@ -197,6 +199,7 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
     ${_NAME_UPPER}_LIBRARIES
     ${_NAME_UPPER}_LIBRARY_DIR
     ${_NAME_UPPER}_INCLUDE_DIR
+    ${_NAME_UPPER}_INCLUDE_DIRS
     )
 
 #endfunction(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
@@ -210,7 +213,7 @@ function(require PACKAGE ADD_SEARCH_PATH VERSION)
   string(TOUPPER ${PACKAGE} UPPER_PACKAGE)
 
   if( ${UPPER_PACKAGE}_FOUND )
-    message(STATUS "   Package ${UPPER_PACKAGE} already loaded")
+    message(STATUS "   Package ${UPPER_PACKAGE} allready loaded")
   endif( ${UPPER_PACKAGE}_FOUND )
   message(STATUS "    Variable ENV{${UPPER_PACKAGE}_HOME} = '$ENV{${UPPER_PACKAGE}_HOME}'")
   message(STATUS "    Variable ${UPPER_PACKAGE}_HOME      = '${${UPPER_PACKAGE}_HOME}'")
