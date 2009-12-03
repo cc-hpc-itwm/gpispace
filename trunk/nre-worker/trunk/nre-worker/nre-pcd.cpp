@@ -6,6 +6,8 @@
 #include <cstring>
 #include <csignal>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 // fvm dependencies
 #include <fvm-pc/pc.hpp>
@@ -251,14 +253,27 @@ int main(int ac, char **av)
   try
   {
     typedef std::vector<std::string> mod_list;
+	mod_list mods;
+	if (getenv("PCD_MODULES") != NULL)
+	{
+	  // first fill the list with those modules specified in PCD_MODULES
+	  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	  boost::char_separator<char> sep(":");
+	  std::string PCD_MODULES(getenv("PCD_MODULES"));
+	  tokenizer tokens(PCD_MODULES, sep);
+	  std::copy(tokens.begin(), tokens.end(), std::back_inserter(mods));
+	}
+
     if (vm.count("load"))
     {
-      const mod_list &mods(vm["load"].as<std::vector<std::string> >());
-      for (mod_list::const_iterator mod(mods.begin()); mod != mods.end(); ++mod)
-      {
-        executor->loader().load(*mod);
-      }
+      const mod_list &cmdline_mods(vm["load"].as<std::vector<std::string> >());
+	  std::copy(cmdline_mods.begin(), cmdline_mods.end(), std::back_inserter(mods));
     }
+
+	for (mod_list::const_iterator mod(mods.begin()); mod != mods.end(); ++mod)
+	{
+	  executor->loader().load(*mod);
+	}
   }
   catch (const ModuleLoadFailed &mlf)
   {
