@@ -43,17 +43,19 @@ include(FindMscgen)
 #include(SMCMacros)
 
 ## find libxml2
-Include(FindXml2)
-IF(NOT LIBXML2_FOUND)
-  message(FATAL_ERROR "No libxml2 found, cannot continue.")
-ENDIF(NOT LIBXML2_FOUND)
-include_directories(${LIBXML2_INCLUDE_DIRS})
+find_package(LibXml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
+message(STATUS "LibXml2: Inc:${LIBXML2_INCLUDE_DIR} Lib:${LIBXML2_LIBRARIES}")
 
 ## find libxslt
-Include(FindLibXslt)
-IF(NOT LIBXSLT_FOUND)
-  message(FATAL_ERROR "No libxslt found, cannot continue.")
-ENDIF(NOT LIBXSLT_FOUND)
+find_package(LibXslt REQUIRED)
+include_directories(${LIBXSLT_INCLUDE_DIR})
+message(STATUS "LibXslt: Inc:${LIBXSLT_INCLUDE_DIR} Lib:${LIBXSLT_LIBRARIES}")
+
+## find zlib
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
+message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 
 ## find fhglog 
 include(FindFhgLog)
@@ -111,7 +113,8 @@ link_directories(${${PROJECT_NAME}_BINARY_DIR})
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(CMAKE_CXX_FLAGS "-Wall -Wno-non-virtual-dtor -Werror -fno-omit-frame-pointer")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow")
+#  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type -Wshadow")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
