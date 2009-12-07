@@ -8,6 +8,7 @@ target_link_libraries(gwes_cpp gworkflowdl_cpp)
 target_link_libraries(gwes_cpp ${UUID_LIBRARY})
 target_link_libraries(gwes_cpp ${FHGLOG_LIBRARY})
 target_link_libraries(gwes_cpp ${Boost_LIBRARIES})
+target_link_libraries(gwes_cpp ${ZLIB_LIBRARIES})
 target_link_libraries(gwes_cpp pthread)
 
 # executable gwes
