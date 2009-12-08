@@ -51,14 +51,17 @@ namespace sdpa { namespace wf { namespace glue {
 
       {
         // remove sdpa-tag...
-        const std::string sTag("<sdpa>");
+        const std::string sTag("<sdpa");
         const std::string eTag("</sdpa>");
         if (gwdl_token_data.substr(0, sTag.size()) == sTag)
         {
-          DLOG(DEBUG, "removing enclosing sdpa-tags...");
+		  // remove everything from <sdpa till a closing >
+          DLOG(DEBUG, "removing enclosing sdpa-tag of: " << gwdl_token_data);
           try
           {
-            gwdl_token_data = gwdl_token_data.substr(sTag.size(), gwdl_token_data.size() - (sTag.size()+eTag.size()) );
+			const std::string::size_type end_of_start_tag = gwdl_token_data.find_first_of(">");
+            gwdl_token_data = gwdl_token_data.substr(end_of_start_tag+1, gwdl_token_data.size() - (end_of_start_tag+1+eTag.size()));
+			DLOG(DEBUG, "resulting data: " << gwdl_token_data);
           }
           catch (const std::exception &ex)
           {
@@ -71,15 +74,13 @@ namespace sdpa { namespace wf { namespace glue {
           DLOG(DEBUG, "no sdpa-tag found, taking data as it is: " << gwdl_token_data);
         }
       }
+      wrapped.data(gwdl_token_data);
 
-      wrapped.data(gtok.getData()->getContent());
-	  if (gtok.getProperties())
+	  for (gtok_properties_t::const_iterator prop(gtok.getProperties().begin()); prop != gtok.getProperties().end(); ++prop)
 	  {
-		for (gtok_properties_t::const_iterator prop(gtok.getProperties()->begin()); prop != gtok.getProperties()->end(); ++prop)
-		{
-		  wrapped.properties().put(prop->first, prop->second);
-		}
+		wrapped.properties().put(prop->first, prop->second);
 	  }
+
       if (! wrapped.properties().has_key("datatype"))
       {
         DLOG(DEBUG, "fixing datatype information of Token, assuming string type");

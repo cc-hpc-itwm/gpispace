@@ -63,8 +63,8 @@ int main(int , char **)
   {
     try
     {
-      gwdl::Properties::ptr_t props(new gwdl::Properties());
-      props->put("datatype", typeid(int).name());
+      gwdl::Properties props;
+      props.put("datatype", typeid(int).name());
       gwdl::Data::ptr_t data(new gwdl::Data("42"));
       gwdl::Token gtoken(props, data);
       sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
