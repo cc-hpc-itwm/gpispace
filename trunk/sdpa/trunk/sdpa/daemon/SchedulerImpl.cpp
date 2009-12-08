@@ -53,7 +53,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
 	gwes::workflow_id_t wf_id = pJob->id().str();
-	gwes::workflow_t* ptrWorkflow = NULL;
+	gwes::workflow_t::ptr_t ptrWorkflow;
 
 	// put the job into the running state
 	pJob->Dispatch();
@@ -69,7 +69,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 			// Should set the workflow_id here, or send it together with the workflow description
 			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
 
-			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
+			ptr_comm_handler_->gwes()->submitWorkflow(ptrWorkflow);
 		}
 		else
 		{

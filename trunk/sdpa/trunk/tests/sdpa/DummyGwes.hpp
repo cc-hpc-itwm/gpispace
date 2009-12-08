@@ -57,14 +57,18 @@ typedef map_t::value_type id_pair;
 class DummyWorkflow : public gwes::workflow_t
 {
   public:
-    DummyWorkflow(const sdpa::job_desc_t& /* desc */ ) { }
+    DummyWorkflow(const sdpa::job_desc_t& /* desc */ ) : gwes::workflow_t("") { }
 
     const gwes::workflow_id_t &getID() const { return wf_id_; }
     void setID(const gwes::workflow_id_t &id) { wf_id_ = id; }
 
     std::string serialize() const { return "serialized workflow"; }
     void deserialize(const std::string &) {}
-    gwdl::Place* getPlace(const std::string& /* id */) { return NULL; }
+    gwdl::Place::ptr_t &getPlace(const std::string& /* id */) throw (gwdl::NoSuchWorkflowElement)
+  {
+	  static gwdl::Place::ptr_t place_holder;
+	  return place_holder;
+	}
 
     gwdl::workflow_result_t getResults() const
 	{
@@ -87,11 +91,13 @@ class DummyActivity : public gwes::activity_t
     void  setID( const activity_id_t &id_arg ) { act_id_ = id_arg; }
     const activity_id_t &getID() const { return act_id_; }
 
+	const std::string &getName() const { return act_id_; }
+
     virtual const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const { return owner_wf_id_; }
 
-    gwdl::IWorkflow::ptr_t transform2Workflow() const throw (std::exception)
+    gwdl::Workflow::ptr_t transform2Workflow() const throw (std::exception)
     {
-      gwdl::IWorkflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
+      gwdl::Workflow::ptr_t pWf( new DummyWorkflow( act_id_ ));
       return pWf;
     }
 
@@ -267,7 +273,7 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
      * asynchronously and notifiy the SPDA about status transitions
      * using the callback methods of the Gwes2Sdpa handler.
      */
-    virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (std::exception)
+    virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflow) throw (std::exception)
     {
       // GWES is supposed to parse the workflow and generate a suite of
       // sub-workflows or activities that are sent to SDPA
@@ -276,7 +282,7 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       SDPA_LOG_DEBUG("Called submitWorkflow ...");
 
       // save the workflow_id
-      workflow_id_t wf_id_orch = workflow.getID();
+      workflow_id_t wf_id_orch = workflow->getID();
       SDPA_LOG_DEBUG("Generate activity ...");
 
       // generate unique id
@@ -302,7 +308,7 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
       else
         SDPA_LOG_ERROR("SDPA has unregistered ...");
 
-      return workflow.getID();
+      return workflow->getID();
     }
 
     /**
@@ -327,18 +333,18 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
         SDPA_LOG_ERROR("SDPA has unregistered ...");
     }
 
-    gwdl::IWorkflow *deserializeWorkflow(const std::string& strJobDesc ) throw (std::runtime_error)
+    gwdl::Workflow::ptr_t deserializeWorkflow(const std::string& strJobDesc ) throw (std::runtime_error)
 	{
-    	 gwdl::IWorkflow* ptrWorkflow = new DummyWorkflow(strJobDesc);
+    	 gwdl::Workflow::ptr_t ptrWorkflow(new DummyWorkflow(strJobDesc));
     	 return ptrWorkflow;
 	}
 
-    std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error)
+    std::string serializeWorkflow(const gwdl::Workflow &) throw (std::runtime_error)
 	{
     	return "dummy_workflow_serialization";
 	}
 
-    gwes::workflow_t &getWorkflow(const workflow_id_t &id) throw (NoSuchWorkflow)
+    gwes::workflow_t::ptr_t &getWorkflow(const workflow_id_t &id) throw (NoSuchWorkflow)
     {
       throw NoSuchWorkflow("cannot look up workflow " + id);
     }

@@ -31,40 +31,40 @@ int main(int , char **)
   using namespace sdpa;
 
   {
-    gwdl::Token gtoken(true);
+    gwdl::Token gtoken(gwdl::Token::CONTROL_TRUE);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-    std::clog << "gtoken: " << gtoken << std::endl;
+//    std::clog << "gtoken: " << gtoken << std::endl;
     std::clog << "stoken: " << stoken << std::endl;;
   }
 
   {
-    gwdl::Token gtoken(false);
+    gwdl::Token gtoken(gwdl::Token::CONTROL_FALSE);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-    std::clog << "gtoken: " << gtoken << std::endl;;
+//    std::clog << "gtoken: " << gtoken << std::endl;;
     std::clog << "stoken: " << stoken << std::endl;;
   }
 
   {
-    gwdl::Token gtoken(new gwdl::Data("<data></data>"));
-    LOG(DEBUG, "creating empty data token: " << gtoken);
+    gwdl::Token gtoken(gwdl::Data::ptr_t(new gwdl::Data("<data></data>")));
+//    LOG(DEBUG, "creating empty data token: " << gtoken);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
     LOG(DEBUG, "wrapped to: " << stoken);
     stoken.data(42);
     LOG(DEBUG, "updated data: " << stoken);
     gwdl::Token *gtoken2 = sdpa::wf::glue::unwrap(stoken);
-    LOG(DEBUG, "unwrapped: " << *gtoken2);
+//    LOG(DEBUG, "unwrapped: " << *gtoken2);
     delete gtoken2;
   }
 
   {
     try
     {
-      gwdl::Properties props;
-      props.put("datatype", typeid(int).name());
-      gwdl::Data *data(new gwdl::Data("<data><sdpa>42</sdpa></data>"));
+      gwdl::Properties::ptr_t props(new gwdl::Properties());
+      props->put("datatype", typeid(int).name());
+      gwdl::Data::ptr_t data(new gwdl::Data("<data><sdpa>42</sdpa></data>"));
       gwdl::Token gtoken(props, data);
       sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-      std::clog << "gtoken: " << gtoken << std::endl;;
+//      std::clog << "gtoken: " << gtoken << std::endl;;
       std::clog << "stoken: " << stoken << std::endl;;
       std::clog << "\tas int: " << stoken.data_as<int>() << std::endl;
     }
