@@ -19,5 +19,5 @@ add_test(gwdl_test ${CMAKE_CURRENT_BINARY_DIR}/gwdl_test)
 add_executable(gwes_test ${gwessrcs})
 target_link_libraries(gwes_test gwes_cpp gworkflowdl_cpp)
 target_link_libraries(gwes_test ${CPPUNIT_LIBRARIES})
-target_link_libraries(ges_test dl) # cppunit requires that ;-(
+target_link_libraries(gwes_test dl) # cppunit requires that ;-(
 add_test(gwes_test ${CMAKE_CURRENT_BINARY_DIR}/gwes_test)
