@@ -18,7 +18,6 @@ using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
 using namespace gwdl::tests;
-XERCES_CPP_NAMESPACE_USE
 
 CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::TokenTest );
 
@@ -26,6 +25,7 @@ void TokenTest::testToken()
 {
 	logger_t logger(getLogger("gwdl"));
 	LOG_INFO(logger, "============== BEGIN TOKEN TEST =============");
+	Libxml2Builder builder;
 	
 	LOG_INFO(logger, "test default constructor Token()...");
 	Token::ptr_t token = Token::ptr_t(new Token());
@@ -51,8 +51,82 @@ void TokenTest::testToken()
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT(token->isData());
 	CPPUNIT_ASSERT_EQUAL(string("<test>15</test>"), token->getData()->getContent());
+	
+	LOG_INFO(logger, "testDeserializeSerialize() data...");
+	string str = string("<token><data><x>1</x></data></token>");
+	LOG_INFO(logger, "\n" << str);
+	Token::ptr_t tokenP = builder.deserializeToken(str);
+	LOG_INFO(logger, "\n" << *tokenP);
+	string str2 = builder.serializeToken(*tokenP);
+	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:data>\n    <x>1</x>\n  </gwdl:data>\n</token>\n"), str2);
 
-	LOG_WARN(logger, "///ToDo: refractoring from xerces-c to libxml2!");
+	LOG_INFO(logger, "testDeserializeSerialize() control...");
+	str = string("<token><control>true</control></token>");
+	LOG_INFO(logger, "\n" << str);
+	tokenP = builder.deserializeToken(str);
+	LOG_INFO(logger, "\n" << *tokenP);
+	str2 = builder.serializeToken(*tokenP);
+	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:control>true</gwdl:control>\n</token>\n"), str2);
+
+	LOG_INFO(logger, "testDeserializeSerialize() control false...");
+	str = string("<token><control>false</control></token>");
+	LOG_INFO(logger, "\n" << str);
+	tokenP = builder.deserializeToken(str);
+	LOG_INFO(logger, "\n" << *tokenP);
+	str2 = builder.serializeToken(*tokenP);
+	CPPUNIT_ASSERT_EQUAL(string("<token xmlns:gwdl=\"http://www.gridworkflow.org/gworkflowdl\">\n  <gwdl:control>false</gwdl:control>\n</token>\n"), str2);
+
+	LOG_INFO(logger, "testDeserialize with wrong xml: missing data element...");
+	str = string("<token></token>");
+	LOG_INFO(logger, "\n" << str);
+	bool success = false;
+	try {
+		tokenP = builder.deserializeToken(str);
+		LOG_INFO(logger, "\n" << *tokenP);
+	} catch (WorkflowFormatException e) {
+		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
+		success = true;
+	}
+	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
+	
+	LOG_INFO(logger, "testDeserialize with wrong xml: too many child elements...");
+	str = string("<token><data><x>1</x><y>2</y></data></token>");
+	LOG_INFO(logger, "\n" << str);
+	success = false;
+	try {
+		tokenP = builder.deserializeToken(str);
+		LOG_INFO(logger, "\n" << *tokenP);
+	} catch (WorkflowFormatException e) {
+		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
+		success = true;
+	}
+	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
+
+	LOG_INFO(logger, "testDeserialize with wrong xml: wrong control content...");
+	str = string("<token><control>XXXtrue</control></token>");
+	LOG_INFO(logger, "\n" << str);
+	success = false;
+	try {
+		tokenP = builder.deserializeToken(str);
+		LOG_INFO(logger, "\n" << *tokenP);
+	} catch (WorkflowFormatException e) {
+		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+		LOG_INFO(logger,"This exception was thrown intentionally, everything is OK!");
+		success = true;
+	}
+	CPPUNIT_ASSERT_MESSAGE("Throws WorkflowFormatException", success);
+
+	//	LOG_INFO(logger, "testDeserializeSerialize() loop...");		
+//	for (unsigned int i=0; i<100; i++) {
+//		ostringstream oss;
+//		oss << "<i>" << i << "</i>";
+//		Data::ptr_t data2P = builder.deserializeData(oss.str());
+//		str2 = builder.serializeData(*data2P);
+//	}
+
+
 //	LOG_INFO(logger, "test control token with properties...");
 //	Properties *props = new Properties();
 //	props->put("key1","value1");

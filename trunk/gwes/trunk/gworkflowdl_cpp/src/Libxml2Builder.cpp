@@ -6,6 +6,8 @@
  */
 //gwdl
 #include <gwdl/Libxml2Builder.h>
+//libxml2
+#include <libxml/tree.h>
 
 using namespace std;
 
@@ -25,16 +27,26 @@ Libxml2Builder::~Libxml2Builder() {}
 //////////////////////////
 // Data
 //////////////////////////
-const Data::ptr_t Libxml2Builder::deserializeData(const string &xmlstring) const {
+Data::ptr_t Libxml2Builder::deserializeData(const string &xmlstring) const throw (WorkflowFormatException) {
 	Data::ptr_t data(new Data(xmlstring));
 	return data;
 }
 
-const string Libxml2Builder::serializeData(const Data::ptr_t &data) const {
-	return data->serialize();
+string Libxml2Builder::serializeData(const Data& data) const {
+	return data.serialize();
 }
 
-const xmlNodePtr Libxml2Builder::dataToElement(const Data &data) const {
+Data::ptr_t Libxml2Builder::elementToData(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	///////////////////
+	// int _type;               -> ignored/set by constructor
+    // content_t _content;      -> set from element contents
+	///////////////////
+	string contents = XMLUtils::Instance()->serializeLibxml2(nodeP, false); 
+	Data::ptr_t dataP(new Data(contents));
+	return dataP;
+}
+
+xmlNodePtr Libxml2Builder::dataToElement(const Data &data) const {
 	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(data.getContent());
 	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
 	xmlUnlinkNode(nodeP);
@@ -45,7 +57,7 @@ const xmlNodePtr Libxml2Builder::dataToElement(const Data &data) const {
 //////////////////////////
 // Token
 //////////////////////////
-const Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const {
+Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const throw (WorkflowFormatException) {
 	xmlDocPtr docP = XMLUtils::Instance()->deserializeLibxml2(xmlstring);
 	const xmlNodePtr nodeP = xmlDocGetRootElement(docP);
 	const Token::ptr_t ret = elementToToken(nodeP);
@@ -53,11 +65,14 @@ const Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) con
 	return ret;
 }
 
-const string Libxml2Builder::serializeToken(const Token::ptr_t &token) const {
-	return serializeToken(*token);
+string Libxml2Builder::serializeToken(const Token &token) const {
+	xmlNodePtr nodeP = tokenToElement(token);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
 }
 
-const Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const {
+Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
 	///////////////////
 	// long _id;                -> set by constructor
     // Data::ptr_t _dataP;      -> set from element <data>
@@ -66,26 +81,71 @@ const Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const 
     // Transition* _p_lock;     -> ignored.
 	///////////////////
 	
-    xmlNodePtr curNodeP = NULL;
+	Token::ptr_t tokenP;
+    xmlNodePtr curNodeP = nodeP;
+    
+    curNodeP = nextElementNode(curNodeP);
 
-    for (curNodeP = nodeP; curNodeP; curNodeP = curNodeP->next) {
-        if (curNodeP->type == XML_ELEMENT_NODE) {
-            LOG_INFO(_logger, "node type: Element, name: " << curNodeP->name);
+    if (checkElementName(curNodeP, "token")) {            // <token>
+        curNodeP = nextElementNode(curNodeP->children);
+    	///ToDo: properties
+        LOG_WARN(_logger, "///ToDo: refractoring from xerces-c to libxml2! ///properties");
+        if (checkElementName(curNodeP, "data")) {           // <data>
+        	curNodeP = nextElementNode(curNodeP->children);
+        	if (curNodeP == NULL) {                           // empty data
+        		Data::ptr_t dataP = Data::ptr_t(new Data(""));
+        		tokenP.reset(new Token(dataP));
+        	} else {                                          // data with content element
+        		Data::ptr_t dataP = elementToData(curNodeP);
+        		tokenP.reset(new Token(dataP));
+        		// check for multiple children of <data> (MUST be single child!)
+        		curNodeP = nextElementNode(curNodeP->next);
+        		if (curNodeP != NULL) {
+                	LOG_ERROR(_logger, "Element <data> MUST have exactly ONE child element!");
+                	throw WorkflowFormatException("Element <data> MUST have exactly ONE child element!");
+        		}
+        	}
+        } else if (checkElementName(curNodeP, "control")) { // <control>
+        	curNodeP = nextTextNode(curNodeP->children);
+        	if ( xmlStrcmp(curNodeP->content,(xmlChar*)"true")==0 ) {
+            	tokenP.reset(new Token());
+        	} else if ( xmlStrcmp(curNodeP->content,(xmlChar*)"false")==0 ) {
+            	tokenP.reset(new Token(Token::CONTROL_FALSE));
+        	} else {
+            	LOG_ERROR(_logger, "Invalid text content of element <control>! MUST be \"true\" or \"false\" but is \"" << curNodeP->content << "\"");
+            	throw WorkflowFormatException("Invalid text content of element <control>! MUST be \"true\" or \"false\"");
+        	}
+        } else {
+        	LOG_ERROR(_logger, "Element <data> or <control> not found as child of <token>!");
+        	throw WorkflowFormatException("Element <data> or <control> not found as child of <token>!");
         }
+    } else {
+    	LOG_WARN(_logger, "Element <token> not found!");
+    	throw WorkflowFormatException("Element <token> not found!"); 
     }
- 	
-	Token::ptr_t token(new Token());
-	return token;
+
+	return tokenP;
 }
 
-const string Libxml2Builder::serializeToken(const Token &token) const {
-	xmlNodePtr nodeP = tokenToElement(token);
-	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
-	xmlFreeNode(nodeP);
-	return ret;
+xmlNodePtr Libxml2Builder::nextElementNode(xmlNodePtr nodeP) {
+    while (nodeP != NULL && nodeP->type != XML_ELEMENT_NODE) nodeP = nodeP->next;
+    return nodeP;
 }
 
-const xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
+xmlNodePtr Libxml2Builder::nextTextNode(xmlNodePtr nodeP) {
+    while (nodeP != NULL && nodeP->type != XML_TEXT_NODE) nodeP = nodeP->next;
+    return nodeP;
+}
+
+bool Libxml2Builder::checkElementName(const xmlNodePtr nodeP,const char* name) {
+	if (nodeP == NULL) {
+    	LOG_WARN(logger_t(getLogger("gwdl")), "Node pointer is NULL; element <" << name << "> not found!");
+		return false;
+	}
+	return xmlStrcmp(nodeP->name,(xmlChar*)name)==0;
+}
+
+xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
 	// ToDo: namespace should be without prefix.
 	xmlNsPtr nsP = xmlNewNs(NULL, (xmlChar*)"http://www.gridworkflow.org/gworkflowdl", (xmlChar*)"gwdl");
 	xmlNodePtr nodeP = xmlNewNode(nsP, (xmlChar*)"token");

@@ -7,135 +7,48 @@
 #include <iostream>
 #include <ostream>
 //gwdl
-#include <gwdl/XMLUtils.h>
 #include <gwdl/Libxml2Builder.h>
 //tests
 #include "TestData.h"
 //fhglog
 #include <fhglog/fhglog.hpp>
-#include <gwdl/XMLTranscode.hpp>
+
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
 using namespace gwdl::tests;
-XERCES_CPP_NAMESPACE_USE
 
 CPPUNIT_TEST_SUITE_REGISTRATION( gwdl::tests::DataTest );
-
-#define D(str) XMLString::release(&str)
-#define SAFE_DELETE(ptr) if ((ptr) != 0) { delete (ptr); ptr=0; }
 
 void DataTest::testData()
 {
 	logger_t logger(getLogger("gwdl"));
-    LOG_INFO(logger, "============== BEGIN DATA TEST =============");
-	
-	LOG_INFO(logger, "test empty data token... ");
-    {
-      Data emptyData("",Data::TYPE_EMPTY);
-      CPPUNIT_ASSERT_MESSAGE("Empty data", emptyData.getContent().empty());
-      CPPUNIT_ASSERT_EQUAL_MESSAGE("Empty data type", (int) Data::TYPE_EMPTY, emptyData.getType());
-    }
- 
-    // ToDo: implement test for libxml2
-	LOG_WARN(logger, "ToDo: refractoring from xerces-c to libxml2!");
-	LOG_WARN(logger, "test xml data token from DOM element... - DEACTIVATED!");
-//    {
-//      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
-//      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
-//      // <data>
-//      DOMElement* dataElement = doc->createElement(X("data"));
-//      // <value1>25</value1>
-//      DOMElement* e1 = doc->createElement(X("value1"));
-//      dataElement->appendChild(e1);
-//      DOMText* e1value = doc->createTextNode(X("25"));
-//      e1->appendChild(e1value);
-//      // <value2>15</value1>
-//      DOMElement* e2 = doc->createElement(X("value2"));
-//      dataElement->appendChild(e2);
-//      DOMText* e2value = doc->createTextNode(X("15"));
-//      e2->appendChild(e2value);
-//      
-//      Data data(dataElement);
-//      LOG_INFO(logger, "test data << operator ...");
-//      LOG_DEBUG(logger, data);
-//      LOG_INFO(logger, "test data.toString() ...");
-//      string* datastr = data.toString();
-//      LOG_INFO(logger, *datastr);
-//      CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
-//      SAFE_DELETE(datastr);
-//    }
+	LOG_INFO(logger, "============== BEGIN DATA TEST =============");
 
-	LOG_WARN(logger, "ToDo: refractoring from xerces-c to libxml2!");
-	LOG_WARN(logger, "test xml data token (loop) from DOM element... - DEACTIVATED!");
-//    {
-//      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
-//      // who releases this doc?
-//      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
-//      // <data>
-//      DOMElement* dataElement = doc->createElement(X("data"));
-//      // <value1>25</value1>
-//      DOMElement* e1 = doc->createElement(X("value1"));
-//      dataElement->appendChild(e1);
-//      DOMText* e1value = doc->createTextNode(X("25"));
-//      e1->appendChild(e1value);
-//      // <value2>15</value1>
-//      DOMElement* e2 = doc->createElement(X("value2"));
-//      dataElement->appendChild(e2);
-//      DOMText* e2value = doc->createTextNode(X("15"));
-//      e2->appendChild(e2value);
-//      
-//      std::list<Data> dataList;
-//      for (std::size_t numElements(0); numElements < 100000; ++numElements)
-//      {
-//        Data data(dataElement);
-//        string* datastr = data.toString();
-//        CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
-//        SAFE_DELETE(datastr);
-//        dataList.push_back(data);
-//      }
-//    }
-	
-	LOG_INFO(logger, "test constructing data from string...");
-    // FIXME: the problem is in the destructor of Data, it ->release() the
-    // internal DOMElement structure which ends up  in a delete 0;
-    {
-      string str("<x>1</x><y>2</y>");
-      Data data2(str);
-      LOG_INFO(logger, data2);
-      LOG_INFO(logger, str);
-      CPPUNIT_ASSERT_EQUAL_MESSAGE("data content", str, data2.getContent());
+	LOG_INFO(logger, "constructor test: empty data token... ");
+	Data emptyData("",Data::TYPE_EMPTY);
+	CPPUNIT_ASSERT_MESSAGE("Empty data", emptyData.getContent().empty());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Empty data type", (int) Data::TYPE_EMPTY, emptyData.getType());
+
+	LOG_INFO(logger, "constructor test: data from string...");
+	string str("<values><x>1</x><y>2</y></values>");
+	Data data2(str);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("data content", str, data2.getContent());
+
+	LOG_INFO(logger, "testDeserializeSerialize()...");
+	Libxml2Builder builder;
+	str = string("<values><x>3</x><y>4</y></values>");
+	Data::ptr_t dataP = builder.deserializeData(str);
+	string str2 = builder.serializeData(*dataP);
+	CPPUNIT_ASSERT_EQUAL(str, str2);
+
+	LOG_INFO(logger, "testDeserializeSerialize() loop...");		
+	for (unsigned int i=0; i<100; i++) {
+		ostringstream oss;
+		oss << "<i>" << i << "</i>";
+		Data::ptr_t data2P = builder.deserializeData(oss.str());
+		str2 = builder.serializeData(*data2P);
 	}
 
-    ///ToDo: FAILED TO DELETE data2!
-	//delete data2;
-	
-	///ToDo: FAILED WITH INTEL COMPILER/// 
-	LOG_WARN(logger, "///ToDo: test workflow format exception when data contents is not valid XML...");
-//	string str3("<blaXX");
-//	bool test = false;
-//	try {
-//		Data data3(str3);
-//        LOG_INFO(logger, data3);
-//    } catch(WorkflowFormatException e) {
-//   	    LOG_INFO(logger, "WorkflowFormatException: " << e.message);
-//   	    test = true;
-//    } catch (...) {
-//        LOG_INFO(logger, "another exception");
-//	}
-//    CPPUNIT_ASSERT(test);
-//	
-    LOG_INFO(logger, "============== END DATA TEST =============");
+	LOG_INFO(logger, "============== END DATA TEST =============");
 }
-
-void DataTest::testDeserializeSerialize() {
-	logger_t logger(getLogger("gwdl"));
-    LOG_INFO(logger, "--- BEGIN DataTest::testDeserializeSerialize()");
-	IBuilder* builderP = new Libxml2Builder();
-    string str("<x>1</x><y>2</y>");
-	Data::ptr_t dataP = builderP->deserializeData(str);
-	string str2 = builderP->serializeData(dataP);
-	CPPUNIT_ASSERT_EQUAL(str, str2);
-    LOG_INFO(logger, "--- END DataTest::testDeserializeSerialize()");
-}
-
