@@ -22,7 +22,7 @@ namespace gwdl
 Data::Data(const string& xmlstring, const int type) throw(WorkflowFormatException) {
 	_content = xmlstring;
 	XMLUtils::trim(_content);
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Data(" << _content << ")...");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Data(" << _content << ")...");
 	
 	if ( _content.empty()) {
 		_type = TYPE_EMPTY;
@@ -32,7 +32,7 @@ Data::Data(const string& xmlstring, const int type) throw(WorkflowFormatExceptio
 }
 
 Data::~Data() {
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Data()");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Data()");
 }
 
 Data::ptr_t Data::deepCopy() {

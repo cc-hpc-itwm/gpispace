@@ -6,8 +6,6 @@
  */
 //gwdl
 #include <gwdl/Libxml2Builder.h>
-//libxml2
-#include <libxml/tree.h>
 
 using namespace std;
 
@@ -17,12 +15,25 @@ namespace gwdl
 /**
  * Constructor implementation.
  */
-Libxml2Builder::Libxml2Builder() : _logger(fhg::log::getLogger("gwdl")) {}
+Libxml2Builder::Libxml2Builder() : _logger(fhg::log::getLogger("gwdl")) {
+	// init libxml2 parser
+	/// done in XMLUtils!
+	//	xmlInitParser();
+	//	LIBXML_TEST_VERSION
+	
+	// create gworkflowdl namespace
+	// ToDo: namespace should be without prefix.
+	_nsP = xmlNewNs(NULL, BAD_CAST "http://www.gridworkflow.org/gworkflowdl", BAD_CAST "gwdl");
+}
 
 /**
  * Destructor implementation.
  */
-Libxml2Builder::~Libxml2Builder() {}
+Libxml2Builder::~Libxml2Builder() {
+	// cleanup xml parser
+	/// done in XMLUtils!
+	//	xmlCleanupParser();
+}
 
 //////////////////////////
 // Data
@@ -66,9 +77,11 @@ Token::ptr_t Libxml2Builder::deserializeToken(const string &xmlstring) const thr
 }
 
 string Libxml2Builder::serializeToken(const Token &token) const {
+//	LOG_DEBUG(_logger, "serializeToken(Token[" << token.getID() << "]) ...");
 	xmlNodePtr nodeP = tokenToElement(token);
 	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
 	xmlFreeNode(nodeP);
+//	LOG_DEBUG(_logger, "serializeToken(Token[" << token.getID() << "]) ... done.");
 	return ret;
 }
 
@@ -88,16 +101,22 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
 
     if (checkElementName(curNodeP, "token")) {            // <token>
         curNodeP = nextElementNode(curNodeP->children);
-    	///ToDo: properties
-        LOG_WARN(_logger, "///ToDo: refractoring from xerces-c to libxml2! ///properties");
-        if (checkElementName(curNodeP, "data")) {           // <data>
+    	Properties::ptr_t propsP = elementsToProperties(curNodeP); // <property> ...
+    	while (checkElementName(curNodeP, "property")) {
+    		// skip all property elements, they have been already processed.
+    		curNodeP = nextElementNode(curNodeP->next); 
+    	}
+    	
+    	if (checkElementName(curNodeP, "data")) {               // <data>
         	curNodeP = nextElementNode(curNodeP->children);
-        	if (curNodeP == NULL) {                           // empty data
+        	if (curNodeP == NULL) {                               // empty data
         		Data::ptr_t dataP = Data::ptr_t(new Data(""));
-        		tokenP.reset(new Token(dataP));
-        	} else {                                          // data with content element
+        		if (propsP) tokenP.reset(new Token(propsP,dataP));
+        		else tokenP.reset(new Token(dataP));
+        	} else {                                              // data with content element
         		Data::ptr_t dataP = elementToData(curNodeP);
-        		tokenP.reset(new Token(dataP));
+        		if (propsP) tokenP.reset(new Token(propsP,dataP));
+        		else tokenP.reset(new Token(dataP));
         		// check for multiple children of <data> (MUST be single child!)
         		curNodeP = nextElementNode(curNodeP->next);
         		if (curNodeP != NULL) {
@@ -105,12 +124,14 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
                 	throw WorkflowFormatException("Element <data> MUST have exactly ONE child element!");
         		}
         	}
-        } else if (checkElementName(curNodeP, "control")) { // <control>
+        } else if (checkElementName(curNodeP, "control")) {     // <control>
         	curNodeP = nextTextNode(curNodeP->children);
-        	if ( xmlStrcmp(curNodeP->content,(xmlChar*)"true")==0 ) {
-            	tokenP.reset(new Token());
-        	} else if ( xmlStrcmp(curNodeP->content,(xmlChar*)"false")==0 ) {
-            	tokenP.reset(new Token(Token::CONTROL_FALSE));
+        	if ( xmlStrcmp(curNodeP->content,BAD_CAST "true")==0 ) {
+        		if (propsP) tokenP.reset(new Token(propsP,Token::CONTROL_TRUE));
+        		else tokenP.reset(new Token(Token::CONTROL_TRUE));
+        	} else if ( xmlStrcmp(curNodeP->content,BAD_CAST "false")==0 ) {
+        		if (propsP) tokenP.reset(new Token(propsP,Token::CONTROL_FALSE));
+        		else tokenP.reset(new Token(Token::CONTROL_FALSE));
         	} else {
             	LOG_ERROR(_logger, "Invalid text content of element <control>! MUST be \"true\" or \"false\" but is \"" << curNodeP->content << "\"");
             	throw WorkflowFormatException("Invalid text content of element <control>! MUST be \"true\" or \"false\"");
@@ -127,14 +148,112 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
 	return tokenP;
 }
 
-xmlNodePtr Libxml2Builder::nextElementNode(xmlNodePtr nodeP) {
-    while (nodeP != NULL && nodeP->type != XML_ELEMENT_NODE) nodeP = nodeP->next;
-    return nodeP;
+xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
+	xmlNodePtr nodeP = xmlNewNode(_nsP, BAD_CAST "token");
+	xmlNodePtr curNodeP;
+	
+	// properties
+	Properties::ptr_t propsP = token.readProperties();
+	if (propsP != NULL) {
+		curNodeP = propertiesToElements(*propsP);
+		if (curNodeP != NULL) {
+			xmlAddChildList(nodeP, curNodeP); 
+		}
+	}
+	
+	// data 
+	if (token.isData()) {
+		curNodeP = xmlNewChild(nodeP,_nsP, BAD_CAST "data",NULL);
+		xmlAddChildList(curNodeP, dataToElement(* token.getData())); 
+	} 
+	// control
+	else {
+		if (token.getControl()) {
+			xmlNewChild(nodeP,_nsP, BAD_CAST "control",BAD_CAST "true");
+		} else {
+			xmlNewChild(nodeP,_nsP, BAD_CAST "control",BAD_CAST "false");
+		}
+	}
+	return nodeP;
 }
 
-xmlNodePtr Libxml2Builder::nextTextNode(xmlNodePtr nodeP) {
-    while (nodeP != NULL && nodeP->type != XML_TEXT_NODE) nodeP = nodeP->next;
-    return nodeP;
+//////////////////////////
+// Properties
+//////////////////////////
+
+string Libxml2Builder::serializeProperties(const Properties& props) const {
+	xmlNodePtr nodeP = propertiesToElements(props);
+	const string ret = XMLUtils::Instance()->serializeLibxml2(nodeP, true); 
+	xmlFreeNode(nodeP);
+	return ret;
+}
+
+/**
+ * Returns NULL if there are now properties.
+ */
+Properties::ptr_t Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+    xmlNodePtr curNodeP = nodeP;
+    xmlNodePtr textNodeP;
+    curNodeP = nextElementNode(curNodeP);
+    Properties::ptr_t propP;
+    while(curNodeP) {
+    	if (checkElementName(curNodeP, "property")) {
+    		if (propP == NULL) propP = Properties::ptr_t(new Properties());
+    		string name = string((const char*) xmlGetProp(curNodeP, BAD_CAST "name")); 
+    		textNodeP = nextTextNode(curNodeP->children);
+    		if (textNodeP == NULL) {
+    			LOG_INFO(_logger, "generating empty property with name \"" << name << "\"");
+    			propP->put( name, string("") );
+    		} else {
+    			string text = string( (const char*) textNodeP->content);
+    			LOG_INFO(_logger, "generating property with name \"" << name << "\" and value \"" << text << "\"");
+        		propP->put( name, text ); 
+    		}
+    	}
+    	curNodeP = nextElementNode(curNodeP->next);
+    }
+    return propP;
+}
+
+xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
+	xmlNodePtr firstNodeP;
+	xmlNodePtr lastNodeP;
+	xmlNodePtr curNodeP;
+	xmlNodePtr textNodeP;
+	bool first = true;
+	for(CITR_Properties it = props.begin(); it != props.end(); ++it) {
+		curNodeP = xmlNewNode(_nsP, BAD_CAST "property");
+	    xmlNewProp(curNodeP, BAD_CAST "name", BAD_CAST it->first.c_str());
+	    if (!it->second.empty()) {
+	    	textNodeP = xmlNewText(BAD_CAST it->second.c_str());
+	    	xmlAddChild(curNodeP, textNodeP);
+	    }
+		if (first) {
+			firstNodeP = curNodeP,
+			first = false;
+		} else {
+			xmlAddNextSibling(lastNodeP,curNodeP);
+		}
+		lastNodeP = curNodeP;
+	}
+	
+	return firstNodeP;
+}
+
+//////////////////////////
+// private helper methods
+//////////////////////////
+
+xmlNodePtr Libxml2Builder::nextElementNode(const xmlNodePtr nodeP) {
+	xmlNodePtr curNodeP = nodeP;
+    while (curNodeP != NULL && curNodeP->type != XML_ELEMENT_NODE) curNodeP = curNodeP->next;
+    return curNodeP;
+}
+
+xmlNodePtr Libxml2Builder::nextTextNode(const xmlNodePtr nodeP) {
+	xmlNodePtr curNodeP = nodeP;
+    while (curNodeP != NULL && curNodeP->type != XML_TEXT_NODE) curNodeP = curNodeP->next;
+    return curNodeP;
 }
 
 bool Libxml2Builder::checkElementName(const xmlNodePtr nodeP,const char* name) {
@@ -142,70 +261,14 @@ bool Libxml2Builder::checkElementName(const xmlNodePtr nodeP,const char* name) {
     	LOG_WARN(logger_t(getLogger("gwdl")), "Node pointer is NULL; element <" << name << "> not found!");
 		return false;
 	}
-	return xmlStrcmp(nodeP->name,(xmlChar*)name)==0;
+	return xmlStrcmp(nodeP->name,BAD_CAST name)==0;
 }
-
-xmlNodePtr Libxml2Builder::tokenToElement(const Token &token) const {
-	// ToDo: namespace should be without prefix.
-	xmlNsPtr nsP = xmlNewNs(NULL, (xmlChar*)"http://www.gridworkflow.org/gworkflowdl", (xmlChar*)"gwdl");
-	xmlNodePtr nodeP = xmlNewNode(nsP, (xmlChar*)"token");
-	xmlNodePtr curNodeP;
-	
-	///ToDo: properties
-	//               // properties
-	//               vector<DOMElement*> v = properties.toElements(doc);       
-	//               for (unsigned int i = 0; i < v.size(); i++)
-	//               { 
-	//        	     el->appendChild(v[i]);
-	//               }
-	
-	// data 
-	if (token.isData()) {
-		curNodeP = xmlNewChild(nodeP,nsP, (xmlChar*)"data",NULL);
-		xmlAddChildList(curNodeP, dataToElement(* token.getData())); 
-	} 
-	// control
-	else {
-		if (token.getControl()) {
-			xmlNewChild(nodeP,nsP, (xmlChar*)"control",(xmlChar*)"true");
-		} else {
-			xmlNewChild(nodeP,nsP, (xmlChar*)"control",(xmlChar*)"false");
-		}
-	}
-	return nodeP;
-}
-
-
-//Token::Token(DOMElement* element) 
-//{
-//  id = generateID();
-//  control = false;
-//  p_lock = NULL;
-//  data = NULL;
-//  
-//  // XMLCh* ns = X(SCHEMA_wfSpace);
-//
-//  // loop child nodes
-//   DOMNodeList* le = element->getChildNodes();
-//   if (le->getLength() >0) {
-// 	  // properties
-// 	  properties = Properties(le);
-// 	  // other nodes
-// 	  for (XMLSize_t i = 0; i<le->getLength(); i++) {
-// 		  DOMNode* node = le->item(i);
-// 		  const XMLCh* name = node->getNodeName(); 
-// 		  if (XMLString::equals(name,X("control"))) {
-// 			  if(!XMLString::compareIString(node->getTextContent(), X("true"))) control = true;
-// 		  } else if (XMLString::equals(name,X("data"))) {
-// 			  LOG_WARN(logger_t(getLogger("gwdl")), "ToDo: Refractoring to libxml2");
-//// 			  data = new Data((DOMElement*)node);
-// 		  }
-// 	  }
-//   }
-//}
-//
 
 } // end namespace gwdl
+
+//////////////////////////
+// << operators
+//////////////////////////
 
 // Data
 ostream& operator<<(ostream &out, gwdl::Data &data) {
@@ -217,5 +280,13 @@ ostream& operator<<(ostream &out, gwdl::Data &data) {
 ostream& operator<<(ostream &out, gwdl::Token &token) {
 	gwdl::Libxml2Builder builder;
 	out << builder.serializeToken(token);
+	return out;
+}
+
+// Properties
+ostream& operator<<(ostream &out, gwdl::Properties &props) 
+{	
+	gwdl::Libxml2Builder builder;
+	out << builder.serializeProperties(props);
 	return out;
 }

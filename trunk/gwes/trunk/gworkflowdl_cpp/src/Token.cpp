@@ -25,7 +25,7 @@ Token::Token() {
 	//_dataP=NULL; 
 	_control = CONTROL_TRUE; 
 	_p_lock = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
 /**
@@ -37,7 +37,7 @@ Token::Token(control_t control) {
 	//_dataP=NULL; 
 	_control = control; 
 	_p_lock = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
 /**
@@ -45,13 +45,13 @@ Token::Token(control_t control) {
  * @param _properties The properties of this token.
  * @param _control The control value of this token.
  */
-Token::Token(Properties properties, control_t control) {
+Token::Token(Properties::ptr_t propertiesP, control_t control) {
 	_id = generateID(); 
 	//_dataP=NULL; 
 	_control = control; 
-	_properties = properties; 
+	_propertiesP = propertiesP; 
 	_p_lock = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "] with " << _propertiesP->size() << " properties.");
 }
 
 /**
@@ -63,7 +63,7 @@ Token::Token(Data::ptr_t dataP) {
 	_id = generateID(); 
 	_dataP = dataP;	
 	_p_lock = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
 }
 
 /**
@@ -72,28 +72,28 @@ Token::Token(Data::ptr_t dataP) {
  * @param _properties The properties of this data token.
  * @param _data The data of this token.
  */
-Token::Token(Properties properties, Data::ptr_t dataP) {
+Token::Token(Properties::ptr_t propertiesP, Data::ptr_t dataP) {
 	_id = generateID(); 
-	_properties = properties; 
+	_propertiesP = propertiesP; 
 	_dataP = dataP; 
 	_p_lock = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "Token[" << _id << "] with " << _propertiesP->size() << " properties.");
 } 
 
 Token::~Token() {
 	// done by Data::shared_ptr
 	//if (isData()) delete data;
 	//data = NULL;
-	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Token[" << _id << "]");
+//	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Token[" << _id << "]");
 }
 
 Token::ptr_t Token::deepCopy() {
 	Token::ptr_t ret; 
 	if (isData()) { 	// data token
-		ret = Token::ptr_t(new Token(_properties, _dataP->deepCopy()));
+		ret = Token::ptr_t(new Token(_propertiesP->deepCopy(), _dataP->deepCopy()));
 		LOG_INFO(logger_t(getLogger("gwdl")), "generating deepCopy of data token " << _id << " with id " << ret->getID() );
 	} else {             // control token
-		ret = Token::ptr_t(new Token(_properties, _control));
+		ret = Token::ptr_t(new Token(_propertiesP->deepCopy(), _control));
 		LOG_INFO(logger_t(getLogger("gwdl")), "generating deepCopy of control token " << _id << " with id " << ret->getID() );
 	}
 	return ret;

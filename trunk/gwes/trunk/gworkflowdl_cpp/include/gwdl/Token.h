@@ -91,7 +91,7 @@ public:
 	 * @param _properties The properties of this token.
 	 * @param _control The control value of this token.
 	 */
-	explicit Token(Properties properties, control_t control);
+	explicit Token(Properties::ptr_t propertiesP, control_t control);
 	
 	/**
 	 * Constructor for data token.
@@ -106,7 +106,7 @@ public:
 	 * @param _properties The properties of this data token.
 	 * @param _data The data of this token.
 	 */
-	explicit Token(Properties properties, Data::ptr_t dataP);
+	explicit Token(Properties::ptr_t propertiesP, Data::ptr_t dataP);
 	
 	/**
 	 * Destructor for data token.
@@ -115,11 +115,19 @@ public:
 	virtual ~Token();
 	
 	/**
-	 * Get a reference to the properties of this token.
-	 * @return A reference to the properties of this token.
+	 * Get a shared pointer to the properties of this token. 
+	 * Returns NULL if there are no properties. 
+	 * @return A shared pointer to the properties of this token.
 	 */
-	Properties& getProperties() {return _properties;}
+	Properties::ptr_t getProperties() {return _propertiesP;}
 	
+	/**
+	 * Get a read-only pointer to the properties of this token.
+	 * Returns NULL if there are no properties. 
+	 * @return A read-only pointer to the properties of this token.
+	 */
+	const Properties::ptr_t readProperties() const {return _propertiesP;}
+
 	/**
 	 * Get a shared pointer to the data object of this data token.
 	 * @return The data of this token.
@@ -182,7 +190,7 @@ public:
 private:
 	long _id;
     Data::ptr_t _dataP;
-    Properties _properties;
+    Properties::ptr_t _propertiesP;
     control_t _control;
     Transition* _p_lock;
     
