@@ -29,8 +29,8 @@ public:
     virtual const std::string serializeData(const Data::ptr_t &) const = 0;
 
     // Token
-//	virtual Token deserializeToken(const std::string& xmlstring) = 0;
-//	virtual std::string serializeToken(const Token& token) = 0;
+	virtual const Token::ptr_t deserializeToken(const std::string &) const = 0;
+	virtual const std::string serializeToken(const Token::ptr_t &) const = 0;
 	
 	// Place
 //	virtual Place deserializePlace(const std::string& xmlstring) = 0;
