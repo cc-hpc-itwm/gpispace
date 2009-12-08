@@ -45,8 +45,8 @@ namespace gwdl
  *	assert(wf->getProperties().get("b_name1")=="value1");
  *	
  *	// add places
- *	Place* p0 = new Place("p0");
- *	Place* p1 = new Place("p1");
+ *	Place::ptr_t p0 = new Place("p0");
+ *	Place::ptr_t p1 = new Place("p1");
  *	wf->addPlace(p0);
  *	wf->addPlace(p1);
  *	assert(wf->placeCount()==2);
@@ -55,11 +55,11 @@ namespace gwdl
  *	Transition* t0 = new Transition("t0");
  *	
  *	// input edge from p0 to t0
- *	Edge* arc0 = new Edge(wf->getPlace("p0"));
+ *	Edge::ptr_t arc0 = new Edge(wf->getPlace("p0"));
  *	t0->addInEdge(arc0);
  * 
  *	// output edge from t0 to p1
- *	Edge* arc1 = new Edge(wf->getPlace("p1"));
+ *	Edge::ptr_t arc1 = new Edge(wf->getPlace("p1"));
  *	t0->addOutEdge(arc1);
  *	
  *	// add  transition	
@@ -69,7 +69,7 @@ namespace gwdl
  *	assert(wf->getTransition("t0")->isEnabled()==false);	
  *			
  *	// add token
- *	Token* d0 = new Token(true);
+ *	Token::ptr_t d0 = new Token(true);
  *	wf->getPlace("p0")->addToken(d0);
  *
  *	// transition is now enabled
@@ -139,9 +139,9 @@ private:
     Properties properties;
     std::vector<Transition*> transitions;
     std::vector<Transition*> enabledTransitions;
-    std::map<std::string, Place*> places;
+    std::map<std::string, Place::ptr_t> places;
     std::vector<std::string> placeids;
-    std::vector<Place*> placeList;
+    std::vector<Place::ptr_t> placeList;
     	
 public:
 
@@ -193,13 +193,13 @@ public:
      * Note that a copy of this place will added and not a reference or pointer!
      * @param place to add
      */
-    void addPlace(Place* place)
-      {places.insert(std::pair<std::string, Place*>(place->getID(),place));}
+    void addPlace(Place::ptr_t place)
+      {places.insert(std::pair<std::string, Place::ptr_t>(place->getID(),place));}
     
     /**
      * Get the ith place.
      */
-    Place* getPlace(unsigned int i) throw (NoSuchWorkflowElement);
+    Place::ptr_t getPlace(unsigned int i) throw (NoSuchWorkflowElement);
     
     /**
      *  get all place ids.
@@ -207,7 +207,7 @@ public:
     const std::vector<std::string>& getPlaceIDs()
     {
       placeids.clear();
-      for(std::map<std::string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+      for(std::map<std::string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
       {
         placeids.push_back(it->first);
       }
@@ -221,7 +221,7 @@ public:
      * @param id place ID
      * @return place  place to find
      */
-    Place* getPlace(const std::string& id) throw (NoSuchWorkflowElement);
+    Place::ptr_t getPlace(const std::string& id) throw (NoSuchWorkflowElement);
 
     /**
      * Get the index of a specific place.
@@ -338,12 +338,12 @@ public:
      * Clear workflow's place container and add the places of the vector.
      * @param _places vector.
      */
-    void setPlaces(std::vector<Place*>& _places)
+    void setPlaces(std::vector<Place::ptr_t>& _places)
     {
      places.clear();
      for(unsigned int i=0; i<_places.size(); ++i)
       {
-        places.insert(std::pair<std::string, Place*>(_places[i]->getID(),_places[i])); 
+        places.insert(std::pair<std::string, Place::ptr_t>(_places[i]->getID(),_places[i])); 
       }
     }
 
@@ -352,10 +352,10 @@ public:
      * ()
      * @return place vector.
      */
-    std::vector<Place*>& getPlaces()
+    std::vector<Place::ptr_t>& getPlaces()
     {
       placeList.clear();
-      for(std::map<std::string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+      for(std::map<std::string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
       {
         placeList.push_back(it->second);
       }

@@ -51,7 +51,7 @@ typedef std::list<parameter_t> parameter_list_t;
 /**
  * Type of map with edgeExpressions as keys and token pointers as values.
  */
-////typedef std::map<std::string,gwdl::Token*> token_map_t;
+////typedef std::map<std::string,gwdl::Token::ptr_t> token_map_t;
 
 } // end namespace gwes
 

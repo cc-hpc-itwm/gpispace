@@ -176,7 +176,7 @@ void TokenTest::testToken()
 ////		Data *data4 = new Data(dataElement);
 ////		data4->toElement(doc);
 ////		LOG_INFO(logger, "  data constructed:" << *data4);
-////	    Token* token4 = new Token(data4);
+////	    Token::ptr_t token4 = new Token(data4);
 ////	    LOG_INFO(logger, "  token4->toElement(doc) ...");
 ////		DOMElement* token4elem = token4->toElement(doc);
 ////	    string* token4str = XMLUtils::Instance()->serialize(token4elem,true);
@@ -198,7 +198,7 @@ void TokenTest::testToken()
 //		string str = string("<data><x>1</x><y>2</y></data>");
 //		Data* data5 = new Data(str);
 //		LOG_INFO(logger, " data constructed.");
-//		Token* token5 = new Token(data5);
+//		Token::ptr_t token5 = new Token(data5);
 //		LOG_INFO(logger, " token constructed.");
 //		LOG_INFO(logger, *token5);
 //		Data *data5b = token5->getData();
@@ -220,7 +220,7 @@ void TokenTest::testToken()
 //	LOG_INFO(logger, "test data token with properties...");
 //	string str6 = string("<data><x>6</x></data>");
 //	Data* data6 = new Data(str6);
-//	Token* token6 = new Token(*props,data6);
+//	Token::ptr_t token6 = new Token(*props,data6);
 //	LOG_INFO(logger, *token6);
 //	CPPUNIT_ASSERT(str6==token6->getData()->getContent());
 //	CPPUNIT_ASSERT(token6->getProperties().get("key2")=="value2");

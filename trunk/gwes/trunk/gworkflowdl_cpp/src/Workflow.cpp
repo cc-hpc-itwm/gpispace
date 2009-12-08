@@ -38,7 +38,7 @@ Workflow::~Workflow()
 	for(vector<Transition*>::iterator it=transitions.begin(); it!=transitions.end(); ++it) delete *it;
 	transitions.clear();
 	enabledTransitions.clear();
-	for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it) delete it->second;
+	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it) (it->second).reset();
 	places.clear();
 	placeList.clear();
 }
@@ -67,7 +67,8 @@ Workflow::Workflow(DOMElement* element)
 				description = string(cntx);
                                 XMLString::release(&cntx);
 			} else if (XMLString::equals(name,X("place"))) {
-				addPlace(new Place((DOMElement*) node));
+				LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: migration to libxml2///");
+//				addPlace(new Place((DOMElement*) node));
 			} else if (XMLString::equals(name,X("transition"))) {
 				addTransition(new Transition(this, (DOMElement*) node));
 			}
@@ -117,7 +118,8 @@ Workflow::Workflow(const string& filename) throw (WorkflowFormatException, NoSuc
 				description = string(cntx);
                                 XMLString::release(&cntx);
 			} else if (XMLString::equals(name,X("place"))) {
-				addPlace(new Place((DOMElement*) node));
+				LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: migration to libxml2///");
+//				addPlace(new Place((DOMElement*) node));
 			} else if (XMLString::equals(name,X("transition"))) {
 				addTransition(new Transition(this, (DOMElement*) node));
 			}
@@ -161,9 +163,10 @@ DOMDocument* Workflow::toDocument()
 //		}
 
 		// places
-		for (map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+		for (map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
 		{
-			wfe->appendChild(it->second->toElement(doc));
+			LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: migration to libxml2///");
+//			wfe->appendChild(it->second->toElement(doc));
 		}
 
 		// transitions
@@ -200,46 +203,10 @@ void Workflow::saveToFile(const string& filename) {
 	}
 }
 
-gwdl::workflow_result_t Workflow::getResults() const
-{
-  gwdl::workflow_result_t results;
-
-  // iterate over all places
-  typedef std::map<std::string, Place*> place_map_t;
-  for (place_map_t::const_iterator a_place(places.begin()); a_place != places.end(); ++a_place)
-  {
-    const std::string &place_name = a_place->first;
-    const Place * place = a_place->second;
-
-    try
-    {
-      gwdl::token_list_t tokens;
-
-      DLOG(DEBUG, "getting tokens from place: " << place_name);
-      typedef std::vector<Token*> place_token_list_t;
-
-      place_token_list_t place_tokens = place->getTokens();
-
-      for (place_token_list_t::const_iterator gwdl_token(place_tokens.begin()); gwdl_token != place_tokens.end(); ++gwdl_token)
-      {
-        tokens.push_back((*gwdl_token)->deepCopy());
-      }
-      DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << place_name);
-
-      results.insert(std::make_pair(place_name, tokens));
-    }
-    catch (const gwdl::NoSuchWorkflowElement &)
-    {
-      LOG(WARN, "Inconsistencey detected: the workflow does not contain place: " << place_name);
-    }
-  }
-  return results;
-}
-
-Place* Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement)
+Place::ptr_t Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement)
 {
 	unsigned int j=0;
-	for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
 	{
 		if(j++ == i) return (it->second);
 	}
@@ -249,9 +216,9 @@ Place* Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement)
 	throw NoSuchWorkflowElement(message.str());
 }
 
-Place* Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement)
+Place::ptr_t Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement)
 {	
-	map<string,Place*>::iterator iter = places.find(id);
+	map<string,Place::ptr_t>::iterator iter = places.find(id);
 	if (iter!=places.end()) return (iter->second);
 	// no such workflow element
 	ostringstream message; 
@@ -262,7 +229,7 @@ Place* Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement)
 unsigned int Workflow::getPlaceIndex(const string& id) throw (NoSuchWorkflowElement)
 {
 	int j=0;
-	for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
 	{
 		if(it->first == id) return j;
 		++j;
@@ -283,10 +250,10 @@ void Workflow::removePlace(unsigned int i) throw (NoSuchWorkflowElement)
 		throw NoSuchWorkflowElement(message.str());
 	}
 	unsigned int j=0;
-	for(map<string,Place*>::iterator it=places.begin(); it!=places.end(); ++it)
+	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it)
 	{
 		if(j++ == i) {
-			delete it->second; it->second = NULL;
+			(it->second).reset();
 			places.erase(it);
 			break;
 		}

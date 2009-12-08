@@ -67,7 +67,7 @@ void TestSdpa2Gwes::testWorkflowWithSdpaActivity() {
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("Workflow status", SdpaDummy::FINISHED, status);
 
 	// get and check output
-	std::vector<Token*> outputTokens = wfP->getPlace("output")->getTokens();
+	std::vector<Token::ptr_t> outputTokens = wf.getPlace("output")->getTokens();
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("number output tokens",(std::size_t) 1, outputTokens.size());
 	CPPUNIT_ASSERT_MESSAGE("is data", outputTokens[0]->isData());
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("data contents", string("15"), *outputTokens[0]->getData()->getText());

@@ -56,9 +56,9 @@ void TestWorkflows::testWorkflowSplitToken()
   CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
   CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("joinSplitTokens") == 0 );
 
-  gwdl::Place* placeP = workflow.getPlace("value"); 
+  gwdl::Place::ptr_t placeP = workflow.getPlace("value"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  gwdl::Token* tokenP = placeP->getTokens().front();
+  gwdl::Token::ptr_t tokenP = placeP->getTokens().front();
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
   // ToDo: improve pretty printing (too much spaces).
@@ -91,9 +91,9 @@ void TestWorkflows::testWorkflowExclusiveChoice()
   CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
   CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("B") == 0 );
   CPPUNIT_ASSERT(workflow.getPlace("end_A")->getTokenNumber() == 0);
-  Place* placeP = workflow.getPlace("end_B"); 
+  Place::ptr_t placeP = workflow.getPlace("end_B"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  Token* tokenP = placeP->getTokens().front();
+  Token::ptr_t tokenP = placeP->getTokens().front();
   CPPUNIT_ASSERT(!tokenP->isData());
   CPPUNIT_ASSERT(tokenP->getControl());
 }
@@ -109,9 +109,9 @@ void TestWorkflows::testWorkflowConditionTest()
   CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
   CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("B A A") == 0 );
 		
-  Place* placeP = workflow.getPlace("end_A"); 
+  Place::ptr_t placeP = workflow.getPlace("end_A"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 2);
-  Token* tokenP = placeP->getTokens()[0];
+  Token::ptr_t tokenP = placeP->getTokens()[0];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
   CPPUNIT_ASSERT_EQUAL(string("<data>\n  <x>6</x>\n</data>"), tokenP->getData()->getContent());
@@ -138,9 +138,9 @@ void TestWorkflows::testWorkflowControlLoop()
   CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/control-loop.gwdl"),m_gwes));
   CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
   CPPUNIT_ASSERT( workflow.getProperties().get("occurrence.sequence").compare("i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus i_plus_plus break") == 0 );
-  Place* placeP = workflow.getPlace("end"); 
+  Place::ptr_t placeP = workflow.getPlace("end"); 
   CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-  Token* tokenP = placeP->getTokens()[0];
+  Token::ptr_t tokenP = placeP->getTokens()[0];
   CPPUNIT_ASSERT(tokenP->isData());
   LOG_INFO(logger, *(tokenP->getData()));
   CPPUNIT_ASSERT_EQUAL(string("<data>\n  <a>10</a>\n</data>"), tokenP->getData()->getContent());

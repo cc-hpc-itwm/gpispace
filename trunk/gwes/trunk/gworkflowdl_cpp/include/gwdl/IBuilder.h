@@ -37,6 +37,8 @@ public:
 	virtual std::string serializeProperties(const Properties&) const = 0;
 
 	// Place
+	virtual Place::ptr_t deserializePlace(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializePlace(const Place &) const = 0;
 
 	// Transition
 

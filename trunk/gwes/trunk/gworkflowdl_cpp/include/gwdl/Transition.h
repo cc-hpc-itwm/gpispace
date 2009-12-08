@@ -21,7 +21,7 @@
 namespace gwdl
 {
 	
-typedef std::vector<Edge*>::iterator ITR_Edges;
+typedef std::vector<Edge::ptr_t>::iterator ITR_Edges;
 
 class Workflow;
 
@@ -119,10 +119,10 @@ private:
     Properties properties;
     Operation* operationP;
     std::vector<std::string> conditions;
-    std::vector<Edge*> readEdges;
-    std::vector<Edge*> inEdges;
-    std::vector<Edge*> writeEdges;
-    std::vector<Edge*> outEdges;
+    std::vector<Edge::ptr_t> readEdges;
+    std::vector<Edge::ptr_t> inEdges;
+    std::vector<Edge::ptr_t> writeEdges;
+    std::vector<Edge::ptr_t> outEdges;
 	
 	std::string generateID() const;
 	
@@ -187,11 +187,11 @@ public:
      * add an read Edge.
      * @param edge read Edge to be added
      */
-    void addReadEdge(Edge* p_edge) {readEdges.push_back(p_edge);}
+    void addReadEdge(Edge::ptr_t edgeP) {readEdges.push_back(edgeP);}
 
     void removeReadEdge(int i)
     {
-    	delete *(readEdges.begin()+i);
+    	(*(readEdges.begin()+i)).reset();
     	readEdges.erase(readEdges.begin()+i);
     }
 
@@ -199,19 +199,19 @@ public:
      * add an input Edge.
      * @param edge input Edge to be added
      */
-    void addInEdge(Edge* p_edge) {inEdges.push_back(p_edge);}
+    void addInEdge(Edge::ptr_t edgeP) {inEdges.push_back(edgeP);}
 
-    void removeInEdge(int i) {delete *(inEdges.begin()+i); inEdges.erase(inEdges.begin()+i);}
+    void removeInEdge(int i) {(*(inEdges.begin()+i)).reset(); inEdges.erase(inEdges.begin()+i);}
 
     /**
      * add an write Edge.
      * @param edge write Edge to be added
      */
-    void addWriteEdge(Edge* p_edge) {writeEdges.push_back(p_edge);}
+    void addWriteEdge(Edge::ptr_t edgeP) {writeEdges.push_back(edgeP);}
 
     void removeWriteEdge(int i)
     {
-    	delete *(writeEdges.begin()+i);
+    	(*(writeEdges.begin()+i)).reset();
     	writeEdges.erase(writeEdges.begin()+i);
     }
 
@@ -219,16 +219,16 @@ public:
      * add an output Edge.
      * @param edge output Edge to be added
      */
-    void addOutEdge(Edge* p_edge) {outEdges.push_back(p_edge);}
+    void addOutEdge(Edge::ptr_t edgeP) {outEdges.push_back(edgeP);}
 
-    void removeOutEdge(int i) {delete *(outEdges.begin()+i); outEdges.erase(inEdges.begin()+i);}
+    void removeOutEdge(int i) {(*(outEdges.begin()+i)).reset(); outEdges.erase(inEdges.begin()+i);}
 
     /**
      * clear read Edges and add array's Edges to read Edges.
      * @param edges array of Edges to set
      */
-    void setReadEdges(std::vector<Edge*> edges){
-    	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) delete *it;
+    void setReadEdges(std::vector<Edge::ptr_t> edges){
+    	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) (*it).reset();
     	readEdges.clear();
     	readEdges.insert(readEdges.end(), edges.begin(), edges.end());}
 
@@ -236,14 +236,14 @@ public:
      * get array of read Edges.
      * @return read Edges
      */
-    const std::vector<Edge*>& getReadEdges() const {return readEdges;}
+    const std::vector<Edge::ptr_t>& getReadEdges() const {return readEdges;}
 
     /**
      * clear input Edges and add array's Edges to input Edges.
      * @param edges array of Edges to set
      */
-    void setInEdges(std::vector<Edge*> edges){
-    	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) delete *it;
+    void setInEdges(std::vector<Edge::ptr_t> edges){
+    	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) (*it).reset();
     	inEdges.clear();
     	inEdges.insert(inEdges.end(), edges.begin(), edges.end());}
 
@@ -251,14 +251,14 @@ public:
      * get array of input Edges.
      * @return input Edges
      */
-    std::vector<Edge*>& getInEdges() {return inEdges;}
+    std::vector<Edge::ptr_t>& getInEdges() {return inEdges;}
 
     /**
      * clear write Edges and add array's Edges to write Edges.
      * @param edges array of Edges to set
      */
-    void setWriteEdges(std::vector<Edge*> edges){
-    	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) delete *it;
+    void setWriteEdges(std::vector<Edge::ptr_t> edges){
+    	for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it) (*it).reset();
     	writeEdges.clear();
     	writeEdges.insert(writeEdges.end(), edges.begin(), edges.end());}
 
@@ -266,14 +266,14 @@ public:
      * get array of write Edges.
      * @return write Edges
      */
-    const std::vector<Edge*>& getWriteEdges() const {return writeEdges;}
+    const std::vector<Edge::ptr_t>& getWriteEdges() const {return writeEdges;}
 
     /**
      * clear output Edges and add array's Edges to output Edges.
      * @param edges array of output Edges to be set
      */
-    void setOutEdges(std::vector<Edge*> edges) {
-    	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) delete *it;
+    void setOutEdges(std::vector<Edge::ptr_t> edges) {
+    	for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it) (*it).reset();
     	outEdges.clear();
     	outEdges.insert(outEdges.end(), edges.begin(), edges.end());}
 
@@ -281,7 +281,7 @@ public:
      * get array of output Edges.
      * @return output edges
      */
-    const std::vector<Edge*>& getOutEdges() const {return outEdges;}
+    const std::vector<Edge::ptr_t>& getOutEdges() const {return outEdges;}
 
     /**
      * set transition's Operation.
@@ -336,7 +336,7 @@ public:
     void removeReadEdge(const std::string& placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){delete *it; readEdges.erase(it); break;}
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); readEdges.erase(it); break;}
     }
 
     /**
@@ -346,7 +346,7 @@ public:
     void removeInEdge(const std::string& placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){delete *it; inEdges.erase(it); break;}
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); inEdges.erase(it); break;}
     }
 
     /**
@@ -356,7 +356,7 @@ public:
     void removeWriteEdge(const std::string& placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){delete *it; writeEdges.erase(it); break;}
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); writeEdges.erase(it); break;}
     }
 
     /**
@@ -366,7 +366,7 @@ public:
     void removeOutEdge(const std::string& placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
-        if((*it)->getPlace()->getID() == placeID){delete *it; outEdges.erase(it); break;}
+        if((*it)->getPlace()->getID() == placeID){(*it).reset(); outEdges.erase(it); break;}
     }
 
     /**
@@ -375,11 +375,11 @@ public:
      * @param placeID of Edge to get
      * @return read edge
      */
-    Edge* getReadEdge(const std::string& placeID)
+    Edge::ptr_t getReadEdge(const std::string& placeID)
     {
       for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
-      return NULL;
+      return Edge::ptr_t();
     }
 
     /**
@@ -388,11 +388,11 @@ public:
      * @param placeID of Edge to get
      * @return input edge
      */
-    Edge* getInEdge(const std::string& placeID)
+    Edge::ptr_t getInEdge(const std::string& placeID)
     {
       for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
-      return NULL;
+      return Edge::ptr_t();
     }
 
     /**
@@ -401,11 +401,11 @@ public:
      * @param placeID of Edge to get
      * @return write edge
      */
-    Edge* getWriteEdge(const std::string& placeID)
+    Edge::ptr_t getWriteEdge(const std::string& placeID)
     {
       for(ITR_Edges it=writeEdges.begin(); it!=writeEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
-      return NULL;
+      return Edge::ptr_t();
     }
 
     /**
@@ -414,11 +414,11 @@ public:
      * @param placeID Place identifier
      * @return output edge
      */
-    Edge* getOutEdge(const std::string& placeID)
+    Edge::ptr_t getOutEdge(const std::string& placeID)
     {
       for(ITR_Edges it=outEdges.begin(); it!=outEdges.end(); ++it)
         if((*it)->getPlace()->getID() == placeID){return *it;}
-      return NULL;
+      return Edge::ptr_t();
     }
 
     int getAbstractionLevel() const;

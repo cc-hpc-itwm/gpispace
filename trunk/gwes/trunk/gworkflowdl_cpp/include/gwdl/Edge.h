@@ -7,6 +7,7 @@
 #ifndef EDGE_H_
 #define EDGE_H_
 //gwdl
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/Place.h>
 //std
 #include <string>
@@ -27,15 +28,18 @@ private:
 	/**
      * place the edge is pointing to.
      */
-    Place* place;
+    Place::ptr_t _placeP;
 
     /**
      * expression of edge.
      */
-    std::string expression;
+    std::string _expression;
     
 public:
-	explicit Edge(Place* _place=NULL, std::string _expression = "") { place = _place; expression = _expression; }
+
+    typedef gwdl::shared_ptr<Edge> ptr_t;
+
+	explicit Edge(Place::ptr_t placeP, std::string expression = "") { _placeP = placeP; _expression = expression; }
 	
 	~Edge(){};
 
@@ -44,24 +48,23 @@ public:
      *
      * @param p Place Edge should point to
      */
-    void setPlace(Place* p) { place = p;}
+    void setPlace(Place::ptr_t p) { _placeP = p;}
 
     /**
      * get place the edge is pointing to.
      *
      * @return Place Edge points to
      */
-    Place* getPlace() { return place; }
+    Place::ptr_t getPlace() { return _placeP; }
 
-    std::string getPlaceID() const { return place != NULL ? place->getID() : "";}
-
+    std::string getPlaceID() const { return _placeP != NULL ? _placeP->getID() : "";}
 
     /**
      * set Edge's expression.
      *
      * @param ex Edge expression
      */
-    void setExpression(const std::string& ex) { expression = ex; }
+    void setExpression(const std::string& ex) { _expression = ex; }
 
 
     /**
@@ -69,7 +72,7 @@ public:
      *
      * @return Edge expression
      */
-    const std::string& getExpression() const { return expression; } 
+    const std::string& getExpression() const { return _expression; } 
 	
 };
 

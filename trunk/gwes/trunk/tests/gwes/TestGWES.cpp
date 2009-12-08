@@ -35,37 +35,37 @@ void GWESTest::testGWES()
    
     Workflow *wf = new Workflow();
     // p0
-    Place* p0 = new Place("p0");
-    Token* token0 = new Token();
+    Place::ptr_t p0 = Place::ptr_t(new Place("p0"));
+    Token::ptr_t token0 = Token::ptr_t(new Token());
 	p0->addToken(token0);
 	wf->addPlace(p0);
 	// p1
-	Place* p1 = new Place("p1");
+	Place::ptr_t p1 = Place::ptr_t(new Place("p1"));
 	wf->addPlace(p1);
 	// p2
-	Place* p2 = new Place("p2");
+	Place::ptr_t p2 = Place::ptr_t(new Place("p2"));
 	wf->addPlace(p2);
 	// p3
-	Place* p3 = new Place("p3");
+	Place::ptr_t p3 = Place::ptr_t(new Place("p3"));
 	Data::ptr_t da1 = Data::ptr_t(new Data("<data><param>param</param></data>"));
-	Token* token1 = new Token(da1);
+	Token::ptr_t token1 = Token::ptr_t(new Token(da1));
 	p3->addToken(token1);
 	wf->addPlace(p3);
 	// t0
 	Transition* t0 = new Transition("t0");
-	Edge* arc0 = new Edge(wf->getPlace("p0"));
+	Edge::ptr_t arc0 = Edge::ptr_t(new Edge( wf->getPlace("p0")));
 	t0->addInEdge(arc0);
-	Edge* arc1 = new Edge(wf->getPlace("p1"));
+	Edge::ptr_t arc1 = Edge::ptr_t(new Edge( wf->getPlace("p1")));
     t0->addOutEdge(arc1);
 	wf->addTransition(t0);
 	// t1
 	Transition* t1 = new Transition("t1");
-	Edge* arc2 = new Edge(wf->getPlace("p1"));
+	Edge::ptr_t arc2 = Edge::ptr_t(new Edge( wf->getPlace("p1")));
 	t1->addInEdge(arc2);
-	Edge* arc4 = new Edge(wf->getPlace("p3"));
+	Edge::ptr_t arc4 = Edge::ptr_t(new Edge( wf->getPlace("p3")));
 	//arc4->setExpression("input");
 	t1->addInEdge(arc4);
-	Edge* arc3 = new Edge(wf->getPlace("p2"));
+	Edge::ptr_t arc3 = Edge::ptr_t(new Edge( wf->getPlace("p2")));
 	t1->addOutEdge(arc3);
 	wf->addTransition(t1);
 	// operations
@@ -99,9 +99,9 @@ void GWESTest::testGWES()
 	// print workflow to stdout	
 	LOG_DEBUG(logger, *wf);
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(id)=="COMPLETED");
-	Place* placeP = wf->getPlace("p2"); 
+	Place::ptr_t placeP = wf->getPlace("p2"); 
 	CPPUNIT_ASSERT(placeP->getTokenNumber() == 1);
-	Token* tokenP = placeP->getTokens()[0];
+	Token::ptr_t tokenP = placeP->getTokens()[0];
 	CPPUNIT_ASSERT(!tokenP->isData());
 	CPPUNIT_ASSERT(tokenP->getControl());
 

@@ -248,13 +248,24 @@ string XMLUtils::serializeLibxml2(const xmlDocPtr doc, bool pretty) {
     return str;
 }
 
+/**
+ * Serializes XML node or list of nodes to string.
+ * If node points to a list of several nodes, each node is serialized
+ * separately as one document and concatenated to one string.
+ */ 
 string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
-	xmlDocPtr docP = xmlNewDoc((const xmlChar*)"1.0");
-//	xmlNodePtr nodecopy = xmlDocCopyNode(node,docP,1);
-	xmlNodePtr nodecopy = xmlDocCopyNodeList(docP,node);
-	xmlDocSetRootElement(docP,nodecopy);
-	string ret = serializeLibxml2(docP,pretty);
-	xmlFreeDoc(docP);
+	string ret;
+	xmlNodePtr curNodeP = node;
+	xmlNodePtr curNodeCopyP;
+	xmlDocPtr docP;
+	while(curNodeP) {
+		docP = xmlNewDoc((const xmlChar*)"1.0");
+		curNodeCopyP = xmlDocCopyNode(curNodeP,docP,1);
+		xmlDocSetRootElement(docP,curNodeCopyP);
+		ret += serializeLibxml2(docP,pretty);
+		xmlFreeDoc(docP);
+		curNodeP = curNodeP->next;
+	}
 	return ret;
 }
 

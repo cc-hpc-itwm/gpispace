@@ -50,7 +50,7 @@ private:
 	 */
 	fhg::log::logger_t _logger;
 	
-	void addTokenToContext(const std::string& edgeExpression, gwdl::Token* tokenP) throw (gwdl::WorkflowFormatException);
+	void addTokenToContext(const std::string& edgeExpression, gwdl::Token::ptr_t tokenP) throw (gwdl::WorkflowFormatException);
 	
 	/** 
 	 * Replace "$" by "/data/" in string

@@ -56,13 +56,13 @@ void PreStackPro::execute(const Event& inputEvent) {
 	LOG_INFO(logger, "algorithm name: " << algName);
 	LOG_INFO(logger, "algorithm resource: " << algResource);
 	
-//	map<string,gwdl::Token*>* inputs = inputEvent._tokensP;
-//	map<string,gwdl::Token*> outputs;
+//	map<string,gwdl::Token::ptr_t>* inputs = inputEvent._tokensP;
+//	map<string,gwdl::Token::ptr_t> outputs;
 //	if (algName=="loadTraceHeaders") {
 //		// check input data
-//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//		for (map<string,gwdl::Token::ptr_t>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
-//			gwdl::Token* input = iter->second;
+//			gwdl::Token::ptr_t input = iter->second;
 //			CPPUNIT_ASSERT(input!=NULL);
 //			if (name=="file") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_FILE);
 //			else CPPUNIT_ASSERT(false);
@@ -70,15 +70,15 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(500000);
 //		// generate faked output token
-//		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
-//		outputs.insert(pair<string,gwdl::Token*>("thd",outputToken));
+//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data("<data><volume>THD_5</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token::ptr_t>("thd",outputToken));
 //	} 
 //
 //	else if (algName=="calcGeoReferenceData") {
 //		// check input data
-//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//		for (map<string,gwdl::Token::ptr_t>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
-//			gwdl::Token* input = iter->second;
+//			gwdl::Token::ptr_t input = iter->second;
 //			CPPUNIT_ASSERT(input!=NULL);
 //			if (name=="thd") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
 //			else CPPUNIT_ASSERT(false);
@@ -86,14 +86,14 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(1000000);
 //		// generate faked output data
-//		gwdl::Token* outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
-//		outputs.insert(pair<string,gwdl::Token*>("grd",outputData));
+//		gwdl::Token::ptr_t outputData = new gwdl::Token(new gwdl::Data("<data><volume>GRD_8</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token::ptr_t>("grd",outputData));
 //	} 
 //	else if (algName=="selectProjectData") {
 //		// check input data
-//		for (map<string,gwdl::Token*>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
+//		for (map<string,gwdl::Token::ptr_t>::iterator iter=inputs->begin(); iter!=inputs->end(); ++iter) {
 //			string name = iter->first;
-//			gwdl::Token* input = iter->second;
+//			gwdl::Token::ptr_t input = iter->second;
 //			CPPUNIT_ASSERT(input!=NULL);
 //			if (name=="grd") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_VOLUME);
 //			else if (name=="parameter") CPPUNIT_ASSERT(input->getData()->getType()==gwdl::Data::TYPE_PARAMETER);
@@ -102,8 +102,8 @@ void PreStackPro::execute(const Event& inputEvent) {
 //		// simulate execution
 //		usleep(500000);
 //		// generate faked output data
-//		gwdl::Token* outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
-//		outputs.insert(pair<string,gwdl::Token*>("frd",outputToken));
+//		gwdl::Token::ptr_t outputToken = new gwdl::Token(new gwdl::Data("<data><volume>FRD_10</volume></data>"));
+//		outputs.insert(pair<string,gwdl::Token::ptr_t>("frd",outputToken));
 //	} 
 //	else {
 //		cerr << "WARNING: algorithm " << algName << " is not implemented nor simulated.");

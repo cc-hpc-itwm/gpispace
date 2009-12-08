@@ -36,14 +36,14 @@ void TransitionTest::testTransition()
    CPPUNIT_ASSERT(t0->getDescription()=="This is the description of the transition");
 		
    LOG_INFO(logger, "test transition connected to four places...");
-   Place *p0 = new Place("");
-   Place *p1 = new Place("");
-   Place *p2 = new Place("");
-   Place *p3 = new Place("");
-   Edge *e0 = new Edge(p0,"input0");
-   Edge *e1 = new Edge(p1,"input1");
-   Edge *e2 = new Edge(p2,"output0");
-   Edge *e3 = new Edge(p3,"output1");
+   Place::ptr_t p0 = Place::ptr_t(new Place(""));
+   Place::ptr_t p1 = Place::ptr_t(new Place(""));
+   Place::ptr_t p2 = Place::ptr_t(new Place(""));
+   Place::ptr_t p3 = Place::ptr_t(new Place(""));
+   Edge::ptr_t e0 = Edge::ptr_t(new Edge( p0,"input0"));
+   Edge::ptr_t e1 = Edge::ptr_t(new Edge( p1,"input1"));
+   Edge::ptr_t e2 = Edge::ptr_t(new Edge( p2,"output0"));
+   Edge::ptr_t e3 = Edge::ptr_t(new Edge( p3,"output1"));
    t0->addReadEdge(e0);
    t0->addInEdge(e1);
    t0->addWriteEdge(e2);
@@ -80,17 +80,17 @@ void TransitionTest::testTransition()
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add read token
-   Token* d0 = new Token();
+   Token::ptr_t d0 = Token::ptr_t(new Token());
    p0->addToken(d0);
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add input token
-   Token* d1 = new Token();
+   Token::ptr_t d1 = Token::ptr_t(new Token());
    p1->addToken(d1);
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add write token
-   Token* d2 = new Token();
+   Token::ptr_t d2 = Token::ptr_t(new Token());
    p2->addToken(d2);
    // transition is now enabled
    CPPUNIT_ASSERT(t0->isEnabled()==true);	

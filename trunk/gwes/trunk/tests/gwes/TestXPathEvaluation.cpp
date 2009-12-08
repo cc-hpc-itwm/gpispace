@@ -136,15 +136,15 @@ void XPathEvaluationTest::testXPathEvaluatorContextCache() {
     
 	// create transition with input places and input tokens
     Transition *t0 = new Transition("");
-    Place *p0 = new Place("");
-    Place *p1 = new Place("");
-    Edge *e0 = new Edge(p0,"input0");
-    Edge *e1 = new Edge(p1,"input1");
+    Place::ptr_t p0 = Place::ptr_t(new Place(""));
+    Place::ptr_t p1 = Place::ptr_t(new Place(""));
+    Edge::ptr_t e0 = Edge::ptr_t(new Edge(p0,"input0"));
+    Edge::ptr_t e1 = Edge::ptr_t(new Edge(p1,"input1"));
     t0->addReadEdge(e0);
     t0->addInEdge(e1);
-    Token* d0 = new Token();
+    Token::ptr_t d0 = Token::ptr_t(new Token());
     p0->addToken(d0);
-    Token* d1 = new Token(Token::CONTROL_FALSE);
+    Token::ptr_t d1 = Token::ptr_t(new Token(Token::CONTROL_FALSE));
     p1->addToken(d1);
     
     TransitionOccurrence* toP = new TransitionOccurrence(t0);

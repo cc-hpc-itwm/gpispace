@@ -35,19 +35,27 @@ public:
 	/**
 	 * Pointer to edge.
 	 */
-	gwdl::Edge* edgeP;
+	gwdl::Edge::ptr_t edgeP;
 	
 	/**
 	 * Pointer to token.
 	 */
-	gwdl::Token* tokenP;
+	gwdl::Token::ptr_t tokenP;
 	
 	Scope scope;
 
 	/**
+	 * Constructor with tokenP = NULL.
+	 */
+	explicit TokenParameter(gwdl::Edge::ptr_t _edgeP, Scope _scope) {
+		edgeP = _edgeP;
+		scope = _scope;
+	}
+
+	/**
 	 * Constructor.
 	 */
-	explicit TokenParameter(gwdl::Token* _tokenP, gwdl::Edge* _edgeP, Scope _scope) {
+	explicit TokenParameter(gwdl::Token::ptr_t _tokenP, gwdl::Edge::ptr_t _edgeP, Scope _scope) {
 		tokenP = _tokenP;
 		edgeP = _edgeP;
 		scope = _scope;
