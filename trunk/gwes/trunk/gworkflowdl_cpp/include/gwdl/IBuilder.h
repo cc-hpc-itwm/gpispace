@@ -11,8 +11,10 @@
 #include <gwdl/Data.h>
 #include <gwdl/Token.h>
 #include <gwdl/Place.h>
+#include <gwdl/Properties.h>
 #include <gwdl/OperationCandidate.h>
 #include <gwdl/OperationClass.h>
+#include <gwdl/Operation.h>
 #include <gwdl/Transition.h>
 #include <gwdl/Workflow.h>
 #include <gwdl/WorkflowFormatException.h>
@@ -55,8 +57,14 @@ public:
 	virtual std::string serializeOperation(const Operation &) const = 0;
 
 	// Transition
+	virtual Transition::ptr_t deserializeTransition(Workflow::ptr_t, const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeTransition(const Transition &) const = 0;
 
 	// Workflow
+	virtual Workflow::ptr_t deserializeWorkflow(const std::string &) const throw (WorkflowFormatException) = 0;
+	virtual Workflow::ptr_t deserializeWorkflowFromFile(const std::string& filename) const throw (WorkflowFormatException) = 0;
+	virtual std::string serializeWorkflow(const Workflow &) const = 0;
+	virtual void serializeWorkflowToFile(const Workflow &, const std::string& filename) const = 0;
 
 }; // end class IBuilder
 

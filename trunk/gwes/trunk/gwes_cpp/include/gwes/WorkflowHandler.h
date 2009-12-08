@@ -93,7 +93,7 @@ public:
 	/**
 	 * Constructor for workflow handler.
 	 */
-	explicit WorkflowHandler(GWES* gwesP, gwdl::Workflow* workflowP, const std::string& userId);
+	explicit WorkflowHandler(GWES* gwesP, gwdl::Workflow::ptr_t workflowP, const std::string& userId);
 
 	/**
 	 * Destructor. Does NOT delete workflow.
@@ -221,7 +221,7 @@ public:
 	 * Get the workflow which is handled by this WorkflowHandler.
 	 * @return A pointer to the workflow.
 	 */
-	gwdl::Workflow* getWorkflow();
+	gwdl::Workflow::ptr_t getWorkflow();
 
 	/**
 	 * Get the parent GWES.
@@ -284,7 +284,7 @@ private:
 	/**
 	 * Pointer to the workflow to handle.
 	 */
-	gwdl::Workflow* _wfP;
+	gwdl::Workflow::ptr_t _wfP;
 
 	/**
 	 * Pointer to the parent gwes.
@@ -377,7 +377,7 @@ private:
 	 * Select one transition occurrence out of all enabled Transitions.
 	 */
 	TransitionOccurrence* selectTransitionOccurrence(
-			std::vector<gwdl::Transition*>& enabledTransitions,int step);
+			std::vector<gwdl::Transition::ptr_t>& enabledTransitions,int step);
 
 	/**
 	 * Process red transition with undefined operation.

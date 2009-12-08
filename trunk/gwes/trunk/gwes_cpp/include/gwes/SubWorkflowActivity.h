@@ -30,7 +30,7 @@ class SubWorkflowActivity : public Activity, public Observer
 private:
 	std::string _subworkflowFilename;
 	std::string _subworkflowId;
-	gwdl::Workflow* _subworkflowP;
+	gwdl::Workflow::ptr_t _subworkflowP;
 	GWES* _gwesP;
 
 public:

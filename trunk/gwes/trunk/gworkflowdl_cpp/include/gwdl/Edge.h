@@ -24,56 +24,75 @@ namespace gwdl
  */
 class Edge
 {
-private:
-	/**
-     * place the edge is pointing to.
-     */
-    Place::ptr_t _placeP;
 
-    /**
-     * expression of edge.
-     */
-    std::string _expression;
-    
 public:
 
-    typedef gwdl::shared_ptr<Edge> ptr_t;
+	typedef gwdl::shared_ptr<Edge> ptr_t;
 
-	explicit Edge(Place::ptr_t placeP, std::string expression = "") { _placeP = placeP; _expression = expression; }
-	
+	enum scope_t {
+		SCOPE_READ=0, // read token
+		SCOPE_INPUT,  // consume token
+		SCOPE_WRITE,  // write token
+		SCOPE_OUTPUT  // put token
+	};
+
+	explicit Edge(scope_t scope, Place::ptr_t placeP, std::string expression = "") { _scope = scope; _placeP = placeP; _expression = expression; }
+
 	~Edge(){};
 
-    /**
-     * set Place the Edge is pointing to.
-     *
-     * @param p Place Edge should point to
-     */
-    void setPlace(Place::ptr_t p) { _placeP = p;}
+	/**
+	 * Get the scope of this edge.
+	 */
+	const scope_t getScope() const { return _scope; }
 
-    /**
-     * get place the edge is pointing to.
-     *
-     * @return Place Edge points to
-     */
-    Place::ptr_t getPlace() { return _placeP; }
+	/**
+	 * set Place the Edge is pointing to.
+	 *
+	 * @param p Place Edge should point to
+	 */
+	void setPlace(Place::ptr_t p) { _placeP = p;}
 
-    std::string getPlaceID() const { return _placeP != NULL ? _placeP->getID() : "";}
+	/**
+	 * get place the edge is pointing to.
+	 *
+	 * @return Place Edge points to
+	 */
+	const Place::ptr_t getPlace() const { return _placeP; }
 
-    /**
-     * set Edge's expression.
-     *
-     * @param ex Edge expression
-     */
-    void setExpression(const std::string& ex) { _expression = ex; }
+	const std::string getPlaceID() const { return _placeP != NULL ? _placeP->getID() : "";}
+
+	/**
+	 * set Edge's expression.
+	 *
+	 * @param ex Edge expression
+	 */
+	void setExpression(const std::string& ex) { _expression = ex; }
 
 
-    /**
-     * get Edge's expression.
-     *
-     * @return Edge expression
-     */
-    const std::string& getExpression() const { return _expression; } 
-	
+	/**
+	 * get Edge's expression.
+	 *
+	 * @return Edge expression
+	 */
+	const std::string& getExpression() const { return _expression; } 
+
+private:
+
+	/**
+	 * scope of the edge (read, input, write, output).
+	 */
+	scope_t _scope;
+
+	/**
+	 * place the edge is pointing to.
+	 */
+	Place::ptr_t _placeP;
+
+	/**
+	 * expression of edge.
+	 */
+	std::string _expression;
+
 };
 
 }

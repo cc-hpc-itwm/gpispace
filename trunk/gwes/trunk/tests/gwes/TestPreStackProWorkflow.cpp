@@ -4,6 +4,8 @@
 #include <fhglog/fhglog.hpp>
 // gwes
 #include <gwes/Channel.h>
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 // test
 #include "PreStackPro.h"
 #include "TestPreStackProWorkflow.h"
@@ -18,11 +20,11 @@ Workflow& testPreStackProWorkflow(string workflowfn, gwes::GWES &gwes) {
 
 	LOG_INFO(logger, "============== BEGIN EXECUTION " << workflowfn << "==============");
 
-	Workflow* wfP = new Workflow(workflowfn);
+	Workflow::ptr_t wfP = Workflow::ptr_t(new Workflow(workflowfn));
 	
 	// initiate workflow
     LOG_INFO(logger, "initiating workflow ...");
-    string workflowId = gwes.initiate(*wfP,"test");
+    string workflowId = gwes.initiate(wfP,"test");
     
 	// register channel with source observer (=PreStackPro)
     PreStackPro* psp = new PreStackPro();

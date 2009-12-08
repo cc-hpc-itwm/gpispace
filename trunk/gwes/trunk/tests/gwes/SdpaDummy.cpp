@@ -245,9 +245,8 @@ void SdpaDummy::logWorkflowStatus() {
 	}
 }
 
-workflow_id_t SdpaDummy::submitWorkflow(workflow_t &workflow) {
-	logger_t logger = getLogger("gwes");
-	workflow_id_t workflowId = _gwesP->submitWorkflow(workflow);
+workflow_id_t SdpaDummy::submitWorkflow(workflow_t::ptr_t workflowP) {
+	workflow_id_t workflowId = _gwesP->submitWorkflow(workflowP);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,RUNNING));
 	logWorkflowStatus();
 	return workflowId;

@@ -16,7 +16,7 @@ namespace gwes {
 /**
  * Constructor.
  */
-TransitionOccurrence::TransitionOccurrence(Transition* transition) : _logger(fhg::log::getLogger("gwes")) {
+TransitionOccurrence::TransitionOccurrence(Transition::ptr_t transition) : _logger(fhg::log::getLogger("gwes")) {
 	transitionP = transition;
 	activityP = NULL;
 	hasXPathEdgeExpressions=false;
@@ -111,7 +111,7 @@ void TransitionOccurrence::lockTokens() {
 		case (TokenParameter::SCOPE_READ):
 			continue;
 		case (TokenParameter::SCOPE_INPUT):
-			it->edgeP->getPlace()->lockToken(it->tokenP,transitionP);
+			it->edgeP->getPlace()->lockToken(it->tokenP,transitionP.get());
 			break;
 		case (TokenParameter::SCOPE_WRITE):	
 		case (TokenParameter::SCOPE_OUTPUT):	

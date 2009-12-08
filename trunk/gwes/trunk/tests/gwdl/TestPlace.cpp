@@ -180,12 +180,12 @@ void PlaceTest::testPlace()
 	placeP->addToken(token2b);
 	LOG_INFO(logger, *placeP);
 	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == token2a);
-	Transition* tr2 = new Transition("");
-	placeP->lockToken(token2a,tr2);
+	Transition::ptr_t tr2 = Transition::ptr_t(new Transition(""));
+	placeP->lockToken(token2a,tr2.get());
 	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == token2b);
-	placeP->lockToken(token2b,tr2);
+	placeP->lockToken(token2b,tr2.get());
 	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == NULL);
-	delete tr2;
+	tr2.reset();
 
 	LOG_INFO(logger, "============== END PLACE TEST =============");
 

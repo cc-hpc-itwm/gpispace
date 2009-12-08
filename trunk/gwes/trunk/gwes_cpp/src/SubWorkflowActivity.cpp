@@ -9,6 +9,7 @@
 #include <gwes/Utils.h>
 //gwdl
 #include <gwdl/Token.h>
+#include <gwdl/Libxml2Builder.h>
 //std
 #include <iostream>
 #include <sstream>
@@ -24,7 +25,7 @@ namespace gwes
 SubWorkflowActivity::SubWorkflowActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP) : Activity(handler, toP, "SubWorkflowActivity", operationP)
 {
 	_gwesP = handler->getGWES();
-	_subworkflowP = NULL;
+	// _subworkflowP = NULL; // default for shared pointer
 }
 
 SubWorkflowActivity::~SubWorkflowActivity()
@@ -50,10 +51,11 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 
 	// parse workflow file
 	try {
-		_subworkflowP = new gwdl::Workflow(_subworkflowFilename);
+		Libxml2Builder builder;
+		_subworkflowP = builder.deserializeWorkflowFromFile(_subworkflowFilename);
 		// delegate simulation flag to sub workflow.
 		if (_toP->simulation) {
-			_subworkflowP->getProperties().put("simulation","true");
+			_subworkflowP->getProperties()->put("simulation","true");
 		}
 		setStatus(STATUS_INITIATED);
 	} catch (const WorkflowFormatException &e) {
@@ -107,7 +109,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	}
 
 	// initiate subworklfow
-	_subworkflowId = _gwesP->initiate(*_subworkflowP,_wfhP->getUserId());
+	_subworkflowId = _gwesP->initiate(_subworkflowP,_wfhP->getUserId());
 
 	// ToDo: Use Gwes2Sdpa / Sdpa2Gwes interface instead!
 	

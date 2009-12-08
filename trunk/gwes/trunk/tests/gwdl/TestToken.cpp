@@ -223,14 +223,14 @@ void TokenTest::testToken()
 //	Token::ptr_t token6 = new Token(*props,data6);
 //	LOG_INFO(logger, *token6);
 //	CPPUNIT_ASSERT(str6==token6->getData()->getContent());
-//	CPPUNIT_ASSERT(token6->getProperties().get("key2")=="value2");
+//	CPPUNIT_ASSERT(token6->getProperties()->get("key2")=="value2");
 //	delete token6;
 //	
 //	LOG_INFO(logger, "test token.lock(transition)...");
 //   	Token *token7 = new Token();
 //   	CPPUNIT_ASSERT(token7->isLocked()==false);
-//   	Transition *t7 = new Transition("");
-//   	Transition *t7b = new Transition("");
+//   	Transition *t7 = Transition::ptr_t(new Transition(""));
+//   	Transition *t7b = Transition::ptr_t(new Transition(""));
 //   	token7->lock(t7);
 //   	CPPUNIT_ASSERT(token7->isLocked());
 //    CPPUNIT_ASSERT(token7->isLockedBy(t7));
@@ -244,9 +244,9 @@ void TokenTest::testToken()
 //   	Token *token8 = new Token(*props,true);
 //   	Token *token8cp = token8->deepCopy();
 //   	CPPUNIT_ASSERT(token8 != token8cp);
-//   	token8->getProperties().put("key1","valueXXX");
-//   	CPPUNIT_ASSERT(token8->getProperties().get("key1").compare("valueXXX")==0);
-//   	CPPUNIT_ASSERT(token8cp->getProperties().get("key1").compare("value1")==0);
+//   	token8->getProperties()->put("key1","valueXXX");
+//   	CPPUNIT_ASSERT(token8->getProperties()->get("key1").compare("valueXXX")==0);
+//   	CPPUNIT_ASSERT(token8cp->getProperties()->get("key1").compare("value1")==0);
 //    LOG_INFO(logger, *token8cp);
 //    delete token8cp;
 //    LOG_INFO(logger, *token8);
