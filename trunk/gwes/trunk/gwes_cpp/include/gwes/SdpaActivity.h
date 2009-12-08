@@ -28,7 +28,7 @@ private:
 	Gwes2Sdpa* _sdpaP;
 
 public:
-	explicit SdpaActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP);
+	explicit SdpaActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP);
 	
 	virtual ~SdpaActivity();
 

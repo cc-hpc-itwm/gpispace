@@ -29,7 +29,7 @@ using namespace std;
 namespace gwes
 {
 
-CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate* operationP) : Activity(handler, toP, "CommandLineActivity", operationP)
+CommandLineActivity::CommandLineActivity(WorkflowHandler* handler, TransitionOccurrence* toP, gwdl::OperationCandidate::ptr_t operationP) : Activity(handler, toP, "CommandLineActivity", operationP)
 {
 }
 

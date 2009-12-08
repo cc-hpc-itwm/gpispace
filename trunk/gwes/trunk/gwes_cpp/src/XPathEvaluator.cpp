@@ -7,6 +7,8 @@
 // gwes
 #include <gwes/XPathEvaluator.h>
 #include <gwes/CommandLineActivity.h>
+// gwdl
+#include <gwdl/XMLUtils.h>
 // libxml2
 #include <libxml/tree.h>
 #include <libxml/parser.h>

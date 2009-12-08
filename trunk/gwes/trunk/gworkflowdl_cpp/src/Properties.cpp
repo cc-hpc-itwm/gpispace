@@ -15,6 +15,22 @@ using namespace std;
 namespace gwdl
 {
 
+
+/**
+ * Constructor.
+ */
+Properties::Properties() {
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "Properties()");
+}
+
+/**
+ * Destructor.
+ */
+Properties::~Properties() {
+	clear();
+	LOG_DEBUG(logger_t(getLogger("gwdl")), "~Properties()");
+}
+
 /**
  * Put new name/value pair into properties.
  * Overwrites old property with same name.

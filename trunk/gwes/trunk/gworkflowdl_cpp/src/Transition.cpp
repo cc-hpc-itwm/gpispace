@@ -29,17 +29,13 @@ Transition::Transition(const string& _id)
 	if (_id == "") id=generateID();
 	else id = _id;
 	description = "";
-	operationP = NULL; 
+	// operationP = NULL; // default for shared pointer 
 	status = Transition::STATUS_NONE;
 }
 
 Transition::~Transition()
 {
-	if(operationP != NULL)
-	{
-		delete operationP;
-		operationP = NULL;
-	}
+	operationP.reset();
 	for(ITR_Edges it=readEdges.begin(); it!=readEdges.end(); ++it) (*it).reset();
 	readEdges.clear();
 	for(ITR_Edges it=inEdges.begin(); it!=inEdges.end(); ++it) (*it).reset();
@@ -56,7 +52,7 @@ Transition::Transition(Workflow* wf, DOMElement* element)
 	
 	// default values
 	description = "";
-	operationP = NULL; 
+	// operationP = NULL; //  
 	status = Transition::STATUS_NONE;
 
 	//XMLCh* ns = X(SCHEMA_wfSpace);
@@ -118,7 +114,7 @@ Transition::Transition(Workflow* wf, DOMElement* element)
 //			}
 //			// operation
 //			else if (XMLString::equals(name,X("operation"))) {
-//				operationP = new Operation((DOMElement*)node);
+//				operationP = Operation::ptr_t(new Operation((DOMElement*)node);
 //			}
 		}
 	}
@@ -194,7 +190,7 @@ DOMElement* Transition::toElement(DOMDocument* doc)
 			el->appendChild(el1);
 		}
 		// operation
-		if (operationP != NULL) el->appendChild(operationP->toElement(doc));
+//		if (operationP != NULL) el->appendChild(operationP->toElement(doc));
 
 	}
 	catch (const OutOfMemoryException&)

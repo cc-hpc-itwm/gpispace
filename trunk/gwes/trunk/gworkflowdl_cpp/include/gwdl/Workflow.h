@@ -76,12 +76,12 @@ namespace gwdl
  *	assert(wf->getTransition("t0")->isEnabled()==true);
  *	
  *	// add operation to transition
- *	Operation* op = new Operation();
+ *	Operation::ptr_t op = Operation::ptr_t(new Operation());
  *	wf->getTransition("t0")->setOperation(op);	
- *	OperationClass* opc = new OperationClass();
+ *	OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
  *	opc->setName("mean-value");
  *	wf->getTransition("t0")->getOperation()->setOperationClass(opc);
- *	OperationCandidate* po = new OperationCandidate();
+ *	OperationCandidate::ptr_t po = OperationCandidate::ptr_t(new OperationCandidate());
  *  po->setType("psp");
  *	po->setOperationName("alg-mean-value");
  *	po->setResourceName("phastgrid");

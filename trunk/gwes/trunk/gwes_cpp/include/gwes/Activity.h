@@ -94,7 +94,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	explicit Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const std::string& activityImpl, gwdl::OperationCandidate* operationP);
+	explicit Activity(WorkflowHandler* handler, TransitionOccurrence* toP, const std::string& activityImpl, gwdl::OperationCandidate::ptr_t operationP);
 
 	/**
 	 * Destructor.
@@ -280,7 +280,7 @@ protected:
 	std::string _activityImpl;
 	std::string _id;
 	status_t _status;
-	gwdl::OperationCandidate* _operation;
+	gwdl::OperationCandidate::ptr_t _operation;
 
 	/**
 	 * Fhg Logger

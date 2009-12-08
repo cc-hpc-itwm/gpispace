@@ -505,8 +505,8 @@ bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step
 	bool modification = false;
 
 	// select selected operation
-	vector<OperationCandidate*> ocs = toP->transitionP->getOperation()->getOperationClass()->getOperationCandidates();
-	OperationCandidate* operationP = NULL;
+	vector<OperationCandidate::ptr_t> ocs = toP->transitionP->getOperation()->getOperationClass()->getOperationCandidates();
+	OperationCandidate::ptr_t operationP;
 	for (size_t i=0; i<ocs.size(); i++) {
 		if (ocs[i]->isSelected()) {
 			operationP = ocs[i];

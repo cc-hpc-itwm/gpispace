@@ -113,78 +113,79 @@ void PlaceTest::testPlace()
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
-//
-//	// place getTokenNumber()
-//	LOG_INFO(logger, "placeP->getTokenNumber()="<< placeP->getTokenNumber());
-//	CPPUNIT_ASSERT(placeP->getTokenNumber()==1);
-//
-//	// place set description
-//	str = "bla";
-//	LOG_INFO(logger, "placeP.setDescription(" << str << ")");
-//	placeP->setDescription(str);
-//	LOG_INFO(logger, "placeP->getDescription()=" << placeP->getDescription());
-//	CPPUNIT_ASSERT(placeP->getDescription() == "bla");
-//	delete place;
-//
-//	LOG_INFO(logger, "test place with data tokens and properties...");
-//	try 
-//	{
-//		Place *place1 = new Place("");
-//		LOG_INFO(logger, "  constructed place with id " << place1->getID());
-//		// should generate place ID "pX".
-//		CPPUNIT_ASSERT(place1->getID().size() > 0);
-//		CPPUNIT_ASSERT(place1->getID().substr(0,1) == "p");
-//		Properties *props1 = new Properties();
-//		props1->put("k1","v1");
-//		props1->put("k2","v2");
-//		place1->setProperties(*props1);
-//		Properties &props1b = place1->getProperties();
-//		props1->put("k3", "v3");  // should be ignored!
-//		props1b.put("k3b","v3b"); // should change the properties!
-//		CPPUNIT_ASSERT(place1->getProperties().size()==3);
-//		Data::ptr_t data5 = Data::ptr_t(new Data("<data><x>245.4</x></data>"));
-//		Token *token5 = Token::ptr_t(new Token(data5));
-//		place1->addToken(token5);
-//		Data::ptr_t data5b = Data::ptr_t(new Data("<data><y>445</y></data>"));
-//		Token *token5b = Token::ptr_t(new Token(data5b));
-//		place1->addToken(token5b);
-//
-//		CPPUNIT_ASSERT(place1->getTokenNumber()==2);
-//		vector<Token::ptr_t> tokens5 = place1->getTokens();
-//		for (unsigned int i=0; i<tokens5.size(); i++) {
-//			LOG_INFO(logger, "tokens5[" << i << "].getData(): " << tokens5[i]->getData()->getContent());
-//		}
-//		CPPUNIT_ASSERT_EQUAL(string("<data><x>245.4</x></data>"), tokens5[0]->getData()->getContent());   
-//		CPPUNIT_ASSERT_EQUAL(string("<data><y>445</y></data>"), tokens5[1]->getData()->getContent());   
-//		place1->removeToken(token5);
-//		CPPUNIT_ASSERT(place1->getTokenNumber()==1);
-//		LOG_INFO(logger, *place1);
-//
-//		delete props1;
-//		delete place1;
-//	}
-//	catch (WorkflowFormatException e) 
-//	{
-//		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
-//	}
-//
-//	// lock token
-//	Place *place2 = new Place("");
-//	CPPUNIT_ASSERT(place2->getNextUnlockedToken() == NULL);
-//	Token::ptr_t token2a = Token::ptr_t(new Token(Token::CONTROL_TRUE));
-//	Token::ptr_t token2b = Token::ptr_t(new Token(Token::CONTROL_FALSE));
-//	place2->addToken(token2a);
-//	place2->addToken(token2b);
-//	LOG_INFO(logger, *place2);
-//	CPPUNIT_ASSERT(place2->getNextUnlockedToken() == token2a);
-//	Transition* tr2 = new Transition("");
-//	place2->lockToken(token2a,tr2);
-//	CPPUNIT_ASSERT(place2->getNextUnlockedToken() == token2b);
-//	place2->lockToken(token2b,tr2);
-//	CPPUNIT_ASSERT(place2->getNextUnlockedToken() == NULL);
-//
-//	delete place2;
-//	delete tr2;
+
+	LOG_INFO(logger, "-------------- place getTokenNumber() --------------");
+	LOG_INFO(logger, "placeP->getTokenNumber()="<< placeP->getTokenNumber());
+	CPPUNIT_ASSERT(placeP->getTokenNumber()==1);
+
+	LOG_INFO(logger, "-------------- place set description --------------");
+	str = "bla";
+	LOG_INFO(logger, "placeP.setDescription(" << str << ")");
+	placeP->setDescription(str);
+	LOG_INFO(logger, "placeP->getDescription()=" << placeP->getDescription());
+	CPPUNIT_ASSERT(placeP->getDescription() == "bla");
+
+	LOG_INFO(logger, "-------------- test place with data tokens and properties... --------------");
+	try 
+	{
+		placeP.reset(new Place(""));
+		LOG_INFO(logger, "  constructed place with id " << placeP->getID());
+		// should generate place ID "pX".
+		CPPUNIT_ASSERT(placeP->getID().size() > 0);
+		CPPUNIT_ASSERT(placeP->getID().substr(0,1) == "p");
+		Properties::ptr_t propsP = Properties::ptr_t(new Properties());
+		propsP->put("k1","v1");
+		propsP->put("k2","v2");
+		placeP->setProperties(propsP->deepCopy());
+		Properties::ptr_t propsPb = placeP->getProperties();
+		propsP->put("k3", "v3");  // should be ignored!
+		propsPb->put("k3b","v3b"); // should change the properties!
+		LOG_INFO(logger, "\n" << *propsPb);
+		CPPUNIT_ASSERT(placeP->getProperties()->size()==3);
+		Data::ptr_t data5 = Data::ptr_t(new Data("<x>245.4</x>"));
+		Token::ptr_t token5 = Token::ptr_t(new Token(data5));
+		placeP->addToken(token5);
+		Data::ptr_t data5b = Data::ptr_t(new Data("<y>445</y>"));
+		Token::ptr_t token5b = Token::ptr_t(new Token(data5b));
+		placeP->addToken(token5b);
+		CPPUNIT_ASSERT(placeP->getTokenNumber()==2);
+		vector<Token::ptr_t> tokens5 = placeP->getTokens();
+		for (unsigned int i=0; i<tokens5.size(); i++) {
+			LOG_INFO(logger, "tokens5[" << i << "].getData(): " << tokens5[i]->getData()->getContent());
+		}
+		CPPUNIT_ASSERT_EQUAL(string("<x>245.4</x>"), tokens5[0]->getData()->getContent());   
+		CPPUNIT_ASSERT_EQUAL(string("<y>445</y>"), tokens5[1]->getData()->getContent());   
+		propsP.reset();
+	}
+	catch (WorkflowFormatException e) 
+	{
+		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
+		CPPUNIT_ASSERT_MESSAGE(e.message, false);
+	}
+
+	LOG_INFO(logger, "-------------- test place deserialize-serialize... --------------");
+	Libxml2Builder builder;
+	str = builder.serializePlace(*placeP);
+	Place::ptr_t place2P = builder.deserializePlace(str);
+	LOG_INFO(logger, "\n" << *place2P);
+	string str2 = builder.serializePlace(*place2P);
+	CPPUNIT_ASSERT_EQUAL(str, str2);
+
+	LOG_INFO(logger, "-------------- test lock token... --------------");
+	placeP.reset(new Place(""));
+	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == NULL);
+	Token::ptr_t token2a = Token::ptr_t(new Token(Token::CONTROL_TRUE));
+	Token::ptr_t token2b = Token::ptr_t(new Token(Token::CONTROL_FALSE));
+	placeP->addToken(token2a);
+	placeP->addToken(token2b);
+	LOG_INFO(logger, *placeP);
+	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == token2a);
+	Transition* tr2 = new Transition("");
+	placeP->lockToken(token2a,tr2);
+	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == token2b);
+	placeP->lockToken(token2b,tr2);
+	CPPUNIT_ASSERT(placeP->getNextUnlockedToken() == NULL);
+	delete tr2;
 
 	LOG_INFO(logger, "============== END PLACE TEST =============");
 
@@ -198,6 +199,4 @@ void PlaceTest::printTokens(logger_t logger, gwdl::Place &place)
 //		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID() << "=" << *token);					
 		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID());					
 	}	
-
 }
-

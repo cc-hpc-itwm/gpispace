@@ -7,10 +7,9 @@
 #ifndef CLASSOPERATION_H_
 #define CLASSOPERATION_H_
 //gwdl
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/OperationCandidate.h>
 #include <gwdl/AbstractionLevel.h>
-//xerces-c
-#include <xercesc/dom/DOM.hpp>
 //std
 #include <vector>
 #include <string>
@@ -32,14 +31,16 @@ private:
 	/**
 	 * Candidates for this operation class.
 	 */
-    std::vector<OperationCandidate*> operationCandidates;
+    std::vector<OperationCandidate::ptr_t> _operationCandidates;
     
     /**
      * Name of this operation class.
      */
-    std::string name;
+    std::string _name;
 	
 public:
+	
+    typedef gwdl::shared_ptr<OperationClass> ptr_t;
 
 	/**
 	 * Constructor for empty operation class.
@@ -47,21 +48,9 @@ public:
 	OperationClass(){}
 	
 	/**
-	 * Construct operation class from DOMElement.
-	 */
-	explicit OperationClass(XERCES_CPP_NAMESPACE::DOMElement* element);
-	
-	/**
 	 * Destructor for operation class.
 	 */
 	virtual ~OperationClass();
-	
-	/**
-	 * Convert this into a DOMElement.
-	 * @param doc The master document this element should belong to.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
 	
     /**
      * Get level of abstraction.
@@ -74,25 +63,25 @@ public:
 	/**
 	 * Get the name of this operation class.
 	 */
-	const std::string& getName() const {return name;}
+	const std::string& getName() const {return _name;}
 
 	/**
 	 * Set the name of this operation class.
 	 */
-	void setName(const std::string& _name) {name = _name;}
+	void setName(const std::string& name) {_name = name;}
 
 	/**
 	 * Get the candidates of this operation class.
 	 */    
-    const std::vector<OperationCandidate*>& getOperationCandidates() const;
+    const std::vector<OperationCandidate::ptr_t>& getOperationCandidates() const;
     
     /**
      * Add an additional concrete operation to the candidates.
      * (allocated OperationCandidate is deleted)
      * @param operation A pointer to the concrete operation.
      */
-    void addOperationCandidate(OperationCandidate* p_operation)
-    { operationCandidates.push_back(p_operation); } 
+    void addOperationCandidate(OperationCandidate::ptr_t ocandP)
+    { _operationCandidates.push_back(ocandP); } 
     
     /**
      * Remove the i-th concrete operation from operations vector.
@@ -106,7 +95,7 @@ public:
      * (allocated OperationCandidate is deleted)
      * @param oper A reference to the concrete operation to be removed.
      */
-    void removeOperationCandidate(OperationCandidate& oper);
+    void removeOperationCandidate(OperationCandidate::ptr_t ocandP);
     
     /**
      * Remove all concrete operations from vector.
@@ -114,8 +103,8 @@ public:
      */
     void removeAllOperationCandidates();
 	
-};
+}; // end class OperationClass
 
-}
+} // end namespace gwdl
 
 #endif /*CLASSOPERATION_H_*/
