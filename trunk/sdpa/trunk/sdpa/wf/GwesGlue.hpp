@@ -113,7 +113,8 @@ namespace sdpa { namespace wf { namespace glue {
     }
     else
     {
-      gwdl::Data::ptr_t data(new gwdl::Data(wf_token.data()));
+	  const std::string tagged_data("<sdpa>" + wf_token.data() + "</sdpa>");
+      gwdl::Data::ptr_t data(new gwdl::Data(tagged_data));
       gwdl::Token *tok = new gwdl::Token(data);
 
       // update all known properties, this also includes the data type
