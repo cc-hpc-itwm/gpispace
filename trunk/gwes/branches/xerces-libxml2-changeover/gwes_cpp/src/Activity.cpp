@@ -45,6 +45,12 @@ Activity::~Activity() {
 /////////////////////////////////////////
 // IActivity interface methods 
 /////////////////////////////////////////
+const std::string &Activity::getName() const
+{
+  static std::string place_holder("activity-name-placeholder");
+  if (_operation) return _operation->getOperationName();
+  else return place_holder;
+}
 
 /** 
  * Generates workflow object that corresponds to this activity.
