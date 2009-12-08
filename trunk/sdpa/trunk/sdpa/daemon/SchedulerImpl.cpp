@@ -84,12 +84,6 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
 
-		if(ptrWorkflow)
-		{
-			delete ptrWorkflow;
-			ptrWorkflow = NULL;
-		}
-
 		//send a JobFailed event
 		sdpa::job_result_t sdpa_result;
 		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
