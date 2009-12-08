@@ -33,6 +33,8 @@
 #include "TestPreStackProWorkflow.h"
 // gwes
 #include <gwes/Utils.h>
+// gwdl
+#include <gwdl/XMLUtils.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // std
@@ -53,6 +55,8 @@ int main()
 	logger_t logger(getLogger("gwes"));
 
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
+	XMLUtils* xmlutils = XMLUtils::Instance();
+	LOG_INFO(logger, "xmlutils singleton instantiated: " << xmlutils);;
 
 	// Informiert Test-Listener ueber Testresultate
 	CPPUNIT_NS::TestResult                   testresult;
@@ -83,6 +87,8 @@ int main()
 	//CPPUNIT_NS::CompilerOutputter compileroutputter (&collectedresults, std::cout);
 	//compileroutputter.write ();
 
+	LOG_INFO(logger, "deleting xmlutils singleton: " << xmlutils);;
+	delete xmlutils;
 
 	//
 	LOG_INFO(logger, "########################### END OF ALL GWES TESTS ###########################");

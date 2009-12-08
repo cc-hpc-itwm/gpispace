@@ -113,9 +113,11 @@ else
   echo "<hasnext>false</hasnext>" > $hasnext
 fi
 
-echo "$offsetclass" > $tracefn
-echo "<traceindex>$index</traceindex>" >> $tracefn
-echo "<simulation><memory><fvm>$memory</fvm></memory></simulation>" >> $tracefn
+echo "<trace>" > $tracefn
+echo "  $offsetclass" >> $tracefn
+echo "  <traceindex>$index</traceindex>" >> $tracefn
+echo "  <simulation><memory><fvm>$memory</fvm></memory></simulation>" >> $tracefn
+echo "</trace>" >> $tracefn
 
 if [ -n "$simulation" ]; then
   echo "<simulation><duration><cpu>$cpu<cpu><io>$io</io><memory><fvm edgeExpression=\"$edgeExpression\">$memory</fvm></memory></simulation>" > $simulation

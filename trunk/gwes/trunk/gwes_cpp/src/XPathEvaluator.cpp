@@ -298,10 +298,13 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token::ptr_
 			// if token text begins with "file://" insert content of file
 			string fn = CommandLineActivity::convertUrlToLocalPath(text);
 			LOG_DEBUG(_logger, "Adding file '" << fn << "' to context ...");
-			xmldoc = utilsP->deserializeFileLibxml2(fn);
-			if (xmldoc == NULL) {      // file not in XML format
-				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in XML format.");
-			} else {
+			try {
+				xmldoc = utilsP->deserializeFileLibxml2(fn);
+			} catch (const WorkflowFormatException &e) {
+				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in wellformed XML format (" << e.what() << ").");
+			}
+			if (xmldoc) {      // file in XML format
+				// contentsDocP will not be needed, because contents has been parsed from XML file.
 				xmlFreeDoc(contentsDocP);
 			}
 		}
