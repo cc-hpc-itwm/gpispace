@@ -26,6 +26,7 @@ using namespace gwes;
 namespace gwes {
 
 WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
+  _thread = 0;
 	_status=STATUS_UNDEFINED;
 	// set user id
 	_userId = userId;

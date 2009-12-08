@@ -340,6 +340,7 @@ void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id
 	try
 	{
 	  mutex_lock lock(monitor_lock_);
+	  LOG_DEBUG(_logger, "activity dispatched: wid=" << workflowId << " aid=" << activityId);
 	  _wfht.get(workflowId)->activityDispatched(activityId);
 	}
 	catch (const NoSuchWorkflowException&)
@@ -356,57 +357,60 @@ void GWES::activityDispatched(const workflow_id_t &workflowId, const activity_id
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityFailed(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
-	try
-	{
-	  mutex_lock lock(monitor_lock_);
-	  _wfht.get(workflowId)->activityFailed(activityId,output);
-	}
-	catch (const NoSuchWorkflowException&)
-	{
-	  throw NoSuchWorkflow(workflowId);
-	}
-	catch (const NoSuchActivityException &)
-	{
-	  throw NoSuchActivity(activityId);
-	}
+  try
+  {
+	mutex_lock lock(monitor_lock_);
+	LOG_WARN(_logger, "activity failed: wid=" << workflowId << " aid=" << activityId);
+	_wfht.get(workflowId)->activityFailed(activityId,output);
+  }
+  catch (const NoSuchWorkflowException&)
+  {
+	throw NoSuchWorkflow(workflowId);
+  }
+  catch (const NoSuchActivityException &)
+  {
+	throw NoSuchActivity(activityId);
+  }
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityFinished(const workflow_id_t &workflowId, const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchWorkflow,NoSuchActivity) {
-	try
-	{
-	  mutex_lock lock(monitor_lock_);
-	  _wfht.get(workflowId)->activityFinished(activityId,output);
-	}
-	catch (const NoSuchWorkflowException&)
-	{
-	  throw NoSuchWorkflow(workflowId);
-	}
-	catch (const NoSuchActivityException &)
-	{
-	  throw NoSuchActivity(activityId);
-	}
+  try
+  {
+	mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "activity finished: wid=" << workflowId << " aid=" << activityId);
+	_wfht.get(workflowId)->activityFinished(activityId,output);
+  }
+  catch (const NoSuchWorkflowException&)
+  {
+	throw NoSuchWorkflow(workflowId);
+  }
+  catch (const NoSuchActivityException &)
+  {
+	throw NoSuchActivity(activityId);
+  }
 }
 
 /**
  * Uses WorkflowHandlerTable to delegate method call to WorkflowHandler.
  */
 void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow,NoSuchActivity) {
-	try
-	{
-	  mutex_lock lock(monitor_lock_);
-	  _wfht.get(workflowId)->activityCanceled(activityId);
-	}
-	catch (const NoSuchWorkflowException&)
-	{
-	  throw NoSuchWorkflow(workflowId);
-	}
-	catch (const NoSuchActivityException &)
-	{
-	  throw NoSuchActivity(activityId);
-	}
+  try
+  {
+	mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "activity cancelled: wid=" << workflowId << " aid=" << activityId);
+	_wfht.get(workflowId)->activityCanceled(activityId);
+  }
+  catch (const NoSuchWorkflowException&)
+  {
+	throw NoSuchWorkflow(workflowId);
+  }
+  catch (const NoSuchActivityException &)
+  {
+	throw NoSuchActivity(activityId);
+  }
 }
 
 /**
@@ -452,7 +456,7 @@ void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
 {
   try
   {
-    remove(workflowId);
+	remove(workflowId);
   }
   catch (const NoSuchWorkflowException &)
   {
@@ -464,13 +468,13 @@ void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
  * Cancel a workflow.
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
-    mutex_lock lock(monitor_lock_);
+  try {
+	mutex_lock lock(monitor_lock_);
 	LOG_INFO(_logger, "request to cancel workflow " << workflowId << " received");
-    try {
-    	abort(workflowId);
-    } catch (const NoSuchWorkflowException &nswfe) {
-    	throw NoSuchWorkflow(workflowId);
-    }
+	abort(workflowId);
+  } catch (const NoSuchWorkflowException &nswfe) {
+	throw NoSuchWorkflow(workflowId);
+  }
 }
 
 gwdl::Workflow::ptr_t GWES::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error) {
