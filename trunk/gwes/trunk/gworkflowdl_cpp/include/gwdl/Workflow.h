@@ -158,7 +158,7 @@ public:
     /**
      * set workflow id.
      */
-    void setID(const workflow_id_t& id) {_id = id;}
+    void setID(const workflow_id_t& id);
 
     /**
      * Appends a place to the registered places.

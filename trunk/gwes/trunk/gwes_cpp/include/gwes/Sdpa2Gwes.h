@@ -131,6 +131,12 @@ public:
 	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) = 0;
 
 	/**
+	 * removes a workflow from gwes after it has reached one of the
+	 * finished/failed/cancelled states
+	 */ 
+	virtual void removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+
+	/**
 	 * Cancel a workflow asynchronously.
 	 * This method is to be invoked by the SDPA.
 	 * The GWES will notifiy the SPDA about the 

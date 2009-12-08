@@ -52,6 +52,7 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 	}
 	// set status
 	setStatus(STATUS_INITIATED);
+	LOG_DEBUG(_logger, "WorkflowHandler[" << _id << "]");
 }
 
 WorkflowHandler::~WorkflowHandler() {
