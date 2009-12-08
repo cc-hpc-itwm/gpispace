@@ -53,7 +53,8 @@ Token::Token(DOMElement* element)
  		  if (XMLString::equals(name,X("control"))) {
  			  if(!XMLString::compareIString(node->getTextContent(), X("true"))) control = true;
  		  } else if (XMLString::equals(name,X("data"))) {
- 			  data = new Data((DOMElement*)node);
+ 			  LOG_WARN(logger_t(getLogger("gwdl")), "ToDo: Refractoring to libxml2");
+// 			  data = new Data((DOMElement*)node);
  		  }
  	  }
    }
@@ -91,12 +92,13 @@ DOMElement* Token::toElement(DOMDocument * doc)
                else 
                {
                	if (data!=NULL) {
-               		DOMElement* eld = data->toElement(doc);
-              		if (eld != NULL) {
-          				el->appendChild(eld);
-              		} else {
-                   		LOG_ERROR(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
-              		}
+               		LOG_WARN(logger_t(getLogger("gwdl")), "ToDo: Refractoring to libxml2");
+//               		DOMElement* eld = data->toElement(doc);
+//              		if (eld != NULL) {
+//          				el->appendChild(eld);
+//              		} else {
+//                   		LOG_ERROR(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
+//              		}
                	} else {
                		LOG_ERROR(logger_t(getLogger("gwdl")), "Data->toElement()==NULL exception");
                	}

@@ -7,9 +7,8 @@
 #ifndef DATA_H_
 #define DATA_H_
 // gwdl
+#include <gwdl/memory.hpp> // shared_ptr
 #include <gwdl/WorkflowFormatException.h>
-// xerces
-#include <xercesc/dom/DOM.hpp>
 // std
 #include <ostream>
 #include <string>
@@ -21,8 +20,7 @@ namespace gwdl
  * This class handles the data which can be hold by data tokens.
  * Code example:
  * <pre>
- * 	string* str = new string("<data><x>6</x></data>");
- *	Data* data = new Data(*str);
+ *	Data* data = new Data("<data><x>6</x></data>");
  *  cout << *data << endl;
  * </pre>
  * 
@@ -31,14 +29,15 @@ namespace gwdl
  */
 class Data
 {
-private:
-	int _type;
-	XERCES_CPP_NAMESPACE::DOMElement* data;
-    std::string* dataText;
-	void trim(std::string& s);
-	void setType();
-    
+
 public:
+
+    typedef shared_ptr<Data> ptr_t;
+    
+    /**
+     * Internal content type of the Data object.
+     */
+    typedef std::string content_t;
 	
 	enum {
 		
@@ -83,45 +82,27 @@ public:
 		
 	};
 
-	/** 
-	 * Constructor for empty data element.
+	/**
+	 * Construct data from xml string.
+	 * @param xmlstring The xml string representing the data element.
 	 */
-	Data();
-	
+	explicit Data(const std::string& xmlstring, const int type = TYPE_DATA) throw(WorkflowFormatException);
+
 	/**
 	 * Destructor for data element.
 	 */
 	virtual ~Data();
 	
 	/**
-	 * Construct data from DOMElement.
-	 * @param element The DOM representation of this element.
+	 * Returns the content of the data element.
+	 * @return The content as XML string.
 	 */
-	explicit Data(XERCES_CPP_NAMESPACE::DOMElement* element);
+	content_t &getContent() {return _content;}
 	
 	/**
-	 * Construct data from xml string.
-	 * @param xmlstring The xml string representing the data element.
+	 * Serialize data to string.
 	 */
-	explicit Data(const std::string& xmlstring) throw(WorkflowFormatException);
-	
-	/**
-	 * Convert this into a DOMElement.
-	 * @return The DOMElement.
-	 */
-	XERCES_CPP_NAMESPACE::DOMElement* toElement(XERCES_CPP_NAMESPACE::DOMDocument* doc);
-	
-	/**
-	 * Returns the text content of the data element and its descendants.
-	 * @return A string containing only the text inside the data XML.
-	 */
-	std::string* getText();
-	
-	/** 
-	 * Convert the content of this data object into a xml string.
-	 * @return The XML string.
-	 */
-	std::string* toString() const;
+	std::string &serialize() {return _content;}
 	
 	/**
 	 * Get the type of the data. Can be
@@ -137,12 +118,15 @@ public:
 	int getType() const {return _type;}
 	
 	/**
-	 * Make a deep copy of this Data object and return a pointer to the new Data.
-	 * Note: Use delete by yourself in order to remove the new Data from memory.
-	 * @return Pointer to the cloned Data object.
+	 * Make a deep copy of this Data object and return a shared pointer to the new Data.
+	 * @return Shared pointer to the cloned Data object.
 	 */ 
-	Data* deepCopy();
+	ptr_t deepCopy();
 
+private:
+	int _type;
+    content_t _content;
+    
 };
 
 }

@@ -36,6 +36,7 @@ namespace gwes {
       
     private:
       gwdl::Workflow& _testWorkflow(std::string workflowfn, gwes::GWES &gwes);
+      WorkflowHandler::status_t _monitorWorkflow(WorkflowHandler::status_t oldStatus, WorkflowHandler* wfhP);
       gwes::GWES m_gwes; 
     };
   }

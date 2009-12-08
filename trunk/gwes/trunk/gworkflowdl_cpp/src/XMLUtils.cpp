@@ -260,15 +260,64 @@ string XMLUtils::serializeLibxml2(const xmlNodePtr node, bool pretty) {
 
 xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool validating) throw (WorkflowFormatException) {
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
-        xmlChar*duped(xmlCharStrdup(xmlstring.c_str()));
-        xmlDocPtr res(xmlParseDoc(duped));
-        xmlFree(duped);
-        return res;
+	xmlChar* duped(xmlCharStrdup(xmlstring.c_str()));
+	xmlDocPtr res(xmlParseDoc(duped));
+	xmlFree(duped);
+	return res;
 }
 
 xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool validating) throw (WorkflowFormatException) {
 	if (validating) LOG_WARN(_logger, "XMLUtils::deserialize(): Validation not yet supported for libxml2");
 	return xmlParseFile(filename.c_str());
+}
+
+void XMLUtils::trim(string& s) {
+	s.erase(s.find_last_not_of(" \t\f\v\n\r")+1).erase(0,s.find_first_not_of(" \t\f\v\n\r"));
+}
+
+/**
+ * Get the text contents of the all the xml elements
+ * that are siblings or children of a given xml node.
+ */
+string XMLUtils::getText(const string& xml) {
+	xmlDocPtr docP = deserializeLibxml2(xml,false);
+	xmlNodePtr rootElementP = xmlDocGetRootElement(docP);
+	ostringstream out;
+	getText(out,rootElementP);
+	xmlFreeDoc(docP);
+	return out.str();
+}
+
+/**
+ * Get the text contents of the all the xml elements
+ * that are siblings or children of a given xml node.
+ */
+void XMLUtils::getText(ostringstream &out, xmlNodePtr nodeP)
+{
+    xmlNodePtr cur_node = NULL;
+
+    for (cur_node = nodeP; cur_node; cur_node = cur_node->next) {
+        if (cur_node->type == XML_TEXT_NODE) {
+            out << cur_node->content;
+        }
+        getText(out, cur_node->children);
+    }
+}
+
+bool XMLUtils::endsWith(const string& s1, const string& s2) {
+	if ( s2.size() > s1.size() ) return false;
+	if ( s1.compare(s1.size()-s2.size(),s2.size(),s2 ) == 0) {
+	   return true;
+    }
+	return false;
+}
+
+bool XMLUtils::startsWith(const string& s1, const string& s2) {
+	if ( s2.size() > s1.size() ) return false;
+	if ( s1.compare(0,s2.size(),s2 ) == 0) {
+	   return true;
+    }
+	return false;
 }
 
 DOMDocument* XMLUtils::createEmptyDocument(bool gwdlnamespace)

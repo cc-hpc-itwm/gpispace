@@ -12,43 +12,54 @@ using namespace std;
 namespace gwdl
 {
 
+/**
+ * Constructor implementation.
+ */
+Libxml2Builder::Libxml2Builder() {}
+
+/**
+ * Destructor implementation.
+ */
+Libxml2Builder::~Libxml2Builder() {}
+
 // Data
-Data Libxml2Builder::deserializeData(const string& xmlstring) {
-	/// ToDo: implement!
-	return Data(xmlstring);
+const Data::ptr_t Libxml2Builder::deserializeData(const string &xmlstring) const {
+	Data::ptr_t data(new Data(xmlstring));
+	return data;
 }
 
-string Libxml2Builder::serialize(const Data& data) {
-	/// ToDo: implement!
-	Data mydata = data;
-	return "<data/>";
+const Data::content_t Libxml2Builder::serializeData(const Data::ptr_t &data) const {
+	return data->serialize();
 }
 
-// Token
-Token deserializeToken(const string& xmlstring) {
-	/// ToDo: implement!
-	string str = xmlstring;
-	return Token(true);
-}
+///dataToElement()
+///dataFromElement()
 
-string serialize(const Token& token) {
-	/// ToDo: implement!
-	Token mytoken = token;
-	return "<token/>";
-}
-
-// Place
-Place deserializePlace(const string& xmlstring) {
-	/// ToDo: implement!
-	return Place(xmlstring);
-}
-
-string serialize(const Place& place) {
-	/// ToDo: implement!
-	Place myplace = place;
-	return "<place/>";
-}
-
+//// Token
+//Token deserializeToken(const string& xmlstring) {
+//	/// ToDo: implement!
+//	string str = xmlstring;
+//	return Token(true);
+//}
+//
+//string serializeToken(const Token& token) {
+//	/// ToDo: implement!
+//	Token mytoken = token;
+//	return "<token/>";
+//}
+//
+//// Place
+//Place deserializePlace(const string& xmlstring) {
+//	/// ToDo: implement!
+//	return Place(xmlstring);
+//}
+//
+//string serializePlace(const Place& place) {
+//	/// ToDo: implement!
+//	Place myplace = place;
+//	return "<place/>";
+//}
+//
 
 } // end namespace gwdl
 

@@ -156,11 +156,10 @@ void PlaceTest::testPlace()
 		CPPUNIT_ASSERT(place1->getTokenNumber()==2);
 		vector<Token*> tokens5 = place1->getTokens();
 		for (unsigned int i=0; i<tokens5.size(); i++) {
-
-			LOG_INFO(logger, "tokens5[" << i << "].getData(): " << tokens5[i]->getData()->toString());
+			LOG_INFO(logger, "tokens5[" << i << "].getData(): " << tokens5[i]->getData()->getContent());
 		}
-		CPPUNIT_ASSERT(*(tokens5[0]->getData()->toString())=="<data><x>245.4</x></data>");   
-		CPPUNIT_ASSERT(*(tokens5[1]->getData()->toString())=="<data><y>445</y></data>");   
+		CPPUNIT_ASSERT_EQUAL(string("<data><x>245.4</x></data>"), tokens5[0]->getData()->getContent());   
+		CPPUNIT_ASSERT_EQUAL(string("<data><y>445</y></data>"), tokens5[1]->getData()->getContent());   
 		place1->removeToken(token5);
 		CPPUNIT_ASSERT(place1->getTokenNumber()==1);
 		LOG_INFO(logger, *place1);

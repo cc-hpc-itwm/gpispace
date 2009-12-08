@@ -8,6 +8,7 @@
 #include <ostream>
 //gwdl
 #include <gwdl/XMLUtils.h>
+#include <gwdl/Libxml2Builder.h>
 //tests
 #include "TestData.h"
 //fhglog
@@ -31,65 +32,69 @@ void DataTest::testData()
 	
 	LOG_INFO(logger, "test empty data token... ");
     {
-      Data emptyData;
-      CPPUNIT_ASSERT(emptyData.toElement(NULL)==NULL);
+      Data emptyData("",Data::TYPE_EMPTY);
+      CPPUNIT_ASSERT_MESSAGE("Empty data", emptyData.getContent().empty());
+      CPPUNIT_ASSERT_EQUAL_MESSAGE("Empty data type", (int) Data::TYPE_EMPTY, emptyData.getType());
     }
  
-	LOG_INFO(logger, "test xml data token from DOM element... ");
-    {
-      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
-      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
-      // <data>
-      DOMElement* dataElement = doc->createElement(X("data"));
-      // <value1>25</value1>
-      DOMElement* e1 = doc->createElement(X("value1"));
-      dataElement->appendChild(e1);
-      DOMText* e1value = doc->createTextNode(X("25"));
-      e1->appendChild(e1value);
-      // <value2>15</value1>
-      DOMElement* e2 = doc->createElement(X("value2"));
-      dataElement->appendChild(e2);
-      DOMText* e2value = doc->createTextNode(X("15"));
-      e2->appendChild(e2value);
-      
-      Data data(dataElement);
-      LOG_INFO(logger, "test data << operator ...");
-      LOG_DEBUG(logger, data);
-      LOG_INFO(logger, "test data.toString() ...");
-      string* datastr = data.toString();
-      LOG_INFO(logger, *datastr);
-      CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
-      SAFE_DELETE(datastr);
-    }
+    // ToDo: implement test for libxml2
+	LOG_WARN(logger, "ToDo: refractoring from xerces-c to libxml2!");
+	LOG_WARN(logger, "test xml data token from DOM element... - DEACTIVATED!");
+//    {
+//      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
+//      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
+//      // <data>
+//      DOMElement* dataElement = doc->createElement(X("data"));
+//      // <value1>25</value1>
+//      DOMElement* e1 = doc->createElement(X("value1"));
+//      dataElement->appendChild(e1);
+//      DOMText* e1value = doc->createTextNode(X("25"));
+//      e1->appendChild(e1value);
+//      // <value2>15</value1>
+//      DOMElement* e2 = doc->createElement(X("value2"));
+//      dataElement->appendChild(e2);
+//      DOMText* e2value = doc->createTextNode(X("15"));
+//      e2->appendChild(e2value);
+//      
+//      Data data(dataElement);
+//      LOG_INFO(logger, "test data << operator ...");
+//      LOG_DEBUG(logger, data);
+//      LOG_INFO(logger, "test data.toString() ...");
+//      string* datastr = data.toString();
+//      LOG_INFO(logger, *datastr);
+//      CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+//      SAFE_DELETE(datastr);
+//    }
 
-	LOG_INFO(logger, "test xml data token (loop) from DOM element... ");
-    {
-      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
-      // who releases this doc?
-      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
-      // <data>
-      DOMElement* dataElement = doc->createElement(X("data"));
-      // <value1>25</value1>
-      DOMElement* e1 = doc->createElement(X("value1"));
-      dataElement->appendChild(e1);
-      DOMText* e1value = doc->createTextNode(X("25"));
-      e1->appendChild(e1value);
-      // <value2>15</value1>
-      DOMElement* e2 = doc->createElement(X("value2"));
-      dataElement->appendChild(e2);
-      DOMText* e2value = doc->createTextNode(X("15"));
-      e2->appendChild(e2value);
-      
-      std::list<Data> dataList;
-      for (std::size_t numElements(0); numElements < 100000; ++numElements)
-      {
-        Data data(dataElement);
-        string* datastr = data.toString();
-        CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
-        SAFE_DELETE(datastr);
-        dataList.push_back(data);
-      }
-    }
+	LOG_WARN(logger, "ToDo: refractoring from xerces-c to libxml2!");
+	LOG_WARN(logger, "test xml data token (loop) from DOM element... - DEACTIVATED!");
+//    {
+//      DOMImplementation* impl (DOMImplementationRegistry::getDOMImplementation (X("LS")));
+//      // who releases this doc?
+//      DOMDocument* doc = impl->createDocument(0,X("workflow"),0);
+//      // <data>
+//      DOMElement* dataElement = doc->createElement(X("data"));
+//      // <value1>25</value1>
+//      DOMElement* e1 = doc->createElement(X("value1"));
+//      dataElement->appendChild(e1);
+//      DOMText* e1value = doc->createTextNode(X("25"));
+//      e1->appendChild(e1value);
+//      // <value2>15</value1>
+//      DOMElement* e2 = doc->createElement(X("value2"));
+//      dataElement->appendChild(e2);
+//      DOMText* e2value = doc->createTextNode(X("15"));
+//      e2->appendChild(e2value);
+//      
+//      std::list<Data> dataList;
+//      for (std::size_t numElements(0); numElements < 100000; ++numElements)
+//      {
+//        Data data(dataElement);
+//        string* datastr = data.toString();
+//        CPPUNIT_ASSERT((*datastr)=="<data><value1>25</value1><value2>15</value2></data>");
+//        SAFE_DELETE(datastr);
+//        dataList.push_back(data);
+//      }
+//    }
 	
 	LOG_INFO(logger, "test constructing data from string...");
     // FIXME: the problem is in the destructor of Data, it ->release() the
@@ -99,17 +104,10 @@ void DataTest::testData()
       Data data2(str);
       LOG_INFO(logger, data2);
       LOG_INFO(logger, str);
-      DOMElement* eP = data2.toElement(NULL);
-      CPPUNIT_ASSERT(eP);
-      char* name = XMLString::transcode(eP->getTagName()); 
-      CPPUNIT_ASSERT(strcmp(name,"data")==0);
-      D(name);
-//      delete [] name; // or free()?
-//      SAFE_DELETE(eP); // this fails!
+      CPPUNIT_ASSERT_EQUAL_MESSAGE("data content", str, data2.getContent());
 	}
 
-
-	///ToDo: FAILED TO DELETE data2!
+    ///ToDo: FAILED TO DELETE data2!
 	//delete data2;
 	
 	///ToDo: FAILED WITH INTEL COMPILER/// 
@@ -129,3 +127,15 @@ void DataTest::testData()
 	
     LOG_INFO(logger, "============== END DATA TEST =============");
 }
+
+void DataTest::testDeserializeSerialize() {
+	logger_t logger(getLogger("gwdl"));
+    LOG_INFO(logger, "--- BEGIN DataTest::testDeserializeSerialize()");
+	IBuilder* builderP = new Libxml2Builder();
+    string str("<data xmlns=\"http://www.gridworkflow.org/gworkflowdl\"><x>1</x><y>2</y></data>");
+	Data::ptr_t dataP = builderP->deserializeData(str);
+	string str2 = builderP->serializeData(dataP);
+	CPPUNIT_ASSERT_EQUAL(str, str2);
+    LOG_INFO(logger, "--- END DataTest::testDeserializeSerialize()");
+}
+

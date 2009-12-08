@@ -21,18 +21,28 @@ class Libxml2Builder : public IBuilder
 {
 
 public:
+	
+	/**
+	 * Constructor.
+	 */
+	Libxml2Builder();
+
+	/**
+	 * Destructor.
+	 */
+	virtual ~Libxml2Builder();
 
 	// Data
-	virtual Data deserializeData(const std::string& xmlstring);
-	virtual std::string serialize(const Data& data);
+    const Data::ptr_t deserializeData(const std::string &) const;
+    const std::string serializeData(const Data::ptr_t &) const;
 	
 	// Token
-	virtual Token deserializeToken(const std::string& xmlstring);
-	virtual std::string serialize(const Token& token);
+//	virtual Token deserializeToken(const std::string& xmlstring);
+//	virtual std::string serializeToken(const Token& token);
 	
 	// Place
-	virtual Place deserializePlace(const std::string& xmlstring);
-	virtual std::string serialize(const Place& place);
+//	virtual Place deserializePlace(const std::string& xmlstring);
+//	virtual std::string serializePlace(const Place& place);
 	
 }; // end class IBuilder
 

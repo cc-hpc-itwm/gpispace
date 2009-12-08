@@ -135,6 +135,27 @@ public:
 	 */	
 	XERCES_CPP_NAMESPACE::DOMDocument* createEmptyDocument(bool gwdlnamespace);
 
+	/**
+	 * Trim leading and trailing spaces, tabs etc. from string.
+	 */
+	static void trim(std::string& s);
+	
+	/**
+	 * Get the text contents of the all the xml elements
+	 * that are siblings or children of a given xml node.
+	 */
+	std::string getText(const std::string& xml);
+	
+	/**
+	 * Get the text contents of the all the xml elements
+	 * that are siblings or children of a given xml node.
+	 */
+	void getText(std::ostringstream &out, xmlNodePtr nodeP);
+
+	static bool endsWith(const std::string& s1, const std::string& s2);
+
+	static bool startsWith(const std::string& s1, const std::string& s2);
+	
 };
 
 }

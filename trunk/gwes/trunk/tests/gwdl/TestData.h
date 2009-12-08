@@ -16,10 +16,12 @@ namespace gwdl {
     class DataTest : public CPPUNIT_NS::TestFixture {
       CPPUNIT_TEST_SUITE( gwdl::tests::DataTest );
       CPPUNIT_TEST( testData );
+      CPPUNIT_TEST( testDeserializeSerialize );
       CPPUNIT_TEST_SUITE_END();
 
     protected:
       void testData() ;
+      void testDeserializeSerialize() ;
     };
   }
 }

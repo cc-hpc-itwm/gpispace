@@ -167,9 +167,10 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
 	}
 
-	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
-	while ((!_userabort && !_systemabort && enabledTransitions.size()> 0) 
-			|| _status == WorkflowHandler::STATUS_ACTIVE) {
+	//loop while workflow is not to abort and ( there exists enabled transitions or this workflow is still active )
+	while ( !_abort 
+			&& (enabledTransitions.size()> 0 || _status == WorkflowHandler::STATUS_ACTIVE) 
+			){
 		if (modification) {
 			LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 			<< ") --- " << enabledTransitions.size()
