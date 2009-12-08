@@ -35,10 +35,10 @@ void ParserTest::testParser()
 
 	// properties
 	LOG_INFO(logger, "  properties...");
-	wf->getProperties()->put("b_name1","value1");	
-	wf->getProperties()->put("a_name2","value2");	
+	wf->putProperty("b_name1","value1");	
+	wf->putProperty("a_name2","value2");	
 	CPPUNIT_ASSERT(wf->getProperties()->get("b_name1")=="value1");
-	
+
 	// places
 	LOG_INFO(logger, "  places...");
 	Place::ptr_t p0 = Place::ptr_t(new Place("p0"));
@@ -46,11 +46,11 @@ void ParserTest::testParser()
 	wf->addPlace(p0);
 	wf->addPlace(p1);
 	CPPUNIT_ASSERT(wf->placeCount()==2);
-	
+
 	// transition
 	LOG_INFO(logger, "  transition...");
 	Transition::ptr_t t0 = Transition::ptr_t(new Transition("t0"));
-	t0->getProperties()->put("t0-key","t0-value");
+	t0->putProperty("t0-key","t0-value");
 	// input edge from p0 to t0
 	LOG_INFO(logger, "  input edge...");
 	Edge::ptr_t arc0 = Edge::ptr_t(new Edge(Edge::SCOPE_INPUT, wf->getPlace("p0")));
@@ -64,7 +64,7 @@ void ParserTest::testParser()
 
 	// transition is not enabled
 	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==false);	
-			
+
 	// add token
 	LOG_INFO(logger, "  token...");
 	Token::ptr_t d0 = Token::ptr_t(new Token());
@@ -74,7 +74,7 @@ void ParserTest::testParser()
 
 	// transition is now enabled
 	CPPUNIT_ASSERT(wf->getTransition("t0")->isEnabled()==true);
-	
+
 	// add operation to transition
 	LOG_INFO(logger, "  operation...");
 	LOG_INFO(logger, "  set operation...");
@@ -91,33 +91,21 @@ void ParserTest::testParser()
 	opcand->setResourceName("phastgrid");
 	opcand->setSelected(true);
 	wf->getTransition("t0")->getOperation()->getOperationClass()->addOperationCandidate(opcand);
+
+	LOG_INFO(logger, "-------------- test serialize/deserialize... --------------");
+	Libxml2Builder builder;
+	string str = builder.serializeWorkflow(*wf);
+	Workflow::ptr_t wf2 = builder.deserializeWorkflow(str);
+	string str2 = builder.serializeWorkflow(*wf2);
+	LOG_INFO(logger, "original workflow:\n" << *wf);
+	LOG_INFO(logger, "serialized/deserialized workflow:\n" << *wf2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("serialize/deserialize", str, str2);
 	
-	LOG_WARN(logger, "///ToDo: Migrate to libxml2///");
-	
-//	DOMDocument* doc = wf->toDocument();
-//	string* s = XMLUtils::Instance()->serialize(doc,true);
-//	
-//	// print workflow to stdout
-//	LOG_INFO(logger, "workflow in:");
-//    LOG_INFO(logger, *s);
-//    
-//    LOG_INFO(logger, "workflow in parsing");
-//    DOMElement* n = (XMLUtils::Instance()->deserialize(*s))->getDocumentElement();
-//    //LOG_INFO(logger, "wf element: \n" << *(XMLUtils::Instance()->serialize((DOMNode*)n, true)));
-//    Workflow::ptr_t wf1 = Workflow::ptr_t(new Workflow(n);
-//    
-//    LOG_INFO(logger, "workflow out to Document");
-//    DOMDocument* doc2 = wf1->toDocument();
-//    string* s2 = XMLUtils::Instance()->serialize(doc2,true);
-//    
-//    LOG_INFO(logger, "workflow out:");
-//    LOG_INFO(logger, *s2);
-//    CPPUNIT_ASSERT(*s == *s2);
-//    
-//	delete wf;
-//	delete wf1;
-	
+	LOG_INFO(logger, "-------------- ///ToDo: test deserializeFromFile... --------------");
+	LOG_WARN(logger, "///ToDo Test fault management when deserializing invalid XML files!");
+	//deserializeFileLibxml2(fn);
+
 	LOG_INFO(logger, "============== END test PARSER =============");
-	
+
 }
 

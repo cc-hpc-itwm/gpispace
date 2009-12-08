@@ -12,7 +12,7 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 2)
 set(V_MINOR 0)
-set(V_PATCH 1)
+set(V_PATCH 2)
 
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
@@ -41,12 +41,6 @@ include(FindMscgen)
 ## find the StateMachineCompiler (SMC)
 #include(FindSMC)
 #include(SMCMacros)
-
-## find xerces-c
-Include(FindXercesC)
-IF(NOT XERCESC_FOUND)
-  message(FATAL_ERROR "No Xerces-c found, cannot continue.")
-ENDIF(NOT XERCESC_FOUND)
 
 ## find libxml2
 Include(FindXml2)

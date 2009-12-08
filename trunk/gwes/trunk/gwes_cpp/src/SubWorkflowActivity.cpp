@@ -55,7 +55,7 @@ void SubWorkflowActivity::initiateActivity() throw (ActivityException,StateTrans
 		_subworkflowP = builder.deserializeWorkflowFromFile(_subworkflowFilename);
 		// delegate simulation flag to sub workflow.
 		if (_toP->simulation) {
-			_subworkflowP->getProperties()->put("simulation","true");
+			_subworkflowP->putProperty("simulation","true");
 		}
 		setStatus(STATUS_INITIATED);
 	} catch (const WorkflowFormatException &e) {
@@ -84,18 +84,33 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 	string edgeExpression;
 	try {
 		Place::ptr_t placeP;
-		Token::ptr_t tokenCloneP;
+		
+		////////////
+		Token::ptr_t token;
+		Token::ptr_t tokenClone;
+		Data::ptr_t data;
+		Data::ptr_t dataClone;
+		///////////
 		for (parameter_list_t::iterator it=_toP->tokens.begin(); it!=_toP->tokens.end(); ++it) {
 			switch (it->scope) {
 			case (TokenParameter::SCOPE_READ):
 			case (TokenParameter::SCOPE_INPUT):
 			case (TokenParameter::SCOPE_WRITE):
 				edgeExpression = it->edgeP->getExpression();
-			LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
-			placeP = _subworkflowP->getPlace(edgeExpression);
-			tokenCloneP = it->tokenP->deepCopy(); 
-			LOG_WARN(_logger, "///ToDo: refractoring to shared_ptr!///");
-//			placeP->addToken(tokenCloneP.get());
+				LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from parent workflow to sub workflow ..."); 
+				placeP = _subworkflowP->getPlace(edgeExpression);
+				LOG_INFO(_logger, ".");
+				token = it->tokenP;
+				LOG_INFO(_logger, "token pointer: " << token);
+				LOG_INFO(_logger, *token);
+				data = token->getData();
+				LOG_INFO(_logger, "data:\n" << *data);
+				dataClone = data->deepCopy();
+				LOG_INFO(_logger, "dataClone:\n" << *dataClone);
+				tokenClone = token->deepCopy();
+				LOG_INFO(_logger, "tokenClone: " << tokenClone);
+				placeP->addToken(it->tokenP->deepCopy());
+				LOG_INFO(_logger, "..");
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	
 				continue;

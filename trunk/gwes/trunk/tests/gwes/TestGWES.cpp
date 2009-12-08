@@ -83,7 +83,7 @@ void GWESTest::testGWES()
 	opcand->setSelected(true);
 	wf->getTransition("t1")->getOperation()->getOperationClass()->addOperationCandidate(opcand);
 	
-	wf->getProperties()->put("occurrence.sequence","");
+	wf->putProperty("occurrence.sequence","");
 
 	LOG_INFO(logger, "initiate workflow ...");
     GWES m_gwes;

@@ -103,10 +103,8 @@ echo "# value=$value"
 echo "# memory=$memory"
 
 if [ $value -ge $min -a $value -le $max ]; then
-  echo "<data>" > $offsetclass
-  echo " <offsetclass>$value</offsetclass>" >> $offsetclass
-  echo " <simulation><memory><fvm>$memory</fvm></memory></simulation>" >> $offsetclass
-  echo "</data>" >> $offsetclass
+  echo "<offsetclass>$value</offsetclass>" > $offsetclass
+#  echo "<simulation><memory><fvm>$memory</fvm></memory></simulation>" >> $offsetclass
 else
   echo "ERROR: value not within range [min,max]!" 1>&2
   usage
@@ -114,9 +112,9 @@ else
 fi
 
 if [ $(($value + $step)) -gt $max ]; then
-  echo "<data><hasnext>false</hasnext></data>" > $hasnext
+  echo "<hasnext>false</hasnext>" > $hasnext
 else 
-  echo "<data><hasnext>true</hasnext></data>" > $hasnext
+  echo "<hasnext>true</hasnext>" > $hasnext
 fi
 
 if [ -n "$simulation" ]; then

@@ -28,15 +28,15 @@ void TransitionTest::testTransition()
 	logger_t logger(getLogger("gwdl"));
    LOG_INFO(logger, "============== BEGIN TRANSITION TEST =============");
    
-   LOG_INFO(logger, "test empty transition...");
+   LOG_INFO(logger, "-------------- test empty transition... --------------");
    Transition::ptr_t t0 = Transition::ptr_t(new Transition(""));
    LOG_INFO(logger, *t0);
    
-   LOG_INFO(logger, "test description...");
+   LOG_INFO(logger, "-------------- test description... --------------");
    t0->setDescription("This is the description of the transition"); 
    CPPUNIT_ASSERT(t0->getDescription()=="This is the description of the transition");
 		
-   LOG_INFO(logger, "test transition connected to four places...");
+   LOG_INFO(logger, "-------------- test transition connected to four places... --------------");
    Place::ptr_t p0 = Place::ptr_t(new Place(""));
    Place::ptr_t p1 = Place::ptr_t(new Place(""));
    Place::ptr_t p2 = Place::ptr_t(new Place(""));
@@ -50,17 +50,17 @@ void TransitionTest::testTransition()
    t0->addEdge(e2);
    t0->addEdge(e3);
    
-   LOG_INFO(logger, "test properties...");
-   t0->getProperties()->put("key1","value1");
+   LOG_INFO(logger, "-------------- test properties... --------------");
+   t0->putProperty("key1","value1");
    
-   LOG_INFO(logger, "test condition...");
+   LOG_INFO(logger, "-------------- test condition... --------------");
    t0->addCondition("true");
    
    // this is still a control transition (without operation)
    CPPUNIT_ASSERT(t0->getAbstractionLevel()==AbstractionLevel::BLACK);
 
    // link this transtion with an operation
-   LOG_INFO(logger, "test operation class...");
+   LOG_INFO(logger, "-------------- test operation class... --------------");
    Operation::ptr_t op = Operation::ptr_t(new Operation()); 
    OperationClass::ptr_t opc = OperationClass::ptr_t(new OperationClass());
    opc->setName("calculateEverything");
@@ -98,6 +98,18 @@ void TransitionTest::testTransition()
 
    LOG_INFO(logger, *t0);
    		
+   LOG_INFO(logger, "-------------- test serialize/deserialize... --------------");
+   Libxml2Builder builder;
+   Workflow::ptr_t wf = Workflow::ptr_t(new Workflow(""));
+   wf->addPlace(p0);
+   wf->addPlace(p1);
+   wf->addPlace(p2);
+   wf->addPlace(p3);
+   string str = builder.serializeTransition(*t0);
+   Transition::ptr_t t1 = builder.deserializeTransition(wf, str);
+   string str2 = builder.serializeTransition(*t1);
+   CPPUNIT_ASSERT_EQUAL_MESSAGE("serialize/deserialize", str, str2);
+
    t0.reset();
    LOG_INFO(logger, "============== END TRANSITION TEST =============");
 }

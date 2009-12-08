@@ -161,8 +161,7 @@ void TransitionOccurrence::removeInputTokens() {
 			continue;
 		case (TokenParameter::SCOPE_INPUT):
 			LOG_DEBUG(_logger, "removeInputTokens[" << getID() << "] removing token 'i" << it->tokenP->getID() << "' from place '" << it->edgeP->getPlace()->getID() << "'");
-			LOG_WARN(_logger, "///ToDo: migration to libxml2 and shared_ptr///");
-///			it->edgeP->getPlace()->removeToken(it->tokenP);
+			it->edgeP->getPlace()->removeToken(it->tokenP);
 			it->tokenP.reset();
 			break;
 		case (TokenParameter::SCOPE_WRITE):	
@@ -204,7 +203,6 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 					fault << "' has no output parameter related to the edge expression '" << it->edgeP->getExpression();
 					fault << "'</soapenv:Detail>";
 					fault << "</soapenv:Fault></data>";
-					LOG_WARN(_logger, "///ToDo: refractoring from xerces-c to libxml2!");
 					it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(fault.str()))));
 				}
 			}

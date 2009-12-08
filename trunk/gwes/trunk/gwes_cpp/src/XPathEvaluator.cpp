@@ -106,7 +106,7 @@ XPathEvaluator::XPathEvaluator(const TransitionOccurrence* toP, int step) throw 
     }
     
     LOG_DEBUG(_logger, "gwes::XPathEvaluator::XPathEvaluator(TransitionOccurrence=" << toP->getID() << "): context:"
-    		<< endl << XMLUtils::Instance()->serializeLibxml2(_xmlContextDocP,false));
+    		<< endl << XMLUtils::Instance()->serializeLibxml2Doc(_xmlContextDocP,false));
 
     // register namespaces
 	xmlXPathRegisterNs(_xmlContextP, (const xmlChar*)"gwdl", (const xmlChar*)"http://www.gridworkflow.org/gworkflowdl");
@@ -125,6 +125,7 @@ XPathEvaluator::~XPathEvaluator()
 }
 
 int XPathEvaluator::evalCondition(string& xPathExprStr) {
+	LOG_DEBUG(_logger,"evalCondition(" << xPathExprStr << ")...");
 	// create xpath expression
 	xmlChar* xPathExpressionP = xmlCharStrdup(expandVariables(xPathExprStr).c_str());
     
@@ -198,26 +199,26 @@ string XPathEvaluator::evalExpression2Xml(string& xPathExprStr) {
 	case(XPATH_UNDEFINED):
 		break;
 	case(XPATH_NODESET):
-		xml << "<data>\n";
+//		xml << "<data>\n";
 		for (int i = 0; i < xpathObjP->nodesetval->nodeNr; i++) {
-			xml << "  " << XMLUtils::Instance()->serializeLibxml2(xpathObjP->nodesetval->nodeTab[i],false);
+			xml << "  " << XMLUtils::Instance()->serializeLibxml2Node(xpathObjP->nodesetval->nodeTab[i],false);
 		}
-		xml << "</data>";
+//		xml << "</data>";
 		xmlResult = xml.str();
 		break;
 	case (XPATH_BOOLEAN): 
-		xml << "<data><boolean xmlns=\"\">";
+		xml << "<boolean xmlns=\"\">";
 		if (xpathObjP->boolval) xml << "true";
 		else xml << "false";
-		xml << "</boolean></data>"; 
+		xml << "</boolean>"; 
 		xmlResult = xml.str(); 
 		break;
 	case(XPATH_NUMBER):
-		xml << "<data><number xmlns=\"\">" << xpathObjP->floatval << "</number></data>"; 
+		xml << "<number xmlns=\"\">" << xpathObjP->floatval << "</number>"; 
 		xmlResult = xml.str(); 
 		break;
 	case(XPATH_STRING):
-		xml << "<data><string xmlns=\"\">" << xpathObjP->stringval << "</string></data>"; 
+		xml << "<string xmlns=\"\">" << xpathObjP->stringval << "</string>"; 
 		xmlResult = xml.str(); 
 		break;
 	case(XPATH_POINT):
@@ -315,8 +316,8 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token::ptr_
 		if (xmldoc != NULL) {
 			// copy children from one document to the other.
 			// search for <data> element
-			xmlNodePtr dataElementP = xmlDocGetRootElement(xmldoc)->children; 
-			while (dataElementP != NULL && dataElementP->type != XML_ELEMENT_NODE) dataElementP = dataElementP->next;
+			xmlNodePtr dataElementP = xmlDocGetRootElement(xmldoc); 
+//			while (dataElementP != NULL && dataElementP->type != XML_ELEMENT_NODE) dataElementP = dataElementP->next;
 			if (dataElementP == NULL) {
 				// missing data element
 				ostringstream message; 

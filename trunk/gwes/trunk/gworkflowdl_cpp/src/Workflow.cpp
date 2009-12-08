@@ -120,6 +120,13 @@ Transition::ptr_t Workflow::getTransition(unsigned int i) throw (NoSuchWorkflowE
 	return _transitions[i];
 }
 
+void Workflow::putProperty(const string& name, const string& value) {
+	if (_propertiesP == NULL) {
+		_propertiesP = Properties::ptr_t(new Properties());
+	}
+	_propertiesP->put(name,value);
+}
+
 /**
  * return the workflow's enabled _transitions as vector.
  * @return vector of enabled _transitions.

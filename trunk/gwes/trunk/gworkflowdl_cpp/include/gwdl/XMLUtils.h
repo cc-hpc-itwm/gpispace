@@ -8,13 +8,10 @@
 #define XMLUTILS_H_
 // gwdl
 #include <gwdl/WorkflowFormatException.h>
-#include <gwdl/XMLDOMErrorHandler.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // libxml2
 #include <libxml/xpathInternals.h>
-//xerces
-#include <xercesc/dom/DOM.hpp>
 // std
 #include <ostream>
 #include <string>
@@ -32,10 +29,7 @@ class XMLUtils
 {
 private:
 	static XMLUtils* _instance;
-	XMLDOMErrorHandler* _errorHandler;
 	fhg::log::logger_t _logger;
-	int initializeXerces();
-	void terminateXerces();
 	int initializeLibxml2();
 	void terminateLibxml2();
 
@@ -58,61 +52,25 @@ public:
 	virtual ~XMLUtils();
 	
 	/**
-	 * Serialize the DOMNode to an ostream.
-	 * @param os The output stream.
-	 * @param node The DOM node to serialize.
-	 * @param pretty Format pretty print
-	 * @return The output stream. 
-	 */
-	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
-	
-	/**
-	 * Xerces: Serialize the DOMDocument to an ostream.
-	 * @param os The output stream.
-	 * @param doc The DOM document to serialize.
-	 * @param pretty Format pretty print
-	 * @return The output stream. 
-	 */
-	std::ostream& serialize (std::ostream& os, const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty);
-
-	/**
-	 * Xerces: Serialize the DOMNode to a string.
-	 * @param node The DOM node to serialize.
-	 * @param pretty Format pretty print
-	 * @return The xml string. 
-	 */
-	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMNode* node, bool pretty);
-
-	/**
-	 * Xerces: Serialize the DOMDocument to a string.
-	 * @param node The DOM document to serialize.
-	 * @param pretty Format pretty print
-	 * @return The xml string. 
-	 */
-	std::string* serialize (const XERCES_CPP_NAMESPACE::DOMDocument* doc, bool pretty); 
-	
-	/**
-	 * Xerces: Deserialize the DOMNode from an XML string.
-	 * @param xmlstring The XML string containing a node.
-	 * @return The corresponding DOMNode.
-	 */
-	XERCES_CPP_NAMESPACE::DOMDocument* deserialize (const std::string& xmlstring, bool validating = false) throw (WorkflowFormatException);
-
-	/**
 	 * Libxml2: Serialize the DOMDocument to a string.
 	 * @param doc The DOM document to serialize.
 	 * @param pretty Format pretty print
 	 * @return The xml string. 
 	 */
-	std::string serializeLibxml2 (const xmlDocPtr doc, bool pretty); 
+	std::string serializeLibxml2Doc (const xmlDocPtr doc, bool pretty); 
 	
 	/**
-	 * Libxml2: Serialize DOM node to a string.
-	 * @param node The DOM node to serialize.
-	 * @param pretty Format pretty print
-	 * @return The xml string. 
-	 */
-	std::string serializeLibxml2 (const xmlNodePtr node, bool pretty); 
+	 * Serializes a single XML node to string.
+	 * If node points to a list of several nodes, only the first node is serialized.
+	 */ 
+	std::string serializeLibxml2Node(const xmlNodePtr node, bool pretty);
+
+    /**
+	 * Serializes XML node or list of nodes to string.
+	 * If node points to a list of several nodes, each node is serialized
+	 * separately as one document and concatenated to one string.
+	 */ 
+	std::string serializeLibxml2NodeList(const xmlNodePtr node, bool pretty);
 
 	/**
 	 * Libxml2: Deserialize the xmlDocPtr from an XML string.
@@ -128,13 +86,6 @@ public:
 	 */
 	xmlDocPtr deserializeFileLibxml2(const std::string& filename, bool validating = false) throw (WorkflowFormatException);
 	
-	/**
-	 * Creates an empty document.
-	 * @param gwdlnamespace Set to <code>true</code> if you want to use the GWorkflowDL namespace.
-	 * @return The document.
-	 */	
-	XERCES_CPP_NAMESPACE::DOMDocument* createEmptyDocument(bool gwdlnamespace);
-
 	/**
 	 * Trim leading and trailing spaces, tabs etc. from string.
 	 */

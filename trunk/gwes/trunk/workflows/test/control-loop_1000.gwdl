@@ -2,7 +2,7 @@
 <workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd" ID="No_ID">
   <!-- $Id: gworkflowdl_control-loop-with-read-edge.xml 1316 2009-05-28 09:53:39Z andreas.hoheisel@first.fraunhofer.de $ -->
   <description>loop that counts from 0 to 1000</description>
-  <property name="occurrence.sequence" />
+  <!-- property name="occurrence.sequence" / -->
   <place ID="counter">
     <token>
       <data>

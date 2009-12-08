@@ -35,7 +35,6 @@
 using namespace std;
 using namespace gwdl;
 using namespace fhg::log;
-XERCES_CPP_NAMESPACE_USE
 
 #define TEST_ALL true
 

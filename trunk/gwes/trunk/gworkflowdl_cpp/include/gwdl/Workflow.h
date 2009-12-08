@@ -38,8 +38,8 @@ namespace gwdl
  *	assert(wf->getDescription()=="This is the description of the workflow") ;
  *
  *	// add properties
- *	wf->getProperties()->put("b_name1","value1");	
- *	wf->getProperties()->put("a_name2","value2");	
+ *	wf->putProperty("b_name1","value1");	
+ *	wf->putProperty("a_name2","value2");	
  *	assert(wf->getProperties()->get("b_name1")=="value1");
  *	
  *	// add places
@@ -296,17 +296,27 @@ public:
 	/**
 	 * Get the properties of this workflow.
 	 * You can use this method to modify properties.
-	 * @return A shared pointer to the workflow properties.
+	 * Returns NULL if there are no properties. 
+	 * @return A shared pointer to the workflow properties or NULL if there are no properties.
 	 */
     Properties::ptr_t getProperties() {return _propertiesP;}
 
 	/**
 	 * Get the properties of this workflow for read-only.
-	 * @return A read-only shared pointer to the workflow properties.
+	 * Returns NULL if there are no properties. 
+	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
     const Properties::ptr_t readProperties() const {return _propertiesP;}
 
-    /**
+	/**
+	 * Put new name/value pair into properties.
+	 * Overwrites old property with same name. Generates new Property map if required. 
+	 * @param name The name of the property.
+	 * @param value The value of the property.
+	 */
+	void putProperty(const std::string& name, const std::string& value);
+
+	/**
 	 * Set all the properties of this workflow.
 	 * @param _properties The workflow properties.
 	 */

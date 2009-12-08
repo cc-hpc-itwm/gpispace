@@ -48,7 +48,7 @@ class Workflow;
  * t0->addEdge(e2);
  *
  * // add a property  
- * t0->getProperties()->put("key1","value1");
+ * t0->putProperty("key1","value1");
  *
  * // add a condition  
  * t0->addCondition("true");
@@ -166,16 +166,26 @@ public:
 
 	/**
 	 * Get a shared pointer to the properties of this transition.
-	 * @return A shared pointer to the properties.
+	 * Returns NULL if there are no properties. 
+	 * @return A shared pointer to the transition properties or NULL if there are no properties.
 	 */
     Properties::ptr_t getProperties() {return _propertiesP;}
 
 	/**
 	 * Get a read-only shared pointer to the properties of this transition.
-	 * @return A read-only shared pointer to the properties.
+	 * Returns NULL if there are no properties. 
+	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
     const Properties::ptr_t readProperties() const {return _propertiesP;}
-
+    
+	/**
+	 * Put new name/value pair into properties.
+	 * Overwrites old property with same name. Generates new Property map if required. 
+	 * @param name The name of the property.
+	 * @param value The value of the property.
+	 */
+	void putProperty(const std::string& name, const std::string& value);
+	
     /**
      * add an Edge.
      * @param edge Edge to be added

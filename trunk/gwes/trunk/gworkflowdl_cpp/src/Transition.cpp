@@ -61,6 +61,13 @@ void Transition::addEdge(Edge::ptr_t edgeP) {
 	}
 }
 
+void Transition::putProperty(const string& name, const string& value) {
+	if (_propertiesP == NULL) {
+		_propertiesP = Properties::ptr_t(new Properties());
+	}
+	_propertiesP->put(name,value);
+}
+
 bool Transition::isEnabled() {
 	// check read edges
 	for(ITR_Edges it=_readEdges.begin(); it!=_readEdges.end(); ++it) {
