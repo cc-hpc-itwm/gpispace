@@ -151,7 +151,7 @@ void TokenTest::testToken()
 
 	LOG_INFO(logger, "-------------- testDeserializeSerialize() loop... --------------");
 	time_t before = time (NULL);
-	for (unsigned int i=0; i<10000; i++) {
+	for (unsigned int i=0; i<100; i++) {
 		ostringstream oss;
 		oss << "<token><data><i>" << i << "</i></data></token>";
 		tokenP = builder.deserializeToken(oss.str());

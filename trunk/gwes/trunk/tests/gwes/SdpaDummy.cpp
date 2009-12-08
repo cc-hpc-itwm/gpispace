@@ -253,6 +253,10 @@ workflow_id_t SdpaDummy::submitWorkflow(workflow_t::ptr_t workflowP) {
 	return workflowId;
 }
 
+void SdpaDummy::removeWorkflow(const workflow_id_t &workflowId) {
+    _gwesP->removeWorkflow(workflowId);
+}
+
 SdpaDummy::ogsa_bes_status_t SdpaDummy::getWorkflowStatus(workflow_id_t workflowId) {
 	return _wfStatusMap.find(workflowId)->second;
 }

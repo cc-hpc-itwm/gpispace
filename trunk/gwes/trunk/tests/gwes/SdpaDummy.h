@@ -42,6 +42,7 @@ public:
 	// helper method
 	gwes::workflow_id_t submitWorkflow(gwes::workflow_t::ptr_t workflowP);
 	ogsa_bes_status_t getWorkflowStatus(gwes::workflow_id_t workflowId);
+	void removeWorkflow(const gwes::workflow_id_t &workflowId);
 
 private:
 	sdpa2gwes_t* _gwesP;

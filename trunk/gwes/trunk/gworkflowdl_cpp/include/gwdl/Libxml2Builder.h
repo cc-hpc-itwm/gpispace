@@ -84,6 +84,7 @@ public:
 
 	// libxml2-specific
 	Properties elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	std::pair<std::string,std::string> elementToProperty(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr propertiesToElements(const Properties& props) const;
 	
     //////////////////////////

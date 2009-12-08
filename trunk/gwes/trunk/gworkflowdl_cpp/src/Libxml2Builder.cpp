@@ -142,9 +142,9 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
 
     if (checkElementName(curNodeP, "token")) {            // <token>
         curNodeP = nextElementNode(curNodeP->children);
-    	Properties props = elementsToProperties(curNodeP); // <property> ...
+    	Properties props;                                 // <property> ...
     	while (checkElementName(curNodeP, "property")) {
-    		// skip all property elements, they have been already processed.
+   	    	props.insert( elementToProperty(curNodeP) );
     		curNodeP = nextElementNode(curNodeP->next); 
     	}
     	
@@ -152,10 +152,12 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
         	curNodeP = nextElementNode(curNodeP->children);
         	if (curNodeP == NULL) {                               // empty data
         		Data::ptr_t dataP = Data::ptr_t(new Data(""));
-        		tokenP.reset(new Token(props,dataP));
+        		if (props.empty()) tokenP.reset(new Token(dataP));
+        		else tokenP.reset(new Token(props,dataP));
         	} else {                                              // data with content element
         		Data::ptr_t dataP = elementToData(curNodeP);
-        		tokenP.reset(new Token(props,dataP));
+        		if (props.empty()) tokenP.reset(new Token(dataP));
+        		else tokenP.reset(new Token(props,dataP));
         		// check for multiple children of <data> (MUST be single child!)
         		curNodeP = nextElementNode(curNodeP->next);
         		if (curNodeP != NULL) {
@@ -166,9 +168,11 @@ Token::ptr_t Libxml2Builder::elementToToken(const xmlNodePtr nodeP) const throw 
         } else if (checkElementName(curNodeP, "control")) {     // <control>
         	curNodeP = nextTextNode(curNodeP->children);
         	if ( xmlStrcmp(curNodeP->content,BAD_CAST "true")==0 ) {
-        		tokenP.reset(new Token(props,Token::CONTROL_TRUE));
+        		if (props.empty()) tokenP.reset(new Token(Token::CONTROL_TRUE));
+        		else tokenP.reset(new Token(props,Token::CONTROL_TRUE));
         	} else if ( xmlStrcmp(curNodeP->content,BAD_CAST "false")==0 ) {
-        		tokenP.reset(new Token(props,Token::CONTROL_FALSE));
+        		if (props.empty()) tokenP.reset(new Token(Token::CONTROL_FALSE));
+        		else tokenP.reset(new Token(props,Token::CONTROL_FALSE));
         	} else {
             	LOG_ERROR(_logger, "Invalid text content of element <control>! MUST be \"true\" or \"false\" but is \"" << curNodeP->content << "\"");
             	throw WorkflowFormatException("Invalid text content of element <control>! MUST be \"true\" or \"false\"");
@@ -243,25 +247,25 @@ string Libxml2Builder::serializeProperties(const Properties& props) const {
 
 Properties Libxml2Builder::elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
     xmlNodePtr curNodeP = nodeP;
-    xmlNodePtr textNodeP;
     curNodeP = nextElementNode(curNodeP);
     Properties props;
-    while(curNodeP) {
-    	if (checkElementName(curNodeP, "property")) {
-    		string name = string((const char*) xmlGetProp(curNodeP, BAD_CAST "name")); 
-    		textNodeP = nextTextNode(curNodeP->children);
-    		if (textNodeP == NULL) {
-    			props.put( name, string("") );
-    		} else {
-    			string text = string( (const char*) textNodeP->content);
-        		props.put( name, text ); 
-    		}
-    	} else if (!props.empty()) { // there MUST NOT be any other element between property elements!
-    		break;
-    	}
+    while(checkElementName(curNodeP, "property")) {
+    	props.insert( elementToProperty(curNodeP) );
     	curNodeP = nextElementNode(curNodeP->next);
     }
     return props;
+}
+
+pair<string,string> Libxml2Builder::elementToProperty(const xmlNodePtr nodeP) const throw (WorkflowFormatException) {
+	if (checkElementName(nodeP, "property")) {
+		string name = string((const char*) xmlGetProp(nodeP, BAD_CAST "name")); 
+		xmlNodePtr textNodeP = nextTextNode(nodeP->children);
+		string value = string( (textNodeP) ? (const char*) textNodeP->content : "" );
+		return pair<string,string>(name,value);
+	} else {
+		LOG_ERROR(_logger, "Element <property> not found!");
+		throw WorkflowFormatException("Element <property> not found!"); 
+	}
 }
 
 xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
@@ -374,11 +378,8 @@ Place::ptr_t Libxml2Builder::elementToPlace(const xmlNodePtr nodeP) const throw 
 	    }
 	    
 		// <property>
-		// extract all property elements
-		Properties props = elementsToProperties(curNodeP);         
-		if (!props.empty()) placeP->setProperties(props);
 		while(curNodeP && checkElementName(curNodeP, "property")) {           
-			// do nothing, properties have already been extracted before
+			placeP->getProperties().insert( elementToProperty(curNodeP) );
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 	    
@@ -920,11 +921,8 @@ Transition::ptr_t Libxml2Builder::elementToTransition(Workflow::ptr_t wfP, const
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <property>
-		// extract all property elements
-		Properties props = elementsToProperties(curNodeP);         
-		if (!props.empty()) transitionP->setProperties(props);
 		while(curNodeP && checkElementName(curNodeP, "property")) {           
-			// do nothing, properties have already been extracted before
+			transitionP->getProperties().insert( elementToProperty(curNodeP) );
 			curNodeP = nextElementNode(curNodeP->next);
 		} 
 		// <readPlace>
@@ -1135,11 +1133,8 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 			curNodeP = nextElementNode(curNodeP->next);
 		}
 		// <property>
-		// extract all property elements
-		Properties props = elementsToProperties(curNodeP);         
-		if (!props.empty()) workflowP->setProperties(props);
-		while(curNodeP && checkElementName(curNodeP, "property")) {           
-			// do nothing, properties have already been extracted before
+		while(curNodeP && checkElementName(curNodeP, "property")) {
+			workflowP->getProperties().insert( elementToProperty(curNodeP) );
 			curNodeP = nextElementNode(curNodeP->next);
 		} 
 		
