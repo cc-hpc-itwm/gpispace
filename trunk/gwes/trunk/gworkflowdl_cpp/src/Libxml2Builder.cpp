@@ -269,10 +269,10 @@ pair<string,string> Libxml2Builder::elementToProperty(const xmlNodePtr nodeP) co
 }
 
 xmlNodePtr Libxml2Builder::propertiesToElements(const Properties& props) const {
-	xmlNodePtr firstNodeP;
-	xmlNodePtr lastNodeP;
-	xmlNodePtr curNodeP;
-	xmlNodePtr textNodeP;
+	xmlNodePtr firstNodeP = 0;
+	xmlNodePtr lastNodeP = 0;
+	xmlNodePtr curNodeP = 0;
+	xmlNodePtr textNodeP = 0;
 	bool first = true;
 	for(CITR_Properties it = props.begin(); it != props.end(); ++it) {
 		curNodeP = xmlNewNode(_nsGworkflowdlP, BAD_CAST "property");
@@ -807,7 +807,7 @@ Edge::ptr_t Libxml2Builder::elementToEdge(Workflow::ptr_t wfP, const xmlNodePtr 
 xmlNodePtr Libxml2Builder::edgeToElement(const Edge &edge) const {
 
 	// <readPlace>, <inputPlace>, <writePlace>, <outputPlace>
-	const char* elementName;
+	const char* elementName = 0;
 	switch(edge.getScope()) {
 	case(Edge::SCOPE_READ):
 		elementName = "readPlace";
