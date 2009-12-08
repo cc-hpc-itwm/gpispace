@@ -48,7 +48,7 @@ Activity::~Activity() {
  * Generates workflow object that corresponds to this activity.
  */
 gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception) {
-	LOG_INFO(_logger, "transforming activity " << _id << " to workflow object...");
+	LOG_DEBUG(_logger, "transforming activity " << _id << " to workflow object...");
 
 	gwdl::Workflow::ptr_t subworkflowP;
 	
@@ -99,7 +99,7 @@ gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception)
 				case (TokenParameter::SCOPE_INPUT):
 				case (TokenParameter::SCOPE_WRITE):
 					edgeExpression = it->edgeP->getExpression();
-					LOG_INFO(_logger, _id << ": copy token " << it->tokenP->getID() << " from activity to sub workflow ..."); 
+					LOG_DEBUG(_logger, _id << ": copy token " << it->tokenP->getID() << " from activity to sub workflow ..."); 
 					placeP = subworkflowP->getPlace(edgeExpression);
 					tokenCloneP = it->tokenP->deepCopy();
 					placeP->addToken(tokenCloneP);

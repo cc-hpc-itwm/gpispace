@@ -301,7 +301,7 @@ void XPathEvaluator::addTokenToContext(const string& edgeExpression, Token::ptr_
 			try {
 				xmldoc = utilsP->deserializeFileLibxml2(fn);
 			} catch (const WorkflowFormatException &e) {
-				LOG_INFO(_logger, "file '" << fn << "' skipped because it is not in wellformed XML format (" << e.what() << ").");
+				LOG_WARN(_logger, "file '" << fn << "' skipped because it is not in wellformed XML format (" << e.what() << ").");
 			}
 			if (xmldoc) {      // file in XML format
 				// contentsDocP will not be needed, because contents has been parsed from XML file.

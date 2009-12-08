@@ -82,7 +82,7 @@ Workflow::ptr_t GWES::initiate(const string& gworkflowdl, const string& userId) 
  */
 string GWES::initiate(gwdl::Workflow::ptr_t workflowP, const string& userId) throw(StateTransitionException)
 {
-	LOG_INFO(_logger, "initiate() ... ");
+	LOG_DEBUG(_logger, "initiate() ... ");
 	WorkflowHandler* wfhP = new WorkflowHandler(this,workflowP,userId);
 	return _wfht.put(wfhP);
 }
@@ -243,7 +243,7 @@ string GWES::getSerializedWorkflow(Workflow::ptr_t workflowP) {
  * @return A reference to the current workflow description as string.
  */
 string GWES::getSerializedWorkflow(const string& workflowId) {
-	LOG_INFO(_logger, "getSerializedWorkflow(" << workflowId << ") ... ");
+	LOG_DEBUG(_logger, "getSerializedWorkflow(" << workflowId << ") ... ");
 	WorkflowHandler* wfhP = _wfht.get(workflowId);
 	return getSerializedWorkflow(wfhP->getWorkflow());
 }
@@ -419,6 +419,7 @@ void GWES::activityCanceled(const workflow_id_t &workflowId, const activity_id_t
  */
 void GWES::registerHandler(Gwes2Sdpa *sdpa) {
     mutex_lock lock(monitor_lock_);
+	LOG_DEBUG(_logger, "handler registered: " << sdpa);
 	_sdpaHandler = sdpa;
 }
 
@@ -443,6 +444,7 @@ void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
 workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) { //(WorkflowFormatException) {
     mutex_lock lock(monitor_lock_);
 	string workflowId = initiate(workflowP,"sdpa");
+	LOG_INFO(_logger, "workflow submitted: " << workflowId);
 	start(workflowId);
 	return workflowId;
 }
@@ -468,6 +470,7 @@ void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
     mutex_lock lock(monitor_lock_);
+	LOG_INFO(_logger, "request to cancel workflow " << workflowId << " received");
     try {
     	abort(workflowId);
     } catch (const NoSuchWorkflowException &nswfe) {
