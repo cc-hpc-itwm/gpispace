@@ -43,16 +43,22 @@ public:
 	 */
 	virtual ~Libxml2Builder();
 
-	// Data - Interface IBuilder
+	//////////////////////////
+	// Data
+	//////////////////////////
+	// Interface IBuilder
     const Data::ptr_t deserializeData(const std::string &) const;
     const std::string serializeData(const Data::ptr_t &) const;
-  	// Data - libxml2-specific
+  	// libxml2-specific
     const xmlNodePtr dataToElement(const Data &data) const; 
 
-    // Token - Interface IBuilder
+    //////////////////////////
+    // Token
+    //////////////////////////
+    // Interface IBuilder
 	const Token::ptr_t deserializeToken(const std::string&) const;
 	const std::string serializeToken(const Token::ptr_t &) const;
-	// Token - libxml2-specific
+	// libxml2-specific
 	const std::string serializeToken(const Token &) const;
 	const Token::ptr_t elementToToken(const xmlNodePtr nodeP) const;
 	const xmlNodePtr tokenToElement(const Token &) const;
@@ -60,6 +66,10 @@ public:
 }; // end class IBuilder
 
 } // end namespace gwdl
+
+//////////////////////////
+// << operators
+//////////////////////////
 
 // Data
 std::ostream& operator<< (std::ostream &out, gwdl::Data &data);
