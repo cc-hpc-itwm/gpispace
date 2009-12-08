@@ -81,7 +81,7 @@ gwdl::Workflow::ptr_t Activity::transform2Workflow() const throw(std::exception)
         		gwdl::Libxml2Builder builder;
         		subworkflowP = builder.deserializeWorkflowFromFile(*path);
         		if (subworkflowP == NULL) {
-        			throw gwdl::WorkflowFormatException("gwd::Workflow("+*path+") returned NULL pointer");
+        			throw gwdl::WorkflowFormatException("deservializeWorkflowFromFile(" + *path + ") returned NULL pointer");
         		}
         		break; // take the first valid sub-workflow for now...
         	} catch (const gwdl::WorkflowFormatException &e) {
