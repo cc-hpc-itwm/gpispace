@@ -103,20 +103,6 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
-## find xerces-c
-Include(FindXercesC)
-IF(NOT XERCESC_FOUND)
-  message(FATAL_ERROR "No Xerces-c found, cannot continue.")
-ENDIF(NOT XERCESC_FOUND)
-include_directories(${XERCERC_INCLUDE_DIRS})
-
-## find libxml2
-Include(FindXml2)
-IF(NOT LIBXML2_FOUND)
-  message(FATAL_ERROR "No libxml2 found, cannot continue.")
-ENDIF(NOT LIBXML2_FOUND)
-include_directories(${LIBXML2_INCLUDE_DIRS})
-
 # GWES/GWDL
 include(FindGwes)
 # check for gwes/gwdl

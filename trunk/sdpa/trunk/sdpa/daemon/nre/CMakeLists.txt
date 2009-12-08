@@ -3,17 +3,17 @@
 file(GLOB hdrs *.hpp)
 file(GLOB srcs *.cpp)
 
-ADD_LIBRARY(sdpa-nre ${hdrs} ${srcs})
+ADD_LIBRARY(sdpa-nre ${srcs})
 
 if (USE_SMC_SC)
-	add_dependencies(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC)
 	target_link_libraries(sdpa-nre sdpa-daemon sdpa-daemonFSM_SMC) 
 endif (USE_SMC_SC)
 
 if (USE_BOOST_SC)
-	add_dependencies(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_BSC)
 	target_link_libraries(sdpa-nre sdpa-daemon sdpa-daemonFSM_BSC) 
 endif (USE_BOOST_SC)
+
+target_link_libraries(sdpa-nre dl)
 
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon/nre)
 install(TARGETS sdpa-nre ARCHIVE DESTINATION lib)
