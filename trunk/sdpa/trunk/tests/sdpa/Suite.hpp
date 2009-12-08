@@ -46,6 +46,8 @@ namespace sdpa { namespace tests {
       // obsolete tests!
       // these tests are running only when the slave posts requests (pull modell)
       /*
+      // obsolete tests!
+      // these tests are running only when the slave posts requests (pull modell)
       suiteOfTests->addTest( DaemonDummyGwesTest::suite() );
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
       suiteOfTests->addTest( D2DDummyGwesTest::suite() );
