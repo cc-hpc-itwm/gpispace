@@ -73,10 +73,13 @@ namespace sdpa { namespace wf { namespace glue {
       }
 
       wrapped.data(gtok.getData()->getContent());
-      for (gtok_properties_t::const_iterator prop(gtok.getProperties()->begin()); prop != gtok.getProperties()->end(); ++prop)
-      {
-        wrapped.properties().put(prop->first, prop->second);
-      }
+	  if (gtok.getProperties())
+	  {
+		for (gtok_properties_t::const_iterator prop(gtok.getProperties()->begin()); prop != gtok.getProperties()->end(); ++prop)
+		{
+		  wrapped.properties().put(prop->first, prop->second);
+		}
+	  }
       if (! wrapped.properties().has_key("datatype"))
       {
         DLOG(DEBUG, "fixing datatype information of Token, assuming string type");
@@ -103,7 +106,7 @@ namespace sdpa { namespace wf { namespace glue {
       gwdl::Token *tok = new gwdl::Token( (control_value ? gwdl::Token::CONTROL_TRUE : gwdl::Token::CONTROL_FALSE) );
       for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
       {
-        (*tok->getProperties())[prop->first] = prop->second;
+		tok->putProperty(prop->first, prop->second);
       }
       return tok;
     }
@@ -115,7 +118,7 @@ namespace sdpa { namespace wf { namespace glue {
       // update all known properties, this also includes the data type
       for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
       {
-        (*tok->getProperties())[prop->first] = prop->second;
+		tok->putProperty(prop->first, prop->second);
       }
       return tok;
     }
@@ -256,15 +259,15 @@ namespace sdpa { namespace wf { namespace glue {
       sdpa::token_list_t tokens;
       for (gwdl::token_list_t::const_iterator a_token(gwdl_tokens.begin()); a_token != gwdl_tokens.end(); ++a_token)
       {
-        gwdl::Token *gwdl_token = dynamic_cast<gwdl::Token*>(a_token->get());
-        if (gwdl_token)
-        {
-          tokens.push_back(wrap(*gwdl_token));
-        }
-        else
-        {
-          LOG(ERROR, "the gwdl::token_list did not contain gwdl::Token, ignoring this one.");
-        }
+//        gwdl::Token *gwdl_token = dynamic_cast<gwdl::Token*>(a_token->get());
+//        if (gwdl_token)
+//        {
+          tokens.push_back(wrap(**a_token));
+//        }
+//        else
+//        {
+//          LOG(ERROR, "the gwdl::token_list did not contain gwdl::Token, ignoring this one.");
+//        }
       }
 
       result.insert(std::make_pair(place_name, tokens));
