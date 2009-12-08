@@ -119,11 +119,15 @@ xmlDocPtr XMLUtils::deserializeLibxml2(const std::string& xmlstring, bool valida
 	mutex_lock lock(_lock);
 	xmlDocPtr res(xmlParseDoc(duped));
 	xmlFree(duped);
-	xmlErrorPtr error = xmlGetLastError();
-	if (error) {
+	if (!res) {
+		xmlErrorPtr error = xmlGetLastError();
 		ostringstream message;
-		message << "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
-		xmlResetError(error);
+		if (error) {
+			message << "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
+			xmlResetError(error);
+		} else {
+			message << "XML ERROR: Unkown error ";
+		}
 		LOG_ERROR(_logger, message.str() << "when parsing:\n" << xmlstring);
 		throw WorkflowFormatException(message.str());
 	} 
@@ -135,11 +139,15 @@ xmlDocPtr XMLUtils::deserializeFileLibxml2(const std::string& filename, bool val
 	LOG_DEBUG(_logger, "xmlParseFile("<< filename.c_str() <<") ...");
 	mutex_lock lock(_lock);
 	xmlDocPtr docP = xmlParseFile(filename.c_str());
-	xmlErrorPtr error = xmlGetLastError();
-	if (error) {
+	if (!docP) {
+		xmlErrorPtr error = xmlGetLastError();
 		ostringstream message;
-		message << "XML ERROR (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
-		xmlResetError(error);
+		if (error) {
+			message << "XML ERROR when parsing file '" << filename << "' (line:" << error->line << "/column:" << error->int2 << "): " << error->message;
+			xmlResetError(error);
+		} else {
+			message << "XML ERROR: Unkown error when parsing file '" << filename << "'";
+		}
 		LOG_ERROR(_logger, message.str());
 		throw WorkflowFormatException(message.str());
 	} 
