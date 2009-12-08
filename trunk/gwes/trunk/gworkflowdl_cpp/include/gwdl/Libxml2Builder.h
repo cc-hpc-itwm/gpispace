@@ -83,7 +83,7 @@ public:
 	std::string serializeProperties(const Properties& props) const;
 
 	// libxml2-specific
-	Properties::ptr_t elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
+	Properties elementsToProperties(const xmlNodePtr nodeP) const throw (WorkflowFormatException);
 	xmlNodePtr propertiesToElements(const Properties& props) const;
 	
     //////////////////////////

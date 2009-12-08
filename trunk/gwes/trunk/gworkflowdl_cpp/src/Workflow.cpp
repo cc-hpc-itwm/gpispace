@@ -158,10 +158,7 @@ Transition::ptr_t& Workflow::getTransition(unsigned int i) throw (NoSuchWorkflow
 }
 
 void Workflow::putProperty(const string& name, const string& value) {
-	if (_propertiesP == NULL) {
-		_propertiesP = Properties::ptr_t(new Properties());
-	}
-	_propertiesP->put(name,value);
+	_properties.put(name,value);
 }
 
 /**

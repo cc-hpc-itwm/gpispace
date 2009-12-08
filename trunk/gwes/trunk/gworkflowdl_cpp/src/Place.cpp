@@ -109,23 +109,20 @@ const string& Place::getDescription() const {
 	return _description;	
 }
 
-void Place::setProperties(Properties::ptr_t& propertiesP) {
-	_propertiesP = propertiesP;
+void Place::setProperties(Properties& properties) {
+	_properties = properties;
 }
 
 void Place::putProperty(const string& name, const string& value) {
-	if (_propertiesP == NULL) {
-		_propertiesP = Properties::ptr_t(new Properties());
-	}
-	_propertiesP->put(name,value);
+	_properties.put(name,value);
 }
 
-Properties::ptr_t& Place::getProperties() {
-	return _propertiesP;	
+Properties& Place::getProperties() {
+	return _properties;	
 }
 
-const Properties::ptr_t& Place::readProperties() const {
-	return _propertiesP;
+const Properties& Place::readProperties() const {
+	return _properties;
 }
 
 void Place::lockToken(Token::ptr_t& tokenP, Transition* transitionP) {

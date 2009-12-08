@@ -133,16 +133,17 @@ void PlaceTest::testPlace()
 		// should generate place ID "pX".
 		CPPUNIT_ASSERT(placeP->getID().size() > 0);
 		CPPUNIT_ASSERT(placeP->getID().substr(0,1) == "p");
-		Properties::ptr_t propsP = Properties::ptr_t(new Properties());
-		propsP->put("k1","v1");
-		propsP->put("k2","v2");
-		Properties::ptr_t propsCloneP = propsP->deepCopy(); 
-		placeP->setProperties(propsCloneP);
-		Properties::ptr_t propsPb = placeP->getProperties();
-		propsP->put("k3", "v3");  // should be ignored!
-		propsPb->put("k3b","v3b"); // should change the properties!
-		LOG_INFO(logger, "\n" << *propsPb);
-		CPPUNIT_ASSERT(placeP->getProperties()->size()==3);
+		Properties props;
+		props.put("k1","v1");
+		props.put("k2","v2");
+		Properties* propsCloneP = props.deepCopy(); 
+		placeP->setProperties(*propsCloneP);
+		Properties& propsb = placeP->getProperties();
+		props.put("k3", "v3");  // should be ignored!
+		propsb.put("k3b","v3b"); // should change the properties!
+		LOG_INFO(logger, "\n" << propsb);
+		LOG_INFO(logger, "placeP->getProperties()\n" << placeP->getProperties());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("properties", (size_t) 3, placeP->getProperties().size());
 		Data::ptr_t data5 = Data::ptr_t(new Data("<x>245.4</x>"));
 		Token::ptr_t token5 = Token::ptr_t(new Token(data5));
 		placeP->addToken(token5);
@@ -156,7 +157,6 @@ void PlaceTest::testPlace()
 		}
 		CPPUNIT_ASSERT_EQUAL(string("<x>245.4</x>"), tokens5[0]->getData()->getContent());   
 		CPPUNIT_ASSERT_EQUAL(string("<y>445</y>"), tokens5[1]->getData()->getContent());   
-		propsP.reset();
 	}
 	catch (const WorkflowFormatException &e) 
 	{

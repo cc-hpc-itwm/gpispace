@@ -44,8 +44,8 @@ WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const s
 	_suspend = false;
 	_sleepTime = SLEEP_TIME_MIN;
 	_simulation = false;
-	const Properties::ptr_t props = workflowP->readProperties();
-	if (props && props->contains("simulation") && (props->get("simulation")).compare("false") != 0) {
+	Properties props = workflowP->readProperties();
+	if (props.contains("simulation") && (props.get("simulation")).compare("false") != 0) {
 		_simulation = true;
 		LOG_DEBUG(_logger, getID() << ": Simulation is ON");
 		LOG_DEBUG(_logger, *workflowP);
@@ -195,9 +195,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 
 			//suspend if breakpoint has been reached
 			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
-				Properties::ptr_t transprops = selectedToP->transitionP->getProperties();
-				if (transprops && transprops->contains("breakpoint")) {
-					string breakstring = transprops->get("breakpoint");
+				Properties& transprops = selectedToP->transitionP->getProperties();
+				if (transprops.contains("breakpoint")) {
+					string breakstring = transprops.get("breakpoint");
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
 						LOG_DEBUG(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
@@ -579,12 +579,12 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	}
 	
     // store occurrence sequence
-	Properties::ptr_t props = _wfP->getProperties();
-    if (props && props->contains("occurrence.sequence")) {
-    	string occurrenceSequence = props->get("occurrence.sequence");
+	Properties& props = _wfP->getProperties();
+    if (props.contains("occurrence.sequence")) {
+    	string occurrenceSequence = props.get("occurrence.sequence");
     	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
     	occurrenceSequence += toP->transitionP->getID();
-    	props->put("occurrence.sequence",occurrenceSequence);
+    	props.put("occurrence.sequence",occurrenceSequence);
     }
 	
     // cleanup
@@ -643,12 +643,12 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 			modification = true;
 
 		    // store occurrence sequence
-			Properties::ptr_t props = _wfP->getProperties();
-		    if (props && props->contains("occurrence.sequence")) {
-		    	string occurrenceSequence = props->get("occurrence.sequence");
+			Properties& props = _wfP->getProperties();
+		    if (props.contains("occurrence.sequence")) {
+		    	string occurrenceSequence = props.get("occurrence.sequence");
 		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
 		    	occurrenceSequence += toP->transitionP->getID();
-		    	props->put("occurrence.sequence",occurrenceSequence);
+		    	props.put("occurrence.sequence",occurrenceSequence);
 		    }
 
 		    ///ToDo: set transition status

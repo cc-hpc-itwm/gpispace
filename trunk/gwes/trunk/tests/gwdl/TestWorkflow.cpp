@@ -35,7 +35,7 @@ void WorkflowTest::testWorkflow()
 	LOG_INFO(logger, "-------------- properties... --------------");
 	wf->putProperty("b_name1","value1");	
 	wf->putProperty("a_name2","value2");	
-	CPPUNIT_ASSERT_EQUAL_MESSAGE("properties", string("value1"), wf->getProperties()->get("b_name1"));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("properties", string("value1"), wf->getProperties().get("b_name1"));
 	
 	// add places
 	LOG_INFO(logger, "-------------- places... --------------");

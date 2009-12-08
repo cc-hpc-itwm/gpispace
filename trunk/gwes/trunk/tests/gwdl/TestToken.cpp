@@ -50,12 +50,12 @@ void TokenTest::testToken()
 	CPPUNIT_ASSERT_MESSAGE("unlocked token", !token->isLocked());
 
 	LOG_INFO(logger, "-------------- test constructor Token(properties, control)... --------------");
-	Properties::ptr_t propsP(new Properties());
-	propsP->put("key1","value1");
-	propsP->put("key2","value2");
-	token.reset(new Token(propsP, Token::CONTROL_TRUE));
+	Properties props;
+	props.put("key1","value1");
+	props.put("key2","value2");
+	token.reset(new Token(props, Token::CONTROL_TRUE));
 	LOG_INFO(logger, "\n" << *token);
-	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties()->size() );
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties().size() );
 	CPPUNIT_ASSERT(token->getControl());
 	CPPUNIT_ASSERT_MESSAGE("unlocked token", !token->isLocked());
 	
@@ -68,11 +68,11 @@ void TokenTest::testToken()
 	CPPUNIT_ASSERT_MESSAGE("unlocked token", !token->isLocked());
 	
 	LOG_INFO(logger, "-------------- test constructor Token(properties, data)... --------------");
-	token.reset(new Token(propsP,dataP));
+	token.reset(new Token(props,dataP));
 	LOG_INFO(logger, "\n" << *token);
 	CPPUNIT_ASSERT(token->isData());
 	CPPUNIT_ASSERT_EQUAL(string("<test>15</test>"), token->getData()->getContent());
-	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties()->size() );
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("number properties", (size_t) 2, token->getProperties().size() );
 	CPPUNIT_ASSERT_MESSAGE("unlocked token", !token->isLocked());
 
 	LOG_INFO(logger, "-------------- test deepCopy() --------------");

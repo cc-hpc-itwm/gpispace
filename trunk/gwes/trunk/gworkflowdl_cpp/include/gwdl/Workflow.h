@@ -40,7 +40,7 @@ namespace gwdl
  *	// add properties
  *	wf->putProperty("b_name1","value1");	
  *	wf->putProperty("a_name2","value2");	
- *	assert(wf->getProperties()->get("b_name1")=="value1");
+ *	assert(wf->getProperties().get("b_name1")=="value1");
  *	
  *	// add places
  *	Place::ptr_t p0 = new Place("p0");
@@ -290,17 +290,15 @@ public:
 	/**
 	 * Get the properties of this workflow.
 	 * You can use this method to modify properties.
-	 * Returns NULL if there are no properties. 
-	 * @return A shared pointer to the workflow properties or NULL if there are no properties.
+	 * @return The workflow properties.
 	 */
-    Properties::ptr_t& getProperties() {return _propertiesP;}
+    Properties& getProperties() {return _properties;}
 
 	/**
 	 * Get the properties of this workflow for read-only.
-	 * Returns NULL if there are no properties. 
-	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
+	 * @return The properties.
 	 */
-    const Properties::ptr_t& readProperties() const {return _propertiesP;}
+    const Properties& readProperties() const {return _properties;}
 
 	/**
 	 * Put new name/value pair into properties.
@@ -314,12 +312,12 @@ public:
 	 * Set all the properties of this workflow.
 	 * @param _properties The workflow properties.
 	 */
-    void setProperties(Properties::ptr_t& propertiesP){_propertiesP = propertiesP;}
+    void setProperties(Properties& properties){_properties = properties;}
 
 private:
     std::string _id;
     std::string _description;
-    Properties::ptr_t _propertiesP;
+    Properties _properties;
     transition_list_t _transitions;
     transition_list_t _enabledTransitions;
     

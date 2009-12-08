@@ -27,7 +27,7 @@ void PropertiesTest::testProperties()
 	Libxml2Builder builder;
 	
 	LOG_INFO(logger, "-------------- test put properties --------------");
-	Properties::ptr_t propsP(new Properties());
+	Properties* propsP = new Properties();
 	propsP->put("key1","value1");
 	propsP->put("key2","value2");
 	propsP->put("key3","value3");
@@ -51,6 +51,8 @@ void PropertiesTest::testProperties()
 	propsP->put("key3","value3b");
 	LOG_INFO(logger, "\n" << *propsP);
 	CPPUNIT_ASSERT_EQUAL_MESSAGE("overwritten property", string("value3b"), propsP->get("key3"));
+	
+	delete propsP;
 
 	LOG_INFO(logger, "============== END PROPERTIES TEST =============");
 }
