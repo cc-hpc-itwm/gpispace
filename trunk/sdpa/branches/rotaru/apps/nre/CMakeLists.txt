@@ -1,6 +1,4 @@
 add_executable(nre main.cpp)
-add_dependencies(nre sdpa-nre)
-
 target_link_libraries(nre sdpa-nre)
 target_link_libraries(nre sdpa-events)
 target_link_libraries(nre sdpa-daemon)
