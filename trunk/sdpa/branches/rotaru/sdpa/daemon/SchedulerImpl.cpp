@@ -1,4 +1,3 @@
-#include <sdpa/daemon/SchedulerImpl.hpp>
 /*
  * =====================================================================================
  *
@@ -16,6 +15,7 @@
  *
  * =====================================================================================
  */
+#include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
@@ -53,7 +53,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
 	gwes::workflow_id_t wf_id = pJob->id().str();
-	gwes::workflow_t* ptrWorkflow = NULL;
+	gwes::workflow_t::ptr_t ptrWorkflow;
 
 	// put the job into the running state
 	pJob->Dispatch();
@@ -69,7 +69,7 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 			// Should set the workflow_id here, or send it together with the workflow description
 			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
 
-			ptr_comm_handler_->gwes()->submitWorkflow(*ptrWorkflow);
+			ptr_comm_handler_->gwes()->submitWorkflow(ptrWorkflow);
 		}
 		else
 		{
@@ -83,12 +83,6 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 	catch (std::exception& )
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
-
-		if(ptrWorkflow)
-		{
-			delete ptrWorkflow;
-			ptrWorkflow = NULL;
-		}
 
 		//send a JobFailed event
 		sdpa::job_result_t sdpa_result;

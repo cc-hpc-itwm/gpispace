@@ -38,25 +38,33 @@ DaemonsWithCommTest::~DaemonsWithCommTest()
 string DaemonsWithCommTest::read_workflow(string strFileName)
 {
 	ifstream f(strFileName.c_str());
-	ostringstream os;
-	os.str("");
+	stringstream sstr;
 
-	if( f.is_open() )
-	{
-		char c;
-		while (f.get(c)) os<<c;
-		f.close();
-	}else
-		cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
-
-	return os.str();
+  if (f)
+  {
+		f >> sstr.rdbuf();
+  }
+  else
+  {
+	throw std::runtime_error("Could not open workflow-file: " + strFileName + ": "+strerror(errno));
+  }
+  return sstr.str();
 }
 
 void DaemonsWithCommTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	const sdpa::client::config_t config = sdpa::client::ClientApi::config();
+  m_ptrSdpa2GwesOrch = NULL;
+  m_ptrSdpa2GwesAgg = NULL;
+  m_ptrSdpa2GwesNRE = NULL;
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+	std::vector<std::string> cav;
+    cav.push_back("--orchestrator=orchestrator_0");
+    cav.push_back("--network.location=orchestrator_0:127.0.0.1:5000");
+	config.parse_command_line(cav);
 	m_ptrUser = sdpa::client::ClientApi::create( config, sdpa::daemon::USER );
+	
 	m_ptrUser->configure_network(config);
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
@@ -72,7 +80,24 @@ void DaemonsWithCommTest::tearDown()
 
 	m_ptrUser.reset();
 
+	seda::StageRegistry::instance().stopAll();
 	seda::StageRegistry::instance().clear();
+
+	if (m_ptrSdpa2GwesOrch)
+	{
+	  delete m_ptrSdpa2GwesOrch;
+	  m_ptrSdpa2GwesOrch = NULL;
+	}
+	if (m_ptrSdpa2GwesAgg)
+	{
+	  delete m_ptrSdpa2GwesAgg;
+	  m_ptrSdpa2GwesAgg = NULL;
+	}
+	if (m_ptrSdpa2GwesNRE)
+	{
+	  delete m_ptrSdpa2GwesNRE;
+	  m_ptrSdpa2GwesNRE = NULL;
+	}
 }
 
 void DaemonsWithCommTest::testUserOrchCommDummyGwes()
@@ -120,7 +145,6 @@ void DaemonsWithCommTest::testUserOrchCommDummyGwes()
 
 	// you can leave now
 	m_ptrOrch->shutdown_network();
-	delete m_ptrSdpa2GwesOrch;
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -168,7 +192,6 @@ void DaemonsWithCommTest::testUserOrchCommRealGwes()
 
 	// you can leave now
 	m_ptrOrch->shutdown_network();
-	delete m_ptrSdpa2GwesOrch;
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -228,8 +251,6 @@ void DaemonsWithCommTest::testUserOrchAggCommDummyGwes()
 	// you can leave now
 	m_ptrOrch->shutdown_network();
 	m_ptrAgg->shutdown_network();
-	delete m_ptrSdpa2GwesOrch;
-	delete m_ptrSdpa2GwesAgg;
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -289,8 +310,6 @@ void DaemonsWithCommTest::testUserOrchAggCommRealGwes()
 	// you can leave now
 	m_ptrOrch->shutdown_network();
 	m_ptrAgg->shutdown_network();
-	delete m_ptrSdpa2GwesOrch;
-	delete m_ptrSdpa2GwesAgg;
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -312,8 +331,8 @@ void DaemonsWithCommTest::testUserOrchAggNRECommDummyGwes()
 	m_ptrAgg->configure_network("127.0.0.1:5001", sdpa::daemon::ORCHESTRATOR, "127.0.0.1:5000");
 	DaemonFSM::start(m_ptrAgg);
 
-	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
-	m_ptrNRE = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::NRE, pGwesNRE, strAnswer ) );
+	m_ptrSdpa2GwesNRE = new DummyGwes();
+	m_ptrNRE = DaemonFSM::ptr_t( new TestDaemon( sdpa::daemon::NRE, m_ptrSdpa2GwesNRE, strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 	m_ptrNRE->configure_network("127.0.0.1:5002", sdpa::daemon::AGGREGATOR, "127.0.0.1:5001");
 	DaemonFSM::start(m_ptrNRE);
@@ -352,7 +371,7 @@ void DaemonsWithCommTest::testUserOrchAggNRECommDummyGwes()
 	InterruptEvent::Ptr pEvtIntOrch( new InterruptEvent(m_ptrOrch->name(), m_ptrOrch->name() ));
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
-
+/*
 	// you can leave now
 	m_ptrOrch->shutdown_network();
 	m_ptrOrch->stop();
@@ -360,10 +379,7 @@ void DaemonsWithCommTest::testUserOrchAggNRECommDummyGwes()
 	m_ptrAgg->stop();
 	m_ptrNRE->shutdown_network();
 	m_ptrNRE->stop();
-
-	delete m_ptrSdpa2GwesOrch;
-	delete m_ptrSdpa2GwesAgg;
-	delete pGwesNRE;
+*/
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -434,9 +450,6 @@ void DaemonsWithCommTest::testUserOrchAggNRECommRealGwes()
 	m_ptrNRE->shutdown_network();
 	m_ptrNRE->stop();
 
-	delete m_ptrSdpa2GwesOrch;
-	delete m_ptrSdpa2GwesAgg;
-	delete pGwesNRE;
 	SDPA_LOG_DEBUG("User finished!");
 }
 

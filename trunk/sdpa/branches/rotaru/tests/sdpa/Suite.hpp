@@ -43,6 +43,8 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );*/
 
+      // obsolete tests!
+      // these tests are running only when the slave posts requests (pull modell)
       /*
       // obsolete tests!
       // these tests are running only when the slave posts requests (pull modell)
@@ -50,14 +52,14 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( DaemonRealGwesTest::suite() );
       suiteOfTests->addTest( D2DDummyGwesTest::suite() );
       suiteOfTests->addTest( D2DRealGwesTest::suite() );
-      */
+	  */
+
       suiteOfTests->addTest( D2D2DDummyGwesTest::suite() );
       suiteOfTests->addTest( D2D2DRealGwesTest::suite() );
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );
 	  suiteOfTests->addTest( TestComponents::suite() );
-
       return suiteOfTests;
     }
   };

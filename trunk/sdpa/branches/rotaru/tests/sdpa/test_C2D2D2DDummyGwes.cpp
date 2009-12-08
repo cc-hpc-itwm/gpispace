@@ -54,16 +54,15 @@ void C2D2D2DDummyGwesTest::setUp() { //initialize and start the finite state mac
 
 	m_ptrSdpa2GwesOrch = new DummyGwes();
 	m_ptrSdpa2GwesAgg  = new DummyGwes();
+	m_ptrSdpa2GwesNRE  = new DummyGwes();
 
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
     cav.push_back("--orchestrator="+sdpa::daemon::ORCHESTRATOR);
-    cav.push_back("--network.location="+sdpa::daemon::ORCHESTRATOR+":127.0.0.1:5000");
     config.parse_command_line(cav);
 
-	m_ptrUser = sdpa::client::ClientApi::create( config );
-	m_ptrUser->configure_network( config );
+	m_ptrUser = sdpa::client::ClientApi::create( config, "apps.sdpa.client", sdpa::daemon::ORCHESTRATOR );
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
 
@@ -82,17 +81,29 @@ void C2D2D2DDummyGwesTest::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
-	m_ptrUser.reset();
-
-	m_ptrNRE->stop();
-	m_ptrAgg->stop();
-	m_ptrOrch->stop();
-
+	seda::StageRegistry::instance().stopAll();
 	seda::StageRegistry::instance().clear();
 
-	//m_ptrOrch.reset();
-	delete m_ptrSdpa2GwesOrch;
-	delete m_ptrSdpa2GwesAgg;
+	m_ptrUser.reset();
+	m_ptrNRE.reset();
+	m_ptrAgg.reset();
+	m_ptrOrch.reset();
+
+	if (m_ptrSdpa2GwesOrch)
+	{
+	  delete m_ptrSdpa2GwesOrch;
+	  m_ptrSdpa2GwesOrch = NULL;
+	}
+	if (m_ptrSdpa2GwesAgg)
+	{
+	  delete m_ptrSdpa2GwesAgg;
+	  m_ptrSdpa2GwesAgg = NULL;
+	}
+	if (m_ptrSdpa2GwesNRE)
+	{
+	  delete m_ptrSdpa2GwesNRE;
+	  m_ptrSdpa2GwesNRE = NULL;
+	}
 }
 
 void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
@@ -274,12 +285,10 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished_WithGwes()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
-
 	m_ptrNRE = DaemonFSM::ptr_t( new NreDaemonWithGwes( sdpa::daemon::NRE,
-														pGwesNRE, sdpa::daemon::AGGREGATOR,
+														m_ptrSdpa2GwesNRE, sdpa::daemon::AGGREGATOR,
 														noStage,
-														strAnswer ) ); // No gwes
+														strAnswer ) );
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
 	m_ptrAgg->set_to_slave_stage(m_ptrNRE->daemon_stage());
@@ -326,7 +335,6 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFinished_WithGwes()
 	m_ptrOrch->daemon_stage()->send(pEvtIntOrch);
 
 	// you can leave now
-	delete pGwesNRE;
 	SDPA_LOG_DEBUG("User finished!");
 }
 
@@ -337,10 +345,8 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobFailed_WithGwes()
 	string strAnswer = "failed";
 	string noStage = "";
 
-	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
-
 	m_ptrNRE = DaemonFSM::ptr_t( new NreDaemonWithGwes( sdpa::daemon::NRE,
-														pGwesNRE, sdpa::daemon::AGGREGATOR,
+														m_ptrSdpa2GwesNRE, sdpa::daemon::AGGREGATOR,
 														noStage,
 														strAnswer ) ); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
@@ -400,10 +406,8 @@ void C2D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_WithGwes()
 	string strAnswer = "cancelled";
 	string noStage = "";
 
-	sdpa::Sdpa2Gwes* pGwesNRE = new DummyGwes();
-
 	m_ptrNRE = DaemonFSM::ptr_t( new NreDaemonWithGwes( sdpa::daemon::NRE,
-														pGwesNRE, sdpa::daemon::AGGREGATOR,
+														m_ptrSdpa2GwesNRE, sdpa::daemon::AGGREGATOR,
 														noStage,
 														strAnswer ) ); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);

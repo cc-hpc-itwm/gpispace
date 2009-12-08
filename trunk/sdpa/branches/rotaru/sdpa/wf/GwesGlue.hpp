@@ -47,18 +47,24 @@ namespace sdpa { namespace wf { namespace glue {
     {
       typedef std::map<std::string, std::string> gtok_properties_t;
 
-      std::string gwdl_token_data(*gtok.getData()->getText());
+      std::string gwdl_token_data(gtok.getData()->getContent());
 
       {
         // remove sdpa-tag...
-        const std::string sTag("<sdpa>");
-        const std::string eTag("</sdpa>");
+        const std::string sTag("<");
+        const std::string eTag(">");
         if (gwdl_token_data.substr(0, sTag.size()) == sTag)
         {
-          DLOG(DEBUG, "removing enclosing sdpa-tags...");
+		  // remove everything from <sdpa till a closing >
+          DLOG(DEBUG, "removing enclosing sdpa-tag of: " << gwdl_token_data);
           try
           {
-            gwdl_token_data = gwdl_token_data.substr(sTag.size(), gwdl_token_data.size() - (sTag.size()+eTag.size()) );
+			const std::string::size_type end_of_start_tag = gwdl_token_data.find_first_of(">");
+			const std::string::size_type start_of_end_tag = gwdl_token_data.find_last_of("<");
+			const std::string::size_type remaining_size = start_of_end_tag - end_of_start_tag - 1;
+			assert (remaining_size <= gwdl_token_data.size());
+            gwdl_token_data = gwdl_token_data.substr(end_of_start_tag+1, remaining_size);
+			DLOG(DEBUG, "resulting data: " << gwdl_token_data);
           }
           catch (const std::exception &ex)
           {
@@ -71,12 +77,13 @@ namespace sdpa { namespace wf { namespace glue {
           DLOG(DEBUG, "no sdpa-tag found, taking data as it is: " << gwdl_token_data);
         }
       }
+      wrapped.data(gwdl_token_data);
 
-      wrapped.data(*gtok.getData()->getText());
-      for (gtok_properties_t::const_iterator prop(gtok.getProperties().begin()); prop != gtok.getProperties().end(); ++prop)
-      {
-        wrapped.properties().put(prop->first, prop->second);
-      }
+	  for (gtok_properties_t::const_iterator prop(gtok.getProperties().begin()); prop != gtok.getProperties().end(); ++prop)
+	  {
+		wrapped.properties().put(prop->first, prop->second);
+	  }
+
       if (! wrapped.properties().has_key("datatype"))
       {
         DLOG(DEBUG, "fixing datatype information of Token, assuming string type");
@@ -99,22 +106,24 @@ namespace sdpa { namespace wf { namespace glue {
     DLOG(DEBUG, "unwrapping wf::Token to gwdl::Token...");
     if (wf_token.properties().has_key("control"))
     {
-      gwdl::Token *tok = new gwdl::Token(wf_token.properties().get<bool>("control"));
+	  bool control_value = wf_token.properties().get<bool>("control");
+      gwdl::Token *tok = new gwdl::Token( (control_value ? gwdl::Token::CONTROL_TRUE : gwdl::Token::CONTROL_FALSE) );
       for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
       {
-        tok->getProperties()[prop->first] = prop->second;
+		tok->putProperty(prop->first, prop->second);
       }
       return tok;
     }
     else
     {
-      gwdl::Data *data(new gwdl::Data("<data><sdpa>"+wf_token.data()+"</sdpa></data>"));
+	  const std::string tagged_data("<sdpa>" + wf_token.data() + "</sdpa>");
+      gwdl::Data::ptr_t data(new gwdl::Data(tagged_data));
       gwdl::Token *tok = new gwdl::Token(data);
 
       // update all known properties, this also includes the data type
       for (wf::Token::properties_t::const_iterator prop(wf_token.properties().begin()); prop != wf_token.properties().end(); ++prop)
       {
-        tok->getProperties()[prop->first] = prop->second;
+		tok->putProperty(prop->first, prop->second);
       }
       return tok;
     }
@@ -156,28 +165,28 @@ namespace sdpa { namespace wf { namespace glue {
         case (gwes::TokenParameter::SCOPE_READ):
           {
             Parameter p(gwes_param_name, Parameter::READ_EDGE, tok);
-            DLOG(DEBUG, "read " << p);
+            DLOG(TRACE, "read " << p);
             wrapped.add_parameter(p);
             break;
           }
         case (gwes::TokenParameter::SCOPE_INPUT):
           {
             Parameter p(gwes_param_name, Parameter::INPUT_EDGE, tok);
-            DLOG(DEBUG, "input " << p);
+            DLOG(TRACE, "input " << p);
             wrapped.add_parameter(p);
             break;
           }
         case (gwes::TokenParameter::SCOPE_WRITE):
           {
             Parameter p(gwes_param_name, Parameter::WRITE_EDGE, tok);
-            DLOG(DEBUG, "write " << p);
+            DLOG(TRACE, "write " << p);
             wrapped.add_parameter(p);
             break;
           }
         case (gwes::TokenParameter::SCOPE_OUTPUT):
           {
             Parameter p(gwes_param_name, Parameter::OUTPUT_EDGE, tok);
-            DLOG(DEBUG, "output " << p);
+            DLOG(TRACE, "output " << p);
             wrapped.add_parameter(p);
             break;
           }
@@ -210,29 +219,24 @@ namespace sdpa { namespace wf { namespace glue {
         case gwes::TokenParameter::SCOPE_READ:
         {
           // nothing to do
-          DLOG(DEBUG, "unwrapping read parameter: nothing to do");
+          DLOG(TRACE, "unwrapping read parameter: nothing to do");
           break;
         }
         case (gwes::TokenParameter::SCOPE_INPUT):
         {
           // nothing to do
-          DLOG(DEBUG, "unwrapping input parameter: nothing to do");
+          DLOG(TRACE, "unwrapping input parameter: nothing to do");
           break;
         }
         case (gwes::TokenParameter::SCOPE_WRITE):
         {
-          DLOG(DEBUG, "unwrapping write parameter: nothing to do");
+          DLOG(TRACE, "unwrapping write parameter: nothing to do");
           break;
         }
         case (gwes::TokenParameter::SCOPE_OUTPUT):
         {
-          DLOG(DEBUG, "unwrapping output parameter: creating new token");
-          if (param->tokenP)
-          {
-            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
-            delete param->tokenP; param->tokenP = NULL;
-          }
-          param->tokenP = unwrap(wf_activity.parameters().at(gwes_param_name).token());
+          DLOG(TRACE, "unwrapping output parameter: creating new token");
+          param->tokenP = gwdl::Token::ptr_t(unwrap(wf_activity.parameters().at(gwes_param_name).token()));
           break;
         }
       }
@@ -255,15 +259,7 @@ namespace sdpa { namespace wf { namespace glue {
       sdpa::token_list_t tokens;
       for (gwdl::token_list_t::const_iterator a_token(gwdl_tokens.begin()); a_token != gwdl_tokens.end(); ++a_token)
       {
-        gwdl::Token *gwdl_token = dynamic_cast<gwdl::Token*>(*a_token);
-        if (gwdl_token)
-        {
-          tokens.push_back(wrap(*gwdl_token));
-        }
-        else
-        {
-          LOG(ERROR, "the gwdl::token_list did not contain gwdl::Token, ignoring this one.");
-        }
+		tokens.push_back(wrap(**a_token));
       }
 
       result.insert(std::make_pair(place_name, tokens));
@@ -285,29 +281,28 @@ namespace sdpa { namespace wf { namespace glue {
         case gwes::TokenParameter::SCOPE_READ:
         {
           // nothing to do
-          DLOG(DEBUG, "putting read parameter: nothing to do");
+          DLOG(TRACE, "putting read parameter: nothing to do");
           break;
         }
         case (gwes::TokenParameter::SCOPE_INPUT):
         {
           // nothing to do
-          DLOG(DEBUG, "putting input parameter: nothing to do");
+          DLOG(TRACE, "putting input parameter: nothing to do");
           break;
         }
         case (gwes::TokenParameter::SCOPE_WRITE):
         {
-          DLOG(DEBUG, "putting write parameter: replacing token");
+          DLOG(TRACE, "putting write parameter: replacing token");
           if (param->tokenP)
           {
-            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
-            delete param->tokenP; param->tokenP = NULL;
+            DLOG(TRACE, "removing old Token on output: " << param->tokenP);
           }
           // looking up tokens in result
           // TODO: check for existence!
           const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
           if (result_tokens.size() == 1)
           {
-            param->tokenP = unwrap(result_tokens.front());
+            param->tokenP = gwdl::Token::ptr_t(unwrap(result_tokens.front()));
           }
           else if (result_tokens.size() > 1)
           {
@@ -324,17 +319,12 @@ namespace sdpa { namespace wf { namespace glue {
         case (gwes::TokenParameter::SCOPE_OUTPUT):
         {
           DLOG(DEBUG, "putting output parameter: creating new token");
-          if (param->tokenP)
-          {
-            DLOG(DEBUG, "removing old Token on output: " << *param->tokenP);
-            delete param->tokenP; param->tokenP = NULL;
-          }
           // looking up tokens in result
           // TODO: check for existence!
           const sdpa::token_list_t &result_tokens = result.at(param->edgeP->getPlaceID());
           if (result_tokens.size() == 1)
           {
-            param->tokenP = unwrap(result_tokens.front());
+            param->tokenP = gwdl::Token::ptr_t(unwrap(result_tokens.front()));
           }
           else if (result_tokens.size() > 1)
           {

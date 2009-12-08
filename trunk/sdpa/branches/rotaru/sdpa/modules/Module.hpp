@@ -58,7 +58,7 @@ namespace modules {
         {
 
 #if defined(ENABLE_SDPA_PARAM_CHECKS) || !defined(NDEBUG)
-          DLOG(INFO, "checking passed data against my expected parameters...");
+          DLOG(TRACE, "checking passed data against my expected parameters...");
           const param_names_list_t &expected_input = fun->second.second;
           std::string missing;
           for (param_names_list_t::const_iterator exp_inp(expected_input.begin()); exp_inp != expected_input.end(); ++exp_inp)

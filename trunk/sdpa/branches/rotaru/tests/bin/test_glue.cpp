@@ -23,6 +23,10 @@
 #include <sdpa/wf/Activity.hpp>
 
 #include <sdpa/wf/GwesGlue.hpp>
+
+#include <gwdl/XMLUtils.h>
+#include <gwdl/Libxml2Builder.h>
+
 #include <fstream>
 
 int main(int , char **)
@@ -31,28 +35,28 @@ int main(int , char **)
   using namespace sdpa;
 
   {
-    gwdl::Token gtoken(true);
+    gwdl::Token gtoken(gwdl::Token::CONTROL_TRUE);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-    std::clog << "gtoken: " << gtoken << std::endl;
+//    std::clog << "gtoken: " << gtoken << std::endl;
     std::clog << "stoken: " << stoken << std::endl;;
   }
 
   {
-    gwdl::Token gtoken(false);
+    gwdl::Token gtoken(gwdl::Token::CONTROL_FALSE);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-    std::clog << "gtoken: " << gtoken << std::endl;;
+//    std::clog << "gtoken: " << gtoken << std::endl;;
     std::clog << "stoken: " << stoken << std::endl;;
   }
 
   {
-    gwdl::Token gtoken(new gwdl::Data("<data></data>"));
-    LOG(DEBUG, "creating empty data token: " << gtoken);
+    gwdl::Token gtoken(gwdl::Data::ptr_t(new gwdl::Data("text")));
+//    LOG(DEBUG, "creating empty data token: " << gtoken);
     sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
     LOG(DEBUG, "wrapped to: " << stoken);
     stoken.data(42);
     LOG(DEBUG, "updated data: " << stoken);
     gwdl::Token *gtoken2 = sdpa::wf::glue::unwrap(stoken);
-    LOG(DEBUG, "unwrapped: " << *gtoken2);
+//    LOG(DEBUG, "unwrapped: " << *gtoken2);
     delete gtoken2;
   }
 
@@ -61,10 +65,10 @@ int main(int , char **)
     {
       gwdl::Properties props;
       props.put("datatype", typeid(int).name());
-      gwdl::Data *data(new gwdl::Data("<data><sdpa>42</sdpa></data>"));
+      gwdl::Data::ptr_t data(new gwdl::Data("42"));
       gwdl::Token gtoken(props, data);
       sdpa::wf::Token stoken(sdpa::wf::glue::wrap(gtoken));
-      std::clog << "gtoken: " << gtoken << std::endl;;
+//      std::clog << "gtoken: " << gtoken << std::endl;;
       std::clog << "stoken: " << stoken << std::endl;;
       std::clog << "\tas int: " << stoken.data_as<int>() << std::endl;
     }
@@ -80,9 +84,19 @@ int main(int , char **)
     {
       using namespace sdpa::wf::glue;
 
-      gwdl::Workflow gwdl_workflow(path_to_desc);
-      gwdl::workflow_result_t wf_result = gwdl_workflow.getResults();
+	  gwdl::Libxml2Builder builder;
+	  gwdl::Workflow::ptr_t gwdl_workflow(builder.deserializeWorkflowFromFile(path_to_desc));
+      gwdl::workflow_result_t wf_result = gwdl_workflow->getResults();
+	  if (wf_result.empty())
+	  {
+		std::clog << "Failed: no result tokens found!"<< std::endl;
+		return 1;
+	  }
       sdpa::job_result_t result = wrap(wf_result);
+	  if (result.empty())
+	  {
+		std::clog << "Failed: no result tokens wrapped!" << std::endl;
+	  }
       gwdl::deallocate_workflow_result(wf_result);
 
       for (sdpa::job_result_t::const_iterator r(result.begin()); r != result.end(); ++r)
@@ -97,6 +111,7 @@ int main(int , char **)
     catch (const std::exception &ex)
     {
       std::clog << "could not parse workflow: " << ex.what() << std::endl;
+	  return 2;
     }
   }
 

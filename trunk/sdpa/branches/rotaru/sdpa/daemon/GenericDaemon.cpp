@@ -700,7 +700,7 @@ gwes::activity_id_t GenericDaemon::submitActivity(gwes::activity_t &activity)
 		job_id_t job_id(activity.getID());
 
 		// transform activity to workflow
-		gwdl::IWorkflow::ptr_t pWf = activity.transform2Workflow();
+		gwdl::Workflow::ptr_t pWf = activity.transform2Workflow();
 		//SDPA_LOG_DEBUG("Transformed activity into an workflow: "<<(gwdl::Workflow&)(*pWf));
 
 		// check if the generated workflow has the same id as the activity_id

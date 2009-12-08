@@ -65,6 +65,7 @@ namespace sdpa {
 
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
 			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
+			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesNRE;
 
 			  sdpa::client::ClientApi::ptr_t m_ptrUser;
 

@@ -40,53 +40,53 @@ Client::ptr_t Client::create(const std::string &name_prefix
 
 Client::~Client()
 {
-  MLOG(DEBUG, "destroying client api");
+  DMLOG(TRACE, "destroying client api");
 }
 
 void Client::perform(const seda::IEvent::Ptr &event)
 {
-  DMLOG(DEBUG, "got event: " << event->str());
+  DMLOG(TRACE, "got event: " << event->str());
   if (dynamic_cast<ConfigOK*>(event.get())) {
-    DMLOG(DEBUG, "ok");
+    DMLOG(TRACE, "ok");
     fsm_.ConfigOk(event);
   } else if (dynamic_cast<ConfigNOK*>(event.get())) {
-    DMLOG(DEBUG,"nok");
+    DMLOG(TRACE,"nok");
     fsm_.ConfigNok(event);
   } else if (StartUp * startup = dynamic_cast<StartUp*>(event.get())) {
-    DMLOG(DEBUG,"start");
+    DMLOG(TRACE,"start");
     fsm_.Start(startup->config());
   } else if (/* Shutdown *shut = */ dynamic_cast<Shutdown*>(event.get())) {
-    DMLOG(DEBUG,"shut");
+    DMLOG(TRACE,"shut");
     fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
-    DMLOG(DEBUG,"sub");
+    DMLOG(TRACE,"sub");
     fsm_.Submit(event);
   } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
-    DMLOG(DEBUG,"ack");
+    DMLOG(TRACE,"ack");
     fsm_.SubmitAck(event);
   } else if (dynamic_cast<se::QueryJobStatusEvent*>(event.get())) {
-    DMLOG(DEBUG,"qstat");
+    DMLOG(TRACE,"qstat");
     fsm_.Query(event);
   } else if (dynamic_cast<se::JobStatusReplyEvent*>(event.get())) {
-    DMLOG(DEBUG,"rstat");
+    DMLOG(TRACE,"rstat");
     fsm_.StatusReply(event);
   } else if (dynamic_cast<se::CancelJobEvent*>(event.get())) {
-    DMLOG(DEBUG,"kill");
+    DMLOG(TRACE,"kill");
     fsm_.Cancel(event);
   } else if (dynamic_cast<se::CancelJobAckEvent*>(event.get())) {
-    DMLOG(DEBUG,"ack");
+    DMLOG(TRACE,"ack");
     fsm_.CancelAck(event);
   } else if (dynamic_cast<se::RetrieveJobResultsEvent*>(event.get())) {
-    DMLOG(DEBUG,"get");
+    DMLOG(TRACE,"get");
     fsm_.Retrieve(event);
   } else if (dynamic_cast<se::JobResultsReplyEvent*>(event.get())) {
-    DMLOG(DEBUG,"get");
+    DMLOG(TRACE,"get");
     fsm_.Results(event);
   } else if (dynamic_cast<se::DeleteJobEvent*>(event.get())) {
-    DMLOG(DEBUG,"del");
+    DMLOG(TRACE,"del");
     fsm_.Delete(event);
   } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
-    DMLOG(DEBUG,"ack");
+    DMLOG(TRACE,"ack");
     fsm_.DeleteAck(event);
   }
 }
@@ -97,7 +97,7 @@ void Client::start(const config_t & config) throw (ClientException)
 
   client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
 
-  DMLOG(DEBUG, "waiting until configuration is done.");
+  DMLOG(TRACE, "waiting until configuration is done.");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -108,12 +108,12 @@ void Client::start(const config_t & config) throw (ClientException)
     }
     else if (ConfigNOK *cfg_nok = dynamic_cast<ConfigNOK*>(reply.get()))
     {
-      MLOG(INFO, "configuration had errors: " << cfg_nok->reason());
+      MLOG(ERROR, "configuration had errors: " << cfg_nok->reason());
       throw ConfigError(cfg_nok->reason());
     }
     else
     {
-      throw ClientException("startup failed (got event: " + reply->str() + ")");
+      throw ClientException("startup failed (got unexpected event: " + reply->str() + ")");
     }
   }
   catch (const Timedout &)
@@ -162,10 +162,9 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
-  MLOG(INFO,"submitting job with description = " << desc);
+  MLOG(DEBUG,"submitting job with description = " << desc);
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc)));
-  DMLOG(DEBUG,"waiting for a reply");
-  // TODO: wait_for_reply(config.get<timeout_t>("sdpa.network.timeout")
+  DMLOG(TRACE,"waiting for a reply");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -194,11 +193,11 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
-  MLOG(INFO,"cancelling job: " << jid);
+  MLOG(DEBUG,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent(name()
                                                              , orchestrator_
                                                              , jid)));
-  DMLOG(DEBUG,"waiting for a reply");
+  DMLOG(TRACE,"waiting for a reply");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -221,11 +220,11 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 
 std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
-  MLOG(INFO,"querying status of job: " << jid);
+  MLOG(DEBUG,"querying status of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                                  , orchestrator_
                                                                  , jid)));
-  DMLOG(DEBUG,"waiting for a reply");
+  DMLOG(TRACE,"waiting for a reply");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -249,11 +248,11 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
-  MLOG(INFO,"deleting job: " << jid);
+  MLOG(DEBUG,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name()
                                                              , orchestrator_
                                                              , jid)));
-  DMLOG(DEBUG,"waiting for a reply");
+  DMLOG(TRACE,"waiting for a reply");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -276,11 +275,11 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
-  MLOG(INFO,"retrieving results of job: " << jid);
+  MLOG(DEBUG,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , orchestrator_
                                                                       , jid)));
-  DMLOG(DEBUG,"waiting for a reply");
+  DMLOG(TRACE,"waiting for a reply");
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -303,7 +302,7 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
 
 void Client::action_configure(const config_t &cfg)
 {
-  MLOG(INFO, "configuring my environment");
+  MLOG(DEBUG, "configuring my environment");
   
   if (cfg.is_set("network.timeout"))
   {
@@ -342,10 +341,10 @@ void Client::action_configure(const config_t &cfg)
 
 void Client::action_configure_network(const config_t &cfg)
 {
-  MLOG(INFO, "configuring network components...");
+  MLOG(DEBUG, "configuring network components...");
   const std::string net_stage_name(client_stage_->name()+".from-net");
   {
-    DMLOG(INFO, "setting up decoding...");
+    DMLOG(TRACE, "setting up decoding...");
     seda::ForwardStrategy::Ptr to_client(new seda::ForwardStrategy(client_stage_->name()));
     sdpa::events::DecodeStrategy::ptr_t decode(new sdpa::events::DecodeStrategy(net_stage_name, to_client));
     seda::Stage::Ptr from_net(new seda::Stage(net_stage_name, decode));
@@ -354,7 +353,7 @@ void Client::action_configure_network(const config_t &cfg)
   }
 
   {
-    DMLOG(INFO, "setting up output stage...");
+    DMLOG(TRACE, "setting up output stage...");
     seda::comm::ConnectionFactory connFactory;
     seda::comm::ConnectionParameters params("udp", my_location_, client_stage_->name());
     seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
@@ -368,7 +367,7 @@ void Client::action_configure_network(const config_t &cfg)
       {
         const std::string n(loc->substr(0, loc->find(':')));
         const std::string l(loc->substr(n.size()+1));
-        MLOG(DEBUG, "inserting location information: " << n << " -> " << l);
+        MLOG(TRACE, "inserting location information: " << n << " -> " << l);
         conn->locator()->insert(n, l);
       }
     }
@@ -392,14 +391,14 @@ void Client::action_config_nok()
 
 void Client::action_shutdown()
 {
-  MLOG(INFO,"shutting down");
-  DMLOG(DEBUG,"waking up api");
+  MLOG(DEBUG,"shutting down");
+  DMLOG(TRACE,"waking up api");
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
 }
 
 void Client::action_shutdown_network()
 {
-  DMLOG(INFO, "shutting network compents down...");
+  DMLOG(DEBUG, "shutting network compents down...");
   seda::StageRegistry::instance().lookup(output_stage_)->stop();
   seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
 
@@ -409,31 +408,31 @@ void Client::action_shutdown_network()
 
 void Client::action_submit(const seda::IEvent::Ptr &e)
 {
-  DMLOG(DEBUG,"sending submit message");
+  DMLOG(TRACE,"sending submit message");
   seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 }
 
 void Client::action_cancel(const seda::IEvent::Ptr &e)
 {
-  DMLOG(DEBUG,"sending cancel message");
+  DMLOG(TRACE,"sending cancel message");
   seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 }
 
 void Client::action_query(const seda::IEvent::Ptr &e)
 {
-  DMLOG(DEBUG,"sending query message");
+  DMLOG(TRACE,"sending query message");
   seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 }
 
 void Client::action_retrieve(const seda::IEvent::Ptr &e)
 {
-  DMLOG(DEBUG,"sending retrieve message");
+  DMLOG(TRACE,"sending retrieve message");
   seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 }
 
 void Client::action_delete(const seda::IEvent::Ptr &e)
 {
-  DMLOG(DEBUG,"sending delete message");
+  DMLOG(TRACE,"sending delete message");
   seda::StageRegistry::instance().lookup(output_stage_)->send(e);
 }
 
@@ -441,7 +440,7 @@ void Client::action_store_reply(const seda::IEvent::Ptr &reply)
 {
   boost::unique_lock<boost::mutex> lock(mtx_);
 
-  DMLOG(DEBUG,"storing reply message: " << reply->str());
+  DMLOG(TRACE,"storing reply message: " << reply->str());
   reply_ = reply;
   cond_.notify_one();
 }
