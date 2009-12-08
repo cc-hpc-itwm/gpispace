@@ -80,7 +80,7 @@ public:
      * (allocated OperationCandidate is deleted)
      * @param operation A pointer to the concrete operation.
      */
-    void addOperationCandidate(OperationCandidate::ptr_t ocandP)
+    void addOperationCandidate(OperationCandidate::ptr_t& ocandP)
     { _operationCandidates.push_back(ocandP); } 
     
     /**
@@ -95,7 +95,7 @@ public:
      * (allocated OperationCandidate is deleted)
      * @param oper A reference to the concrete operation to be removed.
      */
-    void removeOperationCandidate(OperationCandidate::ptr_t ocandP);
+    void removeOperationCandidate(OperationCandidate::ptr_t& ocandP);
     
     /**
      * Remove all concrete operations from vector.

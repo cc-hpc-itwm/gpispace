@@ -43,23 +43,16 @@ public:
 	/**
 	 * Get the scope of this edge.
 	 */
-	const scope_t getScope() const { return _scope; }
-
-	/**
-	 * set Place the Edge is pointing to.
-	 *
-	 * @param p Place Edge should point to
-	 */
-	void setPlace(Place::ptr_t p) { _placeP = p;}
+	scope_t getScope() const { return _scope; }
 
 	/**
 	 * get place the edge is pointing to.
 	 *
 	 * @return Place Edge points to
 	 */
-	const Place::ptr_t getPlace() const { return _placeP; }
+	const Place::ptr_t& getPlace() const { return _placeP; }
 
-	const std::string getPlaceID() const { return _placeP != NULL ? _placeP->getID() : "";}
+	const std::string& getPlaceID() const { return _placeP->getID();}
 
 	/**
 	 * set Edge's expression.

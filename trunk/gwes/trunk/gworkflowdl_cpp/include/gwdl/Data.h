@@ -97,12 +97,12 @@ public:
 	 * Returns the content of the data element.
 	 * @return The content as XML string.
 	 */
-	const content_t &getContent() const {return _content;}
+	const content_t& getContent() const {return _content;}
 	
 	/**
 	 * Serialize data to string.
 	 */
-	const std::string &serialize() const {return _content;}
+	const std::string& serialize() const {return _content;}
 	
 	/**
 	 * Get the type of the data. Can be

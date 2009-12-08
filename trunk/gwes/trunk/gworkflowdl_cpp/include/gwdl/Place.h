@@ -80,7 +80,7 @@ public:
 	 * Note: This method adds a pointer of the token to the place and not a copy!
 	 * @param token The pointer to the token object.
 	 */
-	void addToken(Token::ptr_t tokenP) throw(CapacityException);
+	void addToken(Token::ptr_t& tokenP) throw(CapacityException);
 	
 	/**
 	 * Remove the i-th token from this place.
@@ -98,7 +98,7 @@ public:
 	 * Removes a specific token from the vector of tokens.
 	 * @param token A pointer to the token to be removed.
 	 */
-	void removeToken(Token::ptr_t token);
+	void removeToken(Token::ptr_t& token);
 
 	/**
 	 * Remove all tokens that are placed on this place.
@@ -137,21 +137,21 @@ public:
 	 * Set all the properties of this place.
 	 * @param props The properties object.
 	 */
-	void setProperties(Properties::ptr_t propsP);
+	void setProperties(Properties::ptr_t& propsP);
 
 	/**
 	 * Get a shared pointer to the properties of this place.
 	 * Returns NULL if there are no properties. 
 	 * @return A shared pointer to the place properties or NULL if there are no properties.
 	 */
-	Properties::ptr_t getProperties();
+	Properties::ptr_t& getProperties();
 	
 	/**
 	 * Get a read-only pointer to the properties of this place.
 	 * Returns NULL if there are no properties. 
 	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
-	const Properties::ptr_t readProperties() const;
+	const Properties::ptr_t& readProperties() const;
 
 	/**
 	 * Put new name/value pair into properties.
@@ -168,18 +168,18 @@ public:
      * @param p_token The token to lock
      * @param p_transition The transition that locked the token.
      */
-	void lockToken(Token::ptr_t tokenP, Transition* transitionP);
+	void lockToken(Token::ptr_t& tokenP, Transition* transitionP);
 	
 	/**
 	 * Unlock a token.
 	 */
-	void unlockToken(Token::ptr_t tokenP);
+	void unlockToken(Token::ptr_t& tokenP);
 	
 	/**
 	 * Get the next unlocked token of this place.
 	 * Returns NULL if there is no unlocked token on this place.
 	 */ 
-	Token::ptr_t getNextUnlockedToken();
+	Token::ptr_t& getNextUnlockedToken();
 	
 private: 
 	std::string _id;

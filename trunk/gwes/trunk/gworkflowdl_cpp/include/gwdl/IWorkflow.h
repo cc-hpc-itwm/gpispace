@@ -47,7 +47,7 @@ namespace gwdl
     //virtual std::string serialize() const = 0;
     //virtual void deserialize(const std::string &) = 0;
 
-    virtual Place::ptr_t getPlace(const std::string& id) = 0;
+    virtual Place::ptr_t& getPlace(const std::string& id) = 0;
 
     // one has to explicitly deallocate the memory!
     // all tokens contained in the result are copies!

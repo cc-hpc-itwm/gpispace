@@ -162,21 +162,21 @@ public:
 	 * Set all the properties of this transition.
 	 * @param props The properties object.
 	 */
-    void setProperties(Properties::ptr_t propertiesP) {_propertiesP = propertiesP;}
+    void setProperties(Properties::ptr_t& propertiesP) {_propertiesP = propertiesP;}
 
 	/**
 	 * Get a shared pointer to the properties of this transition.
 	 * Returns NULL if there are no properties. 
 	 * @return A shared pointer to the transition properties or NULL if there are no properties.
 	 */
-    Properties::ptr_t getProperties() {return _propertiesP;}
+    Properties::ptr_t& getProperties() {return _propertiesP;}
 
 	/**
 	 * Get a read-only shared pointer to the properties of this transition.
 	 * Returns NULL if there are no properties. 
 	 * @return A read-only shared pointer to the properties or NULL if there are no properties.
 	 */
-    const Properties::ptr_t readProperties() const {return _propertiesP;}
+    const Properties::ptr_t& readProperties() const {return _propertiesP;}
     
 	/**
 	 * Put new name/value pair into properties.
@@ -190,7 +190,7 @@ public:
      * add an Edge.
      * @param edge Edge to be added
      */
-    void addEdge(Edge::ptr_t edgeP);
+    void addEdge(Edge::ptr_t& edgeP);
 
     void removeReadEdge(int i) { (*(_readEdges.begin()+i)).reset();	_readEdges.erase(_readEdges.begin()+i);}
 
@@ -229,29 +229,29 @@ public:
      * (allocated operation is deleted)
      * @param _operation Operation to be set
      */
-    void setOperation(Operation::ptr_t operationP) {_operationP = operationP;}
+    void setOperation(Operation::ptr_t& operationP) {_operationP = operationP;}
 
     /**
      * get Transitions Operation.
      * You may use this operation to modify the operation object.
      * @return operation Operation of the transition
      */
-    Operation::ptr_t getOperation() { return _operationP;}
+    Operation::ptr_t& getOperation() { return _operationP;}
 
     /**
      * get a read-only shared pointer to transitions Operation.
      * @return operation Operation of the transition
      */
-    const Operation::ptr_t readOperation() const { return _operationP;}
+    const Operation::ptr_t& readOperation() const { return _operationP;}
 
     /**
      * set transition's condition.
      * @param _conditions condition to be set
      */
-    void setConditions(std::vector<std::string> conditions) {_conditions.clear();
+    void setConditions(std::vector<std::string>& conditions) {_conditions.clear();
     	_conditions.insert(_conditions.end(), conditions.begin(), conditions.end());}
 
-    void addCondition(std::string condition) {_conditions.push_back(condition);}
+    void addCondition(const std::string& condition) {_conditions.push_back(condition);}
 
     void removeCondition(int i) {_conditions.erase(_conditions.begin()+i);}
 

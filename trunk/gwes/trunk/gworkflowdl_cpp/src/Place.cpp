@@ -47,7 +47,7 @@ bool Place::isEmpty() const {
 	return (_tokens.empty());
 }
 
-void Place::addToken(Token::ptr_t tokenP) throw(CapacityException) {
+void Place::addToken(Token::ptr_t& tokenP) throw(CapacityException) {
 	if (_tokens.size() >= _capacity) {
 		ostringstream oss; 
 		oss << "Trying to put too many tokens on place \"" << _id << "\"";
@@ -67,7 +67,7 @@ const vector<Token::ptr_t>& Place::getTokens() const {
 	return _tokens;	
 }
 
-void Place::removeToken(Token::ptr_t tokenP) {
+void Place::removeToken(Token::ptr_t& tokenP) {
 	for(vector<Token::ptr_t>::iterator it=_tokens.begin(); it != _tokens.end(); ++it) {
 		if ((*it)->getID() == tokenP->getID()) {
 			(*it).reset();
@@ -109,7 +109,7 @@ const string& Place::getDescription() const {
 	return _description;	
 }
 
-void Place::setProperties(Properties::ptr_t propertiesP) {
+void Place::setProperties(Properties::ptr_t& propertiesP) {
 	_propertiesP = propertiesP;
 }
 
@@ -120,25 +120,25 @@ void Place::putProperty(const string& name, const string& value) {
 	_propertiesP->put(name,value);
 }
 
-Properties::ptr_t Place::getProperties() {
+Properties::ptr_t& Place::getProperties() {
 	return _propertiesP;	
 }
 
-const Properties::ptr_t Place::readProperties() const {
+const Properties::ptr_t& Place::readProperties() const {
 	return _propertiesP;
 }
 
-void Place::lockToken(Token::ptr_t tokenP, Transition* transitionP) {
+void Place::lockToken(Token::ptr_t& tokenP, Transition* transitionP) {
 	_nextUnlockedTokenP.reset();
 	tokenP->lock(transitionP);
 }
 
-void Place::unlockToken(Token::ptr_t tokenP) {
+void Place::unlockToken(Token::ptr_t& tokenP) {
 	_nextUnlockedTokenP.reset();
 	tokenP->unlock();
 }
 
-Token::ptr_t Place::getNextUnlockedToken() {
+Token::ptr_t& Place::getNextUnlockedToken() {
 	if ( _nextUnlockedTokenP == NULL) {
 		for (size_t i=0; i<_tokens.size(); i++) {
 			if (!_tokens[i]->isLocked()) {

@@ -42,7 +42,7 @@ void OperationClass::removeOperationCandidate(int i) {
 	_operationCandidates.erase(_operationCandidates.begin()+i);
 }
 
-void OperationClass::removeOperationCandidate(OperationCandidate::ptr_t ocandP) {
+void OperationClass::removeOperationCandidate(OperationCandidate::ptr_t& ocandP) {
 	for (unsigned int i=0; i<_operationCandidates.size(); i++) {
 		if (ocandP->getID() == _operationCandidates[i]->getID()) {
 			(_operationCandidates[i]).reset();

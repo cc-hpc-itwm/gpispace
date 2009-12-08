@@ -45,7 +45,7 @@ Token::Token(control_t control) {
  * @param _properties The properties of this token.
  * @param _control The control value of this token.
  */
-Token::Token(Properties::ptr_t propertiesP, control_t control) {
+Token::Token(Properties::ptr_t& propertiesP, control_t control) {
 	_id = generateID(); 
 	//_dataP=NULL; 
 	_control = control; 
@@ -59,7 +59,7 @@ Token::Token(Properties::ptr_t propertiesP, control_t control) {
  * Note: When the token is deleted, then also the data object will be deleted! 
  * @param _data XML content of the data token as data object.
  */  
-Token::Token(Data::ptr_t dataP) {
+Token::Token(const Data::ptr_t& dataP) {
 	_id = generateID(); 
 	_dataP = dataP;	
 	_lockP = NULL;
@@ -72,7 +72,7 @@ Token::Token(Data::ptr_t dataP) {
  * @param _properties The properties of this data token.
  * @param _data The data of this token.
  */
-Token::Token(Properties::ptr_t propertiesP, Data::ptr_t dataP) {
+Token::Token(Properties::ptr_t& propertiesP, const Data::ptr_t& dataP) {
 	_id = generateID(); 
 	_propertiesP = propertiesP; 
 	_dataP = dataP; 
@@ -97,12 +97,21 @@ void Token::putProperty(const string& name, const string& value) {
 Token::ptr_t Token::deepCopy() const {
 	Token::ptr_t ret; 
 	if (isData()) { 	// data token
-		if (_propertiesP) ret = Token::ptr_t(new Token(_propertiesP->deepCopy(), _dataP->deepCopy()));
-		else ret = Token::ptr_t(new Token(_dataP->deepCopy()));
+		Data::ptr_t dataCloneP = _dataP->deepCopy();
+		if (_propertiesP) {
+			Properties::ptr_t propsCloneP = _propertiesP->deepCopy();
+			ret = Token::ptr_t(new Token(propsCloneP, dataCloneP));
+		} else {
+			ret = Token::ptr_t(new Token(dataCloneP));
+		}
 		LOG_DEBUG(logger_t(getLogger("gwdl")), "generating deepCopy of data token " << _id << " with id " << ret->getID() );
 	} else {             // control token
-		if (_propertiesP) ret = Token::ptr_t(new Token(_propertiesP->deepCopy(), _control));
-		else ret = Token::ptr_t(new Token(_control));
+		if (_propertiesP) {
+			Properties::ptr_t propsCloneP = _propertiesP->deepCopy();
+			ret = Token::ptr_t(new Token(propsCloneP, _control));
+		} else {
+			ret = Token::ptr_t(new Token(_control));
+		}
 		LOG_DEBUG(logger_t(getLogger("gwdl")), "generating deepCopy of control token " << _id << " with id " << ret->getID() );
 	}
 	return ret;

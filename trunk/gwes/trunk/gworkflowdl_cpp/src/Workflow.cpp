@@ -51,6 +51,7 @@ gwdl::workflow_result_t Workflow::getResults() const
 
       for (place_token_list_t::const_iterator gwdl_token(place_tokens.begin()); gwdl_token != place_tokens.end(); ++gwdl_token)
       {
+    	  //ToDo: is it really neccessary to make a deep copy? Why not to reuse tokens?
         tokens.push_back((*gwdl_token)->deepCopy());
       }
       DLOG(DEBUG, "found " << tokens.size() << " tokens on place " << place_name);
@@ -65,7 +66,7 @@ gwdl::workflow_result_t Workflow::getResults() const
   return results;
 }
 
-Place::ptr_t Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement) {
+Place::ptr_t& Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement) {
 	unsigned int j=0;
 	for(map<string,Place::ptr_t>::iterator it=_places.begin(); it!=_places.end(); ++it)	{
 		if(j++ == i) return (it->second);
@@ -76,7 +77,7 @@ Place::ptr_t Workflow::getPlace(unsigned int i) throw (NoSuchWorkflowElement) {
 	throw NoSuchWorkflowElement(message.str());
 }
 
-Place::ptr_t Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement) {	
+Place::ptr_t& Workflow::getPlace(const string& id) throw (NoSuchWorkflowElement) {	
 	map<string,Place::ptr_t>::iterator iter = _places.find(id);
 	if (iter!=_places.end()) return (iter->second);
 	// no such workflow element
@@ -126,7 +127,7 @@ void Workflow::removeTransition(unsigned int i) throw (NoSuchWorkflowElement) {
 	_transitions.erase(_transitions.begin()+i);
 }
 
-Transition::ptr_t Workflow::getTransition(const string& id) throw (NoSuchWorkflowElement) {
+Transition::ptr_t& Workflow::getTransition(const string& id) throw (NoSuchWorkflowElement) {
 	for(unsigned int i=0; i<_transitions.size(); ++i) {
 		if(_transitions[i]->getID() == id) return _transitions[i];
 	}
@@ -146,7 +147,7 @@ unsigned int Workflow::getTransitionIndex(const string& id) const throw (NoSuchW
 	throw NoSuchWorkflowElement(message.str());
 }
 
-Transition::ptr_t Workflow::getTransition(unsigned int i) throw (NoSuchWorkflowElement) {	
+Transition::ptr_t& Workflow::getTransition(unsigned int i) throw (NoSuchWorkflowElement) {	
 	if (i>=_transitions.size())	{
 		// no such workflow element
 		ostringstream message; 

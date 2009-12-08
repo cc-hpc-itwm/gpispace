@@ -109,7 +109,7 @@ void SubWorkflowActivity::startActivity() throw (ActivityException,StateTransiti
 				LOG_INFO(_logger, "dataClone:\n" << *dataClone);
 				tokenClone = token->deepCopy();
 				LOG_INFO(_logger, "tokenClone: " << tokenClone);
-				placeP->addToken(it->tokenP->deepCopy());
+				placeP->addToken(tokenClone);
 				LOG_INFO(_logger, "..");
 			break;
 			case (TokenParameter::SCOPE_OUTPUT):	

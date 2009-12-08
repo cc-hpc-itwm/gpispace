@@ -152,26 +152,27 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 					string url = generateOutputDataURL(edgeExpression);
 					ostringstream oss;
 					oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
-					it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(gwdl::Data::ptr_t(new gwdl::Data(oss.str()))));
+					gwdl::Data::ptr_t dataP = gwdl::Data::ptr_t(new gwdl::Data(oss.str()));
+					it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(dataP));
 					command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
+				} else {
+					ostringstream oss;
+					oss << "<data><file>FILE://";
+
+					if (edgeExpression == "stdout")
+						oss << _stdoutfn;
+					else if (edgeExpression == "stderr")
+						oss << _stderrfn;
+					else if (edgeExpression == "exitcode")
+						oss << _exitcodefn;
+					else
+						oss << "STRANGE!";
+
+					oss << "</file></data>";
+
+					gwdl::Data::ptr_t dataP = gwdl::Data::ptr_t(new gwdl::Data(oss.str()));
+					it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(dataP));
 				}
-                                else
-                                  {
-                                    ostringstream oss;
-                                    oss << "<data><file>FILE://";
-
-                                    if (edgeExpression == "stdout")
-                                      oss << _stdoutfn;
-                                    else if (edgeExpression == "stderr")
-                                      oss << _stderrfn;
-                                    else if (edgeExpression == "exitcode")
-                                      oss << _exitcodefn;
-                                    else
-                                      oss << "STRANGE!";
-
-                                    oss << "</file></data>";
-                                    it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(gwdl::Data::ptr_t(new gwdl::Data(oss.str()))));
-                                  }
 			break;
 			}
 		}
