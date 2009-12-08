@@ -61,7 +61,8 @@ Place::Place(DOMElement* element) throw(CapacityException)
 				if (tokens.size() >= capacity) {
 					throw CapacityException("Trying to put too many tokens on place"); 
 				}
-				tokens.push_back(new Token((DOMElement*) node));
+				LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: refractoring from xerces-c to libxml2!");
+//				tokens.push_back(new Token((DOMElement*) node));
 			}
 		}
 	}
@@ -116,10 +117,11 @@ DOMElement* Place::toElement(DOMDocument* doc)
 			el->appendChild(el2);
 		}
 
-		for (unsigned int i = 0; i < tokens.size(); i++)
-		{
-			el->appendChild(tokens[i]->toElement(doc));
-		}                   
+		///ToDo: Migration to libxml2.
+//		for (unsigned int i = 0; i < tokens.size(); i++)
+//		{
+//			el->appendChild(tokens[i]->toElement(doc));
+//		}                   
 	}
 	catch (const OutOfMemoryException&)
 	{

@@ -7,6 +7,8 @@
 // gwes
 #include <gwes/Utils.h>
 #include <gwes/WorkflowObserver.h>
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 // std

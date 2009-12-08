@@ -185,9 +185,9 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 			if (it->tokenP == NULL) {
 				if (it->edgeP->getExpression().empty()) {             // missing output token without edge expression
 					if (activityP != NULL) {
-						it->tokenP = new Token(activityP->getStatus()==Activity::STATUS_COMPLETED);
+						it->tokenP = new Token((Token::control_t) (activityP->getStatus()==Activity::STATUS_COMPLETED));
 					} else {
-						it->tokenP = new Token(true);
+						it->tokenP = new Token(Token::CONTROL_TRUE);
 					}
 				} else {                                                  // missing output token with edge expression
 					///put SOAP Fault if there is no data for edge expression
@@ -203,7 +203,8 @@ void TransitionOccurrence::putOutputTokens() throw (CapacityException) {
 					fault << "' has no output parameter related to the edge expression '" << it->edgeP->getExpression();
 					fault << "'</soapenv:Detail>";
 					fault << "</soapenv:Fault></data>";
-					it->tokenP = new Token(new Data(fault.str()));
+					LOG_WARN(_logger, "///ToDo: refractoring from xerces-c to libxml2!");
+					it->tokenP = new Token(Data::ptr_t(new Data(fault.str())));
 				}
 			}
 			// put token to output place
@@ -265,7 +266,7 @@ void TransitionOccurrence::evaluateXPathEdgeExpressions(int step) {
 			string edgeExpression = it->edgeP->getExpression(); 
 			if (edgeExpression.find("$")!=edgeExpression.npos) {  // XPath expression
 				string str = xpathEvaluatorP->evalExpression2Xml(edgeExpression);
-				it->tokenP = new Token( new Data(str) );
+				it->tokenP = new Token( Data::ptr_t(new Data(str)) );
 			}
 			break;
 		}

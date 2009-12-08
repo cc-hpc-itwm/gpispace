@@ -69,7 +69,7 @@ void WorkflowTest::testWorkflow()
 			
 	// add token
 	LOG_INFO(logger, "  token...");
-	Token* d0 = new Token(true);
+	Token* d0 = new Token(Token::CONTROL_TRUE);
 	wf->getPlace("p0")->addToken(d0);
 
 	// transition is now enabled

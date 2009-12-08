@@ -80,17 +80,17 @@ void TransitionTest::testTransition()
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add read token
-   Token* d0 = new Token(true);
+   Token* d0 = new Token();
    p0->addToken(d0);
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add input token
-   Token* d1 = new Token(true);
+   Token* d1 = new Token();
    p1->addToken(d1);
    CPPUNIT_ASSERT(t0->isEnabled()==false);	
    
    // add write token
-   Token* d2 = new Token(true);
+   Token* d2 = new Token();
    p2->addToken(d2);
    // transition is now enabled
    CPPUNIT_ASSERT(t0->isEnabled()==true);	

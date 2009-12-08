@@ -152,7 +152,8 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 					string url = generateOutputDataURL(edgeExpression);
 					ostringstream oss;
 					oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
-					it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
+					LOG_WARN(logger_t(getLogger("gwdl")), "///ToDo: refractoring from xerces-c to libxml2!");
+//					it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
 					command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
 				}
                                 else

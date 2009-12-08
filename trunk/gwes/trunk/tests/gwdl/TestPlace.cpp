@@ -47,7 +47,7 @@ void PlaceTest::testPlace()
 	CPPUNIT_ASSERT(place->isEmpty());
 
 	// place addToken
-	gwdl::Token* token0 = new Token(false);
+	gwdl::Token* token0 = new Token(Token::CONTROL_FALSE);
 	LOG_INFO(logger, "place->addToken.id_" << token0->getID());
 	place->addToken(token0);
 	LOG_INFO(logger, "place->isEmpty()=" << place->isEmpty());
@@ -55,7 +55,7 @@ void PlaceTest::testPlace()
 	printTokens(logger,*place);
 
 	// place addToken
-	Token* token1 = new Token(true);
+	Token* token1 = new Token(Token::CONTROL_TRUE);
 	LOG_INFO(logger, "place->addToken.id_" << token1->getID());
 	LOG_INFO(logger, "Original token pointer=" << token1);
 	place->addToken(token1);
@@ -70,7 +70,7 @@ void PlaceTest::testPlace()
 	CPPUNIT_ASSERT(place->getTokens().size() == 1);
 
 	// place removeToken(token)
-	Token* token2 = new Token(true);
+	Token* token2 = new Token(Token::CONTROL_TRUE);
 	LOG_INFO(logger, "place->addToken.id_" << token2->getID());
 	place->addToken(token2);
 	printTokens(logger,*place);
@@ -97,11 +97,11 @@ void PlaceTest::testPlace()
 	// place CapacityException
 	LOG_INFO(logger, "check capacity exception");
 	bool test = false;
-	Token* token3 = new Token(false);
+	Token* token3 = new Token(Token::CONTROL_FALSE);
 	LOG_INFO(logger, "place->addToken.id_" << token3->getID());
 	place->addToken(token3);
 	try {
-		gwdl::Token* token4 = new Token(true);
+		gwdl::Token* token4 = new Token(Token::CONTROL_TRUE);
 		place->addToken(token4);
 	} catch(const gwdl::CapacityException &e) {
 		LOG_INFO(logger, "CapacityException:" << e.what());
@@ -146,10 +146,10 @@ void PlaceTest::testPlace()
 		props1->put("k3", "v3");  // should be ignored!
 		props1b.put("k3b","v3b"); // should change the properties!
 		CPPUNIT_ASSERT(place1->getProperties().size()==3);
-		Data *data5 = new Data("<data><x>245.4</x></data>");
+		Data::ptr_t data5 = Data::ptr_t(new Data("<data><x>245.4</x></data>"));
 		Token *token5 = new Token(data5);
 		place1->addToken(token5);
-		Data *data5b = new Data("<data><y>445</y></data>");
+		Data::ptr_t data5b = Data::ptr_t(new Data("<data><y>445</y></data>"));
 		Token *token5b = new Token(data5b);
 		place1->addToken(token5b);
 
@@ -175,8 +175,8 @@ void PlaceTest::testPlace()
 	// lock token
 	Place *place2 = new Place("");
 	CPPUNIT_ASSERT(place2->getNextUnlockedToken() == NULL);
-	Token* token2a = new Token(true);
-	Token* token2b = new Token(false);
+	Token* token2a = new Token(Token::CONTROL_TRUE);
+	Token* token2b = new Token(Token::CONTROL_FALSE);
 	place2->addToken(token2a);
 	place2->addToken(token2b);
 	LOG_INFO(logger, *place2);
@@ -199,7 +199,8 @@ void PlaceTest::printTokens(logger_t logger, gwdl::Place &place)
 	vector<gwdl::Token*> tokens = place.getTokens();
 	for (unsigned int i=0; i<tokens.size(); i++) {
 		gwdl::Token* token = tokens[i];
-		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID() << "=" << *token);					
+//		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID() << "=" << *token);					
+		LOG_INFO(logger, "Token[" << i << "].id_" << token->getID());					
 	}	
 
 }

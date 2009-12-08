@@ -8,6 +8,8 @@
 #include "SdpaDummy.h"
 // gwes
 #include <gwes/GWES.h>
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
@@ -172,8 +174,8 @@ void SdpaDummy::executeAtomicActivity(
 			case (TokenParameter::SCOPE_WRITE):
 				continue;
 			case (TokenParameter::SCOPE_OUTPUT):
-				it->tokenP = new Token(new Data(string("<data><output xmlns=\"\">15</output></data>")));
-				LOG_INFO(logger, "generated dummy output token: \n" << *it->tokenP);
+				it->tokenP = new Token(Data::ptr_t(new Data(string("<data><output xmlns=\"\">15</output></data>"))));
+				LOG_INFO(logger_t(getLogger("gwes")), "Generated dummy output token: " << *it->tokenP);
 				break;
 			}
 		}

@@ -7,7 +7,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 // gwdl
-#include <gwdl/memory.hpp> // shared_ptr
+#include <gwdl/Memory.h> // shared_ptr
 #include <gwdl/WorkflowFormatException.h>
 // std
 #include <ostream>
@@ -20,7 +20,7 @@ namespace gwdl
  * This class handles the data which can be hold by data tokens.
  * Code example:
  * <pre>
- *	Data* data = new Data("<data><x>6</x></data>");
+ *	Data* data = new Data("<x>6</x>");
  *  cout << *data << endl;
  * </pre>
  * 
@@ -32,7 +32,7 @@ class Data
 
 public:
 
-    typedef shared_ptr<Data> ptr_t;
+    typedef gwdl::shared_ptr<Data> ptr_t;
     
     /**
      * Internal content type of the Data object.
@@ -97,12 +97,12 @@ public:
 	 * Returns the content of the data element.
 	 * @return The content as XML string.
 	 */
-	content_t &getContent() {return _content;}
+	const content_t getContent() const {return _content;}
 	
 	/**
 	 * Serialize data to string.
 	 */
-	std::string &serialize() {return _content;}
+	const std::string serialize() const {return _content;}
 	
 	/**
 	 * Get the type of the data. Can be
@@ -130,7 +130,4 @@ private:
 };
 
 }
-
-std::ostream& operator<< (std::ostream &out, gwdl::Data &data);
-
 #endif /*DATA_H_*/
