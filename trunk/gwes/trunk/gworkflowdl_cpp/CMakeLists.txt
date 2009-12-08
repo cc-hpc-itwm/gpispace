@@ -10,6 +10,8 @@ target_link_libraries(gworkflowdl_cpp ${XERCESC_LIBRARIES})
 target_link_libraries(gworkflowdl_cpp ${LIBXML2_LIBRARIES})
 target_link_libraries(gworkflowdl_cpp ${LIBXSLT_LIBRARIES})
 target_link_libraries(gworkflowdl_cpp ${Boost_LIBRARIES})
+target_link_libraries(gworkflowdl_cpp pthread)
+target_link_libraries(gworkflowdl_cpp ${ZLIB_LIBRARIES})
 
 install(FILES ${gwdl-hdrs} DESTINATION include/gwdl)
 install(TARGETS gworkflowdl_cpp ARCHIVE DESTINATION lib)
