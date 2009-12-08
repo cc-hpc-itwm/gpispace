@@ -204,10 +204,10 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
 					if (breakstring=="REACHED") {
 						LOG_DEBUG(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
-						transprops->put("breakpoint", "RELEASED");
+						transprops.put("breakpoint", "RELEASED");
 					} else {
 						LOG_DEBUG(_logger, "reached breakpoint at transition " << selectedToP->transitionP->getID());
-						transprops->put("breakpoint", "REACHED");
+						transprops.put("breakpoint", "REACHED");
 						_suspend = true;
 					}
 				}

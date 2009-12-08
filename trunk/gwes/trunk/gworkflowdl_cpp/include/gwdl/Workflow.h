@@ -181,8 +181,6 @@ public:
 
     virtual gwdl::workflow_result_t getResults() const;
 
-    virtual gwdl::workflow_result_t getResults() const;
-
     /**
      * Get the ith place.
      */

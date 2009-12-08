@@ -137,12 +137,6 @@ public:
 	gwdl::OperationCandidate::ptr_t getOperationCandidate() { return _operation; }
 	
 	/**
-	 * Get the operation candidate which contains information
-	 * about operation name and resource name.
-	 */
-	gwdl::OperationCandidate* getOperationCandidate() { return _operation; }
-	
-	/**
 	 * Get activity class.
 	 */
 	std::string& getActivityClass() { return _activityImpl; }

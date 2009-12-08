@@ -15,7 +15,7 @@ namespace gwes
  * Type for referencing to a GWorkflowDL workflow.
  * @todo: It could be better to use a reference to the corresponding WorkflowHandler instead!
  */
-typedef gwdl::IWorkflow workflow_t;
+typedef gwdl::Workflow workflow_t;
 
 /**
  * Type of the workflow identifier.
