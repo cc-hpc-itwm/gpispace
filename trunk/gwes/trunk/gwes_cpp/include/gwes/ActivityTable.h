@@ -53,6 +53,9 @@ public:
 	 * @param activityID The identifier of the activity to erase.
 	 */
 	void remove(const std::string& activityID);
+	
+private:
+	pthread_mutex_t _monitorLock;
 
 }; // end class ActivityTable
 

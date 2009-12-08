@@ -15,26 +15,34 @@ using namespace std;
 namespace gwes
 {
 
-ActivityTable::ActivityTable()
-{
+struct mutex_lock {
+	mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) { pthread_mutex_lock(&mtx); }
+	~mutex_lock() { pthread_mutex_unlock(&mtx); }
+	pthread_mutex_t &mtx;
+};
+
+ActivityTable::ActivityTable() {
+    pthread_mutex_init(&_monitorLock, NULL);
 }
 
-ActivityTable::~ActivityTable()
-{
+ActivityTable::~ActivityTable() {
 	for (map<string,Activity*>::iterator it=begin(); it!=end(); ++it) {
 		Activity* activityP = it->second;
 		delete activityP;
 	}
 	clear();
+	pthread_mutex_destroy(&_monitorLock);
 }
 
 string ActivityTable::put(Activity* activityP) {
+    mutex_lock lock(_monitorLock);
 	string id = activityP->getID();
 	insert(pair<string, Activity*>(id, activityP));
 	return id;
 }
 
 Activity* ActivityTable::get(const string& id) throw (NoSuchActivityException) {
+    mutex_lock lock(_monitorLock);
 	iterator iter=find(id); 
 	if (iter==end()) {
 	     // no such activity
@@ -46,6 +54,7 @@ Activity* ActivityTable::get(const string& id) throw (NoSuchActivityException) {
 }
 
 void ActivityTable::remove(const string& id) {
+    mutex_lock lock(_monitorLock);
 	iterator iter=find(id);
 	if (iter==end()) {
 	     // no such activity
