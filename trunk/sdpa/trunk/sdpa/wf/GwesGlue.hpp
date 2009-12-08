@@ -51,8 +51,8 @@ namespace sdpa { namespace wf { namespace glue {
 
       {
         // remove sdpa-tag...
-        const std::string sTag("<sdpa");
-        const std::string eTag("</sdpa>");
+        const std::string sTag("<");
+        const std::string eTag(">");
         if (gwdl_token_data.substr(0, sTag.size()) == sTag)
         {
 		  // remove everything from <sdpa till a closing >
@@ -60,7 +60,10 @@ namespace sdpa { namespace wf { namespace glue {
           try
           {
 			const std::string::size_type end_of_start_tag = gwdl_token_data.find_first_of(">");
-            gwdl_token_data = gwdl_token_data.substr(end_of_start_tag+1, gwdl_token_data.size() - (end_of_start_tag+1+eTag.size()));
+			const std::string::size_type start_of_end_tag = gwdl_token_data.find_last_of("<");
+			const std::string::size_type remaining_size = start_of_end_tag - end_of_start_tag - 1;
+			assert (remaining_size <= gwdl_token_data.size());
+            gwdl_token_data = gwdl_token_data.substr(end_of_start_tag+1, remaining_size);
 			DLOG(DEBUG, "resulting data: " << gwdl_token_data);
           }
           catch (const std::exception &ex)
