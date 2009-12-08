@@ -1086,23 +1086,7 @@ Workflow::ptr_t Libxml2Builder::deserializeWorkflow(const string &xmlstring) con
  * @param filename The filename of the GWorkflowDL file including its path. 
  */
 Workflow::ptr_t Libxml2Builder::deserializeWorkflowFromFile(const std::string& filename) const throw (WorkflowFormatException) {
-	// read file
-	ifstream file(filename.c_str());
-	ostringstream workflowS;
-	if (file.is_open()) {
-		char c;
-		while (file.get(c)) {
-			workflowS << c;
-		}
-		file.close();
-	} else {
-		ostringstream message; 
-		message << "Unable to open file " << filename << ": " << strerror(errno);
-		LOG_ERROR(logger_t(getLogger("gwdl")), message);
-		throw WorkflowFormatException(message.str());
-	}
-	
-	return deserializeWorkflow(workflowS.str());
+	return deserializeWorkflow(XMLUtils::readFile(filename));
 }
 
 string Libxml2Builder::serializeWorkflow(const Workflow &workflow) const {

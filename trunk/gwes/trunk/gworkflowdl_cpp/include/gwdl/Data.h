@@ -59,7 +59,7 @@ public:
 		/**
 		 * Data of type file, e.g.,
 		 * <pre>
-		 * <data><file>file:///tmp/test.dat</file></data>
+		 * <file>file:///tmp/test.dat</file>
 		 * </pre>
 		 */
 		TYPE_FILE = 1,
@@ -67,7 +67,7 @@ public:
 		/**
 		 * Data of type volume, e.g.,
 		 * <pre>
-		 * <data><volume>THD_5</volume></data>
+		 * <volume>THD_5</volume>
 		 * </pre>
 		 */
 		TYPE_VOLUME = 2,
@@ -75,7 +75,7 @@ public:
 		/**
 		 * Data of type parameter, e.g.,
 		 * <pre>
-		 * <data><parameter><input1>5</input1></parameter></data>
+		 * <parameter><input1>5</input1></parameter>
 		 * </pre>
 		 */
 		TYPE_PARAMETER = 3

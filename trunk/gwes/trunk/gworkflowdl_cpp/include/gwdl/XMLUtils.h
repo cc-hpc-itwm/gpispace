@@ -103,9 +103,11 @@ public:
 	 */
 	void getText(std::ostringstream &out, xmlNodePtr nodeP);
 
-	static bool endsWith(const std::string& s1, const std::string& s2);
+	static bool endsWith(const std::string& str, const std::string& substr);
 
-	static bool startsWith(const std::string& s1, const std::string& s2);
+	static bool startsWith(const std::string& str, const std::string& substr);
+	
+	static std::string readFile(const std::string& filename) throw (WorkflowFormatException);
 	
 };
 

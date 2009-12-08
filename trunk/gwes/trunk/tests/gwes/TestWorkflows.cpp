@@ -8,6 +8,7 @@
 #include <gwes/Utils.h>
 #include <gwes/WorkflowObserver.h>
 // gwdl
+#include <gwdl/XMLUtils.h>
 #include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
@@ -156,6 +157,21 @@ void TestWorkflows::testWorkflowConcatenateIt()
 	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/concatenateIt.gwdl"),m_gwes));
 	CPPUNIT_ASSERT(workflow->readProperties()->get("status")=="COMPLETED");
 	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
+	// check result data.
+	Place::ptr_t place = workflow->getPlace("d25-27");
+	CPPUNIT_ASSERT_MESSAGE("output place", place);
+	Token::ptr_t token = place->getNextUnlockedToken();
+	CPPUNIT_ASSERT_MESSAGE("output token", token);
+	Data::ptr_t data = token->getData();
+	CPPUNIT_ASSERT_MESSAGE("output data", data);
+	string fileurl = XMLUtils::Instance()->getText(data->getContent());
+	LOG_INFO(logger, "output file URL:\n" << fileurl);
+	CPPUNIT_ASSERT_MESSAGE("output data starts with file://", XMLUtils::startsWith(fileurl, string("file://")));
+	string filename = fileurl.substr(fileurl.find("file://")+7);
+	LOG_INFO(logger, "filename: " << filename);
+	string result = XMLUtils::readFile(filename);
+	LOG_INFO(logger, "result: \n" << result);
+	CPPUNIT_ASSERT_EQUAL(string("///d25//////////////////\n///d26///////////////////\n///d27////////////////////\n"), result);		
 }
 
 /**
@@ -177,7 +193,7 @@ void TestWorkflows::testWorkflowPstm0()
 {
 	logger_t logger(getLogger("gwes"));
 	LOG_WARN(logger, "///ToDo: FIX: testWorkflowPstm0() currently DEACTIVATED (segFault)///");
-	Workflow::ptr_t workflow;
+//	Workflow::ptr_t workflow;
 //	CPPUNIT_ASSERT_NO_THROW(workflow = _testWorkflow(Utils::expandEnv("${GWES_CPP_HOME}/workflows/pstm-0.gwdl"),m_gwes));
 //	CPPUNIT_ASSERT(m_gwes.getStatusAsString(workflow)=="COMPLETED");
 //	CPPUNIT_ASSERT(workflow->readProperties()->get("occurrence.sequence").compare("preStackTimeMigration") == 0);

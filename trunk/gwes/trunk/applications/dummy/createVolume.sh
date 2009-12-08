@@ -65,7 +65,7 @@ if [ -z "$volumefn" ]; then
 fi
 
 ####################################
-# <data><numberpoints>320000000</numberpoints></data>
+# <numberpoints>320000000</numberpoints>
 np1=`cat $numberpointsfn`
 np2=${np1#*<numberpoints>}
 numberpoints=${np2%</numberpoints>*}

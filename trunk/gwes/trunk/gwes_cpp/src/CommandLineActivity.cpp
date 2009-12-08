@@ -151,13 +151,13 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 					// create new data token for each output. 
 					string url = generateOutputDataURL(edgeExpression);
 					ostringstream oss;
-					oss << "<data><" << edgeExpression << ">" << url << "</" << edgeExpression << "></data>";
+					oss << "<" << edgeExpression << ">" << url << "</" << edgeExpression << ">";
 					gwdl::Data::ptr_t dataP = gwdl::Data::ptr_t(new gwdl::Data(oss.str()));
 					it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(dataP));
 					command << " -" << edgeExpression << " " << convertUrlToLocalPath(url);
 				} else {
 					ostringstream oss;
-					oss << "<data><file>FILE://";
+					oss << "<file>file://";
 
 					if (edgeExpression == "stdout")
 						oss << _stdoutfn;
@@ -168,7 +168,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
 					else
 						oss << "STRANGE!";
 
-					oss << "</file></data>";
+					oss << "</file>";
 
 					gwdl::Data::ptr_t dataP = gwdl::Data::ptr_t(new gwdl::Data(oss.str()));
 					it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(dataP));
