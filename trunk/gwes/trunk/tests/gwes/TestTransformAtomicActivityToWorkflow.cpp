@@ -9,6 +9,8 @@
 // gwes
 #include <gwes/GWES.h>
 #include <gwes/Utils.h>
+// gwdl
+#include <gwdl/Libxml2Builder.h>
 //fhglog
 #include <fhglog/fhglog.hpp>
 
@@ -43,15 +45,16 @@ void TestTransformAtomicActivityToWorkflow::testTransform() {
 	string fn = Utils::expandEnv("${GWES_CPP_HOME}/workflows/test/simple-sdpa-test.gwdl"); 
 	LOG_INFO(logger, "reading workflow '"+fn+"'...");
 
-	Workflow* wfP;
+	Libxml2Builder builder;
+	Workflow::ptr_t wfP;
 	try {
-		wfP = new Workflow(fn);
+		wfP = builder.deserializeWorkflowFromFile(fn);
 	} catch (const WorkflowFormatException &e) {
 		LOG_ERROR(logger, "WorkflowFormatException: " << e.what());
 		throw;
 	}
 	// start workflow
-	_workflowId = _gwesP->submitWorkflow(*wfP);
+	_workflowId = _gwesP->submitWorkflow(wfP);
 
 	// test continues on callback handler (refer to method "submitActivity")
 	while (!_activityFinished) {

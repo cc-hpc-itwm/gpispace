@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <list>
 
-#include <gwdl/IWorkflow.h>
+#include <gwdl/Workflow.h>
 #include <gwes/IActivity.h>
 
 namespace gwes
@@ -12,8 +12,8 @@ namespace gwes
 
 class Gwes2Sdpa;
 
-typedef gwdl::IWorkflow workflow_t;
-typedef gwdl::IWorkflow::workflow_id_t workflow_id_t;
+typedef gwdl::Workflow workflow_t;
+typedef gwdl::Workflow::workflow_id_t workflow_id_t;
 typedef gwes::IActivity activity_t;
 typedef gwes::IActivity::activity_id_t activity_id_t;
 
@@ -128,7 +128,7 @@ public:
 	 * asynchronously and notifiy the SPDA about status transitions
 	 * using the callback methods of the Gwes2Sdpa handler.  
 	 */
-	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException) = 0;
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) = 0;
 
 	/**
 	 * Cancel a workflow asynchronously.
@@ -140,12 +140,12 @@ public:
 	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (std::exception) = 0;
 
     /* deserialize a workflow from a byte array */
-    virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error) = 0;
+    virtual gwdl::Workflow::ptr_t deserializeWorkflow(const std::string &) throw (std::runtime_error) = 0;
     /* serialize a workflow to a byte array */
-    virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error) = 0;
+    virtual std::string serializeWorkflow(const gwdl::Workflow &) throw (std::runtime_error) = 0;
 
     /* retrieve a workflow */
-    virtual workflow_t &getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
+    virtual workflow_t::ptr_t getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) = 0;
     /* retrieve an activity */
     virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity) = 0;
 };

@@ -94,7 +94,7 @@ void Token::putProperty(const string& name, const string& value) {
 	_propertiesP->put(name,value);
 }
 
-Token::ptr_t Token::deepCopy() {
+Token::ptr_t Token::deepCopy() const {
 	Token::ptr_t ret; 
 	if (isData()) { 	// data token
 		if (_propertiesP) ret = Token::ptr_t(new Token(_propertiesP->deepCopy(), _dataP->deepCopy()));

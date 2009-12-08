@@ -115,24 +115,26 @@ public:
      */
     void setID(const activity_id_t &id) { _id = id; }
 
-	const std::string &getName() const
-	{
-	  return _operation->getOperationName();
-	}
     /** 
      * Generates workflow object that corresponds to this activity.
      */
-    gwdl::IWorkflow::ptr_t transform2Workflow() const throw( std::exception );
+    gwdl::Workflow::ptr_t transform2Workflow() const throw( std::exception );
     
     /**
 	 * Get the ID of the owning workflog
 	 */
-	const gwdl::IWorkflow::workflow_id_t &getOwnerWorkflowID() const;
+	const gwdl::Workflow::workflow_id_t &getOwnerWorkflowID() const;
 
 	/////////////////////////////////////////
 	// GWES internal methods 
 	/////////////////////////////////////////
 
+	/**
+	 * Get the operation candidate which contains information
+	 * about operation name and resource name.
+	 */
+	gwdl::OperationCandidate::ptr_t getOperationCandidate() { return _operation; }
+	
 	/**
 	 * Get the operation candidate which contains information
 	 * about operation name and resource name.

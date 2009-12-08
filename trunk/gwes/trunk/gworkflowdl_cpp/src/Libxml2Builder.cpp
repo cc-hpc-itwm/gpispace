@@ -1119,9 +1119,9 @@ Workflow::ptr_t Libxml2Builder::elementToWorkflow(const xmlNodePtr nodeP) const 
 	// std::string _id;                                     -> from attribute <workflow ID="">
 	// std::string _description;                            -> from child element <description>
 	// Properties::ptr_t _propertiesP;                      -> from child elements <property>
-	// std::map<std::string, Place::ptr_t> _places;         -> from child elements <place>
-	// std::vector<Transition::ptr_t> _transitions;         -> from child elements <transition>
-	// std::vector<Transition::ptr_t> _enabledTransitions;  -> calculated on demand.
+	// place_map_t _places;         -> from child elements <place>
+	// transition_list_t _transitions;         -> from child elements <transition>
+	// transition_list_t _enabledTransitions;  -> calculated on demand.
 	///////////////////
 	
 	Workflow::ptr_t workflowP;
@@ -1202,13 +1202,13 @@ xmlNodePtr Libxml2Builder::workflowToElement(const Workflow &workflow) const {
 	}
 	
 	//  <place>
-	std::map<std::string, Place::ptr_t> places = workflow.readPlaces();
-	for(map<string,Place::ptr_t>::iterator it=places.begin(); it!=places.end(); ++it) {
+	Workflow::place_map_t places = workflow.readPlaces();
+	for(Workflow::place_map_t::iterator it=places.begin(); it!=places.end(); ++it) {
 		xmlAddChild(nodeP, placeToElement(*(it->second)));
 	}
 	
 	// <transition>
-	std::vector<Transition::ptr_t> transitions = workflow.readTransitions();
+	Workflow::transition_list_t transitions = workflow.readTransitions();
 	for (size_t i = 0; i < transitions.size(); i++) {
 		xmlAddChild(nodeP, transitionToElement(*transitions[i]));
 	}

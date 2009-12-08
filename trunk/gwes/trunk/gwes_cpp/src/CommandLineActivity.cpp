@@ -170,7 +170,7 @@ void CommandLineActivity::startActivity() throw (ActivityException,StateTransiti
                                       oss << "STRANGE!";
 
                                     oss << "</file></data>";
-                                    it->tokenP = new gwdl::Token(new gwdl::Data(oss.str()));
+                                    it->tokenP = gwdl::Token::ptr_t(new gwdl::Token(gwdl::Data::ptr_t(new gwdl::Data(oss.str()))));
                                   }
 			break;
 			}

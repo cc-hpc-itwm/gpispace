@@ -121,7 +121,7 @@ public:
 	 * Make a deep copy of this Data object and return a shared pointer to the new Data.
 	 * @return Shared pointer to the cloned Data object.
 	 */ 
-	ptr_t deepCopy();
+	ptr_t deepCopy() const;
 
 private:
 	int _type;

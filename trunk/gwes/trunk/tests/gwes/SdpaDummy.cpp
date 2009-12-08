@@ -86,7 +86,7 @@ void SdpaDummy::executeSubWorkflow(
 // 		subworkflow->setID("sdpa-dummy-worklfow-uuid");
 	
 	// submit workflow
-	workflow_id_t subWorkflowId = submitWorkflow(*subworkflow);
+	workflow_id_t subWorkflowId = submitWorkflow(subworkflow);
 	
 	// notify gwes that activity has been dispatched
 	_gwesP->activityDispatched(workflowId, activityId);
@@ -115,7 +115,7 @@ void SdpaDummy::executeSubWorkflow(
 				case (TokenParameter::SCOPE_OUTPUT):	
 					edgeExpression = it->edgeP->getExpression();
 				if (edgeExpression.find("$")==edgeExpression.npos) { // ignore XPath expressions
-					gwdl::Place* placeP = subworkflow->getPlace(edgeExpression);
+					gwdl::Place::ptr_t placeP = subworkflow->getPlace(edgeExpression);
 					it->tokenP = placeP->getTokens()[0]->deepCopy();
 					LOG_INFO(logger, "copy token " << it->tokenP->getID() << " to parent activity parameter list...");
 				}
@@ -174,8 +174,8 @@ void SdpaDummy::executeAtomicActivity(
 			case (TokenParameter::SCOPE_WRITE):
 				continue;
 			case (TokenParameter::SCOPE_OUTPUT):
-				it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(string("<data><output xmlns=\"\">15</output></data>")))));
-				LOG_INFO(logger_t(getLogger("gwes")), "Generated dummy output token: " << *it->tokenP);
+				it->tokenP = Token::ptr_t(new Token(Data::ptr_t(new Data(string("<output xmlns=\"\">15</output>")))));
+				LOG_INFO(logger, "generated dummy output token: \n" << *it->tokenP);
 				break;
 			}
 		}
@@ -246,6 +246,7 @@ void SdpaDummy::logWorkflowStatus() {
 }
 
 workflow_id_t SdpaDummy::submitWorkflow(workflow_t::ptr_t workflowP) {
+	logger_t logger = getLogger("gwes");
 	workflow_id_t workflowId = _gwesP->submitWorkflow(workflowP);
 	_wfStatusMap.insert(pair<workflow_id_t,ogsa_bes_status_t>(workflowId,RUNNING));
 	logWorkflowStatus();

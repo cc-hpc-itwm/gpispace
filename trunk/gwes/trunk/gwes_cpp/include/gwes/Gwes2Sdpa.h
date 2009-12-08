@@ -1,7 +1,7 @@
 #ifndef GWES2SDPA_H_
 #define GWES2SDPA_H_
 
-#include <gwdl/IWorkflow.h>
+#include <gwdl/Workflow.h>
 #include <gwes/IActivity.h>
 
 #include <stdexcept>
@@ -15,7 +15,7 @@ namespace gwes
 class Gwes2Sdpa {
 
 public:
-    typedef gwdl::IWorkflow workflow_t;
+    typedef gwdl::Workflow workflow_t;
     typedef workflow_t::workflow_id_t workflow_id_t;
 
     typedef gwes::IActivity activity_t;

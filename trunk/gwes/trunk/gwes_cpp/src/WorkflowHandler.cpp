@@ -169,10 +169,9 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
 	}
 
-	//loop while workflow is not to abort and ( there exists enabled transitions or this workflow is still active )
-	while ( !_abort 
-			&& (enabledTransitions.size()> 0 || _status == WorkflowHandler::STATUS_ACTIVE) 
-			){
+	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
+	while ((!_userabort && !_systemabort && enabledTransitions.size()> 0) 
+			|| _status == WorkflowHandler::STATUS_ACTIVE) {
 		if (modification) {
 			LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
 			<< ") --- " << enabledTransitions.size()
@@ -195,7 +194,7 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
 
 			//suspend if breakpoint has been reached
-			if (!_abort && !_suspend && selectedToP != NULL) {
+			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
 				Properties::ptr_t transprops = selectedToP->transitionP->getProperties();
 				if (transprops && transprops->contains("breakpoint")) {
 					string breakstring = transprops->get("breakpoint");
@@ -282,13 +281,13 @@ void WorkflowHandler::executeWorkflow() throw (StateTransitionException, Workflo
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
-			_abort = true;
+			_systemabort = true;
 			_wfP->putProperty(createNewErrorID(), oss.str());
-		}  catch (WorkflowFormatException e) {
+		}  catch (const WorkflowFormatException &e) {
 			ostringstream oss;
 			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.what();
 			LOG_ERROR(_logger, oss.str());
-			_abort = true;
+			_systemabort = true;
 			_wfP->putProperty(createNewErrorID(), oss.str());
 		}
 	}
@@ -573,10 +572,10 @@ bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step
 	try {
 		toP->writeWriteTokens();
 		toP->putOutputTokens();
-	} catch (CapacityException e) {
-		LOG_ERROR(_logger, "exception: " << e.message);
-		_abort = true;
-		_wfP->putProperty(createNewErrorID(), e.message);
+	} catch (const CapacityException &e) {
+		LOG_ERROR(_logger, "exception: " << e.what());
+		_systemabort = true;
+		_wfP->putProperty(createNewErrorID(), e.what());
 	}
 	
     // store occurrence sequence
@@ -635,10 +634,10 @@ bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
 				toP->writeWriteTokens();
 				//  put new token on each output place
 				toP->putOutputTokens();
-			} catch (CapacityException e) {
-				LOG_ERROR(_logger, "CapacityException:" << e.message);;
-				_abort = true;
-				_wfP->putProperty(createNewErrorID(), e.message);
+			} catch (const CapacityException &e) {
+				LOG_ERROR(_logger, "CapacityException:" << e.what());;
+				_systemabort = true;
+				_wfP->putProperty(createNewErrorID(), e.what());
 			}
 			
 			modification = true;

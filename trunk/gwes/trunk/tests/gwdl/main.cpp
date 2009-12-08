@@ -46,6 +46,7 @@ int main()
     fhg::log::Configurator::configure();
 
 	// logger
+    fhg::log::Configurator::configure();
 	logger_t logger(getLogger("gwdl"));
 	
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWDL TESTS ###########################");

@@ -131,27 +131,19 @@ namespace gwdl
 class Workflow : public IWorkflow
 {
 
-private:
-    std::string _id;
-    std::string _description;
-    Properties::ptr_t _propertiesP;
-    std::vector<Transition::ptr_t> _transitions;
-    std::vector<Transition::ptr_t> _enabledTransitions;
-    
-    /**
-     * Map of places.
-     * Key is the place ID, the value contains a shared pointer to the place.
-     */
-    std::map<std::string, Place::ptr_t> _places;
-    	
 public:
 
 	typedef gwdl::shared_ptr<Workflow> ptr_t;
+	typedef std::map<std::string, Place::ptr_t> place_map_t;
+	typedef std::vector<Transition::ptr_t> transition_list_t;
+    typedef std::string workflow_id_t;
+    typedef std::list<Token::ptr_t> token_list_t;
+    typedef std::map<std::string, token_list_t> workflow_result_t;
 
     /**
 	 * Constructor for empty workflow.
 	 */
-	explicit Workflow(const std::string& id);
+	explicit Workflow(const workflow_id_t& id);
 	
 	/**
 	 * Destructor.
@@ -179,13 +171,15 @@ public:
      * Return the map of places of the workflow.
      * @return place map.
      */
-    std::map<std::string, Place::ptr_t>& getPlaces() { return _places; }
+    place_map_t& getPlaces() { return _places; }
 
     /**
      * Return a read-only map of places of the workflow.
      * @return place map.
      */
-    const std::map<std::string, Place::ptr_t>& readPlaces() const { return _places; }
+    const place_map_t& readPlaces() const { return _places; }
+
+    virtual gwdl::workflow_result_t getResults() const;
 
     virtual gwdl::workflow_result_t getResults() const;
 
@@ -265,13 +259,13 @@ public:
      * return the transitions of the workflow as a vector.
      * @return Reference to transition vector.
      */
-    std::vector<Transition::ptr_t>& getTransitions() {return _transitions;}
+    transition_list_t& getTransitions() {return _transitions;}
 
     /**
      * return a read-only vector of the transitions of the workflow.
      * @return read-only reference to transition vector.
      */
-    const std::vector<Transition::ptr_t>& readTransitions() const {return _transitions;}
+    const transition_list_t& readTransitions() const {return _transitions;}
 
     // advanced methods that make life easier
 
@@ -279,7 +273,7 @@ public:
      * return the workflow's enabled transitions as vector.
      * @return vector of enabled transitions.
      */
-    std::vector<Transition::ptr_t>& getEnabledTransitions();
+    transition_list_t& getEnabledTransitions();
 
     /**
      * Set the human-readable workflow description.
@@ -322,6 +316,19 @@ public:
 	 */
     void setProperties(Properties::ptr_t propertiesP){_propertiesP = propertiesP;}
 
+private:
+    std::string _id;
+    std::string _description;
+    Properties::ptr_t _propertiesP;
+    transition_list_t _transitions;
+    transition_list_t _enabledTransitions;
+    
+    /**
+     * Map of places.
+     * Key is the place ID, the value contains a shared pointer to the place.
+     */
+    place_map_t _places;
+    	
 }; // end class Workflow
 
 } // end namespace gwdl

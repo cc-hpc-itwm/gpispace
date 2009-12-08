@@ -48,10 +48,10 @@ using namespace fhg::log;
 
 int main() 
 {
-    fhg::log::Configurator::configure();
-
 	// logger
+    fhg::log::Configurator::configure();
 	logger_t logger(getLogger("gwes"));
+
 	LOG_INFO(logger, "########################### BEGIN OF ALL GWES TESTS ###########################");
 
 	// Informiert Test-Listener ueber Testresultate

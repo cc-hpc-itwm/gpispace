@@ -300,20 +300,14 @@ public:
 	virtual void registerHandler(Gwes2Sdpa *sdpa);
 	virtual void unregisterHandler(Gwes2Sdpa *sdpa);
 
-	virtual workflow_id_t submitWorkflow(workflow_t &workflow) throw (std::exception);
+	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception);
 
-	/**
-	 * removes a workflow from gwes after it has reached one of the
-	 * finished/failed/cancelled states
-	 */ 
-	virtual void removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+	virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
 
-	virtual workflow_id_t submitWorkflow(workflow_t::ptr_t workflowP) throw (gwdl::WorkflowFormatException);
+    virtual gwdl::Workflow::ptr_t deserializeWorkflow(const std::string &) throw (std::runtime_error);
+    virtual std::string serializeWorkflow(const gwdl::Workflow &) throw (std::runtime_error);
 
-    virtual gwdl::IWorkflow *deserializeWorkflow(const std::string &) throw (std::runtime_error);
-    virtual std::string serializeWorkflow(const gwdl::IWorkflow &) throw (std::runtime_error);
-
-    virtual workflow_t &getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
+    virtual workflow_t::ptr_t getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow);
     virtual activity_t &getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity);
 };
 

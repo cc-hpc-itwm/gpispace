@@ -99,8 +99,8 @@ void PlaceTest::testPlace()
 	try {
 		gwdl::Token::ptr_t token4 = Token::ptr_t(new Token(Token::CONTROL_TRUE));
 		placeP->addToken(token4);
-	} catch(gwdl::CapacityException e) {
-		LOG_INFO(logger, "CapacityException:" << e.message);
+	} catch(const gwdl::CapacityException &e) {
+		LOG_INFO(logger, "CapacityException:" << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -108,8 +108,8 @@ void PlaceTest::testPlace()
 	test = false;
 	try {
 		placeP->setCapacity(0);
-	} catch(gwdl::CapacityException e) {
-		LOG_INFO(logger, "CapacityException:" << e.message);
+	} catch(const gwdl::CapacityException &e) {
+		LOG_INFO(logger, "CapacityException:" << e.what());
 		test = true;
 	}
 	CPPUNIT_ASSERT(test);
@@ -157,10 +157,10 @@ void PlaceTest::testPlace()
 		CPPUNIT_ASSERT_EQUAL(string("<y>445</y>"), tokens5[1]->getData()->getContent());   
 		propsP.reset();
 	}
-	catch (WorkflowFormatException e) 
+	catch (const WorkflowFormatException &e) 
 	{
-		LOG_INFO(logger, "WorkflowFormatException: " << e.message);
-		CPPUNIT_ASSERT_MESSAGE(e.message, false);
+		LOG_INFO(logger, "WorkflowFormatException: " << e.what());
+		CPPUNIT_ASSERT_MESSAGE(e.what(), false);
 	}
 
 	LOG_INFO(logger, "-------------- test place deserialize-serialize... --------------");

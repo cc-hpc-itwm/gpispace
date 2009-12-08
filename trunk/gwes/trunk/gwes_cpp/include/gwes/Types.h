@@ -20,7 +20,7 @@ typedef gwdl::IWorkflow workflow_t;
 /**
  * Type of the workflow identifier.
  */
-typedef gwdl::IWorkflow::workflow_id_t workflow_id_t;
+typedef gwdl::Workflow::workflow_id_t workflow_id_t;
 
 /**
  * Type for referencing to a SPDA activity.

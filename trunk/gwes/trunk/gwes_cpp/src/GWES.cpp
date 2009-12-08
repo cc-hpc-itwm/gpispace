@@ -18,27 +18,24 @@ using namespace gwes;
 namespace gwes
 {
 
-  struct mutex_lock
-  {
-    mutex_lock(pthread_mutex_t &mutex)
-      : mtx(mutex)
-    {
+  struct mutex_lock {
+    mutex_lock(pthread_mutex_t &mutex) : mtx(mutex) {
       pthread_mutex_lock(&mtx);
     }
-    ~mutex_lock()
-    {
+    ~mutex_lock() {
       pthread_mutex_unlock(&mtx);
     }
 
     pthread_mutex_t &mtx;
   };
 
-
 /**
  * Constructor for GWES.
  */
-GWES::GWES() : _logger(fhg::log::getLogger("gwes")) {
-	_sdpaHandler = NULL;
+GWES::GWES(const std::string &a_workflow_directory)
+  : _sdpaHandler(NULL)
+  , workflow_directory_(a_workflow_directory)
+  , _logger(fhg::log::getLogger("gwes")) {
 	Utils::setEnvironmentVariables();
     pthread_mutex_init(&monitor_lock_, NULL);
     if (workflow_directory_.empty())
@@ -443,7 +440,8 @@ void GWES::unregisterHandler(Gwes2Sdpa *sdpa) {
 /**
  * Initiate and start a workflow.
  */
-workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (WorkflowFormatException) {
+workflow_id_t GWES::submitWorkflow(workflow_t::ptr_t workflowP) throw (std::exception) { //(WorkflowFormatException) {
+    mutex_lock lock(monitor_lock_);
 	string workflowId = initiate(workflowP,"sdpa");
 	start(workflowId);
 	return workflowId;
@@ -470,65 +468,33 @@ void GWES::removeWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow
  */
 void GWES::cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
     mutex_lock lock(monitor_lock_);
-    try
-    {
+    try {
     	abort(workflowId);
-    }
-    catch (const NoSuchWorkflowException &)
-    {
-      throw NoSuchWorkflow(workflowId);
+    } catch (const NoSuchWorkflowException &nswfe) {
+    	throw NoSuchWorkflow(workflowId);
     }
 }
 
-gwdl::IWorkflow *GWES::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error)
-{
+gwdl::Workflow::ptr_t GWES::deserializeWorkflow(const std::string &bytes) throw (std::runtime_error) {
     mutex_lock lock(monitor_lock_);
-  XERCES_CPP_NAMESPACE::DOMElement* element = (gwdl::XMLUtils::Instance()->deserialize(bytes))->getDocumentElement();
-  if (element)
-  {
-    return new gwdl::Workflow(element);
-  }
-  else
-  {
-    throw std::runtime_error("could not deserialize input string");
-  }
+	Libxml2Builder builder;
+	Workflow::ptr_t workflowP = builder.deserializeWorkflow(bytes);
+	return workflowP;
 }
 
-std::string GWES::serializeWorkflow(const gwdl::IWorkflow &workflow) throw (std::runtime_error)
-{
-    mutex_lock lock(monitor_lock_);
-  gwdl::Workflow &real_workflow = static_cast<gwdl::Workflow&>(const_cast<IWorkflow&>(workflow));
-  std::ostringstream ostr;
-  ostr << real_workflow;
-  return ostr.str();
+std::string GWES::serializeWorkflow(const gwdl::Workflow &workflow) throw (std::runtime_error) {
+	mutex_lock lock(monitor_lock_);
+//	gwdl::Workflow &real_workflow = static_cast<gwdl::Workflow&>(const_cast<IWorkflow&>(workflow));
+	Libxml2Builder builder;
+	return builder.serializeWorkflow(workflow);
 }
 
-workflow_t &GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow)
-{
-  try
-  {
-	return *_wfht.get(workflowId)->getWorkflow();
-  }
-  catch (const NoSuchWorkflowException&)
-  {
-	throw NoSuchWorkflow(workflowId);
-  }
+workflow_t::ptr_t GWES::getWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflow) {
+  return _wfht.get(workflowId)->getWorkflow();
 }
 
-activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity)
-{
-  try
-  {
-	return *_wfht.get(workflowId)->getActivity(activityId);
-  }
-  catch (const NoSuchWorkflowException&)
-  {
-	throw NoSuchWorkflow(workflowId);
-  }
-  catch (const NoSuchActivityException &)
-  {
-	throw NoSuchActivity(activityId);
-  }
+activity_t &GWES::getActivity(const workflow_id_t &workflowId, const activity_id_t &activityId) throw (NoSuchWorkflow, NoSuchActivity) {
+  return *_wfht.get(workflowId)->getActivity(activityId);
 }
 
 } // end namespace gwes

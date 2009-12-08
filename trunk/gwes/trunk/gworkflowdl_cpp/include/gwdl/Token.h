@@ -194,7 +194,7 @@ public:
 	 * Locks from transitions will be removed on the cloned token.
 	 * @return Pointer to the cloned Token object.
 	 */ 
-	Token::ptr_t deepCopy();
+	ptr_t deepCopy() const;
 	
 private:
 	long _id;
