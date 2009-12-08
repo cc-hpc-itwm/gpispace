@@ -419,7 +419,7 @@ void WorkflowHandler::update(const Event& event) {
  * Get the workflow which is handled by this WorkflowHandler.
  * @return A pointer to the workflow.
  */
-gwdl::Workflow::ptr_t WorkflowHandler::getWorkflow() {
+workflow_t::ptr_t& WorkflowHandler::getWorkflow() {
 	return _wfP;
 }
 
