@@ -425,7 +425,7 @@
     <transition ID="computation_done">
       <inputPlace placeID="seq_after_finalize" edgeExpression="seq"/>
 
-      <outputPlace placeID="done" edgeExpression="seq"/>
+      <outputPlace placeID="done" edgeExpression="$seq"/>
     </transition>
 
 </workflow>
