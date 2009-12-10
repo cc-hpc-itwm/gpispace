@@ -137,6 +137,11 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	else //event sent by a worker
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
+
+		// send immediately a JobFinishedAckEvent back to the worker/slave
+		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+		sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
@@ -162,13 +167,6 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());
-
-					// send a JobFinishedAckEvent back to the worker/slave
-					//delete it also from job_map_
-					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
-
-					// send the event to the slave
-					sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
 				}
 				catch(WorkerNotFoundException)
 				{
@@ -231,7 +229,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			}
 			catch(QueueFull)
 			{
-				SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+				SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
 			}
 			catch(seda::StageNotFound)
 			{
@@ -249,6 +247,11 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	else //event sent by a worker
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
+
+		// send immediately a JobFailedAckEvent back to the worker/slave
+		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+		sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
@@ -274,13 +277,6 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());
-
-					// send a JobFailedAckEvent back to the worker/slave
-					//delete it also from job_map_
-					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
-
-					// send the event to the slave
-					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
 				}
 				catch(WorkerNotFoundException)
 				{

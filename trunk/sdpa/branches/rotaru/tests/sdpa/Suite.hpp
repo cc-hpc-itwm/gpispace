@@ -59,7 +59,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( C2D2D2DDummyGwesTest::suite() );
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );
-	  suiteOfTests->addTest( TestComponents::suite() );
+	  //suiteOfTests->addTest( TestComponents::suite() );
       return suiteOfTests;
     }
   };
