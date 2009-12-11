@@ -515,15 +515,15 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		else // send an error event
 		{
 			SDPA_LOG_DEBUG("no job available, get_next_job should probably throw an exception?");
-//			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
-//			sendEvent(ptr_to_slave_stage_, pErrorEvt);
+			// ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
+			// sendEvent(ptr_to_slave_stage_, pErrorEvt);
 		}
 	}
 	catch(const NoJobScheduledException&)
 	{
 		SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
-//		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
-//		sendEvent(ptr_to_slave_stage_, pErrorEvt);
+		// ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_ENOJOBAVAIL) );
+		// sendEvent(ptr_to_slave_stage_, pErrorEvt);
 	}
 	catch(const WorkerNotFoundException&)
 	{

@@ -138,9 +138,12 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 
-		// send immediately a JobFinishedAckEvent back to the worker/slave
-		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
-		sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+		if( name() != NRE )
+		{
+			// send a JobFinishedAckEvent back to the worker/slave
+			JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+			sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+		}
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -248,9 +251,13 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
 
-		// send immediately a JobFailedAckEvent back to the worker/slave
-		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
-		sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+		if( name() != NRE )
+		{
+			// send a JobFailedAckEvent back to the worker/slave
+			JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+
+			sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+		}
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -272,6 +279,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				}
 
 				try {
+					// delete the job from the worker's queues
 					Worker::ptr_t ptrWorker = findWorker(worker_id);
 					// delete job from worker's queues
 

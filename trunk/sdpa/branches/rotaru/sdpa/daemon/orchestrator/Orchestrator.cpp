@@ -101,6 +101,13 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	else //	if(pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
+
+		// send a JobFinishedAckEvent back to the worker/slave
+		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+
+		// send the event to the slave
+		sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
@@ -137,13 +144,6 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());
-
-					// send a JobFinishedAckEvent back to the worker/slave
-					//delete it also from job_map_
-					JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
-
-					// send the event to the slave
-					sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
 				}
 				catch(WorkerNotFoundException)
 				{
@@ -195,6 +195,13 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	else //	if(pEvt->from() != sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
+
+		// send a JobFailedAckEvent back to the worker/slave
+		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+
+		// send the event to the slave
+		sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
 			if(ptr_Sdpa2Gwes_)
@@ -231,13 +238,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());
-
-					// send a JobFailedAckEvent back to the worker/slave
-					//delete it also from job_map_
-					JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
-
-					// send the event to the slave
-					sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
 				}
 				catch(const WorkerNotFoundException&)
 				{
