@@ -15,7 +15,6 @@
 
 void signal_handler(int sig){
         printf("Sig handler called...\n");
-	killProcsVM();
 	shutdownPv4dVM(); 
 	fvmLeave();
 	switch (sig)
@@ -112,7 +111,6 @@ int main(int argc, char *argv[])
 /*     pv4d_printf("Error waiting for pc\n"); */
 
 
-  killProcsVM();
   shutdownPv4dVM();
   fvmLeave();
 
