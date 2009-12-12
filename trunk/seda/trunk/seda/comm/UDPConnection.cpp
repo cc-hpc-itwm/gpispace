@@ -112,9 +112,9 @@ namespace seda { namespace comm {
 
     io_service_.reset();
 
-    DLOG(DEBUG, "host = " << host() << " port = " << port());
+    DLOG(TRACE, "host = " << host() << " port = " << port());
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
-    LOG(DEBUG, "starting UDPConnection(" << name() << ") on " << my_endpoint);
+    DLOG(TRACE, "starting UDPConnection(" << name() << ") on " << my_endpoint);
 
     socket_ = new udp::socket(io_service_, my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
@@ -125,7 +125,7 @@ namespace seda { namespace comm {
           boost::asio::placeholders::bytes_transferred));
     locator_->insert(name(), real_endpoint.address().to_string(), real_endpoint.port());
 
-    DLOG(DEBUG, "starting service thread");
+    DLOG(TRACE, "starting service thread");
     service_thread_ = new boost::thread(boost::ref(*this));
     barrier_.wait();
     LOG(INFO, "started UDPConnection(" << name() << ") on " << real_endpoint);
@@ -135,15 +135,15 @@ namespace seda { namespace comm {
   {
     if (service_thread_)
     {
-      LOG(DEBUG, "stopping UDPConnection(" << name() << ")");
+      DLOG(DEBUG, "stopping UDPConnection(" << name() << ")");
       locator_->remove(name());
 
-      DLOG(DEBUG, "interrupting service thread");
+      DLOG(TRACE, "interrupting service thread");
       service_thread_->interrupt(); 
       io_service_.stop();
-      DLOG(DEBUG, "joining service thread");
+      DLOG(TRACE, "joining service thread");
       service_thread_->join();
-      DLOG(DEBUG, "service thread finished");
+      DLOG(TRACE, "service thread finished");
       delete service_thread_;
       service_thread_ = NULL;
 
@@ -298,7 +298,7 @@ namespace seda { namespace comm {
 
   void UDPConnection::operator()()
   {
-    LOG(DEBUG, "thread started");
+    DLOG(TRACE, "thread started");
     barrier_.wait();
     io_service_.run();
   }
