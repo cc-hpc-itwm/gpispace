@@ -26,11 +26,12 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace seda { namespace comm {
-  template <typename MessageType, typename MessageIdType>
+  template <typename MessageType, typename MessageIdType, typename Destination>
 	struct msg_info
 	{
 	  typedef MessageType message_type;
 	  typedef MessageIdType message_id_type;
+	  typedef Destination destination_type;
 	  typedef unsigned long time_type;
 	  typedef std::size_t size_type;
 
@@ -38,12 +39,14 @@ namespace seda { namespace comm {
 			 , message_id_type id
 			 , size_type retries
 			 , time_type last_send
-			 , time_type deliver_timeout)
+			 , time_type deliver_timeout
+			 , destination_type *dest)
 		: msg_id(id)
 		, msg(m)
 		, retry_counter(retries)
 		, tstamp_of_last_send(last_send)
 		, timeout(deliver_timeout)
+		, destination(dest)
 	  {
 	  }
 
@@ -53,6 +56,7 @@ namespace seda { namespace comm {
 		, retry_counter(other.retry_counter)
 		, tstamp_of_last_send(other.tstamp_of_last_send)
 		, timeout(other.timeout)
+		, destination(other.destination)
 	  { }
 
 	  msg_info &operator=(const msg_info &rhs)
@@ -64,6 +68,7 @@ namespace seda { namespace comm {
 		  retry_counter = rhs.retry_counter;
 		  tstamp_of_last_send = rhs.tstamp_of_last_send;
 		  timeout = rhs.timeout;
+		  destination = rhs.destination;
 		}
 		return *this;
 	  }
@@ -76,25 +81,27 @@ namespace seda { namespace comm {
 	  size_type retry_counter;		//! how often should the message be resent
 	  time_type tstamp_of_last_send;	//! how much time may pass between two resends
 	  time_type timeout;				//! how much time may pass between two resends
+	  destination_type *destination;    //! where to deliver the events (must provide send() method)
 	};
 
-  template <typename MessageType, typename MessageIdType>
+  template <typename MessageType, typename MessageIdType, typename StageType>
 	class delivery_service
 	{
 	  private:
-		typedef msg_info<MessageType, MessageIdType> msg_info_type;
+		typedef msg_info<MessageType, MessageIdType, StageType> msg_info_type;
 		typedef std::deque<msg_info_type> msg_info_list;
 		typedef typename msg_info_list::iterator iterator;
 
 	  public:
+		typedef StageType stage_type;
 		typedef MessageType message_type;
 		typedef MessageIdType message_id_type;
 		typedef typename msg_info_type::time_type time_type;
 		typedef typename msg_info_type::size_type size_type;
 
-		delivery_service(const seda::Stage::Ptr &next_stage, boost::asio::io_service &asio_service, time_type interval_milliseconds = 500)
-		  : output_stage_(next_stage)
-		  , io_service_(asio_service)
+		explicit
+		delivery_service(boost::asio::io_service &asio_service, time_type interval_milliseconds = 500)
+		  : io_service_(asio_service)
 		  , timer_(asio_service)
 		  , timer_timeout_(interval_milliseconds)
 		{ }
@@ -113,12 +120,7 @@ namespace seda { namespace comm {
 		
 		void start()
 		{
-		  timer_.cancel();
-
-		  // register first deadline timer
-		  timer_.expires_from_now(boost::posix_time::milliseconds(timer_timeout_));
-		  timer_.async_wait(boost::bind(&delivery_service::timer_timedout, this, boost::asio::placeholders::error));
-		  DLOG(TRACE, "timer started, expires in " << timer_.expires_from_now());
+		  start_timer();
 		}
 
 		void stop()
@@ -159,16 +161,17 @@ namespace seda { namespace comm {
 		}
 
 		const message_id_type &
-		send(message_type msg
+		send(stage_type *destination
+		   , message_type msg
 		   , const message_id_type &msg_id
 		   , time_type timeout
 		   , size_type retries = std::numeric_limits<size_type>::max())
 		{
-		  output_stage_->send(msg);
+		  destination->send(msg);
 
 		  if (retries)
 		  {
-			msg_info_type m_info(msg, msg_id, retries, time(NULL), timeout);
+			msg_info_type m_info(msg, msg_id, retries, time(NULL), timeout, destination);
 			boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 			pending_messages_.push_back(m_info);
 			DLOG(TRACE, "enqued message for retransmission: " << msg_id);
@@ -177,13 +180,20 @@ namespace seda { namespace comm {
 		  return msg_id;
 		}
 	  private:
+		void start_timer()
+		{
+		  timer_.expires_from_now(boost::posix_time::milliseconds(timer_timeout_));
+		  timer_.async_wait(boost::bind(&delivery_service::timer_timedout, this, boost::asio::placeholders::error));
+		  DLOG(TRACE, "timer started, expires in " << timer_.expires_from_now());
+		}
+
 		void timer_timedout(const boost::system::error_code &error)
 		{
 		  if (! error)
 		  {
 			resend_messages();
 			// reschedule next timer
-			start();
+			start_timer();
 		  }
 		  else
 		  {
@@ -219,7 +229,7 @@ namespace seda { namespace comm {
 		void resend_message(msg_info_type & m_info, time_type tstamp)
 		{
 		  LOG(WARN, "resending message: " << m_info.msg_id);
-		  output_stage_->send(m_info.msg);
+		  m_info.destination->send(m_info.msg);
 		  m_info.retry_counter--;
 		  m_info.tstamp_of_last_send = tstamp;
 		}
@@ -235,7 +245,6 @@ namespace seda { namespace comm {
 		  return false;
 		}
 
-		seda::Stage::Ptr output_stage_;
 		boost::asio::io_service &io_service_;
 		boost::asio::deadline_timer timer_;
 		time_type timer_timeout_; // milli seconds

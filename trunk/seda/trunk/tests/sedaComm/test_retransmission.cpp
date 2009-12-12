@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
   int errcount(0);
   {
-	typedef seda::comm::delivery_service<seda::comm::SedaMessage::Ptr, seda::comm::SedaMessage::message_id_type> seda_msg_delivery_service;
+	typedef seda::comm::delivery_service<seda::comm::SedaMessage::Ptr, seda::comm::SedaMessage::message_id_type, seda::Stage> seda_msg_delivery_service;
 
     seda::StageFactory sFactory;
     seda::Strategy::Ptr discard(new seda::DiscardStrategy("discard"));
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     seda::Stage::Ptr stage(sFactory.createStage("final", ecs));
 
 	seda::comm::ServiceThread service_thread;
-	seda_msg_delivery_service service(stage, service_thread.io_service(), 500);
+	seda_msg_delivery_service service(service_thread.io_service(), 500);
 
 	stage->start();
 	service.start();
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	{
 	  std::clog << "testing successful send of a single message...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
-	  service.send(m1, m1->id(), 1, 1);
+	  service.send(stage.get(), m1, m1->id(), 1, 1);
 
 	  if (ecs->wait(1, 1000))
 	  {
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 	{
 	  std::clog << "testing successful send of a single message after retry...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
-	  service.send(m1, m1->id(), 1, 1);
+	  service.send(stage.get(), m1, m1->id(), 1, 1);
 
 	  if (ecs->wait(2, 3000))
 	  {
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 	{
 	  std::clog << "testing cancel after resend...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
-	  service.send(m1, m1->id(), 1, 5);
+	  service.send(stage.get(), m1, m1->id(), 1, 5);
 
 	  if (ecs->wait(2, 2000))
 	  {
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
 	  std::clog << "testing send of a single message with retry after restart...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
-	  service.send(m1, m1->id(), 1, 1);
+	  service.send(stage.get(), m1, m1->id(), 1, 1);
 
 	  if (ecs->wait(2, 3000))
 	  {
