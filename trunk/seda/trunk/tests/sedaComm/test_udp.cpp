@@ -30,6 +30,8 @@
 #include <seda/comm/ConnectionFactory.hpp>
 #include <seda/comm/ConnectionStrategy.hpp>
 
+#include <seda/comm/delivery_service.hpp>
+
 int main(int argc, char **argv)
 {
   fhg::log::Configurator::configure();
@@ -128,12 +130,12 @@ int main(int argc, char **argv)
 
     // send an event to the p1-network stage
     seda::StageRegistry::instance().lookup("p1-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello process 2"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello process 2", 1))
     );
 
     // send an event to the p2-network stage
     seda::StageRegistry::instance().lookup("p2-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello process 1"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello process 1", 2))
     );
 
     // wait for both messages to be received

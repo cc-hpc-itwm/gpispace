@@ -51,13 +51,17 @@
 
 namespace boost { namespace serialization {
   template <class Archive>
-  void serialize(Archive & ar, seda::comm::SedaMessage & msg, const unsigned int /* version */)
+  void serialize(Archive & ar, seda::comm::SedaMessage & msg, const unsigned int version)
   {
     ar & msg.from();
     ar & msg.to();
     ar & msg.payload();
+
+	if (version > 0)
+	  ar & msg.id();
   }
 }}
 
+BOOST_CLASS_VERSION(seda::comm::SedaMessage, 1)
 
 #endif

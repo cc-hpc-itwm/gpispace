@@ -36,6 +36,9 @@ UDPConnectionTest::setUp() {
 
 void
 UDPConnectionTest::tearDown() {
+  // shut everything down
+  seda::StageRegistry::instance().stopAll();
+  seda::StageRegistry::instance().clear();
 }
 
 class B {
@@ -81,12 +84,14 @@ void UDPConnectionTest::testConnectionFactory() {
     seda::comm::ConnectionFactory::ptr_t factory(new seda::comm::ConnectionFactory());
     seda::comm::Connection::ptr_t conn = factory->createConnection(params);
     conn->start();
-    seda::comm::SedaMessage msg1("test", "test", "foo");
+    seda::comm::SedaMessage msg1("test", "test", "foo", 4711);
     conn->send(msg1);
 
     seda::comm::SedaMessage msg2;
     conn->recv(msg2);
     CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg1.payload() == msg2.payload());
+    CPPUNIT_ASSERT_MESSAGE("received message id differs from sent id", msg1.id() == msg2.id());
+    CPPUNIT_ASSERT_MESSAGE("message id is strange", msg2.id() == 4711);
     conn->stop();
   }
   catch (const std::exception &ex) {
@@ -177,12 +182,12 @@ void UDPConnectionTest::testConnectionStrategy() {
 
     // send an event to the p1-network stage
     seda::StageRegistry::instance().lookup("p1-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello 2"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-1", "process-2", "hello 2", 1))
     );
 
     // send an event to the p2-network stage
     seda::StageRegistry::instance().lookup("p2-net")->send(
-        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello 1"))
+        seda::comm::SedaMessage::Ptr(new seda::comm::SedaMessage("process-2", "process-1", "hello 1", 2))
     );
 
     // wait for both messages to be received
@@ -198,6 +203,9 @@ void UDPConnectionTest::testConnectionStrategy() {
 
     CPPUNIT_ASSERT(p1_msg != NULL);
     CPPUNIT_ASSERT(p2_msg != NULL);
+
+	CPPUNIT_ASSERT(p1_msg->id() == 2);
+	CPPUNIT_ASSERT(p2_msg->id() == 1);
 
     CPPUNIT_ASSERT_EQUAL(std::string("hello 1"), p1_msg->payload());
     CPPUNIT_ASSERT_EQUAL(std::string("hello 2"), p2_msg->payload());
@@ -225,11 +233,12 @@ UDPConnectionTest::testSendReceive() {
 
     for (std::size_t cnt(0); cnt < 1000; ++cnt)
     {
-      seda::comm::SedaMessage msg1("test", "test", "foo");
+      seda::comm::SedaMessage msg1("test", "test", "foo", cnt);
       conn.send(msg1);
       seda::comm::SedaMessage msg2;
       conn.recv(msg2);
       CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg1.payload() == msg2.payload());
+      CPPUNIT_ASSERT_MESSAGE("received msg id differs from sent one", msg1.id() == msg2.id());
     }
 
     conn.stop();
@@ -244,6 +253,9 @@ UDPConnectionTest::testSendReceive() {
 
 void
 UDPConnectionTest::testSendReceiveNetwork() {
+  LOG(INFO, "testing send receive in a circle");
+  const std::size_t num_messages (1000);
+
   seda::comm::Locator::ptr_t locator(new seda::comm::Locator());
   locator->insert("test1", "127.0.0.1:0");
   locator->insert("test2", "127.0.0.1:0");
@@ -255,9 +267,9 @@ UDPConnectionTest::testSendReceiveNetwork() {
 
   conn1.start(); conn2.start(); conn3.start();
   {
-    for (std::size_t cnt(0); cnt < 1000; ++cnt)
+    for (std::size_t cnt(0); cnt < num_messages; ++cnt)
     {
-      seda::comm::SedaMessage msg12("test1", "test2", "test-1-2");
+      seda::comm::SedaMessage msg12("test1", "test2", "test-1-2", 0*num_messages + cnt);
       conn1.send(msg12);
       {
         seda::comm::SedaMessage msg;
@@ -265,7 +277,7 @@ UDPConnectionTest::testSendReceiveNetwork() {
         CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg12.payload() == msg.payload());
       }
 
-      seda::comm::SedaMessage msg23("test2", "test3", "test-2-3");
+      seda::comm::SedaMessage msg23("test2", "test3", "test-2-3", 1*num_messages + cnt);
       conn2.send(msg23);
       {
         seda::comm::SedaMessage msg;
@@ -273,7 +285,7 @@ UDPConnectionTest::testSendReceiveNetwork() {
         CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg23.payload() == msg.payload());
       }
 
-      seda::comm::SedaMessage msg31("test3", "test1", "test-3-1");
+      seda::comm::SedaMessage msg31("test3", "test1", "test-3-1", 2*num_messages + cnt);
       conn3.send(msg31);
       {
         seda::comm::SedaMessage msg;
@@ -294,11 +306,12 @@ UDPConnectionTest::testStartStop() {
     for (std::size_t i(0); i < 3; i++) {
       conn.start();
 
-      seda::comm::SedaMessage msg1("test", "test", "foo");
+      seda::comm::SedaMessage msg1("test", "test", "foo", 42);
       conn.send(msg1);
       seda::comm::SedaMessage msg2;
       conn.recv(msg2);
       CPPUNIT_ASSERT_MESSAGE("received payload differs from sent payload", msg1.payload() == msg2.payload());
+	  CPPUNIT_ASSERT( msg2.id() == msg1.id() );
 
       conn.stop();
       sleep(1);

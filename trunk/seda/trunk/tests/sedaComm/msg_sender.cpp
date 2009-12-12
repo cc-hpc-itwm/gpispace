@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   }
   std::cerr << "D: payload = " << payload << std::endl;
 
-  SedaMessage msg(from, to, payload);
+  SedaMessage msg(from, to, payload, 0);
   try {
     std::cout << "sending message: " << msg.str() << std::endl;
     conn->send(msg);
