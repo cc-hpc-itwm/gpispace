@@ -98,8 +98,9 @@ namespace seda { namespace comm {
 		typedef MessageIdType message_id_type;
 		typedef typename msg_info_type::time_type time_type;
 		typedef typename msg_info_type::size_type size_type;
+		typedef boost::function<void (message_type msg)> callback_handler;
+		
 
-		explicit
 		delivery_service(boost::asio::io_service &asio_service, time_type interval_milliseconds = 500)
 		  : io_service_(asio_service)
 		  , timer_(asio_service)
@@ -116,6 +117,11 @@ namespace seda { namespace comm {
 		  {
 			LOG(ERROR, "error during delivery-service shutdown!");
 		  }
+		}
+
+		void register_callback_handler(callback_handler h)
+		{
+		  handler_ = h;
 		}
 		
 		void start()
@@ -220,7 +226,14 @@ namespace seda { namespace comm {
 			  LOG(ERROR, "delivery of message " << m->msg_id << " failed!");
 			  m = pending_messages_.erase(m);
 			  // TODO: call callback function
-
+			  try
+			  {
+				handler_(m->msg);
+			  }
+			  catch (const std::exception &ex)
+			  {
+				LOG(ERROR, "callback handler could not be executed: " << ex.what());
+			  }
 			  if (m == pending_messages_.end()) break;
 			}
 		  }
@@ -251,6 +264,7 @@ namespace seda { namespace comm {
 
 		boost::recursive_mutex mtx_;
 		msg_info_list pending_messages_;
+		callback_handler handler_;
 	};
 }}
 

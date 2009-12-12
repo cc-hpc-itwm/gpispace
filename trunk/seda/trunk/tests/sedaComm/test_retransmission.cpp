@@ -32,6 +32,14 @@
 #include <seda/comm/delivery_service.hpp>
 #include <seda/comm/ServiceThread.hpp>
 
+struct handler
+{
+  void operator()(seda::comm::SedaMessage::Ptr)
+  {
+	std::clog << "transmission of message failed!" << std::endl;
+  }
+};
+
 int main(int argc, char **argv)
 {
   fhg::log::Configurator::configure();
@@ -49,6 +57,10 @@ int main(int argc, char **argv)
 	seda::comm::ServiceThread service_thread;
 	seda_msg_delivery_service service(service_thread.io_service(), 500);
 
+	seda_msg_delivery_service::callback_handler h;
+	h = handler();
+	service.register_callback_handler(h);
+
 	stage->start();
 	service.start();
 	service_thread.start();
@@ -63,6 +75,24 @@ int main(int argc, char **argv)
 	  {
 		service.acknowledge(m1->id());
 		std::clog << "ok" << std::endl;
+	  }
+	  else
+	  {
+		std::clog << "failed" << std::endl;
+		++errcount;
+	  }
+	}
+	ecs->reset();
+
+	// test unsuccessful send
+	{
+	  std::clog << "testing unsuccessful send of a single message...";
+	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
+	  service.send(stage.get(), m1, m1->id(), 1, 1);
+
+	  if (ecs->wait(1, 1000))
+	  {
+		std::clog << "ok (TODO: check that callback handler was called!)" << std::endl;
 	  }
 	  else
 	  {
