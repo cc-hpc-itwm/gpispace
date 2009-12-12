@@ -120,6 +120,21 @@ else(GWDL_FOUND)
   message(FATAL_ERROR "Gwdl could not be found!")
 endif (GWDL_FOUND)
 
+## find libxml2
+find_package(LibXml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
+message(STATUS "LibXml2: Inc:${LIBXML2_INCLUDE_DIR} Lib:${LIBXML2_LIBRARIES}")
+
+## find libxslt
+find_package(LibXslt REQUIRED)
+include_directories(${LIBXSLT_INCLUDE_DIR})
+message(STATUS "LibXslt: Inc:${LIBXSLT_INCLUDE_DIR} Lib:${LIBXSLT_LIBRARIES}")
+
+## find zlib
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
+message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
+
 # state machine compiler (only when required)
 if (USE_SMC_SC)
   include(FindSMC)

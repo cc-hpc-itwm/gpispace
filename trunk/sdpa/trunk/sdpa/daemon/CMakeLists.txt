@@ -20,8 +20,8 @@ endif (USE_BOOST_SC)
 
 target_link_libraries(sdpa-daemon ${GWES_LIBRARY})
 target_link_libraries(sdpa-daemon ${GWDL_LIBRARY})
-#target_link_libraries(sdpa-daemon ${LIBXML2_LIBRARIES})
-#target_link_libraries(sdpa-daemon ${LIBXSLT_LIBRARIES})
+target_link_libraries(sdpa-daemon ${LIBXSLT_LIBRARIES})
+target_link_libraries(sdpa-daemon ${LIBXML2_LIBRARIES})
 
 install(FILES ${hdrs} DESTINATION include/sdpa/daemon)
 install(TARGETS sdpa-daemon ARCHIVE DESTINATION lib)
