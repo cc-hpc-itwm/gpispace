@@ -23,6 +23,7 @@
 #include <deque>
 #include <fhglog/fhglog.hpp>
 #include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace seda { namespace comm {
   template <typename MessageType, typename MessageIdType>
@@ -33,8 +34,8 @@ namespace seda { namespace comm {
 	  typedef unsigned long time_type;
 	  typedef std::size_t size_type;
 
-	  msg_info(const message_type &m
-			 , const message_id_type &id
+	  msg_info(message_type m
+			 , message_id_type id
 			 , size_type retries
 			 , time_type last_send
 			 , time_type deliver_timeout)
@@ -43,6 +44,31 @@ namespace seda { namespace comm {
 		, retry_counter(retries)
 		, tstamp_of_last_send(last_send)
 		, timeout(deliver_timeout)
+	  {
+	  }
+
+	  msg_info(const msg_info &other)
+		: msg_id(other.msg_id)
+		, msg(other.msg)
+		, retry_counter(other.retry_counter)
+		, tstamp_of_last_send(other.tstamp_of_last_send)
+		, timeout(other.timeout)
+	  { }
+
+	  msg_info &operator=(const msg_info &rhs)
+	  {
+		if (this != &rhs)
+		{
+		  msg_id = rhs.msg_id;
+		  msg = rhs.msg;
+		  retry_counter = rhs.retry_counter;
+		  tstamp_of_last_send = rhs.tstamp_of_last_send;
+		  timeout = rhs.timeout;
+		}
+		return *this;
+	  }
+
+	  ~msg_info()
 	  { }
 
 	  message_id_type msg_id;			//! the corresponding message id
@@ -66,19 +92,39 @@ namespace seda { namespace comm {
 		typedef typename msg_info_type::time_type time_type;
 		typedef typename msg_info_type::size_type size_type;
 
-		delivery_service(const seda::Stage::Ptr next_stage, boost::asio::io_service &asio_service)
+		delivery_service(const seda::Stage::Ptr &next_stage, boost::asio::io_service &asio_service, time_type interval_milliseconds = 500)
 		  : output_stage_(next_stage)
-		  , io_service(asio_service)
-		{}
+		  , io_service_(asio_service)
+		  , timer_(asio_service)
+		  , timer_timeout_(interval_milliseconds)
+		{ }
 
+		~delivery_service()
+		{
+		  try
+		  {
+			stop();
+		  }
+		  catch (...)
+		  {
+			LOG(ERROR, "error during delivery-service shutdown!");
+		  }
+		}
+		
 		void start()
 		{
+		  timer_.cancel();
+
 		  // register first deadline timer
+		  timer_.expires_from_now(boost::posix_time::milliseconds(timer_timeout_));
+		  timer_.async_wait(boost::bind(&delivery_service::timer_timedout, this, boost::asio::placeholders::error));
+		  DLOG(TRACE, "timer started, expires in " << timer_.expires_from_now());
 		}
 
 		void stop()
 		{
 		  // cancel timer
+		  timer_.cancel();
 		}
 
 		bool acknowledge(const message_id_type &message_id)
@@ -113,7 +159,7 @@ namespace seda { namespace comm {
 		}
 
 		const message_id_type &
-		send(const message_type &msg
+		send(message_type msg
 		   , const message_id_type &msg_id
 		   , time_type timeout
 		   , size_type retries = std::numeric_limits<size_type>::max())
@@ -122,21 +168,79 @@ namespace seda { namespace comm {
 
 		  if (retries)
 		  {
-			boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 			msg_info_type m_info(msg, msg_id, retries, time(NULL), timeout);
+			boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 			pending_messages_.push_back(m_info);
 			DLOG(TRACE, "enqued message for retransmission: " << msg_id);
 		  }
 
 		  return msg_id;
 		}
-
 	  private:
+		void timer_timedout(const boost::system::error_code &error)
+		{
+		  if (! error)
+		  {
+			resend_messages();
+			// reschedule next timer
+			start();
+		  }
+		  else
+		  {
+			// cancelled
+		  }
+		}
+
+		void resend_messages()
+		{
+		  const time_type now(time(NULL));
+
+		  boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+
+		  for (iterator m(pending_messages_.begin()); m != pending_messages_.end(); ++m)
+		  {
+			if (m->retry_counter)
+			{
+			  if (must_be_resent(*m, now))
+				resend_message(*m, now);
+			}
+			else
+			{
+			  // remove it
+			  LOG(ERROR, "delivery of message " << m->msg_id << " failed!");
+			  m = pending_messages_.erase(m);
+			  // TODO: call callback function
+
+			  if (m == pending_messages_.end()) break;
+			}
+		  }
+		}
+
+		void resend_message(msg_info_type & m_info, time_type tstamp)
+		{
+		  LOG(WARN, "resending message: " << m_info.msg_id);
+		  output_stage_->send(m_info.msg);
+		  m_info.retry_counter--;
+		  m_info.tstamp_of_last_send = tstamp;
+		}
+
+		bool must_be_resent(const msg_info_type &m_info, const time_type current_time)
+		{
+		  if (m_info.retry_counter > 0
+		   && (m_info.tstamp_of_last_send + m_info.timeout < current_time))
+		  {
+			return true;
+		  }
+
+		  return false;
+		}
+
 		seda::Stage::Ptr output_stage_;
 		boost::asio::io_service &io_service_;
+		boost::asio::deadline_timer timer_;
+		time_type timer_timeout_; // milli seconds
 
 		boost::recursive_mutex mtx_;
-		boost::condition_variable_any recv_cond_;
 		msg_info_list pending_messages_;
 	};
 }}
