@@ -31,16 +31,22 @@ target_link_libraries(sdpa-test
      ${CPPUNIT_STATIC_LIBRARIES}
 	 ${Boost_LIBRARIES})
 
-add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/sdpa_test_suite.cpp)
 target_link_libraries(sdpa_test_suite sdpa-test)
 target_link_libraries(sdpa_test_suite dl)
 target_link_libraries(sdpa_test_suite uuid)
+
+add_executable(mini_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/mini_test_suite.cpp)
+target_link_libraries(mini_test_suite sdpa-test)
+target_link_libraries(mini_test_suite dl)
+target_link_libraries(mini_test_suite uuid)
 
 # test module
 add_library(example-mod SHARED example-mod.cpp)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
+add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
 # copy workflows over to the build directory
 add_subdirectory(workflows)
