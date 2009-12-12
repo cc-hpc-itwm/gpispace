@@ -30,8 +30,6 @@
 #include <seda/comm/ConnectionFactory.hpp>
 #include <seda/comm/ConnectionStrategy.hpp>
 
-#include <seda/comm/delivery_service.hpp>
-
 int main(int argc, char **argv)
 {
   fhg::log::Configurator::configure();

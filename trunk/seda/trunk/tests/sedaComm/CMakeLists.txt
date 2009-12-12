@@ -28,6 +28,10 @@ add_executable(test_udp ${test_srcs})
 add_test(test_udp ${CMAKE_CURRENT_BINARY_DIR}/test_udp)
 target_link_libraries(test_udp seda seda-comm)
 
+add_executable(test_retrans test_retransmission.cpp)
+add_test(test_retrans ${CMAKE_CURRENT_BINARY_DIR}/test_retrans)
+target_link_libraries(test_retrans seda seda-comm)
+
 set(test_srcs test_persister.cpp)
 add_executable(test_persister ${test_srcs})
 add_test(test_persister ${CMAKE_CURRENT_BINARY_DIR}/test_persister)
