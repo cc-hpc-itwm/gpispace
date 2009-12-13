@@ -84,20 +84,20 @@ public:
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<ptr_comm_handler_->master());
 					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFinEvt);
+					ptr_comm_handler_->sendEventToMaster(pJobFinEvt);
 				}
 				else if( m_answerStrategy == "failed" )
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<ptr_comm_handler_->master());
 					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pJobFailEvt);
+					ptr_comm_handler_->sendEventToMaster(pJobFailEvt);
 				}
 				else if( m_answerStrategy == "cancelled" )
 				{
 					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
 					SDPA_LOG_FATAL("TODO: this test requires the message-id of the original cancel request!");
 					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), 0xdeadbeef ) );
-					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pCancelAckEvt);
+					ptr_comm_handler_->sendEventToMaster(pCancelAckEvt);
 				}
 
 				check_post_request();

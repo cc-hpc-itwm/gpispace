@@ -40,10 +40,9 @@ const std::string USER("user");
 
   class IComm{
   public:
-	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual seda::Stage* to_master_stage() const = 0;
-	  virtual seda::Stage* to_slave_stage() const = 0;
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
 
 	  virtual void jobFinished(std::string workerName, const job_id_t &)=0;
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;

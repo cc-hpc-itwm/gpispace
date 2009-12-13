@@ -105,8 +105,9 @@ namespace sdpa { namespace daemon {
 	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
 	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
-	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
-	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendDeleteEvent(const gwes::workflow_id_t &wid);
 
       // Gwes2Sdpa interface implementation

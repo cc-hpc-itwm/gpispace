@@ -114,7 +114,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 				// send the event to the master
-				sendEvent(ptr_to_master_stage_, pEvtJobFinished);
+				sendEventToMaster(pEvtJobFinished);
 				// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
@@ -142,7 +142,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		{
 			// send a JobFinishedAckEvent back to the worker/slave
 			JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
-			sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+			sendEventToSlave(pEvtJobFinishedAckEvt);
 		}
 
 		try {
@@ -227,7 +227,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 				// send the event to the master
-				sendEvent(ptr_to_master_stage_, pEvtJobFailedEvent);
+				sendEventToMaster(pEvtJobFailedEvent);
 				// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
@@ -256,7 +256,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			// send a JobFailedAckEvent back to the worker/slave
 			JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
-			sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+			sendEventToSlave(pEvtJobFailedAckEvt);
 		}
 
 		try {
@@ -410,7 +410,7 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
 			// only if the job was already submitted
-			sendEvent(to_master_stage(), pCancelAckEvt);
+			sendEventToMaster(pCancelAckEvt);
 			os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
 			SDPA_LOG_DEBUG(os.str());
 		}
@@ -449,7 +449,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
 				// only if the job was already submitted, send ack to master
-				sendEvent(to_master_stage(), pCancelAckEvt);
+				sendEventToMaster(pCancelAckEvt);
 
 				// if I'm not the orchestrator delete effectively the job
 				ptr_job_man_->deleteJob(pEvt->job_id());

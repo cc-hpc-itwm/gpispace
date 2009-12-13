@@ -121,7 +121,7 @@ void NRE::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 			// send the event to the master
-			sendEvent(ptr_to_master_stage_, pEvtJobFinished);
+			sendEventToMaster(pEvtJobFinished);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
 		catch(QueueFull)
@@ -167,7 +167,7 @@ void NRE::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 			// send the event to the master
-			sendEvent(ptr_to_master_stage_, pEvtJobFailedEvent);
+			sendEventToMaster(pEvtJobFailedEvent);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
 		catch(QueueFull)

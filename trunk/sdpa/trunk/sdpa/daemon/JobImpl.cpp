@@ -115,7 +115,7 @@ namespace sdpa { namespace daemon {
 				// clearly, I'm into the Pending state here
 				// return back to the master a CancelJobAckEvent
 				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id(), evt.id()) );
-				pComm->sendEvent( pComm->to_master_stage(), pCancelAckEvt );
+				pComm->sendEventToMaster( pCancelAckEvt );
 
 				// delete the job
 				if( GenericDaemon* pDaemon = dynamic_cast<GenericDaemon*>(pComm))
@@ -144,7 +144,7 @@ namespace sdpa { namespace daemon {
 				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
 
 				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-				pComm->sendEvent(pComm->to_slave_stage(), pCancelEvt);
+				pComm->sendEventToSlave(pCancelEvt);
 			} catch(sdpa::util::PropertyLookupFailed& ) {
 				SDPA_LOG_WARN("The job was not assigned to a worker!");
 			} catch(...) {
@@ -180,7 +180,7 @@ namespace sdpa { namespace daemon {
 
     	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id(), e.id()) );
     	//send ack to master
-    	pComm->sendEvent(pComm->to_master_stage(), pDelJobReply);
+    	pComm->sendEventToMaster(pDelJobReply);
 
     	SDPA_LOG_DEBUG("Process 'action_delete_job'");
     }
@@ -195,7 +195,7 @@ namespace sdpa { namespace daemon {
 		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));
 
 		// send status reply to master
-		pComm->sendEvent(pComm->to_master_stage(), pStatReply);
+		pComm->sendEventToMaster(pStatReply);
 
     	SDPA_LOG_DEBUG("Posted an event of type StatusReplyEvent");
     }
@@ -219,7 +219,7 @@ namespace sdpa { namespace daemon {
     	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), result));
 
     	// reply the results to master
-    	pComm->sendEvent(pComm->to_master_stage(), pResReply);
+    	pComm->sendEventToMaster(pResReply);
 
     	// Post a JobResultsReplyEvent to e.from()
     	SDPA_LOG_DEBUG("Process 'action_retrieve_results'");
