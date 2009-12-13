@@ -19,13 +19,14 @@ namespace sdpa { namespace events {
         typedef sdpa::shared_ptr<DeleteJobAckEvent> Ptr;
 
         DeleteJobAckEvent()
-         :  JobEvent( "", "", "" )
+         :  JobEvent( "", "", "", 0 )
         {}
 
         DeleteJobAckEvent(const address_t& a_from
                         , const address_t& a_to
-                        , const sdpa::job_id_t& a_job_id = sdpa::job_id_t(""))
-         :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
+                        , const sdpa::job_id_t& a_job_id
+						, const message_id_type &mid)
+         :  sdpa::events::JobEvent( a_from, a_to, a_job_id, mid )
         {}
 
     	virtual ~DeleteJobAckEvent() { }

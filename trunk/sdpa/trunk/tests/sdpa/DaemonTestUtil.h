@@ -95,7 +95,8 @@ public:
 				else if( m_answerStrategy == "cancelled" )
 				{
 					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
-					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id() ) );
+					SDPA_LOG_FATAL("TODO: this test requires the message-id of the original cancel request!");
+					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), 0xdeadbeef ) );
 					ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pCancelAckEvt);
 				}
 

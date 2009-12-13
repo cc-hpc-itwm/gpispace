@@ -19,6 +19,7 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
+#include <sdpa/events/id_generator.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa::events;

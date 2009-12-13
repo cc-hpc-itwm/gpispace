@@ -63,7 +63,7 @@ int main(int, char **)
 
   {
     std::clog << "testing SubmitJobAckEvent...";
-    SubmitJobAckEvent e("foo", "bar", "job-id-1");
+    SubmitJobAckEvent e("foo", "bar", "job-id-1", 42);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -71,7 +71,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+	   || e2->id() != e.id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -121,7 +122,7 @@ int main(int, char **)
 
   {
     std::clog << "testing CancelJobAckEvent...";
-    CancelJobAckEvent e("foo", "bar", "job-id-1");
+    CancelJobAckEvent e("foo", "bar", "job-id-1", 42);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -129,7 +130,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+	   || e2->id() != e.id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -235,7 +237,7 @@ int main(int, char **)
 
   {
     std::clog << "testing DeleteJobAckEvent...";
-    DeleteJobAckEvent e("foo", "bar", "job-id-1");
+    DeleteJobAckEvent e("foo", "bar", "job-id-1", 42);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -243,7 +245,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+	   || e2->id() != e.id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -325,7 +328,7 @@ int main(int, char **)
 
   {
     std::clog << "testing JobFailedAckEvent...";
-    JobFailedAckEvent e("foo", "bar", "job-id-1");
+    JobFailedAckEvent e("foo", "bar", "job-id-1", 42);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -333,7 +336,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+	   || e2->id() != e.id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -384,7 +388,7 @@ int main(int, char **)
 
   {
     std::clog << "testing JobFinishedAckEvent...";
-    JobFinishedAckEvent e("foo", "bar", "job-id-1");
+    JobFinishedAckEvent e("foo", "bar", "job-id-1", 42);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -392,7 +396,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+	   || e2->id() != e.id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;

@@ -134,7 +134,7 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		Worker::worker_id_t worker_id = pEvt->from();
 
 		// send a JobFinishedAckEvent back to the worker/slave
-		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
 		sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
@@ -248,7 +248,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		Worker::worker_id_t worker_id = pEvt->from();
 
 		// send a JobFailedAckEvent back to the worker/slave
-		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
 		sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
@@ -353,7 +353,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	if( pEvt->from() == sdpa::daemon::GWES  ) // the message comes from GWES, forward it to the master
 		{
 			os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
-			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
+			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
 			// only if the job was already submitted, send ack to master
 			sendEvent(to_master_stage(), pCancelAckEvt);

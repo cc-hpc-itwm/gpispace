@@ -114,7 +114,7 @@ namespace sdpa { namespace daemon {
 			{
 				// clearly, I'm into the Pending state here
 				// return back to the master a CancelJobAckEvent
-				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id()) );
+				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent( pComm->name(), pComm->master(), evt.job_id(), evt.id()) );
 				pComm->sendEvent( pComm->to_master_stage(), pCancelAckEvt );
 
 				// delete the job
@@ -178,7 +178,7 @@ namespace sdpa { namespace daemon {
     {
     	b_marked_for_del_ = true;
 
-    	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id()) );
+    	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id(), e.id()) );
     	//send ack to master
     	pComm->sendEvent(pComm->to_master_stage(), pDelJobReply);
 

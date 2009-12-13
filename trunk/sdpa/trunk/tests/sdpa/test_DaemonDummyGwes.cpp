@@ -281,7 +281,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<strDaemon);
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow, ""));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -317,7 +317,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFinished()
 		// send a SubmitJobAckEvent to master
 		// the master should acknowledge the job then
 		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<strDaemon);
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave) );
+		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave, pSubmitJobEvent->id()) );
 		m_ptrDaemonFSM->daemon_stage()->send(pSubmitJobAck);
 
 		// the slave computes the job ........
@@ -416,7 +416,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<strDaemon);
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow, ""));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -452,7 +452,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobFailed()
 		// send a SubmitJobAckEvent to master
 		// the master should acknowledge the job then
 		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<strDaemon);
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave) );
+		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave, pSubmitJobEvent->id()) );
 		m_ptrDaemonFSM->daemon_stage()->send(pSubmitJobAck);
 
 		// the slave computes the job ........
@@ -553,7 +553,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<strDaemon);
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow, ""));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -589,7 +589,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 		// send a SubmitJobAckEvent to master
 		// the master should acknowledge the job then
 		SDPA_LOG_DEBUG("Slave: send SubmitJobAckEvent to "<<strDaemon);
-		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave) );
+		SubmitJobAckEvent::Ptr pSubmitJobAck( new SubmitJobAckEvent(strFromDown, strDaemon, job_id_slave, pSubmitJobEvent->id()) );
 		m_ptrDaemonFSM->daemon_stage()->send(pSubmitJobAck);
 
 		usleep(sleep_interval);
@@ -604,7 +604,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled()
 		SDPA_LOG_DEBUG("SLAVE: Canceled the job "<<pCancelEvt->job_id()<<"!Sending ack to "<<pCancelEvt->from());
 
 		// ... and replies with a CancelJobAckEvent
-		CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id()));
+		CancelJobAckEvent::Ptr pCancelJobAckEvt(new CancelJobAckEvent(pCancelEvt->to(), pCancelEvt->from(), pCancelEvt->job_id(), pCancelEvt->id()));
 		m_ptrDaemonFSM->daemon_stage()->send(pCancelJobAckEvt);
 
 		// the user expects now a CancelJobAckEvent
@@ -657,7 +657,7 @@ void DaemonDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<strDaemon);
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUp, strDaemon, "", m_strWorkflow, ""));
 		m_ptrDaemonFSM->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment

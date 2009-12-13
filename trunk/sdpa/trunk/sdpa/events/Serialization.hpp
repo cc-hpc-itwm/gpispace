@@ -58,6 +58,7 @@ namespace boost { namespace serialization {
   {
     ar & e.from();
     ar & e.to();
+	ar & e.id();
   }
 
   // ***********

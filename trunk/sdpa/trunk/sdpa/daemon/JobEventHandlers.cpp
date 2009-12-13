@@ -141,7 +141,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		if( name() != NRE )
 		{
 			// send a JobFinishedAckEvent back to the worker/slave
-			JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+			JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 			sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
 		}
 
@@ -254,7 +254,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		if( name() != NRE )
 		{
 			// send a JobFailedAckEvent back to the worker/slave
-			JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+			JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 			sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
 		}
@@ -407,7 +407,7 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
 		// this activity might be already be assigned to  a worker but not yet sent or acknowledged
 		if( name() == ORCHESTRATOR )
 		{
-			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
 			// only if the job was already submitted
 			sendEvent(to_master_stage(), pCancelAckEvt);
@@ -446,7 +446,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		if( name()!= ORCHESTRATOR )
     		{
 				os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
-				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id()));
+				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
 				// only if the job was already submitted, send ack to master
 				sendEvent(to_master_stage(), pCancelAckEvt);

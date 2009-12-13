@@ -500,7 +500,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
 			SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
-			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description()));
+			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
 
 			//inform GWES
 			gwes::activity_id_t actId = ptrJob->id().str();
@@ -587,7 +587,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		if(pJob->is_local())
 		{
 			//send back to the user a SubmitJobAckEvent
-			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
+			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
 
 			// There is a problem with this if uncommented
 			sendEvent(ptr_to_master_stage_, pSubmitJobAckEvt);
@@ -840,7 +840,7 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, cons
 	job_id_t job_id(workflowId);
 
 	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
-	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id));
+	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id, 0));
 	sendEvent(pEvtCancelJobAck);
 
 	// deallocate the results
@@ -867,7 +867,7 @@ void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
 
 void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 {
-	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str() ) );
+	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), 0 ) );
 	sendEvent(pCancelAckEvt);
 }
 

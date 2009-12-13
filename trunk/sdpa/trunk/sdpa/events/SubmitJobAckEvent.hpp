@@ -21,11 +21,11 @@ namespace sdpa { namespace events {
       typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
 
       SubmitJobAckEvent()
-        : JobEvent("", "", "")
+        : JobEvent("", "", "", 0)
       { }
 
-      SubmitJobAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t & a_job_id)
-        : JobEvent(a_from, a_to, a_job_id)
+      SubmitJobAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t & a_job_id, const message_id_type &mid)
+        : JobEvent(a_from, a_to, a_job_id, mid)
       {
       }
 

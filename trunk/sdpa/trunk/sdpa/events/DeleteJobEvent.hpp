@@ -23,7 +23,7 @@ namespace sdpa { namespace events {
           : JobEvent("","","")
         {}
 
-		DeleteJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id = sdpa::job_id_t())
+		DeleteJobEvent(const address_t& from, const address_t& to, const sdpa::job_id_t& job_id)
           :  sdpa::events::JobEvent( from, to, job_id ) {
 		}
 
