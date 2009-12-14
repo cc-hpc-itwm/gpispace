@@ -21,7 +21,7 @@ namespace sdpa { namespace events {
 		typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
 
         CancelJobAckEvent()
-          : JobEvent("", "", "", 0)
+          : JobEvent("", "", "", message_id_type())
         {}
 
 		CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id, const message_id_type &mid)

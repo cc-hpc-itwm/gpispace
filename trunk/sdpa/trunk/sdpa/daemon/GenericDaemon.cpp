@@ -871,7 +871,7 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, cons
 	job_id_t job_id(workflowId);
 
 	sdpa::job_result_t sdpa_result(sdpa::wf::glue::wrap(gwes_result)); //convert it from gwes_result;
-	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id, 0));
+	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::GWES, name(), job_id, SDPAEvent::message_id_type()));
 	sendEventToSelf(pEvtCancelJobAck);
 
 	// deallocate the results
@@ -898,7 +898,7 @@ void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
 
 void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 {
-	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), 0 ) );
+	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), SDPAEvent::message_id_type() ) );
 	sendEventToSelf(pCancelAckEvt);
 }
 

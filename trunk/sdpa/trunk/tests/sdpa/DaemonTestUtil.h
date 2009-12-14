@@ -96,7 +96,7 @@ public:
 				{
 					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
 					SDPA_LOG_FATAL("TODO: this test requires the message-id of the original cancel request!");
-					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), 0xdeadbeef ) );
+					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), "0xdeadbeef"));
 					ptr_comm_handler_->sendEventToMaster(pCancelAckEvt);
 				}
 
