@@ -16,11 +16,14 @@
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
 {
   std::cout << "waiting for job to return..." << std::flush;
-  sdpa::util::time_type poll_start(sdpa::util::now());
+  boost::system_time poll_start = boost::get_system_time();
+
   int exit_code(4);
   std::size_t fail_count(0);
   for (; fail_count < 3 ;)
@@ -62,8 +65,10 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
       std::cout << "." << std::flush;
     }
   }
-  sdpa::util::time_type poll_end(sdpa::util::now());
-  std::cerr << "duration: " << ((poll_end - poll_start) / 1000) << "ms" << std::endl;
+  boost::system_time poll_end = boost::get_system_time();
+  boost::posix_time::time_period tp(poll_start, poll_end);
+
+  std::cerr << "execution time: " << tp.length() << std::endl;
   return exit_code;
 }
 
