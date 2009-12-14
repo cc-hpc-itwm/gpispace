@@ -52,7 +52,7 @@ namespace sdpa {
 	 		// the slave posts a job request
 	 		SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
 	 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-	 		ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtReq);
+	 		ptr_comm_handler_->sendEventToMaster(pEvtReq);
 	 		m_last_request_time = current_time;
 	 		bReqPosted = true;
 	 	}
@@ -75,7 +75,7 @@ namespace sdpa {
 	 		 {
 				DMLOG(DEBUG, "sending life-sign to: " << ptr_comm_handler_->master());
 	 			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-	 			 ptr_comm_handler_->sendEvent(ptr_comm_handler_->to_master_stage(), pEvtLS);
+	 			 ptr_comm_handler_->sendEventToMaster(pEvtLS);
 	 			 m_last_life_sign_time = current_time;
 	 		 }
 	 	 }

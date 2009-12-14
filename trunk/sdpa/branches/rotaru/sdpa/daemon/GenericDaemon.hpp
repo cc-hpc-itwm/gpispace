@@ -19,6 +19,8 @@
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
 #include <seda/Strategy.hpp>
+#include <seda/comm/delivery_service.hpp>
+#include <seda/comm/ServiceThread.hpp>
 
 #include <sdpa/sdpa-config.hpp>
 
@@ -105,8 +107,10 @@ namespace sdpa { namespace daemon {
 	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
 	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
-	  virtual void sendEvent(const sdpa::events::SDPAEvent::Ptr& e);
-	  virtual void sendEvent(seda::Stage* ptrOutStage, const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
+	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid);
 	  virtual void sendDeleteEvent(const gwes::workflow_id_t &wid);
 
       // Gwes2Sdpa interface implementation
@@ -175,6 +179,12 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
+	private:
+	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
+	  seda::comm::ServiceThread service_thread_;
+	  sdpa_msg_delivery_service delivery_service_;
+
+	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
   };
 }}
 

@@ -50,7 +50,7 @@ namespace sdpa { namespace events {
           sdpa_evt->from()
           , sdpa_evt->to()
           , codec.encode(sdpa_evt)
-		  , 42
+		  , sdpa_evt->id()
         ));
 
         seda::StrategyDecorator::perform(seda_msg);

@@ -126,7 +126,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<m_ptrOrch->name());
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow, ""));
 		m_ptrOrch->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -226,7 +226,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<m_ptrOrch->name());
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow, ""));
 		m_ptrOrch->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -326,7 +326,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<m_ptrOrch->name());
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow, ""));
 		m_ptrOrch->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment
@@ -434,7 +434,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 		// the user submits a job
 		// no Jobid set!
 		SDPA_LOG_DEBUG("User: submit new job to "<<m_ptrOrch->name());
-		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow));
+		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(strFromUser, m_ptrOrch->name(), "", m_strWorkflow, ""));
 		m_ptrOrch->daemon_stage()->send(pEvtSubmitJob);
 
 		// the user waits for an acknowledgment

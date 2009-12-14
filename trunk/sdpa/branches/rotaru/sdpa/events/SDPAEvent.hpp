@@ -13,6 +13,7 @@ namespace sdpa { namespace events {
       typedef sdpa::shared_ptr<SDPAEvent> Ptr;
 
       typedef std::string address_t;
+	  typedef unsigned long message_id_type;
 
       virtual ~SDPAEvent() {}
 
@@ -20,6 +21,8 @@ namespace sdpa { namespace events {
       address_t & from() { return from_; }
       const address_t & to() const { return to_; }
       address_t & to() { return to_; }
+	  const message_id_type &id() const { return id_; }
+	  message_id_type &id() { return id_; }
 
       virtual std::string str() const = 0;
 
@@ -29,13 +32,16 @@ namespace sdpa { namespace events {
         : IEvent()
         , from_()
         , to_()
+		, id_(0)
       { }
 
       SDPAEvent(const SDPAEvent &other);
       SDPAEvent(const address_t &from, const address_t &to);
+      SDPAEvent(const address_t &from, const address_t &to, const message_id_type &mid);
     private:
       address_t from_;
       address_t to_;
+	  unsigned long id_;
   };
 }}
 

@@ -23,9 +23,9 @@ namespace sdpa { namespace events {
           : JobEvent("", "", "")
         {}
 
-		JobFailedEvent(	const address_t& a_from,
-						const address_t& a_to,
-						const sdpa::job_id_t& a_job_id
+		JobFailedEvent(	const address_t& a_from
+					  ,	const address_t& a_to
+					  ,	const sdpa::job_id_t& a_job_id
                       , const job_result_t &job_result)
           :  sdpa::events::JobEvent( a_from, a_to, a_job_id )
           , result_(job_result)

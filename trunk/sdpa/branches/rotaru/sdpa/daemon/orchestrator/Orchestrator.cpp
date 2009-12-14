@@ -103,10 +103,10 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		Worker::worker_id_t worker_id = pEvt->from();
 
 		// send a JobFinishedAckEvent back to the worker/slave
-		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id()));
+		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
-		sendEvent(ptr_to_slave_stage_, pEvtJobFinishedAckEvt);
+		sendEventToSlave(pEvtJobFinishedAckEvt);
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -197,10 +197,10 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		Worker::worker_id_t worker_id = pEvt->from();
 
 		// send a JobFailedAckEvent back to the worker/slave
-		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id()));
+		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
-		sendEvent(ptr_to_slave_stage_, pEvtJobFailedAckEvt);
+		sendEventToSlave(pEvtJobFailedAckEvt);
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -276,10 +276,10 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 		pJob->CancelJob(pEvt);
 		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
-		CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+		CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
 		// only if the job was already submitted
-		sendEvent(to_master_stage(), pCancelAckEvt);
+		sendEventToMaster(pCancelAckEvt);
 		os<<std::endl<<"Sent CancelJobAckEvent to the user "<<pEvt->from();
 		SDPA_LOG_DEBUG(os.str());
 	}

@@ -29,9 +29,9 @@ namespace sdpa { namespace events {
 
       SubmitJobEvent( const address_t& a_from
           , const address_t& a_to
-          , const sdpa::job_id_t& a_job_id = sdpa::job_id_t("")
-          , const job_desc_t& a_description = sdpa::job_desc_t("")
-          , const sdpa::job_id_t& a_parent_id = sdpa::job_id_t("")) 
+          , const sdpa::job_id_t& a_job_id
+          , const job_desc_t& a_description
+          , const sdpa::job_id_t& a_parent_id)
         : sdpa::events::JobEvent( a_from, a_to, a_job_id ), desc_(a_description), parent_(a_parent_id)
         { }
         
