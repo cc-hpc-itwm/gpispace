@@ -295,8 +295,7 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	DMLOG(DEBUG, "starting my scheduler...");
 	ptr_scheduler_->start();
 
-	sdpa_msg_delivery_service::callback_handler f = std::bind1st(std::mem_fun(&GenericDaemon::messageDeliveryFailed), this);
-	delivery_service_.register_callback_handler(f);
+	delivery_service_.register_callback_handler(boost::bind(&GenericDaemon::messageDeliveryFailed, this, _1));
 }
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
