@@ -40,8 +40,8 @@ const std::string USER("user");
 
   class IComm{
   public:
-	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e)=0;
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1000) = 0;
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1000) = 0;
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
 
 	  virtual void jobFinished(std::string workerName, const job_id_t &)=0;

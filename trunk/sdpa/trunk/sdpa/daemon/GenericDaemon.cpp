@@ -54,6 +54,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_to_slave_stage_(ptrToSlaveStage),
 	  master_(""),
 	  m_bRegistered(false)
+	  , delivery_service_(service_thread_.io_service(), 500)
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
 
@@ -71,6 +72,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
 	  master_(""),
 	  m_bRegistered(false)
+	  , delivery_service_(service_thread_.io_service(), 500)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -99,6 +101,7 @@ GenericDaemon::GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdp
 	  ptr_Sdpa2Gwes_(pArgSdpa2Gwes),
 	  master_(""),
 	  m_bRegistered(false)
+	  , delivery_service_(service_thread_.io_service(), 500)
 {
 }
 
@@ -286,8 +289,14 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	if(ptr_Sdpa2Gwes_)
 		ptr_Sdpa2Gwes_->registerHandler(this);
 
+	DMLOG(TRACE, "starting delivery service...");
+	delivery_service_.start();
+	service_thread_.start();
 	DMLOG(DEBUG, "starting my scheduler...");
 	ptr_scheduler_->start();
+
+	sdpa_msg_delivery_service::callback_handler f = std::bind1st(std::mem_fun(&GenericDaemon::messageDeliveryFailed), this);
+	delivery_service_.register_callback_handler(f);
 }
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
@@ -300,6 +309,9 @@ void GenericDaemon::onStageStop(const std::string & /* stageName */)
 	ptr_Sdpa2Gwes_ = NULL;
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
+
+	service_thread_.stop();
+	delivery_service_.stop();
 }
 
 void GenericDaemon::sendDeleteEvent(const gwes::workflow_id_t &wid)
@@ -333,10 +345,10 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 	}
 }
 
-void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		to_master_stage()->send(pEvt);
+		delivery_service_.send(to_master_stage(), pEvt, pEvt->id(), timeout, retries);
 		SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
 	catch(QueueFull)
@@ -345,16 +357,21 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 	}
 }
 
-void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		to_slave_stage()->send(pEvt);
+		delivery_service_.send(to_slave_stage(), pEvt, pEvt->id(), timeout, retries);
 		SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
 	catch(QueueFull)
 	{
 		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
 	}
+}
+
+void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
+{
+  LOG(WARN, "delivery of message[" << e->id() << "] failed: " << e->str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
