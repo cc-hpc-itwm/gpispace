@@ -135,7 +135,6 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 		// send a JobFinishedAckEvent back to the worker/slave
 		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
-
 		// send the event to the slave
 		sendEventToSlave(pEvtJobFinishedAckEvt);
 

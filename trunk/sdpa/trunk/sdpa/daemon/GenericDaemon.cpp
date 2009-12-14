@@ -691,13 +691,13 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 	}
 	case ErrorEvent::SDPA_EWORKERNOTREG:
 	{
-	  MLOG(INFO, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
+	  MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
 	  WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from()));
 	  sendEventToMaster(pWorkerRegEvt);
 	  break;
 	}
 	default:
-	  MLOG(INFO, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+	  MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
   }
 }
 

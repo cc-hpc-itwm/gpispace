@@ -255,7 +255,6 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		{
 			// send a JobFailedAckEvent back to the worker/slave
 			JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
-
 			sendEventToSlave(pEvtJobFailedAckEvt);
 		}
 
