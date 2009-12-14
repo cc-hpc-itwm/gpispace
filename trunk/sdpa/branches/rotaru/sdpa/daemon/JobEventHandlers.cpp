@@ -62,6 +62,8 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 	os<<"Call 'handleSubmitJobAckEvent'";
 	SDPA_LOG_DEBUG(os.str());
 
+	acknowledge(pEvent->id());
+
 	// a slave posted an acknowledgement for a job request
 	// put the job from pending into submitted
 	// call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
@@ -312,6 +314,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 // respond to a worker that the JobFinishedEvent was received
 void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 {
+	acknowledge(pEvt->id());
    // The result was succesfully delivered, so I can delete the job from the job map
 	ostringstream os;
 	try {
@@ -342,6 +345,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 // respond to a worker that the JobFailedEvent was received
 void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 {
+	acknowledge(pEvt->id());
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
@@ -428,12 +432,13 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	// if it comes from WFE -> concerns the master job
 
 	// transition from Cancelling to Cancelled
+	// FIXME: is it really to safe to just acknowledge here?
+	acknowledge(pEvt->id());
 
 	ostringstream os;
 	Worker::worker_id_t worker_id = pEvt->from();
-	Job::ptr_t pJob;
 	try {
-		pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 
 		// put the job into the state Cancelled
 	    pJob->CancelJobAck(pEvt);
@@ -469,7 +474,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     			SDPA_LOG_DEBUG(os.str());
     		}
 
-    		// tell to GWES that the activity ob_id() was cancelled
+    		// tell to GWES that the activity job_id() was cancelled
     		activity_id_t actId = pJob->id();
     		workflow_id_t wfId  = pJob->parent();
 
