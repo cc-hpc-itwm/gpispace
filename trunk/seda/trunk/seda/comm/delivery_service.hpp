@@ -221,10 +221,6 @@ namespace seda { namespace comm {
 			}
 			else
 			{
-			  // remove it
-			  LOG(ERROR, "delivery of message " << m->msg_id << " failed!");
-			  m = pending_messages_.erase(m);
-			  // TODO: call callback function
 			  try
 			  {
 				handler_(m->msg);
@@ -233,6 +229,11 @@ namespace seda { namespace comm {
 			  {
 				LOG(ERROR, "callback handler could not be executed: " << ex.what());
 			  }
+
+			  // remove it
+			  LOG(ERROR, "delivery of message " << m->msg_id << " failed!");
+			  m = pending_messages_.erase(m);
+
 			  if (m == pending_messages_.end()) break;
 			}
 		  }
