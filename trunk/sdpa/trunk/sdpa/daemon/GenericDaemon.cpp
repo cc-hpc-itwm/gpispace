@@ -327,7 +327,6 @@ void GenericDaemon::sendDeleteEvent(const gwes::workflow_id_t &wid)
 	}
 }
 
-
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
 	try {
@@ -366,6 +365,11 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, s
 	{
 		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
 	}
+}
+
+bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid)
+{
+  return delivery_service_.acknowledge(mid);
 }
 
 void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
