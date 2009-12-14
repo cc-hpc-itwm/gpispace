@@ -34,7 +34,7 @@
 
 struct handler
 {
-  void operator()(seda::comm::SedaMessage::Ptr)
+  void deliveryFailed(seda::comm::SedaMessage::Ptr)
   {
 	std::clog << "transmission of message failed!" << std::endl;
   }
@@ -57,9 +57,9 @@ int main(int argc, char **argv)
 	seda::comm::ServiceThread service_thread;
 	seda_msg_delivery_service service(service_thread.io_service(), 500);
 
-	seda_msg_delivery_service::callback_handler h;
-	h = handler();
-	service.register_callback_handler(h);
+	handler h;
+	seda_msg_delivery_service::callback_handler f = std::bind1st(std::mem_fun(&handler::deliveryFailed), &h);
+	service.register_callback_handler(f);
 
 	stage->start();
 	service.start();

@@ -98,8 +98,7 @@ namespace seda { namespace comm {
 		typedef MessageIdType message_id_type;
 		typedef typename msg_info_type::time_type time_type;
 		typedef typename msg_info_type::size_type size_type;
-		typedef boost::function<void (message_type msg)> callback_handler;
-		
+		typedef boost::function<void (message_type)> callback_handler;
 
 		delivery_service(boost::asio::io_service &asio_service, time_type interval_milliseconds = 500)
 		  : io_service_(asio_service)
