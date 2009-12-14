@@ -59,7 +59,7 @@ namespace fhg { namespace log {
         real_appender_->append(evt);
       }
 
-      const Appender::ptr_t decorated() const
+      const Appender::ptr_t &decorated() const
       {
         return real_appender_;
       }

@@ -11,6 +11,7 @@
 #include	<fhglog/StreamAppender.hpp>
 #include	<fhglog/SynchronizedAppender.hpp>
 #include	<fhglog/FileAppender.hpp>
+#include	<fhglog/CompoundAppender.hpp>
 
 #if defined(FHGLOG_WITH_REMOTE_LOGGING)
 #   include <fhglog/remote/RemoteAppender.hpp>

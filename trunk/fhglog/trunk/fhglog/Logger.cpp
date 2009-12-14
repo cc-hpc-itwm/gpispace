@@ -1,7 +1,7 @@
 #include    "Logger.hpp"
 #include    <stdexcept>
 #include    <iostream>
-#include    <pthread.h>
+#include <boost/thread.hpp>
 
 using namespace fhg::log;
 
@@ -17,10 +17,13 @@ const Logger::ptr_t &Logger::get()
 const Logger::ptr_t &Logger::get(const std::string &a_name)
 {
   typedef std::map<std::string, Logger::ptr_t> logger_map_t;
-  static logger_map_t loggers_;
-  static pthread_mutex_t lock_ = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+  typedef boost::recursive_mutex mutex_type;
+  typedef boost::unique_lock<mutex_type> lock_type;
 
-  pthread_mutex_lock(&lock_);
+  static logger_map_t loggers_;
+  static mutex_type mtx_;
+
+  lock_type lock(mtx_);
   logger_map_t::iterator logger(loggers_.find(a_name));
   if (logger == loggers_.end())
   {
@@ -36,7 +39,6 @@ const Logger::ptr_t &Logger::get(const std::string &a_name)
     }
   }
 
-  pthread_mutex_unlock(&lock_);
   return logger->second;
 }
 

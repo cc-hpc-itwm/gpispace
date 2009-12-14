@@ -3,6 +3,8 @@
 
 #include <fhglog/fhglog-config.hpp>
 #include <fhglog/fhglog.hpp>
+#include <fhglog/CompoundAppender.hpp>
+#include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/util.hpp> // environment parser
 
 #include <iostream>
@@ -16,6 +18,7 @@ namespace fhg { namespace log {
         , to_file_("")
         , to_server_("")
         , fmt_string_("")
+		, threaded_(true)
       {}
 
       void operator() () throw() {
@@ -91,19 +94,21 @@ namespace fhg { namespace log {
           else                               fmt = Formatter::Custom(fmt_string_);
         }
 
+		CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
+
         if (to_console_.size())
         {
 #ifndef NDEBUG
           std::clog << "D: logging to console" << std::endl;
 #endif
-          getLogger().addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
+		  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
         }
 
         if (to_file_.size())
         {
           try
           {
-            getLogger().addAppender(Appender::ptr_t(new FileAppender("log-file", to_file_)))->setFormat(fmt);
+            compound_appender->addAppender(Appender::ptr_t(new FileAppender("log-file", to_file_)))->setFormat(fmt);
 #ifndef NDEBUG
             std::clog << "D: logging to file: " << to_file_ << std::endl;
 #endif
@@ -120,7 +125,7 @@ namespace fhg { namespace log {
           try
           {
             // TODO: split to_remote_ into host and port
-            getLogger().addAppender(Appender::ptr_t(new remote::RemoteAppender("log-server", to_server_)));
+            compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender("log-server", to_server_)));
 #ifndef NDEBUG
             std::clog << "D: logging to server: " << to_server_ << std::endl;
 #endif
@@ -136,6 +141,14 @@ namespace fhg { namespace log {
         std::clog << "D: loglevel set to " << level_ << std::endl;
 #endif
         getLogger().setLevel(level_);
+		if (threaded_)
+		{
+		  getLogger().addAppender(Appender::ptr_t(new ThreadedAppender(compound_appender)));
+		}
+		else
+		{
+		  getLogger().addAppender(compound_appender);
+		}
       }
 
       void fallback_configuration()
@@ -167,6 +180,10 @@ namespace fhg { namespace log {
         {
           to_server_ = val;
         }
+		else if (key == "FHGLOG_threaded" && (val == "no" || val == "false" || val == "0"))
+		{
+		  threaded_ = false;
+		}
         else if (key.substr(0, 6) == "FHGLOG")
         {
 #ifndef NDEBUG
@@ -186,6 +203,7 @@ namespace fhg { namespace log {
       std::string to_file_;
       std::string to_server_;
       std::string fmt_string_;
+	  bool threaded_;
   };
 
   class Configurator {
