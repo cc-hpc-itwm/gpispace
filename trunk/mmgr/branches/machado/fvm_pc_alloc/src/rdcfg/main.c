@@ -1,6 +1,5 @@
 
 #include <fvmConfig.h>
-#include <rdcfg.tab.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -9,9 +8,13 @@ main ()
 {
   int ret = readConfigFile ("test.cfg");
 
-  printf ("return code of yyparse = %d\n", ret);
+  printf ("return code of readConfigFile = %d\n", ret);
 
-  if (!(ret < 0))
+  if (ret < 0)
+    {
+      printf ("there were parsing errors\n");
+    }
+  else
     {
       printf ("SHMSZ: %ld\n", cfg.shmemsize);
       printf ("FVMSZ: %ld\n", cfg.fvmsize);

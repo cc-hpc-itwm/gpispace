@@ -16,4 +16,6 @@ configFile_t cfg;
 /* ret == 0 ==> success, that is all values are read */
 int readConfigFile (const char *filename);
 
+#include <fvmConfig.tab.h>
+
 #endif
