@@ -18,7 +18,7 @@ const Logger::ptr_t &Logger::get(const std::string &a_name)
 {
   typedef std::map<std::string, Logger::ptr_t> logger_map_t;
   typedef boost::recursive_mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
+  typedef boost::lock_guard<mutex_type> lock_type;
 
   static logger_map_t loggers_;
   static mutex_type mtx_;
