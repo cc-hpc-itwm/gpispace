@@ -541,7 +541,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
 
 			// Post a SubmitJobEvent to the slave who made the request
-			sendEventToSlave(pSubmitEvt);
+			sendEventToSlave(pSubmitEvt, 0);
 		}
 		else // send an error event
 		{
@@ -559,7 +559,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
 
-		sendEventToSlave(pErrorEvt);
+		sendEventToSlave(pErrorEvt, 0);
 	}
 	catch(const QueueFull&)
 	{
@@ -595,13 +595,20 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     * send a submitJobAck back
     */
 
+	// First, check if the job 'job_id' wasn't already submitted!
+	try {
+		ptr_job_man_->findJob(e.job_id());
+		return;
+	} catch(const JobNotFoundException&){
+		SDPA_LOG_DEBUG("Receive new job from "<<e.from());
+	}
+
 	JobId job_id, job_id_empty(""); //already assigns an unique job_id (i.e. the constructor calls the generator)
 	if(e.job_id() != job_id_empty)  //use the job_id already  assigned by the master
 		job_id = e.job_id();        //the orchestrator will assign a new job_id for the user jobs, the Agg/NRE will use the job_id assigned by the master
 
 	try {
-		// First, parse the workflow in order to be able to create a valid job
-		// The job_id is the corresponding activity_id
+		// One should parse the workflow in order to be able to create a valid job
 		// if the event comes from Gwes parent_id is the owner_workflow_id
 		Job::ptr_t pJob( new JobFSM( job_id, e.description(), this, e.parent_id() ));
 
@@ -621,7 +628,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
 
 			// There is a problem with this if uncommented
-			sendEventToMaster(pSubmitJobAckEvt);
+			sendEventToMaster(pSubmitJobAckEvt, 0);
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException&) {
@@ -661,14 +668,15 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
+	// check if the worker evtRegWorker.from() has already registered!
 	try {
-		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
-		addWorker(pWorker);
-
 		SDPA_LOG_INFO("Registered the worker "<<pWorker->name());
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-		sendEventToSlave(pWorkerRegAckEvt);
+		sendEventToSlave(pWorkerRegAckEvt, 0);
+
+		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
+		addWorker(pWorker);
 	}
 	catch(const QueueFull&)
 	{

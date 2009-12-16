@@ -116,7 +116,7 @@ void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 				// send the event to the master
-				sendEventToMaster(pEvtJobFinished);
+				sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
 				// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)
@@ -229,7 +229,7 @@ void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 				// send the event to the master
-				sendEventToMaster(pEvtJobFailedEvent);
+				sendEventToMaster(pEvtJobFailedEvent, MSG_RETRY_CNT);
 				// delete it from the map when you receive a JobFaileddAckEvent!
 			}
 			catch(QueueFull)

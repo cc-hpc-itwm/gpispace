@@ -30,6 +30,8 @@
 
 #include <gwes/IActivity.h>
 
+#define MSG_RETRY_CNT 5
+
 namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;
@@ -40,8 +42,8 @@ const std::string USER("user");
 
   class IComm{
   public:
-	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1000) = 0;
-	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1000) = 0;
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1) = 0;
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1) = 0;
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid) = 0;
 
