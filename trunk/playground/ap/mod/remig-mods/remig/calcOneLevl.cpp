@@ -55,7 +55,11 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
         commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+           if (commStatus != COMM_HANDLE_OK)
+		   {
+			 LOG(FATAL, "get of global config structure failed: " << commStatus);
+			 return (-1);
+		   }
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 

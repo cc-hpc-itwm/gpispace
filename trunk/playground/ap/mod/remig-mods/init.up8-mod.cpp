@@ -57,6 +57,7 @@ void init (data_t &params) throw (std::exception)
 	fvmGlobalFree(node_config.hndScratch);
 	fvmGlobalFree(node_config.hndGlbVMspace);
 
+	MLOG(FATAL, "reApplInit failed: " << retval);
 	throw std::runtime_error("reApplInit failed!");
   }
 

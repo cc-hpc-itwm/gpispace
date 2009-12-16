@@ -23,6 +23,13 @@ extern "C" {
 
 #include "reApplInit.h"
 
+enum ERROR_CODE
+{
+	ECONFIG_FILE = -50
+  , ECHECKPARAM_FILE = -49
+  , EWAITCOMM = -48
+  , ENOERROR = 1
+};
 
 //--------- readParamFile -------------
 static int readParamFile(cfg_t *pCfg, TReGlbStruct *pReG)
@@ -35,7 +42,7 @@ static int readParamFile(cfg_t *pCfg, TReGlbStruct *pReG)
 
         if((fp=fopen(pCfg->config_file, "r"))==NULL) {
 		printf("\n Can not open file %s !!!\n", pCfg->config_file);
-		return -1;
+		return ECONFIG_FILE;
         }
 
             //------ a line comment -----------
@@ -157,7 +164,7 @@ int verbose;
 	fclose(fp);
 
 
-    return 1;
+    return ENOERROR;
 }
 
 //------- writeCheckParamFile -----------
@@ -174,7 +181,7 @@ static int writeCheckParamFile(cfg_t *pCfg, TReGlbStruct *pReG)
 
                 if((fp=fopen(fn, "w"))==NULL) {
 		    printf("\n Can not open file %s !!!\n", fn);
-				return -1;
+				return ECHECKPARAM_FILE;
                 }
 
 	        fprintf(fp, "*******************************************\n");
@@ -218,7 +225,7 @@ static int writeCheckParamFile(cfg_t *pCfg, TReGlbStruct *pReG)
 
 	        fclose(fp);
 
-    return 1;
+    return ENOERROR;
 }
 
 //-------- defineAndCalcParameters ------------
@@ -268,7 +275,7 @@ static int defineAndCalcParameters(TReGlbStruct *pReG)
     pReG->nwH = pReG->nwmax-pReG->nwmin+1;
 
 
-    return 1;
+    return ENOERROR;
 }
 
 
@@ -357,7 +364,7 @@ static int printParameters(cfg_t *pCfg, TReGlbStruct *pReG)
 	    fclose(fp);
 
 
-    return 1;
+    return ENOERROR;
 }
 
 
@@ -367,16 +374,16 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
 	  int retval(1);
 
       retval = readParamFile(pCfg, pReGlb);
-	  if (retval != 1) return -1;
+	  if (retval != ENOERROR) return retval;
 
 	  retval = writeCheckParamFile(pCfg, pReGlb);
-      if (retval != 1) return -1;
+      if (retval != ENOERROR) return retval;
  
       retval = defineAndCalcParameters(pReGlb);
-      if (retval != 1) return -1;
+      if (retval != ENOERROR) return retval;
 
       retval = printParameters(pCfg, pReGlb);
-      if (retval != 1) return -1;
+      if (retval != ENOERROR) return retval;
     
        
        //------ now the structure is filled-in, replicate it everywhere !!
@@ -414,27 +421,30 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				     shmemSrcOffs, //const fvmShmemOffset_t shmemOffset,
 				     hScra); //const fvmAllocHandle_t scratchHandle);
 
-           if (waitComm(commH) != COMM_HANDLE_OK)
-			 return (-1);
+		   fvmCommHandleState_t comm_state;
+		   for (std::size_t i = 0; i < 5; ++i)
+		   {
+			 comm_state = waitComm(commH);
+			 if (comm_state == COMM_HANDLE_NOT_FINISHED) sleep(1);
+			 break;
+		   }
+           if (comm_state != COMM_HANDLE_OK)
+		   {
+			 LOG(FATAL, "distribution of global config structure failed: " << comm_state);
+			 return (EWAITCOMM);
+		   }
        } //for(iNd = 0; iNd < size; iNd++)
 
-    return 1;
+    return ENOERROR;
 }
 
 
 //--------- reApplInit --------------
 int reApplInit(cfg_t *pCfg)
 {
+  //---- the struct with re-glb vars, replicate it on each node
+  TReGlbStruct pReGlb;
 
-       //---- the struct with re-glb vars, replicate it on each node
-       TReGlbStruct *pReGlb = new TReGlbStruct;
-
-
-       //------- init re- glb vars and replicate them over the nodes ---
-       int retval = initReGlbVars(pCfg, pReGlb);
-
-
-       delete pReGlb; // delete re glb struct
-
-    return retval;
+  //------- init re- glb vars and replicate them over the nodes ---
+  return initReGlbVars(pCfg, &pReGlb);
 }
