@@ -2,7 +2,6 @@
 
 using namespace sdpa::daemon;
 
-
 void Job::CancelJob(const sdpa::events::CancelJobEvent*) { }
 void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent*) { }
 void Job::DeleteJob(const sdpa::events::DeleteJobEvent*) { }
