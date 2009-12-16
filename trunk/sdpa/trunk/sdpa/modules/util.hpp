@@ -11,12 +11,16 @@
 namespace fvm { namespace util {
   struct global_allocation
   {
-	explicit global_allocation(fvmSize_t alloc_size)
-	  : handle(0)
+	explicit global_allocation(fvmSize_t alloc_size, fvmAllocHandle_t hdl = 0)
+	  : handle(hdl)
 	  , size(alloc_size)
 	  , committed(false)
 	  {
-		handle = fvmGlobalAlloc(size);
+		if (hdl == 0)
+		{
+		  DLOG(TRACE, "allocating " << size << " bytes globally");
+		  handle = fvmGlobalAlloc(size);
+		}
 	  }
 
 	~global_allocation()
@@ -44,12 +48,16 @@ namespace fvm { namespace util {
 
   struct local_allocation
   {
-	explicit local_allocation(fvmSize_t alloc_size)
-	  : handle(0)
+	explicit local_allocation(fvmSize_t alloc_size, fvmAllocHandle_t hdl = 0)
+	  : handle(hdl)
 	  , size(alloc_size)
 	  , committed(false)
 	  {
-		handle = fvmLocalAlloc(size);
+		if (hdl == 0)
+		{
+		  DLOG(TRACE, "allocating " << size << " bytes locally");
+		  handle = fvmLocalAlloc(size);
+		}
 	  }
 
 	~local_allocation()
