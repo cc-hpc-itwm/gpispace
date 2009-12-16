@@ -20,7 +20,6 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
