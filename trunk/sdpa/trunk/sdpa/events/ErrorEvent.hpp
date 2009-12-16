@@ -24,6 +24,7 @@ namespace sdpa { namespace events {
       enum error_code_t {
           SDPA_ENOERROR = 0,
           SDPA_ENOJOBAVAIL,
+          SDPA_EJOBNOTFOUND,
           SDPA_EWORKERNOTREG,
           SDPA_EBUSY,
           SDPA_EAGAIN,

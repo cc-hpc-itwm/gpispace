@@ -670,13 +670,13 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 {
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
-		SDPA_LOG_INFO("Registered the worker "<<pWorker->name());
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 
 		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
 		addWorker(pWorker);
+		SDPA_LOG_INFO("Registered the worker "<<pWorker->name());
 	}
 	catch(const QueueFull&)
 	{

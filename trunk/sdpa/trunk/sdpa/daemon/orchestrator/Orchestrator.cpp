@@ -31,7 +31,6 @@ Orchestrator::Orchestrator(  const std::string &name,  const std::string& url, c
 	  url_(url)
 {
 	SDPA_LOG_DEBUG("Orchestrator constructor called ...");
-	// FIXME: maybe this should be a parameter to the constructor of the superclass
 	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 }
 
@@ -351,6 +350,7 @@ void Orchestrator::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pEv
 	catch(const JobNotFoundException&)
 	{
 		SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
-		// FIXME: shouldn't we reply with an error?
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND) );
+		sendEventToMaster(pErrorEvt);
 	}
 }
