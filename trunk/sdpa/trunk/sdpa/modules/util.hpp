@@ -2,7 +2,10 @@
 #define FVM_PC_UTIL_HPP 1
 
 #include <cstring>
+#include <unistd.h>
+
 #include <fhglog/fhglog.hpp>
+#include <fvm-pc/pc.hpp>
 #include <sdpa/modules/assert.hpp>
 
 namespace fvm { namespace util {
@@ -72,6 +75,28 @@ namespace fvm { namespace util {
 	bool committed;
   };
 
+  void wait_for_communication(fvmCommHandle_t hdl, std::size_t numRetries = 3, unsigned int usec = 100000)
+  {
+	fvmCommHandleState_t comm_state;
+	for (std::size_t i(0); i < numRetries; ++i)
+	{
+	  comm_state = waitComm(hdl);
+	  if (comm_state == COMM_HANDLE_NOT_FINISHED)
+	  {
+		DLOG(TRACE, "communication " << hdl << " not finished yet, retrying");
+		usleep(usec);
+	  }
+	  else break;
+	}
+	if (comm_state != COMM_HANDLE_OK)
+	{
+	  LOG(FATAL, "communication failed: hdl=" << hdl << " state=" << comm_state);
+	  // FIXME: throw specific exceptions here
+	  throw std::runtime_error("waitComm failed!");
+	}
+	DLOG(TRACE, "communication " << hdl << " finished");
+  }
+
   /****************************************************************************************
    * The following functions are mainly used for "global" configuration stuff,
    * i.e. a structure that must be available on every node and keeps various
@@ -85,7 +110,6 @@ namespace fvm { namespace util {
    * It is always assumed, that the global allocation is of size:
    *    sizeof (Type).
    ****************************************************************************************/
-
 
   /*
    * puts one data element to a global allocation space
@@ -109,10 +133,8 @@ namespace fvm { namespace util {
 	ASSERT_LALLOC(scratch);
 
 	DLOG(DEBUG, "putting data of node " << rank);
-	fvmCommHandle_t comm_hdl = fvmPutGlobalData(global, rank*sizeof(Type), sizeof(Type), 0, scratch);
-	DLOG(DEBUG, "waiting for finish...");
-	fvmCommHandleState_t state = waitComm(comm_hdl);
-	DLOG(DEBUG, "comm state = " << state);
+	fvmCommHandle_t comm_handle = fvmPutGlobalData(global, rank*sizeof(Type), sizeof(Type), 0, scratch);
+	wait_for_communication(comm_handle);
   }
 
   /*
@@ -131,10 +153,8 @@ namespace fvm { namespace util {
 	ASSERT_LALLOC(scratch);
 
 	DLOG(DEBUG, "getting data from node " << rank);
-	fvmCommHandle_t comm_hdl = fvmGetGlobalData(global, rank*sizeof(Type), sizeof(Type), 0, scratch);
-	DLOG(DEBUG, "waiting for finish...");
-	fvmCommHandleState_t state = waitComm(comm_hdl);
-	DLOG(DEBUG, "comm state = " << state);
+	fvmCommHandle_t comm_handle = fvmGetGlobalData(global, rank*sizeof(Type), sizeof(Type), 0, scratch);
+	wait_for_communication(comm_handle);
 
 	// copy from shared mem
 	memcpy(data, fvmGetShmemPtr(), sizeof(Type));
@@ -166,9 +186,7 @@ namespace fvm { namespace util {
 	{
 	  DLOG(DEBUG, "distributing data to node: " << node);
 	  fvmCommHandle_t comm_handle = fvmPutGlobalData(global, node * transfer_size, transfer_size, 0, scratch);
-	  fvmCommHandleState_t state = waitComm(comm_handle);
-	  DLOG(DEBUG, "comm state = " << state);
-	  // FIXME: check communication state!
+	  wait_for_communication(comm_handle);
 	}
   }
 
@@ -195,8 +213,7 @@ namespace fvm { namespace util {
 
 	DLOG(DEBUG, "distributing data to all nodes");
 	fvmCommHandle_t comm_handle = fvmPutGlobalData(global, 0, transfer_size, 0, scratch);
-	fvmCommHandleState_t state = waitComm(comm_handle);
-	DLOG(DEBUG, "comm state = " << state);
+	wait_for_communication(comm_handle);
   }
 }}
 
