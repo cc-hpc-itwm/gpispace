@@ -150,7 +150,7 @@
       <inputPlace placeID="seq_after_read_velocity" edgeExpression="seq"/>
       <inputPlace placeID="slices_finalized" edgeExpression="slices_finalized"/>
 
-      <outputPlace placeID="seq_after_calculation" edgeExpression="seq"/>
+      <outputPlace placeID="seq_after_calculation" edgeExpression="$seq"/>
 
       <condition>$slices_finalized &gt;= $number_of_frequencies</condition>
     </transition>
