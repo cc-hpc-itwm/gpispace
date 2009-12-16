@@ -75,7 +75,7 @@ namespace fvm { namespace util {
 	bool committed;
   };
 
-  void wait_for_communication(fvmCommHandle_t hdl, std::size_t numRetries = 3, unsigned int usec = 100000)
+  inline void wait_for_communication(fvmCommHandle_t hdl, std::size_t numRetries = 3, unsigned int usec = 100000)
   {
 	fvmCommHandleState_t comm_state;
 	for (std::size_t i(0); i < numRetries; ++i)
