@@ -701,7 +701,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 	{
 	  MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
 	  WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from()));
-	  sendEventToMaster(pWorkerRegEvt, MSG_RETRY_CNT);
+	  sendEventToMaster(pWorkerRegEvt);
 	  break;
 	}
 	default:
