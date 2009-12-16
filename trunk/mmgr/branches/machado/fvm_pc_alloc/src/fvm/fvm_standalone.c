@@ -7,7 +7,7 @@
 #include <errno.h>
 
 
-#include <Pv4dLogger.h>
+#include <Pv4dVMLogger.h>
 #include <Pv4dVM4.h>
 
 #include "fvm.h"

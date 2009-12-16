@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <Pv4dVM4.h>
-#include <Pv4dLogger.h>
+#include <Pv4dVMLogger.h>
 
 
 #include "fvmSync.h"
