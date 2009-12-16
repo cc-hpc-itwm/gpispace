@@ -559,7 +559,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
 
-		sendEventToSlave(pErrorEvt, MSG_RETRY_CNT);
+		sendEventToSlave(pErrorEvt);
 	}
 	catch(const QueueFull&)
 	{
@@ -628,7 +628,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
 
 			// There is a problem with this if uncommented
-			sendEventToMaster(pSubmitJobAckEvt, MSG_RETRY_CNT);
+			sendEventToMaster(pSubmitJobAckEvt);
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException&) {
@@ -676,7 +676,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		SDPA_LOG_INFO("Registered the worker "<<pWorker->name());
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-		sendEventToSlave(pWorkerRegAckEvt, MSG_RETRY_CNT);
+		sendEventToSlave(pWorkerRegAckEvt);
 	}
 	catch(const QueueFull&)
 	{

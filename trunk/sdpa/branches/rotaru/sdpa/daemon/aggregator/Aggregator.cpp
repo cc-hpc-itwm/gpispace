@@ -136,7 +136,7 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		// send a JobFinishedAckEvent back to the worker/slave
 		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 		// send the event to the slave
-		sendEventToSlave(pEvtJobFinishedAckEvt, MSG_RETRY_CNT);
+		sendEventToSlave(pEvtJobFinishedAckEvt);
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -250,7 +250,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent(name(), worker_id, pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
-		sendEventToSlave(pEvtJobFailedAckEvt, MSG_RETRY_CNT);
+		sendEventToSlave(pEvtJobFailedAckEvt);
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
@@ -355,7 +355,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
 			// only if the job was already submitted, send ack to master
-			sendEventToMaster(pCancelAckEvt, MSG_RETRY_CNT);
+			sendEventToMaster(pCancelAckEvt);
 
 			// if I'm not the orchestrator delete effectively the job
 			ptr_job_man_->deleteJob(pEvt->job_id());
