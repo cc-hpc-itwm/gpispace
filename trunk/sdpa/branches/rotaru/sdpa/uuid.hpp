@@ -18,6 +18,7 @@ namespace sdpa {
     ~uuid();
 
     uuid &operator=(const uuid &rhs);
+	operator std::string() const { return str(); }
 
     const uuid_t &data() const { return uuid_; }
     uuid_t &data() { dirty_ = true; return uuid_; }

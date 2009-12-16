@@ -20,6 +20,7 @@
 #define SDPA_EVENTS_ID_GENERATOR_HPP 1
 
 #include <boost/thread.hpp>
+#include <sdpa/uuidgen.hpp>
 
 namespace sdpa { namespace events {
   template <typename T>
@@ -32,24 +33,24 @@ namespace sdpa { namespace events {
   public:
 	static id_generator& instance()
 	{
-	  static id_generator gen(0);
+	  static id_generator gen;
 	  return gen;
 	}
 
 	T next()
 	{
 	  lock_type lock(mtx_);
-	  return id_++;
+	  static sdpa::uuidgen gen;
+	  sdpa::uuid id;
+	  gen(id);
+	  return id;
 	}
 
   private:
-	explicit
-	id_generator(T initial)
-	  : id_(initial)
+	id_generator()
 	{}
 
 	mutex_type mtx_;
-	T id_;
   };
 }}
 

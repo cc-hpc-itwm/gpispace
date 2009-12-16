@@ -20,7 +20,7 @@ namespace sdpa { namespace events {
 		typedef sdpa::shared_ptr<JobFailedAckEvent> Ptr;
 
         JobFailedAckEvent()
-          : JobEvent("", "", "", 0)
+          : JobEvent("", "", "", message_id_type())
         {}
 
 		JobFailedAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id, const message_id_type &mid)
