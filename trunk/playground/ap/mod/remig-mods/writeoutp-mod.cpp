@@ -32,6 +32,7 @@ void writeoutp (data_t &params)
   }
 
   params["seq"].token().data("SEQ");
+  params["output_file"].token().data(node_config.output_file);
 }
 
 SDPA_MOD_INIT_START(writeoutp)
@@ -39,6 +40,7 @@ SDPA_MOD_INIT_START(writeoutp)
   SDPA_REGISTER_FUN_START(writeoutp);
     SDPA_ADD_INP("memhandle_for_configuration", fvmAllocHandle_t );
     SDPA_ADD_OUT("seq", char* );
+    SDPA_ADD_OUT("output_file", char* );
   SDPA_REGISTER_FUN_END(writeoutp);
 }
 SDPA_MOD_INIT_END(writeoutp)
