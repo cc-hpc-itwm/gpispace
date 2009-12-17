@@ -5,6 +5,9 @@
     <!-- set by master workflow -->
     <place ID="config_file"/>
 
+	<!-- will be set by the write output -->
+    <place ID="output_file"/>
+
     <!-- global settings, set by the init function -->
     <place ID="number_of_frequencies"/>
     <place ID="number_of_depthlevels"/>
@@ -384,6 +387,7 @@
       <inputPlace placeID="seq_after_prefix_sum"/>
 
       <outputPlace placeID="seq_after_write_output" edgeExpression="seq"/>
+	  <outputPlace placeID="output_file" edgeExpression="output_file"/>
 
       <operation>
         <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="writeoutp">

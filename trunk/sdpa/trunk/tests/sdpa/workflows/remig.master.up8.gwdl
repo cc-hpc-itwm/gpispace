@@ -11,6 +11,8 @@
     <token><data><sdpa>/scratch/petry/sdpa/depth_remig3D.in</sdpa></data></token>
   </place>
 
+  <place ID="output_file"/>
+
   <!-- back from the subworkflow -->
   <place ID="done"/>
 
