@@ -17,7 +17,7 @@
 
 #define MAXHANDLES 256
 
-volatile fvmCommHandleState_t *handles;
+volatile fvmCommHandleState_t handles[MAXHANDLES+1];
 volatile fvmCommHandle_t num_handles;
 stack_t *usedHandlesStack;
 configFile_t configuration;
@@ -57,7 +57,7 @@ const char *op2str(fvmOperation_t op)
   };
 	
   if(op < FGLOBALLOC || op > LEAVE)
-    return "unknown";
+    return "fvm operation unknown";
 
   return fvm_op_str[op];
 }
@@ -86,7 +86,7 @@ int fvmInit(configFile_t config)
   usedHandlesStack = (stack_t *) malloc( sizeof(stack_t));
 
   /* start array for holding handles */
-  handles = (fvmCommHandleState_t *) calloc(MAXHANDLES + 1, sizeof(fvmCommHandleState_t));
+  memset(handles, 0, sizeof(handles));
 
   /* initialize number of handles */
   num_handles = 0;
@@ -111,12 +111,10 @@ int fvmLeave()
   if(ret != 0)
     perror("removing msgq");
 
-  fvmCommHandle_t *freeHandle = (fvmCommHandle_t *) malloc(sizeof(fvmCommHandle_t));
-  while(stackPop(freeHandle, usedHandlesStack)) {}
-  free(freeHandle);
+  fvmCommHandle_t freeHandle;
+  while(stackPop(&freeHandle, usedHandlesStack)) {}
 
-  free(usedHandlesStack);
-  free((void *)handles);
+  free(usedHandlesStack); usedHandlesStack = NULL;
 
   return ret;
 #endif
@@ -274,7 +272,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   size_t rest = 0;
   size_t currentTransferSize = 0;
   size_t availableSpace;
-  fvmCommHandle_t *freeHandle;
+  fvmCommHandle_t freeHandle;
 
 
   fvmAddress = getDmaMemPtrVM();
@@ -284,34 +282,33 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 
   /* update number of worked handles */
   /* see if there are free handles */
-  freeHandle = (fvmCommHandle_t *) malloc(sizeof(fvmCommHandle_t));
-  if(!stackPop(freeHandle, usedHandlesStack))
+  if(!stackPop(&freeHandle, usedHandlesStack))
     {
       ++num_handles;
       //if we exhausted the max number of handles
       if(num_handles == MAXHANDLES)
 	{
-	  *freeHandle = num_handles;
-	  handles[*freeHandle] = COMM_HANDLE_ERROR_TOO_MANY;  
+	  freeHandle = num_handles;
+	  handles[freeHandle] = COMM_HANDLE_ERROR_TOO_MANY;  
 	  num_handles = MAXHANDLES;
-	  sendAck(*freeHandle);
+	  sendAck(freeHandle);
 	  goto out;
 	}      
       else
-	*freeHandle = num_handles;
+	freeHandle = num_handles;
     }    
 
 #ifndef NDEBUGCOMM
-  pv4d_printf("FVM: Global Comm %s: new handle for operation is %d\n",op2str(op), *freeHandle);
+  pv4d_printf("FVM: Global Comm %s: new handle for operation is %d\n",op2str(op), freeHandle);
 #endif
 
-  handles[*freeHandle] = COMM_HANDLE_NOT_FINISHED; /* invalidate while we're not finished */
+  handles[freeHandle] = COMM_HANDLE_NOT_FINISHED; /* invalidate while we're not finished */
   
   /* send ack with communication handle straight away as we don't want to block */
   /* after this point, if any error occurs it will be saved as the handle state */
-  if(sendAck(*freeHandle) < 0)
+  if(sendAck(freeHandle) < 0)
     {
-      handles[*freeHandle]= COMM_HANDLE_ERROR_ACK_FAILED;
+      handles[freeHandle]= COMM_HANDLE_ERROR_ACK_FAILED;
       goto out;
     }
   
@@ -319,7 +316,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #ifndef NBOUNDCHECK 
   if (transferSize + shmemOffset > configuration.shmemsize)
     {
-      handles[*freeHandle] = COMM_HANDLE_ERROR_SHMEM_BOUNDARY;
+      handles[freeHandle] = COMM_HANDLE_ERROR_SHMEM_BOUNDARY;
       goto out;
     }
 #endif 
@@ -329,18 +326,18 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 
   if (handle <= 0 )
     {
-      handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_HANDLE;
+      handles[freeHandle] = COMM_HANDLE_ERROR_INVALID_HANDLE;
       goto out;
     }
   if (scratchHandle <= 0 && (op == PUTGLOBAL || op == GETGLOBAL))
     {
-      handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
+      handles[freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
       goto out;
     }
 	
   if (transferSize == 0)
     {
-      handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SIZE;
+      handles[freeHandle] = COMM_HANDLE_ERROR_INVALID_SIZE;
       goto out;
     }
 #endif
@@ -351,7 +348,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
       arena = ARENA_GLOBAL;
       if( (dtmmgr_offset_size(dtmmgr, handle, ARENA_GLOBAL, &handleOffset, &handleSize)) != RET_SUCCESS)
 	{	
-	  handles[*freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
+	  handles[freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
 	  goto out;
 	}      
     }
@@ -360,7 +357,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
       arena = ARENA_LOCAL;
       if( (dtmmgr_offset_size(dtmmgr, handle, ARENA_LOCAL, &handleOffset, &handleSize)) != RET_SUCCESS)
 	{
-	  handles[*freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
+	  handles[freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
 	  goto out;
 	}
     }
@@ -375,7 +372,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	
       else 
 	{
-	  handles[*freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
+	  handles[freeHandle] = COMM_HANDLE_ERROR_HANDLE_UNKNOWN;
 	  goto out;
 	}
     }
@@ -383,13 +380,13 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #ifndef NDEBUGCOMM 
   if(arena != ARENA_LOCAL && arena != ARENA_GLOBAL)
     {
-      handles[*freeHandle] = COMM_HANDLE_ERROR_ARENA_UNKNOWN;
+      handles[freeHandle] = COMM_HANDLE_ERROR_ARENA_UNKNOWN;
       goto out;
     }
 #endif
 
 #ifndef NDEBUGCOMM
-  pv4d_printf("GLOBAL comm:handle %d starts with %d\n",*freeHandle,handles[*freeHandle]);
+  pv4d_printf("GLOBAL comm:handle %d starts with %d\n",freeHandle,handles[freeHandle]);
 #endif
 
 
@@ -420,7 +417,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 
       	      if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
       		{
-      		  handles[*freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
+      		  handles[freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
       		  goto out;
       		}
       	    }
@@ -434,7 +431,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	  pv4d_printf("GETLOCAL\n");
 
 	  memcpy(((char *)shm) + shmemInitialOffset, ((char *)fvmAddress) + fvmInitialOffset, transferSize);
-	  handles[*freeHandle] = COMM_HANDLE_OK;
+	  handles[freeHandle] = COMM_HANDLE_OK;
 	}
 
       else if( op == PUTLOCAL)
@@ -442,7 +439,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	  pv4d_printf("PUTLOCAL\n");
 	  
 	  memcpy(((char *)fvmAddress) + fvmInitialOffset, ((char *)shm) + shmemInitialOffset, transferSize);
-	  handles[*freeHandle] = COMM_HANDLE_OK;
+	  handles[freeHandle] = COMM_HANDLE_OK;
 	}
 
       else
@@ -496,11 +493,11 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #ifndef NDEBUGCOMM
 			  pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
 				      scratchSize,
-				      *freeHandle,
+				      freeHandle,
 				      currentTransferSize);
 #endif
 
-			  handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;
+			  handles[freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;
 			  goto out;
 			}
 
@@ -531,11 +528,11 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #ifndef NDEBUGCOMM
 			  pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
 				      scratchSize,
-				      *freeHandle,
+				      freeHandle,
 				      currentTransferSize);
 #endif
 
-			  handles[*freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;	  
+			  handles[freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;	  
 			  goto out;
 			}
 
@@ -560,18 +557,18 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 		
 	    }
 
-	  handles[*freeHandle] = COMM_HANDLE_OK;
+	  handles[freeHandle] = COMM_HANDLE_OK;
 	}
     }
   else 
     {
 
       /* put handle in error state */
-      handles[*freeHandle] = COMM_HANDLE_ERROR_SIZE_NOT_MATCH;
+      handles[freeHandle] = COMM_HANDLE_ERROR_SIZE_NOT_MATCH;
       goto out;
     }
  out:	
-  return (handles[*freeHandle]);
+  return (handles[freeHandle]);
 
 }
 
