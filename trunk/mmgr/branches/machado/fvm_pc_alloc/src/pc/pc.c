@@ -253,7 +253,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 {
   fvmRequest_t request;
   request.op = op;
-  request.args.arg_handle = handle;
+  request.args.arg_allochandle = handle;
   request.args.arg_fvmOffset = fvmOffset;
   request.args.arg_size = size;
   request.args.arg_shmOffset = shmemOffset;
@@ -340,7 +340,7 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
   fvmRequest_t request;
   request.op = WAITCOMM;
-  request.args.arg_handle  = handle;
+  request.args.arg_commhandle  = handle;
   
   if(doRequest(request))
     perror("error doing request");
