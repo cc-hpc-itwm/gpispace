@@ -21,6 +21,7 @@
   <transition ID="remigration">
     <inputPlace placeID="config_file" edgeExpression="config_file"/>
     <outputPlace placeID="done" edgeExpression="done"/>
+    <outputPlace placeID="output_file" edgeExpression="output_file"/>
 
     <operation>
       <oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="remigration">

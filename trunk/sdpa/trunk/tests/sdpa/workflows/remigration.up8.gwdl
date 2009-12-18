@@ -428,8 +428,10 @@
     <!-- give control back to master workflow -->
     <transition ID="computation_done">
       <inputPlace placeID="seq_after_finalize" edgeExpression="seq"/>
+      <inputPlace placeID="output_file" edgeExpression="output_file"/>
 
       <outputPlace placeID="done" edgeExpression="$seq"/>
+      <outputPlace placeID="output_file" edgeExpression="$output_file"/>
     </transition>
 
 </workflow>
