@@ -95,15 +95,17 @@ static void printAllocRequest(fvmAllocRequest_t request)
 /************************ Internal functions to allocator ***************************/
 
 /* Handle */
-/* __________________________________ */
-/*|       numAllocations |  rank    | */
-/*|            44 bits   | 20 bits  | */
-/*----------------------------------- */
+/*____________ _______________________ */
+/*|  rank    ||       numAllocations | */
+/*| 20 bits  ||            44 bits   | */
+/*------------------------------------ */
 
 static fvmAllocHandle_t buildHandle()
 {
+  static unsigned long myrankUL = myrank;
+
   numAllocations++;
-  return (fvmAllocHandle_t) ((numAllocations << 20) + myrank);
+  return (fvmAllocHandle_t) ((myrankUL << 44) | (numAllocations & 0xFFFFFFFFFFFUL));
 }
 
 
