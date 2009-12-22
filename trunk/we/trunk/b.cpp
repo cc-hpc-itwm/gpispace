@@ -10,9 +10,6 @@ typedef unsigned int transition_t;
 typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
 
-using std::cout;
-using std::endl;
-
 static const unsigned int nplace (100);
 static const unsigned int ntrans (100);
 static const unsigned int factor (10);
