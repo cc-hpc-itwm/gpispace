@@ -62,18 +62,26 @@ public:
     if (bimap.left.find (x) != bimap.left.end())
       throw already_there (description);
 
-    I i (num++);
+    I i (num);
 
     bimap.insert (val_t (x, i));
 
-    return num;
+    ++num;
+
+    return i;
   }
 };
 
-template<typename IDX = unsigned int, typename ID = unsigned long>
+template<typename IDX = unsigned long, typename ID = unsigned long>
 class adjacency_matrix
 {
 private:
+  BOOST_STATIC_ASSERT(sizeof(ID) == sizeof(IDX));
+  BOOST_STATIC_ASSERT(std::numeric_limits<ID>::is_integer);
+  BOOST_STATIC_ASSERT(std::numeric_limits<IDX>::is_integer);
+  BOOST_STATIC_ASSERT(  std::numeric_limits<ID>::is_signed
+                     == std::numeric_limits<ID>::is_signed);
+
   IDX row;
   IDX col;
 
@@ -93,6 +101,8 @@ public:
     , val     (NULL)
     , invalid (invalid_)
   {
+    
+
     val = new ID[row * col];
 
     if (val != NULL)
@@ -105,6 +115,18 @@ public:
       delete[] val;
     
     val = NULL;
+  }
+
+  const ID get_adjacent_nogrow (const IDX r, const IDX c) const
+    throw (std::out_of_range)
+  {
+    if (r > row - 1)
+      throw std::out_of_range("row");
+
+    if (c > col - 1)
+      throw std::out_of_range("col");
+
+    return val[linear (r, c)];
   }
 
   ID & adjacent (const IDX r, const IDX c) throw (std::bad_alloc)
@@ -164,25 +186,28 @@ private:
   const ID invalid;
   auto_bimap<Edge, ID> emap;
 
-  typedef unsigned int IDX;
+  typedef ID IDX;
+  typedef adjacency_matrix<IDX, ID> adj_matrix;
 
-  adjacency_matrix<IDX, ID> adj_pt;
-  adjacency_matrix<IDX, ID> adj_tp;
+  adj_matrix adj_pt;
+  adj_matrix adj_tp;
 
-  IDX places;
-  IDX transitions;
+  IDX num_places;
+  IDX num_transitions;
+  IDX num_edges;
 
 public:
-  net (const IDX num_places = 100, const IDX num_transitions = 250)
+  net (const IDX places_ = 100, const IDX transitions_ = 250)
   throw (std::bad_alloc)
     : pmap ("place", 0)
     , tmap ("transition", 0)
     , invalid (0)
     , emap ("edge name", invalid + 1)
-    , adj_pt (num_places, num_transitions, 0)
-    , adj_tp (num_transitions, num_places, 0)
-    , places (0)
-    , transitions (0)
+    , adj_pt (places_, transitions_, 0)
+    , adj_tp (transitions_, places_, 0)
+    , num_places (0)
+    , num_transitions (0)
+    , num_edges (0)
   {};
 
   ~net () {};
@@ -193,9 +218,9 @@ private:
     return pmap.get_id (place);
   }
 
-  const Place get_place (const ID i) const throw (no_such)
+  const Place get_place (const ID pid) const throw (no_such)
   {
-    return pmap.get_elem (i);
+    return pmap.get_elem (pid);
   }
 
   const ID get_transition_id (const Transition transition) const throw (no_such)
@@ -203,79 +228,171 @@ private:
     return tmap.get_id (transition);
   }
 
+  const Transition get_transition (const ID tid) const throw (no_such)
+  {
+    return tmap.get_elem (tid);
+  }
+
   const ID get_edge_id (const Edge edge) const throw (no_such)
   {
     return emap.get_id (edge);
   }
 
-public:
-  ID add_place (const Place place) throw (already_there)
+  const Edge get_edge (const ID eid) const throw (no_such)
   {
-    ++places;
+    return emap.get_elem (eid);
+  }
+
+public:
+  const ID add_place (const Place place) throw (already_there)
+  {
+    ++num_places;
 
     return pmap.add (place);
   }
 
-  ID add_transition (const Transition transition) throw (already_there)
+  const ID add_transition (const Transition transition) throw (already_there)
   {
-    ++transitions;
+    ++num_transitions;
 
     return tmap.add (transition);
   }
 
-  ID add_edge_place_to_transition
+private:
+  const ID add_edge
+  (const Edge edge, const IDX x, const IDX y, adj_matrix & m)
+    throw (no_such, already_there)
+  {
+    ID & a (m.adjacent (x, y));
+
+    if (a != invalid)
+      throw already_there ("adjacency");
+
+    const ID eid (emap.add (edge));
+
+    a = eid;
+
+    ++num_edges;
+
+    return eid;
+  }
+
+public:
+  const ID add_edge_place_to_transition
   (const Edge edge, const Place place, const Transition transition)
     throw (no_such, already_there)
   {
     const ID pid (get_place_id (place));
     const ID tid (get_transition_id (transition));
 
-    ID & a (adj_pt.adjacent(pid, tid));
-    
-    if (a != invalid)
-      throw already_there ("adjacency");
-
-    const ID eid (emap.add (edge));
-    
-    a = eid;
-
-    return eid;
+    return add_edge (edge, pid, tid, adj_pt);
   }
 
-  ID add_edge_transition_to_place
+  const ID add_edge_transition_to_place
   (const Edge edge, const Transition transition, const Place place)
     throw (no_such, already_there)
   {
     const ID tid (get_transition_id (transition));
     const ID pid (get_place_id (place));
 
-    ID & a (adj_tp.adjacent(tid, pid));
-
-    if (a != invalid)
-      throw already_there ("adjacency");
-    
-    const ID eid (emap.add (edge));
-    
-    a = eid;
-
-    return eid;
+    return add_edge (edge, tid, pid, adj_tp);
   }
 
-//   const std::vector<Place> out (const Transition transition) const
-//     throw (no_such)
-//   {
-//     std::vector<Place> ret;
+  const std::vector<Transition> transitions (void) const
+  {
+    std::vector<Transition> ret(num_transitions);
 
-//     const ID tid (get_transition_id (transition));
+    for (IDX tid(0); tid < num_transitions; ++tid)
+      ret[tid] = get_transition(tid);
 
-//     for (ID pid(0); pid < places; ++pid)
-//       {
-//         ID & a (adj_tp.adjacent(tid, pid));
+    return ret;
+  }
 
-//         if (a != invalid)
-//           ret.push_back (get_place(pid));
-//       }
+  const std::vector<Place> places (void) const
+  {
+    std::vector<Place> ret(num_places);
 
-//     return ret;
-//   }
+    for (IDX pid(0); pid < num_places; ++pid)
+      ret[pid] = get_place(pid);
+
+    return ret;
+  }
+
+  const std::vector<Edge> edges (void) const
+  {
+    std::vector<Edge> ret(num_edges);
+
+    for (IDX eid(1); eid < num_edges + 1; ++eid)
+      ret[eid-1] = get_edge (eid);
+
+    return ret;
+  }
+
+  const std::vector<Place> out_of_transition (const Transition transition) const
+  {
+    std::vector<Place> ret;
+
+    const ID tid (get_transition_id (transition));
+
+    for (IDX pid(0); pid < num_places; ++pid)
+      {
+        const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
+
+        if (a != invalid)
+          ret.push_back (get_place (pid));
+      }
+
+    return ret;
+  }
+
+  const std::vector<Place> in_to_transition (const Transition transition) const
+  {
+    std::vector<Place> ret;
+
+    const ID tid (get_transition_id (transition));
+
+    for (IDX pid(0); pid < num_places; ++pid)
+      {
+        const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
+
+        if (a != invalid)
+          ret.push_back (get_place (pid));
+      }
+
+    return ret;
+  }
+
+  const std::vector<Transition> out_of_place (const Place place) const
+  {
+    std::vector<Transition> ret;
+
+    const ID pid (get_place_id (place));
+
+    for (IDX tid(0); tid < num_transitions; ++tid)
+      {
+        const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
+
+        if (a != invalid)
+          ret.push_back (get_transition (tid));
+      }
+
+    return ret;
+  }
+
+  const std::vector<Transition> in_to_place (const Place place) const
+  {
+    std::vector<Transition> ret;
+
+    const ID pid (get_place_id (place));
+
+    for (IDX tid(0); tid < num_transitions; ++tid)
+      {
+        const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
+
+        if (a != invalid)
+          ret.push_back (get_transition (tid));
+      }
+
+    return ret;
+  }
 };

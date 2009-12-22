@@ -15,7 +15,7 @@ using std::endl;
 int
 main ()
 {
-  net<place_t, transition_t, edge_t> n;
+  net<place_t, transition_t, edge_t> n(12,4);
 
   cout << "add_place (readyL) => " << n.add_place ("readyL") << endl;
   cout << "add_place (readyR) => " << n.add_place ("readyR") << endl;
@@ -58,14 +58,66 @@ main ()
   cout << "add_edge_transition_to_place (e_lr_s) => "
        << n.add_edge_transition_to_place ("e_lr_s", "leaveR", "semaphore") << endl;
 
-//   const std::vector<place_t> adj = n.out("leaveR");
+  typedef std::vector<transition_t> tvec_t;
+  typedef std::vector<place_t> pvec_t;
+  typedef tvec_t::const_iterator tvec_it_t;
+  typedef pvec_t::const_iterator pvec_it_t;
 
-//   std::cout << "out(leaveR) =>";
+  std::cout << "*** by transition" << std::endl;
 
-//   for (std::vector<place_t>::const_iterator it(adj.begin()); it != adj.end(); ++it)
-//     std::cout << " " << *it;
+  const tvec_t transitions (n.transitions());
 
-//   std::endl;
+  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+    {
+      std::cout << "out (" << *t << ") =>";
+
+      const pvec_t tout (n.out_of_transition(*t));
+      
+      for (pvec_it_t p (tout.begin()); p != tout.end(); ++p)
+        std::cout << " " << *p;
+
+      std::cout << std::endl;
+    }
+
+  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+    {
+      std::cout << "in (" << *t << ") =>";
+
+      const pvec_t tin (n.in_to_transition(*t));
+      
+      for (pvec_it_t p (tin.begin()); p != tin.end(); ++p)
+        std::cout << " " << *p;
+
+      std::cout << std::endl;
+    }
+
+  std::cout << "*** by place" << std::endl;
+
+  const pvec_t places (n.places());
+
+  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+    {
+      std::cout << "out (" << *p << ") =>";
+
+      const tvec_t pout (n.out_of_place (*p));
+
+      for (tvec_it_t t (pout.begin()); t != pout.end(); ++t)
+        std::cout << " " << *t;
+
+      std::cout << std::endl;
+    }
+
+  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+    {
+      std::cout << "in (" << *p << ") =>";
+
+      const tvec_t pin (n.in_to_place (*p));
+
+      for (tvec_it_t t (pin.begin()); t != pin.end(); ++t)
+        std::cout << " " << *t;
+
+      std::cout << std::endl;
+    }
 
   return EXIT_SUCCESS;
 }
