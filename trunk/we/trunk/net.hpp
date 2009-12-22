@@ -28,7 +28,7 @@ private:
   bimap_t bimap;
   I num;
 
-  std::string description;
+  const std::string description;
 
 public:
   auto_bimap (const std::string descr, const I initial = 1)
@@ -37,7 +37,7 @@ public:
   , description (descr)
   {}
 
-  I get_id (const T x) const throw (no_such)
+  const I get_id (const T x) const throw (no_such)
   {
     typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
@@ -47,7 +47,7 @@ public:
     return it->second;
   }
 
-  T get_elem (const I i) const throw (no_such)
+  const T get_elem (const I i) const throw (no_such)
   {
     typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
 
@@ -57,7 +57,7 @@ public:
     return it->second;
   }
 
-  I add (const T x) throw (already_there)
+  const I add (const T x) throw (already_there)
   {
     if (bimap.left.find (x) != bimap.left.end())
       throw already_there (description);
@@ -113,12 +113,13 @@ public:
       {
         ID * newval = new ID [(2 * row) * col];
 
-        std::copy (val, val + row * col, newval);
+        if (newval != NULL)
+          {
+            std::copy (val, val + row * col, newval);
+            std::fill (newval + row * col, newval + 2 * row * col, invalid);
+          }
 
         delete[] val;
-
-        if (newval != NULL)
-          std::fill (newval + row * col, newval + 2 * row * col, invalid);
 
         val = newval;
 
@@ -187,22 +188,22 @@ public:
   ~net () {};
 
 private:
-  ID get_place_id (const Place place) const throw (no_such)
+  const ID get_place_id (const Place place) const throw (no_such)
   {
     return pmap.get_id (place);
   }
 
-  Place get_place (const ID i) const throw (no_such)
+  const Place get_place (const ID i) const throw (no_such)
   {
     return pmap.get_elem (i);
   }
 
-  ID get_transition_id (const Transition transition) const throw (no_such)
+  const ID get_transition_id (const Transition transition) const throw (no_such)
   {
     return tmap.get_id (transition);
   }
 
-  ID get_edge_id (const Edge edge) const throw (no_such)
+  const ID get_edge_id (const Edge edge) const throw (no_such)
   {
     return emap.get_id (edge);
   }
