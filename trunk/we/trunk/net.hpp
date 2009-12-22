@@ -80,7 +80,7 @@ private:
   BOOST_STATIC_ASSERT(std::numeric_limits<ID>::is_integer);
   BOOST_STATIC_ASSERT(std::numeric_limits<IDX>::is_integer);
   BOOST_STATIC_ASSERT(  std::numeric_limits<ID>::is_signed
-                     == std::numeric_limits<ID>::is_signed);
+                     == std::numeric_limits<IDX>::is_signed);
 
   IDX row;
   IDX col;
