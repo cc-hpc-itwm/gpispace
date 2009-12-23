@@ -97,7 +97,7 @@ private:
   const auto_bimap<T, I> & bim;
 public:
   biget (const auto_bimap<T, I> & bim_) : bim(bim_) {}
-  const T get (const I i) { return bim.get_elem (i); }
+  const T get (const I i) const { return bim.get_elem (i); }
 };
 
 template<typename T, typename I>
@@ -238,14 +238,16 @@ private:
   const ID invalid;
 
   IDX pos;
+  ID adj;
 
-  inline bool is_invalid (void) const
+  inline bool is_invalid (void)
   {
-    return (invalid == ((fix_is_fst == true)
-                       ? m.get_adjacent_nogrow (fix, pos)
-                       : m.get_adjacent_nogrow (pos, fix)
-                       )
-           );
+    adj = (fix_is_fst == true)
+        ? m.get_adjacent_nogrow (fix, pos)
+        : m.get_adjacent_nogrow (pos, fix)
+        ;
+
+    return (adj == invalid);
   }
 
   inline void step (void)
@@ -267,23 +269,18 @@ public:
   , fix_is_fst (fix_is_fst_)
   , invalid (invalid_)
   , pos (0)
+  , adj (invalid)
   {
     step();
   }
 
-  const IDX end (void) const { return max; }
-  const IDX operator () (void) const { return pos; }
-
-  typedef std::pair<const IDX, const ID &> pair_t;
-
-  const pair_t get (void) const 
-  {
-    return pair_t (pos, (fix_is_fst == true)
-                      ? m.get_adjacent_nogrow (fix, pos)
-                      : m.get_adjacent_nogrow (pos, fix)
-                  );
-  }
+  const bool has_more (void) const { return (pos != max) ? true : false; }
   void operator ++ (void) { ++pos; step(); }
+
+  const IDX get_pos (void) const { return pos; }
+  const ID get_adj (void) const { return adj; }
+
+  const IDX operator * (void) const { return get_pos(); }
 };
 
 // iterator through adjacencies, returns objects given by auto_bimap
@@ -308,23 +305,13 @@ public:
     , bigE (biE)
   {}
 
-  const bool has_more (void) const
-  {
-    return (ait() != ait.end()) ? true : false;
-  }
+  const bool has_more (void) const { return ait.has_more(); }
   void operator ++ (void) { ++ait; }
-  const T operator * (void) { return bigT.get (ait()); }
 
-  typedef std::pair<const T, const Edge> pair_t;
+  const T get_T (void) const { return bigT.get (ait.get_pos()); }
+  const Edge get_Edge (void) const { return bigE.get (ait.get_adj()); }
 
-  const pair_t get (void)
-  {
-    const typename adj_it<IDX, ID>::pair_t p (ait.get());
-
-    return pair_t ( bigT.get (p.first)
-                  , bigE.get (p.second)
-                  );
-  }
+  const T operator * (void) const { return get_T(); }
 };
 
 // the net itself
@@ -464,35 +451,48 @@ public:
   const edge_it edges (void) const { return edge_it (emap); }
 
   typedef adj_obj_it<Place, Edge, IDX, ID> adj_place_it;
+  typedef adj_obj_it<Place, Edge, IDX, ID> adj_transition_it;
 
+private:
+  const adj_place_it out_of_transition_by_id (const ID tid) const
+  {
+    return adj_place_it (adj_tp, max_place, tid, true, invalid, pmap, emap);
+  }
+
+  const adj_place_it in_to_transition_by_id (const ID tid) const
+  {
+    return adj_place_it (adj_pt, max_place, tid, false, invalid, pmap, emap);
+  }
+
+  const adj_transition_it out_of_place_by_id (const ID pid) const
+  {
+    return adj_transition_it (adj_pt, max_transition, pid, true, invalid, tmap, emap);
+  }
+
+  const adj_transition_it in_to_place_by_id (const ID pid) const
+  {
+    return adj_transition_it (adj_tp, max_transition, pid, false, invalid, tmap, emap);
+  }
+
+public:
   const adj_place_it out_of_transition (const Transition transition) const
   {
-    const ID tid (get_transition_id (transition));
-
-    return adj_place_it (adj_tp, max_place, tid, true, invalid, pmap, emap);
+    return out_of_transition_by_id (get_transition_id (transition));
   }
 
   const adj_place_it in_to_transition (const Transition transition) const
   {
-    const ID tid (get_transition_id (transition));
-    
-    return adj_place_it (adj_pt, max_place, tid, false, invalid, pmap, emap);
+    return in_to_transition_by_id (get_transition_id (transition));
   }
-
-  typedef adj_obj_it<Place, Edge, IDX, ID> adj_transition_it;
 
   const adj_transition_it out_of_place (const Place place) const
   {
-    const ID pid (get_place_id (place));
-
-    return adj_transition_it (adj_pt, max_transition, pid, true, invalid, tmap, emap);
+    return out_of_place_by_id (get_place_id (place));
   }
 
   const adj_transition_it in_to_place (const Place place) const
   {
-    const ID pid (get_place_id (place));
-
-    return adj_transition_it (adj_tp, max_transition, pid, false, invalid, tmap, emap);
+    return in_to_place_by_id (get_place_id (place));
   }
 
 private:
@@ -548,5 +548,24 @@ public:
     emap.erase (edge);
 
     return delete_edge_by_id (eid);
+  }
+
+  const ID delete_place (const Place place) throw (no_such)
+  {
+    const ID pid (get_place_id (place));
+
+    typedef typename net<Place,Transition,Edge,ID>::adj_transition_it trans_it;
+
+    for ( trans_it tit (out_of_place_by_id (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      {
+        delete_edge_by_id (tit.get().second);
+      }
+
+    pmap.erase (place);
+
+    return pid;
   }
 };

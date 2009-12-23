@@ -26,21 +26,13 @@ static void print_net (const pnet & n)
           ; pit.has_more()
           ; ++pit
           )
-        {
-          pnet::adj_place_it::pair_t p (pit.get());
-
-          cout << " >>-{" << p.second << "}->> " << p.first << endl;
-        }
+        cout << " >>-{" << pit.get_Edge() << "}->> " << *pit << endl;
 
       for ( pnet::adj_place_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        {
-          pnet::adj_place_it::pair_t p (pit.get());
-
-          cout << " <<-{" << p.second << "}-<< " << p.first << endl;
-        }
+        cout << " <<-{" << pit.get_Edge() << "}-<< " << *pit << endl;
     }    
 
   cout << "*** by place" << endl;
@@ -53,21 +45,13 @@ static void print_net (const pnet & n)
           ; tit.has_more()
           ; ++tit
           )
-        {
-          pnet::adj_transition_it::pair_t p (tit.get());
-
-          cout << " >>-{" << p.second << "}->> " << p.first << endl;
-        }
+        cout << " >>-{" << tit.get_Edge() << "}->> " << *tit << endl;
       
       for ( pnet::adj_transition_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
-        {
-          pnet::adj_transition_it::pair_t p (tit.get());
-
-          cout << " <<-{" << p.second << "}-<< " << p.first << endl;
-        }
+        cout << " <<-{" << tit.get_Edge() << "}-<< " << *tit << endl;
     }    
 }
 
