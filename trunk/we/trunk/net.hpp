@@ -182,6 +182,57 @@ public:
   }
 };
 
+template <typename IDX, typename ID>
+struct adj_it
+{
+private:
+  typedef adjacency_matrix<IDX, ID> mat_t;
+
+  const mat_t & m;
+  const IDX max;
+  const ID fix;
+  const bool fix_is_fst;
+  const ID invalid;
+
+  IDX pos;
+
+  inline bool is_invalid (void) const
+  {
+    return (invalid == ((fix_is_fst == true)
+                       ? m.get_adjacent_nogrow (fix, pos)
+                       : m.get_adjacent_nogrow (pos, fix)
+                       )
+           );
+  }
+
+  inline void step (void)
+  {
+    while (pos < max && is_invalid())
+      ++pos;
+  }
+
+public:
+  adj_it ( const mat_t & m_
+         , const IDX max_
+         , const ID fix_
+         , const bool fix_is_fst_
+         , const ID invalid_
+         ) 
+  : m (m_)
+  , max (max_)
+  , fix (fix_)
+  , fix_is_fst (fix_is_fst_)
+  , invalid (invalid_)
+  , pos (0)
+  {
+    step();
+  }
+
+  const IDX end (void) const { return max; }
+  const IDX operator () (void) const { return pos; }
+  void operator ++ (void) { ++pos; step(); }
+};
+
 template<typename Place, typename Transition, typename Edge, typename ID = unsigned long>
 class net
 {
@@ -382,15 +433,13 @@ public:
     std::vector<Place> ret;
 
     const ID tid (get_transition_id (transition));
-
-    for (IDX pid(0); pid < max_place; ++pid)
-      {
-        const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
-
-        if (a != invalid)
-          ret.push_back (get_place (pid));
-      }
-
+    
+    for ( adj_it<IDX, ID> adj_it (adj_tp, max_place, tid, true, invalid)
+        ; adj_it() != adj_it.end()
+        ; ++adj_it
+        )
+      ret.push_back (get_place (adj_it()));
+    
     return ret;
   }
 
@@ -399,14 +448,12 @@ public:
     std::vector<Place> ret;
 
     const ID tid (get_transition_id (transition));
-
-    for (IDX pid(0); pid < max_place; ++pid)
-      {
-        const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
-
-        if (a != invalid)
-          ret.push_back (get_place (pid));
-      }
+    
+    for ( adj_it<IDX, ID> adj_it (adj_pt, max_place, tid, false, invalid)
+        ; adj_it() != adj_it.end()
+        ; ++adj_it
+        )
+      ret.push_back (get_place (adj_it()));
 
     return ret;
   }
@@ -417,13 +464,11 @@ public:
 
     const ID pid (get_place_id (place));
 
-    for (IDX tid(0); tid < max_transition; ++tid)
-      {
-        const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
-
-        if (a != invalid)
-          ret.push_back (get_transition (tid));
-      }
+    for ( adj_it<IDX, ID> adj_it (adj_pt, max_transition, pid, true, invalid)
+        ; adj_it() != adj_it.end()
+        ; ++adj_it
+        )
+      ret.push_back (get_transition (adj_it()));
 
     return ret;
   }
@@ -434,24 +479,18 @@ public:
 
     const ID pid (get_place_id (place));
 
-    for (IDX tid(0); tid < max_transition; ++tid)
-      {
-        const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
-
-        if (a != invalid)
-          ret.push_back (get_transition (tid));
-      }
+    for ( adj_it<IDX, ID> adj_it (adj_tp, max_transition, pid, false, invalid)
+        ; adj_it() != adj_it.end()
+        ; ++adj_it
+        )
+      ret.push_back (get_transition (adj_it()));
 
     return ret;
   }
 
-  const ID delete_edge (const Edge edge)
-    throw (no_such)
+private:
+  const ID delete_edge_by_id (const ID eid)
   {
-    const ID eid (get_edge_id (edge));
-
-    emap.erase (edge);
-
     const map_id_it_t in_p (emap_in_p.find (eid));
     const map_id_it_t in_t (emap_in_t.find (eid));
     const map_id_it_t out_p (emap_out_p.find (eid));
@@ -492,5 +531,15 @@ public:
       }
 
     return eid;
+  }
+
+public:
+  const ID delete_edge (const Edge edge) throw (no_such)
+  {
+    const ID eid (get_edge_id (edge));
+
+    emap.erase (edge);
+
+    return delete_edge_by_id (eid);
   }
 };
