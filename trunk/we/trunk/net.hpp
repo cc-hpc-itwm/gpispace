@@ -309,7 +309,8 @@ public:
   void operator ++ (void) { ++ait; }
 
   const T get_T (void) const { return bigT.get (ait.get_pos()); }
-  const Edge get_Edge (void) const { return bigE.get (ait.get_adj()); }
+  const ID get_edge_id (void) const { return ait.get_adj(); }
+  const Edge get_edge (void) const { return bigE.get (get_edge_id()); }
 
   const T operator * (void) const { return get_T(); }
 };
@@ -554,18 +555,42 @@ public:
   {
     const ID pid (get_place_id (place));
 
-    typedef typename net<Place,Transition,Edge,ID>::adj_transition_it trans_it;
-
-    for ( trans_it tit (out_of_place_by_id (pid))
+    for ( adj_transition_it tit (out_of_place_by_id (pid))
         ; tit.has_more()
         ; ++tit
         )
-      {
-        delete_edge_by_id (tit.get().second);
-      }
+      delete_edge_by_id (tit.get_edge_id());
+
+    for ( adj_transition_it tit (in_to_place_by_id (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      delete_edge_by_id (tit.get_edge_id());
 
     pmap.erase (place);
 
     return pid;
+  }
+
+  const ID delete_transition (const Transition transition) throw (no_such)
+  {
+    const ID tid (get_transition_id (transition));
+
+    for ( adj_place_it pit (out_of_transition_by_id (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      delete_edge_by_id (pit.get_edge_id());
+
+    for ( adj_place_it pit (in_to_transition_by_id (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      delete_edge_by_id (pit.get_edge_id());
+
+    tmap.erase (transition);
+
+    return tid;
+    
   }
 };

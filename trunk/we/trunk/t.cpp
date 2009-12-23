@@ -26,13 +26,13 @@ static void print_net (const pnet & n)
           ; pit.has_more()
           ; ++pit
           )
-        cout << " >>-{" << pit.get_Edge() << "}->> " << *pit << endl;
+        cout << " >>-{" << pit.get_edge() << "}->> " << *pit << endl;
 
       for ( pnet::adj_place_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        cout << " <<-{" << pit.get_Edge() << "}-<< " << *pit << endl;
+        cout << " <<-{" << pit.get_edge() << "}-<< " << *pit << endl;
     }    
 
   cout << "*** by place" << endl;
@@ -45,13 +45,13 @@ static void print_net (const pnet & n)
           ; tit.has_more()
           ; ++tit
           )
-        cout << " >>-{" << tit.get_Edge() << "}->> " << *tit << endl;
+        cout << " >>-{" << tit.get_edge() << "}->> " << *tit << endl;
       
       for ( pnet::adj_transition_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
-        cout << " <<-{" << tit.get_Edge() << "}-<< " << *tit << endl;
+        cout << " <<-{" << tit.get_edge() << "}-<< " << *tit << endl;
     }    
 }
 
@@ -105,6 +105,10 @@ main ()
 
   cout << "delete_edge (e_s_er) => " <<  n.delete_edge ("e_s_er") << endl;
   cout << "delete_edge (e_lr_s) => " <<  n.delete_edge ("e_lr_s") << endl;
+
+  print_net (n);
+
+  cout << "delete_place (semaphore) => " << n.delete_place ("semaphore") << endl;
 
   print_net (n);
 
