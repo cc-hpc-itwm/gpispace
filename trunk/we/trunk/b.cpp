@@ -1,9 +1,11 @@
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <net.hpp>
-#include <cstdlib>
+
 #include <malloc.h>
+
+#include <net.hpp>
 
 typedef unsigned int place_t;
 typedef unsigned int transition_t;

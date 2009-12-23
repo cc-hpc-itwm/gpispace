@@ -1,85 +1,82 @@
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
+
 #include <net.hpp>
-#include <cstdlib>
-#include <vector>
 
 typedef std::string place_t;
 typedef std::string transition_t;
 typedef std::string edge_t;
 
+typedef net<place_t, transition_t, edge_t> pnet;
+
 using std::cout;
 using std::endl;
 
-static void print_net (const net<place_t, transition_t, edge_t> & n)
+static void print_net (const pnet & n)
 {
-  typedef std::vector<transition_t> tvec_t;
-  typedef std::vector<place_t> pvec_t;
-  typedef tvec_t::const_iterator tvec_it_t;
-  typedef pvec_t::const_iterator pvec_it_t;
-
   cout << "*** by transition" << endl;
 
-  const tvec_t transitions (n.transitions());
-
-  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+  for (pnet::transition_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << "out (" << *t << ") =>";
+      cout << *t << " -->";
 
-      const pvec_t tout (n.out_of_transition(*t));
+      for ( pnet::adj_place_it pit (n.out_of_transition(*t))
+          ; pit.has_more()
+          ; ++pit
+          )
+        cout << " " << *pit;
       
-      for (pvec_it_t p (tout.begin()); p != tout.end(); ++p)
-        cout << " " << *p;
-
       cout << endl;
-    }
+    }    
 
-  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+  for (pnet::transition_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << "in (" << *t << ") =>";
+      cout << *t << " <--";
 
-      const pvec_t tin (n.in_to_transition(*t));
+      for ( pnet::adj_place_it pit (n.in_to_transition(*t))
+          ; pit.has_more()
+          ; ++pit
+          )
+        cout << " " << *pit;
       
-      for (pvec_it_t p (tin.begin()); p != tin.end(); ++p)
-        cout << " " << *p;
-
       cout << endl;
-    }
+    }    
 
   cout << "*** by place" << endl;
 
-  const pvec_t places (n.places());
-
-  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+  for (pnet::place_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "out (" << *p << ") =>";
+      cout << *p << " -->";
 
-      const tvec_t pout (n.out_of_place (*p));
-
-      for (tvec_it_t t (pout.begin()); t != pout.end(); ++t)
-        cout << " " << *t;
-
+      for ( pnet::adj_transition_it tit (n.out_of_place(*p))
+          ; tit.has_more()
+          ; ++tit
+          )
+        cout << " " << *tit;
+      
       cout << endl;
-    }
+    }    
 
-  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+  for (pnet::place_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "in (" << *p << ") =>";
+      cout << *p << " <--";
 
-      const tvec_t pin (n.in_to_place (*p));
-
-      for (tvec_it_t t (pin.begin()); t != pin.end(); ++t)
-        cout << " " << *t;
-
+      for ( pnet::adj_transition_it tit (n.in_to_place(*p))
+          ; tit.has_more()
+          ; ++tit
+          )
+        cout << " " << *tit;
+      
       cout << endl;
-    }
+    }    
 }
 
 int
 main ()
 {
-  net<place_t, transition_t, edge_t> n(12,4);
+  pnet n(12,4);
 
   cout << "add_place (readyL) => " << n.add_place ("readyL") << endl;
   cout << "add_place (readyR) => " << n.add_place ("readyR") << endl;
