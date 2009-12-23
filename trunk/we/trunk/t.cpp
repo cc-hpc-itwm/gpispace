@@ -12,6 +12,70 @@ typedef std::string edge_t;
 using std::cout;
 using std::endl;
 
+static void print_net (const net<place_t, transition_t, edge_t> & n)
+{
+  typedef std::vector<transition_t> tvec_t;
+  typedef std::vector<place_t> pvec_t;
+  typedef tvec_t::const_iterator tvec_it_t;
+  typedef pvec_t::const_iterator pvec_it_t;
+
+  cout << "*** by transition" << endl;
+
+  const tvec_t transitions (n.transitions());
+
+  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+    {
+      cout << "out (" << *t << ") =>";
+
+      const pvec_t tout (n.out_of_transition(*t));
+      
+      for (pvec_it_t p (tout.begin()); p != tout.end(); ++p)
+        cout << " " << *p;
+
+      cout << endl;
+    }
+
+  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
+    {
+      cout << "in (" << *t << ") =>";
+
+      const pvec_t tin (n.in_to_transition(*t));
+      
+      for (pvec_it_t p (tin.begin()); p != tin.end(); ++p)
+        cout << " " << *p;
+
+      cout << endl;
+    }
+
+  cout << "*** by place" << endl;
+
+  const pvec_t places (n.places());
+
+  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+    {
+      cout << "out (" << *p << ") =>";
+
+      const tvec_t pout (n.out_of_place (*p));
+
+      for (tvec_it_t t (pout.begin()); t != pout.end(); ++t)
+        cout << " " << *t;
+
+      cout << endl;
+    }
+
+  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
+    {
+      cout << "in (" << *p << ") =>";
+
+      const tvec_t pin (n.in_to_place (*p));
+
+      for (tvec_it_t t (pin.begin()); t != pin.end(); ++t)
+        cout << " " << *t;
+
+      cout << endl;
+    }
+}
+
 int
 main ()
 {
@@ -58,66 +122,12 @@ main ()
   cout << "add_edge_transition_to_place (e_lr_s) => "
        << n.add_edge_transition_to_place ("e_lr_s", "leaveR", "semaphore") << endl;
 
-  typedef std::vector<transition_t> tvec_t;
-  typedef std::vector<place_t> pvec_t;
-  typedef tvec_t::const_iterator tvec_it_t;
-  typedef pvec_t::const_iterator pvec_it_t;
+  print_net (n);
 
-  std::cout << "*** by transition" << std::endl;
+  cout << "delete_edge (e_s_er) => " <<  n.delete_edge ("e_s_er") << endl;
+  cout << "delete_edge (e_lr_s) => " <<  n.delete_edge ("e_lr_s") << endl;
 
-  const tvec_t transitions (n.transitions());
-
-  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
-    {
-      std::cout << "out (" << *t << ") =>";
-
-      const pvec_t tout (n.out_of_transition(*t));
-      
-      for (pvec_it_t p (tout.begin()); p != tout.end(); ++p)
-        std::cout << " " << *p;
-
-      std::cout << std::endl;
-    }
-
-  for (tvec_it_t t (transitions.begin()); t != transitions.end(); ++t)
-    {
-      std::cout << "in (" << *t << ") =>";
-
-      const pvec_t tin (n.in_to_transition(*t));
-      
-      for (pvec_it_t p (tin.begin()); p != tin.end(); ++p)
-        std::cout << " " << *p;
-
-      std::cout << std::endl;
-    }
-
-  std::cout << "*** by place" << std::endl;
-
-  const pvec_t places (n.places());
-
-  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
-    {
-      std::cout << "out (" << *p << ") =>";
-
-      const tvec_t pout (n.out_of_place (*p));
-
-      for (tvec_it_t t (pout.begin()); t != pout.end(); ++t)
-        std::cout << " " << *t;
-
-      std::cout << std::endl;
-    }
-
-  for (pvec_it_t p (places.begin()); p != places.end(); ++p)
-    {
-      std::cout << "in (" << *p << ") =>";
-
-      const tvec_t pin (n.in_to_place (*p));
-
-      for (tvec_it_t t (pin.begin()); t != pin.end(); ++t)
-        std::cout << " " << *t;
-
-      std::cout << std::endl;
-    }
+  print_net (n);
 
   return EXIT_SUCCESS;
 }

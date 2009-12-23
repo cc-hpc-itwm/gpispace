@@ -3,6 +3,7 @@
 
 #include <boost/bimap.hpp>
 #include <vector>
+#include <map>
 
 class no_such : public std::runtime_error
 {
@@ -69,6 +70,11 @@ public:
     ++num;
 
     return i;
+  }
+
+  const void erase (const T x)
+  {
+    bimap.left.erase (x);
   }
 };
 
@@ -186,15 +192,23 @@ private:
   const ID invalid;
   auto_bimap<Edge, ID> emap;
 
+  typedef std::map<ID, ID> map_id_t;
+  typedef typename map_id_t::iterator map_id_it_t;
+
+  map_id_t emap_in_p;
+  map_id_t emap_out_p;
+  map_id_t emap_in_t;
+  map_id_t emap_out_t;
+
   typedef ID IDX;
   typedef adjacency_matrix<IDX, ID> adj_matrix;
 
   adj_matrix adj_pt;
   adj_matrix adj_tp;
 
-  IDX num_places;
-  IDX num_transitions;
-  IDX num_edges;
+  IDX max_place;
+  IDX max_transition;
+  IDX max_edge;
 
 public:
   net (const IDX places_ = 100, const IDX transitions_ = 250)
@@ -203,11 +217,15 @@ public:
     , tmap ("transition", 0)
     , invalid (0)
     , emap ("edge name", invalid + 1)
+    , emap_in_p ()
+    , emap_out_p ()
+    , emap_in_t ()
+    , emap_out_t ()
     , adj_pt (places_, transitions_, 0)
     , adj_tp (transitions_, places_, 0)
-    , num_places (0)
-    , num_transitions (0)
-    , num_edges (0)
+    , max_place (0)
+    , max_transition (0)
+    , max_edge (0)
   {};
 
   ~net () {};
@@ -246,14 +264,14 @@ private:
 public:
   const ID add_place (const Place place) throw (already_there)
   {
-    ++num_places;
+    ++max_place;
 
     return pmap.add (place);
   }
 
   const ID add_transition (const Transition transition) throw (already_there)
   {
-    ++num_transitions;
+    ++max_transition;
 
     return tmap.add (transition);
   }
@@ -272,7 +290,7 @@ private:
 
     a = eid;
 
-    ++num_edges;
+    ++max_edge;
 
     return eid;
   }
@@ -284,8 +302,12 @@ public:
   {
     const ID pid (get_place_id (place));
     const ID tid (get_transition_id (transition));
+    const ID eid (add_edge (edge, pid, tid, adj_pt));
 
-    return add_edge (edge, pid, tid, adj_pt);
+    emap_out_p[eid] = pid;
+    emap_in_t[eid] = tid;
+
+    return eid;
   }
 
   const ID add_edge_transition_to_place
@@ -294,36 +316,63 @@ public:
   {
     const ID tid (get_transition_id (transition));
     const ID pid (get_place_id (place));
+    const ID eid (add_edge (edge, tid, pid, adj_tp));
 
-    return add_edge (edge, tid, pid, adj_tp);
+    emap_in_p[eid] = pid;
+    emap_out_t[eid] = tid;
+
+    return eid;
   }
+
+  // how to factor out the pattern in C++?
 
   const std::vector<Transition> transitions (void) const
   {
-    std::vector<Transition> ret(num_transitions);
+    std::vector<Transition> ret;
 
-    for (IDX tid(0); tid < num_transitions; ++tid)
-      ret[tid] = get_transition(tid);
+    for (IDX tid(0); tid < max_transition; ++tid)
+      try
+        {
+          ret.push_back (get_transition (tid));
+        }
+      catch (no_such)
+        {
+          /* do nothing, there was a hole */
+        }
 
     return ret;
   }
 
   const std::vector<Place> places (void) const
   {
-    std::vector<Place> ret(num_places);
+    std::vector<Place> ret;
 
-    for (IDX pid(0); pid < num_places; ++pid)
-      ret[pid] = get_place(pid);
+    for (IDX pid(0); pid < max_place; ++pid)
+      try
+        {
+          ret.push_back (get_place (pid));
+        }
+      catch (no_such)
+        {
+          /* do nothing, there was a hole */
+        }
 
     return ret;
   }
 
   const std::vector<Edge> edges (void) const
   {
-    std::vector<Edge> ret(num_edges);
+    std::vector<Edge> ret;
 
-    for (IDX eid(1); eid < num_edges + 1; ++eid)
-      ret[eid-1] = get_edge (eid);
+    for (IDX eid(1); eid < max_edge + 1; ++eid)
+      try
+        {
+          ret.push_back (get_edge (eid));
+        }
+      catch (no_such)
+        {
+          /* do nothing, there was a hole */
+        }
 
     return ret;
   }
@@ -334,7 +383,7 @@ public:
 
     const ID tid (get_transition_id (transition));
 
-    for (IDX pid(0); pid < num_places; ++pid)
+    for (IDX pid(0); pid < max_place; ++pid)
       {
         const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
 
@@ -351,7 +400,7 @@ public:
 
     const ID tid (get_transition_id (transition));
 
-    for (IDX pid(0); pid < num_places; ++pid)
+    for (IDX pid(0); pid < max_place; ++pid)
       {
         const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
 
@@ -368,7 +417,7 @@ public:
 
     const ID pid (get_place_id (place));
 
-    for (IDX tid(0); tid < num_transitions; ++tid)
+    for (IDX tid(0); tid < max_transition; ++tid)
       {
         const ID a (adj_pt.get_adjacent_nogrow (pid, tid));
 
@@ -385,7 +434,7 @@ public:
 
     const ID pid (get_place_id (place));
 
-    for (IDX tid(0); tid < num_transitions; ++tid)
+    for (IDX tid(0); tid < max_transition; ++tid)
       {
         const ID a (adj_tp.get_adjacent_nogrow (tid, pid));
 
@@ -394,5 +443,54 @@ public:
       }
 
     return ret;
+  }
+
+  const ID delete_edge (const Edge edge)
+    throw (no_such)
+  {
+    const ID eid (get_edge_id (edge));
+
+    emap.erase (edge);
+
+    const map_id_it_t in_p (emap_in_p.find (eid));
+    const map_id_it_t in_t (emap_in_t.find (eid));
+    const map_id_it_t out_p (emap_out_p.find (eid));
+    const map_id_it_t out_t (emap_out_t.find (eid));
+
+    if (out_p != emap_out_p.end())
+      {
+        // place -> transition
+
+        assert (in_t != emap_in_t.end());
+
+        const ID pid (out_p->second);
+        const ID tid (in_t->second);
+
+        assert (adj_pt.adjacent (pid, tid) == eid);
+
+        adj_pt.adjacent (pid, tid) = invalid;
+
+        emap_in_t.erase (in_t);
+        emap_out_p.erase (out_p);
+      }
+    else
+      {
+        // transition -> place
+
+        assert (out_t != emap_out_t.end());
+        assert (in_p != emap_in_p.end());
+
+        const ID tid (out_t->second);
+        const ID pid (in_p->second);
+
+        assert (adj_tp.adjacent (tid, pid) == eid);
+        
+        adj_tp.adjacent (tid, pid) = invalid;
+
+        emap_in_p.erase (in_p);
+        emap_out_t.erase (out_t);
+      }
+
+    return eid;
   }
 };

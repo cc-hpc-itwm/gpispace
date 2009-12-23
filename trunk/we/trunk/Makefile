@@ -1,5 +1,5 @@
 
-CXX_FLAGS = -Wall -Werror -O3
+CXX_FLAGS = -Wall -Werror -g
 #CXX = g++
 CXX_INCLUDE = .
 CXX_INCLUDE += ${BOOST_ROOT}/include
