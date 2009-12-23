@@ -233,6 +233,30 @@ public:
   void operator ++ (void) { ++pos; step(); }
 };
 
+template<typename T, typename IDX, typename ID, T F(IDX)>
+struct nit
+{
+private:
+  adj_it<IDX, ID> adj_it;
+public:
+  nit ( const mat_t & m
+      , const IDX max
+      , const ID fix
+      , const bool fix_is_fst
+      , const ID invalid
+      )
+    : adj_it (m, maxm fix, fix_is_fst, invalid)
+  {}
+
+  const bool has_more (void) const
+  {
+    return (adj_it() != adj_end()) ? true : false;
+  }
+  void operator ++ (void) { ++adj_it; }
+  const T operator * (void) { return F(adj_it()); }
+}
+
+
 template<typename Place, typename Transition, typename Edge, typename ID = unsigned long>
 class net
 {
