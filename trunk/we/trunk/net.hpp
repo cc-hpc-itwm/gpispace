@@ -4,6 +4,9 @@
 #include <boost/bimap.hpp>
 #include <map>
 
+#include <ostream>
+#include <iomanip>
+
 // exceptions
 class no_such : public std::runtime_error
 {
@@ -23,16 +26,17 @@ public:
 template<typename T, typename I = unsigned long>
 class auto_bimap
 {
-private:
+public:
   typedef boost::bimap<T,I> bimap_t;
   typedef typename bimap_t::value_type val_t;
 
+private:
   bimap_t bimap;
   I num;
 
   const std::string description;
-
 public:
+
   auto_bimap (const std::string descr, const I initial = 1)
   : bimap ()
   , num (initial)
@@ -83,10 +87,24 @@ public:
     return i;
   }
 
-  const void erase (const T x)
-  {
-    bimap.left.erase (x);
-  }
+  const void erase (const T x) { bimap.left.erase (x); }
+  const void erase (const I i) { bimap.right.erase (i); }
+
+  template<typename fT,typename fI>
+  friend std::ostream & operator << (std::ostream &, const auto_bimap<fT,fI> &);
+};
+
+template<typename T, typename I>
+std::ostream & operator << (std::ostream & s, const auto_bimap<T, I> & bm)
+{
+  typedef typename auto_bimap<T,I>::bimap_t::const_iterator bm_it;
+
+  s << "bimap (" << bm.description << "):" << std::endl;
+
+  for (bm_it it (bm.it_begin()); it != bm.it_end(); ++it)
+    s << " -- " << it->left << " <=> " << it->right << std::endl;
+
+  return s;
 };
 
 // function object to get elems from an auto_bimap
@@ -222,6 +240,52 @@ public:
 
     return val[linear (r, c)];
   }
+
+  template<typename fIDX, typename fID>
+  friend std::ostream & operator << ( std::ostream &
+                                    , const adjacency_matrix<fIDX, fID> &
+                                    );
+};
+
+template <typename IDX, typename ID>
+std::ostream & operator << ( std::ostream & s
+                           , const adjacency_matrix <IDX, ID> & m
+                           )
+{
+  s << "adjacency_matrix:";
+  s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
+
+  s << std::setw(5) << "";
+
+  for (IDX c(0); c < m.col; ++c)
+    s << std::setw(4) << c;
+
+  s << std::endl;
+
+  for (IDX r(0); r < m.row; ++r)
+    {
+      s << std::setw(3) << r << "  ";
+
+      for (IDX c(0); c < m.col; ++c)
+        {
+          const ID v (m.val[m.linear (r, c)]);
+
+          s << std::setw(4);
+
+          if (v == m.invalid)
+            {
+              s << ".";
+            }
+          else
+            {
+              s << v;
+            }
+        }
+
+      s << std::endl;
+    }
+
+  return s;
 };
 
 // iterate through adjacencies
@@ -538,17 +602,15 @@ private:
         emap_out_t.erase (out_t);
       }
 
+    emap.erase (eid);
+
     return eid;
   }
 
 public:
   const ID delete_edge (const Edge edge) throw (no_such)
   {
-    const ID eid (get_edge_id (edge));
-
-    emap.erase (edge);
-
-    return delete_edge_by_id (eid);
+    return delete_edge_by_id (get_edge_id (edge));
   }
 
   const ID delete_place (const Place place) throw (no_such)
@@ -593,4 +655,38 @@ public:
     return tid;
     
   }
+
+  template<typename P, typename T, typename E, typename I>
+  friend std::ostream & operator << (std::ostream &, const net<P,T,E,I> &);
 };
+
+template<typename I>
+std::ostream & operator << (std::ostream & s, const std::map<I, I> & m)
+{
+  for ( typename std::map<I, I>::const_iterator it (m.begin())
+      ; it != m.end()
+      ; ++it
+      )
+    s << " -- " << it->first << " => " << it -> second << std::endl;
+
+  return s;
+}
+
+template<typename P, typename T, typename E, typename I>
+std::ostream & operator << (std::ostream & s, const net<P,T,E,I> & n)
+{
+  s << n.pmap;
+  s << n.tmap;
+  s << n.emap;
+  s << "emap_in_p:" << std::endl << n.emap_in_p;
+  s << "emap_out_p:" << std::endl << n.emap_out_p;
+  s << "emap_in_t:" << std::endl << n.emap_in_t;
+  s << "emap_out_t:" << std::endl << n.emap_out_t;
+  s << "max_place = " << n.max_place << std::endl;
+  s << "max_transition = " << n.max_transition << std::endl;
+  s << "max_edge = " << n.max_edge << std::endl;
+  s << "adj_pt: " << n.adj_pt;
+  s << "adj_tp: " << n.adj_tp;
+
+  return s;
+}

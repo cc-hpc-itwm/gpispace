@@ -58,7 +58,7 @@ static void print_net (const pnet & n)
 int
 main ()
 {
-  pnet n(12,4);
+  pnet n(5,4);
 
   cout << "add_place (readyL) => " << n.add_place ("readyL") << endl;
   cout << "add_place (readyR) => " << n.add_place ("readyR") << endl;
@@ -105,12 +105,10 @@ main ()
 
   cout << "delete_edge (e_s_er) => " <<  n.delete_edge ("e_s_er") << endl;
   cout << "delete_edge (e_lr_s) => " <<  n.delete_edge ("e_lr_s") << endl;
-
-  print_net (n);
-
   cout << "delete_place (semaphore) => " << n.delete_place ("semaphore") << endl;
+  cout << "delete_transition (enterL) => " << n.delete_transition ("enterL") << endl;
 
-  print_net (n);
+  cout << n;
 
   return EXIT_SUCCESS;
 }
