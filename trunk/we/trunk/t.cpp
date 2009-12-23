@@ -110,5 +110,32 @@ main ()
 
   cout << n;
 
+  // reconstruct
+
+  // first add stuff that was deleted explicitely
+  cout << "add_place (semaphore) => " << n.add_place ("semaphore") << endl;
+  cout << "add_transition (enterL) => " << n.add_transition ("enterL") << endl;
+
+  cout << "add_edge_place_to_transition (e_s_er) => "
+       << n.add_edge_place_to_transition("e_s_er","semaphore","enterR") << endl;
+  cout << "add_edge_transition_to_place (e_lr_s) => "
+       << n.add_edge_transition_to_place ("e_lr_s", "leaveR", "semaphore") << endl;
+
+  // add edges, that were deleted implicitly by delete_place/transition
+
+  // implicitely deleted via deleting enterL
+  cout << "add_edge_place_to_transition (e_rl_el) => "
+       << n.add_edge_place_to_transition("e_rl_rl","readyL","enterL") << endl;
+  cout << "add_edge_transition_to_place (e_el_wl) => "
+       << n.add_edge_transition_to_place ("e_el_wl", "enterL", "workL") << endl;
+
+  //  implicitly deleted via deleting semaphore
+  cout << "add_edge_place_to_transition (e_s_el) => "
+       << n.add_edge_place_to_transition("e_s_el","semaphore","enterL") << endl;
+  cout << "add_edge_transition_to_place (e_ll_s) => "
+       << n.add_edge_transition_to_place ("e_ll_s", "leaveL", "semaphore") << endl;
+
+  cout << n;
+
   return EXIT_SUCCESS;
 }
