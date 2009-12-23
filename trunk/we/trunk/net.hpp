@@ -39,14 +39,14 @@ public:
   , description (descr)
   {}
 
-  const typename bimap_t::left_map::const_iterator it_begin (void) const
+  const typename bimap_t::const_iterator it_begin (void) const
   {
-    return bimap.left.begin();
+    return bimap.begin();
   }
 
-  const typename bimap_t::left_map::const_iterator it_end (void) const
+  const typename bimap_t::const_iterator it_end (void) const
   {
-    return bimap.left.end();
+    return bimap.end();
   }
 
   const I get_id (const T x) const throw (no_such)
@@ -104,19 +104,19 @@ template<typename T, typename I>
 struct bi_it
 {
 private:
-  typedef typename boost::bimap<T,I>::left_map::const_iterator it;
+  typedef typename boost::bimap<T,I>::const_iterator it;
 
   it pos;
   const it end;
 public:
-  bi_it (const auto_bimap<T,I> & bm) 
+  bi_it (const auto_bimap<T,I> & bm)
     : pos (bm.it_begin())
     , end (bm.it_end())
   {}
 
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
-  const T operator * (void) { return pos->first; }
+  const T operator * (void) { return pos->left; }
 };
 
 // adjacency_matrix, grows on demand
