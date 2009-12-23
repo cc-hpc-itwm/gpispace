@@ -237,25 +237,24 @@ template<typename T, typename IDX, typename ID, T F(IDX)>
 struct nit
 {
 private:
-  adj_it<IDX, ID> adj_it;
+  adj_it<IDX, ID> ait;
 public:
-  nit ( const mat_t & m
+  nit ( const adjacency_matrix<IDX, ID> & m
       , const IDX max
       , const ID fix
       , const bool fix_is_fst
       , const ID invalid
       )
-    : adj_it (m, maxm fix, fix_is_fst, invalid)
+    : ait (m, max, fix, fix_is_fst, invalid)
   {}
 
   const bool has_more (void) const
   {
-    return (adj_it() != adj_end()) ? true : false;
+    return (ait() != ait.end()) ? true : false;
   }
-  void operator ++ (void) { ++adj_it; }
-  const T operator * (void) { return F(adj_it()); }
-}
-
+  void operator ++ (void) { ++ait; }
+  const T operator * (void) { return F(ait()); }
+};
 
 template<typename Place, typename Transition, typename Edge, typename ID = unsigned long>
 class net
