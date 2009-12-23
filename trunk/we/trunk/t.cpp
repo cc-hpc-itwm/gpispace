@@ -53,6 +53,26 @@ static void print_net (const pnet & n)
           )
         cout << " <<-{" << tit.get_edge() << "}-<< " << *tit << endl;
     }    
+
+  cout << "*** by edges" << endl;
+
+  for (pnet::edge_it e (n.edges()); e.has_more(); ++e)
+    {
+      cout << *e << ":";
+
+      place_t place;
+      transition_t transition;
+
+      const pnet::edge_type et 
+        (const_cast<pnet&>(n).get_edge_info (*e, place, transition));
+      // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
+
+      cout << " -- typ: " << ((et == pnet::PT) ? "PT" : "TP");
+      cout << ", place: " << place;
+      cout << " " << ((et == pnet::PT) ? "-->" : "<--") << " ";
+      cout << "transition: " << transition;
+      cout << endl;
+    }
 }
 
 int
@@ -136,6 +156,41 @@ main ()
        << n.add_edge_transition_to_place ("e_ll_s", "leaveL", "semaphore") << endl;
 
   cout << n;
+
+  // deep copy
+
+  cout << "#### DEEP COPIED" << endl;
+
+  pnet c(n.get_num_places(),n.get_num_transitions());
+
+  for (pnet::transition_it t (n.transitions()); t.has_more(); ++t)
+    c.add_transition (*t);
+
+  for (pnet::place_it p (n.places()); p.has_more(); ++p)
+    c.add_place (*p);
+
+  for (pnet::edge_it e (n.edges()); e.has_more(); ++e)
+    {
+      place_t place;
+      transition_t transition;
+
+      const pnet::edge_type et 
+        (const_cast<pnet&>(n).get_edge_info (*e, place, transition));
+      // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
+
+      if (et == pnet::PT)
+        {
+          c.add_edge_place_to_transition (*e, place, transition);
+        }
+      else
+        {
+          c.add_edge_transition_to_place (*e, transition, place);
+        }
+    }
+
+  print_net (c);
+
+  cout << c;
 
   return EXIT_SUCCESS;
 }

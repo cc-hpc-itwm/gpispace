@@ -401,12 +401,19 @@ private:
   typedef ID IDX;
   typedef adjacency_matrix<IDX, ID> adj_matrix;
 
+public:
+  enum edge_type {PT,TP};
+
+private:
   adj_matrix adj_pt;
   adj_matrix adj_tp;
 
   IDX max_place;
   IDX max_transition;
   IDX max_edge;
+  IDX num_places;
+  IDX num_transitions;
+  IDX num_edges;
 
 public:
   net (const IDX places_ = 100, const IDX transitions_ = 250)
@@ -424,9 +431,17 @@ public:
     , max_place (0)
     , max_transition (0)
     , max_edge (0)
+    , num_places (0)
+    , num_transitions (0)
+    , num_edges (0)
   {};
 
   ~net () {};
+
+public:
+  const IDX get_num_places (void) const { return num_places; }
+  const IDX get_num_transitions (void) const { return num_transitions; }
+  const IDX get_num_edges (void) const { return num_edges; }
 
 private:
   const ID get_place_id (const Place place) const throw (no_such)
@@ -444,10 +459,26 @@ private:
     return emap.get_id (edge);
   }
 
+  const Place get_place (const ID pid) const throw (no_such)
+  {
+    return pmap.get_elem (pid);
+  }
+
+  const Transition get_transition (const ID tid) const throw (no_such)
+  {
+    return tmap.get_elem (tid);
+  }
+
+  const Edge get_edge (const ID eid) const throw (no_such)
+  {
+    return emap.get_elem (eid);
+  }
+
 public:
   const ID add_place (const Place place) throw (already_there)
   {
     ++max_place;
+    ++num_places;
 
     return pmap.add (place);
   }
@@ -455,6 +486,7 @@ public:
   const ID add_transition (const Transition transition) throw (already_there)
   {
     ++max_transition;
+    ++num_transitions;
 
     return tmap.add (transition);
   }
@@ -474,6 +506,7 @@ private:
     a = eid;
 
     ++max_edge;
+    ++num_edges;
 
     return eid;
   }
@@ -514,6 +547,42 @@ public:
   const place_it places (void) const { return place_it (pmap); }
   const transition_it transitions (void) const { return transition_it (tmap); }
   const edge_it edges (void) const { return edge_it (emap); }
+
+  const edge_type get_edge_info ( const Edge edge
+                                , Place & place
+                                , Transition & transition
+                                )
+  {
+    const ID eid (get_edge_id (edge));
+
+    const map_id_it_t out_p (emap_out_p.find (eid));
+
+    if (out_p != emap_out_p.end())
+      {
+        const map_id_it_t in_t (emap_in_t.find (eid));
+
+        const ID pid (out_p->second);
+        const ID tid (in_t->second);
+
+        place = get_place (pid);
+        transition = get_transition (tid);
+
+        return PT;
+      }
+    else
+      {
+        const map_id_it_t in_p (emap_in_p.find (eid));
+        const map_id_it_t out_t (emap_out_t.find (eid));
+
+        const ID tid (out_t->second);
+        const ID pid (in_p->second);
+
+        place = get_place (pid);
+        transition = get_transition (tid);
+
+        return TP;
+      }
+  }
 
   typedef adj_obj_it<Place, Edge, IDX, ID> adj_place_it;
   typedef adj_obj_it<Place, Edge, IDX, ID> adj_transition_it;
@@ -563,14 +632,13 @@ public:
 private:
   const ID delete_edge_by_id (const ID eid)
   {
-    const map_id_it_t in_p (emap_in_p.find (eid));
-    const map_id_it_t in_t (emap_in_t.find (eid));
     const map_id_it_t out_p (emap_out_p.find (eid));
-    const map_id_it_t out_t (emap_out_t.find (eid));
 
     if (out_p != emap_out_p.end())
       {
         // place -> transition
+
+        const map_id_it_t in_t (emap_in_t.find (eid));
 
         assert (in_t != emap_in_t.end());
 
@@ -588,6 +656,9 @@ private:
       {
         // transition -> place
 
+        const map_id_it_t in_p (emap_in_p.find (eid));
+        const map_id_it_t out_t (emap_out_t.find (eid));
+
         assert (out_t != emap_out_t.end());
         assert (in_p != emap_in_p.end());
 
@@ -603,6 +674,8 @@ private:
       }
 
     emap.erase (eid);
+
+    --num_edges;
 
     return eid;
   }
@@ -631,6 +704,8 @@ public:
 
     pmap.erase (place);
 
+    --num_places;
+
     return pid;
   }
 
@@ -651,6 +726,8 @@ public:
       delete_edge_by_id (pit.get_edge_id());
 
     tmap.erase (transition);
+
+    --num_transitions;
 
     return tid;
     
@@ -685,6 +762,9 @@ std::ostream & operator << (std::ostream & s, const net<P,T,E,I> & n)
   s << "max_place = " << n.max_place << std::endl;
   s << "max_transition = " << n.max_transition << std::endl;
   s << "max_edge = " << n.max_edge << std::endl;
+  s << "num_places = " << n.num_places << std::endl;
+  s << "num_transitions = " << n.num_transitions << std::endl;
+  s << "num_edges = " << n.num_edges << std::endl;
   s << "adj_pt: " << n.adj_pt;
   s << "adj_tp: " << n.adj_tp;
 
