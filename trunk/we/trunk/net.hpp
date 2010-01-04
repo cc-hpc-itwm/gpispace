@@ -1,11 +1,15 @@
+#ifndef _NET_HPP
+#define _NET_HPP
 
 // simple approach to store petri nets, mirko.rahn@itwm.fraunhofer.de
 
-#include <boost/bimap.hpp>
-#include <map>
-
 #include <ostream>
 #include <iomanip>
+
+#include <map>
+
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 
 // exceptions
 class no_such : public std::runtime_error
@@ -26,16 +30,22 @@ public:
 template<typename T, typename I = unsigned long>
 class auto_bimap
 {
-public:
-  typedef boost::bimap<T,I> bimap_t;
+private:
+  // unordered, unique, viewable
+  typedef boost::bimaps::unordered_set_of<T> elem_collection_t;
+
+  // unordered, unique, viewable
+  typedef boost::bimaps::unordered_set_of<I> id_collection_t;
+
+  typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
   typedef typename bimap_t::value_type val_t;
 
-private:
   bimap_t bimap;
   I num;
 
   const std::string description;
 public:
+  typedef typename bimap_t::const_iterator const_iterator;
 
   auto_bimap (const std::string descr, const I initial = 1)
   : bimap ()
@@ -43,12 +53,12 @@ public:
   , description (descr)
   {}
 
-  const typename bimap_t::const_iterator it_begin (void) const
+  const const_iterator it_begin (void) const
   {
     return bimap.begin();
   }
 
-  const typename bimap_t::const_iterator it_end (void) const
+  const const_iterator it_end (void) const
   {
     return bimap.end();
   }
@@ -122,7 +132,7 @@ template<typename T, typename I>
 struct bi_it
 {
 private:
-  typedef typename boost::bimap<T,I>::const_iterator it;
+  typedef typename auto_bimap<T,I>::const_iterator it;
 
   it pos;
   const it end;
@@ -768,3 +778,5 @@ std::ostream & operator << (std::ostream & s, const net<P,T,E,O,I> & n)
 
   return s;
 }
+
+#endif // _NET_HPP
