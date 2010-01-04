@@ -11,6 +11,7 @@ typedef unsigned int place_t;
 typedef unsigned int transition_t;
 typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
+typedef unsigned int token_t;
 
 static const unsigned int nplace (100);
 static const unsigned int ntrans (100);
@@ -20,7 +21,7 @@ int
 main ()
 {
   {
-    net<place_t, transition_t, edge_t> n(nplace, ntrans);
+    net<place_t, transition_t, edge_t, token_t> n(nplace, ntrans);
 
     for (unsigned int p(0); p < factor * nplace; ++p)
       n.add_place (p);

@@ -380,7 +380,7 @@ public:
 };
 
 // the net itself
-template<typename Place, typename Transition, typename Edge, typename ID = unsigned long>
+template<typename Place, typename Transition, typename Edge, typename Token, typename ID = unsigned long>
 class net
 {
 private:
@@ -731,8 +731,8 @@ public:
     
   }
 
-  template<typename P, typename T, typename E, typename I>
-  friend std::ostream & operator << (std::ostream &, const net<P,T,E,I> &);
+  template<typename P, typename T, typename E, typename O, typename I>
+  friend std::ostream & operator << (std::ostream &, const net<P,T,E,O,I> &);
 };
 
 template<typename I>
@@ -747,8 +747,8 @@ std::ostream & operator << (std::ostream & s, const std::map<I, I> & m)
   return s;
 }
 
-template<typename P, typename T, typename E, typename I>
-std::ostream & operator << (std::ostream & s, const net<P,T,E,I> & n)
+template<typename P, typename T, typename E, typename O, typename I>
+std::ostream & operator << (std::ostream & s, const net<P,T,E,O,I> & n)
 {
   s << n.pmap;
   s << n.tmap;
