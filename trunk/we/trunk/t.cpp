@@ -8,27 +8,28 @@
 typedef std::string place_t;
 typedef std::string transition_t;
 typedef std::string edge_t;
+typedef std::string token_t;
 
-typedef net<place_t, transition_t, edge_t> pnet;
+typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 using std::cout;
 using std::endl;
 
-static void print_net (const pnet & n)
+static void print_net (const pnet_t & n)
 {
   cout << "*** by transition" << endl;
 
-  for (pnet::transition_it t (n.transitions()); t.has_more(); ++t)
+  for (pnet_t::transition_it t (n.transitions()); t.has_more(); ++t)
     {
       cout << *t << ":" << endl;
 
-      for ( pnet::adj_place_it pit (n.out_of_transition(*t))
+      for ( pnet_t::adj_place_it pit (n.out_of_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
         cout << " >>-{" << pit.get_edge() << "}->> " << *pit << endl;
 
-      for ( pnet::adj_place_it pit (n.in_to_transition(*t))
+      for ( pnet_t::adj_place_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
@@ -37,17 +38,17 @@ static void print_net (const pnet & n)
 
   cout << "*** by place" << endl;
 
-  for (pnet::place_it p (n.places()); p.has_more(); ++p)
+  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
     {
       cout << *p << ":" << endl;
 
-      for ( pnet::adj_transition_it tit (n.out_of_place(*p))
+      for ( pnet_t::adj_transition_it tit (n.out_of_place(*p))
           ; tit.has_more()
           ; ++tit
           )
         cout << " >>-{" << tit.get_edge() << "}->> " << *tit << endl;
       
-      for ( pnet::adj_transition_it tit (n.in_to_place(*p))
+      for ( pnet_t::adj_transition_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
@@ -56,20 +57,20 @@ static void print_net (const pnet & n)
 
   cout << "*** by edges" << endl;
 
-  for (pnet::edge_it e (n.edges()); e.has_more(); ++e)
+  for (pnet_t::edge_it e (n.edges()); e.has_more(); ++e)
     {
       cout << *e << ":";
 
       place_t place;
       transition_t transition;
 
-      const pnet::edge_type et 
-        (const_cast<pnet&>(n).get_edge_info (*e, place, transition));
+      const pnet_t::edge_type et 
+        (const_cast<pnet_t&>(n).get_edge_info (*e, place, transition));
       // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
 
-      cout << " -- typ: " << ((et == pnet::PT) ? "PT" : "TP");
+      cout << " -- typ: " << ((et == pnet_t::PT) ? "PT" : "TP");
       cout << ", place: " << place;
-      cout << " " << ((et == pnet::PT) ? "-->" : "<--") << " ";
+      cout << " " << ((et == pnet_t::PT) ? "-->" : "<--") << " ";
       cout << "transition: " << transition;
       cout << endl;
     }
@@ -78,7 +79,7 @@ static void print_net (const pnet & n)
 int
 main ()
 {
-  pnet n(5,4);
+  pnet_t n(5,4);
 
   cout << "add_place (readyL) => " << n.add_place ("readyL") << endl;
   cout << "add_place (readyR) => " << n.add_place ("readyR") << endl;
@@ -161,24 +162,24 @@ main ()
 
   cout << "#### DEEP COPIED" << endl;
 
-  pnet c(n.get_num_places(),n.get_num_transitions());
+  pnet_t c(n.get_num_places(),n.get_num_transitions());
 
-  for (pnet::transition_it t (n.transitions()); t.has_more(); ++t)
+  for (pnet_t::transition_it t (n.transitions()); t.has_more(); ++t)
     c.add_transition (*t);
 
-  for (pnet::place_it p (n.places()); p.has_more(); ++p)
+  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
     c.add_place (*p);
 
-  for (pnet::edge_it e (n.edges()); e.has_more(); ++e)
+  for (pnet_t::edge_it e (n.edges()); e.has_more(); ++e)
     {
       place_t place;
       transition_t transition;
 
-      const pnet::edge_type et 
-        (const_cast<pnet&>(n).get_edge_info (*e, place, transition));
+      const pnet_t::edge_type et 
+        (const_cast<pnet_t&>(n).get_edge_info (*e, place, transition));
       // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
 
-      if (et == pnet::PT)
+      if (et == pnet_t::PT)
         {
           c.add_edge_place_to_transition (*e, place, transition);
         }
