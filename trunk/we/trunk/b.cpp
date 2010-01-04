@@ -19,21 +19,25 @@ static const unsigned int factor (10);
 int
 main ()
 {
-  net<place_t, transition_t, edge_t> n(nplace, ntrans);
+  {
+    net<place_t, transition_t, edge_t> n(nplace, ntrans);
 
-  for (unsigned int p(0); p < factor * nplace; ++p)
-    n.add_place (p);
-
-  for (unsigned int t(0); t < factor * ntrans; ++t)
-    n.add_transition (t);
-
-  for (unsigned int p(0); p < factor * nplace; ++p)
-    for (unsigned int t(0); t < factor * ntrans; ++t)
-      n.add_edge_place_to_transition(edge_t(pair_t(p, t), true), p, t);
-
-  for (unsigned int t(0); t < factor * ntrans; ++t)
     for (unsigned int p(0); p < factor * nplace; ++p)
-      n.add_edge_transition_to_place(edge_t(pair_t(t, p), false), t, p);
+      n.add_place (p);
+
+    for (unsigned int t(0); t < factor * ntrans; ++t)
+      n.add_transition (t);
+
+    for (unsigned int p(0); p < factor * nplace; ++p)
+      for (unsigned int t(0); t < factor * ntrans; ++t)
+        n.add_edge_place_to_transition(edge_t(pair_t(p, t), true), p, t);
+
+    for (unsigned int t(0); t < factor * ntrans; ++t)
+      for (unsigned int p(0); p < factor * nplace; ++p)
+        n.add_edge_transition_to_place(edge_t(pair_t(t, p), false), t, p);
+
+    malloc_stats();
+  }
 
   malloc_stats();
 

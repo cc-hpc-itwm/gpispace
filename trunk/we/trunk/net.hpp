@@ -436,8 +436,6 @@ public:
     , num_edges (0)
   {};
 
-  ~net () {};
-
 public:
   const IDX get_num_places (void) const { return num_places; }
   const IDX get_num_transitions (void) const { return num_transitions; }
