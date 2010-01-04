@@ -16,10 +16,9 @@ all: t.bin b.bin
 	gprof ./$^ > $@
 
 %.bin.gprof.dot: %.bin.gprof
-	python gprof2dot.py <$< >$@ 2>$*.bin.gprof.fmap
+	python gprof2dot.py <$< >$@ 2>$*.bin.gprof.map
 
 %.bin.gprof.ps: %.bin.gprof.dot
-	perl untempl.pl <$*.bin.gprof.fmap >$*.bin.gprof.map
 	dot -Tps $< >$@
 
 .PHONY: clean
@@ -31,5 +30,4 @@ clean:
 	rm -rf *.ps
 	rm -rf *.out
 	rm -rf *.gprof
-	rm -rf *.fmap
 	rm -rf *.map

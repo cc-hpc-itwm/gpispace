@@ -193,5 +193,21 @@ main ()
 
   cout << c;
 
+  c.put_token ("semaphore","control");
+  c.put_token ("readyL","piece0");
+  c.put_token ("readyL","piece1");
+  c.put_token ("readyR","piece2");
+  c.put_token ("readyR","piece3");
+
+  for (pnet_t::place_it p (c.places()); p.has_more(); ++p)
+    {
+      std::cout << "token on place " << *p << ":";
+
+      for (pnet_t::token_place_it tp (c.get_token (*p)); tp.has_more(); ++tp)
+        std::cout << " " << *tp;
+
+      std::cout << std::endl;
+    }
+
   return EXIT_SUCCESS;
 }
