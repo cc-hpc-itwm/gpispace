@@ -1,6 +1,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <net.hpp>
@@ -15,44 +16,64 @@ typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
 using std::cout;
 using std::endl;
 
+static std::string brack (const std::string & x)
+{
+  std::ostringstream s; s << " [" << x << "]"; return s.str();
+}
+
+static std::string trans (const pnet_t & n, const handle_t::T & t)
+{
+  std::ostringstream s; s << t << brack(n.transition (t)); return s.str();
+}
+
+static std::string place (const pnet_t & n, const handle_t::T & p)
+{
+  std::ostringstream s; s << p << brack(n.place (p)); return s.str();
+}
+
+static std::string edge (const pnet_t & n, const handle_t::T & e)
+{
+  std::ostringstream s; s << e << brack (n.edge (e)); return s.str();
+}
+
 static void print_net (const pnet_t & n)
 {
   cout << "*** by transition" << endl;
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << *t << ":" << endl;
+      cout << trans (n, *t) << endl;
 
       for ( pnet_t::adj_place_const_it pit (n.out_of_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        cout << " >>-{" << pit.get_edge() << "}->> " << *pit << endl;
+        cout << " >>-{" << edge (n, pit()) << "}->> " << place (n, *pit) << endl;
 
       for ( pnet_t::adj_place_const_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        cout << " <<-{" << pit.get_edge() << "}-<< " << *pit << endl;
+        cout << " <<-{" << edge (n, pit()) << "}-<< " << place (n, *pit) << endl;
     }    
 
   cout << "*** by place" << endl;
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << *p << ":" << endl;
+      cout << place (n, *p) << endl;
 
       for ( pnet_t::adj_transition_const_it tit (n.out_of_place(*p))
           ; tit.has_more()
           ; ++tit
           )
-        cout << " >>-{" << tit.get_edge() << "}->> " << *tit << endl;
+        cout << " >>-{" << edge (n, tit()) << "}->> " << trans (n, *tit) << endl;
       
       for ( pnet_t::adj_transition_const_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
-        cout << " <<-{" << tit.get_edge() << "}-<< " << *tit << endl;
+        cout << " <<-{" << edge (n, tit()) << "}-<< " << trans (n, *tit) << endl;
     }    
 
   cout << "*** by edges" << endl;
@@ -61,15 +82,15 @@ static void print_net (const pnet_t & n)
     {
       cout << *e << ":";
 
-      place_t place;
-      transition_t transition;
+      pnet_t::pid_t pid;
+      pnet_t::tid_t tid;
 
-      const pnet_t::edge_type et (n.get_edge_info (*e, place, transition));
+      const pnet_t::edge_type et (n.get_edge_info (*e, pid, tid));
 
       cout << " -- typ: " << ((et == pnet_t::PT) ? "PT" : "TP");
-      cout << ", place: " << place;
+      cout << ", place: " << place (n, pid);
       cout << " " << ((et == pnet_t::PT) ? "-->" : "<--") << " ";
-      cout << "transition: " << transition;
+      cout << "transition: " << trans (n, tid);
       cout << endl;
     }
 }
@@ -163,25 +184,31 @@ main ()
   pnet_t c(n.get_num_places(),n.get_num_transitions());
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    c.add_transition (*t);
+    c.add_transition (n.transition(*t));
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-    c.add_place (*p);
+    c.add_place (n.place(*p));
 
   for (pnet_t::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
-      place_t place;
-      transition_t transition;
+      pnet_t::pid_t pid;
+      pnet_t::tid_t tid;
 
-      const pnet_t::edge_type et (n.get_edge_info (*e, place, transition));
+      const pnet_t::edge_type et (n.get_edge_info (*e, pid, tid));
 
       if (et == pnet_t::PT)
         {
-          c.add_edge_place_to_transition (*e, place, transition);
+          c.add_edge_place_to_transition ( n.edge(*e)
+                                         , n.place(pid)
+                                         , n.transition(tid)
+                                         );
         }
       else
         {
-          c.add_edge_transition_to_place (*e, transition, place);
+          c.add_edge_transition_to_place ( n.edge(*e)
+                                         , n.transition(tid)
+                                         , n.place(pid)
+                                         );
         }
     }
 

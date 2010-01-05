@@ -10,7 +10,6 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
 
 // exceptions
 class no_such : public std::runtime_error
@@ -34,15 +33,18 @@ public:
   ~token_not_there() throw() {}
 };
 
+// Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
+// cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
+// It follows that an uint64_t is enough for now.
 struct handle_t
 {
 public:
-  typedef signed long T;
+  typedef uint64_t T;
 private:
   T v;
 public:
-  handle_t () : v(0) {}
-  const T invalid (void) { return -1; }
+  handle_t () : v(std::numeric_limits<uint64_t>::min()) {}
+  static const T invalid (void) { return std::numeric_limits<uint64_t>::max(); }
   const T & operator * (void) const { return v; }
   const void operator ++ (void) { ++v; }
 };
@@ -99,6 +101,17 @@ public:
     return it->second;
   }
 
+  T & get_elem (const handle_t::T & i) throw (no_such)
+  {
+    typename bimap_t::right_map::iterator it (bimap.right.find (i));
+
+    if (it == bimap.right.end())
+      throw no_such ("index for " + description);
+
+    return const_cast<T &>(it->second);
+    //     ^^^^^^^^^^UGLY!!
+  }
+
   const handle_t::T add (const T & x) throw (already_there)
   {
     if (bimap.left.find (x) != bimap.left.end())
@@ -111,7 +124,6 @@ public:
     return i;
   }
 
-  const void erase (const T & x) { bimap.left.erase (x); }
   const void erase (const handle_t::T & i) { bimap.right.erase (i); }
 
   template<typename U>
@@ -131,23 +143,11 @@ std::ostream & operator << (std::ostream & s, const auto_bimap<T> & bm)
   return s;
 };
 
-// function object to get elems from an auto_bimap
-template<typename T>
-struct biget
-{
-private:
-  const auto_bimap<T> & bim;
-public:
-  biget (const auto_bimap<T> & m) : bim(m) {}
-  const T & get (const handle_t::T & i) const { return bim.get_elem (i); }
-};
-
 template<typename T>
 struct bi_const_it
 {
 private:
   typedef typename auto_bimap<T>::const_iterator it;
-
   it pos;
   const it end;
 public:
@@ -155,14 +155,29 @@ public:
 
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
-  const T & operator * (void) const { return pos->left; }
+  const handle_t::T & operator * (void) const { return pos->right; }
+};
+
+template<typename T>
+struct bi_it
+{
+private:
+  typedef typename auto_bimap<T>::iterator it;
+  it pos;
+  const it end;
+public:
+  bi_it (const auto_bimap<T> & bm) : pos (bm.begin()), end (bm.end()) {}
+
+  const bool has_more (void) const { return (pos != end) ? true : false; }
+  void operator ++ (void) { ++pos; }
+  handle_t::T & operator * (void) { return pos->right; }
 };
 
 // adjacency_matrix, grows on demand
 class adjacency_matrix
 {
 public:
-  typedef std::size_t size_t;
+  typedef handle_t::T size_t;
 
 private:
   size_t row;
@@ -345,62 +360,44 @@ public:
   const bool has_more (void) const { return (pos != max) ? true : false; }
   void operator ++ (void) { ++pos; step(); }
 
-  const handle_t::T & get_adj (void) const { return adj; }
-  const adjacency_matrix::size_t & operator * (void) const { return pos; }
-};
+  const handle_t::T & edge_id (void) const { return adj; }
+  const adjacency_matrix::size_t & obj_id (void) const { return pos; }
 
-// iterator through adjacencies, returns objects given by auto_bimap
-template<typename T, typename Edge>
-struct adj_obj_const_it
-{
-private:
-  adj_const_it ait;
-  biget<T> bigT;
-  biget<Edge> bigE;
-public:
-  adj_obj_const_it ( const adjacency_matrix & m
-                   , const adjacency_matrix::size_t & max
-                   , const handle_t::T & fix
-                   , const bool & fix_is_fst
-                   , const auto_bimap<T> & biT
-                   , const auto_bimap<Edge> & biE
-                   )
-    : ait (m, max, fix, fix_is_fst)
-    , bigT (biT)
-    , bigE (biE)
-  {}
-
-  const bool has_more (void) const { return ait.has_more(); }
-  void operator ++ (void) { ++ait; }
-
-  const handle_t::T & get_edge_id (void) const { return ait.get_adj(); }
-  const Edge & get_edge (void) const { return bigE.get (get_edge_id()); }
-  
-  const T & operator * (void) const { return bigT.get (*ait); }
+  const handle_t::T & operator () (void) const { return edge_id(); }
+  const adjacency_matrix::size_t & operator * (void) const { return obj_id(); }
 };
 
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
+public:
+  typedef handle_t::T pid_t;
+  typedef handle_t::T tid_t;
+  typedef handle_t::T eid_t;
+
+  enum edge_type {PT,TP};
+
 private:
   auto_bimap<Place> pmap; // Place <-> internal id
   auto_bimap<Transition> tmap; // Transition <-> internal id
   auto_bimap<Edge> emap; // Edge <-> internal id
 
-  typedef std::map<handle_t::T, handle_t::T> map_id_t;
-  typedef typename map_id_t::iterator map_id_it_t;
-  typedef typename map_id_t::const_iterator map_id_const_it_t;
+  typedef std::map<eid_t, pid_t> map_pid_t;
+  typedef typename map_pid_t::iterator map_pid_it_t;
+  typedef typename map_pid_t::const_iterator map_pid_const_it_t;
 
-  map_id_t emap_in_p; // internal edge id -> internal place id
-  map_id_t emap_out_p; // internal edge id -> internal place id
-  map_id_t emap_in_t; // internal edge id -> internal transition id
-  map_id_t emap_out_t; // internal edge id -> internal transition id
+  map_pid_t emap_in_p; // internal edge id -> internal place id
+  map_pid_t emap_out_p; // internal edge id -> internal place id
+
+  typedef std::map<eid_t, tid_t> map_tid_t;
+  typedef typename map_tid_t::iterator map_tid_it_t;
+  typedef typename map_tid_t::const_iterator map_tid_const_it_t;
+
+  map_tid_t emap_in_t; // internal edge id -> internal transition id
+  map_tid_t emap_out_t; // internal edge id -> internal transition id
 
   typedef adjacency_matrix adj_matrix;
-
-public:
-  enum edge_type {PT,TP};
 
 private:
   adj_matrix adj_pt;
@@ -414,8 +411,10 @@ private:
   adjacency_matrix::size_t num_edges;
 
 public:
-  net (const adjacency_matrix::size_t & places_ = 100, const adjacency_matrix::size_t & transitions_ = 250)
-  throw (std::bad_alloc)
+  net ( const adjacency_matrix::size_t & places_ = 100
+      , const adjacency_matrix::size_t & transitions_ = 250
+      )
+    throw (std::bad_alloc)
     : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
@@ -433,7 +432,6 @@ public:
     , num_edges (0)
   {};
 
-public:
   const adjacency_matrix::size_t get_num_places (void) const
   {
     return num_places;
@@ -449,40 +447,53 @@ public:
     return num_edges;
   }
 
-private:
-  const handle_t::T get_place_id (const Place & place) const throw (no_such)
+  const pid_t & get_place_id (const Place & place) const throw (no_such)
   {
     return pmap.get_id (place);
   }
 
-  const handle_t::T get_transition_id (const Transition & transition) const
+  const tid_t & get_transition_id (const Transition & transition) const
     throw (no_such)
   {
     return tmap.get_id (transition);
   }
 
-  const handle_t::T get_edge_id (const Edge & edge) const throw (no_such)
+  const eid_t & get_edge_id (const Edge & edge) const throw (no_such)
   {
     return emap.get_id (edge);
   }
 
-  const Place get_place (const handle_t::T & pid) const throw (no_such)
+  const Place & place (const pid_t & pid) const throw (no_such)
   {
     return pmap.get_elem (pid);
   }
 
-  const Transition get_transition (const handle_t::T & tid) const throw (no_such)
+  const Transition & transition (const tid_t & tid) const throw (no_such)
   {
     return tmap.get_elem (tid);
   }
 
-  const Edge get_edge (const handle_t::T & eid) const throw (no_such)
+  const Edge & edge (const eid_t & eid) const throw (no_such)
   {
     return emap.get_elem (eid);
   }
 
-public:
-  const handle_t::T add_place (const Place & place) throw (already_there)
+   Place & place (const pid_t & pid) throw (no_such)
+   {
+   return pmap.get_elem (pid);
+   }
+
+  Transition & transition (const tid_t & tid) throw (no_such)
+  {
+    return tmap.get_elem (tid);
+  }
+
+  Edge & edge (const eid_t & eid) throw (no_such)
+  {
+    return emap.get_elem (eid);
+  }
+
+  const pid_t add_place (const Place & place) throw (already_there)
   {
     ++max_place;
     ++num_places;
@@ -490,7 +501,8 @@ public:
     return pmap.add (place);
   }
 
-  const handle_t::T add_transition (const Transition & transition) throw (already_there)
+  const tid_t add_transition (const Transition & transition)
+    throw (already_there)
   {
     ++max_transition;
     ++num_transitions;
@@ -499,16 +511,20 @@ public:
   }
 
 private:
-  const handle_t::T add_edge
-  (const Edge & edge, const adjacency_matrix::size_t & x, const adjacency_matrix::size_t & y, adj_matrix & m)
+  const eid_t add_edge
+  ( const Edge & edge
+  , const adjacency_matrix::size_t & x
+  , const adjacency_matrix::size_t & y
+  , adj_matrix & m
+  )
     throw (no_such, already_there)
   {
-    handle_t::T & a (m.adjacent (x, y));
+    eid_t & a (m.adjacent (x, y));
 
     if (a != handle_t().invalid())
       throw already_there ("adjacency");
 
-    const handle_t::T eid (emap.add (edge));
+    const eid_t eid (emap.add (edge));
 
     a = eid;
 
@@ -519,13 +535,11 @@ private:
   }
 
 public:
-  const handle_t::T add_edge_place_to_transition
-  (const Edge & edge, const Place & place, const Transition & transition)
+  const eid_t add_edge_place_to_transition
+  (const Edge & edge, const pid_t & pid, const tid_t & tid)
     throw (no_such, already_there)
   {
-    const handle_t::T pid (get_place_id(place));
-    const handle_t::T tid (get_transition_id (transition));
-    const handle_t::T eid (add_edge (edge, pid, tid, adj_pt));
+    const eid_t eid (add_edge (edge, pid, tid, adj_pt));
 
     emap_out_p[eid] = pid;
     emap_in_t[eid] = tid;
@@ -533,18 +547,36 @@ public:
     return eid;
   }
 
-  const handle_t::T add_edge_transition_to_place
-  (const Edge & edge, const Transition & transition, const Place & place)
+  const eid_t add_edge_place_to_transition
+  (const Edge & edge, const Place & place, const Transition & transition)
     throw (no_such, already_there)
   {
-    const handle_t::T tid (get_transition_id (transition));
-    const handle_t::T pid (get_place_id (place));
-    const handle_t::T eid (add_edge (edge, tid, pid, adj_tp));
+    const pid_t pid (get_place_id (place));
+    const tid_t tid (get_transition_id (transition));
+
+    return add_edge_place_to_transition (edge, pid, tid);
+  }
+
+  const eid_t add_edge_transition_to_place
+  (const Edge & edge, const tid_t & tid, const pid_t & pid)
+    throw (no_such, already_there)
+  {
+    const eid_t eid (add_edge (edge, tid, pid, adj_tp));
 
     emap_in_p[eid] = pid;
     emap_out_t[eid] = tid;
 
     return eid;
+  }
+
+  const eid_t add_edge_transition_to_place
+  (const Edge & edge, const Transition & transition, const Place & place)
+    throw (no_such, already_there)
+  {
+    const pid_t pid (get_place_id (place));
+    const tid_t tid (get_transition_id (transition));
+
+    return add_edge_transition_to_place (edge, tid, pid);
   }
 
   typedef bi_const_it<Place> place_const_it;
@@ -566,113 +598,91 @@ public:
     return edge_const_it (emap);
   }
 
-  typedef adj_obj_const_it<Place, Edge> adj_place_const_it;
-  typedef adj_obj_const_it<Place, Edge> adj_transition_const_it;
+  typedef bi_it<Place> place_it;
+  typedef bi_it<Transition> transition_it;
+  typedef bi_it<Edge> edge_it;
 
-private:
-  const adj_place_const_it
-  out_of_transition_by_id (const handle_t::T & tid) const
+  // WORK HERE: doesn't work, WHY?
+//   place_it places (void)
+//   {
+//     return place_it (pmap);
+//   }
+
+//   transition_it transitions (void)
+//   {
+//     return transition_it (tmap);
+//   }
+
+//   edge_it edges (void)
+//   {
+//     return edge_it (emap);
+//   }
+
+  typedef adj_const_it adj_place_const_it;
+  typedef adj_const_it adj_transition_const_it;
+
+  const adj_place_const_it out_of_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_tp, max_place, tid, true, pmap, emap);
+    return adj_place_const_it (adj_tp, max_place, tid, true);
   }
 
-  const adj_place_const_it
-  in_to_transition_by_id (const handle_t::T & tid) const
+  const adj_place_const_it in_to_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_pt, max_place, tid, false, pmap, emap);
+    return adj_place_const_it (adj_pt, max_place, tid, false);
   }
 
-  const adj_transition_const_it
-  out_of_place_by_id (const handle_t::T & pid) const
+  const adj_transition_const_it out_of_place (const pid_t & pid) const
   {
-    return
-      adj_transition_const_it (adj_pt, max_transition, pid, true, tmap, emap);
+    return adj_transition_const_it (adj_pt, max_transition, pid, true);
   }
 
-  const adj_transition_const_it
-  in_to_place_by_id (const handle_t::T & pid) const
+  const adj_transition_const_it in_to_place (const pid_t & pid) const
   {
-    return
-      adj_transition_const_it (adj_tp, max_transition, pid, false, tmap, emap);
+    return adj_transition_const_it (adj_tp, max_transition, pid, false);
   }
 
-public:
-  const adj_place_const_it
-  out_of_transition (const Transition & transition) const
-  {
-    return out_of_transition_by_id (get_transition_id (transition));
-  }
-
-  const adj_place_const_it
-  in_to_transition (const Transition & transition) const
-  {
-    return in_to_transition_by_id (get_transition_id (transition));
-  }
-
-  const adj_transition_const_it
-  out_of_place (const Place & place) const
-  {
-    return out_of_place_by_id (get_place_id (place));
-  }
-
-  const adj_transition_const_it
-  in_to_place (const Place & place) const
-  {
-    return in_to_place_by_id (get_place_id (place));
-  }
-
-  const edge_type get_edge_info ( const Edge & edge
-                                , Place & place
-                                , Transition & transition
+  const edge_type get_edge_info ( const eid_t & eid
+                                , pid_t & pid
+                                , tid_t & tid
                                 ) const
-    throw (no_such)
   {
-    const handle_t::T eid (get_edge_id (edge));
-
-    const map_id_const_it_t out_p (emap_out_p.find (eid));
+    const map_pid_const_it_t out_p (emap_out_p.find (eid));
 
     if (out_p != emap_out_p.end())
       {
-        const map_id_const_it_t in_t (emap_in_t.find (eid));
+        const map_tid_const_it_t in_t (emap_in_t.find (eid));
 
-        const handle_t::T pid (out_p->second);
-        const handle_t::T tid (in_t->second);
-
-        place = get_place (pid);
-        transition = get_transition (tid);
+        pid = out_p->second;
+        tid = in_t->second;
 
         return PT;
       }
     else
       {
-        const map_id_const_it_t in_p (emap_in_p.find (eid));
-        const map_id_const_it_t out_t (emap_out_t.find (eid));
+        const map_pid_const_it_t in_p (emap_in_p.find (eid));
+        const map_tid_const_it_t out_t (emap_out_t.find (eid));
 
-        const handle_t::T tid (out_t->second);
-        const handle_t::T pid (in_p->second);
-
-        place = get_place (pid);
-        transition = get_transition (tid);
+        tid = out_t->second;
+        pid = in_p->second;
 
         return TP;
       }
   }
 
-private:
-  const handle_t::T delete_edge_by_id (const handle_t::T & eid)
+  const eid_t delete_edge (const eid_t & eid)
   {
-    const map_id_it_t out_p (emap_out_p.find (eid));
+    const map_pid_it_t out_p (emap_out_p.find (eid));
 
     if (out_p != emap_out_p.end())
       {
         // place -> transition
 
-        const map_id_it_t in_t (emap_in_t.find (eid));
+        const map_tid_it_t in_t (emap_in_t.find (eid));
 
         assert (in_t != emap_in_t.end());
 
-        const handle_t::T pid (out_p->second);
-        const handle_t::T tid (in_t->second);
+        const pid_t pid (out_p->second);
+        const tid_t tid (in_t->second);
 
         assert (adj_pt.adjacent (pid, tid) == eid);
 
@@ -685,14 +695,14 @@ private:
       {
         // transition -> place
 
-        const map_id_it_t in_p (emap_in_p.find (eid));
-        const map_id_it_t out_t (emap_out_t.find (eid));
+        const map_pid_it_t in_p (emap_in_p.find (eid));
+        const map_tid_it_t out_t (emap_out_t.find (eid));
 
         assert (out_t != emap_out_t.end());
         assert (in_p != emap_in_p.end());
 
-        const handle_t::T tid (out_t->second);
-        const handle_t::T pid (in_p->second);
+        const tid_t tid (out_t->second);
+        const pid_t pid (in_p->second);
 
         assert (adj_tp.adjacent (tid, pid) == eid);
         
@@ -709,58 +719,63 @@ private:
     return eid;
   }
 
-public:
-  const handle_t::T delete_edge (const Edge & edge) throw (no_such)
+  const eid_t delete_edge (const Edge & edge) throw (no_such)
   {
-    return delete_edge_by_id (get_edge_id (edge));
+    return delete_edge (get_edge_id (edge));
   }
 
-  const handle_t::T delete_place (const Place & place) throw (no_such)
+  const pid_t delete_place (const pid_t & pid) throw (no_such)
   {
-    const handle_t::T pid (get_place_id (place));
-
-    for ( adj_transition_const_it tit (out_of_place_by_id (pid))
+    for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge_by_id (tit.get_edge_id());
+      delete_edge (tit());
 
-    for ( adj_transition_const_it tit (in_to_place_by_id (pid))
+    for ( adj_transition_const_it tit (in_to_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge_by_id (tit.get_edge_id());
+      delete_edge (tit());
 
-    pmap.erase (place);
+    pmap.erase (pid);
 
     --num_places;
 
     return pid;
   }
 
-  const handle_t::T delete_transition (const Transition & transition)
-    throw (no_such)
+  const pid_t delete_place (const Place & place) throw (no_such)
   {
-    const handle_t::T tid (get_transition_id (transition));
+    return delete_place (get_place_id (place));
+  }
 
-    for ( adj_place_const_it pit (out_of_transition_by_id (tid))
+  const tid_t delete_transition (const tid_t & tid) throw (no_such)
+  {
+    for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge_by_id (pit.get_edge_id());
+      delete_edge (pit());
 
-    for ( adj_place_const_it pit (in_to_transition_by_id (tid))
+    for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge_by_id (pit.get_edge_id());
+      delete_edge (pit());
 
-    tmap.erase (transition);
+    tmap.erase (tid);
 
     --num_transitions;
 
     return tid;
     
+  }
+
+  const tid_t delete_transition (const Transition & transition)
+    throw (no_such)
+  {
+    return delete_transition (get_transition_id (transition));
   }
 
   template<typename P, typename T, typename E, typename O>
