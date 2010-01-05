@@ -19,17 +19,17 @@ static void print_net (const pnet_t & n)
 {
   cout << "*** by transition" << endl;
 
-  for (pnet_t::transition_it t (n.transitions()); t.has_more(); ++t)
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
       cout << *t << ":" << endl;
 
-      for ( pnet_t::adj_place_it pit (n.out_of_transition(*t))
+      for ( pnet_t::adj_place_const_it pit (n.out_of_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
         cout << " >>-{" << pit.get_edge() << "}->> " << *pit << endl;
 
-      for ( pnet_t::adj_place_it pit (n.in_to_transition(*t))
+      for ( pnet_t::adj_place_const_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
@@ -38,17 +38,17 @@ static void print_net (const pnet_t & n)
 
   cout << "*** by place" << endl;
 
-  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
+  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
       cout << *p << ":" << endl;
 
-      for ( pnet_t::adj_transition_it tit (n.out_of_place(*p))
+      for ( pnet_t::adj_transition_const_it tit (n.out_of_place(*p))
           ; tit.has_more()
           ; ++tit
           )
         cout << " >>-{" << tit.get_edge() << "}->> " << *tit << endl;
       
-      for ( pnet_t::adj_transition_it tit (n.in_to_place(*p))
+      for ( pnet_t::adj_transition_const_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
@@ -57,7 +57,7 @@ static void print_net (const pnet_t & n)
 
   cout << "*** by edges" << endl;
 
-  for (pnet_t::edge_it e (n.edges()); e.has_more(); ++e)
+  for (pnet_t::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
       cout << *e << ":";
 
@@ -73,21 +73,6 @@ static void print_net (const pnet_t & n)
       cout << endl;
     }
 }
-
-// static void print_marking (const pnet_t & n)
-// {
-//   std::cout << "** marking:" << std::endl;
-
-//   for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
-//     {
-//       std::cout << "token on place " << *p << ":";
-
-//       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-//         std::cout << " " << *tp;
-
-//       std::cout << std::endl;
-//     }
-// }
 
 int
 main ()
@@ -177,13 +162,13 @@ main ()
 
   pnet_t c(n.get_num_places(),n.get_num_transitions());
 
-  for (pnet_t::transition_it t (n.transitions()); t.has_more(); ++t)
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     c.add_transition (*t);
 
-  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
+  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     c.add_place (*p);
 
-  for (pnet_t::edge_it e (n.edges()); e.has_more(); ++e)
+  for (pnet_t::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
       place_t place;
       transition_t transition;
