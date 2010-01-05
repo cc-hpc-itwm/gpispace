@@ -64,9 +64,7 @@ static void print_net (const pnet_t & n)
       place_t place;
       transition_t transition;
 
-      const pnet_t::edge_type et 
-        (const_cast<pnet_t&>(n).get_edge_info (*e, place, transition));
-      // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
+      const pnet_t::edge_type et (n.get_edge_info (*e, place, transition));
 
       cout << " -- typ: " << ((et == pnet_t::PT) ? "PT" : "TP");
       cout << ", place: " << place;
@@ -76,20 +74,20 @@ static void print_net (const pnet_t & n)
     }
 }
 
-static void print_marking (const pnet_t & n)
-{
-  std::cout << "** marking:" << std::endl;
+// static void print_marking (const pnet_t & n)
+// {
+//   std::cout << "** marking:" << std::endl;
 
-  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
-    {
-      std::cout << "token on place " << *p << ":";
+//   for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
+//     {
+//       std::cout << "token on place " << *p << ":";
 
-      for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-        std::cout << " " << *tp;
+//       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+//         std::cout << " " << *tp;
 
-      std::cout << std::endl;
-    }
-}
+//       std::cout << std::endl;
+//     }
+// }
 
 int
 main ()
@@ -190,9 +188,7 @@ main ()
       place_t place;
       transition_t transition;
 
-      const pnet_t::edge_type et 
-        (const_cast<pnet_t&>(n).get_edge_info (*e, place, transition));
-      // ^^^^^^^^^^^^^^^^^ UGLY, but std::map.find is non-const...
+      const pnet_t::edge_type et (n.get_edge_info (*e, place, transition));
 
       if (et == pnet_t::PT)
         {
@@ -207,18 +203,6 @@ main ()
   print_net (c);
 
   cout << c;
-
-  c.place_token ("semaphore","control");
-  c.place_token ("readyL","piece0");
-  c.place_token ("readyL","piece1");
-  c.place_token ("readyR","piece2");
-  c.place_token ("readyR","piece3");
-
-  print_marking (c);
-
-  c.consume_token ("semaphore","control");
-
-  print_marking (c);
 
   return EXIT_SUCCESS;
 }
