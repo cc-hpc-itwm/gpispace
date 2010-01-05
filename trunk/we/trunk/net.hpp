@@ -27,6 +27,13 @@ public:
   ~already_there() throw() {}
 };
 
+class token_not_there : public std::runtime_error
+{
+public:
+  token_not_there (const std::string & msg) : std::runtime_error(msg) {}
+  ~token_not_there() throw() {}
+};
+
 // bimap, that keeps a bijection between objects and some index
 template<typename T, typename I = unsigned long>
 class auto_bimap
@@ -780,10 +787,31 @@ public:
   void place_token (const Place place, const Token token)
     throw (no_such, already_there)
   {
+    typedef typename omap_t<Token,ID>::value_t val_t;
+
     const ID pid (get_place_id (place));
 
-    if (omap.insert (typename omap_t<Token,ID>::value_t (token, pid)).second == false)
+    if (omap.insert (val_t (token, pid)).second == false)
       throw already_there ("token");
+  }
+
+  const ID consume_token (const Place place, const Token token)
+    throw (no_such, token_not_there)
+  {
+    const ID pid (get_place_id (place));
+
+    typename omap_t<Token,ID>::bimap_t::left_map::iterator 
+      it (omap.left.find (token));
+
+    if (it == omap.left.end())
+      throw no_such ("token");
+
+    if (it->second != pid)
+      throw token_not_there ("token not on this place");
+
+    omap.left.erase (it);
+
+    return pid;
   }
 
   typedef token_on_place_it<Token, ID> token_place_it;

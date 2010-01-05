@@ -76,6 +76,21 @@ static void print_net (const pnet_t & n)
     }
 }
 
+static void print_marking (const pnet_t & n)
+{
+  std::cout << "** marking:" << std::endl;
+
+  for (pnet_t::place_it p (n.places()); p.has_more(); ++p)
+    {
+      std::cout << "token on place " << *p << ":";
+
+      for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+        std::cout << " " << *tp;
+
+      std::cout << std::endl;
+    }
+}
+
 int
 main ()
 {
@@ -199,15 +214,11 @@ main ()
   c.place_token ("readyR","piece2");
   c.place_token ("readyR","piece3");
 
-  for (pnet_t::place_it p (c.places()); p.has_more(); ++p)
-    {
-      std::cout << "token on place " << *p << ":";
+  print_marking (c);
 
-      for (pnet_t::token_place_it tp (c.get_token (*p)); tp.has_more(); ++tp)
-        std::cout << " " << *tp;
+  c.consume_token ("semaphore","control");
 
-      std::cout << std::endl;
-    }
+  print_marking (c);
 
   return EXIT_SUCCESS;
 }
