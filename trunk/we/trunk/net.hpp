@@ -777,7 +777,7 @@ public:
     
   }
 
-  void put_token (const Place place, const Token token)
+  void place_token (const Place place, const Token token)
     throw (no_such, already_there)
   {
     const ID pid (get_place_id (place));

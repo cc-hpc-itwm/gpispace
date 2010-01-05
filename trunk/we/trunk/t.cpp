@@ -193,11 +193,11 @@ main ()
 
   cout << c;
 
-  c.put_token ("semaphore","control");
-  c.put_token ("readyL","piece0");
-  c.put_token ("readyL","piece1");
-  c.put_token ("readyR","piece2");
-  c.put_token ("readyR","piece3");
+  c.place_token ("semaphore","control");
+  c.place_token ("readyL","piece0");
+  c.place_token ("readyL","piece1");
+  c.place_token ("readyR","piece2");
+  c.place_token ("readyR","piece3");
 
   for (pnet_t::place_it p (c.places()); p.has_more(); ++p)
     {
