@@ -10,7 +10,9 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 
+#include <boost/typeof/typeof.hpp>
 #include <boost/bimap/support/lambda.hpp>
 
 // exceptions
@@ -371,6 +373,36 @@ public:
   const adjacency_matrix::size_t & operator * (void) const { return obj_id(); }
 };
 
+template<typename Token, typename PID>
+struct omap_t
+{
+public:
+  typedef boost::bimaps::unordered_multiset_of<Token> token_collection_t;
+  typedef boost::bimaps::unordered_multiset_of<PID> place_collection_t;
+
+  typedef typename boost::bimap<token_collection_t, place_collection_t> bimap_t;
+  typedef typename bimap_t::value_type value_t;
+  typedef typename bimap_t::right_map::const_iterator place_const_it; 
+};
+
+// iterate through the tokens on a place
+template<typename Token, typename PID>
+struct token_on_place_it
+{
+private:
+  typedef typename omap_t<Token,PID>::place_const_it pc_it;
+  pc_it pos;
+  const pc_it end;
+public:
+  token_on_place_it (std::pair<pc_it, pc_it> its)
+    : pos (its.first)
+    , end (its.second)
+  {}
+  const bool has_more (void) const { return (pos != end) ? true : false; }
+  void operator ++ (void) { ++pos; }
+  const Token & operator * (void) const { return pos->second; }
+};
+
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
@@ -403,7 +435,6 @@ private:
 
   typedef adjacency_matrix adj_matrix;
 
-private:
   adj_matrix adj_pt;
   adj_matrix adj_tp;
 
@@ -413,6 +444,8 @@ private:
   adjacency_matrix::size_t num_places;
   adjacency_matrix::size_t num_transitions;
   adjacency_matrix::size_t num_edges;
+
+  typename omap_t<Token,pid_t>::bimap_t omap;
 
 public:
   net ( const adjacency_matrix::size_t & places_ = 100
@@ -838,6 +871,32 @@ public:
     return emap.replace (get_edge_id (old_value), new_value);
   }
 
+  // deal with tokens
+  const bool put_token (const pid_t & pid, const Token & token)
+  {
+    return
+      omap.insert (typename omap_t<Token,pid_t>::value_t (token, pid)).second;
+  }
+
+  const bool put_token (const Place & place, const Token & token)
+    throw (no_such)
+  {
+    return put_token (get_place_id (place), token);
+  }
+
+  typedef token_on_place_it<Token, pid_t> token_place_it;
+
+  const token_place_it get_token (const pid_t & pid) const
+  {
+    return token_place_it (omap.right.equal_range (pid));
+  }
+
+  const token_place_it get_token (const Place & place) const
+    throw (no_such)
+  {
+    return get_token (get_place_id (place));
+  }
+
   // output
   template<typename P, typename T, typename E, typename O>
   friend std::ostream & operator << (std::ostream &, const net<P,T,E,O> &);
@@ -858,9 +917,20 @@ std::ostream & operator << (std::ostream & s, const std::map<I, I> & m)
 template<typename P, typename T, typename E, typename O>
 std::ostream & operator << (std::ostream & s, const net<P,T,E,O> & n)
 {
+  s << "##### OP<<" << std::endl;
   s << n.pmap;
   s << n.tmap;
   s << n.emap;
+
+  s << "bimap (token):" << std::endl;
+
+  for (BOOST_AUTO(tp, n.omap.begin()); tp != n.omap.end(); ++tp)
+    s << "on place " 
+      << tp->right << " [" << n.place (tp->right) << "]"
+      << ": " 
+      << tp->left 
+      << std::endl;
+
   s << "emap_in_p:" << std::endl << n.emap_in_p;
   s << "emap_out_p:" << std::endl << n.emap_out_p;
   s << "emap_in_t:" << std::endl << n.emap_in_t;

@@ -21,23 +21,27 @@ static std::string brack (const std::string & x)
   std::ostringstream s; s << " [" << x << "]"; return s.str();
 }
 
-static std::string trans (const pnet_t & n, const handle_t::T & t)
+static std::string trans (const pnet_t & n, const pnet_t::tid_t & t)
 {
   std::ostringstream s; s << t << brack(n.transition (t)); return s.str();
 }
 
-static std::string place (const pnet_t & n, const handle_t::T & p)
+static std::string place (const pnet_t & n, const pnet_t::pid_t & p)
 {
   std::ostringstream s; s << p << brack(n.place (p)); return s.str();
 }
 
-static std::string edge (const pnet_t & n, const handle_t::T & e)
+static std::string edge (const pnet_t & n, const pnet_t::eid_t & e)
 {
   std::ostringstream s; s << e << brack (n.edge (e)); return s.str();
 }
 
 static void print_net (const pnet_t & n)
 {
+  static unsigned int print_net_count (0);
+
+  cout << "##### PRINT NET: " << print_net_count++ << endl;
+
   cout << "*** by transition" << endl;
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
@@ -93,6 +97,20 @@ static void print_net (const pnet_t & n)
       cout << "transition: " << trans (n, tid);
       cout << endl;
     }
+
+//   cout << "*** tokens" << endl;
+
+//   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+//     {
+//       cout << "on " << place (n, *p) << ":";
+
+//       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+//         cout << " " << *tp;
+
+//       cout << endl;
+//     }
+
+  cout << n;
 }
 
 int
@@ -148,7 +166,7 @@ main ()
   cout << "delete_place (semaphore) => " << n.delete_place ("semaphore") << endl;
   cout << "delete_transition (enterL) => " << n.delete_transition ("enterL") << endl;
 
-  cout << n;
+  print_net (n);
 
   // reconstruct
 
@@ -175,7 +193,7 @@ main ()
   cout << "add_edge_transition_to_place (e_ll_s) => "
        << n.add_edge_transition_to_place ("e_ll_s", "leaveL", "semaphore") << endl;
 
-  cout << n;
+  print_net (n);
 
   // deep copy
 
@@ -214,8 +232,6 @@ main ()
 
   print_net (c);
 
-  cout << c;
-
   cout << "#### MODIFIED" << endl;
 
   c.modify_place ("semaphore","Semaphore");
@@ -225,7 +241,18 @@ main ()
 
   print_net (c);
 
-  cout << c;
+  cout << "put_token (Semaphore,c) => " 
+       << c.put_token ("Semaphore","c") << endl;
+  cout << "put_token (readyL,p) => " 
+       << c.put_token ("readyL","p") << endl;
+  cout << "put_token (readyL,p) => " 
+       << c.put_token (c.get_place_id("readyL"),"p") << endl;
+  cout << "put_token (readyR,p) => " 
+       << c.put_token ("readyR","p") << endl;
+  cout << "put_token (readyR,p) => " 
+       << c.put_token (c.get_place_id("readyR"),"p") << endl;
+
+  print_net (c);
 
   return EXIT_SUCCESS;
 }
