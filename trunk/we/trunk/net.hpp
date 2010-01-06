@@ -164,12 +164,14 @@ private:
   typedef typename auto_bimap<T>::const_iterator it;
   it pos;
   const it end;
+  const std::size_t count_;
 public:
   bi_const_it (const auto_bimap<T> & bm) : pos (bm.begin()), end (bm.end()) {}
 
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
   const handle_t::T & operator * (void) const { return pos->right; }
+  const std::size_t count (void) const { return count_; }
 };
 
 // adjacency_matrix, grows on demand
@@ -389,14 +391,17 @@ private:
   typedef typename omap_t<Token,PID>::place_const_it pc_it;
   pc_it pos;
   const pc_it end;
+  const std::size_t count_;
 public:
   token_on_place_it (std::pair<pc_it, pc_it> its)
     : pos (its.first)
     , end (its.second)
+    , count_(std::distance (pos, end))
   {}
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
   const Token & operator * (void) const { return pos->second; }
+  const std::size_t count (void) const { return count_; }
 };
 
 // the net itself

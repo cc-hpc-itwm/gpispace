@@ -273,5 +273,7 @@ main ()
 
   print_net (c);
 
+  cout << "num_token (readyL) => " << c.get_token("readyL").count() << endl;
+
   return EXIT_SUCCESS;
 }
