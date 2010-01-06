@@ -46,7 +46,9 @@ static void print_net (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << trans (n, *t) << endl;
+      cout << trans (n, *t) 
+           << " can_fire == " << (n.can_fire (*t) ? "true" : "false")
+           << endl;
 
       for ( pnet_t::adj_place_const_it pit (n.out_of_transition(*t))
           ; pit.has_more()

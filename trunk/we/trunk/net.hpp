@@ -965,6 +965,22 @@ public:
     return k;
   }
 
+  // FIRE
+
+  const bool can_fire (const tid_t & tid) const
+  {
+    bool can_fire = true;
+
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more() && can_fire
+        ; ++pit
+        )
+      if (get_token (*pit).count() == 0)
+        can_fire = false;
+
+    return can_fire;
+  }
+
   // output
   template<typename P, typename T, typename E, typename O>
   friend std::ostream & operator << (std::ostream &, const net<P,T,E,O> &);
