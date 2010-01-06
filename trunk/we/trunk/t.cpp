@@ -221,6 +221,7 @@ main ()
   c.modify_place ("semaphore","Semaphore");
   c.replace_transition ("enterL", "t_enterL");
   c.replace_transition ("enterR", "t_enterR");
+  c.modify_edge ("e_s_el","e_S_el");
 
   print_net (c);
 
