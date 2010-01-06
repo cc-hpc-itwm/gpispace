@@ -262,8 +262,14 @@ main ()
 
   print_net (c);
 
-  c.delete_one_token (c.get_place_id("readyL"),"p");
-  c.delete_all_token (c.get_place_id("readyL"),"q");
+  cout << "delete_one_token (readyL,p) => "
+       << c.delete_one_token (c.get_place_id("readyL"),"p") << endl;
+  cout << "delete_one_token (readyL,x) => "
+       << c.delete_one_token ("readyL","x") << endl;
+  cout << "delete_all_token (readyL,q) => "
+       << c.delete_all_token ("readyL","q") << endl;
+  cout << "delete_all_token (readyL,q) => "
+       << c.delete_all_token ("readyL","q") << endl;
 
   print_net (c);
 

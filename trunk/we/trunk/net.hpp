@@ -899,19 +899,37 @@ public:
     return get_token (get_place_id (place));
   }
 
-  void delete_one_token (const pid_t & pid, const Token & token)
+  const std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
 
-    if (range_it.first != range_it.second)
+    const std::size_t dist (std::distance (range_it.first, range_it.second));
+
+    if (dist > 0)
       omap.erase (range_it.first);
+
+    return (dist > 0) ? 1 : 0;
   }
 
-  void delete_all_token (const pid_t & pid, const Token & token)
+  const std::size_t delete_one_token (const Place & place, const Token & token)
+    throw (no_such)
+  {
+    return delete_one_token (get_place_id (place), token);
+  }
+
+  const std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
 
     omap.erase (range_it.first, range_it.second);
+
+    return std::distance (range_it.first, range_it.second);
+  }
+
+  const std::size_t delete_all_token (const Place & place, const Token & token)
+    throw (no_such)
+  {
+    return delete_all_token (get_place_id (place), token);
   }
 
   // output
