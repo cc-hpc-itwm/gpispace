@@ -246,11 +246,24 @@ main ()
   cout << "put_token (readyL,p) => " 
        << c.put_token ("readyL","p") << endl;
   cout << "put_token (readyL,p) => " 
+       << c.put_token ("readyL","p") << endl;
+  cout << "put_token (readyL,p) => " 
        << c.put_token (c.get_place_id("readyL"),"p") << endl;
+  cout << "put_token (readyL,q) => " 
+       << c.put_token ("readyL","q") << endl;
+  cout << "put_token (readyL,q) => " 
+       << c.put_token ("readyL","q") << endl;
+  cout << "put_token (readyL,q) => " 
+       << c.put_token (c.get_place_id("readyL"),"q") << endl;
   cout << "put_token (readyR,p) => " 
        << c.put_token ("readyR","p") << endl;
   cout << "put_token (readyR,p) => " 
        << c.put_token (c.get_place_id("readyR"),"p") << endl;
+
+  print_net (c);
+
+  c.delete_one_token (c.get_place_id("readyL"),"p");
+  c.delete_all_token (c.get_place_id("readyL"),"q");
 
   print_net (c);
 

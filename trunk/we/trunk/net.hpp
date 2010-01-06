@@ -30,13 +30,6 @@ public:
   ~already_there() throw() {}
 };
 
-class token_not_there : public std::runtime_error
-{
-public:
-  token_not_there () : std::runtime_error("token not on this place") {}
-  ~token_not_there() throw() {}
-};
-
 // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
 // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
 // It follows that an uint64_t is enough for now.
@@ -380,7 +373,10 @@ public:
   typedef boost::bimaps::unordered_multiset_of<Token> token_collection_t;
   typedef boost::bimaps::unordered_multiset_of<PID> place_collection_t;
 
-  typedef typename boost::bimap<token_collection_t, place_collection_t> bimap_t;
+  typedef typename boost::bimap< token_collection_t
+                               , place_collection_t
+                               , boost::bimaps::unordered_multiset_of_relation<>
+                               > bimap_t;
   typedef typename bimap_t::value_type value_t;
   typedef typename bimap_t::right_map::const_iterator place_const_it; 
 };
@@ -445,7 +441,14 @@ private:
   adjacency_matrix::size_t num_transitions;
   adjacency_matrix::size_t num_edges;
 
-  typename omap_t<Token,pid_t>::bimap_t omap;
+  typedef typename omap_t<Token,pid_t>::bimap_t obimap_t;
+  typedef typename omap_t<Token,pid_t>::value_t oval_t;
+  typedef typename obimap_t::const_iterator omap_const_it;
+  typedef typename obimap_t::iterator omap_it;
+  typedef typename std::pair<omap_it,omap_it> omap_range_it;
+
+  obimap_t omap;
+  
 
 public:
   net ( const adjacency_matrix::size_t & places_ = 100
@@ -874,8 +877,7 @@ public:
   // deal with tokens
   const bool put_token (const pid_t & pid, const Token & token)
   {
-    return
-      omap.insert (typename omap_t<Token,pid_t>::value_t (token, pid)).second;
+    return omap.insert (oval_t (token, pid)).second;
   }
 
   const bool put_token (const Place & place, const Token & token)
@@ -895,6 +897,21 @@ public:
     throw (no_such)
   {
     return get_token (get_place_id (place));
+  }
+
+  void delete_one_token (const pid_t & pid, const Token & token)
+  {
+    omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
+
+    if (range_it.first != range_it.second)
+      omap.erase (range_it.first);
+  }
+
+  void delete_all_token (const pid_t & pid, const Token & token)
+  {
+    omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
+
+    omap.erase (range_it.first, range_it.second);
   }
 
   // output
