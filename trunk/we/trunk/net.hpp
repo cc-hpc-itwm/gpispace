@@ -436,6 +436,7 @@ public:
     , num_edges (0)
   {};
 
+  // numbers of elements
   const adjacency_matrix::size_t get_num_places (void) const
   {
     return num_places;
@@ -451,6 +452,7 @@ public:
     return num_edges;
   }
 
+  // get id
   const pid_t & get_place_id (const Place & place) const throw (no_such)
   {
     return pmap.get_id (place);
@@ -467,6 +469,7 @@ public:
     return emap.get_id (edge);
   }
 
+  // get element
   const Place & place (const pid_t & pid) const throw (no_such)
   {
     return pmap.get_elem (pid);
@@ -482,6 +485,7 @@ public:
     return emap.get_elem (eid);
   }
 
+  // add element
   const pid_t add_place (const Place & place) throw (already_there)
   {
     ++max_place;
@@ -568,6 +572,7 @@ public:
     return add_edge_transition_to_place (edge, tid, pid);
   }
 
+  // iterate through elements
   typedef bi_const_it<Place> place_const_it;
   typedef bi_const_it<Transition> transition_const_it;
   typedef bi_const_it<Edge> edge_const_it;
@@ -587,6 +592,7 @@ public:
     return edge_const_it (emap);
   }
 
+  // iterate through adjacencies
   typedef adj_const_it adj_place_const_it;
   typedef adj_const_it adj_transition_const_it;
 
@@ -610,6 +616,7 @@ public:
     return adj_transition_const_it (adj_tp, max_transition, pid, false);
   }
 
+  // get edge info
   const edge_type get_edge_info ( const eid_t & eid
                                 , pid_t & pid
                                 , tid_t & tid
@@ -638,6 +645,7 @@ public:
       }
   }
 
+  // delete elements
   const eid_t & delete_edge (const eid_t & eid)
   {
     const map_pid_it_t out_p (emap_out_p.find (eid));
@@ -747,11 +755,18 @@ public:
     return delete_transition (get_transition_id (transition));
   }
 
+  // modify and replace
   // erased in case of conflict after modification
   const pid_t modify_place (const pid_t & pid, const Place & place)
     throw (no_such, already_there)
   {
     return pmap.modify (pid, place);
+  }
+
+  const pid_t modify_place (const Place & old_value, const Place & new_value)
+    throw (no_such, already_there)
+  {
+    return modify_place (get_place_id (old_value), new_value);
   }
 
   // keept old value in case of conflict after modification
@@ -761,6 +776,69 @@ public:
     return pmap.replace (pid, place);
   }
 
+  const pid_t replace_place (const Place & old_value, const Place & new_value)
+    throw (no_such, already_there)
+  {
+    return replace_place (get_place_id (old_value), new_value);
+  }
+
+  const tid_t modify_transition ( const tid_t & tid
+                                , const Transition & transition
+                                )
+    throw (no_such, already_there)
+  {
+    return tmap.modify (tid, transition);
+  }
+
+  const tid_t modify_transition ( const Transition & old_value
+                                , const Transition & new_value
+                                )
+    throw (no_such, already_there)
+  {
+    return tmap.modify (get_transition_id (old_value), new_value);
+  }
+
+  const tid_t replace_transition ( const tid_t & tid
+                                 , const Transition & transition
+                                 )
+    throw (no_such, already_there)
+  {
+    return tmap.replace (tid, transition);
+  }
+
+  const tid_t replace_transition ( const Transition & old_value
+                                 , const Transition & new_value
+                                 )
+    throw (no_such, already_there)
+  {
+    return tmap.replace (get_transition_id (old_value), new_value);
+  }
+
+  const eid_t modify_edge (const eid_t & eid, const Edge & edge)
+    throw (no_such, already_there)
+  {
+    return emap.modify (eid, edge);
+  }
+
+  const eid_t modify_edge (const Edge & old_value, const Edge & new_value)
+    throw (no_such, already_there)
+  {
+    return emap.modify (get_edge_id (old_value), new_value);
+  }
+
+  const eid_t replace_edge (const eid_t & eid, const Edge & edge)
+    throw (no_such, already_there)
+  {
+    return emap.replace (eid, edge);
+  }
+
+  const eid_t replace_edge (const Edge & old_value, const Edge & new_value)
+    throw (no_such, already_there)
+  {
+    return emap.replace (get_edge_id (old_value), new_value);
+  }
+
+  // output
   template<typename P, typename T, typename E, typename O>
   friend std::ostream & operator << (std::ostream &, const net<P,T,E,O> &);
 };

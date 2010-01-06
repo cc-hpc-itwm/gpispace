@@ -216,5 +216,15 @@ main ()
 
   cout << c;
 
+  cout << "#### MODIFIED" << endl;
+
+  c.modify_place ("semaphore","Semaphore");
+  c.replace_transition ("enterL", "t_enterL");
+  c.replace_transition ("enterR", "t_enterR");
+
+  print_net (c);
+
+  cout << c;
+
   return EXIT_SUCCESS;
 }
