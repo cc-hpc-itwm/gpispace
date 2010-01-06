@@ -11,6 +11,8 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 
+#include <boost/bimap/support/lambda.hpp>
+
 // exceptions
 class no_such : public std::runtime_error
 {
@@ -114,6 +116,34 @@ public:
   }
 
   const void erase (const handle_t::T & i) { bimap.right.erase (i); }
+
+  const handle_t::T modify (const handle_t::T & i, const T & x)
+    throw (no_such, already_there)
+  {
+    typename bimap_t::right_map::iterator it (bimap.right.find (i));
+
+    if (it == bimap.right.end())
+      throw no_such ("index for " + description);
+
+    if (bimap.right.modify_data (it, boost::bimaps::_data = x) == false)
+      throw already_there (description + " after modify");
+
+    return i;
+  }
+
+  const handle_t::T replace (const handle_t::T & i, const T & x)
+    throw (no_such, already_there)
+  {
+    typename bimap_t::right_map::iterator it (bimap.right.find (i));
+
+    if (it == bimap.right.end())
+      throw no_such ("index for " + description);
+
+    if (bimap.right.replace_data (it, x) == false)
+      throw already_there (description + " after replace");
+
+    return i;
+  }
 
   template<typename U>
   friend std::ostream & operator << (std::ostream &, const auto_bimap<U> &);
@@ -715,6 +745,20 @@ public:
     throw (no_such)
   {
     return delete_transition (get_transition_id (transition));
+  }
+
+  // erased in case of conflict after modification
+  const pid_t modify_place (const pid_t & pid, const Place & place)
+    throw (no_such, already_there)
+  {
+    return pmap.modify (pid, place);
+  }
+
+  // keept old value in case of conflict after modification
+  const pid_t replace_place (const pid_t & pid, const Place & place)
+    throw (no_such, already_there)
+  {
+    return pmap.replace (pid, place);
   }
 
   template<typename P, typename T, typename E, typename O>

@@ -66,6 +66,8 @@ int
 main ()
 {
   {
+    cout << endl << "**** CONSTRUCTING AND DELETING ****" << endl;
+
     pnet_t n;
 
     place_t p;
@@ -96,6 +98,84 @@ main ()
   cout << "# cons = " << cons << endl;
   cout << "# decons = " << decons << endl;
   cout << "# copy = " << copy << endl;
+
+  {
+    cout << endl << "**** MODIFYING ****" << endl;
+
+    pnet_t n;
+
+    place_t p;
+
+    cout << "add_place => " << n.add_place (p) << endl;
+    cout << "add_place => " << n.add_place (p) << endl;
+
+    print (n);
+
+    cout << "** MODIFY 0" << endl;
+
+    try
+      {
+        n.modify_place (0, p);
+      }
+    catch (already_there)
+      {
+        cout << "MODIFY: NO SUCCESS" << endl;
+      }
+
+    print (n);
+
+    cout << "** MODIFY 1" << endl;
+
+    try
+      {
+        n.modify_place (1, p);
+      }
+    catch (already_there)
+      {
+        cout << "MODIFY: NO SUCCESS" << endl;
+      }
+
+    print (n);
+  }
+
+  {
+    cout << endl << "**** REPLACING ****" << endl;
+
+    pnet_t n;
+
+    place_t p;
+
+    cout << "add_place => " << n.add_place (p) << endl;
+    cout << "add_place => " << n.add_place (p) << endl;
+
+    print (n);
+
+    cout << "** REPLACE 0" << endl;
+
+    try
+      {
+        n.replace_place (0, p);
+      }
+    catch (already_there)
+      {
+        cout << "REPLACE: NO SUCCESS" << endl;
+      }
+
+    print (n);
+
+    cout << "** REPLACE 1" << endl;
+
+    try
+      {
+        n.replace_place (1, p);
+      }
+    catch (already_there)
+      {
+        cout << "REPLACE: NO SUCCESS" << endl;
+      }
+
+    print (n);
+  }
 
   return EXIT_SUCCESS;
 }
