@@ -166,7 +166,11 @@ private:
   const it end;
   const std::size_t count_;
 public:
-  bi_const_it (const auto_bimap<T> & bm) : pos (bm.begin()), end (bm.end()) {}
+  bi_const_it (const auto_bimap<T> & bm) 
+    : pos (bm.begin())
+    , end (bm.end()) 
+    , count_(std::distance(pos, end))
+  {}
 
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
