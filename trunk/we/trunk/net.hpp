@@ -808,10 +808,10 @@ public:
     return pmap.modify (pid, place);
   }
 
-  const pid_t modify_place (const Place & old_value, const Place & new_value)
+  const pid_t modify_place (const Place & old_place, const Place & new_place)
     throw (no_such, already_there)
   {
-    return modify_place (get_place_id (old_value), new_value);
+    return modify_place (get_place_id (old_place), new_place);
   }
 
   // keept old value in case of conflict after modification
@@ -821,10 +821,10 @@ public:
     return pmap.replace (pid, place);
   }
 
-  const pid_t replace_place (const Place & old_value, const Place & new_value)
+  const pid_t replace_place (const Place & old_place, const Place & new_place)
     throw (no_such, already_there)
   {
-    return replace_place (get_place_id (old_value), new_value);
+    return replace_place (get_place_id (old_place), new_place);
   }
 
   const tid_t modify_transition ( const tid_t & tid
@@ -835,12 +835,12 @@ public:
     return tmap.modify (tid, transition);
   }
 
-  const tid_t modify_transition ( const Transition & old_value
-                                , const Transition & new_value
+  const tid_t modify_transition ( const Transition & old_transition
+                                , const Transition & new_transition
                                 )
     throw (no_such, already_there)
   {
-    return tmap.modify (get_transition_id (old_value), new_value);
+    return tmap.modify (get_transition_id (old_transition), new_transition);
   }
 
   const tid_t replace_transition ( const tid_t & tid
@@ -851,12 +851,12 @@ public:
     return tmap.replace (tid, transition);
   }
 
-  const tid_t replace_transition ( const Transition & old_value
-                                 , const Transition & new_value
+  const tid_t replace_transition ( const Transition & old_transition
+                                 , const Transition & new_transition
                                  )
     throw (no_such, already_there)
   {
-    return tmap.replace (get_transition_id (old_value), new_value);
+    return tmap.replace (get_transition_id (old_transition), new_transition);
   }
 
   const eid_t modify_edge (const eid_t & eid, const Edge & edge)
@@ -865,10 +865,10 @@ public:
     return emap.modify (eid, edge);
   }
 
-  const eid_t modify_edge (const Edge & old_value, const Edge & new_value)
+  const eid_t modify_edge (const Edge & old_edge, const Edge & new_edge)
     throw (no_such, already_there)
   {
-    return emap.modify (get_edge_id (old_value), new_value);
+    return emap.modify (get_edge_id (old_edge), new_edge);
   }
 
   const eid_t replace_edge (const eid_t & eid, const Edge & edge)
@@ -877,10 +877,10 @@ public:
     return emap.replace (eid, edge);
   }
 
-  const eid_t replace_edge (const Edge & old_value, const Edge & new_value)
+  const eid_t replace_edge (const Edge & old_edge, const Edge & new_edge)
     throw (no_such, already_there)
   {
-    return emap.replace (get_edge_id (old_value), new_value);
+    return emap.replace (get_edge_id (old_edge), new_edge);
   }
 
   // deal with tokens
@@ -930,15 +930,41 @@ public:
   {
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
 
+    std::size_t k (std::distance (range_it.first, range_it.second));
+
     omap.erase (range_it.first, range_it.second);
 
-    return std::distance (range_it.first, range_it.second);
+    return k;
   }
 
   const std::size_t delete_all_token (const Place & place, const Token & token)
     throw (no_such)
   {
     return delete_all_token (get_place_id (place), token);
+  }
+
+  // WORK HERE: implement me more efficient
+  const std::size_t replace_one_token
+  (const pid_t & pid, const Token & old_token, const Token & new_token)
+  {
+    const std::size_t k (delete_one_token (pid, old_token));
+
+    if (k > 0)
+      put_token (pid, new_token);
+
+    return k;
+  }
+
+  // WORK HERE: implement me more efficient
+  const std::size_t replace_all_token
+  (const pid_t & pid, const Token & old_token, const Token & new_token)
+  {
+    const std::size_t k (delete_all_token (pid, old_token));
+
+    for (std::size_t i (0); i < k; ++i)
+      put_token (pid, new_token);
+
+    return k;
   }
 
   // output

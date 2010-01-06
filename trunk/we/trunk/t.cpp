@@ -275,5 +275,23 @@ main ()
 
   cout << "num_token (readyL) => " << c.get_token("readyL").count() << endl;
 
+  cout << "replace_one_token (readyL,p->m) => " 
+       << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
+
+  print_net (c);
+
+  cout << "replace_one_token (readyL,p->m) => " 
+       << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
+  cout << "replace_one_token (readyL,p->m) => " 
+       << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
+  cout << "replace_one_token (readyL,q->m) => " 
+       << c.replace_one_token (c.get_place_id ("readyL"),"q","m") << endl;
+  cout << "replace_all_token (readyL,q->m) => " 
+       << c.replace_all_token (c.get_place_id ("readyL"),"q","m") << endl;
+  cout << "replace_all_token (readyR,p->n) => " 
+       << c.replace_all_token (c.get_place_id ("readyR"),"p","n") << endl;
+
+  print_net (c);
+
   return EXIT_SUCCESS;
 }
