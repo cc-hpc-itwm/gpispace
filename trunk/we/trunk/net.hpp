@@ -457,7 +457,6 @@ private:
   typedef typename std::pair<omap_it,omap_it> omap_range_it;
 
   obimap_t omap;
-  
 
 public:
   net ( const adjacency_matrix::size_t & places_ = 100
@@ -941,7 +940,7 @@ public:
     return delete_all_token (get_place_id (place), token);
   }
 
-  // WORK HERE: implement me more efficient
+  // WORK HERE: implement more efficient
   const std::size_t replace_one_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
@@ -953,7 +952,7 @@ public:
     return k;
   }
 
-  // WORK HERE: implement me more efficient
+  // WORK HERE: implement more efficient
   const std::size_t replace_all_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
@@ -966,7 +965,6 @@ public:
   }
 
   // FIRE
-
   const bool can_fire (const tid_t & tid) const
   {
     bool can_fire = true;
@@ -989,10 +987,9 @@ public:
 template<typename I>
 std::ostream & operator << (std::ostream & s, const std::map<I, I> & m)
 {
-  for ( typename std::map<I, I>::const_iterator it (m.begin())
-      ; it != m.end()
-      ; ++it
-      )
+  typedef typename std::map<I, I>::const_iterator IT;
+
+  for (IT it (m.begin()); it != m.end(); ++it)
     s << " -- " << it->first << " => " << it -> second << std::endl;
 
   return s;
