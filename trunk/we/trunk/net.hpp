@@ -185,7 +185,7 @@ public:
     val = NULL;
   }
 
-  const handle_t::T & get_adjacent (const size_t & r, const size_t & c) const
+  const handle_t::T & adjacent (const size_t & r, const size_t & c) const
     throw (std::out_of_range)
   {
     if (r > row - 1)
@@ -302,8 +302,8 @@ private:
 
   inline bool is_invalid (void)
   {
-    adj = (fix_is_fst == true) ? m.get_adjacent (fix, pos)
-                               : m.get_adjacent (pos, fix)
+    adj = (fix_is_fst == true) ? m.adjacent (fix, pos)
+                               : m.adjacent (pos, fix)
                                ;
 
     return (adj == handle_t().invalid());
@@ -608,7 +608,7 @@ public:
       }
   }
 
-  const eid_t delete_edge (const eid_t & eid)
+  const eid_t & delete_edge (const eid_t & eid)
   {
     const map_pid_it_t out_p (emap_out_p.find (eid));
 
@@ -658,12 +658,12 @@ public:
     return eid;
   }
 
-  const eid_t delete_edge (const Edge & edge) throw (no_such)
+  const eid_t & delete_edge (const Edge & edge) throw (no_such)
   {
     return delete_edge (get_edge_id (edge));
   }
 
-  const pid_t delete_place (const pid_t & pid) throw (no_such)
+  const pid_t & delete_place (const pid_t & pid) throw (no_such)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
@@ -684,12 +684,12 @@ public:
     return pid;
   }
 
-  const pid_t delete_place (const Place & place) throw (no_such)
+  const pid_t & delete_place (const Place & place) throw (no_such)
   {
     return delete_place (get_place_id (place));
   }
 
-  const tid_t delete_transition (const tid_t & tid) throw (no_such)
+  const tid_t & delete_transition (const tid_t & tid) throw (no_such)
   {
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
@@ -711,7 +711,7 @@ public:
     
   }
 
-  const tid_t delete_transition (const Transition & transition)
+  const tid_t & delete_transition (const Transition & transition)
     throw (no_such)
   {
     return delete_transition (get_transition_id (transition));
