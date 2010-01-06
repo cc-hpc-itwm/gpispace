@@ -930,11 +930,9 @@ public:
   {
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
 
-    std::size_t k (std::distance (range_it.first, range_it.second));
-
     omap.erase (range_it.first, range_it.second);
 
-    return k;
+    return std::distance (range_it.first, range_it.second);
   }
 
   const std::size_t delete_all_token (const Place & place, const Token & token)
