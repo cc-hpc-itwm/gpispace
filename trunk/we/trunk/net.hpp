@@ -101,17 +101,6 @@ public:
     return it->second;
   }
 
-  T & get_elem (const handle_t::T & i) throw (no_such)
-  {
-    typename bimap_t::right_map::iterator it (bimap.right.find (i));
-
-    if (it == bimap.right.end())
-      throw no_such ("index for " + description);
-
-    return const_cast<T &>(it->second);
-    //     ^^^^^^^^^^UGLY!!
-  }
-
   const handle_t::T add (const T & x) throw (already_there)
   {
     if (bimap.left.find (x) != bimap.left.end())
@@ -156,21 +145,6 @@ public:
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
   const handle_t::T & operator * (void) const { return pos->right; }
-};
-
-template<typename T>
-struct bi_it
-{
-private:
-  typedef typename auto_bimap<T>::iterator it;
-  it pos;
-  const it end;
-public:
-  bi_it (const auto_bimap<T> & bm) : pos (bm.begin()), end (bm.end()) {}
-
-  const bool has_more (void) const { return (pos != end) ? true : false; }
-  void operator ++ (void) { ++pos; }
-  handle_t::T & operator * (void) { return pos->right; }
 };
 
 // adjacency_matrix, grows on demand
@@ -478,21 +452,6 @@ public:
     return emap.get_elem (eid);
   }
 
-   Place & place (const pid_t & pid) throw (no_such)
-   {
-   return pmap.get_elem (pid);
-   }
-
-  Transition & transition (const tid_t & tid) throw (no_such)
-  {
-    return tmap.get_elem (tid);
-  }
-
-  Edge & edge (const eid_t & eid) throw (no_such)
-  {
-    return emap.get_elem (eid);
-  }
-
   const pid_t add_place (const Place & place) throw (already_there)
   {
     ++max_place;
@@ -597,26 +556,6 @@ public:
   {
     return edge_const_it (emap);
   }
-
-  typedef bi_it<Place> place_it;
-  typedef bi_it<Transition> transition_it;
-  typedef bi_it<Edge> edge_it;
-
-  // WORK HERE: doesn't work, WHY?
-//   place_it places (void)
-//   {
-//     return place_it (pmap);
-//   }
-
-//   transition_it transitions (void)
-//   {
-//     return transition_it (tmap);
-//   }
-
-//   edge_it edges (void)
-//   {
-//     return edge_it (emap);
-//   }
 
   typedef adj_const_it adj_place_const_it;
   typedef adj_const_it adj_transition_const_it;
