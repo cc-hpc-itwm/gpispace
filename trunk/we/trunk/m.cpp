@@ -5,46 +5,159 @@
 #include <string>
 
 #include <net.hpp>
+#include <map>
 
 using std::cout;
 using std::endl;
 
-static unsigned long cons (0);
-static unsigned long decons (0);
-static unsigned long copy (0);
+typedef std::map<std::string, unsigned long> cntmap_t;
 
-class place_t
+static cntmap_t cntmap;
+
+static void print_cnt ()
+{
+  cout << "*** CNTMAP:" << endl;
+
+  for (cntmap_t::const_iterator it (cntmap.begin()); it != cntmap.end(); ++it)
+    cout << it->first << " => " << it->second << endl;
+}
+
+class copy_counted
 {
 private:
-  int x;
+  std::string descr_;
+  unsigned long copy_count_;
 public:
-  void out (std::string msg) { cout << msg << ": " << x << endl; }
-
-  place_t () : x(0) { out ("place_t()"); ++cons; }
-  place_t (const place_t & p) { x = p.x + 1; out ("copy place_t()"); ++copy; }
-  ~place_t () { out ("~place_t()"); ++decons; }
-
-  const int get (void) const { return x; }
-
-  bool operator == (const place_t & other) const 
+  void out (std::string msg)
   {
-    cout << "compare this.x == " << x
-         << " with other.x == " << other.x
-         << endl;
+    cout << msg << ": " << copy_count_ << endl;
 
-    return (x == other.x);
+    ++cntmap[msg];
+  }
+
+  copy_counted (std::string descr)
+    : descr_(descr)
+    , copy_count_(0)
+  {
+    out ("cons '" + descr_ + "'");
+
+    ++cntmap["CONS"];
+  }
+
+  ~copy_counted ()
+  {
+    out ("decons '" + descr_ + "'");
+
+    ++cntmap["DECONS"];
+  }
+
+  copy_counted (const copy_counted & cc)
+  {
+    copy_count_ = cc.copy_count_ + 1;
+    descr_ = "copy of " + cc.descr_;
+    out ("copy '" + cc.descr_ + "'");
+
+    ++cntmap["COPY"];
+  }
+
+  const unsigned long copy_count (void) const
+  {
+    return copy_count_;
   }
 };
 
-static inline const std::size_t hash_value (const place_t & p)
+class internal_place_t : public copy_counted
 {
-  return p.get();
+public:
+  internal_place_t () : copy_counted("internal_place_t") {}
+
+  bool operator == (const internal_place_t & other) const
+  {
+    cout << "internal_place: compare this.copy_count == " << copy_count()
+         << " with other.x == " << other.copy_count()
+         << endl;
+
+    return (copy_count() == other.copy_count());
+  }
+};
+
+static inline const std::size_t hash_value (const internal_place_t & p)
+{
+  return p.copy_count();
 }
 
-std::ostream & operator << (std::ostream & s, const place_t & p)
+std::ostream & operator << (std::ostream & s, const internal_place_t & p)
 {
-  return s << "place_t: copy count = " << p.get();
+  return s << "internal_place_t: copy count = " << p.copy_count();
 }
+
+class wrap_place_t : public copy_counted
+{
+private:
+  internal_place_t p_;
+public:
+  wrap_place_t () : copy_counted ("wrap_place_t"), p_() {}
+
+  const internal_place_t p (void) const { return p_; }
+
+  bool operator == (const wrap_place_t & other) const
+  {
+    cout << "wrap_place_t: compare this.p_ == " << p()
+         << " with other.p_ == " << other.p()
+         << endl;
+
+    return (p() == other.p());
+  }
+};
+
+static inline const std::size_t hash_value (const wrap_place_t & p)
+{
+  return hash_value(p.p());
+}
+
+std::ostream & operator << (std::ostream & s, const wrap_place_t & p)
+{
+  return s << p.p();
+}
+
+class ptr_place_t : public copy_counted
+{
+private:
+  internal_place_t * p_;
+public:
+  ptr_place_t () : copy_counted ("ptr_place_t"), p_(new internal_place_t()) {}
+  ~ptr_place_t () { if (copy_count()==0) delete p_; }
+
+  const internal_place_t * p (void) const { return p_; }
+
+  bool operator == (const ptr_place_t & other) const
+  {
+    cout << "ptr_place_t: compare *this.p_ == " << *p()
+         << " with *other.p_ == " << *(other.p())
+         << endl;
+
+    return (*(p()) == *(other.p()));
+  }
+};
+
+static inline const std::size_t hash_value (const ptr_place_t & p)
+{
+  return hash_value(*(p.p()));
+}
+
+std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
+{
+  return s << *(p.p());
+}
+
+// use internal directly
+//typedef internal_place_t place_t;
+
+// wrapped
+//typedef wrap_place_t place_t;
+
+// indirect
+typedef ptr_place_t place_t;
 
 typedef std::string transition_t;
 typedef std::string edge_t;
@@ -62,120 +175,171 @@ static void print (const pnet_t & n)
   cout << "]" << endl;
 }
 
+static void add (pnet_t & n, const place_t & p)
+{
+  cout << "add " << p << " => ";
+
+  try
+    {
+      cout << n.add_place (p);
+    }
+  catch (already_there)
+    {
+      cout << "ALREADY_THERE";
+    }
+
+  cout << endl;
+}
+
+static void del (pnet_t & n, const place_t & p)
+{
+  cout << "del " << p << " => ";
+
+  try
+    {
+      cout << n.delete_place (p);
+    }
+  catch (no_such)
+    {
+      cout << "NO SUCH";
+    }
+
+  cout << endl;
+}
+
+static void del_pid (pnet_t & n, const pnet_t::pid_t & pid)
+{
+  cout << "del_pid " << pid << " => ";
+
+  try
+    {
+      cout << n.delete_place (pid);
+    }
+  catch (no_such)
+    {
+      cout << "NO SUCH";
+    }
+
+  cout << endl;
+}
+
+static void mod (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
+{
+  cout << "modify " << pid << " -> " << p << " => ";
+
+  try
+    {
+      cout << n.modify_place (pid, p);
+    }
+  catch (already_there)
+    {
+      cout << "ALREADY THERE";
+    }
+  catch (no_such)
+    {
+      cout << "NO SUCH";
+    }
+
+  cout << endl;
+}
+
+static void rep (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
+{
+  cout << "replace " << pid << " -> " << p << " => ";
+
+  try
+    {
+      cout << n.replace_place (pid, p);
+    }
+  catch (already_there)
+    {
+      cout << "ALREADY THERE";
+    }
+  catch (no_such)
+    {
+      cout << "NO SUCH";
+    }
+
+  cout << endl;
+}
+
+static void cons_and_delete (void)
+{
+  cout << endl << "**** CONSTRUCT AND DELETE ****" << endl;
+
+  pnet_t n;
+
+  place_t p;
+
+  add (n, p);
+  add (n, p);
+
+  print (n);
+
+  del (n, p);
+
+  print (n);
+
+  for (pnet_t::place_const_it pit (n.places()); pit.has_more(); ++pit)
+    del_pid (n, *pit);
+
+  print (n);
+}
+
+static void modify (void)
+{
+  cout << endl << "**** MODIFY ****" << endl;
+
+  cntmap.clear();
+
+  pnet_t n;
+
+  place_t p;
+
+  add (n, p);
+  add (n, p);
+
+  print (n);
+
+  mod (n, 0, p);
+
+  print (n);
+
+  mod (n, 1, p);
+
+  print (n);
+}
+
+static void replace (void)
+{
+  cout << endl << "**** REPLACE ****" << endl;
+
+  pnet_t n;
+
+  place_t p;
+
+  add (n, p);
+  add (n, p);
+
+  print (n);
+
+  rep (n, 0, p);
+
+  print (n);
+
+  rep (n, 1, p);
+
+  print (n);
+}
+
 int
 main ()
 {
-  {
-    cout << endl << "**** CONSTRUCTING AND DELETING ****" << endl;
+  cntmap.clear(); cons_and_delete(); print_cnt();
 
-    pnet_t n;
+  cntmap.clear(); modify(); print_cnt();
 
-    place_t p;
-
-    cout << "add_place => " << n.add_place (p) << endl;
-    cout << "add_place => " << n.add_place (p) << endl;
-
-    print (n);
-
-    try
-      {
-        cout << "del_place => " << n.delete_place (p) << endl;
-      }
-    catch (no_such)
-      {
-        cout << "NOT THERE!" << endl;
-      }
-
-    print (n);
-
-    for (pnet_t::place_const_it pit (n.places()); pit.has_more(); ++pit)
-      n.delete_place (*pit);
-
-    print (n);
-  }
-
-  cout << "#" << endl;
-  cout << "# cons = " << cons << endl;
-  cout << "# decons = " << decons << endl;
-  cout << "# copy = " << copy << endl;
-
-  {
-    cout << endl << "**** MODIFYING ****" << endl;
-
-    pnet_t n;
-
-    place_t p;
-
-    cout << "add_place => " << n.add_place (p) << endl;
-    cout << "add_place => " << n.add_place (p) << endl;
-
-    print (n);
-
-    cout << "** MODIFY 0" << endl;
-
-    try
-      {
-        n.modify_place (0, p);
-      }
-    catch (already_there)
-      {
-        cout << "MODIFY: NO SUCCESS" << endl;
-      }
-
-    print (n);
-
-    cout << "** MODIFY 1" << endl;
-
-    try
-      {
-        n.modify_place (1, p);
-      }
-    catch (already_there)
-      {
-        cout << "MODIFY: NO SUCCESS" << endl;
-      }
-
-    print (n);
-  }
-
-  {
-    cout << endl << "**** REPLACING ****" << endl;
-
-    pnet_t n;
-
-    place_t p;
-
-    cout << "add_place => " << n.add_place (p) << endl;
-    cout << "add_place => " << n.add_place (p) << endl;
-
-    print (n);
-
-    cout << "** REPLACE 0" << endl;
-
-    try
-      {
-        n.replace_place (0, p);
-      }
-    catch (already_there)
-      {
-        cout << "REPLACE: NO SUCCESS" << endl;
-      }
-
-    print (n);
-
-    cout << "** REPLACE 1" << endl;
-
-    try
-      {
-        n.replace_place (1, p);
-      }
-    catch (already_there)
-      {
-        cout << "REPLACE: NO SUCCESS" << endl;
-      }
-
-    print (n);
-  }
+  cntmap.clear(); replace(); print_cnt();
 
   return EXIT_SUCCESS;
 }
