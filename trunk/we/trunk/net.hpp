@@ -166,9 +166,9 @@ private:
   const it end;
   const std::size_t count_;
 public:
-  bi_const_it (const auto_bimap<T> & bm) 
+  bi_const_it (const auto_bimap<T> & bm)
     : pos (bm.begin())
-    , end (bm.end()) 
+    , end (bm.end())
     , count_(std::distance(pos, end))
   {}
 
@@ -212,7 +212,7 @@ public:
   {
     if (val != NULL)
       delete[] val;
-    
+
     val = NULL;
   }
 
@@ -351,7 +351,7 @@ public:
                , const adjacency_matrix::size_t & max_
                , const handle_t::T & fix_
                , const bool & fix_is_fst_
-               ) 
+               )
   : m (m_)
   , max (max_)
   , fix (fix_)
@@ -384,7 +384,7 @@ public:
                                , boost::bimaps::unordered_multiset_of_relation<>
                                > bimap_t;
   typedef typename bimap_t::value_type value_t;
-  typedef typename bimap_t::right_map::const_iterator place_const_it; 
+  typedef typename bimap_t::right_map::const_iterator place_const_it;
 };
 
 // iterate through the tokens on a place
@@ -726,7 +726,7 @@ public:
         const pid_t pid (in_p->second);
 
         assert (adj_tp.adjacent (tid, pid) == eid);
-        
+
         adj_tp.adjacent (tid, pid) = handle_t().invalid();
 
         emap_in_p.erase (in_p);
@@ -790,7 +790,7 @@ public:
     --num_transitions;
 
     return tid;
-    
+
   }
 
   const tid_t & delete_transition (const Transition & transition)
@@ -1006,10 +1006,10 @@ std::ostream & operator << (std::ostream & s, const net<P,T,E,O> & n)
   s << "bimap (token):" << std::endl;
 
   for (BOOST_AUTO(tp, n.omap.begin()); tp != n.omap.end(); ++tp)
-    s << "on place " 
+    s << "on place "
       << tp->right << " [" << n.place (tp->right) << "]"
-      << ": " 
-      << tp->left 
+      << ": "
+      << tp->left
       << std::endl;
 
   s << "emap_in_p:" << std::endl << n.emap_in_p;
