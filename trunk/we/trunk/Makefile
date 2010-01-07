@@ -6,9 +6,9 @@ CXX_INCLUDE += ${BOOST_ROOT}/include
 
 .PHONY: all
 
-all: t.bin b.bin m.bin
+all: t.bin b.bin m.bin bi.bin
 
-%.bin: %.cpp net.hpp
+%.bin: %.cpp net.hpp bijection.hpp
 	$(CXX) $(CXX_FLAGS) $(addprefix -I,$(CXX_INCLUDE)) $< -o $@
 
 %.bin.gprof: %.bin
