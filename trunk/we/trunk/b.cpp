@@ -9,6 +9,8 @@
 
 #include <net.hpp>
 
+#include <bijection.hpp>
+
 typedef unsigned int place_t;
 typedef unsigned int transition_t;
 typedef std::pair<unsigned int, unsigned int> pair_t;
@@ -19,6 +21,8 @@ static const unsigned int nplace (100);
 static const unsigned int ntrans (100);
 static const unsigned int factor (10);
 static const unsigned int token (1000);
+
+static const unsigned int bisize (1000000);
 
 static inline double current_time()
 {
@@ -173,6 +177,92 @@ main ()
       std::cout << "p_out = " << p_out << std::endl;
       std::cout << "e_in = " << e_in << std::endl;
       std::cout << "e_out = " << e_out << std::endl;
+    }
+
+    malloc_stats();
+  }
+
+  malloc_stats();
+
+  {
+    bijection::bijection<place_t> bi;
+
+    {
+      Timer_t timer ("unsafe insert elements to bijection", bisize);
+      
+      for (unsigned int i(0); i < bisize; ++i)
+        bi.unsafe_insert (i);
+    }
+
+    {
+      Timer_t timer ("get_id from bijection", bisize);
+
+      bijection::id_t s (0);
+      
+      for (unsigned int i(0); i < bisize; ++i)
+        s += bi.get_id (i);
+
+      std::cout << "s = " << s << std::endl;
+    }
+
+    {
+      Timer_t timer ("get_elem from bijection", bisize);
+
+      unsigned int s (0);
+      
+      for (bijection::id_t i(0); i < bisize; ++i)
+        s += bi.get_elem (i);
+
+      std::cout << "s = " << s << std::endl;
+    }
+
+    {
+      Timer_t timer ("erase from bijection", bisize);
+
+      for (unsigned int i(0); i < bisize; ++i)
+        bi.erase (i);
+    }
+
+    malloc_stats();
+  }
+
+  {
+    auto_bimap<place_t> bm("place_t");
+
+    {
+      Timer_t timer ("insert elements to auto_bimap", bisize);
+      
+      for (unsigned int i(0); i < bisize; ++i)
+        bm.add (i);
+    }
+
+    {
+      Timer_t timer ("get_id from auto_bimap", bisize);
+
+      handle_t::T s (0);
+      
+      for (unsigned int i(0); i < bisize; ++i)
+        s += bm.get_id (i);
+
+      std::cout << "s = " << s << std::endl;
+    }
+
+    {
+      Timer_t timer ("get_elem from auto_bimap", bisize);
+
+      unsigned int s (0);
+      
+      for (handle_t::T i(0); i < bisize; ++i)
+        s += bm.get_elem (i);
+
+      std::cout << "s = " << s << std::endl;
+    }
+
+    {
+      Timer_t timer ("erase from auto_bimap", bisize);
+
+      for (unsigned int i(0); i < bisize; ++i)
+        bm.erase (bm.get_id (i));
     }
 
     malloc_stats();

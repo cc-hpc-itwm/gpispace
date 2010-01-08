@@ -75,8 +75,8 @@ public:
 
   bool operator == (const internal_place_t & other) const
   {
-    cout << "internal_place: compare this.copy_count == " << copy_count()
-         << " with other.x == " << other.copy_count()
+    cout << "internal_place: this.copy_count " << copy_count()
+         << " ==? other.x " << other.copy_count()
          << endl;
 
     return (copy_count() == other.copy_count());
@@ -84,8 +84,8 @@ public:
 
   bool operator < (const internal_place_t & other) const
   {
-    cout << "internal_place: compare this.copy_count < " << copy_count()
-         << " with other.x == " << other.copy_count()
+    cout << "internal_place: this.copy_count " << copy_count()
+         << " <? other.x " << other.copy_count()
          << endl;
 
     return (copy_count() < other.copy_count());
@@ -117,35 +117,6 @@ std::ostream & operator << (std::ostream & s, const internal_place_t & p)
   return s << "internal_place_t: copy count = " << p.copy_count();
 }
 
-class wrap_place_t : public copy_counted
-{
-private:
-  internal_place_t p_;
-public:
-  wrap_place_t () : copy_counted ("wrap_place_t"), p_() {}
-
-  const internal_place_t p (void) const { return p_; }
-
-  bool operator == (const wrap_place_t & other) const
-  {
-    cout << "wrap_place_t: compare this.p_ == " << p()
-         << " with other.p_ == " << other.p()
-         << endl;
-
-    return (p() == other.p());
-  }
-};
-
-static inline const std::size_t hash_value (const wrap_place_t & p)
-{
-  return hash_value(p.p());
-}
-
-std::ostream & operator << (std::ostream & s, const wrap_place_t & p)
-{
-  return s << p.p();
-}
-
 class ptr_place_t : public copy_counted
 {
 private:
@@ -158,11 +129,20 @@ public:
 
   bool operator == (const ptr_place_t & other) const
   {
-    cout << "ptr_place_t: compare *this.p_ == " << *p()
-         << " with *other.p_ == " << *(other.p())
+    cout << "ptr_place_t: *this.p_ " << *p()
+         << " ==? *other.p_ " << *(other.p())
          << endl;
 
     return (*(p()) == *(other.p()));
+  }
+
+  bool operator < (const ptr_place_t & other) const
+  {
+    cout << "ptr_place_t: *this.p_ " << *p()
+         << " <? *other.p_ " << *(other.p())
+         << endl;
+
+    return (*(p()) < *(other.p()));
   }
 };
 
@@ -171,19 +151,31 @@ static inline const std::size_t hash_value (const ptr_place_t & p)
   return hash_value(*(p.p()));
 }
 
+namespace std 
+{
+  namespace tr1
+  {
+    template <>
+    struct hash<ptr_place_t> : public unary_function<ptr_place_t, size_t>
+    {
+      size_t operator()(const ptr_place_t & p) const
+      {
+        return (p.p())->copy_count();
+      }
+    };
+  }
+}
+
 std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
 {
   return s << *(p.p());
 }
 
 // use internal directly
-typedef internal_place_t place_t;
-
-// wrapped
-//typedef wrap_place_t place_t;
+// typedef internal_place_t place_t;
 
 // indirect
-// typedef ptr_place_t place_t;
+typedef ptr_place_t place_t;
 
 typedef std::string transition_t;
 typedef std::string edge_t;
