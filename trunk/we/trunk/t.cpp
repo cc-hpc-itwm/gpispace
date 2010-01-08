@@ -100,17 +100,17 @@ static void print_net (const pnet_t & n)
       cout << endl;
     }
 
-//   cout << "*** tokens" << endl;
+  cout << "*** tokens" << endl;
 
-//   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-//     {
-//       cout << "on " << place (n, *p) << ":";
+  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+    {
+      cout << "on " << place (n, *p) << ":";
 
-//       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-//         cout << " " << *tp;
+      for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+        cout << " " << *tp;
 
-//       cout << endl;
-//     }
+      cout << endl;
+    }
 
   cout << n;
 }
