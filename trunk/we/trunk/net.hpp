@@ -813,7 +813,7 @@ public:
     return modify_place (get_place_id (old_place), new_place);
   }
 
-  // keept old value in case of conflict after modification
+  // kept old value in case of conflict after modification
   const pid_t replace_place (const pid_t & pid, const Place & place)
     throw (no_such, already_there)
   {
