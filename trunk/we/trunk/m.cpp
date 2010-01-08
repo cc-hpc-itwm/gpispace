@@ -7,6 +7,8 @@
 #include <net.hpp>
 #include <map>
 
+#include <tr1/unordered_map>
+
 using std::cout;
 using std::endl;
 
@@ -79,11 +81,35 @@ public:
 
     return (copy_count() == other.copy_count());
   }
+
+  bool operator < (const internal_place_t & other) const
+  {
+    cout << "internal_place: compare this.copy_count < " << copy_count()
+         << " with other.x == " << other.copy_count()
+         << endl;
+
+    return (copy_count() < other.copy_count());
+  }
 };
 
 static inline const std::size_t hash_value (const internal_place_t & p)
 {
   return p.copy_count();
+}
+
+namespace std 
+{
+  namespace tr1
+  {
+    template <>
+    struct hash<internal_place_t> : public unary_function<internal_place_t, size_t>
+    {
+      size_t operator()(const internal_place_t & p) const
+      {
+        return p.copy_count();
+      }
+    };
+  }
 }
 
 std::ostream & operator << (std::ostream & s, const internal_place_t & p)
@@ -151,13 +177,13 @@ std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
 }
 
 // use internal directly
-//typedef internal_place_t place_t;
+typedef internal_place_t place_t;
 
 // wrapped
 //typedef wrap_place_t place_t;
 
 // indirect
-typedef ptr_place_t place_t;
+// typedef ptr_place_t place_t;
 
 typedef std::string transition_t;
 typedef std::string edge_t;
@@ -340,6 +366,70 @@ main ()
   cntmap.clear(); modify(); print_cnt();
 
   cntmap.clear(); replace(); print_cnt();
+
+  {
+    cout << "**** std::map[] ****" << endl;
+
+    place_t p;
+
+    typedef std::map<place_t,int> map_t;
+  
+    map_t m;
+  
+    cout << "std::map[]" << endl; m[p] = 0;
+    cout << "std::map[]" << endl; m[p] = 1;
+
+    for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
+      cout << "## " << it->first << " -> " << it->second << endl;
+  }
+
+  {
+    cout << "**** std::map.insert ****" << endl;
+
+    place_t p;
+
+    typedef std::map<place_t,int> map_t;
+  
+    map_t m;
+  
+    cout << "std::map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
+    cout << "std::map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
+
+    for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
+      cout << "## " << it->first << " -> " << it->second << endl;
+  }
+
+  {
+    cout << "**** std::tr1::unordered_map[] ****" << endl;
+
+    place_t p;
+
+    typedef std::tr1::unordered_map<place_t,int> map_t;
+  
+    map_t m;
+  
+    cout << "std::tr1::unordered_map[]" << endl; m[p] = 0;
+    cout << "std::tr1::unordered_map[]" << endl; m[p] = 1;
+
+    for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
+      cout << "## " << it->first << " -> " << it->second << endl;
+  }
+
+  {
+    cout << "**** std::tr1::unordered_map.insert ****" << endl;
+
+    place_t p;
+
+    typedef std::tr1::unordered_map<place_t,int> map_t;
+  
+    map_t m;
+  
+    cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
+    cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
+
+    for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
+      cout << "## " << it->first << " -> " << it->second << endl;
+  }
 
   return EXIT_SUCCESS;
 }
