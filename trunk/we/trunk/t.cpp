@@ -4,7 +4,10 @@
 #include <sstream>
 #include <string>
 
+#include <tr1/random>
+
 #include <net.hpp>
+#include <timer.hpp>
 
 typedef std::string place_t;
 typedef std::string transition_t;
@@ -104,15 +107,70 @@ static void print_net (const pnet_t & n)
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "on " << place (n, *p) << ":";
+      cout << "on " << place (n, *p) << ": ";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-        cout << " " << *tp;
+        cout << "." << *tp;
 
       cout << endl;
     }
 
+  n.verify_enabled_transitions();
+
   cout << n;
+}
+
+static void marking (const pnet_t & n)
+{
+  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+    {
+      cout << "[" << n.place (*p) << ": ";
+
+      for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+        cout << "." << *tp;
+
+      cout << "]";
+    }
+  cout << endl;
+
+  n.verify_enabled_transitions();
+}
+
+static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
+{
+  pnet_t::enabled_t t (n.enabled_transitions());
+
+  if (!t.empty())
+    {
+      std::tr1::uniform_int<pnet_t::enabled_t::size_type> 
+        uniform (0,t.size()-1);
+
+      n.fire (t.at(uniform (engine)));
+    }
+}
+
+static void step (pnet_t & n, unsigned long k)
+{
+  pnet_t::transition_const_it t (n.transitions());
+  typedef std::vector<pnet_t::tid_t> tid_vec_t;
+  tid_vec_t tid;
+  std::tr1::mt19937 engine;
+  std::tr1::uniform_int<tid_vec_t::size_type> uniform(0, t.count()-1);
+
+  for (; t.has_more(); ++t)
+    tid.push_back (*t);
+
+  while (k)
+    {
+      const pnet_t::tid_t f (tid[uniform (engine)]);
+
+      if (n.can_fire (f))
+        {
+          n.fire (f);
+          --k;
+          marking (n);
+        }
+    }
 }
 
 int
@@ -294,6 +352,27 @@ main ()
        << c.replace_all_token (c.get_place_id ("readyR"),"p","n") << endl;
 
   print_net (c);
+
+  c.fire(c.get_transition_id ("t_enterL"));
+  c.fire(c.get_transition_id ("leaveL"));
+
+  print_net (c);
+
+  {
+    Timer_t timer ("step", 100);
+    step (c, 100);
+  }
+
+  std::tr1::mt19937 engine;
+
+  {
+    unsigned int num_fire (1000000);
+
+    Timer_t timer ("fire random transition", num_fire);
+
+    while (num_fire--)
+      fire_random_transition (c, engine);
+  }
 
   return EXIT_SUCCESS;
 }

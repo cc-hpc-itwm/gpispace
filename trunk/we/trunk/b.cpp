@@ -5,11 +5,12 @@
 #include <string>
 
 #include <malloc.h>
-#include <sys/time.h>
 
 #include <net.hpp>
-
+#include <timer.hpp>
 #include <bijection.hpp>
+
+#include <tr1/random>
 
 typedef unsigned int place_t;
 typedef unsigned int transition_t;
@@ -17,47 +18,14 @@ typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
 typedef unsigned int token_t;
 
-static const unsigned int nplace (100);
+static const unsigned int nplace (400);
 static const unsigned int ntrans (100);
-static const unsigned int factor (10);
-static const unsigned int token (1000);
+static const unsigned int factor (2);
+static const unsigned int token (10);
+static const unsigned int branch (25);
+static const unsigned int num_fire (1000);
 
 static const unsigned int bisize (1000000);
-
-static inline double current_time()
-{
-  struct timeval tv;
-
-  gettimeofday (&tv, NULL);
-
-  return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
-}
-
-struct Timer_t
-{
-private:
-  double t;
-  const std::string msg;
-  const unsigned int k;
-public:
-  Timer_t (const std::string _msg, const unsigned int _k = 1) 
-    : t(-current_time())
-    , msg(_msg)
-    , k(_k)
-  {}
-
-  ~Timer_t ()
-  {
-    t += current_time();
-
-    std::cout << "time " << msg 
-              << " [" << k << "]: " 
-              << t
-              << " [" << t / double(k) << "]"
-              << " [" << double(k) / t << "]"
-              << std::endl;
-  }
-};
 
 typedef net<place_t, transition_t, edge_t, token_t> net_t;
 
@@ -81,24 +49,52 @@ main ()
         n.add_transition (t);
     }
 
+    std::tr1::mt19937 engine;
+
     {
+      std::tr1::uniform_int<transition_t> uniform (0, factor * ntrans - 1);
+
       Timer_t timer ( "add edges place -> transitions"
-                    , factor * nplace * factor * ntrans
+                    , factor * nplace * branch
                     );
 
       for (unsigned int p(0); p < factor * nplace; ++p)
-        for (unsigned int t(0); t < factor * ntrans; ++t)
-          n.add_edge_place_to_transition(edge_t(pair_t(p, t), true), p, t);
+        for (unsigned int t(0); t < branch; ++t)
+          try
+            {
+              transition_t rand (uniform (engine));
+              n.add_edge_place_to_transition( edge_t(pair_t(p, rand), true)
+                                            , p
+                                            , rand
+                                            );
+            }
+          catch (already_there)
+            {
+              std::cout << "duplicate" << std::endl;
+            }
     }
 
     {
+      std::tr1::uniform_int<place_t> uniform (0, factor * nplace - 1);
+
       Timer_t timer ( "add edges transitions -> place"
-                    , factor * nplace * factor * ntrans
+                    , factor * ntrans * branch
                     );
 
       for (unsigned int t(0); t < factor * ntrans; ++t)
-        for (unsigned int p(0); p < factor * nplace; ++p)
-          n.add_edge_transition_to_place(edge_t(pair_t(t, p), false), t, p);
+        for (unsigned int p(0); p < branch; ++p)
+          try
+            {
+              place_t rand (uniform (engine));
+              n.add_edge_transition_to_place( edge_t(pair_t(t, rand), false)
+                                            , t
+                                            , rand
+                                            );
+            }
+          catch (already_there)
+            {
+              std::cout << "duplicate" << std::endl;
+            }
     }
 
     {
@@ -179,10 +175,38 @@ main ()
       std::cout << "e_out = " << e_out << std::endl;
     }
 
+    {
+      Timer_t timer ("fire transitions", num_fire);
+      unsigned int fired (0);
+
+      for (unsigned int f(0); f < num_fire; ++f)
+        {
+          net_t::enabled_t t (n.enabled_transitions());
+
+          if (!t.empty())
+            {
+              std::tr1::uniform_int<net_t::enabled_t::size_type>
+                uniform (0, t.size() - 1);
+
+              net_t::enabled_t::size_type pos (uniform(engine));
+
+              std::cout << "fire " << pos << " from [0.." << t.size() << ")" << std::endl;
+
+              n.fire (t.at (pos));
+
+              ++fired;
+            }
+        }
+
+      std::cout << "fired = " << fired << std::endl;
+    }
+
     malloc_stats();
   }
 
   malloc_stats();
+
+  return EXIT_SUCCESS;
 
   {
     bijection::bijection<place_t> bi;

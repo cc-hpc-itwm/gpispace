@@ -7,6 +7,10 @@
 #include <iomanip>
 
 #include <map>
+#include <set>
+#include <vector>
+
+#include <algorithm>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -30,6 +34,13 @@ public:
   ~already_there() throw() {}
 };
 
+class transition_not_enabled : public std::runtime_error
+{
+public:
+  transition_not_enabled (const std::string & msg) : std::runtime_error(msg) {}
+  ~transition_not_enabled() throw () {}
+};
+
 // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
 // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
 // It follows that an uint64_t is enough for now.
@@ -44,6 +55,57 @@ public:
   static const T invalid (void) { return std::numeric_limits<uint64_t>::max(); }
   const T & operator * (void) const { return v; }
   const void operator ++ (void) { ++v; }
+};
+
+// set with access to nth element
+template<typename T>
+struct svector
+{
+private:
+  typedef typename std::vector<T> vec_t;
+  typedef typename vec_t::iterator it;
+  typedef typename vec_t::const_iterator const_it;
+  typedef std::pair<it,it> pit_t;
+
+  vec_t vec;
+public:
+  typedef typename vec_t::size_type size_type;
+
+  it insert (const T & x)
+  {
+    const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
+
+    return (std::distance (pit.first, pit.second) == 0)
+      ? vec.insert (pit.second, x) : pit.first;
+  }
+
+  it erase (const T & x) throw (no_such)
+  {
+    const it pos (std::lower_bound (vec.begin(), vec.end(), x));
+
+    // NO! a transition could have more than one connection to a single
+    // place!
+//     if (pos == vec.end())
+//       throw no_such ("element in svector");
+
+    return (pos == vec.end()) ? pos : vec.erase (pos);
+  }
+
+  typename vec_t::const_reference & at (typename vec_t::size_type n) const
+  {
+    return vec.at (n);
+  }
+
+  const_it begin (void) const { return vec.begin(); }
+  const_it end (void) const { return vec.end(); }
+
+  const bool empty (void) const { return vec.empty(); }
+  const size_type size (void) const { return vec.size(); }
+
+  const bool operator == (const svector<T> & other) const
+  {
+    return (vec == other.vec);
+  }
 };
 
 // bimap, that keeps a bijection between objects and some index
@@ -203,6 +265,8 @@ public:
     , val (NULL)
   {
     val = new handle_t::T[row * col];
+
+    std::cout << "BEEP" << std::endl;
 
     if (val != NULL)
       std::fill (val, val + row * col, handle_t().invalid());
@@ -478,6 +542,7 @@ public:
     , num_places (0)
     , num_transitions (0)
     , num_edges (0)
+    , enabled ()
   {};
 
   // numbers of elements
@@ -883,9 +948,56 @@ public:
   }
 
   // deal with tokens
+  typedef svector<tid_t> enabled_t;
+
+private:
+  enabled_t enabled;
+
+  void add_enabled_transitions (const pid_t & pid)
+  {
+    for ( adj_transition_const_it tit (out_of_place (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      if (can_fire (*tit))
+        enabled.insert (*tit);
+  }
+
+  void del_enabled_transitions (const pid_t & pid)
+  {
+    for ( adj_transition_const_it tit (out_of_place (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      if (!can_fire (*tit))
+        enabled.erase (*tit);
+  }
+
+public:  
+  const enabled_t & enabled_transitions (void) const
+  {
+    return enabled;
+  }
+
+  const void verify_enabled_transitions (void) const
+  {
+    enabled_t comp;
+
+    for (transition_const_it t (transitions()); t.has_more(); ++t)
+      if (can_fire (*t))
+        comp.insert (*t);
+
+    assert (comp == enabled);
+  }
+
   const bool put_token (const pid_t & pid, const Token & token)
   {
-    return omap.insert (oval_t (token, pid)).second;
+    const bool successful (omap.insert (oval_t (token, pid)).second);
+
+    if (successful)
+      add_enabled_transitions (pid);
+
+    return successful;
   }
 
   const bool put_token (const Place & place, const Token & token)
@@ -907,6 +1019,16 @@ public:
     return get_token (get_place_id (place));
   }
 
+  const bool has_token (const pid_t & pid) const
+  {
+    return (omap.right.find (pid) != omap.right.end());
+  }
+
+  const bool has_token (const Place & place) const
+  {
+    return has_token (get_place_id (place));
+  }
+
   const std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
@@ -914,7 +1036,10 @@ public:
     const std::size_t dist (std::distance (range_it.first, range_it.second));
 
     if (dist > 0)
-      omap.erase (range_it.first);
+      {
+        omap.erase (range_it.first);
+        del_enabled_transitions (pid);
+      }
 
     return (dist > 0) ? 1 : 0;
   }
@@ -930,6 +1055,8 @@ public:
     omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
 
     omap.erase (range_it.first, range_it.second);
+
+    del_enabled_transitions (pid);
 
     return std::distance (range_it.first, range_it.second);
   }
@@ -973,10 +1100,31 @@ public:
         ; pit.has_more() && can_fire
         ; ++pit
         )
-      if (get_token (*pit).count() == 0)
-        can_fire = false;
+      can_fire = has_token (*pit);
 
     return can_fire;
+  }
+
+  void fire (const tid_t & tid) throw (transition_not_enabled)
+  {
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        const token_place_it tp (get_token (*pit));
+
+        if (!tp.has_more())
+          throw transition_not_enabled ("during call of fire");
+
+        delete_one_token (*pit, *tp);
+      }
+
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      put_token (*pit, Token());
   }
 
   // output
