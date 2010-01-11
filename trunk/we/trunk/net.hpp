@@ -170,7 +170,10 @@ public:
     return i;
   }
 
-  const void erase (const handle::T & i) { bimap.right.erase (i); }
+  const void erase (const handle::T & i)
+  {
+    bimap.right.erase (i);
+  }
 
   const handle::T modify (const handle::T & i, const T & x)
     throw (no_such, already_there)
@@ -238,8 +241,9 @@ public:
   const std::size_t count (void) const { return count_; }
 };
 
-// adjacency_matrix, grows on demand
-class adjacency_matrix
+// adjacency_table, grows on demand
+// the expected case leads to sparse matrices, thus implemented as vec_of_vec
+class adjacency_table
 {
 public:
   typedef handle::T size_t;
@@ -252,6 +256,9 @@ private:
   typedef std::vector<adj_t> adj_vec_t;
   typedef std::vector<adj_vec_t> adj_table_t;
 
+  // store table as well as transposed table to allow fast iteration
+  // row wise and column wise
+
   adj_table_t table;
   adj_table_t tableT;
 
@@ -263,25 +270,26 @@ private:
     handle::T v (handle::invalid);
 
     for ( adj_vec_t::const_iterator it (t[x].begin())
-        ; it != t[x].end() && v == handle::invalid
+        ; it != t[x].end()
         ; ++it
         )
       if (it->first == y)
-        v = it->second;
+        {
+          v = it->second;
+          break;
+        }
 
     return v;
   }
 
   void gen_clear (const size_t & x, const size_t & y, adj_table_t & t)
   {
-    adj_vec_t::iterator it (t[x].begin());
-
-    for (; it != t[x].end(); ++it)
+    for (adj_vec_t::iterator it (t[x].begin()); it != t[x].end(); ++it)
       if (it->first == y)
-        break;
-
-    if (it != t[x].end())
-      t[x].erase (it);
+        {
+          t[x].erase (it);
+          break;
+        }
   }
 
 public:
@@ -298,8 +306,7 @@ public:
     return vec_it (tableT[x].begin(),tableT[x].end());
   }
 
-  adjacency_matrix (const size_t & r, const size_t & c)
-    throw (std::bad_alloc)
+  adjacency_table (const size_t & r, const size_t & c)
     : row (r)
     , col (c)
     , table (row)
@@ -330,11 +337,10 @@ public:
     if (r > row - 1)
       throw std::out_of_range("row");
 
-    gen_clear (r, c, table);
-
     if (c > col - 1)
       throw std::out_of_range("col");
 
+    gen_clear (r, c, table);
     gen_clear (c, r, tableT);
   }
 
@@ -359,12 +365,12 @@ public:
     tableT[c].push_back (adj_t (r, x));
   }
 
-  friend std::ostream & operator << (std::ostream &, const adjacency_matrix &);
+  friend std::ostream & operator << (std::ostream &, const adjacency_table &);
 };
 
-std::ostream & operator << (std::ostream & s, const adjacency_matrix & m)
+std::ostream & operator << (std::ostream & s, const adjacency_table & m)
 {
-  s << "adjacency_matrix:";
+  s << "adjacency_table:";
   s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
 
   const unsigned int w (3);
@@ -428,12 +434,12 @@ std::ostream & operator << (std::ostream & s, const adjacency_matrix & m)
 struct adj_const_it
 {
 private:
-  adjacency_matrix::vec_it vec_it;
-  adjacency_matrix::const_it pos;
-  const adjacency_matrix::const_it end;
+  adjacency_table::vec_it vec_it;
+  adjacency_table::const_it pos;
+  const adjacency_table::const_it end;
 
 public:
-  adj_const_it ( const adjacency_matrix & m
+  adj_const_it ( const adjacency_table & m
                , const handle::T & x
                , const bool & fix_is_fst
                )
@@ -446,10 +452,10 @@ public:
   void operator ++ (void) { ++pos; }
 
   const handle::T & edge_id (void) const { return pos->second; }
-  const adjacency_matrix::size_t & obj_id (void) const { return pos->first; }
+  const adjacency_table::size_t & obj_id (void) const { return pos->first; }
 
   const handle::T & operator () (void) const { return edge_id(); }
-  const adjacency_matrix::size_t & operator * (void) const { return obj_id(); }
+  const adjacency_table::size_t & operator * (void) const { return obj_id(); }
 };
 
 template<typename Token, typename PID>
@@ -499,6 +505,17 @@ public:
 
   enum edge_type {PT,TP};
 
+  typedef svector<tid_t> enabled_t;
+
+  typedef bi_const_it<Place> place_const_it;
+  typedef bi_const_it<Transition> transition_const_it;
+  typedef bi_const_it<Edge> edge_const_it;
+
+  typedef adj_const_it adj_place_const_it;
+  typedef adj_const_it adj_transition_const_it;
+
+  typedef token_on_place_it<Token, pid_t> token_place_it;
+
 private:
   auto_bimap<Place> pmap; // Place <-> internal id
   auto_bimap<Transition> tmap; // Transition <-> internal id
@@ -518,17 +535,12 @@ private:
   map_tid_t emap_in_t; // internal edge id -> internal transition id
   map_tid_t emap_out_t; // internal edge id -> internal transition id
 
-  typedef adjacency_matrix adj_matrix;
+  adjacency_table adj_pt;
+  adjacency_table adj_tp;
 
-  adj_matrix adj_pt;
-  adj_matrix adj_tp;
-
-  adjacency_matrix::size_t max_place;
-  adjacency_matrix::size_t max_transition;
-  adjacency_matrix::size_t max_edge;
-  adjacency_matrix::size_t num_places;
-  adjacency_matrix::size_t num_transitions;
-  adjacency_matrix::size_t num_edges;
+  adjacency_table::size_t num_places;
+  adjacency_table::size_t num_transitions;
+  adjacency_table::size_t num_edges;
 
   typedef typename omap_t<Token,pid_t>::bimap_t obimap_t;
   typedef typename omap_t<Token,pid_t>::value_t oval_t;
@@ -538,9 +550,11 @@ private:
 
   obimap_t omap;
 
+  enabled_t enabled;
+
 public:
-  net ( const adjacency_matrix::size_t & places_ = 100
-      , const adjacency_matrix::size_t & transitions_ = 250
+  net ( const adjacency_table::size_t & places_ = 100
+      , const adjacency_table::size_t & transitions_ = 250
       )
     throw (std::bad_alloc)
     : pmap ("place")
@@ -552,9 +566,6 @@ public:
     , emap_out_t ()
     , adj_pt (places_, transitions_)
     , adj_tp (transitions_, places_)
-    , max_place (0)
-    , max_transition (0)
-    , max_edge (0)
     , num_places (0)
     , num_transitions (0)
     , num_edges (0)
@@ -562,17 +573,17 @@ public:
   {};
 
   // numbers of elements
-  const adjacency_matrix::size_t get_num_places (void) const
+  const adjacency_table::size_t get_num_places (void) const
   {
     return num_places;
   }
 
-  const adjacency_matrix::size_t get_num_transitions (void) const
+  const adjacency_table::size_t get_num_transitions (void) const
   {
     return num_transitions;
   }
 
-  const adjacency_matrix::size_t get_num_edges (void) const
+  const adjacency_table::size_t get_num_edges (void) const
   {
     return num_edges;
   }
@@ -613,7 +624,6 @@ public:
   // add element
   const pid_t add_place (const Place & place) throw (already_there)
   {
-    ++max_place;
     ++num_places;
 
     return pmap.add (place);
@@ -622,7 +632,6 @@ public:
   const tid_t add_transition (const Transition & transition)
     throw (already_there)
   {
-    ++max_transition;
     ++num_transitions;
 
     return tmap.add (transition);
@@ -631,9 +640,9 @@ public:
 private:
   const eid_t add_edge
   ( const Edge & edge
-  , const adjacency_matrix::size_t & x
-  , const adjacency_matrix::size_t & y
-  , adj_matrix & m
+  , const adjacency_table::size_t & x
+  , const adjacency_table::size_t & y
+  , adjacency_table & m
   )
     throw (no_such, already_there)
   {
@@ -651,7 +660,6 @@ private:
 
     m.set_adjacent (x, y, eid);
 
-    ++max_edge;
     ++num_edges;
 
     return eid;
@@ -703,10 +711,6 @@ public:
   }
 
   // iterate through elements
-  typedef bi_const_it<Place> place_const_it;
-  typedef bi_const_it<Transition> transition_const_it;
-  typedef bi_const_it<Edge> edge_const_it;
-
   const place_const_it places (void) const
   {
     return place_const_it (pmap);
@@ -723,9 +727,6 @@ public:
   }
 
   // iterate through adjacencies
-  typedef adj_const_it adj_place_const_it;
-  typedef adj_const_it adj_transition_const_it;
-
   const adj_place_const_it out_of_transition (const tid_t & tid) const
   {
     return adj_place_const_it (adj_tp, tid, true);
@@ -969,11 +970,7 @@ public:
   }
 
   // deal with tokens
-  typedef svector<tid_t> enabled_t;
-
 private:
-  enabled_t enabled;
-
   void add_enabled_transitions (const pid_t & pid)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
@@ -1026,8 +1023,6 @@ public:
   {
     return put_token (get_place_id (place), token);
   }
-
-  typedef token_on_place_it<Token, pid_t> token_place_it;
 
   const token_place_it get_token (const pid_t & pid) const
   {
@@ -1185,9 +1180,6 @@ std::ostream & operator << (std::ostream & s, const net<P,T,E,O> & n)
   s << "emap_out_p:" << std::endl << n.emap_out_p;
   s << "emap_in_t:" << std::endl << n.emap_in_t;
   s << "emap_out_t:" << std::endl << n.emap_out_t;
-  s << "max_place = " << n.max_place << std::endl;
-  s << "max_transition = " << n.max_transition << std::endl;
-  s << "max_edge = " << n.max_edge << std::endl;
   s << "num_places = " << n.num_places << std::endl;
   s << "num_transitions = " << n.num_transitions << std::endl;
   s << "num_edges = " << n.num_edges << std::endl;

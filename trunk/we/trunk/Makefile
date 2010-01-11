@@ -1,5 +1,7 @@
 
-CXX_FLAGS = -Wall -Werror -O3
+DOPTS = $(CPP_MACROS)
+
+CXX_FLAGS = -Wall -Werror -O3 $(addprefix -D,$(DOPTS))
 #CXX = g++
 CXX_INCLUDE = .
 CXX_INCLUDE += ${BOOST_ROOT}/include
