@@ -349,14 +349,14 @@ public:
   {
     if (r > row - 1)
       {
-        row *= 2;
+        row = std::max (r + 1, 2 * row);
 
         table.resize (row);
       }
 
     if (c > col - 1)
       {
-        col *= 2;
+        col = std::max (c + 1, 2 * col);
 
         tableT.resize (col);
       }
