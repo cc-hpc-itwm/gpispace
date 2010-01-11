@@ -18,12 +18,12 @@ typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
 typedef unsigned int token_t;
 
-static const unsigned int nplace (400);
-static const unsigned int ntrans (100);
-static const unsigned int factor (5);
+static const unsigned int nplace (200);
+static const unsigned int ntrans (200);
+static const unsigned int factor (10);
 static const unsigned int token (10);
 static const unsigned int branch (25);
-static const unsigned int num_fire (1000000);
+static const unsigned int num_fire (1000);
 
 static const unsigned int bisize (1000000);
 
@@ -54,6 +54,8 @@ main ()
     {
       std::tr1::uniform_int<transition_t> uniform (0, factor * ntrans - 1);
 
+      unsigned int duplicates (0);
+
       Timer_t timer ( "add edges place -> transitions"
                     , factor * nplace * branch
                     );
@@ -67,15 +69,23 @@ main ()
                                             , p
                                             , rand
                                             );
+              n.add_edge_transition_to_place( edge_t(pair_t(rand, p), false)
+                                            , p
+                                            , rand
+                                            );
             }
           catch (already_there)
             {
-              /* std::cout << "duplicate" << std::endl; */
+              ++duplicates;
             }
+
+      std::cout << "duplicates = " << duplicates << std::endl;
     }
 
     {
       std::tr1::uniform_int<place_t> uniform (0, factor * nplace - 1);
+
+      unsigned int duplicates (0);
 
       Timer_t timer ( "add edges transitions -> place"
                     , factor * ntrans * branch
@@ -93,8 +103,10 @@ main ()
             }
           catch (already_there)
             {
-              /* std::cout << "duplicate" << std::endl; */
+              ++duplicates;
             }
+
+      std::cout << "duplicates = " << duplicates << std::endl;
     }
 
     {
