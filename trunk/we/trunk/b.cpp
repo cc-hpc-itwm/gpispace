@@ -20,10 +20,10 @@ typedef unsigned int token_t;
 
 static const unsigned int nplace (400);
 static const unsigned int ntrans (100);
-static const unsigned int factor (2);
+static const unsigned int factor (5);
 static const unsigned int token (10);
 static const unsigned int branch (25);
-static const unsigned int num_fire (1000);
+static const unsigned int num_fire (1000000);
 
 static const unsigned int bisize (1000000);
 
@@ -70,7 +70,7 @@ main ()
             }
           catch (already_there)
             {
-              std::cout << "duplicate" << std::endl;
+              /* std::cout << "duplicate" << std::endl; */
             }
     }
 
@@ -93,7 +93,7 @@ main ()
             }
           catch (already_there)
             {
-              std::cout << "duplicate" << std::endl;
+              /* std::cout << "duplicate" << std::endl; */
             }
     }
 
@@ -190,8 +190,6 @@ main ()
 
               net_t::enabled_t::size_type pos (uniform(engine));
 
-              std::cout << "fire " << pos << " from [0.." << t.size() << ")" << std::endl;
-
               n.fire (t.at (pos));
 
               ++fired;
@@ -263,7 +261,7 @@ main ()
     {
       Timer_t timer ("get_id from auto_bimap", bisize);
 
-      handle_t::T s (0);
+      handle::T s (0);
       
       for (unsigned int i(0); i < bisize; ++i)
         s += bm.get_id (i);
@@ -276,7 +274,7 @@ main ()
 
       unsigned int s (0);
       
-      for (handle_t::T i(0); i < bisize; ++i)
+      for (handle::T i(0); i < bisize; ++i)
         s += bm.get_elem (i);
 
       std::cout << "s = " << s << std::endl;

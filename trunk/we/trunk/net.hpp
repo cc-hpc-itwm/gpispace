@@ -44,17 +44,20 @@ public:
 // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
 // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
 // It follows that an uint64_t is enough for now.
-struct handle_t
+namespace handle
 {
-public:
   typedef uint64_t T;
-private:
-  T v;
-public:
-  handle_t () : v(std::numeric_limits<uint64_t>::min()) {}
-  static const T invalid (void) { return std::numeric_limits<uint64_t>::max(); }
-  const T & operator * (void) const { return v; }
-  const void operator ++ (void) { ++v; }
+  static const T invalid (std::numeric_limits<T>::max());
+
+  struct handle_t
+  {
+  private:
+    T v;
+  public:
+    handle_t () : v(std::numeric_limits<uint64_t>::min()) {}
+    const T & operator * (void) const { return v; }
+    const void operator ++ (void) { ++v; }
+  };
 };
 
 // set with access to nth element
@@ -82,11 +85,6 @@ public:
   it erase (const T & x) throw (no_such)
   {
     const it pos (std::lower_bound (vec.begin(), vec.end(), x));
-
-    // NO! a transition could have more than one connection to a single
-    // place!
-//     if (pos == vec.end())
-//       throw no_such ("element in svector");
 
     return (pos == vec.end()) ? pos : vec.erase (pos);
   }
@@ -117,13 +115,13 @@ private:
   typedef boost::bimaps::unordered_set_of<T> elem_collection_t;
 
   // unordered, unique, viewable
-  typedef boost::bimaps::unordered_set_of<handle_t::T> id_collection_t;
+  typedef boost::bimaps::unordered_set_of<handle::T> id_collection_t;
 
   typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
   typedef typename bimap_t::value_type val_t;
 
   bimap_t bimap;
-  handle_t h;
+  handle::handle_t h;
 
   const std::string description;
 
@@ -140,7 +138,7 @@ public:
   const const_iterator begin (void) const { return bimap.begin(); }
   const const_iterator end (void) const { return bimap.end(); }
 
-  const handle_t::T & get_id (const T & x) const throw (no_such)
+  const handle::T & get_id (const T & x) const throw (no_such)
   {
     typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
@@ -150,7 +148,7 @@ public:
     return it->second;
   }
 
-  const T & get_elem (const handle_t::T & i) const throw (no_such)
+  const T & get_elem (const handle::T & i) const throw (no_such)
   {
     typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
 
@@ -160,21 +158,21 @@ public:
     return it->second;
   }
 
-  const handle_t::T add (const T & x) throw (already_there)
+  const handle::T add (const T & x) throw (already_there)
   {
     if (bimap.left.find (x) != bimap.left.end())
       throw already_there (description);
 
-    handle_t::T i (*h); ++h;
+    handle::T i (*h); ++h;
 
     bimap.insert (val_t (x, i));
 
     return i;
   }
 
-  const void erase (const handle_t::T & i) { bimap.right.erase (i); }
+  const void erase (const handle::T & i) { bimap.right.erase (i); }
 
-  const handle_t::T modify (const handle_t::T & i, const T & x)
+  const handle::T modify (const handle::T & i, const T & x)
     throw (no_such, already_there)
   {
     typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -188,7 +186,7 @@ public:
     return i;
   }
 
-  const handle_t::T replace (const handle_t::T & i, const T & x)
+  const handle::T replace (const handle::T & i, const T & x)
     throw (no_such, already_there)
   {
     typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -236,7 +234,7 @@ public:
 
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
-  const handle_t::T & operator * (void) const { return pos->right; }
+  const handle::T & operator * (void) const { return pos->right; }
   const std::size_t count (void) const { return count_; }
 };
 
@@ -244,102 +242,121 @@ public:
 class adjacency_matrix
 {
 public:
-  typedef handle_t::T size_t;
+  typedef handle::T size_t;
 
 private:
   size_t row;
   size_t col;
 
-  handle_t::T * val;
+  typedef std::pair<size_t,handle::T> adj_t;
+  typedef std::vector<adj_t> adj_vec_t;
+  typedef std::vector<adj_vec_t> adj_table_t;
 
-  const inline size_t linear (const size_t & r, const size_t & c) const
+  adj_table_t table;
+  adj_table_t tableT;
+
+  const handle::T gen_get ( const size_t & x
+                          , const size_t & y
+                          , const adj_table_t & t
+                          ) const
   {
-    return r * col + c;
+    handle::T v (handle::invalid);
+
+    for ( adj_vec_t::const_iterator it (t[x].begin())
+        ; it != t[x].end() && v == handle::invalid
+        ; ++it
+        )
+      if (it->first == y)
+        v = it->second;
+
+    return v;
+  }
+
+  void gen_clear (const size_t & x, const size_t & y, adj_table_t & t)
+  {
+    adj_vec_t::iterator it (t[x].begin());
+
+    for (; it != t[x].end(); ++it)
+      if (it->first == y)
+        break;
+
+    if (it != t[x].end())
+      t[x].erase (it);
   }
 
 public:
+  typedef adj_vec_t::const_iterator const_it;
+  typedef std::pair<const_it,const_it> vec_it;
+
+  const vec_it get_vec_it (const size_t & x) const
+  {
+    return vec_it (table[x].begin(),table[x].end());
+  }
+
+  const vec_it get_vec_itT (const size_t & x) const
+  {
+    return vec_it (tableT[x].begin(),tableT[x].end());
+  }
+
   adjacency_matrix (const size_t & r, const size_t & c)
     throw (std::bad_alloc)
     : row (r)
     , col (c)
-    , val (NULL)
-  {
-    val = new handle_t::T[row * col];
+    , table (row)
+    , tableT (col)
+  {}
 
-    std::cout << "BEEP" << std::endl;
-
-    if (val != NULL)
-      std::fill (val, val + row * col, handle_t().invalid());
-  }
-
-  ~adjacency_matrix ()
-  {
-    if (val != NULL)
-      delete[] val;
-
-    val = NULL;
-  }
-
-  const handle_t::T & adjacent (const size_t & r, const size_t & c) const
+  const handle::T get_adjacent (const size_t & r, const size_t & c) const
     throw (std::out_of_range)
   {
     if (r > row - 1)
       throw std::out_of_range("row");
 
+    return gen_get (r, c, table);
+  }
+
+  const handle::T get_adjacentT (const size_t & r, const size_t & c) const
+    throw (std::out_of_range)
+  {
     if (c > col - 1)
       throw std::out_of_range("col");
 
-    return val[linear (r, c)];
+    return gen_get (c, r, tableT);
   }
 
-  handle_t::T & adjacent (const size_t & r, const size_t & c)
+  void clear_adjacent (const size_t & r, const size_t & c)
+    throw (std::out_of_range)
+  {
+    if (r > row - 1)
+      throw std::out_of_range("row");
+
+    gen_clear (r, c, table);
+
+    if (c > col - 1)
+      throw std::out_of_range("col");
+
+    gen_clear (c, r, tableT);
+  }
+
+  void set_adjacent (const size_t & r, const size_t & c, const size_t & x)
     throw (std::bad_alloc)
   {
     if (r > row - 1)
       {
-        handle_t::T * newval = new handle_t::T [(2 * row) * col];
-
-        if (newval != NULL)
-          {
-            std::copy (val, val + row * col, newval);
-            std::fill ( newval +      row  * col
-                      , newval + (2 * row) * col
-                      , handle_t().invalid()
-                      );
-          }
-
-        delete[] val;
-
-        val = newval;
-
         row *= 2;
+
+        table.resize (row);
       }
 
     if (c > col - 1)
       {
-        handle_t::T * newval = new handle_t::T[row * (2 * col)];
-
-        if (newval != NULL)
-          for (size_t r (0); r < row; ++r)
-            {
-              std::copy ( val    +  r      *      col
-                        , val    + (r + 1) *      col
-                        , newval +  r      * (2 * col)
-                        );
-              std::fill ( newval + r * (2 * col) +     col
-                        , newval + r * (2 * col) + 2 * col
-                        , handle_t().invalid()
-                        );
-            }
-
-        delete[] val;
-
-        val = newval;
-
         col *= 2;
+
+        tableT.resize (col);
       }
 
-    return val[linear (r, c)];
+    table[r].push_back (adj_t (c, x));
+    tableT[c].push_back (adj_t (r, x));
   }
 
   friend std::ostream & operator << (std::ostream &, const adjacency_matrix &);
@@ -350,31 +367,55 @@ std::ostream & operator << (std::ostream & s, const adjacency_matrix & m)
   s << "adjacency_matrix:";
   s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
 
-  s << std::setw(5) << "";
+  const unsigned int w (3);
 
-  for (adjacency_matrix::size_t c(0); c < m.col; ++c)
-    s << std::setw(4) << c;
+  s << std::setw(w) << "";
+
+  for (size_t c (0); c < m.col; ++c)
+    s << std::setw (w) << c;
 
   s << std::endl;
 
-  for (adjacency_matrix::size_t r(0); r < m.row; ++r)
+  for (size_t r (0); r < m.row; ++r)
     {
-      s << std::setw(3) << r << "  ";
+      s << std::setw(w) << r;
 
-      for (adjacency_matrix::size_t c(0); c < m.col; ++c)
+      for (size_t c (0); c < m.col; ++c)
         {
-          const handle_t::T v (m.val[m.linear (r, c)]);
+          const handle::T adj (m.get_adjacent (r, c));
 
-          s << std::setw(4);
+          s << std::setw(w);
 
-          if (v == handle_t().invalid())
-            {
-              s << ".";
-            }
+          if (adj == handle::invalid)
+            s << ".";
           else
-            {
-              s << v;
-            }
+            s << adj;
+        }
+
+      s << std::endl;
+    }
+
+  s << "  transposed:" << std::endl << std::setw(w) << "";
+
+  for (size_t r (0); r < m.row; ++r)
+    s << std::setw (w) << r;
+
+  s << std::endl;
+
+  for (size_t c (0); c < m.col; ++c)
+    {
+      s << std::setw(w) << c;
+
+      for (size_t r (0); r < m.row; ++r)
+        {
+          const handle::T adj (m.get_adjacentT (r, c));
+
+          s << std::setw(w);
+
+          if (adj == handle::invalid)
+            s << ".";
+          else
+            s << adj;
         }
 
       s << std::endl;
@@ -387,52 +428,27 @@ std::ostream & operator << (std::ostream & s, const adjacency_matrix & m)
 struct adj_const_it
 {
 private:
-  const adjacency_matrix & m;
-  const adjacency_matrix::size_t max;
-  const handle_t::T fix;
-  const bool fix_is_fst;
-
-  adjacency_matrix::size_t pos;
-  handle_t::T adj;
-
-  inline bool is_invalid (void)
-  {
-    adj = (fix_is_fst == true) ? m.adjacent (fix, pos)
-                               : m.adjacent (pos, fix)
-                               ;
-
-    return (adj == handle_t().invalid());
-  }
-
-  inline void step (void)
-  {
-    while (pos < max && is_invalid())
-      ++pos;
-  }
+  adjacency_matrix::vec_it vec_it;
+  adjacency_matrix::const_it pos;
+  const adjacency_matrix::const_it end;
 
 public:
-  adj_const_it ( const adjacency_matrix & m_
-               , const adjacency_matrix::size_t & max_
-               , const handle_t::T & fix_
-               , const bool & fix_is_fst_
+  adj_const_it ( const adjacency_matrix & m
+               , const handle::T & x
+               , const bool & fix_is_fst
                )
-  : m (m_)
-  , max (max_)
-  , fix (fix_)
-  , fix_is_fst (fix_is_fst_)
-  , pos (0)
-  , adj (handle_t().invalid())
-  {
-    step();
-  }
+    : vec_it (fix_is_fst ? m.get_vec_it (x) : m.get_vec_itT (x))
+    , pos (vec_it.first)
+    , end (vec_it.second)
+  {}
 
-  const bool has_more (void) const { return (pos != max) ? true : false; }
-  void operator ++ (void) { ++pos; step(); }
+  const bool has_more (void) const { return (pos != end) ? true : false; }
+  void operator ++ (void) { ++pos; }
 
-  const handle_t::T & edge_id (void) const { return adj; }
-  const adjacency_matrix::size_t & obj_id (void) const { return pos; }
+  const handle::T & edge_id (void) const { return pos->second; }
+  const adjacency_matrix::size_t & obj_id (void) const { return pos->first; }
 
-  const handle_t::T & operator () (void) const { return edge_id(); }
+  const handle::T & operator () (void) const { return edge_id(); }
   const adjacency_matrix::size_t & operator * (void) const { return obj_id(); }
 };
 
@@ -477,9 +493,9 @@ template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
 public:
-  typedef handle_t::T pid_t;
-  typedef handle_t::T tid_t;
-  typedef handle_t::T eid_t;
+  typedef handle::T pid_t;
+  typedef handle::T tid_t;
+  typedef handle::T eid_t;
 
   enum edge_type {PT,TP};
 
@@ -621,14 +637,19 @@ private:
   )
     throw (no_such, already_there)
   {
-    eid_t & a (m.adjacent (x, y));
-
-    if (a != handle_t().invalid())
-      throw already_there ("adjacency");
+    try
+      {
+        if (m.get_adjacent (x, y) != handle::invalid)
+          throw already_there ("adjacency");
+      }
+    catch (std::out_of_range)
+      {
+        /* do nothing, was not there */
+      }
 
     const eid_t eid (emap.add (edge));
 
-    a = eid;
+    m.set_adjacent (x, y, eid);
 
     ++max_edge;
     ++num_edges;
@@ -707,22 +728,22 @@ public:
 
   const adj_place_const_it out_of_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_tp, max_place, tid, true);
+    return adj_place_const_it (adj_tp, tid, true);
   }
 
   const adj_place_const_it in_to_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_pt, max_place, tid, false);
+    return adj_place_const_it (adj_pt, tid, false);
   }
 
   const adj_transition_const_it out_of_place (const pid_t & pid) const
   {
-    return adj_transition_const_it (adj_pt, max_transition, pid, true);
+    return adj_transition_const_it (adj_pt, pid, true);
   }
 
   const adj_transition_const_it in_to_place (const pid_t & pid) const
   {
-    return adj_transition_const_it (adj_tp, max_transition, pid, false);
+    return adj_transition_const_it (adj_tp, pid, false);
   }
 
   // get edge info
@@ -770,9 +791,9 @@ public:
         const pid_t pid (out_p->second);
         const tid_t tid (in_t->second);
 
-        assert (adj_pt.adjacent (pid, tid) == eid);
+        assert (adj_pt.get_adjacent (pid, tid) == eid);
 
-        adj_pt.adjacent (pid, tid) = handle_t().invalid();
+        adj_pt.clear_adjacent (pid, tid);
 
         emap_in_t.erase (in_t);
         emap_out_p.erase (out_p);
@@ -790,9 +811,9 @@ public:
         const tid_t tid (out_t->second);
         const pid_t pid (in_p->second);
 
-        assert (adj_tp.adjacent (tid, pid) == eid);
+        assert (adj_tp.get_adjacent (tid, pid) == eid);
 
-        adj_tp.adjacent (tid, pid) = handle_t().invalid();
+        adj_tp.clear_adjacent (tid, pid);
 
         emap_in_p.erase (in_p);
         emap_out_t.erase (out_t);
