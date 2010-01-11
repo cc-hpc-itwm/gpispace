@@ -17,7 +17,8 @@ typedef std::pair<loop_t, id_t> node_t;
 
 static const loop_t num_loops (2500);
 static const id_t size_loop (15);
-static const unsigned int num_fire (num_loops * size_loop * 50);
+static const unsigned int num_rounds (50);
+static const unsigned int num_fire (num_loops * size_loop * num_rounds);
 
 #ifndef NMALLOCHOOK
 #include <malloc.h>
