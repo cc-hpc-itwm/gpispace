@@ -557,7 +557,7 @@ namespace TransitionFunction
     return token_input.first;
   };
 
-  // default construct all output tokens
+  // default construct all output tokens, always possible
   template<typename Token>
   class Default
   {
@@ -585,9 +585,11 @@ namespace TransitionFunction
     }
   };
 
-  // pass the tokens through in the order given
-  template<typename Token>
-  class PassThrough
+  // needs the same number of input and output tokens
+  // applies a function without context to each token
+  // stays with the order given in input/output_descr
+  template<typename Token, Token F (const Token &)>
+  class PassThroughWithFun
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
@@ -611,7 +613,7 @@ namespace TransitionFunction
           if (it_in == input.end())
             throw std::runtime_error ("not enough input tokens to pass through");
 
-          output.push_back (token_on_place_t ( get_token<Token>(*it_in)
+          output.push_back (token_on_place_t ( F(get_token<Token>(*it_in))
                                              , get_pid<Token>(*it_out)
                                              )
                            );
@@ -623,6 +625,17 @@ namespace TransitionFunction
       return output;
     }
   };
+
+  template<typename Token>
+  inline Token Const (const Token & token)
+  {
+    return token;
+  }
+
+  // simple pass the tokens through
+  template<typename Token>
+  class PassThrough : public PassThroughWithFun<Token, Const<Token> >
+  {};
 };
 
 // the net itself

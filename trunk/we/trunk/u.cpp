@@ -11,8 +11,6 @@
 
 #include <vector>
 
-#include <boost/function.hpp>
-
 using std::cout;
 using std::endl;
 
@@ -21,43 +19,9 @@ typedef std::string edge_t;
 typedef std::string transition_t;
 typedef unsigned long token_t;
 
-namespace TransitionFunction
-{
-  static token_t token (0);
+token_t inc (const token_t & token) { return token + 1; }
 
-  token_t up (void) { return token++; }
-  token_t down (void) { return token--; }
-
-  template<token_t F (void)>
-  class UpDown
-  {
-  private:
-    typedef Traits<token_t>::input_t input_t;
-
-    typedef Traits<token_t>::output_descr_t output_descr_t;
-    typedef std::pair<token_t, id_traits::pid_t> token_on_place_t;
-    typedef Traits<token_t>::output_t output_t;
-
-  public:
-    const output_t operator () ( const input_t &
-                               , const output_descr_t & output_descr
-                               ) const
-    {
-      output_t output;
-
-      for ( output_descr_t::const_iterator it (output_descr.begin())
-          ; it != output_descr.end()
-          ; ++it
-          )
-        output.push_back (token_on_place_t (F(), it->first));
-
-      return output;
-    }
-  };
-
-  typedef UpDown<up> Up;
-  typedef UpDown<down> Down;
-};
+typedef TransitionFunction::PassThroughWithFun<token_t,inc> Inc;
 
 typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
 
@@ -70,18 +34,6 @@ static std::string trans (const pnet_t & n, const pnet_t::tid_t & t)
 {
   std::ostringstream s; s << t << brack(n.transition (t)); return s.str();
 }
-
-#if 0
-static std::string place (const pnet_t & n, const pnet_t::pid_t & p)
-{
-  std::ostringstream s; s << p << brack(n.place (p)); return s.str();
-}
-
-static std::string edge (const pnet_t & n, const pnet_t::eid_t & e)
-{
-  std::ostringstream s; s << e << brack (n.edge (e)); return s.str();
-}
-#endif
 
 static void marking (const pnet_t & n)
 {
@@ -125,17 +77,17 @@ main ()
     pnet_t::pid_t pid_top (n.add_place (place_t ("top")));
     pnet_t::pid_t pid_down (n.add_place (place_t ("down")));
     pnet_t::tid_t tid_top_down 
-      (n.add_transition (transition_t ("top_down"), TransitionFunction::Up()));
+      (n.add_transition (transition_t ("top_down"), Inc()));
     pnet_t::tid_t tid_down_top
-      (n.add_transition (transition_t ("down_top"), TransitionFunction::Down()));
+      (n.add_transition (transition_t ("down_top"), Inc()));
   
     n.add_edge_place_to_transition (edge_t ("top_out"), pid_top, tid_top_down);
     n.add_edge_transition_to_place (edge_t ("down_in"), tid_top_down, pid_down);
     n.add_edge_place_to_transition (edge_t ("down_out"), pid_down, tid_down_top);
     n.add_edge_transition_to_place (edge_t ("top_in"), tid_down_top, pid_top);
 
-    n.put_token (pid_top, TransitionFunction::token++);
-    n.put_token (pid_down, TransitionFunction::token++);
+    n.put_token (pid_top, 0);
+    n.put_token (pid_down, 1);
   }
 
   // a second loop, that just passes the tokens through
@@ -163,7 +115,7 @@ main ()
 
   std::tr1::mt19937 engine;
 
-  for (int i(0); i < 20; ++i)
+  for (int i(0); i < 50; ++i)
     {
       fire_random_transition (n, engine);
       marking (n);
