@@ -20,7 +20,6 @@
 #include <boost/bimap/support/lambda.hpp>
 
 #include <boost/function.hpp>
-#include <boost/ref.hpp>
 
 // exceptions
 class no_such : public std::runtime_error
@@ -497,62 +496,133 @@ public:
   const std::size_t count (void) const { return count_; }
 };
 
-struct id_traits
+namespace id_traits
 {
-public:
   typedef handle::T pid_t;
   typedef handle::T tid_t;
   typedef handle::T eid_t;
 };
 
-template<typename Token>
-struct FireTraits
+namespace TransitionFunction
 {
-private:
-  typedef id_traits::pid_t pid_t;
-  typedef id_traits::tid_t tid_t;
-  typedef id_traits::eid_t eid_t;
-
-public:
-  // a transition gets a number of input tokens, taken from places,
-  // connected to the transition via edges
-  // so input is of type: [(Token,(Place,Edge))]
-  // the same holds true for the output, but the tokens are to be produced
-  typedef std::pair<pid_t, eid_t> place_via_edge_t;
-  typedef std::pair<Token, place_via_edge_t> token_input_t;
-  typedef std::vector<token_input_t> input_t;
-
-  typedef std::vector<place_via_edge_t> output_descr_t;
-  typedef std::pair<Token, pid_t> token_on_place_t;
-  typedef std::vector<token_on_place_t> output_t;
-};
-
-// simple transition function, that just default constructs all needed tokens
-template<typename Token>
-class TransitionFunctionDefault
-{
-private:
-  typedef typename FireTraits<Token>::input_t input_t;
-
-  typedef typename FireTraits<Token>::output_descr_t output_descr_t;
-  typedef std::pair<Token, pid_t> token_on_place_t;
-  typedef typename FireTraits<Token>::output_t output_t;
-
-public:
-  const output_t operator () ( const input_t &
-                             , const output_descr_t & output_descr
-                             ) const
+  template<typename Token>
+  struct Traits
   {
-    output_t output;
+  public:
+    // a transition gets a number of input tokens, taken from places,
+    // connected to the transition via edges
+    // so input is of type: [(Token,(Place,Edge))]
+    // the same holds true for the output, but the tokens are to be produced
+    typedef std::pair<id_traits::pid_t, id_traits::eid_t> place_via_edge_t;
+    typedef std::pair<Token, place_via_edge_t> token_input_t;
+    typedef std::vector<token_input_t> input_t;
 
-    for ( typename output_descr_t::const_iterator it (output_descr.begin())
-        ; it != output_descr.end()
-        ; ++it
-        )
-      output.push_back (token_on_place_t (Token(), it->first));
+    typedef std::vector<place_via_edge_t> output_descr_t;
+    typedef std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef std::vector<token_on_place_t> output_t;
+  };
 
-    return output;
-  }
+  template<typename Token>
+  const id_traits::pid_t get_pid 
+  (const typename Traits<Token>::place_via_edge_t & place_via_edge)
+  {
+    return place_via_edge.first;
+  };
+
+  template<typename Token>
+  const id_traits::pid_t get_eid 
+  (const typename Traits<Token>::place_via_edge_t & place_via_edge)
+  {
+    return place_via_edge.second;
+  };
+
+  template<typename Token>
+  const id_traits::pid_t get_pid 
+  (const typename Traits<Token>::token_input_t & token_input)
+  {
+    return get_pid (token_input.second);
+  };
+
+  template<typename Token>
+  const id_traits::pid_t get_eid 
+  (const typename Traits<Token>::token_input_t & token_input)
+  {
+    return get_eid (token_input.second);
+  };
+
+  template<typename Token>
+  const id_traits::pid_t get_token
+  (const typename Traits<Token>::token_input_t & token_input)
+  {
+    return token_input.first;
+  };
+
+  // default construct all output tokens
+  template<typename Token>
+  class Default
+  {
+  private:
+    typedef typename Traits<Token>::input_t input_t;
+
+    typedef typename Traits<Token>::output_descr_t output_descr_t;
+    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename Traits<Token>::output_t output_t;
+
+  public:
+    const output_t operator () ( const input_t &
+                               , const output_descr_t & output_descr
+                               ) const
+    {
+      output_t output;
+
+      for ( typename output_descr_t::const_iterator it (output_descr.begin())
+          ; it != output_descr.end()
+          ; ++it
+          )
+        output.push_back (token_on_place_t (Token(), it->first));
+
+      return output;
+    }
+  };
+
+  // pass the tokens through in the order given
+  template<typename Token>
+  class PassThrough
+  {
+  private:
+    typedef typename Traits<Token>::input_t input_t;
+
+    typedef typename Traits<Token>::output_descr_t output_descr_t;
+    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename Traits<Token>::output_t output_t;
+
+  public:
+    const output_t operator () ( const input_t & input
+                               , const output_descr_t & output_descr
+                               ) const
+    {
+      output_t output;
+      
+      typename output_descr_t::const_iterator it_out (output_descr.begin());
+      typename input_t::const_iterator it_in (input.begin());
+
+      for ( ; it_out != output_descr.end(); ++it_out, ++it_in)
+        {
+          if (it_in == input.end())
+            throw std::runtime_error ("not enough input tokens to pass through");
+
+          output.push_back (token_on_place_t ( get_token<Token>(*it_in)
+                                             , get_pid<Token>(*it_out)
+                                             )
+                           );
+        }
+
+      if (it_in != input.end())
+        throw std::runtime_error ("not enough output places to pass through");
+
+      return output;
+    }
+  };
 };
 
 // the net itself
@@ -577,12 +647,13 @@ public:
 
   typedef token_on_place_it<Token, pid_t> token_place_it;
 
-  typedef typename FireTraits<Token>::place_via_edge_t place_via_edge_t;
-  typedef typename FireTraits<Token>::token_input_t token_input_t;
-  typedef typename FireTraits<Token>::input_t input_t;
+  typedef TransitionFunction::Traits<Token> tf_traits;
+  typedef typename tf_traits::place_via_edge_t place_via_edge_t;
+  typedef typename tf_traits::token_input_t token_input_t;
+  typedef typename tf_traits::input_t input_t;
 
-  typedef typename FireTraits<Token>::output_descr_t output_descr_t;
-  typedef typename FireTraits<Token>::output_t output_t;
+  typedef typename tf_traits::output_descr_t output_descr_t;
+  typedef typename tf_traits::output_t output_t;
 
   typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
 
@@ -703,7 +774,7 @@ public:
 
   const tid_t add_transition 
   ( const Transition & transition
-  , const transfun_t & f = TransitionFunctionDefault<Token>()
+  , const transfun_t & f = TransitionFunction::Default<Token>()
   )
     throw (already_there)
   {
