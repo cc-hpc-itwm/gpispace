@@ -1,4 +1,6 @@
 
+// count, how often object are copied, mirko.rahn@itwm.fraunhofer.de
+
 #include <cstdlib>
 #include <iostream>
 #include <sstream>

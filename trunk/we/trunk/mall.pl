@@ -1,3 +1,5 @@
+# accumulate the output of l.cpp, mirko.rahn@itwm.fraunhofer.de
+
 use strict;
 
 my $m=0;

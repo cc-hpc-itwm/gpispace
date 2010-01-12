@@ -1,4 +1,6 @@
 
+// demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
+
 #include <cstdlib>
 #include <iostream>
 #include <sstream>

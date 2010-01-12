@@ -1,4 +1,6 @@
 
+// measurements bimap vs. homegrown bijection, mirko.rahn@itwm.fraunhofer.de
+
 #include <cstdlib>
 #include <iostream>
 #include <string>

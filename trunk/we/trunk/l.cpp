@@ -1,5 +1,5 @@
 
-// a net, consisting of k independent loops
+// a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
 #include <cstdlib>
 #include <iostream>

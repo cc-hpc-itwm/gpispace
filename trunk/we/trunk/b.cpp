@@ -1,4 +1,6 @@
 
+// some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
+
 #include <cstdlib>
 #include <iostream>
 #include <sstream>

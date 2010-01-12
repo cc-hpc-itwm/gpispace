@@ -1,3 +1,5 @@
+// simple timer, mirko.rahn@itwm.fraunhofer.de
+
 #ifndef _TIMER_H
 #define _TIMER_H
 
