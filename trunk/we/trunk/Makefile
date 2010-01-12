@@ -8,7 +8,7 @@ CXX_INCLUDE += ${BOOST_ROOT}/include
 
 .PHONY: all
 
-all: t.bin b.bin m.bin bi.bin l.bin
+all: t.bin b.bin m.bin bi.bin l.bin u.bin
 
 %.bin: %.cpp net.hpp bijection.hpp Makefile
 	$(CXX) $(CXX_FLAGS) $(addprefix -I,$(CXX_INCLUDE)) $< -o $@

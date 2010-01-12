@@ -19,6 +19,9 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/bimap/support/lambda.hpp>
 
+#include <boost/function.hpp>
+#include <boost/ref.hpp>
+
 // exceptions
 class no_such : public std::runtime_error
 {
@@ -553,12 +556,7 @@ public:
 };
 
 // the net itself
-template< typename Place
-        , typename Transition
-        , typename Edge
-        , typename Token
-        , typename TransitionFunction = TransitionFunctionDefault<Token>
-        >
+template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
 public:
@@ -585,6 +583,8 @@ public:
 
   typedef typename FireTraits<Token>::output_descr_t output_descr_t;
   typedef typename FireTraits<Token>::output_t output_t;
+
+  typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
 
 private:
   auto_bimap<Place> pmap; // Place <-> internal id
@@ -621,6 +621,8 @@ private:
   obimap_t omap;
 
   enabled_t enabled;
+
+  std::map<tid_t, transfun_t> transfun;
 
 public:
   net ( const adjacency_table::size_t & places_ = 100
@@ -699,12 +701,19 @@ public:
     return pmap.add (place);
   }
 
-  const tid_t add_transition (const Transition & transition)
+  const tid_t add_transition 
+  ( const Transition & transition
+  , const transfun_t & f = TransitionFunctionDefault<Token>()
+  )
     throw (already_there)
   {
     ++num_transitions;
 
-    return tmap.add (transition);
+    const tid_t tid (tmap.add (transition));
+
+    transfun[tid] = f;
+
+    return tid;
   }
 
 private:
@@ -1217,7 +1226,7 @@ public:
         )
       output_descr.push_back (place_via_edge_t (*pit, pit()));
 
-    const output_t output (TransitionFunction()(input, output_descr));
+    const output_t output (transfun[tid](input, output_descr));
 
     for ( typename output_t::const_iterator out (output.begin())
         ; out != output.end()
