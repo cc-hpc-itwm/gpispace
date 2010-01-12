@@ -520,6 +520,8 @@ namespace TransitionFunction
     typedef std::vector<place_via_edge_t> output_descr_t;
     typedef std::pair<Token, id_traits::pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
+
+    typedef std::map<id_traits::eid_t, Token> edges_only_t;
   };
 
   template<typename Token>
@@ -530,7 +532,7 @@ namespace TransitionFunction
   };
 
   template<typename Token>
-  const id_traits::pid_t get_eid 
+  const id_traits::eid_t get_eid 
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
@@ -540,18 +542,18 @@ namespace TransitionFunction
   const id_traits::pid_t get_pid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
-    return get_pid (token_input.second);
+    return get_pid<Token> (token_input.second);
   };
 
   template<typename Token>
-  const id_traits::pid_t get_eid 
+  const id_traits::eid_t get_eid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
-    return get_eid (token_input.second);
+    return get_eid<Token> (token_input.second);
   };
 
   template<typename Token>
-  const id_traits::pid_t get_token
+  const Token get_token
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return token_input.first;
@@ -579,7 +581,7 @@ namespace TransitionFunction
           ; it != output_descr.end()
           ; ++it
           )
-        output.push_back (token_on_place_t (Token(), it->first));
+        output.push_back (token_on_place_t (Token(), get_pid <Token>(*it)));
 
       return output;
     }
@@ -588,7 +590,7 @@ namespace TransitionFunction
   // needs the same number of input and output tokens
   // applies a function without context to each token
   // stays with the order given in input/output_descr
-  template<typename Token, Token F (const Token &)>
+  template<typename Token, const Token F (const Token &)>
   class PassThroughWithFun
   {
   private:
@@ -627,7 +629,7 @@ namespace TransitionFunction
   };
 
   template<typename Token>
-  inline Token Const (const Token & token)
+  inline const Token Const (const Token & token)
   {
     return token;
   }
@@ -636,6 +638,64 @@ namespace TransitionFunction
   template<typename Token>
   class PassThrough : public PassThroughWithFun<Token, Const<Token> >
   {};
+
+  // apply a function, that depends on the edges only
+  template< typename Token
+          , const typename Traits<Token>::edges_only_t 
+               F (const typename Traits<Token>::edges_only_t &)
+          >
+  class EdgesOnly
+  {
+  private:
+    typedef typename Traits<Token>::input_t input_t;
+
+    typedef typename Traits<Token>::output_descr_t output_descr_t;
+    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename Traits<Token>::output_t output_t;
+
+    typedef typename Traits<Token>::edges_only_t edges_only_t;
+
+  public:
+    const output_t operator () ( const input_t & input
+                               , const output_descr_t & output_descr
+                               ) const
+    {
+      // collect input as Map (Edge -> Token)
+      edges_only_t in;
+
+      for ( typename input_t::const_iterator it (input.begin())
+          ; it != input.end()
+          ; ++it
+          )
+        in[get_eid<Token>(*it)] = get_token<Token>(*it);
+
+      // calculate output as Map (Edge -> Token)
+      edges_only_t out (F (in));
+
+      // fill the output vector
+      output_t output;
+
+      for ( typename output_descr_t::const_iterator it (output_descr.begin())
+          ; it != output_descr.end()
+          ; ++it
+          )
+        {
+          typename edges_only_t::iterator res (out.find (get_eid<Token>(*it)));
+
+          if (res == out.end())
+            throw std::runtime_error ("missing edge in output map");
+
+          output.push_back (token_on_place_t (res->second, get_pid<Token>(*it)));
+
+          out.erase (res);
+        }
+
+      if (!out.empty())
+        throw std::runtime_error ("to much edges in output map");
+
+      return output;
+    }
+  };
 };
 
 // the net itself
@@ -785,6 +845,13 @@ public:
     return pmap.add (place);
   }
 
+  const tid_t set_transition_function (const tid_t & tid, const transfun_t & f)
+  {
+    transfun[tid] = f;
+
+    return tid;
+  }
+
   const tid_t add_transition 
   ( const Transition & transition
   , const transfun_t & f = TransitionFunction::Default<Token>()
@@ -793,11 +860,7 @@ public:
   {
     ++num_transitions;
 
-    const tid_t tid (tmap.add (transition));
-
-    transfun[tid] = f;
-
-    return tid;
+    return set_transition_function (tmap.add (transition), f);
   }
 
 private:
