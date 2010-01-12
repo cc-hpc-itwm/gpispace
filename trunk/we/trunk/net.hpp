@@ -494,14 +494,77 @@ public:
   const std::size_t count (void) const { return count_; }
 };
 
-// the net itself
-template<typename Place, typename Transition, typename Edge, typename Token>
-class net
+struct id_traits
 {
 public:
   typedef handle::T pid_t;
   typedef handle::T tid_t;
   typedef handle::T eid_t;
+};
+
+template<typename Token>
+struct FireTraits
+{
+private:
+  typedef id_traits::pid_t pid_t;
+  typedef id_traits::tid_t tid_t;
+  typedef id_traits::eid_t eid_t;
+
+public:
+  // a transition gets a number of input tokens, taken from places,
+  // connected to the transition via edges
+  // so input is of type: [(Token,(Place,Edge))]
+  // the same holds true for the output, but the tokens are to be produced
+  typedef std::pair<pid_t, eid_t> place_via_edge_t;
+  typedef std::pair<Token, place_via_edge_t> token_input_t;
+  typedef std::vector<token_input_t> input_t;
+
+  typedef std::vector<place_via_edge_t> output_descr_t;
+  typedef std::pair<Token, pid_t> token_on_place_t;
+  typedef std::vector<token_on_place_t> output_t;
+};
+
+// simple transition function, that just default constructs all needed tokens
+template<typename Token>
+class TransitionFunctionDefault
+{
+private:
+  typedef typename FireTraits<Token>::input_t input_t;
+
+  typedef typename FireTraits<Token>::output_descr_t output_descr_t;
+  typedef std::pair<Token, pid_t> token_on_place_t;
+  typedef typename FireTraits<Token>::output_t output_t;
+
+public:
+  const output_t operator () ( const input_t &
+                             , const output_descr_t & output_descr
+                             ) const
+  {
+    output_t output;
+
+    for ( typename output_descr_t::const_iterator it (output_descr.begin())
+        ; it != output_descr.end()
+        ; ++it
+        )
+      output.push_back (token_on_place_t (Token(), it->first));
+
+    return output;
+  }
+};
+
+// the net itself
+template< typename Place
+        , typename Transition
+        , typename Edge
+        , typename Token
+        , typename TransitionFunction = TransitionFunctionDefault<Token>
+        >
+class net
+{
+public:
+  typedef id_traits::pid_t pid_t;
+  typedef id_traits::tid_t tid_t;
+  typedef id_traits::eid_t eid_t;
 
   enum edge_type {PT,TP};
 
@@ -515,6 +578,13 @@ public:
   typedef adj_const_it adj_transition_const_it;
 
   typedef token_on_place_it<Token, pid_t> token_place_it;
+
+  typedef typename FireTraits<Token>::place_via_edge_t place_via_edge_t;
+  typedef typename FireTraits<Token>::token_input_t token_input_t;
+  typedef typename FireTraits<Token>::input_t input_t;
+
+  typedef typename FireTraits<Token>::output_descr_t output_descr_t;
+  typedef typename FireTraits<Token>::output_t output_t;
 
 private:
   auto_bimap<Place> pmap; // Place <-> internal id
@@ -1123,6 +1193,9 @@ public:
 
   void fire (const tid_t & tid) throw (transition_not_enabled)
   {
+    input_t input;
+    output_descr_t output_descr;
+
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
@@ -1133,6 +1206,8 @@ public:
         if (!tp.has_more())
           throw transition_not_enabled ("during call of fire");
 
+        input.push_back (token_input_t (*tp, place_via_edge_t(*pit, pit())));
+
         delete_one_token (*pit, *tp);
       }
 
@@ -1140,7 +1215,15 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      put_token (*pit, Token());
+      output_descr.push_back (place_via_edge_t (*pit, pit()));
+
+    const output_t output (TransitionFunction()(input, output_descr));
+
+    for ( typename output_t::const_iterator out (output.begin())
+        ; out != output.end()
+        ; ++out
+        )
+      put_token (out->second, out->first);
   }
 
   // output
