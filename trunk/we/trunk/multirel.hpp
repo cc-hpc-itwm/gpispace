@@ -1,0 +1,129 @@
+// multi relation, objects as well as individual relations are allowed
+// to occur more than once, mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _MULTIREL_HPP
+#define _MULTIREL_HPP
+
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
+
+namespace multirel
+{
+  template<typename L, typename R>
+  class traits
+  {
+  public:
+    typedef typename boost::bimap
+    < boost::bimaps::unordered_multiset_of<L>
+    , boost::bimaps::unordered_multiset_of<R>
+    , boost::bimaps::unordered_multiset_of_relation<>
+    > container_t;
+
+    typedef typename container_t::value_type val_t;
+    typedef typename container_t::iterator it_t;
+    typedef std::pair<it_t, it_t> range_it;
+    typedef typename container_t::const_iterator const_it;
+
+    typedef typename container_t::right_map::const_iterator right_const_it;
+    typedef typename container_t::left_map::const_iterator left_const_it;
+  };
+
+  template<typename IT, typename T>
+  struct lr_const_it
+  {
+  private:
+    IT pos;
+    const IT end;
+    const std::size_t count_;
+  public:
+    lr_const_it (const std::pair<IT, IT> & its)
+      : pos (its.first)
+      , end (its.second)
+      , count_(std::distance (pos, end))
+    {}
+    const bool has_more (void) const { return (pos != end) ? true : false; }
+    void operator ++ (void) { ++pos; }
+    const T & operator * (void) const { return pos->second; }
+    const std::size_t count (void) const { return count_; }
+  };
+
+  template<typename L, typename R>
+  struct right_const_it 
+    : public lr_const_it<typename traits<L,R>::right_const_it, L>
+  {
+    typedef typename traits<L,R>::right_const_it it_t;
+
+    right_const_it (const std::pair<it_t, it_t> & its)
+      : lr_const_it<it_t, L> (its)
+    {}
+  };
+
+  template<typename L, typename R>
+  struct left_const_it 
+    : public lr_const_it<typename traits<L,R>::left_const_it, R>
+  {
+    typedef typename traits<L,R>::left_const_it it_t;
+
+    left_const_it (const std::pair<it_t, it_t> & its)
+      : lr_const_it<it_t, R> (its)
+    {}
+  };
+
+  template<typename L, typename R>
+  class multirel
+  {
+  private:
+    typename traits<L,R>::container_t container;
+
+  public:
+    const bool add (const L & l, const R & r)
+    {
+      return container.insert(typename traits<L,R>::val_t (l, r)).second;
+    }
+
+    const std::size_t delete_one (const L & l, const R & r)
+    {
+      typename traits<L,R>::range_it
+        range_it (container.equal_range (typename traits<L,R>::val_t (l, r)));
+
+      const std::size_t dist (std::distance (range_it.first, range_it.second));
+
+      if (dist > 0)
+        container.erase (range_it.first);
+
+      return dist;
+    }
+
+    const std::size_t delete_all (const L & l, const R & r)
+    {
+      typename traits<L,R>::range_it
+        range_it (container.equal_range (typename traits<L,R>::val_t (l, r)));
+
+      container.erase (range_it.first, range_it.second);
+
+      return std::distance (range_it.first, range_it.second);
+    }
+
+    const right_const_it<L,R> left_of (const R & r) const
+    {
+      return right_const_it<L,R> (container.right.equal_range (r));
+    }
+
+    const left_const_it<L,R> right_of (const L & l) const
+    {
+      return left_const_it<L,R> (container.left.equal_range (l));
+    }
+
+    const typename traits<L,R>::const_it begin (void) const
+    {
+      return container.begin();
+    }
+
+    const typename traits<L,R>::const_it end (void) const
+    {
+      return container.end();
+    }
+  };
+} // namespace multirel
+
+#endif // _MULTIREL_HPP
