@@ -3,14 +3,9 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include <net.hpp>
-#include <tr1/random>
-
-#include <vector>
-#include <map>
 
 using std::cout;
 using std::endl;

@@ -9,8 +9,6 @@
 #include <net.hpp>
 #include <map>
 
-#include <bijection.hpp>
-
 #include <tr1/unordered_map>
 
 using std::cout;

@@ -11,9 +11,6 @@
 #include <net.hpp>
 #include <timer.hpp>
 
-#include <bijection.hpp>
-#include <handle.hpp>
-
 #include <tr1/random>
 
 typedef unsigned int place_t;

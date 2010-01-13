@@ -9,8 +9,6 @@
 #include <net.hpp>
 #include <tr1/random>
 
-#include <vector>
-
 using std::cout;
 using std::endl;
 

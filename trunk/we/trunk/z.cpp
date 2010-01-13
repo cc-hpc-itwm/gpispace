@@ -1,7 +1,8 @@
 // basic usage of adjacency.hpp, mirko.rahn@itwm.fraunhofer.de
 
-#include <iostream>
 #include <adjacency.hpp>
+
+#include <iostream>
 #include <limits>
 
 typedef unsigned short row_t;

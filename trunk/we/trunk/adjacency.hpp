@@ -19,10 +19,7 @@ namespace adjacency
     it_t pos;
     const it_t end;
   public:
-    const_it (const it_t & _pos, const it_t & _end)
-      : pos (_pos)
-      , end (_end)
-    {}
+    const_it (const it_t & _pos, const it_t & _end) : pos (_pos), end (_end) {}
 
     const bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
