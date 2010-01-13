@@ -12,6 +12,8 @@
 #include <timer.hpp>
 #include <bijection.hpp>
 
+#include <auto_bimap.hpp>
+
 #include <tr1/random>
 
 typedef unsigned int place_t;
@@ -76,7 +78,7 @@ main ()
                                             , rand
                                             );
             }
-          catch (already_there)
+          catch (auto_bimap::exception::already_there)
             {
               ++duplicates;
             }
@@ -103,7 +105,7 @@ main ()
                                             , rand
                                             );
             }
-          catch (already_there)
+          catch (auto_bimap::exception::already_there)
             {
               ++duplicates;
             }
@@ -263,7 +265,7 @@ main ()
   }
 
   {
-    auto_bimap<place_t> bm("place_t");
+    auto_bimap::auto_bimap<place_t> bm("place_t");
 
     {
       Timer_t timer ("insert elements to auto_bimap", bisize);
@@ -275,7 +277,7 @@ main ()
     {
       Timer_t timer ("get_id from auto_bimap", bisize);
 
-      handle::T s (0);
+      auto_bimap::handle::T s (0);
       
       for (unsigned int i(0); i < bisize; ++i)
         s += bm.get_id (i);
@@ -288,7 +290,7 @@ main ()
 
       unsigned int s (0);
       
-      for (handle::T i(0); i < bisize; ++i)
+      for (auto_bimap::handle::T i(0); i < bisize; ++i)
         s += bm.get_elem (i);
 
       std::cout << "s = " << s << std::endl;

@@ -9,6 +9,8 @@
 #include <net.hpp>
 #include <map>
 
+#include <auto_bimap.hpp>
+
 #include <tr1/unordered_map>
 
 using std::cout;
@@ -203,7 +205,7 @@ static void add (pnet_t & n, const place_t & p)
     {
       cout << n.add_place (p);
     }
-  catch (already_there)
+  catch (auto_bimap::exception::already_there)
     {
       cout << "ALREADY_THERE";
     }
@@ -219,7 +221,7 @@ static void del (pnet_t & n, const place_t & p)
     {
       cout << n.delete_place (p);
     }
-  catch (no_such)
+  catch (auto_bimap::exception::no_such)
     {
       cout << "NO SUCH";
     }
@@ -235,7 +237,7 @@ static void del_pid (pnet_t & n, const pnet_t::pid_t & pid)
     {
       cout << n.delete_place (pid);
     }
-  catch (no_such)
+  catch (auto_bimap::exception::no_such)
     {
       cout << "NO SUCH";
     }
@@ -251,11 +253,11 @@ static void mod (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
     {
       cout << n.modify_place (pid, p);
     }
-  catch (already_there)
+  catch (auto_bimap::exception::already_there)
     {
       cout << "ALREADY THERE";
     }
-  catch (no_such)
+  catch (auto_bimap::exception::no_such)
     {
       cout << "NO SUCH";
     }
@@ -271,11 +273,11 @@ static void rep (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
     {
       cout << n.replace_place (pid, p);
     }
-  catch (already_there)
+  catch (auto_bimap::exception::already_there)
     {
       cout << "ALREADY THERE";
     }
-  catch (no_such)
+  catch (auto_bimap::exception::no_such)
     {
       cout << "NO SUCH";
     }

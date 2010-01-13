@@ -21,45 +21,14 @@
 
 #include <boost/function.hpp>
 
+#include <auto_bimap.hpp>
+
 // exceptions
-class no_such : public std::runtime_error
-{
-public:
-  no_such (const std::string & msg) : std::runtime_error(msg) {}
-  ~no_such() throw() {}
-};
-
-class already_there : public std::runtime_error
-{
-public:
-  already_there (const std::string & msg) : std::runtime_error(msg) {}
-  ~already_there() throw() {}
-};
-
 class transition_not_enabled : public std::runtime_error
 {
 public:
   transition_not_enabled (const std::string & msg) : std::runtime_error(msg) {}
   ~transition_not_enabled() throw () {}
-};
-
-// Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
-// cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
-// It follows that an uint64_t is enough for now.
-namespace handle
-{
-  typedef uint64_t T;
-  static const T invalid (std::numeric_limits<T>::max());
-
-  struct handle_t
-  {
-  private:
-    T v;
-  public:
-    handle_t () : v(std::numeric_limits<uint64_t>::min()) {}
-    const T & operator * (void) const { return v; }
-    const void operator ++ (void) { ++v; }
-  };
 };
 
 // set with access to nth element
@@ -84,7 +53,7 @@ public:
       ? vec.insert (pit.second, x) : pit.first;
   }
 
-  it erase (const T & x) throw (no_such)
+  it erase (const T & x)
   {
     const it pos (std::lower_bound (vec.begin(), vec.end(), x));
 
@@ -108,153 +77,19 @@ public:
   }
 };
 
-// bimap, that keeps a bijection between objects and some index
-template<typename T>
-class auto_bimap
-{
-private:
-  // unordered, unique, viewable
-  typedef boost::bimaps::unordered_set_of<T> elem_collection_t;
-
-  // unordered, unique, viewable
-  typedef boost::bimaps::unordered_set_of<handle::T> id_collection_t;
-
-  typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
-  typedef typename bimap_t::value_type val_t;
-
-  bimap_t bimap;
-  handle::handle_t h;
-
-  const std::string description;
-
-public:
-  auto_bimap (const std::string & descr) : description (descr) {}
-
-  typedef typename bimap_t::iterator iterator;
-
-  iterator begin (void) { return bimap.begin(); }
-  iterator end (void) { return bimap.end(); }
-
-  typedef typename bimap_t::const_iterator const_iterator;
-
-  const const_iterator begin (void) const { return bimap.begin(); }
-  const const_iterator end (void) const { return bimap.end(); }
-
-  const handle::T & get_id (const T & x) const throw (no_such)
-  {
-    typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
-
-    if (it == bimap.left.end())
-      throw no_such (description);
-
-    return it->second;
-  }
-
-  const T & get_elem (const handle::T & i) const throw (no_such)
-  {
-    typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
-
-    if (it == bimap.right.end())
-      throw no_such ("index for " + description);
-
-    return it->second;
-  }
-
-  const handle::T add (const T & x) throw (already_there)
-  {
-    if (bimap.left.find (x) != bimap.left.end())
-      throw already_there (description);
-
-    handle::T i (*h); ++h;
-
-    bimap.insert (val_t (x, i));
-
-    return i;
-  }
-
-  const void erase (const handle::T & i)
-  {
-    bimap.right.erase (i);
-  }
-
-  const handle::T modify (const handle::T & i, const T & x)
-    throw (no_such, already_there)
-  {
-    typename bimap_t::right_map::iterator it (bimap.right.find (i));
-
-    if (it == bimap.right.end())
-      throw no_such ("index for " + description);
-
-    if (bimap.right.modify_data (it, boost::bimaps::_data = x) == false)
-      throw already_there (description + " after modify");
-
-    return i;
-  }
-
-  const handle::T replace (const handle::T & i, const T & x)
-    throw (no_such, already_there)
-  {
-    typename bimap_t::right_map::iterator it (bimap.right.find (i));
-
-    if (it == bimap.right.end())
-      throw no_such ("index for " + description);
-
-    if (bimap.right.replace_data (it, x) == false)
-      throw already_there (description + " after replace");
-
-    return i;
-  }
-
-  template<typename U>
-  friend std::ostream & operator << (std::ostream &, const auto_bimap<U> &);
-};
-
-template<typename T>
-std::ostream & operator << (std::ostream & s, const auto_bimap<T> & bm)
-{
-  typedef typename auto_bimap<T>::const_iterator bm_it;
-
-  s << "bimap (" << bm.description << "):" << std::endl;
-
-  for (bm_it it (bm.begin()), it_end (bm.end()); it != it_end; ++it)
-    s << " -- " << it->left << " <=> " << it->right << std::endl;
-
-  return s;
-};
-
-template<typename T>
-struct bi_const_it
-{
-private:
-  typedef typename auto_bimap<T>::const_iterator it;
-  it pos;
-  const it end;
-  const std::size_t count_;
-public:
-  bi_const_it (const auto_bimap<T> & bm)
-    : pos (bm.begin())
-    , end (bm.end())
-    , count_(std::distance(pos, end))
-  {}
-
-  const bool has_more (void) const { return (pos != end) ? true : false; }
-  void operator ++ (void) { ++pos; }
-  const handle::T & operator * (void) const { return pos->right; }
-  const std::size_t count (void) const { return count_; }
-};
-
 // adjacency_table, grows on demand
 // the expected case leads to sparse matrices, thus implemented as vec_of_vec
 class adjacency_table
 {
 public:
-  typedef handle::T size_t;
+  typedef auto_bimap::handle::T size_t;
+  typedef size_t content_t;
 
 private:
   size_t row;
   size_t col;
 
-  typedef std::pair<size_t,handle::T> adj_t;
+  typedef std::pair<size_t,content_t> adj_t;
   typedef std::vector<adj_t> adj_vec_t;
   typedef std::vector<adj_vec_t> adj_table_t;
 
@@ -264,12 +99,12 @@ private:
   adj_table_t table;
   adj_table_t tableT;
 
-  const handle::T gen_get ( const size_t & x
+  const content_t gen_get ( const size_t & x
                           , const size_t & y
                           , const adj_table_t & t
                           ) const
   {
-    handle::T v (handle::invalid);
+    content_t v (auto_bimap::handle::invalid);
 
     for ( adj_vec_t::const_iterator it (t[x].begin())
         ; it != t[x].end()
@@ -315,7 +150,7 @@ public:
     , tableT (col)
   {}
 
-  const handle::T get_adjacent (const size_t & r, const size_t & c) const
+  const content_t get_adjacent (const size_t & r, const size_t & c) const
     throw (std::out_of_range)
   {
     if (r > row - 1)
@@ -324,7 +159,7 @@ public:
     return gen_get (r, c, table);
   }
 
-  const handle::T get_adjacentT (const size_t & r, const size_t & c) const
+  const content_t get_adjacentT (const size_t & r, const size_t & c) const
     throw (std::out_of_range)
   {
     if (c > col - 1)
@@ -390,11 +225,11 @@ std::ostream & operator << (std::ostream & s, const adjacency_table & m)
 
       for (size_t c (0); c < m.col; ++c)
         {
-          const handle::T adj (m.get_adjacent (r, c));
+          const adjacency_table::content_t adj (m.get_adjacent (r, c));
 
           s << std::setw(w);
 
-          if (adj == handle::invalid)
+          if (adj == auto_bimap::handle::invalid)
             s << ".";
           else
             s << adj;
@@ -416,11 +251,11 @@ std::ostream & operator << (std::ostream & s, const adjacency_table & m)
 
       for (size_t r (0); r < m.row; ++r)
         {
-          const handle::T adj (m.get_adjacentT (r, c));
+          const adjacency_table::content_t adj (m.get_adjacentT (r, c));
 
           s << std::setw(w);
 
-          if (adj == handle::invalid)
+          if (adj == auto_bimap::handle::invalid)
             s << ".";
           else
             s << adj;
@@ -442,7 +277,7 @@ private:
 
 public:
   adj_const_it ( const adjacency_table & m
-               , const handle::T & x
+               , const adjacency_table::content_t & x
                , const bool & fix_is_fst
                )
     : vec_it (fix_is_fst ? m.get_vec_it (x) : m.get_vec_itT (x))
@@ -453,10 +288,10 @@ public:
   const bool has_more (void) const { return (pos != end) ? true : false; }
   void operator ++ (void) { ++pos; }
 
-  const handle::T & edge_id (void) const { return pos->second; }
+  const adjacency_table::content_t & edge_id (void) const { return pos->second; }
   const adjacency_table::size_t & obj_id (void) const { return pos->first; }
 
-  const handle::T & operator () (void) const { return edge_id(); }
+  const adjacency_table::content_t & operator () (void) const { return edge_id(); }
   const adjacency_table::size_t & operator * (void) const { return obj_id(); }
 };
 
@@ -498,9 +333,9 @@ public:
 
 namespace id_traits
 {
-  typedef handle::T pid_t;
-  typedef handle::T tid_t;
-  typedef handle::T eid_t;
+  typedef auto_bimap::handle::T pid_t;
+  typedef auto_bimap::handle::T tid_t;
+  typedef auto_bimap::handle::T eid_t;
 };
 
 namespace TransitionFunction
@@ -711,9 +546,9 @@ public:
 
   typedef svector<tid_t> enabled_t;
 
-  typedef bi_const_it<Place> place_const_it;
-  typedef bi_const_it<Transition> transition_const_it;
-  typedef bi_const_it<Edge> edge_const_it;
+  typedef auto_bimap::bi_const_it<Place> place_const_it;
+  typedef auto_bimap::bi_const_it<Transition> transition_const_it;
+  typedef auto_bimap::bi_const_it<Edge> edge_const_it;
 
   typedef adj_const_it adj_place_const_it;
   typedef adj_const_it adj_transition_const_it;
@@ -731,9 +566,9 @@ public:
   typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
 
 private:
-  auto_bimap<Place> pmap; // Place <-> internal id
-  auto_bimap<Transition> tmap; // Transition <-> internal id
-  auto_bimap<Edge> emap; // Edge <-> internal id
+  auto_bimap::auto_bimap<Place> pmap; // Place <-> internal id
+  auto_bimap::auto_bimap<Transition> tmap; // Transition <-> internal id
+  auto_bimap::auto_bimap<Edge> emap; // Edge <-> internal id
 
   typedef std::map<eid_t, pid_t> map_pid_t;
   typedef typename map_pid_t::iterator map_pid_it_t;
@@ -805,40 +640,46 @@ public:
   }
 
   // get id
-  const pid_t & get_place_id (const Place & place) const throw (no_such)
+  const pid_t & get_place_id (const Place & place) const
+    throw (auto_bimap::exception::no_such)
   {
     return pmap.get_id (place);
   }
 
   const tid_t & get_transition_id (const Transition & transition) const
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return tmap.get_id (transition);
   }
 
-  const eid_t & get_edge_id (const Edge & edge) const throw (no_such)
+  const eid_t & get_edge_id (const Edge & edge) const
+    throw (auto_bimap::exception::no_such)
   {
     return emap.get_id (edge);
   }
 
   // get element
-  const Place & place (const pid_t & pid) const throw (no_such)
+  const Place & place (const pid_t & pid) const
+    throw (auto_bimap::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
-  const Transition & transition (const tid_t & tid) const throw (no_such)
+  const Transition & transition (const tid_t & tid) const
+    throw (auto_bimap::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
-  const Edge & edge (const eid_t & eid) const throw (no_such)
+  const Edge & edge (const eid_t & eid) const
+    throw (auto_bimap::exception::no_such)
   {
     return emap.get_elem (eid);
   }
 
   // add element
-  const pid_t add_place (const Place & place) throw (already_there)
+  const pid_t add_place (const Place & place)
+    throw (auto_bimap::exception::already_there)
   {
     ++num_places;
 
@@ -856,7 +697,7 @@ public:
   ( const Transition & transition
   , const transfun_t & f = TransitionFunction::Default<Token>()
   )
-    throw (already_there)
+    throw (auto_bimap::exception::already_there)
   {
     ++num_transitions;
 
@@ -870,12 +711,12 @@ private:
   , const adjacency_table::size_t & y
   , adjacency_table & m
   )
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     try
       {
-        if (m.get_adjacent (x, y) != handle::invalid)
-          throw already_there ("adjacency");
+        if (m.get_adjacent (x, y) != auto_bimap::handle::invalid)
+          throw auto_bimap::exception::already_there ("adjacency");
       }
     catch (std::out_of_range)
       {
@@ -894,7 +735,7 @@ private:
 public:
   const eid_t add_edge_place_to_transition
   (const Edge & edge, const pid_t & pid, const tid_t & tid)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     const eid_t eid (add_edge (edge, pid, tid, adj_pt));
 
@@ -906,7 +747,7 @@ public:
 
   const eid_t add_edge_place_to_transition
   (const Edge & edge, const Place & place, const Transition & transition)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     const pid_t pid (get_place_id (place));
     const tid_t tid (get_transition_id (transition));
@@ -916,7 +757,7 @@ public:
 
   const eid_t add_edge_transition_to_place
   (const Edge & edge, const tid_t & tid, const pid_t & pid)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     const eid_t eid (add_edge (edge, tid, pid, adj_tp));
 
@@ -928,7 +769,7 @@ public:
 
   const eid_t add_edge_transition_to_place
   (const Edge & edge, const Transition & transition, const Place & place)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     const pid_t pid (get_place_id (place));
     const tid_t tid (get_transition_id (transition));
@@ -1053,12 +894,14 @@ public:
     return eid;
   }
 
-  const eid_t & delete_edge (const Edge & edge) throw (no_such)
+  const eid_t & delete_edge (const Edge & edge)
+    throw (auto_bimap::exception::no_such)
   {
     return delete_edge (get_edge_id (edge));
   }
 
-  const pid_t & delete_place (const pid_t & pid) throw (no_such)
+  const pid_t & delete_place (const pid_t & pid)
+    throw (auto_bimap::exception::no_such)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
@@ -1079,12 +922,14 @@ public:
     return pid;
   }
 
-  const pid_t & delete_place (const Place & place) throw (no_such)
+  const pid_t & delete_place (const Place & place)
+    throw (auto_bimap::exception::no_such)
   {
     return delete_place (get_place_id (place));
   }
 
-  const tid_t & delete_transition (const tid_t & tid) throw (no_such)
+  const tid_t & delete_transition (const tid_t & tid)
+    throw (auto_bimap::exception::no_such)
   {
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
@@ -1107,7 +952,7 @@ public:
   }
 
   const tid_t & delete_transition (const Transition & transition)
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return delete_transition (get_transition_id (transition));
   }
@@ -1115,26 +960,26 @@ public:
   // modify and replace
   // erased in case of conflict after modification
   const pid_t modify_place (const pid_t & pid, const Place & place)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return pmap.modify (pid, place);
   }
 
   const pid_t modify_place (const Place & old_place, const Place & new_place)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return modify_place (get_place_id (old_place), new_place);
   }
 
   // kept old value in case of conflict after modification
   const pid_t replace_place (const pid_t & pid, const Place & place)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return pmap.replace (pid, place);
   }
 
   const pid_t replace_place (const Place & old_place, const Place & new_place)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return replace_place (get_place_id (old_place), new_place);
   }
@@ -1142,7 +987,7 @@ public:
   const tid_t modify_transition ( const tid_t & tid
                                 , const Transition & transition
                                 )
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return tmap.modify (tid, transition);
   }
@@ -1150,7 +995,7 @@ public:
   const tid_t modify_transition ( const Transition & old_transition
                                 , const Transition & new_transition
                                 )
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return tmap.modify (get_transition_id (old_transition), new_transition);
   }
@@ -1158,7 +1003,7 @@ public:
   const tid_t replace_transition ( const tid_t & tid
                                  , const Transition & transition
                                  )
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
@@ -1166,31 +1011,31 @@ public:
   const tid_t replace_transition ( const Transition & old_transition
                                  , const Transition & new_transition
                                  )
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return tmap.replace (get_transition_id (old_transition), new_transition);
   }
 
   const eid_t modify_edge (const eid_t & eid, const Edge & edge)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return emap.modify (eid, edge);
   }
 
   const eid_t modify_edge (const Edge & old_edge, const Edge & new_edge)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return emap.modify (get_edge_id (old_edge), new_edge);
   }
 
   const eid_t replace_edge (const eid_t & eid, const Edge & edge)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return emap.replace (eid, edge);
   }
 
   const eid_t replace_edge (const Edge & old_edge, const Edge & new_edge)
-    throw (no_such, already_there)
+    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
   {
     return emap.replace (get_edge_id (old_edge), new_edge);
   }
@@ -1245,7 +1090,7 @@ public:
   }
 
   const bool put_token (const Place & place, const Token & token)
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return put_token (get_place_id (place), token);
   }
@@ -1256,7 +1101,7 @@ public:
   }
 
   const token_place_it get_token (const Place & place) const
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return get_token (get_place_id (place));
   }
@@ -1287,7 +1132,7 @@ public:
   }
 
   const std::size_t delete_one_token (const Place & place, const Token & token)
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return delete_one_token (get_place_id (place), token);
   }
@@ -1304,7 +1149,7 @@ public:
   }
 
   const std::size_t delete_all_token (const Place & place, const Token & token)
-    throw (no_such)
+    throw (auto_bimap::exception::no_such)
   {
     return delete_all_token (get_place_id (place), token);
   }
