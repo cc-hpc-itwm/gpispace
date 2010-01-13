@@ -4,6 +4,10 @@
 #define _ADJACENCY_HPP
 
 #include <vector>
+#include <stdexcept>
+
+#include <ostream>
+#include <iomanip>
 
 namespace adjacency
 {
@@ -18,18 +22,20 @@ namespace adjacency
 
     typedef std::pair<IDX,ADJ> adj_t;
     typedef std::vector<adj_t> adj_vec_t;
-    typedef std::vector<adj_vec_t> adj_table_t;
-    
+    typedef std::vector<adj_vec_t> table_t;
+
+  public:
+    typedef typename adj_vec_t::const_iterator const_it;
+    typedef typename std::pair<const_it,const_it> range_const_it;
+
+  private:
     // store table as well as transposed table to allow fast iteration
     // row wise and column wise
 
-    adj_table_t tableN;
-    adj_table_t tableT;
+    table_t tableN;
+    table_t tableT;
 
-    const ADJ gen_get ( const IDX & x
-                      , const IDX & y
-                      , const adj_table_t & t
-                      ) const
+    const ADJ gen_get (const IDX & x, const IDX & y, const table_t & t) const
     {
       ADJ v (invalid);
 
@@ -46,9 +52,12 @@ namespace adjacency
       return v;
     }
 
-    void gen_clear (const IDX & x, const IDX & y, adj_table_t & t)
+    void gen_clear (const IDX & x, const IDX & y, table_t & t)
     {
-      for (typename adj_vec_t::iterator it (t[x].begin()); it != t[x].end(); ++it)
+      for ( typename adj_vec_t::iterator it (t[x].begin())
+          ; it != t[x].end()
+          ; ++it
+          )
         if (it->first == y)
           {
             t[x].erase (it);
@@ -65,17 +74,14 @@ namespace adjacency
       , tableT (col)
     {}
 
-    typedef typename adj_vec_t::const_iterator const_it;
-    typedef typename std::pair<const_it,const_it> vec_it;
-
-    const vec_it get_vec_it (const IDX & x) const
+    const range_const_it get_range_const_it (const IDX & x) const
     {
-      return vec_it (tableN[x].begin(),tableN[x].end());
+      return range_const_it (tableN[x].begin(),tableN[x].end());
     }
 
-    const vec_it get_vec_itT (const IDX & x) const
+    const range_const_it get_range_const_itT (const IDX & x) const
     {
-      return vec_it (tableT[x].begin(),tableT[x].end());
+      return range_const_it (tableT[x].begin(),tableT[x].end());
     }
 
     const ADJ get_adjacent (const IDX & r, const IDX & c) const
@@ -199,21 +205,21 @@ namespace adjacency
 
   // iterate through adjacencies
   template<typename IDX, typename ADJ>
-  struct adj_const_it
+  struct const_it
   {
   private:
-    typename table<IDX,ADJ>::vec_it vec_it;
-    typename table<IDX,ADJ>::const_it pos;
-    const typename table<IDX,ADJ>::const_it end;
+    typename table<IDX,ADJ>::range_const_it range_const_it;
+    typename table<IDX,ADJ>::const_it & pos;
+    const typename table<IDX,ADJ>::const_it & end;
 
   public:
-    adj_const_it ( const table<IDX,ADJ> & m
-                 , const ADJ & x
-                 , const bool & fix_is_fst
-                 )
-      : vec_it (fix_is_fst ? m.get_vec_it (x) : m.get_vec_itT (x))
-      , pos (vec_it.first)
-      , end (vec_it.second)
+    const_it (const table<IDX,ADJ> & m, const ADJ & x, const bool & fix_is_fst)
+      : range_const_it ( fix_is_fst 
+                       ? m.get_range_const_it (x) 
+                       : m.get_range_const_itT (x)
+                       )
+      , pos (range_const_it.first)
+      , end (range_const_it.second)
     {}
 
     const bool has_more (void) const { return (pos != end) ? true : false; }

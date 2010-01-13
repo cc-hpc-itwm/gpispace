@@ -288,8 +288,8 @@ public:
   typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
   typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
 
-  typedef adjacency::adj_const_it<handle::T,handle::T> adj_place_const_it;
-  typedef adjacency::adj_const_it<handle::T,handle::T> adj_transition_const_it;
+  typedef adjacency::const_it<handle::T,handle::T> adj_place_const_it;
+  typedef adjacency::const_it<handle::T,handle::T> adj_transition_const_it;
 
   typedef token_on_place_it<Token, pid_t> token_place_it;
 
