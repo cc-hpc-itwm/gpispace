@@ -502,9 +502,9 @@ public:
 
   typedef svector<tid_t> enabled_t;
 
-  typedef bijection::bi_const_it<Place> place_const_it;
-  typedef bijection::bi_const_it<Transition> transition_const_it;
-  typedef bijection::bi_const_it<Edge> edge_const_it;
+  typedef bijection::bi_const_it<Place,pid_t> place_const_it;
+  typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
+  typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
 
   typedef adj_const_it adj_place_const_it;
   typedef adj_const_it adj_transition_const_it;
@@ -522,9 +522,9 @@ public:
   typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
 
 private:
-  bijection::bijection<Place> pmap; // Place <-> internal id
-  bijection::bijection<Transition> tmap; // Transition <-> internal id
-  bijection::bijection<Edge> emap; // Edge <-> internal id
+  bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
+  bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
+  bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
 
   typedef std::map<eid_t, pid_t> map_pid_t;
   typedef typename map_pid_t::iterator map_pid_it_t;

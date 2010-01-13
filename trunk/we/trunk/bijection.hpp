@@ -10,8 +10,6 @@
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/support/lambda.hpp>
 
-#include <handle.hpp>
-
 namespace bijection
 {
   namespace exception
@@ -31,7 +29,7 @@ namespace bijection
     };
   } // namespace exception
 
-  template<typename T, typename I = handle::T>
+  template<typename T, typename I>
   class bijection
   {
   private:
@@ -146,7 +144,7 @@ namespace bijection
     return s;
   };
 
-  template<typename T, typename I = handle::T>
+  template<typename T, typename I>
   struct bi_const_it
   {
   private:
