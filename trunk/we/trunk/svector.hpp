@@ -1,9 +1,10 @@
+// set with access to nth element, mirko.rahn@itwm.fraunhofer.de
+
 #ifndef _SVECTOR_HPP
 #define _SVECTOR_HPP
 
 #include <vector>
 
-// set with access to nth element
 template<typename T>
 struct svector
 {

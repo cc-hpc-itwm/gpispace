@@ -1,7 +1,7 @@
+// type of automatically assigned ids, mirko.rahn@itwm.fraunhofer.de
+
 #ifndef _HANDLE_HPP
 #define _HANDLE_HPP
-
-// type of automatically assigned ids, mirko.rahn@itwm.fraunhofer.de
 
 namespace handle
 {

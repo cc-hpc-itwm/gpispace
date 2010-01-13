@@ -1,8 +1,7 @@
+// bijection between objects and some index, mirko.rahn@itwm.fraunhofer.de
+
 #ifndef _BIJECTION_HPP
 #define _BIJECTION_HPP
-
-// bimap, that keeps a bijection between objects and some index
-// mirko.rahn@itwm.fraunhofer.de
 
 #include <ostream>
 

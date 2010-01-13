@@ -1,7 +1,7 @@
+// simple approach to store petri nets, mirko.rahn@itwm.fraunhofer.de
+
 #ifndef _NET_HPP
 #define _NET_HPP
-
-// simple approach to store petri nets, mirko.rahn@itwm.fraunhofer.de
 
 #include <ostream>
 #include <iomanip>
