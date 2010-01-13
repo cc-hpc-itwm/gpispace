@@ -3,11 +3,11 @@
 #ifndef _BIJECTION_HPP
 #define _BIJECTION_HPP
 
-#include <ostream>
-
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/support/lambda.hpp>
+
+#include <ostream>
 
 namespace bijection
 {

@@ -4,6 +4,7 @@
 #define _SVECTOR_HPP
 
 #include <vector>
+#include <algorithm>
 
 template<typename T>
 struct svector
@@ -11,11 +12,11 @@ struct svector
 private:
   typedef typename std::vector<T> vec_t;
   typedef typename vec_t::iterator it;
-  typedef typename vec_t::const_iterator const_it;
   typedef std::pair<it,it> pit_t;
 
   vec_t vec;
 public:
+  typedef typename vec_t::const_iterator const_it;
   typedef typename vec_t::size_type size_type;
 
   it insert (const T & x)

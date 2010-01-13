@@ -88,7 +88,7 @@ namespace adjacency
       throw (std::out_of_range)
     {
       if (r > row - 1)
-        throw std::out_of_range("row");
+        throw std::out_of_range("adjacency::table.get_adjacent: row");
 
       return gen_get (r, c, tableN);
     }
@@ -97,7 +97,7 @@ namespace adjacency
       throw (std::out_of_range)
     {
       if (c > col - 1)
-        throw std::out_of_range("col");
+        throw std::out_of_range("adjacency::table.get_adjacentT: col");
 
       return gen_get (c, r, tableT);
     }
@@ -106,17 +106,16 @@ namespace adjacency
       throw (std::out_of_range)
     {
       if (r > row - 1)
-        throw std::out_of_range("row");
+        throw std::out_of_range("adjacency::table.clear_adjacent: row");
 
       if (c > col - 1)
-        throw std::out_of_range("col");
+        throw std::out_of_range("adjacency::table.clear_adjacent: col");
 
       gen_clear (r, c, tableN);
       gen_clear (c, r, tableT);
     }
 
     void set_adjacent (const IDX & r, const IDX & c, const IDX & x)
-      throw (std::bad_alloc)
     {
       if (r > row - 1)
         {
@@ -137,11 +136,11 @@ namespace adjacency
     }
 
     template<typename I, typename A>
-    friend std::ostream & operator << (std::ostream &, const adjacency::table<I,A> &);
+    friend std::ostream & operator << (std::ostream &, const table<I,A> &);
   };
 
   template<typename IDX, typename ADJ>
-  std::ostream & operator << (std::ostream & s, const adjacency::table<IDX,ADJ> & m)
+  std::ostream & operator << (std::ostream & s, const table<IDX,ADJ> & m)
   {
     s << "adjacency::table:";
     s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
