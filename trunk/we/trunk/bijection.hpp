@@ -8,6 +8,7 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/bimap/support/lambda.hpp>
 
 #include <handle.hpp>
 
@@ -128,14 +129,14 @@ namespace bijection
       return i;
     }
 
-    template<typename U>
-    friend std::ostream & operator << (std::ostream &, const bijection<U> &);
+    template<typename U, typename J>
+    friend std::ostream & operator << (std::ostream &, const bijection<U, J> &);
   };
 
-  template<typename T>
-  std::ostream & operator << (std::ostream & s, const bijection<T> & b)
+  template<typename T, typename I>
+  std::ostream & operator << (std::ostream & s, const bijection<T, I> & b)
   {
-    typedef typename bijection<T>::const_iterator b_it;
+    typedef typename bijection<T, I>::const_iterator b_it;
 
     s << "bimap (" << b.description << "):" << std::endl;
 
@@ -149,12 +150,12 @@ namespace bijection
   struct bi_const_it
   {
   private:
-    typedef typename bijection<T>::const_iterator it;
+    typedef typename bijection<T, I>::const_iterator it;
     it pos;
     const it end;
     const std::size_t count_;
   public:
-    bi_const_it (const bijection<T> & b)
+    bi_const_it (const bijection<T, I> & b)
       : pos (b.begin())
       , end (b.end())
       , count_(std::distance(pos, end))
