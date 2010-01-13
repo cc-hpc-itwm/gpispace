@@ -128,8 +128,16 @@ main ()
       for (loop_t l (0); l < num_loops; ++l)
         for (id_t i (0); i < size_loop; ++i)
           {
-            n.add_edge_place_to_transition (e++, node_t (l, i), node_t (l, i));
-            n.add_edge_transition_to_place (e++, node_t (l, i), node_t (l, (i + 1) % size_loop));
+            n.add_edge_place_to_transition 
+              ( e++
+              , n.get_place_id (node_t (l, i))
+              , n.get_transition_id (node_t (l, i))
+              );
+            n.add_edge_transition_to_place 
+              ( e++
+              , n.get_transition_id (node_t (l, i))
+              , n.get_place_id (node_t (l, (i + 1) % size_loop))
+              );
           }
     }
 
@@ -138,7 +146,7 @@ main ()
 
       for (loop_t l (0); l < num_loops; ++l)
         {
-          n.put_token (node_t (l, 0), 'c');
+          n.put_token (n.get_place_id (node_t (l, 0)), 'c');
         }
     }
 

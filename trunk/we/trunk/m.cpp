@@ -219,7 +219,7 @@ static void del (pnet_t & n, const place_t & p)
 
   try
     {
-      cout << n.delete_place (p);
+      cout << n.delete_place (n.get_place_id (p));
     }
   catch (bijection::exception::no_such)
     {

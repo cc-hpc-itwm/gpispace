@@ -1,4 +1,3 @@
-
 // demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
 #include <cstdlib>
@@ -173,85 +172,131 @@ static void step (pnet_t & n, unsigned long k)
     }
 }
 
+static void add_place (pnet_t & n, const place_t & place)
+{
+  cout << "add_place (" << place << ") => " << n.add_place (place) << endl;
+}
+
+static void delete_place (pnet_t & n, const place_t & place)
+{
+  cout << "delete_place (" << place << ") => " 
+       << n.delete_place (n.get_place_id (place))
+       << endl;
+}
+
+static void delete_edge (pnet_t & n, const edge_t & edge)
+{
+  cout << "delete_edge (" << edge << ") => " 
+       << n.delete_edge (n.get_edge_id (edge))
+       << endl;
+}
+
+static void delete_transition (pnet_t & n, const transition_t & transition)
+{
+  cout << "delete_transition (" << transition << ") => " 
+       << n.delete_transition (n.get_transition_id (transition))
+       << endl;
+}
+
+static void add_transition (pnet_t & n, const transition_t & transition)
+{
+  cout << "add_transition (" << transition 
+       << ") => " << n.add_transition (transition) 
+       << endl;
+}
+
+static void add_edge_place_to_transition ( pnet_t & n
+                                         , const edge_t & edge
+                                         , const place_t & place
+                                         , const transition_t & transition
+                                         )
+{
+  cout << "add_edge_place_to_transition (" << edge << ") => "
+       << n.add_edge_place_to_transition ( edge
+                                         , n.get_place_id (place)
+                                         , n.get_transition_id (transition)
+                                         )
+       << endl;
+}
+
+static void add_edge_transition_to_place ( pnet_t & n
+                                         , const edge_t & edge
+                                         , const transition_t & transition
+                                         , const place_t & place
+                                         )
+{
+  cout << "add_edge_place_to_transition (" << edge << ") => "
+       << n.add_edge_transition_to_place ( edge
+                                         , n.get_transition_id (transition)
+                                         , n.get_place_id (place)
+                                         )
+       << endl;
+}
+
+static void put_token (pnet_t & n, const place_t & place, const token_t & token)
+{
+  cout << "put_token (" << place << "," << token << ") => "
+       << n.put_token (n.get_place_id (place), token)
+       << endl;
+}
+
 int
 main ()
 {
   pnet_t n(5,4);
 
-  cout << "add_place (readyL) => " << n.add_place ("readyL") << endl;
-  cout << "add_place (readyR) => " << n.add_place ("readyR") << endl;
-  cout << "add_place (workL) => " << n.add_place ("workL") << endl;
-  cout << "add_place (workR) => " << n.add_place ("workR") << endl;
-  cout << "add_place (semaphore) => " << n.add_place ("semaphore") << endl;
+  add_place (n, "readyL");
+  add_place (n, "readyR");
+  add_place (n, "workL");
+  add_place (n, "workR");
+  add_place (n, "semaphore");
 
-  cout << "add_transition (enterL) => " << n.add_transition ("enterL") << endl;
-  cout << "add_transition (enterR) => " << n.add_transition ("enterR") << endl;
-  cout << "add_transition (leaveL) => " << n.add_transition ("leaveL") << endl;
-  cout << "add_transition (leaveR) => " << n.add_transition ("leaveR") << endl;
+  add_transition (n, "enterL");
+  add_transition (n, "enterR");
+  add_transition (n, "leaveL");
+  add_transition (n, "leaveR");
 
-  cout << "add_edge_place_to_transition (e_wr_lr) => "
-       << n.add_edge_place_to_transition("e_wr_lr","workR","leaveR") << endl;
-  cout << "add_edge_place_to_transition (e_rr_er) => "
-       << n.add_edge_place_to_transition("e_rr_rr","readyR","enterR") << endl;
+  add_edge_place_to_transition(n, "e_wr_lr","workR","leaveR");
+  add_edge_place_to_transition(n, "e_rr_rr","readyR","enterR");
+  add_edge_place_to_transition(n, "e_wl_ll","workL","leaveL");
+  add_edge_place_to_transition(n, "e_rl_rl","readyL","enterL");
+  add_edge_place_to_transition(n, "e_s_el","semaphore","enterL");
+  add_edge_place_to_transition(n, "e_s_er","semaphore","enterR");
 
-  cout << "add_edge_place_to_transition (e_wl_ll) => "
-       << n.add_edge_place_to_transition("e_wl_ll","workL","leaveL") << endl;
-  cout << "add_edge_place_to_transition (e_rl_el) => "
-       << n.add_edge_place_to_transition("e_rl_rl","readyL","enterL") << endl;
-
-  cout << "add_edge_place_to_transition (e_s_el) => "
-       << n.add_edge_place_to_transition("e_s_el","semaphore","enterL") << endl;
-  cout << "add_edge_place_to_transition (e_s_er) => "
-       << n.add_edge_place_to_transition("e_s_er","semaphore","enterR") << endl;
-
-  cout << "add_edge_transition_to_place (e_el_wl) => "
-       << n.add_edge_transition_to_place ("e_el_wl", "enterL", "workL") << endl;
-  cout << "add_edge_transition_to_place (e_er_wr) => "
-       << n.add_edge_transition_to_place ("e_er_wr", "enterR", "workR") << endl;
-
-  cout << "add_edge_transition_to_place (e_ll_rl) => "
-       << n.add_edge_transition_to_place ("e_ll_rl", "leaveL", "readyL") << endl;
-  cout << "add_edge_transition_to_place (e_lr_rr) => "
-       << n.add_edge_transition_to_place ("e_lr_rr", "leaveR", "readyR") << endl;
-
-  cout << "add_edge_transition_to_place (e_ll_s) => "
-       << n.add_edge_transition_to_place ("e_ll_s", "leaveL", "semaphore") << endl;
-  cout << "add_edge_transition_to_place (e_lr_s) => "
-       << n.add_edge_transition_to_place ("e_lr_s", "leaveR", "semaphore") << endl;
+  add_edge_transition_to_place (n, "e_el_wl", "enterL", "workL");
+  add_edge_transition_to_place (n, "e_er_wr", "enterR", "workR");
+  add_edge_transition_to_place (n, "e_ll_rl", "leaveL", "readyL");
+  add_edge_transition_to_place (n, "e_lr_rr", "leaveR", "readyR");
+  add_edge_transition_to_place (n, "e_ll_s", "leaveL", "semaphore");
+  add_edge_transition_to_place (n, "e_lr_s", "leaveR", "semaphore");
 
   print_net (n);
 
-  cout << "delete_edge (e_s_er) => " <<  n.delete_edge ("e_s_er") << endl;
-  cout << "delete_edge (e_lr_s) => " <<  n.delete_edge ("e_lr_s") << endl;
-  cout << "delete_place (semaphore) => " << n.delete_place ("semaphore") << endl;
-  cout << "delete_transition (enterL) => " << n.delete_transition ("enterL") << endl;
+  delete_edge (n, "e_s_er");
+  delete_edge (n, "e_lr_s");
+  delete_place (n, "semaphore");
+  delete_transition (n, "enterL");
 
   print_net (n);
 
   // reconstruct
 
   // first add stuff that was deleted explicitely
-  cout << "add_place (semaphore) => " << n.add_place ("semaphore") << endl;
-  cout << "add_transition (enterL) => " << n.add_transition ("enterL") << endl;
+  add_place (n, "semaphore");
+  add_transition (n, "enterL");
 
-  cout << "add_edge_place_to_transition (e_s_er) => "
-       << n.add_edge_place_to_transition("e_s_er","semaphore","enterR") << endl;
-  cout << "add_edge_transition_to_place (e_lr_s) => "
-       << n.add_edge_transition_to_place ("e_lr_s", "leaveR", "semaphore") << endl;
+  add_edge_place_to_transition(n, "e_s_er","semaphore","enterR");
+  add_edge_transition_to_place (n, "e_lr_s", "leaveR", "semaphore");
 
   // add edges, that were deleted implicitly by delete_place/transition
 
   // implicitely deleted via deleting enterL
-  cout << "add_edge_place_to_transition (e_rl_el) => "
-       << n.add_edge_place_to_transition("e_rl_rl","readyL","enterL") << endl;
-  cout << "add_edge_transition_to_place (e_el_wl) => "
-       << n.add_edge_transition_to_place ("e_el_wl", "enterL", "workL") << endl;
+  add_edge_place_to_transition(n, "e_rl_rl","readyL","enterL");
+  add_edge_transition_to_place (n, "e_el_wl", "enterL", "workL");
 
   //  implicitly deleted via deleting semaphore
-  cout << "add_edge_place_to_transition (e_s_el) => "
-       << n.add_edge_place_to_transition("e_s_el","semaphore","enterL") << endl;
-  cout << "add_edge_transition_to_place (e_ll_s) => "
-       << n.add_edge_transition_to_place ("e_ll_s", "leaveL", "semaphore") << endl;
+  add_edge_place_to_transition(n, "e_s_el","semaphore","enterL");
+  add_edge_transition_to_place (n, "e_ll_s", "leaveL", "semaphore");
 
   print_net (n);
 
@@ -276,17 +321,19 @@ main ()
 
       if (et == pnet_t::PT)
         {
-          c.add_edge_place_to_transition ( n.edge(*e)
-                                         , n.place(pid)
-                                         , n.transition(tid)
-                                         );
+          c.add_edge_place_to_transition 
+            ( n.edge(*e)
+            , c.get_place_id(n.place(pid))
+            , c.get_transition_id(n.transition(tid))
+            );
         }
       else
         {
-          c.add_edge_transition_to_place ( n.edge(*e)
-                                         , n.transition(tid)
-                                         , n.place(pid)
-                                         );
+          c.add_edge_transition_to_place
+            ( n.edge(*e)
+            , c.get_transition_id (n.transition(tid))
+            , c.get_place_id (n.place(pid))
+            );
         }
     }
 
@@ -294,46 +341,44 @@ main ()
 
   cout << "#### MODIFIED" << endl;
 
-  c.modify_place ("semaphore","Semaphore");
-  c.replace_transition ("enterL", "t_enterL");
-  c.replace_transition ("enterR", "t_enterR");
-  c.modify_edge ("e_s_el","e_S_el");
+  c.modify_place (c.get_place_id("semaphore"),"Semaphore");
+  c.replace_transition (c.get_transition_id ("enterL"), "t_enterL");
+  c.replace_transition (c.get_transition_id ("enterR"), "t_enterR");
+  c.modify_edge (c.get_edge_id ("e_s_el"),"e_S_el");
 
   print_net (c);
 
-  cout << "put_token (Semaphore,c) => " 
-       << c.put_token ("Semaphore","c") << endl;
-  cout << "put_token (readyL,p) => " 
-       << c.put_token ("readyL","p") << endl;
-  cout << "put_token (readyL,p) => " 
-       << c.put_token ("readyL","p") << endl;
-  cout << "put_token (readyL,p) => " 
-       << c.put_token (c.get_place_id("readyL"),"p") << endl;
-  cout << "put_token (readyL,q) => " 
-       << c.put_token ("readyL","q") << endl;
-  cout << "put_token (readyL,q) => " 
-       << c.put_token ("readyL","q") << endl;
-  cout << "put_token (readyL,q) => " 
-       << c.put_token (c.get_place_id("readyL"),"q") << endl;
-  cout << "put_token (readyR,p) => " 
-       << c.put_token ("readyR","p") << endl;
-  cout << "put_token (readyR,p) => " 
-       << c.put_token (c.get_place_id("readyR"),"p") << endl;
+  put_token (c, "Semaphore","c");
+  put_token (c, "readyL","p");
+  put_token (c, "readyL","p");
+  put_token (c, "readyL","p");
+  put_token (c, "readyL","q");
+  put_token (c, "readyL","q");
+  put_token (c, "readyL","q");
+  put_token (c, "readyR","p");
+  put_token (c, "readyR","p");
 
   print_net (c);
 
-  cout << "delete_one_token (readyL,p) => "
-       << c.delete_one_token (c.get_place_id("readyL"),"p") << endl;
-  cout << "delete_one_token (readyL,x) => "
-       << c.delete_one_token ("readyL","x") << endl;
-  cout << "delete_all_token (readyL,q) => "
-       << c.delete_all_token ("readyL","q") << endl;
-  cout << "delete_all_token (readyL,q) => "
-       << c.delete_all_token ("readyL","q") << endl;
+  {
+    petri_net::pid_t pid (c.get_place_id ("readyL"));
+
+    cout << "delete_one_token (readyL,p) => "
+         << c.delete_one_token (pid,"p") << endl;
+    cout << "delete_one_token (readyL,x) => "
+         << c.delete_one_token (pid,"x") << endl;
+
+    cout << "delete_all_token (readyL,q) => "
+         << c.delete_all_token (pid,"q") << endl;
+    cout << "delete_all_token (readyL,q) => "
+         << c.delete_all_token (pid,"q") << endl;
+  }
 
   print_net (c);
 
-  cout << "num_token (readyL) => " << c.get_token("readyL").count() << endl;
+  cout << "num_token (readyL) => " 
+       << c.get_token(c.get_place_id("readyL")).count()
+       << endl;
 
   cout << "replace_one_token (readyL,p->m) => " 
        << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
