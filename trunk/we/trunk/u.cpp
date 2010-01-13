@@ -109,8 +109,6 @@ main ()
     n.put_token (pid_down, 3141);
    }
 
-  cout << n;
-
   marking (n);
 
   std::tr1::mt19937 engine;

@@ -962,51 +962,6 @@ public:
         )
       put_token (out->second, out->first);
   }
-
-  // output
-  template<typename P, typename T, typename E, typename O>
-  friend std::ostream & operator << (std::ostream &, const net<P,T,E,O> &);
 };
-
-template<typename I>
-std::ostream & operator << (std::ostream & s, const std::map<I, I> & m)
-{
-  typedef typename std::map<I, I>::const_iterator IT;
-
-  for (IT it (m.begin()); it != m.end(); ++it)
-    s << " -- " << it->first << " => " << it -> second << std::endl;
-
-  return s;
-}
-
-template<typename P, typename T, typename E, typename O>
-std::ostream & operator << (std::ostream & s, const net<P,T,E,O> & n)
-{
-  s << "##### OP<<" << std::endl;
-  s << n.pmap;
-  s << n.tmap;
-  s << n.emap;
-
-  s << "bimap (token):" << std::endl;
-
-  for (BOOST_AUTO(tp, n.omap.begin()); tp != n.omap.end(); ++tp)
-    s << "on place "
-      << tp->right << " [" << n.place (tp->right) << "]"
-      << ": "
-      << tp->left
-      << std::endl;
-
-  s << "emap_in_p:" << std::endl << n.emap_in_p;
-  s << "emap_out_p:" << std::endl << n.emap_out_p;
-  s << "emap_in_t:" << std::endl << n.emap_in_t;
-  s << "emap_out_t:" << std::endl << n.emap_out_t;
-  s << "num_places = " << n.num_places << std::endl;
-  s << "num_transitions = " << n.num_transitions << std::endl;
-  s << "num_edges = " << n.num_edges << std::endl;
-  s << "adj_pt: " << n.adj_pt;
-  s << "adj_tp: " << n.adj_tp;
-
-  return s;
-}
 
 #endif // _NET_HPP

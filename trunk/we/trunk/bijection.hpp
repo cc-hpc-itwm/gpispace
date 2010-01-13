@@ -7,8 +7,6 @@
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/support/lambda.hpp>
 
-#include <ostream>
-
 namespace bijection
 {
   namespace exception
@@ -125,22 +123,6 @@ namespace bijection
 
       return i;
     }
-
-    template<typename U, typename J>
-    friend std::ostream & operator << (std::ostream &, const bijection<U, J> &);
-  };
-
-  template<typename T, typename I>
-  std::ostream & operator << (std::ostream & s, const bijection<T, I> & b)
-  {
-    typedef typename bijection<T, I>::const_iterator b_it;
-
-    s << "bimap (" << b.description << "):" << std::endl;
-
-    for (b_it it (b.begin()), it_end (b.end()); it != it_end; ++it)
-      s << " -- " << it->left << " <=> " << it->right << std::endl;
-
-    return s;
   };
 
   template<typename T, typename I>

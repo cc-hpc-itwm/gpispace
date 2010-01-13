@@ -6,9 +6,6 @@
 #include <vector>
 #include <stdexcept>
 
-#include <ostream>
-#include <iomanip>
-
 namespace adjacency
 {
   template<typename IDX, typename ADJ>
@@ -134,72 +131,6 @@ namespace adjacency
       tableN[r].push_back (adj_t (c, x));
       tableT[c].push_back (adj_t (r, x));
     }
-
-    template<typename I, typename A>
-    friend std::ostream & operator << (std::ostream &, const table<I,A> &);
-  };
-
-  template<typename IDX, typename ADJ>
-  std::ostream & operator << (std::ostream & s, const table<IDX,ADJ> & m)
-  {
-    s << "adjacency::table:";
-    s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
-
-    const unsigned int w (3);
-
-    s << std::setw(w) << "";
-
-    for (IDX c (0); c < m.col; ++c)
-      s << std::setw (w) << c;
-
-    s << std::endl;
-
-    for (IDX r (0); r < m.row; ++r)
-      {
-        s << std::setw(w) << r;
-
-        for (IDX c (0); c < m.col; ++c)
-          {
-            const ADJ adj (m.get_adjacent (r, c));
-
-            s << std::setw(w);
-
-            if (adj == m.invalid)
-              s << ".";
-            else
-              s << adj;
-          }
-
-        s << std::endl;
-      }
-
-    s << "  transposed:" << std::endl << std::setw(w) << "";
-
-    for (IDX r (0); r < m.row; ++r)
-      s << std::setw (w) << r;
-
-    s << std::endl;
-
-    for (IDX c (0); c < m.col; ++c)
-      {
-        s << std::setw(w) << c;
-
-        for (IDX r (0); r < m.row; ++r)
-          {
-            const ADJ adj (m.get_adjacentT (r, c));
-
-            s << std::setw(w);
-
-            if (adj == m.invalid)
-              s << ".";
-            else
-              s << adj;
-          }
-
-        s << std::endl;
-      }
-
-    return s;
   };
 
   // iterate through adjacencies

@@ -118,8 +118,6 @@ static void print_net (const pnet_t & n)
     }
 
   n.verify_enabled_transitions();
-
-  cout << n;
 }
 
 static void marking (const pnet_t & n)
