@@ -17,13 +17,13 @@
 #include <boost/bimap/unordered_multiset_of.hpp>
 
 #include <boost/typeof/typeof.hpp>
-#include <boost/bimap/support/lambda.hpp>
 
 #include <boost/function.hpp>
 
 #include <bijection.hpp>
 #include <handle.hpp>
 #include <svector.hpp>
+#include <adjacency.hpp>
 
 // exceptions
 class transition_not_enabled : public std::runtime_error
@@ -31,224 +31,6 @@ class transition_not_enabled : public std::runtime_error
 public:
   transition_not_enabled (const std::string & msg) : std::runtime_error(msg) {}
   ~transition_not_enabled() throw () {}
-};
-
-// adjacency_table, grows on demand
-// the expected case leads to sparse matrices, thus implemented as vec_of_vec
-class adjacency_table
-{
-public:
-  typedef handle::T size_t;
-  typedef size_t content_t;
-
-private:
-  size_t row;
-  size_t col;
-
-  typedef std::pair<size_t,content_t> adj_t;
-  typedef std::vector<adj_t> adj_vec_t;
-  typedef std::vector<adj_vec_t> adj_table_t;
-
-  // store table as well as transposed table to allow fast iteration
-  // row wise and column wise
-
-  adj_table_t table;
-  adj_table_t tableT;
-
-  const content_t gen_get ( const size_t & x
-                          , const size_t & y
-                          , const adj_table_t & t
-                          ) const
-  {
-    content_t v (handle::invalid);
-
-    for ( adj_vec_t::const_iterator it (t[x].begin())
-        ; it != t[x].end()
-        ; ++it
-        )
-      if (it->first == y)
-        {
-          v = it->second;
-          break;
-        }
-
-    return v;
-  }
-
-  void gen_clear (const size_t & x, const size_t & y, adj_table_t & t)
-  {
-    for (adj_vec_t::iterator it (t[x].begin()); it != t[x].end(); ++it)
-      if (it->first == y)
-        {
-          t[x].erase (it);
-          break;
-        }
-  }
-
-public:
-  typedef adj_vec_t::const_iterator const_it;
-  typedef std::pair<const_it,const_it> vec_it;
-
-  const vec_it get_vec_it (const size_t & x) const
-  {
-    return vec_it (table[x].begin(),table[x].end());
-  }
-
-  const vec_it get_vec_itT (const size_t & x) const
-  {
-    return vec_it (tableT[x].begin(),tableT[x].end());
-  }
-
-  adjacency_table (const size_t & r, const size_t & c)
-    : row (r)
-    , col (c)
-    , table (row)
-    , tableT (col)
-  {}
-
-  const content_t get_adjacent (const size_t & r, const size_t & c) const
-    throw (std::out_of_range)
-  {
-    if (r > row - 1)
-      throw std::out_of_range("row");
-
-    return gen_get (r, c, table);
-  }
-
-  const content_t get_adjacentT (const size_t & r, const size_t & c) const
-    throw (std::out_of_range)
-  {
-    if (c > col - 1)
-      throw std::out_of_range("col");
-
-    return gen_get (c, r, tableT);
-  }
-
-  void clear_adjacent (const size_t & r, const size_t & c)
-    throw (std::out_of_range)
-  {
-    if (r > row - 1)
-      throw std::out_of_range("row");
-
-    if (c > col - 1)
-      throw std::out_of_range("col");
-
-    gen_clear (r, c, table);
-    gen_clear (c, r, tableT);
-  }
-
-  void set_adjacent (const size_t & r, const size_t & c, const size_t & x)
-    throw (std::bad_alloc)
-  {
-    if (r > row - 1)
-      {
-        row = std::max (r + 1, 2 * row);
-
-        table.resize (row);
-      }
-
-    if (c > col - 1)
-      {
-        col = std::max (c + 1, 2 * col);
-
-        tableT.resize (col);
-      }
-
-    table[r].push_back (adj_t (c, x));
-    tableT[c].push_back (adj_t (r, x));
-  }
-
-  friend std::ostream & operator << (std::ostream &, const adjacency_table &);
-};
-
-std::ostream & operator << (std::ostream & s, const adjacency_table & m)
-{
-  s << "adjacency_table:";
-  s << " (row = " << m.row << ", col = " << m.col << ")" << std::endl;
-
-  const unsigned int w (3);
-
-  s << std::setw(w) << "";
-
-  for (size_t c (0); c < m.col; ++c)
-    s << std::setw (w) << c;
-
-  s << std::endl;
-
-  for (size_t r (0); r < m.row; ++r)
-    {
-      s << std::setw(w) << r;
-
-      for (size_t c (0); c < m.col; ++c)
-        {
-          const adjacency_table::content_t adj (m.get_adjacent (r, c));
-
-          s << std::setw(w);
-
-          if (adj == handle::invalid)
-            s << ".";
-          else
-            s << adj;
-        }
-
-      s << std::endl;
-    }
-
-  s << "  transposed:" << std::endl << std::setw(w) << "";
-
-  for (size_t r (0); r < m.row; ++r)
-    s << std::setw (w) << r;
-
-  s << std::endl;
-
-  for (size_t c (0); c < m.col; ++c)
-    {
-      s << std::setw(w) << c;
-
-      for (size_t r (0); r < m.row; ++r)
-        {
-          const adjacency_table::content_t adj (m.get_adjacentT (r, c));
-
-          s << std::setw(w);
-
-          if (adj == handle::invalid)
-            s << ".";
-          else
-            s << adj;
-        }
-
-      s << std::endl;
-    }
-
-  return s;
-};
-
-// iterate through adjacencies
-struct adj_const_it
-{
-private:
-  adjacency_table::vec_it vec_it;
-  adjacency_table::const_it pos;
-  const adjacency_table::const_it end;
-
-public:
-  adj_const_it ( const adjacency_table & m
-               , const adjacency_table::content_t & x
-               , const bool & fix_is_fst
-               )
-    : vec_it (fix_is_fst ? m.get_vec_it (x) : m.get_vec_itT (x))
-    , pos (vec_it.first)
-    , end (vec_it.second)
-  {}
-
-  const bool has_more (void) const { return (pos != end) ? true : false; }
-  void operator ++ (void) { ++pos; }
-
-  const adjacency_table::content_t & edge_id (void) const { return pos->second; }
-  const adjacency_table::size_t & obj_id (void) const { return pos->first; }
-
-  const adjacency_table::content_t & operator () (void) const { return edge_id(); }
-  const adjacency_table::size_t & operator * (void) const { return obj_id(); }
 };
 
 template<typename Token, typename PID>
@@ -506,8 +288,8 @@ public:
   typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
   typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
 
-  typedef adj_const_it adj_place_const_it;
-  typedef adj_const_it adj_transition_const_it;
+  typedef adjacency::adj_const_it<handle::T,handle::T> adj_place_const_it;
+  typedef adjacency::adj_const_it<handle::T,handle::T> adj_transition_const_it;
 
   typedef token_on_place_it<Token, pid_t> token_place_it;
 
@@ -540,12 +322,12 @@ private:
   map_tid_t emap_in_t; // internal edge id -> internal transition id
   map_tid_t emap_out_t; // internal edge id -> internal transition id
 
-  adjacency_table adj_pt;
-  adjacency_table adj_tp;
+  adjacency::table<handle::T,handle::T> adj_pt;
+  adjacency::table<handle::T,handle::T> adj_tp;
 
-  adjacency_table::size_t num_places;
-  adjacency_table::size_t num_transitions;
-  adjacency_table::size_t num_edges;
+  handle::T num_places;
+  handle::T num_transitions;
+  handle::T num_edges;
 
   typedef typename omap_t<Token,pid_t>::bimap_t obimap_t;
   typedef typename omap_t<Token,pid_t>::value_t oval_t;
@@ -560,9 +342,7 @@ private:
   std::map<tid_t, transfun_t> transfun;
 
 public:
-  net ( const adjacency_table::size_t & places_ = 100
-      , const adjacency_table::size_t & transitions_ = 250
-      )
+  net (const handle::T & _places = 10, const handle::T & _transitions = 10)
     throw (std::bad_alloc)
     : pmap ("place")
     , tmap ("transition")
@@ -571,8 +351,8 @@ public:
     , emap_out_p ()
     , emap_in_t ()
     , emap_out_t ()
-    , adj_pt (places_, transitions_)
-    , adj_tp (transitions_, places_)
+    , adj_pt (_places, _transitions, handle::invalid)
+    , adj_tp (_transitions, _places, handle::invalid)
     , num_places (0)
     , num_transitions (0)
     , num_edges (0)
@@ -580,17 +360,17 @@ public:
   {};
 
   // numbers of elements
-  const adjacency_table::size_t get_num_places (void) const
+  const handle::T get_num_places (void) const
   {
     return num_places;
   }
 
-  const adjacency_table::size_t get_num_transitions (void) const
+  const handle::T get_num_transitions (void) const
   {
     return num_transitions;
   }
 
-  const adjacency_table::size_t get_num_edges (void) const
+  const handle::T get_num_edges (void) const
   {
     return num_edges;
   }
@@ -663,9 +443,9 @@ public:
 private:
   const eid_t add_edge
   ( const Edge & edge
-  , const adjacency_table::size_t & x
-  , const adjacency_table::size_t & y
-  , adjacency_table & m
+  , const handle::T & x
+  , const handle::T & y
+  , adjacency::table<handle::T, handle::T> & m
   )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
