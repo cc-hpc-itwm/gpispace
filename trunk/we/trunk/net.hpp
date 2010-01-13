@@ -244,8 +244,8 @@ public:
   typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
   typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
 
-  typedef adjacency::const_it<handle::T,handle::T> adj_place_const_it;
-  typedef adjacency::const_it<handle::T,handle::T> adj_transition_const_it;
+  typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
+  typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
   typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
@@ -278,12 +278,12 @@ private:
   map_tid_t emap_in_t; // internal edge id -> internal transition id
   map_tid_t emap_out_t; // internal edge id -> internal transition id
 
-  adjacency::table<handle::T,handle::T> adj_pt;
-  adjacency::table<handle::T,handle::T> adj_tp;
+  adjacency::table<pid_t,tid_t,eid_t> adj_pt;
+  adjacency::table<tid_t,pid_t,eid_t> adj_tp;
 
-  handle::T num_places;
-  handle::T num_transitions;
-  handle::T num_edges;
+  pid_t num_places;
+  tid_t num_transitions;
+  eid_t num_edges;
 
   typename multirel::multirel<Token,pid_t> token_place_rel;
 
@@ -301,8 +301,8 @@ public:
     , emap_out_p ()
     , emap_in_t ()
     , emap_out_t ()
-    , adj_pt (_places, _transitions, handle::invalid)
-    , adj_tp (_transitions, _places, handle::invalid)
+    , adj_pt (eid_invalid, _places, _transitions)
+    , adj_tp (eid_invalid, _transitions, _places)
     , num_places (0)
     , num_transitions (0)
     , num_edges (0)
@@ -311,17 +311,17 @@ public:
   {};
 
   // numbers of elements
-  const handle::T get_num_places (void) const
+  const pid_t get_num_places (void) const
   {
     return num_places;
   }
 
-  const handle::T get_num_transitions (void) const
+  const tid_t get_num_transitions (void) const
   {
     return num_transitions;
   }
 
-  const handle::T get_num_edges (void) const
+  const eid_t get_num_edges (void) const
   {
     return num_edges;
   }
@@ -392,27 +392,21 @@ public:
   }
 
 private:
+  template<typename ROW, typename COL>
   const eid_t add_edge
   ( const Edge & edge
-  , const handle::T & x
-  , const handle::T & y
-  , adjacency::table<handle::T, handle::T> & m
+  , const ROW & r
+  , const COL & c
+  , adjacency::table<ROW,COL,eid_t> & m
   )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    try
-      {
-        if (m.get_adjacent (x, y) != handle::invalid)
-          throw bijection::exception::already_there ("adjacency");
-      }
-    catch (std::out_of_range)
-      {
-        /* do nothing, was not there */
-      }
+    if (m.get_adjacent (r, c) != handle::invalid)
+      throw bijection::exception::already_there ("adjacency");
 
     const eid_t eid (emap.add (edge));
 
-    m.set_adjacent (x, y, eid);
+    m.set_adjacent (r, c, eid);
 
     ++num_edges;
 
@@ -424,7 +418,7 @@ public:
   (const Edge & edge, const pid_t & pid, const tid_t & tid)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    const eid_t eid (add_edge (edge, pid, tid, adj_pt));
+    const eid_t eid (add_edge<pid_t,tid_t> (edge, pid, tid, adj_pt));
 
     emap_out_p[eid] = pid;
     emap_in_t[eid] = tid;
@@ -446,7 +440,7 @@ public:
   (const Edge & edge, const tid_t & tid, const pid_t & pid)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    const eid_t eid (add_edge (edge, tid, pid, adj_tp));
+    const eid_t eid (add_edge<tid_t,pid_t> (edge, tid, pid, adj_tp));
 
     emap_in_p[eid] = pid;
     emap_out_t[eid] = tid;
@@ -483,22 +477,22 @@ public:
   // iterate through adjacencies
   const adj_place_const_it out_of_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_tp, tid, true);
+    return adj_place_const_it (adj_tp.row_const_it (tid));
   }
 
   const adj_place_const_it in_to_transition (const tid_t & tid) const
   {
-    return adj_place_const_it (adj_pt, tid, false);
+    return adj_place_const_it (adj_pt.col_const_it (tid));
   }
 
   const adj_transition_const_it out_of_place (const pid_t & pid) const
   {
-    return adj_transition_const_it (adj_pt, pid, true);
+    return adj_transition_const_it (adj_pt.row_const_it (pid));
   }
 
   const adj_transition_const_it in_to_place (const pid_t & pid) const
   {
-    return adj_transition_const_it (adj_tp, pid, false);
+    return adj_transition_const_it (adj_tp.col_const_it (pid));
   }
 
   // get edge info
