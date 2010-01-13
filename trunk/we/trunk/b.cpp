@@ -31,7 +31,7 @@ static const unsigned int num_fire (1000);
 
 static const unsigned int bisize (1000000);
 
-typedef net<place_t, transition_t, edge_t, token_t> net_t;
+typedef petri_net::net<place_t, transition_t, edge_t, token_t> net_t;
 
 int
 main ()

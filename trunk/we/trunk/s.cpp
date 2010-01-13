@@ -20,7 +20,7 @@ typedef std::string transition_t;
 typedef unsigned char token_t;
 
 typedef std::pair<unsigned int,std::string> edge_t;
-typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 namespace TransitionFunction
 {
@@ -73,12 +73,12 @@ main ()
 {
   pnet_t n(2,1);
 
-  pnet_t::pid_t pid_A (n.add_place (place_t ("A")));
-  pnet_t::pid_t pid_B (n.add_place (place_t ("B")));
-  pnet_t::tid_t tid (n.add_transition ( transition_t ("t")
-                                      , TransitionFunction::Swap()
-                                      )
-                    );
+  petri_net::pid_t pid_A (n.add_place (place_t ("A")));
+  petri_net::pid_t pid_B (n.add_place (place_t ("B")));
+  petri_net::tid_t tid (n.add_transition ( transition_t ("t")
+                                         , TransitionFunction::Swap()
+                                         )
+                       );
   
   n.add_edge_place_to_transition (edge_t (0, "a"), pid_A, tid);
   n.add_edge_place_to_transition (edge_t (1, "b"), pid_B, tid);

@@ -185,7 +185,7 @@ typedef std::string transition_t;
 typedef std::string edge_t;
 typedef std::string token_t;
 
-typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 static void print (const pnet_t & n)
 {
@@ -229,7 +229,7 @@ static void del (pnet_t & n, const place_t & p)
   cout << endl;
 }
 
-static void del_pid (pnet_t & n, const pnet_t::pid_t & pid)
+static void del_pid (pnet_t & n, const petri_net::pid_t & pid)
 {
   cout << "del_pid " << pid << " => ";
 
@@ -245,7 +245,7 @@ static void del_pid (pnet_t & n, const pnet_t::pid_t & pid)
   cout << endl;
 }
 
-static void mod (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
+static void mod (pnet_t & n, const petri_net::pid_t & pid, const place_t & p)
 {
   cout << "modify " << pid << " -> " << p << " => ";
 
@@ -265,7 +265,7 @@ static void mod (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
   cout << endl;
 }
 
-static void rep (pnet_t & n, const pnet_t::pid_t & pid, const place_t & p)
+static void rep (pnet_t & n, const petri_net::pid_t & pid, const place_t & p)
 {
   cout << "replace " << pid << " -> " << p << " => ";
 

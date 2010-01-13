@@ -13,19 +13,25 @@
 #include <multirel.hpp>
 #include <svector.hpp>
 
-// exceptions
-class transition_not_enabled : public std::runtime_error
+namespace petri_net
 {
-public:
-  transition_not_enabled (const std::string & msg) : std::runtime_error(msg) {}
-  ~transition_not_enabled() throw () {}
-};
+  namespace exception
+  {
+    class transition_not_enabled : public std::runtime_error
+    {
+    public:
+      transition_not_enabled (const std::string & msg) 
+        : std::runtime_error(msg) 
+      {}
+      ~transition_not_enabled() throw () {}
+    };
+  }
 
-namespace id_traits
-{
   typedef handle::T pid_t;
   typedef handle::T tid_t;
   typedef handle::T eid_t;
+
+  static const eid_t eid_invalid (handle::invalid);
 };
 
 namespace TransitionFunction
@@ -38,40 +44,40 @@ namespace TransitionFunction
     // connected to the transition via edges
     // so input is of type: [(Token,(Place,Edge))]
     // the same holds true for the output, but the tokens are to be produced
-    typedef std::pair<id_traits::pid_t, id_traits::eid_t> place_via_edge_t;
+    typedef std::pair<petri_net::pid_t, petri_net::eid_t> place_via_edge_t;
     typedef std::pair<Token, place_via_edge_t> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
     typedef std::vector<place_via_edge_t> output_descr_t;
-    typedef std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
 
-    typedef std::map<id_traits::eid_t, Token> edges_only_t;
+    typedef std::map<petri_net::eid_t, Token> edges_only_t;
   };
 
   template<typename Token>
-  const id_traits::pid_t get_pid 
+  const petri_net::pid_t get_pid 
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.first;
   };
 
   template<typename Token>
-  const id_traits::eid_t get_eid 
+  const petri_net::eid_t get_eid 
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
   };
 
   template<typename Token>
-  const id_traits::pid_t get_pid 
+  const petri_net::pid_t get_pid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_pid<Token> (token_input.second);
   };
 
   template<typename Token>
-  const id_traits::eid_t get_eid 
+  const petri_net::eid_t get_eid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_eid<Token> (token_input.second);
@@ -92,7 +98,7 @@ namespace TransitionFunction
     typedef typename Traits<Token>::input_t input_t;
 
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
 
   public:
@@ -122,7 +128,7 @@ namespace TransitionFunction
     typedef typename Traits<Token>::input_t input_t;
 
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
 
   public:
@@ -175,7 +181,7 @@ namespace TransitionFunction
     typedef typename Traits<Token>::input_t input_t;
 
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, id_traits::pid_t> token_on_place_t;
+    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
 
     typedef typename Traits<Token>::edges_only_t edges_only_t;
@@ -223,15 +229,13 @@ namespace TransitionFunction
   };
 };
 
+namespace petri_net
+{
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
 public:
-  typedef id_traits::pid_t pid_t;
-  typedef id_traits::tid_t tid_t;
-  typedef id_traits::eid_t eid_t;
-
   enum edge_type {PT,TP};
 
   typedef svector<tid_t> enabled_t;
@@ -867,7 +871,7 @@ public:
     return can_fire;
   }
 
-  void fire (const tid_t & tid) throw (transition_not_enabled)
+  void fire (const tid_t & tid) throw (exception::transition_not_enabled)
   {
     input_t input;
     output_descr_t output_descr;
@@ -880,7 +884,7 @@ public:
         const token_place_it tp (get_token (*pit));
 
         if (!tp.has_more())
-          throw transition_not_enabled ("during call of fire");
+          throw exception::transition_not_enabled ("during call of fire");
 
         input.push_back (token_input_t (*tp, place_via_edge_t(*pit, pit())));
 
@@ -902,5 +906,6 @@ public:
       put_token (out->second, out->first);
   }
 };
+}
 
 #endif // _NET_HPP

@@ -87,7 +87,7 @@ typedef node_t transition_t;
 typedef unsigned int edge_t;
 typedef unsigned char token_t;
 
-typedef net<place_t, transition_t, edge_t, token_t> pnet_t;
+typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 using std::cout;
 using std::endl;
