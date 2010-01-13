@@ -547,9 +547,9 @@ public:
 
   typedef svector<tid_t> enabled_t;
 
-  typedef auto_bimap::bi_const_it<Place> place_const_it;
-  typedef auto_bimap::bi_const_it<Transition> transition_const_it;
-  typedef auto_bimap::bi_const_it<Edge> edge_const_it;
+  typedef bijection::bi_const_it<Place> place_const_it;
+  typedef bijection::bi_const_it<Transition> transition_const_it;
+  typedef bijection::bi_const_it<Edge> edge_const_it;
 
   typedef adj_const_it adj_place_const_it;
   typedef adj_const_it adj_transition_const_it;
@@ -567,9 +567,9 @@ public:
   typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
 
 private:
-  auto_bimap::auto_bimap<Place> pmap; // Place <-> internal id
-  auto_bimap::auto_bimap<Transition> tmap; // Transition <-> internal id
-  auto_bimap::auto_bimap<Edge> emap; // Edge <-> internal id
+  bijection::bijection<Place> pmap; // Place <-> internal id
+  bijection::bijection<Transition> tmap; // Transition <-> internal id
+  bijection::bijection<Edge> emap; // Edge <-> internal id
 
   typedef std::map<eid_t, pid_t> map_pid_t;
   typedef typename map_pid_t::iterator map_pid_it_t;
@@ -642,45 +642,45 @@ public:
 
   // get id
   const pid_t & get_place_id (const Place & place) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return pmap.get_id (place);
   }
 
   const tid_t & get_transition_id (const Transition & transition) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return tmap.get_id (transition);
   }
 
   const eid_t & get_edge_id (const Edge & edge) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return emap.get_id (edge);
   }
 
   // get element
   const Place & place (const pid_t & pid) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
   const Transition & transition (const tid_t & tid) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
   const Edge & edge (const eid_t & eid) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return emap.get_elem (eid);
   }
 
   // add element
   const pid_t add_place (const Place & place)
-    throw (auto_bimap::exception::already_there)
+    throw (bijection::exception::already_there)
   {
     ++num_places;
 
@@ -698,7 +698,7 @@ public:
   ( const Transition & transition
   , const transfun_t & f = TransitionFunction::Default<Token>()
   )
-    throw (auto_bimap::exception::already_there)
+    throw (bijection::exception::already_there)
   {
     ++num_transitions;
 
@@ -712,12 +712,12 @@ private:
   , const adjacency_table::size_t & y
   , adjacency_table & m
   )
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     try
       {
         if (m.get_adjacent (x, y) != handle::invalid)
-          throw auto_bimap::exception::already_there ("adjacency");
+          throw bijection::exception::already_there ("adjacency");
       }
     catch (std::out_of_range)
       {
@@ -736,7 +736,7 @@ private:
 public:
   const eid_t add_edge_place_to_transition
   (const Edge & edge, const pid_t & pid, const tid_t & tid)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t eid (add_edge (edge, pid, tid, adj_pt));
 
@@ -748,7 +748,7 @@ public:
 
   const eid_t add_edge_place_to_transition
   (const Edge & edge, const Place & place, const Transition & transition)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t pid (get_place_id (place));
     const tid_t tid (get_transition_id (transition));
@@ -758,7 +758,7 @@ public:
 
   const eid_t add_edge_transition_to_place
   (const Edge & edge, const tid_t & tid, const pid_t & pid)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t eid (add_edge (edge, tid, pid, adj_tp));
 
@@ -770,7 +770,7 @@ public:
 
   const eid_t add_edge_transition_to_place
   (const Edge & edge, const Transition & transition, const Place & place)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t pid (get_place_id (place));
     const tid_t tid (get_transition_id (transition));
@@ -896,13 +896,13 @@ public:
   }
 
   const eid_t & delete_edge (const Edge & edge)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return delete_edge (get_edge_id (edge));
   }
 
   const pid_t & delete_place (const pid_t & pid)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
@@ -924,13 +924,13 @@ public:
   }
 
   const pid_t & delete_place (const Place & place)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return delete_place (get_place_id (place));
   }
 
   const tid_t & delete_transition (const tid_t & tid)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
@@ -953,7 +953,7 @@ public:
   }
 
   const tid_t & delete_transition (const Transition & transition)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return delete_transition (get_transition_id (transition));
   }
@@ -961,26 +961,26 @@ public:
   // modify and replace
   // erased in case of conflict after modification
   const pid_t modify_place (const pid_t & pid, const Place & place)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return pmap.modify (pid, place);
   }
 
   const pid_t modify_place (const Place & old_place, const Place & new_place)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return modify_place (get_place_id (old_place), new_place);
   }
 
   // kept old value in case of conflict after modification
   const pid_t replace_place (const pid_t & pid, const Place & place)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return pmap.replace (pid, place);
   }
 
   const pid_t replace_place (const Place & old_place, const Place & new_place)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return replace_place (get_place_id (old_place), new_place);
   }
@@ -988,7 +988,7 @@ public:
   const tid_t modify_transition ( const tid_t & tid
                                 , const Transition & transition
                                 )
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.modify (tid, transition);
   }
@@ -996,7 +996,7 @@ public:
   const tid_t modify_transition ( const Transition & old_transition
                                 , const Transition & new_transition
                                 )
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.modify (get_transition_id (old_transition), new_transition);
   }
@@ -1004,7 +1004,7 @@ public:
   const tid_t replace_transition ( const tid_t & tid
                                  , const Transition & transition
                                  )
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
@@ -1012,31 +1012,31 @@ public:
   const tid_t replace_transition ( const Transition & old_transition
                                  , const Transition & new_transition
                                  )
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (get_transition_id (old_transition), new_transition);
   }
 
   const eid_t modify_edge (const eid_t & eid, const Edge & edge)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.modify (eid, edge);
   }
 
   const eid_t modify_edge (const Edge & old_edge, const Edge & new_edge)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.modify (get_edge_id (old_edge), new_edge);
   }
 
   const eid_t replace_edge (const eid_t & eid, const Edge & edge)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.replace (eid, edge);
   }
 
   const eid_t replace_edge (const Edge & old_edge, const Edge & new_edge)
-    throw (auto_bimap::exception::no_such, auto_bimap::exception::already_there)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.replace (get_edge_id (old_edge), new_edge);
   }
@@ -1091,7 +1091,7 @@ public:
   }
 
   const bool put_token (const Place & place, const Token & token)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return put_token (get_place_id (place), token);
   }
@@ -1102,7 +1102,7 @@ public:
   }
 
   const token_place_it get_token (const Place & place) const
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return get_token (get_place_id (place));
   }
@@ -1133,7 +1133,7 @@ public:
   }
 
   const std::size_t delete_one_token (const Place & place, const Token & token)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return delete_one_token (get_place_id (place), token);
   }
@@ -1150,7 +1150,7 @@ public:
   }
 
   const std::size_t delete_all_token (const Place & place, const Token & token)
-    throw (auto_bimap::exception::no_such)
+    throw (bijection::exception::no_such)
   {
     return delete_all_token (get_place_id (place), token);
   }

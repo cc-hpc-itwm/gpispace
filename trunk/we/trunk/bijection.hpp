@@ -1,5 +1,5 @@
-#ifndef _AUTOBIMAP_HPP
-#define _AUTOBIMAP_HPP
+#ifndef _BIJECTION_HPP
+#define _BIJECTION_HPP
 
 // bimap, that keeps a bijection between objects and some index
 // mirko.rahn@itwm.fraunhofer.de
@@ -11,7 +11,7 @@
 
 #include <handle.hpp>
 
-namespace auto_bimap
+namespace bijection
 {
   namespace exception
   {
@@ -31,7 +31,7 @@ namespace auto_bimap
   } // namespace exception
 
   template<typename T, typename I = handle::T>
-  class auto_bimap
+  class bijection
   {
   private:
     // unordered, unique, viewable
@@ -48,7 +48,7 @@ namespace auto_bimap
     const std::string description;
 
   public:
-    auto_bimap (const std::string & _description = "NO DESCRIPTION GIVEN")
+    bijection (const std::string & _description = "NO DESCRIPTION GIVEN")
       : h(0)
       , description (_description)
     {}
@@ -129,19 +129,17 @@ namespace auto_bimap
     }
 
     template<typename U>
-    friend std::ostream & operator << (std::ostream &, const auto_bimap<U> &);
+    friend std::ostream & operator << (std::ostream &, const bijection<U> &);
   };
 
   template<typename T>
-  std::ostream & operator << ( std::ostream & s
-                             , const auto_bimap<T> & bm
-                             )
+  std::ostream & operator << (std::ostream & s, const bijection<T> & b)
   {
-    typedef typename auto_bimap<T>::const_iterator bm_it;
+    typedef typename bijection<T>::const_iterator b_it;
 
-    s << "bimap (" << bm.description << "):" << std::endl;
+    s << "bimap (" << b.description << "):" << std::endl;
 
-    for (bm_it it (bm.begin()), it_end (bm.end()); it != it_end; ++it)
+    for (b_it it (b.begin()), it_end (b.end()); it != it_end; ++it)
       s << " -- " << it->left << " <=> " << it->right << std::endl;
 
     return s;
@@ -151,14 +149,14 @@ namespace auto_bimap
   struct bi_const_it
   {
   private:
-    typedef typename auto_bimap<T>::const_iterator it;
+    typedef typename bijection<T>::const_iterator it;
     it pos;
     const it end;
     const std::size_t count_;
   public:
-    bi_const_it (const auto_bimap<T> & bm)
-      : pos (bm.begin())
-      , end (bm.end())
+    bi_const_it (const bijection<T> & b)
+      : pos (b.begin())
+      , end (b.end())
       , count_(std::distance(pos, end))
     {}
 
@@ -167,6 +165,6 @@ namespace auto_bimap
     const I & operator * (void) const { return pos->right; }
     const std::size_t count (void) const { return count_; }
   };
-} // namespace auto_bimap
+} // namespace bijection
 
-#endif // _AUTOBIMAP_HPP
+#endif // _BIJECTION_HPP
