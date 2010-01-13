@@ -24,6 +24,7 @@
 #include <handle.hpp>
 #include <svector.hpp>
 #include <adjacency.hpp>
+#include <multirel.hpp>
 
 // exceptions
 class transition_not_enabled : public std::runtime_error
@@ -31,42 +32,6 @@ class transition_not_enabled : public std::runtime_error
 public:
   transition_not_enabled (const std::string & msg) : std::runtime_error(msg) {}
   ~transition_not_enabled() throw () {}
-};
-
-template<typename Token, typename PID>
-struct omap_t
-{
-public:
-  typedef boost::bimaps::unordered_multiset_of<Token> token_collection_t;
-  typedef boost::bimaps::unordered_multiset_of<PID> place_collection_t;
-
-  typedef typename boost::bimap< token_collection_t
-                               , place_collection_t
-                               , boost::bimaps::unordered_multiset_of_relation<>
-                               > bimap_t;
-  typedef typename bimap_t::value_type value_t;
-  typedef typename bimap_t::right_map::const_iterator place_const_it;
-};
-
-// iterate through the tokens on a place
-template<typename Token, typename PID>
-struct token_on_place_it
-{
-private:
-  typedef typename omap_t<Token,PID>::place_const_it pc_it;
-  pc_it pos;
-  const pc_it end;
-  const std::size_t count_;
-public:
-  token_on_place_it (std::pair<pc_it, pc_it> its)
-    : pos (its.first)
-    , end (its.second)
-    , count_(std::distance (pos, end))
-  {}
-  const bool has_more (void) const { return (pos != end) ? true : false; }
-  void operator ++ (void) { ++pos; }
-  const Token & operator * (void) const { return pos->second; }
-  const std::size_t count (void) const { return count_; }
 };
 
 namespace id_traits
@@ -291,7 +256,7 @@ public:
   typedef adjacency::const_it<handle::T,handle::T> adj_place_const_it;
   typedef adjacency::const_it<handle::T,handle::T> adj_transition_const_it;
 
-  typedef token_on_place_it<Token, pid_t> token_place_it;
+  typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
   typedef TransitionFunction::Traits<Token> tf_traits;
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
@@ -329,13 +294,7 @@ private:
   handle::T num_transitions;
   handle::T num_edges;
 
-  typedef typename omap_t<Token,pid_t>::bimap_t obimap_t;
-  typedef typename omap_t<Token,pid_t>::value_t oval_t;
-  typedef typename obimap_t::const_iterator omap_const_it;
-  typedef typename obimap_t::iterator omap_it;
-  typedef typename std::pair<omap_it,omap_it> omap_range_it;
-
-  obimap_t omap;
+  typename multirel::multirel<Token,pid_t> token_place_rel;
 
   enabled_t enabled;
 
@@ -356,6 +315,7 @@ public:
     , num_places (0)
     , num_transitions (0)
     , num_edges (0)
+    , token_place_rel ()
     , enabled ()
   {};
 
@@ -817,7 +777,7 @@ public:
 
   const bool put_token (const pid_t & pid, const Token & token)
   {
-    const bool successful (omap.insert (oval_t (token, pid)).second);
+    const bool successful (token_place_rel.add (token, pid));
 
     if (successful)
       add_enabled_transitions (pid);
@@ -833,7 +793,7 @@ public:
 
   const token_place_it get_token (const pid_t & pid) const
   {
-    return token_place_it (omap.right.equal_range (pid));
+    return token_place_rel.left_of (pid);
   }
 
   const token_place_it get_token (const Place & place) const
@@ -844,25 +804,21 @@ public:
 
   const bool has_token (const pid_t & pid) const
   {
-    return (omap.right.find (pid) != omap.right.end());
+    return token_place_rel.contains_right (pid);
   }
 
   const bool has_token (const Place & place) const
+    throw (bijection::exception::no_such)
   {
     return has_token (get_place_id (place));
   }
 
   const std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
-    omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
-
-    const std::size_t dist (std::distance (range_it.first, range_it.second));
+    const std::size_t dist (token_place_rel.delete_one (token, pid));
 
     if (dist > 0)
-      {
-        omap.erase (range_it.first);
-        del_enabled_transitions (pid);
-      }
+      del_enabled_transitions (pid);
 
     return (dist > 0) ? 1 : 0;
   }
@@ -875,13 +831,9 @@ public:
 
   const std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
-    omap_range_it range_it (omap.equal_range (oval_t (token, pid)));
-
-    omap.erase (range_it.first, range_it.second);
-
     del_enabled_transitions (pid);
 
-    return std::distance (range_it.first, range_it.second);
+    return token_place_rel.delete_all (token, pid);
   }
 
   const std::size_t delete_all_token (const Place & place, const Token & token)

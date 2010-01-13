@@ -63,10 +63,16 @@ main ()
   print_rel_left_of<char,int> (r, 3);
   print_rel_right_of<char,int> (r, 'b');
 
+  cout << r.contains_left ('a') << endl;
+  cout << r.contains_left ('d') << endl;
+  cout << r.contains_right (4) << endl;
+
   r.delete_one ('a',3);
   r.delete_all ('b',4);
 
   print_rel (r);
+
+  cout << r.contains_right (4) << endl;
 
   return 0;
 } 

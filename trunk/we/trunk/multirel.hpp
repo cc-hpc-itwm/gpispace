@@ -123,6 +123,16 @@ namespace multirel
     {
       return container.end();
     }
+
+    const bool contains_left (const L & l) const
+    {
+      return (container.left.find (l) != container.left.end());
+    }
+
+    const bool contains_right (const R & r) const
+    {
+      return (container.right.find (r) != container.right.end());
+    }
   };
 } // namespace multirel
 
