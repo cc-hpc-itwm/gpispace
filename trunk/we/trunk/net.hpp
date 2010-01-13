@@ -22,6 +22,7 @@
 #include <boost/function.hpp>
 
 #include <auto_bimap.hpp>
+#include <handle.hpp>
 
 // exceptions
 class transition_not_enabled : public std::runtime_error
@@ -82,7 +83,7 @@ public:
 class adjacency_table
 {
 public:
-  typedef auto_bimap::handle::T size_t;
+  typedef handle::T size_t;
   typedef size_t content_t;
 
 private:
@@ -104,7 +105,7 @@ private:
                           , const adj_table_t & t
                           ) const
   {
-    content_t v (auto_bimap::handle::invalid);
+    content_t v (handle::invalid);
 
     for ( adj_vec_t::const_iterator it (t[x].begin())
         ; it != t[x].end()
@@ -229,7 +230,7 @@ std::ostream & operator << (std::ostream & s, const adjacency_table & m)
 
           s << std::setw(w);
 
-          if (adj == auto_bimap::handle::invalid)
+          if (adj == handle::invalid)
             s << ".";
           else
             s << adj;
@@ -255,7 +256,7 @@ std::ostream & operator << (std::ostream & s, const adjacency_table & m)
 
           s << std::setw(w);
 
-          if (adj == auto_bimap::handle::invalid)
+          if (adj == handle::invalid)
             s << ".";
           else
             s << adj;
@@ -333,9 +334,9 @@ public:
 
 namespace id_traits
 {
-  typedef auto_bimap::handle::T pid_t;
-  typedef auto_bimap::handle::T tid_t;
-  typedef auto_bimap::handle::T eid_t;
+  typedef handle::T pid_t;
+  typedef handle::T tid_t;
+  typedef handle::T eid_t;
 };
 
 namespace TransitionFunction
@@ -715,7 +716,7 @@ private:
   {
     try
       {
-        if (m.get_adjacent (x, y) != auto_bimap::handle::invalid)
+        if (m.get_adjacent (x, y) != handle::invalid)
           throw auto_bimap::exception::already_there ("adjacency");
       }
     catch (std::out_of_range)

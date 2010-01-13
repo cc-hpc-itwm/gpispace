@@ -13,6 +13,7 @@
 #include <bijection.hpp>
 
 #include <auto_bimap.hpp>
+#include <handle.hpp>
 
 #include <tr1/random>
 
@@ -277,7 +278,7 @@ main ()
     {
       Timer_t timer ("get_id from auto_bimap", bisize);
 
-      auto_bimap::handle::T s (0);
+      handle::T s (0);
       
       for (unsigned int i(0); i < bisize; ++i)
         s += bm.get_id (i);
@@ -290,7 +291,7 @@ main ()
 
       unsigned int s (0);
       
-      for (auto_bimap::handle::T i(0); i < bisize; ++i)
+      for (handle::T i(0); i < bisize; ++i)
         s += bm.get_elem (i);
 
       std::cout << "s = " << s << std::endl;

@@ -5,44 +5,14 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <ostream>
-#include <iomanip>
-
-#include <map>
-#include <set>
-#include <vector>
-
-#include <algorithm>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
 
-#include <boost/typeof/typeof.hpp>
-#include <boost/bimap/support/lambda.hpp>
-
-#include <boost/function.hpp>
+#include <handle.hpp>
 
 namespace auto_bimap
 {
-  // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
-  // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
-  // It follows that an uint64_t is enough for now.
-  namespace handle
-  {
-    typedef uint64_t T;
-    static const T invalid (std::numeric_limits<T>::max());
-
-    struct handle_t
-    {
-    private:
-      T v;
-    public:
-      handle_t () : v(std::numeric_limits<uint64_t>::min()) {}
-      const T & operator * (void) const { return v; }
-      const void operator ++ (void) { ++v; }
-    };
-  };
-
   namespace exception
   {
     class no_such : public std::runtime_error
@@ -60,7 +30,7 @@ namespace auto_bimap
     };
   } // namespace exception
 
-  template<typename T>
+  template<typename T, typename I = handle::T>
   class auto_bimap
   {
   private:
@@ -68,19 +38,19 @@ namespace auto_bimap
     typedef boost::bimaps::unordered_set_of<T> elem_collection_t;
 
     // unordered, unique, viewable
-    typedef boost::bimaps::unordered_set_of<handle::T> id_collection_t;
+    typedef boost::bimaps::unordered_set_of<I> id_collection_t;
 
     typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
     typedef typename bimap_t::value_type val_t;
 
     bimap_t bimap;
-    handle::handle_t h;
-
+    I h;
     const std::string description;
 
   public:
-    auto_bimap (const std::string & descr = "NO DESCRIPTION GIVEN") 
-      : description (descr) 
+    auto_bimap (const std::string & _description = "NO DESCRIPTION GIVEN")
+      : h(0)
+      , description (_description)
     {}
 
     typedef typename bimap_t::iterator iterator;
@@ -93,7 +63,7 @@ namespace auto_bimap
     const const_iterator begin (void) const { return bimap.begin(); }
     const const_iterator end (void) const { return bimap.end(); }
 
-    const handle::T & get_id (const T & x) const throw (exception::no_such)
+    const I & get_id (const T & x) const throw (exception::no_such)
     {
       typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
@@ -103,7 +73,7 @@ namespace auto_bimap
       return it->second;
     }
 
-    const T & get_elem (const handle::T & i) const throw (exception::no_such)
+    const T & get_elem (const I & i) const throw (exception::no_such)
     {
       typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
 
@@ -113,24 +83,24 @@ namespace auto_bimap
       return it->second;
     }
 
-    const handle::T add (const T & x) throw (exception::already_there)
+    const I add (const T & x) throw (exception::already_there)
     {
       if (bimap.left.find (x) != bimap.left.end())
         throw exception::already_there (description);
 
-      handle::T i (*h); ++h;
+      I i (h++);
 
       bimap.insert (val_t (x, i));
 
       return i;
     }
 
-    const void erase (const handle::T & i)
+    const void erase (const I & i)
     {
       bimap.right.erase (i);
     }
 
-    const handle::T modify (const handle::T & i, const T & x)
+    const I modify (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
       typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -144,7 +114,7 @@ namespace auto_bimap
       return i;
     }
 
-    const handle::T replace (const handle::T & i, const T & x)
+    const I replace (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
       typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -162,22 +132,22 @@ namespace auto_bimap
     friend std::ostream & operator << (std::ostream &, const auto_bimap<U> &);
   };
 
-template<typename T>
-std::ostream & operator << ( std::ostream & s
-                           , const auto_bimap<T> & bm
-                           )
-{
-  typedef typename auto_bimap<T>::const_iterator bm_it;
-
-  s << "bimap (" << bm.description << "):" << std::endl;
-
-  for (bm_it it (bm.begin()), it_end (bm.end()); it != it_end; ++it)
-    s << " -- " << it->left << " <=> " << it->right << std::endl;
-
-  return s;
-};
-
   template<typename T>
+  std::ostream & operator << ( std::ostream & s
+                             , const auto_bimap<T> & bm
+                             )
+  {
+    typedef typename auto_bimap<T>::const_iterator bm_it;
+
+    s << "bimap (" << bm.description << "):" << std::endl;
+
+    for (bm_it it (bm.begin()), it_end (bm.end()); it != it_end; ++it)
+      s << " -- " << it->left << " <=> " << it->right << std::endl;
+
+    return s;
+  };
+
+  template<typename T, typename I = handle::T>
   struct bi_const_it
   {
   private:
@@ -194,7 +164,7 @@ std::ostream & operator << ( std::ostream & s
 
     const bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
-    const handle::T & operator * (void) const { return pos->right; }
+    const I & operator * (void) const { return pos->right; }
     const std::size_t count (void) const { return count_; }
   };
 } // namespace auto_bimap
