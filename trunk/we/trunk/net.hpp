@@ -3,28 +3,15 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <ostream>
-#include <iomanip>
-
 #include <map>
-#include <set>
-#include <vector>
-
-#include <algorithm>
-
-#include <boost/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
-
-#include <boost/typeof/typeof.hpp>
 
 #include <boost/function.hpp>
 
+#include <adjacency.hpp>
 #include <bijection.hpp>
 #include <handle.hpp>
-#include <svector.hpp>
-#include <adjacency.hpp>
 #include <multirel.hpp>
+#include <svector.hpp>
 
 // exceptions
 class transition_not_enabled : public std::runtime_error
