@@ -9,7 +9,7 @@
 #include <net.hpp>
 #include <map>
 
-#include <auto_bimap.hpp>
+#include <bijection.hpp>
 
 #include <tr1/unordered_map>
 

@@ -21,7 +21,7 @@
 
 #include <boost/function.hpp>
 
-#include <auto_bimap.hpp>
+#include <bijection.hpp>
 #include <handle.hpp>
 
 // exceptions

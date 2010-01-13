@@ -1,211 +1,172 @@
-#ifndef _BIJECTION_HPP
-#define _BIJECTION_HPP
+#ifndef _AUTOBIMAP_HPP
+#define _AUTOBIMAP_HPP
 
-// keep a bijection between a set of objects and some ids
-// basically implementing a simple hash map, keeping the reverse too
+// bimap, that keeps a bijection between objects and some index
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <tr1/functional> // hash
-#include <map>            // map, multimap
+#include <ostream>
 
-#include <stdint.h>       // unit64_t
-#include <limits>         // numeric_limits
-#include <stdexcept>      // std::runtime_error
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 
-#include <cassert>        // assert
+#include <handle.hpp>
 
-namespace bijection
+namespace auto_bimap
 {
-  // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
-  // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
-  // It follows that an uint64_t is enough for now.
+  namespace exception
+  {
+    class no_such : public std::runtime_error
+    {
+    public:
+      no_such (const std::string & msg) : std::runtime_error(msg) {}
+      ~no_such() throw() {}
+    };
 
-  typedef uint64_t id_t;
+    class already_there : public std::runtime_error
+    {
+    public:
+      already_there (const std::string & msg) : std::runtime_error(msg) {}
+      ~already_there() throw() {}
+    };
+  } // namespace exception
 
-  typedef std::size_t hash_t;
-
-  static const id_t invalid (std::numeric_limits<id_t>::max());
-
-  struct handle_t
+  template<typename T, typename I = handle::T>
+  class auto_bimap
   {
   private:
-    id_t value;
-  public:
-    handle_t () throw () : value(std::numeric_limits<id_t>::min()) {}
-    const id_t operator * (void) throw () { return value++; }
-  };
+    // unordered, unique, viewable
+    typedef boost::bimaps::unordered_set_of<T> elem_collection_t;
 
-  class already_there : public std::runtime_error
-  {
-  public:
-    already_there (const std::string & msg) : std::runtime_error (msg) {}
-    ~already_there (void) throw () {}
-  };
+    // unordered, unique, viewable
+    typedef boost::bimaps::unordered_set_of<I> id_collection_t;
 
-  class no_such : public std::runtime_error
-  {
-  public:
-    no_such (const std::string & msg) : std::runtime_error (msg) {}
-    ~no_such (void) throw () {}
-  };
+    typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
+    typedef typename bimap_t::value_type val_t;
 
-  template<class T, class Hash = std::tr1::hash<T> >
-  class bijection
-  {
-  private:
-    handle_t h;
-
-    typedef typename std::map<id_t,T> id_to_obj_t;
-    typedef std::multimap<hash_t,id_t> hash_to_id_t;
-    typedef hash_to_id_t::const_iterator hash_to_id_const_it;
-    typedef std::pair< hash_to_id_const_it
-                     , hash_to_id_const_it> hash_to_id_range_const_it;
-    typedef hash_to_id_t::iterator hash_to_id_it;
-    typedef std::pair< hash_to_id_it
-                     , hash_to_id_it> hash_to_id_range_it;
-
-    id_to_obj_t id_to_obj;
-    hash_to_id_t hash_to_id;
-
+    bimap_t bimap;
+    I h;
     const std::string description;
 
-    const id_t get_id_from_hash (const T & x, const hash_t & hash) const
-      throw (no_such)
-    {
-      const hash_to_id_range_const_it range_const_it
-        (hash_to_id.equal_range (hash));
-
-      for ( hash_to_id_const_it id_it (range_const_it.first)
-          ; id_it != range_const_it.second
-          ; ++id_it
-          )
-        {
-          const id_t id (id_it->second);
-
-          const typename id_to_obj_t::const_iterator obj_it
-            (id_to_obj.find (id));
-
-          assert (obj_it != id_to_obj.end());
-
-          if (obj_it->second == x)
-            return id;
-        }
-
-      throw no_such (description);
-    }
-
-    const id_t insert_with_hash (const T & x, const hash_t & hash) throw ()
-    {
-      const id_t id (*h);
-
-      assert (id_to_obj.find(id) == id_to_obj.end());
-
-      id_to_obj[id] = x;
-      hash_to_id.insert (hash_to_id_t::value_type (hash, id));
-
-      return id;
-    }
-
-    void erase_with_hash (const id_t & id, const hash_t & hash) throw ()
-    {
-      id_to_obj.erase (id);
-
-      const hash_to_id_range_it range_it (hash_to_id.equal_range (hash));
-
-      for ( hash_to_id_it id_it (range_it.first)
-          ; id_it != range_it.second
-          ; ++id_it
-          )
-        if (id_it->second == id)
-          {
-            hash_to_id.erase (id_it);
-
-            return;
-          }
-
-      assert (false);
-    }
-
   public:
-    typedef typename id_to_obj_t::const_iterator const_it;
-
-    const const_it begin (void) const throw () { return id_to_obj.begin(); }
-    const const_it end (void) const throw () { return id_to_obj.end(); }
-
-    bijection (const std::string & descr = "NO_DESCRIPTION_GIVEN") throw ()
-      : description(descr)
+    auto_bimap (const std::string & _description = "NO DESCRIPTION GIVEN")
+      : h(0)
+      , description (_description)
     {}
 
-    const id_t unsafe_insert (const T & x) throw ()
+    typedef typename bimap_t::iterator iterator;
+
+    iterator begin (void) { return bimap.begin(); }
+    iterator end (void) { return bimap.end(); }
+
+    typedef typename bimap_t::const_iterator const_iterator;
+
+    const const_iterator begin (void) const { return bimap.begin(); }
+    const const_iterator end (void) const { return bimap.end(); }
+
+    const I & get_id (const T & x) const throw (exception::no_such)
     {
-      return insert_with_hash (x, Hash()(x));
+      typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
+
+      if (it == bimap.left.end())
+        throw exception::no_such (description);
+
+      return it->second;
     }
 
-    const id_t insert (const T & x) throw (already_there)
+    const T & get_elem (const I & i) const throw (exception::no_such)
     {
-      const hash_t hash (Hash()(x));
+      typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
 
-      try
-        {
-          get_id_from_hash (x, hash);
-        }
-      catch (no_such)
-        {
-          return insert_with_hash (x, hash);
-        }
+      if (it == bimap.right.end())
+        throw exception::no_such ("index for " + description);
 
-      throw already_there (description);
+      return it->second;
     }
 
-    const T & get_elem (const id_t & id) const throw (no_such)
+    const I add (const T & x) throw (exception::already_there)
     {
-      typename id_to_obj_t::const_iterator obj_it (id_to_obj.find (id));
+      if (bimap.left.find (x) != bimap.left.end())
+        throw exception::already_there (description);
 
-      if (obj_it == id_to_obj.end())
-        throw no_such (description);
+      I i (h++);
 
-      return obj_it->second;
+      bimap.insert (val_t (x, i));
+
+      return i;
     }
 
-    const id_t get_id (const T & x) const throw (no_such)
+    const void erase (const I & i)
     {
-      return get_id_from_hash (x, Hash()(x));
+      bimap.right.erase (i);
     }
 
-    void erase (const T & x) throw (no_such)
+    const I modify (const I & i, const T & x)
+      throw (exception::no_such, exception::already_there)
     {
-      const hash_t hash (Hash()(x));
+      typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
-      erase_with_hash (get_id_from_hash (x, hash), hash);
+      if (it == bimap.right.end())
+        throw exception::no_such ("index for " + description);
+
+      if (bimap.right.modify_data (it, boost::bimaps::_data = x) == false)
+        throw exception::already_there (description + " after modify");
+
+      return i;
     }
 
-    template<class U, class H>
-    friend std::ostream & operator << (std::ostream &, const bijection<U, H> &);
+    const I replace (const I & i, const T & x)
+      throw (exception::no_such, exception::already_there)
+    {
+      typename bimap_t::right_map::iterator it (bimap.right.find (i));
+
+      if (it == bimap.right.end())
+        throw exception::no_such ("index for " + description);
+
+      if (bimap.right.replace_data (it, x) == false)
+        throw exception::already_there (description + " after replace");
+
+      return i;
+    }
+
+    template<typename U>
+    friend std::ostream & operator << (std::ostream &, const auto_bimap<U> &);
   };
 
-  template<class U, class H>
-  std::ostream & operator << (std::ostream & s, const bijection<U, H> & b)
+  template<typename T>
+  std::ostream & operator << ( std::ostream & s
+                             , const auto_bimap<T> & bm
+                             )
   {
-    s << "**** bijection (" << b.description << ")" << std::endl;
+    typedef typename auto_bimap<T>::const_iterator bm_it;
 
-    s << "** id -> obj" << std::endl;
+    s << "bimap (" << bm.description << "):" << std::endl;
 
-    for ( typename bijection<U, H>::id_to_obj_t::const_iterator it (b.id_to_obj.begin())
-        ; it != b.id_to_obj.end()
-        ; ++it
-        )
-      s << it->first << " => " << it->second << std::endl;
-
-    s << "** hash -> id" << std::endl;
-
-    for ( typename bijection<U, H>::hash_to_id_t::const_iterator it (b.hash_to_id.begin())
-        ; it != b.hash_to_id.end()
-        ; ++it
-        )
-      s << it->first << " => " << it->second << std::endl;
+    for (bm_it it (bm.begin()), it_end (bm.end()); it != it_end; ++it)
+      s << " -- " << it->left << " <=> " << it->right << std::endl;
 
     return s;
-  }
-}
+  };
 
-#endif // _BIJECTION_HPP
+  template<typename T, typename I = handle::T>
+  struct bi_const_it
+  {
+  private:
+    typedef typename auto_bimap<T>::const_iterator it;
+    it pos;
+    const it end;
+    const std::size_t count_;
+  public:
+    bi_const_it (const auto_bimap<T> & bm)
+      : pos (bm.begin())
+      , end (bm.end())
+      , count_(std::distance(pos, end))
+    {}
+
+    const bool has_more (void) const { return (pos != end) ? true : false; }
+    void operator ++ (void) { ++pos; }
+    const I & operator * (void) const { return pos->right; }
+    const std::size_t count (void) const { return count_; }
+  };
+} // namespace auto_bimap
+
+#endif // _AUTOBIMAP_HPP

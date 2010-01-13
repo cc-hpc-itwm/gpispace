@@ -10,9 +10,9 @@
 
 #include <net.hpp>
 #include <timer.hpp>
-#include <bijection.hpp>
+#include <bijection_homegrown.hpp>
 
-#include <auto_bimap.hpp>
+#include <bijection.hpp>
 #include <handle.hpp>
 
 #include <tr1/random>

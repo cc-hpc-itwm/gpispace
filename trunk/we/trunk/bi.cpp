@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <bijection.hpp>
+#include <bijection_homegrown.hpp>
 
 typedef std::string T;
 typedef bijection::bijection<T> bijection_t;
