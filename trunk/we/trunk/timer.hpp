@@ -5,7 +5,7 @@
 
 #include <sys/time.h>
 
-#include <ostream>
+#include <iostream>
 
 #include <string>
 
