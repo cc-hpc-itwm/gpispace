@@ -116,7 +116,7 @@ namespace std
   }
 }
 
-std::ostream & operator << (std::ostream & s, const internal_place_t & p)
+static std::ostream & operator << (std::ostream & s, const internal_place_t & p)
 {
   return s << "internal_place_t: copy count = " << p.copy_count();
 }
@@ -170,7 +170,7 @@ namespace std
   }
 }
 
-std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
+static std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
 {
   return s << *(p.p());
 }

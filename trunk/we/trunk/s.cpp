@@ -25,7 +25,7 @@ namespace TransitionFunction
 {
   typedef Traits<token_t>::edges_only_t map_t;
 
-  map_t swap (const map_t * const in)
+  static map_t swap (const map_t * const in)
   {
     map_t out;
 
@@ -50,7 +50,7 @@ namespace TransitionFunction
     swap_descr (const pair_t & _i, const pair_t & _o) : i (_i), o (_o) {}
   };
 
-  map_t swap_state (const swap_descr * descr, const map_t * const in)
+  static map_t swap_state (const swap_descr * descr, const map_t * const in)
   {
     map_t out;
 
@@ -91,7 +91,7 @@ static void fire (pnet_t & n)
 }
 
 int
-main ()
+main (int argc, char **)
 {
   pnet_t n(2,1);
 
@@ -112,18 +112,25 @@ main ()
 
   std::cout << eid0 << " " << eid1 << " " << eid2 << " " << eid3 << std::endl;
 
-  //  TransitionFunction::EdgesOnly<token_t> 
-  //   transfun (&TransitionFunction::swap);
+  if (argc > 0)
+    {
+      TransitionFunction::EdgesOnly<token_t> 
+        transfun (&TransitionFunction::swap);
 
-  TransitionFunction::swap_descr swap_descr 
-    ( TransitionFunction::swap_descr::pair_t (eid0, eid1)
-    , TransitionFunction::swap_descr::pair_t (eid2, eid3)
-    );
+      n.set_transition_function (tid, transfun);
+    }
+  else
+    {
+      TransitionFunction::swap_descr swap_descr 
+        ( TransitionFunction::swap_descr::pair_t (eid0, eid1)
+        , TransitionFunction::swap_descr::pair_t (eid2, eid3)
+        );
 
-  TransitionFunction::EdgesOnly<token_t> 
-    transfun (boost::bind(&TransitionFunction::swap_state, &swap_descr, _1));
+      TransitionFunction::EdgesOnly<token_t> 
+        transfun (boost::bind(&TransitionFunction::swap_state, &swap_descr, _1));
 
-  n.set_transition_function (tid, transfun);
+      n.set_transition_function (tid, transfun);
+    }
 
   n.put_token (pid_A, 'a');
   n.put_token (pid_B, 'b');

@@ -1,8 +1,29 @@
 
-DOPTS = $(CPP_MACROS)
+DOPTS += $(CPP_MACROS)
 
-CXX_FLAGS = -Wall -Werror -Wextra -pedantic -O3 $(addprefix -D,$(DOPTS))
-#CXX = g++
+WARN += all error extra
+WARN += init-self
+WARN += missing-include-dirs
+WARN += switch-default
+# BOOST!
+# WARN += switch-enum
+WARN += no-pragmas
+WARN += float-equal
+# BOOST!
+# WARN += shadow 
+WARN += enum-compare
+WARN += missing-declarations
+# BOOST!
+# WARN += missing-noreturn
+WARN += redundant-decls
+
+EOPTS += pedantic Wno-long-long
+
+CXX_FLAGS = $(addprefix -W,$(WARN))
+CXX_FLAGS += -O3
+CXX_FLAGS += $(addprefix -,$(EOPTS))
+CXX_FLAGS += $(addprefix -D,$(DOPTS))
+
 CXX_INCLUDE = .
 CXX_INCLUDE += ${BOOST_ROOT}/include
 
