@@ -3,8 +3,9 @@
 #ifndef _ADJACENCY_HPP
 #define _ADJACENCY_HPP
 
-#include <vector>
 #include <stdexcept>
+
+#include <vector>
 
 namespace adjacency
 {

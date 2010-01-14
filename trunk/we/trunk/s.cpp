@@ -1,11 +1,13 @@
 
 // how to use named edges to swap two tokens, mirko.rahn@itwm.fraunhofer.de
 
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
 #include <net.hpp>
+
+#include <cstdlib>
+
+#include <iostream>
+
+#include <string>
 
 using std::cout;
 using std::endl;

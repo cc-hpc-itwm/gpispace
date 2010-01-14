@@ -4,8 +4,8 @@
 #define _BIJECTION_HPP
 
 #include <boost/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/support/lambda.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 
 namespace bijection
 {

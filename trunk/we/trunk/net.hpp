@@ -3,14 +3,16 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <map>
-
-#include <boost/function.hpp>
-
 #include <adjacency.hpp>
 #include <bijection.hpp>
 #include <multirel.hpp>
 #include <svector.hpp>
+
+#include <limits>
+
+#include <map>
+
+#include <boost/function.hpp>
 
 namespace petri_net
 {

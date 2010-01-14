@@ -2,8 +2,9 @@
 
 #include <adjacency.hpp>
 
-#include <iostream>
 #include <limits>
+
+#include <iostream>
 
 typedef unsigned short row_t;
 typedef unsigned int col_t;

@@ -4,8 +4,10 @@
 #define _TIMER_H
 
 #include <sys/time.h>
-#include <string>
+
 #include <ostream>
+
+#include <string>
 
 static inline double current_time()
 {

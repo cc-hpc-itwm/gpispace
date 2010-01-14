@@ -1,14 +1,16 @@
 // demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
+#include <net.hpp>
+#include <timer.hpp>
+
 #include <cstdlib>
+
 #include <iostream>
 #include <sstream>
+
 #include <string>
 
 #include <tr1/random>
-
-#include <net.hpp>
-#include <timer.hpp>
 
 typedef std::string place_t;
 typedef std::string transition_t;

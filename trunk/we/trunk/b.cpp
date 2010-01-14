@@ -1,15 +1,16 @@
 
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
-#include <cstdlib>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <malloc.h>
-
 #include <net.hpp>
 #include <timer.hpp>
+
+#include <cstdlib>
+#include <malloc.h>
+
+#include <iostream>
+#include <sstream>
+
+#include <string>
 
 #include <tr1/random>
 

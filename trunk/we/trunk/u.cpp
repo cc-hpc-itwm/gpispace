@@ -1,12 +1,15 @@
 
 // user defined transition function example, mirko.rahn@itwm.fraunhofer.de
 
+#include <net.hpp>
+
 #include <cstdlib>
+
 #include <iostream>
 #include <sstream>
+
 #include <string>
 
-#include <net.hpp>
 #include <tr1/random>
 
 using std::cout;

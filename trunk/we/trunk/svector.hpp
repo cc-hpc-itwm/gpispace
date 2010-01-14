@@ -4,6 +4,7 @@
 #define _SVECTOR_HPP
 
 #include <vector>
+
 #include <algorithm>
 
 template<typename T>

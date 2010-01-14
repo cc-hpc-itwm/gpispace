@@ -1,13 +1,14 @@
 
 // a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
+#include <net.hpp>
+#include <timer.hpp>
+
 #include <cstdlib>
+
 #include <iostream>
 
 #include <tr1/random>
-
-#include <net.hpp>
-#include <timer.hpp>
 
 typedef unsigned int loop_t;
 typedef unsigned int id_t;
