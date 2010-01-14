@@ -108,20 +108,9 @@ public:
   {};
 
   // numbers of elements
-  pid_t get_num_places (void) const
-  {
-    return num_places;
-  }
-
-  tid_t get_num_transitions (void) const
-  {
-    return num_transitions;
-  }
-
-  eid_t get_num_edges (void) const
-  {
-    return num_edges;
-  }
+  pid_t get_num_places (void) const { return num_places; }
+  tid_t get_num_transitions (void) const { return num_transitions; }
+  eid_t get_num_edges (void) const { return num_edges; }
 
   // get id
   const pid_t & get_place_id (const Place & place) const
@@ -190,12 +179,11 @@ public:
 
 private:
   template<typename ROW, typename COL>
-  eid_t add_edge
-  ( const Edge & edge
-  , const ROW & r
-  , const COL & c
-  , adjacency::table<ROW,COL,eid_t> & m
-  )
+  eid_t add_edge ( const Edge & edge
+                 , const ROW & r
+                 , const COL & c
+                 , adjacency::table<ROW,COL,eid_t> & m
+                 )
     throw (bijection::exception::already_there)
   {
     if (m.get_adjacent (r, c) != eid_invalid)
@@ -211,8 +199,10 @@ private:
   }
 
 public:
-  eid_t add_edge_place_to_transition
-  (const Edge & edge, const pid_t & pid, const tid_t & tid)
+  eid_t add_edge_place_to_transition ( const Edge & edge
+                                     , const pid_t & pid
+                                     , const tid_t & tid
+                                     )
     throw (bijection::exception::already_there)
   {
     const eid_t eid (add_edge<pid_t,tid_t> (edge, pid, tid, adj_pt));
@@ -223,8 +213,10 @@ public:
     return eid;
   }
 
-  eid_t add_edge_transition_to_place
-  (const Edge & edge, const tid_t & tid, const pid_t & pid)
+  eid_t add_edge_transition_to_place ( const Edge & edge
+                                     , const tid_t & tid
+                                     , const pid_t & pid
+                                     )
     throw (bijection::exception::already_there)
   {
     const eid_t eid (add_edge<tid_t,pid_t> (edge, tid, pid, adj_tp));
@@ -501,20 +493,22 @@ public:
 
   std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
-    const std::size_t dist (token_place_rel.delete_one (token, pid));
+    const std::size_t k (token_place_rel.delete_one (token, pid));
 
-    if (dist > 0)
+    if (k > 0)
       del_enabled_transitions (pid);
 
-    return (dist > 0) ? 1 : 0;
+    return (k > 0) ? 1 : 0;
   }
 
-  // FIXME: only del if something was deleted
   std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
-    del_enabled_transitions (pid);
+    const std::size_t k (token_place_rel.delete_all (token, pid));
 
-    return token_place_rel.delete_all (token, pid);
+    if (k > 0)
+      del_enabled_transitions (pid);
+
+    return k;
   }
 
   // WORK HERE: implement more efficient

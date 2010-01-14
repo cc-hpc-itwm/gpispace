@@ -103,14 +103,10 @@ main (int argc, char **)
     (n.add_edge_place_to_transition (edge_t (0, "a"), pid_A, tid));
   petri_net::eid_t eid1
     (n.add_edge_place_to_transition (edge_t (1, "b"), pid_B, tid));
-
   petri_net::eid_t eid2
     (n.add_edge_transition_to_place (edge_t (2, "b"), tid, pid_A));
-
   petri_net::eid_t eid3
     (n.add_edge_transition_to_place (edge_t (3, "a"), tid, pid_B));
-
-  std::cout << eid0 << " " << eid1 << " " << eid2 << " " << eid3 << std::endl;
 
   if (argc > 0)
     {
