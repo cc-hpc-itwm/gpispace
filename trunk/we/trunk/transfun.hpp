@@ -27,8 +27,6 @@ namespace TransitionFunction
     typedef std::vector<place_via_edge_t> output_descr_t;
     typedef std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
-
-    typedef std::map<petri_net::eid_t, Token> edges_only_t;
   };
 
   template<typename Token>
@@ -71,10 +69,9 @@ namespace TransitionFunction
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
-
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
+    typedef typename Traits<Token>::token_on_place_t token_on_place_t;
     
     typedef boost::function<output_t ( const input_t &
                                      , const output_descr_t &
@@ -94,16 +91,15 @@ namespace TransitionFunction
     }
   };
 
-  // default construct all output tokens, always possible
+  // default construct all output tokens, alway possible
   template<typename Token>
   class Default
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
-
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
+    typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
   public:
     output_t operator () ( const input_t &
@@ -116,7 +112,7 @@ namespace TransitionFunction
           ; it != output_descr.end()
           ; ++it
           )
-        output.push_back (token_on_place_t (Token(), get_pid <Token>(*it)));
+        output.push_back (token_on_place_t (Token(), get_pid<Token>(*it)));
 
       return output;
     }
@@ -130,10 +126,9 @@ namespace TransitionFunction
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
-
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
+    typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
     typedef boost::function<Token (const Token &)> F;
 
@@ -154,7 +149,7 @@ namespace TransitionFunction
       for ( ; it_out != output_descr.end(); ++it_out, ++it_in)
         {
           if (it_in == input.end())
-            throw std::runtime_error ("not enough input tokens to pass through");
+            throw std::runtime_error ("pass through: missing input token");
 
           output.push_back (token_on_place_t ( f(get_token<Token>(*it_in))
                                              , get_pid<Token>(*it_out)
@@ -163,17 +158,14 @@ namespace TransitionFunction
         }
 
       if (it_in != input.end())
-        throw std::runtime_error ("not enough output places to pass through");
+        throw std::runtime_error ("pass through: missing output places");
 
       return output;
     }
   };
 
   template<typename Token>
-  inline Token Const (const Token & token)
-  {
-    return token;
-  }
+  inline Token Const (const Token & token) { return token; }
 
   // simple pass the tokens through
   template<typename Token>
@@ -187,18 +179,15 @@ namespace TransitionFunction
   template<typename Token>
   class EdgesOnly
   {
+  public:
+    typedef typename std::map<petri_net::eid_t, Token> map_t;
+    typedef boost::function<map_t (const map_t &)> F;
+
   private:
     typedef typename Traits<Token>::input_t input_t;
-
     typedef typename Traits<Token>::output_descr_t output_descr_t;
-    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
-
-    typedef typename Traits<Token>::edges_only_t edges_only_t;
-    
-    typedef typename Traits<Token>::edges_only_t map_t;
-
-    typedef boost::function<map_t (const map_t &)> F;
+    typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
     F f;
 
@@ -210,7 +199,7 @@ namespace TransitionFunction
                          ) const
     {
       // collect input as Map (Edge -> Token)
-      edges_only_t in;
+      map_t in;
 
       for ( typename input_t::const_iterator it (input.begin())
           ; it != input.end()
@@ -219,7 +208,7 @@ namespace TransitionFunction
         in[get_eid<Token>(*it)] = get_token<Token>(*it);
 
       // calculate output as Map (Edge -> Token)
-      edges_only_t out (f (in));
+      map_t out (f (in));
 
       // fill the output vector
       output_t output;
@@ -229,18 +218,21 @@ namespace TransitionFunction
           ; ++it
           )
         {
-          typename edges_only_t::iterator res (out.find (get_eid<Token>(*it)));
+          typename map_t::iterator res (out.find (get_eid<Token>(*it)));
 
           if (res == out.end())
-            throw std::runtime_error ("missing edge in output map");
+            throw std::runtime_error ("edge only: missing edge in output map");
 
-          output.push_back (token_on_place_t (res->second, get_pid<Token>(*it)));
+          output.push_back ( token_on_place_t ( res->second
+                                              , get_pid<Token>(*it)
+                                              )
+                           );
 
           out.erase (res);
         }
 
       if (!out.empty())
-        throw std::runtime_error ("to much edges in output map");
+        throw std::runtime_error ("edge only: to much edges in output map");
 
       return output;
     }

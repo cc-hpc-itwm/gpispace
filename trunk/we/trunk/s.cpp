@@ -1,4 +1,3 @@
-
 // how to use named edges to swap two tokens, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
@@ -23,7 +22,7 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 namespace TransitionFunction
 {
-  typedef Traits<token_t>::edges_only_t map_t;
+  typedef TransitionFunction::EdgesOnly<token_t>::map_t map_t;
 
   static map_t swap (const map_t & in)
   {
