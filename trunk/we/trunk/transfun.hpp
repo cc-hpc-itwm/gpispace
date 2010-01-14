@@ -97,7 +97,7 @@ namespace TransitionFunction
   // needs the same number of input and output tokens
   // applies a function without context to each token
   // stays with the order given in input/output_descr
-  template<typename Token, Token F (const Token &)>
+  template<typename Token>
   class PassThroughWithFun
   {
   private:
@@ -107,7 +107,13 @@ namespace TransitionFunction
     typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef typename Traits<Token>::output_t output_t;
 
+    typedef boost::function<Token (const Token &)> F;
+
+    F f;
+
   public:
+    PassThroughWithFun (F _f) : f (_f) {}
+
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
                          ) const
@@ -122,7 +128,7 @@ namespace TransitionFunction
           if (it_in == input.end())
             throw std::runtime_error ("not enough input tokens to pass through");
 
-          output.push_back (token_on_place_t ( F(get_token<Token>(*it_in))
+          output.push_back (token_on_place_t ( f(get_token<Token>(*it_in))
                                              , get_pid<Token>(*it_out)
                                              )
                            );
@@ -143,8 +149,11 @@ namespace TransitionFunction
 
   // simple pass the tokens through
   template<typename Token>
-  class PassThrough : public PassThroughWithFun<Token, Const<Token> >
-  {};
+  class PassThrough : public PassThroughWithFun<Token>
+  {
+  public:
+    PassThrough () : PassThroughWithFun<Token>(Const<Token>) {}
+  };
 
   // apply a function, that depends on the edges only
   template<typename Token>

@@ -23,8 +23,6 @@ typedef unsigned long token_t;
 token_t inc (const token_t &);
 token_t inc (const token_t & token) { return token + 1; }
 
-typedef TransitionFunction::PassThroughWithFun<token_t,inc> Inc;
-
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 static std::string brack (const std::string & x)
@@ -79,9 +77,15 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down")));
     petri_net::tid_t tid_top_down 
-      (n.add_transition (transition_t ("top_down"), Inc()));
+      ( n.add_transition ( transition_t ("top_down")
+                         , TransitionFunction::PassThroughWithFun<token_t>(inc)
+                         )
+      );
     petri_net::tid_t tid_down_top
-      (n.add_transition (transition_t ("down_top"), Inc()));
+      ( n.add_transition ( transition_t ("down_top")
+                         , TransitionFunction::PassThroughWithFun<token_t>(inc)
+                         )
+      );
   
     n.add_edge_place_to_transition (edge_t ("top_out"), pid_top, tid_top_down);
     n.add_edge_transition_to_place (edge_t ("down_in"), tid_top_down, pid_down);
@@ -98,9 +102,15 @@ main ()
     petri_net::pid_t pid_top (n.add_place (place_t ("top_pass")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down_pass")));
     petri_net::tid_t tid_top_down 
-      (n.add_transition (transition_t ("top_down_pass"), TransitionFunction::PassThrough<token_t>()));
+      ( n.add_transition ( transition_t ("top_down_pass")
+                         , TransitionFunction::PassThrough<token_t>()
+                         )
+      );
     petri_net::tid_t tid_down_top
-      (n.add_transition (transition_t ("down_top_pass"), TransitionFunction::PassThrough<token_t>()));
+      ( n.add_transition ( transition_t ("down_top_pass")
+                         , TransitionFunction::PassThrough<token_t>()
+                         )
+      );
   
     n.add_edge_place_to_transition (edge_t ("top_out_pass"), pid_top, tid_top_down);
     n.add_edge_transition_to_place (edge_t ("down_in_pass"), tid_top_down, pid_down);
