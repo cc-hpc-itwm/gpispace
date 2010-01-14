@@ -20,7 +20,7 @@ typedef std::string edge_t;
 typedef std::string transition_t;
 typedef unsigned long token_t;
 
-const token_t inc (const token_t & token) { return token + 1; }
+token_t inc (const token_t & token) { return token + 1; }
 
 typedef TransitionFunction::PassThroughWithFun<token_t,inc> Inc;
 

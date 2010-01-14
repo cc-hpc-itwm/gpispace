@@ -32,35 +32,35 @@ namespace TransitionFunction
   };
 
   template<typename Token>
-  const petri_net::pid_t get_pid 
+  petri_net::pid_t get_pid
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.first;
   };
 
   template<typename Token>
-  const petri_net::eid_t get_eid 
+  petri_net::eid_t get_eid 
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
   };
 
   template<typename Token>
-  const petri_net::pid_t get_pid 
+  petri_net::pid_t get_pid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_pid<Token> (token_input.second);
   };
 
   template<typename Token>
-  const petri_net::eid_t get_eid 
+  petri_net::eid_t get_eid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_eid<Token> (token_input.second);
   };
 
   template<typename Token>
-  const Token get_token
+  Token get_token
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return token_input.first;
@@ -78,9 +78,9 @@ namespace TransitionFunction
     typedef typename Traits<Token>::output_t output_t;
 
   public:
-    const output_t operator () ( const input_t &
-                               , const output_descr_t & output_descr
-                               ) const
+    output_t operator () ( const input_t &
+                         , const output_descr_t & output_descr
+                         ) const
     {
       output_t output;
 
@@ -97,7 +97,7 @@ namespace TransitionFunction
   // needs the same number of input and output tokens
   // applies a function without context to each token
   // stays with the order given in input/output_descr
-  template<typename Token, const Token F (const Token &)>
+  template<typename Token, Token F (const Token &)>
   class PassThroughWithFun
   {
   private:
@@ -108,9 +108,9 @@ namespace TransitionFunction
     typedef typename Traits<Token>::output_t output_t;
 
   public:
-    const output_t operator () ( const input_t & input
-                               , const output_descr_t & output_descr
-                               ) const
+    output_t operator () ( const input_t & input
+                         , const output_descr_t & output_descr
+                         ) const
     {
       output_t output;
       
@@ -136,7 +136,7 @@ namespace TransitionFunction
   };
 
   template<typename Token>
-  inline const Token Const (const Token & token)
+  inline Token Const (const Token & token)
   {
     return token;
   }
@@ -161,16 +161,16 @@ namespace TransitionFunction
     
     typedef typename Traits<Token>::edges_only_t map_t;
 
-    typedef boost::function<const map_t (const map_t * const)> F;
+    typedef boost::function<map_t (const map_t * const)> F;
 
     F f;
 
   public:
     EdgesOnly (F _f) : f (_f) {}
 
-    const output_t operator () ( const input_t & input
-                               , const output_descr_t & output_descr
-                               ) const
+    output_t operator () ( const input_t & input
+                         , const output_descr_t & output_descr
+                         ) const
     {
       // collect input as Map (Edge -> Token)
       edges_only_t in;

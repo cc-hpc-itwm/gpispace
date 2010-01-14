@@ -41,10 +41,10 @@ namespace multirel
       , end (its.second)
       , count_(std::distance (pos, end))
     {}
-    const bool has_more (void) const { return (pos != end) ? true : false; }
+    bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
     const T & operator * (void) const { return pos->second; }
-    const std::size_t count (void) const { return count_; }
+    std::size_t count (void) const { return count_; }
   };
 
   template<typename L, typename R>
@@ -76,12 +76,12 @@ namespace multirel
     typename traits<L,R>::container_t container;
 
   public:
-    const bool add (const L & l, const R & r)
+    bool add (const L & l, const R & r)
     {
       return container.insert(typename traits<L,R>::val_t (l, r)).second;
     }
 
-    const std::size_t delete_one (const L & l, const R & r)
+    std::size_t delete_one (const L & l, const R & r)
     {
       typename traits<L,R>::range_it
         range_it (container.equal_range (typename traits<L,R>::val_t (l, r)));
@@ -94,7 +94,7 @@ namespace multirel
       return dist;
     }
 
-    const std::size_t delete_all (const L & l, const R & r)
+    std::size_t delete_all (const L & l, const R & r)
     {
       typename traits<L,R>::range_it
         range_it (container.equal_range (typename traits<L,R>::val_t (l, r)));
@@ -104,32 +104,32 @@ namespace multirel
       return std::distance (range_it.first, range_it.second);
     }
 
-    const right_const_it<L,R> left_of (const R & r) const
+    right_const_it<L,R> left_of (const R & r) const
     {
       return right_const_it<L,R> (container.right.equal_range (r));
     }
 
-    const left_const_it<L,R> right_of (const L & l) const
+    left_const_it<L,R> right_of (const L & l) const
     {
       return left_const_it<L,R> (container.left.equal_range (l));
     }
 
-    const typename traits<L,R>::const_it begin (void) const
+    typename traits<L,R>::const_it begin (void) const
     {
       return container.begin();
     }
 
-    const typename traits<L,R>::const_it end (void) const
+    typename traits<L,R>::const_it end (void) const
     {
       return container.end();
     }
 
-    const bool contains_left (const L & l) const
+    bool contains_left (const L & l) const
     {
       return (container.left.find (l) != container.left.end());
     }
 
-    const bool contains_right (const R & r) const
+    bool contains_right (const R & r) const
     {
       return (container.right.find (r) != container.right.end());
     }

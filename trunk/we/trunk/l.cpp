@@ -43,7 +43,7 @@ my_init_hook (void)
 }
      
 static void *
-my_malloc_hook (size_t size, const void *caller)
+my_malloc_hook (size_t size, const void *)
 {
   void *result;
   /* Restore all old hooks */
@@ -63,7 +63,7 @@ my_malloc_hook (size_t size, const void *caller)
 }
      
 static void
-my_free_hook (void *ptr, const void *caller)
+my_free_hook (void *ptr, const void *)
 {
   /* Restore all old hooks */
   __malloc_hook = old_malloc_hook;

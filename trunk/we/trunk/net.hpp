@@ -108,17 +108,17 @@ public:
   {};
 
   // numbers of elements
-  const pid_t get_num_places (void) const
+  pid_t get_num_places (void) const
   {
     return num_places;
   }
 
-  const tid_t get_num_transitions (void) const
+  tid_t get_num_transitions (void) const
   {
     return num_transitions;
   }
 
-  const eid_t get_num_edges (void) const
+  eid_t get_num_edges (void) const
   {
     return num_edges;
   }
@@ -162,7 +162,7 @@ public:
   }
 
   // add element
-  const pid_t add_place (const Place & place)
+  pid_t add_place (const Place & place)
     throw (bijection::exception::already_there)
   {
     ++num_places;
@@ -170,14 +170,14 @@ public:
     return pmap.add (place);
   }
 
-  const tid_t set_transition_function (const tid_t & tid, const transfun_t & f)
+  tid_t set_transition_function (const tid_t & tid, const transfun_t & f)
   {
     transfun[tid] = f;
 
     return tid;
   }
 
-  const tid_t add_transition 
+  tid_t add_transition 
   ( const Transition & transition
   , const transfun_t & f = TransitionFunction::Default<Token>()
   )
@@ -190,7 +190,7 @@ public:
 
 private:
   template<typename ROW, typename COL>
-  const eid_t add_edge
+  eid_t add_edge
   ( const Edge & edge
   , const ROW & r
   , const COL & c
@@ -211,7 +211,7 @@ private:
   }
 
 public:
-  const eid_t add_edge_place_to_transition
+  eid_t add_edge_place_to_transition
   (const Edge & edge, const pid_t & pid, const tid_t & tid)
     throw (bijection::exception::already_there)
   {
@@ -223,7 +223,7 @@ public:
     return eid;
   }
 
-  const eid_t add_edge_transition_to_place
+  eid_t add_edge_transition_to_place
   (const Edge & edge, const tid_t & tid, const pid_t & pid)
     throw (bijection::exception::already_there)
   {
@@ -236,47 +236,47 @@ public:
   }
 
   // iterate through elements
-  const place_const_it places (void) const
+  place_const_it places (void) const
   {
     return place_const_it (pmap);
   }
 
-  const transition_const_it transitions (void) const
+  transition_const_it transitions (void) const
   {
     return transition_const_it (tmap);
   }
 
-  const edge_const_it edges (void) const
+  edge_const_it edges (void) const
   {
     return edge_const_it (emap);
   }
 
   // iterate through adjacencies
-  const adj_place_const_it out_of_transition (const tid_t & tid) const
+  adj_place_const_it out_of_transition (const tid_t & tid) const
   {
     return adj_place_const_it (adj_tp.row_const_it (tid));
   }
 
-  const adj_place_const_it in_to_transition (const tid_t & tid) const
+  adj_place_const_it in_to_transition (const tid_t & tid) const
   {
     return adj_place_const_it (adj_pt.col_const_it (tid));
   }
 
-  const adj_transition_const_it out_of_place (const pid_t & pid) const
+  adj_transition_const_it out_of_place (const pid_t & pid) const
   {
     return adj_transition_const_it (adj_pt.row_const_it (pid));
   }
 
-  const adj_transition_const_it in_to_place (const pid_t & pid) const
+  adj_transition_const_it in_to_place (const pid_t & pid) const
   {
     return adj_transition_const_it (adj_tp.col_const_it (pid));
   }
 
   // get edge info
-  const edge_type get_edge_info ( const eid_t & eid
-                                , pid_t & pid
-                                , tid_t & tid
-                                ) const
+  edge_type get_edge_info ( const eid_t & eid
+                          , pid_t & pid
+                          , tid_t & tid
+                          ) const
   {
     const map_pid_const_it_t out_p (emap_out_p.find (eid));
 
@@ -399,42 +399,42 @@ public:
 
   // modify and replace
   // erased in case of conflict after modification
-  const pid_t modify_place (const pid_t & pid, const Place & place)
+  pid_t modify_place (const pid_t & pid, const Place & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return pmap.modify (pid, place);
   }
 
   // kept old value in case of conflict after modification
-  const pid_t replace_place (const pid_t & pid, const Place & place)
+  pid_t replace_place (const pid_t & pid, const Place & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return pmap.replace (pid, place);
   }
 
-  const tid_t modify_transition ( const tid_t & tid
-                                , const Transition & transition
-                                )
+  tid_t modify_transition ( const tid_t & tid
+                          , const Transition & transition
+                          )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.modify (tid, transition);
   }
 
-  const tid_t replace_transition ( const tid_t & tid
-                                 , const Transition & transition
-                                 )
+  tid_t replace_transition ( const tid_t & tid
+                           , const Transition & transition
+                           )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
 
-  const eid_t modify_edge (const eid_t & eid, const Edge & edge)
+  eid_t modify_edge (const eid_t & eid, const Edge & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.modify (eid, edge);
   }
 
-  const eid_t replace_edge (const eid_t & eid, const Edge & edge)
+  eid_t replace_edge (const eid_t & eid, const Edge & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return emap.replace (eid, edge);
@@ -468,7 +468,7 @@ public:
     return enabled;
   }
 
-  const void verify_enabled_transitions (void) const
+  void verify_enabled_transitions (void) const
   {
     enabled_t comp;
 
@@ -479,7 +479,7 @@ public:
     assert (comp == enabled);
   }
 
-  const bool put_token (const pid_t & pid, const Token & token)
+  bool put_token (const pid_t & pid, const Token & token)
   {
     const bool successful (token_place_rel.add (token, pid));
 
@@ -489,17 +489,17 @@ public:
     return successful;
   }
 
-  const token_place_it get_token (const pid_t & pid) const
+  token_place_it get_token (const pid_t & pid) const
   {
     return token_place_rel.left_of (pid);
   }
 
-  const bool has_token (const pid_t & pid) const
+  bool has_token (const pid_t & pid) const
   {
     return token_place_rel.contains_right (pid);
   }
 
-  const std::size_t delete_one_token (const pid_t & pid, const Token & token)
+  std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
     const std::size_t dist (token_place_rel.delete_one (token, pid));
 
@@ -510,7 +510,7 @@ public:
   }
 
   // FIXME: only del if something was deleted
-  const std::size_t delete_all_token (const pid_t & pid, const Token & token)
+  std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
     del_enabled_transitions (pid);
 
@@ -518,7 +518,7 @@ public:
   }
 
   // WORK HERE: implement more efficient
-  const std::size_t replace_one_token
+  std::size_t replace_one_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
     const std::size_t k (delete_one_token (pid, old_token));
@@ -530,7 +530,7 @@ public:
   }
 
   // WORK HERE: implement more efficient
-  const std::size_t replace_all_token
+  std::size_t replace_all_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
     const std::size_t k (delete_all_token (pid, old_token));
@@ -542,7 +542,7 @@ public:
   }
 
   // FIRE
-  const bool can_fire (const tid_t & tid) const
+  bool can_fire (const tid_t & tid) const
   {
     bool can_fire = true;
 

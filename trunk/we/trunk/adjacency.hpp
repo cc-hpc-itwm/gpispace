@@ -22,7 +22,7 @@ namespace adjacency
   public:
     const_it (const it_t & _pos, const it_t & _end) : pos (_pos), end (_end) {}
 
-    const bool has_more (void) const { return (pos != end) ? true : false; }
+    bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
 
     const L & operator * (void) const { return pos->first; }

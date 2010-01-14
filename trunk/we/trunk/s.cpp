@@ -25,7 +25,7 @@ namespace TransitionFunction
 {
   typedef Traits<token_t>::edges_only_t map_t;
 
-  const map_t swap (const map_t * const in)
+  map_t swap (const map_t * const in)
   {
     map_t out;
 
@@ -50,7 +50,7 @@ namespace TransitionFunction
     swap_descr (const pair_t & _i, const pair_t & _o) : i (_i), o (_o) {}
   };
 
-  const map_t swap_state (const swap_descr * descr, const map_t * const in)
+  map_t swap_state (const swap_descr * descr, const map_t * const in)
   {
     map_t out;
 

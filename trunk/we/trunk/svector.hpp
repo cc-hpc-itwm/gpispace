@@ -43,10 +43,10 @@ public:
   const_it begin (void) const { return vec.begin(); }
   const_it end (void) const { return vec.end(); }
 
-  const bool empty (void) const { return vec.empty(); }
-  const size_type size (void) const { return vec.size(); }
+  bool empty (void) const { return vec.empty(); }
+  size_type size (void) const { return vec.size(); }
 
-  const bool operator == (const svector<T> & other) const
+  bool operator == (const svector<T> & other) const
   {
     return (vec == other.vec);
   }

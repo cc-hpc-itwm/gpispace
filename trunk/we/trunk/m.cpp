@@ -66,7 +66,7 @@ public:
     ++cntmap["COPY"];
   }
 
-  const unsigned long copy_count (void) const
+  unsigned long copy_count (void) const
   {
     return copy_count_;
   }
@@ -96,7 +96,7 @@ public:
   }
 };
 
-static inline const std::size_t hash_value (const internal_place_t & p)
+static inline std::size_t hash_value (const internal_place_t & p)
 {
   return p.copy_count();
 }
@@ -150,7 +150,7 @@ public:
   }
 };
 
-static inline const std::size_t hash_value (const ptr_place_t & p)
+static inline std::size_t hash_value (const ptr_place_t & p)
 {
   return hash_value(*(p.p()));
 }

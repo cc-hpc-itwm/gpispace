@@ -91,12 +91,12 @@ namespace bijection
       return i;
     }
 
-    const void erase (const I & i)
+    void erase (const I & i)
     {
       bimap.right.erase (i);
     }
 
-    const I modify (const I & i, const T & x)
+    I modify (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
       typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -110,7 +110,7 @@ namespace bijection
       return i;
     }
 
-    const I replace (const I & i, const T & x)
+    I replace (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
       typename bimap_t::right_map::iterator it (bimap.right.find (i));
@@ -140,10 +140,10 @@ namespace bijection
       , count_(std::distance(pos, end))
     {}
 
-    const bool has_more (void) const { return (pos != end) ? true : false; }
+    bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
     const I & operator * (void) const { return pos->right; }
-    const std::size_t count (void) const { return count_; }
+    std::size_t count (void) const { return count_; }
   };
 } // namespace bijection
 
