@@ -11,29 +11,23 @@
 #include <svector.hpp>
 #include <transfun.hpp>
 
-#include <limits>
-
 #include <map>
 
 #include <boost/function.hpp>
 
 namespace petri_net
 {
-  namespace exception
-  {
-    class transition_not_enabled : public std::runtime_error
-    {
-    public:
-      transition_not_enabled (const std::string & msg) 
-        : std::runtime_error(msg) 
-      {}
-      ~transition_not_enabled() throw () {}
-    };
-  }
-};
-
-namespace petri_net
+namespace exception
 {
+  class transition_not_enabled : public std::runtime_error
+  {
+  public:
+    transition_not_enabled (const std::string & msg) : std::runtime_error(msg) 
+    {}
+    ~transition_not_enabled() throw () {}
+  };
+}
+
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
@@ -595,6 +589,6 @@ public:
       put_token (out->second, out->first);
   }
 };
-}
+} // namespace petri_net
 
 #endif // _NET_HPP
