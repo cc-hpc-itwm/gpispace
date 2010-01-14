@@ -36,35 +36,35 @@ namespace TransitionFunction
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.first;
-  };
+  }
 
   template<typename Token>
   petri_net::eid_t get_eid 
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
-  };
+  }
 
   template<typename Token>
   petri_net::pid_t get_pid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_pid<Token> (token_input.second);
-  };
+  }
 
   template<typename Token>
   petri_net::eid_t get_eid 
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_eid<Token> (token_input.second);
-  };
+  }
 
   template<typename Token>
   Token get_token
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return token_input.first;
-  };
+  }
 
   // default construct all output tokens, always possible
   template<typename Token>
@@ -208,5 +208,6 @@ namespace TransitionFunction
       return output;
     }
   };
-};
+}
+
 #endif // _TRANSFUN_HPP

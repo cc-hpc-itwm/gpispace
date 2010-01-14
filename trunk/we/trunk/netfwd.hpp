@@ -17,6 +17,6 @@ namespace petri_net
   typedef uint64_t eid_t;
 
   static const eid_t eid_invalid (std::numeric_limits<eid_t>::max());
-};
+}
 
 #endif // _NETFWD_HPP
