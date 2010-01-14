@@ -47,13 +47,22 @@ main ()
 
   cout << t.get_adjacent (333,444) << endl;
 
+  cout << "const row " << 0 << ":" << endl;
   for ( adjacency::const_it<col_t,adj_t> it (t.row_const_it (0))
       ; it.has_more()
       ; ++it
       )
     cout << " " << *it << " by " << it() << endl;
 
+  cout << "const col " << 25 << ":" << endl;
   for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (25))
+      ; it.has_more()
+      ; ++it
+      )
+    cout << " " << *it << " by " << it() << endl;
+
+  cout << "const col " << 3141 << ":" << endl;
+  for ( adjacency::const_it<row_t,adj_t> it (t.col_const_it (3141))
       ; it.has_more()
       ; ++it
       )

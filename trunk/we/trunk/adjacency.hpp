@@ -43,24 +43,45 @@ namespace adjacency
     typedef std::vector<col_adj_vec_t> row_tab_t;
     typedef std::vector<row_adj_vec_t> col_tab_t;
 
-    row_tab_t row_tab;
-    col_tab_t col_tab;
+    row_tab_t row_tab; // size >= 1
+    col_tab_t col_tab; // size >= 1
+
+    template<typename T, typename MAT>
+    void adjust_size (const T & x, MAT & mat)
+    {
+      typedef typename MAT::size_type sz_t;
+
+      sz_t sz (mat.size()); // size >= 1
+
+      while (x >= sz)
+        sz <<= 1;
+
+      mat.resize (sz); // size >= 1
+    }
 
   public:
     const const_it<COL,ADJ> row_const_it (const ROW & r) const
     {
-      return const_it<COL,ADJ> (row_tab[r].begin(), row_tab[r].end());
+      // size >= 1
+      return (r < row_tab.size())
+        ? const_it<COL,ADJ> (row_tab[r].begin(), row_tab[r].end())
+        : const_it<COL,ADJ> (row_tab[0].begin(), row_tab[0].begin()) // empty
+        ;
     }
 
     const const_it<ROW,ADJ> col_const_it (const COL & c) const
     {
-      return const_it<ROW,ADJ> (col_tab[c].begin(), col_tab[c].end());
+       // size >= 1
+      return (c < col_tab.size())
+        ? const_it<ROW,ADJ> (col_tab[c].begin(), col_tab[c].end())
+        : const_it<ROW,ADJ> (col_tab[0].begin(), col_tab[0].begin()) // empty
+        ;
     }
 
-    table (const ADJ & _invalid, const ROW & r = 0, const COL & c = 0)
+    table (const ADJ & _invalid, const ROW & r = 1, const COL & c = 1)
       : invalid (_invalid)
-      , row_tab (r)
-      , col_tab (c)
+      , row_tab (std::max (static_cast<ROW>(1), r)) // size >= 1
+      , col_tab (std::max (static_cast<COL>(1), c)) // size >= 1
     {}
 
     const ADJ get_adjacent (const ROW & r, const COL & c) const
@@ -104,20 +125,6 @@ namespace adjacency
               col_tab[c].erase (it);
               break;
             }
-    }
-
-  private:
-    template<typename T, typename MAT>
-    void adjust_size (const T & x, MAT & mat)
-    {
-      typedef typename MAT::size_type sz_t;
-
-      sz_t sz (std::max (sz_t(1), mat.size()));
-
-      while (x >= sz)
-        sz <<= 1;
-
-      mat.resize (sz);
     }
 
   public:

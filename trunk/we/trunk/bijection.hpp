@@ -45,7 +45,7 @@ namespace bijection
 
   public:
     bijection (const std::string & _description = "NO DESCRIPTION GIVEN")
-      : h(0)
+      : h(static_cast<I>(0))
       , description (_description)
     {}
 

@@ -9,7 +9,6 @@
 
 #include <adjacency.hpp>
 #include <bijection.hpp>
-#include <handle.hpp>
 #include <multirel.hpp>
 #include <svector.hpp>
 
@@ -27,11 +26,14 @@ namespace petri_net
     };
   }
 
-  typedef handle::T pid_t;
-  typedef handle::T tid_t;
-  typedef handle::T eid_t;
+  // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
+  // cycles per second, you can run for 2^64/3e9/60/60/24/365 ~ 195 years.
+  // It follows that an uint64_t is enough for now.
+  typedef uint64_t pid_t;
+  typedef uint64_t tid_t;
+  typedef uint64_t eid_t;
 
-  static const eid_t eid_invalid (handle::invalid);
+  static const eid_t eid_invalid (std::numeric_limits<eid_t>::max());
 };
 
 namespace TransitionFunction
@@ -292,7 +294,7 @@ private:
   std::map<tid_t, transfun_t> transfun;
 
 public:
-  net (const handle::T & _places = 10, const handle::T & _transitions = 10)
+  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
     throw (std::bad_alloc)
     : pmap ("place")
     , tmap ("transition")
@@ -401,7 +403,7 @@ private:
   )
     throw (bijection::exception::already_there)
   {
-    if (m.get_adjacent (r, c) != handle::invalid)
+    if (m.get_adjacent (r, c) != eid_invalid)
       throw bijection::exception::already_there ("adjacency");
 
     const eid_t eid (emap.add (edge));
