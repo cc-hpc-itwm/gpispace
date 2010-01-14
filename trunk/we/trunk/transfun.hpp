@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/function.hpp>
+
 namespace TransitionFunction
 {
   template<typename Token>
@@ -145,10 +147,7 @@ namespace TransitionFunction
   {};
 
   // apply a function, that depends on the edges only
-  template< typename Token
-          , const typename Traits<Token>::edges_only_t 
-               F (const typename Traits<Token>::edges_only_t &)
-          >
+  template<typename Token>
   class EdgesOnly
   {
   private:
@@ -159,8 +158,16 @@ namespace TransitionFunction
     typedef typename Traits<Token>::output_t output_t;
 
     typedef typename Traits<Token>::edges_only_t edges_only_t;
+    
+    typedef typename Traits<Token>::edges_only_t map_t;
+
+    typedef boost::function<const map_t (const map_t * const)> F;
+
+    F f;
 
   public:
+    EdgesOnly (F _f) : f (_f) {}
+
     const output_t operator () ( const input_t & input
                                , const output_descr_t & output_descr
                                ) const
@@ -175,7 +182,7 @@ namespace TransitionFunction
         in[get_eid<Token>(*it)] = get_token<Token>(*it);
 
       // calculate output as Map (Edge -> Token)
-      edges_only_t out (F (in));
+      edges_only_t out (f (&in));
 
       // fill the output vector
       output_t output;

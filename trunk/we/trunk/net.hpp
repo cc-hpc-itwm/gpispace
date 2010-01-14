@@ -509,6 +509,7 @@ public:
     return (dist > 0) ? 1 : 0;
   }
 
+  // FIXME: only del if something was deleted
   const std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
     del_enabled_transitions (pid);
