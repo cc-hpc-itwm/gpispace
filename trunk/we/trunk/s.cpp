@@ -25,14 +25,14 @@ namespace TransitionFunction
 {
   typedef Traits<token_t>::edges_only_t map_t;
 
-  static map_t swap (const map_t * const in)
+  static map_t swap (const map_t & in)
   {
     map_t out;
 
-    map_t::const_iterator i0 (in->find(0));
-    map_t::const_iterator i1 (in->find(1));
+    map_t::const_iterator i0 (in.find(0));
+    map_t::const_iterator i1 (in.find(1));
 
-    if (i0 == in->end() || i1 == in->end())
+    if (i0 == in.end() || i1 == in.end())
       throw std::runtime_error ("missing edges in swap");
 
     out[2] = i1->second;
@@ -50,18 +50,18 @@ namespace TransitionFunction
     swap_descr (const pair_t & _i, const pair_t & _o) : i (_i), o (_o) {}
   };
 
-  static map_t swap_state (const swap_descr * descr, const map_t * const in)
+  static map_t swap_state (const swap_descr & descr, const map_t & in)
   {
     map_t out;
 
-    map_t::const_iterator first  (in->find(descr->i.first));
-    map_t::const_iterator second (in->find(descr->i.second));
+    map_t::const_iterator first  (in.find(descr.i.first));
+    map_t::const_iterator second (in.find(descr.i.second));
 
-    if (first == in->end() || second == in->end())
+    if (first == in.end() || second == in.end())
       throw std::runtime_error ("missing edges in swap");
 
-    out[descr->o.first ] = second->second;
-    out[descr->o.second] = first ->second;
+    out[descr.o.first ] = second->second;
+    out[descr.o.second] = first ->second;
 
     return out;
   }
@@ -123,7 +123,7 @@ main (int argc, char **)
         );
 
       TransitionFunction::EdgesOnly<token_t> 
-        transfun (boost::bind(&TransitionFunction::swap_state, &swap_descr, _1));
+        transfun (boost::bind(&TransitionFunction::swap_state, swap_descr, _1));
 
       n.set_transition_function (tid, transfun);
     }

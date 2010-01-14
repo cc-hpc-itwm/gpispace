@@ -66,6 +66,34 @@ namespace TransitionFunction
     return token_input.first;
   }
 
+  template<typename Token>
+  class Generic
+  {
+  private:
+    typedef typename Traits<Token>::input_t input_t;
+
+    typedef typename Traits<Token>::output_descr_t output_descr_t;
+    typedef typename std::pair<Token, petri_net::pid_t> token_on_place_t;
+    typedef typename Traits<Token>::output_t output_t;
+    
+    typedef boost::function<output_t ( const input_t &
+                                     , const output_descr_t &
+                                     )
+                           > F;
+
+    F f;
+
+  public:
+    Generic (F _f) : f (_f) {}
+
+    output_t operator () ( const input_t & input
+                         , const output_descr_t & output_descr
+                         ) const
+    {
+      return f (input, output_descr);
+    }
+  };
+
   // default construct all output tokens, always possible
   template<typename Token>
   class Default
@@ -170,7 +198,7 @@ namespace TransitionFunction
     
     typedef typename Traits<Token>::edges_only_t map_t;
 
-    typedef boost::function<map_t (const map_t * const)> F;
+    typedef boost::function<map_t (const map_t &)> F;
 
     F f;
 
@@ -191,7 +219,7 @@ namespace TransitionFunction
         in[get_eid<Token>(*it)] = get_token<Token>(*it);
 
       // calculate output as Map (Edge -> Token)
-      edges_only_t out (f (&in));
+      edges_only_t out (f (in));
 
       // fill the output vector
       output_t output;
