@@ -84,6 +84,10 @@ private:
 
   typename multirel::multirel<Token,pid_t> token_place_rel;
 
+  // RESTRICTION: Is always up to date, as long as
+  // 1. the tokens are putted *after* the construction
+  // 2. there is no modification on the net
+  // OVERCOME THIS!!
   enabled_t enabled;
 
   std::map<tid_t, transfun_t> transfun;

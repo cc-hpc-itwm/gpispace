@@ -73,11 +73,13 @@ namespace TransitionFunction
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
     
+  public:
     typedef boost::function<output_t ( const input_t &
                                      , const output_descr_t &
                                      )
                            > F;
 
+  private:
     F f;
 
   public:
