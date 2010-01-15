@@ -94,38 +94,53 @@ namespace TransitionFunction
     }
   };
 
-  // match edge descriptions
+  // generic match the input/output description, use all information available
   template<typename Token, typename Descr>
-  class MatchEdge
+  class MatchWithFun
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
     typedef typename Traits<Token>::output_descr_t output_descr_t;
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
-    
+    typedef typename Traits<Token>::token_input_t token_input_t;
+    typedef typename Traits<Token>::place_via_edge_t place_via_edge_t;
+
   public:
-    typedef boost::function<Descr (const petri_net::eid_t &)> Function;
+    typedef boost::function<Descr (const token_input_t &)> DescrIn;
+    typedef boost::function<Descr (const place_via_edge_t &)> DescrOut;
+
+    typedef boost::function<Token ( const Descr &
+                                  , const token_input_t &
+                                  , const place_via_edge_t &
+                                  )
+                           > Apply;
 
   private:
-    Function f;
+    DescrIn descr_in;
+    DescrOut descr_out;
+    Apply apply;
 
   public:
-    MatchEdge (Function _f) : f (_f) {}
+    MatchWithFun (DescrIn _descr_in, DescrOut _descr_out, Apply _apply)
+      : descr_in (_descr_in)
+      , descr_out (_descr_out)
+      , apply (_apply)
+    {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
                          ) const
     {
-      // collect map descr -> token
-      typedef typename std::map<Descr,Token> map_t;
+      // collect map descr -> token_input_t
+      typedef typename std::map<Descr,token_input_t> map_t;
       map_t m;
 
       for ( typename input_t::const_iterator it (input.begin())
           ; it != input.end()
           ; ++it
           )
-        m[f(get_eid<Token> (*it))] = get_token<Token> (*it);
+        m[descr_in(*it)] = *it;
 
       // match into the output according to the output description
       output_t output;
@@ -135,25 +150,73 @@ namespace TransitionFunction
           ; ++it
           )
         {
-          typename map_t::iterator m_it (m.find (f (get_eid<Token> (*it))));
+          Descr descr (descr_out (*it));
+
+          typename map_t::iterator m_it (m.find (descr));
 
           if (m_it == m.end())
-            throw std::runtime_error ("MatchEdge: missung input edge");
+            throw std::runtime_error ("MatchWithFun: missing input edge");
 
           output.push_back
-            (token_on_place_t (m_it->second, get_pid<Token> (*it)));
+            (token_on_place_t ( apply (descr, m_it->second, *it)
+                              , get_pid<Token> (*it)
+                              )
+            );
 
           m.erase (m_it);
         }
 
       if (!m.empty())
-        throw std::runtime_error ("MatchEdge: missing output edge");
+        throw std::runtime_error ("MatchWithFun: missing output edge");
 
       return output;
     }
   };
 
-  // default construct all output tokens, alway possible
+  template<typename Token, typename Descr>
+  Token apply_const ( const Descr &
+                    , const typename Traits<Token>::token_input_t & token_input
+                    , const typename Traits<Token>::place_via_edge_t &
+                    )
+  {
+    return get_token<Token> (token_input);
+  }
+
+  template<typename Token, typename Descr>
+  Descr descr_in_by_eid 
+  ( boost::function<Descr (const petri_net::eid_t &)> f
+  , const typename Traits<Token>::token_input_t & token_input
+  )
+  {
+    return f (get_eid<Token> (token_input));
+  }
+
+  template<typename Token, typename Descr>
+  Descr descr_out_by_eid 
+  ( boost::function<Descr (const petri_net::eid_t &)> f
+  , const typename Traits<Token>::place_via_edge_t & place_via_edge
+  )
+  {
+    return f (get_eid<Token> (place_via_edge));
+  }
+
+  // match edge descriptions
+  template<typename Token, typename Descr>
+  class MatchEdge : public MatchWithFun<Token, Descr>
+  {
+  public:
+    typedef boost::function<Descr (const petri_net::eid_t &)> Function;
+
+    MatchEdge (Function f) 
+      : MatchWithFun<Token,Descr> 
+        ( boost::bind (&descr_in_by_eid<Token,Descr>, f, _1)
+        , boost::bind (&descr_out_by_eid<Token,Descr>, f, _1)
+        , apply_const<Token,Descr>
+        )
+    {}
+  };
+
+  // default construct all output tokens, always possible
   template<typename Token>
   class Default
   {
@@ -227,14 +290,14 @@ namespace TransitionFunction
   };
 
   template<typename Token>
-  inline Token Const (const Token & token) { return token; }
+  inline Token token_const (const Token & token) { return token; }
 
   // simple pass the tokens through
   template<typename Token>
   class PassThrough : public PassThroughWithFun<Token>
   {
   public:
-    PassThrough () : PassThroughWithFun<Token>(Const<Token>) {}
+    PassThrough () : PassThroughWithFun<Token>(token_const<Token>) {}
   };
 
   // apply a function, that depends on the edges only
