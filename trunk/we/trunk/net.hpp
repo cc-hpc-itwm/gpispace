@@ -84,10 +84,6 @@ private:
 
   typename multirel::multirel<Token,pid_t> token_place_rel;
 
-  // RESTRICTION: Is always up to date, as long as
-  // 1. the tokens are putted *after* the construction
-  // 2. there is no modification on the net
-  // OVERCOME THIS!!
   enabled_t enabled;
 
   std::map<tid_t, transfun_t> transfun;
@@ -214,8 +210,7 @@ public:
     emap_out_p[eid] = pid;
     emap_in_t[eid] = tid;
 
-    if (can_fire (tid))
-      enabled.insert (tid);
+    update_enabled_transitions (tid);
 
     return eid;
   }
@@ -231,8 +226,7 @@ public:
     emap_in_p[eid] = pid;
     emap_out_t[eid] = tid;
 
-    if (can_fire (tid))
-      enabled.insert (tid);
+    update_enabled_transitions (tid);
 
     return eid;
   }
@@ -323,6 +317,8 @@ public:
 
         adj_pt.clear_adjacent (pid, tid);
 
+        update_enabled_transitions (tid);
+
         emap_in_t.erase (in_t);
         emap_out_p.erase (out_p);
       }
@@ -343,6 +339,8 @@ public:
 
         adj_tp.clear_adjacent (tid, pid);
 
+        update_enabled_transitions (tid);
+
         emap_in_p.erase (in_p);
         emap_out_t.erase (out_t);
       }
@@ -354,10 +352,11 @@ public:
     return eid;
   }
 
-  // WORK HERE: delete all token from the place
   const pid_t & delete_place (const pid_t & pid)
     throw (bijection::exception::no_such)
   {
+    token_place_rel.delete_right (pid);
+
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
@@ -394,10 +393,11 @@ public:
 
     tmap.erase (tid);
 
+    enabled.erase (tid);
+
     --num_transitions;
 
     return tid;
-
   }
 
   // modify and replace
@@ -463,6 +463,18 @@ private:
         )
       if (!can_fire (*tit))
         enabled.erase (*tit);
+  }
+
+  void update_enabled_transitions (const tid_t & tid)
+  {
+    if (can_fire (tid))
+      {
+        enabled.insert (tid);
+      }
+    else
+      {
+        enabled.erase (tid);
+      }
   }
 
 public:  

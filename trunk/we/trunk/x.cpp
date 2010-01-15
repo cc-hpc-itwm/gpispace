@@ -58,6 +58,7 @@ main ()
   r.add ('b',4);
   r.add ('a',5);
   r.add ('c',6);
+  r.add ('c',7);
 
   print_rel (r);
   print_rel_left_of<char,int> (r, 3);
@@ -73,6 +74,16 @@ main ()
   print_rel (r);
 
   cout << r.contains_right (4) << endl;
+
+  r.delete_right (3);
+
+  print_rel (r);
+
+  cout << r.contains_left ('c') << endl;
+
+  r.delete_left ('c');
+
+  print_rel (r);
 
   return 0;
 } 

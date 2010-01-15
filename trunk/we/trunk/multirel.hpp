@@ -26,6 +26,11 @@ namespace multirel
 
     typedef typename container_t::right_map::const_iterator right_const_it;
     typedef typename container_t::left_map::const_iterator left_const_it;
+
+    typedef typename container_t::right_map::iterator right_it;
+    typedef typename container_t::left_map::iterator left_it;
+    typedef std::pair<right_it,right_it> right_range_it;
+    typedef std::pair<left_it,left_it> left_range_it;
   };
 
   template<typename IT, typename T>
@@ -102,6 +107,20 @@ namespace multirel
       container.erase (range_it.first, range_it.second);
 
       return std::distance (range_it.first, range_it.second);
+    }
+
+    void delete_right (const R & r)
+    {
+      typename traits<L,R>::right_range_it it (container.right.equal_range (r));
+
+      container.right.erase (it.first, it.second);
+    }
+
+    void delete_left (const L & l)
+    {
+      typename traits<L,R>::left_range_it it (container.left.equal_range (l));
+
+      container.left.erase (it.first, it.second);
     }
 
     right_const_it<L,R> left_of (const R & r) const
