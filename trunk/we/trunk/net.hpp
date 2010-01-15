@@ -28,6 +28,13 @@ namespace petri_net
       {}
       ~transition_not_enabled() throw () {}
     };
+
+    class no_such : public std::runtime_error
+    {
+    public:
+      no_such (const std::string & msg) : std::runtime_error (msg) {}
+      ~no_such () throw () {}
+    };
   }
 
   enum edge_type {PT,TP};
@@ -244,11 +251,13 @@ public:
 
   // get edge info
   connection_t get_edge_info (const eid_t & eid) const
+    throw (exception::no_such)
   {
-    const typename connection_map_t::const_iterator it (connection_map.find (eid));
+    const typename connection_map_t::const_iterator it
+      (connection_map.find (eid));
 
     if (it == connection_map.end())
-      throw std::runtime_error ("connection");
+      throw exception::no_such ("connection");
 
     return it->second;
   }
@@ -259,21 +268,17 @@ public:
     typename connection_map_t::iterator it (connection_map.find (eid));
 
     if (it == connection_map.end())
-      throw std::runtime_error ("connection");
+      throw exception::no_such ("connection");
 
     const connection_t connection (it->second);
 
-    switch (connection.type)
+    if (connection.type == PT)
       {
-      case PT:
         adj_pt.clear_adjacent (connection.pid, connection.tid);
-        break;
-      case TP:
+      }
+    else
+      {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
-        break;
-      default:
-        assert (false);
-        break;
       }
 
     update_enabled_transitions (connection.tid);
