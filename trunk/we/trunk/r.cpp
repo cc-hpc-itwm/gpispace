@@ -166,7 +166,10 @@ main ()
       petri_net::pid_t pid[k];
 
       for (std::size_t i (0); i < k; ++i)
-        pid[i] = n.add_place (place++);
+        {
+          pid[i] = n.add_place (place++);
+          n.put_token (pid[i], elements[i]);
+        }
 
       for (std::size_t i (0); i < k; ++i)
         {
@@ -176,9 +179,6 @@ main ()
           n.add_edge_transition_to_place 
             (edge_t (edge++, perm[i]), tid, pid[i]);
         }
-
-      for (std::size_t i (0); i < k; ++i)
-        n.put_token (pid[i], elements[i]);
     }
   while (std::next_permutation (perm, perm + k));
  

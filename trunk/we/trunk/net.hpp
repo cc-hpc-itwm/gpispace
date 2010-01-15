@@ -214,6 +214,9 @@ public:
     emap_out_p[eid] = pid;
     emap_in_t[eid] = tid;
 
+    if (can_fire (tid))
+      enabled.insert (tid);
+
     return eid;
   }
 
@@ -227,6 +230,9 @@ public:
 
     emap_in_p[eid] = pid;
     emap_out_t[eid] = tid;
+
+    if (can_fire (tid))
+      enabled.insert (tid);
 
     return eid;
   }
@@ -348,6 +354,7 @@ public:
     return eid;
   }
 
+  // WORK HERE: delete all token from the place
   const pid_t & delete_place (const pid_t & pid)
     throw (bijection::exception::no_such)
   {
