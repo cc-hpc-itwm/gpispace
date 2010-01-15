@@ -108,14 +108,23 @@ static void marking (const pnet_t & n, const petri_net::tid_t & tid)
   cout << endl;
 }
 
+static std::size_t fac (void)
+{
+  std::size_t f (1);
+
+  for (std::size_t i (1); i <= k; ++i)
+    f *= i;
+
+  return f;
+}
+
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
 
   assert (!t.empty());
-
-  cout << t.size() << endl;
-
+  assert (t.size() == fac());
+  
   std::tr1::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
 
   pnet_t::enabled_t::size_type tid (t.at(uniform (engine)));
@@ -123,6 +132,8 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
   n.fire (tid);
 
   marking (n, tid);
+
+  n.verify_enabled_transitions ();
 }
 
 int

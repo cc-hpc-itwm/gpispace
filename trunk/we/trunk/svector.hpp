@@ -30,9 +30,10 @@ public:
 
   it erase (const T & x)
   {
-    const it pos (std::lower_bound (vec.begin(), vec.end(), x));
+    const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
 
-    return (pos == vec.end()) ? pos : vec.erase (pos);
+    return (std::distance (pit.first, pit.second) == 0)
+      ? pit.first : vec.erase (pit.first);
   }
 
   typename vec_t::const_reference & at (typename vec_t::size_type n) const
