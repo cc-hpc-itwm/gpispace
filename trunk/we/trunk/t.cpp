@@ -211,10 +211,13 @@ static void add_edge_place_to_transition ( pnet_t & n
                                          )
 {
   cout << "add_edge_place_to_transition (" << edge << ") => "
-       << n.add_edge_place_to_transition ( edge
-                                         , n.get_place_id (place)
-                                         , n.get_transition_id (transition)
-                                         )
+       << n.add_edge ( edge
+                     , petri_net::connection_t 
+                       ( petri_net::PT
+                       , n.get_transition_id (transition)
+                       , n.get_place_id (place)
+                       )
+                     )
        << endl;
 }
 
@@ -225,10 +228,13 @@ static void add_edge_transition_to_place ( pnet_t & n
                                          )
 {
   cout << "add_edge_place_to_transition (" << edge << ") => "
-       << n.add_edge_transition_to_place ( edge
-                                         , n.get_transition_id (transition)
-                                         , n.get_place_id (place)
-                                         )
+       << n.add_edge ( edge
+                     , petri_net::connection_t 
+                       ( petri_net::TP
+                       , n.get_transition_id (transition)
+                       , n.get_place_id (place)
+                       )
+                     )
        << endl;
 }
 

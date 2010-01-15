@@ -67,14 +67,12 @@ main ()
           try
             {
               transition_t rand (uniform (engine));
-              n.add_edge_place_to_transition( edge_t(pair_t(p, rand), true)
-                                            , p
-                                            , rand
-                                            );
-              n.add_edge_transition_to_place( edge_t(pair_t(rand, p), false)
-                                            , p
-                                            , rand
-                                            );
+              n.add_edge ( edge_t(pair_t(p, rand), true)
+                         , petri_net::connection_t (petri_net::PT, rand, p)
+                         );
+              n.add_edge ( edge_t(pair_t(rand, p), false)
+                         , petri_net::connection_t (petri_net::TP, rand, p)
+                         );
             }
           catch (bijection::exception::already_there)
             {
@@ -98,10 +96,9 @@ main ()
           try
             {
               place_t rand (uniform (engine));
-              n.add_edge_transition_to_place( edge_t(pair_t(t, rand), false)
-                                            , t
-                                            , rand
-                                            );
+              n.add_edge( edge_t(pair_t(t, rand), false)
+                        , petri_net::connection_t (petri_net::TP, t, rand)
+                        );
             }
           catch (bijection::exception::already_there)
             {

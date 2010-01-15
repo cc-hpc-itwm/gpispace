@@ -66,6 +66,10 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
     }
 }
 
+using petri_net::connection_t;
+using petri_net::PT;
+using petri_net::TP;
+
 int
 main ()
 {
@@ -87,10 +91,11 @@ main ()
                          )
       );
   
-    n.add_edge_place_to_transition (edge_t ("top_out"), pid_top, tid_top_down);
-    n.add_edge_transition_to_place (edge_t ("down_in"), tid_top_down, pid_down);
-    n.add_edge_place_to_transition (edge_t ("down_out"), pid_down, tid_down_top);
-    n.add_edge_transition_to_place (edge_t ("top_in"), tid_down_top, pid_top);
+    n.add_edge (edge_t ("top_out"), connection_t (PT, tid_top_down, pid_top));
+    n.add_edge (edge_t ("down_in"), connection_t (TP, tid_top_down, pid_down));
+
+    n.add_edge (edge_t ("down_out"), connection_t (PT, tid_down_top, pid_down));
+    n.add_edge (edge_t ("top_in"), connection_t (TP, tid_down_top, pid_top));
 
     n.put_token (pid_top, 0);
     n.put_token (pid_down, 1);
@@ -112,10 +117,11 @@ main ()
                          )
       );
   
-    n.add_edge_place_to_transition (edge_t ("top_out_pass"), pid_top, tid_top_down);
-    n.add_edge_transition_to_place (edge_t ("down_in_pass"), tid_top_down, pid_down);
-    n.add_edge_place_to_transition (edge_t ("down_out_pass"), pid_down, tid_down_top);
-    n.add_edge_transition_to_place (edge_t ("top_in_pass"), tid_down_top, pid_top);
+    n.add_edge (edge_t ("top_out_pass"), connection_t (PT, tid_top_down, pid_top));
+    n.add_edge (edge_t ("down_in_pass"), connection_t (TP, tid_top_down, pid_down));
+
+    n.add_edge (edge_t ("down_out_pass"), connection_t (PT, tid_down_top, pid_down));
+    n.add_edge (edge_t ("top_in_pass"), connection_t (TP, tid_down_top, pid_top));
 
     n.put_token (pid_top, 2718);
     n.put_token (pid_down, 3141);

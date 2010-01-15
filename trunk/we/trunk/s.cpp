@@ -89,6 +89,11 @@ static void fire (pnet_t & n)
   n.fire (t.at(0));
 }
 
+using petri_net::connection_t;
+using petri_net::PT;
+using petri_net::TP;
+using petri_net::eid_t;
+
 int
 main (int argc, char **)
 {
@@ -98,14 +103,10 @@ main (int argc, char **)
   petri_net::pid_t pid_B (n.add_place (place_t ("B")));
   petri_net::tid_t tid (n.add_transition (transition_t ("t")));
 
-  petri_net::eid_t eid0
-    (n.add_edge_place_to_transition (edge_t (0, "a"), pid_A, tid));
-  petri_net::eid_t eid1
-    (n.add_edge_place_to_transition (edge_t (1, "b"), pid_B, tid));
-  petri_net::eid_t eid2
-    (n.add_edge_transition_to_place (edge_t (2, "b"), tid, pid_A));
-  petri_net::eid_t eid3
-    (n.add_edge_transition_to_place (edge_t (3, "a"), tid, pid_B));
+  eid_t eid0 (n.add_edge (edge_t (0, "a"), connection_t (PT, tid, pid_A)));
+  eid_t eid1 (n.add_edge (edge_t (1, "b"), connection_t (PT, tid, pid_B)));
+  eid_t eid2 (n.add_edge (edge_t (2, "b"), connection_t (TP, tid, pid_A)));
+  eid_t eid3 (n.add_edge (edge_t (3, "a"), connection_t (TP, tid, pid_B)));
 
   if (argc > 0)
     {

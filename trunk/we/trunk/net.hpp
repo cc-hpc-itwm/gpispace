@@ -205,36 +205,6 @@ public:
     return eid;
   }
 
-  eid_t add_edge_place_to_transition ( const Edge & edge
-                                     , const pid_t & pid
-                                     , const tid_t & tid
-                                     )
-    throw (bijection::exception::already_there)
-  {
-    const eid_t eid (gen_add_edge<pid_t,tid_t> (edge, pid, tid, adj_pt));
-
-    connection_map[eid] = connection_t (PT, tid, pid);
-
-    update_enabled_transitions (tid);
-
-    return eid;
-  }
-
-  eid_t add_edge_transition_to_place ( const Edge & edge
-                                     , const tid_t & tid
-                                     , const pid_t & pid
-                                     )
-    throw (bijection::exception::already_there)
-  {
-    const eid_t eid (gen_add_edge<tid_t,pid_t> (edge, tid, pid, adj_tp));
-
-    connection_map[eid] = connection_t (TP, tid, pid);
-
-    update_enabled_transitions (tid);
-
-    return eid;
-  }
-
   // iterate through elements
   place_const_it places (void) const
   {
