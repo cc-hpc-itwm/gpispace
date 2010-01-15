@@ -56,13 +56,13 @@ static void print_net (const pnet_t & n)
            << " can_fire == " << (n.can_fire (*t) ? "true" : "false")
            << endl;
 
-      for ( pnet_t::adj_place_const_it pit (n.out_of_transition(*t))
+      for ( petri_net::adj_place_const_it pit (n.out_of_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
         cout << " >>-{" << edge (n, pit()) << "}->> " << place (n, *pit) << endl;
 
-      for ( pnet_t::adj_place_const_it pit (n.in_to_transition(*t))
+      for ( petri_net::adj_place_const_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
@@ -75,13 +75,13 @@ static void print_net (const pnet_t & n)
     {
       cout << place (n, *p) << endl;
 
-      for ( pnet_t::adj_transition_const_it tit (n.out_of_place(*p))
+      for ( petri_net::adj_transition_const_it tit (n.out_of_place(*p))
           ; tit.has_more()
           ; ++tit
           )
         cout << " >>-{" << edge (n, tit()) << "}->> " << trans (n, *tit) << endl;
       
-      for ( pnet_t::adj_transition_const_it tit (n.in_to_place(*p))
+      for ( petri_net::adj_transition_const_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
@@ -94,15 +94,12 @@ static void print_net (const pnet_t & n)
     {
       cout << *e << ":";
 
-      petri_net::pid_t pid;
-      petri_net::tid_t tid;
+      const petri_net::connection_t connection (n.get_edge_info (*e));
 
-      const pnet_t::edge_type et (n.get_edge_info (*e, pid, tid));
-
-      cout << " -- typ: " << ((et == pnet_t::PT) ? "PT" : "TP");
-      cout << ", place: " << place (n, pid);
-      cout << " " << ((et == pnet_t::PT) ? "-->" : "<--") << " ";
-      cout << "transition: " << trans (n, tid);
+      cout << " -- typ: " << ((connection.type == petri_net::PT) ? "PT" : "TP");
+      cout << ", place: " << place (n, connection.pid);
+      cout << " " << ((connection.type == petri_net::PT) ? "-->" : "<--") << " ";
+      cout << "transition: " << trans (n, connection.tid);
       cout << endl;
     }
 
@@ -139,11 +136,11 @@ static void marking (const pnet_t & n)
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
+  petri_net::enabled_t t (n.enabled_transitions());
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<pnet_t::enabled_t::size_type> 
+      std::tr1::uniform_int<petri_net::enabled_t::size_type> 
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
@@ -316,27 +313,15 @@ main ()
 
   for (pnet_t::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
-      petri_net::pid_t pid;
-      petri_net::tid_t tid;
+      const petri_net::connection_t connection (n.get_edge_info (*e));
 
-      const pnet_t::edge_type et (n.get_edge_info (*e, pid, tid));
-
-      if (et == pnet_t::PT)
-        {
-          c.add_edge_place_to_transition 
-            ( n.edge(*e)
-            , c.get_place_id(n.place(pid))
-            , c.get_transition_id(n.transition(tid))
-            );
-        }
-      else
-        {
-          c.add_edge_transition_to_place
-            ( n.edge(*e)
-            , c.get_transition_id (n.transition(tid))
-            , c.get_place_id (n.place(pid))
-            );
-        }
+      c.add_edge ( n.edge (*e)
+                 , petri_net::connection_t 
+                   ( connection.type
+                   , c.get_transition_id (n.transition (connection.tid))
+                   , c.get_place_id (n.place (connection.pid))
+                   )
+                 );
     }
 
   print_net (c);

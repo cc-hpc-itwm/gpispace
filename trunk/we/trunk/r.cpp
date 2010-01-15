@@ -78,14 +78,14 @@ static std::size_t fac (void)
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
+  petri_net::enabled_t t (n.enabled_transitions());
 
   assert (!t.empty());
   assert (t.size() == fac());
   
-  std::tr1::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
+  std::tr1::uniform_int<petri_net::enabled_t::size_type> uniform (0,t.size()-1);
 
-  pnet_t::enabled_t::size_type tid (t.at(uniform (engine)));
+  petri_net::enabled_t::size_type tid (t.at(uniform (engine)));
 
   n.fire (tid);
 
@@ -125,11 +125,13 @@ main ()
 
       for (std::size_t i (0); i < k; ++i)
         {
-          n.add_edge_place_to_transition 
-            (edge_t (edge++, elements[i]), pid[i], tid);
+          n.add_edge ( edge_t (edge++, elements[i])
+                     , petri_net::connection_t (petri_net::PT, tid, pid[i])
+                     );
 
-          n.add_edge_transition_to_place 
-            (edge_t (edge++, perm[i]), tid, pid[i]);
+          n.add_edge ( edge_t (edge++, perm[i])
+                     , petri_net::connection_t (petri_net::TP, tid, pid[i])
+                     );
         }
     }
   while (std::next_permutation (perm, perm + k));

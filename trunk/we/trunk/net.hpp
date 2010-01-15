@@ -7,6 +7,7 @@
 
 #include <adjacency.hpp>
 #include <bijection.hpp>
+#include <connection.hpp>
 #include <multirel.hpp>
 #include <svector.hpp>
 #include <transfun.hpp>
@@ -17,32 +18,35 @@
 
 namespace petri_net
 {
-namespace exception
-{
-  class transition_not_enabled : public std::runtime_error
+  namespace exception
   {
-  public:
-    transition_not_enabled (const std::string & msg) : std::runtime_error(msg) 
-    {}
-    ~transition_not_enabled() throw () {}
-  };
-}
+    class transition_not_enabled : public std::runtime_error
+    {
+    public:
+      transition_not_enabled (const std::string & msg) 
+        : std::runtime_error(msg)
+      {}
+      ~transition_not_enabled() throw () {}
+    };
+  }
+
+  enum edge_type {PT,TP};
+
+  typedef svector<tid_t> enabled_t;
+
+  typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
+  typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
+
+  typedef connection<edge_type, tid_t, pid_t> connection_t;
 
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
 public:
-  enum edge_type {PT,TP};
-
-  typedef svector<tid_t> enabled_t;
-
   typedef bijection::bi_const_it<Place,pid_t> place_const_it;
   typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
   typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
-
-  typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
-  typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
   typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
@@ -60,20 +64,10 @@ private:
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
   bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
   bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
+  
+  typedef std::map<eid_t, connection_t> connection_map_t;
 
-  typedef std::map<eid_t, pid_t> map_pid_t;
-  typedef typename map_pid_t::iterator map_pid_it_t;
-  typedef typename map_pid_t::const_iterator map_pid_const_it_t;
-
-  map_pid_t emap_in_p; // internal edge id -> internal place id
-  map_pid_t emap_out_p; // internal edge id -> internal place id
-
-  typedef std::map<eid_t, tid_t> map_tid_t;
-  typedef typename map_tid_t::iterator map_tid_it_t;
-  typedef typename map_tid_t::const_iterator map_tid_const_it_t;
-
-  map_tid_t emap_in_t; // internal edge id -> internal transition id
-  map_tid_t emap_out_t; // internal edge id -> internal transition id
+  connection_map_t connection_map;
 
   adjacency::table<pid_t,tid_t,eid_t> adj_pt;
   adjacency::table<tid_t,pid_t,eid_t> adj_tp;
@@ -94,10 +88,7 @@ public:
     : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
-    , emap_in_p ()
-    , emap_out_p ()
-    , emap_in_t ()
-    , emap_out_t ()
+    , connection_map ()
     , adj_pt (eid_invalid, _places, _transitions)
     , adj_tp (eid_invalid, _transitions, _places)
     , num_places (0)
@@ -179,11 +170,11 @@ public:
 
 private:
   template<typename ROW, typename COL>
-  eid_t add_edge ( const Edge & edge
-                 , const ROW & r
-                 , const COL & c
-                 , adjacency::table<ROW,COL,eid_t> & m
-                 )
+  eid_t gen_add_edge ( const Edge & edge
+                     , const ROW & r
+                     , const COL & c
+                     , adjacency::table<ROW,COL,eid_t> & m
+                     )
     throw (bijection::exception::already_there)
   {
     if (m.get_adjacent (r, c) != eid_invalid)
@@ -199,16 +190,30 @@ private:
   }
 
 public:
+  eid_t add_edge (const Edge & edge, const connection_t & connection)
+  {
+    const eid_t eid
+      ( (connection.type == PT)
+      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
+      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
+      );
+
+    connection_map[eid] = connection;
+
+    update_enabled_transitions (connection.tid);
+
+    return eid;
+  }
+
   eid_t add_edge_place_to_transition ( const Edge & edge
                                      , const pid_t & pid
                                      , const tid_t & tid
                                      )
     throw (bijection::exception::already_there)
   {
-    const eid_t eid (add_edge<pid_t,tid_t> (edge, pid, tid, adj_pt));
+    const eid_t eid (gen_add_edge<pid_t,tid_t> (edge, pid, tid, adj_pt));
 
-    emap_out_p[eid] = pid;
-    emap_in_t[eid] = tid;
+    connection_map[eid] = connection_t (PT, tid, pid);
 
     update_enabled_transitions (tid);
 
@@ -221,10 +226,9 @@ public:
                                      )
     throw (bijection::exception::already_there)
   {
-    const eid_t eid (add_edge<tid_t,pid_t> (edge, tid, pid, adj_tp));
+    const eid_t eid (gen_add_edge<tid_t,pid_t> (edge, tid, pid, adj_tp));
 
-    emap_in_p[eid] = pid;
-    emap_out_t[eid] = tid;
+    connection_map[eid] = connection_t (TP, tid, pid);
 
     update_enabled_transitions (tid);
 
@@ -269,87 +273,48 @@ public:
   }
 
   // get edge info
-  edge_type get_edge_info ( const eid_t & eid
-                          , pid_t & pid
-                          , tid_t & tid
-                          ) const
+  connection_t get_edge_info (const eid_t & eid) const
   {
-    const map_pid_const_it_t out_p (emap_out_p.find (eid));
+    const typename connection_map_t::const_iterator it (connection_map.find (eid));
 
-    if (out_p != emap_out_p.end())
-      {
-        const map_tid_const_it_t in_t (emap_in_t.find (eid));
+    if (it == connection_map.end())
+      throw std::runtime_error ("connection");
 
-        pid = out_p->second;
-        tid = in_t->second;
-
-        return PT;
-      }
-    else
-      {
-        const map_pid_const_it_t in_p (emap_in_p.find (eid));
-        const map_tid_const_it_t out_t (emap_out_t.find (eid));
-
-        tid = out_t->second;
-        pid = in_p->second;
-
-        return TP;
-      }
+    return it->second;
   }
 
   // delete elements
-private:
-  const eid_t & gen_delete_edge (const eid_t & eid, const tid_t & tid)
+  const eid_t & delete_edge (const eid_t & eid)
   {
-    update_enabled_transitions (tid);
+    typename connection_map_t::iterator it (connection_map.find (eid));
+
+    if (it == connection_map.end())
+      throw std::runtime_error ("connection");
+
+    const connection_t connection (it->second);
+
+    switch (connection.type)
+      {
+      case PT:
+        adj_pt.clear_adjacent (connection.pid, connection.tid);
+        break;
+      case TP:
+        adj_tp.clear_adjacent (connection.tid, connection.pid);
+        break;
+      default:
+        assert (false);
+        break;
+      }
+
+    update_enabled_transitions (connection.tid);
+
+    connection_map.erase (it);
 
     emap.erase (eid);
 
     --num_edges;
 
     return eid;
-  }
-  
-
-public:
-  // WORK HERE: Make more efficient by avoided two searches in the emaps
-  const eid_t & delete_edge_place_to_transition ( const eid_t & eid
-                                                , const pid_t & pid
-                                                , const tid_t & tid
-                                                )
-  {
-    emap_out_p.erase (eid);
-    emap_in_t.erase (eid);
-
-    adj_pt.clear_adjacent (pid, tid);
-
-    return gen_delete_edge (eid, tid);
-  }
-
-  const eid_t & delete_edge_transition_to_place ( const eid_t & eid
-                                                , const tid_t & tid
-                                                , const pid_t & pid
-                                                )
-  {
-    emap_in_p.erase (eid);
-    emap_out_t.erase (eid);
-
-    adj_tp.clear_adjacent (tid, pid);
-
-    return gen_delete_edge (eid, tid);
-  }
-
-  const eid_t & delete_edge (const eid_t & eid)
-  {
-    pid_t pid;
-    tid_t tid;
-
-    edge_type et (get_edge_info (eid, pid, tid));
-
-    return (et == PT)
-      ? delete_edge_place_to_transition (eid, pid, tid)
-      : delete_edge_transition_to_place (eid, tid, pid)
-      ;
   }
 
   const pid_t & delete_place (const pid_t & pid)
@@ -361,13 +326,13 @@ public:
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge_place_to_transition (tit(), pid, *tit);
+      delete_edge (tit());
 
     for ( adj_transition_const_it tit (in_to_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge_transition_to_place (tit(), *tit, pid);
+      delete_edge (tit());
 
     pmap.erase (pid);
 
@@ -383,13 +348,13 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge_transition_to_place (pit(), tid, *pit);
+      delete_edge (pit());
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge_place_to_transition (pit(), *pit, tid);
+      delete_edge (pit());
 
     tmap.erase (tid);
 

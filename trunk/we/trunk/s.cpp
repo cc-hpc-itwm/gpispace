@@ -82,7 +82,7 @@ static void marking (const pnet_t & n)
 
 static void fire (pnet_t & n)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
+  petri_net::enabled_t t (n.enabled_transitions());
 
   assert (t.size() == 1);
 

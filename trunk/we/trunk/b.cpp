@@ -29,13 +29,13 @@ static const unsigned int num_fire (1000);
 
 static const unsigned int bisize (1000000);
 
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> net_t;
+typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 int
 main ()
 {
   {
-    net_t n(nplace, ntrans);
+    pnet_t n(nplace, ntrans);
 
     {
       Timer_t timer ("add places", factor * nplace);
@@ -127,9 +127,9 @@ main ()
       unsigned int e_in (0);
       unsigned int e_out (0);
 
-      for (net_t::place_const_it p (n.places()); p.has_more(); ++p)
+      for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
         {
-          for ( net_t::adj_transition_const_it tit (n.in_to_place(*p))
+          for ( petri_net::adj_transition_const_it tit (n.in_to_place(*p))
               ; tit.has_more()
               ; ++tit
               )
@@ -138,7 +138,7 @@ main ()
               e_in += tit();
             }
 
-          for ( net_t::adj_transition_const_it tit (n.out_of_place(*p))
+          for ( petri_net::adj_transition_const_it tit (n.out_of_place(*p))
               ; tit.has_more()
               ; ++tit
               )
@@ -162,9 +162,9 @@ main ()
       unsigned int e_in (0);
       unsigned int e_out (0);
 
-      for (net_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+      for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
         {
-          for ( net_t::adj_place_const_it pit (n.in_to_transition(*t))
+          for ( petri_net::adj_place_const_it pit (n.in_to_transition(*t))
               ; pit.has_more()
               ; ++pit
               )
@@ -173,7 +173,7 @@ main ()
               e_in += pit();
             }
 
-          for ( net_t::adj_place_const_it pit (n.out_of_transition(*t))
+          for ( petri_net::adj_place_const_it pit (n.out_of_transition(*t))
               ; pit.has_more()
               ; ++pit
               )
@@ -195,14 +195,14 @@ main ()
 
       for (unsigned int f(0); f < num_fire; ++f)
         {
-          net_t::enabled_t t (n.enabled_transitions());
+          petri_net::enabled_t t (n.enabled_transitions());
 
           if (!t.empty())
             {
-              std::tr1::uniform_int<net_t::enabled_t::size_type>
+              std::tr1::uniform_int<petri_net::enabled_t::size_type>
                 uniform (0, t.size() - 1);
 
-              net_t::enabled_t::size_type pos (uniform(engine));
+              petri_net::enabled_t::size_type pos (uniform(engine));
 
               n.fire (t.at (pos));
 
