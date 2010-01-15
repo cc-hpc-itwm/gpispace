@@ -64,6 +64,7 @@ static void marking (const pnet_t & n, const petri_net::tid_t & tid)
   cout << endl;
 }
 
+#ifndef NDEBUG
 static std::size_t fac (void)
 {
   std::size_t f (1);
@@ -73,6 +74,7 @@ static std::size_t fac (void)
 
   return f;
 }
+#endif
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {

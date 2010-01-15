@@ -64,6 +64,7 @@ namespace TransitionFunction
     return token_input.first;
   }
 
+  // eat some function
   template<typename Token>
   class Generic
   {
