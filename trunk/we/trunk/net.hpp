@@ -298,58 +298,58 @@ public:
   }
 
   // delete elements
-  const eid_t & delete_edge (const eid_t & eid)
+private:
+  const eid_t & gen_delete_edge (const eid_t & eid, const tid_t & tid)
   {
-    const map_pid_it_t out_p (emap_out_p.find (eid));
-
-    if (out_p != emap_out_p.end())
-      {
-        // place -> transition
-
-        const map_tid_it_t in_t (emap_in_t.find (eid));
-
-        assert (in_t != emap_in_t.end());
-
-        const pid_t pid (out_p->second);
-        const tid_t tid (in_t->second);
-
-        assert (adj_pt.get_adjacent (pid, tid) == eid);
-
-        adj_pt.clear_adjacent (pid, tid);
-
-        update_enabled_transitions (tid);
-
-        emap_in_t.erase (in_t);
-        emap_out_p.erase (out_p);
-      }
-    else
-      {
-        // transition -> place
-
-        const map_pid_it_t in_p (emap_in_p.find (eid));
-        const map_tid_it_t out_t (emap_out_t.find (eid));
-
-        assert (out_t != emap_out_t.end());
-        assert (in_p != emap_in_p.end());
-
-        const tid_t tid (out_t->second);
-        const pid_t pid (in_p->second);
-
-        assert (adj_tp.get_adjacent (tid, pid) == eid);
-
-        adj_tp.clear_adjacent (tid, pid);
-
-        update_enabled_transitions (tid);
-
-        emap_in_p.erase (in_p);
-        emap_out_t.erase (out_t);
-      }
+    update_enabled_transitions (tid);
 
     emap.erase (eid);
 
     --num_edges;
 
     return eid;
+  }
+  
+
+public:
+  // WORK HERE: Make more efficient by avoided two searches in the emaps
+  const eid_t & delete_edge_place_to_transition ( const eid_t & eid
+                                                , const pid_t & pid
+                                                , const tid_t & tid
+                                                )
+  {
+    emap_out_p.erase (eid);
+    emap_in_t.erase (eid);
+
+    adj_pt.clear_adjacent (pid, tid);
+
+    return gen_delete_edge (eid, tid);
+  }
+
+  const eid_t & delete_edge_transition_to_place ( const eid_t & eid
+                                                , const tid_t & tid
+                                                , const pid_t & pid
+                                                )
+  {
+    emap_in_p.erase (eid);
+    emap_out_t.erase (eid);
+
+    adj_tp.clear_adjacent (tid, pid);
+
+    return gen_delete_edge (eid, tid);
+  }
+
+  const eid_t & delete_edge (const eid_t & eid)
+  {
+    pid_t pid;
+    tid_t tid;
+
+    edge_type et (get_edge_info (eid, pid, tid));
+
+    return (et == PT)
+      ? delete_edge_place_to_transition (eid, pid, tid)
+      : delete_edge_transition_to_place (eid, tid, pid)
+      ;
   }
 
   const pid_t & delete_place (const pid_t & pid)
@@ -361,13 +361,13 @@ public:
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge (tit());
+      delete_edge_place_to_transition (tit(), pid, *tit);
 
     for ( adj_transition_const_it tit (in_to_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge (tit());
+      delete_edge_transition_to_place (tit(), *tit, pid);
 
     pmap.erase (pid);
 
@@ -383,13 +383,13 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge (pit());
+      delete_edge_transition_to_place (pit(), tid, *pit);
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge (pit());
+      delete_edge_place_to_transition (pit(), *pit, tid);
 
     tmap.erase (tid);
 
