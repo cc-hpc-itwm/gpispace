@@ -77,19 +77,78 @@ namespace TransitionFunction
     typedef boost::function<output_t ( const input_t &
                                      , const output_descr_t &
                                      )
-                           > F;
+                           > Function;
 
   private:
-    F f;
+    Function f;
 
   public:
-    Generic (F _f) : f (_f) {}
+    Generic (Function _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
                          ) const
     {
       return f (input, output_descr);
+    }
+  };
+
+  // match edge descriptions
+  template<typename Token, typename Descr>
+  class MatchEdge
+  {
+  private:
+    typedef typename Traits<Token>::input_t input_t;
+    typedef typename Traits<Token>::output_descr_t output_descr_t;
+    typedef typename Traits<Token>::output_t output_t;
+    typedef typename Traits<Token>::token_on_place_t token_on_place_t;
+    
+  public:
+    typedef boost::function<Descr (const petri_net::eid_t &)> Function;
+
+  private:
+    Function f;
+
+  public:
+    MatchEdge (Function _f) : f (_f) {}
+
+    output_t operator () ( const input_t & input
+                         , const output_descr_t & output_descr
+                         ) const
+    {
+      // collect map descr -> token
+      typedef typename std::map<Descr,Token> map_t;
+      map_t m;
+
+      for ( typename input_t::const_iterator it (input.begin())
+          ; it != input.end()
+          ; ++it
+          )
+        m[f(get_eid<Token> (*it))] = get_token<Token> (*it);
+
+      // match into the output according to the output description
+      output_t output;
+
+      for ( typename output_descr_t::const_iterator it (output_descr.begin())
+          ; it != output_descr.end()
+          ; ++it
+          )
+        {
+          typename map_t::iterator m_it (m.find (f (get_eid<Token> (*it))));
+
+          if (m_it == m.end())
+            throw std::runtime_error ("MatchEdge: missung input edge");
+
+          output.push_back
+            (token_on_place_t (m_it->second, get_pid<Token> (*it)));
+
+          m.erase (m_it);
+        }
+
+      if (!m.empty())
+        throw std::runtime_error ("MatchEdge: missing output edge");
+
+      return output;
     }
   };
 

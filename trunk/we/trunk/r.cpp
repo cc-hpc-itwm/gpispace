@@ -34,55 +34,11 @@ typedef std::pair<edge_left_t,edge_right_t> edge_t;
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
-typedef TransitionFunction::Traits<token_t>::input_t input_t;
-typedef TransitionFunction::Traits<token_t>::output_descr_t output_descr_t;
-typedef TransitionFunction::Traits<token_t>::output_t output_t;
-typedef TransitionFunction::Traits<token_t>::token_on_place_t token_on_place_t;
-
-typedef std::map<edge_right_t, token_t> map_t;
-
-// independent of the permutation!
-static output_t permute ( const pnet_t & net
-                        , const input_t & input
-                        , const output_descr_t & output_descr
-                        )
+static edge_right_t edge_descr ( const pnet_t & net
+                               , const petri_net::eid_t & eid
+                               )
 {
-  map_t m;
-
-  for (input_t::const_iterator it (input.begin()); it != input.end(); ++it)
-    {
-      edge_t edge (net.edge (TransitionFunction::get_eid<token_t> (*it)));
-
-      m[edge.second] = TransitionFunction::get_token<token_t> (*it);
-    }
-
-  output_t output;
-
-  for ( output_descr_t::const_iterator it (output_descr.begin())
-      ; it != output_descr.end()
-      ; ++it
-      )
-    {
-      edge_t edge (net.edge (TransitionFunction::get_eid<token_t> (*it)));
-
-      map_t::iterator m_it (m.find (edge.second));
-
-      if (m_it == m.end())
-        throw std::runtime_error ("permute: missing input edge");
-
-      output.push_back 
-        ( token_on_place_t ( m_it->second
-                           , TransitionFunction::get_pid<token_t> (*it)
-                           )
-        );
-
-      m.erase (m_it);
-    }
-
-  if (!m.empty())
-    throw std::runtime_error ("permute: missing output edge");
-
-  return output;
+  return (net.edge (eid)).second;
 }
 
 static void marking (const pnet_t & n, const petri_net::tid_t & tid)
@@ -145,23 +101,17 @@ main ()
   transition_t transition (0);
   edge_left_t edge (0);
 
-  TransitionFunction::Generic<token_t>::F f ( boost::bind ( &permute
-                                                          , boost::ref(n)
-                                                          , _1
-                                                          , _2
-                                                          )
-                                            );
+  typedef TransitionFunction::MatchEdge<token_t, edge_right_t> TF;
+
+  TF::Function f (boost::bind (&edge_descr, boost::ref(n), _1));
+
   token_t perm[k];
 
   memcpy (perm, elements, sizeof(elements));
 
   do
     {
-      petri_net::tid_t tid 
-        ( n.add_transition ( transition++
-                           , TransitionFunction::Generic<token_t>(f)
-                           )
-        );
+      petri_net::tid_t tid (n.add_transition ( transition++, TF(f)));
 
       petri_net::pid_t pid[k];
 
