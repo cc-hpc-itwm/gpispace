@@ -40,8 +40,6 @@ namespace petri_net
 
   enum edge_type {PT,TP};
 
-  typedef svector<tid_t> enabled_t;
-
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
@@ -71,6 +69,9 @@ public:
   typedef Function::Condition::Traits<Token> cd_traits;
   typedef typename cd_traits::precondfun_t precondfun_t;
   typedef typename cd_traits::postcondfun_t postcondfun_t;
+
+  typedef std::pair<input_t, output_descr_t> enabled_descr_t;
+  typedef svector<tid_t> enabled_t;
 
 private:
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id

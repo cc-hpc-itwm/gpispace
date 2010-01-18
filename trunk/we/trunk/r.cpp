@@ -78,14 +78,14 @@ static std::size_t fac (void)
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
-  petri_net::enabled_t t (n.enabled_transitions());
+  pnet_t::enabled_t t (n.enabled_transitions());
 
   assert (!t.empty());
   assert (t.size() == fac());
 
-  std::tr1::uniform_int<petri_net::enabled_t::size_type> uniform (0,t.size()-1);
+  std::tr1::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
 
-  petri_net::enabled_t::size_type tid (t.at(uniform (engine)));
+  pnet_t::enabled_t::size_type tid (t.at(uniform (engine)));
 
   n.fire (tid);
 

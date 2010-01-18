@@ -192,14 +192,14 @@ main ()
 
       for (unsigned int f(0); f < num_fire; ++f)
         {
-          petri_net::enabled_t t (n.enabled_transitions());
+          pnet_t::enabled_t t (n.enabled_transitions());
 
           if (!t.empty())
             {
-              std::tr1::uniform_int<petri_net::enabled_t::size_type>
+              std::tr1::uniform_int<pnet_t::enabled_t::size_type>
                 uniform (0, t.size() - 1);
 
-              petri_net::enabled_t::size_type pos (uniform(engine));
+              pnet_t::enabled_t::size_type pos (uniform(engine));
 
               n.fire (t.at (pos));
 

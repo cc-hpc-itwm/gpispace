@@ -51,11 +51,11 @@ static void marking (const pnet_t & n)
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
-  petri_net::enabled_t t (n.enabled_transitions());
+  pnet_t::enabled_t t (n.enabled_transitions());
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<petri_net::enabled_t::size_type>
+      std::tr1::uniform_int<pnet_t::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       petri_net::tid_t tid (t.at (uniform (engine)));

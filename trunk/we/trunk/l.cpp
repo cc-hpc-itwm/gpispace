@@ -93,11 +93,11 @@ using std::endl;
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
-  petri_net::enabled_t t (n.enabled_transitions());
+  pnet_t::enabled_t t (n.enabled_transitions());
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<petri_net::enabled_t::size_type>
+      std::tr1::uniform_int<pnet_t::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
