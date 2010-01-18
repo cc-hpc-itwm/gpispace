@@ -11,6 +11,7 @@
 #include <multirel.hpp>
 #include <svector.hpp>
 #include <transfun.hpp>
+#include <condfun.hpp>
 
 #include <map>
 
@@ -65,10 +66,11 @@ public:
   typedef typename tf_traits::output_descr_t output_descr_t;
   typedef typename tf_traits::output_t output_t;
 
-  typedef typename tf_traits::transfun_t transfun_t;
+  typedef typename tf_traits::fun_t transfun_t;
 
-  typedef boost::function<bool (token_input_t &)> precondfun_t;
-  typedef boost::function<bool (place_via_edge_t &)> postcondfun_t;
+  typedef Function::Condition::Traits<Token> cd_traits;
+  typedef typename cd_traits::precondfun_t precondfun_t;
+  typedef typename cd_traits::postcondfun_t postcondfun_t;
 
 private:
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
@@ -91,6 +93,8 @@ private:
   enabled_t enabled;
 
   std::map<tid_t, transfun_t> transfun;
+  std::map<tid_t, precondfun_t> precondfun;
+  std::map<tid_t, postcondfun_t> postcondfun;
 
 public:
   net (const pid_t & _places = 10, const tid_t & _transitions = 10)
@@ -160,22 +164,38 @@ public:
     return pmap.add (place);
   }
 
-  tid_t set_transition_function (const tid_t & tid, const transfun_t & f)
+  void set_transition_function (const tid_t & tid, const transfun_t & f)
   {
     transfun[tid] = f;
+  }
 
-    return tid;
+  void set_pre_condition_function (const tid_t & tid, const precondfun_t & f)
+  {
+    precondfun[tid] = f;
+  }
+
+  void set_post_condition_function (const tid_t & tid, const postcondfun_t & f)
+  {
+    postcondfun[tid] = f;
   }
 
   tid_t add_transition 
   ( const Transition & transition
-  , const transfun_t & f = Function::Transition::Default<Token>()
+  , const transfun_t & tf = Function::Transition::Default<Token>()
+  , const precondfun_t & prec = Function::Condition::Pre::Default<Token>()
+  , const postcondfun_t & postc = Function::Condition::Post::Default<Token>()
   )
     throw (bijection::exception::already_there)
   {
     ++num_transitions;
 
-    return set_transition_function (tmap.add (transition), f);
+    const tid_t tid (tmap.add (transition));
+
+    set_transition_function (tid, tf);
+    set_pre_condition_function (tid, prec);
+    set_post_condition_function (tid, postc);
+
+    return tid;
   }
 
 private:
@@ -337,6 +357,10 @@ public:
     tmap.erase (tid);
 
     enabled.erase (tid);
+
+    transfun.erase (tid);
+    precondfun.erase (tid);
+    postcondfun.erase (tid);
 
     --num_transitions;
 

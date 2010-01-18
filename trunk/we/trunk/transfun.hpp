@@ -31,7 +31,7 @@ namespace Function { namespace Transition
     typedef boost::function<output_t ( const input_t &
                                      , const output_descr_t &
                                      )
-                           > transfun_t;
+                           > fun_t;
   };
 
   template<typename Token>
