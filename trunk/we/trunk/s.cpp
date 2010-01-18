@@ -20,9 +20,9 @@ typedef unsigned char token_t;
 typedef std::pair<unsigned int,std::string> edge_t;
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
-namespace TransitionFunction
+namespace Function { namespace Transition
 {
-  typedef TransitionFunction::EdgesOnly<token_t>::map_t map_t;
+  typedef EdgesOnly<token_t>::map_t map_t;
 
   static map_t swap (const map_t & in)
   {
@@ -64,7 +64,7 @@ namespace TransitionFunction
 
     return out;
   }
-}
+  }}
 
 static void marking (const pnet_t & n)
 {
@@ -110,20 +110,20 @@ main (int argc, char **)
 
   if (argc > 0)
     {
-      TransitionFunction::EdgesOnly<token_t> 
-        transfun (&TransitionFunction::swap);
+      Function::Transition::EdgesOnly<token_t> 
+        transfun (&Function::Transition::swap);
 
       n.set_transition_function (tid, transfun);
     }
   else
     {
-      TransitionFunction::swap_descr swap_descr 
-        ( TransitionFunction::swap_descr::pair_t (eid0, eid1)
-        , TransitionFunction::swap_descr::pair_t (eid2, eid3)
+      Function::Transition::swap_descr swap_descr 
+        ( Function::Transition::swap_descr::pair_t (eid0, eid1)
+        , Function::Transition::swap_descr::pair_t (eid2, eid3)
         );
 
-      TransitionFunction::EdgesOnly<token_t> 
-        transfun (boost::bind(&TransitionFunction::swap_state, swap_descr, _1));
+      Function::Transition::EdgesOnly<token_t> 
+        transfun (boost::bind(&Function::Transition::swap_state, swap_descr, _1));
 
       n.set_transition_function (tid, transfun);
     }

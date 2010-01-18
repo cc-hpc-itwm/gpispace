@@ -82,12 +82,12 @@ main ()
     petri_net::pid_t pid_down (n.add_place (place_t ("down")));
     petri_net::tid_t tid_top_down 
       ( n.add_transition ( transition_t ("top_down")
-                         , TransitionFunction::PassThroughWithFun<token_t>(inc)
+                         , Function::Transition::PassWithFun<token_t>(inc)
                          )
       );
     petri_net::tid_t tid_down_top
       ( n.add_transition ( transition_t ("down_top")
-                         , TransitionFunction::PassThroughWithFun<token_t>(inc)
+                         , Function::Transition::PassWithFun<token_t>(inc)
                          )
       );
   
@@ -108,12 +108,12 @@ main ()
     petri_net::pid_t pid_down (n.add_place (place_t ("down_pass")));
     petri_net::tid_t tid_top_down 
       ( n.add_transition ( transition_t ("top_down_pass")
-                         , TransitionFunction::PassThrough<token_t>()
+                         , Function::Transition::Pass<token_t>()
                          )
       );
     petri_net::tid_t tid_down_top
       ( n.add_transition ( transition_t ("down_top_pass")
-                         , TransitionFunction::PassThrough<token_t>()
+                         , Function::Transition::Pass<token_t>()
                          )
       );
   

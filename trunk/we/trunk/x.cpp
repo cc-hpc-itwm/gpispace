@@ -20,12 +20,11 @@ static void print_rel (const multirel::multirel<L,R> & rel)
 template<typename L, typename R>
 static void print_rel_left_of (const multirel::multirel<L,R> & rel, const R & r)
 {
-  cout << r << " =>";
+  typename multirel::right_const_it<L,R> it (rel.left_of (r));
 
-  for ( typename multirel::right_const_it<L,R> it (rel.left_of (r))
-      ; it.has_more()
-      ; ++it
-      )
+  cout << r << " [#" << it.count() << "]" << " =>";
+
+  for (; it.has_more(); ++it)
     cout << " " << *it;
 
   cout << endl;
@@ -34,12 +33,11 @@ static void print_rel_left_of (const multirel::multirel<L,R> & rel, const R & r)
 template<typename L, typename R>
 static void print_rel_right_of (const multirel::multirel<L,R> & rel, const L & l)
 {
-  cout << l << " =>";
+  typename multirel::left_const_it<L,R> it (rel.right_of (l));
 
-  for ( typename multirel::left_const_it<L,R> it (rel.right_of (l))
-      ; it.has_more()
-      ; ++it
-      )
+  cout << l << " [#" << it.count() << "]" << " =>";
+
+  for (; it.has_more(); ++it)
     cout << " " << *it;
 
   cout << endl;

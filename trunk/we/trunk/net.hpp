@@ -57,7 +57,7 @@ public:
 
   typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
-  typedef TransitionFunction::Traits<Token> tf_traits;
+  typedef Function::Transition::Traits<Token> tf_traits;
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
   typedef typename tf_traits::input_t input_t;
@@ -65,7 +65,10 @@ public:
   typedef typename tf_traits::output_descr_t output_descr_t;
   typedef typename tf_traits::output_t output_t;
 
-  typedef boost::function<output_t (input_t &, output_descr_t &)> transfun_t;
+  typedef typename tf_traits::transfun_t transfun_t;
+
+  typedef boost::function<bool (token_input_t &)> precondfun_t;
+  typedef boost::function<bool (place_via_edge_t &)> postcondfun_t;
 
 private:
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
@@ -166,7 +169,7 @@ public:
 
   tid_t add_transition 
   ( const Transition & transition
-  , const transfun_t & f = TransitionFunction::Default<Token>()
+  , const transfun_t & f = Function::Transition::Default<Token>()
   )
     throw (bijection::exception::already_there)
   {
@@ -452,6 +455,11 @@ public:
   bool has_token (const pid_t & pid) const
   {
     return token_place_rel.contains_right (pid);
+  }
+
+  std::size_t num_token (const pid_t & pid) const
+  {
+    return token_place_rel.left_of(pid).count();
   }
 
   std::size_t delete_one_token (const pid_t & pid, const Token & token)

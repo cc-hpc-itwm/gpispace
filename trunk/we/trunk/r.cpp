@@ -103,7 +103,7 @@ main ()
   transition_t transition (0);
   edge_left_t edge (0);
 
-  typedef TransitionFunction::MatchEdge<token_t, edge_right_t> TF;
+  typedef Function::Transition::MatchEdge<token_t, edge_right_t> TF;
 
   TF::Function f (boost::bind (&edge_descr, boost::ref(n), _1));
 

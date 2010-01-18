@@ -10,7 +10,7 @@
 
 #include <boost/function.hpp>
 
-namespace TransitionFunction
+namespace Function { namespace Transition
 {
   template<typename Token>
   struct Traits
@@ -27,6 +27,11 @@ namespace TransitionFunction
     typedef std::vector<place_via_edge_t> output_descr_t;
     typedef std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
+
+    typedef boost::function<output_t ( const input_t &
+                                     , const output_descr_t &
+                                     )
+                           > transfun_t;
   };
 
   template<typename Token>
@@ -247,7 +252,7 @@ namespace TransitionFunction
   // applies a function without context to each token
   // stays with the order given in input/output_descr
   template<typename Token>
-  class PassThroughWithFun
+  class PassWithFun
   {
   private:
     typedef typename Traits<Token>::input_t input_t;
@@ -260,7 +265,7 @@ namespace TransitionFunction
     F f;
 
   public:
-    PassThroughWithFun (F _f) : f (_f) {}
+    PassWithFun (F _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
@@ -294,10 +299,10 @@ namespace TransitionFunction
 
   // simple pass the tokens through
   template<typename Token>
-  class PassThrough : public PassThroughWithFun<Token>
+  class Pass : public PassWithFun<Token>
   {
   public:
-    PassThrough () : PassThroughWithFun<Token>(token_const<Token>) {}
+    Pass () : PassWithFun<Token>(token_const<Token>) {}
   };
 
   // apply a function, that depends on the edges only
@@ -362,6 +367,6 @@ namespace TransitionFunction
       return output;
     }
   };
-}
+}}
 
 #endif // _TRANSFUN_HPP
