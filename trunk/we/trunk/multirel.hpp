@@ -53,7 +53,7 @@ namespace multirel
   };
 
   template<typename L, typename R>
-  struct right_const_it 
+  struct right_const_it
     : public lr_const_it<typename traits<L,R>::right_const_it, L>
   {
     typedef typename traits<L,R>::right_const_it it_t;
@@ -64,7 +64,7 @@ namespace multirel
   };
 
   template<typename L, typename R>
-  struct left_const_it 
+  struct left_const_it
     : public lr_const_it<typename traits<L,R>::left_const_it, R>
   {
     typedef typename traits<L,R>::left_const_it it_t;

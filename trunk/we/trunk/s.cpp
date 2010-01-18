@@ -110,19 +110,19 @@ main (int argc, char **)
 
   if (argc > 0)
     {
-      Function::Transition::EdgesOnly<token_t> 
+      Function::Transition::EdgesOnly<token_t>
         transfun (&Function::Transition::swap);
 
       n.set_transition_function (tid, transfun);
     }
   else
     {
-      Function::Transition::swap_descr swap_descr 
+      Function::Transition::swap_descr swap_descr
         ( Function::Transition::swap_descr::pair_t (eid0, eid1)
         , Function::Transition::swap_descr::pair_t (eid2, eid3)
         );
 
-      Function::Transition::EdgesOnly<token_t> 
+      Function::Transition::EdgesOnly<token_t>
         transfun (boost::bind(&Function::Transition::swap_state, swap_descr, _1));
 
       n.set_transition_function (tid, transfun);

@@ -42,21 +42,21 @@ namespace Function { namespace Transition
   }
 
   template<typename Token>
-  petri_net::eid_t get_eid 
+  petri_net::eid_t get_eid
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
   }
 
   template<typename Token>
-  petri_net::pid_t get_pid 
+  petri_net::pid_t get_pid
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_pid<Token> (token_input.second);
   }
 
   template<typename Token>
-  petri_net::eid_t get_eid 
+  petri_net::eid_t get_eid
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_eid<Token> (token_input.second);
@@ -78,7 +78,7 @@ namespace Function { namespace Transition
     typedef typename Traits<Token>::output_descr_t output_descr_t;
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
-    
+
   public:
     typedef boost::function<output_t ( const input_t &
                                      , const output_descr_t &
@@ -188,7 +188,7 @@ namespace Function { namespace Transition
   }
 
   template<typename Token, typename Descr>
-  Descr descr_in_by_eid 
+  Descr descr_in_by_eid
   ( boost::function<Descr (const petri_net::eid_t &)> f
   , const typename Traits<Token>::token_input_t & token_input
   )
@@ -197,7 +197,7 @@ namespace Function { namespace Transition
   }
 
   template<typename Token, typename Descr>
-  Descr descr_out_by_eid 
+  Descr descr_out_by_eid
   ( boost::function<Descr (const petri_net::eid_t &)> f
   , const typename Traits<Token>::place_via_edge_t & place_via_edge
   )
@@ -212,8 +212,8 @@ namespace Function { namespace Transition
   public:
     typedef boost::function<Descr (const petri_net::eid_t &)> Function;
 
-    MatchEdge (Function f) 
-      : MatchWithFun<Token,Descr> 
+    MatchEdge (Function f)
+      : MatchWithFun<Token,Descr>
         ( boost::bind (&descr_in_by_eid<Token,Descr>, f, _1)
         , boost::bind (&descr_out_by_eid<Token,Descr>, f, _1)
         , apply_const<Token,Descr>
@@ -272,7 +272,7 @@ namespace Function { namespace Transition
                          ) const
     {
       output_t output;
-      
+
       typename output_descr_t::const_iterator it_out (output_descr.begin());
       typename input_t::const_iterator it_in (input.begin());
 

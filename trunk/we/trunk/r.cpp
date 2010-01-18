@@ -82,7 +82,7 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 
   assert (!t.empty());
   assert (t.size() == fac());
-  
+
   std::tr1::uniform_int<petri_net::enabled_t::size_type> uniform (0,t.size()-1);
 
   petri_net::enabled_t::size_type tid (t.at(uniform (engine)));
@@ -135,7 +135,7 @@ main ()
         }
     }
   while (std::next_permutation (perm, perm + k));
- 
+
   std::tr1::mt19937 engine;
 
   marking (n, transition);

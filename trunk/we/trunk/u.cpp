@@ -55,7 +55,7 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<petri_net::enabled_t::size_type> 
+      std::tr1::uniform_int<petri_net::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       petri_net::tid_t tid (t.at (uniform (engine)));
@@ -80,7 +80,7 @@ main ()
   {
     petri_net::pid_t pid_top (n.add_place (place_t ("top")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down")));
-    petri_net::tid_t tid_top_down 
+    petri_net::tid_t tid_top_down
       ( n.add_transition ( transition_t ("top_down")
                          , Function::Transition::PassWithFun<token_t>(inc)
                          )
@@ -90,7 +90,7 @@ main ()
                          , Function::Transition::PassWithFun<token_t>(inc)
                          )
       );
-  
+
     n.add_edge (edge_t ("top_out"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in"), connection_t (TP, tid_top_down, pid_down));
 
@@ -106,7 +106,7 @@ main ()
   {
     petri_net::pid_t pid_top (n.add_place (place_t ("top_pass")));
     petri_net::pid_t pid_down (n.add_place (place_t ("down_pass")));
-    petri_net::tid_t tid_top_down 
+    petri_net::tid_t tid_top_down
       ( n.add_transition ( transition_t ("top_down_pass")
                          , Function::Transition::Pass<token_t>()
                          )
@@ -116,7 +116,7 @@ main ()
                          , Function::Transition::Pass<token_t>()
                          )
       );
-  
+
     n.add_edge (edge_t ("top_out_pass"), connection_t (PT, tid_top_down, pid_top));
     n.add_edge (edge_t ("down_in_pass"), connection_t (TP, tid_top_down, pid_down));
 

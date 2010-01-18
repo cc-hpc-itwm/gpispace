@@ -40,7 +40,7 @@ namespace adjacency
 
     typedef std::vector<row_adj_t> row_adj_vec_t;
     typedef std::vector<col_adj_t> col_adj_vec_t;
-    
+
     typedef std::vector<col_adj_vec_t> row_tab_t;
     typedef std::vector<row_adj_vec_t> col_tab_t;
 

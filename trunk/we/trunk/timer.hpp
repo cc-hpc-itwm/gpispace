@@ -40,8 +40,8 @@ public:
   {
     t += current_time();
 
-    s << "time " << msg 
-      << " [" << k << "]: " 
+    s << "time " << msg
+      << " [" << k << "]: "
       << t
       << " [" << t / double(k) << "]"
       << " [" << double(k) / t << "]"

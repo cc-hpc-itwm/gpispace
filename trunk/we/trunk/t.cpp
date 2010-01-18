@@ -52,7 +52,7 @@ static void print_net (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << trans (n, *t) 
+      cout << trans (n, *t)
            << " can_fire == " << (n.can_fire (*t) ? "true" : "false")
            << endl;
 
@@ -67,7 +67,7 @@ static void print_net (const pnet_t & n)
           ; ++pit
           )
         cout << " <<-{" << edge (n, pit()) << "}-<< " << place (n, *pit) << endl;
-    }    
+    }
 
   cout << "*** by place" << endl;
 
@@ -80,13 +80,13 @@ static void print_net (const pnet_t & n)
           ; ++tit
           )
         cout << " >>-{" << edge (n, tit()) << "}->> " << trans (n, *tit) << endl;
-      
+
       for ( petri_net::adj_transition_const_it tit (n.in_to_place(*p))
           ; tit.has_more()
           ; ++tit
           )
         cout << " <<-{" << edge (n, tit()) << "}-<< " << trans (n, *tit) << endl;
-    }    
+    }
 
   cout << "*** by edges" << endl;
 
@@ -140,7 +140,7 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<petri_net::enabled_t::size_type> 
+      std::tr1::uniform_int<petri_net::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
@@ -178,29 +178,29 @@ static void add_place (pnet_t & n, const place_t & place)
 
 static void delete_place (pnet_t & n, const place_t & place)
 {
-  cout << "delete_place (" << place << ") => " 
+  cout << "delete_place (" << place << ") => "
        << n.delete_place (n.get_place_id (place))
        << endl;
 }
 
 static void delete_edge (pnet_t & n, const edge_t & edge)
 {
-  cout << "delete_edge (" << edge << ") => " 
+  cout << "delete_edge (" << edge << ") => "
        << n.delete_edge (n.get_edge_id (edge))
        << endl;
 }
 
 static void delete_transition (pnet_t & n, const transition_t & transition)
 {
-  cout << "delete_transition (" << transition << ") => " 
+  cout << "delete_transition (" << transition << ") => "
        << n.delete_transition (n.get_transition_id (transition))
        << endl;
 }
 
 static void add_transition (pnet_t & n, const transition_t & transition)
 {
-  cout << "add_transition (" << transition 
-       << ") => " << n.add_transition (transition) 
+  cout << "add_transition (" << transition
+       << ") => " << n.add_transition (transition)
        << endl;
 }
 
@@ -212,7 +212,7 @@ static void add_edge_place_to_transition ( pnet_t & n
 {
   cout << "add_edge_place_to_transition (" << edge << ") => "
        << n.add_edge ( edge
-                     , petri_net::connection_t 
+                     , petri_net::connection_t
                        ( petri_net::PT
                        , n.get_transition_id (transition)
                        , n.get_place_id (place)
@@ -229,7 +229,7 @@ static void add_edge_transition_to_place ( pnet_t & n
 {
   cout << "add_edge_place_to_transition (" << edge << ") => "
        << n.add_edge ( edge
-                     , petri_net::connection_t 
+                     , petri_net::connection_t
                        ( petri_net::TP
                        , n.get_transition_id (transition)
                        , n.get_place_id (place)
@@ -322,7 +322,7 @@ main ()
       const petri_net::connection_t connection (n.get_edge_info (*e));
 
       c.add_edge ( n.edge (*e)
-                 , petri_net::connection_t 
+                 , petri_net::connection_t
                    ( connection.type
                    , c.get_transition_id (n.transition (connection.tid))
                    , c.get_place_id (n.place (connection.pid))
@@ -369,24 +369,24 @@ main ()
 
   print_net (c);
 
-  cout << "num_token (readyL) => " 
+  cout << "num_token (readyL) => "
        << c.get_token(c.get_place_id("readyL")).count()
        << endl;
 
-  cout << "replace_one_token (readyL,p->m) => " 
+  cout << "replace_one_token (readyL,p->m) => "
        << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
 
   print_net (c);
 
-  cout << "replace_one_token (readyL,p->m) => " 
+  cout << "replace_one_token (readyL,p->m) => "
        << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
-  cout << "replace_one_token (readyL,p->m) => " 
+  cout << "replace_one_token (readyL,p->m) => "
        << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
-  cout << "replace_one_token (readyL,q->m) => " 
+  cout << "replace_one_token (readyL,q->m) => "
        << c.replace_one_token (c.get_place_id ("readyL"),"q","m") << endl;
-  cout << "replace_all_token (readyL,q->m) => " 
+  cout << "replace_all_token (readyL,q->m) => "
        << c.replace_all_token (c.get_place_id ("readyL"),"q","m") << endl;
-  cout << "replace_all_token (readyR,p->n) => " 
+  cout << "replace_all_token (readyR,p->n) => "
        << c.replace_all_token (c.get_place_id ("readyR"),"p","n") << endl;
 
   print_net (c);

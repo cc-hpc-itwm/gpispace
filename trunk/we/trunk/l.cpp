@@ -26,7 +26,7 @@ static const unsigned int num_fire (num_loops * size_loop * num_rounds);
 static void my_init_hook (void);
 static void *my_malloc_hook (size_t, const void *);
 static void my_free_hook (void*, const void *);
-     
+
 /* Override initializing hook from the C library. */
 void (*__malloc_initialize_hook) (void) = my_init_hook;
 
@@ -41,7 +41,7 @@ my_init_hook (void)
   __malloc_hook = my_malloc_hook;
   __free_hook = my_free_hook;
 }
-     
+
 static void *
 my_malloc_hook (size_t size, const void *)
 {
@@ -61,7 +61,7 @@ my_malloc_hook (size_t size, const void *)
   __free_hook = my_free_hook;
   return result;
 }
-     
+
 static void
 my_free_hook (void *ptr, const void *)
 {
@@ -97,7 +97,7 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<petri_net::enabled_t::size_type> 
+      std::tr1::uniform_int<petri_net::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
@@ -127,7 +127,7 @@ main ()
       for (loop_t l (0); l < num_loops; ++l)
         for (id_t i (0); i < size_loop; ++i)
           {
-            n.add_edge 
+            n.add_edge
               ( e++
               , petri_net::connection_t
                 ( petri_net::PT

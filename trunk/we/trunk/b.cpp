@@ -43,7 +43,7 @@ main ()
       for (unsigned int p(0); p < factor * nplace; ++p)
         n.add_place (p);
     }
-    
+
     {
       Timer_t timer ("add transitions", factor * ntrans);
 

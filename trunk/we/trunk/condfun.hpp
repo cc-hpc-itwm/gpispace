@@ -27,7 +27,7 @@ namespace Function { namespace Condition
   private:
     bool b;
   public:
-    Const (const bool _b) : b (_b) {} 
+    Const (const bool _b) : b (_b) {}
     bool operator () (const Param &) { return b; }
   };
 
@@ -37,7 +37,7 @@ namespace Function { namespace Condition
     class Default : public Const<Token,typename Traits<Token>::token_input_t>
     {
     public:
-      Default () 
+      Default ()
         : Const<Token,typename Traits<Token>::token_input_t> (true)
       {}
     };
@@ -49,7 +49,7 @@ namespace Function { namespace Condition
     class Default : public Const<Token,typename Traits<Token>::place_via_edge_t>
     {
     public:
-      Default () 
+      Default ()
         : Const<Token,typename Traits<Token>::place_via_edge_t> (true)
       {}
     };

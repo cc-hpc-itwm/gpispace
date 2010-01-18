@@ -24,7 +24,7 @@ namespace petri_net
     class transition_not_enabled : public std::runtime_error
     {
     public:
-      transition_not_enabled (const std::string & msg) 
+      transition_not_enabled (const std::string & msg)
         : std::runtime_error(msg)
       {}
       ~transition_not_enabled() throw () {}
@@ -76,7 +76,7 @@ private:
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
   bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
   bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
-  
+
   typedef std::map<eid_t, connection_t> connection_map_t;
 
   connection_map_t connection_map;
@@ -179,7 +179,7 @@ public:
     postcondfun[tid] = f;
   }
 
-  tid_t add_transition 
+  tid_t add_transition
   ( const Transition & transition
   , const transfun_t & tf = Function::Transition::Default<Token>()
   , const precondfun_t & prec = Function::Condition::Pre::Default<Token>()
@@ -444,7 +444,7 @@ private:
       }
   }
 
-public:  
+public:
   const enabled_t & enabled_transitions (void) const
   {
     return enabled;

@@ -101,7 +101,7 @@ static inline std::size_t hash_value (const internal_place_t & p)
   return p.copy_count();
 }
 
-namespace std 
+namespace std
 {
   namespace tr1
   {
@@ -155,7 +155,7 @@ static inline std::size_t hash_value (const ptr_place_t & p)
   return hash_value(*(p.p()));
 }
 
-namespace std 
+namespace std
 {
   namespace tr1
   {
@@ -369,9 +369,9 @@ main ()
     place_t p;
 
     typedef std::map<place_t,int> map_t;
-  
+
     map_t m;
-  
+
     cout << "std::map[]" << endl; m[p] = 0;
     cout << "std::map[]" << endl; m[p] = 1;
 
@@ -385,9 +385,9 @@ main ()
     place_t p;
 
     typedef std::map<place_t,int> map_t;
-  
+
     map_t m;
-  
+
     cout << "std::map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
     cout << "std::map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
 
@@ -401,9 +401,9 @@ main ()
     place_t p;
 
     typedef std::tr1::unordered_map<place_t,int> map_t;
-  
+
     map_t m;
-  
+
     cout << "std::tr1::unordered_map[]" << endl; m[p] = 0;
     cout << "std::tr1::unordered_map[]" << endl; m[p] = 1;
 
@@ -417,9 +417,9 @@ main ()
     place_t p;
 
     typedef std::tr1::unordered_map<place_t,int> map_t;
-  
+
     map_t m;
-  
+
     cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
     cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
 

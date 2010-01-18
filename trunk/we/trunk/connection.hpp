@@ -13,7 +13,7 @@ public:
 
   connection () : type(), tid(), pid() {}
 
-  connection (const TYPE & _type, const TID & _tid, const PID & _pid) 
+  connection (const TYPE & _type, const TID & _tid, const PID & _pid)
     : type (_type)
     , tid (_tid)
     , pid (_pid)
