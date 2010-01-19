@@ -170,11 +170,13 @@ public:
     transfun[tid] = f;
   }
 
+  // WORK HERE: update enabled
   void set_pre_condition_function (const tid_t & tid, const precondfun_t & f)
   {
     precondfun[tid] = f;
   }
 
+  // WORK HERE: update enabled
   void set_post_condition_function (const tid_t & tid, const postcondfun_t & f)
   {
     postcondfun[tid] = f;
@@ -446,6 +448,30 @@ private:
   }
 
 public:
+  typedef typename std::map<pid_t,std::vector<Token> > in_map_t;
+
+  in_map_t en (const tid_t & tid) const
+  {
+    in_map_t ret;
+
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
+        {
+          typename std::map<tid_t, precondfun_t>::const_iterator f
+            (precondfun.find(tid));
+
+          assert (f != precondfun.end());
+
+          if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
+            ret[*pit].push_back(*tp);
+        }
+
+    return ret;
+  }
+
   const enabled_t & enabled_transitions (void) const
   {
     return enabled;
@@ -570,6 +596,8 @@ public:
         ; ++pit
         )
       output_descr.push_back (place_via_edge_t (*pit, pit()));
+
+    assert (transfun.find (tid) != transfun.end());
 
     const output_t output (transfun[tid](input, output_descr));
 

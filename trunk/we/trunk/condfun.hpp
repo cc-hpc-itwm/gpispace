@@ -22,36 +22,62 @@ namespace Function { namespace Condition
   };
 
   template<typename Token, typename Param>
-  class Const
+  class Gen
   {
   private:
-    bool b;
+    typedef boost::function<bool (const Param &)> Function;
+
+    const Function f;
   public:
-    Const (const bool _b) : b (_b) {}
-    bool operator () (const Param &) { return b; }
+    Gen (const Function & _f) : f (_f) {}
+
+    bool operator () (const Param & param) { return f (param); }
   };
+
+  template<typename T>
+  bool fconst (const bool & b, const T &) { return b; }
 
   namespace Pre
   {
     template<typename Token>
-    class Default : public Const<Token,typename Traits<Token>::token_input_t>
+    class Generic : public Gen<Token,typename Traits<Token>::token_input_t>
     {
     public:
-      Default ()
-        : Const<Token,typename Traits<Token>::token_input_t> (true)
+      Generic (const typename Traits<Token>::precondfun_t & f)
+        : Gen<Token, typename Traits<Token>::token_input_t> (f)
       {}
+    };
+
+    template<typename Token>
+    class Default : public Generic<Token>
+    {
+    private:
+      typedef typename Traits<Token>::token_input_t param_t;
+
+    public:
+      Default () : Generic<Token> (boost::bind(&fconst<param_t>, true, _1)) {}
     };
   }
 
   namespace Post
   {
     template<typename Token>
-    class Default : public Const<Token,typename Traits<Token>::place_via_edge_t>
+    class Generic : public Gen<Token,typename Traits<Token>::place_via_edge_t>
     {
     public:
-      Default ()
-        : Const<Token,typename Traits<Token>::place_via_edge_t> (true)
+      Generic (const typename Traits<Token>::postcondfun_t & f)
+        : Gen<Token, typename Traits<Token>::place_via_edge_t> (f)
       {}
+    };
+
+    template<typename Token>
+    class Default : public Generic<Token>
+    {
+    private:
+      typedef typename Traits<Token>::place_via_edge_t param_t;
+
+    public:
+      Default () : Generic<Token> (boost::bind(&fconst<param_t>, true, _1)) {}
     };
   }
 }}
