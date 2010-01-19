@@ -111,6 +111,9 @@ public:
     , num_edges (0)
     , token_place_rel ()
     , enabled ()
+    , trans ()
+    , in_cond ()
+    , out_cond ()
   {};
 
   // numbers of elements
