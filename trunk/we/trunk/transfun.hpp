@@ -86,10 +86,10 @@ namespace Function { namespace Transition
                            > Function;
 
   private:
-    Function f;
+    const Function f;
 
   public:
-    Generic (Function _f) : f (_f) {}
+    Generic (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
@@ -122,12 +122,15 @@ namespace Function { namespace Transition
                            > Apply;
 
   private:
-    DescrIn descr_in;
-    DescrOut descr_out;
-    Apply apply;
+    const DescrIn descr_in;
+    const DescrOut descr_out;
+    const Apply apply;
 
   public:
-    MatchWithFun (DescrIn _descr_in, DescrOut _descr_out, Apply _apply)
+    MatchWithFun ( const DescrIn & _descr_in
+                 , const DescrOut & _descr_out
+                 , const Apply & _apply
+                 )
       : descr_in (_descr_in)
       , descr_out (_descr_out)
       , apply (_apply)
@@ -212,7 +215,7 @@ namespace Function { namespace Transition
   public:
     typedef boost::function<Descr (const petri_net::eid_t &)> Function;
 
-    MatchEdge (Function f)
+    MatchEdge (const Function & f)
       : MatchWithFun<Token,Descr>
         ( boost::bind (&descr_in_by_eid<Token,Descr>, f, _1)
         , boost::bind (&descr_out_by_eid<Token,Descr>, f, _1)
@@ -260,12 +263,14 @@ namespace Function { namespace Transition
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
-    typedef boost::function<Token (const Token &)> F;
+  public:
+    typedef boost::function<Token (const Token &)> Function;
 
-    F f;
+  private:
+    Function f;
 
   public:
-    PassWithFun (F _f) : f (_f) {}
+    PassWithFun (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
@@ -311,7 +316,7 @@ namespace Function { namespace Transition
   {
   public:
     typedef typename std::map<petri_net::eid_t, Token> map_t;
-    typedef boost::function<map_t (const map_t &)> F;
+    typedef boost::function<map_t (const map_t &)> Function;
 
   private:
     typedef typename Traits<Token>::input_t input_t;
@@ -319,10 +324,10 @@ namespace Function { namespace Transition
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
-    F f;
+    Function f;
 
   public:
-    EdgesOnly (F _f) : f (_f) {}
+    EdgesOnly (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
