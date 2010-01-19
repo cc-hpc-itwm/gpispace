@@ -58,6 +58,16 @@ static bool cond_rem ( const pnet_t & net
          );
 }
 
+static bool cond_capacity ( const pnet_t & net
+                          , const token_t & max_capacity
+                          , const place_via_edge_t & place_via_edge
+                          )
+{
+  petri_net::pid_t pid(Function::Transition::get_pid<token_t> (place_via_edge));
+
+  return (net.num_token (pid) < max_capacity);
+}
+
 using std::cout;
 using std::endl;
 
@@ -76,6 +86,7 @@ static void marking (const pnet_t & n)
 }
 
 using petri_net::tid_t;
+using petri_net::eid_t;
 using petri_net::connection_t;
 using petri_net::PT;
 using petri_net::TP;
@@ -99,6 +110,8 @@ main ()
 
   cnt_edge_t e (0);
 
+  const token_t max_capacity (branch_factor * (branch_factor + 1));
+
   for (token_t rem (0); rem < branch_factor; ++rem)
     {
       const tid_t tid 
@@ -112,6 +125,9 @@ main ()
           , Function::Condition::Pre::Generic<token_t> 
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1)
             )
+          , Function::Condition::Post::Generic<token_t> 
+            ( boost::bind (&cond_capacity, boost::ref(n), max_capacity, _1)
+            )
           )
         );
 
@@ -124,25 +140,44 @@ main ()
   
   marking (n);
 
+  cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
+
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::in_map_t m (n.en(*t));
-
       cout << "Transition " << *t << ":" << endl;
+
+      pnet_t::in_map_t m (n.en_in (*t));
 
       for (pnet_t::in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
           cout << "Place " << i->first << ":";
 
-          for ( std::vector<token_t>::const_iterator k (i->second.begin())
+          for ( std::vector<std::pair<token_t,eid_t> >::const_iterator k (i->second.begin())
               ; k != i->second.end()
               ; ++k
               )
-            cout << " " << *k;
+            cout << " {" << k->first << " via " << k->second << "}";
 
           cout << endl;
         }
     }
+
+  cout << "ENABLED OUTPUTS :: Transition -> [Place via Edge]" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      cout << "Transition " << *t << ":";
+
+      pnet_t::output_descr_t output_descr (n.en_out (*t));
+
+      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
+          ; i != output_descr.end()
+          ; ++i
+          )
+        cout << " {" << i->first << " via " << i->second << "}";
+
+      cout << endl;
+    }  
 
   return EXIT_SUCCESS;
 }

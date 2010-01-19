@@ -448,9 +448,9 @@ private:
   }
 
 public:
-  typedef typename std::map<pid_t,std::vector<Token> > in_map_t;
+  typedef typename std::map<pid_t,std::vector<std::pair<Token,eid_t> > > in_map_t;
 
-  in_map_t en (const tid_t & tid) const
+  in_map_t en_in (const tid_t & tid) const
   {
     in_map_t ret;
 
@@ -466,10 +466,33 @@ public:
           assert (f != precondfun.end());
 
           if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
-            ret[*pit].push_back(*tp);
+            ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
         }
 
     return ret;
+  }
+
+  output_descr_t en_out (const tid_t & tid) const
+  {
+    output_descr_t output_descr;
+
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        typename std::map<tid_t, postcondfun_t>::const_iterator f
+          (postcondfun.find(tid));
+
+        assert (f != postcondfun.end());
+
+        place_via_edge_t place_via_edge (*pit, pit());
+
+        if (f->second (place_via_edge))
+          output_descr.push_back (place_via_edge);
+      }
+
+    return output_descr;
   }
 
   const enabled_t & enabled_transitions (void) const
