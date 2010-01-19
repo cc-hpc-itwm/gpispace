@@ -159,7 +159,7 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      // side effect updates in_enabled!
+      // side effect updates in_enabled, in_choice!
       pnet_t::in_map_t m (n.en_in (*t));
 
       cout << "Transition " << *t 
@@ -169,7 +169,9 @@ main ()
 
       for (pnet_t::in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
-          cout << "Place " << i->first << ":";
+          cout << "Place " << i->first 
+               << " [" << n.in_choice[*t][i->first] << "]"
+               << ":";
 
           for ( std::vector<std::pair<token_t,eid_t> >::const_iterator k (i->second.begin())
               ; k != i->second.end()
