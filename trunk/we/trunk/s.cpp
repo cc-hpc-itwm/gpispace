@@ -111,9 +111,9 @@ main (int argc, char **)
   if (argc > 0)
     {
       Function::Transition::EdgesOnly<token_t>
-        transfun (&Function::Transition::swap);
+        trans (&Function::Transition::swap);
 
-      n.set_transition_function (tid, transfun);
+      n.set_transition_function (tid, trans);
     }
   else
     {
@@ -123,9 +123,9 @@ main (int argc, char **)
         );
 
       Function::Transition::EdgesOnly<token_t>
-        transfun (boost::bind(&Function::Transition::swap_state, swap_descr, _1));
+        trans (boost::bind(&Function::Transition::swap_state, swap_descr, _1));
 
-      n.set_transition_function (tid, transfun);
+      n.set_transition_function (tid, trans);
     }
 
   n.put_token (pid_A, 'a');

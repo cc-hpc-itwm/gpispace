@@ -10,7 +10,7 @@
 #include <connection.hpp>
 #include <multirel.hpp>
 #include <svector.hpp>
-#include <transfun.hpp>
+#include <trans.hpp>
 #include <condfun.hpp>
 
 #include <tr1/unordered_map>
@@ -64,7 +64,7 @@ public:
   typedef typename tf_traits::output_descr_t output_descr_t;
   typedef typename tf_traits::output_t output_t;
 
-  typedef typename tf_traits::fun_t transfun_t;
+  typedef typename tf_traits::fun_t trans_t;
 
   typedef Function::Condition::Traits<Token> cd_traits;
   typedef typename cd_traits::in_condfun_t in_condfun_t;
@@ -93,7 +93,7 @@ private:
 
   enabled_t enabled;
 
-  std::tr1::unordered_map<tid_t, transfun_t> transfun;
+  std::tr1::unordered_map<tid_t, trans_t> trans;
   std::tr1::unordered_map<tid_t, in_condfun_t> in_condfun;
   std::tr1::unordered_map<tid_t, out_condfun_t> out_condfun;
 
@@ -165,9 +165,9 @@ public:
     return pmap.add (place);
   }
 
-  void set_transition_function (const tid_t & tid, const transfun_t & f)
+  void set_transition_function (const tid_t & tid, const trans_t & f)
   {
-    transfun[tid] = f;
+    trans[tid] = f;
   }
 
   // WORK HERE: update enabled
@@ -184,7 +184,7 @@ public:
 
   tid_t add_transition
   ( const Transition & transition
-  , const transfun_t & tf = Function::Transition::Default<Token>()
+  , const trans_t & tf = Function::Transition::Default<Token>()
   , const in_condfun_t & inc = Function::Condition::In::Default<Token>()
   , const out_condfun_t & outc = Function::Condition::Out::Default<Token>()
   )
@@ -361,7 +361,7 @@ public:
 
     enabled.erase (tid);
 
-    transfun.erase (tid);
+    trans.erase (tid);
     in_condfun.erase (tid);
     out_condfun.erase (tid);
 
@@ -619,9 +619,9 @@ public:
         )
       output_descr.push_back (place_via_edge_t (*pit, pit()));
 
-    assert (transfun.find (tid) != transfun.end());
+    assert (trans.find (tid) != trans.end());
 
-    const output_t output (transfun[tid](input, output_descr));
+    const output_t output (trans[tid](input, output_descr));
 
     for ( typename output_t::const_iterator out (output.begin())
         ; out != output.end()

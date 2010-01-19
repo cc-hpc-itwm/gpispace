@@ -37,10 +37,10 @@ static token_t inc (const token_t & token)
   return ((token + 1 >= branch_factor) ? 0 : (token + 1));
 }
 
-static token_t transfun ( const petri_net::pid_t &
-                        , const token_input_t & token_input
-                        , const place_via_edge_t &
-                        )
+static token_t trans ( const petri_net::pid_t &
+                     , const token_input_t & token_input
+                     , const place_via_edge_t &
+                     )
 {
   return inc (Function::Transition::get_token<token_t> (token_input));
 }
@@ -120,7 +120,7 @@ main ()
           , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
             ( & edge_descr<token_input_t>
             , & edge_descr<place_via_edge_t>
-            , & transfun
+            , & trans
             )
           , Function::Condition::In::Generic<token_t> 
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1)

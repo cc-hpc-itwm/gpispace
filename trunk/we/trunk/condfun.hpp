@@ -3,7 +3,7 @@
 #ifndef _CONDFUN_HPP
 #define _CONDFUN_HPP
 
-#include <transfun.hpp>
+#include <trans.hpp>
 
 #include <boost/function.hpp>
 
