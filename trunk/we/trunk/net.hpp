@@ -14,6 +14,7 @@
 #include <trans.hpp>
 
 #include <tr1/unordered_map>
+#include <tr1/unordered_set>
 
 #include <boost/function.hpp>
 
@@ -65,10 +66,14 @@ public:
   typedef typename tf_traits::output_t output_t;
 
   typedef typename tf_traits::fun_t trans_t;
+  typedef std::tr1::unordered_map<tid_t, trans_t> trans_map_t;
 
   typedef Function::Condition::Traits<Token> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::out_cond_t out_cond_t;
+
+  typedef std::tr1::unordered_map<tid_t, in_cond_t> in_cond_map_t;
+  typedef std::tr1::unordered_map<tid_t, out_cond_t> out_cond_map_t;
 
   typedef std::pair<input_t, output_descr_t> enabled_descr_t;
   typedef svector<tid_t> enabled_t;
@@ -93,9 +98,9 @@ private:
 
   enabled_t enabled;
 
-  std::tr1::unordered_map<tid_t, trans_t> trans;
-  std::tr1::unordered_map<tid_t, in_cond_t> in_cond;
-  std::tr1::unordered_map<tid_t, out_cond_t> out_cond;
+  trans_map_t trans;
+  in_cond_map_t in_cond;
+  out_cond_map_t out_cond;
 
 public:
   net (const pid_t & _places = 10, const tid_t & _transitions = 10)
@@ -120,6 +125,11 @@ public:
   pid_t get_num_places (void) const { return num_places; }
   tid_t get_num_transitions (void) const { return num_transitions; }
   eid_t get_num_edges (void) const { return num_edges; }
+
+  // condition accessores
+  const trans_map_t get_trans (void) const { return trans; }
+  const in_cond_map_t get_in_cond (void) const { return in_cond; }
+  const out_cond_map_t get_out_cond (void) const { return out_cond; }
 
   // get id
   const pid_t & get_place_id (const Place & place) const
@@ -452,11 +462,20 @@ private:
   }
 
 public:
-  typedef typename std::tr1::unordered_map<pid_t,std::vector<std::pair<Token,eid_t> > > in_map_t;
+  typedef typename std::pair<Token,eid_t> token_via_edge_t;
+  typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
+  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> in_map_t;
+  typedef std::tr1::unordered_set<tid_t> in_enabled_t;
+  typedef std::tr1::unordered_set<tid_t> out_enabled_t;
 
-  in_map_t en_in (const tid_t & tid) const
+  in_enabled_t in_enabled;
+  out_enabled_t out_enabled;
+
+  in_map_t en_in (const tid_t & tid)
   {
     in_map_t ret;
+
+    bool can_fire = true;
 
     typename std::tr1::unordered_map<tid_t, in_cond_t>::const_iterator f
       (in_cond.find(tid));
@@ -467,16 +486,31 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
-        if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
-          ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
+      {
+        bool usable_token = false;
+
+        for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
+          if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
+            {
+              ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
+
+              usable_token = true;
+            }
+
+        can_fire &= usable_token;
+      }
+
+    if (can_fire)
+      in_enabled.insert (tid);
 
     return ret;
   }
 
-  output_descr_t en_out (const tid_t & tid) const
+  output_descr_t en_out (const tid_t & tid)
   {
     output_descr_t output_descr;
+
+    bool can_fire = true;
 
     typename std::tr1::unordered_map<tid_t, out_cond_t>::const_iterator f
       (out_cond.find(tid));
@@ -491,8 +525,17 @@ public:
         place_via_edge_t place_via_edge (*pit, pit());
 
         if (f->second (place_via_edge))
-          output_descr.push_back (place_via_edge);
+          {
+            output_descr.push_back (place_via_edge);
+          }
+        else
+          {
+            can_fire = false;
+          }
       }
+
+    if (can_fire)
+      out_enabled.insert (tid);
 
     return output_descr;
   }

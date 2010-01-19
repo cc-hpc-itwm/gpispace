@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <tr1/unordered_map>
+
 #include <boost/function.hpp>
 
 typedef unsigned int transition_t;
@@ -58,14 +60,21 @@ static bool cond_rem ( const pnet_t & net
          );
 }
 
+typedef std::tr1::unordered_map<petri_net::pid_t,token_t> capacity_map_t;
+
 static bool cond_capacity ( const pnet_t & net
-                          , const token_t & max_capacity
+                          , const capacity_map_t & capacity
                           , const place_via_edge_t & place_via_edge
                           )
 {
   petri_net::pid_t pid(Function::Transition::get_pid<token_t> (place_via_edge));
 
-  return (net.num_token (pid) < max_capacity);
+  capacity_map_t::const_iterator c (capacity.find(pid));
+
+  if (c == capacity.end())
+    throw std::runtime_error ("cond_capacity: capacity not found");
+
+  return (net.num_token (pid) < c->second);
 }
 
 using std::cout;
@@ -99,9 +108,13 @@ main ()
   petri_net::pid_t pid[branch_factor];
   cnt_place_t p (0);
 
+  capacity_map_t capacity;
+
   for (token_t rem (0); rem < branch_factor; ++rem)
     {
       pid[rem] = n.add_place (place_t (p++,rem));
+
+      capacity[pid[rem]] = branch_factor * (branch_factor + 1);
 
       for (token_t t (0); t < branch_factor; ++t)
         for (token_t i (0); i < branch_factor; ++i)
@@ -109,8 +122,6 @@ main ()
     }
 
   cnt_edge_t e (0);
-
-  const token_t max_capacity (branch_factor * (branch_factor + 1));
 
   for (token_t rem (0); rem < branch_factor; ++rem)
     {
@@ -126,7 +137,11 @@ main ()
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1)
             )
           , Function::Condition::Out::Generic<token_t> 
-            ( boost::bind (&cond_capacity, boost::ref(n), max_capacity, _1)
+            ( boost::bind ( &cond_capacity
+                          , boost::ref(n)
+                          , boost::ref(capacity)
+                          , _1
+                          )
             )
           )
         );
@@ -144,9 +159,13 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << "Transition " << *t << ":" << endl;
-
+      // side effect updates in_enabled!
       pnet_t::in_map_t m (n.en_in (*t));
+
+      cout << "Transition " << *t 
+           << ": can_fire_by_input = "
+           << ((n.in_enabled.find(*t) != n.in_enabled.end()) ? "true" : "false")
+           << ":" << endl;
 
       for (pnet_t::in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
@@ -166,9 +185,13 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cout << "Transition " << *t << ":";
-
+      // side effect updates out_enabled!
       pnet_t::output_descr_t output_descr (n.en_out (*t));
+
+      cout << "Transition " << *t 
+           << ": can_fire_by_output = "
+           << ((n.out_enabled.find(*t) != n.out_enabled.end()) ? "true" : "false")
+           << ":";
 
       for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
           ; i != output_descr.end()
