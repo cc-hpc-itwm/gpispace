@@ -122,10 +122,10 @@ main ()
             , & edge_descr<place_via_edge_t>
             , & transfun
             )
-          , Function::Condition::Pre::Generic<token_t> 
+          , Function::Condition::In::Generic<token_t> 
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1)
             )
-          , Function::Condition::Post::Generic<token_t> 
+          , Function::Condition::Out::Generic<token_t> 
             ( boost::bind (&cond_capacity, boost::ref(n), max_capacity, _1)
             )
           )

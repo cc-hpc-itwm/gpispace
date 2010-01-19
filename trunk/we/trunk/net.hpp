@@ -67,8 +67,8 @@ public:
   typedef typename tf_traits::fun_t transfun_t;
 
   typedef Function::Condition::Traits<Token> cd_traits;
-  typedef typename cd_traits::precondfun_t precondfun_t;
-  typedef typename cd_traits::postcondfun_t postcondfun_t;
+  typedef typename cd_traits::in_condfun_t in_condfun_t;
+  typedef typename cd_traits::out_condfun_t out_condfun_t;
 
   typedef std::pair<input_t, output_descr_t> enabled_descr_t;
   typedef svector<tid_t> enabled_t;
@@ -94,8 +94,8 @@ private:
   enabled_t enabled;
 
   std::tr1::unordered_map<tid_t, transfun_t> transfun;
-  std::tr1::unordered_map<tid_t, precondfun_t> precondfun;
-  std::tr1::unordered_map<tid_t, postcondfun_t> postcondfun;
+  std::tr1::unordered_map<tid_t, in_condfun_t> in_condfun;
+  std::tr1::unordered_map<tid_t, out_condfun_t> out_condfun;
 
 public:
   net (const pid_t & _places = 10, const tid_t & _transitions = 10)
@@ -171,22 +171,22 @@ public:
   }
 
   // WORK HERE: update enabled
-  void set_pre_condition_function (const tid_t & tid, const precondfun_t & f)
+  void set_in_condition_function (const tid_t & tid, const in_condfun_t & f)
   {
-    precondfun[tid] = f;
+    in_condfun[tid] = f;
   }
 
   // WORK HERE: update enabled
-  void set_post_condition_function (const tid_t & tid, const postcondfun_t & f)
+  void set_out_condition_function (const tid_t & tid, const out_condfun_t & f)
   {
-    postcondfun[tid] = f;
+    out_condfun[tid] = f;
   }
 
   tid_t add_transition
   ( const Transition & transition
   , const transfun_t & tf = Function::Transition::Default<Token>()
-  , const precondfun_t & prec = Function::Condition::Pre::Default<Token>()
-  , const postcondfun_t & postc = Function::Condition::Post::Default<Token>()
+  , const in_condfun_t & inc = Function::Condition::In::Default<Token>()
+  , const out_condfun_t & outc = Function::Condition::Out::Default<Token>()
   )
     throw (bijection::exception::already_there)
   {
@@ -195,8 +195,8 @@ public:
     const tid_t tid (tmap.add (transition));
 
     set_transition_function (tid, tf);
-    set_pre_condition_function (tid, prec);
-    set_post_condition_function (tid, postc);
+    set_in_condition_function (tid, inc);
+    set_out_condition_function (tid, outc);
 
     return tid;
   }
@@ -362,8 +362,8 @@ public:
     enabled.erase (tid);
 
     transfun.erase (tid);
-    precondfun.erase (tid);
-    postcondfun.erase (tid);
+    in_condfun.erase (tid);
+    out_condfun.erase (tid);
 
     --num_transitions;
 
@@ -455,10 +455,10 @@ public:
   {
     in_map_t ret;
 
-    typename std::tr1::unordered_map<tid_t, precondfun_t>::const_iterator f
-      (precondfun.find(tid));
+    typename std::tr1::unordered_map<tid_t, in_condfun_t>::const_iterator f
+      (in_condfun.find(tid));
 
-    assert (f != precondfun.end());
+    assert (f != in_condfun.end());
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
@@ -475,10 +475,10 @@ public:
   {
     output_descr_t output_descr;
 
-    typename std::tr1::unordered_map<tid_t, postcondfun_t>::const_iterator f
-      (postcondfun.find(tid));
+    typename std::tr1::unordered_map<tid_t, out_condfun_t>::const_iterator f
+      (out_condfun.find(tid));
 
-    assert (f != postcondfun.end());
+    assert (f != out_condfun.end());
 
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()

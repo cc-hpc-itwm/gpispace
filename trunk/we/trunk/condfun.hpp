@@ -17,8 +17,8 @@ namespace Function { namespace Condition
     typedef typename tf_traits::token_input_t token_input_t;
     typedef typename tf_traits::place_via_edge_t place_via_edge_t;
 
-    typedef boost::function<bool (const token_input_t &)> precondfun_t;
-    typedef boost::function<bool (const place_via_edge_t &)> postcondfun_t;
+    typedef boost::function<bool (const token_input_t &)> in_condfun_t;
+    typedef boost::function<bool (const place_via_edge_t &)> out_condfun_t;
   };
 
   template<typename Token, typename Param>
@@ -37,13 +37,13 @@ namespace Function { namespace Condition
   template<typename T>
   bool fconst (const bool & b, const T &) { return b; }
 
-  namespace Pre
+  namespace In
   {
     template<typename Token>
     class Generic : public Gen<Token,typename Traits<Token>::token_input_t>
     {
     public:
-      Generic (const typename Traits<Token>::precondfun_t & f)
+      Generic (const typename Traits<Token>::in_condfun_t & f)
         : Gen<Token, typename Traits<Token>::token_input_t> (f)
       {}
     };
@@ -59,13 +59,13 @@ namespace Function { namespace Condition
     };
   }
 
-  namespace Post
+  namespace Out
   {
     template<typename Token>
     class Generic : public Gen<Token,typename Traits<Token>::place_via_edge_t>
     {
     public:
-      Generic (const typename Traits<Token>::postcondfun_t & f)
+      Generic (const typename Traits<Token>::out_condfun_t & f)
         : Gen<Token, typename Traits<Token>::place_via_edge_t> (f)
       {}
     };
