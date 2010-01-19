@@ -267,7 +267,7 @@ namespace Function { namespace Transition
     typedef boost::function<Token (const Token &)> Function;
 
   private:
-    Function f;
+    const Function f;
 
   public:
     PassWithFun (const Function & _f) : f (_f) {}
@@ -324,7 +324,7 @@ namespace Function { namespace Transition
     typedef typename Traits<Token>::output_t output_t;
     typedef typename Traits<Token>::token_on_place_t token_on_place_t;
 
-    Function f;
+    const Function f;
 
   public:
     EdgesOnly (const Function & _f) : f (_f) {}
