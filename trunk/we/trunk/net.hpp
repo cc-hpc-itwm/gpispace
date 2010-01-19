@@ -13,7 +13,7 @@
 #include <transfun.hpp>
 #include <condfun.hpp>
 
-#include <map>
+#include <tr1/unordered_map>
 
 #include <boost/function.hpp>
 
@@ -78,7 +78,7 @@ private:
   bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
   bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
 
-  typedef std::map<eid_t, connection_t> connection_map_t;
+  typedef std::tr1::unordered_map<eid_t, connection_t> connection_map_t;
 
   connection_map_t connection_map;
 
@@ -93,9 +93,9 @@ private:
 
   enabled_t enabled;
 
-  std::map<tid_t, transfun_t> transfun;
-  std::map<tid_t, precondfun_t> precondfun;
-  std::map<tid_t, postcondfun_t> postcondfun;
+  std::tr1::unordered_map<tid_t, transfun_t> transfun;
+  std::tr1::unordered_map<tid_t, precondfun_t> precondfun;
+  std::tr1::unordered_map<tid_t, postcondfun_t> postcondfun;
 
 public:
   net (const pid_t & _places = 10, const tid_t & _transitions = 10)
@@ -370,6 +370,7 @@ public:
     return tid;
   }
 
+  // WORK HERE: update the enabled structures
   // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const Place & place)
@@ -448,26 +449,24 @@ private:
   }
 
 public:
-  typedef typename std::map<pid_t,std::vector<std::pair<Token,eid_t> > > in_map_t;
+  typedef typename std::tr1::unordered_map<pid_t,std::vector<std::pair<Token,eid_t> > > in_map_t;
 
   in_map_t en_in (const tid_t & tid) const
   {
     in_map_t ret;
+
+    typename std::tr1::unordered_map<tid_t, precondfun_t>::const_iterator f
+      (precondfun.find(tid));
+
+    assert (f != precondfun.end());
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
       for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
-        {
-          typename std::map<tid_t, precondfun_t>::const_iterator f
-            (precondfun.find(tid));
-
-          assert (f != precondfun.end());
-
-          if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
-            ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
-        }
+        if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
+          ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
 
     return ret;
   }
@@ -476,16 +475,16 @@ public:
   {
     output_descr_t output_descr;
 
+    typename std::tr1::unordered_map<tid_t, postcondfun_t>::const_iterator f
+      (postcondfun.find(tid));
+
+    assert (f != postcondfun.end());
+
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
       {
-        typename std::map<tid_t, postcondfun_t>::const_iterator f
-          (postcondfun.find(tid));
-
-        assert (f != postcondfun.end());
-
         place_via_edge_t place_via_edge (*pit, pit());
 
         if (f->second (place_via_edge))

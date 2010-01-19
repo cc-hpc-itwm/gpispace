@@ -7,11 +7,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <map>
-#include <string>
-
-#include <algorithm>
-
 #include <boost/bind.hpp>
 
 #include <tr1/random>

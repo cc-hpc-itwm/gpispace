@@ -5,8 +5,9 @@
 
 #include <netfwd.hpp>
 
-#include <map>
 #include <vector>
+
+#include <tr1/unordered_map>
 
 #include <boost/function.hpp>
 
@@ -141,7 +142,7 @@ namespace Function { namespace Transition
                          ) const
     {
       // collect map descr -> token_input_t
-      typedef typename std::map<Descr,token_input_t> map_t;
+      typedef typename std::tr1::unordered_map<Descr,token_input_t> map_t;
       map_t m;
 
       for ( typename input_t::const_iterator it (input.begin())
@@ -315,7 +316,7 @@ namespace Function { namespace Transition
   class EdgesOnly
   {
   public:
-    typedef typename std::map<petri_net::eid_t, Token> map_t;
+    typedef typename std::tr1::unordered_map<petri_net::eid_t, Token> map_t;
     typedef boost::function<map_t (const map_t &)> Function;
 
   private:

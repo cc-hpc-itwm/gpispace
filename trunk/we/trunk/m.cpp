@@ -16,7 +16,7 @@
 using std::cout;
 using std::endl;
 
-typedef std::map<std::string, unsigned long> cntmap_t;
+typedef std::tr1::unordered_map<std::string, unsigned long> cntmap_t;
 
 static cntmap_t cntmap;
 
