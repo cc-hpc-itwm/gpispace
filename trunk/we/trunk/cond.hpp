@@ -1,7 +1,7 @@
 // condition functions, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _CONDFUN_HPP
-#define _CONDFUN_HPP
+#ifndef _COND_HPP
+#define _COND_HPP
 
 #include <trans.hpp>
 
@@ -17,8 +17,8 @@ namespace Function { namespace Condition
     typedef typename tf_traits::token_input_t token_input_t;
     typedef typename tf_traits::place_via_edge_t place_via_edge_t;
 
-    typedef boost::function<bool (const token_input_t &)> in_condfun_t;
-    typedef boost::function<bool (const place_via_edge_t &)> out_condfun_t;
+    typedef boost::function<bool (const token_input_t &)> in_cond_t;
+    typedef boost::function<bool (const place_via_edge_t &)> out_cond_t;
   };
 
   template<typename Token, typename Param>
@@ -43,7 +43,7 @@ namespace Function { namespace Condition
     class Generic : public Gen<Token,typename Traits<Token>::token_input_t>
     {
     public:
-      Generic (const typename Traits<Token>::in_condfun_t & f)
+      Generic (const typename Traits<Token>::in_cond_t & f)
         : Gen<Token, typename Traits<Token>::token_input_t> (f)
       {}
     };
@@ -65,7 +65,7 @@ namespace Function { namespace Condition
     class Generic : public Gen<Token,typename Traits<Token>::place_via_edge_t>
     {
     public:
-      Generic (const typename Traits<Token>::out_condfun_t & f)
+      Generic (const typename Traits<Token>::out_cond_t & f)
         : Gen<Token, typename Traits<Token>::place_via_edge_t> (f)
       {}
     };
@@ -82,4 +82,4 @@ namespace Function { namespace Condition
   }
 }}
 
-#endif // _TRANSFUN_HPP
+#endif // _COND_HPP
