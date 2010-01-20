@@ -75,7 +75,6 @@ public:
   typedef std::tr1::unordered_map<tid_t, in_cond_t> in_cond_map_t;
   typedef std::tr1::unordered_map<tid_t, out_cond_t> out_cond_map_t;
 
-  typedef std::pair<input_t, output_descr_t> enabled_descr_t;
   typedef svector<tid_t> enabled_t;
 
 private:
@@ -524,8 +523,6 @@ public:
 
     vec_token_via_edge.clear();
 
-    const place_via_edge_t place_via_edge (pid, eid);
-
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
       if (f(*tp, pid, eid))
         vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
@@ -586,15 +583,13 @@ public:
                            , const eid_t & eid
                            )
   {
-    place_via_edge_t place_via_edge (pid, eid);
-
     if (f(pid, eid))
       {
-        output_descr.insert (place_via_edge);
+        output_descr[pid] = eid;
       }
     else
       {
-        output_descr.erase (place_via_edge);
+        output_descr.erase (pid);
       }
   }
 
@@ -791,7 +786,7 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      output_descr.insert (place_via_edge_t (*pit, pit()));
+      output_descr[*pit] = pit();
 
     const typename trans_map_t::const_iterator f (get_trans().find (tid));
 

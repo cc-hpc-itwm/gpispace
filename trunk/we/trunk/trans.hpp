@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 
 #include <tr1/unordered_map>
 
@@ -30,7 +31,7 @@ namespace Function { namespace Transition
     typedef std::pair<Token, place_via_edge_t> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
-    typedef svector<place_via_edge_t> output_descr_t;
+    typedef std::tr1::unordered_map<pid_t,eid_t> output_descr_t;
     typedef std::pair<Token, pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
 
@@ -48,8 +49,22 @@ namespace Function { namespace Transition
   }
 
   template<typename Token>
+  pid_t get_pid
+  (const typename Traits<Token>::output_descr_t::value_type & place_via_edge)
+  {
+    return place_via_edge.first;
+  }
+
+  template<typename Token>
   eid_t get_eid
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
+  {
+    return place_via_edge.second;
+  }
+
+  template<typename Token>
+  eid_t get_eid
+  (const typename Traits<Token>::output_descr_t::value_type & place_via_edge)
   {
     return place_via_edge.second;
   }
