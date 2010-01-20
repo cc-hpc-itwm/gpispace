@@ -50,18 +50,20 @@ main ()
 
   cross::cross<map_t> cross (map);
 
-  std::size_t k (0);
+  {
+    std::size_t k (0);
 
-  while (cross.has_more())
-    {
-      cout << setw(2) << k << "| ";
+    while (cross.has_more())
+      {
+        cout << setw(2) << k++ << "| ";
+      
+        cross_t c (*cross); ++cross;
 
-      cross_t c (*cross); ++cross; ++k;
-
-      for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
-        cout << *i;
-      cout << endl;
-    }
+        for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
+          cout << *i;
+        cout << endl;
+      }
+  }
 
   cout << "size = " << cross.size() << endl;
 
@@ -75,6 +77,30 @@ main ()
         cout << *i;
       cout << endl;
     }
+
+  cross.rewind();
+
+  {
+    std::size_t k (0);
+
+    while (cross.has_more())
+      {
+        cout << setw(2) << k++ << "| ";
+
+        cross::star_iterator<map_t> i (cross.get_star_it());
+
+        while (i.has_more()) { cout << *i; ++i; }
+
+        cout << endl;
+
+        ++cross;
+      }
+  }
+
+  cross::bracket_iterator<map_t> i (cross.get_bracket_it(11));
+
+  while (i.has_more()) { cout << *i; ++i; }
+  cout << endl;
 
   return EXIT_SUCCESS;
 }
