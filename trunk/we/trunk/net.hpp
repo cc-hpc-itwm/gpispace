@@ -527,7 +527,7 @@ public:
     const place_via_edge_t place_via_edge (pid, eid);
 
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
-      if (f(token_input_t (*tp, place_via_edge)))
+      if (f(*tp, pid, eid))
         vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
 
     if (vec_token_via_edge.empty())
@@ -588,7 +588,7 @@ public:
   {
     place_via_edge_t place_via_edge (pid, eid);
 
-    if (f(place_via_edge))
+    if (f(pid, eid))
       {
         output_descr.insert (place_via_edge);
       }

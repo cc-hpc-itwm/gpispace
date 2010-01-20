@@ -49,26 +49,24 @@ static token_t trans ( const petri_net::pid_t &
 
 static bool cond_rem ( const pnet_t & net
                      , const token_t & rem
-                     , const token_input_t & token_input
+                     , const token_t & token
+                     , const petri_net::pid_t & pid
+                     , const petri_net::eid_t &
                      )
 {
-  petri_net::pid_t pid (Function::Transition::get_pid<token_t> (token_input));
   place_t place (net.place (pid));
   
-  return (  Function::Transition::get_token<token_t>(token_input) 
-         == ((shift(place) + rem) % branch_factor)
-         );
+  return (token == ((shift(place) + rem) % branch_factor));
 }
 
 typedef std::tr1::unordered_map<petri_net::pid_t,token_t> capacity_map_t;
 
 static bool cond_capacity ( const pnet_t & net
                           , const capacity_map_t & capacity
-                          , const place_via_edge_t & place_via_edge
+                          , const petri_net::pid_t & pid
+                          , const petri_net::eid_t &
                           )
 {
-  petri_net::pid_t pid(Function::Transition::get_pid<token_t> (place_via_edge));
-
   capacity_map_t::const_iterator c (capacity.find(pid));
 
   if (c == capacity.end())
@@ -134,13 +132,14 @@ main ()
             , & trans
             )
           , Function::Condition::In::Generic<token_t> 
-            ( boost::bind (&cond_rem, boost::ref(n), rem, _1)
+            ( boost::bind (&cond_rem, boost::ref(n), rem, _1, _2, _3)
             )
           , Function::Condition::Out::Generic<token_t> 
             ( boost::bind ( &cond_capacity
                           , boost::ref(n)
                           , boost::ref(capacity)
                           , _1
+                          , _2
                           )
             )
           )

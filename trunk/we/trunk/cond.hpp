@@ -3,81 +3,95 @@
 #ifndef _COND_HPP
 #define _COND_HPP
 
-#include <trans.hpp>
+#include <netfwd.hpp>
 
 #include <boost/function.hpp>
 
 namespace Function { namespace Condition
 {
+  typedef petri_net::pid_t pid_t;
+  typedef petri_net::eid_t eid_t;
+
   template<typename Token>
   struct Traits
   {
   public:
-    typedef Function::Transition::Traits<Token> tf_traits;
-    typedef typename tf_traits::token_input_t token_input_t;
-    typedef typename tf_traits::place_via_edge_t place_via_edge_t;
+    typedef boost::function<bool ( const Token &
+                                 , const pid_t &
+                                 , const eid_t &
+                                 )
+                           > in_cond_t;
 
-    typedef boost::function<bool (const token_input_t &)> in_cond_t;
-    typedef boost::function<bool (const place_via_edge_t &)> out_cond_t;
+    typedef boost::function<bool ( const pid_t &
+                                 , const eid_t &
+                                 )
+                           > out_cond_t;
   };
-
-  template<typename Token, typename Param>
-  class Gen
-  {
-  private:
-    typedef boost::function<bool (const Param &)> Function;
-
-    const Function f;
-  public:
-    Gen (const Function & _f) : f (_f) {}
-
-    bool operator () (const Param & param) { return f (param); }
-  };
-
-  template<typename T>
-  bool fconst (const bool & b, const T &) { return b; }
 
   namespace In
   {
     template<typename Token>
-    class Generic : public Gen<Token,typename Traits<Token>::token_input_t>
+    class Generic
     {
+    private:
+      typedef typename Traits<Token>::in_cond_t fun;
+
+      fun f;
+
     public:
-      Generic (const typename Traits<Token>::in_cond_t & f)
-        : Gen<Token, typename Traits<Token>::token_input_t> (f)
-      {}
+      Generic (const fun & _f) : f (_f) {}
+
+      bool operator () ( const Token & token
+                       , const pid_t & pid
+                       , const eid_t & eid
+                       )
+      {
+        return f (token, pid, eid);
+      }
     };
 
     template<typename Token>
-    class Default : public Generic<Token>
+    class Default
     {
-    private:
-      typedef typename Traits<Token>::token_input_t param_t;
-
     public:
-      Default () : Generic<Token> (boost::bind(&fconst<param_t>, true, _1)) {}
+      Default () {}
+
+      bool operator () (const Token &, const pid_t &, const eid_t &)
+      {
+        return true;
+      }
     };
   }
 
   namespace Out
   {
     template<typename Token>
-    class Generic : public Gen<Token,typename Traits<Token>::place_via_edge_t>
+    class Generic
     {
+    private:
+      typedef typename Traits<Token>::out_cond_t fun;
+
+      fun f;
+
     public:
-      Generic (const typename Traits<Token>::out_cond_t & f)
-        : Gen<Token, typename Traits<Token>::place_via_edge_t> (f)
-      {}
+      Generic (const fun & _f) : f (_f) {}
+
+      bool operator () (const pid_t & pid, const eid_t & eid)
+      {
+        return f (pid, eid);
+      }
     };
 
     template<typename Token>
-    class Default : public Generic<Token>
+    class Default
     {
-    private:
-      typedef typename Traits<Token>::place_via_edge_t param_t;
-
     public:
-      Default () : Generic<Token> (boost::bind(&fconst<param_t>, true, _1)) {}
+      Default () {}
+
+      bool operator () (const pid_t &, const eid_t &)
+      {
+        return true;
+      }
     };
   }
 }}

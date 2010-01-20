@@ -7,6 +7,7 @@
 #include <svector.hpp>
 
 #include <vector>
+#include <set>
 
 #include <tr1/unordered_map>
 
