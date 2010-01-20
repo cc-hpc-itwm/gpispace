@@ -127,9 +127,9 @@ public:
   eid_t get_num_edges (void) const { return num_edges; }
 
   // condition accessores
-  const trans_map_t get_trans (void) const { return trans; }
-  const in_cond_map_t get_in_cond (void) const { return in_cond; }
-  const out_cond_map_t get_out_cond (void) const { return out_cond; }
+  const trans_map_t & get_trans (void) const { return trans; }
+  const in_cond_map_t & get_in_cond (void) const { return in_cond; }
+  const out_cond_map_t & get_out_cond (void) const { return out_cond; }
 
   // get id
   const pid_t & get_place_id (const Place & place) const
@@ -465,9 +465,10 @@ public:
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
   typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> in_map_t;
-  typedef std::tr1::unordered_set<tid_t> in_enabled_t;
   typedef std::tr1::unordered_map<pid_t,std::size_t> pid_choice_t;
   typedef std::tr1::unordered_map<tid_t,pid_choice_t> in_choice_t;
+
+  typedef std::tr1::unordered_set<tid_t> in_enabled_t;
   typedef std::tr1::unordered_set<tid_t> out_enabled_t;
 
   in_enabled_t in_enabled;
@@ -483,9 +484,9 @@ public:
     in_choice.erase (tid);
 
     typename std::tr1::unordered_map<tid_t, in_cond_t>::const_iterator f
-      (in_cond.find(tid));
+      (get_in_cond().find(tid));
 
-    assert (f != in_cond.end());
+    assert (f != get_in_cond().end());
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
@@ -498,7 +499,7 @@ public:
         for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
           if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
             {
-              ret[*pit].push_back(std::pair<Token,eid_t> (*tp, pit()));
+              ret[*pit].push_back(token_via_edge_t (*tp, pit()));
 
               usable_token = true;
               ++choice;
@@ -522,9 +523,9 @@ public:
     bool can_fire = true;
 
     typename std::tr1::unordered_map<tid_t, out_cond_t>::const_iterator f
-      (out_cond.find(tid));
+      (get_out_cond().find(tid));
 
-    assert (f != out_cond.end());
+    assert (f != get_out_cond().end());
 
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
@@ -674,9 +675,11 @@ public:
         )
       output_descr.push_back (place_via_edge_t (*pit, pit()));
 
-    assert (trans.find (tid) != trans.end());
+    const typename trans_map_t::const_iterator f (get_trans().find (tid));
 
-    const output_t output (trans[tid](input, output_descr));
+    assert (f != get_trans().end());
+
+    const output_t output (f->second(input, output_descr));
 
     for ( typename output_t::const_iterator out (output.begin())
         ; out != output.end()
