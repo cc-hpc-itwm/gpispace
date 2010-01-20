@@ -3,6 +3,8 @@
 #ifndef _CROSS_HPP
 #define _CROSS_HPP
 
+#include <util.hpp>
+
 #include <cassert>
 
 #include <vector>
@@ -12,30 +14,29 @@ namespace cross
   typedef std::vector<std::size_t> pos_t;
 
   template<typename MAP>
-  struct star_iterator
+  struct star_iterator : public util::it<typename MAP::const_iterator>
   {
   private:
+    typedef util::it<typename MAP::const_iterator> super;
     typedef typename MAP::mapped_type::value_type val_t;
     typedef typename MAP::key_type key_t;
-    typedef typename MAP::const_iterator map_it_t;
     typedef std::pair<key_t,val_t> ret_t;
 
-    map_it_t m;
-    const map_it_t m_end;
     pos_t::const_iterator pos;
+    const pos_t::const_iterator end;
 
   public:
     star_iterator (const MAP & map, const pos_t & _pos) 
-      : m (map.begin())
-      , m_end (map.end())
+      : super (map.begin(), map.end())
       , pos (_pos.begin())
+      , end (_pos.end())
     {}
-
-    bool has_more (void) const { return (m != m_end) ? true : false; }
-    void operator ++ (void) { ++pos; ++m; }
+    void operator ++ (void) { ++pos; super::operator++(); }
     ret_t operator * (void) const
     {
-      assert (m != m_end);
+      const typename MAP::const_iterator & m (super::pos);
+
+      assert (pos != end);
       assert (*pos < m->second.size());
 
       return ret_t (m->first, m->second[*pos]);
@@ -43,37 +44,35 @@ namespace cross
   };
 
   template<typename MAP>
-  struct bracket_iterator
+  struct bracket_iterator : public util::it<typename MAP::const_iterator>
   {
   private:
+    typedef util::it<typename MAP::const_iterator> super;
     typedef typename MAP::mapped_type::value_type val_t;
     typedef typename MAP::key_type key_t;
-    typedef typename MAP::const_iterator map_it_t;
     typedef std::pair<key_t,val_t> ret_t;
 
-    map_it_t m;
-    const map_it_t m_end;
     std::size_t k;
 
   public:
     bracket_iterator (const MAP & map, const std::size_t & _k) 
-      : m (map.begin())
-      , m_end (map.end())
+      : super (map.begin(), map.end())
       , k (_k)
     {}
-
-    bool has_more (void) const { return (m != m_end) ? true : false; }
     void operator ++ (void) 
     {
+      const typename MAP::const_iterator & m (super::pos);
+
       assert (m->second.size() > 0);
 
       k /= m->second.size();
 
-      ++m;
+      super::operator++();
     }
     ret_t operator * (void) const
     {
-      assert (m != m_end);
+      const typename MAP::const_iterator & m (super::pos);
+
       assert (m->second.size() > 0);
 
       return ret_t (m->first, m->second[k % m->second.size()]);
@@ -139,29 +138,32 @@ namespace cross
     std::size_t size (void) const { return _size; }
     void operator ++ () { step(0, map.begin()); }
 
-    vec_t operator [] (std::size_t k)
+    template<typename IT>
+    vec_t gen_operator (IT & it) const
     {
       vec_t v;
 
-      for (map_it_t m (map.begin()); m != map.end(); ++m)
+      while (it.has_more())
         {
-          v.push_back (ret_t (m->first, m->second[k % m->second.size()]));
-
-          k /= m->second.size();
+          v.push_back (*it);
+          ++it;
         }
 
       return v;
     }
 
+    vec_t operator [] (std::size_t k) const
+    {
+      bracket_iterator<MAP> b (get_bracket_it(k));
+
+      return gen_operator (b);
+    }
+
     vec_t operator * (void) const
     {
-      vec_t v;
-      pos_t::const_iterator p (pos.begin());
+      star_iterator<MAP> s (get_star_it());
 
-      for (map_it_t m (map.begin()); m != map.end(); ++m, ++p)
-        v.push_back (ret_t (m->first, m->second[*p]));
-
-      return v;
+      return gen_operator (s);
     }
 
     star_iterator<MAP> get_star_it (void) const
