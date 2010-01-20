@@ -12,8 +12,10 @@ namespace cross
   {
   private:
     typedef typename MAP::mapped_type::value_type val_t;
+    typedef typename MAP::key_type key_t;
     typedef typename MAP::const_iterator it_t;
-    typedef std::vector<val_t> vec_t;
+    typedef std::pair<key_t,val_t> ret_t;
+    typedef std::vector<ret_t> vec_t;
     typedef std::vector<std::size_t> pos_t;
 
     const MAP & map;
@@ -42,7 +44,7 @@ namespace cross
       pos_t::const_iterator p (pos.begin());
 
       for (it_t m (map.begin()); m != map.end(); ++m, ++p)
-        v.push_back (m->second[*p]);
+        v.push_back (ret_t (m->first, m->second[*p]));
 
       return v;
     }

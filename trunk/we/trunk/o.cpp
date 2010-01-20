@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include <iostream>
+#include <iomanip>
 
 #include <map>
 #include <vector>
@@ -13,7 +14,13 @@
 int
 main ()
 {
-  typedef std::map<std::string,std::vector<int> > map_t;
+  typedef std::string key_t;
+  typedef int val_t;
+  typedef std::vector<val_t> vec_val_t;
+  typedef std::pair<key_t,val_t> ret_t;
+  typedef std::vector<ret_t> cross_t;
+
+  typedef std::map<key_t,vec_val_t> map_t;
 
   map_t map;
 
@@ -33,10 +40,10 @@ main ()
 
   while (cross.has_more())
     {
-      std::vector<int> c (*cross); ++cross;
+      cross_t c (*cross); ++cross;
 
-      for (std::vector<int>::const_iterator i (c.begin()); i != c.end(); ++i)
-        std::cout << " " << *i;
+      for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
+        std::cout << std::setw(4) << i->first << ":" << i->second;
       std::cout << std::endl;
     }
 
