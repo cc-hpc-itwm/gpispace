@@ -230,11 +230,9 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::pid_in_map_t m (n.in_map[*t]);
+      cross::cross<pnet_t::pid_in_map_t> cross (n.in_map[*t]);
 
-      cout << "Transition " << *t << ":" << std::endl;
-
-      cross::cross<pnet_t::pid_in_map_t> cross (m);
+      cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
 
       typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
       typedef std::vector<ret_t> cross_t;

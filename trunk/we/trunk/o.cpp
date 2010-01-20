@@ -11,8 +11,11 @@
 #include <vector>
 #include <string>
 
-int
-main ()
+using std::cout;
+using std::endl;
+using std::setw;
+
+namespace
 {
   typedef std::string key_t;
   typedef int val_t;
@@ -22,6 +25,15 @@ main ()
 
   typedef std::map<key_t,vec_val_t> map_t;
 
+  static std::ostream & operator << (std::ostream & s, const ret_t & kv)
+  {
+    return s << setw(4) << kv.first << ":" << kv.second;
+  }
+}
+
+int
+main ()
+{
   map_t map;
 
   map["1234"].push_back (1);
@@ -38,13 +50,30 @@ main ()
 
   cross::cross<map_t> cross (map);
 
+  std::size_t k (0);
+
   while (cross.has_more())
     {
-      cross_t c (*cross); ++cross;
+      cout << setw(2) << k << "| ";
+
+      cross_t c (*cross); ++cross; ++k;
 
       for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
-        std::cout << std::setw(4) << i->first << ":" << i->second;
-      std::cout << std::endl;
+        cout << *i;
+      cout << endl;
+    }
+
+  cout << "size = " << cross.size() << endl;
+
+  for (std::size_t k (0); k < cross.size(); ++k)
+    {
+      cross_t c (cross[k]);
+      
+      cout << "cross[" << k << "] =";
+
+      for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
+        cout << *i;
+      cout << endl;
     }
 
   return EXIT_SUCCESS;

@@ -21,35 +21,8 @@ namespace cross
     const MAP & map;
     pos_t pos;
     bool _has_more;
+    std::size_t _size;
 
-  public:
-    cross (const MAP & _map) 
-      : map (_map)
-      , pos ()
-      , _has_more (true)
-    {
-      for (it_t m (map.begin()); m != map.end(); ++m)
-        {
-          pos.push_back (0);
-
-          _has_more &= (!m->second.empty());
-        }
-    }
-
-    bool has_more (void) const { return _has_more; }
-
-    vec_t operator * (void) const
-    {
-      vec_t v;
-      pos_t::const_iterator p (pos.begin());
-
-      for (it_t m (map.begin()); m != map.end(); ++m, ++p)
-        v.push_back (ret_t (m->first, m->second[*p]));
-
-      return v;
-    }
-
-  private:
     void step (std::size_t mark, it_t it)
     {
       ++pos[mark];
@@ -73,9 +46,49 @@ namespace cross
     }
 
   public:
-    void operator ++ ()
+    void rewind (void)
     {
-      step(0, map.begin());
+      _size = 1;
+
+      for (it_t m (map.begin()); m != map.end(); ++m)
+        {
+          pos.push_back (0);
+
+          _size *= m->second.size();
+
+          _has_more &= (!m->second.empty());
+        }
+    }
+
+    cross (const MAP & _map) : map (_map), _has_more (true) { rewind(); }
+    bool has_more (void) const { return _has_more; }
+    // beware: overflow!
+    std::size_t size (void) const { return _size; }
+    void operator ++ () { step(0, map.begin()); }
+
+    vec_t operator [] (std::size_t k)
+    {
+      vec_t v;
+
+      for (it_t m (map.begin()); m != map.end(); ++m)
+        {
+          v.push_back (ret_t (m->first, m->second[k % m->second.size()]));
+
+          k /= m->second.size();
+        }
+
+      return v;
+    }
+
+    vec_t operator * (void) const
+    {
+      vec_t v;
+      pos_t::const_iterator p (pos.begin());
+
+      for (it_t m (map.begin()); m != map.end(); ++m, ++p)
+        v.push_back (ret_t (m->first, m->second[*p]));
+
+      return v;
     }
   };
 }
