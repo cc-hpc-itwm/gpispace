@@ -17,7 +17,7 @@ private:
 
   vec_t vec;
 public:
-  typedef typename vec_t::const_iterator const_it;
+  typedef typename vec_t::const_iterator const_iterator;
   typedef typename vec_t::size_type size_type;
 
   it insert (const T & x)
@@ -41,8 +41,8 @@ public:
     return vec.at (n);
   }
 
-  const_it begin (void) const { return vec.begin(); }
-  const_it end (void) const { return vec.end(); }
+  const_iterator begin (void) const { return vec.begin(); }
+  const_iterator end (void) const { return vec.end(); }
 
   bool empty (void) const { return vec.empty(); }
   size_type size (void) const { return vec.size(); }

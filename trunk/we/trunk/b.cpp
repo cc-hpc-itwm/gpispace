@@ -194,6 +194,8 @@ main ()
         {
           pnet_t::enabled_t t (n.enabled_transitions());
 
+          assert (t == n.new_enabled);
+
           if (!t.empty())
             {
               std::tr1::uniform_int<pnet_t::enabled_t::size_type>

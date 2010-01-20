@@ -42,6 +42,66 @@ static std::string edge (const pnet_t & n, const petri_net::eid_t & e)
   std::ostringstream s; s << e << brack (n.edge (e)); return s.str();
 }
 
+static void print_enabled (const pnet_t & n)
+{
+  cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      pnet_t::pid_in_map_t m (n.in_map.find (*t)->second);
+
+      cout << "Transition " << trans (n, *t)
+           << ": can_fire_by_input = "
+           << ((n.in_enabled.find(*t) != n.in_enabled.end()) ? "true" : "false")
+           << ":" << endl;
+
+      for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
+        {
+          cout << "Place " << place (n, i->first)
+               << " [" << i->second.size() << "]"
+               << ":";
+
+          for ( std::vector<std::pair<token_t,petri_net::eid_t> >::const_iterator k (i->second.begin())
+              ; k != i->second.end()
+              ; ++k
+              )
+            cout << " {" << k->first << " via " << edge (n, k->second) << "}";
+
+          cout << endl;
+        }
+    }
+
+  cout << "ENABLED OUTPUTS :: Transition -> [Place via Edge]" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      pnet_t::output_descr_t output_descr (n.out_map.find(*t)->second);
+
+      cout << "Transition " << trans (n, *t)
+           << ": can_fire_by_output = "
+           << ((n.out_enabled.find(*t) != n.out_enabled.end()) ? "true" : "false")
+           << ":";
+
+      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
+          ; i != output_descr.end()
+          ; ++i
+          )
+        cout << " {" << place (n, i->first) << " via " << edge (n, i->second) << "}";
+
+      cout << endl;
+    }  
+
+  cout << "new_enabled = [";
+
+  for ( pnet_t::enabled_t::const_iterator it (n.new_enabled.begin())
+      ; it != n.new_enabled.end()
+      ; ++it
+      )
+    cout << " " << *it;
+
+  cout << "]" << endl;
+}
+
 static void print_net (const pnet_t & n)
 {
   static unsigned int print_net_count (0);
@@ -137,6 +197,8 @@ static void marking (const pnet_t & n)
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
+
+  assert (t == n.new_enabled);
 
   if (!t.empty())
     {
@@ -243,6 +305,23 @@ static void put_token (pnet_t & n, const place_t & place, const token_t & token)
   cout << "put_token (" << place << "," << token << ") => "
        << n.put_token (n.get_place_id (place), token)
        << endl;
+  print_enabled (n);
+}
+
+static void delete_one_token (pnet_t & n, const place_t & place, const token_t & token)
+{
+  cout << "delete_one_token (" << place << "," << token << ") => "
+       << n.delete_one_token (n.get_place_id (place), token)
+       << endl;
+  print_enabled (n);
+}
+
+static void delete_all_token (pnet_t & n, const place_t & place, const token_t & token)
+{
+  cout << "delete_all_token (" << place << "," << token << ") => "
+       << n.delete_all_token (n.get_place_id (place), token)
+       << endl;
+  print_enabled (n);
 }
 
 int
@@ -353,24 +432,14 @@ main ()
 
   print_net (c);
 
-  {
-    petri_net::pid_t pid (c.get_place_id ("readyL"));
-
-    cout << "delete_one_token (readyL,p) => "
-         << c.delete_one_token (pid,"p") << endl;
-    cout << "delete_one_token (readyL,x) => "
-         << c.delete_one_token (pid,"x") << endl;
-
-    cout << "delete_all_token (readyL,q) => "
-         << c.delete_all_token (pid,"q") << endl;
-    cout << "delete_all_token (readyL,q) => "
-         << c.delete_all_token (pid,"q") << endl;
-  }
+  delete_one_token (c,"readyL","p");
+  delete_one_token (c,"readyL","x");
+  delete_all_token (c,"readyL","q");
+  delete_all_token (c,"readyL","q");
 
   print_net (c);
 
-  cout << "num_token (readyL) => "
-       << c.num_token(c.get_place_id("readyL"))
+  cout << "num_token (readyL) => " << c.num_token(c.get_place_id("readyL"))
        << endl;
 
   cout << "replace_one_token (readyL,p->m) => "
@@ -391,8 +460,17 @@ main ()
 
   print_net (c);
 
+  print_enabled (c);
+
+  cout << "FIRE t_enterL" << endl;
   c.fire(c.get_transition_id ("t_enterL"));
+
+  print_enabled (c);
+
+  cout << "FIRE leaveL" << endl;
   c.fire(c.get_transition_id ("leaveL"));
+
+  print_enabled (c);
 
   print_net (c);
 

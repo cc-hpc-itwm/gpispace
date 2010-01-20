@@ -155,11 +155,14 @@ main ()
   
   marking (n);
 
+  //  n.update_in_enabled();
+  //  n.update_out_enabled();
+
   cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::pid_in_map_t m (n.update_in_enabled (*t));
+      pnet_t::pid_in_map_t m (n.in_map[*t]);
 
       cout << "Transition " << *t 
            << ": can_fire_by_input = "
@@ -186,8 +189,7 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      // side effect updates out_enabled!
-      pnet_t::output_descr_t output_descr (n.update_out_enabled (*t));
+      pnet_t::output_descr_t output_descr (n.out_map[*t]);
 
       cout << "Transition " << *t 
            << ": can_fire_by_output = "
@@ -205,7 +207,7 @@ main ()
 
   cout << "new_enabled = [";
 
-  for ( pnet_t::enabled_t::const_it it (n.new_enabled.begin())
+  for ( pnet_t::enabled_t::const_iterator it (n.new_enabled.begin())
       ; it != n.new_enabled.end()
       ; ++it
       )

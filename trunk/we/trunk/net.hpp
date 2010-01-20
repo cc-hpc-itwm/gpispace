@@ -183,16 +183,18 @@ public:
     trans[tid] = f;
   }
 
-  // WORK HERE: update enabled
   void set_in_condition_function (const tid_t & tid, const in_cond_t & f)
   {
     in_cond[tid] = f;
+
+    update_in_enabled (tid);
   }
 
-  // WORK HERE: update enabled
   void set_out_condition_function (const tid_t & tid, const out_cond_t & f)
   {
     out_cond[tid] = f;
+
+    update_out_enabled (tid);
   }
 
   tid_t add_transition
@@ -245,6 +247,9 @@ public:
       );
 
     connection_map[eid] = connection;
+
+    update_in_enabled (connection.tid);
+    update_out_enabled (connection.tid);
 
     update_enabled_transitions (connection.tid);
 
@@ -322,6 +327,9 @@ public:
 
     update_enabled_transitions (connection.tid);
 
+    update_in_enabled (connection.tid);
+    update_out_enabled (connection.tid);
+
     connection_map.erase (it);
 
     emap.erase (eid);
@@ -377,6 +385,12 @@ public:
     trans.erase (tid);
     in_cond.erase (tid);
     out_cond.erase (tid);
+
+    in_enabled.erase (tid);
+    out_enabled.erase (tid);
+    new_enabled.erase (tid);
+    in_map.erase (tid);
+    out_map.erase (tid);
 
     --num_transitions;
 
@@ -500,69 +514,134 @@ public:
       }
   }
 
-  const pid_in_map_t & update_in_enabled (const tid_t & tid)
+  void update_pid_in_map ( pid_in_map_t & pid_in_map
+                         , const in_cond_t & f
+                         , const pid_t & pid
+                         , const eid_t & eid
+                         )
+  {
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+
+    vec_token_via_edge.clear();
+
+    const place_via_edge_t place_via_edge (pid, eid);
+
+    for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
+      if (f(token_input_t (*tp, place_via_edge)))
+        vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
+
+    if (vec_token_via_edge.empty())
+      pid_in_map.erase (pid);
+  }
+
+  void update_in_enabled (void)
+  {
+    for (transition_const_it t (transitions()); t.has_more(); ++t)
+      update_in_enabled (*t);
+  }
+
+  void update_in_enabled (const tid_t & tid)
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     
-    typename std::tr1::unordered_map<tid_t, in_cond_t>::const_iterator f
-      (get_in_cond().find(tid));
+    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        vec_token_via_edge_t & vec_token_via_edge (pid_in_map[*pit]);
+    adj_place_const_it pit (in_to_transition (tid));
 
-        vec_token_via_edge.clear();
-
-        const place_via_edge_t place_via_edge (*pit, pit());
-
-        for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
-          if (f->second(token_input_t (*tp, place_via_edge)))
-            vec_token_via_edge.push_back(token_via_edge_t (*tp, pit()));
-      }
+    for (; pit.has_more(); ++pit)
+      update_pid_in_map (pid_in_map, f->second, *pit, pit());
 
     update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition (tid).size()
+                       , pid_in_map.size() == pit.size()
                        , in_enabled
                        , out_enabled
                        );
-
-    return pid_in_map;
   }
 
-  const output_descr_t & update_out_enabled (const tid_t & tid)
+  void update_in_enabled ( const tid_t & tid
+                         , const pid_t & pid
+                         , const eid_t & eid
+                         )
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    
+    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+
+    assert (f != get_in_cond().end());
+
+    update_pid_in_map (pid_in_map, f->second, pid, eid);
+
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition(tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
+  }
+
+  void update_output_descr ( output_descr_t & output_descr
+                           , const out_cond_t & f
+                           , const pid_t & pid
+                           , const eid_t & eid
+                           )
+  {
+    place_via_edge_t place_via_edge (pid, eid);
+
+    if (f(place_via_edge))
+      {
+        output_descr.insert (place_via_edge);
+      }
+    else
+      {
+        output_descr.erase (place_via_edge);
+      }
+  }
+
+  void update_out_enabled (void)
+  {
+    for (transition_const_it t (transitions()); t.has_more(); ++t)
+      update_out_enabled (*t);
+  }
+
+  void update_out_enabled (const tid_t & tid)
   {
     output_descr_t & output_descr (out_map[tid]);
     
-    output_descr.clear();
-
-    typename std::tr1::unordered_map<tid_t, out_cond_t>::const_iterator f
-      (get_out_cond().find(tid));
+    typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
 
     assert (f != get_out_cond().end());
 
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        place_via_edge_t place_via_edge (*pit, pit());
+    adj_place_const_it pit (out_of_transition (tid));
 
-        if (f->second (place_via_edge))
-          output_descr.push_back (place_via_edge);
-      }
+    for (; pit.has_more(); ++pit)
+      update_output_descr (output_descr, f->second, *pit, pit());
 
     update_new_enabled ( tid
-                       , output_descr.size() == out_of_transition (tid).size()
+                       , output_descr.size() == pit.size()
                        , out_enabled
                        , in_enabled
                        );
+  }
 
-    return output_descr;
+  void update_out_enabled ( const tid_t & tid
+                          , const pid_t & pid
+                          , const eid_t & eid
+                          )
+  {
+    output_descr_t & output_descr (out_map[tid]);
+    
+    typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
+
+    assert (f != get_out_cond().end());
+
+    update_output_descr (output_descr, f->second, pid, eid);
+
+    update_new_enabled ( tid
+                       , output_descr.size() == out_of_transition(tid).size()
+                       , out_enabled
+                       , in_enabled
+                       );
   }
 
   const enabled_t & enabled_transitions (void) const
@@ -586,7 +665,15 @@ public:
     const bool successful (token_place_rel.add (token, pid));
 
     if (successful)
-      add_enabled_transitions (pid);
+      {
+        add_enabled_transitions (pid);
+
+        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+          update_out_enabled (*t, pid, t());
+
+        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+          update_in_enabled (*t, pid, t());
+      }
 
     return successful;
   }
@@ -611,7 +698,15 @@ public:
     const std::size_t k (token_place_rel.delete_one (token, pid));
 
     if (k > 0)
-      del_enabled_transitions (pid);
+      {
+        del_enabled_transitions (pid);
+
+        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+          update_out_enabled (*t, pid, t());
+
+        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+          update_in_enabled (*t, pid, t());
+      }
 
     return (k > 0) ? 1 : 0;
   }
@@ -621,7 +716,15 @@ public:
     const std::size_t k (token_place_rel.delete_all (token, pid));
 
     if (k > 0)
-      del_enabled_transitions (pid);
+      {
+        del_enabled_transitions (pid);
+
+        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+          update_out_enabled (*t, pid, t());
+
+        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+          update_in_enabled (*t, pid, t());
+      }
 
     return k;
   }
@@ -688,7 +791,7 @@ public:
         ; pit.has_more()
         ; ++pit
         )
-      output_descr.push_back (place_via_edge_t (*pit, pit()));
+      output_descr.insert (place_via_edge_t (*pit, pit()));
 
     const typename trans_map_t::const_iterator f (get_trans().find (tid));
 

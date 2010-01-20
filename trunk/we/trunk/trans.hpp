@@ -4,6 +4,7 @@
 #define _TRANS_HPP
 
 #include <netfwd.hpp>
+#include <svector.hpp>
 
 #include <vector>
 
@@ -25,7 +26,7 @@ namespace Function { namespace Transition
     typedef std::pair<Token, place_via_edge_t> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
-    typedef std::vector<place_via_edge_t> output_descr_t;
+    typedef svector<place_via_edge_t> output_descr_t;
     typedef std::pair<Token, petri_net::pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
 
