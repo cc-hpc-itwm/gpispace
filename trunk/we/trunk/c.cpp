@@ -1,5 +1,6 @@
 
 #include <net.hpp>
+#include <cross.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -9,13 +10,14 @@
 #include <boost/function.hpp>
 
 typedef unsigned int transition_t;
-typedef unsigned int token_t;
+typedef unsigned int token_second_t;
+typedef std::pair<char,unsigned int> token_t;
 typedef unsigned int cnt_edge_t;
 typedef std::pair<cnt_edge_t,petri_net::pid_t> edge_t;
 typedef unsigned int cnt_place_t;
-typedef std::pair<cnt_place_t,token_t> place_t;
+typedef std::pair<cnt_place_t,token_second_t> place_t;
 
-static const token_t branch_factor (3);
+static const token_second_t branch_factor (3);
 
 typedef petri_net::net<place_t,transition_t,edge_t,token_t> pnet_t;
 
@@ -23,7 +25,12 @@ typedef Function::Transition::Traits<token_t> traits;
 typedef traits::token_input_t token_input_t;
 typedef traits::place_via_edge_t place_via_edge_t;
 
-static token_t shift (const place_t & place)
+static std::ostream & operator << (std::ostream & s, const token_t & token)
+{
+  return s << ":" << token.first << "-" << token.second << ":";
+}
+
+static token_second_t shift (const place_t & place)
 {
   return place.second;
 }
@@ -36,7 +43,10 @@ static petri_net::pid_t edge_descr (const T & x)
 
 static token_t inc (const token_t & token)
 {
-  return ((token + 1 >= branch_factor) ? 0 : (token + 1));
+  return token_t
+    ( token.first
+    , ((token.second + 1 >= branch_factor) ? 0 : (token.second + 1))
+    );
 }
 
 static token_t trans ( const petri_net::pid_t &
@@ -48,7 +58,7 @@ static token_t trans ( const petri_net::pid_t &
 }
 
 static bool cond_rem ( const pnet_t & net
-                     , const token_t & rem
+                     , const token_second_t & rem
                      , const token_t & token
                      , const petri_net::pid_t & pid
                      , const petri_net::eid_t &
@@ -56,10 +66,10 @@ static bool cond_rem ( const pnet_t & net
 {
   place_t place (net.place (pid));
   
-  return (token == ((shift(place) + rem) % branch_factor));
+  return (token.second == ((shift(place) + rem) % branch_factor));
 }
 
-typedef std::tr1::unordered_map<petri_net::pid_t,token_t> capacity_map_t;
+typedef std::tr1::unordered_map<petri_net::pid_t,token_second_t> capacity_map_t;
 
 static bool cond_capacity ( const pnet_t & net
                           , const capacity_map_t & capacity
@@ -108,20 +118,22 @@ main ()
 
   capacity_map_t capacity;
 
-  for (token_t rem (0); rem < branch_factor; ++rem)
+  for (token_second_t rem (0); rem < branch_factor; ++rem)
     {
+      char c = 'a';
+
       pid[rem] = n.add_place (place_t (p++,rem));
 
       capacity[pid[rem]] = branch_factor * (branch_factor + 1);
 
-      for (token_t t (0); t < branch_factor; ++t)
-        for (token_t i (0); i < branch_factor; ++i)
-          n.put_token (pid[rem], i);
+      for (token_second_t t (0); t < branch_factor; ++t)
+        for (token_second_t i (0); i < branch_factor; ++i)
+          n.put_token (pid[rem], token_t(c++,i));
     }
 
   cnt_edge_t e (0);
 
-  for (token_t rem (0); rem < branch_factor; ++rem)
+  for (token_second_t rem (0); rem < branch_factor; ++rem)
     {
       const tid_t tid 
         ( n.add_transition 
@@ -145,7 +157,7 @@ main ()
           )
         );
 
-      for (token_t t (0); t < branch_factor; ++t)
+      for (token_second_t t (0); t < branch_factor; ++t)
         {
           n.add_edge (edge_t (e++, pid[t]), connection_t (PT, tid, pid[t]));
           n.add_edge (edge_t (e++, pid[t]), connection_t (TP, tid, pid[t]));
@@ -213,6 +225,35 @@ main ()
     cout << " " << *it;
 
   cout << "]" << endl;
+
+  cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      pnet_t::pid_in_map_t m (n.in_map[*t]);
+
+      cout << "Transition " << *t << ":" << std::endl;
+
+      cross::cross<pnet_t::pid_in_map_t> cross (m);
+
+      typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
+      typedef std::vector<ret_t> cross_t;
+
+      while (cross.has_more())
+        {
+          cross_t c (*cross); ++cross;
+
+          cout << " --";
+
+          for (cross_t::const_iterator it (c.begin()); it != c.end(); ++it)
+            cout << " pid " << it->first << " {"
+                 << it->second.first << " via "
+                 << it->second.second << "}"
+              ;
+
+          cout << endl;
+        }
+     }
 
   return EXIT_SUCCESS;
 }
