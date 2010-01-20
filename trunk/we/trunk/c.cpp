@@ -159,18 +159,17 @@ main ()
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      // side effect updates in_enabled, in_choice!
-      pnet_t::in_map_t m (n.en_in (*t));
+      pnet_t::pid_in_map_t m (n.update_in_enabled (*t));
 
       cout << "Transition " << *t 
            << ": can_fire_by_input = "
            << ((n.in_enabled.find(*t) != n.in_enabled.end()) ? "true" : "false")
            << ":" << endl;
 
-      for (pnet_t::in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
+      for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
           cout << "Place " << i->first 
-               << " [" << n.in_choice[*t][i->first] << "]"
+               << " [" << i->second.size() << "]"
                << ":";
 
           for ( std::vector<std::pair<token_t,eid_t> >::const_iterator k (i->second.begin())
@@ -188,7 +187,7 @@ main ()
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
       // side effect updates out_enabled!
-      pnet_t::output_descr_t output_descr (n.en_out (*t));
+      pnet_t::output_descr_t output_descr (n.update_out_enabled (*t));
 
       cout << "Transition " << *t 
            << ": can_fire_by_output = "
@@ -204,27 +203,15 @@ main ()
       cout << endl;
     }  
 
-  cout << "in_choice.size() = " << n.in_choice.size() << endl;
+  cout << "new_enabled = [";
 
-  for ( pnet_t::in_choice_t::const_iterator t (n.in_choice.begin())
-      ; t != n.in_choice.end()
-      ; ++t
+  for ( pnet_t::enabled_t::const_it it (n.new_enabled.begin())
+      ; it != n.new_enabled.end()
+      ; ++it
       )
-    {
-      cout << "tid " << t->first 
-           << " => size = " 
-           << t->second.size()
-           << " vs "
-           << n.in_to_transition(t->first).size();
+    cout << " " << *it;
 
-      for ( pnet_t::pid_choice_t::const_iterator p (t->second.begin())
-          ; p != t->second.end()
-          ; ++p
-          )
-        cout << " " << p->first << ":" << p->second;
-
-      cout << endl;
-    }
+  cout << "]" << endl;
 
   return EXIT_SUCCESS;
 }

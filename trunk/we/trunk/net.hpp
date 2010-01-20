@@ -464,25 +464,46 @@ private:
 public:
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
-  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> in_map_t;
-  typedef std::tr1::unordered_map<pid_t,std::size_t> pid_choice_t;
-  typedef std::tr1::unordered_map<tid_t,pid_choice_t> in_choice_t;
+  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
-  typedef std::tr1::unordered_set<tid_t> in_enabled_t;
-  typedef std::tr1::unordered_set<tid_t> out_enabled_t;
+  typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
+  typedef set_of_tid_t in_enabled_t;
+  typedef set_of_tid_t out_enabled_t;
+
+  typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
+  typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
 
   in_enabled_t in_enabled;
-  in_choice_t in_choice;
   out_enabled_t out_enabled;
+  enabled_t new_enabled;
 
-  in_map_t en_in (const tid_t & tid)
+  in_map_t in_map;
+  out_map_t out_map;
+
+  void update_new_enabled ( const tid_t & tid
+                          , const bool can_fire
+                          , set_of_tid_t & a
+                          , set_of_tid_t & b
+                          )
   {
-    in_map_t ret;
+    if (can_fire)
+      {
+        a.insert (tid);
 
-    bool can_fire (true);
+        if (b.find (tid) != b.end())
+          new_enabled.insert (tid);
+      }
+    else
+      {
+        a.erase (tid);
+        new_enabled.erase (tid);
+      }
+  }
 
-    in_choice.erase (tid);
-
+  const pid_in_map_t & update_in_enabled (const tid_t & tid)
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    
     typename std::tr1::unordered_map<tid_t, in_cond_t>::const_iterator f
       (get_in_cond().find(tid));
 
@@ -493,34 +514,31 @@ public:
         ; ++pit
         )
       {
-        bool usable_token (false);
-        std::size_t choice (0);
+        vec_token_via_edge_t & vec_token_via_edge (pid_in_map[*pit]);
+
+        vec_token_via_edge.clear();
+
+        const place_via_edge_t place_via_edge (*pit, pit());
 
         for (token_place_it tp (get_token (*pit)); tp.has_more(); ++tp)
-          if (f->second(token_input_t (*tp, place_via_edge_t (*pit, pit()))))
-            {
-              ret[*pit].push_back(token_via_edge_t (*tp, pit()));
-
-              usable_token = true;
-              ++choice;
-            }
-
-        can_fire &= usable_token;
-
-        in_choice[tid][*pit] = choice;
+          if (f->second(token_input_t (*tp, place_via_edge)))
+            vec_token_via_edge.push_back(token_via_edge_t (*tp, pit()));
       }
 
-    if (can_fire)
-      in_enabled.insert (tid);
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition (tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
 
-    return ret;
+    return pid_in_map;
   }
 
-  output_descr_t en_out (const tid_t & tid)
+  const output_descr_t & update_out_enabled (const tid_t & tid)
   {
-    output_descr_t output_descr;
-
-    bool can_fire = true;
+    output_descr_t & output_descr (out_map[tid]);
+    
+    output_descr.clear();
 
     typename std::tr1::unordered_map<tid_t, out_cond_t>::const_iterator f
       (get_out_cond().find(tid));
@@ -535,17 +553,14 @@ public:
         place_via_edge_t place_via_edge (*pit, pit());
 
         if (f->second (place_via_edge))
-          {
-            output_descr.push_back (place_via_edge);
-          }
-        else
-          {
-            can_fire = false;
-          }
+          output_descr.push_back (place_via_edge);
       }
 
-    if (can_fire)
-      out_enabled.insert (tid);
+    update_new_enabled ( tid
+                       , output_descr.size() == out_of_transition (tid).size()
+                       , out_enabled
+                       , in_enabled
+                       );
 
     return output_descr;
   }
