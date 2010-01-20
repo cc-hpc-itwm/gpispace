@@ -15,6 +15,9 @@
 
 namespace Function { namespace Transition
 {
+  typedef petri_net::pid_t pid_t;
+  typedef petri_net::eid_t eid_t;
+
   template<typename Token>
   struct Traits
   {
@@ -23,12 +26,12 @@ namespace Function { namespace Transition
     // connected to the transition via edges
     // so input is of type: [(Token,(Place,Edge))]
     // the same holds true for the output, but the tokens are to be produced
-    typedef std::pair<petri_net::pid_t, petri_net::eid_t> place_via_edge_t;
+    typedef std::pair<pid_t, eid_t> place_via_edge_t;
     typedef std::pair<Token, place_via_edge_t> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
     typedef svector<place_via_edge_t> output_descr_t;
-    typedef std::pair<Token, petri_net::pid_t> token_on_place_t;
+    typedef std::pair<Token, pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
 
     typedef boost::function<output_t ( const input_t &
@@ -38,28 +41,28 @@ namespace Function { namespace Transition
   };
 
   template<typename Token>
-  petri_net::pid_t get_pid
+  pid_t get_pid
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.first;
   }
 
   template<typename Token>
-  petri_net::eid_t get_eid
+  eid_t get_eid
   (const typename Traits<Token>::place_via_edge_t & place_via_edge)
   {
     return place_via_edge.second;
   }
 
   template<typename Token>
-  petri_net::pid_t get_pid
+  pid_t get_pid
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_pid<Token> (token_input.second);
   }
 
   template<typename Token>
-  petri_net::eid_t get_eid
+  eid_t get_eid
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return get_eid<Token> (token_input.second);
@@ -195,7 +198,7 @@ namespace Function { namespace Transition
 
   template<typename Token, typename Descr>
   Descr descr_in_by_eid
-  ( boost::function<Descr (const petri_net::eid_t &)> f
+  ( boost::function<Descr (const eid_t &)> f
   , const typename Traits<Token>::token_input_t & token_input
   )
   {
@@ -204,7 +207,7 @@ namespace Function { namespace Transition
 
   template<typename Token, typename Descr>
   Descr descr_out_by_eid
-  ( boost::function<Descr (const petri_net::eid_t &)> f
+  ( boost::function<Descr (const eid_t &)> f
   , const typename Traits<Token>::place_via_edge_t & place_via_edge
   )
   {
@@ -216,7 +219,7 @@ namespace Function { namespace Transition
   class MatchEdge : public MatchWithFun<Token, Descr>
   {
   public:
-    typedef boost::function<Descr (const petri_net::eid_t &)> Function;
+    typedef boost::function<Descr (const eid_t &)> Function;
 
     MatchEdge (const Function & f)
       : MatchWithFun<Token,Descr>
@@ -318,7 +321,7 @@ namespace Function { namespace Transition
   class EdgesOnly
   {
   public:
-    typedef typename std::tr1::unordered_map<petri_net::eid_t, Token> map_t;
+    typedef typename std::tr1::unordered_map<eid_t, Token> map_t;
     typedef boost::function<map_t (const map_t &)> Function;
 
   private:
