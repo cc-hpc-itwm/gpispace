@@ -244,9 +244,9 @@ main ()
           cout << " --";
 
           for (; c.has_more(); ++c)
-            cout << " pid " << (*c).first << " {"
-                 << (*c).second.first << " via "
-                 << (*c).second.second << "}"
+            cout << " pid " << c->first << " {"
+                 << c->second.first << " via "
+                 << c->second.second << "}"
               ;
 
           cout << endl;

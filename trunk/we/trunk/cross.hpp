@@ -29,11 +29,26 @@ namespace cross
   {
   private:
     typedef util::it<typename Traits<MAP>::map_it_t> super;
+    typedef typename Traits<MAP>::ret_t ret_t;
 
     pos_t::const_iterator pos;
 #ifndef NDEBUG
     const pos_t::const_iterator end;
 #endif
+    ret_t val;
+
+    void set_val (void)
+    {
+      if (super::has_more())
+        {
+          const typename MAP::const_iterator & m (super::pos);
+
+          assert (pos != end);
+          assert (*pos < m->second.size());
+      
+          val = typename Traits<MAP>::ret_t (m->first, m->second[*pos]);
+        }
+    }
 
   public:
     star_iterator (const MAP & map, const pos_t & _pos) 
@@ -42,17 +57,12 @@ namespace cross
 #ifndef NDEBUG
       , end (_pos.end())
 #endif
-    {}
-    void operator ++ (void) { ++pos; super::operator++(); }
-    typename Traits<MAP>::ret_t operator * (void) const
     {
-      const typename MAP::const_iterator & m (super::pos);
-
-      assert (pos != end);
-      assert (*pos < m->second.size());
-
-      return typename Traits<MAP>::ret_t (m->first, m->second[*pos]);
+      set_val();
     }
+    void operator ++ (void) { ++pos; super::operator++(); set_val(); }
+    ret_t operator * (void) const { return val; }
+    const ret_t * operator -> (void) const { return &val; }
   };
 
   template<typename MAP>
