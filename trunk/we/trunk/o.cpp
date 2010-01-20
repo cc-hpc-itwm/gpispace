@@ -51,13 +51,15 @@ main ()
   cross::cross<map_t> cross (map);
 
   {
+    // traversing as vectors, incremental
+
     std::size_t k (0);
 
-    while (cross.has_more())
+    for ( ; cross.has_more(); ++cross)
       {
         cout << setw(2) << k++ << "| ";
       
-        cross_t c (*cross); ++cross;
+        cross_t c (cross.get_vec());
 
         for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
           cout << *i;
@@ -69,7 +71,9 @@ main ()
 
   for (std::size_t k (0); k < cross.size(); ++k)
     {
-      cross_t c (cross[k]);
+      // traversing as vectors, jumping directly
+
+      cross_t c (cross.get_vec(k));
       
       cout << "cross[" << k << "] =";
 
@@ -81,26 +85,42 @@ main ()
   cross.rewind();
 
   {
+    // traversing as vectors, get iterators for the entry too
+
     std::size_t k (0);
 
-    while (cross.has_more())
+    for ( ; cross.has_more(); ++cross)
       {
         cout << setw(2) << k++ << "| ";
 
-        cross::star_iterator<map_t> i (cross.get_star_it());
-
-        while (i.has_more()) { cout << *i; ++i; }
-
+        for (cross::star_iterator<map_t> i (*cross); i.has_more(); ++i)
+          cout << *i;
         cout << endl;
-
-        ++cross;
       }
   }
 
-  cross::bracket_iterator<map_t> i (cross.get_bracket_it(11));
+  {
+    // get iterator, jump directly
 
-  while (i.has_more()) { cout << *i; ++i; }
-  cout << endl;
+    for (cross::bracket_iterator<map_t> i (cross[11]); i.has_more(); ++i)
+      cout << *i;
+    cout << endl;
+  }
+
+  {
+    // get iterator, explicitely specify the elements
+
+    cross::pos_t p;
+
+    p.push_back (3);
+    p.push_back (0);
+    p.push_back (1);
+
+    // should equal to cross[11]
+    for (cross::star_iterator<map_t> i (cross.by(p)); i.has_more(); ++i)
+      cout << *i;
+    cout << endl;
+  }
 
   return EXIT_SUCCESS;
 }

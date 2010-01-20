@@ -237,16 +237,16 @@ main ()
       typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
       typedef std::vector<ret_t> cross_t;
 
-      while (cross.has_more())
+      for ( ; cross.has_more(); ++cross)
         {
-          cross_t c (*cross); ++cross;
+          cross::star_iterator<pnet_t::pid_in_map_t> c (*cross);
 
           cout << " --";
 
-          for (cross_t::const_iterator it (c.begin()); it != c.end(); ++it)
-            cout << " pid " << it->first << " {"
-                 << it->second.first << " via "
-                 << it->second.second << "}"
+          for (; c.has_more(); ++c)
+            cout << " pid " << (*c).first << " {"
+                 << (*c).second.first << " via "
+                 << (*c).second.second << "}"
               ;
 
           cout << endl;

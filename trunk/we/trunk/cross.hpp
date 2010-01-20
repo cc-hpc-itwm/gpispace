@@ -143,42 +143,51 @@ namespace cross
     std::size_t size (void) const { return _size; }
     void operator ++ () { step(0, map.begin()); }
 
+    star_iterator<MAP> operator * (void) const
+    {
+      return star_iterator<MAP>(map,pos);
+    }
+
+    star_iterator<MAP> by (const pos_t & p) const
+    {
+      return star_iterator<MAP>(map,p);
+    }
+
+    bracket_iterator<MAP> operator [] (const std::size_t & k) const
+    {
+      return bracket_iterator<MAP>(map,k);
+    }
+
     template<typename IT>
     typename Traits<MAP>::vec_t gen_operator (IT & it) const
     {
       typename Traits<MAP>::vec_t v;
 
-      while (it.has_more())
-        {
-          v.push_back (*it);
-          ++it;
-        }
+      for ( ; it.has_more(); ++it)
+        v.push_back (*it);
 
       return v;
     }
 
-    typename Traits<MAP>::vec_t operator [] (std::size_t k) const
+    typename Traits<MAP>::vec_t get_vec (void) const
     {
-      bracket_iterator<MAP> b (get_bracket_it(k));
-
-      return gen_operator (b);
-    }
-
-    typename Traits<MAP>::vec_t operator * (void) const
-    {
-      star_iterator<MAP> s (get_star_it());
+      star_iterator<MAP> s (operator * ());
 
       return gen_operator (s);
     }
 
-    star_iterator<MAP> get_star_it (void) const
+    typename Traits<MAP>::vec_t get_vec (const pos_t & p) const
     {
-      return star_iterator<MAP>(map,pos);
+      star_iterator<MAP> s (by (p));
+
+      return gen_operator (s);
     }
 
-    bracket_iterator<MAP> get_bracket_it (const std::size_t & k) const
+    typename Traits<MAP>::vec_t get_vec (std::size_t k) const
     {
-      return bracket_iterator<MAP>(map,k);
+      bracket_iterator<MAP> b (operator [] (k));
+
+      return gen_operator (b);
     }
   };
 }
