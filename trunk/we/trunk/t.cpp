@@ -153,7 +153,7 @@ static void step (pnet_t & n, unsigned long k)
   typedef std::vector<petri_net::tid_t> tid_vec_t;
   tid_vec_t tid;
   std::tr1::mt19937 engine;
-  std::tr1::uniform_int<tid_vec_t::size_type> uniform(0, t.count()-1);
+  std::tr1::uniform_int<tid_vec_t::size_type> uniform(0, t.size()-1);
 
   for (; t.has_more(); ++t)
     tid.push_back (*t);
@@ -370,7 +370,7 @@ main ()
   print_net (c);
 
   cout << "num_token (readyL) => "
-       << c.get_token(c.get_place_id("readyL")).count()
+       << c.num_token(c.get_place_id("readyL"))
        << endl;
 
   cout << "replace_one_token (readyL,p->m) => "

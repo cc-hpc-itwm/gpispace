@@ -3,6 +3,8 @@
 #ifndef _BIJECTION_HPP
 #define _BIJECTION_HPP
 
+#include <util.hpp>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/support/lambda.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -125,25 +127,22 @@ namespace bijection
     }
   };
 
-  template<typename T, typename I>
-  struct bi_const_it
+  template<typename T,typename I>
+  struct IT
+  {
+  public:
+    typedef typename bijection<T, I>::const_iterator type;
+  };
+
+  template<typename T,typename I>
+  struct const_it : public util::it<typename IT<T,I>::type>
   {
   private:
-    typedef typename bijection<T, I>::const_iterator it;
-    it pos;
-    const it end;
-    const std::size_t count_;
+    typedef typename IT<T,I>::type it_t;
   public:
-    bi_const_it (const bijection<T, I> & b)
-      : pos (b.begin())
-      , end (b.end())
-      , count_(std::distance(pos, end))
-    {}
+    const_it (const bijection<T,I> & b) : util::it<it_t> (b.begin(), b.end()) {}
 
-    bool has_more (void) const { return (pos != end) ? true : false; }
-    void operator ++ (void) { ++pos; }
-    const I & operator * (void) const { return pos->right; }
-    std::size_t count (void) const { return count_; }
+    const I & operator * (void) const { return util::it<it_t>::pos->right; }
   };
 } // namespace bijection
 

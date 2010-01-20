@@ -22,7 +22,7 @@ static void print_rel_left_of (const multirel::multirel<L,R> & rel, const R & r)
 {
   typename multirel::right_const_it<L,R> it (rel.left_of (r));
 
-  cout << r << " [#" << it.count() << "]" << " =>";
+  cout << r << " [#" << it.size() << "]" << " =>";
 
   for (; it.has_more(); ++it)
     cout << " " << *it;
@@ -35,7 +35,7 @@ static void print_rel_right_of (const multirel::multirel<L,R> & rel, const L & l
 {
   typename multirel::left_const_it<L,R> it (rel.right_of (l));
 
-  cout << l << " [#" << it.count() << "]" << " =>";
+  cout << l << " [#" << it.size() << "]" << " =>";
 
   for (; it.has_more(); ++it)
     cout << " " << *it;

@@ -51,9 +51,9 @@ template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
 public:
-  typedef bijection::bi_const_it<Place,pid_t> place_const_it;
-  typedef bijection::bi_const_it<Transition,tid_t> transition_const_it;
-  typedef bijection::bi_const_it<Edge,eid_t> edge_const_it;
+  typedef bijection::const_it<Place,pid_t> place_const_it;
+  typedef bijection::const_it<Transition,tid_t> transition_const_it;
+  typedef bijection::const_it<Edge,eid_t> edge_const_it;
 
   typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
@@ -587,7 +587,7 @@ public:
 
   std::size_t num_token (const pid_t & pid) const
   {
-    return token_place_rel.left_of(pid).count();
+    return token_place_rel.left_of(pid).size();
   }
 
   std::size_t delete_one_token (const pid_t & pid, const Token & token)

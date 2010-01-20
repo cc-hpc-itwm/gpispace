@@ -3,30 +3,33 @@
 #ifndef _ADJACENCY_HPP
 #define _ADJACENCY_HPP
 
+#include <util.hpp>
+
 #include <stdexcept>
 
 #include <vector>
 
 namespace adjacency
 {
-  template<typename L, typename R>
-  struct const_it
+  template<typename L,typename R>
+  struct IT
   {
-  private:
+  public:
     typedef std::pair<L,R> pair_t;
     typedef std::vector<pair_t> vec_t;
-    typedef typename vec_t::const_iterator it_t;
-
-    it_t pos;
-    const it_t end;
+    typedef typename vec_t::const_iterator type;
+  };
+  
+  template<typename L, typename R>
+  struct const_it : public util::it<typename IT<L,R>::type>
+  {
+  private:
+    typedef typename IT<L,R>::type it_t;
   public:
-    const_it (const it_t & _pos, const it_t & _end) : pos (_pos), end (_end) {}
+    const_it (const it_t & pos, const it_t & end) : util::it<it_t>(pos,end) {}
 
-    bool has_more (void) const { return (pos != end) ? true : false; }
-    void operator ++ (void) { ++pos; }
-
-    const L & operator * (void) const { return pos->first; }
-    const R & operator () (void) const { return pos->second; }
+    const L & operator * (void) const { return util::it<it_t>::pos->first; }
+    const R & operator () (void) const { return util::it<it_t>::pos->second; }
   };
 
   template<typename ROW, typename COL, typename ADJ>

@@ -204,5 +204,27 @@ main ()
       cout << endl;
     }  
 
+  cout << "in_choice.size() = " << n.in_choice.size() << endl;
+
+  for ( pnet_t::in_choice_t::const_iterator t (n.in_choice.begin())
+      ; t != n.in_choice.end()
+      ; ++t
+      )
+    {
+      cout << "tid " << t->first 
+           << " => size = " 
+           << t->second.size()
+           << " vs "
+           << n.in_to_transition(t->first).size();
+
+      for ( pnet_t::pid_choice_t::const_iterator p (t->second.begin())
+          ; p != t->second.end()
+          ; ++p
+          )
+        cout << " " << p->first << ":" << p->second;
+
+      cout << endl;
+    }
+
   return EXIT_SUCCESS;
 }

@@ -4,6 +4,8 @@
 #ifndef _MULTIREL_HPP
 #define _MULTIREL_HPP
 
+#include <util.hpp>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 
@@ -34,22 +36,14 @@ namespace multirel
   };
 
   template<typename IT, typename T>
-  struct lr_const_it
+  struct lr_const_it : public util::it<IT>
   {
-  private:
-    IT pos;
-    const IT end;
-    const std::size_t count_;
   public:
     lr_const_it (const std::pair<IT, IT> & its)
-      : pos (its.first)
-      , end (its.second)
-      , count_(std::distance (pos, end))
+      : util::it<IT> (its.first, its.second)
     {}
-    bool has_more (void) const { return (pos != end) ? true : false; }
-    void operator ++ (void) { ++pos; }
-    const T & operator * (void) const { return pos->second; }
-    std::size_t count (void) const { return count_; }
+
+    const T & operator * (void) const { return util::it<IT>::pos->second; }
   };
 
   template<typename L, typename R>
