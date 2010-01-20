@@ -56,10 +56,10 @@ namespace cross
   };
 
   template<typename MAP>
-  struct bracket_iterator : public util::it<typename Traits<MAP>::map_it>
+  struct bracket_iterator : public util::it<typename Traits<MAP>::map_it_t>
   {
   private:
-    typedef util::it<typename Traits<MAP>::map_it> super;
+    typedef util::it<typename Traits<MAP>::map_it_t> super;
 
     std::size_t k;
 
