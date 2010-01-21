@@ -3,6 +3,8 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
+#include <iostream>
+
 #include <netfwd.hpp>
 
 #include <adjacency.hpp>
@@ -585,15 +587,48 @@ public:
                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
     
     typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-
     if (f->second(token, pid, eid))
-        vec_token_via_edge.push_back(token_via_edge_t (token, eid));
+      vec_token_via_edge.push_back(token_via_edge_t (token, eid));
+
+    if (vec_token_via_edge.empty())
+      pid_in_map.erase (pid);
+
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition(tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
+  }
+
+  void update_in_enabled_del_token ( const tid_t & tid
+                                   , const pid_t & pid
+                                   , const eid_t & eid
+                                   , const Token & token
+                                   )
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    typename vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
+
+    while (it != vec_token_via_edge.end() && it->first != token)
+      ++it;
+
+    if (it != vec_token_via_edge.end())
+      {
+        assert (it->first == token);
+        assert (it->second == eid);
+
+        vec_token_via_edge.erase (it);
+      }
+
+    if (vec_token_via_edge.empty())
+      pid_in_map.erase (pid);
 
     update_new_enabled ( tid
                        , pid_in_map.size() == in_to_transition(tid).size()
@@ -715,6 +750,9 @@ public:
 
   std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
+    // WORK HERE: get rid of the copy, first get rid of the old firing method
+    const Token token_copy (token);
+
     const std::size_t k (token_place_rel.delete_one (token, pid));
 
     if (k > 0)
@@ -725,10 +763,10 @@ public:
           update_out_enabled (*t, pid, t());
 
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled (*t, pid, t());
+          update_in_enabled_del_token (*t, pid, t(), token_copy);
       }
 
-    return (k > 0) ? 1 : 0;
+    return k;
   }
 
   std::size_t delete_all_token (const pid_t & pid, const Token & token)
