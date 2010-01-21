@@ -513,6 +513,7 @@ public:
       }
   }
 
+  // WORK HERE: get rid of the clear
   void update_pid_in_map ( pid_in_map_t & pid_in_map
                          , const in_cond_t & f
                          , const pid_t & pid
@@ -569,6 +570,30 @@ public:
     assert (f != get_in_cond().end());
 
     update_pid_in_map (pid_in_map, f->second, pid, eid);
+
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition(tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
+  }
+
+  void update_in_enabled_put_token ( const tid_t & tid
+                                   , const pid_t & pid
+                                   , const eid_t & eid
+                                   , const Token & token
+                                   )
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    
+    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+
+    assert (f != get_in_cond().end());
+
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+
+    if (f->second(token, pid, eid))
+        vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     update_new_enabled ( tid
                        , pid_in_map.size() == in_to_transition(tid).size()
@@ -667,7 +692,7 @@ public:
           update_out_enabled (*t, pid, t());
 
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled (*t, pid, t());
+          update_in_enabled_put_token (*t, pid, t(), token);
       }
 
     return successful;
