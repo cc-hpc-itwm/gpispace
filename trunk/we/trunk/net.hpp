@@ -560,26 +560,6 @@ public:
                        );
   }
 
-  void update_in_enabled ( const tid_t & tid
-                         , const pid_t & pid
-                         , const eid_t & eid
-                         )
-  {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-    
-    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
-
-    assert (f != get_in_cond().end());
-
-    update_pid_in_map (pid_in_map, f->second, pid, eid);
-
-    update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition(tid).size()
-                       , in_enabled
-                       , out_enabled
-                       );
-  }
-
   void update_in_enabled_put_token ( const tid_t & tid
                                    , const pid_t & pid
                                    , const eid_t & eid
@@ -606,11 +586,10 @@ public:
                        );
   }
 
-  void update_in_enabled_del_token ( const tid_t & tid
-                                   , const pid_t & pid
-                                   , const eid_t & eid
-                                   , const Token & token
-                                   )
+  void update_in_enabled_del_one_token ( const tid_t & tid
+                                       , const pid_t & pid
+                                       , const Token & token
+                                       )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
@@ -622,10 +601,37 @@ public:
     if (it != vec_token_via_edge.end())
       {
         assert (it->first == token);
-        assert (it->second == eid);
 
         vec_token_via_edge.erase (it);
       }
+
+    if (vec_token_via_edge.empty())
+      pid_in_map.erase (pid);
+
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition(tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
+  }
+
+  void update_in_enabled_del_all_token ( const tid_t & tid
+                                       , const pid_t & pid
+                                       , const Token & token
+                                       )
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    const vec_token_via_edge_t old (vec_token_via_edge);
+
+    vec_token_via_edge.clear();
+
+    for ( typename vec_token_via_edge_t::const_iterator it (old.begin())
+        ; it != old.end()
+        ; ++it
+        )
+      if (it->first != token)
+        vec_token_via_edge.push_back (*it);
 
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
@@ -763,7 +769,7 @@ public:
           update_out_enabled (*t, pid, t());
 
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled_del_token (*t, pid, t(), token_copy);
+          update_in_enabled_del_one_token (*t, pid, token_copy);
       }
 
     return k;
@@ -771,6 +777,9 @@ public:
 
   std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
+    // WORK HERE: get rid of the copy, first get rid of the old firing method
+    const Token token_copy (token);
+
     const std::size_t k (token_place_rel.delete_all (token, pid));
 
     if (k > 0)
@@ -781,7 +790,7 @@ public:
           update_out_enabled (*t, pid, t());
 
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled (*t, pid, t());
+          update_in_enabled_del_all_token (*t, pid, token_copy);
       }
 
     return k;
