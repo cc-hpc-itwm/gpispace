@@ -56,7 +56,7 @@ typedef enum
     COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL,
     COMM_HANDLE_ERROR_SIZE_NOT_MATCH, 
     COMM_HANDLE_ERROR,
-    COMM_HANDLE_FREE, // 0
+    COMM_HANDLE_FREE = 0, // 0
     COMM_HANDLE_NOT_FINISHED,
     COMM_HANDLE_OK
 
@@ -68,7 +68,7 @@ typedef struct fvmRequestArgs
   fvmOffset_t arg_fvmOffset;
   fvmShmemOffset_t arg_shmOffset;
   fvmSize_t arg_size;
-  fvmCommHandle_t arg_handle;
+  fvmCommHandle_t  arg_commhandle;
   fvmAllocHandle_t arg_allochandle;
   fvmAllocHandle_t arg_scratchhandle;
 } fvmRequestArgs_t;
