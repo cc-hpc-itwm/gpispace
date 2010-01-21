@@ -249,8 +249,10 @@ public:
 
     connection_map[eid] = connection;
 
-    update_in_enabled (connection.tid);
-    update_out_enabled (connection.tid);
+    if (connection.type == PT)
+      update_in_enabled (connection.tid);
+    else
+      update_out_enabled (connection.tid);
 
     update_enabled_transitions (connection.tid);
 
@@ -320,16 +322,15 @@ public:
     if (connection.type == PT)
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
+        update_in_enabled (connection.tid);
       }
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
+        update_out_enabled (connection.tid);
       }
 
     update_enabled_transitions (connection.tid);
-
-    update_in_enabled (connection.tid);
-    update_out_enabled (connection.tid);
 
     connection_map.erase (it);
 
@@ -404,14 +405,22 @@ public:
   pid_t modify_place (const pid_t & pid, const Place & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    return pmap.modify (pid, place);
+    const pid_t new_pid (pmap.modify (pid, place));
+
+    update_enabled_by_place (new_pid);
+
+    return new_pid;
   }
 
   // kept old value in case of conflict after modification
   pid_t replace_place (const pid_t & pid, const Place & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    return pmap.replace (pid, place);
+    const pid_t new_pid (pmap.replace (pid, place));
+
+    update_enabled_by_place (new_pid);
+
+    return new_pid;
   }
 
   tid_t modify_transition ( const tid_t & tid
@@ -433,13 +442,21 @@ public:
   eid_t modify_edge (const eid_t & eid, const Edge & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    return emap.modify (eid, edge);
+    const eid_t new_eid (emap.modify (eid, edge));
+
+    update_enabled_by_edge (new_eid);
+
+    return new_eid;
   }
 
   eid_t replace_edge (const eid_t & eid, const Edge & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
-    return emap.replace (eid, edge);
+    const eid_t new_eid (emap.replace (eid, edge));
+
+    update_enabled_by_edge (new_eid);
+
+    return new_eid;
   }
 
   // deal with tokens
@@ -515,7 +532,6 @@ public:
       }
   }
 
-  // WORK HERE: get rid of the clear
   void update_pid_in_map ( pid_in_map_t & pid_in_map
                          , const in_cond_t & f
                          , const pid_t & pid
@@ -532,6 +548,48 @@ public:
 
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
+  }
+
+  void update_in_enabled ( const tid_t & tid
+                         , const pid_t & pid
+                         , const eid_t & eid
+                         )
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    
+    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+
+    assert (f != get_in_cond().end());
+
+    update_pid_in_map (pid_in_map, f->second, pid, eid);
+
+    update_new_enabled ( tid
+                       , pid_in_map.size() == in_to_transition(tid).size()
+                       , in_enabled
+                       , out_enabled
+                       );
+  }
+
+  void update_enabled_by_place (const pid_t & pid)
+  {
+    add_enabled_transitions (pid);
+    del_enabled_transitions (pid);
+
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
+
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      update_in_enabled (*t, pid, t());
+  }
+
+  void update_enabled_by_edge (const eid_t & eid)
+  {
+    const connection_t connection (get_edge_info (eid));
+
+    if (connection.type == PT)
+      update_in_enabled (connection.tid);
+    else
+      update_out_enabled (connection.tid);
   }
 
   void update_in_enabled (void)
