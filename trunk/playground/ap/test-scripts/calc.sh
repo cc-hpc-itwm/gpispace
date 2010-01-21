@@ -4,4 +4,4 @@ if [ $# != 4 ]; then
   exit 1
 fi 
 
-nre-pcc -f calc@calc -i memhandle_for_configuration="$1" -i number_of_depthlevels="$2" -i slice_and_depth="$3" -i memhandle_for_temp_outputvolume="$4" -o slice_and_depth_OUT
+nre-pcc -f calc.calc -i memhandle_for_configuration="$1" -i number_of_depthlevels="$2" -i slice_and_depth="$3" -i memhandle_for_temp_outputvolume="$4" -o slice_and_depth_OUT

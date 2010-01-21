@@ -4,4 +4,4 @@ if [ $# != 1 ]; then
   exit 1
 fi 
 
-nre-pcc -f readinp@readinp -i memhandle_for_configuration="$1" -o seq
+nre-pcc -f readinp.readinp -i memhandle_for_configuration="$1" -o seq

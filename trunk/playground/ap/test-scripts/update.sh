@@ -4,4 +4,4 @@ if [ $# != 4 ]; then
   exit 1
 fi 
 
-nre-pcc -f update@update -i memhandle_for_configuration="$1" -i number_of_depthlevels="$2" -i slice_and_depth="$3" -i memhandle_for_temp_outputvolume_update="$4" -o memhandle_for_temp_outputvolume_update_OUT
+nre-pcc -f update.update -i memhandle_for_configuration="$1" -i number_of_depthlevels="$2" -i slice_and_depth="$3" -i memhandle_for_temp_outputvolume="$4" -o memhandle_for_temp_outputvolume_OUT -o slice_and_depth_OUT
