@@ -86,8 +86,8 @@ static void dump_global_memory(data_t &params) throw (std::exception)
 	fvmCommHandleState_t comm_state = waitComm(comm);
 	if (comm_state != COMM_HANDLE_OK)
 	{
-	  MLOG(ERROR, "could not fvmGetLocalData(): " << comm_state);
-	  throw std::runtime_error("could not fvmGetLocalData()");
+	  MLOG(ERROR, "could not fvmGetGlobalData(): " << comm_state);
+	  throw std::runtime_error("could not fvmGetGlobalData()");
 	}
 
 	ofs.write( (char*)fvmGetShmemPtr(), transfer_size);
