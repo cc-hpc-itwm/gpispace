@@ -46,7 +46,6 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
         
         fvmSize_t transfrSZbytes=sizeof(TReGlbStruct); // bytes to transfer 
         fvmCommHandle_t commH;    // comm handle for glbPut   
-        fvmCommHandleState_t commStatus;
       
         commH =  fvmGetGlobalData(hGlbVMspace,    //const fvmAllocHandle_t handle,
 				  vmOffs,         //const fvmOffset_t fvmOffset,
@@ -54,12 +53,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-           if (commStatus != COMM_HANDLE_OK)
-		   {
-			 LOG(FATAL, "get of global config structure failed: " << commStatus);
-			 return (-1);
-		   }
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 
@@ -96,7 +90,6 @@ static int setPropagateExtraArrays(TReGlbStruct *pReG, float *wH, float *kx, flo
      
     
       //allocate(taperx(1:ntaper))         ! Wavefield taper
-      taperx = new float [pReG->ntaper+1];
       staper(taperx,pReG->ntaper); //call staper(taperx,ntaper)
       
       for(int ix=1; ix <= pReG->ntaper; ix++) { //do ix=1,ntaper
@@ -154,7 +147,8 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
     int ix, iy, ii, jj;
 
    //---- the struct with re-glb vars, replicate it on each node
-   TReGlbStruct *pReGlb = new TReGlbStruct;
+   TReGlbStruct reGlb;
+   TReGlbStruct *pReGlb = &reGlb;
       // copy here re-glb vars from the VM-glb space, offs == ofsGlbDat == 0; 
        cpReGlbVarsFromVM(pCfg, pReGlb);
     
@@ -192,7 +186,6 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
         
           fvmSize_t transfrSZbytes= pReGlb->nz * sizeof(float); // bytes to transfer 
           fvmCommHandle_t commH;    // comm handle for glbPut   
-          fvmCommHandleState_t commStatus;
 
           //-------- vMin[] -----      
           fvmOffset_t vmOffs = pCfg->ofsVmin; //--- src: offs VM, see below, where the transfer occurs 
@@ -202,8 +195,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-          commStatus  = waitComm(commH);
-          if(commStatus != COMM_HANDLE_OK) return (-1);
+		  fvm::util::wait_for_communication(commH);
 
           memcpy(vMin, pShMem, transfrSZbytes);
 
@@ -215,8 +207,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-          commStatus  = waitComm(commH);
-          if(commStatus != COMM_HANDLE_OK) return (-1);
+		  fvm::util::wait_for_communication(commH);
 
           memcpy(vMax, pShMem, transfrSZbytes);
 
@@ -229,7 +220,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
 
        //------ copy the data to the blocked wrk array  -------
-       matrixToBlockedFloat4( (float*) pSlc, (float *)pWrk, pReGlb->nx_fft, 2*pReGlb->ny_fft, 2*roundUp4(pReGlb->ny_fft) );
+	  matrixToBlockedFloat4( (float*) pSlc, (float *)pWrk, pReGlb->nx_fft, 2*pReGlb->ny_fft, 2*roundUp4(pReGlb->ny_fft) );
 
 
 //=== to test: transfer iw-slice data from VM, the test passed OK ---
@@ -310,7 +301,6 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
        k0=w/(v0);                             //k0=w/(v0) // v0->min velocity
 
-
 	    if( (ve-v0)/v0 > 0.01) {   //if((ve-v0)/v0.gt.0.01) then
 	       if(propagator == PS) {    //if (propagator.eq.PS) then
 		    //call PO3D_PS(u, nx_fft, ny_fft, kx2, ky2, k0, dz, &
@@ -374,35 +364,35 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
             } //endiff( (ve-v0)/v0 > 0.01) 
 
-
 	    blockedToMatrixFloat4( (float*) pWrk, (float*) pSlc, pReGlb->nx_fft, 2*pReGlb->ny_fft, 2*roundUp4(pReGlb->ny_fft) );
 
-
 //=== start test-section, dat after propagate, the test passed OK ==
-/*
-     //int rank = fvmGetRank();
-     //int size = fvmGetNodeCount();
-     //FILE *fp; 
-     //char fn[100];
-     sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
+//	{
+//
+//     int rank = fvmGetRank();
+//     int size = fvmGetNodeCount();
+//     FILE *fp; 
+//     char fn[100];
+//     sprintf(fn, "/scratch/petry/sdpa/fTrace%d.txt", rank);
+//
+//     if((fp=fopen(fn, "at")) != NULL) {
+//         
+//	 fprintf(fp,"\n\n ------- the data array AFTER propagator ---------\n");
+//
+//         for(ix=0; ix < pReGlb->nx_fft; ix++) {
+//	     for(iy = 0; iy < pReGlb->ny_fft; iy++) {
+//                 ii = ix*pReGlb->ny_fft+iy;
+//		 fprintf(fp, "\n AFTR prop iz:%d iw:%d w:%e v_min:%e v_max:%e u[ix:%d][iy:%d] -> re:%e im:%e",
+//                         iz, crrFrqI, w, v0, ve, ix, iy, pSlc[ii].real, pSlc[ii].imag); 
+//             } //for(iy = 0; iy < ny_fft; iy++) 
+//             fprintf(fp, "\n");
+//         } // for(ix=0; ix < pCfg->nx_fft; ix++)
+//
+//	 fclose(fp);
+//
+//     } // if((fp=fopen(fn, "at")) != NULL)
+//	}
 
-     if((fp=fopen(fn, "at")) != NULL) {
-         
-	 fprintf(fp,"\n\n ------- the data array AFTER propagator ---------\n");
-
-         for(ix=0; ix < pReGlb->nx_fft; ix++) {
-	     for(iy = 0; iy < pReGlb->ny_fft; iy++) {
-                 ii = ix*pReGlb->ny_fft+iy;
-		 fprintf(fp, "\n AFTR prop iz:%d iw:%d w:%e v_min:%e v_max:%e u[ix:%d][iy:%d] -> re:%e im:%e",
-                         iz, crrFrqI, w, v0, ve, ix, iy, pSlc[ii].real, pSlc[ii].imag); 
-             } //for(iy = 0; iy < ny_fft; iy++) 
-             fprintf(fp, "\n");
-         } // for(ix=0; ix < pCfg->nx_fft; ix++)
-
-	 fclose(fp);
-
-     } // if((fp=fopen(fn, "at")) != NULL)
-*/
 //=== end test-section, dat aftr propagate, the test passed OK ===
 
 
@@ -414,6 +404,7 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
             if(utlAlloc2DcomplArray(&uTaper, iSz, jSz) == 0) {
 	         printf("\n calcOneLevl: -> Unable to allocate matrix uTaper[][] \n");
                  //exit(0); //stop
+				 return -1;
             } //end if
 
 
@@ -518,40 +509,66 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
 
 	     //-------- cp the tapered array to the output ----------
             transfrSZbytes = pReGlb->nx_fft * pReGlb->ny_fft * 2*sizeof(float);
-	    memcpy((unsigned char *) pSlc, (unsigned char *) &(uTaper[0][0]), transfrSZbytes);
-
+	    memcpy((char *) pSlc, (char *) &(uTaper[0][0]), transfrSZbytes);
 
             iSz = pReGlb->nx_fft;  
             jSz = pReGlb->ny_fft; // u[i][j] -> C-indexing, do not invert indices, j ->faster one 
             utlFree2DcomplArray(uTaper, iSz, jSz);
 
 //=== start test-section, dat after temper, the test passed OK ==
-/*
-     int rank = fvmGetRank();
-     int size = fvmGetNodeCount();
-     FILE *fp; 
-     char fn[100];
-     sprintf(fn, "/scratch/dimiter/sdpa/fTrace%d.txt", rank);
+// {
+// 
+//     int rank = fvmGetRank();
+//     int size = fvmGetNodeCount();
+//     FILE *fp; 
+//     char fn[100];
+//     sprintf(fn, "/scratch/petry/sdpa/fTrace%d.txt", rank);
+//
+//     if((fp=fopen(fn, "at")) != NULL) {
+//         
+//	 fprintf(fp,"\n\n ------- the data array AFTER temper ---------\n");
+//
+//         for(ix=0; ix < pReGlb->nx_out; ix++) {
+//	     for(iy = 0; iy < pReGlb->ny_out; iy++) {
+//                 ii = ix*pReGlb->ny_out+iy;
+//		 fprintf(fp, "\n aftr temper iz:%d iw:%d w:%e v_min:%e v_max:%e pOutpRe[ix:%d][iy:%d]:%e ",
+//                         iz, crrFrqI, w, v0, ve, ix, iy, pOutpRe[ii]); 
+//             } //for(iy = 0; iy < ny_fft; iy++) 
+//             fprintf(fp, "\n");
+//         } // for(ix=0; ix < pCfg->nx_fft; ix++)
+//
+//	 fclose(fp);
+//
+//     } // if((fp=fopen(fn, "at")) != NULL)
+// }
 
-     if((fp=fopen(fn, "at")) != NULL) {
-         
-	 fprintf(fp,"\n\n ------- the data array AFTER temper ---------\n");
-
-         for(ix=0; ix < pReGlb->nx_out; ix++) {
-	     for(iy = 0; iy < pReGlb->ny_out; iy++) {
-                 ii = ix*pReGlb->ny_out+iy;
-		 fprintf(fp, "\n aftr temper iz:%d iw:%d w:%e v_min:%e v_max:%e pOutpRe[ix:%d][iy:%d]:%e ",
-                         iz, crrFrqI, w, v0, ve, ix, iy, pOutpRe[ii]); 
-             } //for(iy = 0; iy < ny_fft; iy++) 
-             fprintf(fp, "\n");
-         } // for(ix=0; ix < pCfg->nx_fft; ix++)
-
-	 fclose(fp);
-
-     } // if((fp=fopen(fn, "at")) != NULL)
-*/
 //=== end test-section, dat aftr propagate, the test passed OK ===
 
+//	{
+//
+//     int rank = fvmGetRank();
+//     int size = fvmGetNodeCount();
+//     FILE *fp; 
+//     char fn[100];
+//     sprintf(fn, "/scratch/petry/sdpa/fTrace%d.txt", rank);
+//
+//     if((fp=fopen(fn, "at")) != NULL) {
+//         
+//	 fprintf(fp,"\n\n ------- the input array AFTER temper ---------\n");
+//
+//         for(ix=0; ix < pReGlb->nx_fft; ix++) {
+//	     for(iy = 0; iy < pReGlb->ny_fft; iy++) {
+//                 ii = ix*pReGlb->ny_fft+iy;
+//		 fprintf(fp, "\n AFTR temper iz:%d iw:%d w:%e v_min:%e v_max:%e u[ix:%d][iy:%d] -> re:%e im:%e",
+//                         iz, crrFrqI, w, v0, ve, ix, iy, pSlc[ii].real, pSlc[ii].imag); 
+//             } //for(iy = 0; iy < ny_fft; iy++) 
+//             fprintf(fp, "\n");
+//         } // for(ix=0; ix < pCfg->nx_fft; ix++)
+//
+//	 fclose(fp);
+//
+//     } // if((fp=fopen(fn, "at")) != NULL)
+//	}
 
 
 //=== to test: delete locally allocated arrays ---
@@ -577,8 +594,6 @@ int reCalcOneLevl(cfg_t *pCfg, int iw, int iz, MKL_Complex8 *pSlc, float *pOutpR
        delete [] kx2;
        delete [] kx;
        delete [] wH;
-
-    delete pReGlb; // del glbVars struct
 
     return 1;
 }

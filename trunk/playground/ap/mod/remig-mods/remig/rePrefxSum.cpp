@@ -45,8 +45,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 
@@ -228,9 +227,7 @@ static int cpSolnCubeIntoSharedSpace(cfg_t *pCfg, TReGlbStruct *pReGlb, fvmAlloc
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
-            
+		  fvm::util::wait_for_communication(commH);
         } // for(iNd = 0; iNd < size; iNd++)
         
     return 1;
@@ -306,8 +303,7 @@ static int ditributeShMemSolnOverTheNodes(cfg_t *pCfg, TReGlbStruct *pReGlb, fvm
 				     shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				     hScra);         //const fvmAllocHandle_t scratchHandle);
         
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
+		  fvm::util::wait_for_communication(commH);
             
         } // for(iNd = 0; iNd < size; iNd++)
 

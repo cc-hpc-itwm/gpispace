@@ -91,10 +91,8 @@ void update (data_t &params)
 	  , scratch_b);
 
   // wait for comm to finish
-  comm_status = waitComm(comm_handle_slice_a);
-  assert(comm_status == COMM_HANDLE_OK);
-  comm_status = waitComm(comm_handle_slice_b);
-  assert(comm_status == COMM_HANDLE_OK);
+  fvm::util::wait_for_communication(comm_handle_slice_a);
+  fvm::util::wait_for_communication(comm_handle_slice_b);
 
   // sum up
   float *output_slice   = (float*)(fvmGetShmemPtr()) + 0;
@@ -114,8 +112,7 @@ void update (data_t &params)
 	  , 0
 	  , scratch_a);
   // wait for comm to finish
-  comm_status = waitComm(comm_handle_slice_a);
-  assert(comm_status == COMM_HANDLE_OK);
+  fvm::util::wait_for_communication(comm_handle_slice_a);
 
   params["slice_and_depth_OUT"].token().data(slice_and_depth);
   params["memhandle_for_temp_outputvolume_OUT"].token().data(memhandle_for_temp_outputvolume);

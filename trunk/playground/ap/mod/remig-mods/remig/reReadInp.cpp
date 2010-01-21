@@ -417,9 +417,7 @@ static int readAndDistributeInputData(cfg_t *pCfg, TReGlbStruct *pReG, int *nwHl
 				     transfrSZbytes, //const fvmSize_t size,
 				     shmemSrcOffs, //const fvmShmemOffset_t shmemOffset,
 				     hScra); //const fvmAllocHandle_t scratchHandle);
-	   
-           commStatus  = waitComm(commH);
-           if(commStatus != COMM_HANDLE_OK) return (-1);
+		  fvm::util::wait_for_communication(commH);
        } 
 
 	LOG(INFO, "input data has been read and distributed (executing node: " << rank << ")");
@@ -536,8 +534,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 

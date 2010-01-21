@@ -38,8 +38,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 

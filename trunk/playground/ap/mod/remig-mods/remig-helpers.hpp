@@ -31,7 +31,7 @@ namespace remig { namespace detail {
 	  } //end do
   }
 
-  inline void fill_frequency_on_node_array(int number_of_frequencies, int *pIWonND, int *nwHlocal, int *nwHdispls)
+  inline void fill_frequency_on_node_array(int number_of_frequencies, int *pIWonND, const int * const nwHlocal, const int * const nwHdispls)
   {
 	  int i, j;
 	  int size = fvmGetNodeCount();

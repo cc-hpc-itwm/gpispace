@@ -424,8 +424,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 				     shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				     hScra);         //const fvmAllocHandle_t scratchHandle);
 	   
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
+			fvm::util::wait_for_communication(commH);
             
 
         } //for(iNd=0; iNd < size; iNd++) {
@@ -472,8 +471,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 				     shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				     hScra);         //const fvmAllocHandle_t scratchHandle);
 	   
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
+			fvm::util::wait_for_communication(commH);
             
             //----- 2nd vMax[], copy vMax[] onto the lcl shared mem --
             memcpy(pShMem, (unsigned char *) vMax, transfrSZbytes);
@@ -488,8 +486,7 @@ int readAndDistributeVelocityModel(cfg_t *pCfg, TReGlbStruct *pReG, int *izOffs)
 				     shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				     hScra);         //const fvmAllocHandle_t scratchHandle);
 	   
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
+			fvm::util::wait_for_communication(commH);
 
         } //for(iNd=0; iNd < size; iNd++) {
 
@@ -609,8 +606,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 

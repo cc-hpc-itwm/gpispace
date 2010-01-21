@@ -44,8 +44,7 @@ static int cpReGlbVarsFromVM(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-        commStatus  = waitComm(commH);
-        if(commStatus != COMM_HANDLE_OK) return (-1);
+		fvm::util::wait_for_communication(commH);
 
         memcpy(pReGlb, pShMem, transfrSZbytes);
 
@@ -154,8 +153,7 @@ static int cpSolnCubeIntoSharedSpace(cfg_t *pCfg, TReGlbStruct *pReGlb, fvmAlloc
 				  shmemOffs,      //const fvmShmemOffset_t shmemOffset,
 				  hScra); //const fvmAllocHandle_t scratchHandle);
         
-            commStatus  = waitComm(commH);
-            if(commStatus != COMM_HANDLE_OK) return (-1);
+			fvm::util::wait_for_communication(commH);
             
         } // for(iNd = 0; iNd < size; iNd++)
         
@@ -181,7 +179,7 @@ static int writeOutput(cfg_t *pCfg, TReGlbStruct *pReG, float ***pCube)
 //    for(ix = 0; ix < szX; ix++) {
     for(iy = 0; iy < szY; iy++) {   // NB!! do iy to be the outer loop -> to match the orig FORTRAN array settings
        for(ix = 0; ix < szX; ix++) {  
-; 
+ 
 
 //           pntIndx = indxOffsetIn3DarrayInXplaneChunks(ix, iy, iz, szX, szY, szZ);
 //           bytes = fwrite((const void *) &(((float *) pCube)[pntIndx]), sizeof(float), nz, pfOut);
@@ -189,7 +187,6 @@ static int writeOutput(cfg_t *pCfg, TReGlbStruct *pReG, float ***pCube)
 
         } // for(iy
     } // for(ix
-
    
     fclose(pfOut);
 

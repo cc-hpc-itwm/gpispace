@@ -53,24 +53,24 @@ void calc (data_t &params) throw (std::exception)
   int nwHdispls[fvmGetNodeCount()+1+1];
   std::fill(nwHdispls, nwHdispls + fvmGetNodeCount() + 1 + 1, -1);
   int pIWonND  [number_of_frequencies];
-  std::fill(pIWonND, nwHdispls + number_of_frequencies, -1);
+  std::fill(pIWonND, pIWonND + number_of_frequencies, -1);
 
   remig::detail::calculateDistribution(number_of_frequencies, nwHlocal, nwHdispls);
   remig::detail::fill_frequency_on_node_array(number_of_frequencies, pIWonND, nwHlocal, nwHdispls);
 
-//  std::stringstream sstr;
-//  sstr << "local =";
-//  for (std::size_t i(0); i < fvmGetNodeCount() + 1; ++i)
-//  {
-//	sstr << " " << nwHlocal[i];
-//  }
-//  sstr << ",";
-//  sstr << " displ =";
-//  for (std::size_t i(0); i < fvmGetNodeCount() + 1 + 1; ++i)
-//  {
-//	sstr << " " << nwHdispls[i];
-//  }
-//  DMLOG (DEBUG, "distribution: " << sstr.str());
+  std::stringstream sstr;
+  sstr << "local =";
+  for (std::size_t i(0); i < fvmGetNodeCount() + 1; ++i)
+  {
+	sstr << " " << nwHlocal[i];
+  }
+  sstr << ",";
+  sstr << " displ =";
+  for (std::size_t i(0); i < fvmGetNodeCount() + 1 + 1; ++i)
+  {
+	sstr << " " << nwHdispls[i];
+  }
+  DMLOG (DEBUG, "distribution: " << sstr.str());
 
   // get the input slice
   const std::size_t nx_in = re_global_struct.nx_fft;
@@ -85,8 +85,8 @@ void calc (data_t &params) throw (std::exception)
 	  , nwHdispls);
   DMLOG(DEBUG, "getting input slice (" << input_slice_size << " bytes) from offset: " << input_slice_offset);
 
-  MKL_Complex8 *input_slice = new MKL_Complex8[nx_in * ny_in];
-
+  MKL_Complex8 input_slice[nx_in * ny_in];
+  std::fill((char*)input_slice, ((char*)input_slice + (nx_in*ny_in*sizeof(MKL_Complex8))), 0);
 
   fvmCommHandle_t comm_handle;
   fvmCommHandleState_t comm_status;
@@ -100,14 +100,14 @@ void calc (data_t &params) throw (std::exception)
 		, 0 // shmem
 		, scratch
   );
-  comm_status = waitComm(comm_handle);
-  assert(comm_status == COMM_HANDLE_OK);
+  fvm::util::wait_for_communication(comm_handle);
   memcpy(input_slice, fvmGetShmemPtr(), input_slice_size);
 
   const std::size_t nx_out = re_global_struct.nx_out;
   const std::size_t ny_out = re_global_struct.ny_out;
   const std::size_t output_slice_size = nx_out * ny_out * sizeof(float);
-  float *output_slice = new float[nx_out * ny_out];
+  float output_slice[nx_out * ny_out];
+  std::fill(output_slice, output_slice + (nx_out*ny_out), 0);
 
   DMLOG(DEBUG, "calculating one level");
   int retval = reCalcOneLevl(&node_config, slice, depth, input_slice, output_slice);
@@ -122,24 +122,20 @@ void calc (data_t &params) throw (std::exception)
 	  , 0 // shmem
 	  , scratch
 	);
-	comm_status = waitComm(comm_handle);
-	assert(comm_status == COMM_HANDLE_OK);
-	delete [] output_slice;
+	fvm::util::wait_for_communication(comm_handle);
   }
 
   {
 	// write modified input slice back to input data
-	memcpy(fvmGetShmemPtr(), input_slice,  nx_in * ny_in * sizeof(MKL_Complex8));
+	memcpy(fvmGetShmemPtr(), input_slice, input_slice_size);
 	comm_handle = fvmPutGlobalData(
 		node_config.hndGlbVMspace
 	  , input_slice_offset
-	  , nx_in * ny_in * sizeof(MKL_Complex8)
+	  , input_slice_size
 	  , 0 // shmem
 	  , scratch
 	);
-	comm_status = waitComm(comm_handle);
-	assert(comm_status == COMM_HANDLE_OK);
-	delete [] input_slice;
+	fvm::util::wait_for_communication(comm_handle);
   }
 
   params["slice_and_depth_OUT"].token().data(slice_and_depth);

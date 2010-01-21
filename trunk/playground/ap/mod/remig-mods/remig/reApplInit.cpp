@@ -397,7 +397,7 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
        fvmSize_t shmemSz = pCfg->nodalSharedSpaceSize;
 
 
-	   fvm::util::local_allocation hScra(transfrSZbytes);
+	   fvm::util::local_allocation hScra(transfrSZbytes*2);
 
        fvmOffset_t vmDestOffs;
        fvmShmemOffset_t shmemSrcOffs=0;
@@ -421,18 +421,7 @@ static int initReGlbVars(cfg_t *pCfg, TReGlbStruct *pReGlb)
 				     shmemSrcOffs, //const fvmShmemOffset_t shmemOffset,
 				     hScra); //const fvmAllocHandle_t scratchHandle);
 
-		   fvmCommHandleState_t comm_state;
-		   for (std::size_t i = 0; i < 5; ++i)
-		   {
-			 comm_state = waitComm(commH);
-			 if (comm_state == COMM_HANDLE_NOT_FINISHED) sleep(1);
-			 break;
-		   }
-           if (comm_state != COMM_HANDLE_OK)
-		   {
-			 LOG(FATAL, "distribution of global config structure failed: " << comm_state);
-			 return (EWAITCOMM);
-		   }
+			fvm::util::wait_for_communication(commH);
        } //for(iNd = 0; iNd < size; iNd++)
 
     return ENOERROR;

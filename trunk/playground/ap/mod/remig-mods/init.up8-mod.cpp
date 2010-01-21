@@ -9,6 +9,7 @@
 // remig includes
 #include <remig/reApplInit.h>
 #include <remig/cfg.h>
+#include "remig-helpers.hpp"
 
 using namespace sdpa::modules;
 
@@ -28,35 +29,18 @@ void init (data_t &params) throw (std::exception)
   DLOG(DEBUG, "calling c_read_config");
   c_read_config(config_file, &node_config);
 
-  int retval(1);
-  if (node_config.hndScratch == 0)
-  {
-	LOG(ERROR, "global scratch allocation failed!");
-	retval = -1;
-  }
-  if (node_config.hndGlbVMspace == 0)
-  {
-	LOG(ERROR, "global vmspace allocation failed!");
-	retval = -1;
-  }
+  DLOG(TRACE, "configuration stucture: " << node_config);
+
+  fvm::util::global_allocation memhandle_for_global_scratch(0, node_config.hndScratch);
+  ASSERT_GALLOC(memhandle_for_global_scratch);
+
+  fvm::util::global_allocation memhandle_for_global_vmspace(0, node_config.hndGlbVMspace);
+  ASSERT_GALLOC(memhandle_for_global_vmspace);
+
+  int retval = reApplInit(&node_config);
 
   if (retval != 1)
   {
-	// free the memory!
-	fvmGlobalFree(node_config.hndScratch);
-	fvmGlobalFree(node_config.hndGlbVMspace);
-
-	throw std::runtime_error("at least one allocation failed!");
-  }
-
-  retval = reApplInit(&node_config);
-
-  if (retval != 1)
-  {
-	// free the memory!
-	fvmGlobalFree(node_config.hndScratch);
-	fvmGlobalFree(node_config.hndGlbVMspace);
-
 	MLOG(FATAL, "reApplInit failed: " << retval);
 	throw std::runtime_error("reApplInit failed!");
   }
@@ -65,6 +49,7 @@ void init (data_t &params) throw (std::exception)
   TReGlbStruct re_global_struct;
   fvm::util::get_data(&re_global_struct, node_config.hndGlbVMspace, 0 /*rank*/);
   
+  DLOG(TRACE, "reGlbStruct: " << re_global_struct);
   DLOG(DEBUG, "retrieved reGlbStruct: nx(out)=" << re_global_struct.nx_out << " ny(out)=" << re_global_struct.ny_out << " #freq="<<re_global_struct.nwH << " #depth=" << re_global_struct.nz);
   DLOG(DEBUG, "reGlbHandle=" << node_config.hndGlbVMspace << " reScrHandle=" << node_config.hndScratch);
 
@@ -108,6 +93,8 @@ void init (data_t &params) throw (std::exception)
   // commit allocations
   memhandle_for_temp_outputvolume.commit();
   memhandle_for_configuration.commit();
+  memhandle_for_global_scratch.commit();
+  memhandle_for_global_vmspace.commit();
 }
 
 SDPA_MOD_INIT_START(init)
