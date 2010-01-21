@@ -8,12 +8,7 @@ nd=$2
 ns=$3
 mh=$4
 
-for d in `seq 0 $(( $nd - 1 ))`
-do
-  for s in `seq 0 $(( $ns - 1 ))`
-  do
-	slice_and_depth=$(( $nd * $s + $d ))
-	./calc.sh   $ch $nd $slice_and_depth $mh
-	./update.sh $ch $nd $slice_and_depth $mh
-  done
+for snd in $( ./gen-slice-n-depth.sh $nd $ns ); do
+  ./calc.sh   $ch $nd $snd $mh
+  ./update.sh $ch $nd $snd $mh
 done
