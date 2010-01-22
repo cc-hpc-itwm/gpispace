@@ -3,6 +3,8 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
+#include <iostream>
+
 #include <netfwd.hpp>
 
 #include <adjacency.hpp>
@@ -759,40 +761,24 @@ public:
 
   std::size_t delete_one_token (const pid_t & pid, const Token & token)
   {
-    // WORK HERE: get rid of the copy, first get rid of the old firing method
-    const Token token_copy (token);
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
 
-    const std::size_t k (token_place_rel.delete_one (token, pid));
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      update_in_enabled_del_one_token (*t, pid, token);
 
-    if (k > 0)
-      {
-        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-          update_out_enabled (*t, pid, t());
-
-        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled_del_one_token (*t, pid, token_copy);
-      }
-
-    return k;
+    return (token_place_rel.delete_one (token, pid));
   }
 
   std::size_t delete_all_token (const pid_t & pid, const Token & token)
   {
-    // WORK HERE: get rid of the copy, first get rid of the old firing method
-    const Token token_copy (token);
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
 
-    const std::size_t k (token_place_rel.delete_all (token, pid));
+    for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
+      update_in_enabled_del_all_token (*t, pid, token);
 
-    if (k > 0)
-      {
-        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-          update_out_enabled (*t, pid, t());
-
-        for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-          update_in_enabled_del_all_token (*t, pid, token_copy);
-      }
-
-    return k;
+    return (token_place_rel.delete_all (token, pid));
   }
 
   // WORK HERE: implement more efficient
