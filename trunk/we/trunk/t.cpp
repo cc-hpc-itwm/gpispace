@@ -4,11 +4,14 @@
 #include <timer.hpp>
 
 #include <cstdlib>
+#include <ctype.h>
 
 #include <iostream>
 #include <sstream>
 
 #include <string>
+
+#include <boost/function.hpp>
 
 #include <tr1/random>
 
@@ -324,6 +327,29 @@ static void delete_all_token (pnet_t & n, const place_t & place, const token_t &
   print_enabled (n);
 }
 
+static bool cond_in ( const pnet_t & net
+                    , const token_t & token
+                    , const petri_net::pid_t & pid
+                    , const petri_net::eid_t & eid
+                    )
+{
+  const place_t place (net.place (pid));
+  const edge_t edge (net.edge (eid));
+
+  return (isupper (place[0]) && (token.length() > 0 || edge[0] == '!'));
+}
+
+static bool cond_out ( const pnet_t & net
+                     , const petri_net::pid_t & pid
+                     , const petri_net::eid_t & eid
+                     )
+{
+  const place_t place (net.place (pid));
+  const edge_t edge (net.edge (eid));
+
+  return (isupper (place[0]) || edge[0] == '!');
+}
+
 int
 main ()
 {
@@ -489,6 +515,57 @@ main ()
     while (num_fire--)
       fire_random_transition (c, engine);
   }
+
+  // check whether or not the updates areworking correctly
+
+  cout << endl; print_enabled (c);
+
+  c.set_in_condition_function ( c.get_transition_id ("t_enterR")
+                              , boost::bind ( &cond_in
+                                            , boost::ref (c)
+                                            , _1
+                                            , _2
+                                            , _3
+                                            )
+                              );
+
+  cout << endl; print_enabled (c);
+
+  c.modify_place (c.get_place_id ("readyR"), "ReadyR");
+
+  cout << endl; print_enabled (c);
+
+  c.modify_edge (c.get_edge_id ("e_s_er"), "!e_s_er");
+
+  cout << endl; print_enabled (c);
+
+  c.replace_one_token (c.get_place_id ("ReadyR"), "", "i");
+
+  cout << endl; print_enabled (c);
+
+  c.set_out_condition_function ( c.get_transition_id ("t_enterR")
+                               , boost::bind ( &cond_out
+                                             , boost::ref (c)
+                                             , _1
+                                             , _2
+                                             )
+                               );
+
+  cout << endl; print_enabled (c);
+
+  cout << "++++" << endl;
+
+  c.replace_place (c.get_place_id ("workR"), "WorkR");
+
+  cout << endl; print_enabled (c);
+
+  c.replace_place (c.get_place_id ("WorkR"), "workR");
+
+  cout << endl; print_enabled (c);
+
+  c.replace_edge (c.get_edge_id ("e_er_wr"), "!e_er_wr");
+
+  cout << endl; print_enabled (c);
 
   return EXIT_SUCCESS;
 }

@@ -3,8 +3,6 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <iostream>
-
 #include <netfwd.hpp>
 
 #include <adjacency.hpp>
@@ -47,6 +45,9 @@ namespace petri_net
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
   typedef connection<edge_type, tid_t, pid_t> connection_t;
+
+// WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
+// single map<tid_t,(X,Y)>
 
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
@@ -97,7 +98,7 @@ private:
 
   typename multirel::multirel<Token,pid_t> token_place_rel;
 
-  enabled_t enabled;
+  enabled_t OLD_enabled;
 
   trans_map_t trans;
   in_cond_map_t in_cond;
@@ -116,7 +117,7 @@ public:
     , num_transitions (0)
     , num_edges (0)
     , token_place_rel ()
-    , enabled ()
+    , OLD_enabled ()
     , trans ()
     , in_cond ()
     , out_cond ()
@@ -188,14 +189,14 @@ public:
   {
     in_cond[tid] = f;
 
-    update_in_enabled (tid);
+    calculate_in_enabled (tid);
   }
 
   void set_out_condition_function (const tid_t & tid, const out_cond_t & f)
   {
     out_cond[tid] = f;
 
-    update_out_enabled (tid);
+    calculate_out_enabled (tid);
   }
 
   tid_t add_transition
@@ -250,11 +251,11 @@ public:
     connection_map[eid] = connection;
 
     if (connection.type == PT)
-      update_in_enabled (connection.tid);
+      recalculate_in_enabled (connection.tid, connection.pid, eid);
     else
-      update_out_enabled (connection.tid);
+      update_out_enabled (connection.tid, connection.pid, eid);
 
-    update_enabled_transitions (connection.tid);
+    OLD_update_enabled_transitions (connection.tid);
 
     return eid;
   }
@@ -322,15 +323,15 @@ public:
     if (connection.type == PT)
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
-        update_in_enabled (connection.tid);
+        recalculate_in_enabled (connection.tid, connection.pid, eid);
       }
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
-        update_out_enabled (connection.tid);
+        update_out_enabled (connection.tid, connection.pid, eid);
       }
 
-    update_enabled_transitions (connection.tid);
+    OLD_update_enabled_transitions (connection.tid);
 
     connection_map.erase (it);
 
@@ -382,7 +383,7 @@ public:
 
     tmap.erase (tid);
 
-    enabled.erase (tid);
+    OLD_enabled.erase (tid);
 
     trans.erase (tid);
     in_cond.erase (tid);
@@ -399,7 +400,7 @@ public:
     return tid;
   }
 
-  // WORK HERE: update the enabled structures
+  // WORK HERE: test whether or not the updates are correct
   // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const Place & place)
@@ -407,7 +408,7 @@ public:
   {
     const pid_t new_pid (pmap.modify (pid, place));
 
-    update_enabled_by_place (new_pid);
+    recalculate_enabled_by_place (new_pid);
 
     return new_pid;
   }
@@ -418,7 +419,7 @@ public:
   {
     const pid_t new_pid (pmap.replace (pid, place));
 
-    update_enabled_by_place (new_pid);
+    recalculate_enabled_by_place (new_pid);
 
     return new_pid;
   }
@@ -444,7 +445,7 @@ public:
   {
     const eid_t new_eid (emap.modify (eid, edge));
 
-    update_enabled_by_edge (new_eid);
+    recalculate_enabled_by_edge (new_eid);
 
     return new_eid;
   }
@@ -454,42 +455,42 @@ public:
   {
     const eid_t new_eid (emap.replace (eid, edge));
 
-    update_enabled_by_edge (new_eid);
+    recalculate_enabled_by_edge (new_eid);
 
     return new_eid;
   }
 
   // deal with tokens
 private:
-  void add_enabled_transitions (const pid_t & pid)
+  void OLD_add_enabled_transitions (const pid_t & pid)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
         )
       if (can_fire (*tit))
-        enabled.insert (*tit);
+        OLD_enabled.insert (*tit);
   }
 
-  void del_enabled_transitions (const pid_t & pid)
+  void OLD_del_enabled_transitions (const pid_t & pid)
   {
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
         )
       if (!can_fire (*tit))
-        enabled.erase (*tit);
+        OLD_enabled.erase (*tit);
   }
 
-  void update_enabled_transitions (const tid_t & tid)
+  void OLD_update_enabled_transitions (const tid_t & tid)
   {
     if (can_fire (tid))
       {
-        enabled.insert (tid);
+        OLD_enabled.insert (tid);
       }
     else
       {
-        enabled.erase (tid);
+        OLD_enabled.erase (tid);
       }
   }
 
@@ -512,11 +513,12 @@ public:
   in_map_t in_map;
   out_map_t out_map;
 
-  void update_new_enabled ( const tid_t & tid
-                          , const bool can_fire
-                          , set_of_tid_t & a
-                          , set_of_tid_t & b
-                          )
+private:
+  void update_set_of_tid ( const tid_t & tid
+                         , const bool can_fire
+                         , set_of_tid_t & a
+                         , set_of_tid_t & b
+                         )
   {
     if (can_fire)
       {
@@ -532,11 +534,11 @@ public:
       }
   }
 
-  void update_pid_in_map ( pid_in_map_t & pid_in_map
-                         , const in_cond_t & f
-                         , const pid_t & pid
-                         , const eid_t & eid
-                         )
+  void recalculate_pid_in_map ( pid_in_map_t & pid_in_map
+                              , const in_cond_t & f
+                              , const pid_t & pid
+                              , const eid_t & eid
+                              )
   {
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
 
@@ -550,72 +552,66 @@ public:
       pid_in_map.erase (pid);
   }
 
-  void update_in_enabled ( const tid_t & tid
-                         , const pid_t & pid
-                         , const eid_t & eid
-                         )
+  void recalculate_enabled_by_place (const pid_t & pid)
   {
-    pid_in_map_t & pid_in_map (in_map[tid]);
-    
-    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
-
-    assert (f != get_in_cond().end());
-
-    update_pid_in_map (pid_in_map, f->second, pid, eid);
-
-    update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition(tid).size()
-                       , in_enabled
-                       , out_enabled
-                       );
-  }
-
-  void update_enabled_by_place (const pid_t & pid)
-  {
-    add_enabled_transitions (pid);
-    del_enabled_transitions (pid);
+    OLD_add_enabled_transitions (pid);
+    OLD_del_enabled_transitions (pid);
 
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
-      update_in_enabled (*t, pid, t());
+      recalculate_in_enabled (*t, pid, t());
   }
 
-  void update_enabled_by_edge (const eid_t & eid)
+  void recalculate_enabled_by_edge (const eid_t & eid)
   {
     const connection_t connection (get_edge_info (eid));
 
     if (connection.type == PT)
-      update_in_enabled (connection.tid);
+      recalculate_in_enabled (connection.tid, connection.pid, eid);
     else
-      update_out_enabled (connection.tid);
+      update_out_enabled (connection.tid, connection.pid, eid);
   }
 
-  void update_in_enabled (void)
-  {
-    for (transition_const_it t (transitions()); t.has_more(); ++t)
-      update_in_enabled (*t);
-  }
-
-  void update_in_enabled (const tid_t & tid)
+  void recalculate_in_enabled ( const tid_t & tid
+                              , const pid_t & pid
+                              , const eid_t & eid
+                              )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     
-    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+
+    assert (f != get_in_cond().end());
+
+    recalculate_pid_in_map (pid_in_map, f->second, pid, eid);
+
+    update_set_of_tid ( tid
+                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , in_enabled
+                      , out_enabled
+                      );
+  }
+
+  void calculate_in_enabled (const tid_t & tid)
+  {
+    pid_in_map_t & pid_in_map (in_map[tid]);
+    
+    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
     adj_place_const_it pit (in_to_transition (tid));
 
     for (; pit.has_more(); ++pit)
-      update_pid_in_map (pid_in_map, f->second, *pit, pit());
+      recalculate_pid_in_map (pid_in_map, f->second, *pit, pit());
 
-    update_new_enabled ( tid
-                       , pid_in_map.size() == pit.size()
-                       , in_enabled
-                       , out_enabled
-                       );
+    update_set_of_tid ( tid
+                      , pid_in_map.size() == pit.size()
+                      , in_enabled
+                      , out_enabled
+                      );
   }
 
   void update_in_enabled_put_token ( const tid_t & tid
@@ -627,7 +623,7 @@ public:
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
     
-    typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
+    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
@@ -637,11 +633,11 @@ public:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition(tid).size()
-                       , in_enabled
-                       , out_enabled
-                       );
+    update_set_of_tid ( tid
+                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , in_enabled
+                      , out_enabled
+                      );
   }
 
   void update_in_enabled_del_one_token ( const tid_t & tid
@@ -666,11 +662,11 @@ public:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition(tid).size()
-                       , in_enabled
-                       , out_enabled
-                       );
+    update_set_of_tid ( tid
+                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , in_enabled
+                      , out_enabled
+                      );
   }
 
   void update_in_enabled_del_all_token ( const tid_t & tid
@@ -694,11 +690,11 @@ public:
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
-    update_new_enabled ( tid
-                       , pid_in_map.size() == in_to_transition(tid).size()
-                       , in_enabled
-                       , out_enabled
-                       );
+    update_set_of_tid ( tid
+                      , pid_in_map.size() == in_to_transition(tid).size()
+                      , in_enabled
+                      , out_enabled
+                      );
   }
 
   void update_output_descr ( output_descr_t & output_descr
@@ -717,17 +713,11 @@ public:
       }
   }
 
-  void update_out_enabled (void)
-  {
-    for (transition_const_it t (transitions()); t.has_more(); ++t)
-      update_out_enabled (*t);
-  }
-
-  void update_out_enabled (const tid_t & tid)
+  void calculate_out_enabled (const tid_t & tid)
   {
     output_descr_t & output_descr (out_map[tid]);
     
-    typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
+    const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
 
     assert (f != get_out_cond().end());
 
@@ -736,11 +726,11 @@ public:
     for (; pit.has_more(); ++pit)
       update_output_descr (output_descr, f->second, *pit, pit());
 
-    update_new_enabled ( tid
-                       , output_descr.size() == pit.size()
-                       , out_enabled
-                       , in_enabled
-                       );
+    update_set_of_tid ( tid
+                      , output_descr.size() == pit.size()
+                      , out_enabled
+                      , in_enabled
+                      );
   }
 
   void update_out_enabled ( const tid_t & tid
@@ -750,22 +740,23 @@ public:
   {
     output_descr_t & output_descr (out_map[tid]);
     
-    typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
+    const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
 
     assert (f != get_out_cond().end());
 
     update_output_descr (output_descr, f->second, pid, eid);
 
-    update_new_enabled ( tid
-                       , output_descr.size() == out_of_transition(tid).size()
-                       , out_enabled
-                       , in_enabled
-                       );
+    update_set_of_tid ( tid
+                      , output_descr.size() == out_of_transition(tid).size()
+                      , out_enabled
+                      , in_enabled
+                      );
   }
 
+public:
   const enabled_t & enabled_transitions (void) const
   {
-    return enabled;
+    return new_enabled;
   }
 
   void verify_enabled_transitions (void) const
@@ -776,7 +767,8 @@ public:
       if (can_fire (*t))
         comp.insert (*t);
 
-    assert (comp == enabled);
+    assert (comp == OLD_enabled);
+    assert (comp == new_enabled);
   }
 
   bool put_token (const pid_t & pid, const Token & token)
@@ -785,7 +777,7 @@ public:
 
     if (successful)
       {
-        add_enabled_transitions (pid);
+        OLD_add_enabled_transitions (pid);
 
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
@@ -821,7 +813,7 @@ public:
 
     if (k > 0)
       {
-        del_enabled_transitions (pid);
+        OLD_del_enabled_transitions (pid);
 
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
@@ -842,7 +834,7 @@ public:
 
     if (k > 0)
       {
-        del_enabled_transitions (pid);
+        OLD_del_enabled_transitions (pid);
 
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
