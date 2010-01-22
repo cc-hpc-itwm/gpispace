@@ -5,6 +5,7 @@
 #include <timer.hpp>
 
 #include <cstdlib>
+#include <cstdio>
 
 #include <iostream>
 
@@ -16,8 +17,7 @@ typedef std::pair<loop_t, id_t> node_t;
 
 static const loop_t num_loops (2500);
 static const id_t size_loop (15);
-static const unsigned int num_rounds (50);
-static const unsigned int num_fire (num_loops * size_loop * num_rounds);
+static const unsigned int num_rounds (5);
 
 #ifndef NMALLOCHOOK
 #include <malloc.h>
@@ -146,22 +146,31 @@ main ()
           }
     }
 
+    static const int tokens_per_loop (10);
+
     {
-      Timer_t timer ("put token", num_loops);
+      Timer_t timer ("put token", num_loops * tokens_per_loop);
 
       for (loop_t l (0); l < num_loops; ++l)
-        {
-          n.put_token (n.get_place_id (node_t (l, 0)), 'c');
-        }
+        for (int i (0); i < tokens_per_loop; ++i)
+          n.put_token (n.get_place_id (node_t (l, 0)));
     }
 
     {
-      unsigned int f (num_fire);
+      Timer_t timer ( "fire random transition"
+                    , num_loops * size_loop * num_rounds
+                    );
 
-      Timer_t timer ("fire random transition", f);
+      for (unsigned int r (0); r < num_rounds; ++r)
+        {
+          std::cout << "#"; fflush (stdout);
 
-      while (f--)
-        fire_random_transition (n, engine);
+          for (unsigned int z (0); z < size_loop; ++z)
+            for (unsigned int l (0); l < num_loops; ++l)
+              fire_random_transition (n, engine);
+        }
+
+      std::cout << endl;
     }
 
     std::cout << n.get_num_transitions() << std::endl;
