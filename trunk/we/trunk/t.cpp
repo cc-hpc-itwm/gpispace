@@ -483,16 +483,11 @@ main ()
 
   print_net (c);
 
-  {
-    Timer_t timer ("step", 100);
-    step (c, 100);
-  }
+  // check whether or not the updates are working correctly
 
-  // check whether or not the updates areworking correctly
+  cout << "UPDATE" << endl; print_enabled (c);
 
-  cout << endl; print_enabled (c);
-
-  c.set_in_condition_function ( c.get_transition_id ("t_enterR")
+  c.set_in_condition_function ( c.get_transition_id ("t_enterL")
                               , boost::bind ( &cond_in
                                             , boost::ref (c)
                                             , _1
@@ -503,19 +498,19 @@ main ()
 
   cout << endl; print_enabled (c);
 
-  c.modify_place (c.get_place_id ("readyR"), "ReadyR");
+  c.modify_place (c.get_place_id ("readyL"), "ReadyL");
 
   cout << endl; print_enabled (c);
 
-  c.modify_edge (c.get_edge_id ("e_s_er"), "!e_s_er");
+  c.modify_edge (c.get_edge_id ("e_S_el"), "!e_S_el");
 
   cout << endl; print_enabled (c);
 
-  c.replace_one_token (c.get_place_id ("ReadyR"), "", "i");
+  c.replace_one_token (c.get_place_id ("ReadyL"), "", "i");
 
   cout << endl; print_enabled (c);
 
-  c.set_out_condition_function ( c.get_transition_id ("t_enterR")
+  c.set_out_condition_function ( c.get_transition_id ("t_enterL")
                                , boost::bind ( &cond_out
                                              , boost::ref (c)
                                              , _1
@@ -525,15 +520,15 @@ main ()
 
   cout << endl; print_enabled (c);
 
-  c.replace_place (c.get_place_id ("workR"), "WorkR");
+  c.replace_place (c.get_place_id ("workL"), "WorkL");
 
   cout << endl; print_enabled (c);
 
-  c.replace_place (c.get_place_id ("WorkR"), "workR");
+  c.replace_place (c.get_place_id ("WorkL"), "workL");
 
   cout << endl; print_enabled (c);
 
-  c.replace_edge (c.get_edge_id ("e_er_wr"), "!e_er_wr");
+  c.replace_edge (c.get_edge_id ("e_el_wl"), "!e_el_wl");
 
   cout << endl; print_enabled (c);
 
@@ -545,6 +540,20 @@ main ()
   c.set_out_condition_function ( c.get_transition_id ("t_enterR")
                                , Function::Condition::Out::Default<token_t>()
                                );
+
+  {
+    Timer_t timer ("step", 100);
+    step (c, 100);
+  }
+
+  {
+    unsigned int num_token (10);
+
+    Timer_t timer ("put_token", num_token);
+
+    while (num_token--)
+      c.put_token (c.get_place_id("Semaphore"));
+  }
 
   std::tr1::mt19937 engine;
 
