@@ -14,6 +14,8 @@ private:
   typedef typename std::vector<T> vec_t;
   typedef typename vec_t::iterator it;
   typedef std::pair<it,it> pit_t;
+  typedef typename vec_t::const_iterator const_it;
+  typedef std::pair<const_it,const_it> const_pit_t;
 
   vec_t vec;
 public:
@@ -34,6 +36,13 @@ public:
 
     return (std::distance (pit.first, pit.second) == 0)
       ? pit.first : vec.erase (pit.first);
+  }
+
+  bool elem (const T & x) const
+  {
+    const const_pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
+
+    return (std::distance (pit.first, pit.second) != 0);
   }
 
   typename vec_t::const_reference & at (typename vec_t::size_type n) const

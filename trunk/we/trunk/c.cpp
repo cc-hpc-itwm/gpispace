@@ -173,8 +173,7 @@ main ()
       pnet_t::pid_in_map_t m (n.in_map[*t]);
 
       cout << "Transition " << *t 
-           << ": can_fire_by_input = "
-           << ((n.in_enabled.find(*t) != n.in_enabled.end()) ? "true" : "false")
+           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
            << ":" << endl;
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
@@ -183,7 +182,7 @@ main ()
                << " [" << i->second.size() << "]"
                << ":";
 
-          for ( std::vector<std::pair<token_t,eid_t> >::const_iterator k (i->second.begin())
+          for ( pnet_t::deque_token_via_edge_t::const_iterator k (i->second.begin())
               ; k != i->second.end()
               ; ++k
               )
@@ -199,9 +198,8 @@ main ()
     {
       pnet_t::output_descr_t output_descr (n.out_map[*t]);
 
-      cout << "Transition " << *t 
-           << ": can_fire_by_output = "
-           << ((n.out_enabled.find(*t) != n.out_enabled.end()) ? "true" : "false")
+      cout << "Transition " << *t
+           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
            << ":";
 
       for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())

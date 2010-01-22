@@ -15,6 +15,8 @@
 #include <svector.hpp>
 #include <trans.hpp>
 
+#include <deque>
+
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 
@@ -458,8 +460,8 @@ public:
   // deal with tokens
 public:
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
-  typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
-  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+  typedef std::deque<token_via_edge_t> deque_token_via_edge_t;
+  typedef std::tr1::unordered_map<pid_t,deque_token_via_edge_t> pid_in_map_t;
 
   typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
   typedef set_of_tid_t in_enabled_t;
@@ -468,13 +470,13 @@ public:
   typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
 
-  in_enabled_t in_enabled;
-  out_enabled_t out_enabled;
-
   in_map_t in_map;
   out_map_t out_map;
 
 private:
+  in_enabled_t in_enabled;
+  out_enabled_t out_enabled;
+
   void update_set_of_tid ( const tid_t & tid
                          , const bool can_fire
                          , set_of_tid_t & a
@@ -501,15 +503,15 @@ private:
                               , const eid_t & eid
                               )
   {
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
 
-    vec_token_via_edge.clear();
+    deque_token_via_edge.clear();
 
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
       if (f(*tp, pid, eid))
-        vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
+        deque_token_via_edge.push_back(token_via_edge_t (*tp, eid));
 
-    if (vec_token_via_edge.empty())
+    if (deque_token_via_edge.empty())
       pid_in_map.erase (pid);
   }
 
@@ -579,16 +581,16 @@ private:
                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
     
     const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
     if (f->second(token, pid, eid))
-      vec_token_via_edge.push_back(token_via_edge_t (token, eid));
+      deque_token_via_edge.push_back(token_via_edge_t (token, eid));
 
-    if (vec_token_via_edge.empty())
+    if (deque_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -604,20 +606,20 @@ private:
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    typename vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
+    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
+    typename deque_token_via_edge_t::iterator it (deque_token_via_edge.begin());
 
-    while (it != vec_token_via_edge.end() && it->first != token)
+    while (it != deque_token_via_edge.end() && it->first != token)
       ++it;
 
-    if (it != vec_token_via_edge.end())
+    if (it != deque_token_via_edge.end())
       {
         assert (it->first == token);
 
-        vec_token_via_edge.erase (it);
+        deque_token_via_edge.erase (it);
       }
 
-    if (vec_token_via_edge.empty())
+    if (deque_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -633,19 +635,19 @@ private:
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    const vec_token_via_edge_t old (vec_token_via_edge);
+    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
+    const deque_token_via_edge_t old (deque_token_via_edge);
 
-    vec_token_via_edge.clear();
+    deque_token_via_edge.clear();
 
-    for ( typename vec_token_via_edge_t::const_iterator it (old.begin())
+    for ( typename deque_token_via_edge_t::const_iterator it (old.begin())
         ; it != old.end()
         ; ++it
         )
       if (it->first != token)
-        vec_token_via_edge.push_back (*it);
+        deque_token_via_edge.push_back (*it);
 
-    if (vec_token_via_edge.empty())
+    if (deque_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -797,15 +799,7 @@ public:
   // FIRE
   bool can_fire (const tid_t & tid) const
   {
-    bool can_fire = true;
-
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more() && can_fire
-        ; ++pit
-        )
-      can_fire = has_token (*pit);
-
-    return can_fire;
+    return enabled.elem(tid);
   }
 
   void fire (const tid_t & tid) throw (exception::transition_not_enabled)
