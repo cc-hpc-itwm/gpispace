@@ -1,5 +1,6 @@
 // demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
+#include <cond.hpp>
 #include <net.hpp>
 #include <timer.hpp>
 
@@ -505,17 +506,6 @@ main ()
     step (c, 100);
   }
 
-  std::tr1::mt19937 engine;
-
-  {
-    unsigned int num_fire (1000000);
-
-    Timer_t timer ("fire random transition", num_fire);
-
-    while (num_fire--)
-      fire_random_transition (c, engine);
-  }
-
   // check whether or not the updates areworking correctly
 
   cout << endl; print_enabled (c);
@@ -553,8 +543,6 @@ main ()
 
   cout << endl; print_enabled (c);
 
-  cout << "++++" << endl;
-
   c.replace_place (c.get_place_id ("workR"), "WorkR");
 
   cout << endl; print_enabled (c);
@@ -566,6 +554,26 @@ main ()
   c.replace_edge (c.get_edge_id ("e_er_wr"), "!e_er_wr");
 
   cout << endl; print_enabled (c);
+
+  // reset condition functions and fire random transitions
+
+  c.set_in_condition_function ( c.get_transition_id ("t_enterR")
+                              , Function::Condition::In::Default<token_t>()
+                              );
+  c.set_out_condition_function ( c.get_transition_id ("t_enterR")
+                               , Function::Condition::Out::Default<token_t>()
+                               );
+
+  std::tr1::mt19937 engine;
+
+  {
+    unsigned int num_fire (1000000);
+
+    Timer_t timer ("fire random transition", num_fire);
+
+    while (num_fire--)
+      fire_random_transition (c, engine);
+  }
 
   return EXIT_SUCCESS;
 }
