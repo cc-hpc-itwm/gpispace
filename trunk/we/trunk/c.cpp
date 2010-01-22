@@ -166,9 +166,6 @@ main ()
   
   marking (n);
 
-  //  n.update_in_enabled();
-  //  n.update_out_enabled();
-
   cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
