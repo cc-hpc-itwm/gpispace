@@ -717,17 +717,6 @@ public:
     return enabled;
   }
 
-  void verify_enabled_transitions (void) const
-  {
-    enabled_t comp;
-
-    for (transition_const_it t (transitions()); t.has_more(); ++t)
-      if (can_fire (*t))
-        comp.insert (*t);
-
-    assert (comp == enabled);
-  }
-
   bool put_token (const pid_t & pid, const Token & token)
   {
     const bool successful (token_place_rel.add (token, pid));

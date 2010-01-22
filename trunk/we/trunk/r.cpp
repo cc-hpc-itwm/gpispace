@@ -85,8 +85,6 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
   n.fire (tid);
 
   marking (n, tid);
-
-  n.verify_enabled_transitions ();
 }
 
 int

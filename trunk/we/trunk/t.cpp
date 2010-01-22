@@ -168,8 +168,6 @@ static void print_net (const pnet_t & n)
 
       cout << endl;
     }
-
-  n.verify_enabled_transitions();
 }
 
 static void marking (const pnet_t & n)
@@ -184,8 +182,6 @@ static void marking (const pnet_t & n)
       cout << "]";
     }
   cout << endl;
-
-  n.verify_enabled_transitions();
 }
 
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
