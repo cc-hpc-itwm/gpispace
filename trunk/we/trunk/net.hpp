@@ -735,6 +735,11 @@ public:
     return successful;
   }
 
+  bool put_token (const pid_t & pid)
+  {
+    return put_token (pid, Token());
+  }
+
   token_place_it get_token (const pid_t & pid) const
   {
     return token_place_rel.left_of (pid);
@@ -825,7 +830,9 @@ public:
         deque_token_via_edge_t & deque_token_via_edge (pid_in_map_it->second);
 
         const token_via_edge_t token_via_edge (deque_token_via_edge.front());
-        deque_token_via_edge.pop_front();
+
+        deque_token_via_edge.erase (deque_token_via_edge.begin());
+        //deque_token_via_edge.pop_front();
 
         const Token token (token_via_edge.first);
         const eid_t eid (token_via_edge.second);
