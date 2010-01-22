@@ -3,8 +3,6 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <iostream>
-
 #include <netfwd.hpp>
 
 #include <adjacency.hpp>
@@ -51,12 +49,14 @@ namespace petri_net
   typedef connection<edge_type, tid_t, pid_t> connection_t;
 
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
-// single map<tid_t,(X,Y)>
+// single map<tid_t,(X,Y)>?
 
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
 {
+
+  // *********************************************************************** //
 public:
   typedef bijection::const_it<Place,pid_t> place_const_it;
   typedef bijection::const_it<Transition,tid_t> transition_const_it;
@@ -82,14 +82,31 @@ public:
   typedef std::tr1::unordered_map<tid_t, in_cond_t> in_cond_map_t;
   typedef std::tr1::unordered_map<tid_t, out_cond_t> out_cond_map_t;
 
+  typedef typename std::pair<Token,eid_t> token_via_edge_t;
+
+  typedef std::deque<token_via_edge_t> deque_token_via_edge_t;
+  //  typedef std::vector<token_via_edge_t> deque_token_via_edge_t;
+  typedef std::tr1::unordered_map<pid_t,deque_token_via_edge_t> pid_in_map_t;
+
   typedef svector<tid_t> enabled_t;
 
+  // *********************************************************************** //
 private:
+  typedef std::tr1::unordered_map<eid_t, connection_t> connection_map_t;
+  typedef typename multirel::multirel<Token,pid_t> token_place_rel_t;
+
+  typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
+  typedef set_of_tid_t in_enabled_t;
+  typedef set_of_tid_t out_enabled_t;
+
+  typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
+  typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
+
+  // *********************************************************************** //
+
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
   bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
   bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
-
-  typedef std::tr1::unordered_map<eid_t, connection_t> connection_map_t;
 
   connection_map_t connection_map;
 
@@ -100,7 +117,7 @@ private:
   tid_t num_transitions;
   eid_t num_edges;
 
-  typename multirel::multirel<Token,pid_t> token_place_rel;
+  token_place_rel_t token_place_rel;
 
   enabled_t enabled;
 
@@ -108,125 +125,13 @@ private:
   in_cond_map_t in_cond;
   out_cond_map_t out_cond;
 
-public:
-  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
-    throw (std::bad_alloc)
-    : pmap ("place")
-    , tmap ("transition")
-    , emap ("edge name")
-    , connection_map ()
-    , adj_pt (eid_invalid, _places, _transitions)
-    , adj_tp (eid_invalid, _transitions, _places)
-    , num_places (0)
-    , num_transitions (0)
-    , num_edges (0)
-    , token_place_rel ()
-    , enabled ()
-    , trans ()
-    , in_cond ()
-    , out_cond ()
-    , in_map ()
-    , out_map ()
-    , in_enabled ()
-    , out_enabled ()
-  {};
+  in_map_t in_map;
+  out_map_t out_map;
+  in_enabled_t in_enabled;
+  out_enabled_t out_enabled;
 
-  // numbers of elements
-  pid_t get_num_places (void) const { return num_places; }
-  tid_t get_num_transitions (void) const { return num_transitions; }
-  eid_t get_num_edges (void) const { return num_edges; }
+  // *********************************************************************** //
 
-  // condition accessores
-  const trans_map_t & get_trans (void) const { return trans; }
-  const in_cond_map_t & get_in_cond (void) const { return in_cond; }
-  const out_cond_map_t & get_out_cond (void) const { return out_cond; }
-
-  // get id
-  const pid_t & get_place_id (const Place & place) const
-    throw (bijection::exception::no_such)
-  {
-    return pmap.get_id (place);
-  }
-
-  const tid_t & get_transition_id (const Transition & transition) const
-    throw (bijection::exception::no_such)
-  {
-    return tmap.get_id (transition);
-  }
-
-  const eid_t & get_edge_id (const Edge & edge) const
-    throw (bijection::exception::no_such)
-  {
-    return emap.get_id (edge);
-  }
-
-  // get element
-  const Place & place (const pid_t & pid) const
-    throw (bijection::exception::no_such)
-  {
-    return pmap.get_elem (pid);
-  }
-
-  const Transition & transition (const tid_t & tid) const
-    throw (bijection::exception::no_such)
-  {
-    return tmap.get_elem (tid);
-  }
-
-  const Edge & edge (const eid_t & eid) const
-    throw (bijection::exception::no_such)
-  {
-    return emap.get_elem (eid);
-  }
-
-  // add element
-  pid_t add_place (const Place & place)
-    throw (bijection::exception::already_there)
-  {
-    ++num_places;
-
-    return pmap.add (place);
-  }
-
-  void set_transition_function (const tid_t & tid, const trans_t & f)
-  {
-    trans[tid] = f;
-  }
-
-  void set_in_condition_function (const tid_t & tid, const in_cond_t & f)
-  {
-    in_cond[tid] = f;
-
-    calculate_in_enabled (tid);
-  }
-
-  void set_out_condition_function (const tid_t & tid, const out_cond_t & f)
-  {
-    out_cond[tid] = f;
-
-    calculate_out_enabled (tid);
-  }
-
-  tid_t add_transition
-  ( const Transition & transition
-  , const trans_t & tf = Function::Transition::Default<Token>()
-  , const in_cond_t & inc = Function::Condition::In::Default<Token>()
-  , const out_cond_t & outc = Function::Condition::Out::Default<Token>()
-  )
-    throw (bijection::exception::already_there)
-  {
-    ++num_transitions;
-
-    const tid_t tid (tmap.add (transition));
-
-    set_transition_function (tid, tf);
-    set_in_condition_function (tid, inc);
-    set_out_condition_function (tid, outc);
-
-    return tid;
-  }
-
-private:
   template<typename ROW, typename COL>
   eid_t gen_add_edge ( const Edge & edge
                      , const ROW & r
@@ -247,264 +152,6 @@ private:
     return eid;
   }
 
-public:
-  eid_t add_edge (const Edge & edge, const connection_t & connection)
-  {
-    const eid_t eid
-      ( (connection.type == PT)
-      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
-      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
-      );
-
-    connection_map[eid] = connection;
-
-    if (connection.type == PT)
-      recalculate_in_enabled (connection.tid, connection.pid, eid);
-    else
-      update_out_enabled (connection.tid, connection.pid, eid);
-
-    return eid;
-  }
-
-  // iterate through elements
-  place_const_it places (void) const
-  {
-    return place_const_it (pmap);
-  }
-
-  transition_const_it transitions (void) const
-  {
-    return transition_const_it (tmap);
-  }
-
-  edge_const_it edges (void) const
-  {
-    return edge_const_it (emap);
-  }
-
-  // iterate through adjacencies
-  adj_place_const_it out_of_transition (const tid_t & tid) const
-  {
-    return adj_place_const_it (adj_tp.row_const_it (tid));
-  }
-
-  adj_place_const_it in_to_transition (const tid_t & tid) const
-  {
-    return adj_place_const_it (adj_pt.col_const_it (tid));
-  }
-
-  adj_transition_const_it out_of_place (const pid_t & pid) const
-  {
-    return adj_transition_const_it (adj_pt.row_const_it (pid));
-  }
-
-  adj_transition_const_it in_to_place (const pid_t & pid) const
-  {
-    return adj_transition_const_it (adj_tp.col_const_it (pid));
-  }
-
-  // get edge info
-  connection_t get_edge_info (const eid_t & eid) const
-    throw (exception::no_such)
-  {
-    const typename connection_map_t::const_iterator it
-      (connection_map.find (eid));
-
-    if (it == connection_map.end())
-      throw exception::no_such ("connection");
-
-    return it->second;
-  }
-
-  // delete elements
-  const eid_t & delete_edge (const eid_t & eid)
-  {
-    typename connection_map_t::iterator it (connection_map.find (eid));
-
-    if (it == connection_map.end())
-      throw exception::no_such ("connection");
-
-    const connection_t connection (it->second);
-
-    if (connection.type == PT)
-      {
-        adj_pt.clear_adjacent (connection.pid, connection.tid);
-        recalculate_in_enabled (connection.tid, connection.pid, eid);
-      }
-    else
-      {
-        adj_tp.clear_adjacent (connection.tid, connection.pid);
-        update_out_enabled (connection.tid, connection.pid, eid);
-      }
-
-    connection_map.erase (it);
-
-    emap.erase (eid);
-
-    --num_edges;
-
-    return eid;
-  }
-
-  const pid_t & delete_place (const pid_t & pid)
-    throw (bijection::exception::no_such)
-  {
-    token_place_rel.delete_right (pid);
-
-    for ( adj_transition_const_it tit (out_of_place (pid))
-        ; tit.has_more()
-        ; ++tit
-        )
-      delete_edge (tit());
-
-    for ( adj_transition_const_it tit (in_to_place (pid))
-        ; tit.has_more()
-        ; ++tit
-        )
-      delete_edge (tit());
-
-    pmap.erase (pid);
-
-    --num_places;
-
-    return pid;
-  }
-
-  const tid_t & delete_transition (const tid_t & tid)
-    throw (bijection::exception::no_such)
-  {
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      delete_edge (pit());
-
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      delete_edge (pit());
-
-    tmap.erase (tid);
-
-    trans.erase (tid);
-    in_cond.erase (tid);
-    out_cond.erase (tid);
-
-    in_enabled.erase (tid);
-    out_enabled.erase (tid);
-    enabled.erase (tid);
-    in_map.erase (tid);
-    out_map.erase (tid);
-
-    --num_transitions;
-
-    return tid;
-  }
-
-  // modify and replace
-  // erased in case of conflict after modification
-  pid_t modify_place (const pid_t & pid, const Place & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    const pid_t new_pid (pmap.modify (pid, place));
-
-    recalculate_enabled_by_place (new_pid);
-
-    return new_pid;
-  }
-
-  // kept old value in case of conflict after modification
-  pid_t replace_place (const pid_t & pid, const Place & place)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    const pid_t new_pid (pmap.replace (pid, place));
-
-    recalculate_enabled_by_place (new_pid);
-
-    return new_pid;
-  }
-
-  tid_t modify_transition ( const tid_t & tid
-                          , const Transition & transition
-                          )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    return tmap.modify (tid, transition);
-  }
-
-  tid_t replace_transition ( const tid_t & tid
-                           , const Transition & transition
-                           )
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    return tmap.replace (tid, transition);
-  }
-
-  eid_t modify_edge (const eid_t & eid, const Edge & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    const eid_t new_eid (emap.modify (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
-  eid_t replace_edge (const eid_t & eid, const Edge & edge)
-    throw (bijection::exception::no_such, bijection::exception::already_there)
-  {
-    const eid_t new_eid (emap.replace (eid, edge));
-
-    recalculate_enabled_by_edge (new_eid);
-
-    return new_eid;
-  }
-
-  // deal with tokens
-public:
-  typedef typename std::pair<Token,eid_t> token_via_edge_t;
-
-  typedef std::vector<token_via_edge_t> deque_token_via_edge_t;
-  typedef std::tr1::unordered_map<pid_t,deque_token_via_edge_t> pid_in_map_t;
-
-  typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
-  typedef set_of_tid_t in_enabled_t;
-  typedef set_of_tid_t out_enabled_t;
-
-private:
-  typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
-  typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
-
-  in_map_t in_map;
-  out_map_t out_map;
-  in_enabled_t in_enabled;
-  out_enabled_t out_enabled;
-
-public:
-  const pid_in_map_t get_pid_in_map (const tid_t & tid) const
-    throw (exception::no_such)
-  {
-    const typename in_map_t::const_iterator m (in_map.find (tid));
-
-    if (m == in_map.end())
-      throw exception::no_such ("transition in in_map");
-
-    return m->second;
-  }
-
-  const output_descr_t get_output_descr (const tid_t & tid) const
-    throw (exception::no_such)
-  {
-    const typename out_map_t::const_iterator m (out_map.find (tid));
-
-    if (m == out_map.end())
-      throw exception::no_such ("transition in out_map");
-
-    return m->second;
-  }
-
-private:
   void update_set_of_tid ( const tid_t & tid
                          , const bool can_fire
                          , set_of_tid_t & a
@@ -741,7 +388,362 @@ private:
                       );
   }
 
+  // *********************************************************************** //
+
 public:
+  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
+    throw (std::bad_alloc)
+    : pmap ("place")
+    , tmap ("transition")
+    , emap ("edge name")
+    , connection_map ()
+    , adj_pt (eid_invalid, _places, _transitions)
+    , adj_tp (eid_invalid, _transitions, _places)
+    , num_places (0)
+    , num_transitions (0)
+    , num_edges (0)
+    , token_place_rel ()
+    , enabled ()
+    , trans ()
+    , in_cond ()
+    , out_cond ()
+    , in_map ()
+    , out_map ()
+    , in_enabled ()
+    , out_enabled ()
+  {};
+
+  // numbers of elements
+  pid_t get_num_places (void) const { return num_places; }
+  tid_t get_num_transitions (void) const { return num_transitions; }
+  eid_t get_num_edges (void) const { return num_edges; }
+
+  // condition accessores
+  const trans_map_t & get_trans (void) const { return trans; }
+  const in_cond_map_t & get_in_cond (void) const { return in_cond; }
+  const out_cond_map_t & get_out_cond (void) const { return out_cond; }
+
+  // get id
+  const pid_t & get_place_id (const Place & place) const
+    throw (bijection::exception::no_such)
+  {
+    return pmap.get_id (place);
+  }
+
+  const tid_t & get_transition_id (const Transition & transition) const
+    throw (bijection::exception::no_such)
+  {
+    return tmap.get_id (transition);
+  }
+
+  const eid_t & get_edge_id (const Edge & edge) const
+    throw (bijection::exception::no_such)
+  {
+    return emap.get_id (edge);
+  }
+
+  // get element
+  const Place & place (const pid_t & pid) const
+    throw (bijection::exception::no_such)
+  {
+    return pmap.get_elem (pid);
+  }
+
+  const Transition & transition (const tid_t & tid) const
+    throw (bijection::exception::no_such)
+  {
+    return tmap.get_elem (tid);
+  }
+
+  const Edge & edge (const eid_t & eid) const
+    throw (bijection::exception::no_such)
+  {
+    return emap.get_elem (eid);
+  }
+
+  // add element
+  pid_t add_place (const Place & place)
+    throw (bijection::exception::already_there)
+  {
+    ++num_places;
+
+    return pmap.add (place);
+  }
+
+  void set_transition_function (const tid_t & tid, const trans_t & f)
+  {
+    trans[tid] = f;
+  }
+
+  void set_in_condition_function (const tid_t & tid, const in_cond_t & f)
+  {
+    in_cond[tid] = f;
+
+    calculate_in_enabled (tid);
+  }
+
+  void set_out_condition_function (const tid_t & tid, const out_cond_t & f)
+  {
+    out_cond[tid] = f;
+
+    calculate_out_enabled (tid);
+  }
+
+  tid_t add_transition
+  ( const Transition & transition
+  , const trans_t & tf = Function::Transition::Default<Token>()
+  , const in_cond_t & inc = Function::Condition::In::Default<Token>()
+  , const out_cond_t & outc = Function::Condition::Out::Default<Token>()
+  )
+    throw (bijection::exception::already_there)
+  {
+    ++num_transitions;
+
+    const tid_t tid (tmap.add (transition));
+
+    set_transition_function (tid, tf);
+    set_in_condition_function (tid, inc);
+    set_out_condition_function (tid, outc);
+
+    return tid;
+  }
+
+  eid_t add_edge (const Edge & edge, const connection_t & connection)
+  {
+    const eid_t eid
+      ( (connection.type == PT)
+      ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
+      : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
+      );
+
+    connection_map[eid] = connection;
+
+    if (connection.type == PT)
+      recalculate_in_enabled (connection.tid, connection.pid, eid);
+    else
+      update_out_enabled (connection.tid, connection.pid, eid);
+
+    return eid;
+  }
+
+  // iterate through elements
+  place_const_it places (void) const
+  {
+    return place_const_it (pmap);
+  }
+
+  transition_const_it transitions (void) const
+  {
+    return transition_const_it (tmap);
+  }
+
+  edge_const_it edges (void) const
+  {
+    return edge_const_it (emap);
+  }
+
+  // iterate through adjacencies
+  adj_place_const_it out_of_transition (const tid_t & tid) const
+  {
+    return adj_place_const_it (adj_tp.row_const_it (tid));
+  }
+
+  adj_place_const_it in_to_transition (const tid_t & tid) const
+  {
+    return adj_place_const_it (adj_pt.col_const_it (tid));
+  }
+
+  adj_transition_const_it out_of_place (const pid_t & pid) const
+  {
+    return adj_transition_const_it (adj_pt.row_const_it (pid));
+  }
+
+  adj_transition_const_it in_to_place (const pid_t & pid) const
+  {
+    return adj_transition_const_it (adj_tp.col_const_it (pid));
+  }
+
+  // get edge info
+  connection_t get_edge_info (const eid_t & eid) const
+    throw (exception::no_such)
+  {
+    const typename connection_map_t::const_iterator it
+      (connection_map.find (eid));
+
+    if (it == connection_map.end())
+      throw exception::no_such ("connection");
+
+    return it->second;
+  }
+
+  // delete elements
+  const eid_t & delete_edge (const eid_t & eid)
+  {
+    typename connection_map_t::iterator it (connection_map.find (eid));
+
+    if (it == connection_map.end())
+      throw exception::no_such ("connection");
+
+    const connection_t connection (it->second);
+
+    if (connection.type == PT)
+      {
+        adj_pt.clear_adjacent (connection.pid, connection.tid);
+        recalculate_in_enabled (connection.tid, connection.pid, eid);
+      }
+    else
+      {
+        adj_tp.clear_adjacent (connection.tid, connection.pid);
+        update_out_enabled (connection.tid, connection.pid, eid);
+      }
+
+    connection_map.erase (it);
+
+    emap.erase (eid);
+
+    --num_edges;
+
+    return eid;
+  }
+
+  const pid_t & delete_place (const pid_t & pid)
+    throw (bijection::exception::no_such)
+  {
+    token_place_rel.delete_right (pid);
+
+    for ( adj_transition_const_it tit (out_of_place (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      delete_edge (tit());
+
+    for ( adj_transition_const_it tit (in_to_place (pid))
+        ; tit.has_more()
+        ; ++tit
+        )
+      delete_edge (tit());
+
+    pmap.erase (pid);
+
+    --num_places;
+
+    return pid;
+  }
+
+  const tid_t & delete_transition (const tid_t & tid)
+    throw (bijection::exception::no_such)
+  {
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      delete_edge (pit());
+
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      delete_edge (pit());
+
+    tmap.erase (tid);
+
+    trans.erase (tid);
+    in_cond.erase (tid);
+    out_cond.erase (tid);
+
+    in_enabled.erase (tid);
+    out_enabled.erase (tid);
+    enabled.erase (tid);
+    in_map.erase (tid);
+    out_map.erase (tid);
+
+    --num_transitions;
+
+    return tid;
+  }
+
+  // modify and replace
+  // erased in case of conflict after modification
+  pid_t modify_place (const pid_t & pid, const Place & place)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    const pid_t new_pid (pmap.modify (pid, place));
+
+    recalculate_enabled_by_place (new_pid);
+
+    return new_pid;
+  }
+
+  // kept old value in case of conflict after modification
+  pid_t replace_place (const pid_t & pid, const Place & place)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    const pid_t new_pid (pmap.replace (pid, place));
+
+    recalculate_enabled_by_place (new_pid);
+
+    return new_pid;
+  }
+
+  tid_t modify_transition ( const tid_t & tid
+                          , const Transition & transition
+                          )
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    return tmap.modify (tid, transition);
+  }
+
+  tid_t replace_transition ( const tid_t & tid
+                           , const Transition & transition
+                           )
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    return tmap.replace (tid, transition);
+  }
+
+  eid_t modify_edge (const eid_t & eid, const Edge & edge)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    const eid_t new_eid (emap.modify (eid, edge));
+
+    recalculate_enabled_by_edge (new_eid);
+
+    return new_eid;
+  }
+
+  eid_t replace_edge (const eid_t & eid, const Edge & edge)
+    throw (bijection::exception::no_such, bijection::exception::already_there)
+  {
+    const eid_t new_eid (emap.replace (eid, edge));
+
+    recalculate_enabled_by_edge (new_eid);
+
+    return new_eid;
+  }
+
+  // deal with tokens
+  const pid_in_map_t get_pid_in_map (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    const typename in_map_t::const_iterator m (in_map.find (tid));
+
+    if (m == in_map.end())
+      throw exception::no_such ("transition in in_map");
+
+    return m->second;
+  }
+
+  const output_descr_t get_output_descr (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    const typename out_map_t::const_iterator m (out_map.find (tid));
+
+    if (m == out_map.end())
+      throw exception::no_such ("transition in out_map");
+
+    return m->second;
+  }
+
   const enabled_t & enabled_transitions (void) const
   {
     return enabled;
@@ -805,7 +807,7 @@ public:
     return (token_place_rel.delete_all (token, pid));
   }
 
-  // WORK HERE: implement more efficient
+  // WORK HERE: implement more efficient?
   std::size_t replace_one_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
@@ -817,7 +819,7 @@ public:
     return k;
   }
 
-  // WORK HERE: implement more efficient
+  // WORK HERE: implement more efficient?
   std::size_t replace_all_token
   (const pid_t & pid, const Token & old_token, const Token & new_token)
   {
