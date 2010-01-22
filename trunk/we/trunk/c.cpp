@@ -56,14 +56,15 @@ static token_t trans ( const petri_net::pid_t & pid
 {
   const token_t token (Function::Transition::get_token<token_t> (token_input));
 
-  std::cout << "trans" 
+  std::cout << "trans: " 
             << " descr " << pid 
             << " token " << token
-            << " from_pid " << Function::Transition::get_pid<token_t> (token_input)
+            << " from {" << Function::Transition::get_pid<token_t> (token_input)
             << " via " << Function::Transition::get_eid<token_t> (token_input)
-            << " to " <<  Function::Transition::get_pid<token_t> (place_via_edge)
+            << "} to " << inc (token)
+            << " on {" <<  Function::Transition::get_pid<token_t> (place_via_edge)
             << " via " <<  Function::Transition::get_eid<token_t> (place_via_edge)
-            << std::endl;
+            << "}" << std::endl;
 
   return inc (token);
 }
@@ -143,7 +144,8 @@ static void enabled (const pnet_t & n)
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
-          cout << "Place " << i->first 
+          cout << *t << ":"
+               << " Place " << i->first 
                << " [" << i->second.size() << "]"
                << ":";
 
@@ -181,7 +183,10 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "[" << n.place(*p).first << ": ";
+      cout << "[" << n.place(*p).first 
+           << "-"
+           << n.get_token(*p).size()
+           << ":";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << " " << *tp;
@@ -257,10 +262,11 @@ main ()
   enabled (n);
   firings (n);
 
-  n.fire (0);
-
-  marking (n);
-  enabled (n);
+  for (token_second_t c (0); c < branch_factor * branch_factor; ++c)
+    for (token_second_t t (0); t < branch_factor; ++t)
+      {
+        cout << endl; n.fire (t); marking (n); enabled (n);
+      }
 
   return EXIT_SUCCESS;
 }
