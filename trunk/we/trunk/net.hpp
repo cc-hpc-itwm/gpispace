@@ -125,6 +125,10 @@ public:
     , trans ()
     , in_cond ()
     , out_cond ()
+    , in_map ()
+    , out_map ()
+    , in_enabled ()
+    , out_enabled ()
   {};
 
   // numbers of elements
@@ -460,23 +464,47 @@ public:
   // deal with tokens
 public:
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
-  typedef std::deque<token_via_edge_t> deque_token_via_edge_t;
+
+  typedef std::vector<token_via_edge_t> deque_token_via_edge_t;
   typedef std::tr1::unordered_map<pid_t,deque_token_via_edge_t> pid_in_map_t;
 
   typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
   typedef set_of_tid_t in_enabled_t;
   typedef set_of_tid_t out_enabled_t;
 
+private:
   typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
 
   in_map_t in_map;
   out_map_t out_map;
-
-private:
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
 
+public:
+  const pid_in_map_t get_pid_in_map (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    const typename in_map_t::const_iterator m (in_map.find (tid));
+
+    if (m == in_map.end())
+      throw exception::no_such ("transition in in_map");
+
+    return m->second;
+  }
+
+  const output_descr_t get_output_descr (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    const typename out_map_t::const_iterator m (out_map.find (tid));
+
+    if (m == out_map.end())
+      throw exception::no_such ("transition in out_map");
+
+    return m->second;
+  }
+
+private:
   void update_set_of_tid ( const tid_t & tid
                          , const bool can_fire
                          , set_of_tid_t & a

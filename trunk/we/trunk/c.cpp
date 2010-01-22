@@ -106,7 +106,7 @@ static void firings (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cross::cross<pnet_t::pid_in_map_t> cross (n.in_map.find(*t)->second);
+      cross::cross<pnet_t::pid_in_map_t> cross (n.get_pid_in_map(*t));
 
       cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
 
@@ -136,7 +136,7 @@ static void enabled (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::pid_in_map_t m (n.in_map.find(*t)->second);
+      pnet_t::pid_in_map_t m (n.get_pid_in_map(*t));
 
       cout << "Transition " << *t 
            << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
@@ -163,7 +163,7 @@ static void enabled (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      pnet_t::output_descr_t output_descr (n.out_map.find(*t)->second);
+      pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
 
       cout << "Transition " << *t
            << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
