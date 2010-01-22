@@ -77,7 +77,6 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 
   assert (!t.empty());
   assert (t.size() == fac());
-  assert (t == n.new_enabled);
 
   std::tr1::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
 

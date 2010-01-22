@@ -98,7 +98,7 @@ private:
 
   typename multirel::multirel<Token,pid_t> token_place_rel;
 
-  enabled_t OLD_enabled;
+  enabled_t enabled;
 
   trans_map_t trans;
   in_cond_map_t in_cond;
@@ -117,7 +117,7 @@ public:
     , num_transitions (0)
     , num_edges (0)
     , token_place_rel ()
-    , OLD_enabled ()
+    , enabled ()
     , trans ()
     , in_cond ()
     , out_cond ()
@@ -255,8 +255,6 @@ public:
     else
       update_out_enabled (connection.tid, connection.pid, eid);
 
-    OLD_update_enabled_transitions (connection.tid);
-
     return eid;
   }
 
@@ -331,8 +329,6 @@ public:
         update_out_enabled (connection.tid, connection.pid, eid);
       }
 
-    OLD_update_enabled_transitions (connection.tid);
-
     connection_map.erase (it);
 
     emap.erase (eid);
@@ -383,15 +379,13 @@ public:
 
     tmap.erase (tid);
 
-    OLD_enabled.erase (tid);
-
     trans.erase (tid);
     in_cond.erase (tid);
     out_cond.erase (tid);
 
     in_enabled.erase (tid);
     out_enabled.erase (tid);
-    new_enabled.erase (tid);
+    enabled.erase (tid);
     in_map.erase (tid);
     out_map.erase (tid);
 
@@ -400,7 +394,6 @@ public:
     return tid;
   }
 
-  // WORK HERE: test whether or not the updates are correct
   // modify and replace
   // erased in case of conflict after modification
   pid_t modify_place (const pid_t & pid, const Place & place)
@@ -461,39 +454,6 @@ public:
   }
 
   // deal with tokens
-private:
-  void OLD_add_enabled_transitions (const pid_t & pid)
-  {
-    for ( adj_transition_const_it tit (out_of_place (pid))
-        ; tit.has_more()
-        ; ++tit
-        )
-      if (can_fire (*tit))
-        OLD_enabled.insert (*tit);
-  }
-
-  void OLD_del_enabled_transitions (const pid_t & pid)
-  {
-    for ( adj_transition_const_it tit (out_of_place (pid))
-        ; tit.has_more()
-        ; ++tit
-        )
-      if (!can_fire (*tit))
-        OLD_enabled.erase (*tit);
-  }
-
-  void OLD_update_enabled_transitions (const tid_t & tid)
-  {
-    if (can_fire (tid))
-      {
-        OLD_enabled.insert (tid);
-      }
-    else
-      {
-        OLD_enabled.erase (tid);
-      }
-  }
-
 public:
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
@@ -508,7 +468,6 @@ public:
 
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
-  enabled_t new_enabled;
 
   in_map_t in_map;
   out_map_t out_map;
@@ -525,12 +484,12 @@ private:
         a.insert (tid);
 
         if (b.find (tid) != b.end())
-          new_enabled.insert (tid);
+          enabled.insert (tid);
       }
     else
       {
         a.erase (tid);
-        new_enabled.erase (tid);
+        enabled.erase (tid);
       }
   }
 
@@ -554,9 +513,6 @@ private:
 
   void recalculate_enabled_by_place (const pid_t & pid)
   {
-    OLD_add_enabled_transitions (pid);
-    OLD_del_enabled_transitions (pid);
-
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
 
@@ -756,7 +712,7 @@ private:
 public:
   const enabled_t & enabled_transitions (void) const
   {
-    return new_enabled;
+    return enabled;
   }
 
   void verify_enabled_transitions (void) const
@@ -767,8 +723,7 @@ public:
       if (can_fire (*t))
         comp.insert (*t);
 
-    assert (comp == OLD_enabled);
-    assert (comp == new_enabled);
+    assert (comp == enabled);
   }
 
   bool put_token (const pid_t & pid, const Token & token)
@@ -777,8 +732,6 @@ public:
 
     if (successful)
       {
-        OLD_add_enabled_transitions (pid);
-
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
 
@@ -813,8 +766,6 @@ public:
 
     if (k > 0)
       {
-        OLD_del_enabled_transitions (pid);
-
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
 
@@ -834,8 +785,6 @@ public:
 
     if (k > 0)
       {
-        OLD_del_enabled_transitions (pid);
-
         for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
           update_out_enabled (*t, pid, t());
 

@@ -94,16 +94,6 @@ static void print_enabled (const pnet_t & n)
 
       cout << endl;
     }  
-
-  cout << "new_enabled = [";
-
-  for ( pnet_t::enabled_t::const_iterator it (n.new_enabled.begin())
-      ; it != n.new_enabled.end()
-      ; ++it
-      )
-    cout << " " << *it;
-
-  cout << "]" << endl;
 }
 
 static void print_net (const pnet_t & n)
@@ -201,8 +191,6 @@ static void marking (const pnet_t & n)
 static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
-
-  assert (t == n.new_enabled);
 
   if (!t.empty())
     {

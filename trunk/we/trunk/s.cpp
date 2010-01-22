@@ -85,7 +85,6 @@ static void fire (pnet_t & n)
   pnet_t::enabled_t t (n.enabled_transitions());
 
   assert (t.size() == 1);
-  assert (t == n.new_enabled);
 
   n.fire (t.at(0));
 }

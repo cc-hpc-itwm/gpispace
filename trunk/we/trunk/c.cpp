@@ -213,16 +213,6 @@ main ()
       cout << endl;
     }  
 
-  cout << "new_enabled = [";
-
-  for ( pnet_t::enabled_t::const_iterator it (n.new_enabled.begin())
-      ; it != n.new_enabled.end()
-      ; ++it
-      )
-    cout << " " << *it;
-
-  cout << "]" << endl;
-
   cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
