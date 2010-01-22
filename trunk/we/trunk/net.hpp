@@ -804,33 +804,36 @@ public:
 
   void fire (const tid_t & tid) throw (exception::transition_not_enabled)
   {
-    input_t input;
-    output_descr_t output_descr;
-
-    for ( adj_place_const_it pit (in_to_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      {
-        const token_place_it tp (get_token (*pit));
-
-        if (!tp.has_more())
-          throw exception::transition_not_enabled ("during call of fire");
-
-        input.push_back (token_input_t (*tp, place_via_edge_t(*pit, pit())));
-
-        delete_one_token (*pit, *tp);
-      }
-
-    for ( adj_place_const_it pit (out_of_transition (tid))
-        ; pit.has_more()
-        ; ++pit
-        )
-      output_descr[*pit] = pit();
-
+    if (!can_fire (tid))
+      throw exception::transition_not_enabled ("during call of fire");
+      
     const typename trans_map_t::const_iterator f (get_trans().find (tid));
 
     assert (f != get_trans().end());
+
+    output_descr_t output_descr (out_map[tid]);
+    pid_in_map_t pid_in_map (in_map[tid]);
+
+    input_t input;
+
+    for ( typename pid_in_map_t::iterator pid_in_map_it (pid_in_map.begin())
+        ; pid_in_map_it != pid_in_map.end()
+        ; ++pid_in_map_it
+        )
+      {
+        const pid_t pid (pid_in_map_it->first);
+        deque_token_via_edge_t & deque_token_via_edge (pid_in_map_it->second);
+
+        const token_via_edge_t token_via_edge (deque_token_via_edge.front());
+        deque_token_via_edge.pop_front();
+
+        const Token token (token_via_edge.first);
+        const eid_t eid (token_via_edge.second);
+
+        input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
+
+        delete_one_token (pid, token);
+      }
 
     const output_t output (f->second(input, output_descr));
 

@@ -49,12 +49,23 @@ static token_t inc (const token_t & token)
     );
 }
 
-static token_t trans ( const petri_net::pid_t &
+static token_t trans ( const petri_net::pid_t & pid
                      , const token_input_t & token_input
-                     , const place_via_edge_t &
+                     , const place_via_edge_t & place_via_edge
                      )
 {
-  return inc (Function::Transition::get_token<token_t> (token_input));
+  const token_t token (Function::Transition::get_token<token_t> (token_input));
+
+  std::cout << "trans" 
+            << " descr " << pid 
+            << " token " << token
+            << " from_pid " << Function::Transition::get_pid<token_t> (token_input)
+            << " via " << Function::Transition::get_eid<token_t> (token_input)
+            << " to " <<  Function::Transition::get_pid<token_t> (place_via_edge)
+            << " via " <<  Function::Transition::get_eid<token_t> (place_via_edge)
+            << std::endl;
+
+  return inc (token);
 }
 
 static bool cond_rem ( const pnet_t & net
@@ -87,6 +98,84 @@ static bool cond_capacity ( const pnet_t & net
 
 using std::cout;
 using std::endl;
+
+static void firings (const pnet_t & n)
+{
+  cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      cross::cross<pnet_t::pid_in_map_t> cross (n.in_map.find(*t)->second);
+
+      cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
+
+      typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
+      typedef std::vector<ret_t> cross_t;
+
+      for ( ; cross.has_more(); ++cross)
+        {
+          cross::star_iterator<pnet_t::pid_in_map_t> c (*cross);
+
+          cout << " --";
+
+          for (; c.has_more(); ++c)
+            cout << " pid " << c->first << " {"
+                 << c->second.first << " via "
+                 << c->second.second << "}"
+              ;
+
+          cout << endl;
+        }
+     }
+}
+
+static void enabled (const pnet_t & n)
+{
+  cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      pnet_t::pid_in_map_t m (n.in_map.find(*t)->second);
+
+      cout << "Transition " << *t 
+           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << ":" << endl;
+
+      for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
+        {
+          cout << "Place " << i->first 
+               << " [" << i->second.size() << "]"
+               << ":";
+
+          for ( pnet_t::deque_token_via_edge_t::const_iterator k (i->second.begin())
+              ; k != i->second.end()
+              ; ++k
+              )
+            cout << " {" << k->first << " via " << k->second << "}";
+
+          cout << endl;
+        }
+    }
+
+  cout << "ENABLED OUTPUTS :: Transition -> [Place via Edge]" << endl;
+
+  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    {
+      pnet_t::output_descr_t output_descr (n.out_map.find(*t)->second);
+
+      cout << "Transition " << *t
+           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << ":";
+
+      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
+          ; i != output_descr.end()
+          ; ++i
+          )
+        cout << " {" << i->first << " via " << i->second << "}";
+
+      cout << endl;
+    }  
+}
 
 static void marking (const pnet_t & n)
 {
@@ -165,78 +254,13 @@ main ()
     }
   
   marking (n);
+  enabled (n);
+  firings (n);
 
-  cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
+  n.fire (0);
 
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    {
-      pnet_t::pid_in_map_t m (n.in_map[*t]);
-
-      cout << "Transition " << *t 
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
-           << ":" << endl;
-
-      for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
-        {
-          cout << "Place " << i->first 
-               << " [" << i->second.size() << "]"
-               << ":";
-
-          for ( pnet_t::deque_token_via_edge_t::const_iterator k (i->second.begin())
-              ; k != i->second.end()
-              ; ++k
-              )
-            cout << " {" << k->first << " via " << k->second << "}";
-
-          cout << endl;
-        }
-    }
-
-  cout << "ENABLED OUTPUTS :: Transition -> [Place via Edge]" << endl;
-
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    {
-      pnet_t::output_descr_t output_descr (n.out_map[*t]);
-
-      cout << "Transition " << *t
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
-           << ":";
-
-      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
-          ; i != output_descr.end()
-          ; ++i
-          )
-        cout << " {" << i->first << " via " << i->second << "}";
-
-      cout << endl;
-    }  
-
-  cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
-
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    {
-      cross::cross<pnet_t::pid_in_map_t> cross (n.in_map[*t]);
-
-      cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
-
-      typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
-      typedef std::vector<ret_t> cross_t;
-
-      for ( ; cross.has_more(); ++cross)
-        {
-          cross::star_iterator<pnet_t::pid_in_map_t> c (*cross);
-
-          cout << " --";
-
-          for (; c.has_more(); ++c)
-            cout << " pid " << c->first << " {"
-                 << c->second.first << " via "
-                 << c->second.second << "}"
-              ;
-
-          cout << endl;
-        }
-     }
+  marking (n);
+  enabled (n);
 
   return EXIT_SUCCESS;
 }
