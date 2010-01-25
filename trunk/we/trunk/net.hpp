@@ -722,7 +722,7 @@ public:
   }
 
   // deal with tokens
-  const pid_in_map_t get_pid_in_map (const tid_t & tid) const
+  const pid_in_map_t & get_pid_in_map (const tid_t & tid) const
     throw (exception::no_such)
   {
     const typename in_map_t::const_iterator m (in_map.find (tid));
@@ -733,7 +733,7 @@ public:
     return m->second;
   }
 
-  const output_descr_t get_output_descr (const tid_t & tid) const
+  const output_descr_t & get_output_descr (const tid_t & tid) const
     throw (exception::no_such)
   {
     const typename out_map_t::const_iterator m (out_map.find (tid));
