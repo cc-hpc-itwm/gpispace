@@ -39,7 +39,7 @@ namespace Function { namespace Condition
       fun f;
 
     public:
-      Generic (const fun & _f) : f (_f) {}
+      explicit Generic (const fun & _f) : f (_f) {}
 
       bool operator () ( const Token & token
                        , const pid_t & pid
@@ -74,7 +74,7 @@ namespace Function { namespace Condition
       fun f;
 
     public:
-      Generic (const fun & _f) : f (_f) {}
+      explicit Generic (const fun & _f) : f (_f) {}
 
       bool operator () (const pid_t & pid, const eid_t & eid)
       {

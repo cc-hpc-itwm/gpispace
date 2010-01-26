@@ -16,14 +16,16 @@ namespace bijection
     class no_such : public std::runtime_error
     {
     public:
-      no_such (const std::string & msg) : std::runtime_error(msg) {}
+      explicit no_such (const std::string & msg) : std::runtime_error(msg) {}
       ~no_such() throw() {}
     };
 
     class already_there : public std::runtime_error
     {
     public:
-      already_there (const std::string & msg) : std::runtime_error(msg) {}
+      explicit already_there (const std::string & msg) 
+        : std::runtime_error(msg)
+      {}
       ~already_there() throw() {}
     };
   } // namespace exception
@@ -45,9 +47,9 @@ namespace bijection
     const std::string description;
 
   public:
-    bijection (const std::string & _description = "NO DESCRIPTION GIVEN")
+    explicit bijection (const std::string & _descr = "NO DESCRIPTION GIVEN")
       : h(static_cast<I>(0))
-      , description (_description)
+      , description (_descr)
     {}
 
     typedef typename bimap_t::iterator iterator;

@@ -147,7 +147,7 @@ namespace cross
         }
     }
 
-    cross (const MAP & _map) : map (_map), pos () { rewind(); }
+    explicit cross (const MAP & _map) : map (_map), pos () { rewind(); }
 
     bool has_more (void) const { return _has_more; }
     // beware: overflow!

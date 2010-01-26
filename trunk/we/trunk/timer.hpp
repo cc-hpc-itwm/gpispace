@@ -26,10 +26,10 @@ private:
   const unsigned int k;
   std::ostream & s;
 public:
-  Timer_t ( const std::string & _msg
-          , const unsigned int & _k = 1
-          , std::ostream & _s = std::cout
-          )
+  explicit Timer_t ( const std::string & _msg
+                   , const unsigned int & _k = 1
+                   , std::ostream & _s = std::cout
+                   )
     : t(-current_time())
     , msg(_msg)
     , k(_k)

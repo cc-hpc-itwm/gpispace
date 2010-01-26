@@ -110,7 +110,7 @@ namespace Function { namespace Transition
     const Function f;
 
   public:
-    Generic (const Function & _f) : f (_f) {}
+    explicit Generic (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
@@ -236,7 +236,7 @@ namespace Function { namespace Transition
   public:
     typedef boost::function<Descr (const eid_t &)> Function;
 
-    MatchEdge (const Function & f)
+    explicit MatchEdge (const Function & f)
       : MatchWithFun<Token,Descr>
         ( boost::bind (&descr_in_by_eid<Token,Descr>, f, _1)
         , boost::bind (&descr_out_by_eid<Token,Descr>, f, _1)
@@ -291,7 +291,7 @@ namespace Function { namespace Transition
     const Function f;
 
   public:
-    PassWithFun (const Function & _f) : f (_f) {}
+    explicit PassWithFun (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr
@@ -348,7 +348,7 @@ namespace Function { namespace Transition
     const Function f;
 
   public:
-    EdgesOnly (const Function & _f) : f (_f) {}
+    explicit EdgesOnly (const Function & _f) : f (_f) {}
 
     output_t operator () ( const input_t & input
                          , const output_descr_t & output_descr

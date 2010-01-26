@@ -18,7 +18,7 @@ namespace util
   private:
     const std::size_t the_size;
   public:
-    it (const IT & _pos, const IT & _end)
+    explicit it (const IT & _pos, const IT & _end)
       : pos (_pos)
       , end (_end)
       , the_size (std::distance (pos, end))
