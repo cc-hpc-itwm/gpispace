@@ -179,9 +179,9 @@ namespace Function { namespace Transition
           ; ++it
           )
         {
-          Descr descr (descr_out (*it));
+          const Descr descr (descr_out (*it));
 
-          typename map_t::iterator m_it (m.find (descr));
+          const typename map_t::iterator m_it (m.find (descr));
 
           if (m_it == m.end())
             throw std::runtime_error ("MatchWithFun: missing input edge");
@@ -374,7 +374,7 @@ namespace Function { namespace Transition
           ; ++it
           )
         {
-          typename map_t::iterator res (out.find (get_eid<Token>(*it)));
+          const typename map_t::iterator res (out.find (get_eid<Token>(*it)));
 
           if (res == out.end())
             throw std::runtime_error ("edge only: missing edge in output map");
