@@ -64,9 +64,7 @@ namespace adjacency
     template<typename T, typename MAT>
     void adjust_size (const T & x, MAT & mat)
     {
-      typedef typename MAT::size_type sz_t;
-
-      sz_t sz (mat.size()); // size >= 1
+      typename MAT::size_type sz (mat.size()); // size >= 1
 
       while (x >= sz)
         sz <<= 1;
@@ -87,6 +85,12 @@ namespace adjacency
     }
 
   public:
+    table (const ADJ & _invalid, const ROW & r = 1, const COL & c = 1)
+      : invalid (_invalid)
+      , row_tab (std::max (static_cast<ROW>(1), r)) // size >= 1
+      , col_tab (std::max (static_cast<COL>(1), c)) // size >= 1
+    {}
+
     const const_it<COL,ADJ> row_const_it (const ROW & r) const
     {
       // size >= 1
@@ -105,22 +109,13 @@ namespace adjacency
         ;
     }
 
-    table (const ADJ & _invalid, const ROW & r = 1, const COL & c = 1)
-      : invalid (_invalid)
-      , row_tab (std::max (static_cast<ROW>(1), r)) // size >= 1
-      , col_tab (std::max (static_cast<COL>(1), c)) // size >= 1
-    {}
-
-  public:
     const ADJ get_adjacent (const ROW & r, const COL & c) const
     {
       try
         {
           typedef typename col_adj_vec_t::const_iterator it_t;
 
-          it_t it (find<it_t,const row_tab_t,ROW,COL>(row_tab, r, c));
-
-          return it->second;
+          return find<it_t,const row_tab_t,ROW,COL>(row_tab, r, c)->second;
         }
       catch (exception::not_found)
         {
@@ -134,7 +129,7 @@ namespace adjacency
         {
           typedef typename col_adj_vec_t::iterator it_t;
 
-          it_t it (find<it_t,row_tab_t,ROW,COL>(row_tab, r, c));
+          const it_t it (find<it_t,row_tab_t,ROW,COL>(row_tab, r, c));
 
           row_tab[r].erase (it);
         }
@@ -144,7 +139,7 @@ namespace adjacency
         {
           typedef typename row_adj_vec_t::iterator it_t;
 
-          it_t it (find<it_t,col_tab_t,COL,ROW>(col_tab, c, r));
+          const it_t it (find<it_t,col_tab_t,COL,ROW>(col_tab, c, r));
 
           col_tab[c].erase (it);
         }
