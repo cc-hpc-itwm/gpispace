@@ -150,6 +150,20 @@ private:
     return eid;
   }
 
+  template<typename MAP>
+  const typename MAP::mapped_type & get_fun ( const MAP & map
+                                            , const tid_t & tid
+                                            ) const
+    throw (exception::no_such)
+  {
+    const typename MAP::const_iterator f (map.find (tid));
+
+    if (f == map.end())
+      throw exception::no_such ("transition id in get_fun");
+
+    return f->second;
+  }
+
   void update_set_of_tid ( const tid_t & tid
                          , const bool can_fire
                          , set_of_tid_t & a
@@ -213,12 +227,9 @@ private:
                               )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
+    const in_cond_t in_cond (get_in_cond (tid));
 
-    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
-
-    assert (f != get_in_cond().end());
-
-    recalculate_pid_in_map (pid_in_map, f->second, pid, eid);
+    recalculate_pid_in_map (pid_in_map, in_cond, pid, eid);
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == in_to_transition(tid).size()
@@ -230,15 +241,11 @@ private:
   void calculate_in_enabled (const tid_t & tid)
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-
-    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
-
-    assert (f != get_in_cond().end());
-
     adj_place_const_it pit (in_to_transition (tid));
+    const in_cond_t in_cond (get_in_cond (tid));
 
     for (; pit.has_more(); ++pit)
-      recalculate_pid_in_map (pid_in_map, f->second, *pit, pit());
+      recalculate_pid_in_map (pid_in_map, in_cond, *pit, pit());
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == pit.size()
@@ -255,12 +262,9 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    const in_cond_t in_cond (get_in_cond (tid));
 
-    const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
-
-    assert (f != get_in_cond().end());
-
-    if (f->second(token, pid, eid))
+    if (in_cond(token, pid, eid))
       vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     if (vec_token_via_edge.empty())
@@ -286,11 +290,7 @@ private:
       ++it;
 
     if (it != vec_token_via_edge.end())
-      {
-        assert (it->first == token);
-
-        vec_token_via_edge.erase (it);
-      }
+      vec_token_via_edge.erase (it);
 
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
@@ -349,15 +349,11 @@ private:
   void calculate_out_enabled (const tid_t & tid)
   {
     output_descr_t & output_descr (out_map[tid]);
-
-    const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
-
-    assert (f != get_out_cond().end());
-
     adj_place_const_it pit (out_of_transition (tid));
+    const out_cond_t out_cond (get_out_cond(tid));
 
     for (; pit.has_more(); ++pit)
-      update_output_descr (output_descr, f->second, *pit, pit());
+      update_output_descr (output_descr, out_cond, *pit, pit());
 
     update_set_of_tid ( tid
                       , output_descr.size() == pit.size()
@@ -372,12 +368,9 @@ private:
                           )
   {
     output_descr_t & output_descr (out_map[tid]);
+    const out_cond_t out_cond (get_out_cond(tid));
 
-    const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
-
-    assert (f != get_out_cond().end());
-
-    update_output_descr (output_descr, f->second, pid, eid);
+    update_output_descr (output_descr, out_cond, pid, eid);
 
     update_set_of_tid ( tid
                       , output_descr.size() == out_of_transition(tid).size()
@@ -416,10 +409,24 @@ public:
   tid_t get_num_transitions (void) const { return num_transitions; }
   eid_t get_num_edges (void) const { return num_edges; }
 
-  // condition accessores
-  const trans_map_t & get_trans (void) const { return trans; }
-  const in_cond_map_t & get_in_cond (void) const { return in_cond; }
-  const out_cond_map_t & get_out_cond (void) const { return out_cond; }
+  // condition+transition function accessores
+  const trans_t & get_trans (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    return get_fun (trans, tid);
+  }
+
+  const in_cond_t & get_in_cond (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    return get_fun (in_cond, tid);
+  }
+
+  const out_cond_t & get_out_cond (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    return get_fun (out_cond, tid);
+  }
 
   // get id
   const pid_t & get_place_id (const Place & place) const
@@ -862,12 +869,7 @@ public:
 
   output_t run_activity (const activity_t & activity) const
   {
-    const typename trans_map_t::const_iterator f
-      (get_trans().find (activity.tid));
-
-    assert (f != get_trans().end());
-
-    return f->second(activity.input, activity.output_descr);
+    return get_trans(activity.tid)(activity.input, activity.output_descr);
   }
 
   void inject_activity_result (const output_t & output)
