@@ -19,7 +19,7 @@ namespace adjacency
     typedef std::vector<pair_t> vec_t;
     typedef typename vec_t::const_iterator type;
   };
-  
+
   template<typename L, typename R>
   struct const_it : public util::it<typename IT<L,R>::type>
   {

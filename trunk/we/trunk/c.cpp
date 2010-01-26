@@ -56,8 +56,8 @@ static token_t trans ( const petri_net::pid_t & pid
 {
   const token_t token (Function::Transition::get_token<token_t> (token_input));
 
-  std::cout << "trans: " 
-            << " descr " << pid 
+  std::cout << "trans: "
+            << " descr " << pid
             << " token " << token
             << " from {" << Function::Transition::get_pid<token_t> (token_input)
             << " via " << Function::Transition::get_eid<token_t> (token_input)
@@ -77,7 +77,7 @@ static bool cond_rem ( const pnet_t & net
                      )
 {
   place_t place (net.place (pid));
-  
+
   return (token.second == ((shift(place) + rem) % branch_factor));
 }
 
@@ -138,14 +138,14 @@ static void enabled (const pnet_t & n)
     {
       pnet_t::pid_in_map_t m (n.get_pid_in_map(*t));
 
-      cout << "Transition " << *t 
+      cout << "Transition " << *t
            << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
            << ":" << endl;
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
           cout << *t << ":"
-               << " Place " << i->first 
+               << " Place " << i->first
                << " [" << i->second.size() << "]"
                << ":";
 
@@ -176,14 +176,14 @@ static void enabled (const pnet_t & n)
         cout << " {" << i->first << " via " << i->second << "}";
 
       cout << endl;
-    }  
+    }
 }
 
 static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "[" << n.place(*p).first 
+      cout << "[" << n.place(*p).first
            << "-"
            << n.get_token(*p).size()
            << ":";
@@ -229,18 +229,18 @@ main ()
 
   for (token_second_t rem (0); rem < branch_factor; ++rem)
     {
-      const tid_t tid 
-        ( n.add_transition 
+      const tid_t tid
+        ( n.add_transition
           ( rem
           , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
             ( & edge_descr<token_input_t>
             , & edge_descr<place_via_edge_t>
             , & trans
             )
-          , Function::Condition::In::Generic<token_t> 
+          , Function::Condition::In::Generic<token_t>
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1, _2, _3)
             )
-          , Function::Condition::Out::Generic<token_t> 
+          , Function::Condition::Out::Generic<token_t>
             ( boost::bind ( &cond_capacity
                           , boost::ref(n)
                           , boost::ref(capacity)
@@ -257,7 +257,7 @@ main ()
           n.add_edge (edge_t (e++, pid[t]), connection_t (TP, tid, pid[t]));
         }
     }
-  
+
   marking (n);
   enabled (n);
   firings (n);

@@ -58,7 +58,7 @@ main ()
     for ( ; cross.has_more(); ++cross)
       {
         cout << setw(2) << k++ << "| ";
-      
+
         cross_t c (cross.get_vec());
 
         for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
@@ -74,7 +74,7 @@ main ()
       // traversing as vectors, jumping directly
 
       cross_t c (cross.get_vec(k));
-      
+
       cout << "cross[" << k << "] =";
 
       for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)

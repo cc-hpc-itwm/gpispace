@@ -144,7 +144,7 @@ main ()
   net.add_edge (edge_t (e++, "v"), connection_t (TP, tid_break, pid_final));
 
   net.set_transition_function ( tid_step
-                              , Function::Transition::Generic<token_t> 
+                              , Function::Transition::Generic<token_t>
                                 ( boost::bind ( &trans
                                               , pid_value
                                               , pid_increment
@@ -168,7 +168,7 @@ main ()
                               , Function::Transition::Pass<token_t>()
                               );
   net.set_in_condition_function ( tid_break
-                                , Function::Condition::In::Generic<token_t> 
+                                , Function::Condition::In::Generic<token_t>
                                   (&cond_ge)
                                 );
 

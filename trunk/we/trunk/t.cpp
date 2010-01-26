@@ -80,7 +80,7 @@ static void print_enabled (const pnet_t & n)
     {
       pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
 
-      cout << "Transition " << trans (n, *t) 
+      cout << "Transition " << trans (n, *t)
            << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
            << ":";
 
@@ -91,7 +91,7 @@ static void print_enabled (const pnet_t & n)
         cout << " {" << place (n, i->first) << " via " << edge (n, i->second) << "}";
 
       cout << endl;
-    }  
+    }
 }
 
 static void print_net (const pnet_t & n)

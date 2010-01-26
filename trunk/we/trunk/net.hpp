@@ -213,7 +213,7 @@ private:
                               )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    
+
     const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
@@ -230,7 +230,7 @@ private:
   void calculate_in_enabled (const tid_t & tid)
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    
+
     const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
@@ -255,7 +255,7 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    
+
     const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
@@ -349,7 +349,7 @@ private:
   void calculate_out_enabled (const tid_t & tid)
   {
     output_descr_t & output_descr (out_map[tid]);
-    
+
     const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
 
     assert (f != get_out_cond().end());
@@ -372,7 +372,7 @@ private:
                           )
   {
     output_descr_t & output_descr (out_map[tid]);
-    
+
     const typename out_cond_map_t::const_iterator f (get_out_cond().find(tid));
 
     assert (f != get_out_cond().end());
@@ -862,7 +862,7 @@ public:
 
   output_t run_activity (const activity_t & activity) const
   {
-    const typename trans_map_t::const_iterator f 
+    const typename trans_map_t::const_iterator f
       (get_trans().find (activity.tid));
 
     assert (f != get_trans().end());
@@ -885,7 +885,7 @@ public:
   {
     if (!can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
-      
+
     // before! constructing the input, as this consumes tokens
     output_descr_t output_descr (get_output_descr(tid));
 

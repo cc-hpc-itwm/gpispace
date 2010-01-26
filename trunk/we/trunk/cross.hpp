@@ -45,13 +45,13 @@ namespace cross
 
           assert (pos != end);
           assert (*pos < m->second.size());
-      
+
           val = typename Traits<MAP>::ret_t (m->first, m->second[*pos]);
         }
     }
 
   public:
-    star_iterator (const MAP & map, const pos_t & _pos) 
+    star_iterator (const MAP & map, const pos_t & _pos)
       : super (map.begin(), map.end())
       , pos (_pos.begin())
 #ifndef NDEBUG
@@ -74,11 +74,11 @@ namespace cross
     std::size_t k;
 
   public:
-    bracket_iterator (const MAP & map, const std::size_t & _k) 
+    bracket_iterator (const MAP & map, const std::size_t & _k)
       : super (map.begin(), map.end())
       , k (_k)
     {}
-    void operator ++ (void) 
+    void operator ++ (void)
     {
       const typename MAP::const_iterator & m (super::pos);
 
