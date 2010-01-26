@@ -5,8 +5,6 @@
 
 #include <util.hpp>
 
-#include <cassert>
-
 #include <vector>
 
 namespace cross
@@ -42,9 +40,6 @@ namespace cross
       if (super::has_more())
         {
           const typename MAP::const_iterator & m (super::pos);
-
-          assert (pos != end);
-          assert (*pos < m->second.size());
 
           val = typename Traits<MAP>::ret_t (m->first, m->second[*pos]);
         }
@@ -82,8 +77,6 @@ namespace cross
     {
       const typename MAP::const_iterator & m (super::pos);
 
-      assert (m->second.size() > 0);
-
       k /= m->second.size();
 
       super::operator++();
@@ -91,8 +84,6 @@ namespace cross
     typename Traits<MAP>::ret_t operator * (void) const
     {
       const typename MAP::const_iterator & m (super::pos);
-
-      assert (m->second.size() > 0);
 
       return typename Traits<MAP>::ret_t ( m->first
                                          , m->second[k % m->second.size()]
