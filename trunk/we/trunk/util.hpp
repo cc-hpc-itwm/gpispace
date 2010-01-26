@@ -9,20 +9,6 @@
 
 namespace util
 {
-  template <class T>
-  T next_power_of_two (T v)
-  {
-    if (v == 0)
-      return 1;
-
-    --v;
-
-    for (std::size_t i (1); i < sizeof(T) * CHAR_BIT; i <<= 1)
-      v |= (v >> i);
-
-    return v + 1;
-  }
-
   template<typename IT>
   class it
   {
