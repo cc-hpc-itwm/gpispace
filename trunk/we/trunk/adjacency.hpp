@@ -11,6 +11,16 @@
 
 namespace adjacency
 {
+  namespace exception
+  {
+    class not_found : public std::runtime_error
+    {
+    public:
+      not_found() : std::runtime_error("not_found") {}
+      ~not_found() throw() {}
+    };
+  }
+
   template<typename L,typename R>
   struct IT
   {
@@ -25,11 +35,12 @@ namespace adjacency
   {
   private:
     typedef typename IT<L,R>::type it_t;
+    typedef typename util::it<it_t> super;
   public:
-    const_it (const it_t & pos, const it_t & end) : util::it<it_t>(pos,end) {}
+    const_it (const it_t & pos, const it_t & end) : super(pos,end) {}
 
-    const L & operator * (void) const { return util::it<it_t>::pos->first; }
-    const R & operator () (void) const { return util::it<it_t>::pos->second; }
+    const L & operator * (void) const { return super::pos->first; }
+    const R & operator () (void) const { return super::pos->second; }
   };
 
   template<typename ROW, typename COL, typename ADJ>
@@ -63,6 +74,18 @@ namespace adjacency
       mat.resize (sz); // size >= 1
     }
 
+    template<typename IT, typename M, typename A, typename B>
+    const IT find (M & m, const A & a, const B & b) const
+      throw (exception::not_found)
+    {
+      if (a < m.size())
+        for (IT it (m[a].begin()); it != m[a].end(); ++it)
+          if (it->first == b)
+            return it;
+
+      throw exception::not_found();
+    }
+
   public:
     const const_it<COL,ADJ> row_const_it (const ROW & r) const
     {
@@ -88,47 +111,44 @@ namespace adjacency
       , col_tab (std::max (static_cast<COL>(1), c)) // size >= 1
     {}
 
+  public:
     const ADJ get_adjacent (const ROW & r, const COL & c) const
     {
-      ADJ v (invalid);
+      try
+        {
+          typedef typename col_adj_vec_t::const_iterator it_t;
 
-      if (r < row_tab.size())
-        for ( typename col_adj_vec_t::const_iterator it (row_tab[r].begin())
-            ; it != row_tab[r].end()
-            ; ++it
-            )
-          if (it->first == c)
-            {
-              v = it->second;
-              break;
-            }
+          it_t it (find<it_t,const row_tab_t,ROW,COL>(row_tab, r, c));
 
-      return v;
+          return it->second;
+        }
+      catch (exception::not_found)
+        {
+          return invalid;
+        }
     }
 
     void clear_adjacent (const ROW & r, const COL & c)
     {
-      if (r < row_tab.size())
-        for ( typename col_adj_vec_t::iterator it (row_tab[r].begin())
-            ; it != row_tab[r].end()
-            ; ++it
-            )
-          if (it->first == c)
-            {
-              row_tab[r].erase (it);
-              break;
-            }
+      try
+        {
+          typedef typename col_adj_vec_t::iterator it_t;
 
-      if (c < col_tab.size())
-        for ( typename row_adj_vec_t::iterator it (col_tab[c].begin())
-            ; it != col_tab[c].end()
-            ; ++it
-            )
-          if (it->first == r)
-            {
-              col_tab[c].erase (it);
-              break;
-            }
+          it_t it (find<it_t,row_tab_t,ROW,COL>(row_tab, r, c));
+
+          row_tab[r].erase (it);
+        }
+      catch (exception::not_found) {} // do nothing
+
+      try
+        {
+          typedef typename row_adj_vec_t::iterator it_t;
+
+          it_t it (find<it_t,col_tab_t,COL,ROW>(col_tab, c, r));
+
+          col_tab[c].erase (it);
+        }
+      catch (exception::not_found) {} // do nothing
     }
 
     void set_adjacent (const ROW & r, const COL & c, const ADJ & v)
