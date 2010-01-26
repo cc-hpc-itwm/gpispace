@@ -221,9 +221,9 @@ private:
                               )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    const in_cond_t in_cond (get_in_cond (tid));
+    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
-    recalculate_pid_in_map (pid_in_map, in_cond, pid, eid);
+    recalculate_pid_in_map (pid_in_map, in_cond_fun, pid, eid);
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == in_to_transition(tid).size()
@@ -236,10 +236,10 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     adj_place_const_it pit (in_to_transition (tid));
-    const in_cond_t in_cond (get_in_cond (tid));
+    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
     for (; pit.has_more(); ++pit)
-      recalculate_pid_in_map (pid_in_map, in_cond, *pit, pit());
+      recalculate_pid_in_map (pid_in_map, in_cond_fun, *pit, pit());
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == pit.size()
@@ -256,9 +256,9 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    const in_cond_t in_cond (get_in_cond (tid));
+    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
-    if (in_cond(token, pid, eid))
+    if (in_cond_fun(token, pid, eid))
       vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     if (vec_token_via_edge.empty())
@@ -344,10 +344,10 @@ private:
   {
     output_descr_t & output_descr (out_map[tid]);
     adj_place_const_it pit (out_of_transition (tid));
-    const out_cond_t out_cond (get_out_cond(tid));
+    const out_cond_t & out_cond_fun (get_fun (out_cond, tid));
 
     for (; pit.has_more(); ++pit)
-      update_output_descr (output_descr, out_cond, *pit, pit());
+      update_output_descr (output_descr, out_cond_fun, *pit, pit());
 
     update_set_of_tid ( tid
                       , output_descr.size() == pit.size()
@@ -362,9 +362,9 @@ private:
                           )
   {
     output_descr_t & output_descr (out_map[tid]);
-    const out_cond_t out_cond (get_out_cond(tid));
+    const out_cond_t & out_cond_fun (get_fun (out_cond, tid));
 
-    update_output_descr (output_descr, out_cond, pid, eid);
+    update_output_descr (output_descr, out_cond_fun, pid, eid);
 
     update_set_of_tid ( tid
                       , output_descr.size() == out_of_transition(tid).size()
@@ -850,7 +850,7 @@ public:
 
   output_t run_activity (const activity_t & activity) const
   {
-    return get_trans(activity.tid)(activity.input, activity.output_descr);
+    return get_fun(trans, activity.tid)(activity.input, activity.output_descr);
   }
 
   void inject_activity_result (const output_t & output)
