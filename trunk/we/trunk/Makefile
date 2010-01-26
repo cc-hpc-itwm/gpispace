@@ -32,7 +32,7 @@ HPP = $(wildcard *.hpp)
 
 .PHONY: all
 
-all: t.bin b.bin m.bin l.bin u.bin s.bin x.bin z.bin r.bin c.bin o.bin r.bin
+all: t.bin b.bin m.bin l.bin u.bin s.bin x.bin z.bin r.bin c.bin o.bin p.bin
 
 %.bin: %.cpp $(HPP) Makefile
 	$(CXX) $(CXX_FLAGS) $(addprefix -I,$(CXX_INCLUDE)) $< -o $@
