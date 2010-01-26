@@ -13,8 +13,8 @@ namespace petri_net
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
   typedef uint64_t pid_t;
-  typedef uint32_t tid_t;
-  typedef uint16_t eid_t;
+  typedef uint64_t tid_t;
+  typedef uint64_t eid_t;
 
   static const eid_t eid_invalid (std::numeric_limits<eid_t>::max());
 }
