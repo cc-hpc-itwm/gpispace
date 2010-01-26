@@ -34,12 +34,12 @@ namespace Function { namespace Condition
     class Generic
     {
     private:
-      typedef typename Traits<Token>::in_cond_t fun;
+      typedef typename Traits<Token>::in_cond_t Function;
 
-      fun f;
+      const Function f;
 
     public:
-      explicit Generic (const fun & _f) : f (_f) {}
+      explicit Generic (const Function & _f) : f (_f) {}
 
       bool operator () ( const Token & token
                        , const pid_t & pid
@@ -69,12 +69,12 @@ namespace Function { namespace Condition
     class Generic
     {
     private:
-      typedef typename Traits<Token>::out_cond_t fun;
+      typedef typename Traits<Token>::out_cond_t Function;
 
-      fun f;
+      const Function f;
 
     public:
-      explicit Generic (const fun & _f) : f (_f) {}
+      explicit Generic (const Function & _f) : f (_f) {}
 
       bool operator () (const pid_t & pid, const eid_t & eid)
       {
