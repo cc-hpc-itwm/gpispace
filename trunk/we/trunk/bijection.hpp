@@ -64,7 +64,7 @@ namespace bijection
 
     const I & get_id (const T & x) const throw (exception::no_such)
     {
-      typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
+      const typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
       if (it == bimap.left.end())
         throw exception::no_such (description);
@@ -74,7 +74,8 @@ namespace bijection
 
     const T & get_elem (const I & i) const throw (exception::no_such)
     {
-      typename bimap_t::right_map::const_iterator it (bimap.right.find (i));
+      const typename bimap_t::right_map::const_iterator it
+        (bimap.right.find (i));
 
       if (it == bimap.right.end())
         throw exception::no_such ("index for " + description);
@@ -87,7 +88,7 @@ namespace bijection
       if (bimap.left.find (x) != bimap.left.end())
         throw exception::already_there (description);
 
-      I i (h++);
+      const I i (h++);
 
       bimap.insert (typename bimap_t::value_type (x, i));
 
@@ -102,7 +103,7 @@ namespace bijection
     I modify (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
-      typename bimap_t::right_map::iterator it (bimap.right.find (i));
+      const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
         throw exception::no_such ("index for " + description);
@@ -116,7 +117,7 @@ namespace bijection
     I replace (const I & i, const T & x)
       throw (exception::no_such, exception::already_there)
     {
-      typename bimap_t::right_map::iterator it (bimap.right.find (i));
+      const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
       if (it == bimap.right.end())
         throw exception::no_such ("index for " + description);
@@ -134,7 +135,7 @@ namespace bijection
   private:
     typedef util::it<typename bijection<T, I>::const_iterator> super;
   public:
-    const_it (const bijection<T,I> & b) : super (b.begin(), b.end()) {}
+    explicit const_it (const bijection<T,I> & b) : super (b.begin(), b.end()) {}
 
     const I & operator * (void) const { return super::pos->right; }
   };
