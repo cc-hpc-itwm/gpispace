@@ -64,7 +64,7 @@ static void print_enabled (const pnet_t & n)
                << " [" << i->second.size() << "]"
                << ":";
 
-          for ( pnet_t::deque_token_via_edge_t::const_iterator k (i->second.begin())
+          for ( pnet_t::vec_token_via_edge_t::const_iterator k (i->second.begin())
               ; k != i->second.end()
               ; ++k
               )

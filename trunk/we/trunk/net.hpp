@@ -9,11 +9,10 @@
 #include <bijection.hpp>
 #include <cond.hpp>
 #include <connection.hpp>
+#include <cross.hpp>
 #include <multirel.hpp>
 #include <svector.hpp>
 #include <trans.hpp>
-
-#include <deque>
 
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
@@ -84,9 +83,8 @@ public:
 
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
 
-  typedef std::deque<token_via_edge_t> deque_token_via_edge_t;
-  //  typedef std::vector<token_via_edge_t> deque_token_via_edge_t;
-  typedef std::tr1::unordered_map<pid_t,deque_token_via_edge_t> pid_in_map_t;
+  typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
+  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
   typedef svector<tid_t> enabled_t;
 
@@ -178,15 +176,15 @@ private:
                               , const eid_t & eid
                               )
   {
-    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
 
-    deque_token_via_edge.clear();
+    vec_token_via_edge.clear();
 
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
       if (f(*tp, pid, eid))
-        deque_token_via_edge.push_back(token_via_edge_t (*tp, eid));
+        vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
 
-    if (deque_token_via_edge.empty())
+    if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
   }
 
@@ -256,16 +254,16 @@ private:
                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
     
     const typename in_cond_map_t::const_iterator f (get_in_cond().find(tid));
 
     assert (f != get_in_cond().end());
 
     if (f->second(token, pid, eid))
-      deque_token_via_edge.push_back(token_via_edge_t (token, eid));
+      vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
-    if (deque_token_via_edge.empty())
+    if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -281,20 +279,20 @@ private:
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
-    typename deque_token_via_edge_t::iterator it (deque_token_via_edge.begin());
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    typename vec_token_via_edge_t::iterator it (vec_token_via_edge.begin());
 
-    while (it != deque_token_via_edge.end() && it->first != token)
+    while (it != vec_token_via_edge.end() && it->first != token)
       ++it;
 
-    if (it != deque_token_via_edge.end())
+    if (it != vec_token_via_edge.end())
       {
         assert (it->first == token);
 
-        deque_token_via_edge.erase (it);
+        vec_token_via_edge.erase (it);
       }
 
-    if (deque_token_via_edge.empty())
+    if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -310,19 +308,19 @@ private:
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    deque_token_via_edge_t & deque_token_via_edge (pid_in_map[pid]);
-    const deque_token_via_edge_t old (deque_token_via_edge);
+    vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
+    const vec_token_via_edge_t old (vec_token_via_edge);
 
-    deque_token_via_edge.clear();
+    vec_token_via_edge.clear();
 
-    for ( typename deque_token_via_edge_t::const_iterator it (old.begin())
+    for ( typename vec_token_via_edge_t::const_iterator it (old.begin())
         ; it != old.end()
         ; ++it
         )
       if (it->first != token)
-        deque_token_via_edge.push_back (*it);
+        vec_token_via_edge.push_back (*it);
 
-    if (deque_token_via_edge.empty())
+    if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
 
     update_set_of_tid ( tid
@@ -837,48 +835,98 @@ public:
     return enabled.elem(tid);
   }
 
-  void fire (const tid_t & tid) throw (exception::transition_not_enabled)
+  typedef cross::cross<pid_in_map_t> choices_t;
+
+  const choices_t fire_choices (const tid_t & tid) const
+    throw (exception::no_such)
+  {
+    return choices_t (get_pid_in_map (tid));
+  }
+
+  struct activity_t
+  {
+  public:
+    const tid_t tid;
+    const input_t input;
+    const output_descr_t output_descr;
+
+    activity_t ( const tid_t _tid
+               , const input_t _input
+               , const output_descr_t _output_descr
+               )
+      : tid (_tid)
+      , input (_input)
+      , output_descr (_output_descr)
+    {}
+  };
+
+  output_t run_activity (const activity_t & activity) const
+  {
+    const typename trans_map_t::const_iterator f 
+      (get_trans().find (activity.tid));
+
+    assert (f != get_trans().end());
+
+    return f->second(activity.input, activity.output_descr);
+  }
+
+  void inject_activity_result (const output_t & output)
+  {
+    for ( typename output_t::const_iterator out (output.begin())
+        ; out != output.end()
+        ; ++out
+        )
+      put_token (out->second, out->first);
+  }
+
+  template<typename IT>
+  const activity_t extract_activity (const tid_t & tid, IT choice)
+    throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
       
-    const typename trans_map_t::const_iterator f (get_trans().find (tid));
-
-    assert (f != get_trans().end());
-
-    output_descr_t output_descr (out_map[tid]);
-    pid_in_map_t pid_in_map (in_map[tid]);
+    // before! constructing the input, as this consumes tokens
+    output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
 
-    for ( typename pid_in_map_t::iterator pid_in_map_it (pid_in_map.begin())
-        ; pid_in_map_it != pid_in_map.end()
-        ; ++pid_in_map_it
-        )
+    for ( ; choice.has_more(); ++choice)
       {
-        const pid_t pid (pid_in_map_it->first);
-        deque_token_via_edge_t & deque_token_via_edge (pid_in_map_it->second);
-
-        const token_via_edge_t token_via_edge (deque_token_via_edge.front());
-
-        deque_token_via_edge.erase (deque_token_via_edge.begin());
-        //deque_token_via_edge.pop_front();
-
-        const Token token (token_via_edge.first);
-        const eid_t eid (token_via_edge.second);
+        const pid_t & pid (choice->first);
+        const token_via_edge_t & token_via_edge (choice->second);
+        const Token & token (token_via_edge.first);
+        const eid_t & eid (token_via_edge.second);
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
         delete_one_token (pid, token);
       }
 
-    const output_t output (f->second(input, output_descr));
+    return activity_t (tid, input, output_descr);
+  }
 
-    for ( typename output_t::const_iterator out (output.begin())
-        ; out != output.end()
-        ; ++out
-        )
-      put_token (out->second, out->first);
+  template<typename IT>
+  void fire (const tid_t & tid, IT choice)
+  {
+    const activity_t activity (extract_activity (tid, choice));
+    const output_t output (run_activity (activity));
+    inject_activity_result (output);
+  }
+
+  void fire_first (const tid_t & tid)
+  {
+    fire (tid, cross::star_iterator<pid_in_map_t> (*(fire_choices (tid))));
+  }
+
+  void fire_nth (const tid_t & tid, const std::size_t & k)
+  {
+    fire (tid, cross::bracket_iterator<pid_in_map_t> (fire_choices(tid)[k]));
+  }
+
+  void fire (const tid_t & tid)
+  {
+    fire_first (tid);
   }
 };
 } // namespace petri_net

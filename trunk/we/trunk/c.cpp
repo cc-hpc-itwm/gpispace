@@ -106,7 +106,7 @@ static void firings (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cross::cross<pnet_t::pid_in_map_t> cross (n.get_pid_in_map(*t));
+      cross::cross<pnet_t::pid_in_map_t> cross (n.fire_choices(*t));
 
       cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
 
@@ -149,7 +149,7 @@ static void enabled (const pnet_t & n)
                << " [" << i->second.size() << "]"
                << ":";
 
-          for ( pnet_t::deque_token_via_edge_t::const_iterator k (i->second.begin())
+          for ( pnet_t::vec_token_via_edge_t::const_iterator k (i->second.begin())
               ; k != i->second.end()
               ; ++k
               )
