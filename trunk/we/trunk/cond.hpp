@@ -33,9 +33,10 @@ namespace Function { namespace Condition
     template<typename Token>
     class Generic
     {
-    private:
+    public:
       typedef typename Traits<Token>::in_cond_t Function;
 
+    private:
       const Function f;
 
     public:
@@ -68,9 +69,10 @@ namespace Function { namespace Condition
     template<typename Token>
     class Generic
     {
-    private:
+    public:
       typedef typename Traits<Token>::out_cond_t Function;
 
+    private:
       const Function f;
 
     public:
