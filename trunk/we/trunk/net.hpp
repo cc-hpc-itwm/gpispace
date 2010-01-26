@@ -26,7 +26,7 @@ namespace petri_net
     class transition_not_enabled : public std::runtime_error
     {
     public:
-      transition_not_enabled (const std::string & msg)
+      explicit transition_not_enabled (const std::string & msg)
         : std::runtime_error(msg)
       {}
       ~transition_not_enabled() throw () {}
@@ -35,7 +35,7 @@ namespace petri_net
     class no_such : public std::runtime_error
     {
     public:
-      no_such (const std::string & msg) : std::runtime_error (msg) {}
+      explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
       ~no_such () throw () {}
     };
   }
@@ -205,14 +205,23 @@ private:
       recalculate_in_enabled (*t, pid, t());
   }
 
+  void recalculate_enabled_by_edge ( const eid_t & eid
+                                   , const connection_t & connection
+                                   )
+  {
+    if (connection.type == PT)
+      {
+        recalculate_in_enabled (connection.tid, connection.pid, eid);
+      }
+    else
+      {
+        update_out_enabled (connection.tid, connection.pid, eid);
+      }
+  }
+
   void recalculate_enabled_by_edge (const eid_t & eid)
   {
-    const connection_t connection (get_edge_info (eid));
-
-    if (connection.type == PT)
-      recalculate_in_enabled (connection.tid, connection.pid, eid);
-    else
-      update_out_enabled (connection.tid, connection.pid, eid);
+    recalculate_enabled_by_edge (eid, get_edge_info (eid));
   }
 
   void recalculate_in_enabled ( const tid_t & tid
@@ -510,10 +519,7 @@ public:
 
     connection_map[eid] = connection;
 
-    if (connection.type == PT)
-      recalculate_in_enabled (connection.tid, connection.pid, eid);
-    else
-      update_out_enabled (connection.tid, connection.pid, eid);
+    recalculate_enabled_by_edge (eid, connection);
 
     return eid;
   }
@@ -571,7 +577,7 @@ public:
   // delete elements
   const eid_t & delete_edge (const eid_t & eid)
   {
-    typename connection_map_t::iterator it (connection_map.find (eid));
+    const typename connection_map_t::iterator it (connection_map.find (eid));
 
     if (it == connection_map.end())
       throw exception::no_such ("connection");
@@ -581,13 +587,13 @@ public:
     if (connection.type == PT)
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
-        recalculate_in_enabled (connection.tid, connection.pid, eid);
       }
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
-        update_out_enabled (connection.tid, connection.pid, eid);
       }
+
+    recalculate_enabled_by_edge (eid, connection);
 
     connection_map.erase (it);
 
@@ -599,6 +605,7 @@ public:
   const pid_t & delete_place (const pid_t & pid)
     throw (bijection::exception::no_such)
   {
+    // make the token deletion visible to delete_edge
     token_place_rel.delete_right (pid);
 
     for ( adj_transition_const_it tit (out_of_place (pid))
@@ -790,7 +797,7 @@ public:
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_all_token (*t, pid, token);
 
-    return (token_place_rel.delete_all (token, pid));
+    return token_place_rel.delete_all (token, pid);
   }
 
   // WORK HERE: implement more efficient?
