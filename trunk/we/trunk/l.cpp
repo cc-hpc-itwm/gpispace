@@ -95,7 +95,11 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
 
-  if (!t.empty())
+  if (t.empty())
+    {
+      throw std::runtime_error ("no enabled transition");
+    }
+  else
     {
       std::tr1::uniform_int<pnet_t::enabled_t::size_type>
         uniform (0,t.size()-1);
@@ -163,19 +167,23 @@ main ()
 
       for (unsigned int r (0); r < num_rounds; ++r)
         {
-          std::cout << "#"; fflush (stdout);
-
           for (unsigned int z (0); z < size_loop; ++z)
-            for (unsigned int l (0); l < num_loops; ++l)
-              fire_random_transition (n, engine);
+            {
+              for (unsigned int l (0); l < num_loops; ++l)
+                fire_random_transition (n, engine);
+
+              cout << "."; fflush (stdout);
+            }
+
+          cout << "#"; fflush (stdout);
         }
 
-      std::cout << endl;
+      cout << endl;
     }
 
-    std::cout << n.get_num_transitions() << std::endl;
-    std::cout << n.get_num_places() << std::endl;
-    std::cout << n.get_num_edges() << std::endl;
+    cout << n.get_num_transitions() << endl;
+    cout << n.get_num_places() << endl;
+    cout << n.get_num_edges() << endl;
   }
 
   return EXIT_SUCCESS;
