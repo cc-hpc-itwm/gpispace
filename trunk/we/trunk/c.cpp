@@ -1,3 +1,4 @@
+// demonstrate usage of condition functions, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
 #include <cross.hpp>
@@ -25,6 +26,9 @@ typedef Function::Transition::Traits<token_t> traits;
 typedef traits::token_input_t token_input_t;
 typedef traits::place_via_edge_t place_via_edge_t;
 
+using std::cout;
+using std::endl;
+
 static std::ostream & operator << (std::ostream & s, const token_t & token)
 {
   return s << ":" << token.first << "-" << token.second << ":";
@@ -35,6 +39,7 @@ static token_second_t shift (const place_t & place)
   return place.second;
 }
 
+// match by pid, means put it there where it comes from
 template<typename T>
 static petri_net::pid_t edge_descr (const T & x)
 {
@@ -56,19 +61,21 @@ static token_t trans ( const petri_net::pid_t & pid
 {
   const token_t token (Function::Transition::get_token<token_t> (token_input));
 
-  std::cout << "trans: "
-            << " descr " << pid
-            << " token " << token
-            << " from {" << Function::Transition::get_pid<token_t> (token_input)
-            << " via " << Function::Transition::get_eid<token_t> (token_input)
-            << "} to " << inc (token)
-            << " on {" <<  Function::Transition::get_pid<token_t> (place_via_edge)
-            << " via " <<  Function::Transition::get_eid<token_t> (place_via_edge)
-            << "}" << std::endl;
+  cout << "trans: "
+       << " descr " << pid
+       << " token " << token
+       << " from {" << Function::Transition::get_pid<token_t> (token_input)
+       << " via " << Function::Transition::get_eid<token_t> (token_input)
+       << "} to " << inc (token)
+       << " on {" <<  Function::Transition::get_pid<token_t> (place_via_edge)
+       << " via " <<  Function::Transition::get_eid<token_t> (place_via_edge)
+       << "}"
+       << endl;
 
   return inc (token);
 }
 
+// each transition takes only one remainder, shifted by the place
 static bool cond_rem ( const pnet_t & net
                      , const token_second_t & rem
                      , const token_t & token
@@ -96,9 +103,6 @@ static bool cond_capacity ( const pnet_t & net
 
   return (net.num_token (pid) < c->second);
 }
-
-using std::cout;
-using std::endl;
 
 static void firings (const pnet_t & n)
 {

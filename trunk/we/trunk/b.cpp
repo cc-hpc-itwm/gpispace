@@ -1,4 +1,3 @@
-
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
@@ -30,6 +29,9 @@ static const unsigned int num_fire (1000);
 static const unsigned int bisize (1000000);
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+
+using std::cout;
+using std::endl;
 
 int
 main ()
@@ -79,7 +81,7 @@ main ()
               ++duplicates;
             }
 
-      std::cout << "duplicates = " << duplicates << std::endl;
+      cout << "duplicates = " << duplicates << endl;
     }
 
     {
@@ -105,7 +107,7 @@ main ()
               ++duplicates;
             }
 
-      std::cout << "duplicates = " << duplicates << std::endl;
+      cout << "duplicates = " << duplicates << endl;
     }
 
     {
@@ -117,7 +119,9 @@ main ()
     }
 
     {
-      Timer_t timer ("traverse places plus one level of transitions", factor * nplace);
+      Timer_t timer ( "traverse places plus one level of transitions"
+                    , factor * nplace
+                    );
 
       unsigned int t_in (0);
       unsigned int t_out (0);
@@ -145,10 +149,10 @@ main ()
             }
         }
 
-      std::cout << "t_in = " << t_in << std::endl;
-      std::cout << "t_out = " << t_out << std::endl;
-      std::cout << "e_in = " << e_in << std::endl;
-      std::cout << "e_out = " << e_out << std::endl;
+      cout << "t_in = " << t_in << endl;
+      cout << "t_out = " << t_out << endl;
+      cout << "e_in = " << e_in << endl;
+      cout << "e_out = " << e_out << endl;
     }
 
     {
@@ -180,10 +184,10 @@ main ()
             }
         }
 
-      std::cout << "p_in = " << p_in << std::endl;
-      std::cout << "p_out = " << p_out << std::endl;
-      std::cout << "e_in = " << e_in << std::endl;
-      std::cout << "e_out = " << e_out << std::endl;
+      cout << "p_in = " << p_in << endl;
+      cout << "p_out = " << p_out << endl;
+      cout << "e_in = " << e_in << endl;
+      cout << "e_out = " << e_out << endl;
     }
 
     {
@@ -207,7 +211,7 @@ main ()
             }
         }
 
-      std::cout << "fired = " << fired << std::endl;
+      cout << "fired = " << fired << endl;
     }
 
     malloc_stats();

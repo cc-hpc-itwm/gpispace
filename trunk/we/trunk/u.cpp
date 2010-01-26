@@ -1,4 +1,3 @@
-
 // user defined transition function example, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>

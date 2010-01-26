@@ -1,4 +1,3 @@
-
 // a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
@@ -79,7 +78,7 @@ my_free_hook (void *ptr, const void *)
   __malloc_hook = my_malloc_hook;
   __free_hook = my_free_hook;
 }
-#endif // NMALLOCHOOL
+#endif // NMALLOCHOOK
 
 typedef node_t place_t;
 typedef node_t transition_t;

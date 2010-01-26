@@ -1,5 +1,4 @@
-
-// count, how often object are copied, mirko.rahn@itwm.fraunhofer.de
+// count how often objects are copied, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
 
