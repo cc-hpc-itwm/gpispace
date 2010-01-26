@@ -7,7 +7,7 @@ default: compile
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
-compile: $(BUILD_DIR)/Makefile depend
+compile: $(BUILD_DIR) $(BUILD_DIR)/Makefile depend
 	$(MAKE) -C $(BUILD_DIR)
 
 config: $(BUILD_DIR) CMakeLists.txt

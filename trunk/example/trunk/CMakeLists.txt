@@ -17,6 +17,26 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
+##########################################################
+set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor ")#-Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
+# gprof and gcov support
+set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
+
+include(CheckCompiler)
+info_compiler()
+
+##########################################################
+
 # Find doxygen
 include(FindDoxygen)
 include(FindMscgen)
@@ -54,6 +74,8 @@ include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 
 # Reflect the package structure
 add_subdirectory(example)
+
+include(CTest)
 enable_testing()
 add_subdirectory(tests)
 
