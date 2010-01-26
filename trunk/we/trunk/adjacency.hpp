@@ -131,7 +131,6 @@ namespace adjacency
             }
     }
 
-  public:
     void set_adjacent (const ROW & r, const COL & c, const ADJ & v)
     {
       adjust_size<ROW> (r, row_tab);
