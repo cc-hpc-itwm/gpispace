@@ -50,8 +50,10 @@ namespace multirel
   struct right_const_it
     : public lr_const_it<typename traits<L,R>::right_const_it, L>
   {
+  private:
     typedef typename traits<L,R>::right_const_it it_t;
 
+  public:
     right_const_it (const std::pair<it_t, it_t> & its)
       : lr_const_it<it_t, L> (its)
     {}
@@ -61,8 +63,10 @@ namespace multirel
   struct left_const_it
     : public lr_const_it<typename traits<L,R>::left_const_it, R>
   {
+  private:
     typedef typename traits<L,R>::left_const_it it_t;
 
+  public:
     left_const_it (const std::pair<it_t, it_t> & its)
       : lr_const_it<it_t, R> (its)
     {}
