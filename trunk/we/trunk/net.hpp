@@ -111,10 +111,6 @@ private:
   adjacency::table<pid_t,tid_t,eid_t> adj_pt;
   adjacency::table<tid_t,pid_t,eid_t> adj_tp;
 
-  pid_t num_places;
-  tid_t num_transitions;
-  eid_t num_edges;
-
   token_place_rel_t token_place_rel;
 
   enabled_t enabled;
@@ -144,8 +140,6 @@ private:
     const eid_t eid (emap.add (edge));
 
     m.set_adjacent (r, c, eid);
-
-    ++num_edges;
 
     return eid;
   }
@@ -390,9 +384,6 @@ public:
     , connection_map ()
     , adj_pt (eid_invalid, _places, _transitions)
     , adj_tp (eid_invalid, _transitions, _places)
-    , num_places (0)
-    , num_transitions (0)
-    , num_edges (0)
     , token_place_rel ()
     , enabled ()
     , trans ()
@@ -405,9 +396,9 @@ public:
   {};
 
   // numbers of elements
-  pid_t get_num_places (void) const { return num_places; }
-  tid_t get_num_transitions (void) const { return num_transitions; }
-  eid_t get_num_edges (void) const { return num_edges; }
+  pid_t get_num_places (void) const { return places().size(); }
+  tid_t get_num_transitions (void) const { return transitions().size(); }
+  eid_t get_num_edges (void) const { return edges().size(); }
 
   // condition+transition function accessores
   const trans_t & get_trans (const tid_t & tid) const
@@ -470,8 +461,6 @@ public:
   pid_t add_place (const Place & place)
     throw (bijection::exception::already_there)
   {
-    ++num_places;
-
     return pmap.add (place);
   }
 
@@ -502,8 +491,6 @@ public:
   )
     throw (bijection::exception::already_there)
   {
-    ++num_transitions;
-
     const tid_t tid (tmap.add (transition));
 
     set_transition_function (tid, tf);
@@ -606,8 +593,6 @@ public:
 
     emap.erase (eid);
 
-    --num_edges;
-
     return eid;
   }
 
@@ -629,8 +614,6 @@ public:
       delete_edge (tit());
 
     pmap.erase (pid);
-
-    --num_places;
 
     return pid;
   }
@@ -661,8 +644,6 @@ public:
     enabled.erase (tid);
     in_map.erase (tid);
     out_map.erase (tid);
-
-    --num_transitions;
 
     return tid;
   }
