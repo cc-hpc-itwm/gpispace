@@ -39,7 +39,6 @@ namespace bijection
     typedef boost::bimaps::unordered_set_of<I> id_collection_t;
 
     typedef boost::bimap<elem_collection_t, id_collection_t> bimap_t;
-    typedef typename bimap_t::value_type val_t;
 
     bimap_t bimap;
     I h;
@@ -88,7 +87,7 @@ namespace bijection
 
       I i (h++);
 
-      bimap.insert (val_t (x, i));
+      bimap.insert (typename bimap_t::value_type (x, i));
 
       return i;
     }
@@ -128,21 +127,14 @@ namespace bijection
   };
 
   template<typename T,typename I>
-  struct IT
-  {
-  public:
-    typedef typename bijection<T, I>::const_iterator type;
-  };
-
-  template<typename T,typename I>
-  struct const_it : public util::it<typename IT<T,I>::type>
+  struct const_it : public util::it<typename bijection<T, I>::const_iterator>
   {
   private:
-    typedef typename IT<T,I>::type it_t;
+    typedef util::it<typename bijection<T, I>::const_iterator> super;
   public:
-    const_it (const bijection<T,I> & b) : util::it<it_t> (b.begin(), b.end()) {}
+    const_it (const bijection<T,I> & b) : super (b.begin(), b.end()) {}
 
-    const I & operator * (void) const { return util::it<it_t>::pos->right; }
+    const I & operator * (void) const { return super::pos->right; }
   };
 } // namespace bijection
 
