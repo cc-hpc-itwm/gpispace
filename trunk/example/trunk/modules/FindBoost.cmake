@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # - Try to find Boost include dirs and libraries
 # Usage of this module as follows:
 #
@@ -91,13 +92,16 @@
 #
 
 # this module required CMake 2.5 for the Boost_FIND_VERSION stuff
-CMAKE_MINIMUM_REQUIRED(VERSION "2.6" FATAL_ERROR)
+#CMAKE_MINIMUM_REQUIRED(VERSION "2.6" FATAL_ERROR)
 
 #MESSAGE(STATUS "Finding Boost libraries.... ")
 
 OPTION(Boost_USE_MULTITHREADED "Use the multithreaded versions of the boost libraries" ON)
 
-SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.35.0" "1.35" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" )
+SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.40.0" "1.40" "1.39.0" "1.39"
+	"1.38.0" "1.38" "1.37.0" "1.37" "1.36.0" "1.36"
+	"1.35.0" "1.35" "1.34.1" "1.34.0" "1.34"
+	"1.33.1" "1.33.0" "1.33" )
 
 
 ############################################
@@ -511,6 +515,7 @@ ELSE (_boost_IN_CACHE)
   ENDIF(Boost_INCLUDE_DIR)
 
   IF (Boost_FOUND)
+    set(BOOST_FOUND true)
       IF (NOT Boost_FIND_QUIETLY)
         MESSAGE(STATUS "Found The Following Boost Libraries:")
         FOREACH ( COMPONENT  ${Boost_FIND_COMPONENTS} )
@@ -535,9 +540,11 @@ ELSE (_boost_IN_CACHE)
   ENDIF(WIN32)
 
   # show the Boost_INCLUDE_DIRS AND Boost_LIBRARIES variables only in the advanced view
-  MARK_AS_ADVANCED(Boost_INCLUDE_DIRS
-      Boost_LIBRARIES
-      Boost_LIBRARY_DIRS
+  MARK_AS_ADVANCED(
+    BOOST_FOUND
+    Boost_INCLUDE_DIRS
+    Boost_LIBRARIES
+    Boost_LIBRARY_DIRS
   )
 ENDIF(_boost_IN_CACHE)
 
