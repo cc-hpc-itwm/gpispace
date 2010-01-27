@@ -1,32 +1,38 @@
 
 DOPTS += $(CPP_MACROS)
 
-WARN += all error extra
+WARN += all
+#WARN += error
+# BOOST
+##WARN += extra
 WARN += init-self
 WARN += missing-include-dirs
 WARN += switch-default
 # BOOST!
-# WARN += switch-enum
+## WARN += switch-enum
 WARN += no-pragmas
 WARN += float-equal
 # BOOST!
-# WARN += shadow 
+## WARN += shadow 
 WARN += enum-compare
 WARN += missing-declarations
 # BOOST!
-# WARN += missing-noreturn
+## WARN += missing-noreturn
 WARN += redundant-decls
 
 EOPTS += pedantic Wno-long-long
 
 CXX_FLAGS = $(addprefix -W,$(WARN))
-#CXX_FLAGS += -g -pg -DNDEBUG
-CXX_FLAGS += -O3
+CXX_FLAGS += -g
+#CXX_FLAGS += -O3
 CXX_FLAGS += $(addprefix -,$(EOPTS))
 CXX_FLAGS += $(addprefix -D,$(DOPTS))
 
 CXX_INCLUDE = .
 CXX_INCLUDE += ${BOOST_ROOT}/include
+
+CXX_LIBS += pthread
+CXX_LIBS += boost_thread
 
 HPP = $(wildcard *.hpp)
 CPP = $(wildcard *.cpp)
@@ -36,7 +42,8 @@ CPP = $(wildcard *.cpp)
 all: $(addsuffix .bin,$(basename $(CPP)))
 
 %.bin: %.cpp $(HPP) Makefile
-	$(CXX) $(CXX_FLAGS) $(addprefix -I,$(CXX_INCLUDE)) $< -o $@
+	$(CXX) $(CXX_FLAGS) $(addprefix -l, $(CXX_LIBS)) \
+                            $(addprefix -I, $(CXX_INCLUDE)) $< -o $@
 
 %.bin.gprof: %.bin
 	./$^
