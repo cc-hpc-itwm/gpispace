@@ -110,7 +110,7 @@ static void firings (const pnet_t & n)
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
-      cross::cross<pnet_t::pid_in_map_t> cross (n.fire_choices(*t));
+      cross::cross<pnet_t::pid_in_map_t> cross (n.choices(*t));
 
       cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
 

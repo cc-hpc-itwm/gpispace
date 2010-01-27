@@ -832,7 +832,7 @@ public:
 
   typedef cross::cross<pid_in_map_t> choices_t;
 
-  const choices_t fire_choices (const tid_t & tid) const
+  const choices_t choices (const tid_t & tid) const
     throw (exception::no_such)
   {
     return choices_t (get_pid_in_map (tid));
@@ -897,26 +897,27 @@ public:
   }
 
   template<typename IT>
-  void fire (const tid_t & tid, IT choice)
+  tid_t fire (const tid_t & tid, IT choice)
   {
     const activity_t activity (extract_activity (tid, choice));
     const output_t output (run_activity (activity));
     inject_activity_result (output);
+    return tid;
   }
 
-  void fire_first (const tid_t & tid)
+  tid_t fire_first (const tid_t & tid)
   {
-    fire (tid, cross::star_iterator<pid_in_map_t> (*(fire_choices (tid))));
+    return fire (tid, cross::star_iterator<pid_in_map_t> (*(choices (tid))));
   }
 
-  void fire_nth (const tid_t & tid, const std::size_t & k)
+  tid_t fire_nth (const tid_t & tid, const std::size_t & k)
   {
-    fire (tid, cross::bracket_iterator<pid_in_map_t> (fire_choices(tid)[k]));
+    return fire (tid, cross::bracket_iterator<pid_in_map_t> (choices(tid)[k]));
   }
 
-  void fire (const tid_t & tid)
+  tid_t fire (const tid_t & tid)
   {
-    fire_first (tid);
+    return fire_first (tid);
   }
 };
 } // namespace petri_net
