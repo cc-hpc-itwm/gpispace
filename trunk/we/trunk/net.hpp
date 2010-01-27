@@ -896,6 +896,12 @@ public:
     return activity_t (tid, input, output_descr);
   }
 
+  const activity_t extract_activity_first (const tid_t & tid)
+  {
+    return extract_activity
+      (tid, cross::star_iterator<pid_in_map_t> (*(choices (tid))));
+  }
+
   template<typename IT>
   tid_t fire (const tid_t & tid, IT choice)
   {

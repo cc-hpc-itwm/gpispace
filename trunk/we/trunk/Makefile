@@ -23,8 +23,8 @@ WARN += redundant-decls
 EOPTS += pedantic Wno-long-long
 
 CXX_FLAGS = $(addprefix -W,$(WARN))
-CXX_FLAGS += -g
-#CXX_FLAGS += -O3
+#CXX_FLAGS += -g
+CXX_FLAGS += -O3
 CXX_FLAGS += $(addprefix -,$(EOPTS))
 CXX_FLAGS += $(addprefix -D,$(DOPTS))
 
