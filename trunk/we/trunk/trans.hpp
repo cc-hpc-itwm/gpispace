@@ -90,6 +90,20 @@ namespace Function { namespace Transition
     return token_input.first;
   }
 
+  template<typename Token>
+  pid_t get_pid
+  (const typename Traits<Token>::token_on_place_t & token_on_place)
+  {
+    return token_on_place.second;
+  }
+
+  template<typename Token>
+  pid_t get_token
+  (const typename Traits<Token>::token_on_place_t & token_on_place)
+  {
+    return token_on_place.first;
+  }
+
   // eat some function
   template<typename Token>
   class Generic
