@@ -29,10 +29,11 @@ CXX_INCLUDE = .
 CXX_INCLUDE += ${BOOST_ROOT}/include
 
 HPP = $(wildcard *.hpp)
+CPP = $(wildcard *.cpp)
 
 .PHONY: all
 
-all: t.bin b.bin m.bin l.bin u.bin s.bin x.bin z.bin r.bin c.bin o.bin p.bin
+all: $(addsuffix .bin,$(basename $(CPP)))
 
 %.bin: %.cpp $(HPP) Makefile
 	$(CXX) $(CXX_FLAGS) $(addprefix -I,$(CXX_INCLUDE)) $< -o $@
