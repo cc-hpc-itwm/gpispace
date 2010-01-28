@@ -16,6 +16,7 @@
 
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
+#include <tr1/random>
 
 #include <boost/function.hpp>
 
@@ -87,6 +88,10 @@ public:
   typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
   typedef svector<tid_t> enabled_t;
+
+  typedef cross::cross<pid_in_map_t> choices_t;
+  typedef cross::star_iterator<pid_in_map_t> choices_star_iterator;
+  typedef cross::bracket_iterator<pid_in_map_t> choices_bracket_iterator;
 
   // *********************************************************************** //
 private:
@@ -830,10 +835,7 @@ public:
     return enabled.elem(tid);
   }
 
-  typedef cross::cross<pid_in_map_t> choices_t;
-
-  const choices_t choices (const tid_t & tid) const
-    throw (exception::no_such)
+  choices_t choices (const tid_t & tid) const throw (exception::no_such)
   {
     return choices_t (get_pid_in_map (tid));
   }
@@ -898,14 +900,24 @@ public:
 
   activity_t extract_activity_first (const tid_t & tid)
   {
-    return extract_activity
-      (tid, cross::star_iterator<pid_in_map_t> (*(choices (tid))));
+    return extract_activity (tid, choices_star_iterator (*(choices (tid))));
   }
 
   activity_t extract_activity_nth (const tid_t & tid, const std::size_t & k)
   {
-    return extract_activity
-      (tid, cross::bracket_iterator<pid_in_map_t> (choices (tid)[k]));
+    return extract_activity (tid, choices_bracket_iterator (choices (tid)[k]));
+  }
+
+  template<typename Engine>
+  activity_t extract_activity_random (Engine & engine)
+  {
+    std::tr1::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
+    const tid_t tid (enabled.at (rand_tid (engine)));
+    const choices_t cs (choices(tid));
+    std::tr1::uniform_int<std::size_t> rand_choice (0,cs.size()-1);
+    const choices_bracket_iterator it (cs[rand_choice (engine)]);
+
+    return extract_activity (tid, it);
   }
 
   template<typename IT>
@@ -919,12 +931,12 @@ public:
 
   tid_t fire_first (const tid_t & tid)
   {
-    return fire (tid, cross::star_iterator<pid_in_map_t> (*(choices (tid))));
+    return fire (tid, choices_star_iterator (*(choices (tid))));
   }
 
   tid_t fire_nth (const tid_t & tid, const std::size_t & k)
   {
-    return fire (tid, cross::bracket_iterator<pid_in_map_t> (choices(tid)[k]));
+    return fire (tid, choices_bracket_iterator (choices(tid)[k]));
   }
 
   tid_t fire (const tid_t & tid)

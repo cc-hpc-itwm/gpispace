@@ -12,7 +12,7 @@
 
 typedef unsigned int transition_t;
 typedef unsigned int token_second_t;
-typedef std::pair<char,unsigned int> token_t;
+typedef std::pair<char,token_second_t> token_t;
 typedef unsigned int cnt_edge_t;
 typedef std::pair<cnt_edge_t,petri_net::pid_t> edge_t;
 typedef unsigned int cnt_place_t;
@@ -32,6 +32,16 @@ using std::endl;
 static std::ostream & operator << (std::ostream & s, const token_t & token)
 {
   return s << ":" << token.first << "-" << token.second << ":";
+}
+
+static std::ostream & operator << (std::ostream & s, const place_t & place)
+{
+  return s << "(" << place.first << "-" << place.second << ")";
+}
+
+static std::ostream & operator << (std::ostream & s, const edge_t & edge)
+{
+  return s << "-" << edge.first << "-" << edge.second << "-";
 }
 
 static token_second_t shift (const place_t & place)
@@ -146,7 +156,7 @@ static void enabled (const pnet_t & n)
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
           cout << *t << ":"
-               << " Place " << i->first
+               << " Place " << n.get_place (i->first)
                << " [" << i->second.size() << "]"
                << ":";
 
@@ -154,7 +164,9 @@ static void enabled (const pnet_t & n)
               ; k != i->second.end()
               ; ++k
               )
-            cout << " {" << k->first << " via " << k->second << "}";
+            cout << " {" << k->first 
+                 << " via " << n.get_edge (k->second)
+                 << "}";
 
           cout << endl;
         }
@@ -261,12 +273,16 @@ main ()
 
   marking (n);
   enabled (n);
+
   firings (n);
 
   for (token_second_t c (0); c < branch_factor * branch_factor; ++c)
     for (token_second_t t (0); t < branch_factor; ++t)
       {
-        cout << endl; n.fire (t); marking (n); enabled (n);
+        cout << endl; n.fire (t);
+
+        marking (n);
+        enabled (n);
       }
 
   return EXIT_SUCCESS;

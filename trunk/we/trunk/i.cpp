@@ -199,6 +199,11 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 // ************************************************************************* //
 // thread safe deque
 
+// Attention: A queue wich blocks on a certain maximum capacity would
+// lead to a deadlock: The manager puts into the work queue, which is
+// full and blocks. At the same time, each worker puts into the result
+// queue, which is full as well and blocks.
+
 template<typename T>
 struct deque
 {
@@ -325,7 +330,7 @@ static void do_log (const std::string & msg)
 }
 
 #define LOG(msg) {std::ostringstream s; s << msg; do_log(s.str());}
-#define HEAD(h) h << "." << tid << ": "
+#define HEAD(h) h << "." << iThread << ": "
 #define WLOG(msg) LOG(HEAD("worker") << msg)
 #define MLOG(msg) LOG(HEAD("master") << msg)
 
@@ -348,7 +353,7 @@ struct param_t
 static void * worker (void * arg)
 {
   param_t * p ((param_t *)arg);
-  const unsigned int tid (get_id());
+  const unsigned int iThread (get_id());
 
   WLOG ("START");
 
@@ -374,7 +379,7 @@ static void * worker (void * arg)
 static void * manager (void * arg)
 {
   param_t * p ((param_t *) arg);
-  const unsigned int tid (get_id());
+  const unsigned int iThread (get_id());
 
   unsigned long extract (0);
   unsigned long inject (0);
@@ -403,24 +408,12 @@ static void * manager (void * arg)
       
       while (!p->net.enabled_transitions().empty())
         {
-          const pnet_t::enabled_t & enabled (p->net.enabled_transitions());
-
-          pnet_t::enabled_t::size_type size (enabled.size());
-
-          std::tr1::uniform_int<pnet_t::enabled_t::size_type>
-            uniform (0,size-1);
-
-          pnet_t::enabled_t::size_type k (uniform (engine));
-
-          const petri_net::tid_t t (enabled.at(k));
-
-          MLOG ("EXTRACT " << p->net.get_transition (t) 
-               << ": " << k << " in [0.." << size << ")"
-               );
-
-          const pnet_t::activity_t activity (p->net.extract_activity_first (t));
+          const pnet_t::activity_t activity
+            (p->net.extract_activity_random (engine));
 
           ++extract;
+
+         MLOG ("EXTRACT " << show_activity_t (p->net, activity));
 
           if (  p->tid_to_run_on_master.find (activity.tid) 
              != p->tid_to_run_on_master.end()
@@ -464,6 +457,7 @@ using petri_net::PT;
 using petri_net::TP;
 
 static const unsigned int NUM_WORKER (5);
+static const unsigned int QUEUE_DEPTH_IN_NET (2 * NUM_WORKER);
 
 int
 main ()
@@ -528,7 +522,7 @@ main ()
                           )
             );
 
-  for (unsigned int i(0); i < 2*NUM_WORKER; ++i)
+  for (unsigned int i(0); i < QUEUE_DEPTH_IN_NET; ++i)
     net.put_token (pid.queue);
 
   cout << net << endl;
