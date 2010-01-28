@@ -114,9 +114,6 @@ static void firings (const pnet_t & n)
 
       cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
 
-      typedef std::pair<petri_net::pid_t, pnet_t::token_via_edge_t> ret_t;
-      typedef std::vector<ret_t> cross_t;
-
       for ( ; cross.has_more(); ++cross)
         {
           cross::star_iterator<pnet_t::pid_in_map_t> c (*cross);
