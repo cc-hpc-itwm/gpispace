@@ -140,7 +140,7 @@ static void enabled (const pnet_t & n)
       pnet_t::pid_in_map_t m (n.get_pid_in_map(*t));
 
       cout << "Transition " << *t
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
            << ":" << endl;
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
@@ -167,7 +167,7 @@ static void enabled (const pnet_t & n)
       pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
 
       cout << "Transition " << *t
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
            << ":";
 
       for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())

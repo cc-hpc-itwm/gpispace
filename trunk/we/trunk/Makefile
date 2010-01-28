@@ -2,25 +2,23 @@
 DOPTS += $(CPP_MACROS)
 
 WARN += all
-#WARN += error
+WARN += error
 # BOOST
-WARN += extra
+##WARN += extra
 WARN += init-self
 WARN += missing-include-dirs
 WARN += switch-default
 # BOOST!
-WARN += switch-enum
+##WARN += switch-enum
 WARN += no-pragmas
 WARN += float-equal
 # BOOST!
-WARN += shadow 
+##WARN += shadow 
 WARN += enum-compare
 WARN += missing-declarations
 # BOOST!
-WARN += missing-noreturn
+##WARN += missing-noreturn
 WARN += redundant-decls
-
-WARN = 
 
 EOPTS += pedantic Wno-long-long
 

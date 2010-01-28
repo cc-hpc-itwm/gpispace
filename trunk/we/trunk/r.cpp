@@ -18,9 +18,11 @@ typedef unsigned int place_t;
 typedef unsigned int transition_t;
 typedef char token_t;
 
+namespace {
 static const token_t elements[] = {'a','b','c'};
 static const std::size_t k (sizeof (elements) / sizeof (*elements));
 static const int num_fire (100);
+}
 
 typedef unsigned int edge_left_t;
 typedef char edge_right_t;

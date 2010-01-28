@@ -55,7 +55,7 @@ static void print_enabled (const pnet_t & n)
       pnet_t::pid_in_map_t m (n.get_pid_in_map(*t));
 
       cout << "Transition " << trans (n, *t)
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
            << ":" << endl;
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
@@ -81,7 +81,7 @@ static void print_enabled (const pnet_t & n)
       pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
 
       cout << "Transition " << trans (n, *t)
-           << " can_fire = " << (n.can_fire (*t) ? "true" : "false")
+           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
            << ":";
 
       for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
@@ -105,7 +105,7 @@ static void print_net (const pnet_t & n)
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
     {
       cout << trans (n, *t)
-           << " can_fire == " << (n.can_fire (*t) ? "true" : "false")
+           << " can_fire == " << (n.get_can_fire (*t) ? "true" : "false")
            << endl;
 
       for ( petri_net::adj_place_const_it pit (n.out_of_transition(*t))
@@ -210,7 +210,7 @@ static void step (pnet_t & n, unsigned long k)
     {
       const petri_net::tid_t f (tid[uniform (engine)]);
 
-      if (n.can_fire (f))
+      if (n.get_can_fire (f))
         {
           n.fire (f);
           --k;

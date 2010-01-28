@@ -344,6 +344,7 @@ struct param_t
 };
 
 // as many as you like
+//static void * worker (void *) __attribute__((noreturn));
 static void * worker (void * arg)
 {
   param_t * p ((param_t *)arg);

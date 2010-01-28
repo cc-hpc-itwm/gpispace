@@ -19,6 +19,7 @@ typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
 typedef unsigned int token_t;
 
+namespace {
 static const unsigned int nplace (200);
 static const unsigned int ntrans (200);
 static const unsigned int factor (10);
@@ -27,6 +28,7 @@ static const unsigned int branch (25);
 static const unsigned int num_fire (1000);
 
 static const unsigned int bisize (1000000);
+}
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 

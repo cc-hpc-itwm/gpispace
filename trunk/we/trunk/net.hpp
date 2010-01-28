@@ -825,7 +825,7 @@ public:
   }
 
   // FIRE
-  bool can_fire (const tid_t & tid) const
+  bool get_can_fire (const tid_t & tid) const
   {
     return enabled.elem(tid);
   }
@@ -873,7 +873,7 @@ public:
   activity_t extract_activity (const tid_t & tid, IT choice)
     throw (exception::no_such, exception::transition_not_enabled)
   {
-    if (!can_fire (tid))
+    if (!get_can_fire (tid))
       throw exception::transition_not_enabled ("during call of fire");
 
     // before! constructing the input, as this consumes tokens
