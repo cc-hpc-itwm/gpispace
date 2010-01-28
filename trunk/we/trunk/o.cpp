@@ -1,4 +1,4 @@
-// useage of cross, mirko.rahn@itwm.fraunhofer.de
+// usage of cross, mirko.rahn@itwm.fraunhofer.de
 
 #include <cross.hpp>
 
