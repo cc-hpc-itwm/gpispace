@@ -185,7 +185,7 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      s << "[" << n.place (*p) << ":";
+      s << "[" << n.get_place (*p) << ":";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         s << " " << *tp;
@@ -250,7 +250,7 @@ static std::ostream & operator << ( std::ostream & s
   return s << "{"
            << Function::Transition::get_token<token_t>(token_input)
            << " on "
-           << net.place (Function::Transition::get_pid<token_t>(token_input))
+           << net.get_place (Function::Transition::get_pid<token_t>(token_input))
            << "}";
 }
 
@@ -263,7 +263,7 @@ static std::ostream & operator << ( std::ostream & s
   const pnet_t & net (show_activity.first);
   const pnet_t::activity_t activity (show_activity.second);
 
-  s << "activity" << ": " << net.transition (activity.tid) << ":";
+  s << "activity" << ": " << net.get_transition (activity.tid) << ":";
 
   s << " input: ";
 
@@ -294,7 +294,7 @@ static std::ostream & operator << ( std::ostream & s
     s << "{" 
       << Function::Transition::get_token<token_t>(*it)
       << " on "
-      << net.place (Function::Transition::get_pid<token_t>(*it))
+      << net.get_place (Function::Transition::get_pid<token_t>(*it))
       << "}";
 
   return s;
@@ -413,7 +413,7 @@ static void * manager (void * arg)
 
           const petri_net::tid_t t (enabled.at(k));
 
-          MLOG ("EXTRACT " << p->net.transition (t) 
+          MLOG ("EXTRACT " << p->net.get_transition (t) 
                << ": " << k << " in [0.." << size << ")"
                );
 

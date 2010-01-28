@@ -33,17 +33,17 @@ static std::string brack (const std::string & x)
 
 static std::string trans (const pnet_t & n, const petri_net::tid_t & t)
 {
-  std::ostringstream s; s << t << brack(n.transition (t)); return s.str();
+  std::ostringstream s; s << t << brack(n.get_transition (t)); return s.str();
 }
 
 static std::string place (const pnet_t & n, const petri_net::pid_t & p)
 {
-  std::ostringstream s; s << p << brack(n.place (p)); return s.str();
+  std::ostringstream s; s << p << brack(n.get_place (p)); return s.str();
 }
 
 static std::string edge (const pnet_t & n, const petri_net::eid_t & e)
 {
-  std::ostringstream s; s << e << brack (n.edge (e)); return s.str();
+  std::ostringstream s; s << e << brack (n.get_edge (e)); return s.str();
 }
 
 static void print_enabled (const pnet_t & n)
@@ -172,7 +172,7 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "[" << n.place (*p) << ": ";
+      cout << "[" << n.get_place (*p) << ": ";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << "." << *tp;
@@ -316,8 +316,8 @@ static bool cond_in ( const pnet_t & net
                     , const petri_net::eid_t & eid
                     )
 {
-  const place_t place (net.place (pid));
-  const edge_t edge (net.edge (eid));
+  const place_t place (net.get_place (pid));
+  const edge_t edge (net.get_edge (eid));
 
   return (isupper (place[0]) && (token.length() > 0 || edge[0] == '!'));
 }
@@ -327,8 +327,8 @@ static bool cond_out ( const pnet_t & net
                      , const petri_net::eid_t & eid
                      )
 {
-  const place_t place (net.place (pid));
-  const edge_t edge (net.edge (eid));
+  const place_t place (net.get_place (pid));
+  const edge_t edge (net.get_edge (eid));
 
   return (isupper (place[0]) || edge[0] == '!');
 }
@@ -400,20 +400,20 @@ main ()
   pnet_t c(n.get_num_places(),n.get_num_transitions());
 
   for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    c.add_transition (n.transition(*t));
+    c.add_transition (n.get_transition(*t));
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-    c.add_place (n.place(*p));
+    c.add_place (n.get_place(*p));
 
   for (pnet_t::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
       const petri_net::connection_t connection (n.get_edge_info (*e));
 
-      c.add_edge ( n.edge (*e)
+      c.add_edge ( n.get_edge (*e)
                  , petri_net::connection_t
                    ( connection.type
-                   , c.get_transition_id (n.transition (connection.tid))
-                   , c.get_place_id (n.place (connection.pid))
+                   , c.get_transition_id (n.get_transition (connection.tid))
+                   , c.get_place_id (n.get_place (connection.pid))
                    )
                  );
     }

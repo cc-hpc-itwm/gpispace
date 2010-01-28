@@ -31,14 +31,14 @@ static std::string brack (const std::string & x)
 
 static std::string trans (const pnet_t & n, const petri_net::tid_t & t)
 {
-  std::ostringstream s; s << t << brack(n.transition (t)); return s.str();
+  std::ostringstream s; s << t << brack(n.get_transition (t)); return s.str();
 }
 
 static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "[" << n.place (*p) << ":";
+      cout << "[" << n.get_place (*p) << ":";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << " " << *tp;

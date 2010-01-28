@@ -33,7 +33,7 @@ static edge_right_t edge_descr ( const pnet_t & net
                                , const petri_net::eid_t & eid
                                )
 {
-  return (net.edge (eid)).second;
+  return (net.get_edge (eid)).second;
 }
 
 static void marking (const pnet_t & n, const petri_net::tid_t & tid)
@@ -49,7 +49,7 @@ static void marking (const pnet_t & n, const petri_net::tid_t & tid)
           cout << ((t++ == tid) ? "*" : " ") << " ";
         }
 
-      cout << "[" << std::setw(2) << n.place (*p) << ":";
+      cout << "[" << std::setw(2) << n.get_place (*p) << ":";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << " " << *tp;

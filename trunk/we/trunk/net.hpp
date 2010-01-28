@@ -448,19 +448,19 @@ public:
   }
 
   // get element
-  const Place & place (const pid_t & pid) const
+  const Place & get_place (const pid_t & pid) const
     throw (bijection::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
-  const Transition & transition (const tid_t & tid) const
+  const Transition & get_transition (const tid_t & tid) const
     throw (bijection::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
-  const Edge & edge (const eid_t & eid) const
+  const Edge & get_edge (const eid_t & eid) const
     throw (bijection::exception::no_such)
   {
     return emap.get_elem (eid);
@@ -870,7 +870,7 @@ public:
   }
 
   template<typename IT>
-  const activity_t extract_activity (const tid_t & tid, IT choice)
+  activity_t extract_activity (const tid_t & tid, IT choice)
     throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!can_fire (tid))
@@ -896,10 +896,16 @@ public:
     return activity_t (tid, input, output_descr);
   }
 
-  const activity_t extract_activity_first (const tid_t & tid)
+  activity_t extract_activity_first (const tid_t & tid)
   {
     return extract_activity
       (tid, cross::star_iterator<pid_in_map_t> (*(choices (tid))));
+  }
+
+  activity_t extract_activity_nth (const tid_t & tid, const std::size_t & k)
+  {
+    return extract_activity
+      (tid, cross::bracket_iterator<pid_in_map_t> (choices (tid)[k]));
   }
 
   template<typename IT>

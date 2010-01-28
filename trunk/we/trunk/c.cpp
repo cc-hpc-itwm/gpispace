@@ -83,7 +83,7 @@ static bool cond_rem ( const pnet_t & net
                      , const petri_net::eid_t &
                      )
 {
-  place_t place (net.place (pid));
+  place_t place (net.get_place (pid));
 
   return (token.second == ((shift(place) + rem) % branch_factor));
 }
@@ -184,7 +184,7 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "[" << n.place(*p).first
+      cout << "[" << n.get_place(*p).first
            << "-"
            << n.get_token(*p).size()
            << ":";

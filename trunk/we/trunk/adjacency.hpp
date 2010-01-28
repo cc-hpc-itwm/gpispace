@@ -37,7 +37,7 @@ namespace adjacency
     typedef typename IT<L,R>::type it_t;
     typedef typename util::it<it_t> super;
   public:
-    const_it (const it_t & pos, const it_t & end) : super(pos,end) {}
+    const_it (const it_t & _pos, const it_t & _end) : super(_pos,_end) {}
 
     const L & operator * (void) const { return super::pos->first; }
     const R & operator () (void) const { return super::pos->second; }

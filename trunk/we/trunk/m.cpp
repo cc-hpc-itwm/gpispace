@@ -191,7 +191,7 @@ static void print (const pnet_t & n)
   cout << "*** places [" << endl;
 
   for (pnet_t::place_const_it pit (n.places()); pit.has_more(); ++pit)
-    cout << *pit << " => " << n.place(*pit) << endl;
+    cout << *pit << " => " << n.get_place(*pit) << endl;
 
   cout << "]" << endl;
 }

@@ -61,8 +61,8 @@ namespace cross
     void step (void) { ++super::state; }
 
   public:
-    star_iterator (const MAP & map, const pos_t & pos)
-      : super (map, pos.begin()) { super::set_val(); }
+    star_iterator (const MAP & _map, const pos_t & _pos)
+      : super (_map, _pos.begin()) { super::set_val(); }
   };
 
   template<typename MAP>
