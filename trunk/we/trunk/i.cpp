@@ -23,6 +23,13 @@ typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
 // ************************************************************************* //
+
+static const unsigned int NUM_WORKER (5);
+static const unsigned int QUEUE_DEPTH_IN_NET (2 * NUM_WORKER);
+static const unsigned int QUEUE_DEPTH_FOR_WORK_QUEUE (NUM_WORKER);
+static const unsigned int QUEUE_DEPTH_FOR_RESULT_QUEUE (NUM_WORKER);
+
+// ************************************************************************* //
 // some boilerplate
 
 struct edge
@@ -199,17 +206,18 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 // ************************************************************************* //
 // thread safe deque
 
-// Attention: A queue wich blocks on a certain maximum capacity would
-// lead to a deadlock: The manager puts into the work queue, which is
-// full and blocks. At the same time, each worker puts into the result
-// queue, which is full as well and blocks.
+// DEADLOCK! Attention: A queue wich blocks on a certain maximum
+// capacity would lead to a deadlock: The manager puts into the work
+// queue, which is full and blocks. At the same time, each worker puts
+// into the result queue, which is full as well and blocks.
 
 template<typename T>
 struct deque
 {
 private:
   std::deque<T> q;
-  boost::condition_variable cond;
+  boost::condition_variable cond_put;
+  boost::condition_variable cond_get;
   boost::mutex mutex;
 public:
   void put (const T & x)
@@ -219,7 +227,20 @@ public:
 
       q.push_back (x);
     }
-    cond.notify_one();
+
+    cond_put.notify_one();
+  }
+
+  void put (const T & x, const typename std::deque<T>::size_type & watermark)
+  {
+    boost::unique_lock<boost::mutex> lock (mutex);
+
+    while (q.size() >= watermark)
+      cond_get.wait (lock);
+
+    q.push_back (x);
+
+    cond_put.notify_one();
   }
 
   T get (void) 
@@ -227,14 +248,17 @@ public:
     boost::unique_lock<boost::mutex> lock (mutex);
 
     while (q.empty())
-      cond.wait (lock);
+      cond_put.wait (lock);
 
     const T x (q.front()); q.pop_front();
+
+    cond_get.notify_one();
 
     return x;
   }
 
   bool empty (void) const { return q.empty(); }
+  typename std::deque<T>::size_type size (void) const { return q.size(); }
 };
 
 typedef deque<pnet_t::activity_t> deque_activity_t;
@@ -369,7 +393,8 @@ static void * worker (void * arg)
 
       WLOG ("PUT" << show_output_t (p->net, output));
 
-      p->output.put (output);
+      // the worker blocks, if the result queue is full
+      p->output.put (output, QUEUE_DEPTH_FOR_RESULT_QUEUE);
     }
 
   return NULL;
@@ -392,7 +417,8 @@ static void * manager (void * arg)
     {
       while (!p->output.empty()
             || (extract > inject && p->net.enabled_transitions().empty())
-            // ^comment the or clause to get a busy waiting manager
+            // ^comment this clause to get a busy waiting manager
+            || (p->activity.size() >= QUEUE_DEPTH_FOR_WORK_QUEUE)
             )
         {
           MLOG ("GET");
@@ -406,7 +432,11 @@ static void * manager (void * arg)
           ++inject;
         }
       
-      while (!p->net.enabled_transitions().empty())
+      // the manager puts at most QUEUE_DEPTH_FOR_WORK_QUEUE items into the
+      // work queue, it does not block here
+      while (  !p->net.enabled_transitions().empty()
+            && (p->activity.size() < QUEUE_DEPTH_FOR_WORK_QUEUE)
+            )
         {
           const pnet_t::activity_t activity
             (p->net.extract_activity_random (engine));
@@ -455,9 +485,6 @@ static void * manager (void * arg)
 using petri_net::connection_t;
 using petri_net::PT;
 using petri_net::TP;
-
-static const unsigned int NUM_WORKER (5);
-static const unsigned int QUEUE_DEPTH_IN_NET (2 * NUM_WORKER);
 
 int
 main ()
