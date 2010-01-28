@@ -89,7 +89,7 @@ namespace cross
   class cross
   {
   private:
-    const MAP & map;
+    const MAP map;
     pos_t pos;
     bool _has_more;
     std::size_t _size;
