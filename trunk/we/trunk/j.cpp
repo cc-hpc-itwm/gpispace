@@ -573,7 +573,7 @@ static void * injector (void * arg)
 }
 
 // one only!
-// harder to make it work with more than one injectors, since the
+// harder to make it work with more than one extractors, since the
 // decision to extract could be badly influenced by other extractions
 // however, there is no reason to work on a single net with more than
 // one injector/extractor!?
