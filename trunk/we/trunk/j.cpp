@@ -470,7 +470,7 @@ public:
 static boost::mutex mutex_max_worker_time;
 double max_worker_time (0.0);
 
-static inline void exit_handler_show_time_w (void * arg)
+static inline void exit_handler_show_time (void * arg)
 {
   descr_t * descr ((descr_t *)arg);
 
@@ -479,20 +479,6 @@ static inline void exit_handler_show_time_w (void * arg)
   boost::lock_guard<boost::mutex> lock (mutex_max_worker_time);
 
   max_worker_time = std::max (max_worker_time, descr->time);
-}
-
-static inline void exit_handler_show_time_e (void * arg)
-{
-  descr_t * descr ((descr_t *)arg);
-
-  ELOG ("time " << descr->time);
-}
-
-static inline void exit_handler_show_time_i (void * arg)
-{
-  descr_t * descr ((descr_t *)arg);
-
-  ILOG ("time " << descr->time);
 }
 
 // as many as you like
@@ -505,7 +491,7 @@ static void * worker (void * arg)
 
   WLOG ("START");
 
-  pthread_cleanup_push (exit_handler_show_time_w, descr);
+  pthread_cleanup_push (exit_handler_show_time, descr);
 
   while (1)
     {
@@ -543,8 +529,6 @@ static void * injector (void * arg)
 
   ILOG ("START");
 
-  pthread_cleanup_push (exit_handler_show_time_i, descr);
-
   do
     {
       do
@@ -565,9 +549,7 @@ static void * injector (void * arg)
     }
   while (!p->net.done());
 
-  pthread_cleanup_pop (true);
-
-  ILOG ("DONE");
+  ILOG ("DONE " << descr->time);
 
   return NULL;
 }
@@ -584,8 +566,6 @@ static void * extractor (void * arg)
   descr_t * descr (new descr_t (get_id()));
 
   ELOG ("START");
-
-  pthread_cleanup_push (exit_handler_show_time_e, descr);
 
   do
     {
@@ -609,9 +589,7 @@ static void * extractor (void * arg)
     }
   while (!p->net.done());
   
-  pthread_cleanup_pop (true);
-
-  ELOG ("DONE");
+  ELOG ("DONE " << descr->time);
 
   return NULL;
 }
