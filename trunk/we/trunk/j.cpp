@@ -396,7 +396,9 @@ public:
   {
     boost::unique_lock<boost::mutex> lock (mutex);
 
-    while (n.enabled_transitions().empty() && _extract > _inject)
+    const cnt_t i (_inject);
+
+    while (n.enabled_transitions().empty() && i == _inject)
       cond_inject.wait (lock);
   }
 
