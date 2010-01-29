@@ -32,6 +32,12 @@ static const unsigned int NUM_WORKER (10);
 static const unsigned int NUM_WORKER (_NUM_WORKER);
 #endif
 
+#ifndef _NUM_INJECTOR
+static const unsigned int NUM_INJECTOR (2);
+#else
+static const unsigned int NUM_WORKER (_NUM_INJECTOR);
+#endif
+
 #ifndef _NUM_PACKET
 static const token_t NUM_PACKET (100);
 #else
@@ -462,23 +468,41 @@ struct descr_t
 public:
   const unsigned int iThread;
   double time;
-  descr_t (const unsigned int & _iThread) : iThread (_iThread), time (0.0) {}
-  void start_clock (void) { time -= current_time(); }
+  unsigned long cnt_clock;
+  descr_t (const unsigned int & _iThread) 
+    : iThread (_iThread), time (0.0), cnt_clock (0)
+  {}
+  void start_clock (void) { ++cnt_clock; time -= current_time(); }
   void stop_clock (void) { time += current_time(); }
+  std::string info (void)
+  {
+    std::ostringstream s;
+
+    s << "time " << time << " cnt_clock " << cnt_clock;
+
+    return s.str();
+  }
 };
 
 static boost::mutex mutex_max_worker_time;
 double max_worker_time (0.0);
 
-static inline void exit_handler_show_time (void * arg)
+static inline void exit_handler_show_time_w (void * arg)
 {
   descr_t * descr ((descr_t *)arg);
 
-  WLOG ("time " << descr->time);
+  WLOG (descr->info());
 
   boost::lock_guard<boost::mutex> lock (mutex_max_worker_time);
 
   max_worker_time = std::max (max_worker_time, descr->time);
+}
+
+static inline void exit_handler_show_time_i (void * arg)
+{
+  descr_t * descr ((descr_t *)arg);
+
+  ILOG (descr->info());
 }
 
 // as many as you like
@@ -491,7 +515,7 @@ static void * worker (void * arg)
 
   WLOG ("START");
 
-  pthread_cleanup_push (exit_handler_show_time, descr);
+  pthread_cleanup_push (exit_handler_show_time_w, descr);
 
   while (1)
     {
@@ -517,10 +541,7 @@ static void * worker (void * arg)
   return NULL;
 }
 
-// one only!
-// quite easy to work with more than one injectors: do not check for
-// net.done(). Instead directly go to the get and cancel the thread
-// from outside.
+// as many as you want
 template<typename NET>
 static void * injector (void * arg)
 {
@@ -529,27 +550,24 @@ static void * injector (void * arg)
 
   ILOG ("START");
 
-  do
+  pthread_cleanup_push (exit_handler_show_time_i, descr);
+
+  while (1)
     {
-      do
-        {
-          const pnet_t::output_t output (p->output.get());
+      const pnet_t::output_t output (p->output.get());
 
-          ILOG ("GET " << show_output_t (p->net.net(), output));
+      ILOG ("GET " << show_output_t (p->net.net(), output));
 
-          descr->start_clock();
+      descr->start_clock();
 
-          p->net.inject (output);
+      p->net.inject (output);
 
-          descr->stop_clock();
+      descr->stop_clock();
 
-          ILOG ("INJECT " << show_output_t (p->net.net(), output));
-        }
-      while (!p->output.empty()); // here: problem when more than one injector
+      ILOG ("INJECT " << show_output_t (p->net.net(), output));
     }
-  while (!p->net.done());
 
-  ILOG ("DONE " << descr->time);
+  pthread_cleanup_pop (true);
 
   return NULL;
 }
@@ -589,7 +607,9 @@ static void * extractor (void * arg)
     }
   while (!p->net.done());
   
-  ELOG ("DONE " << descr->time);
+  ELOG ("DONE");
+
+  ELOG (descr->info());
 
   return NULL;
 }
@@ -675,7 +695,7 @@ main ()
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
   pthread_t t_extractor;
-  pthread_t t_injector;
+  pthread_t t_injector[NUM_INJECTOR];
   pthread_t t_worker[NUM_WORKER];
 
   param_t<pnet_t> p ( net
@@ -684,17 +704,25 @@ main ()
                     );
 
   pthread_create(&t_extractor, &attr, extractor<pnet_t>, &p);
-  pthread_create(&t_injector, &attr, injector<pnet_t>, &p);
+
+  for (unsigned int i(0); i < NUM_INJECTOR; ++i)
+    pthread_create(t_injector + i, &attr, injector<pnet_t>, &p);
 
   for (unsigned int w(0); w < NUM_WORKER; ++w)
     pthread_create(t_worker + w, &attr, worker<pnet_t>, &p);
 
 
   pthread_join (t_extractor, NULL);
-  pthread_join (t_injector, NULL);
+
+
+  for (unsigned int i(0); i < NUM_INJECTOR; ++i)
+    pthread_cancel (t_injector[i]);
 
   for (unsigned int w(0); w < NUM_WORKER; ++w)
     pthread_cancel (t_worker[w]);
+
+  for (unsigned int i(0); i < NUM_INJECTOR; ++i)
+    pthread_join (t_injector[i], NULL);
 
   for (unsigned int w(0); w < NUM_WORKER; ++w)
     pthread_join (t_worker[w], NULL);
