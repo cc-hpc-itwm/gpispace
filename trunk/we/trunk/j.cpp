@@ -359,11 +359,11 @@ static unsigned int get_id (void)
 static boost::mutex mutex_out;
 static void do_log (const std::string & msg)
 {
-//   boost::lock_guard<boost::mutex> lock (mutex_out);
+  boost::lock_guard<boost::mutex> lock (mutex_out);
 
-//   cout << msg << endl;
+  cout << msg << endl;
 
-//   fflush (stdout);
+  fflush (stdout);
 }
 
 #define LOG(msg) {std::ostringstream s; s << msg; do_log(s.str());}
