@@ -2,6 +2,7 @@
 // use separate extractor and injector
 
 #include <net.hpp>
+#include <deque.hpp>
 #include <timer.hpp>
 
 #include <pthread.h>
@@ -39,7 +40,7 @@ static const unsigned int NUM_INJECTOR (_NUM_INJECTOR);
 #endif
 
 #ifndef _NUM_PACKET
-static const token_t NUM_PACKET (1000);
+static const token_t NUM_PACKET (100);
 #else
 static const token_t NUM_PACKET (_NUM_PACKET);
 #endif
@@ -63,7 +64,7 @@ static const unsigned int QUEUE_DEPTH_FOR_RESULT_QUEUE (_QUEUE_DEPTH_FOR_RESULT_
 #endif
 
 #ifndef _MEAN
-static const double mean (0.1);
+static const double mean (1.0);
 #else
 static const double mean (_MEAN);
 #endif
@@ -259,60 +260,6 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 }
 
 // ************************************************************************* //
-// thread safe deque, with bounded depth
-
-template<typename T>
-struct deque
-{
-public:
-  typedef typename std::deque<T>::size_type size_type;
-
-  deque (const size_type & _max) : max (_max) {}
-
-private:
-  size_type max;
-  std::deque<T> q;
-  boost::condition_variable cond_put;
-  boost::condition_variable cond_get;
-  boost::mutex mutex;
- 
-public:
-  // maybe blocking!
-  void put (const T & x)
-  {
-    boost::unique_lock<boost::mutex> lock (mutex);
-
-    while (q.size() >= max)
-      cond_get.wait (lock);
-      
-    q.push_back (x);
-
-    cond_put.notify_one();
-  }
-
-  // maybe blocking!
-  T get (void) 
-  {
-    boost::unique_lock<boost::mutex> lock (mutex);
-
-    while (q.empty())
-      cond_put.wait (lock);
-
-    const T x (q.front()); q.pop_front();
-
-    cond_get.notify_one();
-
-    return x;
-  }
-
-  bool empty (void) const { return q.empty(); }
-  size_type size (void) const { return q.size(); }
-};
-
-typedef deque<pnet_t::activity_t> deque_activity_t;
-typedef deque<pnet_t::output_t> deque_output_t;
-
-// ************************************************************************* //
 // div log stuff
 
 typedef std::pair<const pnet_t &,const pnet_t::token_input_t> show_token_input_t;
@@ -487,6 +434,9 @@ public:
     return (!n.enabled_transitions().empty());
   }
 };
+
+typedef deque<pnet_t::activity_t> deque_activity_t;
+typedef deque<pnet_t::output_t> deque_output_t;
 
 template<typename NET>
 struct param_t
