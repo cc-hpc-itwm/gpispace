@@ -413,7 +413,7 @@ public:
 
     ++_inject;
 
-    cond_inject.notify_all();
+    cond_inject.notify_one();
   }
 
   activity_t extract (void)
