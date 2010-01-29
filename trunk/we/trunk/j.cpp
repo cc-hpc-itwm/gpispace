@@ -33,7 +33,7 @@ static const unsigned int NUM_WORKER (_NUM_WORKER);
 #endif
 
 #ifndef _NUM_PACKET
-static const token_t NUM_PACKET (1000);
+static const token_t NUM_PACKET (100);
 #else
 static const token_t NUM_PACKET (_NUM_PACKET);
 #endif
@@ -152,8 +152,8 @@ private:
 
 public:
   random_usec ( const Engine & engine
-              , const double & mean = 0.1
-              , const double & sigma = 0.02
+              , const double & mean = 1.0
+              , const double & sigma = 0.2
               )
     : rand (engine, dist_t (mean, sigma))
     , left (mean-sigma)
