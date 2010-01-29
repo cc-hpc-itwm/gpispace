@@ -35,18 +35,50 @@ static const unsigned int NUM_WORKER (_NUM_WORKER);
 #ifndef _NUM_INJECTOR
 static const unsigned int NUM_INJECTOR (2);
 #else
-static const unsigned int NUM_WORKER (_NUM_INJECTOR);
+static const unsigned int NUM_INJECTOR (_NUM_INJECTOR);
 #endif
 
 #ifndef _NUM_PACKET
-static const token_t NUM_PACKET (100);
+static const token_t NUM_PACKET (1000);
 #else
 static const token_t NUM_PACKET (_NUM_PACKET);
 #endif
 
+#ifndef _QUEUE_DEPTH_IN_NET
 static const unsigned int QUEUE_DEPTH_IN_NET (2 * NUM_WORKER);
+#else
+static const unsigned int QUEUE_DEPTH_IN_NET (_QUEUE_DEPTH_IN_NET);
+#endif
+
+#ifndef _QUEUE_DEPTH_FOR_WORK_QUEUE
 static const unsigned int QUEUE_DEPTH_FOR_WORK_QUEUE (NUM_WORKER);
+#else
+static const unsigned int QUEUE_DEPTH_FOR_WORK_QUEUE (_QUEUE_DEPTH_FOR_WORK_QUEUE);
+#endif
+
+#ifndef _QUEUE_DEPTH_FOR_RESULT_QUEUE
 static const unsigned int QUEUE_DEPTH_FOR_RESULT_QUEUE (NUM_WORKER);
+#else
+static const unsigned int QUEUE_DEPTH_FOR_RESULT_QUEUE (_QUEUE_DEPTH_FOR_RESULT_QUEUE);
+#endif
+
+#ifndef _MEAN
+static const double mean (0.1);
+#else
+static const double mean (_MEAN);
+#endif
+
+#ifndef _SIGMA
+static const double sigma (mean/5.0);
+#else
+static const double sigma (_SIGMA);
+#endif
+
+#ifndef _LOG_LEVEL
+static const int log_level (2);
+#else
+static const int log_level (_LOG_LEVEL);
+#endif
 
 // ************************************************************************* //
 // some boilerplate
@@ -157,10 +189,7 @@ private:
   const double right;
 
 public:
-  random_usec ( const Engine & engine
-              , const double & mean = 1.0
-              , const double & sigma = 0.2
-              )
+  random_usec (const Engine & engine)
     : rand (engine, dist_t (mean, sigma))
     , left (mean-sigma)
     , right (mean+sigma)
@@ -350,33 +379,46 @@ static std::ostream & operator << ( std::ostream & s
 
 // ************************************************************************* //
 
-static unsigned int id (0);
-static boost::mutex mutex_id;
-
-static unsigned int get_id (void)
+static unsigned int worker_id (0);
+static boost::mutex mutex_worker_id;
+static unsigned int get_worker_id (void)
 {
-  boost::lock_guard<boost::mutex> lock (mutex_id);
+  boost::lock_guard<boost::mutex> lock (mutex_worker_id);
 
-  unsigned int i (id++);
+  unsigned int i (worker_id++);
+
+  return i;
+}
+
+static unsigned int injector_id (0);
+static boost::mutex mutex_injector_id;
+static unsigned int get_injector_id (void)
+{
+  boost::lock_guard<boost::mutex> lock (mutex_injector_id);
+
+  unsigned int i (injector_id++);
 
   return i;
 }
 
 static boost::mutex mutex_out;
-static void do_log (const std::string & msg)
+static void do_log (const std::string & msg, const int & level)
 {
-  boost::lock_guard<boost::mutex> lock (mutex_out);
+  if (level < log_level)
+    {
+      boost::lock_guard<boost::mutex> lock (mutex_out);
 
-  cout << msg << endl;
+      cout << msg << endl;
 
-  fflush (stdout);
+      fflush (stdout);
+    }
 }
 
-#define LOG(msg) {std::ostringstream s; s << msg; do_log(s.str());}
+#define LOG(lvl,msg) {std::ostringstream s; s << msg; do_log(s.str(),lvl);}
 #define HEAD(h) h << "." << descr->iThread << ": "
-#define WLOG(msg) LOG(HEAD("worker") << msg)
-#define ELOG(msg) LOG(HEAD("extract") << msg)
-#define ILOG(msg) LOG(HEAD("inject") << msg)
+#define WLOG(lvl,msg) LOG(lvl,HEAD("worker") << msg)
+#define ELOG(lvl,msg) LOG(lvl,HEAD("extract") << msg)
+#define ILOG(lvl,msg) LOG(lvl,HEAD("inject") << msg)
 
 // ************************************************************************* //
 
@@ -491,18 +533,22 @@ static inline void exit_handler_show_time_w (void * arg)
 {
   descr_t * descr ((descr_t *)arg);
 
-  WLOG (descr->info());
+  WLOG (0, descr->info());
 
   boost::lock_guard<boost::mutex> lock (mutex_max_worker_time);
 
   max_worker_time = std::max (max_worker_time, descr->time);
+
+  delete descr;
 }
 
 static inline void exit_handler_show_time_i (void * arg)
 {
   descr_t * descr ((descr_t *)arg);
 
-  ILOG (descr->info());
+  ILOG (0, descr->info());
+
+  delete descr;
 }
 
 // as many as you like
@@ -511,19 +557,19 @@ template<typename NET>
 static void * worker (void * arg)
 {
   param_t<NET> * p ((param_t<NET> *)arg);
-  descr_t * descr (new descr_t (get_id()));
+  descr_t * descr (new descr_t (get_worker_id()));
 
-  WLOG ("START");
+  WLOG (0, "START");
 
   pthread_cleanup_push (exit_handler_show_time_w, descr);
 
   while (1)
     {
-      WLOG ("GET");
+      WLOG (1, "GET");
 
       const pnet_t::activity_t activity (p->activity.get());
 
-      WLOG ("RUN " << show_activity_t (p->net.net(), activity));
+      WLOG (1, "RUN " << show_activity_t (p->net.net(), activity));
 
       descr->start_clock();
 
@@ -531,7 +577,7 @@ static void * worker (void * arg)
 
       descr->stop_clock();
 
-      WLOG ("PUT" << show_output_t (p->net.net(), output));
+      WLOG (1, "PUT" << show_output_t (p->net.net(), output));
 
       p->output.put (output);
     }
@@ -546,9 +592,9 @@ template<typename NET>
 static void * injector (void * arg)
 {
   param_t<NET> * p ((param_t<NET> *) arg);
-  descr_t * descr (new descr_t (get_id()));
+  descr_t * descr (new descr_t (get_injector_id()));
 
-  ILOG ("START");
+  ILOG (0, "START");
 
   pthread_cleanup_push (exit_handler_show_time_i, descr);
 
@@ -556,7 +602,7 @@ static void * injector (void * arg)
     {
       const pnet_t::output_t output (p->output.get());
 
-      ILOG ("GET " << show_output_t (p->net.net(), output));
+      ILOG (1, "GET " << show_output_t (p->net.net(), output));
 
       descr->start_clock();
 
@@ -564,7 +610,7 @@ static void * injector (void * arg)
 
       descr->stop_clock();
 
-      ILOG ("INJECT " << show_output_t (p->net.net(), output));
+      ILOG (1, "INJECT " << show_output_t (p->net.net(), output));
     }
 
   pthread_cleanup_pop (true);
@@ -581,9 +627,9 @@ template<typename NET>
 static void * extractor (void * arg)
 {
   param_t<NET> * p ((param_t<NET> *) arg);
-  descr_t * descr (new descr_t (get_id()));
+  descr_t * descr (new descr_t (0));
 
-  ELOG ("START");
+  ELOG (0, "START");
 
   do
     {
@@ -591,7 +637,7 @@ static void * extractor (void * arg)
         {
           const pnet_t::activity_t activity (p->net.extract());
 
-          ELOG ("EXTRACT " << show_activity_t (p->net.net(), activity));
+          ELOG (1, "EXTRACT " << show_activity_t (p->net.net(), activity));
 
           descr->start_clock();
 
@@ -599,7 +645,7 @@ static void * extractor (void * arg)
 
           descr->stop_clock();
 
-          ELOG ("PUT " << show_activity_t (p->net.net(), activity));
+          ELOG (1, "PUT " << show_activity_t (p->net.net(), activity));
         }
 
       p->net.wait_inject();
@@ -607,9 +653,11 @@ static void * extractor (void * arg)
     }
   while (!p->net.done());
   
-  ELOG ("DONE");
+  ELOG (0, "DONE");
 
-  ELOG (descr->info());
+  ELOG (0, descr->info());
+
+  delete descr;
 
   return NULL;
 }
