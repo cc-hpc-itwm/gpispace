@@ -1,12 +1,12 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _SHARED_NET_HPP
-#define _SHARED_NET_HPP
+#ifndef _CONCURRENT_NET_HPP
+#define _CONCURRENT_NET_HPP
 
 #include <pthread.h>
 
 #include <net.hpp>
-#include <deque.hpp>
+#include <concurrent/deque.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/random.hpp>

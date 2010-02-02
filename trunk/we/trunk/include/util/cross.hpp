@@ -1,9 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _CROSS_HPP
-#define _CROSS_HPP
+#ifndef _UTIL_CROSS_HPP
+#define _UTIL_CROSS_HPP
 
-#include <it.hpp>
+#include <util/it.hpp>
 
 #include <vector>
 

@@ -1,6 +1,6 @@
 // usage of cross, mirko.rahn@itwm.fraunhofer.de
 
-#include <cross.hpp>
+#include <util/cross.hpp>
 
 #include <cstdlib>
 

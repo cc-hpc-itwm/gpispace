@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _IT_HPP
-#define _IT_HPP
+#ifndef _UTIL_IT_HPP
+#define _UTIL_IT_HPP
 
 #include <limits.h>
 #include <cstddef>

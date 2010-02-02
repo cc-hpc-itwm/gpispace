@@ -1,9 +1,9 @@
 // condition functions, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _COND_HPP
-#define _COND_HPP
+#ifndef _FUNCTION_COND_HPP
+#define _FUNCTION_COND_HPP
 
-#include <netfwd.hpp>
+#include <type/id.hpp>
 
 #include <boost/function.hpp>
 
@@ -98,4 +98,4 @@ namespace Function { namespace Condition
   }
 }}
 
-#endif // _COND_HPP
+#endif

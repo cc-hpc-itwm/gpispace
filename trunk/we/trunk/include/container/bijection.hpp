@@ -1,9 +1,9 @@
 // bijection between objects and some index, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _BIJECTION_HPP
-#define _BIJECTION_HPP
+#ifndef _CONTAINER_BIJECTION_HPP
+#define _CONTAINER_BIJECTION_HPP
 
-#include <it.hpp>
+#include <util/it.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/support/lambda.hpp>
@@ -152,4 +152,4 @@ namespace bijection
   };
 } // namespace bijection
 
-#endif // _BIJECTION_HPP
+#endif

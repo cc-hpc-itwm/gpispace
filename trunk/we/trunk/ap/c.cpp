@@ -1,7 +1,7 @@
 // demonstrate usage of condition functions, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
-#include <cross.hpp>
+#include <util/cross.hpp>
 
 #include <iostream>
 #include <cstdlib>

@@ -1,6 +1,6 @@
 // basic usage of multirel.hpp, mirko.rahn@itwm.fraunhofer.de
 
-#include <multirel.hpp>
+#include <container/multirel.hpp>
 
 #include <iostream>
 #include <sstream>

@@ -2,8 +2,8 @@
 // use separate extractor and injector
 
 #include <net.hpp>
-#include <shared_net.hpp>
-#include <timer.hpp>
+#include <concurrent/net.hpp>
+#include <util/timer.hpp>
 
 #include <pthread.h>
 

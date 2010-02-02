@@ -1,10 +1,10 @@
 // multi relation, objects as well as individual relations are allowed
 // to occur more than once, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _MULTIREL_HPP
-#define _MULTIREL_HPP
+#ifndef _CONTAINER_MULTIREL_HPP
+#define _CONTAINER_MULTIREL_HPP
 
-#include <it.hpp>
+#include <util/it.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -162,4 +162,4 @@ namespace multirel
   };
 } // namespace multirel
 
-#endif // _MULTIREL_HPP
+#endif

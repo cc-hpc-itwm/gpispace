@@ -1,10 +1,10 @@
 // control loop, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
-#include <trans.hpp>
-#include <cond.hpp>
+#include <function/trans.hpp>
+#include <function/cond.hpp>
 
-#include <timer.hpp>
+#include <util/timer.hpp>
 
 #include <string>
 

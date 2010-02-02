@@ -1,7 +1,7 @@
-// some common needed typedefs, mirko.rahn@itwm.fraunhofer.de
+// mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _NETFWD_HPP
-#define _NETFWD_HPP
+#ifndef _TYPE_ID_HPP
+#define _TYPE_ID_HPP
 
 #include <stdint.h>
 
@@ -19,4 +19,4 @@ namespace petri_net
   static const eid_t eid_invalid (std::numeric_limits<eid_t>::max());
 }
 
-#endif // _NETFWD_HPP
+#endif

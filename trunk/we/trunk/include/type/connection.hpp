@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _CONNECTION_HPP
-#define _CONNECTION_HPP
+#ifndef _TYPE_CONNECTION_HPP
+#define _TYPE_CONNECTION_HPP
 
 #include <boost/serialization/nvp.hpp>
 

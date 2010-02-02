@@ -1,7 +1,7 @@
 // a net, consisting of k independent loops, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
-#include <timer.hpp>
+#include <util/timer.hpp>
 
 #include <cstdlib>
 #include <cstdio>

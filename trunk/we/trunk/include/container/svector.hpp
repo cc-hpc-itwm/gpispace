@@ -1,7 +1,7 @@
 // set with access to nth element, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _SVECTOR_HPP
-#define _SVECTOR_HPP
+#ifndef _CONTAINER_SVECTOR_HPP
+#define _CONTAINER_SVECTOR_HPP
 
 #include <vector>
 
@@ -72,4 +72,5 @@ public:
     return (vec == other.vec);
   }
 };
-#endif // _SVECTOR_HPP
+
+#endif

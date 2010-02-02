@@ -3,19 +3,17 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
-#include <netfwd.hpp>
-
-#include <adjacency.hpp>
-#include <bijection.hpp>
-#include <cond.hpp>
-#include <connection.hpp>
-#include <cross.hpp>
-#include <multirel.hpp>
-#include <svector.hpp>
-#include <trans.hpp>
-
+#include <container/adjacency.hpp>
+#include <container/bijection.hpp>
+#include <container/multirel.hpp>
+#include <container/svector.hpp>
+#include <function/cond.hpp>
+#include <function/trans.hpp>
 #include <serialize/unordered_map.hpp>
 #include <serialize/unordered_set.hpp>
+#include <type/connection.hpp>
+#include <type/id.hpp>
+#include <util/cross.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>

@@ -1,7 +1,7 @@
 // thread safe deque, with bounded depth, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _DEQUE_HPP
-#define _DEQUE_HPP
+#ifndef _CONCURRENT_DEQUE_HPP
+#define _CONCURRENT_DEQUE_HPP
 
 #include <deque>
 

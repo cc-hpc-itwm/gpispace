@@ -1,7 +1,7 @@
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
 #include <net.hpp>
-#include <timer.hpp>
+#include <util/timer.hpp>
 
 #include <cstdlib>
 #include <malloc.h>

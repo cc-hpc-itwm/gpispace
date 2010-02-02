@@ -1,9 +1,9 @@
 // adjacency table, stored as adjacency list, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _ADJACENCY_HPP
-#define _ADJACENCY_HPP
+#ifndef _CONTAINER_ADJACENCY_HPP
+#define _CONTAINER_ADJACENCY_HPP
 
-#include <it.hpp>
+#include <util/it.hpp>
 
 #include <stdexcept>
 
@@ -168,4 +168,4 @@ namespace adjacency
   };
 } // namespace adjacency
 
-#endif // _ADJACENCY_HPP
+#endif

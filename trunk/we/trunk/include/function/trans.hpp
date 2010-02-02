@@ -1,10 +1,9 @@
 // transition functions, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _TRANS_HPP
-#define _TRANS_HPP
+#ifndef _FUNCTION_TRANS_HPP
+#define _FUNCTION_TRANS_HPP
 
-#include <netfwd.hpp>
-#include <svector.hpp>
+#include <type/id.hpp>
 
 #include <vector>
 #include <set>
@@ -409,4 +408,4 @@ namespace Function { namespace Transition
   };
 }}
 
-#endif // _TRANS_HPP
+#endif

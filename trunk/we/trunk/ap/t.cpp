@@ -1,8 +1,8 @@
 // demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
-#include <cond.hpp>
 #include <net.hpp>
-#include <timer.hpp>
+#include <util/timer.hpp>
+#include <function/cond.hpp>
 
 #include <cstdlib>
 #include <ctype.h>
