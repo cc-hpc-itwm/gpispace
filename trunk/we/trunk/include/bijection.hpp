@@ -3,7 +3,7 @@
 #ifndef _BIJECTION_HPP
 #define _BIJECTION_HPP
 
-#include <util.hpp>
+#include <it.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/support/lambda.hpp>
@@ -141,10 +141,10 @@ namespace bijection
   };
 
   template<typename T,typename I>
-  struct const_it : public util::it<typename bijection<T, I>::const_iterator>
+  struct const_it : public it::it<typename bijection<T, I>::const_iterator>
   {
   private:
-    typedef util::it<typename bijection<T, I>::const_iterator> super;
+    typedef it::it<typename bijection<T, I>::const_iterator> super;
   public:
     explicit const_it (const bijection<T,I> & b) : super (b.begin(), b.end()) {}
 

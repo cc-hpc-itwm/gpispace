@@ -1,13 +1,13 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _UTIL_HPP
-#define _UTIL_HPP
+#ifndef _IT_HPP
+#define _IT_HPP
 
 #include <limits.h>
 #include <cstddef>
 #include <algorithm>
 
-namespace util
+namespace it
 {
   template<typename IT>
   class it

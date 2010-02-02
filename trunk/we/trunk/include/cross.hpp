@@ -3,7 +3,7 @@
 #ifndef _CROSS_HPP
 #define _CROSS_HPP
 
-#include <util.hpp>
+#include <it.hpp>
 
 #include <vector>
 
@@ -23,10 +23,10 @@ namespace cross
   };
 
   template<typename MAP, typename STATE>
-  struct iterator : public util::it<typename Traits<MAP>::map_it_t>
+  struct iterator : public it::it<typename Traits<MAP>::map_it_t>
   {
   protected:
-    typedef util::it<typename Traits<MAP>::map_it_t> super;
+    typedef it::it<typename Traits<MAP>::map_it_t> super;
     typedef typename Traits<MAP>::ret_t ret_t;
 
     STATE state;

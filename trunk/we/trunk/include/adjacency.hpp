@@ -3,7 +3,7 @@
 #ifndef _ADJACENCY_HPP
 #define _ADJACENCY_HPP
 
-#include <util.hpp>
+#include <it.hpp>
 
 #include <stdexcept>
 
@@ -34,11 +34,11 @@ namespace adjacency
   };
 
   template<typename L, typename R>
-  struct const_it : public util::it<typename IT<L,R>::type>
+  struct const_it : public it::it<typename IT<L,R>::type>
   {
   private:
     typedef typename IT<L,R>::type it_t;
-    typedef typename util::it<it_t> super;
+    typedef typename it::it<it_t> super;
   public:
     const_it (const it_t & _pos, const it_t & _end) : super(_pos,_end) {}
 
