@@ -91,7 +91,7 @@ public:
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
   typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
-  typedef svector<tid_t> enabled_t;
+  typedef svector::svector<tid_t> enabled_t;
 
   typedef cross::cross<pid_in_map_t> choices_t;
   typedef cross::star_iterator<pid_in_map_t> choices_star_iterator;

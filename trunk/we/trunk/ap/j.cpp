@@ -439,8 +439,8 @@ public:
   }
 };
 
-typedef deque<pnet_t::activity_t> deque_activity_t;
-typedef deque<pnet_t::output_t> deque_output_t;
+typedef concurrent::deque<pnet_t::activity_t> deque_activity_t;
+typedef concurrent::deque<pnet_t::output_t> deque_output_t;
 
 template<typename NET>
 struct param_t

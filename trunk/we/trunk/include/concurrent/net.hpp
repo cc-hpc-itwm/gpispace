@@ -15,7 +15,6 @@
 
 namespace petri_net
 {
-
   // sequentialize critical accesses to the net
   template<typename NET, typename CNT = unsigned long>
   struct shared_t
@@ -94,13 +93,14 @@ namespace petri_net
       typedef typename NET::output_t output_t;
 
       shared_t<NET> shared;
-      deque<activity_t> activity;
-      deque<output_t> output;
+      concurrent::deque<activity_t> activity;
+      concurrent::deque<output_t> output;
 
-      param_t ( NET & _net
-              , const typename deque<activity_t>::size_type & max_activity
-              , const typename deque<output_t>::size_type & max_output
-              )
+      param_t 
+      ( NET & _net
+      , const typename concurrent::deque<activity_t>::size_type & max_activity
+      , const typename concurrent::deque<output_t>::size_type & max_output
+      )
         : shared (_net)
         , activity (max_activity)
         , output (max_output)
@@ -159,8 +159,8 @@ namespace petri_net
   public:
     thread_safe_t
     ( NET & _net
-    , const typename deque<activity_t>::size_type & _max_activity = 100
-    , const typename deque<output_t>::size_type & _max_output = 100
+    , const typename concurrent::deque<activity_t>::size_type & _max_activity = 100
+    , const typename concurrent::deque<output_t>::size_type & _max_output = 100
     , const unsigned int _num_injector = 1
     )
       : net (_net)
