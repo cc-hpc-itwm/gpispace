@@ -9,6 +9,8 @@
 #include <boost/bimap/support/lambda.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 namespace bijection
 {
   namespace exception
@@ -45,6 +47,15 @@ namespace bijection
     bimap_t bimap;
     I h;
     const std::string description;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(bimap);
+      ar & BOOST_SERIALIZATION_NVP(h);
+      ar & BOOST_SERIALIZATION_NVP(description);
+    }
 
   public:
     explicit bijection (const std::string & _descr = "NO DESCRIPTION GIVEN")

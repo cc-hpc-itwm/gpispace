@@ -13,10 +13,12 @@
 
 #include <deque>
 
-#include <tr1/unordered_map>
-#include <tr1/random>
+#include <boost/unordered_map.hpp>
+
+#include <boost/random.hpp>
 
 #include <boost/function.hpp>
+
 #include <boost/thread.hpp>
 
 typedef unsigned int token_t;
@@ -107,7 +109,7 @@ public:
 };
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
-typedef std::tr1::unordered_map<petri_net::pid_t,token_t> map_t;
+typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef boost::function<void ( const pid_collection_t &
                              , map_t & m
                              , pnet_t::output_t &
@@ -182,8 +184,8 @@ template<typename Engine>
 struct random_usec
 {
 private:
-  typedef std::tr1::normal_distribution<double> dist_t;
-  std::tr1::variate_generator<Engine, dist_t> rand;
+  typedef boost::normal_distribution<double> dist_t;
+  boost::variate_generator<Engine, dist_t> rand;
   boost::mutex mutex;
 
   const double left;
@@ -330,13 +332,13 @@ main ()
   set_trans (net, tid_finish, pid, trans_finish);
   set_trans (net, tid_finalize, pid, trans_finalize);
 
-  std::tr1::mt19937 engine;
-  random_usec<std::tr1::mt19937> random_usec(engine);
+  boost::mt19937 engine;
+  random_usec<boost::mt19937> random_usec(engine);
 
   set_trans ( net
             , tid_work
             , pid
-            , boost::bind ( &trans_work<std::tr1::mt19937>
+            , boost::bind ( &trans_work<boost::mt19937>
                           , boost::ref(random_usec)
                           , _1
                           , _2

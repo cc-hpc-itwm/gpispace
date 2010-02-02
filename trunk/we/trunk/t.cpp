@@ -13,8 +13,9 @@
 #include <string>
 
 #include <boost/function.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
-#include <tr1/random>
+#include <boost/random.hpp>
 
 typedef std::string place_t;
 typedef std::string transition_t;
@@ -182,13 +183,13 @@ static void marking (const pnet_t & n)
   cout << endl;
 }
 
-static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
+static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
 
   if (!t.empty())
     {
-      std::tr1::uniform_int<pnet_t::enabled_t::size_type>
+      boost::uniform_int<pnet_t::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
@@ -200,8 +201,8 @@ static void step (pnet_t & n, unsigned long k)
   pnet_t::transition_const_it t (n.transitions());
   typedef std::vector<petri_net::tid_t> tid_vec_t;
   tid_vec_t tid;
-  std::tr1::mt19937 engine;
-  std::tr1::uniform_int<tid_vec_t::size_type> uniform(0, t.size()-1);
+  boost::mt19937 engine;
+  boost::uniform_int<tid_vec_t::size_type> uniform(0, t.size()-1);
 
   for (; t.has_more(); ++t)
     tid.push_back (*t);
@@ -555,7 +556,7 @@ main ()
       c.put_token (c.get_place_id("Semaphore"));
   }
 
-  std::tr1::mt19937 engine;
+  boost::mt19937 engine;
 
   {
     unsigned int num_fire (1000000);
@@ -565,6 +566,16 @@ main ()
     while (num_fire--)
       fire_random_transition (c, engine);
   }
+
+  std::ostringstream ss;
+
+  {
+    boost::archive::text_oarchive oa (ss);
+    oa << c;
+  }
+
+  cout << ss.str();
+  cout << ss.str().length() << endl;
 
   return EXIT_SUCCESS;
 }

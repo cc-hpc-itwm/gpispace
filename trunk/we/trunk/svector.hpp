@@ -7,6 +7,9 @@
 
 #include <algorithm>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/vector.hpp>
+
 template<typename T>
 struct svector
 {
@@ -18,6 +21,14 @@ private:
   typedef std::pair<const_it,const_it> const_pit_t;
 
   vec_t vec;
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(vec);
+  }
+
 public:
   typedef typename vec_t::const_iterator const_iterator;
   typedef typename vec_t::size_type size_type;

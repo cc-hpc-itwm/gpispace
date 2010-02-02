@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <tr1/unordered_map>
+#include <boost/unordered_map.hpp>
 
 #include <boost/function.hpp>
 
@@ -98,7 +98,7 @@ static bool cond_rem ( const pnet_t & net
   return (token.second == ((shift(place) + rem) % branch_factor));
 }
 
-typedef std::tr1::unordered_map<petri_net::pid_t,token_second_t> capacity_map_t;
+typedef boost::unordered_map<petri_net::pid_t,token_second_t> capacity_map_t;
 
 static bool cond_capacity ( const pnet_t & net
                           , const capacity_map_t & capacity

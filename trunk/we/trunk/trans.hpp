@@ -10,7 +10,7 @@
 #include <set>
 #include <map>
 
-#include <tr1/unordered_map>
+#include <boost/unordered_map.hpp>
 
 #include <boost/function.hpp>
 
@@ -31,7 +31,7 @@ namespace Function { namespace Transition
     typedef std::pair<Token, place_via_edge_t> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
-    typedef std::tr1::unordered_map<pid_t,eid_t> output_descr_t;
+    typedef boost::unordered_map<pid_t,eid_t> output_descr_t;
     typedef std::pair<Token, pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> output_t;
 
@@ -176,7 +176,7 @@ namespace Function { namespace Transition
                          ) const
     {
       // collect map descr -> token_input_t
-      typedef typename std::tr1::unordered_map<Descr,token_input_t> map_t;
+      typedef typename boost::unordered_map<Descr,token_input_t> map_t;
       map_t m;
 
       for ( typename input_t::const_iterator it (input.begin())
@@ -350,7 +350,7 @@ namespace Function { namespace Transition
   class EdgesOnly
   {
   public:
-    typedef typename std::tr1::unordered_map<eid_t, Token> map_t;
+    typedef typename boost::unordered_map<eid_t, Token> map_t;
     typedef boost::function<map_t (const map_t &)> Function;
 
   private:

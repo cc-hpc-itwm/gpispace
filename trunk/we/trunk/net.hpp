@@ -14,11 +14,14 @@
 #include <svector.hpp>
 #include <trans.hpp>
 
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
-#include <tr1/random>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+
+#include <boost/random.hpp>
 
 #include <boost/function.hpp>
+
+#include <boost/serialization/nvp.hpp>
 
 namespace petri_net
 {
@@ -73,19 +76,19 @@ public:
   typedef typename tf_traits::output_t output_t;
 
   typedef typename tf_traits::fun_t trans_t;
-  typedef std::tr1::unordered_map<tid_t, trans_t> trans_map_t;
+  typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
 
   typedef Function::Condition::Traits<Token> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::out_cond_t out_cond_t;
 
-  typedef std::tr1::unordered_map<tid_t, in_cond_t> in_cond_map_t;
-  typedef std::tr1::unordered_map<tid_t, out_cond_t> out_cond_map_t;
+  typedef boost::unordered_map<tid_t, in_cond_t> in_cond_map_t;
+  typedef boost::unordered_map<tid_t, out_cond_t> out_cond_map_t;
 
   typedef typename std::pair<Token,eid_t> token_via_edge_t;
 
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
-  typedef std::tr1::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+  typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
   typedef svector<tid_t> enabled_t;
 
@@ -95,15 +98,15 @@ public:
 
   // *********************************************************************** //
 private:
-  typedef std::tr1::unordered_map<eid_t, connection_t> connection_map_t;
+  typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
   typedef typename multirel::multirel<Token,pid_t> token_place_rel_t;
 
-  typedef std::tr1::unordered_set<tid_t> set_of_tid_t;
+  typedef boost::unordered_set<tid_t> set_of_tid_t;
   typedef set_of_tid_t in_enabled_t;
   typedef set_of_tid_t out_enabled_t;
 
-  typedef std::tr1::unordered_map<tid_t,pid_in_map_t> in_map_t;
-  typedef std::tr1::unordered_map<tid_t,output_descr_t> out_map_t;
+  typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
+  typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
   // *********************************************************************** //
 
@@ -128,6 +131,26 @@ private:
   out_map_t out_map;
   in_enabled_t in_enabled;
   out_enabled_t out_enabled;
+
+  // *********************************************************************** //
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(pmap);
+    ar & BOOST_SERIALIZATION_NVP(tmap);
+    ar & BOOST_SERIALIZATION_NVP(emap);
+    //    ar & BOOST_SERIALIZATION_NVP(connection_map);
+//     ar & BOOST_SERIALIZATION_NVP(adj_pt);
+//     ar & BOOST_SERIALIZATION_NVP(adj_tp);
+    ar & BOOST_SERIALIZATION_NVP(token_place_rel);
+    ar & BOOST_SERIALIZATION_NVP(enabled);
+//     ar & BOOST_SERIALIZATION_NVP(in_map);
+//     ar & BOOST_SERIALIZATION_NVP(out_map);
+//    ar & BOOST_SERIALIZATION_NVP(in_enabled);
+//    ar & BOOST_SERIALIZATION_NVP(out_enabled);
+  }
 
   // *********************************************************************** //
 
@@ -911,10 +934,10 @@ public:
   template<typename Engine>
   activity_t extract_activity_random (Engine & engine)
   {
-    std::tr1::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
+    boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
     const tid_t tid (enabled.at (rand_tid (engine)));
     const choices_t cs (choices(tid));
-    std::tr1::uniform_int<std::size_t> rand_choice (0,cs.size()-1);
+    boost::uniform_int<std::size_t> rand_choice (0,cs.size()-1);
     const choices_bracket_iterator it (cs[rand_choice (engine)]);
 
     return extract_activity (tid, it);

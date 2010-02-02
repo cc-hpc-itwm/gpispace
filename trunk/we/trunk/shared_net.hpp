@@ -9,6 +9,7 @@
 #include <deque.hpp>
 
 #include <boost/thread.hpp>
+#include <boost/random.hpp>
 
 #include <iostream>
 
@@ -30,7 +31,7 @@ namespace petri_net
     boost::mutex mutex;
     boost::condition_variable cond_inject;
 
-    std::tr1::mt19937 engine;
+    boost::mt19937 engine;
 
   public:
     shared_t (NET & _net) 

@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include <tr1/random>
+#include <boost/random.hpp>
 
 typedef unsigned int loop_t;
 typedef unsigned int id_t;
@@ -90,7 +90,7 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 using std::cout;
 using std::endl;
 
-static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
+static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
 
@@ -100,7 +100,7 @@ static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
     }
   else
     {
-      std::tr1::uniform_int<pnet_t::enabled_t::size_type>
+      boost::uniform_int<pnet_t::enabled_t::size_type>
         uniform (0,t.size()-1);
 
       n.fire (t.at(uniform (engine)));
@@ -113,7 +113,7 @@ main ()
   {
     pnet_t n (num_loops * size_loop, num_loops * size_loop);
 
-    std::tr1::mt19937 engine;
+    boost::mt19937 engine;
 
     {
       Timer_t timer ("construct net");

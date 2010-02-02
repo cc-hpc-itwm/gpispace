@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include <tr1/random>
+#include <boost/random.hpp>
 
 typedef unsigned int place_t;
 typedef unsigned int transition_t;
@@ -55,10 +55,10 @@ main ()
         n.add_transition (t);
     }
 
-    std::tr1::mt19937 engine;
+    boost::mt19937 engine;
 
     {
-      std::tr1::uniform_int<transition_t> uniform (0, factor * ntrans - 1);
+      boost::uniform_int<transition_t> uniform (0, factor * ntrans - 1);
 
       unsigned int duplicates (0);
 
@@ -87,7 +87,7 @@ main ()
     }
 
     {
-      std::tr1::uniform_int<place_t> uniform (0, factor * nplace - 1);
+      boost::uniform_int<place_t> uniform (0, factor * nplace - 1);
 
       unsigned int duplicates (0);
 
@@ -202,7 +202,7 @@ main ()
 
           if (!t.empty())
             {
-              std::tr1::uniform_int<pnet_t::enabled_t::size_type>
+              boost::uniform_int<pnet_t::enabled_t::size_type>
                 uniform (0, t.size() - 1);
 
               pnet_t::enabled_t::size_type pos (uniform(engine));

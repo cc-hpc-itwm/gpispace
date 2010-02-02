@@ -10,12 +10,12 @@
 #include <map>
 #include <string>
 
-#include <tr1/unordered_map>
+#include <boost/unordered_map.hpp>
 
 using std::cout;
 using std::endl;
 
-typedef std::tr1::unordered_map<std::string, unsigned long> cntmap_t;
+typedef boost::unordered_map<std::string, unsigned long> cntmap_t;
 
 static cntmap_t cntmap;
 
@@ -100,21 +100,6 @@ static inline std::size_t hash_value (const internal_place_t & p)
   return p.copy_count();
 }
 
-namespace std
-{
-  namespace tr1
-  {
-    template <>
-    struct hash<internal_place_t> : public unary_function<internal_place_t, size_t>
-    {
-      size_t operator()(const internal_place_t & p) const
-      {
-        return p.copy_count();
-      }
-    };
-  }
-}
-
 static std::ostream & operator << (std::ostream & s, const internal_place_t & p)
 {
   return s << "internal_place_t: copy count = " << p.copy_count();
@@ -152,21 +137,6 @@ public:
 static inline std::size_t hash_value (const ptr_place_t & p)
 {
   return hash_value(*(p.p()));
-}
-
-namespace std
-{
-  namespace tr1
-  {
-    template <>
-    struct hash<ptr_place_t> : public unary_function<ptr_place_t, size_t>
-    {
-      size_t operator()(const ptr_place_t & p) const
-      {
-        return (p.p())->copy_count();
-      }
-    };
-  }
 }
 
 static std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
@@ -395,32 +365,32 @@ main ()
   }
 
   {
-    cout << "**** std::tr1::unordered_map[] ****" << endl;
+    cout << "**** boost::unordered_map[] ****" << endl;
 
     place_t p;
 
-    typedef std::tr1::unordered_map<place_t,int> map_t;
+    typedef boost::unordered_map<place_t,int> map_t;
 
     map_t m;
 
-    cout << "std::tr1::unordered_map[]" << endl; m[p] = 0;
-    cout << "std::tr1::unordered_map[]" << endl; m[p] = 1;
+    cout << "boost::unordered_map[]" << endl; m[p] = 0;
+    cout << "boost::unordered_map[]" << endl; m[p] = 1;
 
     for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
       cout << "## " << it->first << " -> " << it->second << endl;
   }
 
   {
-    cout << "**** std::tr1::unordered_map.insert ****" << endl;
+    cout << "**** boost::unordered_map.insert ****" << endl;
 
     place_t p;
 
-    typedef std::tr1::unordered_map<place_t,int> map_t;
+    typedef boost::unordered_map<place_t,int> map_t;
 
     map_t m;
 
-    cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
-    cout << "std::tr1::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
+    cout << "boost::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 0));
+    cout << "boost::unordered_map.insert" << endl; m.insert (std::pair<place_t,int>(p, 1));
 
     for (map_t::const_iterator it (m.begin()); it != m.end(); ++it)
       cout << "## " << it->first << " -> " << it->second << endl;

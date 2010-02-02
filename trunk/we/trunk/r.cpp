@@ -9,7 +9,7 @@
 
 #include <boost/bind.hpp>
 
-#include <tr1/random>
+#include <boost/random.hpp>
 
 using std::cout;
 using std::endl;
@@ -73,14 +73,14 @@ static std::size_t fac (void)
 }
 #endif
 
-static void fire_random_transition (pnet_t & n, std::tr1::mt19937 & engine)
+static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
 {
   pnet_t::enabled_t t (n.enabled_transitions());
 
   assert (!t.empty());
   assert (t.size() == fac());
 
-  std::tr1::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
+  boost::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
 
   pnet_t::enabled_t::size_type tid (t.at(uniform (engine)));
 
@@ -131,7 +131,7 @@ main ()
     }
   while (std::next_permutation (perm, perm + k));
 
-  std::tr1::mt19937 engine;
+  boost::mt19937 engine;
 
   marking (n, transition);
 
