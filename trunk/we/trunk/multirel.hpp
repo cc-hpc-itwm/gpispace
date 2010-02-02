@@ -9,6 +9,8 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 namespace multirel
 {
   template<typename L, typename R>
@@ -77,6 +79,13 @@ namespace multirel
   {
   private:
     typename traits<L,R>::container_t container;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(container);
+    }
 
   public:
     bool add (const L & l, const R & r)
