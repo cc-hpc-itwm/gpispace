@@ -1,3 +1,7 @@
+# global variables
+
+# use the environment variable if present otherwise use a reasonable default value
+BOOST_ROOT ?= /usr
 
 DOPTS += $(CPP_MACROS)
 
