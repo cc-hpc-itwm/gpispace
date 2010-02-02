@@ -14,7 +14,8 @@
 #include <svector.hpp>
 #include <trans.hpp>
 
-#include <serialize.hpp>
+#include <serialize/unordered_map.hpp>
+#include <serialize/unordered_set.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>

@@ -28,15 +28,15 @@ CXX_FLAGS += -O3
 CXX_FLAGS += $(addprefix -,$(EOPTS))
 CXX_FLAGS += $(addprefix -D,$(DOPTS))
 
-CXX_INCLUDE = .
+CXX_INCLUDE = ./include
 CXX_INCLUDE += ${BOOST_ROOT}/include
 
 CXX_LIBS += pthread
 CXX_LIBS += boost_thread
 CXX_LIBS += boost_serialization
 
-HPP = $(wildcard *.hpp)
-CPP = $(wildcard *.cpp)
+HPP = $(wildcard include/*.hpp)
+CPP = $(wildcard ap/*.cpp)
 
 .PHONY: all
 
