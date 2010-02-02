@@ -28,7 +28,7 @@ CXX_FLAGS += -O3
 CXX_FLAGS += $(addprefix -,$(EOPTS))
 CXX_FLAGS += $(addprefix -D,$(DOPTS))
 
-CXX_INCLUDE = ./include
+CXX_INCLUDE = ./include ./ap
 CXX_INCLUDE += ${BOOST_ROOT}/include
 
 CXX_LIBS += pthread
