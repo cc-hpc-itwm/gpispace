@@ -352,7 +352,7 @@ static void do_log (const std::string & msg)
 
   cout << msg << endl;
 
-  fflush (stdout);
+  cout << std::flush;
 }
 
 #define LOG(msg) {std::ostringstream s; s << msg; do_log(s.str());}

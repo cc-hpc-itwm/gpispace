@@ -358,8 +358,7 @@ static void do_log (const std::string & msg, const int & level)
       boost::lock_guard<boost::mutex> lock (mutex_out);
 
       cout << msg << endl;
-
-      fflush (stdout);
+	  cout << std::flush;
     }
 }
 
