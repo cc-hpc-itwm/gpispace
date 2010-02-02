@@ -14,6 +14,8 @@
 #include <svector.hpp>
 #include <trans.hpp>
 
+#include <serialize.hpp>
+
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -141,15 +143,18 @@ private:
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(emap);
-    //    ar & BOOST_SERIALIZATION_NVP(connection_map);
-//     ar & BOOST_SERIALIZATION_NVP(adj_pt);
-//     ar & BOOST_SERIALIZATION_NVP(adj_tp);
+    ar & BOOST_SERIALIZATION_NVP(connection_map);
+    ar & BOOST_SERIALIZATION_NVP(adj_pt);
+    ar & BOOST_SERIALIZATION_NVP(adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
     ar & BOOST_SERIALIZATION_NVP(enabled);
-//     ar & BOOST_SERIALIZATION_NVP(in_map);
-//     ar & BOOST_SERIALIZATION_NVP(out_map);
-//    ar & BOOST_SERIALIZATION_NVP(in_enabled);
-//    ar & BOOST_SERIALIZATION_NVP(out_enabled);
+    //    ar & BOOST_SERIALIZATION_NVP(trans);
+    //    ar & BOOST_SERIALIZATION_NVP(in_cond);
+    //    ar & BOOST_SERIALIZATION_NVP(out_cond);
+    ar & BOOST_SERIALIZATION_NVP(in_map);
+    ar & BOOST_SERIALIZATION_NVP(out_map);
+    ar & BOOST_SERIALIZATION_NVP(in_enabled);
+    ar & BOOST_SERIALIZATION_NVP(out_enabled);
   }
 
   // *********************************************************************** //

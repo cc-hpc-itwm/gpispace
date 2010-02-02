@@ -9,6 +9,9 @@
 
 #include <vector>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/vector.hpp>
+
 namespace adjacency
 {
   namespace exception
@@ -82,6 +85,14 @@ namespace adjacency
             return it;
 
       throw exception::not_found();
+    }
+
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(row_tab);
+      ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
 
   public:

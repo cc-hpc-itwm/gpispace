@@ -3,6 +3,8 @@
 #ifndef _CONNECTION_HPP
 #define _CONNECTION_HPP
 
+#include <boost/serialization/nvp.hpp>
+
 template<typename TYPE, typename TID, typename PID>
 struct connection
 {
@@ -18,6 +20,14 @@ public:
     , tid (_tid)
     , pid (_pid)
   {}
+
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & type;
+    ar & tid;
+    ar & pid;
+  }
 };
 
 #endif
