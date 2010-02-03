@@ -4,6 +4,8 @@
 BOOST_ROOT ?= /usr
 
 DOPTS += $(CPP_MACROS)
+DOPTS += NMALLOCHOOK
+DOPTS += NDEBUG
 
 WARN += all
 WARN += error

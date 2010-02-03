@@ -14,6 +14,7 @@
 
 #include <boost/function.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <boost/random.hpp>
 
@@ -337,6 +338,7 @@ static bool cond_out ( const pnet_t & net
 int
 main ()
 {
+  boost::mt19937 engine;
   pnet_t n(5,4);
 
   add_place (n, "readyL");
@@ -556,7 +558,38 @@ main ()
       c.put_token (c.get_place_id("Semaphore"));
   }
 
-  boost::mt19937 engine;
+  {
+    pnet_t d;
+
+    std::ostringstream oss;
+
+    {
+      boost::archive::text_oarchive oa (oss, boost::archive::no_header);
+      oa << BOOST_SERIALIZATION_NVP(c);
+    }
+
+    print_net (c);
+
+    {
+      std::istringstream iss(oss.str());
+      boost::archive::text_iarchive ia (iss, boost::archive::no_header);
+      ia >> BOOST_SERIALIZATION_NVP(d);
+    }
+  
+    print_net (d);
+  
+    cout << oss.str() << endl;
+    cout << "SERIALIZATION SIZE = " << oss.str().length() << endl;
+
+    try
+      {
+        fire_random_transition (d, engine);
+      }
+    catch (petri_net::exception::no_such)
+      {
+        cout << "cannot fire, the functions are not de-serialized" << endl;
+      }
+  }
 
   {
     unsigned int num_fire (1000000);
@@ -566,16 +599,6 @@ main ()
     while (num_fire--)
       fire_random_transition (c, engine);
   }
-
-  std::ostringstream ss;
-
-  {
-    boost::archive::text_oarchive oa (ss);
-    oa << c;
-  }
-
-  cout << ss.str();
-  cout << ss.str().length() << endl;
 
   return EXIT_SUCCESS;
 }

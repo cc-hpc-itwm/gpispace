@@ -7,8 +7,16 @@
 #include <cstdio>
 
 #include <iostream>
+#include <sstream>
 
 #include <boost/random.hpp>
+
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 
 typedef unsigned int loop_t;
 typedef unsigned int id_t;
@@ -157,6 +165,69 @@ main ()
       for (loop_t l (0); l < num_loops; ++l)
         for (int i (0); i < tokens_per_loop; ++i)
           n.put_token (n.get_place_id (node_t (l, 0)));
+    }
+
+    {
+      std::ostringstream oss;
+
+      {
+        Timer_t timer ("serialize: binary");
+
+        boost::archive::binary_oarchive oa (oss, boost::archive::no_header);
+        oa << BOOST_SERIALIZATION_NVP(n);
+      }
+
+      cout << "size serialize: binary: " << oss.str().length() << endl;
+
+      {
+        Timer_t timer ("deserialize: binary");
+
+        std::istringstream iss(oss.str());
+        boost::archive::binary_iarchive oa (iss, boost::archive::no_header);
+        oa >> BOOST_SERIALIZATION_NVP(n);
+      }
+    }
+
+    {
+      std::ostringstream oss;
+
+      {
+        Timer_t timer ("serialize: text");
+
+        boost::archive::text_oarchive oa (oss, boost::archive::no_header);
+        oa << BOOST_SERIALIZATION_NVP(n);
+      }
+
+      cout << "size serialize: text: " << oss.str().length() << endl;
+
+      {
+        Timer_t timer ("deserialize: text");
+
+        std::istringstream iss(oss.str());
+        boost::archive::text_iarchive oa (iss, boost::archive::no_header);
+        oa >> BOOST_SERIALIZATION_NVP(n);
+      }
+    }
+
+    {
+      std::ostringstream oss;
+
+      {
+        Timer_t timer ("serialize: xml");
+
+        boost::archive::xml_oarchive oa (oss, boost::archive::no_header);
+        oa << BOOST_SERIALIZATION_NVP(n);
+      }
+
+      cout << "size serialize: xml: " << oss.str().length() << endl;
+
+      {
+        Timer_t timer ("deserialize: xml");
+
+        std::istringstream iss(oss.str());
+        boost::archive::xml_iarchive oa (iss, boost::archive::no_header);
+        oa >> BOOST_SERIALIZATION_NVP(n);
+      }
     }
 
     {

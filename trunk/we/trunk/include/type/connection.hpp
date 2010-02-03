@@ -26,9 +26,9 @@ namespace petri_net
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      ar & type;
-      ar & tid;
-      ar & pid;
+      ar & BOOST_SERIALIZATION_NVP(type);
+      ar & BOOST_SERIALIZATION_NVP(tid);
+      ar & BOOST_SERIALIZATION_NVP(pid);
     }
   };
 }

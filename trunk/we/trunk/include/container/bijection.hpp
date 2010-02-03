@@ -46,7 +46,7 @@ namespace bijection
 
     bimap_t bimap;
     I h;
-    const std::string description;
+    std::string description;
 
     friend class boost::serialization::access;
     template<class Archive>

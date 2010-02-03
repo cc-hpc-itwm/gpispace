@@ -50,7 +50,7 @@ namespace adjacency
   class table
   {
   private:
-    const ADJ invalid;
+    ADJ invalid;
 
     typedef std::pair<ROW,ADJ> row_adj_t;
     typedef std::pair<COL,ADJ> col_adj_t;
@@ -91,6 +91,7 @@ namespace adjacency
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
+      ar & BOOST_SERIALIZATION_NVP(invalid);
       ar & BOOST_SERIALIZATION_NVP(row_tab);
       ar & BOOST_SERIALIZATION_NVP(col_tab);
     }
