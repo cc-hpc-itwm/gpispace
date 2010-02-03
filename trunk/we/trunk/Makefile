@@ -33,7 +33,7 @@ CXX_FLAGS += $(addprefix -,$(EOPTS))
 CXX_FLAGS += $(addprefix -D,$(DOPTS))
 
 CXX_INCLUDE = ./include .
-CXX_INCLUDE += ${BOOST_ROOT}/include
+CXX_INCLUDE += $(BOOST_ROOT)/include
 
 CXX_LIBS += pthread
 CXX_LIBS += boost_thread

@@ -20,6 +20,7 @@
 #define WE_EXPR_HPP 1
 
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/support.hpp>
+// ??? /usr/include/boost/spirit/include/support.hpp:11:41: error: boost/spirit/home/support.hpp: No such file or directory
+// #include <boost/spirit/include/support.hpp>
 
 #endif
