@@ -147,6 +147,7 @@ private:
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
     ar & BOOST_SERIALIZATION_NVP(enabled);
+    // WORK HERE: serialize the functions
     //    ar & BOOST_SERIALIZATION_NVP(trans);
     //    ar & BOOST_SERIALIZATION_NVP(in_cond);
     //    ar & BOOST_SERIALIZATION_NVP(out_cond);
