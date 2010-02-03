@@ -6,8 +6,7 @@
 #include <type/id.hpp>
 
 #include <vector>
-#include <set>
-#include <map>
+#include <string>
 
 #include <boost/unordered_map.hpp>
 

@@ -7,9 +7,10 @@
 #include <iostream>
 #include <iomanip>
 
-#include <map>
 #include <vector>
 #include <string>
+
+#include <boost/unordered_map.hpp>
 
 using std::cout;
 using std::endl;
@@ -23,7 +24,7 @@ namespace
   typedef std::pair<key_t,val_t> ret_t;
   typedef std::vector<ret_t> cross_t;
 
-  typedef std::map<key_t,vec_val_t> map_t;
+  typedef boost::unordered_map<key_t,vec_val_t> map_t;
 
   static std::ostream & operator << (std::ostream & s, const ret_t & kv)
   {

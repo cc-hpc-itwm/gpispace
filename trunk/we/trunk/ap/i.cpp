@@ -11,6 +11,7 @@
 #include <deque>
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <boost/random.hpp>
 
@@ -364,7 +365,7 @@ static void do_log (const std::string & msg)
 
 struct param_t
 {
-  typedef std::set<petri_net::tid_t> tid_set_t;
+  typedef boost::unordered_set<petri_net::tid_t> tid_set_t;
   pnet_t & net;
   tid_set_t & tid_to_run_on_master; // Not! const, to be changed on runtime
   deque_activity_t activity;
