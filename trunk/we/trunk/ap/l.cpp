@@ -171,10 +171,10 @@ main ()
               for (unsigned int l (0); l < num_loops; ++l)
                 fire_random_transition (n, engine);
 
-              cout << "."; fflush (stdout);
+              cout << "." << std::flush;
             }
 
-          cout << "#"; fflush (stdout);
+          cout << "#" << std::flush;
         }
 
       cout << endl;
