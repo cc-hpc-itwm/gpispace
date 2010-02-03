@@ -143,12 +143,11 @@ namespace bijection
   template<typename T,typename I>
   struct const_it : public it::it<typename bijection<T, I>::const_iterator>
   {
-  private:
-    typedef it::it<typename bijection<T, I>::const_iterator> super;
   public:
-    explicit const_it (const bijection<T,I> & b) : super (b.begin(), b.end()) {}
+    explicit const_it (const bijection<T,I> & b) 
+      : const_it::super (b.begin(), b.end()) {}
 
-    const I & operator * (void) const { return super::pos->right; }
+    const I & operator * (void) const { return const_it::super::pos->right; }
   };
 } // namespace bijection
 

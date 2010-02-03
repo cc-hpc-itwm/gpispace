@@ -15,6 +15,7 @@ namespace it
   protected:
     IT pos;
     const IT end;
+    typedef it<IT> super;
   private:
     const std::size_t the_size;
   public:

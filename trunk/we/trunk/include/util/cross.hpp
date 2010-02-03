@@ -26,7 +26,6 @@ namespace cross
   struct iterator : public it::it<typename Traits<MAP>::map_it_t>
   {
   protected:
-    typedef it::it<typename Traits<MAP>::map_it_t> super;
     typedef typename Traits<MAP>::ret_t ret_t;
 
     STATE state;
@@ -35,13 +34,13 @@ namespace cross
     virtual ret_t get (void) const = 0;
     virtual void step (void) = 0;
 
-    void set_val (void) { if (super::has_more()) val = get(); }
+    void set_val (void) { if (iterator::super::has_more()) val = get(); }
 
   public:
     iterator (const MAP & map, const STATE & _state)
-      : super (map.begin(), map.end()), state(_state) {}
+      : iterator::super (map.begin(), map.end()), state(_state) {}
 
-    void operator ++ (void) { step(); super::operator++(); set_val(); }
+    void operator ++ (void) { step(); iterator::super::operator++(); set_val(); }
     ret_t operator * (void) const { return val; }
     const ret_t * operator -> (void) const { return &val; }
   };

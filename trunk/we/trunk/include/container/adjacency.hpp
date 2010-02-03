@@ -38,12 +38,12 @@ namespace adjacency
   {
   private:
     typedef typename IT<L,R>::type it_t;
-    typedef typename it::it<it_t> super;
   public:
-    const_it (const it_t & _pos, const it_t & _end) : super(_pos,_end) {}
+    const_it (const it_t & _pos, const it_t & _end) 
+      : const_it::super(_pos,_end) {}
 
-    const L & operator * (void) const { return super::pos->first; }
-    const R & operator () (void) const { return super::pos->second; }
+    const L & operator * (void) const { return const_it::super::pos->first; }
+    const R & operator () (void) const { return const_it::super::pos->second; }
   };
 
   template<typename ROW, typename COL, typename ADJ>
