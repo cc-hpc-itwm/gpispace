@@ -361,13 +361,13 @@ public:
 			os<<"Slave: Popped-up event "<<typeid(*(pEvent.get())).name();
 			SDPA_LOG_DEBUG(os.str());
 
-#if USE_STL_TR1
+/*#if USE_STL_TR1
 			ptrT = std::tr1::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
 			pErrorEvt = std::tr1::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#else
+#else*/
 			ptrT = boost::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
 			pErrorEvt = boost::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#endif
+//#endif
 
 		 }while( !ptrT.get() && !pErrorEvt.get());
 

@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(1),
+    m_nITER(100),
     m_sleep_interval(1000000)
 {
 }
@@ -91,19 +91,19 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:5000", "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:6000", "workflows" );
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( "aggregator_0",  "127.0.0.1:5001",
-																			   "orchestrator_0", "127.0.0.1:5000");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:6001","orchestrator_0", "127.0.0.1:6000");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
-	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create( "NRE_0",  "127.0.0.1:5002",
-																   "aggregator_0", "127.0.0.1:5001",
-																   "127.0.0.1:8000" );
+	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create("NRE_0",  "127.0.0.1:6002","aggregator_0", "127.0.0.1:6001", "127.0.0.1:8000" );
+	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:6003","aggregator_0", "127.0.0.1:6001" );
+
     try
     {
 	  sdpa::daemon::NRE::start(ptrNRE_0);
+	  //sdpa::daemon::NRE::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
@@ -113,13 +113,10 @@ void TestComponents::testComponents()
       sdpa::daemon::Orchestrator::shutdown(ptrOrch);
       sdpa::daemon::Aggregator::shutdown(ptrAgg);
       sdpa::daemon::NRE::shutdown(ptrNRE_0);
+      //sdpa::daemon::NRE::shutdown(ptrNRE_1);
+
       return;
     }
-
-	/*sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:5003",
-																	 "aggregator_0", "127.0.0.1:5001",
-																	 "127.0.0.1:8001" );
-	sdpa::daemon::NRE::start(ptrNRE_1);*/
 
 	for(int k=0; k<m_nITER; k++ )
 	{

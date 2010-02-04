@@ -22,6 +22,8 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/thread.hpp>
+#include <boost/serialization/nvp.hpp>
+
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -31,6 +33,11 @@ namespace sdpa { namespace daemon {
 	  typedef sdpa::shared_ptr<JobManager> ptr_t;
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
+	  typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+	  typedef job_map_t::iterator iterator;
+
+	  iterator begin() { return job_map_.begin(); }
+	  iterator end() { return job_map_.end(); }
 
 	  JobManager();
 	  virtual ~JobManager();
@@ -41,16 +48,21 @@ namespace sdpa { namespace daemon {
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
 
-	  long number_of_jobs() { return job_map_.size(); }
+	  std::string dump();
+	  size_t number_of_jobs() { return job_map_.size(); }
 
-	  //only for testing purposes!
+	  template <class Archive>
+	  void serialize(Archive& ar, const unsigned int file_version )
+	  {
+		  ar & job_map_;
+	  }
+
+	  // only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
   protected:
 	  SDPA_DECLARE_LOGGER();
-	  typedef std::map<sdpa::job_id_t, Job::ptr_t> job_map_t;
-
 	  job_map_t job_map_;
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;

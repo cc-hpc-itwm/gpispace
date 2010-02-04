@@ -35,19 +35,25 @@ using namespace std;
 using namespace sdpa::events;
 
 namespace sdpa { namespace daemon {
-    JobImpl::JobImpl(const sdpa::job_id_t &id,
-                     const sdpa::job_desc_t &desc,
+    JobImpl::JobImpl(const sdpa::job_id_t id,
+                     const sdpa::job_desc_t desc,
                      const sdpa::daemon::IComm* pHandler,
                      const sdpa::job_id_t &parent)
         : id_(id), desc_(desc),
           parent_(parent),
           b_marked_for_del_(false),
           b_local_(false),
-          SDPA_INIT_LOGGER( string("Job ")+ id.str() ),
-          pComm(const_cast<IComm*>(pHandler))
+          pComm(const_cast<IComm*>(pHandler)),
+          SDPA_INIT_LOGGER( string("Job ")+ id.str())
     {}
 
-    JobImpl::~JobImpl() throw () { }
+
+    JobImpl::~JobImpl() throw () {
+    	std::ostringstream os;
+    	os<<"Destructor of the job "<<id_.str()<<" called!";
+    	SDPA_LOG_DEBUG(os.str());
+    }
+
 
     const sdpa::job_id_t & JobImpl::id() const {
         return id_;
@@ -138,15 +144,19 @@ namespace sdpa { namespace daemon {
 		{
     		try
     		{
-				sdpa::worker_id_t worker_id = get("worker");// Clearly, the job can be into the submitted or acknowledged queue
+				sdpa::worker_id_t worker_id = worker(); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
-				// else, forward the cancel to the worker
-				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+				if( !worker().empty() )
+				{
+					SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+					CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
+					pComm->sendEventToSlave(pCancelEvt);
+				}
+				else
+					SDPA_LOG_WARN("The job was not assigned to any worker!");
 
-				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-				pComm->sendEventToSlave(pCancelEvt);
 			} catch(sdpa::util::PropertyLookupFailed& ) {
-				SDPA_LOG_WARN("The job was not assigned to a worker!");
+				SDPA_LOG_WARN("The job was not assigned to any worker!");
 			} catch(...) {
 				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			}

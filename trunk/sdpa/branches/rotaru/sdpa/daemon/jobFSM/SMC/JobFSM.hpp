@@ -27,7 +27,7 @@
 namespace sdpa { namespace fsm { namespace smc {
 	class JobFSM : public sdpa::daemon::JobImpl {
 		public:
-			typedef std::tr1::shared_ptr<JobFSM> Ptr;
+			typedef sdpa::shared_ptr<JobFSM> Ptr;
 
 			JobFSM( const sdpa::job_id_t &id,
 					const sdpa::job_desc_t &desc,

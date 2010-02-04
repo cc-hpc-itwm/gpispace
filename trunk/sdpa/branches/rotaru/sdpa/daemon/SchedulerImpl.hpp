@@ -36,7 +36,7 @@ namespace sdpa {
 	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
 	 //typedef SynchronizedQueue<Job::ptr_t > JobQueue;
 
-	 SchedulerImpl(sdpa::daemon::IComm* pHandler);
+	 SchedulerImpl(sdpa::daemon::IComm* pHandler );
 	 virtual ~SchedulerImpl();
 
 

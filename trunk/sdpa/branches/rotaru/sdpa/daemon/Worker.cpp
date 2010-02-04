@@ -20,7 +20,7 @@ void Worker::update(const sdpa::events::SDPAEvent &) {
 void Worker::dispatch(const Job::ptr_t &pJob) {
   SDPA_LOG_DEBUG("appending job(" << pJob->id() << ") to the pending queue");
 
-  pJob->put("worker", name());
+  pJob->worker() = name();
   pending_.push(pJob);
 }
 

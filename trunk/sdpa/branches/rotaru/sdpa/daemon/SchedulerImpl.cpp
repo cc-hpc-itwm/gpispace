@@ -25,7 +25,7 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler)
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")

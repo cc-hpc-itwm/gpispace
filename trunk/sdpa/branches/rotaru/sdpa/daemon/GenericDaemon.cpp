@@ -36,6 +36,10 @@
 #include <gwes/GWES.h>
 #include <sdpa/wf/GwesGlue.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
@@ -179,7 +183,6 @@ void GenericDaemon::shutdown_network()
 	seda::Stage::Ptr encode_stage = seda::StageRegistry::instance().lookup(encode_stage_name);
 
 	encode_stage->stop();
-
 	ptr_to_master_stage_ = ptr_to_slave_stage_ = NULL;
 }
 
@@ -910,3 +913,33 @@ void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 	sendEventToSelf(pCancelAckEvt);
 }
 
+
+void GenericDaemon::backup(std::string& strFileName)
+{
+	try
+	{
+		ofstream ofs(strFileName.c_str());
+		assert(ofs.good());
+		boost::archive::text_oarchive oa(ofs);
+		//oa<<ptr_job_man_;
+	}
+	catch(exception &e)
+	{
+		cout << e.what() << endl;
+	}
+}
+
+void GenericDaemon::recover(std::string& strFileName)
+{
+	try
+	{
+		ifstream ifs(strFileName.c_str());
+		assert(ifs.good());
+		boost::archive::text_iarchive ia(ifs);
+		//ia >>ptr_job_man_;
+	}
+	catch(exception &e)
+	{
+		cout << e.what() << endl;
+	}
+}

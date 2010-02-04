@@ -25,9 +25,9 @@
 #include <sdpa/events/Serialization.hpp>
 
 namespace sdpa { namespace events {
-  class Codec
-  {
-  public:
+	class Codec
+	{
+	public:
 
     std::string encode(sdpa::events::SDPAEvent *e) const
     {

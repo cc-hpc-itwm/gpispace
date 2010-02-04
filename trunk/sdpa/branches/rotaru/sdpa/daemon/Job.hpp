@@ -22,6 +22,8 @@
 #include <gwdl/IWorkflow.h>
 #include <sdpa/types.hpp>
 
+#include <boost/serialization/access.hpp>
+
 namespace sdpa { namespace daemon {
 
 	class GenericDaemon;
@@ -29,19 +31,22 @@ namespace sdpa { namespace daemon {
      * The interface to the generic job description we keep around in all
      * components.
      */
-    class Job : public sdpa::util::Properties {
+    class Job /*: public sdpa::util::Properties */ {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
         virtual const job_desc_t & description() const = 0;
+        virtual sdpa::worker_id_t& worker() = 0;
 
         virtual bool is_marked_for_deletion() = 0;
         virtual bool mark_for_deletion() = 0;
 
         virtual bool is_local()=0;
         virtual void set_local(bool)=0;
+
+        virtual std::string print_info() = 0;
 
 #ifdef USE_BOOST_SC
         virtual void process_event( const boost::statechart::event_base &) {}
@@ -60,6 +65,9 @@ namespace sdpa { namespace daemon {
 		virtual void setResult(const sdpa::job_result_t& ) =0;
 		virtual sdpa::status_t getStatus() { return "Undefined"; }
 
+		friend class boost::serialization::access;
+		template<class Archive>
+			void serialize(Archive&, const unsigned int /* file version */){}
     };
 }}
 

@@ -11,10 +11,6 @@
 #include <tests/sdpa/test_Config.hpp>
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
-#include <tests/sdpa/test_DaemonDummyGwes.hpp>
-#include <tests/sdpa/test_DaemonRealGwes.hpp>
-#include <tests/sdpa/test_D2DDummyGwes.hpp>
-#include <tests/sdpa/test_D2DRealGwes.hpp>
 
 #include <tests/sdpa/test_D2D2DDummyGwes.hpp>
 #include <tests/sdpa/test_D2D2DRealGwes.hpp>
