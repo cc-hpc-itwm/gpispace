@@ -37,7 +37,7 @@ namespace seda {
     public:
       typedef std::list<IEvent::Ptr>::iterator iterator;
       typedef std::list<IEvent::Ptr>::const_iterator const_iterator;
-      typedef std::tr1::shared_ptr<AccumulateStrategy> Ptr;
+      typedef seda::shared_ptr<AccumulateStrategy> Ptr;
       explicit AccumulateStrategy(const Strategy::Ptr& s)
                 : StrategyDecorator(s->name()+".accumulate", s),
         _accumulator() {}

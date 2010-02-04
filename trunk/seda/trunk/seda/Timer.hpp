@@ -29,7 +29,7 @@
 namespace seda {
     class Timer {
         public:
-            typedef std::tr1::shared_ptr<Timer> Ptr;
+            typedef seda::shared_ptr<Timer> Ptr;
 
             explicit
             Timer(const std::string &a_targetStage,

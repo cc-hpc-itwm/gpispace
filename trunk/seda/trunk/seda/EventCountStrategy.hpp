@@ -30,7 +30,7 @@
 namespace seda {
     class EventCountStrategy : public StrategyDecorator {
         public:
-            typedef std::tr1::shared_ptr<EventCountStrategy> Ptr;
+            typedef seda::shared_ptr<EventCountStrategy> Ptr;
 
             explicit
                 EventCountStrategy(const Strategy::Ptr& s)

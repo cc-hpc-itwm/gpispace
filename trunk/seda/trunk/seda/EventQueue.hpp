@@ -39,7 +39,7 @@
 namespace seda {
     class EventQueue : public IEventQueue {
         public:
-            typedef std::tr1::shared_ptr< EventQueue > Ptr;
+            typedef seda::shared_ptr< EventQueue > Ptr;
 
             explicit
                 EventQueue(const std::string& a_name, std::size_t a_maxQueueSize=SEDA_MAX_QUEUE_SIZE)

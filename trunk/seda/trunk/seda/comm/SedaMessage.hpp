@@ -47,7 +47,7 @@ namespace seda {
 
     class SedaMessage : public seda::UserEvent {
       public:
-        typedef std::tr1::shared_ptr<SedaMessage> Ptr;
+        typedef seda::shared_ptr<SedaMessage> Ptr;
 		typedef std::string payload_type;
 		typedef std::string address_type;
 		typedef unsigned long message_id_type;

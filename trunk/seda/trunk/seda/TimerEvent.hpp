@@ -29,7 +29,7 @@ namespace seda {
     /** */
     class TimerEvent : public SystemEvent {
     public:
-        typedef std::tr1::shared_ptr<TimerEvent> Ptr;
+        typedef seda::shared_ptr<TimerEvent> Ptr;
 
         explicit
         TimerEvent(const std::string& a_tag) : _tag(a_tag) {}

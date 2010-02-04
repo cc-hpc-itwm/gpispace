@@ -161,10 +161,12 @@ namespace seda { namespace comm {
     {
       insert(name, location_t(name, val));
     }
+
     void insert(const std::string &name, const location_t::host_t &h, location_t::port_t p)
     {
       insert(name, location_t(name, h, p));
     }
+
     void insert(const std::string &name, const location_t &location)
     {
       boost::unique_lock<boost::recursive_mutex> mtx_lock(mtx_);

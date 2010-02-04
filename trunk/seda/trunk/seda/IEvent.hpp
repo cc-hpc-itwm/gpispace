@@ -30,7 +30,7 @@
 namespace seda {
     class IEvent {
     public:
-        typedef std::tr1::shared_ptr<IEvent> Ptr;
+        typedef seda::shared_ptr<IEvent> Ptr;
     
         virtual ~IEvent() {}
         virtual std::string str() const = 0;

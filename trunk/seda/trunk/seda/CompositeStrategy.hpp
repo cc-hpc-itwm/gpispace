@@ -29,7 +29,7 @@
 namespace seda {
   class CompositeStrategy : public seda::Strategy {
   public:
-    typedef std::tr1::shared_ptr<CompositeStrategy> Ptr;
+    typedef seda::shared_ptr<CompositeStrategy> Ptr;
     
     CompositeStrategy(const std::string& name);
     ~CompositeStrategy() {}

@@ -34,7 +34,7 @@ namespace seda {
      */
     class UserEvent : public IEvent {
     public:
-        typedef std::tr1::shared_ptr<UserEvent> Ptr;
+        typedef seda::shared_ptr<UserEvent> Ptr;
     
         virtual ~UserEvent() {}
     protected:

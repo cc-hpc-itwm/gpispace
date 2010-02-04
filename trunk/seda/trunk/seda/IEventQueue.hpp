@@ -42,7 +42,7 @@ namespace seda {
 
   class IEventQueue {
   public:
-    typedef std::tr1::shared_ptr<IEventQueue> Ptr;
+    typedef seda::shared_ptr<IEventQueue> Ptr;
     
     virtual ~IEventQueue() {}
 

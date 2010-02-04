@@ -8,7 +8,7 @@
 namespace seda {
   namespace tests {
     class AccumulateStrategyTest : public CppUnit::TestFixture {
-        typedef std::tr1::shared_ptr<AccumulateStrategyTest> Ptr;
+        typedef seda::shared_ptr<AccumulateStrategyTest> Ptr;
         CPPUNIT_TEST_SUITE( seda::tests::AccumulateStrategyTest );
         CPPUNIT_TEST( testAddRemoveEvents );
         CPPUNIT_TEST( testIterator );

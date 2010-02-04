@@ -38,7 +38,7 @@ OPTION(WITH_COMM
 
 OPTION(USE_STL_TR1 
  "Use tr1 from stl"
- 1)
+ 0)
 
 OPTION(ENABLE_UNIT_TESTS
   "Build and perform unit tests"

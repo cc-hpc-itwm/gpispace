@@ -30,7 +30,7 @@ namespace seda {
 
     class StageFactory {
         public:
-            typedef std::tr1::shared_ptr<StageFactory> Ptr;
+            typedef seda::shared_ptr<StageFactory> Ptr;
 
             explicit
             StageFactory() {}

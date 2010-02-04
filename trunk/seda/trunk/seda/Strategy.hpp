@@ -34,7 +34,7 @@ namespace seda {
   
     class Strategy {
     public:
-        typedef std::tr1::shared_ptr<Strategy> Ptr;
+        typedef seda::shared_ptr<Strategy> Ptr;
     
         virtual ~Strategy() {}
         virtual void perform(const IEvent::Ptr&) = 0; //{ throw seda::EventNotSupported(e); }
