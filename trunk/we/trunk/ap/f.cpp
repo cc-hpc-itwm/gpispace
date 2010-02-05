@@ -159,6 +159,11 @@ namespace parse
         }
     }
 
+    static bool can_be_unary (const type & token)
+    {
+      return (token != val && token != rpr && token != ref);
+    }
+
     template<typename T>
     struct tokenizer
     {
@@ -210,7 +215,12 @@ namespace parse
                 switch (*pos)
                   {
                   case '=': token = ne; ++pos; break;
-                  default: token = _not; break;
+                  default:
+                    if (can_be_unary (token))
+                      token = _not;
+                    else
+                      throw exception ("misplaced negation");
+                    break;
                   }
               break;
             case '=':
@@ -227,7 +237,7 @@ namespace parse
 
             case '+': token = add; ++pos; break;
             case '-':
-              if (token != val && token != rpr && token != ref)
+              if (can_be_unary (token))
                 token = neg;
               else
                 token = sub;
@@ -794,7 +804,6 @@ int main (void)
 //   std::string input 
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
 
-  if (0)
   {
     parse::eval::context<int> context;
     std::string input;
