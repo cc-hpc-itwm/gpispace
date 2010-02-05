@@ -38,7 +38,7 @@ namespace parse
   {
   public:
     explicit expected (const std::string & what)
-      : exception ("excpected '" + what + "'") {}
+      : exception ("expected '" + what + "'") {}
   };
 
   namespace token
