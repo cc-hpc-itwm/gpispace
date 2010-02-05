@@ -14,10 +14,15 @@
 #include <cassert>
 
 #include <boost/unordered_map.hpp>
-#include <boost/function.hpp>
 
 namespace parse
 {
+  template<typename T>
+  std::string show (const T & x)
+  {
+    std::ostringstream s; s << x; return s.str();
+  }
+
   class exception : public std::runtime_error
   {
   public:
@@ -35,12 +40,15 @@ namespace parse
   namespace token
   {
     enum type
-    { lt, le, gt, ge, ne, eq  // prec 0, left assoziative
-    , add, sub                // prec 1, left assoziative
-    , mul, div                // prec 2, left assoziative
-    , mod                     // prec 3, left assoziative
-    , pow                     // prec 4, right assoziative
-    , neg                     // prec 5, unary minus
+    { _or                     // prec  0, left associative
+    , _and                    // prec  1, left associative
+    , _not                    // prec  2, left associative
+    , lt, le, gt, ge, ne, eq  // prec 10, left associative
+    , add, sub                // prec 21, left associative
+    , mul, div                // prec 22, left associative
+    , mod                     // prec 23, left associative
+    , pow                     // prec 24, right associative
+    , neg                     // prec 25, unary minus
     , fac, com                // factorial, combinations
     , sep                     // comma
     , lpr, rpr                // parenthesis
@@ -52,78 +60,75 @@ namespace parse
     namespace function
     {
       template<typename T>
-      static T lt (const T & l, const T & r) { return l < r; }
-      template<typename T>
-      static T le (const T & l, const T & r) { return l <= r; }
-      template<typename T>
-      static T gt (const T & l, const T & r) { return l > r; }
-      template<typename T>
-      static T ge (const T & l, const T & r) { return l >= r; }
-      template<typename T>
-      static T ne (const T & l, const T & r) { return l != r; }
-      template<typename T>
-      static T eq (const T & l, const T & r) { return l == r; }
-      template<typename T>
-      static T add (const T & l, const T & r) { return l + r; }
-      template<typename T>
-      static T sub (const T & l, const T & r) { return l - r; }
-      template<typename T>
-      static T mul (const T & l, const T & r) { return l * r; }
-      template<typename T>
-      static T div (const T & l, const T & r) { return l / r; }
-      template<typename T>
-      static T mod (const T & l, const T & r) { return l % r; }
-      template<typename T>
-      static T pow (const T & l, const T & r)
+      static T unary (const type & token, const T & x)
       {
-        T p (1);
+        switch (token)
+          {
+          case _not: return !x;
+          case neg: return -x;
+          case fac:
+            {
+              T f (1);
 
-        for (T i (1); i < r; ++i)
-          p *= l;
+              for (T i (1); i < x; ++i)
+                f *= i;
 
-        return p; 
+              return f;
+            }
+          default: throw std::runtime_error ("unary " + show(token));
+          }
       }
 
       template<typename T>
-      static T neg (const T & x) { return -x; }
-
-      template<typename T>
-      static T fac (const T & x) 
+      static T binary (const type & token, const T & l, const T & r)
       {
-        T f (1);
+        switch (token)
+          {
+          case _or: return l | r;
+          case _and: return l & r;
+          case lt: return l < r;
+          case le: return l <= r;
+          case gt: return l > r;
+          case ge: return l >= r;
+          case ne: return l != r;
+          case eq: return l == r;
+          case add: return l + r;
+          case sub: return l - r;
+          case mul: return l * r;
+          case div: return l / r;
+          case mod: return l % r;
+          case pow:
+            {
+              T p (1);
 
-        for (T i (1); i < x; ++i)
-          f *= i;
-
-        return f;
+              for (T i (0); i < r; ++i)
+                p *= l;
+              
+              return p; 
+            }
+          case com: return (unary<T>(fac, l)) / (unary<T>(fac, l-r));
+          default: throw std::runtime_error ("binary " + show(token));
+          }
       }
 
-      template<typename T>
-      static T com (const T & l, const T & r)
+      static bool is_builtin_function (const type & token)
       {
-        return (fac<T>(l)) / (fac<T>(l-r));
+        return (token > neg && token < sep);
       }
-    }
-
-    static bool is_function (const type & token)
-    {
-      return (token > neg && token < sep);
-    }
-
-    static bool is_unary (const type & token)
-    {
-      return (token == neg || token == fac);
-    }
+    } // namespace function
 
     static bool is_prefix (const type & token)
     {
-      return (token == fac || token == com);
+      return (token == fac || token == com || token == _not);
     }
 
     static std::ostream & operator << (std::ostream & s, const type & token)
     {
       switch (token)
         {
+        case _or: return s << " | ";
+        case _and: return s << " & ";
+        case _not: return s << "!";
         case lt: return s << " < ";
         case le: return s << " <= ";
         case gt: return s << " > ";
@@ -145,7 +150,7 @@ namespace parse
         case val: return s << "<val>";
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
-        default: throw std::runtime_error ("token");
+        default: throw std::runtime_error ("token " + show(token));
         }
     }
 
@@ -157,8 +162,7 @@ namespace parse
       const std::string::const_iterator end;
       token::type token;
       T tokval;
-      std::string::const_iterator refname_begin;
-      std::string::const_iterator refname_end;
+      std::string _refname;
 
       void get (void)
       {
@@ -170,6 +174,8 @@ namespace parse
         else
           switch (*pos)
             {
+            case '|': token = _or; ++pos; break;
+            case '&': token = _and; ++pos; break;
             case '<':
               ++pos;
               if (pos == end)
@@ -194,12 +200,12 @@ namespace parse
             case '!':
               ++pos;
               if (pos == end)
-                throw expected("=");
+                throw expected("= or expression");
               else
                 switch (*pos)
                   {
                   case '=': token = ne; ++pos; break;
-                  default: throw expected ("="); break;
+                  default: token = _not; break;
                   }
               break;
             case '=':
@@ -216,7 +222,7 @@ namespace parse
 
             case '+': token = add; ++pos; break;
             case '-':
-              if (token != val && token != rpr)
+              if (token != val && token != rpr && token != ref)
                 token = neg;
               else
                 token = sub;
@@ -241,12 +247,13 @@ namespace parse
                   {
                   case '{':
                     ++pos;
-                    refname_begin = pos;
+                    _refname.clear();
                     while (pos != end && *pos != '}')
-                      ++pos;
-                    if (*pos == '}')
-                      refname_end = pos;
-                    else
+                      {
+                        _refname.push_back (*pos);
+                        ++pos;
+                      }
+                    if (*pos != '}')
                       throw expected ("}");
                     ++pos;
                     break;
@@ -275,10 +282,7 @@ namespace parse
       const T & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
-      std::string refname (void) const
-      {
-        return std::string (refname_begin, refname_end);
-      }
+      std::string refname (void) const { return _refname; }
     };
 
     template<typename T>
@@ -291,7 +295,7 @@ namespace parse
         default: return s << *t;
         }
     }
-  }
+  } // namespace token
 
   namespace prec
   {
@@ -301,23 +305,26 @@ namespace parse
     {
       switch (token)
         {
+        case token::_or: return 0;
+        case token::_and: return 1;
+        case token::_not: return 2;
         case token::lt:
         case token::le:
         case token::gt:
         case token::ge:
         case token::ne:
-        case token::eq: return 0;
+        case token::eq: return 10;
         case token::add:
-        case token::sub: return 1;
+        case token::sub: return 21;
         case token::mul:
-        case token::div: return 2;
-        case token::mod: return 3;
-        case token::pow: return 4;
-        case token::neg: return 5;
-        default: throw std::runtime_error ("prec");
+        case token::div: return 22;
+        case token::mod: return 23;
+        case token::pow: return 24;
+        case token::neg: return 25;
+        default: throw std::runtime_error ("prec " + show(token));
         }
     }
-  }
+  } // namespace prec
 
   namespace associativity
   {
@@ -327,6 +334,9 @@ namespace parse
     {
       switch (token)
         {
+        case token::_or:
+        case token::_and: return left;
+        case token::_not: return right;
         case token::lt:
         case token::le:
         case token::gt:
@@ -338,11 +348,12 @@ namespace parse
         case token::mul:
         case token::div:
         case token::mod: return left;
-        case token::pow: return right;
-        default: throw std::runtime_error ("associativity");
+        case token::pow: 
+        case token::neg: return right;
+        default: throw std::runtime_error ("associativity " + show(token));
         }
     }
-  }
+  } // namespace associativity
 
   namespace action
   {
@@ -367,11 +378,11 @@ namespace parse
         case error2: return s << "error: missing operator";
         case error3: return s << "error: unbalanced parenthesis";
         case error4: return s << "error: invalid function argument";
-        default: throw std::runtime_error ("action");
+        default: throw std::runtime_error ("action " + show(action));
         }
     }
 
-    static type action (const token::type & top, const token::type inp)
+    static type action (const token::type & top, const token::type & inp)
     {
       if (top == token::lpr)
         {
@@ -389,7 +400,7 @@ namespace parse
           if (inp == token::sep)
             return error4;
 
-          if (token::is_function (inp))
+          if (token::function::is_builtin_function (inp))
             return error3;
 
           return reduce;
@@ -420,13 +431,10 @@ namespace parse
           return reduce;
         }
 
-      if (token::is_function (top))
+      if (token::function::is_builtin_function (top))
         {
           if (inp == token::lpr)
             return shift;
-
-          if (inp < token::lpr)
-            return error4;
 
           return reduce;
         }
@@ -445,7 +453,7 @@ namespace parse
       if (inp == token::eof)
         return reduce;
 
-      if (token::is_function (inp))
+      if (token::function::is_builtin_function (inp))
         return shift;
 
       assert (inp < token::fac);
@@ -463,107 +471,150 @@ namespace parse
 
       return reduce;
     }
-  }
+  } // namespace action
 
-  template<typename T>
-  struct node_t
+  namespace node
   {
-    bool is_value;
-    T value;
+    template<typename T>
+    struct type
+    {
+      typedef boost::unordered_map<std::string,T> context_t;
 
-    bool is_refname;
-    std::string refname;
+      bool is_value;
+      T value;
 
-    bool is_unary;
-    bool is_binary;
-    token::type token;
-    node_t<T> * child0;
-    node_t<T> * child1;
+      bool is_refname;
+      std::string refname;
 
-    node_t (const T & _value) 
-      : is_value (true)
-      , value (_value)
-      , is_refname (false)
-      , is_unary (false)
-      , is_binary (false)
-    {}
+      bool is_unary;
+      bool is_binary;
+      token::type token;
+      type<T> * child0;
+      type<T> * child1;
+      
+      type (const T & _value) 
+        : is_value (true)
+        , value (_value)
+        , is_refname (false)
+        , is_unary (false)
+        , is_binary (false)
+      {}
 
-    node_t (const std::string & _refname)
-      : is_value (false)
-      , is_refname (true)
-      , refname (_refname)
-      , is_unary (false)
-      , is_binary (false)
-    {}
+      type (const std::string & _refname)
+        : is_value (false)
+        , is_refname (true)
+        , refname (_refname)
+        , is_unary (false)
+        , is_binary (false)
+      {}
 
-    node_t (const token::type & _token, node_t<T> * _child0)
-      : is_value (false)
-      , is_refname (false)
-      , is_unary (true)
-      , is_binary (false)
-      , token (_token)
-      , child0 (_child0)
-    {}   
+      type (const token::type & _token, type<T> * _child0)
+        : is_value (false)
+        , is_refname (false)
+        , is_unary (true)
+        , is_binary (false)
+        , token (_token)
+        , child0 (_child0)
+      {}   
 
-    node_t ( const token::type & _token
-           , node_t<T> * _child0
-           , node_t<T> * _child1
-           )
-      : is_value (false)
-      , is_refname (false)
-      , is_unary (false)
-      , is_binary (true)
-      , token (_token)
-      , child0 (_child0)
-      , child1 (_child1)
-    {}   
-  };
+      type (const token::type & _token, type<T> * _child0, type<T> * _child1)
+        : is_value (false)
+        , is_refname (false)
+        , is_unary (false)
+        , is_binary (true)
+        , token (_token)
+        , child0 (_child0)
+        , child1 (_child1)
+      {}
+    };
 
-  template<typename T>
-  std::ostream & operator << (std::ostream & s, const node_t<T> & nd)
-  {
-    if (nd.is_value)
-      return s << nd.value;
+    template<typename T>
+    std::ostream & operator << (std::ostream & s, const type<T> & nd)
+    {
+      if (nd.is_value)
+        return s << nd.value;
 
-    if (nd.is_refname)
-      return s << "${" << nd.refname << "}";
+      if (nd.is_refname)
+        return s << "${" << nd.refname << "}";
 
-    if (nd.is_unary)
-      return s << nd.token << "(" << *(nd.child0) << ")";
+      if (nd.is_unary)
+        return s << nd.token << "(" << *(nd.child0) << ")";
 
-    if (nd.is_binary)
-      {
-        if (token::is_prefix (nd.token))
-          return s << nd.token 
-                   << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
+      if (nd.is_binary)
+        {
+          if (token::is_prefix (nd.token))
+            return s << nd.token 
+                     << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
 
-        return s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
-      }
+          return s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
+        }
 
-    assert (false);
-  }
+      assert (false);
+
+      return s;
+    }
+
+    class missing_binding : public std::runtime_error
+    {
+    public:
+      explicit missing_binding (const std::string & name)
+        : std::runtime_error ("missing binding for: ${" + name + "}") {};
+    };
+
+    template<typename T>
+    T eval (const type<T> & node, const typename type<T>::context_t context)
+    {
+      if (node.is_value)
+        return node.value;
+
+      if (node.is_refname)
+        {
+          typename type<T>::context_t::const_iterator it 
+            (context.find (node.refname));
+
+          if (it != context.end())
+            return it->second;
+          else
+            throw missing_binding (node.refname);
+        }
+
+      if (node.is_unary)
+        return token::function::unary<T> ( node.token
+                                         , eval (*node.child0, context)
+                                         );
+
+      if (node.is_binary)
+        return token::function::binary<T> ( node.token
+                                          , eval (*node.child0, context)
+                                          , eval (*node.child1, context)
+                                          );
+
+      assert (false);
+
+      return T();
+    }
+  } // namespace node
 
   template<typename T>
   struct parser_t
   {
   private:
-    typedef node_t<T> nd_t;
+    typedef node::type<T> nd_t;
     typedef std::stack<nd_t> nd_stack_t;
     typedef std::stack<token::type> op_stack_t;
     nd_stack_t nd_stack;
     op_stack_t op_stack;
 
-    typedef boost::unordered_map<std::string,T> context_t;
-
-    void unary ( const token::type & token
-               , const boost::function<T (const T & x)> & f
-               )
+    void unary (const token::type & token)
     {
+      if (nd_stack.empty())
+        throw exception ("unary operator missing operand: " + show(token));
+
       nd_t * c = new nd_t(nd_stack.top()); nd_stack.pop();
 
       if (c->is_value)
         {
-          nd_stack.push (nd_t(f (c->value)));
+          nd_stack.push (nd_t(token::function::unary (token, c->value)));
           delete c;
         }
       else
@@ -572,16 +623,22 @@ namespace parse
         }
     }
 
-    void binary ( const token::type & token
-                , const boost::function<T (const T & l, const T & r)> & f
-                )
+    void binary (const token::type & token)
     {
+      if (nd_stack.empty())
+        throw exception ("binary operator missing operand r: " + show(token));
+
       nd_t * r = new nd_t(nd_stack.top()); nd_stack.pop();
+
+      if (nd_stack.empty())
+        throw exception ("binary operator missing operand l: " + show(token));
+
       nd_t * l = new nd_t(nd_stack.top()); nd_stack.pop();
 
       if (l->is_value && r->is_value)
         {
-          nd_stack.push (nd_t(f (l->value, r->value)));
+          nd_stack.push 
+            (nd_t(token::function::binary (token, l->value, r->value)));
           delete l;
           delete r;
         }
@@ -595,21 +652,24 @@ namespace parse
     {
       switch (op_stack.top())
         {
-        case token::lt: binary (token::lt, token::function::lt<T>); break;
-        case token::le: binary (token::le, token::function::le<T>); break;
-        case token::gt: binary (token::gt, token::function::gt<T>); break;
-        case token::ge: binary (token::ge, token::function::ge<T>); break;
-        case token::ne: binary (token::ne, token::function::ne<T>); break;
-        case token::eq: binary (token::eq, token::function::eq<T>); break;
-        case token::add: binary (token::add, token::function::add<T>); break;
-        case token::sub: binary (token::sub, token::function::sub<T>); break;
-        case token::mul: binary (token::mul, token::function::mul<T>); break;
-        case token::div: binary (token::div, token::function::div<T>); break;
-        case token::mod: binary (token::mod, token::function::mod<T>); break;
-        case token::pow: binary (token::pow, token::function::pow<T>); break;
-        case token::neg: unary (token::neg, token::function::neg<T>); break;
-        case token::fac: unary (token::fac, token::function::fac<T>); break;
-        case token::com: binary (token::com, token::function::com<T>); break;
+        case token::_or:
+        case token::_and: binary (op_stack.top()); break;
+        case token::_not: unary (op_stack.top()); break;
+        case token::lt:
+        case token::le:
+        case token::gt:
+        case token::ge:
+        case token::ne:
+        case token::eq:
+        case token::add:
+        case token::sub:
+        case token::mul:
+        case token::div:
+        case token::mod:
+        case token::pow: binary (op_stack.top()); break;
+        case token::neg:
+        case token::fac: unary (op_stack.top()); break;
+        case token::com: binary (op_stack.top()); break;
         case token::rpr: op_stack.pop(); break;
         default: break;
         }
@@ -648,12 +708,7 @@ namespace parse
                   case action::accept:
                     break;
                   default:
-                    {
-                      std::ostringstream oss;
-                      oss << action;
-                      throw exception (oss.str());
-                    }
-                    break;
+                    throw exception (show(action));
                   }
                 break;
               }
@@ -663,6 +718,11 @@ namespace parse
     }
 
     const nd_t & operator * (void) const { return nd_stack.top(); }
+
+    const T eval (const typename node::type<T>::context_t & context)
+    {
+      return node::eval (this->operator * (), context);
+    }
   };
 }
 
@@ -675,18 +735,81 @@ int main (void)
 //   std::string input 
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
 
-  while (1)
-    {
-      std::string input;
+  parse::node::type<int>::context_t context;
 
-      cin >> input;
+  std::string input;
 
-      cout << input << endl;
+  while (getline(cin, input).good())
+    switch (input[0])
+      {
+      case '#':
+        context.clear();
+        cout << "context deleted" << endl;
+        break;
+      case ':':
+        {
+          std::string::const_iterator pos (input.begin());
+          const std::string::const_iterator end (input.end());
 
-      parse::parser_t<int> parser (input);
+          ++pos;
 
-      cout << *parser << endl;
-    }
+          while (pos != end && isspace(*pos))
+            ++pos;
+
+          std::string name;
+
+          while (pos != end && *pos != '=' && !isspace(*pos))
+            {
+              name.push_back (*pos);
+              ++pos;
+            }
+
+          while (pos != end && isspace(*pos))
+            ++pos;
+
+          if (*pos != '=')
+            cout << "parse error: syntax: name = value" << endl;
+
+          ++pos;
+
+          while (pos != end && isspace(*pos))
+            ++pos;
+
+          int value(0);
+
+          while (isdigit(*pos))
+            {
+              value *= 10;
+              value += *pos - '0';
+              ++pos;
+            }
+
+          cout << "bind: " << name << " = " << value << endl;
+
+          context[name] = value;
+        }
+        break;
+      default:
+        try
+          {
+            parse::parser_t<int> parser (input);
+              
+            cout << "parsed expression: " << *parser << endl;
+
+            try
+              {
+                cout << "evaluated value: " << parser.eval (context) << endl;
+              }
+            catch (parse::node::missing_binding e)
+              {
+                cout << e.what() << endl;
+              }
+          }
+        catch (parse::exception e)
+          {
+            cout << e.what() << endl;
+          }
+      }
 
   return EXIT_SUCCESS;
 }
