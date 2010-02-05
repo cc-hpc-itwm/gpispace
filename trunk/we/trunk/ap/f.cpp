@@ -46,7 +46,7 @@ namespace parse
     enum type
     { _or                     // prec  0, left associative
     , _and                    // prec  1, left associative
-    , _not                    // prec  2, left associative
+    , _not                    // prec 30, right associative
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
     , add, sub                // prec 21, left associative
     , mul, div                // prec 22, left associative
@@ -324,7 +324,7 @@ namespace parse
         {
         case token::_or: return 0;
         case token::_and: return 1;
-        case token::_not: return 2;
+        case token::_not: return 30;
         case token::lt:
         case token::le:
         case token::gt:
@@ -485,6 +485,9 @@ namespace parse
 
           return shift;
         }
+
+      if (top == token::_not && inp == token::neg)
+        return shift;
 
       return reduce;
     }
