@@ -23,7 +23,9 @@
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/thread.hpp>
 #include <boost/serialization/nvp.hpp>
-
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -57,6 +59,7 @@ namespace sdpa { namespace daemon {
 		  ar & job_map_;
 	  }
 
+	  friend class boost::serialization::access;
 	  // only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;

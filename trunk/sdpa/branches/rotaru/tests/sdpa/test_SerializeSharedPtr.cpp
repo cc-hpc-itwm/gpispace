@@ -1,3 +1,18 @@
+/* =====================================================================================
+ *
+ *       Filename:  test_SerializeSharedPtr.cpp
+ *
+ *    Description:
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * ===================================================================================== */
 #include "test_SerializeSharedPtr.hpp"
 #include <iostream>
 #include <cstddef>
@@ -28,15 +43,13 @@ class Test
 {
 public:
 	 static int count;
-	 Test(string arg) { x_ = arg; ++count; std::cout<<"Called the constructor ..."<<std::endl;}
+	 Test(string arg) { x_ = arg; ++count; }
 	 Test(){
 		 ++count;
-		 //std::cout<<"Called the constructor ..."<<std::endl;
 	 }
 
 	 virtual ~Test(){
 		 --count;
-		 //std::cout<<"Called the destructor ..."<<std::endl;
 	 }
 
 	 virtual string str() { return x_ + " (Base)"; ; }
@@ -56,8 +69,6 @@ protected:
 
 BOOST_SERIALIZATION_SHARED_PTR(Test)
 
-/////////////////
-// ADDITION BY DT
 class Derived : public Test
 {
 public:
@@ -82,7 +93,7 @@ BOOST_SERIALIZATION_SHARED_PTR(DERIVED)
 
 int Test::count = 0;
 
-TestSerializeSharedPtr::TestSerializeSharedPtr() //:SDPA_INIT_LOGGER("sdpa.tests. TestSerializeSharedPtr")
+TestSerializeSharedPtr::TestSerializeSharedPtr() : SDPA_INIT_LOGGER("sdpa.tests.TestSerializeSharedPtr")
 {
 }
 
@@ -91,12 +102,12 @@ TestSerializeSharedPtr::~TestSerializeSharedPtr()
 
 
 void TestSerializeSharedPtr::setUp() { //initialize and start the finite state machine
-	//SDPA_LOG_DEBUG("setUp");
+	SDPA_LOG_DEBUG("TestSerializeSharedPtr::setUp");
 }
 
 void TestSerializeSharedPtr::tearDown()
 {
-	//SDPA_LOG_DEBUG("tearDown");
+	SDPA_LOG_DEBUG("TestSerializeSharedPtr::tearDown");
 }
 
 void TestSerializeSharedPtr::testSerializeBoostShPtrToTxt()
@@ -104,7 +115,8 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrToTxt()
 	/*std::string filename(boost::archive::tmpdir());
 	filename += "testArchShPtr.txt";*/
 
-	std::string filename = "testArchShPtr.txt";
+	std::cout<<"Testing boost::shared_ptr serialization into txt file ..."<<std::endl;
+	std::string filename = "testSerializeBoostShPtr2Txt.txt";
 
 	boost::shared_ptr<Test> shptrS(new Test("a_string"));
 	{
@@ -134,7 +146,8 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrToXml()
 	/*std::string filename(boost::archive::tmpdir());
 	filename += "testArchShPtr.txt";*/
 
-	std::string filename = "testArchShPtr.xml";
+	std::cout<<"Testing boost::shared_ptr serialization into xml file ..."<<std::endl;
+	std::string filename = "testSerializeBoostShPtr2Xml.xml";
 
 	boost::shared_ptr<Test> shptrS(new Test("a_string"));
 	{
@@ -171,7 +184,8 @@ void infoPtrs(boost::shared_ptr<Test> &ptrSh1, boost::shared_ptr<Test> &ptrSh2)
 
 void TestSerializeSharedPtr::testSerializeBoostShPtrDerived()
 {
-    std::string filename = "testDerivedArchive.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+	std::cout<<"Testing the serialization of a boost::shared_ptr to a derived class into a file ..."<<std::endl;
+    std::string filename = "testSerializeBoostShPtrDerived.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
     // create  a new shared pointer to ta new object of type Test
     boost::shared_ptr<Test> ptrSh1(new Test);
@@ -205,12 +219,6 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrDerived()
     ptrSh1.reset();
     ptrSh2.reset();
 
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << "New tests" << std::endl;
-
-    /////////////////
-    // ADDITION BY DT
     // create  a new shared pointer to ta new object of type Test
     ptrSh1 = boost::shared_ptr<Test>(new Derived);
     ptrSh2 = ptrSh1;
@@ -242,18 +250,12 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrDerived()
         ia >> ptrSh2;
     }
     infoPtrs(ptrSh1, ptrSh2);
-
-    ///////////////
-    //std::remove(filename.c_str());
-
-    // obj of type Test gets destroyed
-    // as smart_ptr goes out of scope
 }
 
 void TestSerializeSharedPtr::testSerializeNormalPtr()
 {
-	std::cout<<"*******************Normal pointer & text archive**************************"<<std::endl;
-    std::string filename = "testNormalPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+	std::cout<<"Testing serialization of an object pointed by a normal pointer into a text file ..."<<std::endl;
+    std::string filename = "testSerializeNormalPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
     // create  a new shared pointer to ta new object of type Test
     Test* p1 = new Test("testSerializeNormalPtr");
@@ -276,13 +278,13 @@ void TestSerializeSharedPtr::testSerializeNormalPtr()
         ia >> p2;
     }
 
-    std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
+    std::cout<<"The restored value of the pointer is "<<p2->str()<<endl<<std::endl;
 
 	delete p1;
 	delete p2;
 
-    std::cout<<"*******************Normal pointer & xml archive**************************"<<std::endl;
-    filename = "testNormalPtr.xml"; // = boost::archive::tmpdir());filename += "/testfile";
+	std::cout<<"Testing serialization of an object pointed by a normal pointer into an xml file ..."<<std::endl;
+    filename = "testSerializeNormalPtr.xml"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	// create  a new shared pointer to ta new object of type Test
 	p1 = new Test("testSerializeNormalPtr");
@@ -305,10 +307,10 @@ void TestSerializeSharedPtr::testSerializeNormalPtr()
 		ia >> BOOST_SERIALIZATION_NVP(p2);
 	}
 
-	std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
+	std::cout<<"The restored value of the pointer is "<<p2->str()<<std::endl;
 	delete p1; delete p2;
 
-	std::cout<<"*******************Normal pointer & binary archive**************************"<<std::endl;
+	std::cout<<"Testing serialization of an object pointed by a normal pointer into a binary file ..."<<std::endl;
 	filename = "testNormalPtr.bin"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	// create  a new shared pointer to ta new object of type Test
@@ -332,14 +334,14 @@ void TestSerializeSharedPtr::testSerializeNormalPtr()
 	   ia >> p2;
 	}
 
-	std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
+	std::cout<<"The restored value of the pointer is "<<p2->str()<<std::endl;
 	delete p1; delete p2;
 
 
-    std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
-    filename = "testSerializePoly.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+	std::cout<<"Testing serialization of an object pointed by a normal pointer into a binary file ..."<<std::endl;
+    filename = "testSerializeNormalPtr2Derived.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
-    p1 = new Derived("testSerializeNormalPtrDerived");
+    p1 = new Derived("testSerializeNormalPtr2Derived");
 
     // serialize it
 	{
@@ -361,28 +363,22 @@ void TestSerializeSharedPtr::testSerializeNormalPtr()
 	   ia >> p2;
 	}
 
-	std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
+	std::cout<<"The restored value of the pointer is "<<p2->str()<<std::endl;
 	delete p1; delete p2;
-    ///////////////
-    //std::remove(filename.c_str());
-    //
-
-    // obj of type Test gets destroyed
-    // as smart_ptr goes out of scope
 }
 
 void TestSerializeSharedPtr::testSerializeMapPtr()
 {
-    std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Test map of pointers serialization ..."<<std::endl;
     std::string filename = "testSerializeMapPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
     std::map<std::string, Test*> mapPtrsOut;
 
-    mapPtrsOut["1"]  = new Derived("first");
+    mapPtrsOut["1"] = new Derived("first");
     mapPtrsOut["2"] = new Test("second");
-    mapPtrsOut["3"]  = new Test("third");
+    mapPtrsOut["3"] = new Test("third");
     mapPtrsOut["4"] = new Derived("fourth");
-    mapPtrsOut["5"]  = new Test("fifth");
+    mapPtrsOut["5"] = new Test("fifth");
 
     // serialize it
 	{
@@ -392,8 +388,6 @@ void TestSerializeSharedPtr::testSerializeMapPtr()
 	   oa << BOOST_SERIALIZATION_NVP(mapPtrsOut);
 	}
 
-
-	std::cout<<"Delete mapPtrsOut ..."<<std::endl;
 	for(  std::map<std::string, Test*>::iterator it = mapPtrsOut.begin(); it !=  mapPtrsOut.end(); it++  )
 		if(it->second)
 			delete it->second;
@@ -410,20 +404,11 @@ void TestSerializeSharedPtr::testSerializeMapPtr()
 	   ia >> BOOST_SERIALIZATION_NVP(mapPtrsIn);
 	}
 
-
-	//std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
 	for(  std::map<std::string, Test*>::iterator iter = mapPtrsIn.begin(); iter !=  mapPtrsIn.end(); iter++  )
 		std::cout<<"mapPtrIn["<<iter->first<<"] = "<<iter->second->str()<<std::endl;
 
-	std::cout<<"Delete mapPtrsIn ..."<<std::endl;
 	for(  std::map<std::string, Test*>::iterator iter = mapPtrsIn.begin(); iter !=  mapPtrsIn.end(); iter++  )
 		if(iter->second)
 			delete iter->second;
-    ///////////////
-    //std::remove(filename.c_str());
-    //
-
-    // obj of type Test gets destroyed
-    // as smart_ptr goes out of scope
 }
 

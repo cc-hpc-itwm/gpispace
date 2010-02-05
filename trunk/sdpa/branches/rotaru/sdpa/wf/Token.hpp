@@ -14,6 +14,13 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+
 namespace sdpa { namespace wf {
   /**
     A class representing a Token.
@@ -149,9 +156,18 @@ namespace sdpa { namespace wf {
 	    */
 		os << "}";
       }
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int file_version )
+	{
+    	ar & data_;
+		ar & properties_;
+	}
+
     private:
-      data_t data_;
-      properties_t properties_;
+		data_t data_;
+		properties_t properties_;
   };
 }}
 

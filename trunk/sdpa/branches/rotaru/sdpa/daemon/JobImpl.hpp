@@ -70,7 +70,6 @@ namespace sdpa { namespace daemon {
 
 		virtual void setResult(const sdpa::job_result_t& arg_results) { result = arg_results; }
 
-
 		virtual std::string print_info()
 		{
 			std::ostringstream os;
@@ -83,16 +82,12 @@ namespace sdpa { namespace daemon {
 
 		template <class Archive> void serialize(Archive& ar, const unsigned int file_version )
 		{
-			//ar & boost::serialization::base_object<sdpa::daemon::Job>(*this);
-			//boost::serialization::split_member(ar, *this, file_version);
 			ar & boost::serialization::base_object<Job>(*this);
 			ar & id_;
 			ar & desc_;
 			ar & parent_;
 			ar & worker_id_;
-
-			//attention! typedef std::map<std::string, token_list_t> job_result_t;
-			//ar & result;
+			ar & result;
 		}
 
     private:

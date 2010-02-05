@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_Components.hpp
+ *       Filename:  test_SerializeSharedPtr.hpp
  *
  *    Description:  test all components, each with a real gwes, using a real user client
  *
@@ -48,7 +48,7 @@ namespace sdpa {
 		  void testSerializeMapPtr();
 
 		private:
-		  //SDPA_DECLARE_LOGGER();
+		  SDPA_DECLARE_LOGGER();
 		};
 	}
 }

@@ -206,12 +206,12 @@ namespace sdpa {
 
 			try {
 				m_worker_.start();
-			}catch(const std::exception& val)
+			}
+			catch(const std::exception& val)
 			{
 				SDPA_LOG_ERROR("Could not start the nre-worker-client ...");
 				throw;
 			}
-
 		}
 
 		void stop()

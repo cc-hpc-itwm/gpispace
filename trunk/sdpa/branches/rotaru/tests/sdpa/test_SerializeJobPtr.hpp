@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_Components.hpp
+ *       Filename:  test_SerializeJobPtr.hpp
  *
- *    Description:  test all components, each with a real gwes, using a real user client
+ *    Description:
  *
  *        Version:  1.0
  *        Created:
@@ -32,6 +32,7 @@ namespace sdpa {
 		  CPPUNIT_TEST( testSerializeSdpaJobSharedPtr );
 		  CPPUNIT_TEST( testSerializeMapSdpaJobSharedPtr );
 		  CPPUNIT_TEST( testSerializeJobManager );
+		  CPPUNIT_TEST( testSerializeJobFSMShPtr );
 		  CPPUNIT_TEST_SUITE_END();
 
 		public:
@@ -47,6 +48,7 @@ namespace sdpa {
 		  void testSerializeSdpaJobSharedPtr();
 		  void testSerializeMapSdpaJobSharedPtr();
 		  void testSerializeJobManager();
+		  void testSerializeJobFSMShPtr();
 
 		private:
 		  SDPA_DECLARE_LOGGER();

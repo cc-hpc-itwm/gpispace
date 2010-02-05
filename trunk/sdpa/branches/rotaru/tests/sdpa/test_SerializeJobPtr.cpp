@@ -1,3 +1,19 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_SerializeJobPtr.cpp
+ *
+ *    Description:
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================*/
 #include "test_SerializeJobPtr.hpp"
 #include <iostream>
 #include <cstddef>
@@ -16,13 +32,14 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
 #include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobImpl.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <boost/serialization/export.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
+using namespace sdpa::fsm::smc;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TestSerializeJobPtr );
 
@@ -44,10 +61,6 @@ namespace sdpa {
 		void serialize(Archive& ar, const unsigned int /* file version */){}
 	};
 
-	//BOOST_SERIALIZATION_SHARED_PTR(Job)
-
-	/////////////////
-	// ADDITION BY DT
 	class JobImpl : public Job
 	{
 	public:
@@ -117,7 +130,7 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
 void TestSerializeJobPtr::testSerializeJobPtr()
 {
-	std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Testing the serialization of a normal job pointer ..."<<std::endl;
 	std::string filename = "testSerializeJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	sdpa::unit_test::Job* p1 = new sdpa::unit_test::JobImpl("1234", "a certain job description");
@@ -142,14 +155,14 @@ void TestSerializeJobPtr::testSerializeJobPtr()
 	   ia>>p2;
 	}
 
-	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
+	std::cout<<"The restored values from the archive follow:\n"<<p2->print_info()<<std::endl;
 	delete p1;
 	delete p2;
 }
 
 void TestSerializeJobPtr::testSerializeSdpaJobPtr()
 {
-	std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Testing the serialization of a shared job pointer ..."<<std::endl;
 	std::string filename = "testSerializeSdpaJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	sdpa::daemon::Job* p1 = new sdpa::daemon::JobImpl("1234", "a certain job description");
@@ -174,14 +187,14 @@ void TestSerializeJobPtr::testSerializeSdpaJobPtr()
 	   ia>>p2;
 	}
 
-	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
+	std::cout<<"The restored values from the archive follow:\n"<<p2->print_info()<<endl;
 	delete p1;
 	delete p2;
 }
 
 void TestSerializeJobPtr::testSerializeMapJobPtr()
 {
-    std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Testing the serialization of a map of normal job pointers ..."<<std::endl;
     std::string filename = "testSerializeMapJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
     std::map<std::string, sdpa::daemon::Job*> mapPtrsOut;
@@ -200,8 +213,6 @@ void TestSerializeJobPtr::testSerializeMapJobPtr()
 	   oa << BOOST_SERIALIZATION_NVP(mapPtrsOut);
 	}
 
-
-	std::cout<<"Delete mapPtrsOut ..."<<std::endl;
 	for(  std::map<std::string, sdpa::daemon::Job*>::iterator it = mapPtrsOut.begin(); it !=  mapPtrsOut.end(); it++  )
 		if(it->second)
 			delete it->second;
@@ -218,26 +229,18 @@ void TestSerializeJobPtr::testSerializeMapJobPtr()
 	   ia >> BOOST_SERIALIZATION_NVP(mapPtrsIn);
 	}
 
-
 	//std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
 	for(  std::map<std::string, sdpa::daemon::Job*>::iterator iter = mapPtrsIn.begin(); iter !=  mapPtrsIn.end(); iter++  )
 		std::cout<<"mapPtrIn["<<iter->first<<"] = "<<iter->second->print_info()<<std::endl;
 
-	std::cout<<"Delete mapPtrsIn ..."<<std::endl;
 	for(  std::map<std::string, sdpa::daemon::Job*>::iterator iter = mapPtrsIn.begin(); iter !=  mapPtrsIn.end(); iter++  )
 		if(iter->second)
 			delete iter->second;
-    ///////////////
-    //std::remove(filename.c_str());
-    //
-
-    // obj of type sdpa::daemon::Job gets destroyed
-    // as smart_ptr goes out of scope
 }
 
 void TestSerializeJobPtr::testSerializeSdpaJobSharedPtr()
 {
-	std::cout<<"*******************Job shared pointer (boost), polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Testing the serialization of a job shared pointer ..."<<std::endl;
 	std::string filename = "testSerializeSdpaJobSharedPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	sdpa::daemon::Job::ptr_t p1(new sdpa::daemon::JobImpl("1234", "owned by a job shared pointer ..."));
@@ -267,7 +270,7 @@ void TestSerializeJobPtr::testSerializeSdpaJobSharedPtr()
 
 void TestSerializeJobPtr::testSerializeMapSdpaJobSharedPtr()
 {
-	std::cout<<"*******************Normal pointer, polymorphism & serialization *********************"<<std::endl;
+	std::cout<<"Testing the serialization of a map of job shared pointers ..."<<std::endl;
 	std::string filename = "testSerializeMapSdpaJobSharedPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> map_shptr_jobs_t;
@@ -328,7 +331,7 @@ BOOST_SERIALIZATION_SHARED_PTR(sdpa::daemon::JobManager)
 
 void TestSerializeJobPtr::testSerializeJobManager()
 {
-	std::cout<<"*******************JobManager (with boost::shared_ptr!) *********************"<<std::endl;
+	std::cout<<"serialize the JobManager (with boost::shared_ptr)"<<std::endl;
 	std::string filename = "testSerializeJobMan.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	//sdpa::daemon::JobManager::ptr_t p1(new sdpa::daemon::JobManager());
@@ -374,7 +377,7 @@ void TestSerializeJobPtr::testSerializeJobManager()
 
 	// restore state to one equivalent to the original
 	// creating a new type Job object
-	std::cout<<"De-serialize the JobManager ..."<<std::endl;
+	std::cout<<"De-serialize the JobManager ...";
 	sdpa::daemon::JobManager::ptr_t pJobMan2;
 	try {
 		// open the archive
@@ -389,5 +392,37 @@ void TestSerializeJobPtr::testSerializeJobManager()
 		return;
 	}
 
-	std::cout<<"Start dumping the JobManager ..."<<std::endl<<pJobMan2->dump();
+	std::cout<<std::endl<<pJobMan2->dump();
 }
+
+
+void TestSerializeJobPtr::testSerializeJobFSMShPtr()
+{
+	std::cout<<"Testing the serialization of a job state chart ..."<<std::endl;
+	std::string filename = "testSerializeJobFSMShPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+	JobFSM::Ptr p1(new JobFSM("1234", "owned by a job shared pointer ..."));
+
+	// serialize it
+	{
+	   std::ofstream ofs(filename.c_str());
+	   boost::archive::text_oarchive oa(ofs);
+	   oa.register_type(static_cast<JobFSM*>(NULL));
+	   oa << p1;
+	}
+
+	// restore state to one equivalent to the original
+	// creating a new type Job object
+	JobFSM::Ptr p2;
+	{
+	   // open the archive
+	   std::ifstream ifs(filename.c_str());
+	   boost::archive::text_iarchive ia(ifs);
+	   ia.register_type(static_cast<JobFSM*>(NULL));
+	   // restore the schedule from the archive
+	   ia>>p2;
+	}
+
+	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
+}
+

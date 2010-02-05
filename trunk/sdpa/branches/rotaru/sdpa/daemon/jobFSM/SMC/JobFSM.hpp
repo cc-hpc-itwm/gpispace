@@ -23,17 +23,19 @@
 #include <sdpa/daemon/jobFSM/SMC/JobFSM_sm.h>
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
+#include <boost/serialization/access.hpp>
 
 namespace sdpa { namespace fsm { namespace smc {
 	class JobFSM : public sdpa::daemon::JobImpl {
 		public:
 			typedef sdpa::shared_ptr<JobFSM> Ptr;
 
-			JobFSM( const sdpa::job_id_t &id,
-					const sdpa::job_desc_t &desc,
+			JobFSM( const sdpa::job_id_t id = JobId(""),
+					const sdpa::job_desc_t desc = "",
 				    const sdpa::daemon::IComm* pHandler = NULL,
 				    const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
-				: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.smc.JobFSM"), m_fsmContext(*this) {
+			: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.smc.JobFSM"), m_fsmContext(*this)
+			{
 				SDPA_LOG_DEBUG("Job state machine created");
 			}
 
@@ -49,8 +51,15 @@ namespace sdpa { namespace fsm { namespace smc {
 			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 			void Dispatch();
 
-			sdpa::status_t getStatus() { return m_status_; }
+			friend class boost::serialization::access;
+			template <class Archive>
+			void serialize(Archive& ar, const unsigned int file_version )
+			{
+				ar & boost::serialization::base_object<JobImpl>(*this);
+			}
 
+
+			sdpa::status_t getStatus() { return m_status_; }
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:
 			SDPA_DECLARE_LOGGER();
