@@ -1,6 +1,8 @@
 // Tom Niemann: "Operator Precedence Parsing."
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <util/timer.hpp>
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -14,6 +16,8 @@
 #include <cassert>
 
 #include <boost/unordered_map.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 
 namespace parse
 {
@@ -478,8 +482,6 @@ namespace parse
     template<typename T>
     struct type
     {
-      typedef boost::unordered_map<std::string,T> context_t;
-
       bool is_value;
       T value;
 
@@ -553,7 +555,10 @@ namespace parse
 
       return s;
     }
+  } // namespace node
 
+  namespace eval
+  {
     class missing_binding : public std::runtime_error
     {
     public:
@@ -562,21 +567,36 @@ namespace parse
     };
 
     template<typename T>
-    T eval (const type<T> & node, const typename type<T>::context_t context)
+    struct context
+    {
+    private:
+      boost::unordered_map<std::string,T> container;
+    public:
+      void bind (const std::string & name, const T & value)
+      {
+        container[name] = value;
+      }
+      const T & value (const std::string & name) const
+      {
+        typename boost::unordered_map<std::string,T>::const_iterator
+          it (container.find (name));
+
+        if (it == container.end())
+          throw missing_binding (name);
+        else
+          return it->second;
+      }
+      void clear () { container.clear(); }
+    };
+
+    template<typename T>
+    T eval (const node::type<T> & node, const context<T> & context)
     {
       if (node.is_value)
         return node.value;
 
       if (node.is_refname)
-        {
-          typename type<T>::context_t::const_iterator it 
-            (context.find (node.refname));
-
-          if (it != context.end())
-            return it->second;
-          else
-            throw missing_binding (node.refname);
-        }
+        return context.value (node.refname);
 
       if (node.is_unary)
         return token::function::unary<T> ( node.token
@@ -593,10 +613,24 @@ namespace parse
 
       return T();
     }
-  } // namespace node
+  } // namespace eval
 
   template<typename T>
-  struct parser_t
+  node::type<T> refnode_value ( const eval::context<T> & context
+                              , const std::string & name
+                              )
+  {
+    return node::type<T>(context.value(name));
+  }
+
+  template<typename T>
+  node::type<T> refnode_name (const std::string & name) 
+  {
+    return node::type<T>(name);
+  }
+
+  template<typename T>
+  struct parser
   {
   private:
     typedef node::type<T> nd_t;
@@ -676,8 +710,9 @@ namespace parse
       op_stack.pop();
     }
 
-  public:
-    parser_t (const std::string & input)
+    void parse ( const std::string & input
+               , const boost::function<nd_t (const std::string &)> & refnode
+               )
     {
       op_stack.push (token::eof);
 
@@ -690,7 +725,7 @@ namespace parse
           switch (*token)
             {
             case token::val: nd_stack.push (nd_t(token())); break;
-            case token::ref: nd_stack.push (nd_t(token.refname())); break;
+            case token::ref: nd_stack.push (refnode(token.refname())); break;
             default:
               {
               ACTION:
@@ -717,11 +752,22 @@ namespace parse
       while (*token != token::eof);
     }
 
+  public:
+    parser (const std::string & input, const eval::context<T> & context)
+    {
+      parse (input, boost::bind (refnode_value<T>, context, _1));
+    }
+
+    parser (const std::string & input)
+    {
+      parse (input, boost::bind (refnode_name<T>, _1));
+    }
+
     const nd_t & operator * (void) const { return nd_stack.top(); }
 
-    const T eval (const typename node::type<T>::context_t & context)
+    const T eval (const eval::context<T> & context)
     {
-      return node::eval (this->operator * (), context);
+      return eval::eval (this->operator * (), context);
     }
   };
 }
@@ -735,81 +781,143 @@ int main (void)
 //   std::string input 
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
 
-  parse::node::type<int>::context_t context;
+  {
+    parse::eval::context<int> context;
+    std::string input;
 
-  std::string input;
-
-  while (getline(cin, input).good())
-    switch (input[0])
-      {
-      case '#':
-        context.clear();
-        cout << "context deleted" << endl;
-        break;
-      case ':':
+    while (getline(cin, input).good())
+      switch (input[0])
         {
-          std::string::const_iterator pos (input.begin());
-          const std::string::const_iterator end (input.end());
-
-          ++pos;
-
-          while (pos != end && isspace(*pos))
-            ++pos;
-
-          std::string name;
-
-          while (pos != end && *pos != '=' && !isspace(*pos))
-            {
-              name.push_back (*pos);
-              ++pos;
-            }
-
-          while (pos != end && isspace(*pos))
-            ++pos;
-
-          if (*pos != '=')
-            cout << "parse error: syntax: name = value" << endl;
-
-          ++pos;
-
-          while (pos != end && isspace(*pos))
-            ++pos;
-
-          int value(0);
-
-          while (isdigit(*pos))
-            {
-              value *= 10;
-              value += *pos - '0';
-              ++pos;
-            }
-
-          cout << "bind: " << name << " = " << value << endl;
-
-          context[name] = value;
-        }
-        break;
-      default:
-        try
+        case '#':
+          context.clear();
+          cout << "context deleted" << endl;
+          break;
+        case ':':
           {
-            parse::parser_t<int> parser (input);
+            std::string::const_iterator pos (input.begin());
+            const std::string::const_iterator end (input.end());
+
+            ++pos;
+
+            while (pos != end && isspace(*pos))
+              ++pos;
+
+            std::string name;
+
+            while (pos != end && *pos != '=' && !isspace(*pos))
+              {
+                name.push_back (*pos);
+                ++pos;
+              }
+
+            while (pos != end && isspace(*pos))
+              ++pos;
+
+            if (*pos != '=')
+              cout << "parse error: syntax: name = value" << endl;
+
+            ++pos;
+
+            while (pos != end && isspace(*pos))
+              ++pos;
+
+            int value(0);
+
+            while (isdigit(*pos))
+              {
+                value *= 10;
+                value += *pos - '0';
+                ++pos;
+              }
+
+            cout << "bind: " << name << " = " << value << endl;
+
+            context.bind (name, value);
+          }
+          break;
+        default:
+          try
+            {
+              parse::parser<int> parser (input);
               
-            cout << "parsed expression: " << *parser << endl;
+              cout << "parsed expression: " << *parser << endl;
 
-            try
-              {
-                cout << "evaluated value: " << parser.eval (context) << endl;
-              }
-            catch (parse::node::missing_binding e)
-              {
-                cout << e.what() << endl;
-              }
-          }
-        catch (parse::exception e)
-          {
-            cout << e.what() << endl;
-          }
-      }
+              try
+                {
+                  cout << "evaluated value: " << parser.eval (context) << endl;
+                }
+              catch (parse::eval::missing_binding e)
+                {
+                  cout << e.what() << endl;
+                }
+            }
+          catch (parse::exception e)
+            {
+              cout << e.what() << endl;
+            }
+        }
+  }
+
+  cout << "measure..." << endl;
+
+  {
+    const unsigned int round (100);
+    const unsigned int max (1000);
+    const std::string input ("${i} < ${max}");
+    parse::eval::context<unsigned int> context;
+
+    context.bind("max",max);
+
+    {
+      Timer_t timer ("parse once, evaluate often", max * round);
+
+      parse::parser<unsigned int> parser (input);
+
+      unsigned long z (0);
+
+      for (unsigned int r (0); r < round; ++r)
+        {
+          unsigned int i (0);
+
+          context.bind ("i",i);
+          ++z;
+
+          while (parser.eval (context))
+            {
+              context.bind ("i",++i);
+              ++z;
+            }
+        }
+
+      cout << "z = " << z << endl;
+    }
+
+    {
+      Timer_t timer ("parse with evaluate often", max * round);
+
+      unsigned long z (0);
+
+      for (unsigned int r (0); r < round; ++r)
+        {
+          unsigned int i (0);
+
+        STEP:
+          context.bind ("i",i);
+
+          ++z;
+
+          parse::parser<unsigned int> parser (input, context);
+
+          if (parser.eval (context))
+            {
+              ++i;
+              goto STEP;
+            }
+        }
+
+      cout << "z = " << z << endl;
+    }
+  }
 
   return EXIT_SUCCESS;
 }
