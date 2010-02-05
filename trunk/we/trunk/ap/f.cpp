@@ -74,7 +74,7 @@ namespace parse
             {
               T f (1);
 
-              for (T i (1); i < x; ++i)
+              for (T i (1); i <= x; ++i)
                 f *= i;
 
               return f;
@@ -99,7 +99,8 @@ namespace parse
           case add: return l + r;
           case sub: return l - r;
           case mul: return l * r;
-          case div: return l / r;
+          case div:
+            if (r == 0) throw exception ("divide by zero"); return l / r;
           case mod: return l % r;
           case pow:
             {
@@ -265,6 +266,8 @@ namespace parse
                   }
               break;
             default:
+              if (!isdigit(*pos))
+                throw expected ("digit");
               token = val;
               tokval = 0;
               while (isdigit(*pos))
@@ -566,18 +569,28 @@ namespace parse
         : std::runtime_error ("missing binding for: ${" + name + "}") {};
     };
 
+    static unsigned long cnt_bind (0);
+    static unsigned long cnt_value (0);
+
     template<typename T>
     struct context
     {
     private:
       boost::unordered_map<std::string,T> container;
     public:
+      context (void) { cnt_bind = cnt_value = 0; }
+      ~context (void)
+      {
+        std::cout << "bind " << cnt_bind << " value " << cnt_value << std::endl;
+      }
       void bind (const std::string & name, const T & value)
       {
-        container[name] = value;
+        ++cnt_bind; container[name] = value;
       }
       const T & value (const std::string & name) const
       {
+        ++cnt_value;
+
         typename boost::unordered_map<std::string,T>::const_iterator
           it (container.find (name));
 
@@ -755,7 +768,7 @@ namespace parse
   public:
     parser (const std::string & input, const eval::context<T> & context)
     {
-      parse (input, boost::bind (refnode_value<T>, context, _1));
+      parse (input, boost::bind (refnode_value<T>, boost::ref(context), _1));
     }
 
     parser (const std::string & input)
@@ -781,6 +794,7 @@ int main (void)
 //   std::string input 
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
 
+  if (0)
   {
     parse::eval::context<int> context;
     std::string input;
@@ -861,61 +875,45 @@ int main (void)
   cout << "measure..." << endl;
 
   {
-    const unsigned int round (100);
+    const unsigned int round (1000);
     const unsigned int max (1000);
     const std::string input ("${i} < ${max}");
-    parse::eval::context<unsigned int> context;
-
-    context.bind("max",max);
 
     {
       Timer_t timer ("parse once, evaluate often", max * round);
 
-      parse::parser<unsigned int> parser (input);
+      parse::eval::context<unsigned int> context;
 
-      unsigned long z (0);
+      context.bind("max",max);
+
+      parse::parser<unsigned int> parser (input);
 
       for (unsigned int r (0); r < round; ++r)
         {
           unsigned int i (0);
 
           context.bind ("i",i);
-          ++z;
 
           while (parser.eval (context))
-            {
-              context.bind ("i",++i);
-              ++z;
-            }
+            context.bind ("i",++i);
         }
-
-      cout << "z = " << z << endl;
     }
 
     {
       Timer_t timer ("parse with evaluate often", max * round);
 
-      unsigned long z (0);
+      parse::eval::context<unsigned int> context;
+
+      context.bind("max",max);
 
       for (unsigned int r (0); r < round; ++r)
         {
           unsigned int i (0);
 
-        STEP:
-          context.bind ("i",i);
-
-          ++z;
-
-          parse::parser<unsigned int> parser (input, context);
-
-          if (parser.eval (context))
-            {
-              ++i;
-              goto STEP;
-            }
+          do
+            context.bind ("i",i++);
+          while (parse::parser<unsigned int>(input, context).eval (context));
         }
-
-      cout << "z = " << z << endl;
     }
   }
 
