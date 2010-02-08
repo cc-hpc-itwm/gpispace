@@ -1,4 +1,5 @@
-// Tom Niemann: "Operator Precedence Parsing."
+// Tom Niemann: "Operator Precedence Parsing." 
+// + save a parsed tree and evaluate against different context'
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <util/timer.hpp>
@@ -13,7 +14,6 @@
 #include <stack>
 
 #include <cstdlib>
-#include <cassert>
 
 #include <boost/unordered_map.hpp>
 #include <boost/function.hpp>
@@ -41,6 +41,12 @@ namespace parse
       : exception ("expected '" + what + "'") {}
   };
 
+  class divide_by_zero : public std::runtime_error
+  {
+  public:
+    explicit divide_by_zero () : std::runtime_error ("divide by zero") {};
+  };
+
   namespace token
   {
     enum type
@@ -48,18 +54,88 @@ namespace parse
     , _and                    // prec  1, left associative
     , _not                    // prec 30, right associative
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
+
     , add, sub                // prec 21, left associative
     , mul, div                // prec 22, left associative
     , mod                     // prec 23, left associative
     , pow                     // prec 24, right associative
     , neg                     // prec 25, unary minus
+
+    , min, max, abs
     , fac, com                // factorial, combinations
+
     , sep                     // comma
     , lpr, rpr                // parenthesis
+
     , val                     // value
     , ref                     // reference to context
+
     , eof
     };
+
+    static std::ostream & operator << (std::ostream & s, const type & token)
+    {
+      switch (token)
+        {
+        case _or: return s << " | ";
+        case _and: return s << " & ";
+        case _not: return s << "!";
+        case lt: return s << " < ";
+        case le: return s << " <= ";
+        case gt: return s << " > ";
+        case ge: return s << " >= ";
+        case ne: return s << " != ";
+        case eq: return s << " == ";
+        case add: return s << " + ";
+        case sub: return s << " - ";
+        case mul: return s << " * ";
+        case div: return s << " / ";
+        case mod: return s << " % ";
+        case pow: return s << "^";
+        case neg: return s << "-";
+        case min: return s << "min";
+        case max: return s << "max";
+        case abs: return s << "abs";
+        case fac: return s << "f";
+        case com: return s << "c";
+        case sep: return s << ", ";
+        case lpr: return s << "(";
+        case rpr: return s << ")";
+        case val: return s << "<val>";
+        case ref: return s << "<ref>";
+        case eof: return s << "<eof>";
+        default: throw std::runtime_error ("token " + show(token));
+        }
+    }
+
+    static bool is_builtin (const type & token)
+    {
+      return (token > neg && token < sep);
+    }
+
+    static bool is_prefix (const type & token)
+    {
+      switch (token)
+        {
+        case fac:
+        case com:
+        case min:
+        case max:
+        case abs: return true;
+        default: return false;
+        }
+    }
+
+    static bool next_can_be_unary (const type & token)
+    {
+      switch (token)
+        {
+        case val:
+        case rpr:
+        case ref: return false;
+        default: return true;
+        }
+    }
 
     namespace function
     {
@@ -70,6 +146,7 @@ namespace parse
           {
           case _not: return !x;
           case neg: return -x;
+          case abs: return (x < 0) ? (-x) : x;
           case fac:
             {
               T f (1);
@@ -99,8 +176,7 @@ namespace parse
           case add: return l + r;
           case sub: return l - r;
           case mul: return l * r;
-          case div:
-            if (r == 0) throw exception ("divide by zero"); return l / r;
+          case div: if (r == 0) throw divide_by_zero(); return l / r;
           case mod: return l % r;
           case pow:
             {
@@ -111,58 +187,13 @@ namespace parse
               
               return p; 
             }
+          case min: return std::min (l,r);
+          case max: return std::max (l,r);
           case com: return (unary<T>(fac, l)) / (unary<T>(fac, l-r));
           default: throw std::runtime_error ("binary " + show(token));
           }
       }
-
-      static bool is_builtin_function (const type & token)
-      {
-        return (token > neg && token < sep);
-      }
     } // namespace function
-
-    static bool is_prefix (const type & token)
-    {
-      return (token == fac || token == com || token == _not);
-    }
-
-    static std::ostream & operator << (std::ostream & s, const type & token)
-    {
-      switch (token)
-        {
-        case _or: return s << " | ";
-        case _and: return s << " & ";
-        case _not: return s << "!";
-        case lt: return s << " < ";
-        case le: return s << " <= ";
-        case gt: return s << " > ";
-        case ge: return s << " >= ";
-        case ne: return s << " != ";
-        case eq: return s << " == ";
-        case add: return s << " + ";
-        case sub: return s << " - ";
-        case mul: return s << " * ";
-        case div: return s << " / ";
-        case mod: return s << " % ";
-        case pow: return s << "^";
-        case neg: return s << "-";
-        case fac: return s << "f";
-        case com: return s << "c";
-        case sep: return s << ", ";
-        case lpr: return s << "(";
-        case rpr: return s << ")";
-        case val: return s << "<val>";
-        case ref: return s << "<ref>";
-        case eof: return s << "<eof>";
-        default: throw std::runtime_error ("token " + show(token));
-        }
-    }
-
-    static bool can_be_unary (const type & token)
-    {
-      return (token != val && token != rpr && token != ref);
-    }
 
     template<typename T>
     struct tokenizer
@@ -184,6 +215,25 @@ namespace parse
         else
           switch (*pos)
             {
+            case 'a':
+              ++pos;
+              if (pos == end || *pos != 'b')
+                throw expected ("bs");
+              else
+                {
+                  ++pos;
+                  if (pos == end || *pos != 's')
+                    throw expected ("s");
+                  else
+                    {
+                      if (next_can_be_unary (token))
+                        token = abs;
+                      else
+                        throw exception ("misplaced abs");
+                      ++pos;
+                    }
+                }
+              break;
             case '|': token = _or; ++pos; break;
             case '&': token = _and; ++pos; break;
             case '<':
@@ -216,7 +266,7 @@ namespace parse
                   {
                   case '=': token = ne; ++pos; break;
                   default:
-                    if (can_be_unary (token))
+                    if (next_can_be_unary (token))
                       token = _not;
                     else
                       throw exception ("misplaced negation");
@@ -231,13 +281,13 @@ namespace parse
                 switch (*pos)
                   {
                   case '=': token = eq; ++pos; break;
-                  default: throw expected ("="); break;
+                  default: throw expected ("=");
                   }
               break;
 
             case '+': token = add; ++pos; break;
             case '-':
-              if (can_be_unary (token))
+              if (next_can_be_unary (token))
                 token = neg;
               else
                 token = sub;
@@ -249,6 +299,42 @@ namespace parse
             case '^': token = pow; ++pos; break;
             case 'f': token = fac; ++pos; break;
             case 'c': token = com; ++pos; break;
+            case 'm':
+              ++pos;
+              if (pos == end)
+                throw expected ("in or ax");
+              else
+                switch (*pos)
+                  {
+                  case 'i':
+                    ++pos;
+                    if (pos == end)
+                      throw expected ("n");
+                    else
+                      if (*pos == 'n')
+                        {
+                          token = min;
+                          ++pos;
+                        }
+                      else
+                        throw expected ("n");
+                    break;
+                  case 'a':
+                    ++pos;
+                    if (pos == end)
+                      throw expected ("x");
+                    else
+                      if (*pos == 'x')
+                        {
+                          token = max;
+                          ++pos;
+                        }
+                      else
+                        throw expected ("x");
+                    break;
+                  default: throw expected ("in or ax");
+                  }
+              break;
             case ',': token = sep; ++pos; break;
             case '(': token = lpr; ++pos; break;
             case ')': token = rpr; ++pos; break;
@@ -272,7 +358,7 @@ namespace parse
                       throw expected ("}");
                     ++pos;
                     break;
-                  default: throw expected ("{"); break;
+                  default: throw expected ("{");
                   }
               break;
             default:
@@ -399,6 +485,7 @@ namespace parse
         }
     }
 
+    // WORK HERE: build a table!?
     static type action (const token::type & top, const token::type & inp)
     {
       if (top == token::lpr)
@@ -415,9 +502,9 @@ namespace parse
             return error2;
           
           if (inp == token::sep)
-            return error4;
+            return reduce;
 
-          if (token::function::is_builtin_function (inp))
+          if (token::is_builtin (inp))
             return error3;
 
           return reduce;
@@ -448,7 +535,7 @@ namespace parse
           return reduce;
         }
 
-      if (token::function::is_builtin_function (top))
+      if (token::is_builtin (top))
         {
           if (inp == token::lpr)
             return shift;
@@ -470,7 +557,7 @@ namespace parse
       if (inp == token::eof)
         return reduce;
 
-      if (token::function::is_builtin_function (inp))
+      if (token::is_builtin (inp))
         return shift;
 
       assert (inp < token::fac);
@@ -495,6 +582,13 @@ namespace parse
 
   namespace node
   {
+    class unknown : public std::runtime_error
+    {
+    public:
+      unknown () : std::runtime_error ("STRANGE: unknown node type") {};
+    };
+
+    // WORK HERE: better type with union!?
     template<typename T>
     struct type
     {
@@ -567,9 +661,7 @@ namespace parse
           return s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
         }
 
-      assert (false);
-
-      return s;
+      throw unknown();
     }
   } // namespace node
 
@@ -635,9 +727,7 @@ namespace parse
                                           , eval (*node.child1, context)
                                           );
 
-      assert (false);
-
-      return T();
+      throw node::unknown();
     }
   } // namespace eval
 
@@ -729,6 +819,9 @@ namespace parse
         case token::pow: binary (op_stack.top()); break;
         case token::neg:
         case token::fac: unary (op_stack.top()); break;
+        case token::min:
+        case token::max: binary (op_stack.top()); break;
+        case token::abs: unary (op_stack.top()); break;
         case token::com: binary (op_stack.top()); break;
         case token::rpr: op_stack.pop(); break;
         default: break;
