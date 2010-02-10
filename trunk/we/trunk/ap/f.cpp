@@ -8,6 +8,8 @@
 
 #include <cstdlib>
 
+#include <malloc.h>
+
 using std::cin;
 using std::cout;
 using std::endl;
@@ -16,6 +18,8 @@ int main (void)
 {
 //   std::string input 
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
+
+  cout << "enter expression, ^D to start measurement" << endl;
 
   {
     expr::eval::context<double> context;
@@ -90,8 +94,7 @@ int main (void)
           catch (expr::exception e)
             {
               cout << input << endl;
-              unsigned int k (e.eaten);
-              while (k-->0)
+              for (unsigned int k (0); k < e.eaten; ++k)
                 cout << " ";
               cout << "^" << endl;
               cout << e.what() << endl;
@@ -142,6 +145,8 @@ int main (void)
         }
     }
   }
+
+  malloc_stats();
 
   return EXIT_SUCCESS;
 }

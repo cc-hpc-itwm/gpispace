@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <boost/shared_ptr.hpp>
+
 namespace expr
 {
   namespace parse
@@ -26,6 +28,8 @@ namespace expr
       template<typename T>
       struct type
       {
+        typedef boost::shared_ptr<type> ptr_t;
+
         bool is_value;
         T value;
 
@@ -35,9 +39,9 @@ namespace expr
         bool is_unary;
         bool is_binary;
         token::type token;
-        type<T> * child0;
-        type<T> * child1;
-      
+        ptr_t child0;
+        ptr_t child1;
+
         type (const T & _value) 
           : is_value (true)
           , value (_value)
@@ -54,16 +58,16 @@ namespace expr
           , is_binary (false)
         {}
 
-        type (const token::type & _token, type<T> * _child0)
+        type (const token::type & _token, ptr_t _child0)
           : is_value (false)
           , is_refname (false)
           , is_unary (true)
           , is_binary (false)
           , token (_token)
           , child0 (_child0)
-        {}   
+        {}
 
-        type (const token::type & _token, type<T> * _child0, type<T> * _child1)
+        type (const token::type & _token, ptr_t _child0, ptr_t _child1)
           : is_value (false)
           , is_refname (false)
           , is_unary (false)

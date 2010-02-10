@@ -25,6 +25,15 @@ namespace expr
 {
   namespace parse
   {
+    class missing_operand : public exception
+    {
+    public:
+      missing_operand (const unsigned int k, const std::string & what)
+        : exception ("missing " + what + " operand", k-1) {}
+      missing_operand (const unsigned int k)
+        : exception ("missing operand", k-1) {}
+    };
+
     template<typename T>
     struct parser
     {
@@ -38,47 +47,45 @@ namespace expr
       void unary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw exception ("unary operator missing operand: " + show(token), k);
+          throw missing_operand (k);
 
-        nd_t * c = new nd_t(nd_stack.top()); nd_stack.pop();
+        nd_t c (nd_stack.top()); nd_stack.pop();
 
-        if (c->is_value)
-          {
-            nd_stack.push (nd_t(token::function::unary (token, c->value)));
-            delete c;
-          }
+        if (c.is_value)
+          nd_stack.push (nd_t(token::function::unary (token, c.value)));
         else
           {
-            nd_stack.push (nd_t (token, c));
+            typename nd_t::ptr_t ptr_c (new nd_t(c));
+
+            nd_stack.push (nd_t (token, ptr_c));
           }
       }
 
       void binary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw exception ( "binary operator missing operand r: " + show(token)
-                          , k
-                          );
+          throw missing_operand (k, "left");
 
-        nd_t * r = new nd_t(nd_stack.top()); nd_stack.pop();
+        nd_t r (nd_t(nd_stack.top())); nd_stack.pop();
 
         if (nd_stack.empty())
-          throw exception ( "binary operator missing operand l: " + show(token)
-                          , k
-                          );
+          throw missing_operand (k, "right");
 
-        nd_t * l = new nd_t(nd_stack.top()); nd_stack.pop();
+        nd_t l (nd_t(nd_stack.top())); nd_stack.pop();
 
-        if (l->is_value && r->is_value)
-          {
-            nd_stack.push 
-              (nd_t(token::function::binary (token, l->value, r->value)));
-            delete l;
-            delete r;
-          }
+        if (l.is_value && r.is_value)
+          nd_stack.push (nd_t (token::function::binary ( token
+                                                       , l.value
+                                                       , r.value
+                                                       )
+                              )
+                        );
         else
           {
-            nd_stack.push (nd_t (token, l, r));
+            typename nd_t::ptr_t ptr_l (new nd_t (l));
+            typename nd_t::ptr_t ptr_r (new nd_t (r));
+
+            nd_stack.push (nd_t (token, ptr_l, ptr_r));
           }
       }
 
