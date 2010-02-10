@@ -26,6 +26,15 @@ namespace expr
       : exception ("expected '" + what + "'", k) {}
   };
 
+  class misplaced : public exception
+  {
+  public:
+    misplaced (const std::string & what, const unsigned int k)
+      : exception ( "misplaced " + what + ", operator expected"
+                  , k - what.length()
+                  ) {}
+  };
+
   class divide_by_zero : public std::runtime_error
   {
   public:

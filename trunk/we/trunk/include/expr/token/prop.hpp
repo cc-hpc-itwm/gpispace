@@ -22,6 +22,8 @@ namespace expr
         case com:
         case min:
         case max:
+        case _sin:
+        case _cos:
         case abs: return true;
         default: return false;
         }

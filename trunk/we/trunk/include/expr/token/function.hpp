@@ -29,6 +29,10 @@ namespace expr
           case _not: return (is_zero (x)) ? 1 : 0;
           case neg: return -x;
           case abs: return is_zero (x) ? 0 : ((x < 0) ? (-x) : x);
+          case _sin: return sin(x);
+          case _cos: return cos(x);
+          case _sqrt: return sqrt(x);
+          case _log: return log(x);
           case fac:
             {
               T f (1);
