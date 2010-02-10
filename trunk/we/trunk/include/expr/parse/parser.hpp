@@ -35,10 +35,10 @@ namespace expr
       nd_stack_t nd_stack;
       op_stack_t op_stack;
 
-      void unary (const token::type & token)
+      void unary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw exception ("unary operator missing operand: " + show(token));
+          throw exception ("unary operator missing operand: " + show(token), k);
 
         nd_t * c = new nd_t(nd_stack.top()); nd_stack.pop();
 
@@ -53,15 +53,19 @@ namespace expr
           }
       }
 
-      void binary (const token::type & token)
+      void binary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw exception ("binary operator missing operand r: " + show(token));
+          throw exception ( "binary operator missing operand r: " + show(token)
+                          , k
+                          );
 
         nd_t * r = new nd_t(nd_stack.top()); nd_stack.pop();
 
         if (nd_stack.empty())
-          throw exception ("binary operator missing operand l: " + show(token));
+          throw exception ( "binary operator missing operand l: " + show(token)
+                          , k
+                          );
 
         nd_t * l = new nd_t(nd_stack.top()); nd_stack.pop();
 
@@ -78,13 +82,13 @@ namespace expr
           }
       }
 
-      void reduce (void)
+      void reduce (const unsigned int k)
       {
         switch (op_stack.top())
           {
           case token::_or:
-          case token::_and: binary (op_stack.top()); break;
-          case token::_not: unary (op_stack.top()); break;
+          case token::_and: binary (op_stack.top(), k); break;
+          case token::_not: unary (op_stack.top(), k); break;
           case token::lt:
           case token::le:
           case token::gt:
@@ -96,13 +100,13 @@ namespace expr
           case token::mul:
           case token::div:
           case token::mod:
-          case token::pow: binary (op_stack.top()); break;
+          case token::pow: binary (op_stack.top(), k); break;
           case token::neg:
-          case token::fac: unary (op_stack.top()); break;
+          case token::fac: unary (op_stack.top(), k); break;
           case token::min:
-          case token::max: binary (op_stack.top()); break;
-          case token::abs: unary (op_stack.top()); break;
-          case token::com: binary (op_stack.top()); break;
+          case token::max: binary (op_stack.top(), k); break;
+          case token::abs: unary (op_stack.top(), k); break;
+          case token::com: binary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           default: break;
           }
@@ -133,7 +137,7 @@ namespace expr
                   switch (action)
                     {
                     case action::reduce:
-                      reduce();
+                      reduce(token.eaten());
                       goto ACTION;
                       break;
                     case action::shift:
@@ -142,7 +146,7 @@ namespace expr
                     case action::accept:
                       break;
                     default:
-                      throw exception (show(action));
+                      throw exception (show(action), token.eaten());
                     }
                   break;
                 }

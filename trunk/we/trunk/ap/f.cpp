@@ -89,6 +89,11 @@ int main (void)
             }
           catch (expr::exception e)
             {
+              cout << input << endl;
+              unsigned int k (e.eaten);
+              while (k-->0)
+                cout << " ";
+              cout << "^" << endl;
               cout << e.what() << endl;
             }
         }

@@ -19,16 +19,19 @@ namespace expr
     struct tokenizer
     {
     private:
+      unsigned int k;
       std::string::const_iterator pos;
       const std::string::const_iterator end;
       token::type token;
       T tokval;
       std::string _refname;
 
+      void eat (void) { ++k; ++pos; }
+
       void get (void)
       {
         while (pos != end && isspace(*pos))
-          ++pos;
+          eat();;
 
         if (pos == end)
           token = eof;
@@ -36,161 +39,161 @@ namespace expr
           switch (*pos)
             {
             case 'a':
-              ++pos;
+              eat();;
               if (pos == end || *pos != 'b')
-                throw expected ("bs");
+                throw expected ("bs", k);
               else
                 {
-                  ++pos;
+                  eat();;
                   if (pos == end || *pos != 's')
-                    throw expected ("s");
+                    throw expected ("s", k);
                   else
                     {
                       if (next_can_be_unary (token))
                         token = abs;
                       else
-                        throw exception ("misplaced abs");
-                      ++pos;
+                        throw exception ("misplaced abs", k);
+                      eat();;
                     }
                 }
               break;
-            case '|': token = _or; ++pos; break;
-            case '&': token = _and; ++pos; break;
+            case '|': token = _or; eat();; break;
+            case '&': token = _and; eat();; break;
             case '<':
-              ++pos;
+              eat();;
               if (pos == end)
                 token = lt;
               else
                 switch (*pos)
                   {
-                  case '=': token = le; ++pos; break;
+                  case '=': token = le; eat();; break;
                   default: token = lt; break;
                   }
               break;
             case '>':
-              ++pos;
+              eat();;
               if (pos == end)
                 token = gt;
               switch (*pos)
                 {
-                case '=': token = ge; ++pos; break;
+                case '=': token = ge; eat();; break;
                 default: token = gt; break;
                 }
               break;
             case '!':
-              ++pos;
+              eat();;
               if (pos == end)
-                throw expected("= or expression");
+                throw expected("= or expression", k);
               else
                 switch (*pos)
                   {
-                  case '=': token = ne; ++pos; break;
+                  case '=': token = ne; eat();; break;
                   default:
                     if (next_can_be_unary (token))
                       token = _not;
                     else
-                      throw exception ("misplaced negation");
+                      throw exception ("misplaced negation", k);
                     break;
                   }
               break;
             case '=':
-              ++pos;
+              eat();;
               if (pos == end)
-                throw expected("=");
+                throw expected("=", k);
               else
                 switch (*pos)
                   {
-                  case '=': token = eq; ++pos; break;
-                  default: throw expected ("=");
+                  case '=': token = eq; eat();; break;
+                  default: throw expected ("=", k);
                   }
               break;
 
-            case '+': token = add; ++pos; break;
+            case '+': token = add; eat();; break;
             case '-':
               if (next_can_be_unary (token))
                 token = neg;
               else
                 token = sub;
-              ++pos;
+              eat();;
               break;
-            case '*': token = mul; ++pos; break;
-            case '/': token = div; ++pos; break;
-            case '%': token = mod; ++pos; break;
-            case '^': token = pow; ++pos; break;
-            case 'f': token = fac; ++pos; break;
-            case 'c': token = com; ++pos; break;
+            case '*': token = mul; eat();; break;
+            case '/': token = div; eat();; break;
+            case '%': token = mod; eat();; break;
+            case '^': token = pow; eat();; break;
+            case 'f': token = fac; eat();; break;
+            case 'c': token = com; eat();; break;
             case 'm':
-              ++pos;
+              eat();;
               if (pos == end)
-                throw expected ("in or ax");
+                throw expected ("in or ax", k);
               else
                 switch (*pos)
                   {
                   case 'i':
-                    ++pos;
+                    eat();;
                     if (pos == end)
-                      throw expected ("n");
+                      throw expected ("n", k);
                     else
                       if (*pos == 'n')
                         {
                           token = min;
-                          ++pos;
+                          eat();;
                         }
                       else
-                        throw expected ("n");
+                        throw expected ("n", k);
                     break;
                   case 'a':
-                    ++pos;
+                    eat();;
                     if (pos == end)
-                      throw expected ("x");
+                      throw expected ("x", k);
                     else
                       if (*pos == 'x')
                         {
                           token = max;
-                          ++pos;
+                          eat();;
                         }
                       else
-                        throw expected ("x");
+                        throw expected ("x", k);
                     break;
-                  default: throw expected ("in or ax");
+                  default: throw expected ("in or ax", k);
                   }
               break;
-            case ',': token = sep; ++pos; break;
-            case '(': token = lpr; ++pos; break;
-            case ')': token = rpr; ++pos; break;
+            case ',': token = sep; eat();; break;
+            case '(': token = lpr; eat();; break;
+            case ')': token = rpr; eat();; break;
             case '$':
               token = ref;
-              ++pos;
+              eat();;
               if (pos == end)
-                throw expected ("{");
+                throw expected ("{", k);
               else
                 switch (*pos)
                   {
                   case '{':
-                    ++pos;
+                    eat();;
                     _refname.clear();
                     while (pos != end && *pos != '}')
                       {
                         _refname.push_back (*pos);
-                        ++pos;
+                        eat();;
                       }
                     if (*pos != '}')
-                      throw expected ("}");
-                    ++pos;
+                      throw expected ("}", k);
+                    eat();;
                     break;
-                  default: throw expected ("{");
+                  default: throw expected ("{", k);
                   }
               break;
             default:
               if (!isdigit(*pos))
-                throw expected ("digit");
+                throw expected ("digit", k);
               token = val;
               tokval = 0;
               while (isdigit(*pos))
                 {
                   tokval *= 10;
                   tokval += *pos - '0';
-                  ++pos;
+                  eat();;
                 }
               break;
             }
@@ -201,10 +204,11 @@ namespace expr
 
     public:
       tokenizer (const std::string & input) 
-        : pos (input.begin()), end (input.end()), token (eof) {}
+        : k (0), pos (input.begin()), end (input.end()), token (eof) {}
       const T & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
+      unsigned int eaten (void) { return k; }
       std::string refname (void) const { return _refname; }
     };
 
