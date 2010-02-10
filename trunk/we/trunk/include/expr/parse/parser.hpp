@@ -172,11 +172,29 @@ namespace expr
         parse (input, boost::bind (eval::refnode_name<T>, _1));
       }
 
-      const nd_t & operator * (void) const { return nd_stack.top(); }
-
-      const T eval (const eval::context<T> & context)
+      const nd_t & expr (void) const
       {
-        return eval::eval (this->operator * (), context);
+        return nd_stack.top();
+      }
+
+      const T eval (const eval::context<T> & context) const
+      {
+        return eval::eval (expr(), context);
+      }
+
+      const bool eval_bool (const eval::context<T> & context) const
+      {
+        return !token::function::is_zero (eval (context));
+      }
+
+      const T & get () const
+      {
+        return node::get (expr());
+      }
+
+      const bool get_bool () const 
+      {
+        return !token::function::is_zero (get ());
       }
     };
   }

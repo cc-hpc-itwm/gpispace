@@ -12,7 +12,7 @@ namespace expr
   class exception : public std::runtime_error
   {
   public:
-    unsigned int eaten;
+    const unsigned int eaten;
     exception (const std::string & msg, const unsigned int k)
       : std::runtime_error("parse error [" + show(k) + "]: " + msg) 
       , eaten (k)
@@ -38,7 +38,7 @@ namespace expr
   class divide_by_zero : public std::runtime_error
   {
   public:
-    explicit divide_by_zero () : std::runtime_error ("divide by zero") {};
+    divide_by_zero () : std::runtime_error ("divide by zero") {};
   };
 }
 

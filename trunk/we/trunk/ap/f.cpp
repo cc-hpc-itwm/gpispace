@@ -76,7 +76,7 @@ int main (void)
             {
               expr::parse::parser<double> parser (input);
               
-              cout << "parsed expression: " << *parser << endl;
+              cout << "parsed expression: " << parser.expr() << endl;
 
               try
                 {
@@ -119,10 +119,9 @@ int main (void)
         {
           unsigned int i (0);
 
-          context.bind ("i",i);
-
-          while (int(parser.eval (context)))
-            context.bind ("i",++i);
+          do
+            context.bind ("i",i++);
+          while (parser.eval_bool (context));
         }
     }
 
@@ -139,7 +138,7 @@ int main (void)
 
           do
             context.bind ("i",i++);
-          while (int(expr::parse::parser<double>(input, context).eval (context)));
+          while (expr::parse::parser<double>(input, context).get_bool ());
         }
     }
   }

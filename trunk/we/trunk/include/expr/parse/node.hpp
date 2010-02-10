@@ -97,6 +97,15 @@ namespace expr
 
         throw unknown();
       }
+
+      template<typename T>
+      const T & get (const type<T> & node)
+      {
+        if (!node.is_value)
+          throw std::runtime_error ("node is not an value");
+
+        return node.value;
+      }
     }
   }
 }

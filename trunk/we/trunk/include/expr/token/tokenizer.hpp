@@ -340,8 +340,8 @@ namespace expr
       const T & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
-      unsigned int eaten (void) { return k; }
-      std::string refname (void) const { return _refname; }
+      unsigned int eaten (void) const { return k; }
+      const std::string & refname (void) const { return _refname; }
     };
 
     template<typename T>
