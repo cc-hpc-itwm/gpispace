@@ -31,7 +31,7 @@ namespace expr
       void get (void)
       {
         while (pos != end && isspace(*pos))
-          eat();;
+          eat();
 
         if (pos == end)
           token = eof;
@@ -39,12 +39,12 @@ namespace expr
           switch (*pos)
             {
             case 'a':
-              eat();;
+              eat();
               if (pos == end || *pos != 'b')
                 throw expected ("bs", k);
               else
                 {
-                  eat();;
+                  eat();
                   if (pos == end || *pos != 's')
                     throw expected ("s", k);
                   else
@@ -53,41 +53,41 @@ namespace expr
                         token = abs;
                       else
                         throw exception ("misplaced abs", k);
-                      eat();;
+                      eat();
                     }
                 }
               break;
-            case '|': token = _or; eat();; break;
-            case '&': token = _and; eat();; break;
+            case '|': token = _or; eat(); break;
+            case '&': token = _and; eat(); break;
             case '<':
-              eat();;
+              eat();
               if (pos == end)
                 token = lt;
               else
                 switch (*pos)
                   {
-                  case '=': token = le; eat();; break;
+                  case '=': token = le; eat(); break;
                   default: token = lt; break;
                   }
               break;
             case '>':
-              eat();;
+              eat();
               if (pos == end)
                 token = gt;
               switch (*pos)
                 {
-                case '=': token = ge; eat();; break;
+                case '=': token = ge; eat(); break;
                 default: token = gt; break;
                 }
               break;
             case '!':
-              eat();;
+              eat();
               if (pos == end)
                 throw expected("= or expression", k);
               else
                 switch (*pos)
                   {
-                  case '=': token = ne; eat();; break;
+                  case '=': token = ne; eat(); break;
                   default:
                     if (next_can_be_unary (token))
                       token = _not;
@@ -97,60 +97,60 @@ namespace expr
                   }
               break;
             case '=':
-              eat();;
+              eat();
               if (pos == end)
                 throw expected("=", k);
               else
                 switch (*pos)
                   {
-                  case '=': token = eq; eat();; break;
+                  case '=': token = eq; eat(); break;
                   default: throw expected ("=", k);
                   }
               break;
 
-            case '+': token = add; eat();; break;
+            case '+': token = add; eat(); break;
             case '-':
               if (next_can_be_unary (token))
                 token = neg;
               else
                 token = sub;
-              eat();;
+              eat();
               break;
-            case '*': token = mul; eat();; break;
-            case '/': token = div; eat();; break;
-            case '%': token = mod; eat();; break;
-            case '^': token = pow; eat();; break;
-            case 'f': token = fac; eat();; break;
-            case 'c': token = com; eat();; break;
+            case '*': token = mul; eat(); break;
+            case '/': token = div; eat(); break;
+            case '%': token = mod; eat(); break;
+            case '^': token = pow; eat(); break;
+            case 'f': token = fac; eat(); break;
+            case 'c': token = com; eat(); break;
             case 'm':
-              eat();;
+              eat();
               if (pos == end)
                 throw expected ("in or ax", k);
               else
                 switch (*pos)
                   {
                   case 'i':
-                    eat();;
+                    eat();
                     if (pos == end)
                       throw expected ("n", k);
                     else
                       if (*pos == 'n')
                         {
                           token = min;
-                          eat();;
+                          eat();
                         }
                       else
                         throw expected ("n", k);
                     break;
                   case 'a':
-                    eat();;
+                    eat();
                     if (pos == end)
                       throw expected ("x", k);
                     else
                       if (*pos == 'x')
                         {
                           token = max;
-                          eat();;
+                          eat();
                         }
                       else
                         throw expected ("x", k);
@@ -158,42 +158,78 @@ namespace expr
                   default: throw expected ("in or ax", k);
                   }
               break;
-            case ',': token = sep; eat();; break;
-            case '(': token = lpr; eat();; break;
-            case ')': token = rpr; eat();; break;
+            case ',': token = sep; eat(); break;
+            case '(': token = lpr; eat(); break;
+            case ')': token = rpr; eat(); break;
             case '$':
               token = ref;
-              eat();;
+              eat();
               if (pos == end)
                 throw expected ("{", k);
               else
                 switch (*pos)
                   {
                   case '{':
-                    eat();;
+                    eat();
                     _refname.clear();
                     while (pos != end && *pos != '}')
                       {
                         _refname.push_back (*pos);
-                        eat();;
+                        eat();
                       }
                     if (*pos != '}')
                       throw expected ("}", k);
-                    eat();;
+                    eat();
                     break;
                   default: throw expected ("{", k);
                   }
               break;
             default:
-              if (!isdigit(*pos))
-                throw expected ("digit", k);
               token = val;
               tokval = 0;
               while (isdigit(*pos))
                 {
                   tokval *= 10;
                   tokval += *pos - '0';
-                  eat();;
+                  eat();
+                }
+              if (*pos == '.')
+                {
+                  eat();
+                  T e (10);
+                  while (isdigit(*pos))
+                    {
+                      tokval += (*pos - '0') / e;
+                      e *= 10;
+                      eat();
+                    }
+                }
+              if (*pos == 'e' || *pos == 'E')
+                {
+                  eat();
+                  T sig (1);
+                  if (*pos == '-')
+                    {
+                      eat();
+                      sig = -1;
+                    }
+                  else if (*pos == '+')
+                    eat();
+
+                  if (!isdigit(*pos))
+                    throw expected ("digit", k);
+
+                  unsigned int e (0);
+
+                  while (isdigit(*pos))
+                    {
+                      e *= 10;
+                      e += *pos - '0';
+                      eat();
+                    }
+
+                  while (e-->0)
+                    tokval *= 10;
                 }
               break;
             }

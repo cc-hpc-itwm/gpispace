@@ -40,6 +40,7 @@ CXX_INCLUDE += $(BOOST_ROOT)/include
 CXX_LIBS += pthread
 CXX_LIBS += boost_thread
 CXX_LIBS += boost_serialization
+CXX_LIBS += m
 
 HPP = $(wildcard include/*.hpp include/*/*.hpp include/*/*/*.hpp)
 CPP = $(wildcard ap/*.cpp)
