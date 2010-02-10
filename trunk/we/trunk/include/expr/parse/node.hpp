@@ -30,46 +30,62 @@ namespace expr
       {
         typedef boost::shared_ptr<type> ptr_t;
 
-        bool is_value;
-        T value;
+        const bool is_value;
+        const T value;
 
-        bool is_refname;
-        std::string refname;
+        const bool is_refname;
+        const std::string refname;
 
-        bool is_unary;
-        bool is_binary;
-        token::type token;
-        ptr_t child0;
-        ptr_t child1;
+        const bool is_unary;
+        const bool is_binary;
+        const token::type token;
+        const ptr_t child0;
+        const ptr_t child1;
 
         type (const T & _value) 
           : is_value (true)
           , value (_value)
           , is_refname (false)
+          , refname ()
           , is_unary (false)
           , is_binary (false)
+          , token ()
+          , child0 ()
+          , child1 ()
         {}
 
         type (const std::string & _refname)
           : is_value (false)
+          , value ()
           , is_refname (true)
           , refname (_refname)
           , is_unary (false)
           , is_binary (false)
+          , token ()
+          , child0 ()
+          , child1 ()
         {}
 
-        type (const token::type & _token, ptr_t _child0)
+        type (const token::type & _token, const ptr_t _child0)
           : is_value (false)
+          , value ()
           , is_refname (false)
+          , refname ()
           , is_unary (true)
           , is_binary (false)
           , token (_token)
           , child0 (_child0)
+          , child1 ()
         {}
 
-        type (const token::type & _token, ptr_t _child0, ptr_t _child1)
+        type ( const token::type & _token
+             , const ptr_t _child0
+             , const ptr_t _child1
+             )
           : is_value (false)
+          , value ()
           , is_refname (false)
+          , refname ()
           , is_unary (false)
           , is_binary (true)
           , token (_token)
