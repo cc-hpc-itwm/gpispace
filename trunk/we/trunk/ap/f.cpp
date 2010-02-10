@@ -18,7 +18,7 @@ int main (void)
 //     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
 
   {
-    expr::eval::context<float> context;
+    expr::eval::context<double> context;
     std::string input;
 
     while (getline(cin, input).good())
@@ -74,7 +74,7 @@ int main (void)
         default:
           try
             {
-              expr::parse::parser<float> parser (input);
+              expr::parse::parser<double> parser (input);
               
               cout << "parsed expression: " << *parser << endl;
 
@@ -109,11 +109,11 @@ int main (void)
     {
       Timer_t timer ("parse once, evaluate often", max * round);
 
-      expr::eval::context<float> context;
+      expr::eval::context<double> context;
 
       context.bind("max",max);
 
-      expr::parse::parser<float> parser (input);
+      expr::parse::parser<double> parser (input);
 
       for (unsigned int r (0); r < round; ++r)
         {
@@ -129,7 +129,7 @@ int main (void)
     {
       Timer_t timer ("parse with evaluate often", max * round);
 
-      expr::eval::context<float> context;
+      expr::eval::context<double> context;
 
       context.bind("max",max);
 
@@ -139,7 +139,7 @@ int main (void)
 
           do
             context.bind ("i",i++);
-          while (int(expr::parse::parser<float>(input, context).eval (context)));
+          while (int(expr::parse::parser<double>(input, context).eval (context)));
         }
     }
   }
