@@ -41,7 +41,7 @@ CXX_LIBS += pthread
 CXX_LIBS += boost_thread
 CXX_LIBS += boost_serialization
 
-HPP = $(wildcard include/*.hpp include/*/*.hpp)
+HPP = $(wildcard include/*.hpp include/*/*.hpp include/*/*/*.hpp)
 CPP = $(wildcard ap/*.cpp)
 
 .PHONY: all
