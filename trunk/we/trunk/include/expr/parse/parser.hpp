@@ -3,17 +3,18 @@
 #ifndef _EXPR_PARSE_PARSER_HPP
 #define _EXPR_PARSE_PARSER_HPP
 
-#include <expr/parse/node.hpp>
 #include <expr/parse/action.hpp>
-#include <expr/token/type.hpp>
+#include <expr/parse/node.hpp>
+
 #include <expr/token/function.hpp>
 #include <expr/token/prop.hpp>
 #include <expr/token/tokenizer.hpp>
-
-#include <expr/exception.hpp>
+#include <expr/token/type.hpp>
 
 #include <expr/eval/context.hpp>
 #include <expr/eval/eval.hpp>
+
+#include <expr/exception.hpp>
 
 #include <stack>
 
@@ -127,18 +128,18 @@ namespace expr
               default:
                 {
                 ACTION:
-                  parse::action::type action (parse::action::action (op_stack.top(), *token));
+                  action::type action (action::action (op_stack.top(), *token));
 
                   switch (action)
                     {
-                    case parse::action::reduce:
+                    case action::reduce:
                       reduce();
                       goto ACTION;
                       break;
-                    case parse::action::shift:
+                    case action::shift:
                       op_stack.push (*token);
                       break;
-                    case parse::action::accept:
+                    case action::accept:
                       break;
                     default:
                       throw exception (show(action));
@@ -153,7 +154,9 @@ namespace expr
     public:
       parser (const std::string & input, const eval::context<T> & context)
       {
-        parse (input, boost::bind (eval::refnode_value<T>, boost::ref(context), _1));
+        parse ( input
+              , boost::bind (eval::refnode_value<T>, boost::ref(context), _1)
+              );
       }
 
       parser (const std::string & input)

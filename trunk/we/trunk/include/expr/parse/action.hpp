@@ -3,12 +3,12 @@
 #ifndef _EXPR_PARSE_ACTION_HPP
 #define _EXPR_PARSE_ACTION_HPP
 
-#include <util/show.hpp>
-
 #include <expr/token/assoc.hpp>
 #include <expr/token/prec.hpp>
 #include <expr/token/prop.hpp>
 #include <expr/token/type.hpp>
+
+#include <util/show.hpp>
 
 #include <iostream>
 

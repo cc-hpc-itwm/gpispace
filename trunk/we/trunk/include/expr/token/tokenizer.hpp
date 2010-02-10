@@ -3,9 +3,10 @@
 #ifndef _EXPR_TOKEN_TOKENIZER_HPP
 #define _EXPR_TOKEN_TOKENIZER_HPP
 
-#include <expr/exception.hpp>
-#include <expr/token/type.hpp>
 #include <expr/token/prop.hpp>
+#include <expr/token/type.hpp>
+
+#include <expr/exception.hpp>
 
 #include <string>
 #include <iostream>

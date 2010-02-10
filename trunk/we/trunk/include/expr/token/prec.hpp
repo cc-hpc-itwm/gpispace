@@ -3,8 +3,9 @@
 #ifndef _EXPR_PREC_HPP
 #define _EXPR_PREC_HPP
 
-#include <util/show.hpp>
 #include <expr/token/type.hpp>
+
+#include <util/show.hpp>
 
 namespace expr
 {

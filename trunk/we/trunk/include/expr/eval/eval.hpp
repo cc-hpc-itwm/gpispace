@@ -4,8 +4,8 @@
 #define _EXPR_EVAL_EVAL_HPP
 
 #include <expr/eval/context.hpp>
-#include <expr/token/function.hpp>
 #include <expr/parse/node.hpp>
+#include <expr/token/function.hpp>
 
 namespace expr
 {

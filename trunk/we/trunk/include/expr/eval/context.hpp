@@ -3,10 +3,11 @@
 #ifndef _EXPR_EVAL_CONTEXT_HPP
 #define _EXPR_EVAL_CONTEXT_HPP
 
+#include <expr/parse/node.hpp>
+
+
 #include <string>
 #include <stdexcept>
-
-#include <expr/parse/node.hpp>
 
 #include <boost/unordered_map.hpp>
 
