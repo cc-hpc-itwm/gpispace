@@ -28,7 +28,8 @@ using namespace sdpa::events;
 NRE :: NRE(  const std::string& name, const std::string& url,
 			 const std::string& masterName, const std::string& masterUrl,
 			 const std::string& workerUrl,
-			 const std::string& guiUrl)
+			 const std::string& guiUrl,
+			 bool bExtSched  )
 		: dsm::DaemonFSM( name, new gwes::GWES() ),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url),
@@ -37,7 +38,8 @@ NRE :: NRE(  const std::string& name, const std::string& url,
 		  m_guiServ("SDPA", guiUrl)
 {
 	SDPA_LOG_DEBUG("NRE constructor called ...");
-	ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
+	if(!bExtSched)
+		ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
 
 	//attach gui observer
 	SDPA_LOG_DEBUG("Attach GUI observer ...");

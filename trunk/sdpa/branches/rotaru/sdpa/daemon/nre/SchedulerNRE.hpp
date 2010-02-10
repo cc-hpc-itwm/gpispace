@@ -282,7 +282,7 @@ namespace sdpa {
 			 }
 		 }
 
-	private:
+	protected:
 		ActivityQueue activities_to_be_executed;
 		boost::thread m_threadExecutor;
 		sdpa::nre::worker::NreWorkerClient m_worker_;

@@ -36,7 +36,8 @@ namespace sdpa {
 		NRE( const std::string& name, const std::string& url,
 			 const std::string& masterName, const std::string& masterUrl,
 			 const std::string& workerUrl,
-			 const std::string& guiUrl);
+			 const std::string& guiUrl,
+			 bool bExtSched = false );
 
 		virtual ~NRE();
 
@@ -45,7 +46,7 @@ namespace sdpa {
 								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000");
 
 		static void start( NRE::ptr_t ptrNRE );
-		static void shutdown(NRE::ptr_t ptrNRE);
+		static void shutdown(NRE::ptr_t ptrNRE );
 
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
@@ -66,7 +67,7 @@ namespace sdpa {
 		void activityFailed(const gwes::activity_t& act);
 		void activityCancelled(const gwes::activity_t& act);
 
-	  private:
+	  protected:
 		const std::string url_;
 		const std::string masterName_;
 		const std::string masterUrl_;
