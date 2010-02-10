@@ -300,11 +300,11 @@ namespace expr
               if (*pos == 'e')
                 {
                   eat();
-                  T sig (1);
+                  bool sig_neg (false);
                   if (*pos == '-')
                     {
                       eat();
-                      sig = -1;
+                      sig_neg = true;
                     }
                   else if (*pos == '+')
                     eat();
@@ -322,7 +322,10 @@ namespace expr
                     }
 
                   while (e-->0)
-                    tokval *= 10;
+                    if (sig_neg)
+                      tokval /= 10;
+                    else
+                      tokval *= 10;
                 }
               break;
             }
