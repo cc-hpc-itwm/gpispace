@@ -13,13 +13,10 @@ SchedulerTestImpl::~SchedulerTestImpl()
 	SDPA_LOG_DEBUG("Called the destructor of  SchedulerTestImpl ...");
 }
 
-void SchedulerTestImpl::schedule(Job::ptr_t& pJob)
+void SchedulerTestImpl::schedule(sdpa::job_id_t& jobId)
 {
-	ostringstream os;
-	os<<"Handle job "<<pJob->id();
-	SDPA_LOG_DEBUG(os.str());
-
-	jobs_to_be_scheduled.push(pJob);
+	SDPA_LOG_DEBUG("Handle job "<<jobId.str());
+	jobs_to_be_scheduled.push(jobId);
 }
 
 Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -56,9 +53,10 @@ void SchedulerTestImpl::run()
 	while(!bStopRequested)
 	{
 		try {
-			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
+			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait();
 
-			if( pJob.use_count() )
+			if( jobId != sdpa::job_id_t::invalid_job_id() )
 			{
 				SDPA_LOG_DEBUG("Job scheduled!");
 			}

@@ -13,12 +13,12 @@ class SchedulerTestImpl : public Scheduler {
   public:
 
 	 typedef sdpa::shared_ptr<SchedulerTestImpl> ptr_t;
-	 typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
+	 typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
 	 SchedulerTestImpl();
 	 virtual ~SchedulerTestImpl();
 
-    void schedule(Job::ptr_t& pJob);
+    void schedule(sdpa::job_id_t& );
     virtual void schedule(gwes::activity_t& ) {}
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );

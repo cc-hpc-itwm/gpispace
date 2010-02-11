@@ -57,14 +57,14 @@ void SchedulerTest::testSchedulerImpl()
 {
 	 sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerTestImpl());
 	 ptr_scheduler_->start();
-	for(int i=0; i<10; i++)
-	{
+	 for(int i=0; i<10; i++)
+	 {
 		JobId job_id;
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
 		pJob->set_local(true);
-		ptr_scheduler_->schedule(pJob);
-	}
+		ptr_scheduler_->schedule(job_id);
+	 }
 
-	sleep(5);
-	ptr_scheduler_->stop();
+	 sleep(5);
+	 ptr_scheduler_->stop();
 }

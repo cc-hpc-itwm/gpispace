@@ -182,7 +182,6 @@ namespace unit_tests {
 	  };
 }
 
-
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
     m_nITER(1),
