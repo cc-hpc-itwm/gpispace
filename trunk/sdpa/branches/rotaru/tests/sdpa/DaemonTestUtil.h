@@ -76,7 +76,7 @@ public:
 			try
 			{
 				//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-				sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				const sdpa::job_id_t& jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 
 				sdpa::job_result_t results;
 
@@ -177,7 +177,7 @@ public:
 			{
 				check_post_request();
 
-				sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				const sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 				Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 				if(pJob->is_local())
@@ -217,7 +217,7 @@ public:
 
 		string worker = "Scheduler";
 
-		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 		//first put the job into the running state
 		pJob->Dispatch();

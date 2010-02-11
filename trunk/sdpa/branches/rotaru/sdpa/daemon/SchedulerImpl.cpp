@@ -58,7 +58,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 
 	try {
 
-		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 		// put the job into the running state
 		pJob->Dispatch();
 
@@ -108,7 +108,7 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
 
 		if( ptr_worker_man_ )
 		{
-			Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
@@ -237,7 +237,7 @@ void SchedulerImpl::run()
 		{
 			check_post_request();
 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-			Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 			if(pJob->is_local())
 				schedule_local(jobId);
