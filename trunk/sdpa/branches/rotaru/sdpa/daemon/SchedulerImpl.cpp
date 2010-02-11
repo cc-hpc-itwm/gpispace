@@ -236,7 +236,6 @@ void SchedulerImpl::run()
 		try
 		{
 			check_post_request();
-
 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
