@@ -28,6 +28,7 @@
 #include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
 
+#include <sdpa/daemon/JobManager.hpp>
 #include <gwes/IActivity.h>
 
 #define MSG_RETRY_CNT 5
@@ -57,6 +58,8 @@ const std::string USER("user");
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
 	  virtual sdpa::util::Config* cfg() const = 0;
+
+	  virtual JobManager::ptr_t jobManager() const = 0;
 
 	  //GUI notification methods
 	  virtual void activityCreated(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }

@@ -72,13 +72,15 @@ namespace sdpa {
 				try
 				{
 					check_post_request();
-					sdpa::daemon::Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+					//sdpa::daemon::Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+					JobId jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+					Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 					// schedule only jobs submitted by the master
 					if(pJob->is_local())
 					{
 						post_request(true);
-						schedule_local(pJob);
+						schedule_local(jobId);
 					}
 				}
 				catch( const boost::thread_interrupted & )
@@ -96,10 +98,9 @@ namespace sdpa {
 			}
 		}
 
-        void schedule(Job::ptr_t & pJob)
-        {
-          return SchedulerImpl::schedule(pJob);
-        }
+		void schedule(JobId& jobId) {
+			return SchedulerImpl::schedule(jobId);
+		}
 
 		void schedule(gwes::activity_t& act)
 		{

@@ -623,7 +623,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		if(e.from() != sdpa::daemon::GWES ) //e.to())
 			pJob->set_local(true);
 
-		ptr_scheduler_->schedule(pJob);
+		ptr_scheduler_->schedule(job_id);
 
 		if(pJob->is_local())
 		{

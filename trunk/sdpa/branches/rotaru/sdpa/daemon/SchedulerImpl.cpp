@@ -50,16 +50,18 @@ SchedulerImpl::~SchedulerImpl()
 /*
 	Schedule a job locally, send the job to GWES
 */
-void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
+void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	gwes::workflow_id_t wf_id = pJob->id().str();
+	gwes::workflow_id_t wf_id = jobId.str();
 	gwes::workflow_t::ptr_t ptrWorkflow;
 
-	// put the job into the running state
-	pJob->Dispatch();
-
 	try {
+
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		// put the job into the running state
+		pJob->Dispatch();
+
 		if( ptr_comm_handler_->gwes() )
 		{
 			// Use gwes workflow here!
@@ -81,13 +83,17 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 			ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 		}
 	}
+	catch(JobNotFoundException& ex)
+	{
+		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+	}
 	catch (std::exception& )
 	{
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
 
 		//send a JobFailed event
 		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, sdpa_result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 }
@@ -95,13 +101,15 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 /*
  * Implement here in a first phase a simple round-robin schedule
  */
-void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
+void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
 	try {
 
 		if( ptr_worker_man_ )
 		{
+			Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
@@ -109,25 +117,26 @@ void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
 			pWorker->dispatch(pJob);
 		}
 	}
+	catch(JobNotFoundException& ex)
+	{
+		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+	}
 	catch(const NoWorkerFoundException&)
 	{
 		// put the job back into the queue
-		jobs_to_be_scheduled.push(pJob);
+		jobs_to_be_scheduled.push(jobId);
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
 	}
 }
 
-void SchedulerImpl::start_job(const Job::ptr_t& pJob) {
-	SDPA_LOG_DEBUG("Start the job "<<pJob->id());
+void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
+	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
 }
 
-void SchedulerImpl::schedule(Job::ptr_t& pJob)
+void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
 {
-	ostringstream os;
-	os<<"Handle job "<<pJob->id();
-	SDPA_LOG_DEBUG(os.str());
-
-	jobs_to_be_scheduled.push(pJob);
+	SDPA_LOG_DEBUG("Handle job "<<jobId.str());
+	jobs_to_be_scheduled.push(jobId);
 }
 
 Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -218,7 +227,6 @@ void SchedulerImpl::check_post_request()
 	 }
 }
 
-
 void SchedulerImpl::run()
 {
 	SDPA_LOG_DEBUG("Scheduler thread running ...");
@@ -229,25 +237,22 @@ void SchedulerImpl::run()
 		{
 			check_post_request();
 
-			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
-			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+			Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
-			if( pJob )
+			if(pJob->is_local())
+				schedule_local(jobId);
+			else
 			{
-				if(pJob->is_local())
-					schedule_local(pJob);
-				else
-				{
-					// if it's an NRE just execute it!
-					// Attention!: an NRE has no WorkerManager!!!!
-					// or has an Worker Manager and the workers are threads
-					schedule_remote(pJob);
-				}
-
-				// if I'm not the orchestrator (i.e. either aggregator or nre)
-				// if the job queue's length is less than twice the number of workers
-				// and the elapased time since the last request is > polling_interval_time
+				// if it's an NRE just execute it!
+				// Attention!: an NRE has no WorkerManager!!!!
+				// or has an Worker Manager and the workers are threads
+				schedule_remote(jobId);
 			}
+		}
+		catch(JobNotFoundException& ex)
+		{
+			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 		}
 		catch( const boost::thread_interrupted & )
 		{
