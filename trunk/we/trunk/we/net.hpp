@@ -419,7 +419,6 @@ private:
 
 public:
   net (const pid_t & _places = 10, const tid_t & _transitions = 10)
-    throw (std::bad_alloc)
     : pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
