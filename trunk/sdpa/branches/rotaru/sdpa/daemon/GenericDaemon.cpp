@@ -97,7 +97,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 }
 
 // with network scommunicatio
-GenericDaemon::GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+GenericDaemon::GenericDaemon( const std::string name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
@@ -206,7 +206,6 @@ void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
 
 void GenericDaemon::start( const GenericDaemon::ptr_t& ptr_daemon,  sdpa::util::Config::ptr_t ptrConfig )
 {
-
 	ptr_daemon->ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
 
 	// The stage uses 2 threads
@@ -526,7 +525,9 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		ptrWorker->update(e);
 
 		// you should consume from the  worker's pending list; put the job into the worker's submitted list
-		Job::ptr_t ptrJob = ptrWorker->get_next_job(e.last_job_id());
+		sdpa::job_id_t jobId = ptrWorker->get_next_job(e.last_job_id());
+		const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
+
 		if( ptrJob.get() )
 		{
 			// put the job into the Runnig state here
@@ -913,7 +914,7 @@ void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 	sendEventToSelf(pCancelAckEvt);
 }
 
-
+/*
 void GenericDaemon::backup(std::string& strFileName)
 {
 	try
@@ -943,3 +944,4 @@ void GenericDaemon::recover(std::string& strFileName)
 		cout << e.what() << endl;
 	}
 }
+*/

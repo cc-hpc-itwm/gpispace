@@ -131,7 +131,7 @@ std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 	return v;
 }
 
-std::string JobManager::dump()
+std::string JobManager::print()
 {
 	//lock_type lock(mtx_);
 	std::ostringstream os;

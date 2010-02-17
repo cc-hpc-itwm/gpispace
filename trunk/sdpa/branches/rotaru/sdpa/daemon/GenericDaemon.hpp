@@ -44,6 +44,12 @@
 #  include <boost/statechart/exception_translator.hpp>
 #endif
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
@@ -153,16 +159,27 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
 
-	  void backup(std::string& strFileName);
-	  void recover(std::string& strFileName);
+	  template <class Archive>
+	  void serialize(Archive& ar, const unsigned int file_version )
+	  {
+		  ar & ptr_job_man_;
+		  ar & ptr_scheduler_;
+	  }
 
+	  friend class boost::serialization::access;
+	  friend class sdpa::tests::WorkerSerializationTest;
+
+	  void print() {
+	  		  ptr_job_man_->print();
+	  		  ptr_scheduler_->print();
+	  }
 
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon(const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes*);
-	  GenericDaemon(const std::string &name, const std::string&, const std::string&,sdpa::Sdpa2Gwes*);
-	  GenericDaemon( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes);
+	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes* );
+	  GenericDaemon( const std::string &name, const std::string&, const std::string&,sdpa::Sdpa2Gwes* );
+	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL );
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
@@ -182,6 +199,7 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
+
 	private:
 	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
 	  seda::comm::ServiceThread service_thread_;

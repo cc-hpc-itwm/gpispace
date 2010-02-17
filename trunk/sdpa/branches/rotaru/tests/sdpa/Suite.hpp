@@ -24,6 +24,7 @@
 #include <tests/sdpa/test_Scheduler.hpp>
 #include <tests/sdpa/test_SerializeSharedPtr.hpp>
 #include <tests/sdpa/test_SerializeJobPtr.hpp>
+#include <tests/sdpa/test_SerializeDaemonComponents.hpp>
 
 namespace sdpa { namespace tests {
   class Suite : public CPPUNIT_NS::TestFixture {
@@ -47,9 +48,10 @@ namespace sdpa { namespace tests {
 	  suiteOfTests->addTest( C2D2D2DRealGwesTest::suite() );
 	  suiteOfTests->addTest( DaemonsWithCommTest::suite() );*/
 
-      suiteOfTests->addTest( TestComponents::suite() );
-	  suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
-	  suiteOfTests->addTest( TestSerializeJobPtr::suite() );
+      //suiteOfTests->addTest( TestComponents::suite() );
+	  //suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
+	  //suiteOfTests->addTest( TestSerializeJobPtr::suite() );
+      suiteOfTests->addTest( WorkerSerializationTest::suite() );
 
       return suiteOfTests;
     }

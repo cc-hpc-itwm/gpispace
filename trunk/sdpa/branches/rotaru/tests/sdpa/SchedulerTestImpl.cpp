@@ -78,3 +78,9 @@ void SchedulerTestImpl::run()
 		}
 	}
 }
+
+void SchedulerTestImpl::print()
+{
+	jobs_to_be_scheduled.print();
+	ptr_worker_man_->print();
+}

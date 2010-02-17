@@ -25,6 +25,11 @@
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/Sdpa2Gwes.hpp>
 #include <sdpa/daemon/IComm.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <tests/sdpa/test_SerializeDaemonComponents.hpp>
 
 namespace sdpa {
 	namespace daemon {
@@ -80,7 +85,18 @@ namespace sdpa {
 	virtual void stop();
 	virtual void run();
 
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<Scheduler>(*this);
+		ar & jobs_to_be_scheduled;
+		ar & ptr_worker_man_;
+	}
 
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
+
+	void print();
   protected:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;

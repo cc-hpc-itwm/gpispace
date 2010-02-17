@@ -358,7 +358,7 @@ void TestSerializeJobPtr::testSerializeJobManager()
 	sdpa::daemon::Job::ptr_t  p5(new sdpa::daemon::JobImpl(id5, "decsription 5"));
 	pJobMan1->addJob(id5, p5);
 
-	std::cout<<pJobMan1->dump()<<std::endl;
+	std::cout<<pJobMan1->print()<<std::endl;
 
 	std::cout<<"Serialize the JobManager ..."<<std::endl;
 
@@ -392,7 +392,7 @@ void TestSerializeJobPtr::testSerializeJobManager()
 		return;
 	}
 
-	std::cout<<std::endl<<pJobMan2->dump();
+	std::cout<<std::endl<<pJobMan2->print();
 }
 
 

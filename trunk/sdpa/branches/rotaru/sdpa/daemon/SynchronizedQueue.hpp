@@ -23,6 +23,13 @@
 #include <sdpa/SDPAException.hpp>
 #include <iostream>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
+
 namespace sdpa { namespace daemon {
   class QueueException : public SDPAException
   {
@@ -175,6 +182,21 @@ namespace sdpa { namespace daemon {
     }
 
     mutex_type &mutex() { return mtx_; }
+
+    template <class Archive>
+  	void serialize(Archive& ar, const unsigned int file_version )
+  	{
+      	ar & container_;
+  	}
+
+    friend class boost::serialization::access;
+
+    void print() {
+    	for( iterator it = begin(); it!= end(); it++)
+    		std::cout<<*it<<" ";
+    	std::cout<<std::endl;
+    }
+
   private:
     mutable mutex_type mtx_;
     condition_type not_empty_;

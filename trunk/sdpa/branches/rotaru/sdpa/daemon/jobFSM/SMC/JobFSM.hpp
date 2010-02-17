@@ -58,7 +58,6 @@ namespace sdpa { namespace fsm { namespace smc {
 				ar & boost::serialization::base_object<JobImpl>(*this);
 			}
 
-
 			sdpa::status_t getStatus() { return m_status_; }
 			JobFSMContext& GetContext() { return m_fsmContext; }
 		private:

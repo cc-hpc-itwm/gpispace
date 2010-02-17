@@ -246,14 +246,14 @@ void TestComponents::testComponents()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:6000", "workflows" );
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:6001","orchestrator_0", "127.0.0.1:6000");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
-	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:6002","aggregator_0", "127.0.0.1:6001", "127.0.0.1:8000" );
-	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:6003","aggregator_0", "127.0.0.1:6001" );
+	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
+	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
     {

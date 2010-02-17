@@ -22,6 +22,7 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <gwes/IActivity.h>
+#include <boost/serialization/access.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -38,7 +39,15 @@ namespace daemon {
 	 virtual void start()=0;
 	 virtual void stop()=0;
 	 virtual void run()=0;
+	 virtual void print()=0;
+
+	 friend class boost::serialization::access;
+	 template<class Archive>
+		void serialize(Archive&, const unsigned int /* file version */){}
   };
 }}
+
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Scheduler )
 
 #endif

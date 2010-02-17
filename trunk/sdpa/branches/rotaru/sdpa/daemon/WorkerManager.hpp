@@ -20,6 +20,11 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -42,6 +47,19 @@ namespace sdpa { namespace daemon {
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
+
+	  template <class Archive>
+	  void serialize(Archive& ar, const unsigned int file_version )
+	  {
+		  ar & worker_map_;
+	  }
+
+	  friend class boost::serialization::access;
+
+	  void print() {
+		  for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
+			 (*it).second->print();
+	  }
 
 	  worker_map_t worker_map_;
   protected:

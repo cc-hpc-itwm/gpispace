@@ -5,6 +5,12 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <boost/thread.hpp>
+#include <sdpa/daemon/IComm.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <tests/sdpa/test_SerializeDaemonComponents.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 using namespace sdpa::daemon;
 
@@ -29,9 +35,20 @@ class SchedulerTestImpl : public Scheduler {
     void stop();
     void run();
 
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & jobs_to_be_scheduled;
+		ar & ptr_worker_man_;
+	}
 
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
+
+	void print();
   private:
 	  JobQueue jobs_to_be_scheduled;
+	  WorkerManager::ptr_t ptr_worker_man_;
 
 	  bool bStopRequested;
 	  boost::thread m_thread;

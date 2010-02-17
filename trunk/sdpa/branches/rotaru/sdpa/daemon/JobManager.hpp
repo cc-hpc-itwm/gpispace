@@ -26,6 +26,7 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -50,7 +51,7 @@ namespace sdpa { namespace daemon {
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
 
-	  std::string dump();
+	  std::string print();
 	  size_t number_of_jobs() { return job_map_.size(); }
 
 	  template <class Archive>

@@ -65,6 +65,13 @@ namespace sdpa {
 
 		void run()
 		{
+			if(!ptr_comm_handler_)
+			{
+				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+				stop();
+				return;
+			}
+
 			SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 			while(!bStopRequested)
@@ -144,6 +151,13 @@ namespace sdpa {
 		void execute(const gwes::activity_t& activity) throw (std::exception)
 		{
 			SDPA_LOG_DEBUG("Execute activity ...");
+
+			if(!ptr_comm_handler_)
+			{
+				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+				stop();
+				return;
+			}
 
 			gwes::Activity& gwes_act = (gwes::Activity&)(activity);
 			sdpa::wf::Activity result;
@@ -229,6 +243,13 @@ namespace sdpa {
 
 		 bool post_request(bool force=false)
 		 {
+			 if(!ptr_comm_handler_)
+			{
+				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+				stop();
+				return false;
+			}
+
 			DMLOG(TRACE, "post request: force=" << force);
 			bool bReqPosted = false;
 			sdpa::util::time_type current_time = sdpa::util::now();

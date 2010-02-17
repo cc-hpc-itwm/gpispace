@@ -28,7 +28,7 @@ using namespace std;
 SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
-  , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
+  , SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name():"tests::sdpa::SchedulerImpl")
   , m_timeout(boost::posix_time::milliseconds(100))
   , m_last_request_time(0)
   , m_last_life_sign_time(0)
@@ -81,6 +81,12 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 			sdpa::job_result_t sdpa_result;
 			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
 			ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+
+			if(!ptr_comm_handler_)
+		    {
+				stop();
+				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		    }
 		}
 	}
 	catch(JobNotFoundException& ex)
@@ -105,6 +111,13 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
 	try {
+		if(!ptr_comm_handler_)
+		{
+			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+			stop();
+			return;
+		}
+
 
 		if( ptr_worker_man_ )
 		{
@@ -114,7 +127,9 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
 			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-			pWorker->dispatch(pJob);
+
+			pJob->worker() = pWorker->name();
+			pWorker->dispatch(jobId);
 		}
 	}
 	catch(JobNotFoundException& ex)
@@ -159,6 +174,12 @@ void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
 void SchedulerImpl::start()
 {
    bStopRequested = false;
+   if(!ptr_comm_handler_)
+   {
+	   SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+	   return;
+   }
+
    m_thread = boost::thread(boost::bind(&SchedulerImpl::run, this));
    SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
@@ -176,6 +197,13 @@ void SchedulerImpl::stop()
 
 bool SchedulerImpl::post_request(bool force)
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return false;
+	}
+
 	bool bReqPosted = false;
 	sdpa::util::time_type current_time = sdpa::util::now();
 	sdpa::util::time_type difftime = current_time - m_last_request_time;
@@ -199,6 +227,13 @@ bool SchedulerImpl::post_request(bool force)
 
 void SchedulerImpl::send_life_sign()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return ;
+	}
+
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
@@ -216,6 +251,13 @@ void SchedulerImpl::send_life_sign()
 
 void SchedulerImpl::check_post_request()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return;
+	}
+
 	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 {
 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
@@ -229,6 +271,13 @@ void SchedulerImpl::check_post_request()
 
 void SchedulerImpl::run()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return;
+	}
+
 	SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 	while(!bStopRequested)
@@ -268,4 +317,10 @@ void SchedulerImpl::run()
 		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
 		}
 	}
+}
+
+void SchedulerImpl::print()
+{
+	jobs_to_be_scheduled.print();
+	ptr_worker_man_->print();
 }
