@@ -257,20 +257,20 @@ void TestComponents::testComponents()
 
     try
     {
-	  unit_tests::NRE::start(ptrNRE_0);
-	  //sdpa::daemon::NRE::start(ptrNRE_1);
+    	unit_tests::NRE::start(ptrNRE_0);
+    	//sdpa::daemon::NRE::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
-      LOG(FATAL, "could not start NRE: " << ex.what());
-      LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
-      /* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
-      sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-      sdpa::daemon::Aggregator::shutdown(ptrAgg);
-      unit_tests::NRE::shutdown(ptrNRE_0);
-      //sdpa::daemon::NRE::shutdown(ptrNRE_1);
+    	LOG(FATAL, "could not start NRE: " << ex.what());
+    	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+    	/* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
+    	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+    	sdpa::daemon::Aggregator::shutdown(ptrAgg);
+    	unit_tests::NRE::shutdown(ptrNRE_0);
+    	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
-      return;
+    	return;
     }
 
 	for(int k=0; k<m_nITER; k++ )

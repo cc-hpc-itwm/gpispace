@@ -43,7 +43,7 @@ NRE :: NRE(  const std::string& name, const std::string& url,
 
 	//attach gui observer
 	SDPA_LOG_DEBUG("Attach GUI observer ...");
-	attach_observer( &m_guiServ );
+	attach_observer(&m_guiServ);
 }
 
 NRE :: ~NRE()

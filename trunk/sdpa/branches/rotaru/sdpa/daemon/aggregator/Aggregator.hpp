@@ -26,8 +26,8 @@ namespace sdpa {
 			typedef sdpa::shared_ptr<Aggregator> ptr_t;
 			SDPA_DECLARE_LOGGER();
 
-			Aggregator( const std::string& name, const std::string& url,
-						const std::string& masterName, const std::string& masterUrl );
+			Aggregator( const std::string& name = "", const std::string& url = "",
+						const std::string& masterName = "", const std::string& masterUrl = "");
 
 			virtual ~Aggregator();
 
@@ -49,6 +49,15 @@ namespace sdpa {
 			const std::string& url() const {return url_;}
 			const std::string& masterName() const { return masterName_; }
 			const std::string& masterUrl() const { return masterUrl_; }
+
+			template <class Archive>
+			void serialize(Archive& ar, const unsigned int file_version )
+			{
+				ar & boost::serialization::base_object<DaemonFSM>(*this);
+			}
+
+			friend class boost::serialization::access;
+			friend class sdpa::tests::WorkerSerializationTest;
 
 			private:
 			const std::string url_;

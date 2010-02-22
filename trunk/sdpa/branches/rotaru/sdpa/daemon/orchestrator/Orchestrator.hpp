@@ -25,7 +25,7 @@ namespace daemon {
 		typedef sdpa::shared_ptr<Orchestrator> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
-		Orchestrator( const std::string &name,  const std::string& url, const std::string &workflow_directory );
+		Orchestrator( const std::string &name = "",  const std::string& url = "", const std::string &workflow_directory = "" );
 
 		virtual ~Orchestrator();
 
@@ -46,6 +46,16 @@ namespace daemon {
 		void handleRetrieveResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
 		const std::string& url() const {return url_;}
+
+		template <class Archive>
+		void serialize(Archive& ar, const unsigned int file_version )
+		{
+			ar & boost::serialization::base_object<DaemonFSM>(*this);
+		}
+
+		friend class boost::serialization::access;
+		friend class sdpa::tests::WorkerSerializationTest;
+
 
 	  private:
 		const std::string url_;

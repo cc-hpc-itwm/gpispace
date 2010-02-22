@@ -54,7 +54,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 				const std::string& toMasterStageName,
 				const std::string& toSlaveStageName = std::string(""));
 
-	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes );
+	DaemonFSM( const std::string &name = "", sdpa::Sdpa2Gwes*  pArgSdpa2Gwes = NULL);
 
 	virtual ~DaemonFSM();
 
@@ -63,6 +63,15 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	virtual void process_event( const boost::statechart::event_base & e) {
 		 sc::state_machine<DaemonFSM, Down>::process_event(e);
 	}
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<GenericDaemon>(*this);
+	}
+
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
 
 	void print_states();
 private:

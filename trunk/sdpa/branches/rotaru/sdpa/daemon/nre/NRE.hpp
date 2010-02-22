@@ -33,10 +33,9 @@ namespace sdpa {
 		typedef sdpa::shared_ptr<NRE> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
-		NRE( const std::string& name, const std::string& url,
-			 const std::string& masterName, const std::string& masterUrl,
-			 const std::string& workerUrl,
-			 const std::string& guiUrl,
+		NRE( const std::string& name = "", const std::string& url = "",
+			 const std::string& masterName = "", const std::string& masterUrl = "",
+			 const std::string& workerUrl = "", const std::string& guiUrl = "",
 			 bool bExtSched = false );
 
 		virtual ~NRE();
@@ -66,6 +65,16 @@ namespace sdpa {
 		void activityFinished(const gwes::activity_t& act);
 		void activityFailed(const gwes::activity_t& act);
 		void activityCancelled(const gwes::activity_t& act);
+
+		template <class Archive>
+		void serialize(Archive& ar, const unsigned int file_version )
+		{
+			ar & boost::serialization::base_object<DaemonFSM>(*this);
+		}
+
+		friend class boost::serialization::access;
+		friend class sdpa::tests::WorkerSerializationTest;
+
 
 	  protected:
 		const std::string url_;

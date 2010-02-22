@@ -55,7 +55,7 @@ namespace sdpa {
 						SDPA_LOG_DEBUG("Daemon state machine created");
 					}
 
-			     	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes* pArgSdpa2Gwes )
+			     	DaemonFSM( const std::string &name = "", sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL )
 						: GenericDaemon(name, pArgSdpa2Gwes),
 						  SDPA_INIT_LOGGER(name+"FSM"),
 						  m_fsmContext(*this)
@@ -70,6 +70,16 @@ namespace sdpa {
 					void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
 
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
+
+					template <class Archive>
+					void serialize(Archive& ar, const unsigned int file_version )
+					{
+						ar & boost::serialization::base_object<GenericDaemon>(*this);
+					}
+
+					friend class boost::serialization::access;
+					friend class sdpa::tests::WorkerSerializationTest;
+
 
 				protected:
 

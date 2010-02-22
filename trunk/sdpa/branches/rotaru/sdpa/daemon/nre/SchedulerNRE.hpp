@@ -37,9 +37,9 @@ namespace sdpa {
 
 		SDPA_DECLARE_LOGGER();
 
-		SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string workerUrl ):
+		SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = ""):
 			sdpa::daemon::SchedulerImpl(pHandler),
-			SDPA_INIT_LOGGER("Scheduler "+pHandler->name()),
+			SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE")),
 	        m_worker_(workerUrl)
 			{
 				m_worker_.set_ping_interval(60);
