@@ -81,7 +81,7 @@ namespace Function { namespace Transition
   }
 
   template<typename Token>
-  Token get_token
+  const Token & get_token
   (const typename Traits<Token>::token_input_t & token_input)
   {
     return token_input.first;
@@ -95,7 +95,7 @@ namespace Function { namespace Transition
   }
 
   template<typename Token>
-  pid_t get_token
+  const Token & get_token
   (const typename Traits<Token>::token_on_place_t & token_on_place)
   {
     return token_on_place.first;
