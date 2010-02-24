@@ -31,6 +31,7 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -51,9 +52,76 @@ void WorkerSerializationTest::setUp() {
 void WorkerSerializationTest::tearDown() {
 }
 
+void WorkerSerializationTest::testSchedulerNRESerialization()
+{
+	std::cout<<std::endl<<"----------------Begin  testSchedulerNRESerialization----------------"<<std::endl;
+	std::string filename = "testSerializeSchedulerNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+	Scheduler::ptr_t pSchedulerNRE(new SchedulerNRE());
+
+	int nSchedQSize = 5;
+	for(int i=0; i<nSchedQSize; i++)
+	{
+		std::ostringstream ossJobId;;
+		ossJobId<<"Job_"<<i;
+		sdpa::job_id_t jobId(ossJobId.str());
+		dynamic_cast<SchedulerNRE*>(pSchedulerNRE.get())->jobs_to_be_scheduled.push(jobId);
+	}
+
+	int nWorkers=0; // No worker
+
+	DummyActivity act1("activity 1", "workflow 0");
+	DummyActivity act2("activity 2", "workflow 0");
+	DummyActivity act3("activity 3", "workflow 0");
+
+	pSchedulerNRE->schedule(act1);
+	pSchedulerNRE->schedule(act2);
+	pSchedulerNRE->schedule(act3);
+
+	// serialize now the job queue
+	try
+	{
+		std::cout<<"----------------The SchedulerNRE's content before the backup is:----------------"<<std::endl;
+		pSchedulerNRE->print();
+		std::ofstream ofs(filename.c_str());
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<SchedulerNRE*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		//oa.register_type(static_cast<DummyActivity*>(NULL)); IActivity should contain a serialization function!!!
+		oa << pSchedulerNRE;
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: "<< e.what() << endl;
+		return;
+	}
+
+	// restore state to one equivalent to the original
+	try
+	{
+		Scheduler::ptr_t pSchedRest;
+		// open the archive
+		std::ifstream ifs(filename.c_str());
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<SchedulerNRE*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		//ia.register_type(static_cast<DummyActivity*>(NULL));
+		// restore the schedule from the archive
+		ia >> pSchedRest;
+		std::cout<<"----------------The SchedulerNRE's content after the backup is:----------------"<<std::endl;
+		pSchedRest->print();
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: "<< e.what() << endl;
+		return;
+	}
+
+	std::cout<<std::endl<<"----------------End  testSchedulerNRESerialization----------------"<<std::endl;
+}
+
 void WorkerSerializationTest::testNRESerialization()
 {
-	/*std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
+	std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
 	std::string filename = "testSerializeNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
 
@@ -103,7 +171,7 @@ void WorkerSerializationTest::testNRESerialization()
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
 		oa.register_type(static_cast<SchedulerNRE*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
-		oa.register_type(static_cast< sdpa::daemon::NRE*>(NULL));
+		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		oa << ptrNRE_0;
 	}
 	catch(exception &e)
@@ -123,7 +191,7 @@ void WorkerSerializationTest::testNRESerialization()
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		ia.register_type(static_cast<SchedulerNRE*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		ia.register_type(static_cast< sdpa::daemon::NRE*>(NULL));
+		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		ia >> ptrRestoredNRE_0;
 
 		std::cout<<std::endl<<"----------------The restored content of the NRE is:----------------"<<std::endl;
@@ -136,7 +204,7 @@ void WorkerSerializationTest::testNRESerialization()
 	}
 
 	std::cout<<std::endl<<"----------------End  NRE----------------"<<std::endl;
-	*/
+
 }
 
 void WorkerSerializationTest::testAggregatorSerialization()

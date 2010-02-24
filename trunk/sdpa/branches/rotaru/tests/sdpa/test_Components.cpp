@@ -184,7 +184,7 @@ namespace unit_tests {
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(1),
+    m_nITER(10),
     m_sleep_interval(1000000)
 {
 }

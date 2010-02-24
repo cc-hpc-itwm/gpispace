@@ -37,6 +37,12 @@
 #include <map>
 #include <boost/thread.hpp>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
 
 using namespace sdpa;
 using namespace gwes;
@@ -57,7 +63,7 @@ typedef map_t::value_type id_pair;
 class DummyWorkflow : public gwes::workflow_t
 {
   public:
-    DummyWorkflow(const sdpa::job_desc_t& /* desc */ ) : gwes::workflow_t("") { }
+    DummyWorkflow(const sdpa::job_desc_t& = "" /* desc */ ) : gwes::workflow_t("") { }
 
     const gwes::workflow_id_t &getID() const { return wf_id_; }
     void setID(const gwes::workflow_id_t &id) { wf_id_ = id; }
@@ -65,7 +71,7 @@ class DummyWorkflow : public gwes::workflow_t
     std::string serialize() const { return "serialized workflow"; }
     void deserialize(const std::string &) {}
     gwdl::Place::ptr_t &getPlace(const std::string& /* id */) throw (gwdl::NoSuchWorkflowElement)
-  {
+    {
 	  static gwdl::Place::ptr_t place_holder;
 	  return place_holder;
 	}
@@ -74,15 +80,22 @@ class DummyWorkflow : public gwes::workflow_t
 	{
 	  return gwdl::workflow_result_t();
 	}
+
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+    	ar & boost::serialization::base_object<gwes::workflow_t>(*this);
+		ar & wf_id_;
+	}
+
   private:
     gwes::workflow_id_t wf_id_;
 };
 
-
 class DummyActivity : public gwes::activity_t
 {
   public:
-    DummyActivity(  gwes::activity_id_t act_id_arg, gwes::workflow_id_t owner_wf_id_arg )
+    DummyActivity( const gwes::activity_id_t& act_id_arg = "", const gwes::workflow_id_t& owner_wf_id_arg = "")
     {
       act_id_ = act_id_arg;
       owner_wf_id_ = owner_wf_id_arg;
@@ -101,6 +114,14 @@ class DummyActivity : public gwes::activity_t
       return pWf;
     }
 
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<gwes::activity_t>(*this);
+		ar & act_id_;
+		ar & owner_wf_id_;
+	}
+
   private:
     gwes::activity_id_t act_id_;
     gwes::workflow_id_t owner_wf_id_;
@@ -115,10 +136,10 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     typedef boost::unique_lock<mutex_type> lock_type;
 
     DummyGwes() : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
-  {
-    ptr_Gwes2SdpaHandler = NULL;
-    SDPA_LOG_DEBUG("Dummy workflow engine created ...");
-  }
+	{
+    	ptr_Gwes2SdpaHandler = NULL;
+    	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
+    }
 
     /**
      * Notify the GWES that an activity has been dispatched
@@ -367,6 +388,14 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     	SDPA_LOG_ERROR("Removed the workflow ...");
 	}
 
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+    	ar & boost::serialization::base_object<sdpa::Sdpa2Gwes>(*this);
+		ar & map_wf_act_ids_;
+	}
+
+
   private:
     mutable Gwes2Sdpa *ptr_Gwes2SdpaHandler;
     map_t map_wf_act_ids_;
@@ -375,5 +404,10 @@ class DummyGwes : public sdpa::Sdpa2Gwes {
     /*workflow_id_t wf_id_orch;
       activity_id_t act_id;*/
 };
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(DummyActivity)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(DummyWorkflow)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::Sdpa2Gwes)
+
 
 #endif //DUMMY_WORKFLOW_HPP

@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #include "test_D2D2DDummyGwes.hpp"
-#include <DaemonTestUtil.h>
+#include <tests/sdpa/DaemonTestUtil.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyGwesTest );
 

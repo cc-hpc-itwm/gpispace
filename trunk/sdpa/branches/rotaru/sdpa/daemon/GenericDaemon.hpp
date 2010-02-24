@@ -169,7 +169,7 @@ namespace sdpa { namespace daemon {
 	  friend class boost::serialization::access;
 	  friend class sdpa::tests::WorkerSerializationTest;
 
-	  void print() {
+	  virtual void print() {
 	  		  ptr_job_man_->print();
 	  		  ptr_scheduler_->print();
 	  }

@@ -304,6 +304,27 @@ namespace sdpa {
 			 }
 		 }
 
+		template <class Archive>
+		void serialize(Archive& ar, const unsigned int file_version )
+		{
+			ar & boost::serialization::base_object<SchedulerImpl>(*this);
+			// gwes should provide support for the serialization of the activities
+			// ar & activities_to_be_executed;
+		}
+
+		friend class boost::serialization::access;
+		friend class sdpa::tests::WorkerSerializationTest;
+
+		void print() {
+			SchedulerImpl::print();
+
+			/*std::cout<<"Scheduled activities: "<<std::endl;
+			for( ActivityQueue::iterator it = activities_to_be_executed.begin(); it!= activities_to_be_executed.end(); it++)
+				std::cout<<(*it)->getID()<<" ";
+
+			std::cout<<std::endl;*/
+		}
+
 	protected:
 		ActivityQueue activities_to_be_executed;
 		boost::thread m_threadExecutor;
