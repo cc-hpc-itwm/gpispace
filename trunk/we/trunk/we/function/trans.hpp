@@ -214,7 +214,7 @@ namespace Function { namespace Transition
   };
 
   template<typename Token, typename Descr>
-  Token apply_const ( const Descr &
+  Token const & apply_const ( const Descr &
                     , const typename Traits<Token>::token_input_t & token_input
                     , const typename Traits<Token>::place_via_edge_t &
                     )
