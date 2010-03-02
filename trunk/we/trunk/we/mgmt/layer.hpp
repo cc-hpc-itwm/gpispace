@@ -19,6 +19,8 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
+#include <cassert>
+
 #include <we/util/warnings.hpp>
 #include <we/concurrent/net.hpp>
 
@@ -152,6 +154,7 @@ namespace we { namespace mgmt {
 	typedef typename net_type::transition_type transition_type;
 	typedef typename net_type::token_type token_type;
 
+
 	/******************************
 	 * EXTERNAL API
 	 *****************************/
@@ -256,6 +259,15 @@ namespace we { namespace mgmt {
 	  we::util::remove_unused_variable_warning(id);
 	  throw std::runtime_error("not yet implemented");
 	}
+
+  public:
+	explicit
+	layer(exec_layer_type & exec_layer)
+	  : exec_layer_(exec_layer)
+	{ }
+
+  private:
+	exec_layer_type & exec_layer_;
   };
 }}
 

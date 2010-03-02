@@ -7,9 +7,17 @@ using namespace we::mgmt;
 
 typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
 
-struct sdpa_exec
+template <typename Net = pnet_t>
+struct sdpa_daemon
 {
+  typedef Net net_type;
+  typedef typename we::mgmt::layer<sdpa_daemon, net_type> mgmt_layer_type;
 
+  sdpa_daemon()
+	: mgmt_layer(*this)
+  {}
+
+  mgmt_layer_type mgmt_layer;
 };
 
 int main ()
@@ -23,12 +31,13 @@ int main ()
   std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
 
   // instantiate layer
-  typedef layer<sdpa_exec, pnet_t> pnet_mgmt_layer_t;
-  pnet_mgmt_layer_t mgmt_layer;
+  typedef sdpa_daemon<> daemon_type;
+  daemon_type daemon;
+  daemon_type::mgmt_layer_type & mgmt_layer = daemon.mgmt_layer;
 
   for (std::size_t i (0); i < 10; ++i)
   {
-	pnet_mgmt_layer_t::id_type id = mgmt_layer.submit("");
+	daemon_type::mgmt_layer_type::id_type id = mgmt_layer.submit("");
 	std::cout << "id=" << id << std::endl;
 	mgmt_layer.cancel(id, "");
 	mgmt_layer.failed(id, "");
