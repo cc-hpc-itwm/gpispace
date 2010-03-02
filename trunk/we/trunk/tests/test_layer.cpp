@@ -7,6 +7,11 @@ using namespace we::mgmt;
 
 typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
 
+struct sdpa_exec
+{
+
+};
+
 int main ()
 {
   std::cout << "running layer test..." << std::endl;
@@ -16,6 +21,20 @@ int main ()
   std::cout << net << std::endl;
 
   std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
+
+  // instantiate layer
+  typedef layer<sdpa_exec, pnet_t> pnet_layer_t;
+  pnet_layer_t pnet_layer;
+
+  for (std::size_t i (0); i < 10; ++i)
+  {
+	pnet_layer_t::id_type id = pnet_layer.submit("");
+	std::cout << "id=" << id << std::endl;
+	pnet_layer.cancel(id, "");
+	pnet_layer.failed(id, "");
+	pnet_layer.finished(id, "");
+	pnet_layer.status(id);
+  }
 
   return EXIT_SUCCESS;
 }
