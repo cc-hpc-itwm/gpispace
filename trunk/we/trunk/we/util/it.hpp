@@ -9,15 +9,18 @@
 
 namespace it
 {
-  template<typename IT>
+  template<typename IT, typename SizeType=std::size_t>
   class it
   {
+  public:
+	typedef SizeType size_type;
+
   protected:
     IT pos;
     const IT end;
     typedef it<IT> super;
   private:
-    const std::size_t the_size;
+    const size_type the_size;
   public:
     explicit it (const IT & _pos, const IT & _end)
       : pos (_pos)
@@ -28,7 +31,7 @@ namespace it
     bool has_more (void) const { return (pos != end) ? true : false; }
     void operator ++ (void) { ++pos; }
 
-    std::size_t size (void) const { return the_size; }
+    size_type size (void) const { return the_size; }
   };
 }
 

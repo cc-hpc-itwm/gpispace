@@ -65,6 +65,7 @@ public:
   typedef bijection::const_it<Place,pid_t> place_const_it;
   typedef bijection::const_it<Transition,tid_t> transition_const_it;
   typedef bijection::const_it<Edge,eid_t> edge_const_it;
+  typedef typename place_const_it::size_type size_type;
 
   typedef multirel::right_const_it<Token, pid_t> token_place_it;
 
@@ -439,9 +440,9 @@ public:
   {};
 
   // numbers of elements
-  pid_t get_num_places (void) const { return places().size(); }
-  tid_t get_num_transitions (void) const { return transitions().size(); }
-  eid_t get_num_edges (void) const { return edges().size(); }
+  size_type get_num_places (void) const { return places().size(); }
+  size_type get_num_transitions (void) const { return transitions().size(); }
+  size_type get_num_edges (void) const { return edges().size(); }
 
   // condition+transition function accessores
   const trans_t & get_trans (const tid_t & tid) const
