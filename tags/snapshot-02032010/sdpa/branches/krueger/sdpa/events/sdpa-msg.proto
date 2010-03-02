@@ -1,0 +1,97 @@
+package sdpa.events;
+option optimize_for = SPEED;
+
+message SDPAMessage {
+    optional Error     error = 1;
+
+    optional SubmitJob submit_job = 2;
+    optional SubmitJobAck submit_job_ack = 3;
+
+    optional CancelJob cancel_job = 4;
+    optional CancelJobAck cancel_job_ack = 5;
+
+    optional JobStatusRequest job_status_request = 6;
+    optional JobStatusReply job_status = 7;
+
+    optional JobFinished job_finished = 8;
+    optional JobFinishedAck job_finished_ack = 9;
+    optional JobFailed   job_failed = 10;
+    optional JobFailedAck job_failed_ack = 11;
+
+    optional LifeSignal life_signal = 12;
+
+    optional ConfigRequest config_request = 13;
+    optional ConfigReply   config_reply = 14;
+}
+
+enum ErrorCode {
+    OK = 0;
+}
+
+enum JobState {
+    UNKNOWN = 0;
+    PENDING = 1;
+    RUNNING = 2;
+    FINISHED = 3;
+    FAILED = 4;
+    CANCELLED = 5;
+    CANCELLING = 6;
+}
+
+message Error {
+    required ErrorCode error_code = 1;
+    required string error_description = 2;
+}
+
+message Token {
+    required bytes place = 1;
+    required bytes token = 2;
+}
+
+message SubmitJob {
+    required bytes workflow = 1;
+    repeated Token input = 2;
+}
+message SubmitJobAck {
+    required bytes job_id = 1;
+}
+
+message CancelJob {
+    required bytes job_id = 1;
+    optional string reason = 2;
+}
+message CancelJobAck {
+    required bytes job_id = 1;
+}
+
+message JobStatusRequest {
+    required bytes job_id = 1;
+}
+
+message JobStatusReply {
+    required bytes job_id = 1;
+    required JobState state = 2;
+}
+
+message JobFinished {
+    required bytes job_id = 1;
+}
+message JobFinishedAck {
+    required bytes job_id = 1;
+}
+message JobFailed {
+    required bytes job_id = 1;
+}
+message JobFailedAck {
+    required bytes job_id = 1;
+}
+message LifeSignal {
+    required fixed64 timestamp = 1;
+    required bytes component_id = 2;
+}
+message ConfigRequest {
+    required bytes component_id = 1;
+}
+message ConfigReply {
+    required bytes component_id = 1;
+}

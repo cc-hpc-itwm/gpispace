@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
+#ifndef NOSUCHWORKFLOWELEMENT_H_
+#define NOSUCHWORKFLOWELEMENT_H_
+// std
+#include <string>
+#include <stdexcept>
+
+namespace gwdl
+{
+
+/**
+ * This Exception is thrown when a workflow element is requested, which is not available within the workflow.
+ * 
+ * @version $Id$
+ * @author Andreas Hoheisel and Helge Ros&eacute; &copy; 2008 <a href="http://www.first.fraunhofer.de/">Fraunhofer FIRST</a>  
+ */ 
+class NoSuchWorkflowElement : public std::runtime_error {
+public:
+        explicit
+		NoSuchWorkflowElement(const std::string& a_message) 
+          : std::runtime_error(a_message)
+		{
+		}
+
+        ~NoSuchWorkflowElement() throw () {}
+};
+
+}
+
+#endif /*NOSUCHWORKFLOWELEMENT_H_*/

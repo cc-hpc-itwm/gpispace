@@ -1,0 +1,305 @@
+/* 
+   Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
+
+   This file is part of seda.
+
+   seda is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
+
+   seda is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with seda; see the file COPYING.  If not, write to
+   the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  
+
+*/
+
+/*
+ * =====================================================================================
+ *
+ *       Filename:  UDPConnection.cpp
+ *
+ *    Description:  implementation of the udp-connection
+ *
+ *        Version:  1.0
+ *        Created:  10/23/2009 01:16:56 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
+
+#include "UDPConnection.hpp"
+#include <fhglog/fhglog.hpp>
+#include <sstream>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include "Serialization.hpp"
+
+using boost::asio::ip::udp;
+
+namespace seda { namespace comm {
+  UDPConnection::UDPConnection(const Locator::ptr_t &a_locator
+                             , const std::string &a_logical_name)
+    : Connection()
+    , locator_(a_locator)
+    , logical_name_(a_logical_name)
+    , host_()
+    , port_()
+    , io_service_()
+    , sender_endpoint_()
+    , socket_(NULL)
+    , recv_waiting_(0)
+    , service_thread_(NULL)
+    , barrier_(2)
+  {
+    Locator::location_t my_loc(a_locator->lookup(name()));
+    host_ = my_loc.host();
+    port_ = my_loc.port();
+  }
+
+  UDPConnection::UDPConnection(const Locator::ptr_t &a_locator
+                             , const std::string &a_logical_name
+                             , const Locator::location_t::host_t &a_host
+                             , const Locator::location_t::port_t &a_port)
+    : Connection()
+    , locator_(a_locator)
+    , logical_name_(a_logical_name)
+    , host_(a_host)
+    , port_(a_port)
+    , io_service_()
+    , sender_endpoint_()
+    , socket_(NULL)
+    , recv_waiting_(0)
+    , service_thread_(NULL)
+    , barrier_(2)
+  {}
+
+  UDPConnection::~UDPConnection()
+  {
+    try
+    {
+      stop();
+    }
+    catch (const std::exception &ex)
+    {
+      LOG(ERROR, "exception during connection destructor: " << ex.what());
+    }
+    catch (...)
+    {
+      LOG(ERROR, "unknown exception during connection destructor");
+    }
+  }
+
+  void UDPConnection::start()
+  {
+    if (service_thread_)
+    {
+      LOG(DEBUG, "still running, cannot start again");
+      return;
+    }
+
+    io_service_.reset();
+
+    DLOG(TRACE, "host = " << host() << " port = " << port());
+    udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
+    DLOG(TRACE, "starting UDPConnection(" << name() << ") on " << my_endpoint);
+
+    socket_ = new udp::socket(io_service_, my_endpoint);
+    udp::endpoint real_endpoint = socket_->local_endpoint();
+
+    socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
+        boost::bind(&UDPConnection::handle_receive_from, this,
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+    locator_->insert(name(), real_endpoint.address().to_string(), real_endpoint.port());
+
+    DLOG(TRACE, "starting service thread");
+    service_thread_ = new boost::thread(boost::ref(*this));
+    barrier_.wait();
+    LOG(INFO, "started UDPConnection(" << name() << ") on " << real_endpoint);
+  }
+
+  void UDPConnection::stop()
+  {
+    if (service_thread_)
+    {
+      DLOG(DEBUG, "stopping UDPConnection(" << name() << ")");
+      locator_->remove(name());
+
+      DLOG(TRACE, "interrupting service thread");
+      service_thread_->interrupt(); 
+      io_service_.stop();
+      DLOG(TRACE, "joining service thread");
+      service_thread_->join();
+      DLOG(TRACE, "service thread finished");
+      delete service_thread_;
+      service_thread_ = NULL;
+
+      if (socket_)
+      {
+        socket_->close();
+        delete socket_;
+        socket_ = NULL;
+      }
+      LOG(INFO, "stopped UDPConnection(" << name() << ")");
+    }
+  }
+
+  void UDPConnection::handle_receive_from(const boost::system::error_code &error
+                                        , size_t bytes_recv)
+  {
+    if (!error && bytes_recv > 0)
+    {
+      data_[bytes_recv] = 0;
+      std::string tmp(data_, bytes_recv);
+
+      DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
+
+      try
+      {
+        std::stringstream sstr(tmp);
+        boost::archive::text_iarchive ia(sstr);
+
+        seda::comm::SedaMessage msg;
+        ia >> msg;
+
+        {
+          // update location
+          locator_->insert(msg.from(), sender_endpoint_.address().to_string(), sender_endpoint_.port());
+        }
+        
+        if (! has_listeners())
+        {
+          boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+          incoming_messages_.push_back(msg);
+          recv_cond_.notify_one();
+        }
+        else
+        {
+          if (recv_waiting_)
+          {
+            boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+            incoming_messages_.push_back(msg);
+            recv_cond_.notify_one();
+          }
+          else
+          {
+            notifyListener(msg);
+          }
+        }
+      } catch (const std::exception &ex) {
+        LOG(ERROR, "could not decode message: " << ex.what());
+      } catch (...) {
+        LOG(ERROR, "could not decode message due to an unknwon reason");
+      }
+
+      socket_->async_receive_from(
+          boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&UDPConnection::handle_receive_from, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    }
+    else
+    {
+      LOG(ERROR, "error during receive: " << error);
+      socket_->async_receive_from(
+          boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&UDPConnection::handle_receive_from, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    }
+  }
+
+  void UDPConnection::send(const seda::comm::SedaMessage &m)
+  {
+    if (service_thread_ == NULL)
+    {
+      LOG(ERROR, "the connection has not been started!");
+      throw std::runtime_error("Connection not started!");
+    }
+
+    const Locator::location_t &loc(locator_->lookup(m.to()));
+
+    udp::resolver resolver(io_service_);
+    udp::resolver::query query(udp::v4(), loc.host(), "0");
+    udp::endpoint dst = *resolver.resolve(query);
+    dst.port(loc.port());
+    LOG(DEBUG, "sending " << m.str() << " to " << dst);
+
+    boost::system::error_code ignored_error;
+
+    std::stringstream sstr;
+    boost::archive::text_oarchive oa(sstr);
+    oa << m;
+
+    socket_->send_to(boost::asio::buffer(sstr.str()), dst, 0, ignored_error);
+    DLOG(DEBUG, "error = " << ignored_error);
+  }
+
+  template <typename T> struct recv_waiting_mgr {
+    public:
+      recv_waiting_mgr(T *count)
+        : cnt(count)
+      {
+        *cnt++;
+      }
+
+      ~recv_waiting_mgr()
+      {
+        *cnt--;
+      }
+    private:
+      T *cnt;
+  };
+
+  bool UDPConnection::recv(SedaMessage &msg, const bool block) throw(boost::thread_interrupted)
+  {
+    boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+
+    recv_waiting_mgr<std::size_t> waiting_mgr(&recv_waiting_);
+
+    if (block)
+    {
+      while (incoming_messages_.empty())
+      {
+        recv_cond_.wait(lock);
+      }
+
+      msg = incoming_messages_.front();
+      incoming_messages_.pop_front();
+      return true;
+    }
+    else
+    {
+      if (incoming_messages_.empty())
+      {
+        return false;
+      }
+      else
+      {
+        msg = incoming_messages_.front();
+        incoming_messages_.pop_front();
+        return true;
+      }
+    }
+  }
+
+  void UDPConnection::operator()()
+  {
+    DLOG(TRACE, "thread started");
+    barrier_.wait();
+    io_service_.run();
+  }
+}}

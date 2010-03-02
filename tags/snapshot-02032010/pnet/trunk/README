@@ -1,0 +1,61 @@
+The Petri-Net re-writing Engine
+===============================
+
+  0. Introduction
+  1. Building Parts
+	a) the graph structure
+
+0. Introduction
+---------------
+
+  This	document   aims   to   describe   the	structure	of	 our   Petri-Net
+  rewriting Engine.  A Petri-Net is a directed graph with  two	different  kinds
+  of  nodes,  places  and  transitions.   Places  are  always  connected  to   a
+  transition and  vice	versa.	 The  data	flowing  through  such	a  graph  is
+  represented by "tokens".	 Tokens  reside  on  places  and  move	through  the
+  network via transitions.	A transition is executable	when  all  input  places
+  contain at least one token and if all guards evaluate to	true.	A  place  is
+  connected  to   a   transition   via	 different	 kinds	 of   links,   read,
+  input, output or update.	A  "read"  link  does  not	remove	the  token	from
+  the place, a "input" link  removes  the  token  from	the  place,  a	"output"
+  link creates a new token	on	the  place	and  an  "update"  link  modifies  a
+  token  (in  an  unspecified  way).
+
+  The basic operation on such a network is	the  execution	of	the  transitions
+  which results in token-deletion and token-creation.
+
+  The links between  Transitions  and  Places  can	be	annotated  with  "guard"
+  expressions that operate on a chosen token or on some state of  the  connected
+  place.  It is  for  example  possible  to  evaluate  simple  mathematical  and
+  boolean operations on the data references by Tokens, like
+			
+			"($value  %  10)  == 0"
+
+  The  execution  of  a  transition  results   in	a	non-structural	 network
+  modification called "Update", basically it describes which tokens  are  to  be
+  removed and where new tokens are to be placed.
+
+  An example network can look like the following:
+
+      .----.
+	 /      \
+	.        .
+	|   P0   |
+	.        .
+	 \      /
+      `----'
+
+1. Building Blocks
+------------------
+  a) graph structure
+
+	We need  a	very  efficient  representation  of  a	petri-net  that  exactly
+	meets our requirements.  In the following I am going to describe  the  basic
+    functionalities we need and which must be fast.
+
+	  - non-structural updates
+	  - activity front generation
+	  - structural updates
+
+	The latter won't happen too often, the first two categories are crucial.
+

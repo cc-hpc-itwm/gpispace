@@ -1,0 +1,721 @@
+/*
+ * Copyright 2009 Fraunhofer Gesellschaft, Munich, Germany,
+ * for its Fraunhofer Institute for Computer Architecture and Software
+ * Technology (FIRST), Berlin, Germany 
+ * All rights reserved. 
+ */
+//gwes
+#include <gwes/WorkflowHandler.h>
+#include <gwes/SdpaActivity.h>
+#include <gwes/CommandLineActivity.h>
+#include <gwes/SubWorkflowActivity.h>
+#include <gwes/Utils.h>
+//gwdl
+#include <gwdl/AbstractionLevel.h>
+#include <gwdl/Libxml2Builder.h>
+//std
+#include <unistd.h>
+#include <list>
+#include <map>
+#include <pthread.h>
+
+using namespace std;
+using namespace gwdl;
+using namespace gwes;
+
+namespace gwes {
+
+WorkflowHandler::WorkflowHandler(GWES* gwesP, Workflow::ptr_t workflowP, const string& userId) : _logger(fhg::log::getLogger("gwes")) {
+  _thread = 0;
+	_status=STATUS_UNDEFINED;
+	// set user id
+	_userId = userId;
+	// set id
+	_id = workflowP->getID();
+	if (workflowP->getID()==WORKFLOW_DEFAULT_ID)
+		_id=generateID();
+	workflowP->setID(_id);
+	// set pointer to parent gwes
+	_gwesP = gwesP;
+	// set pointer to workflow
+	_wfP = workflowP;
+	// set switches
+	_userabort = false;
+	_systemabort = false;
+	_suspend = false;
+	_sleepTime = SLEEP_TIME_MIN;
+	_simulation = false;
+	Properties props = workflowP->readProperties();
+	if (props.contains("simulation") && (props.get("simulation")).compare("false") != 0) {
+		_simulation = true;
+		LOG_DEBUG(_logger, getID() << ": Simulation is ON");
+		LOG_DEBUG(_logger, *workflowP);
+	}
+	// set status
+	setStatus(STATUS_INITIATED);
+	LOG_DEBUG(_logger, "WorkflowHandler[" << _id << "]");
+}
+
+WorkflowHandler::~WorkflowHandler() {
+  // AP: this code is not required, when the _activityTable is deallocated, all
+  // activities will be removed anyways.
+
+//	// delete activities in activity table
+//	for (ActivityTable::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
+//		delete it->second;
+//	}
+//	_activityTable.clear();
+
+  DMLOG(TRACE, "cleaning up workflow handler thread...");
+  if (_thread)
+  {
+	pthread_cancel(_thread);
+	pthread_join(_thread, NULL);
+	_thread = 0;
+  }
+}
+
+void WorkflowHandler::setStatus(WorkflowHandler::status_t status) {
+	if (status == _status) return;
+	status_t oldStatus = _status;
+	_status = status;
+	if (_status != STATUS_UNDEFINED) {
+		_wfP->putProperty("status", getStatusAsString(_status));
+	}
+	
+	LOG_DEBUG(_logger, "status of workflow \"" << getID() << "\" changed from " << getStatusAsString(oldStatus) << " to " << getStatusAsString());
+	
+	// ToDo: depricated - remove?
+	if (_channels.size()>0) {
+		Event event(_id,Event::EVENT_WORKFLOW,getStatusAsString());
+		for (size_t i = 0; i<_channels.size(); i++ ) {
+			_channels[i]->_sourceP->update(event);
+		}
+	}
+
+	// notify observers
+	Gwes2Sdpa* sdpaP = _gwesP->getSdpaHandler();
+	if (sdpaP != NULL) {
+		switch (_status) {
+		case (STATUS_ACTIVE): 
+			break;
+		case (STATUS_COMPLETED):
+			sdpaP->workflowFinished(_id, _wfP->getResults());
+			break;
+		case (STATUS_TERMINATED):
+			if (_userabort) {
+				sdpaP->workflowCanceled(_id, _wfP->getResults());
+			} else {
+				// internal abort by system is handled as failure
+				sdpaP->workflowFailed(_id, _wfP->getResults());
+			}
+			break;
+		case (STATUS_FAILED):
+			break;
+		case (STATUS_INITIATED):
+			break;
+		case (STATUS_RUNNING):
+			break;
+		case (STATUS_SUSPENDED):
+			break;
+		case (STATUS_UNDEFINED):
+			break;
+		}
+	}
+	
+}
+
+string WorkflowHandler::getNewActivityID() const {
+	static long activityCounter = 0;
+	ostringstream oss;
+	///ToDo: leading 000000x for activity counter
+	oss << _id << "_" << activityCounter++;
+	return oss.str();
+}
+
+/**
+ * Start this workflow. Status should switch to RUNNING.
+ */
+void WorkflowHandler::startWorkflow() throw (StateTransitionException) {
+	//check status
+	if (_status != STATUS_INITIATED) {
+		ostringstream oss;
+		oss << "Invalid status " << getStatusAsString()	<< " for starting workflow \"" << getID() << "\"";
+		throw StateTransitionException(oss.str());
+	}
+
+	//start workflow in own thread.
+	pthread_create(&_thread, NULL, startWorkflowAsThread, (void*)this);
+}
+
+/**
+ * Execute this workflow. Status should switch to RUNNING.
+ */
+void WorkflowHandler::executeWorkflow() throw (StateTransitionException, WorkflowFormatException) {
+	LOG_DEBUG(_logger, "executeWorkflow(" << getID() << ") ...");
+	LOG_DEBUG(_logger, *_wfP);
+	//check status
+	if (getStatus() != WorkflowHandler::STATUS_INITIATED) {
+		ostringstream oss;
+		oss << "Invalid status " << getStatusAsString() << " for starting workflow \"" << getID() << "\"";
+		throw StateTransitionException(oss.str());
+	}
+
+	setStatus(WorkflowHandler::STATUS_RUNNING);
+
+	int step=0;
+	bool modification = true;
+
+	//get enabled transitions
+	vector<Transition::ptr_t>& enabledTransitions = _wfP->getEnabledTransitions();
+	if (enabledTransitions.size() <= 0) {
+		LOG_WARN(_logger, "workflow \"" << getID() << "\" does not contain any enabled transitions!");
+	}
+
+	//loop while workflow is not to abort and there exists enabled transitions or this workflow is still active
+	while ((!_userabort && !_systemabort && enabledTransitions.size()> 0) 
+			|| _status == WorkflowHandler::STATUS_ACTIVE) {
+		if (modification) {
+			LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ":" << getStatusAsString()
+			<< ") --- " << enabledTransitions.size()
+			<< " enabled transition(s)");
+			modification = false;
+		}
+
+		try {
+
+			///ToDo: search for undecided decisions. Updates "unresolvedDecisionTransitions" and "undecidedDecisions"
+
+			//select transition, find enabled transition with true condition. 
+			// ToDo: Updates list "enabledTrueTransitions" ?
+			TransitionOccurrence* selectedToP = selectTransitionOccurrence(enabledTransitions, step);
+			if (selectedToP != NULL) {
+				selectedToP->simulation=_simulation;
+				LOG_DEBUG(_logger, "Processing " << *selectedToP << " ...");
+			}
+
+			///ToDo: if there are only transitions with unresolved decisions, then suspend the workflow!
+
+			//suspend if breakpoint has been reached
+			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
+				Properties& transprops = selectedToP->transitionP->getProperties();
+				if (transprops.contains("breakpoint")) {
+					string breakstring = transprops.get("breakpoint");
+					// If workflow is resumed, remove "REACHED and put "RELEASED" as value to breakpoint property
+					if (breakstring=="REACHED") {
+						LOG_DEBUG(_logger, "released breakpoint at transition " << selectedToP->transitionP->getID());
+						transprops.put("breakpoint", "RELEASED");
+					} else {
+						LOG_DEBUG(_logger, "reached breakpoint at transition " << selectedToP->transitionP->getID());
+						transprops.put("breakpoint", "REACHED");
+						_suspend = true;
+					}
+				}
+			}
+
+			///ToDo: prorate blue transtions related to program executions
+
+			//process selected transition.
+			if (!_userabort && !_systemabort && !_suspend && selectedToP != NULL) {
+				int abstractionLevel = selectedToP->transitionP->getAbstractionLevel();
+				LOG_DEBUG(_logger, "--- step " << step << " (" << getID() << ") --- processing transition occurrence \""
+				<< selectedToP->getID() << "\" (level "
+				<< abstractionLevel << ") ...");
+				switch (abstractionLevel) {
+				case (AbstractionLevel::BLACK): // no operation
+					if (processBlackTransition(selectedToP, step))
+						modification = true;
+				break;
+				case (AbstractionLevel::GREEN): // concrete selected operation
+					if (processGreenTransition(selectedToP, step))
+						modification = true;
+				break;
+				case (AbstractionLevel::BLUE): // set of operation candidates
+					if (processBlueTransition(selectedToP, step))
+						modification = true;
+				break;
+				case (AbstractionLevel::YELLOW): // operation class
+					if (processYellowTransition(selectedToP, step))
+						modification = true;
+				break;
+				case (AbstractionLevel::RED): // unspecified operation
+					if (processRedTransition(selectedToP, step))
+						modification = true;
+				break;
+				}
+			}
+
+			// check the status of all activities and process results if COMPLETED or TERMINATED (or FAILED).
+			if (checkActivityStatus(step)) modification = true;
+
+			//wait here if workflow has been suspended. Workflow must switch from ACTIVE to RUNNING first!
+			if (_suspend && _status == WorkflowHandler::STATUS_RUNNING) {
+				setStatus(WorkflowHandler::STATUS_SUSPENDED);
+				modification = true;
+				waitForStatusChangeFrom(WorkflowHandler::STATUS_SUSPENDED);
+			}
+
+			// suspend if there is a deadlock because of false conditions
+			if (getStatus() == STATUS_RUNNING && !modification && selectedToP == NULL) {
+				modification = true;
+				LOG_INFO(_logger, "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!" );
+				_wfP->putProperty(createNewWarnID(), "Workflow suspended because all conditions of all enabled transitions are false, or because of unresolved decision (conflict)!");
+				_suspend = true;
+			}
+
+			//if no modification occurred this step, wait some time
+			if (!modification && !_userabort && !_systemabort) {
+				usleep(_sleepTime);
+				// set dynamic sleep time
+				_sleepTime *= 2;
+				if (_sleepTime> WorkflowHandler::SLEEP_TIME_MAX)
+					_sleepTime = WorkflowHandler::SLEEP_TIME_MAX;
+			}
+			// reset sleep time if there was a modification
+			else
+				_sleepTime = WorkflowHandler::SLEEP_TIME_MIN;
+
+			//update enabled transitions
+			if (!_userabort && !_systemabort)
+				enabledTransitions = _wfP->getEnabledTransitions();
+			if (modification)
+				step++;
+		} catch (const ActivityException &e) {
+			ostringstream oss;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): ActivityException: ERROR :" << e.what();
+			LOG_ERROR(_logger, oss.str());
+			_systemabort = true;
+			_wfP->putProperty(createNewErrorID(), oss.str());
+		}  catch (const WorkflowFormatException &e) {
+			ostringstream oss;
+			oss << "gwes::WorkflowHandler::WorkflowHandler(" << getID() << "): WorkflowFormatException: ERROR :" << e.what();
+			LOG_ERROR(_logger, oss.str());
+			_systemabort = true;
+			_wfP->putProperty(createNewErrorID(), oss.str());
+		}
+	}
+
+	//set exit status
+	setStatus((_userabort || _systemabort) ? WorkflowHandler::STATUS_TERMINATED : WorkflowHandler::STATUS_COMPLETED);
+}
+
+/**
+ * Suspend this workflow. Status should switch to SUSPENDED.
+ */
+void WorkflowHandler::suspendWorkflow() throw (StateTransitionException) {
+	if (_status == STATUS_RUNNING || _status == STATUS_ACTIVE) {
+		_suspend = true;
+		waitForStatusChangeTo(STATUS_SUSPENDED);
+	} else {
+		ostringstream oss;
+		oss << "Invalid status " << getStatusAsString()
+				<< " for suspending workflow \"" << getID() << "\"" << endl;
+		throw StateTransitionException(oss.str());
+	}
+}
+
+/**
+ * Resume this workflow. Status should switch to RUNNING. 
+ */
+void WorkflowHandler::resumeWorkflow() throw (StateTransitionException) {
+	if (_status == STATUS_SUSPENDED) {
+		///ToDo: && isAlive() 
+		_suspend = false;
+		setStatus(STATUS_RUNNING);
+	} else {
+		ostringstream oss;
+		oss << "Invalid status " << getStatusAsString()
+				<< " for resuming workflow \"" << getID() << "\"" << endl;
+		throw StateTransitionException(oss.str());
+	}
+}
+
+/**
+ * Abort this workflow. Status switches to TERMINATED afterwards.
+ * This method is asynchronous and does NOT wait until workflow has been aborted.
+ */
+void WorkflowHandler::abortWorkflow() throw (StateTransitionException) {
+	// you cannot abort an COMPLETED, or TERMINATED workflow
+	if (_status == STATUS_COMPLETED || _status == STATUS_TERMINATED) {
+		ostringstream oss;
+		oss << "Invalid status " << getStatusAsString()
+				<< " for aborting workflow \"" << getID() << "\"" << endl;
+		throw StateTransitionException(oss.str());
+	}
+
+	_userabort = true;
+
+	// Workflow is NOT running nor active
+	if (_status == STATUS_INITIATED || _status == STATUS_SUSPENDED || _status
+			== STATUS_UNDEFINED) {
+		setStatus(STATUS_TERMINATED);
+	}
+
+	// Notification about workflow abort is async.
+}
+
+WorkflowHandler::status_t WorkflowHandler::waitForStatusChangeFrom(WorkflowHandler::status_t oldStatus) {
+	while (_status == oldStatus) {
+		usleep(_sleepTime);
+	}
+	return _status;
+}
+
+void WorkflowHandler::waitForStatusChangeTo(WorkflowHandler::status_t newStatus) {
+	while (_status != newStatus) {
+		usleep(_sleepTime);
+	}
+}
+
+void WorkflowHandler::waitForStatusChangeToCompletedOrTerminated() {
+	while (_status != STATUS_COMPLETED && _status != STATUS_TERMINATED) {
+		usleep(_sleepTime);
+	}
+}
+
+string WorkflowHandler::generateID() const {
+	ostringstream oss;
+	oss << _userId << "_" << Utils::generateUuid();
+	return oss.str();
+}
+
+void WorkflowHandler::connect(Channel* channel) {
+	// register channel
+	_channels.push_back(channel);
+	// attach observer also to all activities of this workflow. 
+	for (map<string,Activity*>::iterator it=_activityTable.begin(); it!=_activityTable.end(); ++it) {
+		Activity* activityP = it->second;
+		activityP->attachObserver(channel->_sourceP);
+	}
+	// set channel destination observer
+	channel->setDestination(this);
+}
+
+/**
+ * Overides gwes::Observer::update().
+ * This method is called by the source of the channels connected to this workflow handler.
+ * @deprecated[Use Spda2Gwes instead]
+ */
+void WorkflowHandler::update(const Event& event) {
+	LOG_WARN(_logger, "update() is DEPRICATED!");
+	// logging
+	LOG_DEBUG(_logger, _id << ":update(" 
+			<< event._sourceId 
+			<< "," << event._eventType 
+			<< "," << event._message 
+			<< ")");
+	
+	// forward events regarding activities to the corresponding activity.
+	if (event._eventType==Event::EVENT_ACTIVITY_END) {
+		Activity* activityP = _activityTable.get(event._sourceId);
+		if (activityP!=NULL) {
+			activityP->setStatus(Activity::STATUS_RUNNING);
+			if (event._tokensP!=NULL) {
+				/// here was activity.setOutputs
+			}
+			activityP->setStatus(Activity::STATUS_COMPLETED);
+		}
+	}
+}
+
+/**
+ * Get the workflow which is handled by this WorkflowHandler.
+ * @return A pointer to the workflow.
+ */
+workflow_t::ptr_t& WorkflowHandler::getWorkflow() {
+	return _wfP;
+}
+
+/////////////////////////////////////////
+// Delegation from Interface Spda2Gwes //
+/////////////////////////////////////////
+
+// transition from pending to running
+void WorkflowHandler::activityDispatched(const activity_id_t &activityId) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityDispatched();
+}
+
+// transition from running to failed     
+void WorkflowHandler::activityFailed(const activity_id_t &activityId, const parameter_list_t &output)  throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityFailed(output);
+}
+
+// transition from running to finished
+void WorkflowHandler::activityFinished(const activity_id_t &activityId, const parameter_list_t &output) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityFinished(output);
+}
+
+// transition from * to canceled
+void WorkflowHandler::activityCanceled(const activity_id_t &activityId) throw (NoSuchActivityException) {
+	_activityTable.get(activityId)->activityCanceled();
+}
+
+Activity * WorkflowHandler::getActivity(const activity_id_t &activityId) throw (NoSuchActivityException)
+{
+  return _activityTable.get(activityId);
+}
+
+///////////////////////////////////////////////
+/////////// PRIVATE METHODS
+///////////////////////////////////////////////
+
+/**
+ * Select next enabled transtition with true conditions and build transition occurrence object.
+ * This method also locks all input tokens.
+ * ToDo: include support of data.group
+ * ToDo: include support for transition priority
+ */
+TransitionOccurrence* WorkflowHandler::selectTransitionOccurrence(vector<gwdl::Transition::ptr_t>& enabledTransitions,int step) {
+	if (enabledTransitions.size()<= 0)
+		return NULL;
+	else {
+		for (vector<gwdl::Transition::ptr_t>::iterator it = enabledTransitions.begin(); it != enabledTransitions.end(); ++it) {
+			TransitionOccurrence* toP = new TransitionOccurrence(*it);
+			if (toP->checkConditions(step)) {
+				toP->lockTokens();
+				return toP;
+			}
+                        else
+                          {
+                            delete toP;
+                          }
+		}
+		return NULL;
+	}
+}
+
+bool WorkflowHandler::processRedTransition(TransitionOccurrence* toP, int step) {
+	/// ToDo: implement!
+	LOG_WARN(_logger, "processRedTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
+	return false;
+}
+
+bool WorkflowHandler::processYellowTransition(TransitionOccurrence* toP, int step) {
+	/// ToDo: implement!
+	LOG_WARN(_logger, "processYellowTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
+	return false;
+}
+
+bool WorkflowHandler::processBlueTransition(TransitionOccurrence* toP, int step) {
+	/// ToDo: implement!
+	LOG_WARN(_logger, "processBlueTransition(" << toP->getID() <<") not yet implemented! (step=" << step <<")");
+	return false;
+}
+
+bool WorkflowHandler::processGreenTransition(TransitionOccurrence* toP, int step) {
+	LOG_DEBUG(_logger, "processGreenTransitionOccurrence(" << toP->getID() << ") --- step=" << step <<" ...");
+	bool modification = false;
+
+	// select selected operation
+	vector<OperationCandidate::ptr_t> ocs = toP->transitionP->getOperation()->getOperationClass()->getOperationCandidates();
+	OperationCandidate::ptr_t operationP;
+	for (size_t i=0; i<ocs.size(); i++) {
+		if (ocs[i]->isSelected()) {
+			operationP = ocs[i];
+			break;
+		}
+	}
+	if (operationP == NULL) {
+		LOG_WARN(_logger, "ERROR: No selected operation available!");
+		return modification;
+	}
+
+	// construct corresponding activity
+	Activity* activityP;
+	string operationType = operationP->getType();
+	if (operationType == "sdpa") {
+		activityP = new SdpaActivity(this, toP, operationP);
+	} else if (operationType == "sdpa/workflow") {
+		activityP = new SdpaActivity(this, toP, operationP);
+	} else if (operationType == "cli") {
+		activityP = new CommandLineActivity(this, toP, operationP);
+	} else if (operationType == "workflow") {
+		activityP = new SubWorkflowActivity(this, toP, operationP);
+	} else {
+		ostringstream oss;
+		oss << "Transition occurrence \"" << toP->getID()
+				<< "\" is related to an operation of type \"" << operationType
+				<< "\" which is not supported." << endl;
+		throw WorkflowFormatException(oss.str());
+	}
+	if (activityP == NULL) {
+		LOG_ERROR(_logger, "ERROR: Activity Pointer is NULL!");
+		return modification;
+	}
+	toP->activityP=activityP;
+	
+	// attach workflow observers to activity
+	for (size_t i=0; i<_channels.size(); i++) {
+		activityP->attachObserver(_channels[i]->_sourceP);
+	}
+
+	setStatus(STATUS_ACTIVE);
+	_activityTable.put(activityP);
+
+	// initiate activity
+	activityP->initiateActivity();
+
+	// invoke activity
+	activityP->startActivity();
+	modification = true;
+
+	return modification;
+}
+
+bool WorkflowHandler::processBlackTransition(TransitionOccurrence* toP, int step) {
+	LOG_DEBUG(_logger, "gwes::WorkflowHandler::processBlackTransitionOccurrence(" << toP->getID() << ") ...");
+
+	//evaluate edgeExpressions with XPath expressions.
+	toP->evaluateXPathEdgeExpressions(step);
+	
+	// remove input tokens
+	toP->removeInputTokens();
+
+	// put output tokens to output places.
+	try {
+		toP->writeWriteTokens();
+		toP->putOutputTokens();
+	} catch (const CapacityException &e) {
+		LOG_ERROR(_logger, "exception: " << e.what());
+		_systemabort = true;
+		_wfP->putProperty(createNewErrorID(), e.what());
+	}
+	
+    // store occurrence sequence
+	Properties& props = _wfP->getProperties();
+    if (props.contains("occurrence.sequence")) {
+    	string occurrenceSequence = props.get("occurrence.sequence");
+    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
+    	occurrenceSequence += toP->transitionP->getID();
+    	props.put("occurrence.sequence",occurrenceSequence);
+    }
+	
+    // cleanup
+    delete toP;
+    
+	return true;
+}
+
+bool WorkflowHandler::checkActivityStatus(int step) throw (ActivityException) {
+	bool modification = false;
+	status_t tempworkflowstatus = STATUS_RUNNING;
+
+    // FIXME: maybe that helps
+    std::list<std::string> toRemove;
+
+	// loop through activities
+	for (map<string,Activity*>::iterator it=_activityTable.begin(); it
+			!=_activityTable.end(); ++it) {
+		string activityID = it->first;
+		Activity* activityP = it->second;
+		int activityStatus = activityP->getStatus();
+		LOG_DEBUG(_logger, "--- step " << step << " --- activity#" << activityID << "=" << activityP->getStatusAsString());
+
+		// activity has completed or terminated
+		if (activityStatus == Activity::STATUS_COMPLETED || activityStatus == Activity::STATUS_TERMINATED) {
+			TransitionOccurrence* toP = activityP->getTransitionOccurrence();
+
+			// set workflow warning property if there is any activity fault message
+			string faultMessage = activityP->getFaultMessage();
+			if (faultMessage.size()>0) {
+				ostringstream oss;
+				oss << "Fault in activity \"" << activityID
+						<< "\" related to transition occurrence \""
+						<< toP->getID() << "\": " << faultMessage
+						<< endl;
+				_wfP->putProperty(createNewWarnID(), oss.str());
+			}
+			
+			// process XPath edge expressions
+			toP->evaluateXPathEdgeExpressions(step);
+
+			// remove the corresponding token from each input place
+			toP->removeInputTokens();
+
+			try {
+				// replace write tokens
+				toP->writeWriteTokens();
+				//  put new token on each output place
+				toP->putOutputTokens();
+			} catch (const CapacityException &e) {
+				LOG_ERROR(_logger, "CapacityException:" << e.what());;
+				_systemabort = true;
+				_wfP->putProperty(createNewErrorID(), e.what());
+			}
+			
+			modification = true;
+
+		    // store occurrence sequence
+			Properties& props = _wfP->getProperties();
+		    if (props.contains("occurrence.sequence")) {
+		    	string occurrenceSequence = props.get("occurrence.sequence");
+		    	if (occurrenceSequence.length()>0) occurrenceSequence += " ";
+		    	occurrenceSequence += toP->transitionP->getID();
+		    	props.put("occurrence.sequence",occurrenceSequence);
+		    }
+
+		    ///ToDo: set transition status
+
+		    // cleanup
+		    delete toP;
+            toRemove.push_back(activityID);
+
+		    ///ToDo: fault management regarding the fault management policy property
+		    if (activityStatus == Activity::STATUS_TERMINATED) {
+		    	_systemabort = true;
+		    }
+
+		} else if (activityStatus == Activity::STATUS_FAILED) {
+			///ToDo: implement fault management.
+			LOG_WARN(_logger, "Fault management not yet implemented!");
+            // AP: shouldn't the activity be removed here?
+            // fault management is a bonus, but the activity has failed, it should be deleted and the workflow too
+		} else {
+			// activity still not completed or terminated
+			tempworkflowstatus = STATUS_ACTIVE;
+			// abort active activities if workflow is to abort
+			if (_userabort || _systemabort) {
+				activityP->abortActivity();
+			}
+		}
+
+	}
+    while (! toRemove.empty())
+    {
+      _activityTable.remove(toRemove.front());
+      toRemove.pop_front();
+    }
+	
+	///ToDo: annotate transitions with transition status
+
+	// set workflow status
+	setStatus(tempworkflowstatus);
+	return modification;
+}
+
+string WorkflowHandler::createNewErrorID() const {
+	static long errorCounter = 0;
+	ostringstream oss;
+	oss << "error." << errorCounter++;
+	return oss.str();
+}
+
+string WorkflowHandler::createNewWarnID() const {
+	static long warnCounter = 0;
+	ostringstream oss;
+	oss << "warn." << warnCounter++;
+	return oss.str();
+}
+
+} // end namespace gwes
+
+/**
+ * This method is used by pthread_create in order to start this workflow in an own thread.
+ * @param workflowHandlerP Pointer to the WorkflowHandler.
+ */
+void *startWorkflowAsThread(void *workflowHandlerP) {
+	gwes::WorkflowHandler* wfhP = (gwes::WorkflowHandler*) workflowHandlerP;
+	LOG_DEBUG(getLogger("gwes"), "start workflow as new thread...");
+	wfhP->executeWorkflow();
+	return 0;
+}

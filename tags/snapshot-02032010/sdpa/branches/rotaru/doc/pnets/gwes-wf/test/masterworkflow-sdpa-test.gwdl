@@ -1,0 +1,22 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+    <!-- $Id$ -->
+    <description>Test: SDPA master workflow</description>
+
+    <place ID="master-input">
+        <token><data><long xmlns="">25</long></data></token>
+    </place>
+	
+    <place ID="master-output"/>
+
+    <transition ID="sub-workflow">
+        <description>SDPA sub-workflow</description>
+        <inputPlace placeID="master-input" edgeExpression="sub-input"/>
+        <outputPlace placeID="master-output" edgeExpression="sub-output"/>
+ 		<operation>
+      		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="subworkflow-sdpa-test">
+        		<oc:operationCandidate type="sdpa/workflow" operationName="${GWES_CPP_HOME}/workflows/test/subworkflow-sdpa-test.gwdl" resourceName="nre#1" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+</workflow>

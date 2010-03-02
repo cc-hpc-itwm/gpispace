@@ -1,0 +1,102 @@
+# Finds the protocol buffers compiler, protoc.
+# Protocol Buffers is available at http://code.google.com/apis/protocolbuffers
+# This file defines:
+# * POSTGRESQL_FOUND if protoc was found
+# * POSTGRESQL_LIBRARY The lib to link to (currently only a static unix lib, not
+# portable) 
+# * POSTGRESQL_INCLUDE_DIR
+# * POSTGRESQL_LDFLAGS
+
+MARK_AS_ADVANCED(
+  POSTGRESQL_LIBRARY
+  POSTGRESQL_INCLUDE_DIR
+  POSTGRESQL_LDFLAGS
+)
+
+if(POSTGRESQL_HOME MATCHES "")
+  if("" MATCHES "$ENV{POSTGRESQL_HOME}")
+    message(STATUS "POSTGRESQL_HOME env is not set, setting it to /usr/local")
+    set (POSTGRESQL_HOME "/usr/local")
+  else("" MATCHES "$ENV{POSTGRESQL_HOME}")
+    set (POSTGRESQL_HOME "$ENV{POSTGRESQL_HOME}")
+  endif("" MATCHES "$ENV{POSTGRESQL_HOME}")
+else(POSTGRESQL_HOME MATCHES "")
+  message(STATUS "POSTGRESQL_HOME is not empty: \"${POSTGRESQL_HOME}\"")
+  set (POSTGRESQL_HOME "${POSTGRESQL_HOME}")
+endif(POSTGRESQL_HOME MATCHES "")
+
+# find pg_config
+FIND_PROGRAM(POSTGRESQL_PGCONFIG pg_config
+  PATHS ${POSTGRESQL_HOME}/bin
+  ${CMAKE_ADDITIONAL_PATH}
+  ${CMAKE_INCLUDE_PATH}
+  /usr/bin
+  /usr/local/bin
+  NO_DEFAULT_PATH
+)
+message(STATUS "POSTGRESQL found pg_config at: ${POSTGRESQL_PGCONFIG}")
+
+# fetch include dir
+EXECUTE_PROCESS(COMMAND ${POSTGRESQL_PGCONFIG} --includedir
+		OUTPUT_VARIABLE POSTGRESQL_INCLUDE_DIR)
+message(STATUS "POSTGRESQL INCpath: ${POSTGRESQL_INCLUDE_DIR}")
+
+# Support preference of static libs by adjusting CMAKE_FIND_LIBRARY_SUFFIXES
+IF(WIN32)
+  SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+ELSE(WIN32)
+  SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+ENDIF(WIN32)
+
+FIND_LIBRARY(POSTGRESQL_LIBRARY
+  NAMES pq
+  PATHS ${POSTGRESQL_HOME}/lib ${CMAKE_LIBRARY_PATH} $ENV{PATH} /usr/lib /usr/local/lib
+  NO_CMAKE_SYSTEM_PATH
+)
+EXECUTE_PROCESS(COMMAND ${POSTGRESQL_PGCONFIG} --libs
+		OUTPUT_VARIABLE POSTGRESQL_LDFLAGS)
+
+
+message(STATUS "POSTGRESQL Libpath: ${POSTGRESQL_LIBRARY}")
+message(STATUS "POSTGRESQL INCpath: ${POSTGRESQL_INCLUDE_DIR}")
+message(STATUS "POSTGRESQL ldflags: ${POSTGRESQL_LDFLAGS}")
+STRING(REGEX REPLACE "-l" "" POSTGRESQL_DEPEND_LIBS ${POSTGRESQL_LDFLAGS})
+STRING(REGEX REPLACE "pgport" "" POSTGRESQL_DEPEND_LIBS ${POSTGRESQL_DEPEND_LIBS})
+STRING(STRIP "${POSTGRESQL_DEPEND_LIBS}" POSTGRESQL_DEPEND_LIBS)
+STRING(REGEX REPLACE " " ";" POSTGRESQL_DEPEND_LIBS ${POSTGRESQL_DEPEND_LIBS})
+
+# check dependencies
+SET(POSTGRESQL_STATIC true)
+SET(POSTGRESQL_LIBRARIES "")
+message(STATUS "Checking dependencies for PostgreSQL...")
+foreach(loop_var ${POSTGRESQL_DEPEND_LIBS})
+  # message(STATUS "Check library: ${loop_var}")
+  FIND_LIBRARY(POSTGRESQL_${loop_var}_LIBRARY
+    NAMES lib${loop_var}.a
+    PATHS ${POSTGRESQL_HOME}/lib ${CMAKE_LIBRARY_PATH} $ENV{PATH} /usr/lib /usr/local/lib
+  )
+  if("${POSTGRESQL_${loop_var}_LIBRARY}" STREQUAL "POSTGRESQL_${loop_var}_LIBRARY-NOTFOUND")
+    SET(POSTGRESQL_STATIC false)
+    message(STATUS "Check library: ${loop_var}... NOT found.")
+  else("${POSTGRESQL_${loop_var}_LIBRARY}" STREQUAL "POSTGRESQL_${loop_var}_LIBRARY-NOTFOUND")
+    message(STATUS "Check library: ${loop_var}... ${POSTGRESQL_${loop_var}_LIBRARY}")
+    SET(POSTGRESQL_LIBRARIES "${POSTGRESQL_LIBRARIES};${POSTGRESQL_${loop_var}_LIBRARY}")
+  endif("${POSTGRESQL_${loop_var}_LIBRARY}" STREQUAL "POSTGRESQL_${loop_var}_LIBRARY-NOTFOUND")
+endforeach(loop_var)
+
+STRING(STRIP "${POSTGRESQL_LIBRARIES}" POSTGRESQL_LIBRARIES)
+# message(STATUS "POSTGRESQL Libs: '${POSTGRESQL_LIBRARIES}'")
+
+# if the include and the program are found then we have it
+IF(POSTGRESQL_LIBRARY) 
+  SET(POSTGRESQL_FOUND true)
+  SET(HAVE_POSTGRESQL true)
+ENDIF(POSTGRESQL_LIBRARY)
+
+IF(POSTGRESQL_FOUND)
+  IF(NOT POSTGRESQL_STATIC)
+    SET(POSTGRESQL_LIBRARY "pq")
+    SET(POSTGRESQL_LIBRARIES "")
+    message(STATUS "Cannot compile with static version of libpq. Switching to shared version.")
+  ENDIF(NOT POSTGRESQL_STATIC)
+ENDIF(POSTGRESQL_FOUND)

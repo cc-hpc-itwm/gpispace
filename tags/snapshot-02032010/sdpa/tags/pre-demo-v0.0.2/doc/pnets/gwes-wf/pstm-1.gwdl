@@ -1,0 +1,113 @@
+<workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass"
+          xmlns="http://www.gridworkflow.org/gworkflowdl"
+          xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd"
+          ID="No_ID">
+
+    <!-- $Id$ -->
+    
+    <description>Pre-Stack Time Migration (Aggregator)</description>
+	
+	<property name="simulation">true</property>
+    <property name="occurrence.sequence" />
+
+	<!-- workflow input places (are filled with tokens by parent workflow) -->
+    <place ID="OffsetParameters">
+        <property name="workflowInputPlace"/>
+    </place>
+
+    <place ID="GatherParameters">
+        <property name="workflowInputPlace"/>
+    </place>
+
+    <!-- intermediate places -->
+    <place ID="OffsetClasses"/>
+    <place ID="NumberClasses">
+        <token><data><numberClasses xmlns="" xsd:type="int">0</numberClasses></data></token>
+    </place>
+    <place ID="HasNext">
+        <token><control>true</control></token>
+    </place>
+    <place ID="IsLast"/>
+    <place ID="NumberPoints"/>
+    <place ID="OffsetVolume"/>
+    <place ID="OffsetClass"/>
+
+    <!-- workflow output places -->
+    <place ID="OutputGather">
+        <property name="workflowOutputPlace"/>
+    </place>
+
+    <!-- transitions -->
+    <transition ID="getNextOffsetClass">
+        <description>Get next offset class</description>
+        <readPlace placeID="OffsetParameters" edgeExpression="OffsetParameters"/>
+        <inputPlace placeID="HasNext" edgeExpression="HasNext"/>
+        <inputPlace placeID="NumberClasses" edgeExpression="i"/>
+        <outputPlace placeID="NumberClasses" edgeExpression="$i + 1"/>
+        <outputPlace placeID="HasNext" edgeExpression="HasNext"/>
+        <outputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
+        <condition>$HasNext = 'true'</condition>
+        <operation>
+            <oc:operationClass name="getNextOffsetClass">
+                <oc:operationCandidate type="cli" operationName="getNextOffsetClass.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/getNextOffsetClass.sh" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="checkHasNext">
+        <inputPlace placeID="HasNext" edgeExpression="HasNext"/>
+        <outputPlace placeID="IsLast"/>
+        <condition>not($HasNext = 'true')</condition>
+    </transition>
+
+    <transition ID="getNumberOfPoints">
+        <inputPlace placeID="GatherParameters" edgeExpression="GatherParameters"/>
+        <outputPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <operation>
+            <oc:operationClass name="getNumberOfPoints">
+                <oc:operationCandidate type="cli" operationName="getNumberOfPoints.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/getNumberOfPoints.sh" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="createOutputGather">
+        <description>Create empty output gather</description>
+        <readPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <inputPlace placeID="NumberClasses" edgeExpression="NumberClasses"/>
+        <inputPlace placeID="IsLast"/>
+        <outputPlace placeID="OutputGather" edgeExpression="OutputGather"/>
+ 		<operation>
+      		<oc:operationClass name="createOutputGather">
+        		<oc:operationCandidate type="cli" operationName="createOutputGather.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/createOutputGather.sh" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+    <transition ID="calculateOffsetVolume">
+        <description>Calculate the offset volume for a given offset class</description>
+        <readPlace placeID="NumberPoints" edgeExpression="NumberPoints"/>
+        <inputPlace placeID="OffsetClasses" edgeExpression="OffsetClass"/>
+        <outputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <outputPlace placeID="OffsetClass" edgeExpression="$OffsetClass"/>
+        <operation>
+            <oc:operationClass name="calculateOffsetVolume">
+                <oc:operationCandidate type="workflow" operationName="${GWES_CPP_HOME}/workflows/pstm-calculateOffsetVolume.gwdl" resourceName="localhost" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+    <transition ID="store">
+        <description>Store the offset volume in the output gather</description>
+        <readPlace placeID="OutputGather" edgeExpression="OutputGather"/>
+        <inputPlace placeID="OffsetVolume" edgeExpression="OffsetVolume"/>
+        <inputPlace placeID="OffsetClass" edgeExpression="OffsetClass"/>
+        <writePlace placeID="OutputGather" edgeExpression="$OutputGather"/>
+        <operation>
+            <oc:operationClass name="store">
+                <oc:operationCandidate type="cli" operationName="store.sh" resourceName="${GWES_CPP_HOME}/applications/dummy/store.sh" selected="true"/>
+            </oc:operationClass>
+        </operation>
+    </transition>
+
+</workflow>
