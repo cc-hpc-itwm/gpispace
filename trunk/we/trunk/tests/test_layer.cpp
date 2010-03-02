@@ -26,26 +26,9 @@ int main ()
 {
   std::cout << "running layer test..." << std::endl;
   pnet_t net("test_layer");
-  petri_net::pid_t pid_in = net.add_place(detail::place_t("in"));
-  petri_net::pid_t pid_out = net.add_place(detail::place_t("out"));
-
-  petri_net::tid_t tid_start (
-	  net.add_transition(
-		detail::transition_t("start", detail::transition_t::INTERNAL_SIMPLE)));
-  petri_net::eid_t eid_start_in (
-	  net.add_edge(detail::edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in)));
-  petri_net::eid_t eid_start_out (
-	  net.add_edge(detail::edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out)));
-
-  detail::edge_t e("foo");
+  parse<pnet_t, NetTraits<pnet_t>, std::string>(net, ""); 
 
   std::cout << net << std::endl;
-
-  std::cout 
-	<< "in=" << pid_in << " out=" << pid_out
-	<< " trans=" << tid_start
-	<< " e_in" << eid_start_in << " e_out=" << eid_start_out
-	<< std::endl;
 
   std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
 
