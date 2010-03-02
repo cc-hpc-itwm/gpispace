@@ -1,0 +1,36 @@
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd" ID="No_ID">
+    <!-- $Id$ -->
+    <description>Test: SDPA subworkflow</description>
+
+	<!-- input token must be copied from master workflow before initialization -->
+    <place ID="sub-input">
+      <token><data><sdpa>25</sdpa></data></token>
+    </place>
+    <place ID="i1">
+      <token><data><sdpa>4711</sdpa></data></token>
+    </place>
+    <place ID="config file">
+      <token><data><sdpa>file:///etc/config</sdpa></data></token>
+    </place>
+    <place ID="multi place">
+      <token><data><sdpa>foo</sdpa></data></token>
+      <token><data><sdpa>bar</sdpa></data></token>
+      <token><data><sdpa>baz</sdpa></data></token>
+    </place>
+	
+    <place ID="sub-output">
+      <token><data><sdpa>42</sdpa></data></token>
+    </place>
+
+    <transition ID="alg-dummy">
+        <description>dummy SDPA algorithm</description>
+        <inputPlace placeID="sub-input" edgeExpression="input"/>
+        <outputPlace placeID="sub-output" edgeExpression="output"/>
+ 		<operation>
+      		<oc:operationClass xmlns:oc="http://www.gridworkflow.org/gworkflowdl/operationclass" name="dummy">
+        		<oc:operationCandidate type="sdpa" operationName="dummy" resourceName="nre#1" selected="true"/>
+     	 	</oc:operationClass>
+    	</operation>
+    </transition>
+
+</workflow>
