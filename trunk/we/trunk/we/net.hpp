@@ -74,6 +74,7 @@ public:
 
   typedef multirel::right_const_it<token_type, pid_t> token_place_it;
 
+  // TODO: traits should be template parameters (with default values)
   typedef Function::Transition::Traits<token_type> tf_traits;
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
@@ -85,6 +86,7 @@ public:
   typedef typename tf_traits::fun_t trans_t;
   typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
 
+  // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::out_cond_t out_cond_t;
