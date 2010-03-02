@@ -18,8 +18,10 @@
 
 #include <gwes/GWES.h>
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -29,8 +31,9 @@ NRE :: NRE(  const std::string& name, const std::string& url,
 			 const std::string& masterName, const std::string& masterUrl,
 			 const std::string& workerUrl,
 			 const std::string& guiUrl,
-			 bool bExtSched  )
-		: dsm::DaemonFSM( name, new gwes::GWES() ),
+			 const bool bExtSched, const bool bUseDummyWE )
+		: dsm::DaemonFSM( name, (bUseDummyWE ? dynamic_cast<sdpa::Sdpa2Gwes*>(new DummyGwes) :
+				  dynamic_cast<sdpa::Sdpa2Gwes*>(new gwes::GWES)) ),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url),
 		  masterName_(masterName),
@@ -56,9 +59,10 @@ NRE :: ~NRE()
 NRE::ptr_t NRE ::create( const std::string& name, const std::string& url,
 						 const std::string& masterName, const std::string& masterUrl,
 						 const std::string& workerUrl,
-						 const std::string guiUrl)
+						 const std::string guiUrl,
+						 const bool bExtSched, const bool bUseDummyWE)
 {
-	 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl ));
+	 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE ));
 }
 
 void NRE :: start(NRE::ptr_t ptrNRE)
@@ -96,6 +100,13 @@ void NRE::action_config_ok(const ConfigOkEvent&)
 	SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 	to_master_stage()->send(pEvtWorkerReg);
+}
+
+void NRE::action_interrupt(const InterruptEvent&)
+{
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
+	// save the current state of the system .i.e serialize the daemon's state
+
 }
 
 void NRE::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -250,3 +261,49 @@ void NRE ::activityCancelled(const gwes::activity_t& act)
 	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CANCELLED));
 }
 
+void NRE::backup( const std::string& strArchiveName )
+{
+	try
+	{
+		print();
+
+		NRE::ptr_t ptrNRE_0(this);
+		std::ofstream ofs(strArchiveName.c_str());
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<DaemonFSM*>(NULL));
+		oa.register_type(static_cast<GenericDaemon*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa.register_type(static_cast<SchedulerNRE*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
+		oa << ptrNRE_0;
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: "<< e.what() << endl;
+	}
+}
+
+void NRE::recover( const std::string& strArchiveName )
+{
+	try
+	{
+		NRE::ptr_t ptrRestoredNRE_0(this);
+		std::ifstream ifs(strArchiveName.c_str());
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<DaemonFSM*>(NULL));
+		ia.register_type(static_cast<GenericDaemon*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia.register_type(static_cast<SchedulerNRE*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
+		ia >> ptrRestoredNRE_0;
+
+		std::cout<<std::endl<<"----------------The restored content of the NRE is:----------------"<<std::endl;
+		print();
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: " << e.what() << endl;
+	}
+}

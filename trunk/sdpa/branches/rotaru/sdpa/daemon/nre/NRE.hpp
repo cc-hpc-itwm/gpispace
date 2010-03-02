@@ -36,19 +36,21 @@ namespace sdpa {
 		NRE( const std::string& name = "", const std::string& url = "",
 			 const std::string& masterName = "", const std::string& masterUrl = "",
 			 const std::string& workerUrl = "", const std::string& guiUrl = "",
-			 bool bExtSched = false );
+			 const bool bExtSched = false, const bool bUseDummyWE = false  );
 
 		virtual ~NRE();
 
 		static NRE::ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000");
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",
+								  const bool bExtSched = false, const bool bUseDummyWE = false  );
 
 		static void start( NRE::ptr_t ptrNRE );
 		static void shutdown(NRE::ptr_t ptrNRE );
 
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
+		void action_interrupt( const sdpa::events::InterruptEvent& );
 
 		gwes::activity_id_t submitActivity(gwes::activity_t &activity);
 		void cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity);
@@ -71,6 +73,9 @@ namespace sdpa {
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
 		}
+
+		virtual void backup( const std::string& strArchiveName );
+	    virtual void recover( const std::string& strArchiveName );
 
 		friend class boost::serialization::access;
 		friend class sdpa::tests::WorkerSerializationTest;

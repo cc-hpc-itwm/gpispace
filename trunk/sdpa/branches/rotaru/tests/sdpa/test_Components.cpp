@@ -22,6 +22,7 @@
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <gwes/GWES.h>
+#include <tests/sdpa/DummyGwes.hpp>
 
 namespace po = boost::program_options;
 
@@ -147,8 +148,9 @@ namespace unit_tests {
 
 		NRE(  const std::string& name, const std::string& url,
 			  const std::string& masterName, const std::string& masterUrl,
-			  const std::string& workerUrl,  const std::string guiUrl = "" )
-				: 	sdpa::daemon::NRE::NRE(  name, url, masterName, masterUrl, workerUrl, guiUrl, true )
+			  const std::string& workerUrl,  const std::string guiUrl = "",
+			  const bool bExtSched = false, const bool bUseDummyWE = false  )
+				: 	sdpa::daemon::NRE::NRE(  name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE )
 						  //,SDPA_INIT_LOGGER(name)
 		{
 			//SDPA_LOG_DEBUG("TesNRE constructor called ...");
@@ -166,9 +168,10 @@ namespace unit_tests {
 
 		static NRE::ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl = "")
+								  const std::string& workerUrl,  const std::string guiUrl = "",
+								  const bool bExtSched = false, const bool bUseDummyWE = false )
 		{
-			 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl ));
+			 return NRE::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE ));
 		}
 
 		static void start(NRE::ptr_t ptrNRE)
@@ -240,11 +243,12 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-void TestComponents::testComponents()
+void TestComponents::testComponentsRealGWES()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
 	string strAnswer = "finished";
 	string noStage = "";
+	string strGuiUrl = "";
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	sdpa::daemon::Orchestrator::start(ptrOrch);
@@ -252,7 +256,8 @@ void TestComponents::testComponents()
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
-	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
+	// use external scheduler and real GWES
+	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
 	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
@@ -307,3 +312,76 @@ void TestComponents::testComponents()
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
 }
+
+void TestComponents::testComponentsDummyGWES()
+{
+	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
+	string strAnswer = "finished";
+	string noStage = "";
+	bool bUseDummyGWES = true;
+	bool bUseExtSched  = true;
+	string strGuiUrl   = "";
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:7000", "workflows", bUseDummyGWES );
+	sdpa::daemon::Orchestrator::start(ptrOrch);
+
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000", bUseDummyGWES);
+	sdpa::daemon::Aggregator::start(ptrAgg);
+
+	// use external scheduler and dummy GWES
+	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched, bUseDummyGWES );
+	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
+
+    try
+    {
+    	unit_tests::NRE::start(ptrNRE_0);
+    	//sdpa::daemon::NRE::start(ptrNRE_1);
+    }
+    catch (const std::exception &ex)
+    {
+    	LOG(FATAL, "could not start NRE: " << ex.what());
+    	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+    	/* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
+    	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+    	sdpa::daemon::Aggregator::shutdown(ptrAgg);
+    	unit_tests::NRE::shutdown(ptrNRE_0);
+    	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
+
+    	return;
+    }
+
+	for(int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
+
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
+
+		std::string job_status =  m_ptrUser->queryJob(job_id_user);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = m_ptrUser->queryJob(job_id_user);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(m_sleep_interval);
+		}
+
+		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
+		m_ptrUser->retrieveResults(job_id_user);
+
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		m_ptrUser->deleteJob(job_id_user);
+	}
+
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
+	unit_tests::NRE::shutdown(ptrNRE_0);
+	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
+
+    sleep(1);
+	SDPA_LOG_DEBUG("Test finished!");
+}
+

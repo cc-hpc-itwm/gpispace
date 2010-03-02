@@ -174,6 +174,9 @@ namespace sdpa { namespace daemon {
 	  		  ptr_scheduler_->print();
 	  }
 
+	  //virtual void backup( const std::string& );
+	  //virtual void recover( const std::string& );
+
   protected:
 	  SDPA_DECLARE_LOGGER();
 

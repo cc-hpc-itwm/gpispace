@@ -30,7 +30,8 @@ namespace sdpa {
 		namespace tests {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
-			  CPPUNIT_TEST( testComponents );
+			  CPPUNIT_TEST( testComponentsRealGWES );
+			  CPPUNIT_TEST( testComponentsDummyGWES );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -42,7 +43,8 @@ namespace sdpa {
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
-			  void testComponents();
+			  void testComponentsRealGWES();
+			  void testComponentsDummyGWES();
 
 			private:
 			  SDPA_DECLARE_LOGGER();

@@ -51,15 +51,40 @@ namespace sdpa { namespace fsm { namespace smc {
 			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 			void Dispatch();
 
-			friend class boost::serialization::access;
-			template <class Archive>
-			void serialize(Archive& ar, const unsigned int file_version )
-			{
-				ar & boost::serialization::base_object<JobImpl>(*this);
-			}
-
 			sdpa::status_t getStatus() { return m_status_; }
 			JobFSMContext& GetContext() { return m_fsmContext; }
+
+			template<class Archive>
+			void save(Archive & ar, const unsigned int version) const
+			{
+				int stateId(m_fsmContext.getState().getId());
+
+			    // invoke serialization of the base class
+			    ar << boost::serialization::base_object<JobImpl>(*this);
+			    ar << stateId;
+			}
+
+			template<class Archive>
+			void load(Archive & ar, const unsigned int version)
+			{
+				int stateId;
+
+			    // invoke serialization of the base class
+			    ar >> boost::serialization::base_object<JobImpl>(*this);
+			    ar >> stateId;
+
+			    m_fsmContext.setState(m_fsmContext.valueOf(stateId));
+			}
+
+			template<class Archive>
+			void serialize( Archive & ar, const unsigned int file_version )
+			{
+			    boost::serialization::split_member(ar, *this, file_version);
+			}
+
+			friend class boost::serialization::access;
+			//friend class sdpa::tests::WorkerSerializationTest;
+
 		private:
 			SDPA_DECLARE_LOGGER();
 			JobFSMContext m_fsmContext;

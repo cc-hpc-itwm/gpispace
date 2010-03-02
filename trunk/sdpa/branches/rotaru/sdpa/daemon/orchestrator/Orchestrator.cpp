@@ -17,16 +17,28 @@
  */
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+
 #include <gwes/GWES.h>
 #include <SchedulerOrch.hpp>
 #include <Orchestrator.hpp>
+
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
-Orchestrator::Orchestrator(  const std::string &name,  const std::string& url, const std::string &workflow_directory )
-	: DaemonFSM( name, new gwes::GWES(workflow_directory) ),
+Orchestrator::Orchestrator(  const std::string &name,  const std::string& url,
+		                     const std::string &workflow_directory, const bool bUseDummyWE )
+	: DaemonFSM( name, (bUseDummyWE ? dynamic_cast<sdpa::Sdpa2Gwes*>(new DummyGwes) :
+			                          dynamic_cast<sdpa::Sdpa2Gwes*>(new gwes::GWES(workflow_directory))) ),
 	  SDPA_INIT_LOGGER(name),
 	  url_(url)
 {
@@ -41,9 +53,10 @@ Orchestrator::~Orchestrator()
 	daemon_stage_ = NULL;
 }
 
-Orchestrator::ptr_t Orchestrator::create( const std::string& name, const std::string& url, const std::string &workflow_directory )
+Orchestrator::ptr_t Orchestrator::create( const std::string& name, const std::string& url,
+		                                  const std::string &workflow_directory, const bool bUseDummyWE )
 {
-	return Orchestrator::ptr_t(new Orchestrator(name, url, workflow_directory));
+	return Orchestrator::ptr_t(new Orchestrator(name, url, workflow_directory, bUseDummyWE));
 }
 
 void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
@@ -73,6 +86,13 @@ void Orchestrator::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+}
+
+void Orchestrator::action_interrupt(const InterruptEvent&)
+{
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
+	// save the current state of the system .i.e serialize the daemon's state
+
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -353,5 +373,56 @@ void Orchestrator::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pEv
 		SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND) );
 		sendEventToMaster(pErrorEvt);
+	}
+}
+
+void Orchestrator::backup( const std::string& strArchiveName )
+{
+	try
+	{
+		//print();
+
+		Orchestrator* ptrOrch(this);
+		std::ofstream ofs( strArchiveName.c_str() );
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<Orchestrator*>(NULL));
+		oa.register_type(static_cast<DaemonFSM*>(NULL));
+		oa.register_type(static_cast<GenericDaemon*>(NULL));
+		oa.register_type(static_cast<SchedulerOrch*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		oa << ptrOrch;
+
+		SDPA_LOG_DEBUG("Successfully serialized the Orchestrator into "<<strArchiveName);
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: "<< e.what() << endl;
+		return ;
+	}
+}
+
+void Orchestrator::recover( const std::string& strArchiveName )
+{
+	try
+	{
+		Orchestrator* pRestoredOrch(this);
+		std::ifstream ifs( strArchiveName.c_str() );
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<Orchestrator*>(NULL));
+		ia.register_type(static_cast<DaemonFSM*>(NULL));
+		ia.register_type(static_cast<GenericDaemon*>(NULL));
+		ia.register_type(static_cast<SchedulerOrch*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		ia >> pRestoredOrch;
+
+		SDPA_LOG_DEBUG("Successfully de-serialized the Orchestrator from "<<strArchiveName);
+		pRestoredOrch->print();
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: " << e.what() << endl;
+		return;
 	}
 }

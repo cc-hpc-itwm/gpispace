@@ -27,18 +27,21 @@ namespace sdpa {
 			SDPA_DECLARE_LOGGER();
 
 			Aggregator( const std::string& name = "", const std::string& url = "",
-						const std::string& masterName = "", const std::string& masterUrl = "");
+						const std::string& masterName = "", const std::string& masterUrl = "",
+						const bool bUseDummyWE = false);
 
 			virtual ~Aggregator();
 
 			static Aggregator::ptr_t create( const std::string& name, const std::string& url,
-											 const std::string& masterName, const std::string& masterUrl );
+											 const std::string& masterName, const std::string& masterUrl,
+											 const bool bUseDummyWE = false );
 
 			static void start(Aggregator::ptr_t ptrAgg);
 			static void shutdown(Aggregator::ptr_t ptrAgg);
 
 			void action_configure( const sdpa::events::StartUpEvent& );
-			void action_config_ok(const sdpa::events::ConfigOkEvent&);
+			void action_config_ok( const sdpa::events::ConfigOkEvent&);
+			void action_interrupt( const sdpa::events::InterruptEvent& );
 
 			void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 			void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
@@ -55,6 +58,9 @@ namespace sdpa {
 			{
 				ar & boost::serialization::base_object<DaemonFSM>(*this);
 			}
+
+			virtual void backup( const std::string& );
+			virtual void recover( const std::string& );
 
 			friend class boost::serialization::access;
 			friend class sdpa::tests::WorkerSerializationTest;

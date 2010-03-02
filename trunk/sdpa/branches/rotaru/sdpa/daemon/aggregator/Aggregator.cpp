@@ -17,9 +17,18 @@
  */
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <gwes/GWES.h>
 #include <SchedulerAgg.hpp>
 #include <Aggregator.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -27,8 +36,9 @@ using namespace sdpa::events;
 
 
 Aggregator::Aggregator( const std::string& name, const std::string& url,
-						const std::string& masterName, const std::string& masterUrl)
-	: DaemonFSM( name, new gwes::GWES() ),
+						const std::string& masterName, const std::string& masterUrl, const bool bUseDummyWE)
+	: DaemonFSM( name, (bUseDummyWE ? dynamic_cast<sdpa::Sdpa2Gwes*>(new DummyGwes) :
+									  dynamic_cast<sdpa::Sdpa2Gwes*>(new gwes::GWES)) ),
 	  SDPA_INIT_LOGGER(name),
 	  url_(url),
 	  masterName_(masterName),
@@ -45,9 +55,10 @@ Aggregator::~Aggregator()
 }
 
 Aggregator::ptr_t Aggregator::create( const std::string& name, const std::string& url,
-									  const std::string& masterName, const std::string& masterUrl )
+									  const std::string& masterName, const std::string& masterUrl,
+									  const bool bUseDummyWE)
 {
-	 return Aggregator::ptr_t( new Aggregator( name, url, masterName, masterUrl ));
+	 return Aggregator::ptr_t( new Aggregator( name, url, masterName, masterUrl, bUseDummyWE ));
 }
 
 void Aggregator::start(Aggregator::ptr_t ptrAgg)
@@ -86,6 +97,13 @@ void Aggregator::action_config_ok(const ConfigOkEvent&)
 	SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 	to_master_stage()->send(pEvtWorkerReg);
+}
+
+void Aggregator::action_interrupt(const InterruptEvent&)
+{
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
+	// save the current state of the system .i.e serialize the daemon's state
+
 }
 
 void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -403,3 +421,47 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	}
 }
 
+void Aggregator::backup( const std::string& strArchiveName )
+{
+	try
+	{
+		print();
+
+		Aggregator* ptrOrch(this);
+		std::ofstream ofs( strArchiveName.c_str() );
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<Aggregator*>(NULL));
+		oa.register_type(static_cast<DaemonFSM*>(NULL));
+		oa.register_type(static_cast<GenericDaemon*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		oa << ptrOrch;
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: "<< e.what() << endl;
+		return;
+	}
+}
+
+void Aggregator::recover( const std::string& strArchiveName )
+{
+	try
+	{
+		Aggregator* pRestoredOrch(this);
+		std::ifstream ifs( strArchiveName.c_str() );
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<Aggregator*>(NULL));
+		ia.register_type(static_cast<DaemonFSM*>(NULL));
+		ia.register_type(static_cast<GenericDaemon*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		ia >> pRestoredOrch;
+
+		print();
+	}
+	catch(exception &e)
+	{
+		cout <<"Exception occurred: " << e.what() << endl;
+	}
+}

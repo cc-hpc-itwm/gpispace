@@ -36,6 +36,7 @@
 #include <gwes/GWES.h>
 #include <sdpa/wf/GwesGlue.hpp>
 
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -165,7 +166,7 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 
 void GenericDaemon::shutdown_network()
 {
-	SDPA_LOG_DEBUG("shutting-down the network components...");
+	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
 	const std::string prefix(daemon_stage_->name()+".net");
 
 	SDPA_LOG_DEBUG("shutdown the decoding stage...");
@@ -406,6 +407,8 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
+	// check if the system should be recovered
+
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
 	// in fact the master name should be red from the configuration file
@@ -436,6 +439,8 @@ void GenericDaemon::action_config_nok(const ConfigNokEvent&)
 void GenericDaemon::action_interrupt(const InterruptEvent&)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
+	// save the current state of the system .i.e serialize the daemon's state
+
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
@@ -893,7 +898,6 @@ void GenericDaemon::workflowCanceled(const gwes::workflow_id_t &workflowId, cons
 	sendDeleteEvent(workflowId);
 }
 
-
 void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
 {
 	sdpa::job_result_t results;
@@ -914,34 +918,13 @@ void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 	sendEventToSelf(pCancelAckEvt);
 }
 
-/*
-void GenericDaemon::backup(std::string& strFileName)
+
+/*void GenericDaemon::backup( const std::string& strArchiveName )
 {
-	try
-	{
-		ofstream ofs(strFileName.c_str());
-		assert(ofs.good());
-		boost::archive::text_oarchive oa(ofs);
-		//oa<<ptr_job_man_;
-	}
-	catch(exception &e)
-	{
-		cout << e.what() << endl;
-	}
+	SDPA_LOG_WARN("Not implemented");
 }
 
-void GenericDaemon::recover(std::string& strFileName)
+void GenericDaemon::recover( const std::string& strArchiveName )
 {
-	try
-	{
-		ifstream ifs(strFileName.c_str());
-		assert(ifs.good());
-		boost::archive::text_iarchive ia(ifs);
-		//ia >>ptr_job_man_;
-	}
-	catch(exception &e)
-	{
-		cout << e.what() << endl;
-	}
-}
-*/
+	SDPA_LOG_WARN("Not implemented");
+}*/

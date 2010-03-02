@@ -29,7 +29,7 @@ namespace sdpa {
   class SchedulerOrch : public SchedulerImpl {
 
   public:
-	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler):
+	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL):
 		 SchedulerImpl(pCommHandler),
 		 SDPA_INIT_LOGGER("Scheduler " + pCommHandler->name())
 	{
@@ -42,6 +42,14 @@ namespace sdpa {
 	 void send_life_sign() {}
 	 void check_post_request() {}
 
+	 template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<SchedulerImpl>(*this);
+	}
+
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
 
   private:
 	  SDPA_DECLARE_LOGGER();

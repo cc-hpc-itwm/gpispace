@@ -7,6 +7,7 @@ namespace sdpa {
   namespace tests {
     class WorkerSerializationTest : public CPPUNIT_NS::TestFixture {
       CPPUNIT_TEST_SUITE( sdpa::tests::WorkerSerializationTest);
+
       CPPUNIT_TEST( testSynchQueueSerialization );
       CPPUNIT_TEST( testWorkerSerialization );
       CPPUNIT_TEST( testSchedulerSerialization );
@@ -16,7 +17,7 @@ namespace sdpa {
       CPPUNIT_TEST( testOrchestratorSerialization );
       CPPUNIT_TEST( testAggregatorSerialization );
       CPPUNIT_TEST( testNRESerialization );
-      //CPPUNIT_TEST( testSchedulerNRESerialization );
+      CPPUNIT_TEST( testSchedulerNRESerialization );
       CPPUNIT_TEST_SUITE_END();
 
     private:

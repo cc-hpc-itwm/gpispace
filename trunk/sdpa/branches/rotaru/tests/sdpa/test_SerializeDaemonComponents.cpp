@@ -9,9 +9,6 @@
 #include <sstream>
 #include <string>
 
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -26,6 +23,7 @@
 
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
@@ -33,10 +31,15 @@
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <tests/sdpa/DummyGwes.hpp>
 
+#include <sdpa/client/ClientApi.hpp>
+#include <seda/StageRegistry.hpp>
+#include <seda/Strategy.hpp>
+
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
+using namespace seda;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( sdpa::tests::WorkerSerializationTest );
 
@@ -50,6 +53,23 @@ void WorkerSerializationTest::setUp() {
 }
 
 void WorkerSerializationTest::tearDown() {
+}
+
+string read_workflow(string strFileName)
+{
+	ifstream f(strFileName.c_str());
+	ostringstream os;
+	os.str("");
+
+	if( f.is_open() )
+	{
+		char c;
+		while (f.get(c)) os<<c;
+		f.close();
+	}else
+		cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+
+	return os.str();
 }
 
 void WorkerSerializationTest::testSchedulerNRESerialization()
@@ -171,7 +191,7 @@ void WorkerSerializationTest::testNRESerialization()
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
 		oa.register_type(static_cast<SchedulerNRE*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
-		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
+
 		oa << ptrNRE_0;
 	}
 	catch(exception &e)
@@ -191,7 +211,7 @@ void WorkerSerializationTest::testNRESerialization()
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		ia.register_type(static_cast<SchedulerNRE*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
+
 		ia >> ptrRestoredNRE_0;
 
 		std::cout<<std::endl<<"----------------The restored content of the NRE is:----------------"<<std::endl;
@@ -386,6 +406,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa.register_type(static_cast<SchedulerOrch*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		oa << pOrch;
 	}
@@ -405,6 +426,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia.register_type(static_cast<SchedulerOrch*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
 		ia >> pRestoredOrch;
 
