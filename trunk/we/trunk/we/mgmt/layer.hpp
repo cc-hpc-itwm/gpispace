@@ -178,7 +178,9 @@ namespace we { namespace mgmt {
 	  // check network for validity
 	  if (net_validator::is_valid(n))
 	  {
-		 return id_traits::next();
+		 id_type id = id_traits::next();
+		 std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
+		 return id;
 	  }
 	  else
 	  {
