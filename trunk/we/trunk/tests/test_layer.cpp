@@ -38,7 +38,6 @@ int main ()
   for (std::size_t i (0); i < 10; ++i)
   {
 	daemon_type::mgmt_layer_type::id_type id = mgmt_layer.submit("");
-	std::cout << "id=" << id << std::endl;
 	mgmt_layer.cancel(id, "");
 	mgmt_layer.failed(id, "");
 	mgmt_layer.finished(id, "");
