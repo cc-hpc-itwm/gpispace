@@ -35,24 +35,31 @@ namespace we { namespace mgmt {
 	typedef typename detail::edge_t edge_t;
   };
 
-  template <typename _Net, typename _Traits, typename _Data>
-  void parse (_Net & net, const _Data &)
+  template <typename _Net, typename _Data = std::string, typename _Traits = NetTraits<_Net> >
+  struct parser
   {
-	typedef typename _Traits::pid_t pid_t;
-	typedef typename _Traits::tid_t tid_t;
-	typedef typename _Traits::transition_t transition_t;
-	typedef typename _Traits::place_t place_t;
-	typedef typename _Traits::edge_t edge_t;
-	typedef typename _Traits::token_t token_t;
+	typedef _Net net_type;
+	typedef _Data data_type;
+	typedef _Traits traits_type;
 
-	pid_t pid_in = net.add_place(place_t("in"));
-	pid_t pid_out = net.add_place(place_t("out"));
-	tid_t tid_start ( net.add_transition( transition_t("start", transition_t::INTERNAL_SIMPLE)));
-	net.add_edge (edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in));
-	net.add_edge (edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out));
+	typedef typename traits_type::pid_t pid_t;
+	typedef typename traits_type::tid_t tid_t;
+	typedef typename traits_type::transition_t transition_t;
+	typedef typename traits_type::place_t place_t;
+	typedef typename traits_type::edge_t edge_t;
+	typedef typename traits_type::token_t token_t;
 
-	net.put_token(pid_in, token_t("token-data"));
-  }
+	static void parse (net_type & net, const data_type &)
+	{
+	  pid_t pid_in = net.add_place(place_t("in"));
+	  pid_t pid_out = net.add_place(place_t("out"));
+	  pid_t tid_start ( net.add_transition( transition_t("start", transition_t::INTERNAL_SIMPLE)));
+	  net.add_edge (edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in));
+	  net.add_edge (edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out));
+
+	  net.put_token(pid_in, token_t("token-data"));
+	}
+  };
 
   template <typename Stream, typename Net>
   inline Stream & operator << (Stream & s, const Net & n)

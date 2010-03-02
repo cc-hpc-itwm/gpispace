@@ -24,7 +24,7 @@ int main ()
 
   std::cout << "running layer test..." << std::endl;
   pnet_t net("test_layer");
-  parse<pnet_t, NetTraits<pnet_t>, std::string>(net, ""); 
+  parser<pnet_t>::parse(net, ""); 
 
   std::cout << net << std::endl;
 
