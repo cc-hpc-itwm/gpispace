@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "layer.hpp"
+#include <we/mgmt/layer.hpp>
 
 using namespace we::mgmt;
 
