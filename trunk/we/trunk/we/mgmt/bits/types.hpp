@@ -27,7 +27,15 @@ namespace we { namespace mgmt {
 
 	struct token_t
 	{
-	  typedef unsigned int type;
+	  typedef std::string type;
+
+	  token_t() {}
+
+	  template <typename _Tp>
+	  token_t(const _Tp & value_)
+		: value(value_)
+	  {}
+
 	  type value;
 	};
 
