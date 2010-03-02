@@ -23,17 +23,17 @@ int main ()
   std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
 
   // instantiate layer
-  typedef layer<sdpa_exec, pnet_t> pnet_layer_t;
-  pnet_layer_t pnet_layer;
+  typedef layer<sdpa_exec, pnet_t> pnet_mgmt_layer_t;
+  pnet_mgmt_layer_t mgmt_layer;
 
   for (std::size_t i (0); i < 10; ++i)
   {
-	pnet_layer_t::id_type id = pnet_layer.submit("");
+	pnet_mgmt_layer_t::id_type id = mgmt_layer.submit("");
 	std::cout << "id=" << id << std::endl;
-	pnet_layer.cancel(id, "");
-	pnet_layer.failed(id, "");
-	pnet_layer.finished(id, "");
-	pnet_layer.status(id);
+	mgmt_layer.cancel(id, "");
+	mgmt_layer.failed(id, "");
+	mgmt_layer.finished(id, "");
+	mgmt_layer.status(id);
   }
 
   return EXIT_SUCCESS;
