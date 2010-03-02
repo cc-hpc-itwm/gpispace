@@ -7,21 +7,6 @@ using namespace we::mgmt;
 
 typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
 
-static std::ostream & operator << (std::ostream & s, const pnet_t & n)
-{
-  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-    {
-      s << "[" << n.get_place (*p) << ":";
-
-      for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-        s << " " << *tp;
-
-      s << "]";
-    }
-
-  return s;
-}
-
 int main ()
 {
   std::cout << "running layer test..." << std::endl;

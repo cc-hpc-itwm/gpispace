@@ -25,22 +25,52 @@ namespace we { namespace mgmt {
   template <typename Net>
   struct NetTraits
   {
-	typedef petri_net::pid_t pid_t;
-	typedef petri_net::tid_t tid_t;
-	typedef petri_net::eid_t eid_t;
+	typedef typename petri_net::pid_t pid_t;
+	typedef typename petri_net::tid_t tid_t;
+	typedef typename petri_net::eid_t eid_t;
+
+	typedef typename detail::transition_t transition_t;
+	typedef typename detail::place_t place_t;
+	typedef typename detail::token_t token_t;
+	typedef typename detail::edge_t edge_t;
   };
 
-  template <typename _Net, typename _NetTraits, typename _Data>
+  template <typename _Net, typename _Traits, typename _Data>
   void parse (_Net & net, const _Data &)
   {
-	typename _NetTraits::pid_t pid_in = net.add_place(detail::place_t("in"));
-	typename _NetTraits::pid_t pid_out = net.add_place(detail::place_t("out"));
-	typename _NetTraits::tid_t tid_start (
-	  net.add_transition(
-		detail::transition_t("start", detail::transition_t::INTERNAL_SIMPLE)));
-	net.add_edge(detail::edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in));
-	net.add_edge(detail::edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out));
+	typedef typename _Traits::pid_t pid_t;
+	typedef typename _Traits::tid_t tid_t;
+	typedef typename _Traits::transition_t transition_t;
+	typedef typename _Traits::place_t place_t;
+	typedef typename _Traits::edge_t edge_t;
+	typedef typename _Traits::token_t token_t;
+
+	pid_t pid_in = net.add_place(place_t("in"));
+	pid_t pid_out = net.add_place(place_t("out"));
+	tid_t tid_start ( net.add_transition( transition_t("start", transition_t::INTERNAL_SIMPLE)));
+	net.add_edge (edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in));
+	net.add_edge (edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out));
+
+	net.put_token(pid_in, token_t("token-data"));
   }
+
+  template <typename Stream, typename Net>
+  inline Stream & operator << (Stream & s, const Net & n)
+  {
+	for (typename Net::place_const_it p (n.places()); p.has_more(); ++p)
+	  {
+		s << "[" << n.get_place (*p) << ":";
+
+		for (typename Net::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+		  s << " " << *tp;
+
+		s << "]";
+	  }
+
+	return s;
+  }
+
+
 }}
 
 #endif
