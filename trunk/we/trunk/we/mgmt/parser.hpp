@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  layer.hpp
+ *       Filename:  parser.hpp
  *
- *    Description:  workflow engine management layer
+ *    Description:  
  *
  *        Version:  1.0
- *        Created:  02/25/2010 12:51:21 PM
+ *        Created:  02/25/2010 05:05:32 PM
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,17 +16,13 @@
  * =====================================================================================
  */
 
-#ifndef WE_MGMT_LAYER_HPP
-#define WE_MGMT_LAYER_HPP 1
-
-#include <we/concurrent/net.hpp>
-
-#include <boost/random.hpp>
-#include <boost/function.hpp>
-#include <boost/functional/hash.hpp>
-#include <boost/thread.hpp>
+#ifndef WE_MGMT_PARSER_HPP
+#define WE_MGMT_PARSER_HPP 1
 
 #include <we/mgmt/bits/types.hpp>
-#include <we/mgmt/parser.hpp>
+
+namespace we { namespace mgmt {
+
+}}
 
 #endif

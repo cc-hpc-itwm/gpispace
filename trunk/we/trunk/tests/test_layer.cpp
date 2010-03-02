@@ -46,5 +46,8 @@ int main ()
 	<< " trans=" << tid_start
 	<< " e_in" << eid_start_in << " e_out=" << eid_start_out
 	<< std::endl;
+
+  std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
+
   return EXIT_SUCCESS;
 }
