@@ -33,66 +33,80 @@
 namespace we { namespace mgmt {
   namespace detail {
 	namespace def { // defaults
-	template <typename Net>
-	struct net_traits
-	{
-	};
 
-	template <typename IdType=unsigned long>
-	struct id_traits
-	{
-	public:
-	  typedef IdType id_type;
-
-	  static id_type next()
+	  template <typename Net, bool default_value = true>
+	  struct basic_net_validator
 	  {
-		static id_type _id = zero();
-		return _id++;
-	  }
+		typedef Net net_type;
 
-	  static id_type zero()
+		static bool is_valid(const net_type & n)
+		{
+		  we::util::remove_unused_variable_warning(n);
+		  return default_value;
+		}
+	  };
+
+	  template <typename Net>
+	  struct net_traits
 	  {
-		return 0;
-	  }
-	};
+		typedef basic_net_validator<Net> validator_type;
+	  };
 
-	template <typename StatusType=int>
-	struct status_traits
-	{
-	  typedef StatusType value_type;
-
-	  static value_type RUNNING() { return 0; }
-	};
-
-	template <typename Net, typename BytesType=std::string>
-	struct codec
-	{
-	  typedef BytesType bytes_type;
-	  typedef Net net_type;
-
-	  typedef bytes_type encode_type;
-	  typedef net_type decode_type;
-
-	  static decode_type decode(const encode_type & data)
+	  template <typename IdType=unsigned long>
+	  struct id_traits
 	  {
-		we::util::remove_unused_variable_warning(data);
-		net_type n;
-		return n;
-	  }
+	  public:
+		typedef IdType id_type;
 
-	  static encode_type encode(const decode_type & data)
+		static id_type next()
+		{
+		  static id_type _id = zero();
+		  return _id++;
+		}
+
+		static id_type zero()
+		{
+		  return 0;
+		}
+	  };
+
+	  template <typename StatusType=int>
+	  struct status_traits
 	  {
-		we::util::remove_unused_variable_warning(data);
-		bytes_type b;
-		return b;
-	  }
-	};
+		typedef StatusType value_type;
 
-	template <typename Net>
-	struct result_traits
-	{
-	  typedef std::string value_type;
-	};
+		static value_type RUNNING() { return 0; }
+	  };
+
+	  template <typename Net, typename BytesType=std::string>
+	  struct codec
+	  {
+		typedef BytesType bytes_type;
+		typedef Net net_type;
+
+		typedef bytes_type encode_type;
+		typedef net_type decode_type;
+
+		static decode_type decode(const encode_type & data)
+		{
+		  we::util::remove_unused_variable_warning(data);
+		  net_type n;
+		  return n;
+		}
+
+		static encode_type encode(const decode_type & data)
+		{
+		  we::util::remove_unused_variable_warning(data);
+		  bytes_type b;
+		  return b;
+		}
+	  };
+
+	  template <typename Net>
+	  struct result_traits
+	  {
+		typedef std::string value_type;
+	  };
 
 	} // namespace def
 
@@ -105,6 +119,7 @@ namespace we { namespace mgmt {
 	  typedef def::codec<Net, std::string> codec_type;
 	  typedef def::result_traits<Net> result_traits;
 	};
+
   }
 
   template <typename ExecutionLayer
@@ -119,6 +134,7 @@ namespace we { namespace mgmt {
 	typedef Traits traits_type;
 
 	typedef typename traits_type::net_traits net_traits;
+	typedef typename net_traits::validator_type net_validator;
 
 	typedef typename traits_type::id_traits  id_traits;
 	typedef typename id_traits::id_type id_type;
@@ -139,13 +155,48 @@ namespace we { namespace mgmt {
 	/******************************
 	 * EXTERNAL API
 	 *****************************/
+
+	/** 
+	 * Submit a new petri net to the petri-net management layer
+	 *
+	 *	  pre-conditions: none
+	 *
+	 *	  side-effects: parses the passed data
+	 *					registeres the petri-net with the mgmt layer
+	 *					returns a newly generated id
+	 *
+	 *	  post-conditions: the net is registered is with id "id"
+	 *
+	 */
 	id_type submit(const typename codec_type::encode_type & bytes)
 	{
 	  net_type n = codec_type::decode(bytes);
-	  
-	  return id_traits::next();
+
+	  // check network for validity
+	  if (net_validator::is_valid(n))
+	  {
+		 return id_traits::next();
+	  }
+	  else
+	  {
+		// TODO: detailed error analysis
+		throw std::runtime_error("network invalid!");
+	  }
 	}
 
+	/** 
+	 * Inform the management layer to cancel a previously submitted net
+	 *
+	 *	  pre-conditions:
+	 *		  - a network must have been registered and assigned the id "id"
+	 *
+	 *	  side-effects:
+	 *		  - the hierarchy belonging to the net is cancelled in turn
+	 *
+	 *	  post-conditions:
+	 *		  - the internal state of the network switches to CANCELLING
+	 *		  - all children of the network will be terminated
+	 * */
 	template <typename ReasonType>
 	bool cancel(const id_type & id, const ReasonType & reason)
 	{
@@ -154,6 +205,18 @@ namespace we { namespace mgmt {
 	  return true;
 	}
 
+	/**
+	 * Inform the management layer that an execution finished with the given result
+	 *
+	 *	  pre-conditions:
+	 *		  - the management layer submitted an activity to be executed with id "id"
+	 *
+	 *	  side-effects:
+	 *		  -	the results are integrated into the referenced net
+	 *
+	 *	  post-conditions:
+	 *		  - the node belonging to this is activity is removed
+	 **/
 	bool finished(const id_type & id, const result_type & result)
 	{
 	  we::util::remove_unused_variable_warning(id);
@@ -161,6 +224,18 @@ namespace we { namespace mgmt {
 	  return true;
 	}
 
+	/**
+	 * Inform the management layer that an execution failed with the given result
+	 *
+	 *	  pre-conditions:
+	 *		  - the management layer submitted an activity to be executed with id "id"
+	 *
+	 *	  side-effects:
+	 *		  -	the results are integrated into the referenced net
+	 *
+	 *	  post-conditions:
+	 *		  - the node belonging to this activity is removed
+	 **/
 	bool failed(const id_type & id, const result_type & result)
 	{
 	  we::util::remove_unused_variable_warning(id);
@@ -168,10 +243,18 @@ namespace we { namespace mgmt {
 	  return true;
 	}
 
+	// END: EXTERNAL API
+
 	status_type status(const id_type & id)
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  return status_traits::RUNNING();
+	}
+
+	const net_type & lookup(const id_type & id)
+	{
+	  we::util::remove_unused_variable_warning(id);
+	  throw std::runtime_error("not yet implemented");
 	}
   };
 }}
