@@ -64,9 +64,11 @@ namespace petri_net
     {
       boost::lock_guard<boost::mutex> lock (mutex);
 
+      activity_t act = n.extract_activity_random (engine);
+
       ++_extract;
 
-      return n.extract_activity_random (engine);
+      return act;
     }
 
     bool done (void)
