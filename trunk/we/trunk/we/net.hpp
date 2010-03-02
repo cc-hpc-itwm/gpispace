@@ -62,14 +62,19 @@ class net
 
   // *********************************************************************** //
 public:
-  typedef bijection::const_it<Place,pid_t> place_const_it;
-  typedef bijection::const_it<Transition,tid_t> transition_const_it;
-  typedef bijection::const_it<Edge,eid_t> edge_const_it;
+  typedef Place place_type;
+  typedef Transition transition_type;
+  typedef Edge edge_type;
+  typedef Token token_type;
+
+  typedef bijection::const_it<place_type,pid_t> place_const_it;
+  typedef bijection::const_it<transition_type,tid_t> transition_const_it;
+  typedef bijection::const_it<edge_type,eid_t> edge_const_it;
   typedef typename place_const_it::size_type size_type;
 
-  typedef multirel::right_const_it<Token, pid_t> token_place_it;
+  typedef multirel::right_const_it<token_type, pid_t> token_place_it;
 
-  typedef Function::Transition::Traits<Token> tf_traits;
+  typedef Function::Transition::Traits<token_type> tf_traits;
   typedef typename tf_traits::place_via_edge_t place_via_edge_t;
   typedef typename tf_traits::token_input_t token_input_t;
   typedef typename tf_traits::input_t input_t;
@@ -80,14 +85,14 @@ public:
   typedef typename tf_traits::fun_t trans_t;
   typedef boost::unordered_map<tid_t, trans_t> trans_map_t;
 
-  typedef Function::Condition::Traits<Token> cd_traits;
+  typedef Function::Condition::Traits<token_type> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::out_cond_t out_cond_t;
 
   typedef boost::unordered_map<tid_t, in_cond_t> in_cond_map_t;
   typedef boost::unordered_map<tid_t, out_cond_t> out_cond_map_t;
 
-  typedef typename std::pair<Token,eid_t> token_via_edge_t;
+  typedef typename std::pair<token_type,eid_t> token_via_edge_t;
 
   typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
   typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
@@ -101,7 +106,7 @@ public:
   // *********************************************************************** //
 private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
-  typedef typename multirel::multirel<Token,pid_t> token_place_rel_t;
+  typedef typename multirel::multirel<token_type,pid_t> token_place_rel_t;
 
   typedef boost::unordered_set<tid_t> set_of_tid_t;
   typedef set_of_tid_t in_enabled_t;
@@ -112,9 +117,9 @@ private:
 
   // *********************************************************************** //
   std::string name;
-  bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
-  bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
-  bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
+  bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
+  bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
+  bijection::bijection<edge_type,eid_t> emap; // edge_type <-> internal id
 
   connection_map_t connection_map;
 
@@ -162,7 +167,7 @@ private:
   // *********************************************************************** //
 
   template<typename ROW, typename COL>
-  eid_t gen_add_edge ( const Edge & edge
+  eid_t gen_add_edge ( const edge_type & edge
                      , const ROW & r
                      , const COL & c
                      , adjacency::table<ROW,COL,eid_t> & m
@@ -295,7 +300,7 @@ private:
   void update_in_enabled_put_token ( const tid_t & tid
                                    , const pid_t & pid
                                    , const eid_t & eid
-                                   , const Token & token
+                                   , const token_type & token
                                    )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -317,7 +322,7 @@ private:
 
   void update_in_enabled_del_one_token ( const tid_t & tid
                                        , const pid_t & pid
-                                       , const Token & token
+                                       , const token_type & token
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -342,7 +347,7 @@ private:
 
   void update_in_enabled_del_all_token ( const tid_t & tid
                                        , const pid_t & pid
-                                       , const Token & token
+                                       , const token_type & token
                                        )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
@@ -464,45 +469,45 @@ public:
   }
 
   // get id
-  const pid_t & get_place_id (const Place & place) const
+  const pid_t & get_place_id (const place_type & place) const
     throw (bijection::exception::no_such)
   {
     return pmap.get_id (place);
   }
 
-  const tid_t & get_transition_id (const Transition & transition) const
+  const tid_t & get_transition_id (const transition_type & transition) const
     throw (bijection::exception::no_such)
   {
     return tmap.get_id (transition);
   }
 
-  const eid_t & get_edge_id (const Edge & edge) const
+  const eid_t & get_edge_id (const edge_type & edge) const
     throw (bijection::exception::no_such)
   {
     return emap.get_id (edge);
   }
 
   // get element
-  const Place & get_place (const pid_t & pid) const
+  const place_type & get_place (const pid_t & pid) const
     throw (bijection::exception::no_such)
   {
     return pmap.get_elem (pid);
   }
 
-  const Transition & get_transition (const tid_t & tid) const
+  const transition_type & get_transition (const tid_t & tid) const
     throw (bijection::exception::no_such)
   {
     return tmap.get_elem (tid);
   }
 
-  const Edge & get_edge (const eid_t & eid) const
+  const edge_type & get_edge (const eid_t & eid) const
     throw (bijection::exception::no_such)
   {
     return emap.get_elem (eid);
   }
 
   // add element
-  pid_t add_place (const Place & place)
+  pid_t add_place (const place_type & place)
     throw (bijection::exception::already_there)
   {
     return pmap.add (place);
@@ -528,10 +533,10 @@ public:
   }
 
   tid_t add_transition
-  ( const Transition & transition
-  , const trans_t & tf = Function::Transition::Default<Token>()
-  , const in_cond_t & inc = Function::Condition::In::Default<Token>()
-  , const out_cond_t & outc = Function::Condition::Out::Default<Token>()
+  ( const transition_type & transition
+  , const trans_t & tf = Function::Transition::Default<token_type>()
+  , const in_cond_t & inc = Function::Condition::In::Default<token_type>()
+  , const out_cond_t & outc = Function::Condition::Out::Default<token_type>()
   )
     throw (bijection::exception::already_there)
   {
@@ -544,7 +549,7 @@ public:
     return tid;
   }
 
-  eid_t add_edge (const Edge & edge, const connection_t & connection)
+  eid_t add_edge (const edge_type & edge, const connection_t & connection)
   {
     const eid_t eid
       ( (connection.type == PT)
@@ -692,7 +697,7 @@ public:
 
   // modify and replace
   // erased in case of conflict after modification
-  pid_t modify_place (const pid_t & pid, const Place & place)
+  pid_t modify_place (const pid_t & pid, const place_type & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.modify (pid, place));
@@ -703,7 +708,7 @@ public:
   }
 
   // kept old value in case of conflict after modification
-  pid_t replace_place (const pid_t & pid, const Place & place)
+  pid_t replace_place (const pid_t & pid, const place_type & place)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const pid_t new_pid (pmap.replace (pid, place));
@@ -714,7 +719,7 @@ public:
   }
 
   tid_t modify_transition ( const tid_t & tid
-                          , const Transition & transition
+                          , const transition_type & transition
                           )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
@@ -722,14 +727,14 @@ public:
   }
 
   tid_t replace_transition ( const tid_t & tid
-                           , const Transition & transition
+                           , const transition_type & transition
                            )
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     return tmap.replace (tid, transition);
   }
 
-  eid_t modify_edge (const eid_t & eid, const Edge & edge)
+  eid_t modify_edge (const eid_t & eid, const edge_type & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.modify (eid, edge));
@@ -739,7 +744,7 @@ public:
     return new_eid;
   }
 
-  eid_t replace_edge (const eid_t & eid, const Edge & edge)
+  eid_t replace_edge (const eid_t & eid, const edge_type & edge)
     throw (bijection::exception::no_such, bijection::exception::already_there)
   {
     const eid_t new_eid (emap.replace (eid, edge));
@@ -777,7 +782,7 @@ public:
     return enabled;
   }
 
-  bool put_token (const pid_t & pid, const Token & token)
+  bool put_token (const pid_t & pid, const token_type & token)
   {
     const bool successful (token_place_rel.add (token, pid));
 
@@ -795,7 +800,7 @@ public:
 
   bool put_token (const pid_t & pid)
   {
-    return put_token (pid, Token());
+    return put_token (pid, token_type());
   }
 
   token_place_it get_token (const pid_t & pid) const
@@ -813,7 +818,7 @@ public:
     return token_place_rel.left_of(pid).size();
   }
 
-  std::size_t delete_one_token (const pid_t & pid, const Token & token)
+  std::size_t delete_one_token (const pid_t & pid, const token_type & token)
   {
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
@@ -824,7 +829,7 @@ public:
     return (token_place_rel.delete_one (token, pid));
   }
 
-  std::size_t delete_all_token (const pid_t & pid, const Token & token)
+  std::size_t delete_all_token (const pid_t & pid, const token_type & token)
   {
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
@@ -837,7 +842,7 @@ public:
 
   // WORK HERE: implement more efficient?
   std::size_t replace_one_token
-  (const pid_t & pid, const Token & old_token, const Token & new_token)
+  (const pid_t & pid, const token_type & old_token, const token_type & new_token)
   {
     const std::size_t k (delete_one_token (pid, old_token));
 
@@ -849,7 +854,7 @@ public:
 
   // WORK HERE: implement more efficient?
   std::size_t replace_all_token
-  (const pid_t & pid, const Token & old_token, const Token & new_token)
+  (const pid_t & pid, const token_type & old_token, const token_type & new_token)
   {
     const std::size_t k (delete_all_token (pid, old_token));
 
@@ -917,7 +922,7 @@ public:
       {
         const pid_t & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
-        const Token & token (token_via_edge.first);
+        const token_type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
