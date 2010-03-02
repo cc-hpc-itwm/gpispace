@@ -1,0 +1,50 @@
+#ifndef SDPA_ReplyJobStatusEvent_HPP
+#define SDPA_ReplyJobStatusEvent_HPP
+
+#include <sdpa/sdpa-config.hpp>
+
+#ifdef USE_BOOST_SC
+#   include <boost/statechart/event.hpp>
+namespace sc = boost::statechart;
+#endif
+#include <sdpa/events/JobEvent.hpp>
+#include <sdpa/types.hpp>
+
+namespace sdpa { namespace events {
+#ifdef USE_BOOST_SC
+  class JobStatusReplyEvent : public JobEvent, public sc::event<JobStatusReplyEvent>
+#else
+  class JobStatusReplyEvent : public JobEvent
+#endif
+  {
+    public:
+      typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
+      typedef sdpa::status_t status_t;
+
+      JobStatusReplyEvent()
+        : JobEvent("", "", "")
+        , status_("UNKNOWN")
+      {}
+
+      JobStatusReplyEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id, const status_t &a_status = status_t())
+        : sdpa::events::JobEvent(a_from, a_to, a_job_id)
+        , status_(a_status)
+      { }
+
+      virtual ~JobStatusReplyEvent() { }
+
+      std::string str() const { return "JobStatusReplyEvent"; }
+
+      const status_t &status() const { return status_; }
+      status_t &status() { return status_; }
+
+      virtual void accept(EventVisitor *visitor)
+      {
+        visitor->visitJobStatusReplyEvent(this);
+      }
+    private:
+      status_t status_;
+  };
+}}
+
+#endif

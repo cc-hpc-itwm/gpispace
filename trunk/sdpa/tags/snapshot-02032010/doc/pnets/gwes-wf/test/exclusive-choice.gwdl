@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow xmlns="http://www.gridworkflow.org/gworkflowdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gridworkflow.org/gworkflowdl http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_2_0.xsd http://www.gridworkflow.org/gworkflowdl/operationclass http://www.gridworkflow.org/kwfgrid/src/xsd/gworkflowdl_operationclass_2_0.xsd" ID="No_ID">
+  <!-- $Id: exclusive-choice.gwdl 1316 2009-05-28 09:53:39Z andreas.hoheisel@first.fraunhofer.de $ -->
+  <description>Pattern - Exclusive Choice (XOR-Split)</description>
+  <property name="occurrence.sequence" />
+  <place ID="XOR_Split">
+    <token>
+      <control>false</control>
+    </token>
+  </place>
+  <place ID="end_A" />
+  <place ID="end_B" />
+  <transition ID="A">
+    <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
+    <inputPlace placeID="XOR_Split" edgeExpression="x" />
+    <outputPlace placeID="end_A" />
+    <condition>$x = "true"</condition>
+  </transition>
+  <transition ID="B">
+    <property name="icon.url">http://www.gridworkflow.org/gworkflowdl/images/exec.png</property>
+    <inputPlace placeID="XOR_Split" edgeExpression="x" />
+    <outputPlace placeID="end_B" />
+    <condition>$x = "false"</condition>
+  </transition>
+</workflow>
+
