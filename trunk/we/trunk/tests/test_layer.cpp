@@ -25,7 +25,7 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 int main ()
 {
   std::cout << "running layer test..." << std::endl;
-  pnet_t net;
+  pnet_t net("test_layer");
   petri_net::pid_t pid_in = net.add_place(detail::place_t("in"));
   petri_net::pid_t pid_out = net.add_place(detail::place_t("out"));
 

@@ -110,7 +110,7 @@ private:
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
   // *********************************************************************** //
-
+  std::string name;
   bijection::bijection<Place,pid_t> pmap; // Place <-> internal id
   bijection::bijection<Transition,tid_t> tmap; // Transition <-> internal id
   bijection::bijection<Edge,eid_t> emap; // Edge <-> internal id
@@ -139,6 +139,7 @@ private:
   template<typename Archive>
   void serialize (Archive & ar, const unsigned int)
   {
+    ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(pmap);
     ar & BOOST_SERIALIZATION_NVP(tmap);
     ar & BOOST_SERIALIZATION_NVP(emap);
@@ -418,8 +419,9 @@ private:
   // *********************************************************************** //
 
 public:
-  net (const pid_t & _places = 10, const tid_t & _transitions = 10)
-    : pmap ("place")
+  net (const std::string & _name = "noname", const pid_t & _places = 10, const tid_t & _transitions = 10)
+    : name (_name)
+	, pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()
