@@ -7,7 +7,7 @@
 using namespace we::mgmt;
 
 typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
-typedef we::mgmt::layer<basic_layer, pnet_t> layer_t;
+typedef we::mgmt::layer<basic_layer<>, pnet_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 
 int main ()

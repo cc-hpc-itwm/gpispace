@@ -22,7 +22,7 @@
 #include <we/mgmt/layer.hpp>
 
 template <typename Layer>
-struct sdpa_daemon : public we::mgmt::basic_layer
+struct sdpa_daemon : public we::mgmt::basic_layer<>
 {
   typedef Layer mgmt_layer_type;
   typedef unsigned long id_type;

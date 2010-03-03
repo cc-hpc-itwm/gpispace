@@ -30,6 +30,7 @@
 #include <boost/thread.hpp>
 
 #include <we/mgmt/bits/types.hpp>
+#include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -52,33 +53,25 @@ namespace we { namespace mgmt {
 	  template <typename Net>
 	  struct net_traits
 	  {
+		typedef Net type;
 		typedef basic_net_validator<Net> validator_type;
-	  };
-
-	  template <typename IdType=unsigned long>
-	  struct id_traits
-	  {
-	  public:
-		typedef IdType id_type;
-
-		static id_type next()
-		{
-		  static id_type _id = zero();
-		  return _id++;
-		}
-
-		static id_type zero()
-		{
-		  return 0;
-		}
 	  };
 
 	  template <typename StatusType=int>
 	  struct status_traits
 	  {
-		typedef StatusType value_type;
+		typedef StatusType type;
 
-		static value_type RUNNING() { return 0; }
+		static type RUNNING() { return 0; }
+	  };
+
+	  template <typename ReasonType=std::string>
+	  struct reason_traits
+	  {
+		typedef ReasonType type;
+
+		static type USER_CANCEL() { return "USER_CANCEL"; }
+		static type SYSTEM_CANCEL() { return "SYSTEM_CANCEL"; }
 	  };
 
 	  template <typename Net, typename BytesType=std::string>
@@ -108,27 +101,27 @@ namespace we { namespace mgmt {
 	  template <typename Net>
 	  struct result_traits
 	  {
-		typedef std::string value_type;
+		typedef std::string type;
 	  };
 	} // namespace def
 
-	template <typename Exec, typename Net>
+	template <typename Net>
 	struct layer_traits
 	{
+	  typedef detail::id_traits<unsigned long> id_traits;
 	  typedef def::status_traits<int> status_traits;
-	  typedef def::id_traits<unsigned long> id_traits;
 	  typedef def::net_traits<Net> net_traits;
 	  typedef def::codec<Net, std::string> codec_type;
 	  typedef def::result_traits<Net> result_traits;
-	  typedef std::string reason_type;
+	  typedef def::reason_traits<std::string> reason_traits;
 	};
   }
 
   template <typename ExecutionLayer
 		  , typename Net
-		  , typename Traits = detail::layer_traits<ExecutionLayer, Net>
+		  , typename Traits = detail::layer_traits<Net>
 		  , std::size_t NUM_EXTRACTOR=1, std::size_t NUM_INJECTOR=1>
-  class layer : public basic_layer
+  class layer : public basic_layer<typename Traits::id_traits::type>
   {
   public:
 	typedef ExecutionLayer exec_layer_type;
@@ -139,16 +132,16 @@ namespace we { namespace mgmt {
 	typedef typename net_traits::validator_type net_validator;
 
 	typedef typename traits_type::id_traits  id_traits;
-	typedef typename id_traits::id_type id_type;
+	typedef typename id_traits::type id_type;
 
 	typedef typename traits_type::status_traits status_traits;
-	typedef typename status_traits::value_type status_type;
+	typedef typename status_traits::type status_type;
 
 	typedef typename traits_type::result_traits result_traits;
-	typedef typename result_traits::value_type result_type;
+	typedef typename result_traits::type result_type;
 
 	typedef typename traits_type::codec_type codec_type;
-	typedef typename traits_type::reason_type reason_type;
+	typedef typename traits_type::reason_traits::type reason_type;
 
 	typedef typename net_type::place_type place_type;
 	typedef typename net_type::edge_type edge_type;

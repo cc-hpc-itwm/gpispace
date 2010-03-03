@@ -22,13 +22,13 @@
 #include <string>
 
 namespace we { namespace mgmt {
+  template <typename id_type=unsigned long
+		  , typename result_type=std::string
+		  , typename reason_type=std::string
+		  , typename encoded_type=std::string
+  >
   struct basic_layer
   {
-	typedef unsigned long id_type;
-	typedef std::string encoded_type;
-	typedef std::string reason_type;
-	typedef std::string result_type;
-
 	virtual id_type submit(const id_type & id, const encoded_type & ) = 0;
 	virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
