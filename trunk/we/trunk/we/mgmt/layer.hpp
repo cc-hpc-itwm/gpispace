@@ -248,6 +248,25 @@ namespace we { namespace mgmt {
 	  return true;
 	}
 
+	/**
+	 * Inform the management layer that an execution has been cancelled
+	 *
+	 *	  pre-conditions:
+	 *		  - the management layer submitted an activity to be executed with id "id"
+	 *		  - the management layer requested the cancellation of an activity
+	 *
+	 *	  side-effects:
+	 *		  - the enclosing workflow will be informed that an activity has been cancelled
+	 *
+	 *	  post-conditions:
+	 *		  - the node belonging to this activity is removed
+	 **/
+	bool cancelled(const id_type & id)
+	{
+	  we::util::remove_unused_variable_warning(id);
+	  return true;
+	}
+
 	// END: EXTERNAL API
 
 	status_type status(const id_type & id)
