@@ -2,21 +2,9 @@
 #include <sstream>
 
 #include <we/mgmt/layer.hpp>
+#include "test_layer.hpp"
 
 using namespace we::mgmt;
-
-template <typename Net>
-struct sdpa_daemon
-{
-  typedef Net net_type;
-  typedef typename we::mgmt::layer<sdpa_daemon, net_type> mgmt_layer_type;
-
-  sdpa_daemon()
-	: mgmt_layer(*this)
-  {}
-
-  mgmt_layer_type mgmt_layer;
-};
 
 int main ()
 {
@@ -37,7 +25,7 @@ int main ()
 
   for (std::size_t i (0); i < 10; ++i)
   {
-	daemon_type::mgmt_layer_type::id_type id = mgmt_layer.submit("");
+	daemon_type::mgmt_layer_type::id_type id = mgmt_layer.submit(i, "");
 	mgmt_layer.cancel(id, "");
 	mgmt_layer.failed(id, "");
 	mgmt_layer.finished(id, "");

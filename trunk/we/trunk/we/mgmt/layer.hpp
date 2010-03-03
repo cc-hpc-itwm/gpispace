@@ -109,7 +109,6 @@ namespace we { namespace mgmt {
 	  {
 		typedef std::string value_type;
 	  };
-
 	} // namespace def
 
 	template <typename Exec, typename Net>
@@ -171,14 +170,13 @@ namespace we { namespace mgmt {
 	 *	  post-conditions: the net is registered is with id "id"
 	 *
 	 */
-	id_type submit(const typename codec_type::encode_type & bytes)
+	id_type submit(const id_type & id, const typename codec_type::encode_type & bytes)
 	{
 	  net_type n = codec_type::decode(bytes);
 
 	  // check network for validity
 	  if (net_validator::is_valid(n))
 	  {
-		 id_type id = id_traits::next();
 		 std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
 		 return id;
 	  }
