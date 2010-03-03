@@ -6,9 +6,12 @@
 
 using namespace we::mgmt;
 
+typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
+typedef we::mgmt::layer<basic_layer, pnet_t> layer_t;
+typedef sdpa_daemon<layer_t> daemon_type;
+
 int main ()
 {
-  typedef petri_net::net<detail::place_t, detail::transition_t, detail::edge_t, detail::token_t> pnet_t;
 
   std::cout << "running layer test..." << std::endl;
   pnet_t net("test_layer");
@@ -19,7 +22,6 @@ int main ()
   std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
 
   // instantiate layer
-  typedef sdpa_daemon<pnet_t> daemon_type;
   daemon_type daemon;
   daemon_type::mgmt_layer_type & mgmt_layer = daemon.mgmt_layer;
 

@@ -30,6 +30,7 @@
 #include <boost/thread.hpp>
 
 #include <we/mgmt/bits/types.hpp>
+#include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
 namespace we { namespace mgmt {
@@ -119,15 +120,15 @@ namespace we { namespace mgmt {
 	  typedef def::net_traits<Net> net_traits;
 	  typedef def::codec<Net, std::string> codec_type;
 	  typedef def::result_traits<Net> result_traits;
+	  typedef std::string reason_type;
 	};
-
   }
 
   template <typename ExecutionLayer
 		  , typename Net
 		  , typename Traits = detail::layer_traits<ExecutionLayer, Net>
 		  , std::size_t NUM_EXTRACTOR=1, std::size_t NUM_INJECTOR=1>
-  class layer
+  class layer : public basic_layer
   {
   public:
 	typedef ExecutionLayer exec_layer_type;
@@ -147,6 +148,7 @@ namespace we { namespace mgmt {
 	typedef typename result_traits::value_type result_type;
 
 	typedef typename traits_type::codec_type codec_type;
+	typedef typename traits_type::reason_type reason_type;
 
 	typedef typename net_type::place_type place_type;
 	typedef typename net_type::edge_type edge_type;
@@ -178,6 +180,7 @@ namespace we { namespace mgmt {
 	  if (net_validator::is_valid(n))
 	  {
 		 std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
+		 exec_layer_.submit(id, bytes);
 		 return id;
 	  }
 	  else
@@ -200,8 +203,7 @@ namespace we { namespace mgmt {
 	 *		  - the internal state of the network switches to CANCELLING
 	 *		  - all children of the network will be terminated
 	 * */
-	template <typename ReasonType>
-	bool cancel(const id_type & id, const ReasonType & reason)
+	bool cancel(const id_type & id, const reason_type & reason)
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(reason);
