@@ -20,23 +20,102 @@
 #define WE_MGMT_BITS_TRAITS_HPP 1
 
 namespace we { namespace mgmt { namespace detail {
-  template <typename IdType=unsigned long>
-  struct id_traits
-  {
-  public:
-	typedef IdType type;
+  namespace def {
+	template <typename Net, bool default_value = true>
+	  struct basic_net_validator
+	  {
+		typedef Net net_type;
 
-	static type next()
-	{
-	  static type _id = zero();
-	  return _id++;
-	}
+		static bool is_valid(const net_type & n)
+		{
+		  we::util::remove_unused_variable_warning(n);
+		  return default_value;
+		}
+	  };
 
-	static type zero()
+	template <typename Net>
+	  struct net_traits
+	  {
+		typedef Net type;
+		typedef basic_net_validator<Net> validator_type;
+	  };
+
+	template <typename IdType=unsigned long>
+	  struct id_traits
+	  {
+		public:
+		  typedef IdType type;
+
+		  static type next()
+		  {
+			static type _id = zero();
+			return _id++;
+		  }
+
+		  static type zero()
+		  {
+			return 0;
+		  }
+	  };
+
+	template <typename StatusType=int>
+	  struct status_traits
+	  {
+		typedef StatusType type;
+
+		static type RUNNING() { return 0; }
+	  };
+
+	template <typename ReasonType=std::string>
+	  struct reason_traits
+	  {
+		typedef ReasonType type;
+
+		static type USER_CANCEL() { return "USER_CANCEL"; }
+		static type SYSTEM_CANCEL() { return "SYSTEM_CANCEL"; }
+	  };
+
+	template <typename Net, typename BytesType=std::string>
+	  struct codec
+	  {
+		typedef BytesType bytes_type;
+		typedef Net net_type;
+
+		typedef bytes_type encode_type;
+		typedef net_type decode_type;
+
+		static decode_type decode(const encode_type & data)
+		{
+		  we::util::remove_unused_variable_warning(data);
+		  net_type n;
+		  return n;
+		}
+
+		static encode_type encode(const decode_type & data)
+		{
+		  we::util::remove_unused_variable_warning(data);
+		  bytes_type b;
+		  return b;
+		}
+	  };
+
+	template <typename Net>
+	  struct result_traits
+	  {
+		typedef std::string type;
+	  };
+  }
+
+  template <typename Net>
+	struct layer_traits
 	{
-	  return 0;
-	}
-  };
+	  typedef def::id_traits<unsigned long> id_traits;
+	  typedef def::status_traits<int> status_traits;
+	  typedef def::net_traits<Net> net_traits;
+	  typedef def::codec<Net, std::string> codec_type;
+	  typedef def::result_traits<Net> result_traits;
+	  typedef def::reason_traits<std::string> reason_traits;
+	};
 }}}
 
 #endif
