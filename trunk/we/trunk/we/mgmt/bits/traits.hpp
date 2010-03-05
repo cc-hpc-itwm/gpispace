@@ -19,6 +19,11 @@
 #ifndef WE_MGMT_BITS_TRAITS_HPP
 #define WE_MGMT_BITS_TRAITS_HPP 1
 
+#include <string>
+#include <limits>
+
+#include <we/mgmt/parser.hpp>
+
 namespace we { namespace mgmt { namespace detail {
   namespace def {
 	template <typename Net, bool default_value = true>
@@ -40,19 +45,25 @@ namespace we { namespace mgmt { namespace detail {
 		typedef basic_net_validator<Net> validator_type;
 	  };
 
-	template <typename IdType=unsigned long>
+	template <typename IdType=unsigned long long>
 	  struct id_traits
 	  {
 		public:
 		  typedef IdType type;
 
-		  static type next()
+		  inline static type next()
 		  {
-			static type _id = zero();
+			static type _id = init();
 			return _id++;
 		  }
 
-		  static type zero()
+		  inline static type nil()
+		  {
+			return std::numeric_limits<type>::max();
+		  }
+
+	  private:
+		  inline static type init()
 		  {
 			return 0;
 		  }
@@ -88,6 +99,7 @@ namespace we { namespace mgmt { namespace detail {
 		{
 		  we::util::remove_unused_variable_warning(data);
 		  net_type n;
+		  parser<net_type>::parse(n, data);
 		  return n;
 		}
 
