@@ -22,6 +22,7 @@
 #include <string>
 
 namespace we { namespace mgmt {
+  // WORK: should probably be template<typename Net, typename Traits>
   template <typename IdType
 		  , typename ResultType=std::string
 		  , typename ReasonType=std::string
