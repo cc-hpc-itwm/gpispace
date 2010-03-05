@@ -41,7 +41,7 @@ namespace we { namespace mgmt {
 
   template <typename ExecutionLayer
 		  , typename Net
-		  , typename Traits = detail::layer_traits<Net>
+		  , typename Traits = detail::layer_traits<Net, typename ExecutionLayer::id_type>
 		  , typename Policy = detail::layer_policy<Traits>
 		  , std::size_t NUM_EXTRACTOR=1, std::size_t NUM_INJECTOR=1>
   class layer : public basic_layer<typename Traits::id_traits::type>
@@ -258,9 +258,24 @@ namespace we { namespace mgmt {
 	/**
 	 * Constructor calls
 	 */ 
+	template <class E>
 	explicit
-	layer(exec_layer_type & exec_layer /* id_gen_type & id_gen */)
+	layer(E & exec_layer)
 	  : exec_layer_(exec_layer)
+	  , id_gen_(&id_traits::generate)
+	{ }
+
+	template <class E, typename G>
+	layer(E & exec_layer, G gen)
+	  : exec_layer_(exec_layer)
+	  , id_gen_(gen)
+	{ }
+
+	template <class E, typename G, typename V>
+	layer(E & exec_layer, G gen, V validator)
+	  : exec_layer_(exec_layer)
+	  , id_gen_(gen)
+	  , validator_(validator)
 	{ }
 
 	~layer()
@@ -295,18 +310,13 @@ namespace we { namespace mgmt {
 	{
 	}
 
-	id_type generate_id()
-	{
-	  return id_traits::next();
-	}
-
 	/** Member variables **/
   private:
 	exec_layer_type & exec_layer_;
-	/* id_gen_type & id_gen_; */
+	boost::function<id_type()> id_gen_;
+	boost::function<bool (const net_type&)> validator_;
 	id_descriptor_map_t descriptors_;
 	/* extractor_command_queue_t extractor_commands_; */
-
   };
 }}
 

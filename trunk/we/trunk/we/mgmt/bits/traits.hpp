@@ -45,23 +45,37 @@ namespace we { namespace mgmt { namespace detail {
 		typedef basic_net_validator<Net> validator_type;
 	  };
 
-	template <typename IdType=unsigned long long>
+	template <typename IdType>
 	  struct id_traits
 	  {
-		public:
-		  typedef IdType type;
+		typedef IdType type;
+		static const type nil();
+	  };
 
-		  inline static type next()
-		  {
-			static type _id = init();
-			return _id++;
-		  }
+	template <>
+	  struct id_traits<std::string>
+	  {
+		typedef std::string type;
+
+		inline static const type nil() { return ""; }
+	  };
+
+	template <>
+	  struct id_traits<long unsigned int>
+	  {
+		public:
+		  typedef long unsigned int type;
 
 		  inline static type nil()
 		  {
 			return std::numeric_limits<type>::max();
 		  }
 
+		  inline static type generate()
+		  {
+			static type _id = init();
+			return _id++;
+		  }
 	  private:
 		  inline static type init()
 		  {
@@ -77,13 +91,21 @@ namespace we { namespace mgmt { namespace detail {
 		static type RUNNING() { return 0; }
 	  };
 
-	template <typename ReasonType=std::string>
+	template <typename ReasonType>
 	  struct reason_traits
 	  {
 		typedef ReasonType type;
 
-		static type USER_CANCEL() { return "USER_CANCEL"; }
-		static type SYSTEM_CANCEL() { return "SYSTEM_CANCEL"; }
+		static type USER_CANCEL();
+		static type SYSTEM_CANCEL();
+	  };
+	template <>
+	  struct reason_traits<std::string>
+	  {
+		typedef std::string type;
+
+		static const type USER_CANCEL() { return "USER_CANCEL"; }
+		static const type SYSTEM_CANCEL() { return "SYSTEM_CANCEL"; }
 	  };
 
 	template <typename Net, typename BytesType=std::string>
@@ -111,21 +133,21 @@ namespace we { namespace mgmt { namespace detail {
 		}
 	  };
 
-	template <typename Net>
+	template <typename T>
 	  struct result_traits
 	  {
-		typedef std::string type;
+		typedef T type;
 	  };
   }
 
-  template <typename Net>
+  template <typename Net, typename IdType>
 	struct layer_traits
 	{
-	  typedef def::id_traits<unsigned long> id_traits;
+	  typedef def::id_traits<IdType> id_traits;
 	  typedef def::status_traits<int> status_traits;
 	  typedef def::net_traits<Net> net_traits;
 	  typedef def::codec<Net, std::string> codec_type;
-	  typedef def::result_traits<Net> result_traits;
+	  typedef def::result_traits<std::string> result_traits;
 	  typedef def::reason_traits<std::string> reason_traits;
 	};
 }}}

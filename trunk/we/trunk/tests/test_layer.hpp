@@ -19,17 +19,20 @@
 #ifndef WE_TESTS_TEST_LAYER_HPP
 #define WE_TESTS_TEST_LAYER_HPP 1
 
+#include <boost/bind.hpp>
 #include <we/mgmt/layer.hpp>
 
 template <typename Layer>
-struct sdpa_daemon : public we::mgmt::basic_layer<>
+struct sdpa_daemon : public we::mgmt::basic_layer<std::string>
 {
   typedef Layer layer_type;
   typedef typename layer_type::id_type id_type;
 
   sdpa_daemon()
-	: mgmt_layer(*this)
+	: mgmt_layer(*this, boost::bind(&sdpa_daemon::gen_id, this))
   {}
+
+  id_type gen_id() { return "foo"; }
 
   layer_type mgmt_layer;
 
