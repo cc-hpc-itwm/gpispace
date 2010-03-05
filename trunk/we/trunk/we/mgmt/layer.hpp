@@ -28,9 +28,12 @@
 #include <boost/function.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <we/mgmt/bits/types.hpp>
 #include <we/mgmt/bits/traits.hpp>
+#include <we/mgmt/bits/policy.hpp>
+#include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -39,6 +42,7 @@ namespace we { namespace mgmt {
   template <typename ExecutionLayer
 		  , typename Net
 		  , typename Traits = detail::layer_traits<Net>
+		  , typename Policy = detail::layer_policy<Traits>
 		  , std::size_t NUM_EXTRACTOR=1, std::size_t NUM_INJECTOR=1>
   class layer : public basic_layer<typename Traits::id_traits::type>
   {
@@ -60,6 +64,7 @@ namespace we { namespace mgmt {
 	typedef typename result_traits::type result_type;
 
 	typedef typename traits_type::codec_type codec_type;
+	typedef typename codec_type::encode_type encode_type;
 	typedef typename traits_type::reason_traits::type reason_type;
 
 	typedef typename net_type::place_type place_type;
@@ -67,6 +72,8 @@ namespace we { namespace mgmt {
 	typedef typename net_type::transition_type transition_type;
 	typedef typename net_type::token_type token_type;
 
+	typedef detail::descriptor<id_type, net_type, status_type, encode_type> descriptor_type;
+	typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
 
 	/******************************
 	 * EXTERNAL API
@@ -92,7 +99,7 @@ namespace we { namespace mgmt {
 	  if (net_validator::is_valid(n))
 	  {
 		 std::cerr << "D: submitted petri-net["<< id << "] = " << n << std::endl;
-		 return id;
+		 submit_toplevel_net(id, n);
 	  }
 	  else
 	  {
@@ -226,8 +233,25 @@ namespace we { namespace mgmt {
 
 	const net_type & lookup(const id_type & id) throw (std::exception)
 	{
-	  we::util::remove_unused_variable_warning(id);
-	  throw std::runtime_error("not yet implemented: lookup");
+	  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
+	  if (d != descriptors_.end() && d->second.is_net()) return *d->second.net;
+	  throw std::runtime_error("not found!");
+	}
+
+	void submit_toplevel_net(const id_type & id, const net_type & n)
+	{
+	  descriptor_type desc(id, descriptor_type::NET);
+	  desc.parent = id_traits::nil();
+	  desc.net = n;
+	  descriptors_.insert(std::make_pair(id, desc));
+	}
+
+	void submit(const id_type & id, const id_type & parent, const encode_type & bytes)
+	{
+	  descriptor_type desc(id, descriptor_type::ACTIVITY);
+	  desc.parent = parent;
+	  desc.data = bytes;
+	  descriptors_.insert(std::make_pair(id, desc));
 	}
 
   public:
@@ -239,9 +263,50 @@ namespace we { namespace mgmt {
 	  : exec_layer_(exec_layer)
 	{ }
 
+	~layer()
+	{
+	  // stop threads
+	  //
+	  // cancel activities
+	  //
+	  // delete memory allocations
+	  //
+	  // clean up all descriptors
+	  for (typename id_descriptor_map_t::iterator d = (descriptors_.begin()); d != descriptors_.end(); ++d)
+	  {
+		std::cerr << "D: removing descriptor[" << d->first << "]" << std::endl;
+	  }
+	}
+  
+	/* internal functions */
+  private:
+	void extractor()
+	{
+	  for (;;)
+	  {
+	  }
+	}
+
+	void injector()
+	{
+	}
+
+	void executor()
+	{
+	}
+
+	id_type generate_id()
+	{
+	  return id_traits::next();
+	}
+
+	/** Member variables **/
   private:
 	exec_layer_type & exec_layer_;
 	/* id_gen_type & id_gen_; */
+	id_descriptor_map_t descriptors_;
+	/* extractor_command_queue_t extractor_commands_; */
+
   };
 }}
 
