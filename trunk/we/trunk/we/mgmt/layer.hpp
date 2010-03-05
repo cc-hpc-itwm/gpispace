@@ -178,6 +178,44 @@ namespace we { namespace mgmt {
 	  return true;
 	}
 
+	/**
+	 * Temporarily suspend the execution of the given petri-net
+	 *
+	 *	  pre-conditions:
+	 *		  - a net with the given id had been submitted
+	 *
+	 *	  side-effects:
+	 *		  - sub-activities are suspended as well
+	 *
+	 *	  post-conditions:
+	 *		  - the network will not be considered in the selection of new activities
+	 *		  - the execution of the network is on hold
+	 */
+	bool suspend(const id_type & id) throw()
+	{
+	  we::util::remove_unused_variable_warning(id);
+	  return true;
+	}
+
+	/**
+	 * Execution of a network is resumed.
+	 *
+	 *	  pre-conditions:
+	 *		  - a net with the given id had been submitted
+	 *
+	 *	  side-effects:
+	 *		  - sub-activities are resumed as well
+	 *
+	 *	  post-conditions:
+	 *		  - the network will again be considered in the selection of new activities
+	 *
+	 */
+	bool resume(const id_type & id) throw()
+	{
+	  we::util::remove_unused_variable_warning(id);
+	  return true;
+	}
+
 	// END: EXTERNAL API
 
 	status_type status(const id_type & id) throw (std::exception)
