@@ -35,23 +35,23 @@ struct sdpa_daemon : public we::mgmt::basic_layer<>
 
   void submit(const id_type & id, const std::string & desc)
   {
-	std::cout << "submit[" << id << "] = " << desc << std::endl; return id;
+	std::cout << "submit[" << id << "] = " << desc << std::endl;
   }
   bool cancel(const id_type & id, const std::string & desc)
   {
-	std::cout << "cancel[" << id << "] = " << desc << std::endl; return id;
+	std::cout << "cancel[" << id << "] = " << desc << std::endl; return true;
   }
   bool finished(const id_type & id, const std::string & desc)
   {
-	std::cout << "finished[" << id << "] = " << desc << std::endl; return id;
+	std::cout << "finished[" << id << "] = " << desc << std::endl; return true;
   }
   bool failed(const id_type & id, const std::string & desc)
   {
-	std::cout << "finished[" << id << "] = " << desc << std::endl; return id;
+	std::cout << "finished[" << id << "] = " << desc << std::endl; return true;
   }
   bool cancelled(const id_type & id)
   {
-	std::cout << "cancelled[" << id << "]" << std::endl; return id;
+	std::cout << "cancelled[" << id << "]" << std::endl; return true;
   }
 };
 
