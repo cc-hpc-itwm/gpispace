@@ -22,15 +22,16 @@ int main ()
 
   // instantiate layer
   daemon_type daemon;
-  daemon_type::mgmt_layer_type & mgmt_layer = daemon.mgmt_layer;
+  daemon_type::layer_type & mgmt_layer = daemon.mgmt_layer;
 
   for (std::size_t i (0); i < 10; ++i)
   {
-	daemon_type::mgmt_layer_type::id_type id = mgmt_layer.submit(i, "");
+	daemon_type::layer_type::id_type id = mgmt_layer.submit(i, "");
 	mgmt_layer.cancel(id, "");
 	mgmt_layer.failed(id, "");
 	mgmt_layer.finished(id, "");
-	mgmt_layer.status(id);
+	mgmt_layer.suspend(id);
+	mgmt_layer.resume(id);
   }
 
   return EXIT_SUCCESS;

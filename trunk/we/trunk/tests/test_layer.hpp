@@ -24,14 +24,14 @@
 template <typename Layer>
 struct sdpa_daemon : public we::mgmt::basic_layer<>
 {
-  typedef Layer mgmt_layer_type;
-  typedef unsigned long id_type;
+  typedef Layer layer_type;
+  typedef typename layer_type::id_type id_type;
 
   sdpa_daemon()
 	: mgmt_layer(*this)
   {}
 
-  mgmt_layer_type mgmt_layer;
+  layer_type mgmt_layer;
 
   id_type submit(const id_type & id, const std::string & desc)
   {
