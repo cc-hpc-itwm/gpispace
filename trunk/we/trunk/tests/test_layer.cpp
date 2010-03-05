@@ -12,21 +12,13 @@ int main ()
   typedef we::mgmt::layer<basic_layer<>, pnet_t> layer_t;
   typedef sdpa_daemon<layer_t> daemon_type;
 
-  std::cout << "running layer test..." << std::endl;
-  pnet_t net("test_layer");
-  parser<pnet_t>::parse(net, ""); 
-
-  std::cout << net << std::endl;
-
-  std::cout << "#enabled=" << net.enabled_transitions().size() << std::endl;
-
   // instantiate layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.mgmt_layer;
 
-  for (std::size_t i (0); i < 10; ++i)
+  for (std::size_t id (0); id < 10; ++id)
   {
-	daemon_type::layer_type::id_type id = mgmt_layer.submit(i, "");
+	mgmt_layer.submit(id, "");
 	mgmt_layer.cancel(id, "");
 	mgmt_layer.failed(id, "");
 	mgmt_layer.finished(id, "");
