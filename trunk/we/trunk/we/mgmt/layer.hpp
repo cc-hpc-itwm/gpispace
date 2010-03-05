@@ -84,7 +84,7 @@ namespace we { namespace mgmt {
 	 *	  post-conditions: the net is registered is with id "id"
 	 *
 	 */
-	id_type submit(const id_type & id, const typename codec_type::encode_type & bytes) throw (std::exception)
+	void submit(const id_type & id, const encode_type & bytes) throw (std::exception)
 	{
 	  net_type n = codec_type::decode(bytes);
 

@@ -29,7 +29,7 @@ namespace we { namespace mgmt {
   >
   struct basic_layer
   {
-	virtual id_type submit(const id_type & id, const encoded_type & ) = 0;
+	virtual void submit(const id_type & id, const encoded_type & ) = 0;
 	virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
 	virtual bool finished(const id_type & id, const result_type & result) = 0;
