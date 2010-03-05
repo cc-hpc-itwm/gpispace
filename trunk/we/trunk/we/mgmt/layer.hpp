@@ -91,8 +91,7 @@ namespace we { namespace mgmt {
 	  // check network for validity
 	  if (net_validator::is_valid(n))
 	  {
-		 std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
-		 exec_layer_.submit(id, bytes);
+		 std::cerr << "D: submitted petri-net["<< id << "] = " << n << std::endl;
 		 return id;
 	  }
 	  else
