@@ -84,7 +84,7 @@ namespace we { namespace mgmt {
 	 *	  post-conditions: the net is registered is with id "id"
 	 *
 	 */
-	id_type submit(const id_type & id, const typename codec_type::encode_type & bytes)
+	id_type submit(const id_type & id, const typename codec_type::encode_type & bytes) throw (std::exception)
 	{
 	  net_type n = codec_type::decode(bytes);
 
@@ -115,7 +115,7 @@ namespace we { namespace mgmt {
 	 *		  - the internal state of the network switches to CANCELLING
 	 *		  - all children of the network will be terminated
 	 * */
-	bool cancel(const id_type & id, const reason_type & reason)
+	bool cancel(const id_type & id, const reason_type & reason) throw ()
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(reason);
@@ -134,7 +134,7 @@ namespace we { namespace mgmt {
 	 *	  post-conditions:
 	 *		  - the node belonging to this is activity is removed
 	 **/
-	bool finished(const id_type & id, const result_type & result)
+	bool finished(const id_type & id, const result_type & result) throw()
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(result);
@@ -153,7 +153,7 @@ namespace we { namespace mgmt {
 	 *	  post-conditions:
 	 *		  - the node belonging to this activity is removed
 	 **/
-	bool failed(const id_type & id, const result_type & result)
+	bool failed(const id_type & id, const result_type & result) throw()
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(result);
@@ -181,16 +181,16 @@ namespace we { namespace mgmt {
 
 	// END: EXTERNAL API
 
-	status_type status(const id_type & id)
+	status_type status(const id_type & id) throw (std::exception)
 	{
 	  we::util::remove_unused_variable_warning(id);
-	  return status_traits::RUNNING();
+	  throw std::runtime_error("not yet implemented: status");
 	}
 
-	const net_type & lookup(const id_type & id)
+	const net_type & lookup(const id_type & id) throw (std::exception)
 	{
 	  we::util::remove_unused_variable_warning(id);
-	  throw std::runtime_error("not yet implemented");
+	  throw std::runtime_error("not yet implemented: lookup");
 	}
 
   public:
