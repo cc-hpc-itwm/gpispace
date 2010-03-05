@@ -172,7 +172,7 @@ namespace we { namespace mgmt {
 	 *	  post-conditions:
 	 *		  - the node belonging to this activity is removed
 	 **/
-	bool cancelled(const id_type & id)
+	bool cancelled(const id_type & id) throw()
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  return true;
