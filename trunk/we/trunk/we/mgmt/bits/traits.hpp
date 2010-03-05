@@ -49,7 +49,8 @@ namespace we { namespace mgmt { namespace detail {
 	  struct id_traits
 	  {
 		typedef IdType type;
-		static const type nil();
+//		must be specialized
+		static const type nil() { return std::numeric_limits<type>::max(); }
 	  };
 
 	template <>
