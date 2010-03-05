@@ -98,7 +98,7 @@ namespace we { namespace mgmt { namespace detail {
 		static decode_type decode(const encode_type & data)
 		{
 		  we::util::remove_unused_variable_warning(data);
-		  net_type n;
+		  decode_type n;
 		  parser<net_type>::parse(n, data);
 		  return n;
 		}
