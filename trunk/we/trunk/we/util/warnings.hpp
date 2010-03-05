@@ -21,7 +21,7 @@
 
 namespace we { namespace util {
   template <typename T>
-  void remove_unused_variable_warning(T) { }
+  inline void remove_unused_variable_warning(T) { }
 }}
 
 #endif
