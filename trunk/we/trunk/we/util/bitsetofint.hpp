@@ -9,6 +9,7 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
+#include <we/util/warnings.hpp>
 
 namespace bitsetofint
 {
@@ -25,6 +26,7 @@ namespace bitsetofint
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+	  we::util::remove_unused_variable_warning(version);
       ar & BOOST_SERIALIZATION_NVP(_data);
     }
 
