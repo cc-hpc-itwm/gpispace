@@ -19,22 +19,50 @@
 #ifndef WE_TESTS_TEST_LAYER_HPP
 #define WE_TESTS_TEST_LAYER_HPP 1
 
+#include <sstream>
 #include <boost/bind.hpp>
 #include <we/mgmt/layer.hpp>
 
+namespace test {
+namespace detail
+{
+  template <typename I>
+  struct id_generator
+  {
+	explicit
+	id_generator(I initial=0) : id(initial) {}
+
+	inline I operator++() { return ++id; }
+  private:
+	I id;
+  };
+
+  template <>
+  struct id_generator<std::string>
+  {
+	inline const std::string operator++()
+	{
+	  unsigned long id = ++number;
+	  std::ostringstream sstr;
+	  sstr << id;
+	  return sstr.str();
+	}
+  private:
+	id_generator<unsigned long> number;
+  };
+}
+
 template <typename Layer>
-struct sdpa_daemon : public we::mgmt::basic_layer<std::string>
+struct sdpa_daemon : public we::mgmt::basic_layer<typename Layer::id_type>
 {
   typedef Layer layer_type;
   typedef typename layer_type::id_type id_type;
 
   sdpa_daemon()
-	: mgmt_layer(*this, boost::bind(&sdpa_daemon::gen_id, this))
+	: mgmt_layer_(*this, boost::bind(&sdpa_daemon::gen_id, this))
   {}
 
-  id_type gen_id() { return "foo"; }
-
-  layer_type mgmt_layer;
+  id_type gen_id() { return ++id_; }
 
   void submit(const id_type & id, const std::string & desc)
   {
@@ -56,6 +84,13 @@ struct sdpa_daemon : public we::mgmt::basic_layer<std::string>
   {
 	std::cout << "cancelled[" << id << "]" << std::endl; return true;
   }
+
+  inline layer_type & layer() { return mgmt_layer_; }
+
+  private:
+	detail::id_generator<id_type> id_;
+	layer_type mgmt_layer_;
 };
+}
 
 #endif
