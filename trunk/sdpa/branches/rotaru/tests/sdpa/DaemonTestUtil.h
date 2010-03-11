@@ -41,7 +41,7 @@
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
-#include "DummyGwes.hpp"
+#include <tests/sdpa/DummyGwes.hpp>
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
@@ -129,7 +129,7 @@ public:
 	NreDaemon(	const std::string &name,
 				seda::Stage* ptrToMasterStage,
 				seda::Stage* ptrToSlaveStage,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				IWorkflowEngine*  pArgSdpa2Gwes,
 				std::string& answerStrategy)
 	: DaemonFSM( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
 	  SDPA_INIT_LOGGER(name)
@@ -138,7 +138,7 @@ public:
 	}
 
 	NreDaemon(  const std::string &name,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				IWorkflowEngine*  pArgSdpa2Gwes,
 				const std::string& toMasterStageName,
 				const std::string& toSlaveStageName,
 				std::string& answerStrategy)
@@ -244,7 +244,7 @@ public:
 	SDPA_DECLARE_LOGGER();
 
 	NreDaemonWithGwes(  const std::string &name,
-						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						IWorkflowEngine*  pArgSdpa2Gwes,
 						const std::string& toMasterStageName,
 						const std::string& toSlaveStageName,
 						std::string& answerStrategy)
@@ -264,7 +264,7 @@ public:
 	SDPA_DECLARE_LOGGER();
 
 	TestDaemon(  const  std::string &name,
-						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						IWorkflowEngine*  pArgSdpa2Gwes,
 						std::string& answerStrategy)
 	: DaemonFSM( name, pArgSdpa2Gwes ),
 	  SDPA_INIT_LOGGER(name)

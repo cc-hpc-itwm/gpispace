@@ -103,14 +103,11 @@ namespace sdpa { namespace daemon {
 			try {
 				// clearly, I'm in the Pending state here
 				// inform immediately GWES that the corresponding activity was cancelled
-				gwes::activity_id_t actId = evt.job_id();
-				gwes::workflow_id_t wfId  = parent().str();
+				id_type actId = evt.job_id();
 
-				pComm->gwes()->activityCanceled( wfId, actId );
+				pComm->gwes()->cancelled( actId );
 
-			} catch(sdpa::util::PropertyLookupFailed& ) {
-				SDPA_LOG_DEBUG("The job was not assigned to a worker!");
-			} catch(...) {
+			}  catch(...) {
 				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			} //handle here NoSuchWorkflow,NoSuchActivity exceptions
 		}
@@ -163,17 +160,9 @@ namespace sdpa { namespace daemon {
 		}
 		else // /the upper level sent a Cancel message -> inform Gwes
 		{
-			try {
-				gwes::workflow_id_t workflowId = evt.job_id();
-				pComm->gwes()->cancelWorkflow(workflowId);
-			}
-			catch(gwes::Gwes2Sdpa::NoSuchWorkflow)
-			{
-				SDPA_LOG_ERROR("No such workflow exception occured!");
-			}
-			catch(...) {
-				SDPA_LOG_ERROR("Unexpected exception occurred!");
-			}
+			id_type workflowId = evt.job_id();
+			reason_type reason("No reason");
+			pComm->gwes()->cancel(workflowId, reason);
 		}
     }
 

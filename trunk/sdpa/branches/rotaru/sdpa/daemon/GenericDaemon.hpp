@@ -50,25 +50,18 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
+// to be removed
+#include <sdpa/IWorkflowEngine.hpp>
+
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
-						public gwes::Gwes2Sdpa {
+						public IDaemon
+{
   public:
-	  class DeleteWorkflowFromGWES : public seda::IEvent
-	  {
-		public:
-		  typedef shared_ptr<DeleteWorkflowFromGWES> Ptr;
-		 explicit DeleteWorkflowFromGWES(const gwes::workflow_id_t &wfid)
-		: id(wfid) {}
-		 gwes::workflow_id_t id;
-
-		std::string str() const { return "DeleteWorkflowFromGWES("+id+")"; }
-	  };
-
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
 
@@ -104,31 +97,32 @@ namespace sdpa { namespace daemon {
 
 	  // job event handlers
 	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* pEvent);
+
+	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
 	  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
 	  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 	  virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+
+
 	  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
+
 	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid);
-	  virtual void sendDeleteEvent(const gwes::workflow_id_t &wid);
 
       // Gwes2Sdpa interface implementation
 	  //virtual workflow_id_t submitWorkflow(const workflow_t &workflow);
-	  virtual gwes::activity_id_t submitActivity(gwes::activity_t &activity);
 
-	  //virtual void cancelWorkflow(const workflow_id_t &workflowId) throw (NoSuchWorkflowException);
-	  virtual void cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity);
-
-	  virtual void workflowFinished(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t&) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
-	  virtual void workflowFailed(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t&) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
-	  virtual void workflowCanceled(const gwes::workflow_id_t &workflowId, const gwdl::workflow_result_t&) throw (gwes::Gwes2Sdpa::NoSuchWorkflow);
+	  virtual void submit(const id_type & id, const encoded_type & );
+	  virtual bool cancel(const id_type & id, const reason_type & reason);
+	  virtual bool finished(const id_type & id, const result_type & result);
+	  virtual bool failed(const id_type & id, const result_type & result);
+	  virtual bool cancelled(const id_type & id);
 
 	  virtual void jobFinished(std::string workerName, const job_id_t &);
 	  virtual void jobFailed(std::string workerName, const job_id_t &);
@@ -154,7 +148,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
 
-	  virtual sdpa::Sdpa2Gwes* gwes() const { return ptr_Sdpa2Gwes_; }
+	  virtual IWorkflowEngine* gwes() const { return ptr_workflow_engine_; }
 	  virtual bool is_registered() const { return m_bRegistered;}
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
@@ -180,13 +174,13 @@ namespace sdpa { namespace daemon {
   protected:
 	  SDPA_DECLARE_LOGGER();
 
-	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, sdpa::Sdpa2Gwes* );
-	  GenericDaemon( const std::string &name, const std::string&, const std::string&,sdpa::Sdpa2Gwes* );
-	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL );
+	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
+	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
+	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
-	  sdpa::Sdpa2Gwes*  ptr_Sdpa2Gwes_;
+	  IWorkflowEngine*  ptr_workflow_engine_;
 
 	  void setStage(seda::Stage* stage)
 	  {

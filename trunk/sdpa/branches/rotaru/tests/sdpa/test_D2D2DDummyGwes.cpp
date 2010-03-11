@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #include "test_D2D2DDummyGwes.hpp"
-#include <tests/sdpa/DaemonTestUtil.h>
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyGwesTest );
 
@@ -61,6 +61,8 @@ void D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machi
 												m_ptrToUserStage.get(),
 												NULL,
 												m_ptrSdpa2GwesOrch) ); // Orchestrator gwes instance
+	m_ptrSdpa2GwesOrch->registerDaemon(m_ptrOrch.get());
+
 	DaemonFSM::create_daemon_stage(m_ptrOrch);
 
 
@@ -68,6 +70,7 @@ void D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machi
 								m_ptrOrch->daemon_stage(),
 								NULL,
 								m_ptrSdpa2GwesAgg) ); // Aggregator gwes instance
+	m_ptrSdpa2GwesAgg->registerDaemon(m_ptrAgg.get());
 	DaemonFSM::create_daemon_stage(m_ptrAgg);
 
 

@@ -72,7 +72,7 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-void WorkerSerializationTest::testSchedulerNRESerialization()
+/*void WorkerSerializationTest::testSchedulerNRESerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testSchedulerNRESerialization----------------"<<std::endl;
 	std::string filename = "testSerializeSchedulerNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -138,6 +138,7 @@ void WorkerSerializationTest::testSchedulerNRESerialization()
 
 	std::cout<<std::endl<<"----------------End  testSchedulerNRESerialization----------------"<<std::endl;
 }
+*/
 
 void WorkerSerializationTest::testNRESerialization()
 {

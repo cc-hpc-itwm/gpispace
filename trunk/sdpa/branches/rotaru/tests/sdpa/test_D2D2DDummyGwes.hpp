@@ -24,6 +24,7 @@
 #include <sdpa/logging.hpp>
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <seda/Strategy.hpp>
+#include <tests/sdpa/DaemonTestUtil.h>
 
 namespace sdpa {
 		namespace tests {
@@ -56,8 +57,8 @@ namespace sdpa {
 			  dsm::DaemonFSM::ptr_t m_ptrAgg;
 			  dsm::DaemonFSM::ptr_t m_ptrNRE;
 
-			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesOrch;
-			  sdpa::Sdpa2Gwes* m_ptrSdpa2GwesAgg;
+			  DummyGwes* m_ptrSdpa2GwesOrch;
+			  DummyGwes* m_ptrSdpa2GwesAgg;
 
 			  seda::Stage::Ptr m_ptrToUserStage;
 			  seda::Strategy::Ptr m_ptrUserStrategy;

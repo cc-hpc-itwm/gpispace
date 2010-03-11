@@ -10,8 +10,6 @@ namespace sc = boost::statechart;
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventVisitor.hpp>
 
-#include <sdpa/wf/GwesGlue.hpp>
-
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
   class JobFinishedEvent : public JobEvent, public sc::event<JobFinishedEvent>

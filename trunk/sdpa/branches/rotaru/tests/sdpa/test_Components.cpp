@@ -33,7 +33,7 @@ using namespace sdpa::tests;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
-
+/*
 namespace unit_tests {
 
 		class SchedulerNRE : public sdpa::daemon::SchedulerNRE
@@ -45,98 +45,26 @@ namespace unit_tests {
 
 			SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string workerUrl ):
 				sdpa::daemon::SchedulerNRE(pHandler, workerUrl),
-				SDPA_INIT_LOGGER("Scheduler "+pHandler->name()) {}
+				SDPA_INIT_LOGGER("sdpa::daemon::Scheduler "+pHandler->name()) {}
 
-			virtual ~SchedulerNRE()
-	        {
-	          try
-	          {
-	            stop();
-	          }
-	          catch (const std::exception &ex)
-	          {
-	            LOG(ERROR, "could not stop nre-scheduler: " << ex.what());
-	          }
-	          catch (...)
-	          {
-	            LOG(ERROR, "could not stop nre-scheduler (unknown error)");
-	          }
-	        }
 
-			void execute(const gwes::activity_t& activity) throw (std::exception)
-			{
-				SDPA_LOG_DEBUG("Execute activity ...");
+			 void execute(const  sdpa::daemon::Job::ptr_t& pJob) throw (std::exception)
+			 {
+				id_type act_id = pJob->id().str();
+				SDPA_LOG_DEBUG("Execute the activity "<<act_id);
 
-				gwes::Activity& gwes_act = (gwes::Activity&)(activity);
-				sdpa::wf::Activity result;
-				try
+				if(!ptr_comm_handler_)
 				{
-					sdpa::wf::Activity act(sdpa::wf::glue::wrap(gwes_act));
-
-					ptr_comm_handler_->activityStarted(gwes_act);
-
-					//result = m_worker_.execute(act, act.properties().get<unsigned long>("walltime", 0));
-					result.state () = sdpa::wf::Activity::ACTIVITY_FINISHED;
-					result.reason() = "";
-
-					sdpa::wf::glue::unwrap(result, gwes_act);
-				}
-				catch( const boost::thread_interrupted &)
-				{
-					SDPA_LOG_ERROR("could not execute activity: interrupted" );
-					result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
-					result.reason() = "interrupted";
-				}
-				catch (const std::exception &ex)
-				{
-					SDPA_LOG_ERROR("could not execute activity: " << ex.what());
-					result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
-					result.reason() = ex.what();
+					SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+					stop();
+					return;
 				}
 
-				sdpa::parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
 
-				gwes::activity_id_t act_id = activity.getID();
-				gwes::workflow_id_t wf_id  = activity.getOwnerWorkflowID();
-
-				SDPA_LOG_DEBUG("Finished activity execution: notify GWES ...");
-				if( result.state() == sdpa::wf::Activity::ACTIVITY_FINISHED )
-				{
-					ptr_comm_handler_->activityFinished(gwes_act);
-					ptr_comm_handler_->gwes()->activityFinished(wf_id, act_id, output);
-				}
-				else if( result.state() == sdpa::wf::Activity::ACTIVITY_FAILED )
-				{
-					ptr_comm_handler_->activityFailed(gwes_act);
-					ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
-				}
-				else if( result.state() == sdpa::wf::Activity::ACTIVITY_CANCELED )
-				{
-					ptr_comm_handler_->activityCancelled(gwes_act);
-					ptr_comm_handler_->gwes()->activityCanceled(wf_id, act_id);
-				}
-				else
-				{
-					ptr_comm_handler_->activityFailed(gwes_act);
-					ptr_comm_handler_->gwes()->activityFailed(wf_id, act_id, output);
-				}
-			}
-
-			void start()throw (std::exception)
-			{
-				SchedulerImpl::start();
-				m_threadExecutor = boost::thread(boost::bind(&SchedulerNRE::runExecutor, this));
-				SDPA_LOG_DEBUG("Executor thread started ...");
-			}
-
-			void stop()
-			{
-				SchedulerImpl::stop();
-				m_threadExecutor.interrupt();
-
-				SDPA_LOG_DEBUG("Executor thread before join ...");
-				m_threadExecutor.join();
-			}
+				// call here the NreWorkerClient
+				result_type output; // to be fiile-in by the NreWorkerClient
+				ptr_comm_handler_->gwes()->finished(act_id, output);
+			 }
 	  };
 
 
@@ -155,7 +83,7 @@ namespace unit_tests {
 		{
 			//SDPA_LOG_DEBUG("TesNRE constructor called ...");
 			//ptr_scheduler_.reset();
-			sdpa::daemon::Scheduler* ptr_scheduler =  new unit_tests::SchedulerNRE(this, workerUrl);
+			sdpa::daemon::Scheduler* ptr_scheduler =  new sdpa::daemon::SchedulerNRE(this, workerUrl);
 
 		}
 
@@ -184,6 +112,7 @@ namespace unit_tests {
 
 	  };
 }
+*/
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
@@ -243,6 +172,7 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
+/*
 void TestComponents::testComponentsRealGWES()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
@@ -257,22 +187,22 @@ void TestComponents::testComponentsRealGWES()
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and real GWES
-	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
+	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
 	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
     {
-    	unit_tests::NRE::start(ptrNRE_0);
+    	sdpa::daemon::NRE::start(ptrNRE_0);
     	//sdpa::daemon::NRE::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
     	LOG(FATAL, "could not start NRE: " << ex.what());
     	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
-    	/* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
+
     	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
     	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-    	unit_tests::NRE::shutdown(ptrNRE_0);
+    	sdpa::daemon::NRE::shutdown(ptrNRE_0);
     	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     	return;
@@ -306,12 +236,13 @@ void TestComponents::testComponentsRealGWES()
 
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	unit_tests::NRE::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE::shutdown(ptrNRE_0);
 	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
 }
+*/
 
 void TestComponents::testComponentsDummyGWES()
 {
@@ -319,7 +250,7 @@ void TestComponents::testComponentsDummyGWES()
 	string strAnswer = "finished";
 	string noStage = "";
 	bool bUseDummyGWES = true;
-	bool bUseExtSched  = true;
+	bool bUseExtSched  = false;
 	string strGuiUrl   = "";
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", "127.0.0.1:7000", "workflows", bUseDummyGWES );
@@ -329,28 +260,28 @@ void TestComponents::testComponentsDummyGWES()
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and dummy GWES
-	unit_tests::NRE::ptr_t ptrNRE_0 = unit_tests::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched, bUseDummyGWES );
+	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched, bUseDummyGWES );
 	//sdpa::daemon::NRE::ptr_t ptrNRE_1 = sdpa::daemon::NRE::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
     {
-    	unit_tests::NRE::start(ptrNRE_0);
+    	sdpa::daemon::NRE::start(ptrNRE_0);
     	//sdpa::daemon::NRE::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
     	LOG(FATAL, "could not start NRE: " << ex.what());
     	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
-    	/* CPPUNIT_ASSERT_MESSAGE("could not start NRE", false); */
+
     	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
     	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-    	unit_tests::NRE::shutdown(ptrNRE_0);
+    	sdpa::daemon::NRE::shutdown(ptrNRE_0);
     	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     	return;
     }
 
-	for(int k=0; k<m_nITER; k++ )
+	for( int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
 
@@ -378,10 +309,9 @@ void TestComponents::testComponentsDummyGWES()
 
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	unit_tests::NRE::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE::shutdown(ptrNRE_0);
 	//sdpa::daemon::NRE::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
 }
-

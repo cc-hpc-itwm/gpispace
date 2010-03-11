@@ -36,7 +36,7 @@ namespace sdpa {
 			      	DaemonFSM(	const std::string &name,
 								seda::Stage* ptrToMasterStage,
 								seda::Stage* ptrToSlaveStage,
-								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes)
+								IWorkflowEngine*  pArgSdpa2Gwes)
 						:GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
 						 SDPA_INIT_LOGGER(name+"FSM"),
 						 m_fsmContext(*this)
@@ -45,7 +45,7 @@ namespace sdpa {
 					}
 
 			      	DaemonFSM(  const std::string &name,
-								sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+								IWorkflowEngine*  pArgSdpa2Gwes,
 								const std::string& toMasterStageName,
 								const std::string& toSlaveStageName = std::string(""))
 						: GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
@@ -55,7 +55,7 @@ namespace sdpa {
 						SDPA_LOG_DEBUG("Daemon state machine created");
 					}
 
-			     	DaemonFSM( const std::string &name = "", sdpa::Sdpa2Gwes* pArgSdpa2Gwes = NULL )
+			     	DaemonFSM( const std::string &name = "", IWorkflowEngine* pArgSdpa2Gwes = NULL )
 						: GenericDaemon(name, pArgSdpa2Gwes),
 						  SDPA_INIT_LOGGER(name+"FSM"),
 						  m_fsmContext(*this)

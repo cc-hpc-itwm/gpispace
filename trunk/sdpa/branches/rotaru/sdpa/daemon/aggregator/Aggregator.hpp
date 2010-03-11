@@ -17,7 +17,6 @@
  */
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
-#include <gwes/GWES.h>
 
 namespace sdpa {
 	namespace daemon {

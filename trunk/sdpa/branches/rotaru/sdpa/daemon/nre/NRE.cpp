@@ -16,7 +16,6 @@
  * =====================================================================================
  */
 
-#include <gwes/GWES.h>
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
@@ -32,8 +31,7 @@ NRE :: NRE(  const std::string& name, const std::string& url,
 			 const std::string& workerUrl,
 			 const std::string& guiUrl,
 			 const bool bExtSched, const bool bUseDummyWE )
-		: dsm::DaemonFSM( name, (bUseDummyWE ? dynamic_cast<sdpa::Sdpa2Gwes*>(new DummyGwes) :
-				  dynamic_cast<sdpa::Sdpa2Gwes*>(new gwes::GWES)) ),
+		: dsm::DaemonFSM( name, (bUseDummyWE ? dynamic_cast<IWorkflowEngine*>(new DummyGwes(this)) : NULL) ),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url),
 		  masterName_(masterName),
@@ -78,8 +76,8 @@ void NRE ::shutdown(NRE::ptr_t ptrNRE)
 	ptrNRE->shutdown_network();
 	ptrNRE->stop();
 
-	delete ptrNRE->ptr_Sdpa2Gwes_;
-	ptrNRE->ptr_Sdpa2Gwes_ = NULL;
+	delete ptrNRE->ptr_workflow_engine_;
+	ptrNRE->ptr_workflow_engine_ = NULL;
 }
 
 //actions
@@ -197,37 +195,12 @@ void NRE::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 }
 
-gwes::activity_id_t  NRE ::submitActivity(gwes::activity_t &activity)
-{
-	SDPA_LOG_DEBUG("NRE GWES submitted new activity ...");
-	ostringstream os;
-	gwes::activity_id_t actId = activity.getID();
-	gwes::workflow_id_t wfId  = activity.getOwnerWorkflowID();
-
-	activityCreated(activity);
-
-	try {
-
-		SDPA_LOG_DEBUG("Notify NRE GWES that the activity was dispatched ...");
-		ptr_Sdpa2Gwes_->activityDispatched( wfId, actId );
-		ptr_scheduler_->schedule(activity);
-	}
-	catch(std::exception&)
-	{
-		SDPA_LOG_DEBUG("Cancel the activity!");
-		// inform immediately GWES that the corresponding activity was cancelled
-		gwes()->activityCanceled( wfId, actId );
-		activityCancelled(activity);
-	}
-
-	return activity.getID();
-}
 
 /**
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-void NRE::cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity)
+bool  NRE::cancel(const id_type& activityId, const reason_type& reason )
 {
 	SDPA_LOG_DEBUG("GWES asked SDPA to cancel the activity "<<activityId<<" ...");
 	/*job_id_t job_id(activityId);
@@ -235,7 +208,7 @@ void NRE::cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwe
 	sendEvent(pEvtCancelJob);*/
 }
 
-
+/*
 void NRE ::activityCreated(const gwes::activity_t& act)
 {
 	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CREATED));
@@ -260,6 +233,7 @@ void NRE ::activityCancelled(const gwes::activity_t& act)
 {
 	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CANCELLED));
 }
+*/
 
 void NRE::backup( const std::string& strArchiveName )
 {

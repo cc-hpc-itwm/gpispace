@@ -1,6 +1,8 @@
 add_subdirectory(util)
 add_subdirectory(events)
-add_subdirectory(wf)
+
+#obsolete
+#add_subdirectory(wf)
 add_subdirectory(modules)
 add_subdirectory(daemon)
 add_subdirectory(client)

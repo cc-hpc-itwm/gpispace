@@ -18,7 +18,6 @@
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 
-#include <gwes/GWES.h>
 #include <SchedulerOrch.hpp>
 #include <Orchestrator.hpp>
 
@@ -37,8 +36,7 @@ using namespace sdpa::events;
 
 Orchestrator::Orchestrator(  const std::string &name,  const std::string& url,
 		                     const std::string &workflow_directory, const bool bUseDummyWE )
-	: DaemonFSM( name, (bUseDummyWE ? dynamic_cast<sdpa::Sdpa2Gwes*>(new DummyGwes) :
-			                          dynamic_cast<sdpa::Sdpa2Gwes*>(new gwes::GWES(workflow_directory))) ),
+	: DaemonFSM( name, (bUseDummyWE ? dynamic_cast<IWorkflowEngine*>(new DummyGwes(this)) : NULL) ),
 	  SDPA_INIT_LOGGER(name),
 	  url_(url)
 {
@@ -72,8 +70,8 @@ void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 	ptrOrch->shutdown_network();
 	ptrOrch->stop();
 
-	delete ptrOrch->ptr_Sdpa2Gwes_;
-	ptrOrch->ptr_Sdpa2Gwes_ = NULL;
+	delete ptrOrch->ptr_workflow_engine_;
+	ptrOrch->ptr_workflow_engine_ = NULL;
 }
 
 //actions
@@ -130,33 +128,13 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
-			if(ptr_Sdpa2Gwes_)
+			if(ptr_workflow_engine_)
 			{
-				activity_id_t actId = pJob->id().str();
-				workflow_id_t wfId  = pJob->parent().str();
+				id_type actId = pJob->id().str();
 
-				gwes::Activity& gwes_act = (gwes::Activity&)ptr_Sdpa2Gwes_->getActivity(wfId, actId);
-
-				try
-				{
-					sdpa::wf::glue::put_results_to_activity(pEvt->result(), gwes_act);
-				}
-				catch (const std::exception &ex)
-				{
-					SDPA_LOG_ERROR("could not put results back to activity: "<< ex.what());
-				}
-
-				parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
-
-				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" finished");
-
-				try {
-					ptr_Sdpa2Gwes_->activityFinished(wfId, actId, output);
-				}
-				catch(gwes::Gwes2Sdpa::NoSuchActivity& )
-				{
-					SDPA_LOG_ERROR("NoSuchActivityException occurred!");
-				}
+				SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
+				result_type output = pEvt->result();
+				ptr_workflow_engine_->finished(actId, output);
 
 				try {
 					Worker::ptr_t ptrWorker = findWorker(worker_id);
@@ -224,33 +202,13 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 		try {
 			// Should set the workflow_id here, or send it together with the workflow description
-			if(ptr_Sdpa2Gwes_)
+			if(ptr_workflow_engine_)
 			{
-				activity_id_t actId = pJob->id().str();
-				workflow_id_t wfId  = pJob->parent().str();
+				id_type actId = pJob->id().str();
 
-				gwes::Activity& gwes_act = (gwes::Activity&)ptr_Sdpa2Gwes_->getActivity(wfId, actId);
-
-				try
-				{
-					sdpa::wf::glue::put_results_to_activity(pEvt->result(), gwes_act);
-				}
-				catch (const std::exception &ex)
-				{
-					SDPA_LOG_ERROR("could not put results back to activity: "<< ex.what());
-				}
-
-				parameter_list_t output = *gwes_act.getTransitionOccurrence()->getTokens();
-
-				SDPA_LOG_DEBUG("Inform GWES that the activity "<<actId<<" failed");
-
-				try {
-					ptr_Sdpa2Gwes_->activityFailed(wfId, actId, output);
-				}
-				catch(gwes::Gwes2Sdpa::NoSuchActivity& )
-				{
-					SDPA_LOG_ERROR("NoSuchActivityException occurred!");
-				}
+				SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
+				result_type output = pEvt->result();
+				ptr_workflow_engine_->failed(actId, output);
 
 				try {
 					Worker::ptr_t ptrWorker = findWorker(worker_id);
@@ -342,11 +300,10 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		}
 
     		// tell to GWES that the activity ob_id() was cancelled
-    		activity_id_t actId = pJob->id();
-    		workflow_id_t wfId  = pJob->parent();
+    		id_type actId = pJob->id();
 
     		// inform gwes that the activity was canceled
-    		ptr_Sdpa2Gwes_->activityCanceled(wfId, actId);
+    		ptr_workflow_engine_->cancelled(actId);
     	}
 	}
 	catch(const JobNotFoundException&)

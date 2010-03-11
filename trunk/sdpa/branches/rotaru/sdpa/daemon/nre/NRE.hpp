@@ -17,7 +17,6 @@
  */
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
-#include <gwes/GWES.h>
 #include <gwes/IActivity.h>
 
 #include <sdpa/daemon/Observable.hpp>
@@ -52,8 +51,7 @@ namespace sdpa {
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
 		void action_interrupt( const sdpa::events::InterruptEvent& );
 
-		gwes::activity_id_t submitActivity(gwes::activity_t &activity);
-		void cancelActivity(const gwes::activity_id_t &activityId) throw (gwes::Gwes2Sdpa::NoSuchActivity);
+		bool cancel(const id_type&, const reason_type & );
 
 		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
@@ -62,11 +60,11 @@ namespace sdpa {
 		const std::string& masterName() const { return masterName_; }
 		const std::string& masterUrl() const { return masterUrl_; }
 
-		void activityCreated(const gwes::activity_t& act);
+		/*void activityCreated(const gwes::activity_t& act);
 		void activityStarted(const gwes::activity_t& act);
 		void activityFinished(const gwes::activity_t& act);
 		void activityFailed(const gwes::activity_t& act);
-		void activityCancelled(const gwes::activity_t& act);
+		void activityCancelled(const gwes::activity_t& act);*/
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int file_version )

@@ -50,11 +50,11 @@ SchedulerImpl::~SchedulerImpl()
 /*
 	Schedule a job locally, send the job to GWES
 */
-void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
+void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
+{
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	gwes::workflow_id_t wf_id = jobId.str();
-	gwes::workflow_t::ptr_t ptrWorkflow;
+	id_type wf_id = jobId.str();
 
 	try {
 
@@ -64,22 +64,17 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 
 		if( ptr_comm_handler_->gwes() )
 		{
-			// Use gwes workflow here!
-
-			ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
-			ptrWorkflow->setID(wf_id);
-
 			// Should set the workflow_id here, or send it together with the workflow description
 			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
-
-			ptr_comm_handler_->gwes()->submitWorkflow(ptrWorkflow);
+			ptr_comm_handler_->gwes()->submit(wf_id, pJob->description());
 		}
 		else
 		{
 			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
 			//send a JobFailed event
-			sdpa::job_result_t sdpa_result;
-			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+
+			sdpa::job_result_t result;
+			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), result) );
 			ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 
 			if(!ptr_comm_handler_)
@@ -98,8 +93,8 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
 
 		//send a JobFailed event
-		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, sdpa_result) );
+		sdpa::job_result_t result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 }
@@ -107,7 +102,8 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId) {
 /*
  * Implement here in a first phase a simple round-robin schedule
  */
-void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
+void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+{
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
 	try {
@@ -144,6 +140,7 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId) {
 	}
 }
 
+// obsolete, only for testing purposes!
 void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
 	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
 }
