@@ -82,6 +82,9 @@ class DummyGwes : public IWorkflowEngine {
 			result_type wf_result;
 			pIDaemon_->failed(workflowId, wf_result);
 
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
+
 			return true;
 		}
 		else
@@ -108,6 +111,9 @@ class DummyGwes : public IWorkflowEngine {
 			pIDaemon_->finished(workflowId, wf_result);
 
 			//delete the entry corresp to activityId;
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
+
 			return true;
 		}
 		else
@@ -134,8 +140,18 @@ class DummyGwes : public IWorkflowEngine {
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
 
-			pIDaemon_->cancelled(workflowId);
+			// check if there are any activities left for that workflow
+			bool bAllActFinished = true;
+			for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
+				if( it->second == workflowId )
+					bAllActFinished = false;
+
+			// if no activity left, declare the workflow cancelled
+			if(bAllActFinished)
+				pIDaemon_->cancelled(workflowId);
 
 			return true;
 		}
@@ -161,11 +177,9 @@ class DummyGwes : public IWorkflowEngine {
 
 		//create several activities out of it
 
-		// generate unique id
-		uuid uid;
-		uuidgen gen;
-		gen(uid);
-		id_type act_id = uid.str();
+		// assign new id
+		sdpa::JobId id;
+		id_type act_id = id.str();
 
 		// either you assign here an id or it be assigned by daemon
 		lock_type lock(mtx_);
@@ -190,6 +204,7 @@ class DummyGwes : public IWorkflowEngine {
 	{
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
+		lock_type lock(mtx_);
 		if(pIDaemon_)
 		{
 			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);

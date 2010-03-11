@@ -11,6 +11,7 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -47,8 +48,8 @@ int main (int argc, char **argv)
 	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( aggName, aggUrl, orchName, orchUrl );
-		sdpa::daemon::Aggregator::start(ptrAgg);
+		sdpa::daemon::Aggregator<DummyGwes>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyGwes>::create( aggName, aggUrl, orchName, orchUrl );
+		sdpa::daemon::Aggregator<DummyGwes>::start(ptrAgg);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -84,7 +85,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}

@@ -386,7 +386,9 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
 	// in fact the master name should be red from the configuration file
-	if( name() == sdpa::daemon::AGGREGATOR )
+
+
+	/*if( name() == sdpa::daemon::AGGREGATOR )
 	{
 		if(master().empty())
 			setMaster(sdpa::daemon::ORCHESTRATOR);
@@ -402,7 +404,7 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
 		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 		to_master_stage()->send(pEvtWorkerReg);
-	}
+	}*/
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent&)

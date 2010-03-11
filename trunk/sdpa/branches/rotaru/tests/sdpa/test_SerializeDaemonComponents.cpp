@@ -144,7 +144,7 @@ void WorkerSerializationTest::testNRESerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
 	std::string filename = "testSerializeNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	sdpa::daemon::NRE::ptr_t ptrNRE_0 = sdpa::daemon::NRE::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
+	sdpa::daemon::NRE<DummyGwes>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyGwes>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
 
 	ptrNRE_0->ptr_scheduler_ = sdpa::daemon::SchedulerNRE::ptr_t(new sdpa::daemon::SchedulerNRE());
 	 sdpa::daemon::SchedulerNRE* pScheduler = dynamic_cast< sdpa::daemon::SchedulerNRE*>(ptrNRE_0->ptr_scheduler_.get());
@@ -204,7 +204,7 @@ void WorkerSerializationTest::testNRESerialization()
 	std::cout<<"----------------Try now to restore the NRE:----------------"<<std::endl;
 	try
 	{
-		NRE::ptr_t ptrRestoredNRE_0;
+		NRE<DummyGwes>::ptr_t ptrRestoredNRE_0;
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
@@ -232,7 +232,7 @@ void WorkerSerializationTest::testAggregatorSerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
 	std::string filename = "testSerializeAggregator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Aggregator::ptr_t pAgg = sdpa::daemon::Aggregator::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	Aggregator<DummyGwes>::ptr_t pAgg = sdpa::daemon::Aggregator<DummyGwes>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
 
 	pAgg->ptr_scheduler_ = SchedulerImpl::ptr_t(new SchedulerImpl());
 	SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pAgg->ptr_scheduler_.get());
@@ -291,12 +291,12 @@ void WorkerSerializationTest::testAggregatorSerialization()
 
 	try
 	{
-		std::cout<<"----------------The Aggregator's content before backup is:----------------"<<std::endl;
+		std::cout<<"----------------The Aggregator<DummyGwes>'s content before backup is:----------------"<<std::endl;
 		pAgg->print();
 
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<Aggregator*>(NULL));
+		oa.register_type(static_cast<Aggregator<DummyGwes>*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -309,20 +309,20 @@ void WorkerSerializationTest::testAggregatorSerialization()
 		return;
 	}
 
-	std::cout<<"----------------Try now to restore the Aggregator:----------------"<<std::endl;
+	std::cout<<"----------------Try now to restore the Aggregator<DummyGwes>:----------------"<<std::endl;
 	try
 	{
-		Aggregator::ptr_t pRestoredAgg;
+		Aggregator<DummyGwes>::ptr_t pRestoredAgg;
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<Aggregator*>(NULL));
+		ia.register_type(static_cast<Aggregator<DummyGwes>*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
 		ia >> pRestoredAgg;
 
-		std::cout<<std::endl<<"----------------The restored content of the Aggregator is:----------------"<<std::endl;
+		std::cout<<std::endl<<"----------------The restored content of the Aggregator<DummyGwes> is:----------------"<<std::endl;
 		pRestoredAgg->print();
 	}
 	catch(exception &e)
@@ -339,7 +339,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
 	std::string filename = "testSerializeOrchestrator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Orchestrator::ptr_t pOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", "127.0.0.1:6000", "workflows");
+	Orchestrator<DummyGwes>::ptr_t pOrch = sdpa::daemon::Orchestrator<DummyGwes>::create( "orchestrator_0", "127.0.0.1:6000", "workflows");
 
 	pOrch->ptr_scheduler_ = SchedulerImpl::ptr_t(new SchedulerImpl());
 	SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pOrch->ptr_scheduler_.get());
@@ -403,7 +403,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<Orchestrator*>(NULL));
+		oa.register_type(static_cast<Orchestrator<DummyGwes>*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -420,10 +420,10 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 	std::cout<<"----------------Try now to restore the orchestrator:----------------"<<std::endl;
 	try
 	{
-		Orchestrator::ptr_t pRestoredOrch;
+		Orchestrator<DummyGwes>::ptr_t pRestoredOrch;
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<Orchestrator*>(NULL));
+		ia.register_type(static_cast<Orchestrator<DummyGwes>*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));

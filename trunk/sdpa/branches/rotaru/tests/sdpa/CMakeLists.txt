@@ -21,8 +21,8 @@ target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
 	 sdpa-nre
-	 sdpa-aggregator
-	 sdpa-orchestrator
+#	 sdpa-aggregator
+#	 sdpa-orchestrator
 	 sdpa-events
 	 sdpa-util
 	 sdpa

@@ -6,7 +6,7 @@ file(GLOB srcs *.cpp)
 ADD_LIBRARY(sdpa-nre ${srcs})
 
 if (USE_SMC_SC)
-	add_dependencies(sdpa-aggregator sdpa-daemon sdpa-daemonFSM_SMC)
+	add_dependencies(sdpa-nre sdpa-daemon sdpa-daemonFSM_SMC)
 	target_link_libraries(sdpa-nre sdpa-daemon sdpa-daemonFSM_SMC) 
 endif (USE_SMC_SC)
 

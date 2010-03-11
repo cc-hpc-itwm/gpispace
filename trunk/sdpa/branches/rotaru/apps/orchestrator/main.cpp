@@ -12,6 +12,7 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -46,8 +47,8 @@ int main (int argc, char **argv)
 	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, workflow_directory );
-		sdpa::daemon::Orchestrator::start(ptrOrch);
+		sdpa::daemon::Orchestrator<DummyGwes>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyGwes>::create( orchName, orchUrl, workflow_directory );
+		sdpa::daemon::Orchestrator<DummyGwes>::start(ptrOrch);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -83,7 +84,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator<DummyGwes>::shutdown(ptrOrch);
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

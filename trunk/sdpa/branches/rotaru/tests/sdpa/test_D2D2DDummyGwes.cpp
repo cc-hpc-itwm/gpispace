@@ -104,7 +104,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 
 	string answerStrategy = "finished";
 	string strFromUser(sdpa::daemon::USER);
-	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE, m_ptrAgg->daemon_stage(),
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( "NRE_TEST", m_ptrAgg->daemon_stage(),
 												NULL, NULL, answerStrategy )); // No gwes
 	DaemonFSM::create_daemon_stage(m_ptrNRE);
 
@@ -201,7 +201,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 
 	string answerStrategy = "failed";
 	string strFromUser(sdpa::daemon::USER);
-	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( "NRE_TEST",
 										m_ptrAgg->daemon_stage(),
 										NULL,
 										NULL,
@@ -301,7 +301,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 
 	string answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
-	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( "NRE_TEST",
 										m_ptrAgg->daemon_stage(),
 										NULL,
 										NULL,
@@ -409,7 +409,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
 
 	string answerStrategy = "cancelled";
 	string strFromUser(sdpa::daemon::USER);
-	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( sdpa::daemon::NRE,
+	m_ptrNRE = DaemonFSM::ptr_t (new NreDaemon( "NRE_TEST",
 										m_ptrAgg->daemon_stage(),
 										NULL,
 										NULL,
