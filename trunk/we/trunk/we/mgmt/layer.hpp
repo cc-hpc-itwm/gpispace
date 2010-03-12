@@ -368,28 +368,39 @@ namespace we { namespace mgmt {
 		{
 		  descriptor_type & desc = lookup(cmd.dat);
 		  assert ( desc.is_net() );
-		  if (desc.net.has_enabled())
-		  {
-			do
-			{
-			  std::cerr << "I: net[" << desc.id << "] has "
-						<< desc.net.num_enabled()
-						<< " enabled transition(s)" << std::endl;
-			  typename net_type::activity_t act = desc.net.extract();
-			  debug_activity (act);
-			  desc.get_real_net();
-			} while (desc.net.has_enabled());
-		  }
-		  else
-		  {
-			std::cerr << "E: attention for net[" << desc.id << "] had been requested, but nothing to do!" << std::endl;
-		  }
-		}
 
-		template <typename Activity>
-		inline void debug_activity(Activity const & act)
+		  // submit new activities
+		  while (desc.net.has_enabled())
+		  {
+			std::cerr << "I: net[" << desc.id << "] has "
+					  << desc.net.num_enabled()
+					  << " enabled transition(s)" << std::endl;
+			typename net_type::activity_t act = desc.net.extract();
+			debug_activity (act, desc.get_real_net());
+
+			typename net_type::output_t out;
+			desc.get_real_net().get_transition (act.tid) (act.input, act.output_descr, out);
+			desc.net.inject (out);
+
+		  }
+
+			if (desc.net.done())
+			{
+			  std::cerr << "I: net finished" << std::endl;
+			}
+			else
+			{
+			  std::cerr << "E: attention for net["
+						<< desc.id
+						<< "] had been requested, but nothing to do!"
+						<< std::endl;
+			}
+		  }
+
+		template <typename Activity, typename N>
+		inline void debug_activity(Activity const & act, N const & net)
 		{
-		  std::cerr << "D: transition[" << act.tid << "]:" << std::endl;
+		  std::cerr << "D: transition[" << act.tid << "](" << net.get_transition(act.tid) << "):" << std::endl;
 		  {
 			std::cerr << "\tin:" << std::endl;
 			for ( typename net_type::input_t::const_iterator it (act.input.begin())
