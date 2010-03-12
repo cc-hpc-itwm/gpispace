@@ -33,6 +33,7 @@ namespace we { namespace mgmt {
 	  {}
 
 	  template <typename _Tp>
+	  explicit
 	  token_t(const _Tp & value_)
 		: value(value_)
 	  {}
@@ -78,6 +79,7 @@ namespace we { namespace mgmt {
 
 	struct place_t
 	{
+	  explicit
 	  place_t (std::string const & name_)
 		: name(name_)
 	  {}
