@@ -103,7 +103,6 @@ public:
 
   typedef cross::cross<pid_in_map_t> choices_t;
   typedef cross::star_iterator<pid_in_map_t> choices_star_iterator;
-  typedef cross::bracket_iterator<pid_in_map_t> choices_bracket_iterator;
 
   // *********************************************************************** //
 private:
@@ -936,26 +935,13 @@ public:
     return activity_t (tid, input, output_descr);
   }
 
-  activity_t extract_activity_first (const tid_t & tid)
-  {
-    return extract_activity (tid, choices_star_iterator (*(choices (tid))));
-  }
-
-  activity_t extract_activity_nth (const tid_t & tid, const std::size_t & k)
-  {
-    return extract_activity (tid, choices_bracket_iterator (choices (tid)[k]));
-  }
-
   template<typename Engine>
   activity_t extract_activity_random (Engine & engine)
   {
     boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
     const tid_t tid (enabled.at (rand_tid (engine)));
-    const choices_t cs (choices(tid));
-    boost::uniform_int<std::size_t> rand_choice (0,cs.size()-1);
-    const choices_bracket_iterator it (cs[rand_choice (engine)]);
 
-    return extract_activity (tid, it);
+    return extract_activity (tid, *(choices(tid)));
   }
 
   template<typename IT>
@@ -967,19 +953,9 @@ public:
     return tid;
   }
 
-  tid_t fire_first (const tid_t & tid)
-  {
-    return fire (tid, choices_star_iterator (*(choices (tid))));
-  }
-
-  tid_t fire_nth (const tid_t & tid, const std::size_t & k)
-  {
-    return fire (tid, choices_bracket_iterator (choices(tid)[k]));
-  }
-
   tid_t fire (const tid_t & tid)
   {
-    return fire_first (tid);
+    return fire (tid, choices_star_iterator (*(choices (tid))));
   }
 };
 } // namespace petri_net
