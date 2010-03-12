@@ -36,6 +36,7 @@
 #include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/bits/commands.hpp>
+#include <we/mgmt/bits/synch_net.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -109,9 +110,8 @@ namespace we { namespace mgmt {
 		  {
 			std::cerr << "D: submitted petri-net["<< id << "] = " << n << std::endl;
 			{
-			  descriptor_type desc(id, descriptor_type::NET);
+			  descriptor_type desc(id, n);
 			  desc.parent = id_traits::nil();
-			  desc.net = n;
 			  insert_descriptor(id, desc);
 			}
 			e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
@@ -250,13 +250,6 @@ namespace we { namespace mgmt {
 		  throw std::runtime_error("not yet implemented: status");
 		}
 
-		const net_type & lookup(const id_type & id) throw (std::exception)
-		{
-		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
-		  if (d != descriptors_.end() && d->second.is_net()) return d->second.net;
-		  throw std::runtime_error("not found!");
-		}
-
 		void submit(const id_type & id, const id_type & parent, const encode_type & bytes)
 		{
 		  descriptor_type desc(id, descriptor_type::ACTIVITY);
@@ -352,6 +345,14 @@ namespace we { namespace mgmt {
 		  descriptors_.insert(std::make_pair(id, desc));
 		}
 
+		inline descriptor_type & lookup(const id_type & id)
+		{
+		  boost::unique_lock<boost::mutex> lock (descriptors_mutex_);
+		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
+		  assert( d != descriptors_.end() );
+		  return d->second;
+		}
+
 		/** Member variables **/
 	  private:
 		exec_layer_type & exec_layer_;
@@ -365,7 +366,16 @@ namespace we { namespace mgmt {
 
 		void net_needs_attention(const e_cmd_t & cmd)
 		{
-		  std::cerr << "I: net[" << cmd.dat << "] has " << lookup(cmd.dat).enabled_transitions().size() << " enabled transitions" << std::endl;
+		  descriptor_type & desc = lookup(cmd.dat);
+		  assert ( desc.is_net() );
+		  if (desc.net.has_enabled())
+		  {
+			std::cerr << "I: net[" << desc.id << "] has " << desc.net.num_enabled() << " enabled transition(s)" << std::endl;
+		  }
+		  else
+		  {
+			std::cerr << "E: attention for net[" << desc.id << "] had been requested, but nothing to do!" << std::endl;
+		  }
 		}
 		void suspend_net(const e_cmd_t & cmd)
 		{
