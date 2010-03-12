@@ -53,7 +53,7 @@ namespace we { namespace mgmt {
 	{
 	  // map-reduce network with 3 parallel nodes
 
-	  const std::size_t NUM_NODES=1;
+	  const std::size_t NUM_NODES=3;
 
 	  pid_t pid_in = net.add_place(place_t("in"));
 	  pid_t pid_out = net.add_place(place_t("out"));
