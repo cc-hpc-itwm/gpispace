@@ -880,17 +880,26 @@ public:
   struct activity_t
   {
   public:
+	enum Category
+	{
+	  CAT_ATOMIC = 0
+	, CAT_COMPLX
+	};
+
     const tid_t tid;
     const input_t input;
     const output_descr_t output_descr;
+	const Category category;
 
     activity_t ( const tid_t _tid
                , const input_t _input
                , const output_descr_t _output_descr
+			   , const Category _category = CAT_ATOMIC
                )
       : tid (_tid)
       , input (_input)
       , output_descr (_output_descr)
+	  , category (_category)
     {}
   };
 
@@ -899,9 +908,10 @@ public:
     return get_fun(trans, activity.tid)(activity.input, activity.output_descr);
   }
 
-  void inject_activity_result (const output_t & output)
+  template <typename Output>
+  void inject_activity_result (Output const & output)
   {
-    for ( typename output_t::const_iterator out (output.begin())
+    for ( typename Output::const_iterator out (output.begin())
         ; out != output.end()
         ; ++out
         )
