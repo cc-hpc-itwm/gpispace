@@ -370,7 +370,12 @@ namespace we { namespace mgmt {
 		  assert ( desc.is_net() );
 		  if (desc.net.has_enabled())
 		  {
-			std::cerr << "I: net[" << desc.id << "] has " << desc.net.num_enabled() << " enabled transition(s)" << std::endl;
+			do
+			{
+			  std::cerr << "I: net[" << desc.id << "] has " << desc.net.num_enabled() << " enabled transition(s)" << std::endl;
+			  typename net_type::activity_t act = desc.net.extract();
+
+			} while (desc.net.has_enabled());
 		  }
 		  else
 		  {
