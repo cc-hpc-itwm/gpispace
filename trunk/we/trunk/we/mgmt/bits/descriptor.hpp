@@ -36,6 +36,14 @@ namespace we { namespace mgmt { namespace detail {
 	  typedef Data data_type;
 	  typedef std::vector<id_type> container_type;
 
+	  struct
+	  {
+		bool cancel : 1;
+		bool cancelling : 1;
+		bool cancelled : 1;
+		bool suspended : 1;
+	  } flags;
+
 	  enum descriptor_category
 	  {
 		NET
