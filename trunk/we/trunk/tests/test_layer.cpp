@@ -17,9 +17,23 @@ inline Stream & operator << (Stream & s, const pnet_t & n)
     {
   	s << "[" << n.get_place (*p) << ":";
 
+	typedef boost::unordered_map<we::mgmt::detail::token_t, size_t> token_cnt_t;
+	token_cnt_t token;
   	for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-  	  s << " " << *tp;
-
+	{
+  	  token[*tp]++;
+	}
+	for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
+	{
+	  if (t->second > 1)
+	  {
+		s << " " << t->second << "x " << t->first;
+	  }
+	  else
+	  {
+		s << " " << t->first;
+	  }
+	}
   	s << "]";
     }
 
