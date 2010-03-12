@@ -69,6 +69,7 @@ namespace we { namespace mgmt { namespace detail {
 	  inline bool is_net() const { return category == NET; }
 	  inline bool is_activity() const { return category == ACTIVITY; }
 
+	  real_net_type & get_real_net() { return real_net; }
 	  id_type id;
 	  id_type parent;
   private:
