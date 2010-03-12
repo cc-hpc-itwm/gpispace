@@ -39,7 +39,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-#include <sdpa/IWorkflowEngine.hpp>
+#include <sdpa/daemon/IWorkflowEngine.hpp>
 
 using namespace sdpa;
 
