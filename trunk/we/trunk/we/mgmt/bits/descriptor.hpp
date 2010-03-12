@@ -19,6 +19,7 @@
 #ifndef WE_MGMT_LAYER_DESCRIPTOR_HPP
 #define WE_MGMT_LAYER_DESCRIPTOR_HPP 1
 
+#include <boost/unordered_set.hpp>
 #include <we/mgmt/bits/synch_net.hpp>
 
 namespace we { namespace mgmt { namespace detail {
@@ -34,7 +35,7 @@ namespace we { namespace mgmt { namespace detail {
 
 	  typedef Status status_type;
 	  typedef Data data_type;
-	  typedef std::vector<id_type> container_type;
+	  typedef boost::unordered_set<id_type> children_type;
 
 	  struct
 	  {
@@ -52,18 +53,18 @@ namespace we { namespace mgmt { namespace detail {
 
 	  descriptor(const id_type & id_, descriptor_category category_)
 		: id(id_)
-		  , net(real_net)
 		  , category(category_)
+		  , net(real_net)
 	  {}
 
-	  descriptor(const id_type & id_, real_net_type & n)
+	  descriptor(const id_type & id_, real_net_type const& n)
 		: id(id_)
 		, category(NET)
 		, real_net(n)
 		, net(real_net)
 	  {}
 
-	  descriptor(const descriptor &other)
+	  descriptor(descriptor const& other)
 		: id(other.id)
 		, parent(other.parent)
 		, category(other.category)
@@ -86,7 +87,7 @@ namespace we { namespace mgmt { namespace detail {
   public:
 	  synch_net_type net;
 	  data_type data;
-	  container_type children;
+	  children_type children;
 	};
 }}}
 
