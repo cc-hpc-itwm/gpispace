@@ -42,7 +42,7 @@ int main ()
 
   std::vector<id_type> ids;
 
-  for (std::size_t i (0); i < 2; ++i)
+  for (std::size_t i (0); i < 1; ++i)
   {
 	daemon_type::id_type id = daemon.gen_id();
 	ids.push_back(id);
