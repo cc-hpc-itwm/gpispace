@@ -66,6 +66,10 @@ namespace we { namespace mgmt {
 	{
 	  return a.id == b.id;
 	}
+	inline bool operator!=(const token_t & a, const token_t & b)
+	{
+	  return !(a == b);
+	}
 	inline std::size_t hash_value(token_t const & t)
 	{
 	  boost::hash<unsigned long long> hasher;
