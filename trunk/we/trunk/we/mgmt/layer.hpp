@@ -109,7 +109,7 @@ namespace we { namespace mgmt {
 	  {
 		 std::cerr << "D: submitted petri-net["<< id << "] = " << n << std::endl;
 		 submit_toplevel_net(id, n);
-		 e_cmd_q_.put(make_cmd(detail::commands::NET_NEEDS_ATTENTION, id));
+		 e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 	  }
 	  else
 	  {
@@ -154,6 +154,7 @@ namespace we { namespace mgmt {
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(result);
+	  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 	  return true;
 	}
 
@@ -173,6 +174,7 @@ namespace we { namespace mgmt {
 	{
 	  we::util::remove_unused_variable_warning(id);
 	  we::util::remove_unused_variable_warning(result);
+	  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 	  return true;
 	}
 
@@ -211,6 +213,7 @@ namespace we { namespace mgmt {
 	bool suspend(const id_type & id) throw()
 	{
 	  we::util::remove_unused_variable_warning(id);
+	  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
 	  return true;
 	}
 
@@ -230,6 +233,7 @@ namespace we { namespace mgmt {
 	bool resume(const id_type & id) throw()
 	{
 	  we::util::remove_unused_variable_warning(id);
+	  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
 	  return true;
 	}
 
@@ -332,15 +336,7 @@ namespace we { namespace mgmt {
 	  for (;;)
 	  {
 		e_cmd_t cmd = e_cmd_q_.get();
-		std::cerr << "D: ex got command[" << cmd << "]" << std::endl;
-		switch (cmd.cmd)
-		{
-		  case NET_NEEDS_ATTENTION:
-			std::cout << "I: net[" << cmd.dat << "] has " << lookup(cmd.dat).enabled_transitions().size() << " enabled transitions" << std::endl;
-			break;
-		  default:
-			break;
-		}
+		cmd.handle();
 	  }
 	  std::cerr << "D: extractor thread stopped..." << std::endl;
 	}
@@ -362,6 +358,20 @@ namespace we { namespace mgmt {
 	e_cmd_q_t e_cmd_q_;
 
 	boost::thread extractor_;
+
+	void net_needs_attention(const e_cmd_t & cmd)
+	{
+	  std::cerr << "I: net[" << cmd.dat << "] has " << lookup(cmd.dat).enabled_transitions().size() << " enabled transitions" << std::endl;
+	}
+	void suspend_net(const e_cmd_t & cmd)
+	{
+	  std::cerr << "I: net[" << cmd.dat << "] suspended" << std::endl;
+	}
+	void resume_net(const e_cmd_t & cmd)
+	{
+	  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
+	  e_cmd_q_.put(make_cmd(cmd.dat, boost::bind(&this_type::net_needs_attention, this, _1)));
+	}
   };
 }}
 
