@@ -22,7 +22,7 @@ namespace we { namespace mgmt { namespace detail {
     CNT _extract;
     CNT _inject;
 
-    boost::mutex mutex;
+    boost::shared_mutex mutex;
     boost::mt19937 engine;
 
   public:
@@ -35,7 +35,7 @@ namespace we { namespace mgmt { namespace detail {
 	template <typename Output>
     void inject (Output const & output)
     {
-      boost::lock_guard<boost::mutex> lock (mutex);
+      boost::unique_lock<boost::shared_mutex> lock (mutex);
 
       n.inject_activity_result (output);
 
@@ -44,7 +44,7 @@ namespace we { namespace mgmt { namespace detail {
 
     activity_t extract (void)
     {
-      boost::lock_guard<boost::mutex> lock (mutex);
+      boost::unique_lock<boost::shared_mutex> lock (mutex);
 
       activity_t act = n.extract_activity_random (engine);
 
@@ -55,21 +55,22 @@ namespace we { namespace mgmt { namespace detail {
 
     bool done (void)
     {
-      boost::lock_guard<boost::mutex> lock (mutex);
+      boost::shared_lock<boost::shared_mutex> lock (mutex);
 
       return (_extract == _inject && n.enabled_transitions().empty());
     }
 
     bool has_enabled (void)
     {
-      boost::lock_guard<boost::mutex> lock (mutex);
+      boost::shared_lock<boost::shared_mutex> lock (mutex);
 
       return (!n.enabled_transitions().empty());
     }
 
 	std::size_t num_enabled (void)
 	{
-      boost::lock_guard<boost::mutex> lock (mutex);
+      boost::shared_lock<boost::shared_mutex> lock (mutex);
+
 	  return n.enabled_transitions().size();
 	}
   private:
