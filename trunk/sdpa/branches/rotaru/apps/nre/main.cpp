@@ -11,10 +11,14 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
+#include <tests/sdpa/DummyGwes.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
+
+// change this to the real workflow engine
+typedef DummyGwes WorkflowEngine;
 
 int main (int argc, char **argv)
 {
@@ -55,8 +59,8 @@ int main (int argc, char **argv)
   fhg::log::Configurator::configure();
 
   try {
-    sdpa::daemon::NRE::ptr_t ptrNRE = sdpa::daemon::NRE::create( nreName, nreUrl, aggName, aggUrl, workerUrl, guiUrl );
-    sdpa::daemon::NRE::start(ptrNRE);
+    sdpa::daemon::NRE<WorkflowEngine>::ptr_t ptrNRE = sdpa::daemon::NRE<WorkflowEngine>::create( nreName, nreUrl, aggName, aggUrl, workerUrl, guiUrl );
+    sdpa::daemon::NRE<WorkflowEngine>::start(ptrNRE);
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -92,7 +96,7 @@ int main (int argc, char **argv)
 
     LOG(INFO, "terminating...");
 
-    sdpa::daemon::NRE::shutdown(ptrNRE);
+    sdpa::daemon::NRE<WorkflowEngine>::shutdown(ptrNRE);
   } catch( std::exception& ) {
     std::cout<<"Could not start the NRE!"<<std::endl;
   }

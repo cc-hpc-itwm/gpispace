@@ -172,8 +172,7 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-/*
-void TestComponents::testComponentsRealGWES()
+/*void TestComponents::testComponentsRealGWES()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
 	string strAnswer = "finished";

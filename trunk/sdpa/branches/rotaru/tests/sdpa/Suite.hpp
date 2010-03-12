@@ -52,9 +52,9 @@ namespace sdpa { namespace tests {
 	  //suiteOfTests->addTest( DaemonsWithCommTest::suite() );
 
       suiteOfTests->addTest( TestComponents::suite() );
-	 /* suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
+	  suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
 	  suiteOfTests->addTest( TestSerializeJobPtr::suite() );
-      suiteOfTests->addTest( WorkerSerializationTest::suite() );*/
+      suiteOfTests->addTest( WorkerSerializationTest::suite() );
 
       return suiteOfTests;
     }

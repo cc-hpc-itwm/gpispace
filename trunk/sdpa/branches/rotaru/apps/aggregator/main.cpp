@@ -13,6 +13,9 @@
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <tests/sdpa/DummyGwes.hpp>
 
+// change this to the real workflow engine
+typedef DummyGwes WorkflowEngine;
+
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
@@ -48,8 +51,8 @@ int main (int argc, char **argv)
 	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Aggregator<DummyGwes>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyGwes>::create( aggName, aggUrl, orchName, orchUrl );
-		sdpa::daemon::Aggregator<DummyGwes>::start(ptrAgg);
+		sdpa::daemon::Aggregator<WorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<WorkflowEngine>::create( aggName, aggUrl, orchName, orchUrl );
+		sdpa::daemon::Aggregator<WorkflowEngine>::start(ptrAgg);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -85,7 +88,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator<WorkflowEngine>::shutdown(ptrAgg);
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}
