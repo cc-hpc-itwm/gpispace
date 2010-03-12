@@ -37,6 +37,9 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
 	typedef command_t<C,D> this_type;
 	typedef boost::function<void (this_type const &)> handler_type;
 
+	command_t()
+	{}
+
 	command_t(C c, D d)
 	  : cmd(c)
 	  , dat(d)
