@@ -29,24 +29,47 @@ namespace we { namespace mgmt {
 	{
 	  typedef std::string type;
 
-	  token_t() {}
+	  token_t()
+		: id(counter()++)
+	  {}
 
 	  template <typename _Tp>
 	  token_t(const _Tp & value_)
-		: value(value_)
+		: id(counter()++)
+		, value(value_)
 	  {}
 
+	  token_t(const token_t &other)
+	  {
+		value = other.value;
+		id = other.id;
+	  }
+
+	  token_t & operator=(const token_t &other)
+	  {
+		value = other.value;
+		id = other.id;
+		return *this;
+	  }
+
+	  unsigned long long id;
 	  type value;
+	private:
+	  static unsigned long long& counter()
+	  {
+		static unsigned long long counter = 0;
+		return counter;
+	  }
 	};
 
 	inline bool operator==(const token_t & a, const token_t & b)
 	{
-	  return a.value == b.value;
+	  return a.id == b.id;
 	}
 	inline std::size_t hash_value(token_t const & t)
 	{
-	  boost::hash<token_t::type> hasher;
-	  return hasher(t.value);
+	  boost::hash<unsigned long long> hasher;
+	  return hasher(t.id);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const token_t & t)
 	{
@@ -109,20 +132,43 @@ namespace we { namespace mgmt {
 
 	struct edge_t
 	{
+	  explicit
 	  edge_t(std::string const & name_)
-		: name(name_)
+		: id(counter()++)
+		, name(name_)
 	  {}
 
+	  edge_t(const edge_t &other)
+	  {
+		name = other.name;
+		id = other.id;
+	  }
+
+	  edge_t & operator=(const edge_t &other)
+	  {
+		name = other.name;
+		id = other.id;
+		return *this;
+	  }
+
+	  unsigned long long id;
 	  std::string name;
+	private:
+	  static unsigned long long& counter()
+	  {
+		static unsigned long long counter = 0;
+		return counter;
+	  }
 	};
+
 	inline bool operator==(const edge_t & a, const edge_t & b)
 	{
-	  return a.name == b.name;
+	  return a.id == b.id;
 	}
 	inline std::size_t hash_value(edge_t const & e)
 	{
-	  boost::hash<std::string> hasher;
-	  return hasher(e.name);
+	  boost::hash<unsigned long long> hasher;
+	  return hasher(e.id);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const edge_t & e)
 	{

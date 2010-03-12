@@ -9,7 +9,7 @@
 
 namespace concurrent
 {
-  template<typename T>
+  template<typename T, typename Alloc = std::allocator<T> >
   struct deque
   {
   public:
@@ -19,7 +19,7 @@ namespace concurrent
 
   private:
     size_type max;
-    std::deque<T> q;
+    std::deque<T, Alloc> q;
     boost::condition_variable cond_put;
     boost::condition_variable cond_get;
     boost::mutex mutex;
@@ -53,8 +53,16 @@ namespace concurrent
       return x;
     }
 
-    bool empty (void) const { return q.empty(); }
-    size_type size (void) const { return q.size(); }
+    bool empty (void) const
+	{
+//      boost::unique_lock<boost::mutex> lock (mutex);
+	  return q.empty();
+	}
+    size_type size (void) const
+	{
+//      boost::unique_lock<boost::mutex> lock (mutex);
+	  return q.size();
+	}
   };
 }
 

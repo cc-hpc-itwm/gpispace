@@ -51,33 +51,46 @@ namespace we { namespace mgmt {
 
 	static void parse (net_type & net, const data_type &)
 	{
+	  // map-reduce network with 3 parallel nodes
+
+	  const std::size_t NUM_NODES=1;
+
 	  pid_t pid_in = net.add_place(place_t("in"));
 	  pid_t pid_out = net.add_place(place_t("out"));
-	  pid_t tid_start ( net.add_transition( transition_t("start", transition_t::INTERNAL_SIMPLE)));
-	  net.add_edge (edge_t("in"), petri_net::connection_t (petri_net::PT, tid_start, pid_in));
-	  net.add_edge (edge_t("out"), petri_net::connection_t (petri_net::TP, tid_start, pid_out));
+
+	  tid_t tid_map = net.add_transition (transition_t("map", transition_t::INTERNAL_SIMPLE));
+	  tid_t tid_red = net.add_transition (transition_t("red", transition_t::INTERNAL_SIMPLE));
+
+	  net.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, pid_in));
+	  net.add_edge (edge_t("red"), petri_net::connection_t (petri_net::TP, tid_red, pid_out));
+
+	  // create places and transitions
+	  for (std::size_t n(0); n < NUM_NODES; ++n)
+	  {
+		const char wi_name[] = {'w', 'i', '_', '0'+n, 0}; // input place
+		const char w_name[] = {'w', '_', '0'+n, 0}; // transition
+		const char wo_name[] = {'w', 'o', '_', '0'+n, 0}; // output place
+
+		const pid_t pid_wi = net.add_place(place_t(wi_name));
+		const pid_t pid_wo = net.add_place(place_t(wo_name));
+		const tid_t tid_w = net.add_transition( transition_t(w_name, transition_t::INTERNAL_SIMPLE));
+
+		// connect map to work input
+		net.add_edge (edge_t("map"), petri_net::connection_t (petri_net::TP, tid_map, pid_wi));
+
+		// connect work in
+		net.add_edge (edge_t("work in"), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+
+		// connect work out
+		net.add_edge (edge_t("work out"), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+
+		// connect work output to red
+		net.add_edge (edge_t("red"), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
+	  }
 
 	  net.put_token(pid_in, token_t("token-data"));
 	}
   };
-
-  template <typename Stream, typename Net>
-  inline Stream & operator << (Stream & s, const Net & n)
-  {
-	for (typename Net::place_const_it p (n.places()); p.has_more(); ++p)
-	  {
-		s << "[" << n.get_place (*p) << ":";
-
-		for (typename Net::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-		  s << " " << *tp;
-
-		s << "]";
-	  }
-
-	return s;
-  }
-
-
 }}
 
 #endif

@@ -21,8 +21,9 @@
 
 #include <cassert>
 
+#include <we/net.hpp>
 #include <we/util/warnings.hpp>
-#include <we/concurrent/net.hpp>
+#include <we/concurrent/deque.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
@@ -34,6 +35,7 @@
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
+#include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -43,10 +45,11 @@ namespace we { namespace mgmt {
 		  , typename Net
 		  , typename Traits = detail::layer_traits<Net, typename ExecutionLayer::id_type>
 		  , typename Policy = detail::layer_policy<Traits>
-		  , std::size_t NUM_EXTRACTOR=1, std::size_t NUM_INJECTOR=1>
+  >
   class layer : public basic_layer<typename Traits::id_traits::type>
   {
   public:
+	typedef layer<ExecutionLayer, Net, Traits, Policy> this_type;
 	typedef ExecutionLayer exec_layer_type;
 	typedef Net net_type;
 	typedef Traits traits_type;
@@ -74,6 +77,11 @@ namespace we { namespace mgmt {
 
 	typedef detail::descriptor<id_type, net_type, status_type, encode_type> descriptor_type;
 	typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
+  private:
+	typedef detail::commands::command_t<detail::commands::E_CMD_ID, id_type> e_cmd_t;
+	typedef concurrent::deque<e_cmd_t> e_cmd_q_t;
+
+  public:
 
 	/******************************
 	 * EXTERNAL API
@@ -93,6 +101,7 @@ namespace we { namespace mgmt {
 	 */
 	void submit(const id_type & id, const encode_type & bytes) throw (std::exception)
 	{
+	  using detail::commands::make_cmd;
 	  net_type n = codec_type::decode(bytes);
 
 	  // check network for validity
@@ -100,6 +109,7 @@ namespace we { namespace mgmt {
 	  {
 		 std::cerr << "D: submitted petri-net["<< id << "] = " << n << std::endl;
 		 submit_toplevel_net(id, n);
+		 e_cmd_q_.put(make_cmd(detail::commands::NET_NEEDS_ATTENTION, id));
 	  }
 	  else
 	  {
@@ -234,7 +244,7 @@ namespace we { namespace mgmt {
 	const net_type & lookup(const id_type & id) throw (std::exception)
 	{
 	  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
-	  if (d != descriptors_.end() && d->second.is_net()) return *d->second.net;
+	  if (d != descriptors_.end() && d->second.is_net()) return d->second.net;
 	  throw std::runtime_error("not found!");
 	}
 
@@ -263,23 +273,31 @@ namespace we { namespace mgmt {
 	layer(E & exec_layer)
 	  : exec_layer_(exec_layer)
 	  , id_gen_(&id_traits::generate)
+	  , e_cmd_q_(1024)
 	{ }
 
 	template <class E, typename G>
 	layer(E & exec_layer, G gen)
 	  : exec_layer_(exec_layer)
 	  , id_gen_(gen)
-	{ }
+	  , e_cmd_q_(1024)
+	{
+	  start();
+	}
 
 	template <class E, typename G, typename V>
 	layer(E & exec_layer, G gen, V validator)
 	  : exec_layer_(exec_layer)
 	  , id_gen_(gen)
 	  , validator_(validator)
-	{ }
+	{
+	  start();
+	}
 
 	~layer()
 	{
+	  stop();
+
 	  // stop threads
 	  //
 	  // cancel activities
@@ -292,14 +310,39 @@ namespace we { namespace mgmt {
 		std::cerr << "D: removing descriptor[" << d->first << "]" << std::endl;
 	  }
 	}
-  
+ 
 	/* internal functions */
   private:
+	void start()
+	{
+	  extractor_ = boost::thread(boost::bind(&this_type::extractor, this));
+	}
+
+	void stop()
+	{
+	  std::cerr << "D: cleaning up extractor thread..." << std::endl;
+	  extractor_.interrupt();
+	  extractor_.join();
+	}
+
 	void extractor()
 	{
+	  using namespace we::mgmt::detail::commands;
+	  std::cerr << "D: extractor thread started..." << std::endl;
 	  for (;;)
 	  {
+		e_cmd_t cmd = e_cmd_q_.get();
+		std::cerr << "D: ex got command[" << cmd << "]" << std::endl;
+		switch (cmd.cmd)
+		{
+		  case NET_NEEDS_ATTENTION:
+			std::cout << "I: net[" << cmd.dat << "] has " << lookup(cmd.dat).enabled_transitions().size() << " enabled transitions" << std::endl;
+			break;
+		  default:
+			break;
+		}
 	  }
+	  std::cerr << "D: extractor thread stopped..." << std::endl;
 	}
 
 	void injector()
@@ -316,7 +359,9 @@ namespace we { namespace mgmt {
 	boost::function<id_type()> id_gen_;
 	boost::function<bool (const net_type&)> validator_;
 	id_descriptor_map_t descriptors_;
-	/* extractor_command_queue_t extractor_commands_; */
+	e_cmd_q_t e_cmd_q_;
+
+	boost::thread extractor_;
   };
 }}
 

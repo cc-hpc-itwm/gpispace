@@ -31,6 +31,20 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(pid);
     }
   };
+
+  namespace detail
+  {
+	namespace tag {
+	  struct p2t_tag {};
+	  struct t2p_tag {};
+	}
+
+	template <typename TID, typename PID, typename Dir>
+	struct tagged_connection
+	{
+	  typedef Dir direction;
+	};
+  }
 }
 
 #endif
