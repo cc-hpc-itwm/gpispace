@@ -373,8 +373,8 @@ namespace we { namespace mgmt {
 		  while (desc.net.has_enabled())
 		  {
 			std::cerr << "I: net[" << desc.id << "] has "
-					  << desc.net.num_enabled()
-					  << " enabled transition(s)" << std::endl;
+			  << desc.net.num_enabled()
+			  << " enabled transition(s)" << std::endl;
 			typename net_type::activity_t act = desc.net.extract();
 			debug_activity (act, desc.get_real_net());
 
@@ -384,50 +384,50 @@ namespace we { namespace mgmt {
 
 		  }
 
-			if (desc.net.done())
-			{
-			  std::cerr << "I: net finished" << std::endl;
-			  std::cerr << desc.get_real_net() << std::endl;
-			}
-			else
-			{
-			  std::cerr << "E: attention for net["
-						<< desc.id
-						<< "] had been requested, but nothing to do!"
-						<< std::endl;
-			}
-		  }
-
-		template <typename Activity, typename N>
-		inline void debug_activity(Activity const & act, N const & net)
-		{
-		  std::cerr << "D: transition[" << act.tid << "](" << net.get_transition(act.tid) << "):" << std::endl;
+		  if (desc.net.done())
 		  {
-			std::cerr << "\tin:" << std::endl;
-			for ( typename net_type::input_t::const_iterator it (act.input.begin())
-				; it != act.input.end()
-				; ++it)
-			{
-			  std::cerr << "\t\t" << it->first
-						<< " from place " << it->second.first
-						<< " via edge " << it->second.second
-						<< std::endl;
-			}
+			std::cerr << "I: net finished" << std::endl;
+			std::cerr << desc.get_real_net() << std::endl;
 		  }
-
+		  else
 		  {
-			std::cerr << "\tout:" << std::endl;
-			for ( typename net_type::output_descr_t::const_iterator it (act.output_descr.begin())
-				; it != act.output_descr.end()
-				; ++it)
-			{
-			  std::cerr << "\t\t"
-						<< "to place " << it->first
-						<< " via edge " << it->second 
-						<< std::endl;
-			}
+			std::cerr << "E: attention for net["
+			  << desc.id
+			  << "] had been requested, but nothing to do!"
+			  << std::endl;
 		  }
 		}
+
+		template <typename Activity, typename N>
+		  inline void debug_activity(Activity const & act, N const & net)
+		  {
+			std::cerr << "D: transition[" << act.tid << "](" << net.get_transition(act.tid) << "):" << std::endl;
+			{
+			  std::cerr << "\tin:" << std::endl;
+			  for ( typename net_type::input_t::const_iterator it (act.input.begin())
+				  ; it != act.input.end()
+				  ; ++it)
+			  {
+				std::cerr << "\t\t" << it->first
+				  << " from place " << it->second.first
+				  << " via edge " << it->second.second
+				  << std::endl;
+			  }
+			}
+
+			{
+			  std::cerr << "\tout:" << std::endl;
+			  for ( typename net_type::output_descr_t::const_iterator it (act.output_descr.begin())
+				  ; it != act.output_descr.end()
+				  ; ++it)
+			  {
+				std::cerr << "\t\t"
+				  << "to place " << it->first
+				  << " via edge " << it->second 
+				  << std::endl;
+			  }
+			}
+		  }
 
 		void suspend_net(const e_cmd_t & cmd)
 		{
