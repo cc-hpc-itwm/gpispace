@@ -19,6 +19,7 @@
 #ifndef WE_MGMT_PARSER_HPP
 #define WE_MGMT_PARSER_HPP 1
 
+#include <we/util/show.hpp>
 #include <we/mgmt/bits/types.hpp>
 
 namespace we { namespace mgmt {
@@ -68,30 +69,26 @@ namespace we { namespace mgmt {
 	  // create places and transitions
 	  for (std::size_t n(0); n < NUM_NODES; ++n)
 	  {
-		const char wi_name[] = {'w', 'i', '_', '0'+n, 0}; // input place
-		const char w_name[] = {'w', '_', '0'+n, 0}; // transition
-		const char wo_name[] = {'w', 'o', '_', '0'+n, 0}; // output place
-
-		const pid_t pid_wi = net.add_place(place_t(wi_name));
-		const pid_t pid_wo = net.add_place(place_t(wo_name));
-		const tid_t tid_w = net.add_transition( transition_t(w_name, transition_t::INTERNAL_SIMPLE));
+		const pid_t pid_wi = net.add_place(place_t("wi_" + show(n)));
+		const pid_t pid_wo = net.add_place(place_t("wo_" + show(n)));
+		const tid_t tid_w = net.add_transition( transition_t("work_"+show(n), transition_t::INTERNAL_SIMPLE));
 
 		// connect map to work input
-		net.add_edge (edge_t("map"), petri_net::connection_t (petri_net::TP, tid_map, pid_wi));
+		net.add_edge (edge_t("map_" + show(n)), petri_net::connection_t (petri_net::TP, tid_map, pid_wi));
 
 		// connect work in
-		net.add_edge (edge_t("work in"), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+		net.add_edge (edge_t("work_in_"+show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
 
 		// connect work out
-		net.add_edge (edge_t("work out"), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+		net.add_edge (edge_t("work_out_" + show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
 
 		// connect work output to red
-		net.add_edge (edge_t("red"), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
+		net.add_edge (edge_t("red_" + show(n)), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
 	  }
 
 	  for (std::size_t t (0); t < NUM_TOKEN; ++t)
 	  {
-		const char name[] = {'t', 'o', 'k', 'e', 'n', '-', '0' + t, 0};
+		std::string name = "token-" + show(t);
 		net.put_token(pid_in, token_t(name));
 	  }
 	}
