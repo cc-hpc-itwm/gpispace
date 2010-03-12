@@ -880,26 +880,17 @@ public:
   struct activity_t
   {
   public:
-	enum Category
-	{
-	  CAT_ATOMIC = 0
-	, CAT_COMPLX
-	};
-
     const tid_t tid;
     const input_t input;
     const output_descr_t output_descr;
-	const Category category;
 
     activity_t ( const tid_t _tid
                , const input_t _input
                , const output_descr_t _output_descr
-			   , const Category _category = CAT_ATOMIC
                )
       : tid (_tid)
       , input (_input)
       , output_descr (_output_descr)
-	  , category (_category)
     {}
   };
 
