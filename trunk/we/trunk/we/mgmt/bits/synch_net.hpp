@@ -22,7 +22,7 @@ namespace we { namespace mgmt { namespace detail {
     CNT _extract;
     CNT _inject;
 
-    boost::shared_mutex mutex;
+    mutable boost::shared_mutex mutex;
     boost::mt19937 engine;
 
   public:
@@ -53,21 +53,21 @@ namespace we { namespace mgmt { namespace detail {
       return act;
     }
 
-    bool done (void)
+    bool done (void) const
     {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
       return (_extract == _inject && n.enabled_transitions().empty());
     }
 
-    bool has_enabled (void)
+    bool has_enabled (void) const
     {
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
       return (!n.enabled_transitions().empty());
     }
 
-	std::size_t num_enabled (void)
+	std::size_t num_enabled (void) const
 	{
       boost::shared_lock<boost::shared_mutex> lock (mutex);
 
