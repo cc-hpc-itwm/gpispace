@@ -123,6 +123,25 @@ namespace we { namespace mgmt {
 		, type(category_)
 	  {}
 
+	  template <typename Output, typename Input, typename OutputDescription>
+	  Output operator()(Input input, OutputDescription desc)
+	  {
+		Output output;
+		for ( typename Input::const_iterator in (input.begin())
+			; in != input.end()
+			; ++in)
+		{
+		  for ( typename OutputDescription::const_iterator out (desc.begin())
+			  ; out != desc.end()
+			  ; ++out)
+		  {
+			std::cerr << "D: copying input " << in->first << " to place " << out->first << std::endl;
+			output.push_back(std::make_pair(in->first, out->first));
+		  }
+		}
+		return output;
+	  }
+
 	  std::string name;
 	  transition_cat type;
 	};
