@@ -82,8 +82,14 @@ namespace we { namespace mgmt {
 		typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
 	  private:
 		typedef detail::set<id_type> active_nets_t;
+
+		// manager thread
 		typedef detail::commands::command_t<detail::commands::CMD_ID, id_type> cmd_t;
 		typedef detail::queue<cmd_t> cmd_q_t;
+
+		// injector thread
+		typedef std::pair<id_type, std::pair<int, typename net_type::output_t> > inj_cmd_t;
+		typedef detail::queue<inj_cmd_t> inj_q_t;
 
 	  public:
 
@@ -112,13 +118,7 @@ namespace we { namespace mgmt {
 		  if (net_validator::is_valid(n))
 		  {
 			std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
-			debug_net (n);
-			{
-			  descriptor_type desc(id, n);
-			  desc.parent = id_traits::nil();
-			  insert_descriptor(id, desc);
-			}
-			cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+			submit (id, n);
 		  }
 		  else
 		  {
@@ -163,7 +163,11 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-//		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+
+		  // TODO: parse results
+		  // hand results over to injector
+		  typename net_type::output_t output /* (parse_result(result)) */;
+		  inj_q_.put ( std::make_pair (id, std::make_pair(0, output)) );
 		  return true;
 		}
 
@@ -254,12 +258,15 @@ namespace we { namespace mgmt {
 		  throw std::runtime_error("not yet implemented: status");
 		}
 
-		void submit(const id_type & id, const id_type & parent, const encode_type & bytes)
+		void submit (const id_type & id, const net_type & n)
 		{
-		  descriptor_type desc(id, descriptor_type::ACTIVITY);
-		  desc.parent = parent;
-		  desc.data = bytes;
-		  descriptors_.insert(std::make_pair(id, desc));
+		  debug_net (n);
+		  {
+			descriptor_type desc(id, n);
+			desc.parent = id_traits::nil();
+			insert_descriptor(id, desc);
+		  }
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		}
 
 	  public:
@@ -273,6 +280,7 @@ namespace we { namespace mgmt {
 			, id_gen_(&id_traits::generate)
 			   , cmd_q_(1024)
 			   , active_nets_(1024)
+			   , inj_q_(1024)
 	  {
 		start();
 	  }
@@ -283,6 +291,7 @@ namespace we { namespace mgmt {
 		  , id_gen_(gen)
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
+		  , inj_q_(1024)
 	  {
 		start();
 	  }
@@ -294,6 +303,7 @@ namespace we { namespace mgmt {
 		  , validator_(validator)
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
+		  , inj_q_(1024)
 	  {
 		start();
 	  }
@@ -351,6 +361,24 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: manager thread stopped..." << std::endl;
 		}
 
+		inline
+		bool is_net_alive ( const descriptor_type & desc ) const
+		{
+		  if ( desc.flags.suspended || desc.flags.cancelling ) return false;
+		  return true;
+		}
+
+		inline
+		bool is_net_done ( const descriptor_type & desc ) const
+		{
+		  return desc.net.done();
+		}
+
+		inline void post_finished_notification( const id_type & id)
+		{
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_finished, this, _1)));
+		}
+
 		void extractor()
 		{
 		  using namespace we::mgmt::detail::commands;
@@ -363,16 +391,14 @@ namespace we { namespace mgmt {
 			descriptor_type & desc = lookup(active_net);
 			assert ( desc.is_net() );
 
-			if (desc.flags.suspended)
+			if (! is_net_alive (desc))
 			{
-			  std::cerr << "I: net[" << desc.id << "] is suspended" << std::endl;
 			  continue;
 			}
 
-			if (desc.net.done())
+			if (is_net_done (desc))
 			{
-			  std::cerr << "I: net finished" << std::endl;
-			  debug_net (desc.get_real_net());
+			  post_finished_notification (active_net);
 			  continue;
 			}
 
@@ -394,6 +420,28 @@ namespace we { namespace mgmt {
 		void injector()
 		{
 		  std::cerr << "D: injector thread started..." << std::endl;
+		  for (;;)
+		  {
+			inj_cmd_t cmd = inj_q_.get();
+			try
+			{
+			  descriptor_type & act_desc = lookup( cmd.first );
+			  descriptor_type & net_desc = lookup( act_desc.parent );
+			  std::cerr << "I: injecting results of "
+						<< "activity[" << cmd.first << "] into "
+						<< "net[" << act_desc.parent << "]"
+						<< std::endl;
+			  net_desc.net.inject (cmd.second.second);
+			  net_desc.children.erase ( act_desc.id );
+			  remove_descriptor ( act_desc );
+			  cmd_q_.put (make_cmd( net_desc.id, boost::bind(&this_type::net_needs_attention, this, _1)));
+			}
+			catch (const std::exception & ex)
+			{
+			  std::cerr << "E: error during injecting: " << ex.what() << std::endl;
+			  // ignore
+			}
+		  }
 		  std::cerr << "D: injector thread stopped..." << std::endl;
 		}
 
@@ -409,11 +457,23 @@ namespace we { namespace mgmt {
 		  descriptors_.insert(std::make_pair(id, desc));
 		}
 
+		inline void remove_descriptor(const descriptor_type & desc)
+		{
+		  remove_descriptor (desc.id);
+		}
+
+		inline void remove_descriptor(const id_type & id)
+		{
+		  boost::unique_lock<boost::shared_mutex> lock (descriptors_mutex_);
+		  descriptors_.erase (id);
+		}
+
 		inline descriptor_type & lookup(const id_type & id)
 		{
 		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
 		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
-		  assert( d != descriptors_.end() );
+		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
+//		  assert( d != descriptors_.end() );
 		  return d->second;
 		}
 
@@ -426,6 +486,7 @@ namespace we { namespace mgmt {
 		id_descriptor_map_t descriptors_;
 		cmd_q_t cmd_q_;
 		active_nets_t active_nets_;
+		inj_q_t inj_q_;
 
 		boost::mutex active_nets_mutex_;
 		boost::condition active_nets_modified_;
@@ -472,7 +533,15 @@ namespace we { namespace mgmt {
 
 		void net_needs_attention(const cmd_t & cmd)
 		{
+		  std::cerr << "D: net[" << cmd.dat << "] active" << std::endl;
 		  active_nets_.put (cmd.dat);
+		}
+
+		void net_finished(const cmd_t & cmd)
+		{
+		  std::cerr << "D: net[" << cmd.dat << "] finished" << std::endl;
+		  exec_layer_.finished ( cmd.dat, "dummy result" );
+		  remove_descriptor ( cmd.dat );
 		}
 
 		void suspend_net(const cmd_t & cmd)
@@ -488,15 +557,18 @@ namespace we { namespace mgmt {
 		  active_nets_.put (cmd.dat);
 		}
 
-		void async_execute(typename net_type::activity_t const & act, descriptor_type & desc)
+		void async_execute(typename net_type::activity_t const & act, descriptor_type & parent_desc)
 		{
-		  debug_activity (act, desc.get_real_net());
+		  descriptor_type act_desc (id_gen_(), descriptor_type::ACTIVITY);
+		  act_desc.parent = parent_desc.id;
+		  parent_desc.children.insert ( act_desc.id );
+		  insert_descriptor (act_desc.id, act_desc);
+		  std::cerr << "D: executing activity[" << act_desc.id << "]..." << std::endl;
+		  debug_activity (act, parent_desc.get_real_net());
 
 		  typename net_type::output_t out;
-		  desc.get_real_net().get_transition (act.tid) (act.input, act.output_descr, out);
-		  desc.net.inject (out);
-
-		  active_nets_.put ( desc.id );
+		  parent_desc.get_real_net().get_transition (act.tid) (act.input, act.output_descr, out);
+		  inj_q_.put ( std::make_pair (act_desc.id, std::make_pair(0, out)) );
 		}
 	};
 }}
