@@ -32,7 +32,8 @@ namespace we { namespace mgmt { namespace detail {
       , _inject(0)
     {}
 
-    void inject (const output_t & output)
+	template <typename Output>
+    void inject (Output const & output)
     {
       boost::lock_guard<boost::mutex> lock (mutex);
 
