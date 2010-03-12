@@ -67,8 +67,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(token_t const & t)
 	{
-	  boost::hash<const void *> hasher;
-	  return hasher(&t);
+	  boost::hash<token_t::type> hasher;
+	  return hasher(t.value);
 	}
 
 	inline std::ostream & operator<< (std::ostream & s, const token_t & t)
@@ -90,8 +90,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(place_t const & p)
 	{
-	  boost::hash<void const *> hasher;
-	  return hasher(&p);
+	  boost::hash<std::string> hasher;
+	  return hasher(p.name);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const place_t & p)
 	{
@@ -173,8 +173,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(edge_t const & e)
 	{
-	  boost::hash<void const *> hasher;
-	  return hasher(&e);
+	  boost::hash<std::string> hasher;
+	  return hasher(e.name);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const edge_t & e)
 	{
