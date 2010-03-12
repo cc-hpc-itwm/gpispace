@@ -54,6 +54,7 @@ namespace we { namespace mgmt {
 	  // map-reduce network with 3 parallel nodes
 
 	  const std::size_t NUM_NODES=3;
+	  const std::size_t NUM_TOKEN=1;
 
 	  pid_t pid_in = net.add_place(place_t("in"));
 	  pid_t pid_out = net.add_place(place_t("out"));
@@ -88,7 +89,11 @@ namespace we { namespace mgmt {
 		net.add_edge (edge_t("red"), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
 	  }
 
-	  net.put_token(pid_in, token_t("token-data"));
+	  for (std::size_t t (0); t < NUM_TOKEN; ++t)
+	  {
+		const char name[] = {'t', 'o', 'k', 'e', 'n', '-', '0' + t, 0};
+		net.put_token(pid_in, token_t(name));
+	  }
 	}
   };
 }}
