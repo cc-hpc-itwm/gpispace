@@ -35,26 +35,32 @@ namespace we { namespace mgmt {
 
 	  template <typename _Tp>
 	  token_t(const _Tp & value_)
-		: id(counter()++)
-		, value(value_)
+		: value(value_)
+		, id(counter()++)
 	  {}
 
 	  token_t(const token_t &other)
-	  {
-		value = other.value;
-		id = other.id;
-	  }
+		: value(other.value)
+		, id (other.id)
+	  { }
 
 	  token_t & operator=(const token_t &other)
 	  {
-		value = other.value;
-		id = other.id;
+		if (&other != this)
+		{
+		  value = other.value;
+		  id = other.id;
+		}
 		return *this;
 	  }
 
-	  unsigned long long id;
 	  type value;
+
+	  friend bool operator==(const token_t &, const token_t &);
+	  friend std::ostream& operator<<(std::ostream &, const token_t &);
+	  friend std::size_t hash_value(const token_t &);
 	private:
+	  unsigned long long id;
 	  static unsigned long long& counter()
 	  {
 		static unsigned long long counter = 0;
@@ -75,11 +81,11 @@ namespace we { namespace mgmt {
 	  boost::hash<unsigned long long> hasher;
 	  return hasher(t.id);
 	}
+
 	inline std::ostream & operator<< (std::ostream & s, const token_t & t)
 	{
-	  return s << t.value;
+	  return s << "t["<< t.id << "](" << t.value << ")";
 	}
-
 
 	struct place_t
 	{
