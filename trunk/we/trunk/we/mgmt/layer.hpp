@@ -374,7 +374,36 @@ namespace we { namespace mgmt {
 			{
 			  std::cerr << "I: net[" << desc.id << "] has " << desc.net.num_enabled() << " enabled transition(s)" << std::endl;
 			  typename net_type::activity_t act = desc.net.extract();
+			  std::cerr << "D: transition[" << act.tid << "]:" << std::endl;
+			  {
+				std::cerr << "\tin:" << std::endl;
+				for ( typename net_type::input_t::const_iterator it (act.input.begin())
+					; it != act.input.end()
+					; ++it)
+				{
+				  std::cerr << "\t\t" << it->first
+							<< " from place " << it->second.first
+							<< " via edge " << it->second.second
+							<< std::endl;
+				}
+			  }
 
+			  {
+				std::cerr << "\tout:" << std::endl;
+				for ( typename net_type::output_descr_t::const_iterator it (act.output_descr.begin())
+					; it != act.output_descr.end()
+					; ++it)
+				{
+				  std::cerr << "\t\t"
+							<< "to place " << it->first
+							<< " via edge " << it->second 
+							<< std::endl;
+				}
+			  }
+
+			  // dummy execute
+			  {
+			  }
 			} while (desc.net.has_enabled());
 		  }
 		  else
