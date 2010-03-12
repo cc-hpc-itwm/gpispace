@@ -30,26 +30,22 @@ namespace we { namespace mgmt {
 	  typedef std::string type;
 
 	  token_t()
-		: id(counter()++)
 	  {}
 
 	  template <typename _Tp>
 	  token_t(const _Tp & value_)
 		: value(value_)
-		, id(counter()++)
 	  {}
 
 	  token_t(const token_t &other)
 		: value(other.value)
-		, id (other.id)
-	  { }
+	  {}
 
 	  token_t & operator=(const token_t &other)
 	  {
 		if (&other != this)
 		{
 		  value = other.value;
-		  id = other.id;
 		}
 		return *this;
 	  }
@@ -59,18 +55,11 @@ namespace we { namespace mgmt {
 	  friend bool operator==(const token_t &, const token_t &);
 	  friend std::ostream& operator<<(std::ostream &, const token_t &);
 	  friend std::size_t hash_value(const token_t &);
-	private:
-	  unsigned long long id;
-	  static unsigned long long& counter()
-	  {
-		static unsigned long long counter = 0;
-		return counter;
-	  }
 	};
 
 	inline bool operator==(const token_t & a, const token_t & b)
 	{
-	  return a.id == b.id;
+	  return (a.value == b.value);
 	}
 	inline bool operator!=(const token_t & a, const token_t & b)
 	{
@@ -78,13 +67,13 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(token_t const & t)
 	{
-	  boost::hash<unsigned long long> hasher;
-	  return hasher(t.id);
+	  boost::hash<const void *> hasher;
+	  return hasher(&t);
 	}
 
 	inline std::ostream & operator<< (std::ostream & s, const token_t & t)
 	{
-	  return s << "t["<< t.id << "](" << t.value << ")";
+	  return s << "t(" << t.value << ")";
 	}
 
 	struct place_t
@@ -101,8 +90,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(place_t const & p)
 	{
-	  boost::hash<std::string> hasher;
-	  return hasher(p.name);
+	  boost::hash<void const *> hasher;
+	  return hasher(&p);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const place_t & p)
 	{
@@ -123,10 +112,9 @@ namespace we { namespace mgmt {
 		, type(category_)
 	  {}
 
-	  template <typename Output, typename Input, typename OutputDescription>
-	  Output operator()(Input input, OutputDescription desc)
+	  template <typename Input, typename OutputDescription, typename Output>
+	  void operator ()(Input const & input, OutputDescription const & desc, Output & output) const
 	  {
-		Output output;
 		for ( typename Input::const_iterator in (input.begin())
 			; in != input.end()
 			; ++in)
@@ -135,11 +123,10 @@ namespace we { namespace mgmt {
 			  ; out != desc.end()
 			  ; ++out)
 		  {
-			std::cerr << "D: copying input " << in->first << " to place " << out->first << std::endl;
+			std::cerr << "D: putting " << in->first << " to place " << out->first << std::endl;
 			output.push_back(std::make_pair(in->first, out->first));
 		  }
 		}
-		return output;
 	  }
 
 	  std::string name;
@@ -151,8 +138,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(transition_t const & t)
 	{
-	  boost::hash<std::string> hasher;
-	  return hasher(t.name);
+	  boost::hash<void const*> hasher;
+	  return hasher(&t);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const transition_t & t)
 	{
@@ -163,41 +150,31 @@ namespace we { namespace mgmt {
 	{
 	  explicit
 	  edge_t(std::string const & name_)
-		: id(counter()++)
-		, name(name_)
+		: name(name_)
 	  {}
 
 	  edge_t(const edge_t &other)
 	  {
 		name = other.name;
-		id = other.id;
 	  }
 
 	  edge_t & operator=(const edge_t &other)
 	  {
 		name = other.name;
-		id = other.id;
 		return *this;
 	  }
 
-	  unsigned long long id;
 	  std::string name;
-	private:
-	  static unsigned long long& counter()
-	  {
-		static unsigned long long counter = 0;
-		return counter;
-	  }
 	};
 
 	inline bool operator==(const edge_t & a, const edge_t & b)
 	{
-	  return a.id == b.id;
+	  return a.name == b.name;
 	}
 	inline std::size_t hash_value(edge_t const & e)
 	{
-	  boost::hash<unsigned long long> hasher;
-	  return hasher(e.id);
+	  boost::hash<void const *> hasher;
+	  return hasher(&e);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const edge_t & e)
 	{
