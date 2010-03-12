@@ -79,7 +79,7 @@ namespace we { namespace mgmt {
 		typedef detail::descriptor<id_type, net_type, status_type, encode_type> descriptor_type;
 		typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
 	  private:
-		typedef detail::commands::command_t<detail::commands::E_CMD_ID, id_type> e_cmd_t;
+		typedef detail::commands::command_t<detail::commands::CMD_ID, id_type> e_cmd_t;
 		typedef detail::queue<e_cmd_t> cmd_q_t;
 
 	  public:

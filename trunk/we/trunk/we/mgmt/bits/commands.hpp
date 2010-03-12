@@ -22,7 +22,7 @@
 #include <boost/function.hpp>
 
 namespace we { namespace mgmt { namespace detail { namespace commands {
-  enum E_CMD_ID
+  enum CMD_ID
   {
 	GENERIC
   ,	NET_NEEDS_ATTENTION
@@ -65,9 +65,9 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   };
 
   template <typename D, typename H>
-  inline command_t<E_CMD_ID, D> make_cmd(D d, H h)
+  inline command_t<CMD_ID, D> make_cmd(D d, H h)
   {
-	return command_t<E_CMD_ID,D>(GENERIC, d, h);
+	return command_t<CMD_ID,D>(GENERIC, d, h);
   }
 
   template <typename C, typename D, typename H>
