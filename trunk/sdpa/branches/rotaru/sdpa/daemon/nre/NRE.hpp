@@ -87,12 +87,6 @@ namespace sdpa {
 		const std::string& masterName() const { return masterName_; }
 		const std::string& masterUrl() const { return masterUrl_; }
 
-		/*void activityCreated(const gwes::activity_t& act);
-		void activityStarted(const gwes::activity_t& act);
-		void activityFinished(const gwes::activity_t& act);
-		void activityFailed(const gwes::activity_t& act);
-		void activityCancelled(const gwes::activity_t& act);*/
-
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int file_version )
 		{
