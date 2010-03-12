@@ -40,16 +40,23 @@ int main ()
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
-  for (std::size_t i (0); i < 1; ++i)
+  std::vector<id_type> ids;
+
+  for (std::size_t i (0); i < 2; ++i)
   {
 	daemon_type::id_type id = daemon.gen_id();
+	ids.push_back(id);
 
 	mgmt_layer.submit(id, "");
-	mgmt_layer.suspend(id);
-	mgmt_layer.resume(id);
-	mgmt_layer.failed(id, "");
-	mgmt_layer.finished(id, "");
-	mgmt_layer.cancel(id, "");
+  }
+
+  for (std::vector<id_type>::const_iterator id (ids.begin()); id != ids.end(); ++id)
+  {
+	mgmt_layer.suspend(*id);
+	mgmt_layer.resume(*id);
+	mgmt_layer.failed(*id, "");
+	mgmt_layer.finished(*id, "");
+	mgmt_layer.cancel(*id, "");
   }
 
   sleep(1); // not nice, but we cannot wait for a network to finish right now
