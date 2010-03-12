@@ -45,11 +45,11 @@ int main ()
 	daemon_type::id_type id = daemon.gen_id();
 
 	mgmt_layer.submit(id, "");
-	mgmt_layer.cancel(id, "");
-	mgmt_layer.failed(id, "");
-	mgmt_layer.finished(id, "");
 	mgmt_layer.suspend(id);
 	mgmt_layer.resume(id);
+	mgmt_layer.failed(id, "");
+	mgmt_layer.finished(id, "");
+	mgmt_layer.cancel(id, "");
   }
 
   sleep(1); // not nice, but we cannot wait for a network to finish right now
