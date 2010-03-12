@@ -68,8 +68,8 @@ int main ()
   {
 	mgmt_layer.suspend(*id);
 	mgmt_layer.resume(*id);
-	mgmt_layer.failed(*id, "");
-	mgmt_layer.finished(*id, "");
+//	mgmt_layer.failed(*id, "");
+//	mgmt_layer.finished(*id, "");
 	mgmt_layer.cancel(*id, "");
   }
 
