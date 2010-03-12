@@ -50,9 +50,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-// to be removed
-#include <sdpa/IWorkflowEngine.hpp>
-
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {

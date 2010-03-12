@@ -21,7 +21,7 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
 
-#include <sdpa/IWorkflowEngine.hpp>
+#include <sdpa/daemon/IWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
 #include <sdpa/util/Config.hpp>
