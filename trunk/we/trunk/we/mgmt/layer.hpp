@@ -80,7 +80,7 @@ namespace we { namespace mgmt {
 		typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
 	  private:
 		typedef detail::commands::command_t<detail::commands::E_CMD_ID, id_type> e_cmd_t;
-		typedef detail::queue<e_cmd_t> e_cmd_q_t;
+		typedef detail::queue<e_cmd_t> cmd_q_t;
 
 	  public:
 
@@ -114,7 +114,7 @@ namespace we { namespace mgmt {
 			  desc.parent = id_traits::nil();
 			  insert_descriptor(id, desc);
 			}
-			e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+			cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  }
 		  else
 		  {
@@ -159,7 +159,7 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  return true;
 		}
 
@@ -179,7 +179,7 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  return true;
 		}
 
@@ -218,7 +218,7 @@ namespace we { namespace mgmt {
 		bool suspend(const id_type & id) throw()
 		{
 		  we::util::remove_unused_variable_warning(id);
-		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
 		  return true;
 		}
 
@@ -238,7 +238,7 @@ namespace we { namespace mgmt {
 		bool resume(const id_type & id) throw()
 		{
 		  we::util::remove_unused_variable_warning(id);
-		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
 		  return true;
 		}
 
@@ -267,14 +267,14 @@ namespace we { namespace mgmt {
 		  layer(E & exec_layer)
 		  : exec_layer_(exec_layer)
 			, id_gen_(&id_traits::generate)
-			   , e_cmd_q_(1024)
+			   , cmd_q_(1024)
 	  { }
 
 		template <class E, typename G>
 		  layer(E & exec_layer, G gen)
 		  : exec_layer_(exec_layer)
 			, id_gen_(gen)
-			   , e_cmd_q_(1024)
+			   , cmd_q_(1024)
 	  {
 		start();
 	  }
@@ -325,7 +325,7 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: extractor thread started..." << std::endl;
 		  for (;;)
 		  {
-			e_cmd_t cmd = e_cmd_q_.get();
+			e_cmd_t cmd = cmd_q_.get();
 			cmd.handle();
 		  }
 		  std::cerr << "D: extractor thread stopped..." << std::endl;
@@ -360,7 +360,7 @@ namespace we { namespace mgmt {
 		boost::function<bool (const net_type&)> validator_;
 		boost::mutex descriptors_mutex_;
 		id_descriptor_map_t descriptors_;
-		e_cmd_q_t e_cmd_q_;
+		cmd_q_t cmd_q_;
 
 		boost::thread extractor_;
 
@@ -436,7 +436,7 @@ namespace we { namespace mgmt {
 		void resume_net(const e_cmd_t & cmd)
 		{
 		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
-		  e_cmd_q_.put(make_cmd(cmd.dat, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  cmd_q_.put(make_cmd(cmd.dat, boost::bind(&this_type::net_needs_attention, this, _1)));
 		}
 	};
 }}
