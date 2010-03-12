@@ -23,7 +23,6 @@
 
 #include <we/net.hpp>
 #include <we/util/warnings.hpp>
-#include <we/concurrent/deque.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
@@ -37,6 +36,7 @@
 #include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/synch_net.hpp>
+#include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -80,7 +80,7 @@ namespace we { namespace mgmt {
 		typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
 	  private:
 		typedef detail::commands::command_t<detail::commands::E_CMD_ID, id_type> e_cmd_t;
-		typedef concurrent::deque<e_cmd_t> e_cmd_q_t;
+		typedef detail::queue<e_cmd_t> e_cmd_q_t;
 
 	  public:
 
@@ -159,7 +159,7 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-		  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  return true;
 		}
 
@@ -179,7 +179,7 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-		  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  return true;
 		}
 
@@ -218,7 +218,7 @@ namespace we { namespace mgmt {
 		bool suspend(const id_type & id) throw()
 		{
 		  we::util::remove_unused_variable_warning(id);
-		  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
+		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
 		  return true;
 		}
 
@@ -238,7 +238,7 @@ namespace we { namespace mgmt {
 		bool resume(const id_type & id) throw()
 		{
 		  we::util::remove_unused_variable_warning(id);
-		  e_cmd_q_.put(make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
+		  e_cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
 		  return true;
 		}
 
@@ -387,6 +387,7 @@ namespace we { namespace mgmt {
 			if (desc.net.done())
 			{
 			  std::cerr << "I: net finished" << std::endl;
+			  std::cerr << desc.get_real_net() << std::endl;
 			}
 			else
 			{
