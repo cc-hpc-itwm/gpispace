@@ -12,14 +12,14 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <tests/sdpa/DummyGwes.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
 // change this to the real workflow engine
-typedef DummyGwes WorkflowEngine;
+typedef DummyWorkflowEngine WorkflowEngine;
 
 int main (int argc, char **argv)
 {

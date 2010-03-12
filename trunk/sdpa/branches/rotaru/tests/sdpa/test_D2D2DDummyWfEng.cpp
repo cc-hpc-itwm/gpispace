@@ -15,23 +15,23 @@
  *
  * =====================================================================================
  */
-#include "test_D2D2DDummyGwes.hpp"
+#include "test_D2D2DDummyWfEng.hpp"
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyGwesTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( D2D2DDummyWfEngTest );
 
-D2D2DDummyGwesTest::D2D2DDummyGwesTest() :
+D2D2DDummyWfEngTest::D2D2DDummyWfEngTest() :
 	SDPA_INIT_LOGGER("sdpa.tests.D2D2DDummyGwesTest"),
 	m_nITER(1),
 	m_sleep_interval(10000)
 {
 }
 
-D2D2DDummyGwesTest::~D2D2DDummyGwesTest()
+D2D2DDummyWfEngTest::~D2D2DDummyWfEngTest()
 {}
 
 
-string D2D2DDummyGwesTest::read_workflow(string strFileName)
+string D2D2DDummyWfEngTest::read_workflow(string strFileName)
 {
 	ifstream f(strFileName.c_str());
 	ostringstream os;
@@ -48,11 +48,11 @@ string D2D2DDummyGwesTest::read_workflow(string strFileName)
 	return os.str();
 }
 
-void D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machine
+void D2D2DDummyWfEngTest::setUp() { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
-	m_ptrSdpa2GwesOrch = new DummyGwes();
-	m_ptrSdpa2GwesAgg  = new DummyGwes();
+	m_ptrSdpa2GwesOrch = new DummyWorkflowEngine();
+	m_ptrSdpa2GwesAgg  = new DummyWorkflowEngine();
 
 	m_ptrUserStrategy = seda::Strategy::Ptr( new UserStrategy("User") );
 	m_ptrToUserStage  = seda::Stage::Ptr(new seda::Stage("to_master_stage", m_ptrUserStrategy) );
@@ -78,7 +78,7 @@ void D2D2DDummyGwesTest::setUp() { //initialize and start the finite state machi
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
-void D2D2DDummyGwesTest::tearDown()
+void D2D2DDummyWfEngTest::tearDown()
 {
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
@@ -96,7 +96,7 @@ void D2D2DDummyGwesTest::tearDown()
 	delete m_ptrSdpa2GwesAgg;
 }
 
-void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
+void D2D2DDummyWfEngTest::testDaemonFSM_JobFinished()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFinished******************************************"<<std::endl;
@@ -193,7 +193,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFinished()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
+void D2D2DDummyWfEngTest::testDaemonFSM_JobFailed()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobFailed******************************************"<<std::endl;
@@ -293,7 +293,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobFailed()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
+void D2D2DDummyWfEngTest::testDaemonFSM_JobCancelled()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled******************************************"<<std::endl;
@@ -401,7 +401,7 @@ void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled()
 	SDPA_LOG_DEBUG("User finished!");
 }
 
-void D2D2DDummyGwesTest::testDaemonFSM_JobCancelled_from_Pending()
+void D2D2DDummyWfEngTest::testDaemonFSM_JobCancelled_from_Pending()
 {
 	ostringstream os;
 	os<<std::endl<<"************************************testDaemonFSM_JobCancelled_from_Pending******************************************"<<std::endl;

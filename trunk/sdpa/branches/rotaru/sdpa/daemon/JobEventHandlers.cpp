@@ -29,7 +29,6 @@
 
 using namespace std;
 using namespace sdpa::daemon;
-using namespace gwes;
 using namespace sdpa::events;
 
 

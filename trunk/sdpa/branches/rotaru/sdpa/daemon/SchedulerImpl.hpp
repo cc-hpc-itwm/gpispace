@@ -46,9 +46,6 @@ namespace sdpa {
 
 
 	virtual void schedule(sdpa::job_id_t& job);
-
-	virtual void schedule(gwes::activity_t& ) { throw std::runtime_error("scheduling of activities not supported here"); }
-
 	virtual void registerHandler(sdpa::daemon::IComm* pHandler) { ptr_comm_handler_ = pHandler; }
 	virtual void unregisterHandler(sdpa::daemon::IComm* pHandler) { if(pHandler == ptr_comm_handler_) ptr_comm_handler_=NULL;}
 

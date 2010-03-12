@@ -118,12 +118,12 @@ namespace sdpa {
 		{
 			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
 			result_type output_fail;
-			ptr_comm_handler_->gwes()->finished(act_id, output_fail);
+			ptr_comm_handler_->workflowEngine()->finished(act_id, output_fail);
 			return;
 		}
 
 		result_type output; // to be fiile-in by the NreWorkerClient
-		ptr_comm_handler_->gwes()->finished(act_id, output);
+		ptr_comm_handler_->workflowEngine()->finished(act_id, output);
 
 		// call here the NreWorkerClient
 		/*try

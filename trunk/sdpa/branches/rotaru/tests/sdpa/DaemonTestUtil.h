@@ -41,7 +41,7 @@
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
-#include <tests/sdpa/DummyGwes.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>

@@ -148,7 +148,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
 
-	  virtual IWorkflowEngine* gwes() const { return ptr_workflow_engine_; }
+	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
 	  virtual bool is_registered() const { return m_bRegistered;}
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}

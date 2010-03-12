@@ -731,7 +731,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
 	}
 	catch(std::exception&)
 	{
-		gwes()->cancelled( activityId ); // why?
+		workflowEngine()->cancelled( activityId ); // why?
 	}
 
 }

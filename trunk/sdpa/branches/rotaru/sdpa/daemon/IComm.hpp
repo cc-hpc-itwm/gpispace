@@ -49,8 +49,8 @@ const std::string USER("user");
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
 	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;
 
-	  // only for testing with DummyGwes, change it
-	  virtual IWorkflowEngine* gwes() const = 0;
+	  // only for testing with DummyWorkflowEngine, change it
+	  virtual IWorkflowEngine* workflowEngine() const = 0;
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;

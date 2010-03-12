@@ -46,14 +46,14 @@ using namespace sdpa;
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
 
-class DummyGwes : public IWorkflowEngine {
+class DummyWorkflowEngine : public IWorkflowEngine {
   private:
     SDPA_DECLARE_LOGGER();
   public:
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    DummyGwes( IDaemon* pIDaemon = NULL ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( IDaemon* pIDaemon = NULL ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
     	pIDaemon_ = pIDaemon;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");

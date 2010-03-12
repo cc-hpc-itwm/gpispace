@@ -12,7 +12,7 @@
 #include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 
-#include <tests/sdpa/test_D2D2DDummyGwes.hpp>
+#include <tests/sdpa/test_D2D2DDummyWfEng.hpp>
 /*
  * #include <tests/sdpa/test_D2D2DRealGwes.hpp>
 #include <tests/sdpa/test_C2D2D2DDummyGwes.hpp>

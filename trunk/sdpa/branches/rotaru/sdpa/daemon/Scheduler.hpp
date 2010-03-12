@@ -21,7 +21,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <gwes/IActivity.h>
 #include <boost/serialization/access.hpp>
 
 namespace sdpa {
@@ -35,7 +34,6 @@ namespace daemon {
 	 virtual void addWorker(const  Worker::ptr_t& ) = 0;
 	 virtual size_t  numberOfWorkers() = 0;
 	 virtual void schedule(sdpa::job_id_t& jobId) = 0;
-	 virtual void schedule(gwes::activity_t& act)=0;
 	 virtual void start()=0;
 	 virtual void stop()=0;
 	 virtual void run()=0;

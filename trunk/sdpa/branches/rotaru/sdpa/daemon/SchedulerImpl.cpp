@@ -62,11 +62,11 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		// put the job into the running state
 		pJob->Dispatch();
 
-		if( ptr_comm_handler_->gwes() )
+		if( ptr_comm_handler_->workflowEngine() )
 		{
 			// Should set the workflow_id here, or send it together with the workflow description
 			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
-			ptr_comm_handler_->gwes()->submit(wf_id, pJob->description());
+			ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
 		}
 		else
 		{

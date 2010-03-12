@@ -22,7 +22,7 @@
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <gwes/GWES.h>
-#include <tests/sdpa/DummyGwes.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 namespace po = boost::program_options;
 
@@ -78,7 +78,7 @@ namespace unit_tests {
 			  const std::string& masterName, const std::string& masterUrl,
 			  const std::string& workerUrl,  const std::string guiUrl = "",
 			  const bool bExtSched = false, const bool bUseDummyWE = false  )
-				: 	sdpa::daemon::NRE<DummyGwes>::NRE(  name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE )
+				: 	sdpa::daemon::NRE<DummyWorkflowEngine>::NRE(  name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE )
 						  //,SDPA_INIT_LOGGER(name)
 		{
 			//SDPA_LOG_DEBUG("TesNRE constructor called ...");
@@ -94,15 +94,15 @@ namespace unit_tests {
 
 		}
 
-		static NRE<DummyGwes>::ptr_t create( const std::string& name, const std::string& url,
+		static NRE<DummyWorkflowEngine>::ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
 								  const std::string& workerUrl,  const std::string guiUrl = "",
 								  const bool bExtSched = false, const bool bUseDummyWE = false )
 		{
-			 return NRE<DummyGwes>::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE ));
+			 return NRE<DummyWorkflowEngine>::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE ));
 		}
 
-		static void start(NRE<DummyGwes>::ptr_t ptrNRE)
+		static void start(NRE<DummyWorkflowEngine>::ptr_t ptrNRE)
 		{
 			dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 			ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );
@@ -179,30 +179,30 @@ void TestComponents::tearDown()
 	string noStage = "";
 	string strGuiUrl = "";
 
-	sdpa::daemon::Orchestrator<DummyGwes>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyGwes>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
-	sdpa::daemon::Orchestrator<DummyGwes>::start(ptrOrch);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
 
-	sdpa::daemon::Aggregator<DummyGwes>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyGwes>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
-	sdpa::daemon::Aggregator<DummyGwes>::start(ptrAgg);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and real GWES
-	sdpa::daemon::NRE<DummyGwes>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyGwes>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
-	//sdpa::daemon::NRE<DummyGwes>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyGwes>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
+	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
+	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
     {
-    	sdpa::daemon::NRE<DummyGwes>::start(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyGwes>::start(ptrNRE_1);
+    	sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
     	LOG(FATAL, "could not start NRE: " << ex.what());
     	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-    	sdpa::daemon::Orchestrator<DummyGwes>::shutdown(ptrOrch);
-    	sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
-    	sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_1);
+    	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+    	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+    	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
     	return;
     }
@@ -233,10 +233,10 @@ void TestComponents::tearDown()
 		m_ptrUser->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::Orchestrator<DummyGwes>::shutdown(ptrOrch);
-	sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
-	sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_0);
-	//sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_1);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
@@ -252,30 +252,30 @@ void TestComponents::testComponentsDummyGWES()
 	bool bUseExtSched  = false;
 	string strGuiUrl   = "";
 
-	sdpa::daemon::Orchestrator<DummyGwes>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyGwes>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
-	sdpa::daemon::Orchestrator<DummyGwes>::start(ptrOrch);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
 
-	sdpa::daemon::Aggregator<DummyGwes>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyGwes>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
-	sdpa::daemon::Aggregator<DummyGwes>::start(ptrAgg);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy GWES
-	sdpa::daemon::NRE<DummyGwes>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyGwes>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched );
-	//sdpa::daemon::NRE<DummyGwes>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyGwes>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
+	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched );
+	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try
     {
-    	sdpa::daemon::NRE<DummyGwes>::start(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyGwes>::start(ptrNRE_1);
+    	sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
     	LOG(FATAL, "could not start NRE: " << ex.what());
     	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-    	sdpa::daemon::Orchestrator<DummyGwes>::shutdown(ptrOrch);
-    	sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
-    	sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_1);
+    	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+    	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+    	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
     	return;
     }
@@ -306,10 +306,10 @@ void TestComponents::testComponentsDummyGWES()
 		m_ptrUser->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::Orchestrator<DummyGwes>::shutdown(ptrOrch);
-	sdpa::daemon::Aggregator<DummyGwes>::shutdown(ptrAgg);
-	sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_0);
-	//sdpa::daemon::NRE<DummyGwes>::shutdown(ptrNRE_1);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");

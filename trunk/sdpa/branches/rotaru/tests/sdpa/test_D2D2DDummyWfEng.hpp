@@ -15,8 +15,8 @@
  *
  * =====================================================================================
  */
-#ifndef D2D2D_DUMMY_GWES_TEST_HPP_
-#define D2D2D_DUMMY_GWES_TEST_HPP_
+#ifndef D2D2D_DUMMY_WFENG_TEST_HPP_
+#define D2D2D_DUMMY_WFENG_TEST_HPP_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <sdpa/sdpa-config.hpp>
@@ -28,8 +28,8 @@
 
 namespace sdpa {
 		namespace tests {
-			class D2D2DDummyGwesTest: public CPPUNIT_NS::TestFixture {
-			  CPPUNIT_TEST_SUITE( sdpa::tests::D2D2DDummyGwesTest );
+			class D2D2DDummyWfEngTest: public CPPUNIT_NS::TestFixture {
+			  CPPUNIT_TEST_SUITE( sdpa::tests::D2D2DDummyWfEngTest );
 
 			  CPPUNIT_TEST( testDaemonFSM_JobFinished );
 			  CPPUNIT_TEST( testDaemonFSM_JobFailed );
@@ -38,8 +38,8 @@ namespace sdpa {
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
-			  D2D2DDummyGwesTest();
-			  ~D2D2DDummyGwesTest();
+			  D2D2DDummyWfEngTest();
+			  ~D2D2DDummyWfEngTest();
 			  void setUp();
 			  void tearDown();
 
@@ -57,8 +57,8 @@ namespace sdpa {
 			  dsm::DaemonFSM::ptr_t m_ptrAgg;
 			  dsm::DaemonFSM::ptr_t m_ptrNRE;
 
-			  DummyGwes* m_ptrSdpa2GwesOrch;
-			  DummyGwes* m_ptrSdpa2GwesAgg;
+			  DummyWorkflowEngine* m_ptrSdpa2GwesOrch;
+			  DummyWorkflowEngine* m_ptrSdpa2GwesAgg;
 
 			  seda::Stage::Ptr m_ptrToUserStage;
 			  seda::Strategy::Ptr m_ptrUserStrategy;

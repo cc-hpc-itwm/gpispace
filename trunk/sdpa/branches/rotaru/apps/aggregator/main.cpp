@@ -11,10 +11,10 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
-#include <tests/sdpa/DummyGwes.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 // change this to the real workflow engine
-typedef DummyGwes WorkflowEngine;
+typedef DummyWorkflowEngine WorkflowEngine;
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;

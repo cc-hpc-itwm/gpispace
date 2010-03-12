@@ -105,7 +105,7 @@ namespace sdpa { namespace daemon {
 				// inform immediately GWES that the corresponding activity was cancelled
 				id_type actId = evt.job_id();
 
-				pComm->gwes()->cancelled( actId );
+				pComm->workflowEngine()->cancelled( actId );
 
 			}  catch(...) {
 				SDPA_LOG_ERROR("Unexpected exception occurred!");
@@ -162,7 +162,7 @@ namespace sdpa { namespace daemon {
 		{
 			id_type workflowId = evt.job_id();
 			reason_type reason("No reason");
-			pComm->gwes()->cancel(workflowId, reason);
+			pComm->workflowEngine()->cancel(workflowId, reason);
 		}
     }
 
