@@ -10,6 +10,11 @@ using namespace test;
 
 typedef petri_net::net<we::mgmt::detail::place_t, we::mgmt::detail::transition_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t> pnet_t;
 
+static void test_execute(unsigned int id, const std::string & a)
+{
+  std::cerr << "execute: " << id << " " << a << std::endl;
+}
+
 template <typename Stream>
 inline Stream & operator << (Stream & s, const pnet_t & n)
 {
@@ -55,7 +60,7 @@ int main ()
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
   std::vector<id_type> ids;
-
+  mgmt_layer.sig_execute.connect ( &test_execute );
   for (std::size_t i (0); i < 1; ++i)
   {
 	daemon_type::id_type id = daemon.gen_id();
