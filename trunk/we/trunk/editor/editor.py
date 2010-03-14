@@ -5,11 +5,88 @@ import sip
 sip.setapi('QString', 2)
 
 import math
+import traceback
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtXml
 
 import editor_rc
 
+class scene_visitor:
+    def __init__(self):
+        pass
+
+    def visit_scene(self, scene):
+        print >>sys.stderr, "visiting scene: with %d items" % (len(scene.items()))
+        for item in scene.items(): item.accept(self)
+
+    def visit_edge(self, edge):
+        print >>sys.stderr, "link between %s and %s" % (edge.startItem(), edge.endItem())
+        edge.startItem().accept(self)
+        edge.endItem().accept(self)
+
+    def visit_place(self, p):
+        print >>sys.stderr, "place:", p
+
+    def visit_transition(self, t):
+        print >>sys.stderr, "transition:", t
+
+class xml_visitor(scene_visitor):
+    def __init__(self):
+        scene_visitor.__init__(self)
+        self.doc = QtXml.QDomDocument()
+
+        self._visited = {}
+
+    def visited(self, thing):
+        return thing in self._visited
+    def id_of(self, thing):
+        return self._visited[thing]
+    def mark_visited(self, thing):
+        id = len(self._visited)
+        self._visited[thing] = id
+        return id
+
+    def visit_scene(self, scene):
+        self.root = self.doc.createElement("workflow")
+        self.doc.appendChild(self.root)
+
+        for item in scene.items(): item.accept(self)
+
+    def visit_edge(self, edge):
+        print >>sys.stderr, "link between %s and %s" % (edge.startItem(), edge.endItem())
+        edge.startItem().accept(self)
+        edge.endItem().accept(self)
+
+        src = self.id_of(edge.startItem())
+        dst = self.id_of(edge.endItem())
+        e = self.doc.createElement("edge")
+        e.setAttribute("from", src)
+        e.setAttribute("to", dst)
+        self.root.appendChild(e)
+
+    def visit_place(self, p):
+        print >>sys.stderr, "place:", p
+        # make sure that we visit places only once
+        if self.visited(p): return
+
+        id = self.mark_visited(p)
+
+        e = self.doc.createElement("place")
+        e.setAttribute("id", id)
+        e.setAttribute("pos", "(%s, %s)" % (p.pos().x(), p.pos().y()))
+        self.root.appendChild(e)
+
+    def visit_transition(self, t):
+        print >>sys.stderr, "trans:", t
+        # make sure that we visit transitions only once
+        if self.visited(t): return
+
+        id = self.mark_visited(t)
+
+        e = self.doc.createElement("transition")
+        e.setAttribute("id", id)
+        e.setAttribute("pos", "(%s, %s)" % (t.pos().x(), t.pos().y()))
+        self.root.appendChild(e)
 
 class Edge(QtGui.QGraphicsLineItem):
     def __init__(self, startItem, endItem, parent=None, scene=None):
@@ -23,6 +100,9 @@ class Edge(QtGui.QGraphicsLineItem):
         self.myColor = QtCore.Qt.black
         self.setPen(QtGui.QPen(self.myColor, 1, QtCore.Qt.SolidLine,
                 QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+
+    def accept(self, visitor):
+        visitor.visit_edge(self)
 
     def setColor(self, color):
         self.myColor = color
@@ -125,6 +205,10 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
         self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
 
+    def accept(self, visitor):
+        if self.diagramType == self.Place: visitor.visit_place(self)
+        if self.diagramType == self.Transition: visitor.visit_transition(self)
+
     def removeEdge(self, edge):
         try:
             self.edges.remove(edge)
@@ -184,6 +268,9 @@ class DiagramScene(QtGui.QGraphicsScene):
         self.myLineColor = QtCore.Qt.black
         self.myFont = QtGui.QFont()
 
+    def accept(self, visitor):
+        visitor.visit_scene(self)
+
     def setLineColor(self, color):
         self.myLineColor = color
         if self.isItemChange(Arrow):
@@ -224,32 +311,31 @@ class DiagramScene(QtGui.QGraphicsScene):
             self.removeItem(item)
             item.deleteLater()
 
+    def addItemByType(self, type, pos):
+        item = DiagramItem(type, self.myItemMenu)
+        item.setBrush(self.myItemColor)
+        self.addItem(item)
+        if pos is not None: item.setPos(pos)
+        self.itemInserted.emit(item)
+        return item
+
+    def addPlace(self, pos=None):
+        return self.addItemByType(DiagramItem.Place, pos)
+
+    def addTransition(self, pos=None):
+        return self.addItemByType(DiagramItem.Transition, pos)
+
     def mousePressEvent(self, mouseEvent):
         if (mouseEvent.button() != QtCore.Qt.LeftButton):
             return
 
         if self.myMode == self.InsertItem:
-            item = DiagramItem(self.myItemType, self.myItemMenu)
-            item.setBrush(self.myItemColor)
-            self.addItem(item)
-            item.setPos(mouseEvent.scenePos())
-            self.itemInserted.emit(item)
+            self.addItemByType(self.myItemType, mouseEvent.scenePos())
         elif self.myMode == self.InsertLine:
             self.line = QtGui.QGraphicsLineItem(QtCore.QLineF(mouseEvent.scenePos(),
                                         mouseEvent.scenePos()))
             self.line.setPen(QtGui.QPen(self.myLineColor, 2))
             self.addItem(self.line)
-        elif self.myMode == self.InsertText:
-            textItem = DiagramTextItem()
-            textItem.setFont(self.myFont)
-            textItem.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
-            textItem.setZValue(1000.0)
-            textItem.lostFocus.connect(self.editorLostFocus)
-            textItem.selectedChange.connect(self.itemSelected)
-            self.addItem(textItem)
-            textItem.setDefaultTextColor(self.myTextColor)
-            textItem.setPos(mouseEvent.scenePos())
-            self.textInserted.emit(textItem)
 
         super(DiagramScene, self).mousePressEvent(mouseEvent)
 
@@ -278,16 +364,20 @@ class DiagramScene(QtGui.QGraphicsScene):
                     startItems[0] != endItems[0]:
                 startItem = startItems[0]
                 endItem = endItems[0]
-                edge = Edge(startItem, endItem)
-                edge.setColor(self.myLineColor)
-                startItem.addEdge(edge)
-                endItem.addEdge(edge)
-                edge.setZValue(-1000.0)
-                self.addItem(edge)
-                edge.updatePosition()
+                self.connectItems(startItem, endItem)
 
         self.line = None
         super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
+
+    def connectItems(self, src, dst):
+        edge = Edge(src, dst)
+        edge.setColor(self.myLineColor)
+        src.addEdge(edge)
+        dst.addEdge(edge)
+        edge.setZValue(-1000.0)
+        self.addItem(edge)
+        edge.updatePosition()
+        return edge
 
     def isItemChange(self, type):
         for item in self.selectedItems():
@@ -323,6 +413,11 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setCentralWidget(self.widget)
         self.setWindowTitle("Petri-Net Editor")
+
+        if len(sys.argv) > 1:
+          self.loadFile(sys.argv[1])
+        else:
+          self.setCurrentFile(None)
 
     def backgroundButtonGroupClicked(self, button):
         buttons = self.backgroundButtonGroup.buttons()
@@ -452,19 +547,32 @@ class MainWindow(QtGui.QMainWindow):
                 shortcut="Ctrl+B", statusTip="Send item to back",
                 triggered=self.sendToBack)
 
-        self.deleteAction = QtGui.QAction(QtGui.QIcon(':/images/delete.png'),
+        self.deleteAction = QtGui.QAction(QtGui.QIcon(':/images/delete.svg'),
                 "&Delete", self, shortcut="Delete",
                 statusTip="Delete item from diagram",
                 triggered=self.deleteItem)
 
-        self.exitAction = QtGui.QAction("&Quit", self, shortcut="Ctrl+Q",
-                statusTip="Quit Scenediagram example", triggered=self.close)
+        self.exitAction = QtGui.QAction(
+            QtGui.QIcon(":/images/exit.svg"), "&Exit", self, shortcut="Ctrl+W",
+            statusTip="Quit Scenediagram example", triggered=self.close)
 
         self.aboutAction = QtGui.QAction("A&bout", self, shortcut="Ctrl+B",
                 triggered=self.about)
 
+        self.openAction = QtGui.QAction(
+            QtGui.QIcon(":/images/open.svg"), "&Open", self, shortcut="Ctrl+O", triggered=self.open, statusTip="Open network")
+        self.saveAction = QtGui.QAction(
+            QtGui.QIcon(":/images/save.svg"), "&Save", self, shortcut="Ctrl+S", triggered=self.save, statusTip="Save network")
+        self.saveAsAction = QtGui.QAction(
+            QtGui.QIcon(":/images/save-as.svg"), "Save &As...", self, triggered=self.saveAs, statusTip="Save network")
+#        self.saveAction.setEnabled( False )
+
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
+        self.fileMenu.addAction(self.openAction)
+        self.fileMenu.addAction(self.saveAction)
+        self.fileMenu.addAction(self.saveAsAction)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAction)
 
         self.itemMenu = self.menuBar().addMenu("&Item")
@@ -477,6 +585,11 @@ class MainWindow(QtGui.QMainWindow):
         self.aboutMenu.addAction(self.aboutAction)
 
     def createToolbars(self):
+        self.fileToolBar = self.addToolBar("File")
+        self.fileToolBar.addAction(self.openAction)
+        self.fileToolBar.addAction(self.saveAction)
+        self.fileToolBar.addAction(self.saveAsAction)
+
         self.editToolBar = self.addToolBar("Edit")
         self.editToolBar.addAction(self.deleteAction)
         self.editToolBar.addAction(self.toFrontAction)
@@ -488,7 +601,7 @@ class MainWindow(QtGui.QMainWindow):
         pointerButton.setIcon(QtGui.QIcon(':/images/pointer.png'))
         linePointerButton = QtGui.QToolButton()
         linePointerButton.setCheckable(True)
-        linePointerButton.setIcon(QtGui.QIcon(':/images/linepointer.png'))
+        linePointerButton.setIcon(QtGui.QIcon(':/images/edge.svg'))
 
         self.pointerTypeGroup = QtGui.QButtonGroup()
         self.pointerTypeGroup.addButton(pointerButton, DiagramScene.MoveItem)
@@ -524,6 +637,114 @@ class MainWindow(QtGui.QMainWindow):
         widget.setLayout(layout)
 
         return widget
+
+    def open(self):
+        # TODO: this should actually check for unsaved modifications
+        if len(self.scene.items()) > 0:
+            answer = QtGui.QMessageBox.question(self, "Clear current net?", "Your net contains elements, i have to remove them!", QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            if answer == QtGui.QMessageBox.Ok:
+                self.scene.clear()
+            else:
+                return
+        fileName = QtGui.QFileDialog.getOpenFileName(self)
+        if fileName:
+            self.loadFile(fileName)
+
+    def save(self):
+        if self.current_file:
+            return self.saveFile(self.current_file)
+        else:
+            return self.saveAs()
+
+    def saveAs(self):
+        fileName = QtGui.QFileDialog.getSaveFileName(self)
+        if fileName:
+            return self.saveFile(fileName)
+
+    def saveFile(self, fileName):
+        file = QtCore.QFile(fileName)
+        if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
+            QtGui.QMessageBox.critical(self, "Petri-Net Editor",
+                    "Cannot write file %s:\n%s." % (fileName, file.errorString()))
+            return False
+        outf = QtCore.QTextStream(file)
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            debug_visitor = scene_visitor()
+            self.scene.accept(debug_visitor)
+            visitor = xml_visitor()
+            self.scene.accept(visitor)
+
+            outf << visitor.doc
+            self.debugXml(visitor.doc)
+            self.statusBar().showMessage("Network saved to file: %s" % (fileName), 2000)
+            self.setCurrentFile(fileName);
+        except:
+            QtGui.QMessageBox.critical(self, "Error", "File could not be saved:\n\n%s." % (traceback.format_exc()))
+            return False
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+
+        return True
+
+    def loadFile(self, fileName):
+        file = QtCore.QFile(fileName)
+        if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
+            QtGui.QMessageBox.warning(self, "Petri-Net Editor",
+                    "Cannot open file %s:\n%s." % (fileName, file.errorString()))
+            return False
+        try:
+            QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            doc = QtXml.QDomDocument()
+            doc.setContent(file)
+            self.debugXml(doc)
+
+            # collect all things
+            things = {}
+            workflow_node = doc.documentElement()
+            thing = workflow_node.firstChild()
+            while not thing.isNull():
+                if not thing.isElement(): continue
+                e = thing.toElement()
+                if e.tagName() == "place":
+                  id = e.attribute("id")
+                  x,y = eval( e.attribute("pos", "(0,0)"))
+                  p = self.scene.addPlace( QtCore.QPointF(x,y) )
+                  things[id] = p
+                if e.tagName() == "transition":
+                  id = e.attribute("id")
+                  x,y = eval( e.attribute("pos", "(0,0)"))
+                  t = self.scene.addTransition( QtCore.QPointF(x,y) )
+                  things[id] = t
+                if e.tagName() == "edge":
+                  src = things[e.attribute("from")]
+                  dst = things[e.attribute("to")]
+                  self.scene.connectItems(src, dst)
+                thing = thing.nextSibling()
+
+            self.statusBar().showMessage("Data loaded from file: %s" % fileName, 2000)
+            self.setCurrentFile(fileName)
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
+        return True
+
+    def setCurrentFile(self, filename):
+        self.current_file = filename
+        if self.current_file:
+            shownName = self.strippedName(self.current_file)
+        else:
+            shownName = 'untitled'
+        self.setWindowTitle("%s[*] - Petri-Net Editor" % shownName)
+
+    def strippedName(self, filename):
+        return QtCore.QFileInfo(filename).fileName()
+
+    def debugXml(self, doc):
+        buf = QtCore.QBuffer()
+        buf.open(QtCore.QBuffer.ReadWrite);
+        text = QtCore.QTextStream(buf)
+        text << doc
+        sys.stderr.write(buf.buffer())
 
 if __name__ == '__main__':
 
