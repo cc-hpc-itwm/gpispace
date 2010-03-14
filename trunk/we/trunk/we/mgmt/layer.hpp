@@ -39,6 +39,7 @@
 #include <we/mgmt/bits/synch_net.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
+#include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
@@ -96,6 +97,11 @@ namespace we { namespace mgmt {
 		/******************************
 		 * EXTERNAL API
 		 *****************************/
+		// observe
+		detail::signal<void (id_type, std::string)> sig_finished;
+		detail::signal<void (id_type, std::string)> sig_failed;
+		detail::signal<void (id_type, std::string)> sig_cancelled;
+		detail::signal<void (id_type, std::string)> sig_execute;
 
 		/** 
 		 * Submit a new petri net to the petri-net management layer
@@ -161,10 +167,8 @@ namespace we { namespace mgmt {
 		 **/
 		bool finished(const id_type & id, const result_type & result) throw()
 		{
-		  we::util::remove_unused_variable_warning(id);
-		  we::util::remove_unused_variable_warning(result);
-
 		  // TODO: parse results
+		  we::util::remove_unused_variable_warning(result);
 		  // hand results over to injector
 		  typename net_type::output_t output /* (parse_result(result)) */;
 		  inj_q_.put ( std::make_pair (id, std::make_pair(0, output)) );
@@ -187,7 +191,6 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(result);
-//		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
 		  return true;
 		}
 
@@ -266,7 +269,7 @@ namespace we { namespace mgmt {
 			desc.parent = id_traits::nil();
 			insert_descriptor(id, desc);
 		  }
-		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  post_activity_notification (id);
 		}
 
 	  public:
@@ -374,9 +377,28 @@ namespace we { namespace mgmt {
 		  return desc.net.done();
 		}
 
-		inline void post_finished_notification( const id_type & id)
+		inline
+		void post_activity_notification( const id_type & id)
+		{
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		}
+
+		inline
+		void post_finished_notification( const id_type & id)
 		{
 		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_finished, this, _1)));
+		}
+
+		inline
+		void post_failed_notification( const id_type & id)
+		{
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_failed, this, _1)));
+		}
+
+		inline
+		void post_cancelled_notification( const id_type & id)
+		{
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_cancelled, this, _1)));
 		}
 
 		void extractor()
@@ -450,39 +472,12 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: executor thread started..." << std::endl;
 		  std::cerr << "D: executor thread stopped..." << std::endl;
 		}
-
-		inline void insert_descriptor(const id_type & id, const descriptor_type & desc)
-		{
-		  boost::unique_lock<boost::shared_mutex> lock (descriptors_mutex_);
-		  descriptors_.insert(std::make_pair(id, desc));
-		}
-
-		inline void remove_descriptor(const descriptor_type & desc)
-		{
-		  remove_descriptor (desc.id);
-		}
-
-		inline void remove_descriptor(const id_type & id)
-		{
-		  boost::unique_lock<boost::shared_mutex> lock (descriptors_mutex_);
-		  descriptors_.erase (id);
-		}
-
-		inline descriptor_type & lookup(const id_type & id)
-		{
-		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
-		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
-		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
-//		  assert( d != descriptors_.end() );
-		  return d->second;
-		}
-
 		/** Member variables **/
 	  private:
 		exec_layer_type & exec_layer_;
 		boost::function<id_type()> id_gen_;
 		boost::function<bool (const net_type&)> validator_;
-		boost::shared_mutex descriptors_mutex_;
+		mutable boost::shared_mutex descriptors_mutex_;
 		id_descriptor_map_t descriptors_;
 		cmd_q_t cmd_q_;
 		active_nets_t active_nets_;
@@ -541,7 +536,31 @@ namespace we { namespace mgmt {
 		{
 		  std::cerr << "D: net[" << cmd.dat << "] finished" << std::endl;
 		  exec_layer_.finished ( cmd.dat, "dummy result" );
+		  assert_is_leave ( cmd.dat );
 		  remove_descriptor ( cmd.dat );
+		}
+
+		void net_failed(const cmd_t & cmd)
+		{
+		  std::cerr << "D: net[" << cmd.dat << "] failed" << std::endl;
+		  exec_layer_.failed ( cmd.dat, "dummy result" );
+		  assert_is_leave ( cmd.dat );
+		  remove_descriptor ( cmd.dat );
+		}
+
+		void net_cancelled(const cmd_t & cmd)
+		{
+		  std::cerr << "D: net[" << cmd.dat << "] cancelled" << std::endl;
+		  exec_layer_.cancelled ( cmd.dat );
+		  assert_is_leave ( cmd.dat );
+		  remove_descriptor ( cmd.dat );
+		}
+
+		inline
+		void assert_is_leave (const id_type & id) const
+		{
+		  const descriptor_type & desc = lookup (id);
+		  assert (desc.children.size() == 0);
 		}
 
 		void suspend_net(const cmd_t & cmd)
@@ -564,11 +583,45 @@ namespace we { namespace mgmt {
 		  parent_desc.children.insert ( act_desc.id );
 		  insert_descriptor (act_desc.id, act_desc);
 		  std::cerr << "D: executing activity[" << act_desc.id << "]..." << std::endl;
+		  sig_execute( act_desc.id, "" );
 		  debug_activity (act, parent_desc.get_real_net());
 
 		  typename net_type::output_t out;
 		  parent_desc.get_real_net().get_transition (act.tid) (act.input, act.output_descr, out);
 		  inj_q_.put ( std::make_pair (act_desc.id, std::make_pair(0, out)) );
+		}
+
+		inline void insert_descriptor(const id_type & id, const descriptor_type & desc)
+		{
+		  boost::unique_lock<boost::shared_mutex> lock (descriptors_mutex_);
+		  descriptors_.insert(std::make_pair(id, desc));
+		}
+
+		inline void remove_descriptor(const descriptor_type & desc)
+		{
+		  remove_descriptor (desc.id);
+		}
+
+		inline void remove_descriptor(const id_type & id)
+		{
+		  boost::unique_lock<boost::shared_mutex> lock (descriptors_mutex_);
+		  descriptors_.erase (id);
+		}
+
+		inline descriptor_type & lookup(const id_type & id)
+		{
+		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
+		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
+		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
+		  return d->second;
+		}
+
+		inline const descriptor_type & lookup(const id_type & id) const
+		{
+		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
+		  typename id_descriptor_map_t::const_iterator d = descriptors_.find(id);
+		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
+		  return d->second;
 		}
 	};
 }}
