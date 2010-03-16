@@ -270,6 +270,8 @@ bool  NRE<T>::cancel(const id_type& activityId, const reason_type& reason )
 	/*job_id_t job_id(activityId);
 	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
 	sendEvent(pEvtCancelJob);*/
+
+	return true;
 }
 
 /*

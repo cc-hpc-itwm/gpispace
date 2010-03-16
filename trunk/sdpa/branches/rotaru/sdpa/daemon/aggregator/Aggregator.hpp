@@ -56,7 +56,7 @@ namespace sdpa {
 			static void shutdown(ptr_t ptrAgg);
 
 			void action_configure( const sdpa::events::StartUpEvent& );
-			void action_config_ok( const sdpa::events::ConfigOkEvent&);
+			void action_config_ok( const sdpa::events::ConfigOkEvent& );
 			void action_interrupt( const sdpa::events::InterruptEvent& );
 
 			void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );

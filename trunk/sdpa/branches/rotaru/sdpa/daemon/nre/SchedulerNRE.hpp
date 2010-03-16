@@ -35,11 +35,11 @@ namespace sdpa {
 		SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = ""):
 				sdpa::daemon::SchedulerImpl(pHandler)
 				,SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
-				//,m_worker_(workerUrl)
+				,m_worker_(workerUrl)
 	{
-		/*m_worker_.set_ping_interval(60);
+		m_worker_.set_ping_interval(60);
 		m_worker_.set_ping_timeout(3);
-		m_worker_.set_ping_trials(3);*/
+		m_worker_.set_ping_trials(3);
 	}
 
 
@@ -114,65 +114,65 @@ namespace sdpa {
 		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 		id_type act_id = pJob->id().str();
 
+		result_type result;
+
 		if(!ptr_comm_handler_)
 		{
 			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
 			result_type output_fail;
-			ptr_comm_handler_->workflowEngine()->finished(act_id, output_fail);
+			ptr_comm_handler_->workflowEngine()->failed(act_id, output_fail);
 			return;
 		}
 
 		result_type output; // to be fiile-in by the NreWorkerClient
-		ptr_comm_handler_->workflowEngine()->finished(act_id, output);
 
 		// call here the NreWorkerClient
-		/*try
+		encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+		try
 		{
-		  //ptr_comm_handler_->activityStarted(gwes_act);
-		  //result = m_worker_.execute(act, act.properties().get<unsigned long>("walltime", 0));
+			//ptr_comm_handler_->activityStarted(gwes_act);
+			// don't forget to specify the walltime first!!!!!!!!!
+			//result = "FAILED";
+			result = m_worker_.execute(enc_act, pJob->walltime());
 		}
 		catch( const boost::thread_interrupted &)
 		{
-		  SDPA_LOG_ERROR("could not execute activity: interrupted" );
-		  result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
-		  result.reason() = "interrupted";
+			SDPA_LOG_ERROR("could not execute activity: interrupted" );
+			result = "FAILED";
 		}
 		catch (const std::exception &ex)
 		{
-		  SDPA_LOG_ERROR("could not execute activity: " << ex.what());
-		  result.state () = sdpa::wf::Activity::ACTIVITY_FAILED;
-		  result.reason() = ex.what();
+			SDPA_LOG_ERROR("could not execute activity: " << ex.what());
+			result = "FAILED";
 		}
-		*/
 
 		// check the result state and invoke the NRE's callbacks
-		/*SDPA_LOG_DEBUG("Finished activity execution: notify WE ...");
-		if( result.state() == FINISHED )
+		SDPA_LOG_DEBUG("Finished activity execution: notify WE ...");
+		if( result == "FINISHED" )
 		{
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->gwes()->finished(act_id, output);
+			ptr_comm_handler_->workflowEngine()->finished(act_id, output);
 		}
-		else if( result.state() == FAILED )
+		else if( result == "FAILED" )
 		{
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->gwes()->failed(act_id, output);
+			ptr_comm_handler_->workflowEngine()->failed(act_id, output);
 		}
-		else if( result.state() == CANCELLED )
+		else if( result == "CANCELLED" )
 		{
 
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->gwes()->cancelled(act_id);
+			ptr_comm_handler_->workflowEngine()->cancelled(act_id);
 		}
 		else
 		{
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->gwes()->failed(act_id, output);
+			ptr_comm_handler_->workflowEngine()->failed(act_id, output);
 		}
-		*/
 	 }
 
 	 /*
@@ -199,7 +199,7 @@ namespace sdpa {
 
   private:
 	  SDPA_DECLARE_LOGGER();
-	  //sdpa::nre::worker::NreWorkerClient m_worker_;
+	  sdpa::nre::worker::NreWorkerClient m_worker_;
   };
 }}
 

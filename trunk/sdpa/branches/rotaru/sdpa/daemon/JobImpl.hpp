@@ -57,6 +57,8 @@ namespace sdpa { namespace daemon {
         virtual bool is_local();
         virtual void set_local(bool);
 
+        virtual unsigned long &walltime() { return walltime_;}
+
         // job FSM actions
 		virtual void action_run_job();
 		virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
@@ -69,6 +71,7 @@ namespace sdpa { namespace daemon {
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
 		virtual void setResult(const sdpa::job_result_t& arg_results) { result = arg_results; }
+
 
 		virtual std::string print_info()
 		{
@@ -88,6 +91,7 @@ namespace sdpa { namespace daemon {
 			ar & parent_;
 			ar & worker_id_;
 			ar & result;
+			ar & walltime_;
 		}
 
     private:
@@ -102,6 +106,7 @@ namespace sdpa { namespace daemon {
 
         friend class boost::serialization::access;
         sdpa::worker_id_t worker_id_;
+        unsigned long walltime_;
     protected:
        	/*mutable*/ IComm* pComm;
         mutex_type mtx_;

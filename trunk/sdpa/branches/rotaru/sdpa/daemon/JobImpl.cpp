@@ -31,6 +31,8 @@
 #include <sdpa/util/Properties.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <limits>
+
 using namespace std;
 using namespace sdpa::events;
 
@@ -44,7 +46,8 @@ namespace sdpa { namespace daemon {
           b_marked_for_del_(false),
           b_local_(false),
           pComm(const_cast<IComm*>(pHandler)),
-          SDPA_INIT_LOGGER( string("Job ")+ id.str())
+          SDPA_INIT_LOGGER( string("Job ")+ id.str()),
+          walltime_(std::numeric_limits<unsigned int>::max()) // by default
     {}
 
 

@@ -22,7 +22,7 @@
 #include <ostream>
 #include <string>
 #include <fhglog/fhglog.hpp>
-#include <sdpa/wf/Activity.hpp>
+#include <sdpa/daemon/IWorkflowEngine.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 
 #include <sys/time.h>
@@ -147,12 +147,11 @@ namespace sdpa { namespace nre { namespace worker {
   class ExecuteReply   : public Reply
   {
   public:
-    typedef sdpa::wf::Activity result_t;
 
     ExecuteReply() {}
 
     explicit
-    ExecuteReply(const result_t & execution_result)
+    ExecuteReply(const result_type & execution_result)
       : result_(execution_result)
     {}
 
@@ -161,10 +160,10 @@ namespace sdpa { namespace nre { namespace worker {
       os << "ExecuteReply: result="<< result();
     }
 
-    result_t &result() { return result_; }
-    const result_t &result() const { return result_; }
+    result_type &result() { return result_; }
+    const result_type &result() const { return result_; }
   private:
-    result_t result_;
+    result_type result_; // defined in IWorkflowEngine
   };
 
   class ExecuteRequest : public Request
@@ -173,7 +172,7 @@ namespace sdpa { namespace nre { namespace worker {
     ExecuteRequest()
     {}
 
-    ExecuteRequest(const sdpa::wf::Activity &act)
+    ExecuteRequest(const encoded_type &act)
       : activity_(act)
     {}
 
@@ -182,13 +181,13 @@ namespace sdpa { namespace nre { namespace worker {
     virtual void writeTo(std::ostream &os) const
     {
       os << "Execute(";
-      activity().writeTo(os, false);
+     // activity().writeTo(os, false);
       os << ")";
     }
 
     virtual Reply *execute(ExecutionContext *ctxt)
     {
-      const std::string mod_name(activity().method().module());
+      /*const std::string mod_name(activity().method().module());
       const std::string fun_name(activity().method().name());
 
       Reply *reply(NULL);
@@ -209,7 +208,7 @@ namespace sdpa { namespace nre { namespace worker {
         activity().check_parameters(keep_going);
 
         LOG(INFO, "execution of activity finished");
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
+        activity().state() = encoded_type::ACTIVITY_FINISHED;
 
         reply = new ExecuteReply(activity());
       }
@@ -217,117 +216,39 @@ namespace sdpa { namespace nre { namespace worker {
       {
         LOG(ERROR, "function " << mfa.module() << "." << mfa.function()
                                << " expected argument " << mfa.arguments());
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        activity().state() = encoded_type::ACTIVITY_FAILED;
         activity().reason() = mfa.what();
         reply = new ExecuteReply(activity());
       }
       catch (const std::exception &ex)
       {
         LOG(ERROR, "execution of activity failed: " << ex.what());
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        activity().state() = encoded_type::ACTIVITY_FAILED;
         activity().reason() = ex.what();
         reply = new ExecuteReply(activity());
       }
       catch (...)
       {
         LOG(ERROR, "execution of activity failed: ");
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
+        activity().state() = encoded_type::ACTIVITY_FAILED;
         activity().reason() = "unknown reason";
         reply = new ExecuteReply(activity());
       }
 
       assert(reply);
       reply->id() = id();
-      return reply;
+      return reply;*/
+
+    	return NULL;
     }
 
-    sdpa::wf::Activity &activity() { return activity_; }
-    const sdpa::wf::Activity &activity() const { return activity_; }
+    encoded_type &activity() { return activity_; }
+    const encoded_type &activity() const { return activity_; }
   private:
-    sdpa::wf::Activity activity_;
+    encoded_type activity_;
   };
 
-  class ModuleLoaded : public Reply
-  {
-  public:
-    ModuleLoaded()
-    {}
 
-    ModuleLoaded(const std::string &path_to_module)
-      : path_(path_to_module)
-    {}
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ModuleLoaded: path="<< path();
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-  private:
-    std::string path_;
-  };
-
-  class ModuleNotLoaded : public Reply
-  {
-  public:
-    ModuleNotLoaded()
-    {}
-
-    ModuleNotLoaded(const std::string &path_to_module, const std::string &reason_for_failure)
-      : path_(path_to_module)
-      , reason_(reason_for_failure)
-    {}
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ModuleNotLoaded: path="<< path() << " reason=" << reason();
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-
-    const std::string &reason() const { return reason_; }
-    std::string &reason() { return reason_; }
-  private:
-    std::string path_;
-    std::string reason_;
-  };
-
-  class LoadModuleRequest : public Request
-  {
-  public:
-    LoadModuleRequest()
-    {}
-
-    explicit LoadModuleRequest(const std::string &path_to_module)
-      : path_(path_to_module)
-    { }
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "LoadModule: path="<< path();
-    }
-
-    virtual Reply *execute(ExecutionContext *ctxt)
-    {
-      try
-      {
-        ctxt->loader().load(path());
-        return new ModuleLoaded(path());
-      }
-      catch (const std::exception &ex)
-      {
-        LOG(WARN, "execution of activity failed: " << ex.what());
-        return new ModuleNotLoaded(path(), ex.what());
-      }
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-  private:
-    std::string path_;
-  };
 }}}
 
 inline std::ostream &operator<<(std::ostream &os, const sdpa::nre::worker::Message &m)

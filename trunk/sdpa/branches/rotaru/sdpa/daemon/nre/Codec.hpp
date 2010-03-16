@@ -60,9 +60,9 @@ namespace sdpa { namespace nre { namespace worker {
       ar.register_type(static_cast<sdpa::nre::worker::ExecuteRequest*>(NULL));
       ar.register_type(static_cast<sdpa::nre::worker::ExecuteReply*>(NULL));
 
-      ar.register_type(static_cast<sdpa::nre::worker::ModuleLoaded*>(NULL));
+      /*ar.register_type(static_cast<sdpa::nre::worker::ModuleLoaded*>(NULL));
       ar.register_type(static_cast<sdpa::nre::worker::ModuleNotLoaded*>(NULL));
-      ar.register_type(static_cast<sdpa::nre::worker::LoadModuleRequest*>(NULL));
+      ar.register_type(static_cast<sdpa::nre::worker::LoadModuleRequest*>(NULL)); */
     }
   };
 }}}

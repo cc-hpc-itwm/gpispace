@@ -48,6 +48,8 @@ namespace sdpa { namespace daemon {
 
         virtual std::string print_info() = 0;
 
+        virtual unsigned long& walltime() = 0;
+
 #ifdef USE_BOOST_SC
         virtual void process_event( const boost::statechart::event_base &) {}
 #endif
