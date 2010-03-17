@@ -55,6 +55,10 @@ namespace petri_net
 // WORK HERE: Performance: collect map<tid_t,X>, map<tid_t,Y> into a
 // single map<tid_t,(X,Y)>?
 
+// WORK HERE: Performance: The update mechanism is not optimal in all
+// cases, e.g. if a token is putted to a place, re-evaluting the
+// condition of already enabled transitions is not neccessary
+
 // the net itself
 template<typename Place, typename Transition, typename Edge, typename Token>
 class net
@@ -90,19 +94,22 @@ public:
   typedef Function::Condition::Traits<token_type> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::out_cond_t out_cond_t;
+  typedef typename cd_traits::choice_cond_t choice_cond_t;
 
   typedef boost::unordered_map<tid_t, in_cond_t> in_cond_map_t;
   typedef boost::unordered_map<tid_t, out_cond_t> out_cond_map_t;
+  typedef boost::unordered_map<tid_t, choice_cond_t> choice_cond_map_t;
 
-  typedef typename std::pair<token_type,eid_t> token_via_edge_t;
+  typedef typename cd_traits::token_via_edge_t token_via_edge_t;
+  typedef typename cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
+  typedef typename cd_traits::pid_in_map_t pid_in_map_t;
+  typedef typename cd_traits::choices_t choices_t;
 
-  typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
-  typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
+  typedef typename cross::star_iterator<pid_in_map_t> choice_star_it;
+
+  typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
 
   typedef svector::svector<tid_t> enabled_t;
-
-  typedef cross::cross<pid_in_map_t> choices_t;
-  typedef cross::star_iterator<pid_in_map_t> choices_star_iterator;
 
   // *********************************************************************** //
 private:
@@ -113,10 +120,13 @@ private:
   typedef set_of_tid_t in_enabled_t;
   typedef set_of_tid_t out_enabled_t;
 
+  typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
+
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
 
   // *********************************************************************** //
+
   std::string name;
   bijection::bijection<place_type,pid_t> pmap; // place_type <-> internal id
   bijection::bijection<transition_type,tid_t> tmap; // transition_type <-> internal id
@@ -130,10 +140,12 @@ private:
   token_place_rel_t token_place_rel;
 
   enabled_t enabled;
+  enabled_choice_t enabled_choice;
 
   trans_map_t trans;
   in_cond_map_t in_cond;
   out_cond_map_t out_cond;
+  choice_cond_map_t choice_cond;
 
   in_map_t in_map;
   out_map_t out_map;
@@ -155,10 +167,12 @@ private:
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
     ar & BOOST_SERIALIZATION_NVP(enabled);
+    ar & BOOST_SERIALIZATION_NVP(enabled_choice);
     // WORK HERE: serialize the functions
     //    ar & BOOST_SERIALIZATION_NVP(trans);
     //    ar & BOOST_SERIALIZATION_NVP(in_cond);
     //    ar & BOOST_SERIALIZATION_NVP(out_cond);
+    //    ar & BOOST_SERIALIZATION_NVP(choice_cond);
     ar & BOOST_SERIALIZATION_NVP(in_map);
     ar & BOOST_SERIALIZATION_NVP(out_map);
     ar & BOOST_SERIALIZATION_NVP(in_enabled);
@@ -210,7 +224,23 @@ private:
         a.insert (tid);
 
         if (b.find (tid) != b.end())
-          enabled.insert (tid);
+          {
+            choices_t cs (choices(tid));
+
+            // call the global condition function here, that sets the
+            // cross product either to the end or to some valid choice
+
+            if (get_fun (choice_cond, tid) (cs))
+              {
+                enabled.insert (tid);
+                  
+                enabled_choice[tid] = cs.get_vec();
+              }
+            else
+              {
+                enabled.erase (tid);
+              }
+          }
       }
     else
       {
@@ -533,19 +563,31 @@ public:
     calculate_out_enabled (tid);
   }
 
+  void set_choice_condition_function (const tid_t & tid, const choice_cond_t & f)
+  {
+    choice_cond[tid] = f;
+
+    calculate_in_enabled (tid);
+  }
+
   tid_t add_transition
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
   , const in_cond_t & inc = Function::Condition::In::Default<token_type>()
   , const out_cond_t & outc = Function::Condition::Out::Default<token_type>()
+  , const choice_cond_t & choicec = Function::Condition::Choice::Default<token_type>()
   )
     throw (bijection::exception::already_there)
   {
     const tid_t tid (tmap.add (transition));
 
-    set_transition_function (tid, tf);
-    set_in_condition_function (tid, inc);
-    set_out_condition_function (tid, outc);
+    trans[tid] = tf;
+    in_cond[tid] = inc;
+    out_cond[tid] = outc;
+    choice_cond[tid] = choicec;
+
+    calculate_in_enabled (tid);
+    calculate_out_enabled (tid);
 
     return tid;
   }
@@ -908,7 +950,7 @@ public:
       put_token (out->second, out->first);
   }
 
-  activity_t extract_activity (const tid_t & tid)
+  activity_t extract_activity (const tid_t tid)
     throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!get_can_fire (tid))
@@ -918,11 +960,12 @@ public:
     output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
-    // save the cross object as long as the iterator is used
-    choices_t * cs = new choices_t (choices(tid));
-    choices_star_iterator choice (*(*cs));
+    choice_vec_t choice_vec (enabled_choice[tid]);
 
-    for ( ; choice.has_more(); ++choice)
+    for ( typename choice_vec_t::const_iterator choice (choice_vec.begin())
+        ; choice != choice_vec.end()
+        ; ++choice
+        )
       {
         const pid_t & pid (choice->first);
         const token_via_edge_t & token_via_edge (choice->second);
@@ -933,8 +976,6 @@ public:
 
         delete_one_token (pid, token);
       }
-
-    delete cs;
 
     return activity_t (tid, input, output_descr);
   }
@@ -954,6 +995,15 @@ public:
     const output_t output (run_activity (activity));
     inject_activity_result (output);
     return tid;
+  }
+
+  template<typename Engine>
+  tid_t fire_random (Engine & engine)
+  {
+    boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
+    const tid_t tid (enabled.at (rand_tid (engine)));
+
+    return fire (tid);
   }
 };
 } // namespace petri_net
