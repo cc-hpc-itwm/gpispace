@@ -908,8 +908,7 @@ public:
       put_token (out->second, out->first);
   }
 
-  template<typename IT>
-  activity_t extract_activity (const tid_t & tid, IT choice)
+  activity_t extract_activity (const tid_t & tid)
     throw (exception::no_such, exception::transition_not_enabled)
   {
     if (!get_can_fire (tid))
@@ -919,6 +918,9 @@ public:
     output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
+    // save the cross object as long as the iterator is used
+    choices_t * cs = new choices_t (choices(tid));
+    choices_star_iterator choice (*(*cs));
 
     for ( ; choice.has_more(); ++choice)
       {
@@ -932,6 +934,8 @@ public:
         delete_one_token (pid, token);
       }
 
+    delete cs;
+
     return activity_t (tid, input, output_descr);
   }
 
@@ -941,21 +945,15 @@ public:
     boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
     const tid_t tid (enabled.at (rand_tid (engine)));
 
-    return extract_activity (tid, *(choices(tid)));
-  }
-
-  template<typename IT>
-  tid_t fire (const tid_t & tid, IT choice)
-  {
-    const activity_t activity (extract_activity (tid, choice));
-    const output_t output (run_activity (activity));
-    inject_activity_result (output);
-    return tid;
+    return extract_activity (tid);
   }
 
   tid_t fire (const tid_t & tid)
   {
-    return fire (tid, choices_star_iterator (*(choices (tid))));
+    const activity_t activity (extract_activity (tid));
+    const output_t output (run_activity (activity));
+    inject_activity_result (output);
+    return tid;
   }
 };
 } // namespace petri_net
