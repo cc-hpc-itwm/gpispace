@@ -31,6 +31,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
+#include <we/mgmt/exception.hpp>
 #include <we/mgmt/bits/types.hpp>
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/policy.hpp>
@@ -97,6 +98,7 @@ namespace we { namespace mgmt {
 		/******************************
 		 * EXTERNAL API
 		 *****************************/
+
 		// observe
 		detail::signal<void (id_type, std::string)> sig_finished;
 		detail::signal<void (id_type, std::string)> sig_failed;
@@ -123,8 +125,8 @@ namespace we { namespace mgmt {
 		  // check network for validity
 		  if (net_validator::is_valid(n))
 		  {
-			std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
 			submit (id, n);
+			std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
 		  }
 		  else
 		  {
@@ -228,8 +230,7 @@ namespace we { namespace mgmt {
 		 */
 		bool suspend(const id_type & id) throw()
 		{
-		  we::util::remove_unused_variable_warning(id);
-//		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
+          post_suspend_network_notification(id);
 		  return true;
 		}
 
@@ -248,8 +249,7 @@ namespace we { namespace mgmt {
 		 */
 		bool resume(const id_type & id) throw()
 		{
-		  we::util::remove_unused_variable_warning(id);
-//		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
+          post_resume_network_notification(id);
 		  return true;
 		}
 
@@ -281,6 +281,7 @@ namespace we { namespace mgmt {
 		  layer(E & exec_layer)
 		  : exec_layer_(exec_layer)
 			, id_gen_(&id_traits::generate)
+            , barrier_(4) // injector, manager, executor
 			   , cmd_q_(1024)
 			   , active_nets_(1024)
 			   , inj_q_(1024)
@@ -292,6 +293,7 @@ namespace we { namespace mgmt {
 		  layer(E & exec_layer, G gen)
 		  : exec_layer_(exec_layer)
 		  , id_gen_(gen)
+          , barrier_(4) // 1 + injector, manager, executor
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
 		  , inj_q_(1024)
@@ -304,6 +306,7 @@ namespace we { namespace mgmt {
 		  : exec_layer_(exec_layer)
 		  , id_gen_(gen)
 		  , validator_(validator)
+          , barrier_(4) // injector, manager, executor
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
 		  , inj_q_(1024)
@@ -335,6 +338,7 @@ namespace we { namespace mgmt {
 		  manager_   = boost::thread(boost::bind(&this_type::manager, this));
 		  extractor_ = boost::thread(boost::bind(&this_type::extractor, this));
 		  injector_  = boost::thread(boost::bind(&this_type::injector, this));
+          barrier_.wait();
 		}
 
 		void stop()
@@ -356,10 +360,18 @@ namespace we { namespace mgmt {
 		{
 		  using namespace we::mgmt::detail::commands;
 		  std::cerr << "D: manager thread started..." << std::endl;
+          barrier_.wait();
 		  for (;;)
 		  {
 			cmd_t cmd = cmd_q_.get();
-			cmd.handle();
+            try
+            {
+			  cmd.handle();
+            }
+            catch (std::exception const& ex)
+            {
+              std::cerr << "W: error during command handling: " << ex.what() << std::endl;
+            }
 		  }
 		  std::cerr << "D: manager thread stopped..." << std::endl;
 		}
@@ -401,40 +413,60 @@ namespace we { namespace mgmt {
 		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_cancelled, this, _1)));
 		}
 
+        inline
+        void post_suspend_network_notification( const id_type & id )
+        {
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
+        }
+
+        inline
+        void post_resume_network_notification( const id_type & id )
+        {
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
+        }
+
 		void extractor()
 		{
 		  using namespace we::mgmt::detail::commands;
 		  std::cerr << "D: extractor thread started..." << std::endl;
+          barrier_.wait();
 		  for (;;)
 		  {
 			// TODO: probably timed wait?
 			id_type active_net = active_nets_.get();
 
-			descriptor_type & desc = lookup(active_net);
-			assert ( desc.is_net() );
+            try
+            {
+              descriptor_type & desc = lookup(active_net);
+              assert ( desc.is_net() );
 
-			if (! is_net_alive (desc))
-			{
-			  continue;
-			}
+              if (! is_net_alive (desc))
+              {
+                continue;
+              }
 
-			if (is_net_done (desc))
-			{
-			  post_finished_notification (active_net);
-			  continue;
-			}
+              if (is_net_done (desc))
+              {
+                post_finished_notification (active_net);
+                continue;
+              }
 
-			// submit new activities
-			while (desc.net.has_enabled())
-			{
-			  std::cerr << "I: net[" << desc.id << "] has "
-				<< desc.net.num_enabled()
-				<< " enabled transition(s)" << std::endl;
+              // submit new activities
+              while (desc.net.has_enabled())
+              {
+                std::cerr << "I: net[" << desc.id << "] has "
+                  << desc.net.num_enabled()
+                  << " enabled transition(s)" << std::endl;
 
-			  typename net_type::activity_t act = desc.net.extract();
-			  // classify 
-			  async_execute (act, desc);
-			}
+                typename net_type::activity_t act = desc.net.extract();
+                // classify and execute
+                async_execute (act, desc);
+              }
+            }
+            catch (const net_not_found<id_type> & ex)
+            {
+              std::cerr << "W: net could not be found: " << ex.id << std::endl;
+            }
 		  }
 		  std::cerr << "D: extractor thread stopped..." << std::endl;
 		}
@@ -442,6 +474,7 @@ namespace we { namespace mgmt {
 		void injector()
 		{
 		  std::cerr << "D: injector thread started..." << std::endl;
+          barrier_.wait();
 		  for (;;)
 		  {
 			inj_cmd_t cmd = inj_q_.get();
@@ -453,10 +486,11 @@ namespace we { namespace mgmt {
 						<< "activity[" << cmd.first << "] into "
 						<< "net[" << act_desc.parent << "]"
 						<< std::endl;
-			  net_desc.net.inject (cmd.second.second);
-			  net_desc.children.erase ( act_desc.id );
+              unlink_parent_and_child( net_desc, act_desc );
 			  remove_descriptor ( act_desc );
-			  cmd_q_.put (make_cmd( net_desc.id, boost::bind(&this_type::net_needs_attention, this, _1)));
+			  net_desc.net.inject (cmd.second.second);
+
+              post_activity_notification( net_desc.id );
 			}
 			catch (const std::exception & ex)
 			{
@@ -477,6 +511,7 @@ namespace we { namespace mgmt {
 		exec_layer_type & exec_layer_;
 		boost::function<id_type()> id_gen_;
 		boost::function<bool (const net_type&)> validator_;
+		boost::barrier barrier_;
 		mutable boost::shared_mutex descriptors_mutex_;
 		id_descriptor_map_t descriptors_;
 		cmd_q_t cmd_q_;
@@ -528,59 +563,76 @@ namespace we { namespace mgmt {
 
 		void net_needs_attention(const cmd_t & cmd)
 		{
-		  std::cerr << "D: net[" << cmd.dat << "] active" << std::endl;
-		  active_nets_.put (cmd.dat);
+          descriptor_type & d = lookup ( cmd.dat );
+          if (! d.flags.suspended )
+          {
+            std::cerr << "D: net[" << cmd.dat << "] active" << std::endl;
+            active_nets_.put (cmd.dat);
+          }
 		}
 
 		void net_finished(const cmd_t & cmd)
 		{
-		  std::cerr << "D: net[" << cmd.dat << "] finished" << std::endl;
 		  exec_layer_.finished ( cmd.dat, "dummy result" );
-		  assert_is_leave ( cmd.dat );
+		  assert_is_leaf ( cmd.dat );
 		  remove_descriptor ( cmd.dat );
+		  std::cerr << "D: net[" << cmd.dat << "] finished" << std::endl;
 		}
 
 		void net_failed(const cmd_t & cmd)
 		{
-		  std::cerr << "D: net[" << cmd.dat << "] failed" << std::endl;
 		  exec_layer_.failed ( cmd.dat, "dummy result" );
-		  assert_is_leave ( cmd.dat );
+		  assert_is_leaf ( cmd.dat );
 		  remove_descriptor ( cmd.dat );
+		  std::cerr << "D: net[" << cmd.dat << "] failed" << std::endl;
 		}
 
 		void net_cancelled(const cmd_t & cmd)
 		{
-		  std::cerr << "D: net[" << cmd.dat << "] cancelled" << std::endl;
 		  exec_layer_.cancelled ( cmd.dat );
-		  assert_is_leave ( cmd.dat );
+		  assert_is_leaf ( cmd.dat );
 		  remove_descriptor ( cmd.dat );
+		  std::cerr << "D: net[" << cmd.dat << "] cancelled" << std::endl;
 		}
 
 		inline
-		void assert_is_leave (const id_type & id) const
+		void assert_is_leaf (const id_type & id) const
 		{
 		  const descriptor_type & desc = lookup (id);
-		  assert (desc.children.size() == 0);
+		  if (desc.children.size() != 0) throw std::runtime_error("not leaf");
 		}
 
 		void suspend_net(const cmd_t & cmd)
 		{
-		  std::cerr << "I: net[" << cmd.dat << "] suspended" << std::endl;
 		  lookup(cmd.dat).flags.suspended = true;
+		  std::cerr << "I: net[" << cmd.dat << "] suspended" << std::endl;
 		}
 
 		void resume_net(const cmd_t & cmd)
 		{
-		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
 		  lookup(cmd.dat).flags.suspended = false;
 		  active_nets_.put (cmd.dat);
+		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
 		}
+
+        inline
+        void link_parent_and_child ( descriptor_type & parent, descriptor_type & child)
+        { 
+          child.parent = parent.id;
+          parent.children.insert( child.id );
+        }
+
+        inline
+        void unlink_parent_and_child ( descriptor_type & parent, descriptor_type & child)
+        { 
+          child.parent = id_traits::nil();
+          parent.children.erase ( child.id );
+        }
 
 		void async_execute(typename net_type::activity_t const & act, descriptor_type & parent_desc)
 		{
 		  descriptor_type act_desc (id_gen_(), descriptor_type::ACTIVITY);
-		  act_desc.parent = parent_desc.id;
-		  parent_desc.children.insert ( act_desc.id );
+          link_parent_and_child( parent_desc, act_desc );
 		  insert_descriptor (act_desc.id, act_desc);
 		  std::cerr << "D: executing activity[" << act_desc.id << "]..." << std::endl;
 		  sig_execute( act_desc.id, "" );
@@ -612,7 +664,7 @@ namespace we { namespace mgmt {
 		{
 		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
 		  typename id_descriptor_map_t::iterator d = descriptors_.find(id);
-		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
+		  if (d == descriptors_.end()) throw net_not_found<id_type>("lookup", id);
 		  return d->second;
 		}
 
@@ -620,7 +672,7 @@ namespace we { namespace mgmt {
 		{
 		  boost::shared_lock <boost::shared_mutex> lock (descriptors_mutex_);
 		  typename id_descriptor_map_t::const_iterator d = descriptors_.find(id);
-		  if (d == descriptors_.end()) throw std::runtime_error( "not found" );
+		  if (d == descriptors_.end()) throw net_not_found<id_type>("lookup", id);
 		  return d->second;
 		}
 	};
