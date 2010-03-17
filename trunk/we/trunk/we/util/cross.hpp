@@ -88,7 +88,7 @@ namespace cross
   class cross
   {
   private:
-    const MAP map;
+    const MAP & map;
     pos_t pos;
     bool _has_more;
     std::size_t _size;
@@ -133,8 +133,8 @@ namespace cross
   public:
     void rewind (void)
     {
-      _size = 1;
-      _has_more = true;
+      _size = (map.begin() != map.end()) ? 1 : 0;
+      _has_more = (map.begin() != map.end());
 
       for (it_t m (map.begin()); m != map.end(); ++m)
         {
