@@ -28,14 +28,27 @@ namespace we { namespace mgmt { namespace detail {
   class signal
   {
   public:
+    explicit
+    signal(const std::string & name = "noname")
+      : name_(name)
+    { }
+
 	template <typename C>
 	void connect(C f)
 	{
 	  targets_.push_back(f);
 	}
 
+    const std::string &name() const { return name_; }
+
 	void operator() ()
 	{
+      if (targets_.empty())
+      {
+        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+        return;
+      }
+
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
@@ -46,6 +59,12 @@ namespace we { namespace mgmt { namespace detail {
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
+      if (targets_.empty())
+      {
+        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+        return;
+      }
+
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
@@ -56,6 +75,11 @@ namespace we { namespace mgmt { namespace detail {
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
+      if (targets_.empty())
+      {
+        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+        return;
+      }
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
@@ -66,6 +90,11 @@ namespace we { namespace mgmt { namespace detail {
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
+      if (targets_.empty())
+      {
+        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+        return;
+      }
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
@@ -74,6 +103,7 @@ namespace we { namespace mgmt { namespace detail {
 	}
 
   private:
+    std::string name_;
 	std::vector<boost::function<F> > targets_;
   };
 }}}
