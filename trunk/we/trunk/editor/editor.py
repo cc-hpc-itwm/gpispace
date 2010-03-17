@@ -72,7 +72,7 @@ class xml_visitor(scene_visitor):
         id = self.mark_visited(p)
 
         e = self.doc.createElement("place")
-        e.setAttribute("id", id)
+        e.setAttribute("name", id)
         e.setAttribute("pos", "(%s, %s)" % (p.pos().x(), p.pos().y()))
         self.root.appendChild(e)
 
@@ -84,7 +84,7 @@ class xml_visitor(scene_visitor):
         id = self.mark_visited(t)
 
         e = self.doc.createElement("transition")
-        e.setAttribute("id", id)
+        e.setAttribute("name", id)
         e.setAttribute("pos", "(%s, %s)" % (t.pos().x(), t.pos().y()))
         self.root.appendChild(e)
 
@@ -707,12 +707,12 @@ class MainWindow(QtGui.QMainWindow):
                 if not thing.isElement(): continue
                 e = thing.toElement()
                 if e.tagName() == "place":
-                  id = e.attribute("id")
+                  id = e.attribute("name")
                   x,y = eval( e.attribute("pos", "(0,0)"))
                   p = self.scene.addPlace( QtCore.QPointF(x,y) )
                   things[id] = p
                 if e.tagName() == "transition":
-                  id = e.attribute("id")
+                  id = e.attribute("name")
                   x,y = eval( e.attribute("pos", "(0,0)"))
                   t = self.scene.addTransition( QtCore.QPointF(x,y) )
                   things[id] = t
