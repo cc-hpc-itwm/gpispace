@@ -10,6 +10,15 @@ using namespace test;
 
 typedef petri_net::net<we::mgmt::detail::place_t, we::mgmt::detail::transition_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t> pnet_t;
 
+typedef uint64_t id_type;
+//  typedef unsigned long id_type;
+//  typedef unsigned int id_type;
+//  typedef int id_type;
+//  typedef std::string id_type;
+
+typedef we::mgmt::layer<basic_layer<id_type>, pnet_t> layer_t;
+typedef sdpa_daemon<layer_t> daemon_type;
+
 static void test_execute(unsigned int id, const std::string & a)
 {
   std::cerr << "execute: " << id << " " << a << std::endl;
@@ -47,14 +56,6 @@ inline Stream & operator << (Stream & s, const pnet_t & n)
 
 int main ()
 {
-	typedef uint64_t id_type;
-//  typedef unsigned long id_type;
-//  typedef unsigned int id_type;
-//  typedef int id_type;
-//  typedef std::string id_type;
-  typedef we::mgmt::layer<basic_layer<id_type>, pnet_t> layer_t;
-  typedef sdpa_daemon<layer_t> daemon_type;
-
   // instantiate layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
@@ -72,10 +73,13 @@ int main ()
   for (std::vector<id_type>::const_iterator id (ids.begin()); id != ids.end(); ++id)
   {
 	mgmt_layer.suspend(*id);
+    sleep(3);
 	mgmt_layer.resume(*id);
 //	mgmt_layer.failed(*id, "");
 //	mgmt_layer.finished(*id, "");
 	mgmt_layer.cancel(*id, "");
+    sleep(1);
+	mgmt_layer.suspend(*id);
   }
 
   sleep(1); // not nice, but we cannot wait for a network to finish right now
