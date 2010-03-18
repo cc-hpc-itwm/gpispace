@@ -28,20 +28,6 @@ static unsigned int capacity_value (3);
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
-static map_t build_map (const pnet_t::input_t & input)
-{
-  map_t m;
-
-  for ( pnet_t::input_t::const_iterator it (input.begin())
-      ; it != input.end()
-      ; ++it
-      )
-    m[Function::Transition::get_pid<token_t>(*it)]
-      = Function::Transition::get_token<token_t>(*it);
-
-  return m;
-}
-
 static pnet_t::output_t trans_step 
 ( const petri_net::pid_t pid_max
 , const petri_net::pid_t pid_state
@@ -52,7 +38,14 @@ static pnet_t::output_t trans_step
 {
   pnet_t::output_t output;
 
-  map_t m (build_map (input));
+  map_t m;
+
+  for ( pnet_t::input_t::const_iterator it (input.begin())
+      ; it != input.end()
+      ; ++it
+      )
+    m[Function::Transition::get_pid<token_t>(*it)]
+      = Function::Transition::get_token<token_t>(*it);
 
   output.push_back (top_t (m[pid_max], pid_max));
   output.push_back (top_t (m[pid_state] + 1, pid_state));
@@ -62,13 +55,10 @@ static pnet_t::output_t trans_step
 }
 
 static pnet_t::output_t trans_sum
-( const petri_net::pid_t pid_sum
-, const pnet_t::input_t & input
+( const pnet_t::input_t & input
 , const pnet_t::output_descr_t & output_descr
 )
 {
-  pnet_t::output_t output;
-
   token_t sum (0);
 
   for ( pnet_t::input_t::const_iterator it (input.begin())
@@ -77,7 +67,7 @@ static pnet_t::output_t trans_sum
       )
     sum += Function::Transition::get_token<token_t>(*it);
 
-  //output.push_back (top_t (sum, pid_sum));
+  pnet_t::output_t output;
 
   for ( pnet_t::output_descr_t::const_iterator it (output_descr.begin())
           ; it != output_descr.end()
@@ -177,13 +167,7 @@ main ()
 
   net.set_transition_function 
     ( tid_sum
-    , Function::Transition::Generic<token_t> 
-      ( boost::bind ( &trans_sum
-                    , pid_sum
-                    , _1
-                    , _2
-                    )
-      )
+    , Function::Transition::Generic<token_t> (trans_sum)
     );
 
   net.set_choice_condition_function 
