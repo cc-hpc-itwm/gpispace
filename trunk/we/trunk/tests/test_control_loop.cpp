@@ -48,6 +48,10 @@ static bool cond_ge ( const token_t & token
   return (token >= max);
 }
 
+typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
+typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
+
+
 static unsigned long cnt_trans (0);
 
 static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
@@ -58,47 +62,19 @@ static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
 {
   ++cnt_trans;
 
-  pnet_t::output_t output;
-
-  token_t value (0);
-  token_t increment (0);
+  map_t m;
 
   for ( pnet_t::input_t::const_iterator it (input.begin())
       ; it != input.end()
       ; ++it
       )
-    {
-      const petri_net::pid_t pid (Function::Transition::get_pid<token_t> (*it));
-      const token_t token (Function::Transition::get_token<token_t> (*it));
+    m[Function::Transition::get_pid<token_t>(*it)]
+      = Function::Transition::get_token<token_t>(*it);
 
-      if (pid == pid_value)
-        {
-          value = token;
-        }
-      else if (pid == pid_increment)
-        {
-          increment = token;
-        }
-      else
-        throw std::runtime_error ("STRANGE! Unknown input!");
-    }
+  pnet_t::output_t output;
 
-  typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
-
-  for ( pnet_t::output_descr_t::const_iterator it (output_descr.begin())
-      ; it != output_descr.end()
-      ; ++it
-      )
-    if (it->first == pid_value)
-      {
-        output.push_back (top_t (value + increment, pid_value));
-      }
-    else if (it->first == pid_increment)
-      {
-        output.push_back (top_t (increment, pid_increment));
-      }
-    else
-      throw std::runtime_error ("STRANGE! Unknown output!");
+  output.push_back (top_t (m[pid_value] + m[pid_increment], pid_value));
+  output.push_back (top_t (m[pid_increment], pid_increment));
 
   return output;
 }
@@ -182,12 +158,9 @@ main ()
   {
     Timer_t timer ("fire", max + 1);
 
-    pnet_t::enabled_t t (net.enabled_transitions());
-
-    while (!t.empty())
+    while (!net.enabled_transitions().empty())
       {
-        net.fire(t.at(0));
-        t = net.enabled_transitions();
+        net.fire(net.enabled_transitions().at(0));
         ++f;
       }
   }
