@@ -107,8 +107,6 @@ public:
 
   typedef typename cross::star_iterator<pid_in_map_t> choice_star_it;
 
-  typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
-
   typedef svector::svector<tid_t> enabled_t;
 
   // *********************************************************************** //
@@ -120,6 +118,7 @@ private:
   typedef set_of_tid_t in_enabled_t;
   typedef set_of_tid_t out_enabled_t;
 
+  typedef typename cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
   typedef boost::unordered_map<tid_t, choice_vec_t> enabled_choice_t;
 
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
