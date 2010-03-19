@@ -8,15 +8,16 @@ namespace sdpa {
     class WorkerSerializationTest : public CPPUNIT_NS::TestFixture {
       CPPUNIT_TEST_SUITE( sdpa::tests::WorkerSerializationTest);
 
-      CPPUNIT_TEST( testSynchQueueSerialization );
+      /*CPPUNIT_TEST( testSynchQueueSerialization );
       CPPUNIT_TEST( testWorkerSerialization );
       CPPUNIT_TEST( testSchedulerSerialization );
       CPPUNIT_TEST( testDaemonSerialization );
       CPPUNIT_TEST( testDaemonSerializationWithFSMs );
       CPPUNIT_TEST( testOrchestratorSerialization );
       CPPUNIT_TEST( testAggregatorSerialization );
-      CPPUNIT_TEST( testNRESerialization );
-      //CPPUNIT_TEST( testSchedulerNRESerialization );
+      CPPUNIT_TEST( testNRESerialization );*/
+      //CPPUNIT_TEST( testDummyWorkflowEngineSerialization );
+      //CPPUNIT_TEST( testBackupRecover );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -34,8 +35,9 @@ namespace sdpa {
       void testDaemonSerializationWithFSMs();
       void testOrchestratorSerialization();
       void testAggregatorSerialization();
-      //void testSchedulerNRESerialization();
+      void testDummyWorkflowEngineSerialization();
       void testNRESerialization();
+      void testBackupRecover();
     };
   }
 }

@@ -194,7 +194,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     void cancel() throw (std::exception)
     {
-      throw std::runtime_error("not implemented");
+    	throw std::runtime_error("not implemented");
     }
 
     /* method: execute
@@ -215,7 +215,7 @@ namespace sdpa { namespace nre { namespace worker {
         	 throw std::runtime_error("did not get a response from worker!");
          }*/
 
-    	return "FAILED";
+    	return "FINISHED";
 	}
 
     /* method: request
@@ -278,8 +278,8 @@ namespace sdpa { namespace nre { namespace worker {
 
 			if( timeout )
 			{
-			  const boost::system_time to(boost::get_system_time() + boost::posix_time::seconds(timeout));
-			  notified_ = msg_avail_.timed_wait(lock, to);
+				const boost::system_time to(boost::get_system_time() + boost::posix_time::seconds(timeout));
+				notified_ = msg_avail_.timed_wait(lock, to);
 			}
 			else
 			  msg_avail_.wait(lock);
@@ -310,56 +310,54 @@ namespace sdpa { namespace nre { namespace worker {
     {
     	socket_->async_receive_from(
           boost::asio::buffer(data_, max_length), sender_endpoint_,
-          boost::bind(&NreWorkerClient::handle_receive_from, this,
-            boost::asio::placeholders::error,
-            boost::asio::placeholders::bytes_transferred));
+          boost::bind(&NreWorkerClient::handle_receive_from,
+					  this,
+					  boost::asio::placeholders::error,
+					  boost::asio::placeholders::bytes_transferred));
     }
 
     void start_timeout_timer()
     {
-      if (! timer_active_)
-      {
-        timer_.expires_from_now(boost::posix_time::seconds(timer_timeout_));
-        timer_.async_wait(boost::bind(&NreWorkerClient::timer_timedout, this, boost::asio::placeholders::error));
-        DLOG(TRACE, "started timeout timer (expires in: "<< timer_.expires_from_now() <<")");
-        timer_active_ = true;
-      }
-      else
-      {
-        DLOG(TRACE, "timeout timer still active (expires in: "<< timer_.expires_from_now() <<")");
-      }
+		if (! timer_active_)
+		{
+			timer_.expires_from_now(boost::posix_time::seconds(timer_timeout_));
+			timer_.async_wait(boost::bind(&NreWorkerClient::timer_timedout, this, boost::asio::placeholders::error));
+			DLOG(TRACE, "started timeout timer (expires in: "<< timer_.expires_from_now() <<")");
+			timer_active_ = true;
+		}
+		else
+			DLOG(TRACE, "timeout timer still active (expires in: "<< timer_.expires_from_now() <<")");
     }
 
     void start_ping_interval_timer()
     {
-      DLOG(TRACE, "starting ping timer ("<<ping_interval_<<"s)");
-      // schedule next ping
-      ping_interval_timer_.expires_from_now(boost::posix_time::seconds(ping_interval_));
-      ping_interval_timer_.async_wait(boost::bind(&NreWorkerClient::send_ping, this, boost::asio::placeholders::error));
+		DLOG(TRACE, "starting ping timer ("<<ping_interval_<<"s)");
+		// schedule next ping
+		ping_interval_timer_.expires_from_now(boost::posix_time::seconds(ping_interval_));
+		ping_interval_timer_.async_wait(boost::bind(&NreWorkerClient::send_ping, this, boost::asio::placeholders::error));
     }
 
     void send_ping(const boost::system::error_code &error)
     {
-      if (! error)
-      {
-        DLOG(DEBUG, "checking if pcd is alive...");
-        send (PingRequest("tag-1"));
-        // start the timeout timer
-        start_timeout_timer();
-        start_ping_interval_timer();
-      }
-      {
-        DLOG(TRACE, "ping timer cancelled");
-      }
+		if (! error)
+		{
+			DLOG(DEBUG, "checking if pcd is alive...");
+			send (PingRequest("tag-1"));
+			// start the timeout timer
+			start_timeout_timer();
+			start_ping_interval_timer();
+		}
+
+		DLOG(TRACE, "ping timer cancelled");
     }
 
     void ping_reply_received(const sdpa::shared_ptr<PingReply> &ping_reply)
     {
-      not_responded_to_ping_ = 0;
+		  not_responded_to_ping_ = 0;
 
-      DLOG(DEBUG, "got ping reply from pid=" << ping_reply->pid());
-      timer_.cancel();
-      DLOG(TRACE, "timeout timer cancelled");
+		  DLOG(DEBUG, "got ping reply from pid=" << ping_reply->pid());
+		  timer_.cancel();
+		  DLOG(TRACE, "timeout timer cancelled");
     }
 
     void timer_timedout(const boost::system::error_code &error)
@@ -383,7 +381,7 @@ namespace sdpa { namespace nre { namespace worker {
     void handle_send_to(const boost::system::error_code &error
                       , size_t bytes_sent)
     {
-      DLOG(TRACE, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
+    	DLOG(TRACE, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
     }
 
     void handle_receive_from(const boost::system::error_code &error

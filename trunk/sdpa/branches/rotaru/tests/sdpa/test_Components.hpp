@@ -49,7 +49,7 @@ namespace sdpa {
 			private:
 			  SDPA_DECLARE_LOGGER();
 
-			  sdpa::client::ClientApi::ptr_t m_ptrUser;
+			  sdpa::client::ClientApi::ptr_t m_ptrCli;
 			  std::string m_strWorkflow;
 
 			  int m_nITER;

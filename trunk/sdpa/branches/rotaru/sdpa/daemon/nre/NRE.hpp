@@ -187,7 +187,7 @@ void NRE<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		try {
 			// forward it up
@@ -230,7 +230,7 @@ void NRE<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator

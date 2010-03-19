@@ -152,10 +152,10 @@ void TestComponents::setUp() { //initialize and start the finite state machine
     cav.push_back("--network.location=orchestrator_0:127.0.0.1:5000");
     config.parse_command_line(cav);
 
-	m_ptrUser = sdpa::client::ClientApi::create( config );
-	m_ptrUser->configure_network( config );
+	m_ptrCli = sdpa::client::ClientApi::create( config );
+	m_ptrCli->configure_network( config );
 
-	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrUser->input_stage());
+	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrCli->input_stage());
 
 	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
 				    //read_workflow("workflows/remig.master.gwdl");
@@ -168,7 +168,8 @@ void TestComponents::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 	//stop the finite state machine
 
-	m_ptrUser.reset();
+	m_ptrCli->shutdown_network();
+	m_ptrCli.reset();
 	seda::StageRegistry::instance().clear();
 }
 
@@ -282,28 +283,28 @@ void TestComponents::testComponentsDummyGWES()
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user = m_ptrCli->submitJob(m_strWorkflow);
 
 		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
-		std::string job_status =  m_ptrUser->queryJob(job_id_user);
+		std::string job_status =  m_ptrCli->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
 
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
 			   job_status.find("Cancelled") == std::string::npos)
 		{
-			job_status = m_ptrUser->queryJob(job_id_user);
+			job_status = m_ptrCli->queryJob(job_id_user);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
 
 			usleep(m_sleep_interval);
 		}
 
 		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
-		m_ptrUser->retrieveResults(job_id_user);
+		m_ptrCli->retrieveResults(job_id_user);
 
 		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
-		m_ptrUser->deleteJob(job_id_user);
+		m_ptrCli->deleteJob(job_id_user);
 	}
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);

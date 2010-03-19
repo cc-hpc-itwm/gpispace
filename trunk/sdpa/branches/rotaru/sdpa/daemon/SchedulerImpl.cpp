@@ -48,7 +48,7 @@ SchedulerImpl::~SchedulerImpl()
 }
 
 /*
-	Schedule a job locally, send the job to GWES
+	Schedule a job locally, send the job to WE
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
@@ -65,7 +65,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		if( ptr_comm_handler_->workflowEngine() )
 		{
 			// Should set the workflow_id here, or send it together with the workflow description
-			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
+			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
 			ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
 		}
 		else
@@ -90,7 +90,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	}
 	catch (std::exception& )
 	{
-		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to WE!");
 
 		//send a JobFailed event
 		sdpa::job_result_t result;

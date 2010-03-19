@@ -155,6 +155,7 @@ namespace sdpa { namespace daemon {
 	  {
 		  ar & ptr_job_man_;
 		  ar & ptr_scheduler_;
+		  ar & ptr_workflow_engine_;
 	  }
 
 	  friend class boost::serialization::access;

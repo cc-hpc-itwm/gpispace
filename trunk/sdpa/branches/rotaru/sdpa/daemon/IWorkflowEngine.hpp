@@ -18,6 +18,12 @@
 #ifndef WE_MGMT_BASIC_LAYER_HPP
 #define WE_MGMT_BASIC_LAYER_HPP 1
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
 // part to be replaced by #include </we/mgmt/basic_layer.hpp>
 
 #include <string>
@@ -36,6 +42,14 @@ namespace we { namespace mgmt {
 	virtual bool finished(const id_type & id, const result_type & result) = 0;
 	virtual bool failed(const id_type & id, const result_type & result) = 0;
 	virtual bool cancelled(const id_type & id) = 0;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+
+	}
+
+	friend class boost::serialization::access;
   };
 }}
 

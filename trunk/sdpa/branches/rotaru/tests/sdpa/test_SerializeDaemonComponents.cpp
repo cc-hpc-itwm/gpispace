@@ -72,42 +72,74 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-/*void WorkerSerializationTest::testSchedulerNRESerialization()
+void WorkerSerializationTest::testBackupRecover()
 {
-	std::cout<<std::endl<<"----------------Begin  testSchedulerNRESerialization----------------"<<std::endl;
-	std::string filename = "testSerializeSchedulerNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Scheduler::ptr_t pSchedulerNRE(new SchedulerNRE());
+	std::cout<<std::endl<<"----------------Begin  testBackupRecover----------------"<<std::endl;
+	std::string filename = "testBackupRecover.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
-	int nSchedQSize = 5;
-	for(int i=0; i<nSchedQSize; i++)
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	cav.push_back("--network.location=orchestrator_0:127.0.0.1:7000");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	std::string strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
+
+	// submit a number of jobs
+	for(int k=0; k<5; k++ )
+		sdpa::job_id_t job_id_user = ptrCli->submitJob(strWorkflow);
+
+	ptrOrch->print();
+	ptrOrch->backup("OrchestratorBackupFile.txt");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+	sleep(1);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
+	ptrRecOrch->recover("OrchestratorBackupFile.txt");
+	//sdpa::daemon::Orchestrator::start(ptrRecOrch);
+
+	sleep(1);
+
+	// sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
+	// sleep(1);
+
+	ptrCli->shutdown_network();
+	std::cout<<std::endl<<"----------------End  testBackupRecover----------------"<<std::endl;
+}
+
+void WorkerSerializationTest::testDummyWorkflowEngineSerialization()
+{
+	std::cout<<std::endl<<"----------------Begin  testDummyWorkflowEngineSerialization----------------"<<std::endl;
+	std::string filename = "testDummyWorkflowEngineSerialization.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+	IWorkflowEngine* pWfEng = new DummyWorkflowEngine();
+
+	const int NWFS = 10;
+	encoded_type wf_desc("workflow description ");
+
+	for(int i=0; i<NWFS; i++)
 	{
-		std::ostringstream ossJobId;;
-		ossJobId<<"Job_"<<i;
-		sdpa::job_id_t jobId(ossJobId.str());
-		dynamic_cast<SchedulerNRE*>(pSchedulerNRE.get())->jobs_to_be_scheduled.push(jobId);
+		sdpa::job_id_t jobId;
+		pWfEng->submit(jobId.str(), wf_desc);
 	}
-
-	int nWorkers=0; // No worker
-
-	DummyActivity act1("activity 1", "workflow 0");
-	DummyActivity act2("activity 2", "workflow 0");
-	DummyActivity act3("activity 3", "workflow 0");
-
-	pSchedulerNRE->schedule(act1);
-	pSchedulerNRE->schedule(act2);
-	pSchedulerNRE->schedule(act3);
 
 	// serialize now the job queue
 	try
 	{
-		std::cout<<"----------------The SchedulerNRE's content before the backup is:----------------"<<std::endl;
-		pSchedulerNRE->print();
+		std::cout<<"----------------The DummyWorkflowEngine's content before the backup is:----------------"<<std::endl;
+		dynamic_cast<DummyWorkflowEngine*>(pWfEng)->print();
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<SchedulerNRE*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		//oa.register_type(static_cast<DummyActivity*>(NULL)); IActivity should contain a serialization function!!!
-		oa << pSchedulerNRE;
+		oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
+		oa<<pWfEng;
 	}
 	catch(exception &e)
 	{
@@ -118,17 +150,14 @@ string read_workflow(string strFileName)
 	// restore state to one equivalent to the original
 	try
 	{
-		Scheduler::ptr_t pSchedRest;
+		IWorkflowEngine* pRestoredWfEng;
 		// open the archive
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<SchedulerNRE*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		//ia.register_type(static_cast<DummyActivity*>(NULL));
-		// restore the schedule from the archive
-		ia >> pSchedRest;
-		std::cout<<"----------------The SchedulerNRE's content after the backup is:----------------"<<std::endl;
-		pSchedRest->print();
+		ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
+		ia >> pRestoredWfEng;
+		std::cout<<"----------------The DummyWorkflowEngine's content after the backup is:----------------"<<std::endl;
+		dynamic_cast<DummyWorkflowEngine*>(pRestoredWfEng)->print();
 	}
 	catch(exception &e)
 	{
@@ -136,9 +165,8 @@ string read_workflow(string strFileName)
 		return;
 	}
 
-	std::cout<<std::endl<<"----------------End  testSchedulerNRESerialization----------------"<<std::endl;
+	std::cout<<std::endl<<"----------------End  testDummyWorkflowEngineSerialization----------------"<<std::endl;
 }
-*/
 
 void WorkerSerializationTest::testNRESerialization()
 {

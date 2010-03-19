@@ -167,7 +167,7 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		pJob->setResult(pEvt->result());
 	}
@@ -242,7 +242,7 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if(pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if(pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		pJob->setResult(pEvt->result());
 	}
@@ -345,7 +345,7 @@ void Orchestrator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
-    	if( pEvt->from() != sdpa::daemon::GWES  ) // the message comes from GWES, forward it to the master
+    	if( pEvt->from() != sdpa::daemon::WE  ) // the message comes from GWES, forward it to the master
     	{
     		try {
     			Worker::ptr_t ptrWorker = findWorker(worker_id);

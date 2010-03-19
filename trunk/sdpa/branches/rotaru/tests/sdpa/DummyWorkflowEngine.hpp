@@ -228,6 +228,10 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		ar & map_Act2Wf_Ids_;
 	}
 
+    void print() {
+    	for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+    		std::cout<<it->second<<" -> "<<it->first<<std::endl;
+    }
 
   private:
     mutable IDaemon *pIDaemon_;

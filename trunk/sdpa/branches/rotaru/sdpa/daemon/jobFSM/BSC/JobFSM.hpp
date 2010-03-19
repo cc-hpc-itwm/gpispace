@@ -164,7 +164,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::JobFinishedEvent>,
     sc::result react( const sc::exception_thrown & );
 };
 
-// superstate wit 2 states Cncelling and Cancelled
+// superstate wit 2 states Cancelling and Cancelled
 struct Cancel : sc::simple_state<Cancel, JobFSM, Cancelling>
 {
 	typedef mpl::list< sc::custom_reaction< sc::exception_thrown > > reactions;

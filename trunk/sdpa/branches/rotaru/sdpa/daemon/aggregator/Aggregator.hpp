@@ -178,7 +178,7 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		try {
 			// forward it up
@@ -270,7 +270,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
-	if( pEvt->from() == sdpa::daemon::GWES ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES
 		try {
@@ -383,7 +383,7 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
-    	if( pEvt->from() == sdpa::daemon::GWES  ) // the message comes from GWES, forward it to the master
+    	if( pEvt->from() == sdpa::daemon::WE  ) // the message comes from GWES, forward it to the master
 		{
 			os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
