@@ -22,7 +22,7 @@ typedef std::pair<edge_cnt_t,std::string> edge_t;
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
-static token_t max (100);
+static token_t max (100000);
 static unsigned int capacity_value (3);
 
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
@@ -207,7 +207,7 @@ main ()
     while (!net.enabled_transitions().empty())
       {
         net.fire(net.enabled_transitions().at(0));
-        marking (net);
+        //        marking (net);
       }
   }
 

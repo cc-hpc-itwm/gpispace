@@ -21,7 +21,7 @@ typedef std::pair<edge_cnt_t,std::string> edge_t;
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
-static const token_t max (1000000);
+static const token_t max (100000);
 
 static unsigned long cnt_cond_lt (0);
 
