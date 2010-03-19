@@ -217,6 +217,7 @@ private:
                          , const bool can_fire
                          , set_of_tid_t & a
                          , set_of_tid_t & b
+                         , const bool recalc_choices = true
                          )
   {
     if (can_fire)
@@ -225,20 +226,37 @@ private:
 
         if (b.find (tid) != b.end())
           {
-            choices_t cs (choices(tid));
-
-            // call the global condition function here, that sets the
-            // cross product either to the end or to some valid choice
-
-            if (get_fun (choice_cond, tid) (cs))
+            if (recalc_choices)
               {
-                enabled.insert (tid);
-                  
-                enabled_choice[tid] = cs.get_vec();
+                choices_t cs (choices(tid));
+
+                // call the global condition function here, that sets the
+                // cross product either to the end or to some valid choice
+
+                if (get_fun (choice_cond, tid) (cs))
+                  {
+                    enabled.insert (tid);
+                    
+                    enabled_choice[tid] = cs.get_vec();
+                  }
+                else
+                  {
+                    enabled.erase (tid);
+                  }
               }
             else
               {
-                enabled.erase (tid);
+                typename enabled_choice_t::iterator it
+                  (enabled_choice.find(tid));
+
+                if (it != enabled_choice.end())
+                  {
+                    enabled.insert (tid);
+                  }
+                else
+                  {
+                    enabled.erase (tid);
+                  }
               }
           }
       }
@@ -348,6 +366,7 @@ private:
                       , pid_in_map.size() == in_to_transition(tid).size()
                       , in_enabled
                       , out_enabled
+                      , !enabled.elem(tid)
                       );
   }
 
@@ -433,6 +452,7 @@ private:
                       , output_descr.size() == pit.size()
                       , out_enabled
                       , in_enabled
+                      , false
                       );
   }
 
@@ -450,6 +470,7 @@ private:
                       , output_descr.size() == out_of_transition(tid).size()
                       , out_enabled
                       , in_enabled
+                      , false
                       );
   }
 
@@ -960,7 +981,13 @@ public:
     output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
-    choice_vec_t choice_vec (enabled_choice[tid]);
+    typename enabled_choice_t::iterator it (enabled_choice.find(tid));
+
+    if (it == enabled_choice.end())
+      throw std::runtime_error ("STRANGE: enabled but there is no choice");
+
+    choice_vec_t choice_vec (it->second);
+    enabled_choice.erase (it);
 
     for ( typename choice_vec_t::const_iterator choice (choice_vec.begin())
         ; choice != choice_vec.end()
