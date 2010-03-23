@@ -140,8 +140,8 @@ namespace we { namespace mgmt {
 	}
 	inline std::size_t hash_value(transition_t const & t)
 	{
-	  boost::hash<void const*> hasher;
-	  return hasher(&t);
+	  boost::hash<std::string> hasher;
+	  return hasher(t.name);
 	}
 	inline std::ostream & operator<< (std::ostream & s, const transition_t & t)
 	{
