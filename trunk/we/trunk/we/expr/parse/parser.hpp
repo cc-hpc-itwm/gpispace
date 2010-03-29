@@ -16,6 +16,8 @@
 
 #include <we/expr/exception.hpp>
 
+#include <we/util/read.hpp>
+
 #include <stack>
 #include <deque>
 
@@ -35,11 +37,14 @@ namespace expr
         : exception ("missing operand", k-1) {}
     };
 
-    template<typename T>
+    template< typename Key
+            , typename Value
+            , Key READ (const std::string &) = read<Key>
+            >
     struct parser
     {
     private:
-      typedef node::type<T> nd_t;
+      typedef node::type<Key,Value> nd_t;
       typedef std::deque<nd_t> nd_stack_t;
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
@@ -127,7 +132,7 @@ namespace expr
       }
 
       void parse ( const std::string input
-                 , const boost::function<nd_t (const std::string &)> & refnode
+                 , const boost::function<nd_t (const Key &)> & refnode
                  )
       {
         std::string::const_iterator pos (input.begin());
@@ -138,7 +143,7 @@ namespace expr
           {
             op_stack.push (token::eof);
 
-            token::tokenizer<T> token (k, pos, end);
+            token::tokenizer<Key,Value,READ> token (k, pos, end);
 
             do
               {
@@ -149,9 +154,9 @@ namespace expr
                   case token::val:
                     nd_stack.push_back (nd_t(token())); break;
                   case token::ref:
-                    nd_stack.push_back (refnode(token.refname())); break;
+                    nd_stack.push_back (refnode(token.get_ref())); break;
                   case token::define:
-                    if (nd_stack.empty() || !nd_stack.back().is_refname)
+                    if (nd_stack.empty() || !nd_stack.back().is_ref)
                       throw exception ("left hand of " + show(*token) + " must be reference name", token.eaten());
                     op_stack.push (*token);
                     break;
@@ -184,16 +189,18 @@ namespace expr
       }
 
     public:
-      parser (const std::string & input, eval::context<T> & context)
+      parser (const std::string & input, eval::context<Key,Value> & context)
       {
-        parse ( input
-              , boost::bind (eval::refnode_value<T>, boost::ref(context), _1)
+        parse ( input, boost::bind ( eval::refnode_value<Key,Value>
+                                   , boost::ref(context)
+                                   , _1
+                                   )
               );
       }
 
       parser (const std::string & input)
       {
-        parse (input, boost::bind (eval::refnode_name<T>, _1));
+        parse (input, boost::bind (eval::refnode_name<Key,Value>, _1));
       }
 
       bool empty (void) const
@@ -211,17 +218,17 @@ namespace expr
         return nd_stack.front();
       }
 
-      const T eval (eval::context<T> & context) const
+      const Value eval (eval::context<Key,Value> & context) const
       {
         return eval::eval (expr(), context);
       }
 
-      bool eval_bool (eval::context<T> & context) const
+      bool eval_bool (eval::context<Key,Value> & context) const
       {
         return !token::function::is_zero (eval (context));
       }
 
-      const T & get () const
+      const Value & get () const
       {
         return node::get (expr());
       }

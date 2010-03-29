@@ -8,6 +8,8 @@
 
 #include <we/expr/exception.hpp>
 
+#include <we/util/show.hpp>
+
 #include <string>
 #include <iostream>
 
@@ -15,7 +17,7 @@ namespace expr
 {
   namespace token
   {
-    template<typename T>
+    template<typename Key, typename Value, Key READ (const std::string &)>
     struct tokenizer
     {
     private:
@@ -24,8 +26,9 @@ namespace expr
       const std::string::const_iterator & end;
 
       token::type token;
-      T tokval;
+      Value tokval;
       std::string _refname;
+      Key _ref;
 
       inline void eat (void) { ++k; ++pos; }
 
@@ -185,6 +188,7 @@ namespace expr
                         eat();
                       }
                     require ("}");
+                    _ref = READ(_refname);
                     break;
                   default: throw expected ("{", k);
                   }
@@ -203,7 +207,7 @@ namespace expr
               if (*pos == '.')
                 {
                   eat();
-                  T e (10);
+                  Value e (10);
                   while (isdigit(*pos))
                     {
                       tokval += (*pos - '0') / e;
@@ -245,8 +249,10 @@ namespace expr
             }
       }
 
-      template<typename U>
-      friend std::ostream & operator << (std::ostream &, const tokenizer<U> &);
+      template<typename K, typename V, K R (const V &)>
+      friend std::ostream & operator << ( std::ostream &
+                                        , const tokenizer<K, V, R> &
+                                        );
 
     public:
       tokenizer ( unsigned int & _k
@@ -254,20 +260,22 @@ namespace expr
                 , const std::string::const_iterator & _end
                 ) 
         : k (_k), pos (_pos), end (_end), token (eof) {}
-      const T & operator () (void) const { return tokval; }
+      const Value & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
       unsigned int eaten (void) const { return k; }
-      const std::string & refname (void) const { return _refname; }
+      const Key & get_ref (void) const { return _ref; }
     };
 
-    template<typename T>
-    static std::ostream & operator << (std::ostream & s, const tokenizer<T> & t)
+    template<typename Key, typename Value, Key R (const Value &)>
+    static std::ostream & operator << ( std::ostream & s
+                                      , const tokenizer<Key, Value, R> & t
+                                      )
     {
       switch (*t)
         {
         case val: return s << t();
-        case ref: return s << "${" << t.refname() << "}";
+        case ref: return s << "${" << show(t.ref()) << "}";
         default: return s << *t;
         }
     }

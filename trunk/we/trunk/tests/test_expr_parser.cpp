@@ -2,6 +2,8 @@
 
 #include <we/expr/parse/parser.hpp>
 
+#include <we/util/read.hpp>
+
 #include "timer.hpp"
 
 #include <iostream>
@@ -24,7 +26,7 @@ int main (int ac, char **)
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
     cout << "list context: ?" << endl;
-    typedef expr::eval::context<double> context_t;
+    typedef expr::eval::context<std::string,double> context_t;
     context_t context;
     std::string input;
 
@@ -38,8 +40,8 @@ int main (int ac, char **)
           {
           case '?':
             for ( context_t::const_iterator it (context.begin())
-                    ; it != context.end()
-                    ; ++it
+                ; it != context.end()
+                ; ++it
                 )
               cout << it->first << " = " << it->second << endl;
             break;
@@ -50,7 +52,7 @@ int main (int ac, char **)
           default:
             try
               {
-                expr::parse::parser<double> parser (input);
+                expr::parse::parser<std::string,double> parser (input);
               
                 while (!parser.empty())
                   {
@@ -61,7 +63,7 @@ int main (int ac, char **)
                         cout << "evaluated value: " << parser.eval (context)
                              << endl;
                       }
-                    catch (expr::eval::missing_binding e)
+                    catch (expr::eval::missing_binding<std::string> e)
                       {
                         cout << e.what() << endl;
                       }
@@ -85,44 +87,98 @@ int main (int ac, char **)
   cout << "measure..." << endl;
 
   {
-    const unsigned int round (1000);
-    const unsigned int max (1000);
-    const std::string input ("${i} < ${max}");
+    typedef int ref_t;
+    typedef expr::parse::parser<ref_t, double, read_int<int> > parser_t;
+    typedef expr::eval::context<ref_t,double> context_t;
 
     {
-      Timer_t timer ("parse once, evaluate often", max * round);
+      const unsigned int round (1000);
+      const unsigned int max (1000);
+      const std::string input ("${0} < ${1}");
 
-      expr::eval::context<double> context;
+      {
+        Timer_t timer ("parse<int> once, eval often", max * round);
 
-      context.bind("max",max);
+        context_t context;
 
-      expr::parse::parser<double> parser (input);
+        context.bind(1,max);
+      
+        parser_t parser (input);
 
-      for (unsigned int r (0); r < round; ++r)
-        {
-          unsigned int i (0);
+        for (unsigned int r (0); r < round; ++r)
+          {
+            unsigned int i (0);
 
-          do
-            context.bind ("i",i++);
-          while (parser.eval_bool (context));
-        }
+            do
+              context.bind (0,i++);
+            while (parser.eval_bool (context));
+          }
+      }
+
+      {
+        Timer_t timer ("often parse<int> and eval", max * round);
+
+        context_t context;
+
+        context.bind(1,max);
+
+        for (unsigned int r (0); r < round; ++r)
+          {
+            unsigned int i (0);
+
+            do
+              context.bind (0,i++);
+            while (parser_t (input, context).get_bool ());
+          }
+      }
     }
+  }
+
+  {
+    typedef std::string ref_t;
+    typedef expr::parse::parser<ref_t, double> parser_t;
+    typedef expr::eval::context<ref_t,double> context_t;
 
     {
-      Timer_t timer ("parse with evaluate often", max * round);
+      const unsigned int round (1000);
+      const unsigned int max (1000);
+      const std::string input ("${0} < ${1}");
 
-      expr::eval::context<double> context;
+      {
+        Timer_t timer ("parse<string> once, eval often", max * round);
 
-      context.bind("max",max);
+        context_t context;
 
-      for (unsigned int r (0); r < round; ++r)
-        {
-          unsigned int i (0);
+        context.bind("1",max);
+      
+        parser_t parser (input);
 
-          do
-            context.bind ("i",i++);
-          while (expr::parse::parser<double>(input, context).get_bool ());
-        }
+        for (unsigned int r (0); r < round; ++r)
+          {
+            unsigned int i (0);
+
+            do
+              context.bind ("0",i++);
+            while (parser.eval_bool (context));
+          }
+      }
+
+      {
+        Timer_t timer ("often parse<string> and eval", max * round);
+
+        context_t context;
+
+        context.bind("1",max);
+
+        for (unsigned int r (0); r < round; ++r)
+          {
+            unsigned int i (0);
+
+            do
+              context.bind ("0",i++);
+            while (parser_t (input, context).get_bool ());
+          }
+      }
     }
   }
 

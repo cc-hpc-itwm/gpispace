@@ -6,7 +6,6 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/prop.hpp>
 
-#include <string>
 #include <stdexcept>
 #include <iostream>
 
@@ -25,16 +24,16 @@ namespace expr
       };
 
       // WORK HERE: better type with union!?
-      template<typename T>
+      template<typename Key, typename Value>
       struct type
       {
         typedef boost::shared_ptr<type> ptr_t;
 
         const bool is_value;
-        const T value;
+        const Value value;
 
-        const bool is_refname;
-        const std::string refname;
+        const bool is_ref;
+        const Key ref;
 
         const bool is_unary;
         const bool is_binary;
@@ -42,11 +41,11 @@ namespace expr
         const ptr_t child0;
         const ptr_t child1;
 
-        type (const T & _value) 
+        type (const Value & _value) 
           : is_value (true)
           , value (_value)
-          , is_refname (false)
-          , refname ()
+          , is_ref (false)
+          , ref ()
           , is_unary (false)
           , is_binary (false)
           , token ()
@@ -54,11 +53,11 @@ namespace expr
           , child1 ()
         {}
 
-        type (const std::string & _refname)
+        type (const Key & _ref)
           : is_value (false)
           , value ()
-          , is_refname (true)
-          , refname (_refname)
+          , is_ref (true)
+          , ref (_ref)
           , is_unary (false)
           , is_binary (false)
           , token ()
@@ -69,8 +68,8 @@ namespace expr
         type (const token::type & _token, const ptr_t _child0)
           : is_value (false)
           , value ()
-          , is_refname (false)
-          , refname ()
+          , is_ref (false)
+          , ref ()
           , is_unary (true)
           , is_binary (false)
           , token (_token)
@@ -84,8 +83,8 @@ namespace expr
              )
           : is_value (false)
           , value ()
-          , is_refname (false)
-          , refname ()
+          , is_ref (false)
+          , ref ()
           , is_unary (false)
           , is_binary (true)
           , token (_token)
@@ -94,14 +93,14 @@ namespace expr
         {}
       };
 
-      template<typename T>
-      std::ostream & operator << (std::ostream & s, const type<T> & nd)
+      template<typename Key, typename Value>
+      std::ostream & operator << (std::ostream & s, const type<Key,Value> & nd)
       {
         if (nd.is_value)
           return s << nd.value;
 
-        if (nd.is_refname)
-          return s << "${" << nd.refname << "}";
+        if (nd.is_ref)
+          return s << "${" << nd.ref << "}";
 
         if (nd.is_unary)
           return s << nd.token << "(" << *(nd.child0) << ")";
@@ -118,8 +117,8 @@ namespace expr
         throw unknown();
       }
 
-      template<typename T>
-      const T & get (const type<T> & node)
+      template<typename Key, typename Value>
+      const Value & get (const type<Key,Value> & node)
       {
         if (!node.is_value)
           throw std::runtime_error ("node is not an value");
