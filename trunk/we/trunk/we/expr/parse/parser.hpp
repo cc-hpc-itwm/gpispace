@@ -23,6 +23,7 @@
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace expr
 {
@@ -43,12 +44,16 @@ namespace expr
             >
     struct parser
     {
+    public:
+      typedef boost::unordered_set<Key> holes_t;
+
     private:
       typedef node::type<Key,Value> nd_t;
       typedef std::deque<nd_t> nd_stack_t;
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
       op_stack_t op_stack;
+      holes_t holes;
 
       void unary (const token::type & token, const unsigned int k)
       {
@@ -154,7 +159,12 @@ namespace expr
                   case token::val:
                     nd_stack.push_back (nd_t(token())); break;
                   case token::ref:
-                    nd_stack.push_back (refnode(token.get_ref())); break;
+                    {
+                      const Key key (token.get_ref());
+                      nd_stack.push_back (refnode(key));
+                      holes.insert (key);
+                    }
+                    break;
                   case token::define:
                     if (nd_stack.empty() || !nd_stack.back().is_ref())
                       throw exception ("left hand of " + show(*token) + " must be reference name", token.eaten());
@@ -237,6 +247,8 @@ namespace expr
       {
         return !token::function::is_zero (get ());
       }
+
+      const holes_t & get_holes () const { return holes; }
     };
   }
 }

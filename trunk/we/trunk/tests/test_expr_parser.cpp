@@ -52,11 +52,21 @@ int main (int ac, char **)
           default:
             try
               {
-                expr::parse::parser<std::string,double> parser (input);
+                typedef expr::parse::parser<std::string,double> parser_t;
+
+                parser_t parser (input);
               
                 while (!parser.empty())
                   {
                     cout << "parsed expression: " << parser.expr() << endl;
+                    cout << "holes:";
+
+                    for ( parser_t::holes_t::const_iterator it (parser.get_holes().begin())
+                        ; it != parser.get_holes().end()
+                        ; ++it
+                        )
+                      cout << " " << *it;
+                    cout << endl;
 
                     try
                       {
