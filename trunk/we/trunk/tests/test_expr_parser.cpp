@@ -59,14 +59,6 @@ int main (int ac, char **)
                 while (!parser.empty())
                   {
                     cout << "parsed expression: " << parser.expr() << endl;
-                    cout << "holes:";
-
-                    for ( parser_t::holes_t::const_iterator it (parser.get_holes().begin())
-                        ; it != parser.get_holes().end()
-                        ; ++it
-                        )
-                      cout << " " << *it;
-                    cout << endl;
 
                     try
                       {
