@@ -20,214 +20,121 @@ namespace expr
     {
     private:
       unsigned int k;
-      std::string::const_iterator pos;
-      const std::string::const_iterator end;
+      std::string::const_iterator & pos;
+      const std::string::const_iterator & end;
       token::type token;
       T tokval;
       std::string _refname;
 
-      void eat (void) { ++k; ++pos; }
+      inline bool is_eof (void) const
+      {
+        return (pos == end || *pos == ';');
+      }
+
+      inline void eat (void) { ++k; ++pos; }
+
+      inline void require (const std::string & what)
+      {
+        std::string::const_iterator what_pos (what.begin());
+        const std::string::const_iterator what_end (what.end());
+
+        while (what_pos != what_end)
+          if (is_eof() || *pos != *what_pos)
+            throw expected (std::string (what_pos, what_end), k);
+          else
+            {
+              eat(); ++what_pos;
+            }
+      }
+
+      inline void cmp (const token::type & t, const token::type & e)
+      {
+        if (is_eof())
+          token = t;
+        else
+          switch (*pos)
+            {
+            case '=': eat(); token = e; break;
+            default: token = t; break;
+            }
+      }
+
+      inline void unary (const token::type & t, const std::string descr)
+      {
+        if (next_can_be_unary (token))
+          token = t;
+        else
+          throw misplaced (descr, k);
+      }
 
       void get (void)
       {
         while (pos != end && isspace(*pos))
           eat();
 
-        if (pos == end)
+        if (is_eof())
           token = eof;
         else
           switch (*pos)
             {
-            case 'a':
-              eat();
-              if (pos == end || *pos != 'b')
-                throw expected ("bs", k);
-              else
-                {
-                  eat();
-                  if (pos == end || *pos != 's')
-                    throw expected ("s", k);
-                  else
-                    {
-                      eat();
-                      if (next_can_be_unary (token))
-                        token = abs;
-                      else
-                        throw misplaced ("abs", k);
-                    }
-                }
-              break;
+            case 'a': eat(); require ("bs"); unary (abs, "abs"); break;
             case 'c':
               eat();
-              if (pos == end || *pos != 'o')
+              if (is_eof() || *pos != 'o')
                 token = com;
               else
                 {
-                  eat();
-                  if (pos == end || *pos != 's')
-                    throw expected ("s", k);
-                  else
-                    {
-                      eat();
-                      if (next_can_be_unary (token))
-                        token = _cos;
-                      else
-                        throw misplaced ("cos", k);
-                    }
+                  eat(); require ("s"); unary (_cos, "cos");
                 }
               break;
             case 'e': eat(); token = val; tokval = 2.7182818284590452354; break;
             case 'f': eat(); token = fac; break;
-            case 'l':
-              eat();
-              if (pos == end || *pos != 'o')
-                throw expected ("og", k);
-              else
-                {
-                  eat();
-                  if (pos == end || *pos != 'g')
-                    throw expected ("g", k);
-                  else
-                    {
-                      eat();
-                      if (next_can_be_unary (token))
-                        token = _log;
-                      else
-                        throw misplaced ("log", k);
-                    }
-                }
-              break;
+            case 'l': eat(); require ("og"); unary (_log, "log"); break;
             case 'm':
               eat();
-              if (pos == end)
+              if (is_eof())
                 throw expected ("in or ax", k);
               else
                 switch (*pos)
                   {
-                  case 'i':
-                    eat();
-                    if (pos == end)
-                      throw expected ("n", k);
-                    else
-                      if (*pos == 'n')
-                        {
-                          eat();
-                          token = min;
-                        }
-                      else
-                        throw expected ("n", k);
-                    break;
-                  case 'a':
-                    eat();
-                    if (pos == end)
-                      throw expected ("x", k);
-                    else
-                      if (*pos == 'x')
-                        {
-                          eat();
-                          token = max;
-                        }
-                      else
-                        throw expected ("x", k);
-                    break;
+                  case 'i': eat(); require ("n"); token = min; break;
+                  case 'a': eat(); require ("x"); token = max; break;
                   default: throw expected ("in or ax", k);
                   }
               break;
             case 'p':
-              eat();
-              if (pos == end || *pos != 'i')
-                throw expected ("i", k);
-              else
-                {
-                  eat();
-                  token = val;
-                  tokval = 3.14159265358979323846;
-                }
+              eat(); require("i"); token = val; tokval = 3.14159265358979323846;
               break;
             case 's':
               eat();
-              if (pos == end)
+              if (is_eof())
                 throw expected ("'in' or 'qrt'", k);
               else
                 switch (*pos)
                   {
-                  case 'i':
-                    eat();
-                    if (pos == end || *pos != 'n')
-                      throw expected ("n", k);
-                    else
-                      {
-                        eat();
-                        if (next_can_be_unary (token))
-                          token = _sin;
-                        else
-                          throw misplaced ("sin", k);
-                      }
-                    break;
-                  case 'q':
-                    eat();
-                    if (pos == end || *pos != 'r')
-                      throw expected ("rt", k);
-                    else
-                      {
-                        eat();
-                        if (pos == end || *pos != 't')
-                          throw expected ("t", k);
-                        else
-                          {
-                            eat();
-                            if (next_can_be_unary (token))
-                              token = _sqrt;
-                            else
-                              throw misplaced ("sqrt", k);
-                          }
-                      }
-                    break;
+                  case 'i': eat(); require ("n"); unary (_sin, "sin"); break;
+                  case 'q': eat(); require ("rt"); unary (_sqrt, "sqrt"); break;
                   default: throw expected ("'in' or 'qrt'", k);
                   }
               break;
             case '|': eat(); token = _or; break;
             case '&': eat(); token = _and; break;
-            case '<':
-              eat();
-              if (pos == end)
-                token = lt;
-              else
-                switch (*pos)
-                  {
-                  case '=': eat(); token = le; break;
-                  default: token = lt; break;
-                  }
-              break;
-            case '>':
-              eat();
-              if (pos == end)
-                token = gt;
-              switch (*pos)
-                {
-                case '=': eat(); token = ge; break;
-                default: token = gt; break;
-                }
-              break;
+            case '<': eat(); cmp (lt, le); break;
+            case '>': eat(); cmp (gt, ge); break;
             case '!':
               eat();
-              if (pos == end)
+              if (is_eof())
                 throw expected("= or expression", k);
               else
                 switch (*pos)
                   {
                   case '=': eat(); token = ne; break;
-                  default:
-                    if (next_can_be_unary (token))
-                      token = _not;
-                    else
-                      throw misplaced ("negation", k);
-                    break;
+                  default: unary (_not, "negation"); break;
                   }
               break;
             case '=':
               eat();
-              if (pos == end)
+              if (is_eof())
                 throw expected("=", k);
               else
                 switch (*pos)
@@ -236,7 +143,6 @@ namespace expr
                   default: throw expected ("=", k);
                   }
               break;
-
             case '+': eat(); token = add; break;
             case '-':
               eat();
@@ -255,7 +161,7 @@ namespace expr
             case '$':
               eat();
               token = ref;
-              if (pos == end)
+              if (is_eof())
                 throw expected ("{", k);
               else
                 switch (*pos)
@@ -268,9 +174,7 @@ namespace expr
                         _refname.push_back (*pos);
                         eat();
                       }
-                    if (*pos != '}')
-                      throw expected ("}", k);
-                    eat();
+                    require ("}");
                     break;
                   default: throw expected ("{", k);
                   }
@@ -335,8 +239,10 @@ namespace expr
       friend std::ostream & operator << (std::ostream &, const tokenizer<U> &);
 
     public:
-      tokenizer (const std::string & input) 
-        : k (0), pos (input.begin()), end (input.end()), token (eof) {}
+      tokenizer ( std::string::const_iterator & _pos
+                , const std::string::const_iterator & _end
+                ) 
+        : k (0), pos (_pos), end (_end), token (eof) {}
       const T & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }

@@ -33,6 +33,8 @@ namespace expr
     , val                     // value
     , ref                     // reference to context
 
+    , define                  // prec 99, no assoc, needs to be finished by ';'
+
     , eof
     };
 
@@ -49,6 +51,7 @@ namespace expr
         case ge: return s << " >= ";
         case ne: return s << " != ";
         case eq: return s << " == ";
+        case define: return s << " := ";
         case add: return s << " + ";
         case sub: return s << " - ";
         case mul: return s << " * ";

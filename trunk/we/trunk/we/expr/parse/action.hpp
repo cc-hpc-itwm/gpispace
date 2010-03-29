@@ -26,6 +26,7 @@ namespace expr
       , error2
       , error3
       , error4
+      , error5
       };
 
       static std::ostream & operator << (std::ostream & s, const type & action)
@@ -39,6 +40,7 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
+          case error5: return s << "error: missing ';'";
           default: throw std::runtime_error ("action " + show(action));
           }
       }

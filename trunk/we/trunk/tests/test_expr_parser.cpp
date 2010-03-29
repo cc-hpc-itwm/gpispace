@@ -80,15 +80,21 @@ int main (int ac, char **)
             {
               expr::parse::parser<double> parser (input);
               
-              cout << "parsed expression: " << parser.expr() << endl;
+              while (!parser.empty())
+                {
+                  cout << "parsed expression: " << parser.expr() << endl;
 
-              try
-                {
-                  cout << "evaluated value: " << parser.eval (context) << endl;
-                }
-              catch (expr::eval::missing_binding e)
-                {
-                  cout << e.what() << endl;
+                  try
+                    {
+                      cout << "evaluated value: " << parser.eval (context)
+                           << endl;
+                    }
+                  catch (expr::eval::missing_binding e)
+                    {
+                      cout << e.what() << endl;
+                    }
+
+                  parser.pop();
                 }
             }
           catch (expr::exception e)

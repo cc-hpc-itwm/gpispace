@@ -124,46 +124,58 @@ namespace expr
         op_stack.pop();
       }
 
-      void parse ( const std::string & input
+      void parse ( const std::string input
                  , const boost::function<nd_t (const std::string &)> & refnode
                  )
       {
-        op_stack.push (token::eof);
+        std::string::const_iterator pos (input.begin());
+        const std::string::const_iterator end (input.end());
 
-        token::tokenizer<T> token (input);
-
-        do
+        while (pos != end)
           {
-            ++token;
+            op_stack.push (token::eof);
 
-            switch (*token)
+            token::tokenizer<T> token (pos, end);
+
+            do
               {
-              case token::val: nd_stack.push (nd_t(token())); break;
-              case token::ref: nd_stack.push (refnode(token.refname())); break;
-              default:
-                {
-                ACTION:
-                  action::type action (action::action (op_stack.top(), *token));
+                ++token;
 
-                  switch (action)
+                switch (*token)
+                  {
+                  case token::val:
+                    nd_stack.push (nd_t(token())); break;
+                  case token::ref:
+                    nd_stack.push (refnode(token.refname())); break;
+                  default:
                     {
-                    case action::reduce:
-                      reduce(token.eaten());
-                      goto ACTION;
+                    ACTION:
+                      action::type action
+                        (action::action (op_stack.top(), *token));
+
+                      switch (action)
+                        {
+                        case action::reduce:
+                          reduce(token.eaten());
+                          goto ACTION;
+                          break;
+                        case action::shift:
+                          op_stack.push (*token);
+                          break;
+                        case action::accept:
+                          break;
+                        default:
+                          throw exception (show(action), token.eaten());
+                        }
                       break;
-                    case action::shift:
-                      op_stack.push (*token);
-                      break;
-                    case action::accept:
-                      break;
-                    default:
-                      throw exception (show(action), token.eaten());
                     }
-                  break;
-                }
+                  }
               }
+            while (*token != token::eof);
+
+            if (pos != end)
+              ++pos;
           }
-        while (*token != token::eof);
       }
 
     public:
@@ -177,6 +189,16 @@ namespace expr
       parser (const std::string & input)
       {
         parse (input, boost::bind (eval::refnode_name<T>, _1));
+      }
+
+      bool empty (void) const
+      {
+        return nd_stack.empty();
+      }
+
+      void pop (void)
+      {
+        nd_stack.pop();
       }
 
       const nd_t & expr (void) const
