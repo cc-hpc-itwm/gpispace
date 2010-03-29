@@ -19,9 +19,10 @@ namespace expr
     struct tokenizer
     {
     private:
-      unsigned int k;
+      unsigned int & k;
       std::string::const_iterator & pos;
       const std::string::const_iterator & end;
+
       token::type token;
       T tokval;
       std::string _refname;
@@ -239,10 +240,11 @@ namespace expr
       friend std::ostream & operator << (std::ostream &, const tokenizer<U> &);
 
     public:
-      tokenizer ( std::string::const_iterator & _pos
+      tokenizer ( unsigned int & _k
+                , std::string::const_iterator & _pos
                 , const std::string::const_iterator & _end
                 ) 
-        : k (0), pos (_pos), end (_end), token (eof) {}
+        : k (_k), pos (_pos), end (_end), token (eof) {}
       const T & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }

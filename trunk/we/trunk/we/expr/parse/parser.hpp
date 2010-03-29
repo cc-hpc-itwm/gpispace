@@ -130,12 +130,13 @@ namespace expr
       {
         std::string::const_iterator pos (input.begin());
         const std::string::const_iterator end (input.end());
+        unsigned int k (0);
 
         while (pos != end)
           {
             op_stack.push (token::eof);
 
-            token::tokenizer<T> token (pos, end);
+            token::tokenizer<T> token (k, pos, end);
 
             do
               {
@@ -174,7 +175,9 @@ namespace expr
             while (*token != token::eof);
 
             if (pos != end)
-              ++pos;
+              {
+                ++pos; ++k;
+              }
           }
       }
 
