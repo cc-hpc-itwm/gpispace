@@ -22,57 +22,64 @@ int main (int ac, char **)
 
   if (ac > 1) { // just assume "-i" as first parameter for interactive mode
     cout << "enter expression, ^D to start measurement" << endl;
-    cout << " clear context: #" << endl;
-    cout << " list context: ?" << endl;
+    cout << "clear context: #" << endl;
+    cout << "list context: ?" << endl;
     typedef expr::eval::context<double> context_t;
     context_t context;
     std::string input;
 
+    const std::string prompt ("> ");
+
+    cout << prompt;
+
     while (getline(cin, input).good())
-      switch (input[0])
-        {
-        case '?':
-          for ( context_t::const_iterator it (context.begin())
-              ; it != context.end()
-              ; ++it
-              )
-            cout << it->first << " = " << it->second << endl;
-          break;
-        case '#':
-          context.clear();
-          cout << "context deleted" << endl;
-          break;
-        default:
-          try
-            {
-              expr::parse::parser<double> parser (input);
+      {
+        switch (input[0])
+          {
+          case '?':
+            for ( context_t::const_iterator it (context.begin())
+                    ; it != context.end()
+                    ; ++it
+                )
+              cout << it->first << " = " << it->second << endl;
+            break;
+          case '#':
+            context.clear();
+            cout << "context deleted" << endl;
+            break;
+          default:
+            try
+              {
+                expr::parse::parser<double> parser (input);
               
-              while (!parser.empty())
-                {
-                  cout << "parsed expression: " << parser.expr() << endl;
+                while (!parser.empty())
+                  {
+                    cout << "parsed expression: " << parser.expr() << endl;
 
-                  try
-                    {
-                      cout << "evaluated value: " << parser.eval (context)
-                           << endl;
-                    }
-                  catch (expr::eval::missing_binding e)
-                    {
-                      cout << e.what() << endl;
-                    }
+                    try
+                      {
+                        cout << "evaluated value: " << parser.eval (context)
+                             << endl;
+                      }
+                    catch (expr::eval::missing_binding e)
+                      {
+                        cout << e.what() << endl;
+                      }
 
-                  parser.pop();
-                }
-            }
-          catch (expr::exception e)
-            {
-              cout << input << endl;
-              for (unsigned int k (0); k < e.eaten; ++k)
-                cout << " ";
-              cout << "^" << endl;
-              cout << e.what() << endl;
-            }
-        }
+                    parser.pop();
+                  }
+              }
+            catch (expr::exception e)
+              {
+                cout << input << endl;
+                for (unsigned int k (0); k < e.eaten; ++k)
+                  cout << " ";
+                cout << "^" << endl;
+                cout << e.what() << endl;
+              }
+          }
+        cout << prompt;
+      }
   }
 
   cout << "measure..." << endl;
