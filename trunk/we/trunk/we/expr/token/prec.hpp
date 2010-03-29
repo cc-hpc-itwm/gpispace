@@ -11,7 +11,7 @@ namespace expr
 {
   namespace prec
   {
-    typedef unsigned int type;
+    typedef int type;
 
     static type prec (const token::type & token)
     {
@@ -33,6 +33,7 @@ namespace expr
         case token::mod: return 23;
         case token::pow: return 24;
         case token::neg: return 25;
+        case token::define: return -99;
         default: throw std::runtime_error ("prec " + show(token));
         }
     }

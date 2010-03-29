@@ -12,7 +12,7 @@ namespace expr
   namespace eval
   {
     template<typename T>
-    T eval (const parse::node::type<T> & node, const context<T> & context)
+    T eval (const parse::node::type<T> & node, context<T> & context)
     {
       if (node.is_value)
         return node.value;
@@ -26,10 +26,17 @@ namespace expr
                                          );
 
       if (node.is_binary)
-        return token::function::binary<T> ( node.token
-                                          , eval (*node.child0, context)
-                                          , eval (*node.child1, context)
-                                          );
+        {
+          if (is_define (node.token))
+            return context.bind ( (*node.child0).refname
+                                , eval (*node.child1, context)
+                                );
+          else
+            return token::function::binary<T> ( node.token
+                                              , eval (*node.child0, context)
+                                              , eval (*node.child1, context)
+                                              );
+        }
 
       throw parse::node::unknown();
     }

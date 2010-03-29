@@ -26,11 +26,13 @@ namespace expr
     struct context
     {
     private:
-      boost::unordered_map<std::string,T> container;
+      typedef boost::unordered_map<std::string,T> container_t;
+      container_t container;
     public:
-      void bind (const std::string & name, const T & value)
+      T bind (const std::string & name, const T & value)
       {
         container[name] = value;
+        return value;
       }
       const T & value (const std::string & name) const
       {
@@ -43,6 +45,10 @@ namespace expr
           return it->second;
       }
       void clear () { container.clear(); }
+
+      typedef typename container_t::const_iterator const_iterator;
+      const_iterator begin (void) const { return container.begin(); }
+      const_iterator end (void) const { return container.end(); }
     };
 
     template<typename T>

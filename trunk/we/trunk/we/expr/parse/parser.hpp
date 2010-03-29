@@ -17,6 +17,7 @@
 #include <we/expr/exception.hpp>
 
 #include <stack>
+#include <deque>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -39,7 +40,7 @@ namespace expr
     {
     private:
       typedef node::type<T> nd_t;
-      typedef std::stack<nd_t> nd_stack_t;
+      typedef std::deque<nd_t> nd_stack_t;
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
       op_stack_t op_stack;
@@ -49,15 +50,15 @@ namespace expr
         if (nd_stack.empty())
           throw missing_operand (k);
 
-        nd_t c (nd_stack.top()); nd_stack.pop();
+        nd_t c (nd_stack.back()); nd_stack.pop_back();
 
         if (c.is_value)
-          nd_stack.push (nd_t(token::function::unary (token, c.value)));
+          nd_stack.push_back (nd_t(token::function::unary (token, c.value)));
         else
           {
             typename nd_t::ptr_t ptr_c (new nd_t(c));
 
-            nd_stack.push (nd_t (token, ptr_c));
+            nd_stack.push_back (nd_t (token, ptr_c));
           }
       }
 
@@ -66,26 +67,26 @@ namespace expr
         if (nd_stack.empty())
           throw missing_operand (k, "left");
 
-        nd_t r (nd_t(nd_stack.top())); nd_stack.pop();
+        nd_t r (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
           throw missing_operand (k, "right");
 
-        nd_t l (nd_t(nd_stack.top())); nd_stack.pop();
+        nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (l.is_value && r.is_value)
-          nd_stack.push (nd_t (token::function::binary ( token
-                                                       , l.value
-                                                       , r.value
-                                                       )
-                              )
-                        );
+          nd_stack.push_back (nd_t (token::function::binary ( token
+                                                            , l.value
+                                                            , r.value
+                                                            )
+                                   )
+                             );
         else
           {
             typename nd_t::ptr_t ptr_l (new nd_t (l));
             typename nd_t::ptr_t ptr_r (new nd_t (r));
 
-            nd_stack.push (nd_t (token, ptr_l, ptr_r));
+            nd_stack.push_back (nd_t (token, ptr_l, ptr_r));
           }
       }
 
@@ -119,6 +120,7 @@ namespace expr
           case token::abs: unary (op_stack.top(), k); break;
           case token::com: binary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
+          case token::define: binary (op_stack.top(), k); break;
           default: break;
           }
         op_stack.pop();
@@ -145,9 +147,14 @@ namespace expr
                 switch (*token)
                   {
                   case token::val:
-                    nd_stack.push (nd_t(token())); break;
+                    nd_stack.push_back (nd_t(token())); break;
                   case token::ref:
-                    nd_stack.push (refnode(token.refname())); break;
+                    nd_stack.push_back (refnode(token.refname())); break;
+                  case token::define:
+                    if (nd_stack.empty() || !nd_stack.back().is_refname)
+                      throw exception ("left hand of " + show(*token) + " must be reference name", token.eaten());
+                    op_stack.push (*token);
+                    break;
                   default:
                     {
                     ACTION:
@@ -177,7 +184,7 @@ namespace expr
       }
 
     public:
-      parser (const std::string & input, const eval::context<T> & context)
+      parser (const std::string & input, eval::context<T> & context)
       {
         parse ( input
               , boost::bind (eval::refnode_value<T>, boost::ref(context), _1)
@@ -196,20 +203,20 @@ namespace expr
 
       void pop (void)
       {
-        nd_stack.pop();
+        nd_stack.pop_front();
       }
 
       const nd_t & expr (void) const
       {
-        return nd_stack.top();
+        return nd_stack.front();
       }
 
-      const T eval (const eval::context<T> & context) const
+      const T eval (eval::context<T> & context) const
       {
         return eval::eval (expr(), context);
       }
 
-      bool eval_bool (const eval::context<T> & context) const
+      bool eval_bool (eval::context<T> & context) const
       {
         return !token::function::is_zero (eval (context));
       }

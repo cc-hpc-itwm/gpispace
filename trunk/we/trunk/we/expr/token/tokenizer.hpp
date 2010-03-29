@@ -152,6 +152,7 @@ namespace expr
                   default: throw expected ("=", k);
                   }
               break;
+            case ':': eat(); require("="); token = define; break;
             case '+': eat(); token = add; break;
             case '-':
               eat();

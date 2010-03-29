@@ -39,6 +39,11 @@ namespace expr
         default: return true;
         }
     }
+
+    static bool is_define (const type & token)
+    {
+      return (token == define);
+    }
   }
 }
 

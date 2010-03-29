@@ -33,6 +33,7 @@ namespace expr
         case token::mod: return left;
         case token::pow: 
         case token::neg: return right;
+        case token::define: return left;
         default: throw std::runtime_error ("associativity " + show(token));
         }
     }

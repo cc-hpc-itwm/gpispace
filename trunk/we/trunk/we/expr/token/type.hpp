@@ -33,7 +33,7 @@ namespace expr
     , val                     // value
     , ref                     // reference to context
 
-    , define                  // prec 99, no assoc, needs to be finished by ';'
+    , define                  // prec -99, left associative
 
     , eof
     };
@@ -51,7 +51,6 @@ namespace expr
         case ge: return s << " >= ";
         case ne: return s << " != ";
         case eq: return s << " == ";
-        case define: return s << " := ";
         case add: return s << " + ";
         case sub: return s << " - ";
         case mul: return s << " * ";
@@ -74,6 +73,7 @@ namespace expr
         case val: return s << "<val>";
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
+        case define: return s << " := ";
         default: throw std::runtime_error ("unknown token");
         }
     }

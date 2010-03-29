@@ -22,58 +22,25 @@ int main (int ac, char **)
 
   if (ac > 1) { // just assume "-i" as first parameter for interactive mode
     cout << "enter expression, ^D to start measurement" << endl;
-    expr::eval::context<double> context;
+    cout << " clear context: #" << endl;
+    cout << " list context: ?" << endl;
+    typedef expr::eval::context<double> context_t;
+    context_t context;
     std::string input;
 
     while (getline(cin, input).good())
       switch (input[0])
         {
+        case '?':
+          for ( context_t::const_iterator it (context.begin())
+              ; it != context.end()
+              ; ++it
+              )
+            cout << it->first << " = " << it->second << endl;
+          break;
         case '#':
           context.clear();
           cout << "context deleted" << endl;
-          break;
-        case ':':
-          {
-            std::string::const_iterator pos (input.begin());
-            const std::string::const_iterator end (input.end());
-
-            ++pos;
-
-            while (pos != end && isspace(*pos))
-              ++pos;
-
-            std::string name;
-
-            while (pos != end && *pos != '=' && !isspace(*pos))
-              {
-                name.push_back (*pos);
-                ++pos;
-              }
-
-            while (pos != end && isspace(*pos))
-              ++pos;
-
-            if (*pos != '=')
-              cout << "parse error: syntax: name = value" << endl;
-
-            ++pos;
-
-            while (pos != end && isspace(*pos))
-              ++pos;
-
-            int value(0);
-
-            while (isdigit(*pos))
-              {
-                value *= 10;
-                value += *pos - '0';
-                ++pos;
-              }
-
-            cout << "bind: " << name << " = " << value << endl;
-
-            context.bind (name, value);
-          }
           break;
         default:
           try
