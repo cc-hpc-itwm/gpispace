@@ -173,11 +173,6 @@ namespace expr
                   }
               }
             while (*token != token::eof);
-
-            if (pos != end)
-              {
-                ++pos; ++k;
-              }
           }
       }
 

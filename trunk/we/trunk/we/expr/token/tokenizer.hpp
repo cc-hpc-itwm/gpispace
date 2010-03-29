@@ -27,12 +27,20 @@ namespace expr
       T tokval;
       std::string _refname;
 
-      inline bool is_eof (void) const
-      {
-        return (pos == end || *pos == ';');
-      }
-
       inline void eat (void) { ++k; ++pos; }
+
+      inline bool is_eof (void)
+      {
+        if (pos == end)
+          return true;
+
+        if (*pos == ';')
+          {
+            eat(); return true;
+          }
+
+        return false;
+      }
 
       inline void require (const std::string & what)
       {
