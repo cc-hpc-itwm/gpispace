@@ -16,18 +16,18 @@ namespace expr
                , context<Key,Value> & context
                )
     {
-      if (node.is_value)
+      if (node.is_value())
         return node.value;
 
-      if (node.is_ref)
+      if (node.is_ref())
         return context.value (node.ref);
 
-      if (node.is_unary)
+      if (node.is_unary())
         return token::function::unary<Value> ( node.token
                                              , eval (*node.child0, context)
                                              );
 
-      if (node.is_binary)
+      if (node.is_binary())
         {
           if (is_define (node.token))
             return context.bind ( (*node.child0).ref

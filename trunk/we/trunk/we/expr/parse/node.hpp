@@ -23,55 +23,51 @@ namespace expr
         unknown () : std::runtime_error ("STRANGE: unknown node type") {};
       };
 
+      namespace flag
+      {
+        enum flag
+        { value
+        , ref
+        , unary
+        , binary
+        };
+      };
+
       // WORK HERE: better type with union!?
       template<typename Key, typename Value>
       struct type
       {
         typedef boost::shared_ptr<type> ptr_t;
 
-        const bool is_value;
+        const flag::flag flag;
         const Value value;
-
-        const bool is_ref;
         const Key ref;
-
-        const bool is_unary;
-        const bool is_binary;
         const token::type token;
         const ptr_t child0;
         const ptr_t child1;
 
-        type (const Value & _value) 
-          : is_value (true)
+        type (const Value & _value)
+          : flag (flag::value)
           , value (_value)
-          , is_ref (false)
           , ref ()
-          , is_unary (false)
-          , is_binary (false)
           , token ()
           , child0 ()
           , child1 ()
         {}
 
         type (const Key & _ref)
-          : is_value (false)
+          : flag (flag::ref)
           , value ()
-          , is_ref (true)
           , ref (_ref)
-          , is_unary (false)
-          , is_binary (false)
           , token ()
           , child0 ()
           , child1 ()
         {}
 
         type (const token::type & _token, const ptr_t _child0)
-          : is_value (false)
+          : flag (flag::unary)
           , value ()
-          , is_ref (false)
           , ref ()
-          , is_unary (true)
-          , is_binary (false)
           , token (_token)
           , child0 (_child0)
           , child1 ()
@@ -81,31 +77,33 @@ namespace expr
              , const ptr_t _child0
              , const ptr_t _child1
              )
-          : is_value (false)
+          : flag (flag::binary)
           , value ()
-          , is_ref (false)
           , ref ()
-          , is_unary (false)
-          , is_binary (true)
           , token (_token)
           , child0 (_child0)
           , child1 (_child1)
         {}
+
+        bool is_value (void) const { return flag == flag::value; }
+        bool is_ref (void) const { return flag == flag::ref; }
+        bool is_unary (void) const { return flag == flag::unary; }
+        bool is_binary (void) const { return flag == flag::binary; }
       };
 
       template<typename Key, typename Value>
       std::ostream & operator << (std::ostream & s, const type<Key,Value> & nd)
       {
-        if (nd.is_value)
+        if (nd.is_value())
           return s << nd.value;
 
-        if (nd.is_ref)
+        if (nd.is_ref())
           return s << "${" << nd.ref << "}";
 
-        if (nd.is_unary)
+        if (nd.is_unary())
           return s << nd.token << "(" << *(nd.child0) << ")";
 
-        if (nd.is_binary)
+        if (nd.is_binary())
           {
             if (token::is_prefix (nd.token))
               return s << nd.token 
@@ -120,7 +118,7 @@ namespace expr
       template<typename Key, typename Value>
       const Value & get (const type<Key,Value> & node)
       {
-        if (!node.is_value)
+        if (!node.is_value())
           throw std::runtime_error ("node is not an value");
 
         return node.value;

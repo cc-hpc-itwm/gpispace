@@ -57,7 +57,7 @@ namespace expr
 
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
-        if (c.is_value)
+        if (c.is_value())
           nd_stack.push_back (nd_t(token::function::unary (token, c.value)));
         else
           {
@@ -79,7 +79,7 @@ namespace expr
 
         nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
-        if (l.is_value && r.is_value)
+        if (l.is_value() && r.is_value())
           nd_stack.push_back (nd_t (token::function::binary ( token
                                                             , l.value
                                                             , r.value
@@ -156,7 +156,7 @@ namespace expr
                   case token::ref:
                     nd_stack.push_back (refnode(token.get_ref())); break;
                   case token::define:
-                    if (nd_stack.empty() || !nd_stack.back().is_ref)
+                    if (nd_stack.empty() || !nd_stack.back().is_ref())
                       throw exception ("left hand of " + show(*token) + " must be reference name", token.eaten());
                     op_stack.push (*token);
                     break;

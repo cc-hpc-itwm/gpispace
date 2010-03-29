@@ -89,7 +89,7 @@ int main (int ac, char **)
   {
     typedef int ref_t;
     typedef expr::parse::parser<ref_t, double, read_int<int> > parser_t;
-    typedef expr::eval::context<ref_t,double> context_t;
+    typedef expr::eval::context<ref_t, double> context_t;
 
     {
       const unsigned int round (1000);
@@ -137,7 +137,7 @@ int main (int ac, char **)
   {
     typedef std::string ref_t;
     typedef expr::parse::parser<ref_t, double> parser_t;
-    typedef expr::eval::context<ref_t,double> context_t;
+    typedef expr::eval::context<ref_t, double> context_t;
 
     {
       const unsigned int round (1000);
