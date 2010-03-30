@@ -31,7 +31,7 @@ namespace expr
         case token::mul:
         case token::div:
         case token::mod: return left;
-        case token::pow: 
+        case token::_pow: 
         case token::neg: return right;
         case token::define: return left;
         case token::_endif: return left;

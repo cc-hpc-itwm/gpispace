@@ -237,7 +237,7 @@ namespace expr
                   }
               break;
             case '%': eat(); token = mod; break;
-            case '^': eat(); token = pow; break;
+            case '^': eat(); token = _pow; break;
             case ',': eat(); token = sep; break;
             case '(': eat(); token = lpr; break;
             case ')': eat(); token = rpr; break;

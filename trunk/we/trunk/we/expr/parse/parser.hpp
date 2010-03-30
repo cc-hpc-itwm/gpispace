@@ -147,7 +147,7 @@ namespace expr
           case token::mul:
           case token::div:
           case token::mod:
-          case token::pow: binary (op_stack.top(), k); break;
+          case token::_pow: binary (op_stack.top(), k); break;
           case token::neg:
           case token::fac: unary (op_stack.top(), k); break;
           case token::min:

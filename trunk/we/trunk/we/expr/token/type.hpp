@@ -19,7 +19,7 @@ namespace expr
     , add, sub                // prec 21, left associative
     , mul, div                // prec 22, left associative
     , mod                     // prec 23, left associative
-    , pow                     // prec 24, right associative
+    , _pow                    // prec 24, right associative
     , neg                     // prec 25, unary minus
 
     , min, max, abs
@@ -59,7 +59,7 @@ namespace expr
         case mul: return s << " * ";
         case div: return s << " / ";
         case mod: return s << " % ";
-        case pow: return s << "^";
+        case _pow: return s << "^";
         case neg: return s << "-";
         case min: return s << "min";
         case max: return s << "max";

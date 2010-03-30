@@ -60,26 +60,18 @@ namespace expr
           {
           case _or: return int(l) | int(r);
           case _and: return int(l) & int(r);
-          case lt: return is_zero (l-r) ? 0 : (l < r);
-          case le: return is_zero (l-r) ? 1 : (l <= r);
-          case gt: return is_zero (l-r) ? 0 : (l > r);
-          case ge: return is_zero (l-r) ? 1 : (l >= r);
-          case ne: return is_zero (l-r) ? 0 : 1;
-          case eq: return is_zero (l-r) ? 1 : 0;
+          case lt: return isless (l,r);
+          case le: return islessequal (l,r);
+          case gt: return isgreater (l,r);
+          case ge: return isgreaterequal (l, r);
+          case ne: return isunordered(l,r) || isless (l,r) || isgreater (l,r);
+          case eq: return !(isunordered(l,r) || isless (l,r) || isgreater (l,r));
           case add: return l + r;
           case sub: return l - r;
           case mul: return l * r;
           case div: if (is_zero(r)) throw divide_by_zero(); return l / r;
           case mod: return int(l) % int(r);
-          case pow:
-            {
-              T p (1);
-
-              for (T i (0); i < r; ++i)
-                p *= l;
-              
-              return p; 
-            }
+          case _pow: return pow (l, r);
           case min: return std::min (l,r);
           case max: return std::max (l,r);
           case com: return (unary<T>(fac, l)) / (unary<T>(fac, l-r));
