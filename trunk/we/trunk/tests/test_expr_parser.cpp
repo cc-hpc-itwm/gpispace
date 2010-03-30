@@ -174,6 +174,26 @@ int main (int ac, char **)
     }
   }
 
+  {
+    typedef std::string ref_t;
+    typedef expr::parse::parser<ref_t, double> parser_t;
+    typedef expr::eval::context<ref_t, double> context_t;
+
+    const std::string input ("${x}:=${x}+1;${y}:=${x}/2");
+
+    context_t context;
+    context.bind("x",0);
+    parser_t parser (input);
+
+    int i = 10;
+
+    while (i-->0)
+      {
+        parser.eval_all (context);
+        cout << context;
+      }
+  }
+
   malloc_stats();
 
   return EXIT_SUCCESS;

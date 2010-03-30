@@ -239,6 +239,15 @@ namespace expr
       {
         return !token::function::is_zero (get ());
       }
+
+      void eval_all (eval::context<Key,Value> & context) const
+      {
+        for ( typename nd_stack_t::const_iterator it (nd_stack.begin())
+            ; it != nd_stack.end()
+            ; ++it
+            )
+          eval::eval (*it, context);
+      }
     };
   }
 }
