@@ -13,6 +13,8 @@
 #include <string>
 #include <iostream>
 
+#include <math.h>
+
 namespace expr
 {
   namespace token
@@ -298,7 +300,7 @@ namespace expr
                     eat();
 
                   if (pos == end || !isdigit(*pos))
-                    throw expected ("<digit>", k);
+                    throw expected ("<exponent>", k);
 
                   unsigned int e (0);
 
@@ -309,11 +311,10 @@ namespace expr
                       eat();
                     }
 
-                  while (e-->0)
-                    if (sig_neg)
-                      tokval /= 10;
-                    else
-                      tokval *= 10;
+                  if (sig_neg)
+                    tokval /= pow (10, e);
+                  else
+                    tokval *= pow (10, e);
                 }
               break;
             }
