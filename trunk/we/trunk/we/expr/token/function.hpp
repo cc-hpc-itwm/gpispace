@@ -86,6 +86,18 @@ namespace expr
           default: throw std::runtime_error ("binary " + show(token));
           }
       }
+
+      template<typename T>
+      static T ternary ( const type & token
+                       , const T & a, const T & b, const T & c
+                       )
+      {
+        switch (token)
+          {
+          case _ite: return is_zero (a) ? c : b;
+          default: throw std::runtime_error ("ternary " + show(token));
+          }
+      }
     }
   }
 }

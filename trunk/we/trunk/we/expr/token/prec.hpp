@@ -33,6 +33,10 @@ namespace expr
         case token::mod: return 23;
         case token::pow: return 24;
         case token::neg: return 25;
+        case token::_if:
+        case token::_then:
+        case token::_else:
+        case token::_endif: return -98;
         case token::define: return -99;
         default: throw std::runtime_error ("prec " + show(token));
         }

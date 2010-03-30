@@ -30,6 +30,12 @@ namespace expr
       std::string _refname;
       Key _ref;
 
+      inline void set_E (void)
+      {
+        token = val;
+        tokval = 2.7182818284590452354;
+      }
+
       inline void eat (void) { ++k; ++pos; }
 
       inline bool is_eof (void)
@@ -127,7 +133,18 @@ namespace expr
                   default: token = com; break;
                   }
               break;
-            case 'e': eat(); token = val; tokval = 2.7182818284590452354; break;
+            case 'e':
+              eat();
+              if (pos == end)
+                set_E();
+              else
+                switch (*pos)
+                  {
+                  case 'l': eat(); require("se"); token = _else; break;
+                  case 'n': eat(); require("dif"); token = _endif; break;
+                  default: set_E(); break;
+                  }
+              break;
             case 'f':
               eat();
               if (is_eof())
@@ -139,6 +156,7 @@ namespace expr
                 default: token = fac; break;
                 }
               break;
+            case 'i': eat(); require ("f"); token = _if; break;
             case 'l': eat(); require ("og"); unary (_log, "log"); break;
             case 'm':
               eat();
@@ -169,6 +187,7 @@ namespace expr
                   default: throw expected ("'in' or 'qrt'", k);
                   }
               break;
+            case 't': eat(); require("hen"); token = _then; break;
             case '|': eat(); token = _or; break;
             case '&': eat(); token = _and; break;
             case '<': eat(); cmp (lt, le); break;

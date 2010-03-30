@@ -36,6 +36,8 @@ namespace expr
 
     , define                  // prec -99, left associative
 
+    , _if, _then, _else, _endif, _ite
+
     , eof
     };
 
@@ -78,6 +80,11 @@ namespace expr
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
         case define: return s << " := ";
+        case _if: return s << "if ";
+        case _then: return s << " then ";
+        case _else: return s << " else ";
+        case _endif: return s << " endif";
+        case _ite: throw std::runtime_error ("token _ite");
         default: throw std::runtime_error ("unknown token");
         }
     }

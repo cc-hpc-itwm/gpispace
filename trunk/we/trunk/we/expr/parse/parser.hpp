@@ -95,6 +95,40 @@ namespace expr
           }
       }
 
+      void ite (const unsigned int k)
+      {
+        if (nd_stack.empty())
+          throw missing_operand (k, "else expression");
+
+        nd_t case_false (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        if (nd_stack.empty())
+          throw missing_operand (k, "then expression");
+
+        nd_t case_true (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        if (nd_stack.empty())
+          throw missing_operand (k, "condition");
+
+        nd_t condition (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        if (condition.flag == node::flag::value)
+          {
+            if (token::function::is_zero (condition.value))
+              nd_stack.push_back (case_false);
+            else
+              nd_stack.push_back (case_true);
+          }
+        else
+          {
+            typename nd_t::ptr_t ptr_c (new nd_t (condition));
+            typename nd_t::ptr_t ptr_t (new nd_t (case_true));
+            typename nd_t::ptr_t ptr_f (new nd_t (case_false));
+
+            nd_stack.push_back (nd_t (token::_ite,  ptr_c, ptr_t, ptr_f));
+          }
+      }
+
       void reduce (const unsigned int k)
       {
         switch (op_stack.top())
@@ -129,6 +163,7 @@ namespace expr
           case token::com: binary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           case token::define: binary (op_stack.top(), k); break;
+          case token::_else: ite (k); break;
           default: break;
           }
         op_stack.pop();

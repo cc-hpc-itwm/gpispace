@@ -30,6 +30,7 @@ namespace expr
         , ref
         , unary
         , binary
+        , ternary
         };
       };
 
@@ -45,6 +46,7 @@ namespace expr
         const token::type token;
         const ptr_t child0;
         const ptr_t child1;
+        const ptr_t child2;
 
         type (const Value & _value)
           : flag (flag::value)
@@ -53,6 +55,7 @@ namespace expr
           , token ()
           , child0 ()
           , child1 ()
+          , child2 ()
         {}
 
         type (const Key & _ref)
@@ -62,6 +65,7 @@ namespace expr
           , token ()
           , child0 ()
           , child1 ()
+          , child2 ()
         {}
 
         type (const token::type & _token, const ptr_t _child0)
@@ -71,6 +75,7 @@ namespace expr
           , token (_token)
           , child0 (_child0)
           , child1 ()
+          , child2 ()
         {}
 
         type ( const token::type & _token
@@ -83,6 +88,21 @@ namespace expr
           , token (_token)
           , child0 (_child0)
           , child1 (_child1)
+          , child2 ()
+        {}
+
+        type ( const token::type & _token
+             , const ptr_t _child0
+             , const ptr_t _child1
+             , const ptr_t _child2
+             )
+          : flag (flag::ternary)
+          , value ()
+          , ref ()
+          , token (_token)
+          , child0 (_child0)
+          , child1 (_child1)
+          , child2 (_child2)
         {}
       };
 
@@ -102,6 +122,15 @@ namespace expr
             else
               return 
                 s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
+          case flag::ternary:
+            if (nd.token != token::_ite)
+              throw std::runtime_error ("STRANGE: ternary but not _ite!?");
+
+            return s << "(" << token::_if << *(nd.child0)
+                            << token::_then << *(nd.child1)
+                            << token::_else << *(nd.child2)
+                            << token::_endif
+                     << ")";
           default: throw unknown();
           }
       }

@@ -34,6 +34,12 @@ namespace expr
                                                   , eval (*node.child0, context)
                                                   , eval (*node.child1, context)
                                                   );
+        case expr::parse::node::flag::ternary:
+          return token::function::ternary<Value> ( node.token
+                                                 , eval (*node.child0, context)
+                                                 , eval (*node.child1, context)
+                                                 , eval (*node.child2, context)
+                                                 );
         default: throw parse::node::unknown();
         }
     }
