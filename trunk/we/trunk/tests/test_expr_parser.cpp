@@ -179,18 +179,41 @@ int main (int ac, char **)
     typedef expr::parse::parser<ref_t, double> parser_t;
     typedef expr::eval::context<ref_t, double> context_t;
 
-    const std::string input ("${x}:=${x}+1;${y}:=${x}/2");
+    std::ostringstream ss;
+
+    ss << "${x} := ${x} + 1;" << endl;
+    ss << "${y} := ${x} / 4;" << endl;
+    ss << "${ceil} := ceil(${y});" << endl;
+    ss << "${floor} := floor${y} /* note the omision of parens */;" << endl;
+    ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << endl;
+    ss << "${round_half_down} := ceil(${y} - 0.5);" << endl;
+    ss << "${round} := round(${y});" << endl;
+    ss << "/* round switches between half_up and half_down */" << endl;
+    ss << "round(2.5); round(2.5); round(2.5); round(2.5);" << endl;
+
+    const std::string input (ss.str());
+
+    cout << "INPUT:" << endl << input << endl;
 
     context_t context;
     context.bind("x",0);
     parser_t parser (input);
 
-    int i = 10;
+    cout << "PARSED [" << std::distance(parser.begin(), parser.end()) 
+         << "]:" << endl;
+    int k = 0;
+    for (parser_t::nd_it_t it (parser.begin()); it != parser.end(); ++it, ++k)
+      cout << "[" << k << "]: " << *it << endl;
+    cout << endl;
+
+    cout << "EVAL_ALL:" << endl;
+
+    int i = 12;
 
     while (i-->0)
       {
         parser.eval_all (context);
-        cout << context;
+        cout << context << endl;
       }
   }
 

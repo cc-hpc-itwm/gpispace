@@ -24,6 +24,8 @@ namespace expr
       template<typename T>
       static T unary (const type & token, const T & x)
       {
+        static bool round_half_up (true);
+
         switch (token)
           {
           case _not: return (is_zero (x)) ? 1 : 0;
@@ -44,6 +46,9 @@ namespace expr
             }
           case _floor: return floor(x);
           case _ceil: return ceil(x);
+          case _round:
+            round_half_up = !round_half_up;
+            return round_half_up ? floor (x + 0.5) : ceil (x - 0.5);
           default: throw std::runtime_error ("unary " + show(token));
           }
       }

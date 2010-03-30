@@ -23,7 +23,7 @@ namespace expr
   {
   public:
     expected (const std::string & what, const unsigned int k)
-      : exception ("expected '" + what + "'", k) {}
+      : exception ("expected " + what, k) {}
   };
 
   class misplaced : public exception
@@ -33,6 +33,13 @@ namespace expr
       : exception ( "misplaced " + what + ", operator expected"
                   , k - what.length()
                   ) {}
+  };
+
+  class unterminated_comment : public exception
+  {
+  public:
+    unterminated_comment (const unsigned int open, const unsigned int k)
+      : exception ("unterminated comment, opened at: " + show (open), k) {}
   };
 
   class divide_by_zero : public std::runtime_error

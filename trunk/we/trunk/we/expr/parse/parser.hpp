@@ -120,6 +120,7 @@ namespace expr
           case token::max: binary (op_stack.top(), k); break;
           case token::_floor:
           case token::_ceil:
+          case token::_round:
           case token::_sin:
           case token::_cos:
           case token::_sqrt:
@@ -242,12 +243,14 @@ namespace expr
         return !token::function::is_zero (get ());
       }
 
+      typedef typename nd_stack_t::const_iterator nd_it_t;
+
+      nd_it_t begin () const { return nd_stack.begin(); }
+      nd_it_t end () const { return nd_stack.end(); }
+
       void eval_all (eval::context<Key,Value> & context) const
       {
-        for ( typename nd_stack_t::const_iterator it (nd_stack.begin())
-            ; it != nd_stack.end()
-            ; ++it
-            )
+        for (nd_it_t it (begin()); it != end(); ++it)
           eval::eval (*it, context);
       }
     };

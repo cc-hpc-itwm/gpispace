@@ -79,6 +79,31 @@ namespace expr
           throw misplaced (descr, k);
       }
 
+      void skip_comment (const unsigned int open)
+      {
+        while (pos != end)
+          switch (*pos)
+            {
+            case '/':
+              eat();
+              if (pos != end && *pos == '*')
+                {
+                  eat(); skip_comment (k);
+                }
+              break;
+            case '*':
+              eat();
+              if (pos != end && *pos == '/')
+                {
+                  eat(); return;
+                }
+              break;
+            default: eat(); break;
+            }
+
+        throw unterminated_comment (open-2, k);
+      }
+
       void get (void)
       {
         while (pos != end && isspace(*pos))
@@ -130,6 +155,8 @@ namespace expr
             case 'p':
               eat(); require("i"); token = val; tokval = 3.14159265358979323846;
               break;
+            case 'r':
+              eat(); require("ound"); token = _round; break;
             case 's':
               eat();
               if (is_eof())
@@ -178,7 +205,18 @@ namespace expr
                 token = sub;
               break;
             case '*': eat(); token = mul; break;
-            case '/': eat(); token = div; break;
+
+            case '/':
+              eat();
+              if (is_eof())
+                token = div;
+              else
+                switch (*pos)
+                  {
+                  case '*': eat(); skip_comment(k); get(); break;
+                  default: token = div; break;
+                  }
+              break;
             case '%': eat(); token = mod; break;
             case '^': eat(); token = pow; break;
             case ',': eat(); token = sep; break;

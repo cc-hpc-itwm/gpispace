@@ -23,7 +23,7 @@ namespace expr
     , neg                     // prec 25, unary minus
 
     , min, max, abs
-    , _floor, _ceil
+    , _floor, _ceil, _round
     , _sin, _cos
     , _sqrt, _log
     , fac, com                // factorial, combinations
@@ -63,6 +63,7 @@ namespace expr
         case max: return s << "max";
         case _floor: return s << "floor";
         case _ceil: return s << "ceil";
+        case _round: return s << "round";
         case _sin: return s << "sin";
         case _cos: return s << "cos";
         case _sqrt: return s << "sqrt";
