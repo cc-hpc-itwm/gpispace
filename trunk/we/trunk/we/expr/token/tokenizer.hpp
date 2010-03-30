@@ -38,6 +38,12 @@ namespace expr
         tokval = 2.7182818284590452354;
       }
 
+      inline void set_PI (void)
+      {
+        token = val;
+        tokval = 3.14159265358979323846;
+      }
+
       inline void eat (void) { ++k; ++pos; }
 
       inline bool is_eof (void)
@@ -172,11 +178,8 @@ namespace expr
                   default: throw expected ("'in' or 'ax'", k);
                   }
               break;
-            case 'p':
-              eat(); require("i"); token = val; tokval = 3.14159265358979323846;
-              break;
-            case 'r':
-              eat(); require("ound"); token = _round; break;
+            case 'p': eat(); require("i"); set_PI(); break;
+            case 'r': eat(); require("ound"); token = _round; break;
             case 's':
               eat();
               if (is_eof())
