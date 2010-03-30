@@ -135,7 +135,7 @@ namespace expr
               break;
             case 'e':
               eat();
-              if (pos == end)
+              if (is_eof())
                 set_E();
               else
                 switch (*pos)
@@ -265,44 +265,44 @@ namespace expr
               break;
             default:
               if (!isdigit(*pos) && *pos != '.')
-                throw expected ("<expression>", k);
+                throw expected ("<floating point value>", k);
               token = val;
               tokval = 0;
-              while (isdigit(*pos))
+              while (pos != end && isdigit(*pos))
                 {
                   tokval *= 10;
                   tokval += *pos - '0';
                   eat();
                 }
-              if (*pos == '.')
+              if (pos != end && *pos == '.')
                 {
                   eat();
                   Value e (10);
-                  while (isdigit(*pos))
+                  while (pos != end && isdigit(*pos))
                     {
                       tokval += (*pos - '0') / e;
                       e *= 10;
                       eat();
                     }
                 }
-              if (*pos == 'e')
+              if (pos != end && *pos == 'e')
                 {
                   eat();
                   bool sig_neg (false);
-                  if (*pos == '-')
+                  if (pos != end && *pos == '-')
                     {
                       eat();
                       sig_neg = true;
                     }
-                  else if (*pos == '+')
+                  else if (pos != end && *pos == '+')
                     eat();
 
-                  if (!isdigit(*pos))
+                  if (pos == end || !isdigit(*pos))
                     throw expected ("<digit>", k);
 
                   unsigned int e (0);
 
-                  while (isdigit(*pos))
+                  while (pos != end && isdigit(*pos))
                     {
                       e *= 10;
                       e += *pos - '0';
