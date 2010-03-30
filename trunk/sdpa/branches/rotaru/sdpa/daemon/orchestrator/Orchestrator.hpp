@@ -402,7 +402,8 @@ void Orchestrator<T>::backup( const std::string& strArchiveName )
 		Orchestrator* ptrOrch(this);
 		std::ofstream ofs( strArchiveName.c_str() );
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<Orchestrator*>(NULL));
+		oa.register_type(static_cast<Orchestrator<T>*>(NULL));
+		oa.register_type(static_cast<T*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerOrch*>(NULL));
@@ -427,7 +428,8 @@ void Orchestrator<T>::recover( const std::string& strArchiveName )
 		Orchestrator* pRestoredOrch(this);
 		std::ifstream ifs( strArchiveName.c_str() );
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<Orchestrator*>(NULL));
+		ia.register_type(static_cast<Orchestrator<T>*>(NULL));
+		ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerOrch*>(NULL));

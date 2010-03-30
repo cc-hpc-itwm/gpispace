@@ -197,6 +197,16 @@ namespace sdpa {
 	 	}
 	 }
 
+	 friend class boost::serialization::access;
+	 friend class sdpa::tests::WorkerSerializationTest;
+
+	 template <class Archive>
+	 void serialize(Archive& ar, const unsigned int file_version )
+	 {
+		ar & boost::serialization::base_object<SchedulerImpl>(*this);
+		//ar & m_worker_;  //NreWorkerClient
+	 }
+
   private:
 	  SDPA_DECLARE_LOGGER();
 	  sdpa::nre::worker::NreWorkerClient m_worker_;

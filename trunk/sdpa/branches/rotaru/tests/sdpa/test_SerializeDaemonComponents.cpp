@@ -104,11 +104,11 @@ void WorkerSerializationTest::testBackupRecover()
 	// now try to recover the system
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	ptrRecOrch->recover("OrchestratorBackupFile.txt");
-	//sdpa::daemon::Orchestrator::start(ptrRecOrch);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrRecOrch);
 
 	sleep(1);
 
-	// sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
 	// sleep(1);
 
 	ptrCli->shutdown_network();
@@ -175,7 +175,7 @@ void WorkerSerializationTest::testNRESerialization()
 	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
 
 	ptrNRE_0->ptr_scheduler_ = sdpa::daemon::SchedulerNRE::ptr_t(new sdpa::daemon::SchedulerNRE());
-	 sdpa::daemon::SchedulerNRE* pScheduler = dynamic_cast< sdpa::daemon::SchedulerNRE*>(ptrNRE_0->ptr_scheduler_.get());
+	sdpa::daemon::SchedulerImpl* pScheduler = dynamic_cast< sdpa::daemon::SchedulerImpl*>(ptrNRE_0->ptr_scheduler_.get());
 
 	JobId id1("_1");
 	sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
@@ -211,10 +211,12 @@ void WorkerSerializationTest::testNRESerialization()
 	try
 	{
 		std::cout<<"----------------The NRE's content before backup is:----------------"<<std::endl;
-		ptrNRE_0->print();
+		//ptrNRE_0->print();
 
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<NRE<DummyWorkflowEngine>*>(NULL));
+		oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -233,8 +235,11 @@ void WorkerSerializationTest::testNRESerialization()
 	try
 	{
 		NRE<DummyWorkflowEngine>::ptr_t ptrRestoredNRE_0;
+
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<NRE<DummyWorkflowEngine>*>(NULL));
+		ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -325,6 +330,7 @@ void WorkerSerializationTest::testAggregatorSerialization()
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
 		oa.register_type(static_cast<Aggregator<DummyWorkflowEngine>*>(NULL));
+		oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -344,6 +350,7 @@ void WorkerSerializationTest::testAggregatorSerialization()
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<Aggregator<DummyWorkflowEngine>*>(NULL));
+		ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -432,6 +439,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
 		oa.register_type(static_cast<Orchestrator<DummyWorkflowEngine>*>(NULL));
+		oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -452,6 +460,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<Orchestrator<DummyWorkflowEngine>*>(NULL));
+		ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));

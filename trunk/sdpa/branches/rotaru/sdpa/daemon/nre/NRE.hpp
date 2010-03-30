@@ -91,6 +91,10 @@ namespace sdpa {
 		void serialize(Archive& ar, const unsigned int file_version )
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
+			//ar & url_;
+			//ar & masterName_;
+			//ar & masterUrl_;
+			//ar & m_guiServ;
 		}
 
 		virtual void backup( const std::string& strArchiveName );
@@ -311,6 +315,8 @@ void NRE<T>::backup( const std::string& strArchiveName )
 		ptr_t ptrNRE_0(this);
 		std::ofstream ofs(strArchiveName.c_str());
 		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<NRE<T>*>(NULL));
+		oa.register_type(static_cast<T*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -333,6 +339,8 @@ void NRE<T>::recover( const std::string& strArchiveName )
 		ptr_t ptrRestoredNRE_0(this);
 		std::ifstream ifs(strArchiveName.c_str());
 		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<NRE<T>*>(NULL));
+		ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));

@@ -43,13 +43,13 @@ namespace sdpa {
 	 void check_post_request() {}
 
 	 template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
-	{
-		ar & boost::serialization::base_object<SchedulerImpl>(*this);
-	}
+	 void serialize(Archive& ar, const unsigned int file_version )
+	 {
+		 ar & boost::serialization::base_object<SchedulerImpl>(*this);
+	 }
 
-	friend class boost::serialization::access;
-	friend class sdpa::tests::WorkerSerializationTest;
+	 friend class boost::serialization::access;
+	 friend class sdpa::tests::WorkerSerializationTest;
 
   private:
 	  SDPA_DECLARE_LOGGER();
