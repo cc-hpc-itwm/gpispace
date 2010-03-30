@@ -16,19 +16,15 @@ namespace expr
                , context<Key,Value> & context
                )
     {
-      if (node.is_value())
-        return node.value;
-
-      if (node.is_ref())
-        return context.value (node.ref);
-
-      if (node.is_unary())
-        return token::function::unary<Value> ( node.token
-                                             , eval (*node.child0, context)
-                                             );
-
-      if (node.is_binary())
+      switch (node.flag)
         {
+        case expr::parse::node::flag::value: return node.value;
+        case expr::parse::node::flag::ref: return context.value (node.ref);
+        case expr::parse::node::flag::unary:
+          return token::function::unary<Value> ( node.token
+                                               , eval (*node.child0, context)
+                                               );
+        case expr::parse::node::flag::binary:
           if (is_define (node.token))
             return context.bind ( (*node.child0).ref
                                 , eval (*node.child1, context)
@@ -38,9 +34,8 @@ namespace expr
                                                   , eval (*node.child0, context)
                                                   , eval (*node.child1, context)
                                                   );
+        default: throw parse::node::unknown();
         }
-
-      throw parse::node::unknown();
     }
   }
 }

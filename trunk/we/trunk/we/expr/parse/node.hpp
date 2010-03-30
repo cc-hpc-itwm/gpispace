@@ -84,41 +84,32 @@ namespace expr
           , child0 (_child0)
           , child1 (_child1)
         {}
-
-        bool is_value (void) const { return flag == flag::value; }
-        bool is_ref (void) const { return flag == flag::ref; }
-        bool is_unary (void) const { return flag == flag::unary; }
-        bool is_binary (void) const { return flag == flag::binary; }
       };
 
       template<typename Key, typename Value>
       std::ostream & operator << (std::ostream & s, const type<Key,Value> & nd)
       {
-        if (nd.is_value())
-          return s << nd.value;
-
-        if (nd.is_ref())
-          return s << "${" << nd.ref << "}";
-
-        if (nd.is_unary())
-          return s << nd.token << "(" << *(nd.child0) << ")";
-
-        if (nd.is_binary())
+        switch (nd.flag)
           {
+          case flag::value: return s << nd.value;
+          case flag::ref: return s << "${" << nd.ref << "}";
+          case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
+          case flag::binary:
             if (token::is_prefix (nd.token))
-              return s << nd.token 
-                       << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
-
-            return s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
+              return 
+                s << nd.token 
+                  << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
+            else
+              return 
+                s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
+          default: throw unknown();
           }
-
-        throw unknown();
       }
 
       template<typename Key, typename Value>
       const Value & get (const type<Key,Value> & node)
       {
-        if (!node.is_value())
+        if (node.flag != flag::value)
           throw std::runtime_error ("node is not an value");
 
         return node.value;
