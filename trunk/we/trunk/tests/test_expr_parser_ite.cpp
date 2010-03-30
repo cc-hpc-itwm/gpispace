@@ -13,7 +13,7 @@ main (int argc, char ** argv)
   context.bind (0 , (argc > 1) ? atof (argv[1]) : 23);
   
   const std::string input
-    ("${0} := if ${0} % 2 == 0 then ${0} / 2 else 3 * ${0} + 1 endif; ${1} := ${0} - 1;");
+    ("${1} := (${0} := if ${0} % 2 == 0 then ${0}/2 else 3*${0}+1 endif) - 1");
 
   expr::parse::parser<int, double> parser (input);
 
