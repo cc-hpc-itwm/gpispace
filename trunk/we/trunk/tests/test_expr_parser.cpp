@@ -38,17 +38,8 @@ int main (int ac, char **)
       {
         switch (input[0])
           {
-          case '?':
-            for ( context_t::const_iterator it (context.begin())
-                ; it != context.end()
-                ; ++it
-                )
-              cout << it->first << " = " << it->second << endl;
-            break;
-          case '#':
-            context.clear();
-            cout << "context deleted" << endl;
-            break;
+          case '?': cout << context; break;
+          case '#': context.clear(); cout << "context deleted" << endl; break;
           default:
             try
               {
@@ -92,7 +83,6 @@ int main (int ac, char **)
     typedef int ref_t;
     typedef expr::parse::parser<ref_t, double, read_int<int> > parser_t;
     typedef expr::eval::context<ref_t, double> context_t;
-
     {
       const unsigned int round (1000);
       const unsigned int max (1000);

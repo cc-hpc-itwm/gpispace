@@ -7,6 +7,7 @@
 
 #include <we/util/show.hpp>
 
+#include <iostream>
 #include <stdexcept>
 
 #include <boost/unordered_map.hpp>
@@ -49,7 +50,21 @@ namespace expr
 
       const_iterator begin (void) const { return container.begin(); }
       const_iterator end (void) const { return container.end(); }
+
+      template<typename K, typename V>
+      friend std::ostream & operator << (std::ostream &, const context<K,V> &);
     };
+
+    template<typename K, typename V>
+    std::ostream & operator << (std::ostream & s, const context<K,V> & cntx)
+    {
+      for ( typename context<K,V>::const_iterator it (cntx.begin())
+          ; it != cntx.end()
+          ; ++it
+          )
+        s << it->first << " := " << it->second << std::endl;
+      return s;
+    }
 
     template<typename Key, typename Value>
     parse::node::type<Key,Value>
