@@ -22,6 +22,8 @@ namespace expr
         case com:
         case min:
         case max:
+        case _floor:
+        case _ceil:
         case _sin:
         case _cos:
         case abs: return true;

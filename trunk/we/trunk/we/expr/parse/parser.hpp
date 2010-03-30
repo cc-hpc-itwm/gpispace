@@ -118,6 +118,8 @@ namespace expr
           case token::fac: unary (op_stack.top(), k); break;
           case token::min:
           case token::max: binary (op_stack.top(), k); break;
+          case token::_floor:
+          case token::_ceil:
           case token::_sin:
           case token::_cos:
           case token::_sqrt:

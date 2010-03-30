@@ -42,6 +42,8 @@ namespace expr
 
               return f;
             }
+          case _floor: return floor(x);
+          case _ceil: return ceil(x);
           default: throw std::runtime_error ("unary " + show(token));
           }
       }

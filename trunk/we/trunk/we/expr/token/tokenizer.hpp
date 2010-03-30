@@ -52,7 +52,7 @@ namespace expr
 
         while (what_pos != what_end)
           if (is_eof() || *pos != *what_pos)
-            throw expected (std::string (what_pos, what_end), k);
+            throw expected ("'" + std::string (what_pos, what_end) + "'", k);
           else
             {
               eat(); ++what_pos;
@@ -92,26 +92,39 @@ namespace expr
             case 'a': eat(); require ("bs"); unary (abs, "abs"); break;
             case 'c':
               eat();
-              if (is_eof() || *pos != 'o')
+              if (is_eof())
                 token = com;
               else
-                {
-                  eat(); require ("s"); unary (_cos, "cos");
-                }
+                switch (*pos)
+                  {
+                  case 'o': eat(); require("s"); unary (_cos, "cos"); break;
+                  case 'e': eat(); require("il"); unary (_ceil, "ceil"); break;
+                  default: token = com; break;
+                  }
               break;
             case 'e': eat(); token = val; tokval = 2.7182818284590452354; break;
-            case 'f': eat(); token = fac; break;
+            case 'f':
+              eat();
+              if (is_eof())
+                token = fac;
+              else
+                switch (*pos)
+                {
+                case 'l': eat(); require("oor"); unary (_floor, "floor"); break;
+                default: token = fac; break;
+                }
+              break;
             case 'l': eat(); require ("og"); unary (_log, "log"); break;
             case 'm':
               eat();
               if (is_eof())
-                throw expected ("in or ax", k);
+                throw expected ("'in' or 'ax'", k);
               else
                 switch (*pos)
                   {
                   case 'i': eat(); require ("n"); token = min; break;
                   case 'a': eat(); require ("x"); token = max; break;
-                  default: throw expected ("in or ax", k);
+                  default: throw expected ("'in' or 'ax'", k);
                   }
               break;
             case 'p':
@@ -136,7 +149,7 @@ namespace expr
             case '!':
               eat();
               if (is_eof())
-                throw expected("= or expression", k);
+                throw expected("'=' or <expression>", k);
               else
                 switch (*pos)
                   {
@@ -147,12 +160,12 @@ namespace expr
             case '=':
               eat();
               if (is_eof())
-                throw expected("=", k);
+                throw expected("'='", k);
               else
                 switch (*pos)
                   {
                   case '=': eat(); token = eq; break;
-                  default: throw expected ("=", k);
+                  default: throw expected ("'='", k);
                   }
               break;
             case ':': eat(); require("="); token = define; break;
@@ -175,7 +188,7 @@ namespace expr
               eat();
               token = ref;
               if (is_eof())
-                throw expected ("{", k);
+                throw expected ("'{'", k);
               else
                 switch (*pos)
                   {
@@ -190,12 +203,12 @@ namespace expr
                     require ("}");
                     _ref = READ(_refname);
                     break;
-                  default: throw expected ("{", k);
+                  default: throw expected ("'{'", k);
                   }
               break;
             default:
               if (!isdigit(*pos) && *pos != '.')
-                throw expected ("expression", k);
+                throw expected ("<expression>", k);
               token = val;
               tokval = 0;
               while (isdigit(*pos))
@@ -228,7 +241,7 @@ namespace expr
                     eat();
 
                   if (!isdigit(*pos))
-                    throw expected ("digit", k);
+                    throw expected ("<digit>", k);
 
                   unsigned int e (0);
 
