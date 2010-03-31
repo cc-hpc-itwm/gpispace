@@ -251,50 +251,53 @@ namespace expr
         parse (input, boost::bind (eval::refnode_name<Key,Value>, _1));
       }
 
-      bool empty (void) const
+      // the parsed expressions in the correct order
+      bool empty (void) const { return nd_stack.empty(); }
+      void pop_front (void) { nd_stack.pop_front(); }
+      const nd_t & front (void) const { return nd_stack.front(); }
+
+      // eval the first entry in the stack
+      Value eval_front (eval::context<Key,Value> & context) const
       {
-        return nd_stack.empty();
+        return eval::eval (front(), context);
       }
 
-      void pop (void)
+      bool eval_front_bool (eval::context<Key,Value> & context) const
       {
-        nd_stack.pop_front();
+        return !token::function::is_zero (eval_front (context));
       }
 
-      const nd_t & expr (void) const
+      // get the already evaluated value, throws if entry is not an value
+      const Value & get_front () const
       {
-        return nd_stack.front();
+        return node::get (front());
       }
 
-      const Value eval (eval::context<Key,Value> & context) const
+      bool get_front_bool () const 
       {
-        return eval::eval (expr(), context);
+        return !token::function::is_zero (get_front ());
       }
 
-      bool eval_bool (eval::context<Key,Value> & context) const
-      {
-        return !token::function::is_zero (eval (context));
-      }
-
-      const Value & get () const
-      {
-        return node::get (expr());
-      }
-
-      bool get_bool () const 
-      {
-        return !token::function::is_zero (get ());
-      }
-
+      // iterate through the entries
       typedef typename nd_stack_t::const_iterator nd_it_t;
 
       nd_it_t begin () const { return nd_stack.begin(); }
       nd_it_t end () const { return nd_stack.end(); }
 
-      void eval_all (eval::context<Key,Value> & context) const
+      // evaluate the hole stack in order, return the last value
+      Value eval_all (eval::context<Key,Value> & context) const
       {
+        Value v;
+
         for (nd_it_t it (begin()); it != end(); ++it)
-          eval::eval (*it, context);
+          v = eval::eval (*it, context);
+
+        return v;
+      }
+
+      bool eval_all_bool (eval::context<Key,Value> & context) const
+      {
+        return !token::function::is_zero (eval_all (context));
       }
     };
   }

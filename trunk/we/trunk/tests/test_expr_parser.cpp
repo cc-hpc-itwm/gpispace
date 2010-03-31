@@ -49,11 +49,12 @@ int main (int ac, char **)
               
                 while (!parser.empty())
                   {
-                    cout << "parsed expression: " << parser.expr() << endl;
+                    cout << "parsed expression: " << parser.front() << endl;
 
                     try
                       {
-                        cout << "evaluated value: " << parser.eval (context)
+                        cout << "evaluated value: "
+                             << parser.eval_front (context)
                              << endl;
                       }
                     catch (expr::eval::missing_binding<std::string> e)
@@ -61,7 +62,7 @@ int main (int ac, char **)
                         cout << e.what() << endl;
                       }
 
-                    parser.pop();
+                    parser.pop_front();
                   }
               }
             catch (expr::not_integral e)
@@ -111,7 +112,7 @@ int main (int ac, char **)
 
             do
               context.bind (0,i++);
-            while (parser.eval_bool (context));
+            while (parser.eval_front_bool (context));
           }
       }
 
@@ -128,7 +129,7 @@ int main (int ac, char **)
 
             do
               context.bind (0,i++);
-            while (parser_t (input, context).get_bool ());
+            while (parser_t (input, context).get_front_bool ());
           }
       }
     }
@@ -159,7 +160,7 @@ int main (int ac, char **)
 
             do
               context.bind ("0",i++);
-            while (parser.eval_bool (context));
+            while (parser.eval_front_bool (context));
           }
       }
 
@@ -176,7 +177,7 @@ int main (int ac, char **)
 
             do
               context.bind ("0",i++);
-            while (parser_t (input, context).get_bool ());
+            while (parser_t (input, context).get_front_bool ());
           }
       }
     }
