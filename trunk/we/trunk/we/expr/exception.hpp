@@ -47,6 +47,13 @@ namespace expr
   public:
     divide_by_zero () : std::runtime_error ("divide by zero") {};
   };
+
+  class not_integral : public std::runtime_error
+  {
+  public:
+    not_integral (const std::string & op) 
+      : std::runtime_error ("applied " + op + " to non-integral value(s)") {};
+  };
 }
 
 #endif

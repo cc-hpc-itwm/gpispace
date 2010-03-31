@@ -17,8 +17,8 @@ namespace expr
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
 
     , add, sub                // prec 21, left associative
-    , mul, div                // prec 22, left associative
-    , mod                     // prec 23, left associative
+    , mul, div, divint        // prec 22, left associative
+    , mod, modint             // prec 23, left associative
     , _pow                    // prec 24, right associative
     , neg                     // prec 25, unary minus
 
@@ -58,7 +58,9 @@ namespace expr
         case sub: return s << " - ";
         case mul: return s << " * ";
         case div: return s << " / ";
+        case divint: return s << " div ";
         case mod: return s << " % ";
+        case modint: return s << " mod ";
         case _pow: return s << "^";
         case neg: return s << "-";
         case min: return s << "min";

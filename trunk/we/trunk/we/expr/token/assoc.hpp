@@ -30,6 +30,8 @@ namespace expr
         case token::sub:
         case token::mul:
         case token::div:
+        case token::divint:
+        case token::modint:
         case token::mod: return left;
         case token::_pow: 
         case token::neg: return right;

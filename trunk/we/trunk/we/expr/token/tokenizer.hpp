@@ -141,6 +141,7 @@ namespace expr
                   default: token = com; break;
                   }
               break;
+            case 'd': eat(); require ("iv"); token = divint; break;
             case 'e':
               eat();
               if (is_eof())
@@ -169,13 +170,14 @@ namespace expr
             case 'm':
               eat();
               if (is_eof())
-                throw expected ("'in' or 'ax'", k);
+                throw expected ("'in' or 'ax' or 'od'", k);
               else
                 switch (*pos)
                   {
                   case 'i': eat(); require ("n"); token = min; break;
                   case 'a': eat(); require ("x"); token = max; break;
-                  default: throw expected ("'in' or 'ax'", k);
+                  case 'o': eat(); require ("d"); token = modint; break;
+                  default: throw expected ("'in' or 'ax' od 'od'", k);
                   }
               break;
             case 'p': eat(); require("i"); set_PI(); break;
@@ -229,7 +231,6 @@ namespace expr
                 token = sub;
               break;
             case '*': eat(); token = mul; break;
-
             case '/':
               eat();
               if (is_eof())

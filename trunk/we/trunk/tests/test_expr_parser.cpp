@@ -64,13 +64,21 @@ int main (int ac, char **)
                     parser.pop();
                   }
               }
+            catch (expr::not_integral e)
+              {
+                cout << "EXCEPTION: " << e.what() << endl;
+              }
+            catch (expr::divide_by_zero e)
+              {
+                cout << "EXCEPTION: " << e.what() << endl;
+              }
             catch (expr::exception e)
               {
                 cout << input << endl;
                 for (unsigned int k (0); k < e.eaten; ++k)
                   cout << " ";
                 cout << "^" << endl;
-                cout << e.what() << endl;
+                cout << "EXCEPTION: " << e.what() << endl;
               }
           }
         cout << prompt;
