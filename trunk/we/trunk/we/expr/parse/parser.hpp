@@ -24,6 +24,8 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+#include <iostream>
+
 namespace expr
 {
   namespace parse
@@ -49,6 +51,12 @@ namespace expr
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
       op_stack_t op_stack;
+
+      // iterate through the entries
+      typedef typename nd_stack_t::const_iterator nd_it_t;
+
+      nd_it_t begin () const { return nd_stack.begin(); }
+      nd_it_t end () const { return nd_stack.end(); }
 
       void unary (const token::type & token, const unsigned int k)
       {
@@ -278,12 +286,6 @@ namespace expr
         return !token::function::is_zero (get_front ());
       }
 
-      // iterate through the entries
-      typedef typename nd_stack_t::const_iterator nd_it_t;
-
-      nd_it_t begin () const { return nd_stack.begin(); }
-      nd_it_t end () const { return nd_stack.end(); }
-
       // evaluate the hole stack in order, return the last value
       Value eval_all (eval::context<Key,Value> & context) const
       {
@@ -299,7 +301,19 @@ namespace expr
       {
         return !token::function::is_zero (eval_all (context));
       }
+
+      template<typename K, typename V, K R (const std::string &)>
+      friend std::ostream &
+      operator << (std::ostream &, const parser<K,V,R> &);
     };
+
+    template<typename K, typename V, K R (const std::string &)>
+    std::ostream & operator << (std::ostream & s, const parser<K,V,R> & p)
+    {
+      for (typename parser<K,V,R>::nd_it_t it (p.begin()); it != p.end(); ++it)
+        s << *it << std::endl;
+      return s << std::endl;
+    }
   }
 }
 

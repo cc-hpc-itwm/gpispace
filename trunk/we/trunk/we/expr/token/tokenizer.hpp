@@ -271,7 +271,7 @@ namespace expr
               break;
             default:
               if (!isdigit(*pos) && *pos != '.')
-                throw expected ("<floating point value>", k);
+                throw expected ("<expression>", k);
               token = val;
               tokval = 0;
               while (pos != end && isdigit(*pos))

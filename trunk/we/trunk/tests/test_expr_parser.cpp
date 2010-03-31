@@ -18,10 +18,6 @@ using std::endl;
 
 int main (int ac, char **)
 {
-//   std::string input 
-//     ("4*f(2) + --1 - 4*(-13+25/${j}) + c(4,8) <= 4*(f(2)+--1) - 4*-13 + 25 / ${ii}");
-
-
   if (ac > 1) { // just assume "-i" as first parameter for interactive mode
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
@@ -49,12 +45,11 @@ int main (int ac, char **)
               
                 while (!parser.empty())
                   {
-                    cout << "parsed expression: " << parser.front() << endl;
+                    cout << "expression: " << parser.front() << endl;
 
                     try
                       {
-                        cout << "evaluated value: "
-                             << parser.eval_front (context)
+                        cout << "evals to: " << parser.eval_front (context)
                              << endl;
                       }
                     catch (expr::eval::missing_binding<std::string> e)
@@ -208,13 +203,7 @@ int main (int ac, char **)
     context.bind("x",0);
     parser_t parser (input);
 
-    cout << "PARSED [" << std::distance(parser.begin(), parser.end()) 
-         << "]:" << endl;
-    int k = 0;
-    for (parser_t::nd_it_t it (parser.begin()); it != parser.end(); ++it, ++k)
-      cout << "[" << k << "]: " << *it << endl;
-    cout << endl;
-
+    cout << "PARSED:" << endl << parser;
     cout << "EVAL_ALL:" << endl;
 
     int i = 12;
