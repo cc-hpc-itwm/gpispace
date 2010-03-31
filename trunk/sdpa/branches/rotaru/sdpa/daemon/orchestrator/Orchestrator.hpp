@@ -71,6 +71,7 @@ namespace daemon {
 		void serialize(Archive& ar, const unsigned int file_version )
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
+			ar & url_; //boost::serialization::make_nvp("url_", url_);
 		}
 
 		virtual void backup( const std::string& strArchiveName );
@@ -80,7 +81,7 @@ namespace daemon {
 		friend class sdpa::tests::WorkerSerializationTest;
 
 	  private:
-		const std::string url_;
+		std::string url_;
 	  };
 	}
 }

@@ -91,9 +91,9 @@ namespace sdpa {
 		void serialize(Archive& ar, const unsigned int file_version )
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
-			//ar & url_;
-			//ar & masterName_;
-			//ar & masterUrl_;
+			ar & url_; //boost::serialization::make_nvp("url_", url_);
+			ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
+			ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			//ar & m_guiServ;
 		}
 
@@ -105,9 +105,9 @@ namespace sdpa {
 
 
 	  protected:
-		const std::string url_;
-		const std::string masterName_;
-		const std::string masterUrl_;
+		std::string url_;
+		std::string masterName_;
+		std::string masterUrl_;
 		gui_service m_guiServ;
 	  };
 	}

@@ -104,11 +104,11 @@ void WorkerSerializationTest::testBackupRecover()
 	// now try to recover the system
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	ptrRecOrch->recover("OrchestratorBackupFile.txt");
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrRecOrch);
+	//sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrRecOrch);
 
 	sleep(1);
 
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
+	//sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
 	// sleep(1);
 
 	ptrCli->shutdown_network();

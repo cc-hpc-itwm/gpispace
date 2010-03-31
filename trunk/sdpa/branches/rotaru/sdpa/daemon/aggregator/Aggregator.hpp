@@ -21,6 +21,8 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/aggregator/SchedulerAgg.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa {
 	namespace daemon {
 		template <typename T>
@@ -73,6 +75,9 @@ namespace sdpa {
 			void serialize(Archive& ar, const unsigned int file_version )
 			{
 				ar & boost::serialization::base_object<DaemonFSM>(*this);
+				ar & url_; //boost::serialization::make_nvp("url_", url_);
+				ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
+				ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			}
 
 			virtual void backup( const std::string& );
@@ -82,9 +87,9 @@ namespace sdpa {
 			friend class sdpa::tests::WorkerSerializationTest;
 
 			private:
-			const std::string url_;
-			const std::string masterName_;
-			const std::string masterUrl_;
+			std::string url_;
+			std::string masterName_;
+			std::string masterUrl_;
 		};
 	}
 }
