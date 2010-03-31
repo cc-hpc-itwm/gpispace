@@ -4,6 +4,10 @@
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
+#include <we/function/cond_exp.hpp>
+
+#include <we/util/show.hpp>
+
 #include "timer.hpp"
 
 #include <string>
@@ -25,6 +29,7 @@ static const token_t max (100000);
 
 static unsigned long cnt_cond_lt (0);
 
+/*
 static bool cond_lt ( const petri_net::pid_t & pid_value
                     , const token_t & token
                     , const petri_net::pid_t & pid
@@ -35,6 +40,7 @@ static bool cond_lt ( const petri_net::pid_t & pid_value
 
   return (pid != pid_value) || (token < max);
 }
+*/
 
 static unsigned long cnt_cond_ge (0);
 
@@ -129,6 +135,7 @@ main ()
                                               )
                                 )
                               );
+  /*
   net.set_in_condition_function ( tid_step
                                 , Function::Condition::In::Generic<token_t>
                                   ( boost::bind ( &cond_lt
@@ -139,6 +146,19 @@ main ()
                                                 )
                                   )
                                 );
+  */
+
+  const std::string var ("${" + show (pid_value) + "}");
+  Function::Condition::In::Expression<token_t>::default_t dflt;
+  dflt.push_back (Function::Condition::In::Expression<token_t>::bind_t (0,0));
+
+  net.set_in_condition_function 
+    ( tid_step
+    , Function::Condition::In::Expression<token_t> 
+      ( "${" + show (pid_value) + "}" + " < " + show (max)
+      , dflt
+      )
+    );
 
   net.set_transition_function ( tid_break
                               , Function::Transition::Pass<token_t>()

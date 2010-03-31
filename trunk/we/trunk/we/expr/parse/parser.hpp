@@ -289,7 +289,7 @@ namespace expr
       // evaluate the hole stack in order, return the last value
       Value eval_all (eval::context<Key,Value> & context) const
       {
-        Value v;
+        Value v (0);
 
         for (nd_it_t it (begin()); it != end(); ++it)
           v = eval::eval (*it, context);
