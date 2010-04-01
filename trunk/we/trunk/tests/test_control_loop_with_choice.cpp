@@ -2,7 +2,9 @@
 
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
-#include <we/function/cond.hpp>
+#include <we/function/cond_exp.hpp>
+
+#include <we/util/show.hpp>
 
 #include "timer.hpp"
 
@@ -54,58 +56,6 @@ static pnet_t::output_t trans_step
   output.push_back (top_t (m[pid_increment], pid_increment));
 
   return output;
-}
-
-static unsigned long cnt_cond_step (0);
-
-static bool cond_step 
-( const petri_net::pid_t pid_max
-, const petri_net::pid_t pid_state
-, pnet_t::choices_t & choices
-)
-{
-  ++cnt_cond_step;
-
-  for ( ; choices.has_more(); ++choices)
-    {
-      map_t m;
-
-      pnet_t::choice_star_it choice (*choices);
-
-      for ( ; choice.has_more(); ++choice)
-        m[choice->first] = choice->second.first;
-
-      if (m[pid_state] < m[pid_max])
-        return true;
-    }
-
-  return false;
-}
-
-static unsigned long cnt_cond_break (0);
-
-static bool cond_break
-( const petri_net::pid_t pid_max
-, const petri_net::pid_t pid_state
-, pnet_t::choices_t & choices
-)
-{
-  ++cnt_cond_break;
-
-  for ( ; choices.has_more(); ++choices)
-    {
-      map_t m;
-
-      pnet_t::choice_star_it choice (*choices);
-
-      for ( ; choice.has_more(); ++choice)
-        m[choice->first] = choice->second.first;
-
-      if (!(m[pid_state] < m[pid_max]))
-        return true;
-    }
-
-  return false;
 }
 
 static void marking (const pnet_t & n)
@@ -165,24 +115,14 @@ main ()
 
   net.set_choice_condition_function 
     ( tid_step
-    , Function::Condition::Choice::Generic<token_t>
-      ( boost::bind ( &cond_step
-                    , pid_max
-                    , pid_state
-                    , _1
-                    )
-      )
+    , Function::Condition::Choice::Expression<token_t>
+      ("${" + show (pid_state) + "} < ${" + show (pid_max) + "}")
     );
 
   net.set_choice_condition_function 
     ( tid_break
-    , Function::Condition::Choice::Generic<token_t>
-      ( boost::bind ( &cond_break
-                    , pid_max
-                    , pid_state
-                    , _1
-                    )
-      )
+    , Function::Condition::Choice::Expression<token_t>
+      ("${" + show (pid_state) + "} >= ${" + show (pid_max) + "}")
     );
 
   net.put_token (pid_state, 0);
@@ -205,8 +145,6 @@ main ()
 
   cout << "fire = " << f << endl;
   cout << "cnt_trans = " << cnt_trans << endl;
-  cout << "cnt_cond_step = " << cnt_cond_step << endl;
-  cout << "cnt_cond_break = " << cnt_cond_break << endl;
 
   marking (net);
 

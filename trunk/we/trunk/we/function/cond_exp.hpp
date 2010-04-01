@@ -47,9 +47,46 @@ namespace Function { namespace Condition
                        , const eid_t &
                        )
       {
-        context.bind (pid, double(token));
+        context.bind (pid, val_t (token));
 
         return parser.eval_all_bool (context);
+      }
+    };
+  }
+
+  namespace Choice
+  {
+    template<typename token_type>
+    class Expression
+    {
+    private:
+      typedef double val_t;
+      const std::string expression;
+      const expr::parse::parser<pid_t,val_t> parser;
+      expr::eval::context<pid_t,val_t> context;
+    public:
+      explicit Expression (const std::string & _expression)
+        : expression (_expression)
+        , parser (expression)
+        , context ()
+      {}
+
+      bool operator () (typename Traits<token_type>::choices_t & choices)
+      {
+        context.clear();
+
+        for (; choices.has_more(); ++choices)
+          {
+            typename Traits<token_type>::choice_star_it_t choice (*choices);
+
+            for ( ; choice.has_more(); ++choice)
+              context.bind (choice->first, val_t (choice->second.first));
+
+            if (parser.eval_all_bool (context))
+              return true;
+          }
+
+        return false;
       }
     };
   }

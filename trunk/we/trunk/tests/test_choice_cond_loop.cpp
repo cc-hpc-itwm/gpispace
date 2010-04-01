@@ -2,7 +2,9 @@
 
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
-#include <we/function/cond.hpp>
+#include <we/function/cond_exp.hpp>
+
+#include <we/util/show.hpp>
 
 #include "timer.hpp"
 
@@ -78,28 +80,6 @@ static pnet_t::output_t trans_sum
   return output;
 }
 
-static bool cond_step 
-( const petri_net::pid_t pid_max
-, const petri_net::pid_t pid_state
-, pnet_t::choices_t & choices
-)
-{
-  for ( ; choices.has_more(); ++choices)
-    {
-      map_t m;
-
-      pnet_t::choice_star_it choice (*choices);
-
-      for ( ; choice.has_more(); ++choice)
-        m[choice->first] = choice->second.first;
-
-      if (m[pid_state] < m[pid_max])
-        return true;
-    }
-
-  return false;
-}
-
 static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
@@ -163,13 +143,8 @@ main ()
 
   net.set_choice_condition_function 
     ( tid_step
-    , Function::Condition::Choice::Generic<token_t>
-      ( boost::bind ( &cond_step
-                    , pid_max
-                    , pid_state
-                    , _1
-                    )
-      )
+    , Function::Condition::Choice::Expression<token_t>
+      ("${" + show (pid_state) + "} < ${" + show (pid_max) + "}")
     );
 
   net.set_capacity (pid_value, capacity_value);
