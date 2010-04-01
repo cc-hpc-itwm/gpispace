@@ -105,25 +105,18 @@ main ()
                                 )
                               );
 
-  {
-    Function::Condition::In::default_t dflt;
-    dflt.push_back (Function::Condition::In::bind_t (0,0));
-
-    net.set_in_condition_function 
-      ( tid_step
-      , Function::Condition::In::Expression<token_t> 
-        ( "${" + show (pid_value) + "}" + " < " + show (max)
-        , dflt
-        )
-      );
-  }
+  net.set_choice_condition_function 
+    ( tid_step
+    , Function::Condition::Choice::Expression<token_t> 
+      ( "${" + show (pid_value) + "}" + " < " + show (max))
+    );
 
   net.set_transition_function ( tid_break
                               , Function::Transition::Pass<token_t>()
                               );
-  net.set_in_condition_function 
+  net.set_choice_condition_function 
     ( tid_break
-    , Function::Condition::In::Expression<token_t>
+    , Function::Condition::Choice::Expression<token_t>
       ("${" + show(pid_value) + "}" + " >= " + show (max))
     );
 
