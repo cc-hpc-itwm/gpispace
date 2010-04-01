@@ -92,10 +92,8 @@ public:
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
-  typedef typename cd_traits::in_cond_t in_cond_t;
   typedef typename cd_traits::choice_cond_t choice_cond_t;
 
-  typedef boost::unordered_map<tid_t, in_cond_t> in_cond_map_t;
   typedef boost::unordered_map<tid_t, choice_cond_t> choice_cond_map_t;
 
   typedef typename cd_traits::token_via_edge_t token_via_edge_t;
@@ -144,7 +142,6 @@ private:
   enabled_choice_t enabled_choice;
 
   trans_map_t trans;
-  in_cond_map_t in_cond;
   choice_cond_map_t choice_cond;
 
   capacity_map_t capacity_map;
@@ -172,7 +169,6 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled_choice);
     // WORK HERE: serialize the functions
     //    ar & BOOST_SERIALIZATION_NVP(trans);
-    //    ar & BOOST_SERIALIZATION_NVP(in_cond);
     //    ar & BOOST_SERIALIZATION_NVP(choice_cond);
     ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
@@ -270,7 +266,6 @@ private:
   }
 
   void recalculate_pid_in_map ( pid_in_map_t & pid_in_map
-                              , const in_cond_t & f
                               , const pid_t & pid
                               , const eid_t & eid
                               )
@@ -280,8 +275,7 @@ private:
     vec_token_via_edge.clear();
 
     for (token_place_it tp (get_token (pid)); tp.has_more(); ++tp)
-      if (f(*tp, pid, eid))
-        vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
+      vec_token_via_edge.push_back(token_via_edge_t (*tp, eid));
 
     if (vec_token_via_edge.empty())
       pid_in_map.erase (pid);
@@ -321,9 +315,8 @@ private:
                               )
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
-    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
-    recalculate_pid_in_map (pid_in_map, in_cond_fun, pid, eid);
+    recalculate_pid_in_map (pid_in_map, pid, eid);
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == in_to_transition(tid).size()
@@ -336,10 +329,9 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     adj_place_const_it pit (in_to_transition (tid));
-    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
     for (; pit.has_more(); ++pit)
-      recalculate_pid_in_map (pid_in_map, in_cond_fun, *pit, pit());
+      recalculate_pid_in_map (pid_in_map, *pit, pit());
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == pit.size()
@@ -356,13 +348,8 @@ private:
   {
     pid_in_map_t & pid_in_map (in_map[tid]);
     vec_token_via_edge_t & vec_token_via_edge (pid_in_map[pid]);
-    const in_cond_t & in_cond_fun (get_fun (in_cond, tid));
 
-    if (in_cond_fun(token, pid, eid))
-      vec_token_via_edge.push_back(token_via_edge_t (token, eid));
-
-    if (vec_token_via_edge.empty())
-      pid_in_map.erase (pid);
+    vec_token_via_edge.push_back(token_via_edge_t (token, eid));
 
     update_set_of_tid ( tid
                       , pid_in_map.size() == in_to_transition(tid).size()
@@ -490,7 +477,6 @@ public:
     , enabled ()
     , enabled_choice ()
     , trans ()
-    , in_cond ()
     , choice_cond ()
     , capacity_map ()
     , in_map ()
@@ -509,12 +495,6 @@ public:
     throw (exception::no_such)
   {
     return get_fun (trans, tid);
-  }
-
-  const in_cond_t & get_in_cond (const tid_t & tid) const
-    throw (exception::no_such)
-  {
-    return get_fun (in_cond, tid);
   }
 
   // get id
@@ -577,13 +557,6 @@ public:
     trans[tid] = f;
   }
 
-  void set_in_condition_function (const tid_t & tid, const in_cond_t & f)
-  {
-    in_cond[tid] = f;
-
-    calculate_in_enabled (tid);
-  }
-
   void set_choice_condition_function (const tid_t & tid, const choice_cond_t & f)
   {
     choice_cond[tid] = f;
@@ -594,15 +567,13 @@ public:
   tid_t add_transition
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
-  , const in_cond_t & inc = Function::Condition::In::Default<token_type>()
-  , const choice_cond_t & choicec = Function::Condition::Choice::Default<token_type>()
+  , const choice_cond_t & choicec = Function::Condition::Default<token_type>()
   )
     throw (bijection::exception::already_there)
   {
     const tid_t tid (tmap.add (transition));
 
     trans[tid] = tf;
-    in_cond[tid] = inc;
     choice_cond[tid] = choicec;
 
     calculate_in_enabled (tid);
@@ -745,7 +716,6 @@ public:
     tmap.erase (tid);
 
     trans.erase (tid);
-    in_cond.erase (tid);
 
     in_enabled.erase (tid);
     out_enabled.erase (tid);

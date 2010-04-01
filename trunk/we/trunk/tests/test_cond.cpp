@@ -158,8 +158,7 @@ main ()
             , & edge_descr<place_via_edge_t>
             , & trans
             )
-          , Function::Condition::In::Default<token_t>()
-          , Function::Condition::Choice::Generic<token_t>
+          , Function::Condition::Generic<token_t>
             (boost::bind (&cond_rem, boost::ref(n), rem, _1))
           )
         );

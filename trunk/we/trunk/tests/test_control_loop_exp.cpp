@@ -2,8 +2,6 @@
 
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
-#include <we/function/cond.hpp>
-
 #include <we/function/cond_exp.hpp>
 
 #include <we/util/show.hpp>
@@ -107,7 +105,7 @@ main ()
 
   net.set_choice_condition_function 
     ( tid_step
-    , Function::Condition::Choice::Expression<token_t> 
+    , Function::Condition::Expression<token_t> 
       ( "${" + show (pid_value) + "}" + " < " + show (max))
     );
 
@@ -116,7 +114,7 @@ main ()
                               );
   net.set_choice_condition_function 
     ( tid_break
-    , Function::Condition::Choice::Expression<token_t>
+    , Function::Condition::Expression<token_t>
       ("${" + show(pid_value) + "}" + " >= " + show (max))
     );
 

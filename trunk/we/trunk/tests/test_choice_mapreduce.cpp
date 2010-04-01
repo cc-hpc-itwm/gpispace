@@ -299,8 +299,7 @@ main ()
     ( net.add_transition 
       ( mk_transition ("sum")
       , Function::Transition::Generic<token_t> (trans_join)
-      , Function::Condition::In::Default<token_t>()
-      , Function::Condition::Choice::Generic<token_t>(cond_join)
+      , Function::Condition::Generic<token_t>(cond_join)
       )
     );
 

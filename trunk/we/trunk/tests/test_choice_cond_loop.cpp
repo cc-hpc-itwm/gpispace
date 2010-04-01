@@ -143,7 +143,7 @@ main ()
 
   net.set_choice_condition_function 
     ( tid_step
-    , Function::Condition::Choice::Expression<token_t>
+    , Function::Condition::Expression<token_t>
       ("${" + show (pid_state) + "} < ${" + show (pid_max) + "}")
     );
 

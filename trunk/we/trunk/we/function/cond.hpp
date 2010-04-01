@@ -19,12 +19,6 @@ namespace Function { namespace Condition
   struct Traits
   {
   public:
-    typedef boost::function<bool ( const token_type &
-                                 , const pid_t &
-                                 , const eid_t &
-                                 )
-                           > in_cond_t;
-
     typedef std::pair<token_type,eid_t> token_via_edge_t;
     typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
     typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
@@ -36,74 +30,35 @@ namespace Function { namespace Condition
     typedef boost::function<bool (choices_t &)> choice_cond_t;
   };
 
-  namespace In
+  template<typename token_type>
+  class Generic
   {
-    template<typename token_type>
-    class Generic
+  public:
+    typedef typename Traits<token_type>::choice_cond_t Function;
+
+  private:
+    const Function f;
+
+  public:
+    explicit Generic (const Function & _f) : f (_f) {}
+
+    bool operator () (typename Traits<token_type>::choices_t & choices)
     {
-    public:
-      typedef typename Traits<token_type>::in_cond_t Function;
+      return f(choices);
+    }
+  };
 
-    private:
-      const Function f;
-
-    public:
-      explicit Generic (const Function & _f) : f (_f) {}
-
-      bool operator () ( const token_type & token
-                       , const pid_t & pid
-                       , const eid_t & eid
-                       )
-      {
-        return f (token, pid, eid);
-      }
-    };
-
-    template<typename token_type>
-    class Default
-    {
-    public:
-      Default () {}
-
-      bool operator () (const token_type &, const pid_t &, const eid_t &)
-      {
-        return true;
-      }
-    };
-  }
-
-  namespace Choice
+  template<typename token_type>
+  class Default
   {
-    template<typename token_type>
-    class Generic
+  public:
+    Default () {}
+
+    bool operator () (typename Traits<token_type>::choices_t &)
     {
-    public:
-      typedef typename Traits<token_type>::choice_cond_t Function;
-
-    private:
-      const Function f;
-
-    public:
-      explicit Generic (const Function & _f) : f (_f) {}
-
-      bool operator () (typename Traits<token_type>::choices_t & choices)
-      {
-        return f(choices);
-      }
-    };
-
-    template<typename token_type>
-    class Default
-    {
-    public:
-      Default () {}
-
-      bool operator () (typename Traits<token_type>::choices_t &)
-      {
-        return true;
-      }
-    };
-  }
+      return true;
+    }
+  };
 }}
 
 #endif

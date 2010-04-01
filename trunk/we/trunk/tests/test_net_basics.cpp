@@ -479,17 +479,6 @@ main ()
 
   cout << "UPDATE" << endl; print_enabled (c);
 
-  c.set_in_condition_function ( c.get_transition_id ("t_enterL")
-                              , boost::bind ( &cond_in
-                                            , boost::ref (c)
-                                            , _1
-                                            , _2
-                                            , _3
-                                            )
-                              );
-
-  cout << endl; print_enabled (c);
-
   c.modify_place (c.get_place_id ("readyL"), "ReadyL");
 
   cout << endl; print_enabled (c);
@@ -514,11 +503,6 @@ main ()
 
   cout << endl; print_enabled (c);
 
-  // reset condition functions and fire random transitions
-
-  c.set_in_condition_function ( c.get_transition_id ("t_enterR")
-                              , Function::Condition::In::Default<token_t>()
-                              );
   {
     Timer_t timer ("step", 100);
     step (c, 100);
