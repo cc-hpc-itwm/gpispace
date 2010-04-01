@@ -73,8 +73,6 @@ namespace Function { namespace Condition
 
       bool operator () (typename Traits<token_type>::choices_t & choices)
       {
-        context.clear();
-
         for (; choices.has_more(); ++choices)
           {
             typename Traits<token_type>::choice_star_it_t choice (*choices);
