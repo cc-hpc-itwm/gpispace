@@ -34,16 +34,6 @@ static std::ostream & operator << (std::ostream & s, const token_t & token)
   return s << ":" << token.first << "-" << token.second << ":";
 }
 
-static std::ostream & operator << (std::ostream & s, const place_t & place)
-{
-  return s << "(" << place.first << "-" << place.second << ")";
-}
-
-static std::ostream & operator << (std::ostream & s, const edge_t & edge)
-{
-  return s << "-" << edge.first << "-" << edge.second << "-";
-}
-
 static token_second_t shift (const place_t & place)
 {
   return place.second;
@@ -88,92 +78,28 @@ static token_t trans ( const petri_net::pid_t & pid
 // each transition takes only one remainder, shifted by the place
 static bool cond_rem ( const pnet_t & net
                      , const token_second_t & rem
-                     , const token_t & token
-                     , const petri_net::pid_t & pid
-                     , const petri_net::eid_t &
+                     , pnet_t::choices_t & choices
                      )
 {
-  place_t place (net.get_place (pid));
-
-  return (token.second == ((shift(place) + rem) % branch_factor));
-}
-
-static void firings (const pnet_t & n)
-{
-  cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
-
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+  for ( ; choices.has_more(); ++choices)
     {
-      cross::cross<pnet_t::pid_in_map_t> cross (n.choices(*t));
+      pnet_t::choice_star_it choice (*choices);
 
-      cout << "Transition " << *t << " [" << cross.size() <<"]:" << std::endl;
+      bool all_ok (true);
 
-      for ( ; cross.has_more(); ++cross)
+      for ( ; choice.has_more() && all_ok; ++choice)
         {
-          cross::star_iterator<pnet_t::pid_in_map_t> c (*cross);
+          place_t place (net.get_place (choice->first));
+          token_t token (choice->second.first);
 
-          cout << " --";
-
-          for (; c.has_more(); ++c)
-            cout << " pid " << c->first << " {"
-                 << c->second.first << " via "
-                 << c->second.second << "}"
-              ;
-
-          cout << endl;
+          all_ok = (token.second == ((shift(place) + rem) % branch_factor));
         }
-     }
-}
 
-static void enabled (const pnet_t & n)
-{
-  cout << "ENABLED INPUTS :: Transition -> (Place -> [Token via Edge])" << endl;
-
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    {
-      pnet_t::pid_in_map_t m (n.get_pid_in_map(*t));
-
-      cout << "Transition " << *t
-           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
-           << ":" << endl;
-
-      for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
-        {
-          cout << *t << ":"
-               << " Place " << n.get_place (i->first)
-               << " [" << i->second.size() << "]"
-               << ":";
-
-          for ( pnet_t::vec_token_via_edge_t::const_iterator k (i->second.begin())
-              ; k != i->second.end()
-              ; ++k
-              )
-            cout << " {" << k->first 
-                 << " via " << n.get_edge (k->second)
-                 << "}";
-
-          cout << endl;
-        }
+      if (all_ok)
+        return true;
     }
 
-  cout << "ENABLED OUTPUTS :: Transition -> [Place via Edge]" << endl;
-
-  for (pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    {
-      pnet_t::output_descr_t output_descr (n.get_output_descr(*t));
-
-      cout << "Transition " << *t
-           << " can_fire = " << (n.get_can_fire (*t) ? "true" : "false")
-           << ":";
-
-      for ( pnet_t::output_descr_t::const_iterator i (output_descr.begin())
-          ; i != output_descr.end()
-          ; ++i
-          )
-        cout << " {" << i->first << " via " << i->second << "}";
-
-      cout << endl;
-    }
+  return false;
 }
 
 static void marking (const pnet_t & n)
@@ -232,9 +158,9 @@ main ()
             , & edge_descr<place_via_edge_t>
             , & trans
             )
-          , Function::Condition::In::Generic<token_t>
-            ( boost::bind (&cond_rem, boost::ref(n), rem, _1, _2, _3)
-            )
+          , Function::Condition::In::Default<token_t>()
+          , Function::Condition::Choice::Generic<token_t>
+            (boost::bind (&cond_rem, boost::ref(n), rem, _1))
           )
         );
 
@@ -246,9 +172,6 @@ main ()
     }
 
   marking (n);
-  enabled (n);
-
-  firings (n);
 
   for (token_second_t c (0); c < branch_factor * branch_factor; ++c)
     for (token_second_t t (0); t < branch_factor; ++t)
@@ -256,7 +179,6 @@ main ()
         cout << endl; n.fire (t);
 
         marking (n);
-        enabled (n);
       }
 
   return EXIT_SUCCESS;
