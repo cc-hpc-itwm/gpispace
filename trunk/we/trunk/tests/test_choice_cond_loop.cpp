@@ -100,15 +100,6 @@ static bool cond_step
   return false;
 }
 
-static bool cond_cap
-( const pnet_t & net
-, const petri_net::pid_t & pid
-, const petri_net::eid_t &
-)
-{
-  return (net.num_token (pid) < capacity_value);
-}
-
 static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
@@ -181,16 +172,7 @@ main ()
       )
     );
 
- net.set_out_condition_function
-   ( tid_step
-   , Function::Condition::Out::Generic<token_t>
-     ( boost::bind ( &cond_cap
-                   , boost::ref(net)
-                   , _1
-                   , _2
-                   )
-     )
-   );
+  net.set_capacity (pid_value, capacity_value);
 
   net.put_token (pid_state, 0);
   net.put_token (pid_state, 0);

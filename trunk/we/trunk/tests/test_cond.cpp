@@ -98,22 +98,6 @@ static bool cond_rem ( const pnet_t & net
   return (token.second == ((shift(place) + rem) % branch_factor));
 }
 
-typedef boost::unordered_map<petri_net::pid_t,token_second_t> capacity_map_t;
-
-static bool cond_capacity ( const pnet_t & net
-                          , const capacity_map_t & capacity
-                          , const petri_net::pid_t & pid
-                          , const petri_net::eid_t &
-                          )
-{
-  capacity_map_t::const_iterator c (capacity.find(pid));
-
-  if (c == capacity.end())
-    throw std::runtime_error ("cond_capacity: capacity not found");
-
-  return (net.num_token (pid) < c->second);
-}
-
 static void firings (const pnet_t & n)
 {
   cout << "POSSIBLE INPUT FIRINGS :: Transition -> [[Place,Token]]" << endl;
@@ -223,15 +207,13 @@ main ()
   petri_net::pid_t pid[branch_factor];
   cnt_place_t p (0);
 
-  capacity_map_t capacity;
-
   for (token_second_t rem (0); rem < branch_factor; ++rem)
     {
       char c = 'a';
 
       pid[rem] = n.add_place (place_t (p++,rem));
 
-      capacity[pid[rem]] = branch_factor * (branch_factor + 1);
+      n.set_capacity(pid[rem], branch_factor * (branch_factor + 1));
 
       for (token_second_t t (0); t < branch_factor; ++t)
         for (token_second_t i (0); i < branch_factor; ++i)
@@ -252,14 +234,6 @@ main ()
             )
           , Function::Condition::In::Generic<token_t>
             ( boost::bind (&cond_rem, boost::ref(n), rem, _1, _2, _3)
-            )
-          , Function::Condition::Out::Generic<token_t>
-            ( boost::bind ( &cond_capacity
-                          , boost::ref(n)
-                          , boost::ref(capacity)
-                          , _1
-                          , _2
-                          )
             )
           )
         );

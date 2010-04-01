@@ -4,6 +4,8 @@
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
+#include <we/function/cond_exp.hpp>
+
 #include <we/util/show.hpp>
 
 #include "timer.hpp"
@@ -25,36 +27,9 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
 static const token_t max (100000);
 
-static unsigned long cnt_cond_lt (0);
-
-static bool cond_lt ( const petri_net::pid_t & pid_value
-                    , const token_t & token
-                    , const petri_net::pid_t & pid
-                    , const petri_net::eid_t &
-                    )
-{
-  ++cnt_cond_lt;
-
-  return (pid != pid_value) || (token < max);
-}
-
-static unsigned long cnt_cond_ge (0);
-
-static bool cond_ge ( const token_t & token
-                    , const petri_net::pid_t &
-                    , const petri_net::eid_t &
-                    )
-{
-  ++cnt_cond_ge;
-
-  return (token >= max);
-}
-
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
-
-static unsigned long cnt_trans (0);
 
 static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
                               , const petri_net::pid_t & pid_increment
@@ -62,8 +37,6 @@ static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
                               , const pnet_t::output_descr_t & output_descr
                               )
 {
-  ++cnt_trans;
-
   map_t m;
 
   for ( pnet_t::input_t::const_iterator it (input.begin())
@@ -131,45 +104,40 @@ main ()
                                               )
                                 )
                               );
-  net.set_in_condition_function ( tid_step
-                                , Function::Condition::In::Generic<token_t>
-                                  ( boost::bind ( &cond_lt
-                                                , pid_value
-                                                , _1
-                                                , _2
-                                                , _3
-                                                )
-                                  )
-                                );
+
+  {
+    Function::Condition::In::default_t dflt;
+    dflt.push_back (Function::Condition::In::bind_t (0,0));
+
+    net.set_in_condition_function 
+      ( tid_step
+      , Function::Condition::In::Expression<token_t> 
+        ( "${" + show (pid_value) + "}" + " < " + show (max)
+        , dflt
+        )
+      );
+  }
+
   net.set_transition_function ( tid_break
                               , Function::Transition::Pass<token_t>()
                               );
-  net.set_in_condition_function ( tid_break
-                                , Function::Condition::In::Generic<token_t>
-                                  (&cond_ge)
-                                );
+  net.set_in_condition_function 
+    ( tid_break
+    , Function::Condition::In::Expression<token_t>
+      ("${" + show(pid_value) + "}" + " >= " + show (max))
+    );
 
   net.put_token (pid_value, 0);
   net.put_token (pid_increment, 1);
 
   marking (net);
 
-  unsigned long f (0);
-
   {
     Timer_t timer ("fire", max + 1);
 
     while (!net.enabled_transitions().empty())
-      {
-        net.fire(net.enabled_transitions().at(0));
-        ++f;
-      }
+      net.fire(net.enabled_transitions().at(0));
   }
-
-  cout << "fire = " << f << endl;
-  cout << "cnt_trans = " << cnt_trans << endl;
-  cout << "cnt_cond_lt = " << cnt_cond_lt << endl;
-  cout << "cnt_cond_ge = " << cnt_cond_ge << endl;
 
   marking (net);
 

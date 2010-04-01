@@ -324,17 +324,6 @@ static bool cond_in ( const pnet_t & net
   return (isupper (place[0]) && (token.length() > 0 || edge[0] == '!'));
 }
 
-static bool cond_out ( const pnet_t & net
-                     , const petri_net::pid_t & pid
-                     , const petri_net::eid_t & eid
-                     )
-{
-  const place_t place (net.get_place (pid));
-  const edge_t edge (net.get_edge (eid));
-
-  return (isupper (place[0]) || edge[0] == '!');
-}
-
 int
 main ()
 {
@@ -513,16 +502,6 @@ main ()
 
   cout << endl; print_enabled (c);
 
-  c.set_out_condition_function ( c.get_transition_id ("t_enterL")
-                               , boost::bind ( &cond_out
-                                             , boost::ref (c)
-                                             , _1
-                                             , _2
-                                             )
-                               );
-
-  cout << endl; print_enabled (c);
-
   c.replace_place (c.get_place_id ("workL"), "WorkL");
 
   cout << endl; print_enabled (c);
@@ -540,10 +519,6 @@ main ()
   c.set_in_condition_function ( c.get_transition_id ("t_enterR")
                               , Function::Condition::In::Default<token_t>()
                               );
-  c.set_out_condition_function ( c.get_transition_id ("t_enterR")
-                               , Function::Condition::Out::Default<token_t>()
-                               );
-
   {
     Timer_t timer ("step", 100);
     step (c, 100);

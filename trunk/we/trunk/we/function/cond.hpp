@@ -25,11 +25,6 @@ namespace Function { namespace Condition
                                  )
                            > in_cond_t;
 
-    typedef boost::function<bool ( const pid_t &
-                                 , const eid_t &
-                                 )
-                           > out_cond_t;
-
     typedef std::pair<token_type,eid_t> token_via_edge_t;
     typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
     typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
@@ -70,39 +65,6 @@ namespace Function { namespace Condition
       Default () {}
 
       bool operator () (const token_type &, const pid_t &, const eid_t &)
-      {
-        return true;
-      }
-    };
-  }
-
-  namespace Out
-  {
-    template<typename token_type>
-    class Generic
-    {
-    public:
-      typedef typename Traits<token_type>::out_cond_t Function;
-
-    private:
-      const Function f;
-
-    public:
-      explicit Generic (const Function & _f) : f (_f) {}
-
-      bool operator () (const pid_t & pid, const eid_t & eid)
-      {
-        return f (pid, eid);
-      }
-    };
-
-    template<typename token_type>
-    class Default
-    {
-    public:
-      Default () {}
-
-      bool operator () (const pid_t &, const eid_t &)
       {
         return true;
       }

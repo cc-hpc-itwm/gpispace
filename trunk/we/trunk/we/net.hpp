@@ -93,11 +93,9 @@ public:
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
   typedef typename cd_traits::in_cond_t in_cond_t;
-  typedef typename cd_traits::out_cond_t out_cond_t;
   typedef typename cd_traits::choice_cond_t choice_cond_t;
 
   typedef boost::unordered_map<tid_t, in_cond_t> in_cond_map_t;
-  typedef boost::unordered_map<tid_t, out_cond_t> out_cond_map_t;
   typedef boost::unordered_map<tid_t, choice_cond_t> choice_cond_map_t;
 
   typedef typename cd_traits::token_via_edge_t token_via_edge_t;
@@ -108,6 +106,8 @@ public:
   typedef typename cross::star_iterator<pid_in_map_t> choice_star_it;
 
   typedef svector::svector<tid_t> enabled_t;
+
+  typedef unsigned long capacity_t;
 
   // *********************************************************************** //
 private:
@@ -123,6 +123,8 @@ private:
 
   typedef boost::unordered_map<tid_t,pid_in_map_t> in_map_t;
   typedef boost::unordered_map<tid_t,output_descr_t> out_map_t;
+
+  typedef boost::unordered_map<pid_t,capacity_t> capacity_map_t;
 
   // *********************************************************************** //
 
@@ -143,8 +145,9 @@ private:
 
   trans_map_t trans;
   in_cond_map_t in_cond;
-  out_cond_map_t out_cond;
   choice_cond_map_t choice_cond;
+
+  capacity_map_t capacity_map;
 
   in_map_t in_map;
   out_map_t out_map;
@@ -170,8 +173,8 @@ private:
     // WORK HERE: serialize the functions
     //    ar & BOOST_SERIALIZATION_NVP(trans);
     //    ar & BOOST_SERIALIZATION_NVP(in_cond);
-    //    ar & BOOST_SERIALIZATION_NVP(out_cond);
     //    ar & BOOST_SERIALIZATION_NVP(choice_cond);
+    ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
     ar & BOOST_SERIALIZATION_NVP(out_map);
     ar & BOOST_SERIALIZATION_NVP(in_enabled);
@@ -423,12 +426,13 @@ private:
   }
 
   void update_output_descr ( output_descr_t & output_descr
-                           , const out_cond_t & f
                            , const pid_t & pid
                            , const eid_t & eid
                            )
   {
-    if (f(pid, eid))
+    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
+
+    if (cap == capacity_map.end() || num_token (pid) < cap->second)
       {
         output_descr[pid] = eid;
       }
@@ -442,10 +446,9 @@ private:
   {
     output_descr_t & output_descr (out_map[tid]);
     adj_place_const_it pit (out_of_transition (tid));
-    const out_cond_t & out_cond_fun (get_fun (out_cond, tid));
 
     for (; pit.has_more(); ++pit)
-      update_output_descr (output_descr, out_cond_fun, *pit, pit());
+      update_output_descr (output_descr, *pit, pit());
 
     update_set_of_tid ( tid
                       , output_descr.size() == pit.size()
@@ -461,9 +464,8 @@ private:
                           )
   {
     output_descr_t & output_descr (out_map[tid]);
-    const out_cond_t & out_cond_fun (get_fun (out_cond, tid));
 
-    update_output_descr (output_descr, out_cond_fun, pid, eid);
+    update_output_descr (output_descr, pid, eid);
 
     update_set_of_tid ( tid
                       , output_descr.size() == out_of_transition(tid).size()
@@ -478,7 +480,7 @@ private:
 public:
   net (const std::string & _name = "noname", const pid_t & _places = 10, const tid_t & _transitions = 10)
     : name (_name)
-	, pmap ("place")
+    , pmap ("place")
     , tmap ("transition")
     , emap ("edge name")
     , connection_map ()
@@ -486,9 +488,11 @@ public:
     , adj_tp (eid_invalid, _transitions, _places)
     , token_place_rel ()
     , enabled ()
+    , enabled_choice ()
     , trans ()
     , in_cond ()
-    , out_cond ()
+    , choice_cond ()
+    , capacity_map ()
     , in_map ()
     , out_map ()
     , in_enabled ()
@@ -511,12 +515,6 @@ public:
     throw (exception::no_such)
   {
     return get_fun (in_cond, tid);
-  }
-
-  const out_cond_t & get_out_cond (const tid_t & tid) const
-    throw (exception::no_such)
-  {
-    return get_fun (out_cond, tid);
   }
 
   // get id
@@ -564,6 +562,16 @@ public:
     return pmap.add (place);
   }
 
+  void set_capacity (const pid_t & pid, const capacity_t & cap)
+  {
+    capacity_map[pid] = cap;
+  }
+
+  void clear_capacity (const pid_t & pid)
+  {
+    capacity_map.erase (pid);
+  }
+
   void set_transition_function (const tid_t & tid, const trans_t & f)
   {
     trans[tid] = f;
@@ -574,13 +582,6 @@ public:
     in_cond[tid] = f;
 
     calculate_in_enabled (tid);
-  }
-
-  void set_out_condition_function (const tid_t & tid, const out_cond_t & f)
-  {
-    out_cond[tid] = f;
-
-    calculate_out_enabled (tid);
   }
 
   void set_choice_condition_function (const tid_t & tid, const choice_cond_t & f)
@@ -594,7 +595,6 @@ public:
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
   , const in_cond_t & inc = Function::Condition::In::Default<token_type>()
-  , const out_cond_t & outc = Function::Condition::Out::Default<token_type>()
   , const choice_cond_t & choicec = Function::Condition::Choice::Default<token_type>()
   )
     throw (bijection::exception::already_there)
@@ -603,7 +603,6 @@ public:
 
     trans[tid] = tf;
     in_cond[tid] = inc;
-    out_cond[tid] = outc;
     choice_cond[tid] = choicec;
 
     calculate_in_enabled (tid);
@@ -747,7 +746,6 @@ public:
 
     trans.erase (tid);
     in_cond.erase (tid);
-    out_cond.erase (tid);
 
     in_enabled.erase (tid);
     out_enabled.erase (tid);

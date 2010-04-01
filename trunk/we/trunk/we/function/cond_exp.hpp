@@ -14,22 +14,26 @@ namespace Function { namespace Condition
 {
   namespace In
   {
+    typedef double val_t;
+    typedef std::pair<pid_t, val_t> bind_t;
+    typedef std::vector<bind_t> default_t;
+    typedef expr::parse::parser<pid_t,val_t> parser_t;
+    typedef expr::eval::context<pid_t,val_t> context_t;
+
     template<typename token_type>
     class Expression
     {
-    public:
-      typedef std::pair<pid_t, double> bind_t;
-      typedef std::vector<bind_t> default_t;
     private:
-      std::string expression;
-      expr::parse::parser<pid_t,double> parser;
-      expr::eval::context<pid_t,double> context;
+      const std::string expression;
+      const parser_t parser;
+      context_t context;
     public:
       explicit Expression ( const std::string & _expression
                           , const default_t & dflt = default_t()
                           )
         : expression (_expression) 
         , parser (expression)
+        , context ()
       {
         for ( default_t::const_iterator it (dflt.begin())
             ; it != dflt.end()
