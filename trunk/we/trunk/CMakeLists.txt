@@ -50,6 +50,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wswitch-default -Wno-pragmas -Wfloat-equal -Wenum-compare -Wmissing-declarations -Wredundant-decls")
+    add_definitions("-D_FORTIFY_SOURCE=2")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
