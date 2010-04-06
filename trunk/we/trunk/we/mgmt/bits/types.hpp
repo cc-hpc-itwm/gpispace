@@ -151,15 +151,17 @@ namespace we { namespace mgmt {
       typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
       struct mod_t
       {
-        mod_t(std::string const &m)
-          : v(m) {}
-        std::string v;
+        mod_t(std::string const &m_, std::string const &f_)
+          : m(m_), f(f_) {}
+        const std::string m;
+        const std::string f;
       };
+
       struct expr_t
       {
         expr_t(std::string const &e)
           : v(e) {}
-        std::string v;
+        const std::string v;
       };
 
       typedef mod_t mod_type;

@@ -104,12 +104,86 @@ namespace we { namespace mgmt {
     {
       // create the subnetwork
       net_type map_reduce_subnet ("map-reduce-subnet");
+
+      // connector ports
       pid_t mr_sn_inp = map_reduce_subnet.add_place (place_t("in"));
       pid_t mr_sn_out = map_reduce_subnet.add_place (place_t("out"));
 
-      // create the atomic subtransitions
+      // create the atomic transitions
       {
+        const std::size_t NUM_NODES=3;
 
+        typedef std::vector<pid_t> hull_t;
+        hull_t hull_in;
+        hull_in.reserve(NUM_NODES);
+
+        hull_t hull_out;
+        hull_out.reserve(NUM_NODES);
+
+        // create some parallelism
+        for (std::size_t n(0); n < NUM_NODES; ++n)
+        {
+          const pid_t pid_wi = map_reduce_subnet.add_place(place_t("wi_" + show(n)));
+          hull_in.push_back (pid_wi);
+
+          const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + show(n)));
+          hull_out.push_back (pid_wo);
+
+          transition_t wrk_trans ("work"+show(n), typename transition_t::mod_type("map_reduce", "work"));
+          wrk_trans.connect (pid_wi, pid_t(0));
+          wrk_trans.connect (pid_wo, pid_t(1));
+
+          const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
+
+          // connect work in
+          map_reduce_subnet.add_edge (edge_t("work_in_"+show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+
+          // connect work out
+          map_reduce_subnet.add_edge (edge_t("work_out_" + show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+        }
+
+        {
+          transition_t map_trans ("map", typename transition_t::expr_type("$1 = (1); $2 = (2); $3 = (3);"));
+
+          // emulate ports for now
+          map_trans.connect ( mr_sn_inp, pid_t (0) ); // port_0
+
+          size_t cnt(0);
+          for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
+          {
+            map_trans.connect ( *i, pid_t (1 + (cnt++)) ); // port_1 .. port_N
+          }
+          tid_t tid_map = map_reduce_subnet.add_transition ( map_trans );
+          map_reduce_subnet.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, mr_sn_inp));
+
+          cnt = 0;
+          for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
+          {
+            map_reduce_subnet.add_edge (edge_t("map_" + show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
+            cnt++;
+          }
+        }
+
+        {
+          transition_t red_trans ("red", typename transition_t::expr_type("$1 = (0);"));
+          red_trans.connect (mr_sn_out, pid_t (NUM_NODES)); // port_1
+
+          size_t cnt(0);
+          for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
+          {
+            red_trans.connect ( *o, pid_t (0 + (cnt)) );
+            cnt++;
+          }
+          tid_t tid_red = map_reduce_subnet.add_transition ( red_trans );
+          map_reduce_subnet.add_edge (edge_t("red"), petri_net::connection_t (petri_net::TP, tid_red, mr_sn_out));
+
+          cnt = 0;
+          for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
+          {
+            map_reduce_subnet.add_edge (edge_t("red_" + show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
+            cnt++;
+          }
+        }
       }
 
       // create the toplevel transition
@@ -119,7 +193,7 @@ namespace we { namespace mgmt {
         pid_t mr_inp = map_reduce.add_place(place_t("in"));
         pid_t mr_out = map_reduce.add_place(place_t("out"));
 
-        transition_t map_reduce_trans("map-reduce", map_reduce);
+        transition_t map_reduce_trans("map-reduce", map_reduce_subnet);
         map_reduce_trans.connect(mr_inp, mr_sn_inp);
         map_reduce_trans.connect(mr_out, mr_sn_out);
         map_reduce_trans.flags.internal = true;
