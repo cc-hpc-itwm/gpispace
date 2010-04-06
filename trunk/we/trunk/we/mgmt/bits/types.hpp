@@ -143,15 +143,22 @@ namespace we { namespace mgmt {
 
 	  enum transition_cat
 	  {
-		INTERNAL_SIMPLE
-	  , INTERNAL_COMPLX
-	  , EXTERNAL
+        MODULE_CALL
+	  , EXPRESSION
+      , NET
 	  };
+
+      struct flags_t
+      {
+        bool internal : 1;
+      };
 
 	  transition_t (const std::string & name_, transition_cat category_)
 		: name(name_)
 		, type(category_)
-	  {}
+	  {
+        flags.internal = false;
+      }
 
 	  template <typename Input, typename OutputDescription, typename Output>
 	  void operator ()(Input const & input, OutputDescription const & desc, Output & output) const
@@ -172,6 +179,7 @@ namespace we { namespace mgmt {
 
 	  std::string name;
 	  transition_cat type;
+      flags_t flags;
 	};
     template <typename P, typename E, typename T>
 	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)

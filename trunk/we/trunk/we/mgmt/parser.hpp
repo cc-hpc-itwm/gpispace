@@ -65,8 +65,8 @@ namespace we { namespace mgmt {
 	  pid_t pid_in = net.add_place(place_t("in"));
 	  pid_t pid_out = net.add_place(place_t("out"));
 
-	  tid_t tid_map = net.add_transition (transition_t("map", transition_t::INTERNAL_SIMPLE));
-	  tid_t tid_red = net.add_transition (transition_t("red", transition_t::INTERNAL_SIMPLE));
+	  tid_t tid_map = net.add_transition (transition_t("map", transition_t::MODULE_CALL));
+	  tid_t tid_red = net.add_transition (transition_t("red", transition_t::MODULE_CALL));
 
 	  net.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, pid_in));
 	  net.add_edge (edge_t("red"), petri_net::connection_t (petri_net::TP, tid_red, pid_out));
