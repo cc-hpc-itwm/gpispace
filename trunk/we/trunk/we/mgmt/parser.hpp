@@ -50,6 +50,11 @@ namespace we { namespace mgmt {
 	typedef typename traits_type::edge_t edge_t;
 	typedef typename traits_type::token_t token_t;
 
+    // TODO parsing should return an "activity" styly thing
+    //      where this activity thing contains one of:
+    //         - network
+    //         - expression
+    //         - module call
 	static void parse (net_type & net, const data_type &)
 	{
 	  // map-reduce network with 3 parallel nodes
