@@ -190,18 +190,6 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
 
         self.diagramType = diagramType
         self.contextMenu = contextMenu
-
-        path = QtGui.QPainterPath()
-        if self.diagramType == self.Place:
-            path.addEllipse(-15, -15, 30, 30)
-            self.myPolygon = path.toFillPolygon()
-        elif self.diagramType == self.Transition:
-            path.addRect(-25, -10, 50, 20)
-            self.myPolygon = path.toFillPolygon()
-        else:
-            raise "Invalid item type %d" % diagramType
-
-        self.setPolygon(self.myPolygon)
         self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable, True)
 
@@ -225,13 +213,7 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
         self.edges.append(edge)
 
     def image(self):
-        pixmap = QtGui.QPixmap(250, 250)
-        pixmap.fill(QtCore.Qt.transparent)
-        painter = QtGui.QPainter(pixmap)
-        painter.setPen(QtGui.QPen(QtCore.Qt.black, 8))
-        painter.translate(125, 125)
-        painter.drawPolyline(self.myPolygon)
-        return pixmap
+      raise "not implemented"
 
     def contextMenuEvent(self, event):
         self.scene().clearSelection()
@@ -242,9 +224,45 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
         if change == QtGui.QGraphicsItem.ItemPositionChange:
             for edge in self.edges:
                 edge.updatePosition()
-
         return value
 
+class Place(DiagramItem):
+  def __init__(self, contextMenu, parent=None, scene=None):
+    DiagramItem.__init__(self, DiagramItem.Place, contextMenu, parent, scene)
+    path = QtGui.QPainterPath()
+    path.addEllipse(-15, -15, 30, 30)
+    self.setPolygon(path.toFillPolygon())
+
+  def image(self):
+    pixmap = QtGui.QPixmap(250, 250)
+    pixmap.fill(QtCore.Qt.transparent)
+    painter = QtGui.QPainter(pixmap)
+    painter.setPen(QtGui.QPen(QtCore.Qt.black, 8))
+    painter.translate(125, 125)
+
+    path = QtGui.QPainterPath()
+    path.addEllipse(-70, -70, 140, 140)
+    painter.drawPolyline(path.toFillPolygon())
+    return pixmap
+
+class Transition(DiagramItem):
+  def __init__(self, contextMenu, parent=None, scene=None):
+    DiagramItem.__init__(self, DiagramItem.Transition, contextMenu, parent, scene)
+    path = QtGui.QPainterPath()
+    path.addRect(-25, -10, 50, 20)
+    self.setPolygon(path.toFillPolygon())
+
+  def image(self):
+    pixmap = QtGui.QPixmap(250, 250)
+    pixmap.fill(QtCore.Qt.transparent)
+    painter = QtGui.QPainter(pixmap)
+    painter.setPen(QtGui.QPen(QtCore.Qt.black, 8))
+    painter.translate(125, 125)
+
+    path = QtGui.QPainterPath()
+    path.addRect(-100, -50, 200, 100)
+    painter.drawPolyline(path.toFillPolygon())
+    return pixmap
 
 class DiagramScene(QtGui.QGraphicsScene):
     InsertItem, InsertLine, InsertText, MoveItem  = range(4)
@@ -266,7 +284,6 @@ class DiagramScene(QtGui.QGraphicsScene):
         self.myItemColor = QtCore.Qt.white
         self.myTextColor = QtCore.Qt.black
         self.myLineColor = QtCore.Qt.black
-        self.myFont = QtGui.QFont()
 
     def accept(self, visitor):
         visitor.visit_scene(self)
@@ -290,12 +307,6 @@ class DiagramScene(QtGui.QGraphicsScene):
             item = self.selectedItems()[0]
             item.setBrush(self.myItemColor)
 
-    def setFont(self, font):
-        self.myFont = font
-        if self.isItemChange(DiagramTextItem):
-            item = self.selectedItems()[0]
-            item.setFont(self.myFont)
-
     def setMode(self, mode):
         self.myMode = mode
 
@@ -312,12 +323,18 @@ class DiagramScene(QtGui.QGraphicsScene):
             item.deleteLater()
 
     def addItemByType(self, type, pos):
-        item = DiagramItem(type, self.myItemMenu)
-        item.setBrush(self.myItemColor)
-        self.addItem(item)
-        if pos is not None: item.setPos(pos)
-        self.itemInserted.emit(item)
-        return item
+      if type == DiagramItem.Place:
+        item = Place(self.myItemMenu)
+      elif type == DiagramItem.Transition:
+        item = Transition(self.myItemMenu)
+      else:
+        raise Exception("unknown item type %s" % (type))
+      item.setBrush(self.myItemColor)
+      self.addItem(item)
+      if pos is not None:
+        item.setPos(pos)
+      self.itemInserted.emit(item)
+      return item
 
     def addPlace(self, pos=None):
         return self.addItemByType(DiagramItem.Place, pos)
@@ -385,6 +402,79 @@ class DiagramScene(QtGui.QGraphicsScene):
                 return True
         return False
 
+class DragItem(QtGui.QToolButton):
+  def __init__(self, type, parent=None):
+    QtGui.QToolButton.__init__(self, parent)
+    if type == DiagramItem.Place:
+      self.image = Place(None).image()
+    elif type == DiagramItem.Transition:
+      self.image = Transition(None).image()
+    self.type = type
+    self.setIcon(QtGui.QIcon(self.image))
+    self.setIconSize(QtCore.QSize(50, 50))
+    self.setCheckable(True)
+
+  def mousePressEvent(self, event):
+    #QtGui.QToolButton.mousePressEvent(self, event)
+    pass
+
+  def mouseMoveEvent(self, event):
+    if event.buttons() != QtCore.Qt.LeftButton:
+      return
+
+    itemData = QtCore.QByteArray()
+    dataStream = QtCore.QDataStream(itemData, QtCore.QIODevice.WriteOnly)
+    dataStream.writeInt32(int(self.type))
+
+    mimeData = QtCore.QMimeData()
+    mimeData.setData("application/x-pnet-item", itemData)
+
+    drag = QtGui.QDrag(self)
+    drag.setMimeData(mimeData)
+    drag.setPixmap(self.icon().pixmap(50))
+    drag.setHotSpot(event.pos() - self.pos())
+
+    dropAction = drag.start(QtCore.Qt.MoveAction)
+
+    if dropAction == QtCore.Qt.MoveAction:
+        self.close()
+
+class EditorView(QtGui.QGraphicsView):
+  def __init__(self, scene, parent=None):
+    QtGui.QGraphicsView.__init__(self, scene, parent)
+    self.setAcceptDrops(True)
+
+  def dragEnterEvent(self, event):
+    if event.mimeData().hasFormat("application/x-pnet-item"):
+      if event.source() == self:
+        event.setDropAction(QtCore.Qt.MoveAction)
+        event.accept()
+      else:
+        event.acceptProposedAction()
+    else:
+      print "ignoring invalid mimedata: %s" % (event.mimeData())
+
+  dragMoveEvent = dragEnterEvent
+
+  def dropEvent(self, event):
+    if event.mimeData().hasFormat("application/x-pnet-item"):
+      itemData = event.mimeData().data("application/x-pnet-item")
+      dataStream = QtCore.QDataStream(itemData, QtCore.QIODevice.ReadOnly)
+      type = int(dataStream.readInt32())
+      if type == DiagramItem.Place:
+        self.scene().addPlace(self.mapToScene(event.pos()))
+      if type == DiagramItem.Transition:
+        self.scene().addTransition(self.mapToScene(event.pos()))
+      else:
+        event.ignore()
+
+      if event.source() == self:
+        event.setDropAction(QtCore.Qt.QMoveAction)
+        event.accept()
+      else:
+        event.acceptProposedAction()
+    else:
+      event.ignore()
 
 class MainWindow(QtGui.QMainWindow):
     InsertTextButton = 10
@@ -405,12 +495,11 @@ class MainWindow(QtGui.QMainWindow):
 
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.toolBox)
-        self.view = QtGui.QGraphicsView(self.scene)
+        self.view = EditorView(self.scene)
         layout.addWidget(self.view)
 
         self.widget = QtGui.QWidget()
         self.widget.setLayout(layout)
-
         self.setCentralWidget(self.widget)
         self.setWindowTitle("Petri-Net Editor")
 
@@ -492,13 +581,7 @@ class MainWindow(QtGui.QMainWindow):
         self.scene.setLineColor(QtGui.QColor(self.lineAction.data()))
 
     def itemSelected(self, item):
-        font = item.font()
-        color = item.defaultTextColor()
-        self.fontCombo.setCurrentFont(font)
-        self.fontSizeCombo.setEditText(str(font.pointSize()))
-        self.boldAction.setChecked(font.weight() == QtGui.QFont.Bold)
-        self.italicAction.setChecked(font.italic())
-        self.underlineAction.setChecked(font.underline())
+      pass
 
     def about(self):
         QtGui.QMessageBox.about(self, "About Diagram Scene",
@@ -621,13 +704,7 @@ class MainWindow(QtGui.QMainWindow):
         self.pointerToolbar.addWidget(self.sceneScaleCombo)
 
     def createCellWidget(self, text, diagramType):
-        item = DiagramItem(diagramType, self.itemMenu)
-        icon = QtGui.QIcon(item.image())
-
-        button = QtGui.QToolButton()
-        button.setIcon(icon)
-        button.setIconSize(QtCore.QSize(50, 50))
-        button.setCheckable(True)
+        button = DragItem(diagramType)
         self.buttonGroup.addButton(button, diagramType)
 
         layout = QtGui.QGridLayout()
