@@ -6,8 +6,7 @@
 #include <string>
 #include <sstream>
 
-namespace util
-{
+namespace we { namespace util {
   template<typename T>
   inline T read (const std::string & showed)
   {
@@ -51,6 +50,6 @@ namespace util
 
     return (sign > 0) ? x : -x;
   }
-}
+}}
 
 #endif

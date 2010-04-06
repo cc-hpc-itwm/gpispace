@@ -4,6 +4,7 @@
 #include <we/function/trans.hpp>
 #include <we/function/cond_exp.hpp>
 
+#include <we/util/read.hpp>
 #include <we/util/show.hpp>
 #include <we/function/cond.hpp>
 #include <we/util/warnings.hpp>

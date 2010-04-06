@@ -37,7 +37,7 @@ static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
                               )
 {
   we::util::remove_unused_variable_warning (output_descr);
-  ++cnt_trans;
+//  ++cnt_trans;
 
   map_t m;
 

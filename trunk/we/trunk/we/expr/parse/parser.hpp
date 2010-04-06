@@ -49,7 +49,7 @@ namespace expr
   namespace parse
   {
     template< typename Key
-            , Key READ (const std::string &) = util::read<Key>
+            , Key READ (const std::string &) = we::util::read<Key>
             >
     struct parser
     {
