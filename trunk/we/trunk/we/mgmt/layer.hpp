@@ -41,6 +41,7 @@
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
+#include <we/mgmt/bits/activity.hpp>
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/parser.hpp>
 
