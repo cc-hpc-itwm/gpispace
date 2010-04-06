@@ -122,7 +122,7 @@ namespace we { namespace mgmt { namespace detail {
 		{
 		  we::util::remove_unused_variable_warning(data);
 		  decode_type n;
-		  parser<net_type>::parse(n, data);
+		  parser<decode_type>::parse(n, data);
 		  return n;
 		}
 
@@ -147,7 +147,6 @@ namespace we { namespace mgmt { namespace detail {
 	  typedef def::id_traits<IdType> id_traits;
 	  typedef def::status_traits<int> status_traits;
 	  typedef def::net_traits<Net> net_traits;
-	  typedef def::codec<Net, std::string> codec_type;
 	  typedef def::result_traits<std::string> result_traits;
 	  typedef def::reason_traits<std::string> reason_traits;
 	};

@@ -20,7 +20,9 @@
 #define WE_MGMT_BITS_TYPES_HPP 1
 
 #include <string>
+#include <cassert>
 #include <we/net.hpp>
+#include <we/mgmt/bits/pid_map_t.hpp>
 
 namespace we { namespace mgmt {
 
@@ -139,25 +141,173 @@ namespace we { namespace mgmt {
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
-      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
-
-	  enum transition_cat
+	  enum Category
 	  {
-        MODULE_CALL
+        MOD_CALL
 	  , EXPRESSION
       , NET
 	  };
+
+      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
+      struct mod_t
+      {
+        mod_t(std::string const &m)
+          : v(m) {}
+        std::string v;
+      };
+      struct expr_t
+      {
+        expr_t(std::string const &e)
+          : v(e) {}
+        std::string v;
+      };
+
+      typedef mod_t mod_type;
+      typedef expr_t expr_type;
+
+      typedef petri_net::pid_t pid_t;
+      typedef typename traits::pid_map_traits<pid_t>::type pid_map_t;
+      typedef Category category_t;
 
       struct flags_t
       {
         bool internal : 1;
       };
 
-	  transition_t (const std::string & name_, transition_cat category_)
+      template <typename Type>
+	  transition_t (const std::string & name_, Type const & typ, bool intern = false)
 		: name(name_)
-		, type(category_)
 	  {
-        flags.internal = false;
+        assign(typ);
+        flags.internal = intern;
+      }
+
+      transition_t (const transition_t &other)
+        : name(other.name)
+        , type(other.type)
+        , flags(other.flags)
+        , mapping(other.mapping)
+      {
+        switch (type)
+        {
+          case MOD_CALL:
+            data.mod = new mod_type( *other.data.mod );
+            break;
+          case NET:
+            data.net = new net_type( *other.data.net );
+            break;
+          case EXPRESSION:
+            data.expr = new expr_type( *other.data.expr );
+            break;
+          default:
+            assert(false);
+        }
+      }
+
+      void assign( net_type const & net )
+      {
+        clear();
+        type = NET;
+        data.net = new net_type (net);
+      }
+
+      void assign( expr_type const & expr )
+      {
+        clear();
+        type = EXPRESSION;
+        data.expr = new expr_type (expr);
+      }
+
+      void assign( mod_type const & mod )
+      {
+        clear();
+        type = MOD_CALL;
+        data.mod = new mod_type (mod);
+      }
+
+      inline
+      void clear()
+      {
+        if (data.ptr)
+        {
+          switch (type)
+          {
+            case NET:
+              delete data.net;
+              break;
+            case MOD_CALL:
+              delete data.mod;
+              break;
+            case EXPRESSION:
+              delete data.expr;
+              break;
+            default:
+              assert(false);
+          }
+        }
+        data.ptr = 0;
+      }
+
+      transition_t & operator=(const transition_t & other)
+      {
+        if (this != &other)
+        {
+          name = other.name;
+          flags = other.flags;
+          mapping = other.mapping;
+
+          switch (type) // old type
+          {
+            case MOD_CALL:
+              delete data.mod;
+              break;
+            case NET:
+              delete data.net;
+              break;
+            case EXPRESSION:
+              delete data.expr;
+              break;
+            default:
+              assert(false);
+          }
+
+          type = other.type;
+
+          switch (type) // new type
+          {
+            case MOD_CALL:
+              data.mod = new mod_type( *other.data.mod );
+              break;
+            case NET:
+              data.net = new net_type( *other.data.net );
+              break;
+            case EXPRESSION:
+              data.expr = new expr_type( *other.data.expr );
+              break;
+            default:
+              assert(false);
+          }
+        }
+        return *this;
+      }
+
+      ~transition_t ()
+      {
+        if (type == NET)
+        {
+          delete data.net;
+          data.net = 0;
+        }
+        else if (type == MOD_CALL)
+        {
+          delete data.mod;
+          data.mod = 0;
+        }
+        else if (type == EXPRESSION)
+        {
+          delete data.expr;
+          data.expr = 0;
+        }
       }
 
 	  template <typename Input, typename OutputDescription, typename Output>
@@ -177,9 +327,24 @@ namespace we { namespace mgmt {
 		}
 	  }
 
+      template <typename Pid>
+      void connect(const Pid outer, const Pid inner)
+      {
+        mapping.insert (pid_map_t::value_type(outer, inner));
+      }
+
+      union
+      {
+        net_type *net;
+        expr_type *expr;
+        mod_type *mod;
+        void *ptr;
+      } data;
+
 	  std::string name;
-	  transition_cat type;
+	  category_t type;
       flags_t flags;
+      pid_map_t mapping;
 	};
     template <typename P, typename E, typename T>
 	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
