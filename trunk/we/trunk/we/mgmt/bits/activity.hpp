@@ -84,7 +84,8 @@ namespace we { namespace mgmt { namespace detail {
     }
 
     activity (const this_type & other)
-      : id_ (other.id_)
+      : flags (other.flags)
+      , id_ (other.id_)
       , type_ (other.type_)
       , parent_ (other.parent_)
       , children_ (other.children_)
@@ -116,6 +117,7 @@ namespace we { namespace mgmt { namespace detail {
     {
       if (this != &other)
       {
+        flags = (other.flags);
         id_  = (other.id_);
         parent_ = (other.parent_);
         children_ = (other.children_);
