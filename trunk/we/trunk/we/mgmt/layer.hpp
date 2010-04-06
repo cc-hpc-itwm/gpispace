@@ -567,7 +567,7 @@ namespace we { namespace mgmt {
 		void net_needs_attention(const cmd_t & cmd)
 		{
           activity_type & a = lookup ( cmd.dat );
-          if (! a.flags.suspended )
+          if (! a.flags().suspended )
           {
             std::cerr << "D: act[" << cmd.dat << "] active" << std::endl;
             active_nets_.put (cmd.dat);
@@ -607,13 +607,13 @@ namespace we { namespace mgmt {
 
 		void suspend_net(const cmd_t & cmd)
 		{
-		  lookup(cmd.dat).flags.suspended = true;
+		  lookup(cmd.dat).flags().suspended = true;
 		  std::cerr << "I: net[" << cmd.dat << "] suspended" << std::endl;
 		}
 
 		void resume_net(const cmd_t & cmd)
 		{
-		  lookup(cmd.dat).flags.suspended = false;
+		  lookup(cmd.dat).flags().suspended = false;
 		  active_nets_.put (cmd.dat);
 		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
 		}

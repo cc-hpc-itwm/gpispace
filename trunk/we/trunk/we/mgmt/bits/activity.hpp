@@ -79,137 +79,68 @@ namespace we { namespace mgmt { namespace detail {
     explicit
     activity (const id_type id)
       : id_ (id)
-    {
-      data.ptr = 0;
-    }
+    { }
 
     activity (const this_type & other)
-      : flags (other.flags)
-      , id_ (other.id_)
-      , type_ (other.type_)
+      : id_ (other.id_)
       , parent_ (other.parent_)
+      , flags_ (other.flags_)
       , children_ (other.children_)
+      , transition_ (other.transition_)
       , input_ (other.input_)
       , output_ (other.output_)
       , extracted_ (other.extracted_)
       , injected_ (other.injected_)
-    {
-      if (other.data.ptr)
-      {
-        switch (type_) // new type
-        {
-          case transition_type::MOD_CALL:
-            assign ( *other.data.mod );
-            break;
-          case transition_type::NET:
-            assign ( *other.data.net );
-            break;
-          case transition_type::EXPRESSION:
-            assign ( *other.data.expr );
-            break;
-          default:
-            assert(false);
-        }
-      }
-    }
+    { }
 
     activity & operator= (const this_type & other)
     {
       if (this != &other)
       {
-        flags = (other.flags);
         id_  = (other.id_);
         parent_ = (other.parent_);
+        flags_ = (other.flags_);
         children_ = (other.children_);
+        transition_ = (other.transition_);
         input_ = (other.input_);
         output_ = (other.output_);
         extracted_ = (other.extracted_);
         injected_ = (other.injected_);
-
-        clear();
-
-        type_  = (other.type_);
-        if (other.data.ptr)
-        {
-          switch (type_) // new type
-          {
-            case transition_type::MOD_CALL:
-              assign ( *other.data.mod );
-              break;
-            case transition_type::NET:
-              assign ( *other.data.net );
-              break;
-            case transition_type::EXPRESSION:
-              assign ( *other.data.expr );
-              break;
-            default:
-              assert(false);
-          }
-        }
       }
       return *this;
     }
 
-    void assign( net_type const & net )
+    template <typename T>
+    void assign( T const & t )
     {
-      clear();
-      type_ = transition_type::NET;
-      data.net = new net_type (net);
+      unique_lock_t lock(*this);
+      transition_ = t;
     }
 
-    void assign( expr_type const & expr )
+    struct flags_t
     {
-      clear();
-      type_ = transition_type::EXPRESSION;
-      data.expr = new expr_type (expr);
-    }
-
-    void assign( mod_type const & mod )
-    {
-      clear();
-      type_ = transition_type::MOD_CALL;
-      data.mod = new mod_type (mod);
-    }
-
-    inline
-    void clear()
-    {
-      if (data.ptr)
-      {
-        switch (type_)
-        {
-          case transition_type::NET:
-            delete data.net;
-            break;
-          case transition_type::MOD_CALL:
-            delete data.mod;
-            break;
-          case transition_type::EXPRESSION:
-            delete data.expr;
-            break;
-          default:
-            assert(false);
-        }
-      }
-      data.ptr = 0;
-    }
-
-    struct
-    {
-      bool internal : 1;
-
       bool suspended : 1;
       bool cancelling : 1;
       bool cancelled : 1;
       bool failed : 1;
-    } flags;
+    };
+
+    inline
+    flags_t const & flags() const
+    {
+      return flags_;
+    }
+    inline
+    flags_t & flags()
+    {
+      return flags_;
+    }
 
     inline
     bool is_alive() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-//      shared_lock_t lock(mutex_);
-      return ( flags.suspended || flags.cancelling || flags.cancelled ) == false;
+      return ( flags_.suspended || flags_.cancelling || flags_.cancelled ) == false;
     }
 
     inline
@@ -217,13 +148,6 @@ namespace we { namespace mgmt { namespace detail {
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return children_.empty();
-    }
-
-    template <typename Category>
-    void setType(const Category cat)
-    {
-      unique_lock_t lock(const_cast<this_type&>(*this));
-      type_ = cat;
     }
 
     inline
@@ -246,13 +170,11 @@ namespace we { namespace mgmt { namespace detail {
     {
       unique_lock_t lock(const_cast<this_type&>(*this));
 
-      // this function is only valid for net-types!
-      assert ( flags.internal && type_ == transition_type::NET );
-
-      typename net_type::activity_t net_activity = data.net->extract_activity_random(engine_);
+      typename net_type::activity_t net_activity = transition_.template as<net_type>()->extract_activity_random(engine_);
 
       this_type act = this->create_activity_from_net_activity (net_activity, id_gen());
 
+      ++extracted_;
       return act;
     }
 
@@ -267,25 +189,24 @@ namespace we { namespace mgmt { namespace detail {
       // can inject
       output_t mapped_output;
       mapped_output.reserve (o.size());
-      map_from_local (o.begin(), o.end(), mapped_output.begin());
+      map_from_local (o.begin(), o.end(), std::back_inserter(mapped_output));
 
-      if (type_ == transition_type::NET)
+      if (transition_.is_net())
       {
-        data.net->inject_activity_result (mapped_output);
+        transition_. template as<net_type>()->inject_activity_result (mapped_output);
       }
       else
       {
         output_ = mapped_output;
       }
-
-      throw std::runtime_error("not implemented yet");
+      ++injected_;
     }
 
     bool
     done (void) const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      if (type_ == transition_type::NET)
+      if (transition_.is_net())
       {
         return (extracted_ == injected_) && ( ! has_enabled() );
       }
@@ -299,8 +220,8 @@ namespace we { namespace mgmt { namespace detail {
     has_enabled (void) const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      if (type_ == transition_type::NET)
-        return ! (this->data.net->enabled_transitions().empty());
+      if (transition_.is_net())
+        return ! (transition_.template as<net_type>()->enabled_transitions().empty());
       else
         return false;
     }
@@ -315,17 +236,10 @@ namespace we { namespace mgmt { namespace detail {
     num_enabled (void) const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      if (type_ == transition_type::NET)
-        return ! (this->data.net->enabled_transitions().empty());
+      if (transition_.is_net())
+        return (transition_.template as<net_type>()->enabled_transitions().size());
       else
         return 0;
-    }
-
-    void
-    map_place (const pid_t outer, const pid_t inner)
-    {
-      unique_lock_t lock(const_cast<this_type&>(*this));
-      pid_mapping_.insert(typename pid_map_t::value_type(outer, inner));
     }
 
     // **********************************
@@ -392,7 +306,7 @@ namespace we { namespace mgmt { namespace detail {
       for (Iter it (begin); it != end; ++it)
       {
         typename pid_map_traits::result_type map_result = 
-          pid_map_traits::map_from( pid_mapping_, it->second );
+          pid_map_traits::map_from( transition_.o_mapping, it->second );
         if (map_result.second) // mapped
         {
           *dst++ = token_on_place_t (it->first, map_result.first);
@@ -406,7 +320,7 @@ namespace we { namespace mgmt { namespace detail {
       for (Iter it (begin); it != end; ++it)
       {
         typename pid_map_traits::result_type map_result = 
-          pid_map_traits::map_to( pid_mapping_, it->second.first );
+          pid_map_traits::map_to( transition_.i_mapping, it->second.first );
         if (map_result.second) // mapped
         {
           *dst++ = token_on_place_t (it->first, map_result.first);
@@ -420,34 +334,11 @@ namespace we { namespace mgmt { namespace detail {
     {
       this_type act(id);
       this->link_with_child(act);
-      typename net_type::transition_type trans = this->data.net->get_transition (net_act.tid);
-      act.type_ = trans.type;
-      act.flags.internal = trans.flags.internal;
-      act.pid_mapping_ = trans.mapping;
+      typename net_type::transition_type trans = transition_.template as<net_type>()->get_transition (net_act.tid);
+      act.assign (trans);
       act.input_.reserve (net_act.input.size());
 
-      act.map_to_local (net_act.input.begin(), net_act.input.end(), std::back_inserter(act.input_));
-
       return act;
-    }
-
-    // TODO: remove this overload, it's only here until we remove edges from the net
-    inline
-    token_on_place_t map_to_local(const typename net_type::token_input_t & t_p_via_e) const
-    {
-      return token_on_place_t (t_p_via_e.first, map_to_local(t_p_via_e.second.first));
-    }
-
-    inline
-    token_on_place_t map_to_local(const token_on_place_t & top) const
-    {
-      return token_on_place_t (top.first, map_to_local(top.second));
-    }
-
-    inline
-    token_on_place_t map_from_local(const token_on_place_t & top) const
-    {
-      return token_on_place_t (top.first, map_from_local(top.second));
     }
 
     template <typename Activity>
@@ -467,33 +358,26 @@ namespace we { namespace mgmt { namespace detail {
     template<class Archive>
     void serialize (Archive & ar, const unsigned int version)
     {
-      ar & BOOST_SERIALIZATION_NVP(type_);
       ar & BOOST_SERIALIZATION_NVP(id_);
-      ar & BOOST_SERIALIZATION_NVP(children_);
       ar & BOOST_SERIALIZATION_NVP(parent_);
+      ar & BOOST_SERIALIZATION_NVP(flags_);
+      ar & BOOST_SERIALIZATION_NVP(children_);
+      ar & BOOST_SERIALIZATION_NVP(transition_);
       ar & BOOST_SERIALIZATION_NVP(input_);
       ar & BOOST_SERIALIZATION_NVP(output_);
-      ar & BOOST_SERIALIZATION_NVP(pid_mapping_);
     }
 
   private:
     id_type id_;
-    activity_cat_t type_;
     id_type parent_;
+    flags_t flags_;
     mutable boost::shared_mutex mutex_;
     children_set_t children_;
 
-    union
-    {
-      mod_type *mod;
-      net_type *net;
-      expr_type *expr;
-      void *ptr;
-    } data;
+    transition_type transition_;
 
     input_t input_;
     output_t output_;
-    pid_map_t pid_mapping_;
 
     size_t extracted_;
     size_t injected_;

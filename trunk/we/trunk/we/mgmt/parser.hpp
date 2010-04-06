@@ -131,8 +131,8 @@ namespace we { namespace mgmt {
           hull_out.push_back (pid_wo);
 
           transition_t wrk_trans ("work"+show(n), typename transition_t::mod_type("map_reduce", "work"));
-          wrk_trans.connect (pid_wi, pid_t(0));
-          wrk_trans.connect (pid_wo, pid_t(1));
+          wrk_trans.connect_in (pid_wi, pid_t(0));
+          wrk_trans.connect_out (pid_wo, pid_t(1));
 
           const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
 
@@ -144,15 +144,15 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t map_trans ("map", typename transition_t::expr_type("$1 = (1); $2 = (2); $3 = (3);"));
+          transition_t map_trans ("map", typename transition_t::expr_type("$1 := (1); $2 := (2); $3 := (3);"));
 
           // emulate ports for now
-          map_trans.connect ( mr_sn_inp, pid_t (0) ); // port_0
+          map_trans.connect_in ( mr_sn_inp, pid_t (0) ); // port_0
 
           size_t cnt(0);
           for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
           {
-            map_trans.connect ( *i, pid_t (1 + (cnt++)) ); // port_1 .. port_N
+            map_trans.connect_out ( *i, pid_t (1 + (cnt++)) ); // port_1 .. port_N
           }
           tid_t tid_map = map_reduce_subnet.add_transition ( map_trans );
           map_reduce_subnet.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, mr_sn_inp));
@@ -166,13 +166,13 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t red_trans ("red", typename transition_t::expr_type("$1 = (0);"));
-          red_trans.connect (mr_sn_out, pid_t (NUM_NODES)); // port_1
+          transition_t red_trans ("red", typename transition_t::expr_type("$1 := (0);"));
+          red_trans.connect_out (mr_sn_out, pid_t (NUM_NODES)); // port_1
 
           size_t cnt(0);
           for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
           {
-            red_trans.connect ( *o, pid_t (0 + (cnt)) );
+            red_trans.connect_in ( *o, pid_t (0 + (cnt)) );
             cnt++;
           }
           tid_t tid_red = map_reduce_subnet.add_transition ( red_trans );
@@ -194,12 +194,11 @@ namespace we { namespace mgmt {
         pid_t mr_inp = map_reduce.add_place(place_t("in"));
         pid_t mr_out = map_reduce.add_place(place_t("out"));
 
-        transition_t map_reduce_trans("map-reduce", map_reduce_subnet);
-        map_reduce_trans.connect(mr_inp, mr_sn_inp);
-        map_reduce_trans.connect(mr_out, mr_sn_out);
-        map_reduce_trans.flags.internal = true;
+        transition_t map_reduce_sub_trans("map-reduce", map_reduce_subnet, true);
+        map_reduce_sub_trans.connect_in  (mr_inp, mr_sn_inp);
+        map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
 
-        tid_t tid_sub = map_reduce.add_transition( map_reduce_trans );
+        tid_t tid_sub = map_reduce.add_transition( map_reduce_sub_trans );
         map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
         map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
 
@@ -210,8 +209,9 @@ namespace we { namespace mgmt {
           map_reduce.put_token(mr_inp, token_t(name));
         }
 
-        act.assign (map_reduce);
-        act.flags.internal = true;
+        // dummy transition
+        transition_t map_reduce_trans ("map-reduce", map_reduce, true);
+        act.assign (map_reduce_trans);
       }
     }
   };

@@ -138,12 +138,20 @@ namespace we { namespace mgmt {
 	  return s << e.name;
 	}
 
+    namespace tag {
+      struct net_type_tag {};
+      struct mod_type_tag {};
+      struct expr_type_tag {};
+      struct nil_type_tag {};
+    }
+
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
 	  enum Category
 	  {
-        MOD_CALL
+        UNKNOWN
+      , MOD_CALL
 	  , EXPRESSION
       , NET
 	  };
@@ -176,6 +184,13 @@ namespace we { namespace mgmt {
         bool internal : 1;
       };
 
+      transition_t ()
+        : name ("unknown")
+        , type (UNKNOWN)
+      {
+        data.ptr = 0;
+      }
+
       template <typename Type>
 	  transition_t (const std::string & name_, Type const & typ, bool intern = false)
 		: name(name_)
@@ -189,7 +204,8 @@ namespace we { namespace mgmt {
         : name(other.name)
         , type(other.type)
         , flags(other.flags)
-        , mapping(other.mapping)
+        , i_mapping(other.i_mapping)
+        , o_mapping(other.o_mapping)
       {
         data.ptr = 0;
         if (other.data.ptr)
@@ -232,6 +248,42 @@ namespace we { namespace mgmt {
         data.mod = new mod_type (mod);
       }
 
+      bool is_net (void) const
+      {
+        return is( tag::net_type_tag () );
+      }
+
+      template <typename Tag>
+      bool is ( Tag & t ) const
+      {
+        return false;
+      }
+
+      bool is ( const tag::net_type_tag & ) const
+      {
+        return type == NET;
+      }
+      bool is ( const tag::mod_type_tag & ) const
+      {
+        return type == MOD_CALL;
+      }
+      bool is ( const tag::expr_type_tag & ) const
+      {
+        return type == EXPRESSION;
+      }
+
+      template <typename T>
+      T * as(void)
+      {
+        return (T*)(data.ptr);
+      }
+
+      template <typename T>
+      const T * as(void) const
+      {
+        return (const T*)(data.ptr);
+      }
+
       inline
       void clear()
       {
@@ -249,9 +301,10 @@ namespace we { namespace mgmt {
               delete data.expr;
               break;
             default:
-              assert(false);
+              break;
           }
         }
+        type = UNKNOWN;
         data.ptr = 0;
       }
 
@@ -261,7 +314,8 @@ namespace we { namespace mgmt {
         {
           name = other.name;
           flags = other.flags;
-          mapping = other.mapping;
+          i_mapping = other.i_mapping;
+          o_mapping = other.o_mapping;
           clear();
 
           type = other.type;
@@ -280,7 +334,7 @@ namespace we { namespace mgmt {
                 assign ( *other.data.expr );
                 break;
               default:
-                assert(false);
+                break;
             }
           }
         }
@@ -317,9 +371,15 @@ namespace we { namespace mgmt {
 	  }
 
       template <typename Pid>
-      void connect(const Pid outer, const Pid inner)
+      void connect_in(const Pid outer, const Pid inner)
       {
-        mapping.insert (pid_map_t::value_type(outer, inner));
+        i_mapping.insert (pid_map_t::value_type(outer, inner));
+      }
+
+      template <typename Pid>
+      void connect_out(const Pid outer, const Pid inner)
+      {
+        o_mapping.insert (pid_map_t::value_type(outer, inner));
       }
 
       union
@@ -333,7 +393,8 @@ namespace we { namespace mgmt {
 	  std::string name;
 	  category_t type;
       flags_t flags;
-      pid_map_t mapping;
+      pid_map_t i_mapping;
+      pid_map_t o_mapping;
 	};
     template <typename P, typename E, typename T>
 	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)

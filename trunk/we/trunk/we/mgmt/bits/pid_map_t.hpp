@@ -28,7 +28,7 @@ namespace we { namespace mgmt { namespace detail { namespace traits {
   {
     typedef Pid pid_t;
     typedef boost::bimaps::unordered_set_of<pid_t> pid_collection_t;
-    typedef boost::bimap<pid_collection_t, pid_collection_t> type;
+    typedef boost::bimap<pid_collection_t, pid_collection_t, boost::bimaps::unordered_set_of_relation<> > type;
     typedef std::pair<pid_t, bool> result_type;
 
     static result_type map_from(type const & map, const pid_t p)
