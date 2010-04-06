@@ -30,10 +30,10 @@ namespace we { namespace mgmt {
 	typedef typename petri_net::tid_t tid_t;
 	typedef typename petri_net::eid_t eid_t;
 
-	typedef typename detail::transition_t transition_t;
 	typedef typename detail::place_t place_t;
-	typedef typename detail::token_t token_t;
 	typedef typename detail::edge_t edge_t;
+	typedef typename detail::token_t token_t;
+	typedef typename detail::transition_t<place_t, edge_t, token_t> transition_t;
   };
 
   template <typename _Net, typename _Data = std::string, typename _Traits = NetTraits<_Net> >

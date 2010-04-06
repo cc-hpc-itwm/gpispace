@@ -8,7 +8,11 @@
 using namespace we::mgmt;
 using namespace test;
 
-typedef petri_net::net<we::mgmt::detail::place_t, we::mgmt::detail::transition_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t> pnet_t;
+// this is ugly
+typedef petri_net::net<we::mgmt::detail::place_t
+                     , we::mgmt::detail::transition_t<we::mgmt::detail::place_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t>
+                     , we::mgmt::detail::edge_t
+                     , we::mgmt::detail::token_t> pnet_t;
 
 typedef uint64_t id_type;
 //  typedef unsigned long id_type;

@@ -20,6 +20,7 @@
 #define WE_MGMT_BITS_TYPES_HPP 1
 
 #include <string>
+#include <we/net.hpp>
 
 namespace we { namespace mgmt {
 
@@ -100,54 +101,6 @@ namespace we { namespace mgmt {
 	  return s << p.name;
 	}
 
-	struct transition_t
-	{
-	  enum transition_cat
-	  {
-		INTERNAL_SIMPLE
-	  , INTERNAL_COMPLX
-	  , EXTERNAL
-	  };
-
-	  transition_t (const std::string & name_, transition_cat category_)
-		: name(name_)
-		, type(category_)
-	  {}
-
-	  template <typename Input, typename OutputDescription, typename Output>
-	  void operator ()(Input const & input, OutputDescription const & desc, Output & output) const
-	  {
-		for ( typename Input::const_iterator in (input.begin())
-			; in != input.end()
-			; ++in)
-		{
-		  for ( typename OutputDescription::const_iterator out (desc.begin())
-			  ; out != desc.end()
-			  ; ++out)
-		  {
-			std::cerr << "D: putting " << in->first << " to place " << out->first << std::endl;
-			output.push_back(std::make_pair(in->first, out->first));
-		  }
-		}
-	  }
-
-	  std::string name;
-	  transition_cat type;
-	};
-	inline bool operator==(const transition_t & a, const transition_t & b)
-	{
-	  return a.name == b.name;
-	}
-	inline std::size_t hash_value(transition_t const & t)
-	{
-	  boost::hash<std::string> hasher;
-	  return hasher(t.name);
-	}
-	inline std::ostream & operator<< (std::ostream & s, const transition_t & t)
-	{
-	  return s << t.name;
-	}
-
 	struct edge_t
 	{
 	  explicit
@@ -181,6 +134,60 @@ namespace we { namespace mgmt {
 	inline std::ostream & operator<< (std::ostream & s, const edge_t & e)
 	{
 	  return s << e.name;
+	}
+
+    template <typename Place, typename Edge, typename Token>
+	struct transition_t
+	{
+      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
+
+	  enum transition_cat
+	  {
+		INTERNAL_SIMPLE
+	  , INTERNAL_COMPLX
+	  , EXTERNAL
+	  };
+
+	  transition_t (const std::string & name_, transition_cat category_)
+		: name(name_)
+		, type(category_)
+	  {}
+
+	  template <typename Input, typename OutputDescription, typename Output>
+	  void operator ()(Input const & input, OutputDescription const & desc, Output & output) const
+	  {
+		for ( typename Input::const_iterator in (input.begin())
+			; in != input.end()
+			; ++in)
+		{
+		  for ( typename OutputDescription::const_iterator out (desc.begin())
+			  ; out != desc.end()
+			  ; ++out)
+		  {
+			std::cerr << "D: putting " << in->first << " to place " << out->first << std::endl;
+			output.push_back(std::make_pair(in->first, out->first));
+		  }
+		}
+	  }
+
+	  std::string name;
+	  transition_cat type;
+	};
+    template <typename P, typename E, typename T>
+	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
+	{
+	  return a.name == b.name;
+	}
+    template <typename P, typename E, typename T>
+	inline std::size_t hash_value(transition_t<P,E,T> const & t)
+	{
+	  boost::hash<std::string> hasher;
+	  return hasher(t.name);
+	}
+    template <typename P, typename E, typename T>
+	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
+	{
+	  return s << t.name;
 	}
   }
 }}
