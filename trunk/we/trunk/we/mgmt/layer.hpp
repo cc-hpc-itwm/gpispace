@@ -123,6 +123,7 @@ namespace we { namespace mgmt {
 		  using detail::commands::make_cmd;
           activity_type act(id);
           parser<net_type>::parse(act, bytes);
+          act.prepare_input();
           submit (id, act);
           std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
 //
@@ -265,7 +266,7 @@ namespace we { namespace mgmt {
 
 		void submit (const id_type & id, const activity_type & act)
 		{
-//		  debug_net (*act.data.net);
+		  debug_activity (act);
 		  {
 			insert_activity(id, act);
 		  }
@@ -481,17 +482,14 @@ namespace we { namespace mgmt {
 			{
               // TODO: when act is network, probably collect all output?
 			  activity_type & act = lookup( cmd.first );
-              act.inject (cmd.second.second);
+              act.inject_results (cmd.second.second);
               activity_type & par = lookup( act.parent() );
-              par.inject (act.output());
 			  std::cerr << "I: injecting results of "
 						<< "act[" << act.id() << "] into "
 						<< "act[" << par.id() << "]"
 						<< std::endl;
-
-//              unlink_parent_and_child( par, act );
+              par.inject_results (act.output());
 			  remove_activity ( act );
-			  par.inject ( act.output() );
 
               post_activity_notification( par.id() );
 			}
@@ -533,32 +531,18 @@ namespace we { namespace mgmt {
 		  std::cerr << n << std::endl;
 		}
 
-		template <typename Activity, typename N>
-		  inline void debug_activity(Activity const & act, N const & net)
+		template <typename Activity>
+		  inline void debug_activity(Activity const & act)
 		  {
-			std::cerr << "D: transition[" << act.tid << "](" << net.get_transition(act.tid) << "):" << std::endl;
+			std::cerr << "D: transition[" << act.id() << "](type=" << act.transition().type << " " << act.transition() << "):" << std::endl;
 			{
 			  std::cerr << "\tin:" << std::endl;
-			  for ( typename net_type::input_t::const_iterator it (act.input.begin())
-				  ; it != act.input.end()
+			  for ( typename Activity::input_t::const_iterator it (act.input().begin())
+				  ; it != act.input().end()
 				  ; ++it)
 			  {
 				std::cerr << "\t\t" << it->first
-				  << " from place " << it->second.first
-				  << " via edge " << it->second.second
-				  << std::endl;
-			  }
-			}
-
-			{
-			  std::cerr << "\tout:" << std::endl;
-			  for ( typename net_type::output_descr_t::const_iterator it (act.output_descr.begin())
-				  ; it != act.output_descr.end()
-				  ; ++it)
-			  {
-				std::cerr << "\t\t"
-				  << "to place " << it->first
-				  << " via edge " << it->second 
+				  << " on place " << it->second
 				  << std::endl;
 			  }
 			}
@@ -618,34 +602,20 @@ namespace we { namespace mgmt {
 		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
 		}
 
-//        inline
-//        void link_parent_and_child ( descriptor_type & parent, descriptor_type & child)
-//        { 
-//          child.parent = parent.id;
-//          parent.children.insert( child.id );
-//        }
-//
-//        inline
-//        void unlink_parent_and_child ( descriptor_type & parent, descriptor_type & child)
-//        { 
-//          child.parent = id_traits::nil();
-//          parent.children.erase ( child.id );
-//        }
-
-		void async_execute(activity_type const & act)
+		void async_execute(activity_type & act)
 		{
 		  std::cerr << "D: executing activity[" << act.id() << "]..." << std::endl;
-          throw std::runtime_error("not implemented");
-
-//		  descriptor_type act_desc (id_gen_(), descriptor_type::ACTIVITY);
-//          link_parent_and_child( parent_desc, act_desc );
-//		  insert_descriptor (act_desc.id, act_desc);
-//		  sig_execute( act_desc.id, "" );
-//		  debug_activity (act, parent_desc.get_real_net());
-//
-//		  typename net_type::output_t out;
-//		  parent_desc.get_real_net().get_transition (act.tid) (act.input, act.output_descr, out);
-//		  inj_q_.put ( std::make_pair (act_desc.id, std::make_pair(0, out)) );
+		  debug_activity (act);
+          if (act.transition().flags.internal)
+          {
+            std::cerr << "D: internal activity" << std::endl;
+            act.prepare_input();
+		    post_activity_notification (act.id());
+          }
+          else
+          {
+            sig_execute( act.id(), "" );
+          }
 		}
 
 		inline void insert_activity(const id_type & id, const activity_type & act)

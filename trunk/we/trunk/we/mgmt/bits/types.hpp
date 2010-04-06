@@ -250,7 +250,7 @@ namespace we { namespace mgmt {
 
       bool is_net (void) const
       {
-        return is( tag::net_type_tag () );
+        return type == NET;
       }
 
       template <typename Tag>

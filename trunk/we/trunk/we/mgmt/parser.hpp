@@ -189,12 +189,12 @@ namespace we { namespace mgmt {
 
       // create the toplevel transition
       {
-        net_type map_reduce ("map-reduce");
+        net_type map_reduce ("map-reduce-net");
 
         pid_t mr_inp = map_reduce.add_place(place_t("in"));
         pid_t mr_out = map_reduce.add_place(place_t("out"));
 
-        transition_t map_reduce_sub_trans("map-reduce", map_reduce_subnet, true);
+        transition_t map_reduce_sub_trans("map-reduce-subnet", map_reduce_subnet, true);
         map_reduce_sub_trans.connect_in  (mr_inp, mr_sn_inp);
         map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
 
@@ -202,16 +202,18 @@ namespace we { namespace mgmt {
         map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
         map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
 
+        // dummy transition
+        transition_t map_reduce_trans ("map-reduce", map_reduce, true);
+        map_reduce_trans.connect_in (pid_t(0), mr_inp);
+        map_reduce_trans.connect_out (pid_t(1), mr_out);
+        act.assign (map_reduce_trans);
+
         // put some tokens on the input
         for (std::size_t t (0); t < NUM_TOKEN; ++t)
         {
           std::string name = "token-" + show(t);
-          map_reduce.put_token(mr_inp, token_t(name));
+          act.input().push_back( std::make_pair(token_t(name), pid_t(0))); //  ) );map_reduce.put_token(mr_inp, token_t(name));
         }
-
-        // dummy transition
-        transition_t map_reduce_trans ("map-reduce", map_reduce, true);
-        act.assign (map_reduce_trans);
       }
     }
   };

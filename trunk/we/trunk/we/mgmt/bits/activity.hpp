@@ -164,6 +164,12 @@ namespace we { namespace mgmt { namespace detail {
       return parent_;
     }
 
+    inline
+    const transition_type & transition() const
+    {
+      return transition_;
+    }
+
     template <typename IdGen>
     this_type
     extract(IdGen id_gen)
@@ -181,9 +187,9 @@ namespace we { namespace mgmt { namespace detail {
     // TODO: work here
     template <typename Output>
     void
-    inject(const Output & o)
+    inject_results(const Output & o)
     {
-      unique_lock_t lock(const_cast<this_type&>(*this));
+      unique_lock_t lock(*this);
 
       // the passed results are in "local view", we have to map them before we
       // can inject
@@ -200,6 +206,30 @@ namespace we { namespace mgmt { namespace detail {
         output_ = mapped_output;
       }
       ++injected_;
+    }
+
+    void prepare_input()
+    {
+      unique_lock_t lock(*this);
+      if (transition_.is_net())
+      {
+        std::cerr << "mapping..." << std::endl;
+        for (typename input_t::const_iterator it = input_.begin(); it != input_.end(); ++it)
+        {
+          typename pid_map_traits::result_type map_result =
+            pid_map_traits::map_from( transition_.i_mapping, it->second );
+          // should always be safe!
+          if (map_result.second)
+          {
+            std::cerr << "\tmapped place " << it->second << " to " << map_result.first << std::endl;
+            transition_.template as<net_type>()->put_token( map_result.first, it->first );
+          }
+        }
+      }
+      else
+      {
+        // nothing to do (TODO?)
+      }
     }
 
     bool
@@ -224,6 +254,17 @@ namespace we { namespace mgmt { namespace detail {
         return ! (transition_.template as<net_type>()->enabled_transitions().empty());
       else
         return false;
+    }
+
+    const input_t & input() const
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return input_;
+    }
+    input_t & input()
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return input_;
     }
 
     const output_t & output() const
@@ -320,7 +361,7 @@ namespace we { namespace mgmt { namespace detail {
       for (Iter it (begin); it != end; ++it)
       {
         typename pid_map_traits::result_type map_result = 
-          pid_map_traits::map_to( transition_.i_mapping, it->second.first );
+          pid_map_traits::map_to( transition_.i_mapping, it->second );
         if (map_result.second) // mapped
         {
           *dst++ = token_on_place_t (it->first, map_result.first);
@@ -337,6 +378,16 @@ namespace we { namespace mgmt { namespace detail {
       typename net_type::transition_type trans = transition_.template as<net_type>()->get_transition (net_act.tid);
       act.assign (trans);
       act.input_.reserve (net_act.input.size());
+
+      for (typename net_type::input_t::const_iterator it = net_act.input.begin(); it != net_act.input.end(); ++it)
+      {
+        typename pid_map_traits::result_type map_result = 
+          pid_map_traits::map_to( trans.i_mapping, it->second.first );
+        if (map_result.second) // mapped
+        {
+          act.input_.push_back ( token_on_place_t(it->first, map_result.first) );
+        }
+      }
 
       return act;
     }
