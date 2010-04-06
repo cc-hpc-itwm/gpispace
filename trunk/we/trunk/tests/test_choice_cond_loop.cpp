@@ -5,6 +5,8 @@
 #include <we/function/cond_exp.hpp>
 
 #include <we/util/show.hpp>
+#include <we/function/cond.hpp>
+#include <we/util/warnings.hpp>
 
 #include "timer.hpp"
 
@@ -38,6 +40,8 @@ static pnet_t::output_t trans_step
 , const pnet_t::output_descr_t & output_descr
 )
 {
+  we::util::remove_unused_variable_warning (output_descr);
+
   pnet_t::output_t output;
 
   map_t m;
