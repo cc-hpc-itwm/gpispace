@@ -3,6 +3,7 @@
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond_exp.hpp>
+#include <we/util/warnings.hpp>
 
 #include <we/util/show.hpp>
 
@@ -35,6 +36,9 @@ static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
                               , const pnet_t::output_descr_t & output_descr
                               )
 {
+  we::util::remove_unused_variable_warning (output_descr);
+  ++cnt_trans;
+
   map_t m;
 
   for ( pnet_t::input_t::const_iterator it (input.begin())
