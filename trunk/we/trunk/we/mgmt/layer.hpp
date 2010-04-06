@@ -123,7 +123,6 @@ namespace we { namespace mgmt {
 		  using detail::commands::make_cmd;
           activity_type act(id);
           parser<net_type>::parse(act, bytes);
-          act.prepare_input();
           submit (id, act);
           std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
 //
@@ -264,11 +263,13 @@ namespace we { namespace mgmt {
 		  throw std::runtime_error("not yet implemented: status");
 		}
 
-		void submit (const id_type & id, const activity_type & act)
+      private:
+		void submit (const id_type & id, activity_type & act)
 		{
 		  debug_activity (act);
 		  {
 			insert_activity(id, act);
+            act.prepare_input();
 		  }
 		  post_activity_notification (id);
 		}
