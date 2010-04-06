@@ -260,7 +260,7 @@ namespace expr
         }
 
         template<typename T,typename U>
-        variant::type operator () (const T & l, const U & r) const
+        variant::type operator () (const T &, const U &) const
         {
           throw exception::eval::type_error 
             (util::show (token) + " for value(s) of different types");
