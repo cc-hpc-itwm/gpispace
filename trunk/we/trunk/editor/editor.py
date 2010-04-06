@@ -226,12 +226,26 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
                 edge.updatePosition()
         return value
 
+    def canConnectFrom(self, src):
+      return True
+    def canConnectTo(self, dst):
+      return True
+
 class Place(DiagramItem):
   def __init__(self, contextMenu, parent=None, scene=None):
     DiagramItem.__init__(self, DiagramItem.Place, contextMenu, parent, scene)
     path = QtGui.QPainterPath()
     path.addEllipse(-15, -15, 30, 30)
     self.setPolygon(path.toFillPolygon())
+
+  def __str__(self):
+    return "place (%s)" % (DiagramItem.__str__(self))
+
+  def canConnectFrom(self, src):
+    return isinstance(src, Transition)
+
+  def canConnectTo(self, dst):
+    return isinstance(dst, Transition)
 
   def image(self):
     pixmap = QtGui.QPixmap(250, 250)
@@ -251,6 +265,15 @@ class Transition(DiagramItem):
     path = QtGui.QPainterPath()
     path.addRect(-25, -10, 50, 20)
     self.setPolygon(path.toFillPolygon())
+
+  def __str__(self):
+    return "transition (%s)" % (DiagramItem.__str__(self))
+
+  def canConnectFrom(self, src):
+    return isinstance(src, Place)
+
+  def canConnectTo(self, dst):
+    return isinstance(dst, Place)
 
   def image(self):
     pixmap = QtGui.QPixmap(250, 250)
@@ -365,23 +388,24 @@ class DiagramScene(QtGui.QGraphicsScene):
 
     def mouseReleaseEvent(self, mouseEvent):
         if self.line and self.myMode == self.InsertLine:
+
             startItems = self.items(self.line.line().p1())
-            if len(startItems) and startItems[0] == self.line:
-                startItems.pop(0)
+            if len(startItems): startItems.remove(self.line)
+
             endItems = self.items(self.line.line().p2())
-            if len(endItems) and endItems[0] == self.line:
-                endItems.pop(0)
+            if len(endItems): endItems.remove(self.line)
 
             self.removeItem(self.line)
             self.line = None
 
-            if len(startItems) and len(endItems) and \
-                    isinstance(startItems[0], DiagramItem) and \
-                    isinstance(endItems[0], DiagramItem) and \
-                    startItems[0] != endItems[0]:
-                startItem = startItems[0]
-                endItem = endItems[0]
-                self.connectItems(startItem, endItem)
+            if len(startItems) and len(endItems):
+              src = startItems[0]
+              dst = endItems[0]
+              if dst.canConnectFrom(src) and src.canConnectTo(dst):
+                self.connectItems(src, dst)
+              else:
+                # TODO: should go to status bar
+                print >>sys.stderr, "Cannot connect: %s -> %s" % (src, dst)
 
         self.line = None
         super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
@@ -495,8 +519,12 @@ class MainWindow(QtGui.QMainWindow):
 
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.toolBox)
+        self.tabWidget = QtGui.QTabWidget()
         self.view = EditorView(self.scene)
-        layout.addWidget(self.view)
+        self.tabWidget.addTab(self.view, "untitled")
+        self.tabWidget.setTabsClosable (True)
+        self.tabWidget.tabCloseRequested.connect(self.tabClose)
+        layout.addWidget(self.tabWidget)
 
         self.widget = QtGui.QWidget()
         self.widget.setLayout(layout)
@@ -508,6 +536,12 @@ class MainWindow(QtGui.QMainWindow):
           self.loadFile(sys.argv[1])
         else:
           self.setCurrentFile(None)
+
+    def tabClose(self, tab):
+      # TODO check for changes in tab
+      # TODO scene must be attached to tab widget, not so self
+      print >>sys.stderr, "tab should be closed"
+      #self.tabWidget.removeTab(tab)
 
     def backgroundButtonGroupClicked(self, button):
         buttons = self.backgroundButtonGroup.buttons()
@@ -538,32 +572,6 @@ class MainWindow(QtGui.QMainWindow):
 
     def pointerGroupClicked(self, i):
         self.scene.setMode(self.pointerTypeGroup.checkedId())
-
-    def bringToFront(self):
-        if not self.scene.selectedItems():
-            return
-
-        selectedItem = self.scene.selectedItems()[0]
-        overlapItems = selectedItem.collidingItems()
-
-        zValue = 0
-        for item in overlapItems:
-            if (item.zValue() >= zValue and isinstance(item, DiagramItem)):
-                zValue = item.zValue() + 0.1
-        selectedItem.setZValue(zValue)
-
-    def sendToBack(self):
-        if not self.scene.selectedItems():
-            return
-
-        selectedItem = self.scene.selectedItems()[0]
-        overlapItems = selectedItem.collidingItems()
-
-        zValue = 0
-        for item in overlapItems:
-            if (item.zValue() <= zValue and isinstance(item, DiagramItem)):
-                zValue = item.zValue() - 0.1
-        selectedItem.setZValue(zValue)
 
     def itemInserted(self, item):
         self.pointerTypeGroup.button(DiagramScene.MoveItem).setChecked(True)
@@ -621,16 +629,6 @@ class MainWindow(QtGui.QMainWindow):
         self.toolBox.addItem(backgroundWidget, "Library")
 
     def createActions(self):
-        self.toFrontAction = QtGui.QAction(
-                QtGui.QIcon(':/images/bringtofront.png'), "Bring to &Front",
-                self, shortcut="Ctrl+F", statusTip="Bring item to front",
-                triggered=self.bringToFront)
-
-        self.sendBackAction = QtGui.QAction(
-                QtGui.QIcon(':/images/sendtoback.png'), "Send to &Back", self,
-                shortcut="Ctrl+B", statusTip="Send item to back",
-                triggered=self.sendToBack)
-
         self.deleteAction = QtGui.QAction(QtGui.QIcon(':/images/delete.svg'),
                 "&Delete", self, shortcut="Delete",
                 statusTip="Delete item from diagram",
@@ -661,9 +659,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.itemMenu = self.menuBar().addMenu("&Item")
         self.itemMenu.addAction(self.deleteAction)
-        self.itemMenu.addSeparator()
-        self.itemMenu.addAction(self.toFrontAction)
-        self.itemMenu.addAction(self.sendBackAction)
 
         self.aboutMenu = self.menuBar().addMenu("&Help")
         self.aboutMenu.addAction(self.aboutAction)
@@ -676,8 +671,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.editToolBar = self.addToolBar("Edit")
         self.editToolBar.addAction(self.deleteAction)
-        self.editToolBar.addAction(self.toFrontAction)
-        self.editToolBar.addAction(self.sendBackAction)
 
         pointerButton = QtGui.QToolButton()
         pointerButton.setCheckable(True)
