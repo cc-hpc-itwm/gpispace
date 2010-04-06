@@ -83,6 +83,9 @@ namespace we { namespace mgmt {
 
 		typedef detail::descriptor<id_type, net_type, status_type, encode_type> descriptor_type;
 		typedef typename boost::unordered_map<id_type, descriptor_type> id_descriptor_map_t;
+
+        typedef detail::activity<id_type, std::string, net_type, std::string> activity_type;
+		typedef typename boost::unordered_map<id_type, activity_type> activities_t;
 	  private:
 		typedef detail::set<id_type> active_nets_t;
 
