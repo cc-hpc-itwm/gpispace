@@ -8,14 +8,14 @@
 int
 main (int argc, char ** argv)
 {
-  expr::eval::context<int, double> context;
+  expr::eval::context<int> context;
 
   context.bind (0 , (argc > 1) ? atof (argv[1]) : 23);
   
   const std::string input
     ("${1} := (${0} := if ${0} % 2 == 0 then ${0}/2 else 3*${0}+1 endif) - 1");
 
-  expr::parse::parser<int, double> parser (input);
+  expr::parse::parser<int> parser (input);
 
   std::cout << "collatz sequence for " << context.value (0) << ":" << std::endl;
 

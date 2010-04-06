@@ -14,7 +14,7 @@ namespace expr
   public:
     const unsigned int eaten;
     exception (const std::string & msg, const unsigned int k)
-      : std::runtime_error("parse error [" + show(k) + "]: " + msg) 
+      : std::runtime_error("parse error [" + util::show(k) + "]: " + msg) 
       , eaten (k)
     {}
   };
@@ -35,11 +35,23 @@ namespace expr
                   ) {}
   };
 
-  class unterminated_comment : public exception
+  class unterminated : public exception
   {
   public:
-    unterminated_comment (const unsigned int open, const unsigned int k)
-      : exception ("unterminated comment, opened at: " + show (open), k) {}
+    unterminated ( const std::string & what
+                 , const unsigned int open
+                 , const unsigned int k
+                 )
+      : exception ( "unterminated " + what + ", opened at: " + util::show (open)
+                  , k
+                  ) {}
+  };
+
+  class missing : public exception
+  {
+  public:
+    missing (const std::string & what, const unsigned int k)
+      : exception ("missing " + what, k) {}
   };
 
   class divide_by_zero : public std::runtime_error

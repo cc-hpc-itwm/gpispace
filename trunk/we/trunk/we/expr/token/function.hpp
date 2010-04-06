@@ -7,6 +7,8 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/exception.hpp>
 
+#include <we/expr/variant/variant.hpp>
+
 #include <math.h>
 
 namespace expr
@@ -15,115 +17,121 @@ namespace expr
   {
     namespace function
     {
-      template<typename T>
-      static inline bool is_zero (const T & x)
+      class visitor_is_zero : public boost::static_visitor<bool>
       {
-        return (fabs (x) < 1e-6) ? true : false;
+      public:
+        bool operator () (const long & x) const { return (x == 0); }
+        bool operator () (const double & x) const { return (fabs (x) < 1e-6); }
+
+        template<typename T>
+        bool operator () (const T &) const
+        {
+          throw std::runtime_error ("STRANGE! is_zero for non-num");
+        }
+      };
+
+      static bool is_zero (const variant::type & v)
+      {
+        static const visitor_is_zero z;
+
+        return boost::apply_visitor (z, v);
       }
 
-      template<typename T>
-      static inline bool is_eq (const T & x, const T & y)
+      class unary : public boost::static_visitor<variant::type>
       {
-        return is_zero (x - y);
-      }
+      private:
+        const type & token;
+      public:
+        unary (const type & _token) : token (_token) {}
 
-      template<typename T>
-      static inline bool is_integral (const T & x)
+        variant::type operator () (const long & x) const
+        {
+          switch (token)
+            {
+            case _not: return (x == 0) ? 1L : 0L;
+            case neg: return -x;
+            case abs: return (x < 0) ? (-x) : x;
+            case _sin: return sin (double(x));
+            case _cos: return cos (double(x));
+            case _sqrt: return sqrt (double(x));
+            case _log: return log (double(x));
+            case _floor:
+            case _ceil:
+            case _round:
+              return x;
+            default: throw std::runtime_error ("unary " + util::show(token));
+            }
+        }
+
+        variant::type operator () (const double & x) const
+        {
+          switch (token)
+            {
+            case _not: return (fabs (x) < 1e-6) ? 1L : 0L;
+            case neg: return -x;
+            case abs: return (x < 0) ? (-x) : x;
+            case _sin: return sin (x);
+            case _cos: return cos (x);
+            case _sqrt: return sqrt (x);
+            case _log: return log (x);
+            case _floor:
+            case _ceil:
+            case _round:
+              return x;
+            default: throw std::runtime_error ("unary " + util::show(token));
+            }
+        }
+
+        template<typename T>
+        variant::type operator () (const T & x) const
+        {
+          throw std::runtime_error ("not implemented: unary");
+        }
+      };
+
+      class binary : public boost::static_visitor<variant::type>
       {
-        return is_eq (x, round(x));
-      }
+      private:
+        const type & token;
+      public:
+        binary (const type & _token) : token (_token) {}
 
-      template<typename T>
-      static T unary (const type & token, const T & x)
-      {
-        static bool round_half_up (true);
+        variant::type operator () (const long & l, const long & r) const
+        {
+          switch (token)
+            {
+            case _or: return l | r;
+            case _and: return l & r;
+            case lt: return l < r ? 1L : 0L;
+            case le: return l <= r ? 1L : 0L;
+            case gt: return l > r ? 1L : 0L;
+            case ge: return l >= r ? 1L : 0L;
+            case ne: return l != r ? 1L : 0L;
+            case eq: return l == r ? 1L : 0L;
+            case add: return l + r ? 1L : 0L;
+            case sub: return l - r ? 1L : 0L;
+            case mul: return l * r ? 1L : 0L;
+            case div:
+            case divint:
+              if (r == 0) throw divide_by_zero();
+              return l / r;
+            case modint:
+            case mod:
+              if (r == 0) throw divide_by_zero();
+              return l % r;
+            case _pow: return pow (l, r);
+            case min: return std::min (l,r);
+            case max: return std::max (l,r);
+            default: throw std::runtime_error ("binary " + util::show(token));
+            }
+        }
 
-        switch (token)
-          {
-          case _not: 
-            if (is_integral (x))
-              return (is_zero (x) ? 1 : 0);
-            throw not_integral (show (token));
-          case neg: return -x;
-          case abs: return is_zero (x) ? 0 : ((x < 0) ? (-x) : x);
-          case _sin: return sin(x);
-          case _cos: return cos(x);
-          case _sqrt: return sqrt(x);
-          case _log: return log(x);
-          case fac:
-            if (is_integral (x))
-              {
-                T f (1);
-
-                for (T i (1); i <= x; ++i)
-                  f *= i;
-
-                return f;
-              }
-            throw not_integral (show (token));
-          case _floor: return floor(x);
-          case _ceil: return ceil(x);
-          case _round:
-            round_half_up = !round_half_up;
-            return round_half_up ? floor (x + 0.5) : ceil (x - 0.5);
-          default: throw std::runtime_error ("unary " + show(token));
-          }
-      }
-
-      template<typename T>
-      static T binary (const type & token, const T & l, const T & r)
-      {
-        switch (token)
-          {
-          case _or:
-            if (is_integral (l) && is_integral (r))
-              return long(round(l)) | long (round(r));
-            throw not_integral (show (token));
-          case _and:
-            if (is_integral (l) && is_integral (r))
-              return long(round(l)) & long (round(r));
-            throw not_integral (show (token));
-          case lt: return is_eq(l,r) ? 0 : (l < r);
-          case le: return is_eq(l,r) ? 1 : (l < r);
-          case gt: return is_eq(l,r) ? 0 : (l > r);
-          case ge: return is_eq(l,r) ? 1 : (l > r);
-          case ne: return !is_eq(l, r);
-          case eq: return is_eq(l,r);
-          case add: return l + r;
-          case sub: return l - r;
-          case mul: return l * r;
-          case div: if (is_zero(r)) throw divide_by_zero(); return l / r;
-          case divint:
-            if (is_zero (r)) throw divide_by_zero();
-            if (is_integral (l) && is_integral (r))
-              return floor(round(l) / round(r));
-            throw not_integral (show (token));
-          case modint:
-          case mod:
-            if (is_zero (r)) throw divide_by_zero();
-            if (is_integral (l) && is_integral (r))
-              return long(round(l)) % long(round(r));
-            throw not_integral (show (token));
-          case _pow: return pow (l, r);
-          case min: return std::min (l,r);
-          case max: return std::max (l,r);
-          case com:
-            return (unary<T>(fac, long(round(l)))) / (unary<T>(fac, l-r));
-          default: throw std::runtime_error ("binary " + show(token));
-          }
-      }
-
-      template<typename T>
-      static T ternary ( const type & token
-                       , const T & a, const T & b, const T & c
-                       )
-      {
-        switch (token)
-          {
-          case _ite: return is_zero (a) ? c : b;
-          default: throw std::runtime_error ("ternary " + show(token));
-          }
-      }
+        template<typename T, typename U>
+        variant::type operator () (const T &, const U &) const
+        {
+          throw std::runtime_error ("not implemented: binary");
+        }
+      };
     }
   }
 }

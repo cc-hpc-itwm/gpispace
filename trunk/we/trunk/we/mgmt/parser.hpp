@@ -69,26 +69,26 @@ namespace we { namespace mgmt {
 	  // create places and transitions
 	  for (std::size_t n(0); n < NUM_NODES; ++n)
 	  {
-		const pid_t pid_wi = net.add_place(place_t("wi_" + show(n)));
-		const pid_t pid_wo = net.add_place(place_t("wo_" + show(n)));
-		const tid_t tid_w = net.add_transition( transition_t("work_"+show(n), transition_t::INTERNAL_SIMPLE));
+            const pid_t pid_wi = net.add_place(place_t("wi_" + ::util::show(n)));
+            const pid_t pid_wo = net.add_place(place_t("wo_" + ::util::show(n)));
+            const tid_t tid_w = net.add_transition( transition_t("work_"+::util::show(n), transition_t::INTERNAL_SIMPLE));
 
 		// connect map to work input
-		net.add_edge (edge_t("map_" + show(n)), petri_net::connection_t (petri_net::TP, tid_map, pid_wi));
+            net.add_edge (edge_t("map_" + ::util::show(n)), petri_net::connection_t (petri_net::TP, tid_map, pid_wi));
 
 		// connect work in
-		net.add_edge (edge_t("work_in_"+show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+            net.add_edge (edge_t("work_in_"+::util::show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
 
 		// connect work out
-		net.add_edge (edge_t("work_out_" + show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+            net.add_edge (edge_t("work_out_" + ::util::show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
 
 		// connect work output to red
-		net.add_edge (edge_t("red_" + show(n)), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
+            net.add_edge (edge_t("red_" + ::util::show(n)), petri_net::connection_t (petri_net::PT, tid_red, pid_wo));
 	  }
 
 	  for (std::size_t t (0); t < NUM_TOKEN; ++t)
 	  {
-		std::string name = "token-" + show(t);
+            std::string name = "token-" + ::util::show(t);
 		net.put_token(pid_in, token_t(name));
 	  }
 	}

@@ -15,7 +15,7 @@
 using std::cout;
 using std::endl;
 
-typedef unsigned long token_t;
+typedef long token_t;
 typedef std::string place_t;
 typedef std::string transition_t;
 typedef unsigned short edge_cnt_t;
@@ -106,7 +106,7 @@ main ()
   net.set_choice_condition_function 
     ( tid_step
     , Function::Condition::Expression<token_t> 
-      ( "${" + show (pid_value) + "}" + " < " + show (max))
+      ( "${" + util::show (pid_value) + "}" + " < " + util::show (max))
     );
 
   net.set_transition_function ( tid_break
@@ -115,7 +115,7 @@ main ()
   net.set_choice_condition_function 
     ( tid_break
     , Function::Condition::Expression<token_t>
-      ("${" + show(pid_value) + "}" + " >= " + show (max))
+      ("${" + util::show(pid_value) + "}" + " >= " + util::show (max))
     );
 
   net.put_token (pid_value, 0);

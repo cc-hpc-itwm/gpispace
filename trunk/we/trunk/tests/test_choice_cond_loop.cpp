@@ -16,7 +16,7 @@
 using std::cout;
 using std::endl;
 
-typedef unsigned long token_t;
+typedef long token_t;
 typedef std::string place_t;
 typedef std::string transition_t;
 typedef unsigned short edge_cnt_t;
@@ -144,7 +144,7 @@ main ()
   net.set_choice_condition_function 
     ( tid_step
     , Function::Condition::Expression<token_t>
-      ("${" + show (pid_state) + "} < ${" + show (pid_max) + "}")
+      ("${" + util::show (pid_state) + "} < ${" + util::show (pid_max) + "}")
     );
 
   net.set_capacity (pid_value, capacity_value);

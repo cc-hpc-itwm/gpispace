@@ -6,7 +6,11 @@
 #include <we/expr/token/prop.hpp>
 #include <we/expr/token/type.hpp>
 
+#include <we/expr/parse/position.hpp>
+
 #include <we/expr/exception.hpp>
+
+#include <we/expr/variant/variant.hpp>
 
 #include <we/util/show.hpp>
 
@@ -19,16 +23,14 @@ namespace expr
 {
   namespace token
   {
-    template<typename Key, typename Value, Key READ (const std::string &)>
+    template<typename Key, Key READ (const std::string &)>
     struct tokenizer
     {
     private:
-      unsigned int & k;
-      std::string::const_iterator & pos;
-      const std::string::const_iterator & end;
+      parse::position pos;
 
       token::type token;
-      Value tokval;
+      variant::type tokval;
       std::string _refname;
       Key _ref;
 
@@ -44,16 +46,14 @@ namespace expr
         tokval = 3.14159265358979323846;
       }
 
-      inline void eat (void) { ++k; ++pos; }
-
       inline bool is_eof (void)
       {
-        if (pos == end)
+        if (pos.end())
           return true;
 
         if (*pos == ';')
           {
-            eat(); return true;
+            ++pos; return true;
           }
 
         return false;
@@ -66,10 +66,10 @@ namespace expr
 
         while (what_pos != what_end)
           if (is_eof() || *pos != *what_pos)
-            throw expected ("'" + std::string (what_pos, what_end) + "'", k);
+            throw expected ("'" + std::string (what_pos, what_end) + "'", pos());
           else
             {
-              eat(); ++what_pos;
+              ++pos; ++what_pos;
             }
       }
 
@@ -80,7 +80,7 @@ namespace expr
         else
           switch (*pos)
             {
-            case '=': eat(); token = e; break;
+            case '=': ++pos; token = e; break;
             default: token = t; break;
             }
       }
@@ -90,243 +90,182 @@ namespace expr
         if (next_can_be_unary (token))
           token = t;
         else
-          throw misplaced (descr, k);
+          throw misplaced (descr, pos());
       }
 
       void skip_comment (const unsigned int open)
       {
-        while (pos != end)
+        while (!pos.end())
           switch (*pos)
             {
             case '/':
-              eat();
-              if (pos != end && *pos == '*')
+              ++pos;
+              if (!pos.end() && *pos == '*')
                 {
-                  eat(); skip_comment (k);
+                  ++pos; skip_comment (pos());
                 }
               break;
             case '*':
-              eat();
-              if (pos != end && *pos == '/')
+              ++pos;
+              if (!pos.end() && *pos == '/')
                 {
-                  eat(); return;
+                  ++pos; return;
                 }
               break;
-            default: eat(); break;
+            default: ++pos; break;
             }
 
-        throw unterminated_comment (open-2, k);
+        throw unterminated ("comment", open-2, pos());
       }
 
       void get (void)
       {
-        while (pos != end && isspace(*pos))
-          eat();
+        while (!pos.end() && isspace(*pos))
+          ++pos;
 
         if (is_eof())
           token = eof;
         else
           switch (*pos)
             {
-            case 'a': eat(); require ("bs"); unary (abs, "abs"); break;
+            case 'a': ++pos; require ("bs"); unary (abs, "abs"); break;
             case 'c':
-              eat();
+              ++pos;
               if (is_eof())
-                token = com;
+                throw expected ("'os' or 'eil'", pos());
               else
                 switch (*pos)
                   {
-                  case 'o': eat(); require("s"); unary (_cos, "cos"); break;
-                  case 'e': eat(); require("il"); unary (_ceil, "ceil"); break;
-                  default: token = com; break;
+                  case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
+                  case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
+                  default: throw expected ("'os' or 'eil'", pos());
                   }
               break;
-            case 'd': eat(); require ("iv"); token = divint; break;
+            case 'd': ++pos; require ("iv"); token = divint; break;
             case 'e':
-              eat();
+              ++pos;
               if (is_eof())
                 set_E();
               else
                 switch (*pos)
                   {
-                  case 'l': eat(); require("se"); token = _else; break;
-                  case 'n': eat(); require("dif"); token = _endif; break;
+                  case 'l': ++pos; require("se"); token = _else; break;
+                  case 'n': ++pos; require("dif"); token = _endif; break;
                   default: set_E(); break;
                   }
               break;
-            case 'f':
-              eat();
-              if (is_eof())
-                token = fac;
-              else
-                switch (*pos)
-                {
-                case 'l': eat(); require("oor"); unary (_floor, "floor"); break;
-                default: token = fac; break;
-                }
-              break;
-            case 'i': eat(); require ("f"); token = _if; break;
-            case 'l': eat(); require ("og"); unary (_log, "log"); break;
+            case 'f': ++pos; require ("loor"); unary (_floor, "floor"); break;
+            case 'i': ++pos; require ("f"); token = _if; break;
+            case 'l': ++pos; require ("og"); unary (_log, "log"); break;
             case 'm':
-              eat();
+              ++pos;
               if (is_eof())
-                throw expected ("'in' or 'ax' or 'od'", k);
+                throw expected ("'in' or 'ax' or 'od'", pos());
               else
                 switch (*pos)
                   {
-                  case 'i': eat(); require ("n"); token = min; break;
-                  case 'a': eat(); require ("x"); token = max; break;
-                  case 'o': eat(); require ("d"); token = modint; break;
-                  default: throw expected ("'in' or 'ax' od 'od'", k);
+                  case 'i': ++pos; require ("n"); token = min; break;
+                  case 'a': ++pos; require ("x"); token = max; break;
+                  case 'o': ++pos; require ("d"); token = modint; break;
+                  default: throw expected ("'in' or 'ax' od 'od'", pos());
                   }
               break;
-            case 'p': eat(); require("i"); set_PI(); break;
-            case 'r': eat(); require("ound"); token = _round; break;
+            case 'p': ++pos; require("i"); set_PI(); break;
+            case 'r': ++pos; require("ound"); token = _round; break;
             case 's':
-              eat();
+              ++pos;
               if (is_eof())
-                throw expected ("'in' or 'qrt'", k);
+                throw expected ("'in' or 'qrt'", pos());
               else
                 switch (*pos)
                   {
-                  case 'i': eat(); require ("n"); unary (_sin, "sin"); break;
-                  case 'q': eat(); require ("rt"); unary (_sqrt, "sqrt"); break;
-                  default: throw expected ("'in' or 'qrt'", k);
+                  case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
+                  case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
+                  default: throw expected ("'in' or 'qrt'", pos());
                   }
               break;
-            case 't': eat(); require("hen"); token = _then; break;
-            case '|': eat(); token = _or; break;
-            case '&': eat(); token = _and; break;
-            case '<': eat(); cmp (lt, le); break;
-            case '>': eat(); cmp (gt, ge); break;
+            case 't': ++pos; require("hen"); token = _then; break;
+            case '|': ++pos; token = _or; break;
+            case '&': ++pos; token = _and; break;
+            case '<': ++pos; cmp (lt, le); break;
+            case '>': ++pos; cmp (gt, ge); break;
             case '!':
-              eat();
+              ++pos;
               if (is_eof())
-                throw expected("'=' or <expression>", k);
+                throw expected("'=' or <expression>", pos());
               else
                 switch (*pos)
                   {
-                  case '=': eat(); token = ne; break;
+                  case '=': ++pos; token = ne; break;
                   default: unary (_not, "negation"); break;
                   }
               break;
             case '=':
-              eat();
+              ++pos;
               if (is_eof())
-                throw expected("'='", k);
+                throw expected("'='", pos());
               else
                 switch (*pos)
                   {
-                  case '=': eat(); token = eq; break;
-                  default: throw expected ("'='", k);
+                  case '=': ++pos; token = eq; break;
+                  default: throw expected ("'='", pos());
                   }
               break;
-            case ':': eat(); require("="); token = define; break;
-            case '+': eat(); token = add; break;
+            case ':': ++pos; require("="); token = define; break;
+            case '+': ++pos; token = add; break;
             case '-':
-              eat();
+              ++pos;
               if (next_can_be_unary (token))
                 token = neg;
               else
                 token = sub;
               break;
-            case '*': eat(); token = mul; break;
+            case '*': ++pos; token = mul; break;
             case '/':
-              eat();
+              ++pos;
               if (is_eof())
                 token = div;
               else
                 switch (*pos)
                   {
-                  case '*': eat(); skip_comment(k); get(); break;
+                  case '*': ++pos; skip_comment(pos()); get(); break;
                   default: token = div; break;
                   }
               break;
-            case '%': eat(); token = mod; break;
-            case '^': eat(); token = _pow; break;
-            case ',': eat(); token = sep; break;
-            case '(': eat(); token = lpr; break;
-            case ')': eat(); token = rpr; break;
+            case '%': ++pos; token = mod; break;
+            case '^': ++pos; token = _pow; break;
+            case ',': ++pos; token = sep; break;
+            case '(': ++pos; token = lpr; break;
+            case ')': ++pos; token = rpr; break;
             case '$':
-              eat();
+              ++pos;
               token = ref;
               if (is_eof())
-                throw expected ("'{'", k);
+                throw expected ("'{'", pos());
               else
                 switch (*pos)
                   {
                   case '{':
-                    eat();
+                    ++pos;
                     _refname.clear();
-                    while (pos != end && *pos != '}')
+                    while (!pos.end() && *pos != '}')
                       {
                         _refname.push_back (*pos);
-                        eat();
+                        ++pos;
                       }
                     require ("}");
                     _ref = READ(_refname);
                     break;
-                  default: throw expected ("'{'", k);
+                  default: throw expected ("'{'", pos());
                   }
               break;
-            default:
-              if (!isdigit(*pos) && *pos != '.')
-                throw expected ("<expression>", k);
-              token = val;
-              tokval = 0;
-              while (pos != end && isdigit(*pos))
-                {
-                  tokval *= 10;
-                  tokval += *pos - '0';
-                  eat();
-                }
-              if (pos != end && *pos == '.')
-                {
-                  eat();
-                  Value e (10);
-                  while (pos != end && isdigit(*pos))
-                    {
-                      tokval += (*pos - '0') / e;
-                      e *= 10;
-                      eat();
-                    }
-                }
-              if (pos != end && *pos == 'e')
-                {
-                  eat();
-                  bool sig_neg (false);
-                  if (pos != end && *pos == '-')
-                    {
-                      eat();
-                      sig_neg = true;
-                    }
-                  else if (pos != end && *pos == '+')
-                    eat();
-
-                  if (pos == end || !isdigit(*pos))
-                    throw expected ("<exponent>", k);
-
-                  unsigned int e (0);
-
-                  while (pos != end && isdigit(*pos))
-                    {
-                      e *= 10;
-                      e += *pos - '0';
-                      eat();
-                    }
-
-                  if (sig_neg)
-                    tokval /= pow (10, e);
-                  else
-                    tokval *= pow (10, e);
-                }
-              break;
+            default: token = val; variant::read (tokval, pos); break;
             }
       }
 
-      template<typename K, typename V, K R (const V &)>
+      template<typename K, K R (const std::string &)>
       friend std::ostream & operator << ( std::ostream &
-                                        , const tokenizer<K, V, R> &
+                                        , const tokenizer<K, R> &
                                         );
 
     public:
@@ -334,17 +273,16 @@ namespace expr
                 , std::string::const_iterator & _pos
                 , const std::string::const_iterator & _end
                 ) 
-        : k (_k), pos (_pos), end (_end), token (eof) {}
-      const Value & operator () (void) const { return tokval; }
+        : pos (_k, _pos,_end), token (eof) {}
+      const variant::type & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
-      unsigned int eaten (void) const { return k; }
       const Key & get_ref (void) const { return _ref; }
     };
 
-    template<typename Key, typename Value, Key R (const Value &)>
+    template<typename Key, Key R (const std::string &)>
     static std::ostream & operator << ( std::ostream & s
-                                      , const tokenizer<Key, Value, R> & t
+                                      , const tokenizer<Key, R> & t
                                       )
     {
       switch (*t)

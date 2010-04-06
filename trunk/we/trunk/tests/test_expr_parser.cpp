@@ -22,7 +22,7 @@ int main (int ac, char **)
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
     cout << "list context: ?" << endl;
-    typedef expr::eval::context<std::string,double> context_t;
+    typedef expr::eval::context<std::string> context_t;
     context_t context;
     std::string input;
 
@@ -39,7 +39,7 @@ int main (int ac, char **)
           default:
             try
               {
-                typedef expr::parse::parser<std::string,double> parser_t;
+                typedef expr::parse::parser<std::string> parser_t;
 
                 parser_t parser (input);
               
@@ -49,8 +49,10 @@ int main (int ac, char **)
 
                     try
                       {
-                        cout << "evals to: " << parser.eval_front (context)
-                             << endl;
+                        cout 
+                          << "evals to: "
+                          << expr::variant::show (parser.eval_front (context))
+                          << endl;
                       }
                     catch (expr::eval::missing_binding<std::string> e)
                       {
@@ -85,11 +87,11 @@ int main (int ac, char **)
 
   {
     typedef int ref_t;
-    typedef expr::parse::parser<ref_t, double, read_int<int> > parser_t;
-    typedef expr::eval::context<ref_t, double> context_t;
+    typedef expr::parse::parser<ref_t, util::read_int<int> > parser_t;
+    typedef expr::eval::context<ref_t> context_t;
     {
-      const unsigned int round (1000);
-      const unsigned int max (1000);
+      const long round (1000);
+      const long max (1000);
       const std::string input ("${0} < ${1}");
 
       {
@@ -103,7 +105,7 @@ int main (int ac, char **)
 
         for (unsigned int r (0); r < round; ++r)
           {
-            unsigned int i (0);
+            long i (0);
 
             do
               context.bind (0,i++);
@@ -120,7 +122,7 @@ int main (int ac, char **)
 
         for (unsigned int r (0); r < round; ++r)
           {
-            unsigned int i (0);
+            long i (0);
 
             do
               context.bind (0,i++);
@@ -132,12 +134,12 @@ int main (int ac, char **)
 
   {
     typedef std::string ref_t;
-    typedef expr::parse::parser<ref_t, double> parser_t;
-    typedef expr::eval::context<ref_t, double> context_t;
+    typedef expr::parse::parser<ref_t> parser_t;
+    typedef expr::eval::context<ref_t> context_t;
 
     {
-      const unsigned int round (1000);
-      const unsigned int max (1000);
+      const long round (1000);
+      const long max (1000);
       const std::string input ("${0} < ${1}");
 
       {
@@ -151,7 +153,7 @@ int main (int ac, char **)
 
         for (unsigned int r (0); r < round; ++r)
           {
-            unsigned int i (0);
+            long i (0);
 
             do
               context.bind ("0",i++);
@@ -168,7 +170,7 @@ int main (int ac, char **)
 
         for (unsigned int r (0); r < round; ++r)
           {
-            unsigned int i (0);
+            long i (0);
 
             do
               context.bind ("0",i++);
@@ -180,8 +182,8 @@ int main (int ac, char **)
 
   {
     typedef std::string ref_t;
-    typedef expr::parse::parser<ref_t, double> parser_t;
-    typedef expr::eval::context<ref_t, double> context_t;
+    typedef expr::parse::parser<ref_t> parser_t;
+    typedef expr::eval::context<ref_t> context_t;
 
     std::ostringstream ss;
 
@@ -200,7 +202,7 @@ int main (int ac, char **)
     cout << "INPUT:" << endl << input << endl;
 
     context_t context;
-    context.bind("x",0);
+    context.bind("x",0L);
     parser_t parser (input);
 
     cout << "PARSED:" << endl << parser;

@@ -5,6 +5,8 @@
 
 #include <we/expr/parse/node.hpp>
 
+#include <we/expr/variant/variant.hpp>
+
 #include <we/util/show.hpp>
 
 #include <iostream>
@@ -21,23 +23,25 @@ namespace expr
     {
     public:
       explicit missing_binding (const Key & key)
-        : std::runtime_error ("missing binding for: ${" + show(key) + "}") {};
+        : std::runtime_error 
+          ("missing binding for: ${" + util::show(key) + "}") 
+      {};
     };
 
-    template<typename Key, typename Value>
+    template<typename Key>
     struct context
     {
     private:
-      typedef boost::unordered_map<Key,Value> container_t;
+      typedef boost::unordered_map<Key,variant::type> container_t;
       container_t container;
     public:
       typedef typename container_t::const_iterator const_iterator;
 
-      Value bind (const Key & key, const Value & value)
+      variant::type bind (const Key & key, const variant::type & value)
       {
         container[key] = value; return value;
       }
-      const Value & value (const Key & key) const
+      const variant::type & value (const Key & key) const
       {
         const const_iterator it (container.find (key));
 
@@ -51,14 +55,14 @@ namespace expr
       const_iterator begin (void) const { return container.begin(); }
       const_iterator end (void) const { return container.end(); }
 
-      template<typename K, typename V>
-      friend std::ostream & operator << (std::ostream &, const context<K,V> &);
+      template<typename K>
+      friend std::ostream & operator << (std::ostream &, const context<K> &);
     };
 
-    template<typename K, typename V>
-    std::ostream & operator << (std::ostream & s, const context<K,V> & cntx)
+    template<typename K>
+    std::ostream & operator << (std::ostream & s, const context<K> & cntx)
     {
-      for ( typename context<K,V>::const_iterator it (cntx.begin())
+      for ( typename context<K>::const_iterator it (cntx.begin())
           ; it != cntx.end()
           ; ++it
           )
@@ -66,19 +70,19 @@ namespace expr
       return s;
     }
 
-    template<typename Key, typename Value>
-    parse::node::type<Key,Value>
-    refnode_value ( const context<Key,Value> & context
+    template<typename Key>
+    parse::node::type<Key>
+    refnode_value ( const context<Key> & context
                   , const Key & key
                   )
     {
-      return parse::node::type<Key,Value>(context.value(key));
+      return parse::node::type<Key>(context.value(key));
     }
 
-    template<typename Key,typename Value>
-    parse::node::type<Key,Value> refnode_name (const Key & key) 
+    template<typename Key>
+    parse::node::type<Key> refnode_name (const Key & key) 
     {
-      return parse::node::type<Key,Value>(key);
+      return parse::node::type<Key>(key);
     }
   }
 }

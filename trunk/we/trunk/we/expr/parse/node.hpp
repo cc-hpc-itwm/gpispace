@@ -6,6 +6,8 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/prop.hpp>
 
+#include <we/expr/variant/variant.hpp>
+
 #include <stdexcept>
 #include <iostream>
 
@@ -35,20 +37,20 @@ namespace expr
       };
 
       // WORK HERE: better type with union!?
-      template<typename Key, typename Value>
+      template<typename Key>
       struct type
       {
         typedef boost::shared_ptr<type> ptr_t;
 
         const flag::flag flag;
-        const Value value;
+        const variant::type value;
         const Key ref;
         const token::type token;
         const ptr_t child0;
         const ptr_t child1;
         const ptr_t child2;
 
-        type (const Value & _value)
+        type (const variant::type & _value)
           : flag (flag::value)
           , value (_value)
           , ref ()
@@ -106,12 +108,14 @@ namespace expr
         {}
       };
 
-      template<typename Key, typename Value>
-      std::ostream & operator << (std::ostream & s, const type<Key,Value> & nd)
+      template<typename Key>
+      std::ostream & operator << (std::ostream & s, const type<Key> & nd)
       {
+        static const expr::variant::visitor_show vs;
+
         switch (nd.flag)
           {
-          case flag::value: return s << nd.value;
+          case flag::value: return s << variant::show (nd.value);
           case flag::ref: return s << "${" << nd.ref << "}";
           case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
           case flag::binary:
@@ -135,8 +139,8 @@ namespace expr
           }
       }
 
-      template<typename Key, typename Value>
-      const Value & get (const type<Key,Value> & node)
+      template<typename Key>
+      const variant::type & get (const type<Key> & node)
       {
         if (node.flag != flag::value)
           throw std::runtime_error ("node is not an value");

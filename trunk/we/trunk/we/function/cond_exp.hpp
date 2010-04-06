@@ -8,6 +8,8 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/expr/variant/variant.hpp>
+
 #include <string>
 
 namespace Function { namespace Condition
@@ -16,10 +18,10 @@ namespace Function { namespace Condition
   class Expression
   {
   private:
-    typedef double val_t;
+    typedef expr::variant::type val_t;
     const std::string expression;
-    const expr::parse::parser<pid_t,val_t> parser;
-    expr::eval::context<pid_t,val_t> context;
+    const expr::parse::parser<pid_t> parser;
+    expr::eval::context<pid_t> context;
   public:
     explicit Expression (const std::string & _expression)
       : expression (_expression)

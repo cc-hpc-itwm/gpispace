@@ -26,7 +26,6 @@ namespace expr
     , _floor, _ceil, _round
     , _sin, _cos
     , _sqrt, _log
-    , fac, com                // factorial, combinations
 
     , sep                     // comma
     , lpr, rpr                // parenthesis
@@ -73,8 +72,6 @@ namespace expr
         case _sqrt: return s << "sqrt";
         case _log: return s << "log";
         case abs: return s << "abs";
-        case fac: return s << "f";
-        case com: return s << "c";
         case sep: return s << ", ";
         case lpr: return s << "(";
         case rpr: return s << ")";

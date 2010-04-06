@@ -18,8 +18,6 @@ namespace expr
     {
       switch (token)
         {
-        case fac:
-        case com:
         case min:
         case max:
         case _floor:

@@ -39,7 +39,7 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: throw std::runtime_error ("action " + show(action));
+          default: throw std::runtime_error ("action " + util::show(action));
           }
       }
 

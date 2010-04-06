@@ -40,7 +40,7 @@ namespace expr
         case token::_else:
         case token::_endif: return -98;
         case token::define: return -99;
-        default: throw std::runtime_error ("prec " + show(token));
+        default: throw std::runtime_error ("prec " + util::show(token));
         }
     }
   }

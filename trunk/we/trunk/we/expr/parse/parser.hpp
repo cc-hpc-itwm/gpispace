@@ -11,12 +11,15 @@
 #include <we/expr/token/tokenizer.hpp>
 #include <we/expr/token/type.hpp>
 
+#include <we/expr/variant/variant.hpp>
+
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/eval.hpp>
 
 #include <we/expr/exception.hpp>
 
 #include <we/util/read.hpp>
+#include <we/util/show.hpp>
 
 #include <stack>
 #include <deque>
@@ -40,13 +43,12 @@ namespace expr
     };
 
     template< typename Key
-            , typename Value
-            , Key READ (const std::string &) = read<Key>
+            , Key READ (const std::string &) = util::read<Key>
             >
     struct parser
     {
     private:
-      typedef node::type<Key,Value> nd_t;
+      typedef node::type<Key> nd_t;
       typedef std::deque<nd_t> nd_stack_t;
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
@@ -66,7 +68,12 @@ namespace expr
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
         if (c.flag == node::flag::value)
-          nd_stack.push_back (nd_t (token::function::unary (token, c.value)));
+          nd_stack.push_back 
+            (nd_t (boost::apply_visitor ( token::function::unary (token)
+                                        , c.value
+                                        )
+                  )
+            );
         else
           {
             typename nd_t::ptr_t ptr_c (new nd_t(c));
@@ -88,12 +95,13 @@ namespace expr
         nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (l.flag == node::flag::value && r.flag == node::flag::value)
-          nd_stack.push_back (nd_t (token::function::binary ( token
-                                                            , l.value
-                                                            , r.value
-                                                            )
-                                   )
-                             );
+          nd_stack.push_back 
+            (nd_t (boost::apply_visitor ( token::function::binary (token)
+                                        , l.value
+                                        , r.value
+                                        )
+                  )
+            );
         else
           {
             typename nd_t::ptr_t ptr_l (new nd_t (l));
@@ -122,7 +130,7 @@ namespace expr
 
         if (condition.flag == node::flag::value)
           {
-            if (token::function::is_zero (condition.value))
+            if (token::function::is_zero(condition.value))
               nd_stack.push_back (case_false);
             else
               nd_stack.push_back (case_true);
@@ -158,8 +166,7 @@ namespace expr
           case token::divint:
           case token::modint:
           case token::_pow: binary (op_stack.top(), k); break;
-          case token::neg:
-          case token::fac: unary (op_stack.top(), k); break;
+          case token::neg: unary (op_stack.top(), k); break;
           case token::min:
           case token::max: binary (op_stack.top(), k); break;
           case token::_floor:
@@ -170,7 +177,6 @@ namespace expr
           case token::_sqrt:
           case token::_log:
           case token::abs: unary (op_stack.top(), k); break;
-          case token::com: binary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           case token::define: binary (op_stack.top(), k); break;
           case token::_else: ite (k); break;
@@ -191,7 +197,7 @@ namespace expr
           {
             op_stack.push (token::eof);
 
-            token::tokenizer<Key,Value,READ> token (k, pos, end);
+            token::tokenizer<Key,READ> token (k, pos, end);
 
             do
               {
@@ -210,9 +216,9 @@ namespace expr
                        || (nd_stack.back().flag != node::flag::ref)
                        )
                       throw exception ( "left hand of " 
-                                      + show(*token) 
+                                      + util::show(*token) 
                                       + " must be reference name"
-                                      , token.eaten()
+                                      , k
                                       );
                     op_stack.push (*token);
                     break;
@@ -225,7 +231,7 @@ namespace expr
                       switch (action)
                         {
                         case action::reduce:
-                          reduce(token.eaten());
+                          reduce(k);
                           goto ACTION;
                           break;
                         case action::shift:
@@ -234,7 +240,7 @@ namespace expr
                         case action::accept:
                           break;
                         default:
-                          throw exception (show(action), token.eaten());
+                          throw exception (util::show(action), k);
                         }
                       break;
                     }
@@ -245,18 +251,18 @@ namespace expr
       }
 
     public:
-      parser (const std::string & input, eval::context<Key,Value> & context)
+      parser (const std::string & input, eval::context<Key> & context)
       {
-        parse ( input, boost::bind ( eval::refnode_value<Key,Value>
-                                   , boost::ref(context)
-                                   , _1
-                                   )
+        parse (input, boost::bind ( eval::refnode_value<Key>
+                                  , boost::ref(context)
+                                  , _1
+                                  )
               );
       }
 
       parser (const std::string & input)
       {
-        parse (input, boost::bind (eval::refnode_name<Key,Value>, _1));
+        parse (input, boost::bind (eval::refnode_name<Key>, _1));
       }
 
       // the parsed expressions in the correct order
@@ -265,31 +271,31 @@ namespace expr
       const nd_t & front (void) const { return nd_stack.front(); }
 
       // eval the first entry in the stack
-      Value eval_front (eval::context<Key,Value> & context) const
+      variant::type eval_front (eval::context<Key> & context) const
       {
         return eval::eval (front(), context);
       }
 
-      bool eval_front_bool (eval::context<Key,Value> & context) const
+      bool eval_front_bool (eval::context<Key> & context) const
       {
-        return !token::function::is_zero (eval_front (context));
+        return !token::function::is_zero(eval_front (context));
       }
 
       // get the already evaluated value, throws if entry is not an value
-      const Value & get_front () const
+      const variant::type & get_front () const
       {
         return node::get (front());
       }
 
       bool get_front_bool () const 
       {
-        return !token::function::is_zero (get_front ());
+        return !token::function::is_zero(get_front ());
       }
 
       // evaluate the hole stack in order, return the last value
-      Value eval_all (eval::context<Key,Value> & context) const
+      variant::type eval_all (eval::context<Key> & context) const
       {
-        Value v (0);
+        variant::type v (0L);
 
         for (nd_it_t it (begin()); it != end(); ++it)
           v = eval::eval (*it, context);
@@ -297,20 +303,22 @@ namespace expr
         return v;
       }
 
-      bool eval_all_bool (eval::context<Key,Value> & context) const
+      bool eval_all_bool (eval::context<Key> & context) const
       {
-        return !token::function::is_zero (eval_all (context));
+        const variant::type v (eval_all (context));
+
+        return !token::function::is_zero(v);
       }
 
-      template<typename K, typename V, K R (const std::string &)>
+      template<typename K, K R (const std::string &)>
       friend std::ostream &
-      operator << (std::ostream &, const parser<K,V,R> &);
+      operator << (std::ostream &, const parser<K,R> &);
     };
 
-    template<typename K, typename V, K R (const std::string &)>
-    std::ostream & operator << (std::ostream & s, const parser<K,V,R> & p)
+    template<typename K, K R (const std::string &)>
+    std::ostream & operator << (std::ostream & s, const parser<K,R> & p)
     {
-      for (typename parser<K,V,R>::nd_it_t it (p.begin()); it != p.end(); ++it)
+      for (typename parser<K,R>::nd_it_t it (p.begin()); it != p.end(); ++it)
         s << *it << std::endl;
       return s << std::endl;
     }

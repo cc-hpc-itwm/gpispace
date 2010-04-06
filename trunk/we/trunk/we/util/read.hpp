@@ -6,48 +6,51 @@
 #include <string>
 #include <sstream>
 
-template<typename T>
-inline T read (const std::string & showed)
+namespace util
 {
-  T x;
+  template<typename T>
+  inline T read (const std::string & showed)
+  {
+    T x;
 
-  std::istringstream i(showed); 
+    std::istringstream i(showed); 
 
-  i >> x;
+    i >> x;
 
-  return x;
-}
+    return x;
+  }
 
-template<>
-inline std::string read (const std::string & s)
-{
-  return s;
-}
+  template<>
+  inline std::string read (const std::string & s)
+  {
+    return s;
+  }
 
-template<typename I>
-inline I read_int (const std::string & s)
-{
-  std::string::const_iterator pos (s.begin());
-  const std::string::const_iterator end (s.end());
+  template<typename I>
+  inline I read_int (const std::string & s)
+  {
+    std::string::const_iterator pos (s.begin());
+    const std::string::const_iterator end (s.end());
 
-  I sign (1);
+    I sign (1);
 
-  if (*pos == '-')
-    {
-      sign = -1;
-      ++pos;
-    }
+    if (*pos == '-')
+      {
+        sign = -1;
+        ++pos;
+      }
 
-  I x (0);
+    I x (0);
 
-  while (isdigit(*pos))
-    {
-      x *= 10;
-      x += *pos - '0';
-      ++pos;
-    }
+    while (isdigit(*pos))
+      {
+        x *= 10;
+        x += *pos - '0';
+        ++pos;
+      }
 
-  return (sign > 0) ? x : -x;
+    return (sign > 0) ? x : -x;
+  }
 }
 
 #endif
