@@ -102,6 +102,9 @@ namespace we { namespace mgmt {
     template <typename Activity>
     static void parse( Activity & act, const data_type &)
     {
+      const std::size_t NUM_NODES=3;
+      const std::size_t NUM_TOKEN=3;
+
       // create the subnetwork
       net_type map_reduce_subnet ("map-reduce-subnet");
 
@@ -111,8 +114,6 @@ namespace we { namespace mgmt {
 
       // create the atomic transitions
       {
-        const std::size_t NUM_NODES=3;
-
         typedef std::vector<pid_t> hull_t;
         hull_t hull_in;
         hull_in.reserve(NUM_NODES);
@@ -198,9 +199,19 @@ namespace we { namespace mgmt {
         map_reduce_trans.connect(mr_out, mr_sn_out);
         map_reduce_trans.flags.internal = true;
 
-        map_reduce.add_transition( map_reduce_trans );
+        tid_t tid_sub = map_reduce.add_transition( map_reduce_trans );
+        map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
+        map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
+
+        // put some tokens on the input
+        for (std::size_t t (0); t < NUM_TOKEN; ++t)
+        {
+          std::string name = "token-" + show(t);
+          map_reduce.put_token(mr_inp, token_t(name));
+        }
 
         act.assign (map_reduce);
+        act.flags.internal = true;
       }
     }
   };
