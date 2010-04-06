@@ -414,6 +414,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.widget)
         self.setWindowTitle("Petri-Net Editor")
 
+        self.statusBar().showMessage("Petri-Net Editor initialized", 2000)
         if len(sys.argv) > 1:
           self.loadFile(sys.argv[1])
         else:
@@ -554,7 +555,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.exitAction = QtGui.QAction(
             QtGui.QIcon(":/images/exit.svg"), "&Exit", self, shortcut="Ctrl+W",
-            statusTip="Quit Scenediagram example", triggered=self.close)
+            statusTip="Exit the Petri-Net editor", triggered=self.close)
 
         self.aboutAction = QtGui.QAction("A&bout", self, shortcut="Ctrl+B",
                 triggered=self.about)
@@ -564,7 +565,7 @@ class MainWindow(QtGui.QMainWindow):
         self.saveAction = QtGui.QAction(
             QtGui.QIcon(":/images/save.svg"), "&Save", self, shortcut="Ctrl+S", triggered=self.save, statusTip="Save network")
         self.saveAsAction = QtGui.QAction(
-            QtGui.QIcon(":/images/save-as.svg"), "Save &As...", self, triggered=self.saveAs, statusTip="Save network")
+            QtGui.QIcon(":/images/save-as.svg"), "Save &As...", self, triggered=self.saveAs, statusTip="Save network in a different file")
 #        self.saveAction.setEnabled( False )
 
     def createMenus(self):
