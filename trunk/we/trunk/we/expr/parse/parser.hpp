@@ -49,7 +49,7 @@ namespace expr
   namespace parse
   {
     template< typename Key
-            , Key READ (const std::string &) = we::util::read<Key>
+            , typename READER = ::we::util::reader<Key>
             >
     struct parser
     {
@@ -206,7 +206,7 @@ namespace expr
           {
             op_stack.push (token::eof);
 
-            token::tokenizer<Key,READ> token (k, pos, end);
+            token::tokenizer<Key,READER> token (k, pos, end);
 
             do
               {
@@ -319,12 +319,12 @@ namespace expr
         return !token::function::is_zero(v);
       }
 
-      template<typename K, K R (const std::string &)>
+      template<typename K, typename R>
       friend std::ostream &
       operator << (std::ostream &, const parser<K,R> &);
     };
 
-    template<typename K, K R (const std::string &)>
+    template<typename K, typename R>
     std::ostream & operator << (std::ostream & s, const parser<K,R> & p)
     {
       for (typename parser<K,R>::nd_it_t it (p.begin()); it != p.end(); ++it)

@@ -25,6 +25,15 @@ namespace we { namespace util {
     return s;
   }
 
+  template <typename T>
+  struct reader
+  {
+    inline static T read(std::string const & s)
+    {
+      return ::we::util::read<T>(s);
+    }
+  };
+
   template<typename I>
   inline I read_int (const std::string & s)
   {
@@ -50,6 +59,15 @@ namespace we { namespace util {
 
     return (sign > 0) ? x : -x;
   }
+
+  template <typename T>
+  struct int_reader
+  {
+    inline static T read(std::string const & s)
+    {
+      return ::we::util::read_int<T>(s);
+    }
+  };
 }}
 
 #endif

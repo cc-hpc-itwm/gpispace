@@ -23,7 +23,7 @@ namespace expr
 {
   namespace token
   {
-    template<typename Key, Key READ (const std::string &)>
+    template<typename Key, typename READER>
     struct tokenizer
     {
     private:
@@ -291,7 +291,7 @@ namespace expr
                         ++pos;
                       }
                     require ("}");
-                    _ref = READ(_refname);
+                    _ref = READER::read(_refname);
                     break;
                   default: throw exception::parse::expected ("'{'", pos());
                   }
@@ -300,7 +300,7 @@ namespace expr
             }
       }
 
-      template<typename K, K R (const std::string &)>
+      template<typename K, typename R>
       friend std::ostream & operator << ( std::ostream &
                                         , const tokenizer<K, R> &
                                         );
@@ -317,7 +317,7 @@ namespace expr
       const Key & get_ref (void) const { return _ref; }
     };
 
-    template<typename Key, Key R (const std::string &)>
+    template<typename Key, typename R>
     static std::ostream & operator << ( std::ostream & s
                                       , const tokenizer<Key, R> & t
                                       )

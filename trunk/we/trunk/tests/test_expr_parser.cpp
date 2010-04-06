@@ -95,7 +95,7 @@ int main (int ac, char **)
 
   {
     typedef int ref_t;
-    typedef expr::parse::parser<ref_t, util::read_int<int> > parser_t;
+    typedef expr::parse::parser<ref_t, we::util::int_reader<int> > parser_t;
     typedef expr::eval::context<ref_t> context_t;
     {
       const long round (1000);
@@ -111,7 +111,7 @@ int main (int ac, char **)
       
         parser_t parser (input);
 
-        for (unsigned int r (0); r < round; ++r)
+        for (int r (0); r < round; ++r)
           {
             long i (0);
 
@@ -128,7 +128,7 @@ int main (int ac, char **)
 
         context.bind(1,max);
 
-        for (unsigned int r (0); r < round; ++r)
+        for (int r (0); r < round; ++r)
           {
             long i (0);
 
@@ -159,7 +159,7 @@ int main (int ac, char **)
       
         parser_t parser (input);
 
-        for (unsigned int r (0); r < round; ++r)
+        for (int r (0); r < round; ++r)
           {
             long i (0);
 
@@ -176,7 +176,7 @@ int main (int ac, char **)
 
         context.bind("1",max);
 
-        for (unsigned int r (0); r < round; ++r)
+        for (int r (0); r < round; ++r)
           {
             long i (0);
 

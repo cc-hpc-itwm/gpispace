@@ -124,23 +124,23 @@ namespace we { namespace mgmt {
         // create some parallelism
         for (std::size_t n(0); n < NUM_NODES; ++n)
         {
-          const pid_t pid_wi = map_reduce_subnet.add_place(place_t("wi_" + show(n)));
+          const pid_t pid_wi = map_reduce_subnet.add_place(place_t("wi_" + ::util::show(n)));
           hull_in.push_back (pid_wi);
 
-          const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + show(n)));
+          const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + ::util::show(n)));
           hull_out.push_back (pid_wo);
 
-          transition_t wrk_trans ("work"+show(n), typename transition_t::mod_type("map_reduce", "work"));
+          transition_t wrk_trans ("work"+::util::show(n), typename transition_t::mod_type("map_reduce", "work"));
           wrk_trans.connect_in (pid_wi, pid_t(0));
           wrk_trans.connect_out (pid_wo, pid_t(1));
 
           const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
 
           // connect work in
-          map_reduce_subnet.add_edge (edge_t("work_in_"+show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+          map_reduce_subnet.add_edge (edge_t("work_in_"+::util::show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
 
           // connect work out
-          map_reduce_subnet.add_edge (edge_t("work_out_" + show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+          map_reduce_subnet.add_edge (edge_t("work_out_" + ::util::show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
         }
 
         {
@@ -160,7 +160,7 @@ namespace we { namespace mgmt {
           cnt = 0;
           for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
           {
-            map_reduce_subnet.add_edge (edge_t("map_" + show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
+            map_reduce_subnet.add_edge (edge_t("map_" + ::util::show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
             cnt++;
           }
         }
@@ -181,7 +181,7 @@ namespace we { namespace mgmt {
           cnt = 0;
           for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
           {
-            map_reduce_subnet.add_edge (edge_t("red_" + show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
+            map_reduce_subnet.add_edge (edge_t("red_" + ::util::show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
             cnt++;
           }
         }
@@ -211,7 +211,7 @@ namespace we { namespace mgmt {
         // put some tokens on the input
         for (std::size_t t (0); t < NUM_TOKEN; ++t)
         {
-          std::string name = "token-" + show(t);
+          std::string name = "token-" + ::util::show(t);
           act.input().push_back( std::make_pair(token_t(name), pid_t(0))); //  ) );map_reduce.put_token(mr_inp, token_t(name));
         }
       }
