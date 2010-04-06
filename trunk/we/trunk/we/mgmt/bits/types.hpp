@@ -178,6 +178,7 @@ namespace we { namespace mgmt {
 	  transition_t (const std::string & name_, Type const & typ, bool intern = false)
 		: name(name_)
 	  {
+        data.ptr = 0;
         assign(typ);
         flags.internal = intern;
       }
@@ -188,19 +189,23 @@ namespace we { namespace mgmt {
         , flags(other.flags)
         , mapping(other.mapping)
       {
-        switch (type)
+        data.ptr = 0;
+        if (other.data.ptr)
         {
-          case MOD_CALL:
-            data.mod = new mod_type( *other.data.mod );
-            break;
-          case NET:
-            data.net = new net_type( *other.data.net );
-            break;
-          case EXPRESSION:
-            data.expr = new expr_type( *other.data.expr );
-            break;
-          default:
-            assert(false);
+          switch (type)
+          {
+            case MOD_CALL:
+              assign ( *other.data.mod );
+              break;
+            case NET:
+              assign ( *other.data.net );
+              break;
+            case EXPRESSION:
+              assign ( *other.data.expr );
+              break;
+            default:
+              assert(false);
+          }
         }
       }
 
@@ -255,37 +260,26 @@ namespace we { namespace mgmt {
           name = other.name;
           flags = other.flags;
           mapping = other.mapping;
-
-          switch (type) // old type
-          {
-            case MOD_CALL:
-              delete data.mod;
-              break;
-            case NET:
-              delete data.net;
-              break;
-            case EXPRESSION:
-              delete data.expr;
-              break;
-            default:
-              assert(false);
-          }
+          clear();
 
           type = other.type;
 
-          switch (type) // new type
+          if (other.data.ptr)
           {
-            case MOD_CALL:
-              data.mod = new mod_type( *other.data.mod );
-              break;
-            case NET:
-              data.net = new net_type( *other.data.net );
-              break;
-            case EXPRESSION:
-              data.expr = new expr_type( *other.data.expr );
-              break;
-            default:
-              assert(false);
+            switch (type) // new type
+            {
+              case MOD_CALL:
+                assign ( *other.data.mod );
+                break;
+              case NET:
+                assign ( *other.data.net );
+                break;
+              case EXPRESSION:
+                assign ( *other.data.expr );
+                break;
+              default:
+                assert(false);
+            }
           }
         }
         return *this;
@@ -293,20 +287,13 @@ namespace we { namespace mgmt {
 
       ~transition_t ()
       {
-        if (type == NET)
+        try
         {
-          delete data.net;
-          data.net = 0;
+          clear();
         }
-        else if (type == MOD_CALL)
+        catch (...)
         {
-          delete data.mod;
-          data.mod = 0;
-        }
-        else if (type == EXPRESSION)
-        {
-          delete data.expr;
-          data.expr = 0;
+
         }
       }
 

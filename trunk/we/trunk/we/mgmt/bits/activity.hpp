@@ -79,7 +79,9 @@ namespace we { namespace mgmt { namespace detail {
     explicit
     activity (const id_type id)
       : id_ (id)
-    { }
+    {
+      data.ptr = 0;
+    }
 
     activity (const this_type & other)
       : id_ (other.id_)
@@ -90,28 +92,65 @@ namespace we { namespace mgmt { namespace detail {
       , output_ (other.output_)
       , extracted_ (other.extracted_)
       , injected_ (other.injected_)
-    { }
+    {
+      if (other.data.ptr)
+      {
+        switch (type_) // new type
+        {
+          case transition_type::MOD_CALL:
+            assign ( *other.data.mod );
+            break;
+          case transition_type::NET:
+            assign ( *other.data.net );
+            break;
+          case transition_type::EXPRESSION:
+            assign ( *other.data.expr );
+            break;
+          default:
+            assert(false);
+        }
+      }
+    }
 
     activity & operator= (const this_type & other)
     {
       if (this != &other)
       {
         id_  = (other.id_);
-        type_  = (other.type_);
         parent_ = (other.parent_);
         children_ = (other.children_);
         input_ = (other.input_);
         output_ = (other.output_);
         extracted_ = (other.extracted_);
         injected_ = (other.injected_);
+
+        clear();
+
+        type_  = (other.type_);
+        if (other.data.ptr)
+        {
+          switch (type_) // new type
+          {
+            case transition_type::MOD_CALL:
+              assign ( *other.data.mod );
+              break;
+            case transition_type::NET:
+              assign ( *other.data.net );
+              break;
+            case transition_type::EXPRESSION:
+              assign ( *other.data.expr );
+              break;
+            default:
+              assert(false);
+          }
+        }
       }
       return *this;
     }
 
     void assign( net_type const & net )
     {
-      if (data.ptr)
-        clear();
+      clear();
       type_ = transition_type::NET;
       data.net = new net_type (net);
     }
@@ -174,26 +213,28 @@ namespace we { namespace mgmt { namespace detail {
     inline
     bool is_leaf() const
     {
-//      shared_lock_t lock(*this);
-//      shared_lock_t lock(mutex_);
+      shared_lock_t lock(const_cast<this_type&>(*this));
       return children_.empty();
     }
 
     template <typename Category>
     void setType(const Category cat)
     {
+      unique_lock_t lock(const_cast<this_type&>(*this));
       type_ = cat;
     }
 
     inline
     id_type id() const
     {
+      shared_lock_t lock(const_cast<this_type&>(*this));
       return id_;
     }
 
     inline
     id_type parent() const
     {
+      shared_lock_t lock(const_cast<this_type&>(*this));
       return parent_;
     }
 
@@ -201,8 +242,7 @@ namespace we { namespace mgmt { namespace detail {
     this_type
     extract(IdGen id_gen)
     {
-//      unique_lock_t lock(*this);
-//      unique_lock_t lock(mutex_);
+      unique_lock_t lock(const_cast<this_type&>(*this));
 
       // this function is only valid for net-types!
       assert ( flags.internal && type_ == transition_type::NET );
@@ -219,8 +259,7 @@ namespace we { namespace mgmt { namespace detail {
     void
     inject(const Output & o)
     {
-//      unique_lock_t lock(*this);
-//      unique_lock_t lock(mutex_);
+      unique_lock_t lock(const_cast<this_type&>(*this));
 
       // the passed results are in "local view", we have to map them before we
       // can inject
@@ -243,7 +282,7 @@ namespace we { namespace mgmt { namespace detail {
     bool
     done (void) const
     {
-//      shared_lock_t lock(*this);
+      shared_lock_t lock(const_cast<this_type&>(*this));
       if (type_ == transition_type::NET)
       {
         return (extracted_ == injected_) && ( ! has_enabled() );
@@ -257,7 +296,7 @@ namespace we { namespace mgmt { namespace detail {
     bool
     has_enabled (void) const
     {
-//      shared_lock_t lock(*this);
+      shared_lock_t lock(const_cast<this_type&>(*this));
       if (type_ == transition_type::NET)
         return ! (this->data.net->enabled_transitions().empty());
       else
@@ -266,14 +305,14 @@ namespace we { namespace mgmt { namespace detail {
 
     const output_t & output() const
     {
-//      shared_lock_t lock(*this);
+      shared_lock_t lock(const_cast<this_type&>(*this));
       return output_;
     }
 
     size_t
     num_enabled (void) const
     {
-//      shared_lock_t lock(*this);
+      shared_lock_t lock(const_cast<this_type&>(*this));
       if (type_ == transition_type::NET)
         return ! (this->data.net->enabled_transitions().empty());
       else
@@ -283,8 +322,7 @@ namespace we { namespace mgmt { namespace detail {
     void
     map_place (const pid_t outer, const pid_t inner)
     {
-//      unique_lock_t lock(*this);
-//      unique_lock_t lock(mutex_);
+      unique_lock_t lock(const_cast<this_type&>(*this));
       pid_mapping_.insert(typename pid_map_t::value_type(outer, inner));
     }
 
