@@ -74,7 +74,7 @@ namespace expr
         ++pos;
       
       if (pos.end())
-        throw unterminated ("\\", open, pos());
+        throw exception::parse::unterminated ("\\", open, pos());
 
       const char c (*pos);
 
@@ -86,7 +86,7 @@ namespace expr
     static long read_ulong (expr::parse::position & pos)
     {
       if (pos.end() || !isdigit(*pos))
-        throw expected ("digit", pos());
+        throw exception::parse::expected ("digit", pos());
 
       long l (0);
       
@@ -159,7 +159,8 @@ namespace expr
     static void read (type & v, expr::parse::position & pos)
     {
       if (pos.end())
-        throw expected ("long or double or char or string", pos());
+        throw exception::parse::expected
+          ("long or double or char or string", pos());
 
       switch (*pos)
         {
@@ -170,15 +171,15 @@ namespace expr
             ++pos;
 
             if (pos.end())
-              throw missing ("character after '", pos());
+              throw exception::parse::missing ("character after '", pos());
 
             if (*pos == '\'')
-              throw exception ("'' with no content", pos());
+              throw exception::parse::exception ("'' with no content", pos());
 
             v = read_quoted_char (pos);
 
             if (pos.end() || *pos != '\'')
-              throw unterminated ("'", open, pos());
+              throw exception::parse::unterminated ("'", open, pos());
 
             ++pos;
           }
@@ -195,7 +196,7 @@ namespace expr
               s.push_back (read_quoted_char (pos));
 
             if (pos.end())
-              throw unterminated ("\"", open, pos());
+              throw exception::parse::unterminated ("\"", open, pos());
 
             ++pos;
 

@@ -31,17 +31,23 @@
 
 namespace expr
 {
+  namespace exception
+  {
+    namespace parse
+    {
+      class missing_operand : public exception
+      {
+      public:
+        missing_operand (const unsigned int k, const std::string & what)
+          : exception ("missing " + what + " operand", k-1) {}
+        missing_operand (const unsigned int k)
+          : exception ("missing operand", k-1) {}
+      };
+    }
+  }
+
   namespace parse
   {
-    class missing_operand : public exception
-    {
-    public:
-      missing_operand (const unsigned int k, const std::string & what)
-        : exception ("missing " + what + " operand", k-1) {}
-      missing_operand (const unsigned int k)
-        : exception ("missing operand", k-1) {}
-    };
-
     template< typename Key
             , Key READ (const std::string &) = util::read<Key>
             >
@@ -63,7 +69,7 @@ namespace expr
       void unary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw missing_operand (k);
+          throw exception::parse::missing_operand (k);
 
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
@@ -85,12 +91,12 @@ namespace expr
       void binary (const token::type & token, const unsigned int k)
       {
         if (nd_stack.empty())
-          throw missing_operand (k, "left");
+          throw exception::parse::missing_operand (k, "left");
 
         nd_t r (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
-          throw missing_operand (k, "right");
+          throw exception::parse::missing_operand (k, "right");
 
         nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
@@ -114,17 +120,17 @@ namespace expr
       void ite (const unsigned int k)
       {
         if (nd_stack.empty())
-          throw missing_operand (k, "else expression");
+          throw exception::parse::missing_operand (k, "else expression");
 
         nd_t case_false (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
-          throw missing_operand (k, "then expression");
+          throw exception::parse::missing_operand (k, "then expression");
 
         nd_t case_true (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
-          throw missing_operand (k, "condition");
+          throw exception::parse::missing_operand (k, "condition");
 
         nd_t condition (nd_t(nd_stack.back())); nd_stack.pop_back();
 
@@ -165,7 +171,8 @@ namespace expr
           case token::mod:
           case token::divint:
           case token::modint:
-          case token::_pow: binary (op_stack.top(), k); break;
+          case token::_pow:
+          case token::_powint: binary (op_stack.top(), k); break;
           case token::neg: unary (op_stack.top(), k); break;
           case token::min:
           case token::max: binary (op_stack.top(), k); break;
@@ -176,6 +183,8 @@ namespace expr
           case token::_cos:
           case token::_sqrt:
           case token::_log:
+          case token::_toint:
+          case token::_todouble:
           case token::abs: unary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           case token::define: binary (op_stack.top(), k); break;
@@ -215,11 +224,11 @@ namespace expr
                     if (  nd_stack.empty() 
                        || (nd_stack.back().flag != node::flag::ref)
                        )
-                      throw exception ( "left hand of " 
-                                      + util::show(*token) 
-                                      + " must be reference name"
-                                      , k
-                                      );
+                      throw exception::parse::exception ( "left hand of " 
+                                                        + util::show(*token) 
+                                                        + " must be reference name"
+                                                        , k
+                                                        );
                     op_stack.push (*token);
                     break;
                   default:
@@ -240,7 +249,7 @@ namespace expr
                         case action::accept:
                           break;
                         default:
-                          throw exception (util::show(action), k);
+                          throw exception::parse::exception (util::show(action), k);
                         }
                       break;
                     }

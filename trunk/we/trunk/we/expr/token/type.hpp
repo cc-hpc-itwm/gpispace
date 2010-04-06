@@ -3,6 +3,8 @@
 #ifndef _EXPR_TOKEN_TYPE_HPP
 #define _EXPR_TOKEN_TYPE_HPP
 
+#include <we/expr/exception.hpp>
+
 #include <stdexcept>
 #include <iostream>
 
@@ -20,12 +22,14 @@ namespace expr
     , mul, div, divint        // prec 22, left associative
     , mod, modint             // prec 23, left associative
     , _pow                    // prec 24, right associative
+    , _powint                 // prec 24, right associative
     , neg                     // prec 25, unary minus
 
     , min, max, abs
     , _floor, _ceil, _round
     , _sin, _cos
     , _sqrt, _log
+    , _toint, _todouble
 
     , sep                     // comma
     , lpr, rpr                // parenthesis
@@ -60,7 +64,8 @@ namespace expr
         case divint: return s << " div ";
         case mod: return s << " % ";
         case modint: return s << " mod ";
-        case _pow: return s << "^";
+        case _pow: return s << "**";
+        case _powint: return s << "^";
         case neg: return s << "-";
         case min: return s << "min";
         case max: return s << "max";
@@ -71,6 +76,8 @@ namespace expr
         case _cos: return s << "cos";
         case _sqrt: return s << "sqrt";
         case _log: return s << "log";
+        case _toint: return s << "int";
+        case _todouble: return s << "double";
         case abs: return s << "abs";
         case sep: return s << ", ";
         case lpr: return s << "(";
@@ -83,8 +90,8 @@ namespace expr
         case _then: return s << " then ";
         case _else: return s << " else ";
         case _endif: return s << " endif";
-        case _ite: throw std::runtime_error ("token _ite");
-        default: throw std::runtime_error ("unknown token");
+        case _ite: throw exception::strange ("<< (token _ite)");
+        default: throw  exception::strange ("<< (unknown token)");
         }
     }
   }

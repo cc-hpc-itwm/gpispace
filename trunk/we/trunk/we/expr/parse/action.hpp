@@ -7,6 +7,7 @@
 #include <we/expr/token/prec.hpp>
 #include <we/expr/token/prop.hpp>
 #include <we/expr/token/type.hpp>
+#include <we/expr/exception.hpp>
 
 #include <we/util/show.hpp>
 
@@ -39,7 +40,7 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: throw std::runtime_error ("action " + util::show(action));
+          default: throw exception::strange ("action " + util::show(action));
           }
       }
 

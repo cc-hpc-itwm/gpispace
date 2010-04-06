@@ -66,7 +66,8 @@ namespace expr
 
         while (what_pos != what_end)
           if (is_eof() || *pos != *what_pos)
-            throw expected ("'" + std::string (what_pos, what_end) + "'", pos());
+            throw exception::parse::expected
+              ("'" + std::string (what_pos, what_end) + "'", pos());
           else
             {
               ++pos; ++what_pos;
@@ -90,7 +91,7 @@ namespace expr
         if (next_can_be_unary (token))
           token = t;
         else
-          throw misplaced (descr, pos());
+          throw exception::parse::misplaced (descr, pos());
       }
 
       void skip_comment (const unsigned int open)
@@ -115,7 +116,7 @@ namespace expr
             default: ++pos; break;
             }
 
-        throw unterminated ("comment", open-2, pos());
+        throw exception::parse::unterminated ("comment", open-2, pos());
       }
 
       void get (void)
@@ -132,16 +133,29 @@ namespace expr
             case 'c':
               ++pos;
               if (is_eof())
-                throw expected ("'os' or 'eil'", pos());
+                throw exception::parse::expected ("'os' or 'eil'", pos());
               else
                 switch (*pos)
                   {
                   case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
                   case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
-                  default: throw expected ("'os' or 'eil'", pos());
+                  default: throw exception::parse::expected 
+                      ("'os' or 'eil'", pos());
                   }
               break;
-            case 'd': ++pos; require ("iv"); token = divint; break;
+            case 'd':
+              ++pos;
+              if (pos.end())
+                throw exception::parse::expected ("'iv' or 'ouble'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'i': ++pos; require ("v"); token = divint; break;
+                  case 'o': ++pos; require ("uble"); token = _todouble; break;
+                  default: throw exception::parse::expected
+                      ("'iv' or 'ouble'", pos());
+                  }
+              break;
             case 'e':
               ++pos;
               if (is_eof())
@@ -155,19 +169,32 @@ namespace expr
                   }
               break;
             case 'f': ++pos; require ("loor"); unary (_floor, "floor"); break;
-            case 'i': ++pos; require ("f"); token = _if; break;
+            case 'i':
+              ++pos;
+              if (pos.end())
+                throw exception::parse::expected ("'f' of 'nt'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'f': ++pos; token = _if; break;
+                  case 'n': ++pos; require("t"); token = _toint; break;
+                  default: throw exception::parse::expected ("'f' of 'nt'", pos());
+                  }
+              break;
             case 'l': ++pos; require ("og"); unary (_log, "log"); break;
             case 'm':
               ++pos;
               if (is_eof())
-                throw expected ("'in' or 'ax' or 'od'", pos());
+                throw exception::parse::expected
+                  ("'in' or 'ax' or 'od'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); token = min; break;
                   case 'a': ++pos; require ("x"); token = max; break;
                   case 'o': ++pos; require ("d"); token = modint; break;
-                  default: throw expected ("'in' or 'ax' od 'od'", pos());
+                  default: throw exception::parse::expected
+                      ("'in' or 'ax' od 'od'", pos());
                   }
               break;
             case 'p': ++pos; require("i"); set_PI(); break;
@@ -175,13 +202,14 @@ namespace expr
             case 's':
               ++pos;
               if (is_eof())
-                throw expected ("'in' or 'qrt'", pos());
+                throw exception::parse::expected ("'in' or 'qrt'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
                   case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
-                  default: throw expected ("'in' or 'qrt'", pos());
+                  default: throw exception::parse::expected
+                      ("'in' or 'qrt'", pos());
                   }
               break;
             case 't': ++pos; require("hen"); token = _then; break;
@@ -192,7 +220,7 @@ namespace expr
             case '!':
               ++pos;
               if (is_eof())
-                throw expected("'=' or <expression>", pos());
+                throw exception::parse::expected("'=' or <expression>", pos());
               else
                 switch (*pos)
                   {
@@ -203,12 +231,12 @@ namespace expr
             case '=':
               ++pos;
               if (is_eof())
-                throw expected("'='", pos());
+                throw exception::parse::expected("'='", pos());
               else
                 switch (*pos)
                   {
                   case '=': ++pos; token = eq; break;
-                  default: throw expected ("'='", pos());
+                  default: throw exception::parse::expected ("'='", pos());
                   }
               break;
             case ':': ++pos; require("="); token = define; break;
@@ -220,7 +248,16 @@ namespace expr
               else
                 token = sub;
               break;
-            case '*': ++pos; token = mul; break;
+            case '*':
+              ++pos;
+              if (!pos.end() && *pos == '*')
+                {
+                  token = _pow;
+                  ++pos;
+                }
+              else
+                token = mul;
+              break;
             case '/':
               ++pos;
               if (is_eof())
@@ -233,7 +270,7 @@ namespace expr
                   }
               break;
             case '%': ++pos; token = mod; break;
-            case '^': ++pos; token = _pow; break;
+            case '^': ++pos; token = _powint; break;
             case ',': ++pos; token = sep; break;
             case '(': ++pos; token = lpr; break;
             case ')': ++pos; token = rpr; break;
@@ -241,7 +278,7 @@ namespace expr
               ++pos;
               token = ref;
               if (is_eof())
-                throw expected ("'{'", pos());
+                throw exception::parse::expected ("'{'", pos());
               else
                 switch (*pos)
                   {
@@ -256,7 +293,7 @@ namespace expr
                     require ("}");
                     _ref = READ(_refname);
                     break;
-                  default: throw expected ("'{'", pos());
+                  default: throw exception::parse::expected ("'{'", pos());
                   }
               break;
             default: token = val; variant::read (tokval, pos); break;

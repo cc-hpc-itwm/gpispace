@@ -16,18 +16,24 @@
 
 namespace expr
 {
+  namespace exception
+  {
+    namespace eval
+    {
+      template<typename Key>
+      class missing_binding : public std::runtime_error
+      {
+      public:
+        explicit missing_binding (const Key & key)
+          : std::runtime_error 
+            ("missing binding for: ${" + util::show(key) + "}") 
+        {};
+      };
+    }
+  }
+
   namespace eval
   {
-    template<typename Key>
-    class missing_binding : public std::runtime_error
-    {
-    public:
-      explicit missing_binding (const Key & key)
-        : std::runtime_error 
-          ("missing binding for: ${" + util::show(key) + "}") 
-      {};
-    };
-
     template<typename Key>
     struct context
     {
@@ -46,7 +52,7 @@ namespace expr
         const const_iterator it (container.find (key));
 
         if (it == container.end())
-          throw missing_binding<Key> (key);
+          throw exception::eval::missing_binding<Key> (key);
         else
           return it->second;
       }
@@ -66,7 +72,7 @@ namespace expr
           ; it != cntx.end()
           ; ++it
           )
-        s << it->first << " := " << it->second << std::endl;
+        s << it->first << " := " << variant::show (it->second) << std::endl;
       return s;
     }
 

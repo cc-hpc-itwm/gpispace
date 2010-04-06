@@ -5,6 +5,7 @@
 
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/prop.hpp>
+#include <we/expr/exception.hpp>
 
 #include <we/expr/variant/variant.hpp>
 
@@ -22,7 +23,7 @@ namespace expr
       class unknown : public std::runtime_error
       {
       public:
-        unknown () : std::runtime_error ("STRANGE: unknown node type") {};
+        unknown () : std::runtime_error ("STRANGE! unknown node type") {};
       };
 
       namespace flag
@@ -128,7 +129,7 @@ namespace expr
                 s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
           case flag::ternary:
             if (nd.token != token::_ite)
-              throw std::runtime_error ("STRANGE: ternary but not _ite!?");
+              throw exception::strange ("ternary but not _ite!?");
 
             return s << "(" << token::_if << *(nd.child0)
                             << token::_then << *(nd.child1)
@@ -143,7 +144,7 @@ namespace expr
       const variant::type & get (const type<Key> & node)
       {
         if (node.flag != flag::value)
-          throw std::runtime_error ("node is not an value");
+          throw exception::eval::type_error ("get: node is not an value");
 
         return node.value;
       }

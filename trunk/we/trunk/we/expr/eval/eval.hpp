@@ -45,12 +45,12 @@ namespace expr
                                           );
             }
         case expr::parse::node::flag::ternary:
-          throw std::runtime_error ("not implemented: ternary");
-//           return token::function::ternary<double> ( node.token
-//                                                   , eval (*node.child0, context)
-//                                                   , eval (*node.child1, context)
-//                                                   , eval (*node.child2, context)
-//                                                   );
+          return token::function::ternary ( node.token
+                                          , eval (*node.child0, context)
+                                          , eval (*node.child1, context)
+                                          , eval (*node.child2, context)
+                                          );
+
         default: throw parse::node::unknown();
         }
     }

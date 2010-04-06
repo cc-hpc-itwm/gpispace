@@ -4,6 +4,7 @@
 #define _EXPR_PREC_HPP
 
 #include <we/expr/token/type.hpp>
+#include <we/expr/exception.hpp>
 
 #include <we/util/show.hpp>
 
@@ -33,14 +34,15 @@ namespace expr
         case token::div: return 22;
         case token::modint:
         case token::mod: return 23;
-        case token::_pow: return 24;
+        case token::_pow:
+        case token::_powint: return 24;
         case token::neg: return 25;
         case token::_if:
         case token::_then:
         case token::_else:
         case token::_endif: return -98;
         case token::define: return -99;
-        default: throw std::runtime_error ("prec " + util::show(token));
+        default: throw exception::strange ("prec " + util::show(token));
         }
     }
   }

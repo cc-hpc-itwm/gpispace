@@ -54,7 +54,7 @@ int main (int ac, char **)
                           << expr::variant::show (parser.eval_front (context))
                           << endl;
                       }
-                    catch (expr::eval::missing_binding<std::string> e)
+                    catch (expr::exception::eval::missing_binding<std::string> e)
                       {
                         cout << e.what() << endl;
                       }
@@ -62,20 +62,28 @@ int main (int ac, char **)
                     parser.pop_front();
                   }
               }
-            catch (expr::not_integral e)
+            catch (expr::exception::eval::not_integral e)
               {
                 cout << "EXCEPTION: " << e.what() << endl;
               }
-            catch (expr::divide_by_zero e)
+            catch (expr::exception::eval::divide_by_zero e)
               {
                 cout << "EXCEPTION: " << e.what() << endl;
               }
-            catch (expr::exception e)
+            catch (expr::exception::eval::type_error e)
+              {
+                cout << "EXCEPTION: " << e.what() << endl;
+              }
+            catch (expr::exception::parse::exception e)
               {
                 cout << input << endl;
                 for (unsigned int k (0); k < e.eaten; ++k)
                   cout << " ";
                 cout << "^" << endl;
+                cout << "EXCEPTION: " << e.what() << endl;
+              }
+            catch (std::runtime_error e)
+              {
                 cout << "EXCEPTION: " << e.what() << endl;
               }
           }

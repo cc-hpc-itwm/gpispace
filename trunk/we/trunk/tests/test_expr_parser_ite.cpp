@@ -10,10 +10,10 @@ main (int argc, char ** argv)
 {
   expr::eval::context<int> context;
 
-  context.bind (0 , (argc > 1) ? atof (argv[1]) : 23);
+  context.bind (0 , (argc > 1) ? atol (argv[1]) : 23);
   
   const std::string input
-    ("${1} := (${0} := if ${0} % 2 == 0 then ${0}/2 else 3*${0}+1 endif) - 1");
+    ("${1} := (${0} := if ${0} % 2 == 0 then ${0} div 2 else 3*${0}+1 endif) - 1");
 
   expr::parse::parser<int> parser (input);
 
