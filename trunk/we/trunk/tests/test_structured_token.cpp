@@ -228,17 +228,19 @@ namespace po = boost::program_options;
 int
 main (int argc, char ** argv)
 {
-  long NUM_SLICES (50);
-  long MAX_DEPTH (50);
-  long CAP_IN_PROGRESS (10);
+  long NUM_SLICES (3);
+  long MAX_DEPTH (4);
+  long CAP_IN_PROGRESS (0);
+  bool PRINT_MARKING (true);
 
   po::options_description desc("options");
 
   desc.add_options()
     ("help", "this message")
-    ("slices", po::value<long>(&NUM_SLICES)->default_value(30), "num slices")
-    ("depth", po::value<long>(&MAX_DEPTH)->default_value(20), "max depth")
-    ("cap", po::value<long>(&CAP_IN_PROGRESS)->default_value(10), "capacity in place 'in_progress'")
+    ("slices", po::value<long>(&NUM_SLICES)->default_value(3), "num slices")
+    ("depth", po::value<long>(&MAX_DEPTH)->default_value(4), "max depth")
+    ("cap", po::value<long>(&CAP_IN_PROGRESS)->default_value(0), "capacity in place 'in_progress'")
+    ("print", po::value<bool>(&PRINT_MARKING)->default_value(true), "print after each fire")
     ;
 
   po::variables_map vm;
@@ -397,7 +399,9 @@ main (int argc, char ** argv)
     while (!net.enabled_transitions().empty())
       {
         net.fire_random(engine);
-        //        marking (net);
+
+        if (PRINT_MARKING)
+          marking (net);
       }
   }
 
