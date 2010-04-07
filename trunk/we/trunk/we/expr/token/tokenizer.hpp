@@ -168,7 +168,21 @@ namespace expr
                   default: set_E(); break;
                   }
               break;
-            case 'f': ++pos; require ("loor"); unary (_floor, "floor"); break;
+            case 'f':
+              ++pos;
+              if (pos.end())
+                throw exception::parse::expected ("'loor' or 'alse'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'l':
+                    ++pos; require ("oor"); unary (_floor, "floor"); break;
+                  case 'a':
+                    ++pos; require ("lse"); token = val; tokval = false; break;
+                  default:
+                    throw exception::parse::expected ("'loor' or 'alse'", pos());
+                  }
+              break;
             case 'i':
               ++pos;
               if (pos.end())
@@ -212,7 +226,18 @@ namespace expr
                       ("'in' or 'qrt'", pos());
                   }
               break;
-            case 't': ++pos; require("hen"); token = _then; break;
+            case 't':
+              ++pos;
+              if (pos.end())
+                throw exception::parse::expected ("'hen' or 'rue'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'h': ++pos; require("en"); token = _then; break;
+                  case 'r': ++pos; require("ue"); token = val; tokval = true; break;
+                  default: throw exception::parse::expected ("'hen' or 'rue'", pos());
+                  }
+              break;
             case '|': ++pos; token = _or; break;
             case '&': ++pos; token = _and; break;
             case '<': ++pos; cmp (lt, le); break;

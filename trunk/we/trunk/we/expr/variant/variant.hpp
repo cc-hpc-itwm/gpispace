@@ -21,11 +21,16 @@ namespace expr
 {
   namespace variant
   {
-    typedef boost::variant<long, double, char, std::string> type;
+    typedef boost::variant<bool, long, double, char, std::string> type;
 
     class visitor_show : public boost::static_visitor<std::string>
     {
     public:
+      std::string operator () (const bool & x) const
+      {
+        return x ? "true" : "false";
+      }
+
       std::string operator () (const long & x) const
       {
         return util::show (x) + "L";

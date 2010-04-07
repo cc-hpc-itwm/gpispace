@@ -22,28 +22,27 @@ namespace expr
         return (fabs (x) < 1e-6);
       }
 
-      class visitor_is_zero : public boost::static_visitor<bool>
+      class visitor_is_true : public boost::static_visitor<bool>
       {
       public:
-        bool operator () (const long & x) const { return (x == 0); }
-        bool operator () (const double & x) const { return is_zero (x); }
+        bool operator () (const bool & x) const
+        {
+          return x ? true : false;
+        }
 
-        bool operator () (const char & x) const
+        template<typename T>
+        bool operator () (const T &) const
         {
           throw exception::eval::type_error
-            ("is_zero ('" + util::show(x) + "')");
-        }
-        bool operator () (const std::string & x) const
-        {
-          throw exception::eval::type_error ("is_zero (\"" + x + "\")");
+            ("is_true for something that is not of type bool");
         }
       };
 
-      static bool is_zero (const variant::type & v)
+      static bool is_true (const variant::type & v)
       {
-        static const visitor_is_zero z;
+        static const visitor_is_true vt;
 
-        return boost::apply_visitor (z, v);
+        return boost::apply_visitor (vt, v);
       }
 
       class unary : public boost::static_visitor<variant::type>
@@ -53,11 +52,33 @@ namespace expr
       public:
         unary (const type & _token) : token (_token) {}
 
+        variant::type operator () (const bool & x) const
+        {
+          switch (token)
+            {
+            case _not: return x ? false : true;
+            case neg:
+            case abs:
+            case _sin:
+            case _cos:
+            case _sqrt:
+            case _log:
+            case _floor:
+            case _ceil:
+            case _round:
+              throw exception::eval::type_error
+                (util::show (token) + " (" + util::show(x) + ")");
+            case _toint: return x ? 1L : 0L;
+            case _todouble: return x ? 1.0 : 0.0;
+            default: throw exception::strange ("unary " + util::show(token));
+            }
+        }
+
         variant::type operator () (const long & x) const
         {
           switch (token)
             {
-            case _not: return (x == 0) ? 1L : 0L;
+            case _not: return (x == 0) ? true : false;
             case neg: return -x;
             case abs: return (x < 0) ? (-x) : x;
             case _sin: return sin (x);
@@ -79,7 +100,7 @@ namespace expr
 
           switch (token)
             {
-            case _not: return is_zero(x) ? 1L : 0L;
+            case _not: return is_zero(x) ? true : false;
             case neg: return -x;
             case abs: return (x < 0) ? (-x) : x;
             case _sin: return sin (x);
@@ -117,18 +138,47 @@ namespace expr
       public:
         binary (const type & _token) : token (_token) {}
 
+        variant::type operator () (const bool & l, const bool & r) const
+        {
+          switch (token)
+            {
+            case _or: return l || r;
+            case _and: return l && r;
+            case lt: return l < r ? true : false;
+            case le: return l <= r ? true : false;
+            case gt: return l > r ? true : false;
+            case ge: return l >= r ? true : false;
+            case ne: return l != r ? true : false;
+            case eq: return l == r ? true : false;
+            case add:
+            case sub:
+            case mul:
+            case div:
+            case divint:
+            case modint:
+            case mod:
+            case _pow:
+            case _powint:
+              throw exception::eval::type_error 
+                (util::show (token) + " for value(s) of type double");
+            case min: return std::min (l,r);
+            case max: return std::max (l,r);
+            default: throw exception::strange ("binary " + util::show(token));
+            }
+        }
+
         variant::type operator () (const long & l, const long & r) const
         {
           switch (token)
             {
             case _or: return l | r;
             case _and: return l & r;
-            case lt: return l < r ? 1L : 0L;
-            case le: return l <= r ? 1L : 0L;
-            case gt: return l > r ? 1L : 0L;
-            case ge: return l >= r ? 1L : 0L;
-            case ne: return l != r ? 1L : 0L;
-            case eq: return l == r ? 1L : 0L;
+            case lt: return l < r ? true : false;
+            case le: return l <= r ? true : false;
+            case gt: return l > r ? true : false;
+            case ge: return l >= r ? true : false;
+            case ne: return l != r ? true : false;
+            case eq: return l == r ? true : false;
             case add: return l + r;
             case sub: return l - r;
             case mul: return l * r;
@@ -166,12 +216,12 @@ namespace expr
             case _and:
               throw exception::eval::type_error 
                 (util::show (token) + " for value(s) of type double");
-            case lt: return is_zero (l-r) ? 0L : (l < r);
-            case le: return is_zero (l-r) ? 1L : (l < r);
-            case gt: return is_zero (l-r) ? 0L : (l > r);
-            case ge: return is_zero (l-r) ? 1L : (l > r);
-            case ne: return is_zero (l-r) ? 0L : 1L;
-            case eq: return is_zero (l-r) ? 1L : 0L;
+            case lt: return is_zero (l-r) ? false : (l < r ? true : false);
+            case le: return is_zero (l-r) ? true : (l < r ? true : false);
+            case gt: return is_zero (l-r) ? false : (l > r ? true : false);
+            case ge: return is_zero (l-r) ? true : (l > r ? true : false);
+            case ne: return is_zero (l-r) ? false : true;
+            case eq: return is_zero (l-r) ? true : false;
             case add: return l + r;
             case sub: return l - r;
             case mul: return l * r;
@@ -205,12 +255,12 @@ namespace expr
             case _and:
               throw exception::eval::type_error 
                 (util::show (token) + " for value(s) of type string");
-            case lt: return l < r ? 1L : 0L;
-            case le: return l <= r ? 1L : 0L;
-            case gt: return l > r ? 1L : 0L;
-            case ge: return l >= r ? 1L : 0L;
-            case ne: return l != r ? 1L : 0L;
-            case eq: return l == r ? 1L : 0L;
+            case lt: return l < r ? true : false;
+            case le: return l <= r ? true : false;
+            case gt: return l > r ? true : false;
+            case ge: return l >= r ? true : false;
+            case ne: return l != r ? true : false;
+            case eq: return l == r ? true : false;
             case add: { std::string s; s+= l; s += r; return s; }
             case sub:
             case mul:
@@ -236,12 +286,12 @@ namespace expr
             case _and:
               throw exception::eval::type_error 
                 (util::show (token) + " for value(s) of type char");
-            case lt: return l < r ? 1L : 0L;
-            case le: return l <= r ? 1L : 0L;
-            case gt: return l > r ? 1L : 0L;
-            case ge: return l >= r ? 1L : 0L;
-            case ne: return l != r ? 1L : 0L;
-            case eq: return l == r ? 1L : 0L;
+            case lt: return l < r ? true : false;
+            case le: return l <= r ? true : false;
+            case gt: return l > r ? true : false;
+            case ge: return l >= r ? true : false;
+            case ne: return l != r ? true : false;
+            case eq: return l == r ? true : false;
             case add: { std::string s; s+= l; s += r; return s; }
             case sub:
             case mul:
@@ -275,7 +325,7 @@ namespace expr
       {
         switch (token)
           {
-          case _ite: return is_zero (a) ? c : b;
+          case _ite: return is_true (a) ? b : c;
           default: throw exception::strange ("ternary but not ite");
           }
       }

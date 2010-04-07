@@ -136,10 +136,10 @@ namespace expr
 
         if (condition.flag == node::flag::value)
           {
-            if (token::function::is_zero(condition.value))
-              nd_stack.push_back (case_false);
-            else
+            if (token::function::is_true(condition.value))
               nd_stack.push_back (case_true);
+            else
+              nd_stack.push_back (case_false);
           }
         else
           {
@@ -287,7 +287,7 @@ namespace expr
 
       bool eval_front_bool (eval::context<Key> & context) const
       {
-        return !token::function::is_zero(eval_front (context));
+        return token::function::is_true(eval_front (context));
       }
 
       // get the already evaluated value, throws if entry is not an value
@@ -298,7 +298,7 @@ namespace expr
 
       bool get_front_bool () const 
       {
-        return !token::function::is_zero(get_front ());
+        return token::function::is_true(get_front ());
       }
 
       // evaluate the hole stack in order, return the last value
@@ -316,7 +316,7 @@ namespace expr
       {
         const variant::type v (eval_all (context));
 
-        return !token::function::is_zero(v);
+        return token::function::is_true(v);
       }
 
       template<typename K, typename R>
