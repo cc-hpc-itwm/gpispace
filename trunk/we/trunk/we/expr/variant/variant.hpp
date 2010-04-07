@@ -148,7 +148,13 @@ namespace expr
       long i (read_long (pos));
 
       if (pos.end() || *pos != '.')
-        v = i;
+        {
+          v = i;
+
+          // consume a trailing 'L'
+          if (!pos.end() && *pos == 'L')
+            ++pos;
+        }
       else
         {
           ++pos;
