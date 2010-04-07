@@ -60,6 +60,7 @@ namespace expr
 
       const_iterator begin (void) const { return container.begin(); }
       const_iterator end (void) const { return container.end(); }
+      std::size_t size (void) const { return container.size(); }
 
       template<typename K>
       friend std::ostream & operator << (std::ostream &, const context<K> &);

@@ -13,6 +13,8 @@
 #include <we/type/token.hpp>
 #include <we/util/show.hpp>
 
+#include <boost/function.hpp>
+
 #include <string>
 
 namespace Function { namespace Condition
@@ -56,11 +58,16 @@ namespace Function { namespace Condition
     const std::string expression;
     const expr::parse::parser<std::string> parser;
     expr::eval::context<std::string> context;
+    typedef boost::function<std::string (const pid_t &)> translate_t;
+    translate_t translate;
   public:
-    explicit Expression (const std::string & _expression)
+    explicit Expression ( const std::string & _expression
+                        , const translate_t & _translate
+                        )
       : expression (_expression)
       , parser (expression)
       , context ()
+      , translate (_translate)
     {}
 
     bool operator () (Traits<we::token::type>::choices_t & choices)
@@ -73,14 +80,8 @@ namespace Function { namespace Condition
             {
               const pid_t pid (choice->first);
               const we::token::type token (choice->second.first);
-              
-              for ( we::token::type::const_iterator field (token.begin())
-                  ; field != token.end()
-                  ; ++field
-                  )
-                context.bind ( util::show (pid) + "." + we::token::name (*field)
-                             , we::token::value (*field)
-                             );
+
+              token.bind (translate (pid), context);
             }
 
           if (parser.eval_all_bool (context))
