@@ -295,6 +295,12 @@ private:
       recalculate_in_enabled (*t, pid, t());
   }
 
+  void recalculate_out_enabled_by_place (const pid_t & pid)
+  {
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
+  }
+
   void recalculate_enabled_by_edge ( const eid_t & eid
                                    , const connection_t & connection
                                    )
@@ -550,11 +556,15 @@ public:
   void set_capacity (const pid_t & pid, const capacity_t & cap)
   {
     capacity_map[pid] = cap;
+
+    recalculate_out_enabled_by_place (pid);
   }
 
   void clear_capacity (const pid_t & pid)
   {
     capacity_map.erase (pid);
+
+    recalculate_out_enabled_by_place (pid);
   }
 
   void set_transition_function (const tid_t & tid, const trans_t & f)
