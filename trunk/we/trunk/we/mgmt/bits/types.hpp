@@ -410,7 +410,20 @@ namespace we { namespace mgmt {
     template <typename P, typename E, typename T>
 	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
 	{
-	  return s << t.name;
+      typedef transition_t<P,E,T> trans_t;
+      s << t.name << "=";
+      switch (t.type)
+      {
+        case trans_t::MOD_CALL:
+          return s << "mod:" << t.template as<typename trans_t::mod_type>()->f;
+        case trans_t::EXPRESSION:
+          return s << "expr:" << t.template as<typename trans_t::expr_type>()->v;
+        case trans_t::NET:
+//          return s << "net:" << *t.template as<typename trans_t::net_type>();
+          return s << "net-place-holder";
+        default:
+          return s << "unknown";
+      }
 	}
   }
 }}

@@ -202,11 +202,21 @@ namespace we { namespace mgmt {
         map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
         map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
 
+//        map_reduce.put_token(mr_inp, token_t("test"));
+        std::cerr << "D: " << map_reduce.enabled_transitions().size() << std::endl;
+
         // dummy transition
         transition_t map_reduce_trans ("map-reduce", map_reduce, true);
         map_reduce_trans.connect_in (pid_t(0), mr_inp);
         map_reduce_trans.connect_out (pid_t(1), mr_out);
+
         act.assign (map_reduce_trans);
+
+        std::cerr << "D: mr-inp=" << mr_inp << std::endl;
+        std::cerr << "D: mr-out=" << mr_out << std::endl;
+        std::cerr << "D: is-net=" << map_reduce_trans.is_net() << std::endl;
+        std::cerr << "D: enabld=" << map_reduce_trans.template as<typename transition_t::net_type>()->enabled_transitions().size() << std::endl;
+        std::cerr << "D: enabld=" << act.has_enabled() << std::endl;
 
         // put some tokens on the input
         for (std::size_t t (0); t < NUM_TOKEN; ++t)

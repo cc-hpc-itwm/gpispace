@@ -124,7 +124,7 @@ namespace we { namespace mgmt {
           activity_type act(id);
           parser<net_type>::parse(act, bytes);
           submit (id, act);
-          std::cerr << "D: submitted petri-net["<< id << "]" << std::endl;
+          std::cerr << "D: submitted act["<< id << "]" << std::endl;
 //
 //		  // check network for validity
 //		  if (net_validator::is_valid(*act.data.net))
@@ -268,8 +268,8 @@ namespace we { namespace mgmt {
 		{
 		  debug_activity (act);
 		  {
-			insert_activity(id, act);
             act.prepare_input();
+			insert_activity(id, act);
 		  }
 		  post_activity_notification (id);
 		}
@@ -329,7 +329,7 @@ namespace we { namespace mgmt {
 		  // clean up all activity
 		  for (typename activities_t::iterator a = (activities_.begin()); a != activities_.end(); ++a)
 		  {
-			std::cerr << "D: removing activity[" << a->first << "]" << std::endl;
+			std::cerr << "D: removing act[" << a->first << "]" << std::endl;
 		  }
 		}
 
@@ -440,13 +440,16 @@ namespace we { namespace mgmt {
             {
               activity_type & act = lookup(active_net);
 
+              // TODO: check status flags
               if (! is_net_alive (act))
               {
+                std::cerr << "D: act[" << act.id() << "] is on hold." << std::endl;
                 continue;
               }
 
               if (is_net_done (act))
               {
+                std::cerr << "D: act[" << act.id() << "] is done." << std::endl;
                 post_finished_notification (active_net);
                 continue;
               }
@@ -461,12 +464,12 @@ namespace we { namespace mgmt {
                 activity_type sub_act = act.extract(id_gen_);
                 insert_activity (sub_act.id(), sub_act);
                 // classify and execute
-                async_execute (sub_act);
+                async_execute (lookup (sub_act.id()) );
               }
             }
             catch (const net_not_found<id_type> & ex)
             {
-              std::cerr << "W: net could not be found: " << ex.id << std::endl;
+              std::cerr << "W: activity could not be found: " << ex.id << std::endl;
             }
 		  }
 		  std::cerr << "D: extractor thread stopped..." << std::endl;
@@ -535,7 +538,7 @@ namespace we { namespace mgmt {
 		template <typename Activity>
 		  inline void debug_activity(Activity const & act)
 		  {
-			std::cerr << "D: transition[" << act.id() << "](type=" << act.transition().type << " " << act.transition() << "):" << std::endl;
+			std::cerr << "D: act[" << act.id() << "](type=" << act.transition().type << " " << act.transition() << "):" << std::endl;
 			{
 			  std::cerr << "\tin:" << std::endl;
 			  for ( typename Activity::input_t::const_iterator it (act.input().begin())
@@ -564,7 +567,7 @@ namespace we { namespace mgmt {
 		  exec_layer_.finished ( cmd.dat, "dummy result" );
 		  assert_is_leaf ( cmd.dat );
 		  remove_activity ( cmd.dat );
-		  std::cerr << "D: net[" << cmd.dat << "] finished" << std::endl;
+		  std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
 		}
 
 		void net_failed(const cmd_t & cmd)
@@ -572,7 +575,7 @@ namespace we { namespace mgmt {
 		  exec_layer_.failed ( cmd.dat, "dummy result" );
 		  assert_is_leaf ( cmd.dat );
 		  remove_activity ( cmd.dat );
-		  std::cerr << "D: net[" << cmd.dat << "] failed" << std::endl;
+		  std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
 		}
 
 		void net_cancelled(const cmd_t & cmd)
@@ -580,7 +583,7 @@ namespace we { namespace mgmt {
 		  exec_layer_.cancelled ( cmd.dat );
 		  assert_is_leaf ( cmd.dat );
 		  remove_activity ( cmd.dat );
-		  std::cerr << "D: net[" << cmd.dat << "] cancelled" << std::endl;
+		  std::cerr << "D: act[" << cmd.dat << "] cancelled" << std::endl;
 		}
 
 		inline
@@ -593,19 +596,19 @@ namespace we { namespace mgmt {
 		void suspend_net(const cmd_t & cmd)
 		{
 		  lookup(cmd.dat).flags().suspended = true;
-		  std::cerr << "I: net[" << cmd.dat << "] suspended" << std::endl;
+		  std::cerr << "I: act[" << cmd.dat << "] suspended" << std::endl;
 		}
 
 		void resume_net(const cmd_t & cmd)
 		{
 		  lookup(cmd.dat).flags().suspended = false;
 		  active_nets_.put (cmd.dat);
-		  std::cerr << "I: net[" << cmd.dat << "] resumed" << std::endl;
+		  std::cerr << "I: act[" << cmd.dat << "] resumed" << std::endl;
 		}
 
 		void async_execute(activity_type & act)
 		{
-		  std::cerr << "D: executing activity[" << act.id() << "]..." << std::endl;
+		  std::cerr << "D: executing act[" << act.id() << "]..." << std::endl;
 		  debug_activity (act);
           if (act.transition().flags.internal)
           {

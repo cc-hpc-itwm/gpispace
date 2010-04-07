@@ -123,6 +123,13 @@ namespace we { namespace mgmt { namespace detail {
       bool cancelling : 1;
       bool cancelled : 1;
       bool failed : 1;
+
+      flags_t ()
+        : suspended(0)
+        , cancelling(0)
+        , cancelled(0)
+        , failed(0)
+      { }
     };
 
     inline
@@ -213,16 +220,15 @@ namespace we { namespace mgmt { namespace detail {
       unique_lock_t lock(*this);
       if (transition_.is_net())
       {
-        std::cerr << "mapping..." << std::endl;
         for (typename input_t::const_iterator it = input_.begin(); it != input_.end(); ++it)
         {
           typename pid_map_traits::result_type map_result =
-            pid_map_traits::map_from( transition_.i_mapping, it->second );
+            pid_map_traits::map_to( transition_.i_mapping, it->second );
           // should always be safe!
           if (map_result.second)
           {
-            std::cerr << "\tmapped place " << it->second << " to " << map_result.first << std::endl;
             transition_.template as<net_type>()->put_token( map_result.first, it->first );
+            std::cerr << "\tmapped token " << it->first << " on outer place " << it->second << " to inner " << map_result.first << std::endl;
           }
         }
       }
@@ -251,9 +257,13 @@ namespace we { namespace mgmt { namespace detail {
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       if (transition_.is_net())
+      {
         return ! (transition_.template as<net_type>()->enabled_transitions().empty());
+      }
       else
+      {
         return false;
+      }
     }
 
     const input_t & input() const
