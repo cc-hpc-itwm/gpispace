@@ -170,7 +170,7 @@ namespace expr
             case _pow:
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type double");
+                (util::show (token) + " for values of type bool");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
             default: throw exception::strange ("binary " + util::show(token));
@@ -225,7 +225,7 @@ namespace expr
             case _or:
             case _and:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type double");
+                (util::show (token) + " for values of type double");
             case lt: return is_zero (l-r) ? false : (l < r ? true : false);
             case le: return is_zero (l-r) ? true : (l < r ? true : false);
             case gt: return is_zero (l-r) ? false : (l > r ? true : false);
@@ -244,11 +244,11 @@ namespace expr
             case modint:
             case mod:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type double");
+                (util::show (token) + " for values of type double");
             case _pow: return pow (l, r);
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type double");
+                (util::show (token) + " for values of type double");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
             default: throw exception::strange ("binary " + util::show(token));
@@ -264,7 +264,7 @@ namespace expr
             case _or:
             case _and:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type string");
+                (util::show (token) + " for values of type string");
             case lt: return l < r ? true : false;
             case le: return l <= r ? true : false;
             case gt: return l > r ? true : false;
@@ -281,7 +281,7 @@ namespace expr
             case _pow:
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type string");
+                (util::show (token) + " for values of type string");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
             default: throw exception::strange ("binary " + util::show(token));
@@ -316,7 +316,7 @@ namespace expr
             case max:
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type string");
+                (util::show (token) + " for value of type string");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
@@ -328,7 +328,7 @@ namespace expr
             case _or:
             case _and:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type char");
+                (util::show (token) + " for values of type char");
             case lt: return l < r ? true : false;
             case le: return l <= r ? true : false;
             case gt: return l > r ? true : false;
@@ -345,7 +345,7 @@ namespace expr
             case _pow:
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type char");
+                (util::show (token) + " for values of type char");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
             default: throw exception::strange ("binary " + util::show(token));
@@ -356,7 +356,7 @@ namespace expr
         variant::type operator () (const T &, const U &) const
         {
           throw exception::eval::type_error 
-            (util::show (token) + " for value(s) of different types");
+            (util::show (token) + " for values of different types");
         }
       };
 
