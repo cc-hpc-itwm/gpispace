@@ -975,6 +975,8 @@ public:
 
         delete_one_token (pid, token);
 
+        // WORK HERE: This is not the most efficient way, but
+        // delete_one_token has side effects....
         if (get_edge_info (eid).type == PT_READ)
           put_token (pid, token);
       }
