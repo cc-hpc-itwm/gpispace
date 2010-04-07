@@ -974,9 +974,20 @@ public:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
         delete_one_token (pid, token);
+      }
 
-        // WORK HERE: This is not the most efficient way, but
-        // delete_one_token has side effects....
+    // WORK HERE: This is not the most efficient way, but
+    // delete_one_token has side effects....
+    for ( typename choice_vec_t::const_iterator choice (choice_vec.begin())
+        ; choice != choice_vec.end()
+        ; ++choice
+        )
+      {
+        const pid_t & pid (choice->first);
+        const token_via_edge_t & token_via_edge (choice->second);
+        const token_type & token (token_via_edge.first);
+        const eid_t & eid (token_via_edge.second);
+
         if (get_edge_info (eid).type == PT_READ)
           put_token (pid, token);
       }
