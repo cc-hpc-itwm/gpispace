@@ -195,7 +195,21 @@ namespace expr
                   default: throw exception::parse::expected ("'f' of 'nt'", pos());
                   }
               break;
-            case 'l': ++pos; require ("og"); unary (_log, "log"); break;
+            case 'l':
+              ++pos;
+              if (is_eof())
+                throw exception::parse::expected
+                  ("'en' or 'og'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'e': ++pos; require ("n"); unary (_len, "len"); break;
+                  case 'o': ++pos; require ("g"); unary (_log, "log"); break;
+                  default:
+                    throw exception::parse::expected
+                      ("'en' or 'og'", pos());
+                  }
+              break;
             case 'm':
               ++pos;
               if (is_eof())
@@ -216,14 +230,15 @@ namespace expr
             case 's':
               ++pos;
               if (is_eof())
-                throw exception::parse::expected ("'in' or 'qrt'", pos());
+                throw exception::parse::expected ("'in', 'ubstr' or 'qrt'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
                   case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
+                  case 'u': ++pos; require ("bstr"); token = _substr; break;
                   default: throw exception::parse::expected
-                      ("'in' or 'qrt'", pos());
+                      ("'in', 'ubstr' or 'qrt'", pos());
                   }
               break;
             case 't':

@@ -166,6 +166,7 @@ namespace expr
           case token::eq:
           case token::add:
           case token::sub:
+          case token::_substr:
           case token::mul:
           case token::div:
           case token::mod:
@@ -183,6 +184,7 @@ namespace expr
           case token::_cos:
           case token::_sqrt:
           case token::_log:
+          case token::_len:
           case token::_toint:
           case token::_todouble:
           case token::abs: unary (op_stack.top(), k); break;

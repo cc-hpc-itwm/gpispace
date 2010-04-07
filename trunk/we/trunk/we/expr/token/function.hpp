@@ -120,14 +120,24 @@ namespace expr
 
         variant::type operator () (const char & x) const
         {
-          throw exception::eval::type_error
-            (util::show (token) + " ('" + util::show(x) + "')");
+          switch (token)
+          {
+            case _len: return (long)(1);
+            default:
+              throw exception::eval::type_error
+                (util::show (token) + " ('" + util::show(x) + "')");
+          }
         }
 
         variant::type operator () (const std::string & x) const
         {
-          throw exception::eval::type_error
-            (util::show (token) + " (\"" + x + "\")");
+          switch (token)
+          {
+            case _len: return (long)(x.size());
+            default:
+              throw exception::eval::type_error
+                (util::show (token) + " ('" + util::show(x) + "')");
+          }
         }
       };
 
@@ -274,6 +284,39 @@ namespace expr
                 (util::show (token) + " for value(s) of type string");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
+            default: throw exception::strange ("binary " + util::show(token));
+            }
+        }
+
+        variant::type operator () ( const std::string & l
+                                  , const long & r
+                                  ) const
+        {
+          switch (token)
+            {
+            case _substr:
+              return l.substr(0, r);
+            case _or:
+            case _and:
+            case lt:
+            case le:
+            case gt:
+            case ge:
+            case ne:
+            case eq:
+            case add:
+            case sub:
+            case mul:
+            case div:
+            case divint:
+            case modint:
+            case mod:
+            case _pow:
+            case min:
+            case max:
+            case _powint:
+              throw exception::eval::type_error 
+                (util::show (token) + " for value(s) of type string");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }

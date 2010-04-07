@@ -30,6 +30,8 @@ namespace expr
     , _sin, _cos
     , _sqrt, _log
     , _toint, _todouble
+    , _len
+    , _substr
 
     , sep                     // comma
     , lpr, rpr                // parenthesis
