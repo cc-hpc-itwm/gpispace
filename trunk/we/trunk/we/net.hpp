@@ -45,7 +45,12 @@ namespace petri_net
     };
   }
 
-  enum edge_type {PT,TP};
+  enum edge_type {PT,PT_READ,TP};
+
+  static inline bool is_PT (const edge_type & et)
+  {
+    return (et == PT || et == PT_READ);
+  }
 
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
@@ -294,7 +299,7 @@ private:
                                    , const connection_t & connection
                                    )
   {
-    if (connection.type == PT)
+    if (is_PT (connection.type))
       {
         recalculate_in_enabled (connection.tid, connection.pid, eid);
       }
@@ -585,7 +590,7 @@ public:
   eid_t add_edge (const edge_type & edge, const connection_t & connection)
   {
     const eid_t eid
-      ( (connection.type == PT)
+      ( (is_PT (connection.type))
       ? gen_add_edge<pid_t,tid_t> (edge, connection.pid, connection.tid, adj_pt)
       : gen_add_edge<tid_t,pid_t> (edge, connection.tid, connection.pid, adj_tp)
       );
@@ -657,7 +662,7 @@ public:
 
     const connection_t connection (it->second);
 
-    if (connection.type == PT)
+    if (is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
       }
@@ -969,6 +974,9 @@ public:
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
         delete_one_token (pid, token);
+
+        if (get_edge_info (eid).type == PT_READ)
+          put_token (pid, token);
       }
 
     return activity_t (tid, input, output_descr);
