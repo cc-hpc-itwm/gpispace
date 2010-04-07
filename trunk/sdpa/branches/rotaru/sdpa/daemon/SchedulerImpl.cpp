@@ -56,6 +56,13 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
 	id_type wf_id = jobId.str();
 
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
+		stop();
+		return;
+	}
+
 	try {
 
 		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
@@ -106,14 +113,14 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
-	try {
-		if(!ptr_comm_handler_)
-		{
-			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
-			stop();
-			return;
-		}
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		stop();
+		return;
+	}
 
+	try {
 
 		if( ptr_worker_man_ )
 		{

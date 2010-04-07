@@ -17,7 +17,7 @@ namespace sdpa {
       CPPUNIT_TEST( testAggregatorSerialization );
       CPPUNIT_TEST( testNRESerialization );
       CPPUNIT_TEST( testDummyWorkflowEngineSerialization );
-      //CPPUNIT_TEST( testBackupRecover );
+      CPPUNIT_TEST( testBackupRecoverOrch );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -37,7 +37,7 @@ namespace sdpa {
       void testAggregatorSerialization();
       void testDummyWorkflowEngineSerialization();
       void testNRESerialization();
-      void testBackupRecover();
+      void testBackupRecoverOrch();
     };
   }
 }

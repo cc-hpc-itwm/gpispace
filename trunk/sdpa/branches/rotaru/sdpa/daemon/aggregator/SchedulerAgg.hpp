@@ -32,7 +32,7 @@ namespace sdpa {
   public:
 	 SchedulerAgg(sdpa::daemon::IComm* pCommHandler = NULL):
 		 SchedulerImpl(pCommHandler),
-		 SDPA_INIT_LOGGER("Scheduler " + pCommHandler->name())
+		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"AGG"))
 	{
 
 	}

@@ -72,49 +72,6 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-void WorkerSerializationTest::testBackupRecover()
-{
-	std::cout<<std::endl<<"----------------Begin  testBackupRecover----------------"<<std::endl;
-	std::string filename = "testBackupRecover.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.location=orchestrator_0:127.0.0.1:7000");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	std::string strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
-
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
-
-	// submit a number of jobs
-	for(int k=0; k<5; k++ )
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(strWorkflow);
-
-	ptrOrch->print();
-	ptrOrch->backup("OrchestratorBackupFile.txt");
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
-	sleep(1);
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
-	ptrRecOrch->recover("OrchestratorBackupFile.txt");
-	//sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrRecOrch);
-
-	sleep(1);
-
-	//sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
-	// sleep(1);
-
-	ptrCli->shutdown_network();
-	std::cout<<std::endl<<"----------------End  testBackupRecover----------------"<<std::endl;
-}
-
 void WorkerSerializationTest::testDummyWorkflowEngineSerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testDummyWorkflowEngineSerialization----------------"<<std::endl;
@@ -845,3 +802,46 @@ void WorkerSerializationTest::testSynchQueueSerialization()
 	}
 }
 
+void WorkerSerializationTest::testBackupRecoverOrch()
+{
+	std::cout<<std::endl<<"----------------Begin  testBackupRecoverOrch----------------"<<std::endl;
+	std::string filename = "testBackupRecover.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	cav.push_back("--network.location=orchestrator_0:127.0.0.1:7000");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	std::string strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
+
+	// submit a number of jobs
+	for(int k=0; k<5; k++ )
+		sdpa::job_id_t job_id_user = ptrCli->submitJob(strWorkflow);
+
+	ptrOrch->print();
+	ptrOrch->backup(filename);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+	sleep(1);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
+	ptrRecOrch->recover(filename);
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrRecOrch);
+
+	sleep(1);
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
+	sleep(1);
+
+	ptrCli->shutdown_network();
+
+	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
+}
