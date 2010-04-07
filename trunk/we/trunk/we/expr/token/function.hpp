@@ -211,7 +211,7 @@ namespace expr
             case ge: return l >= r ? 1L : 0L;
             case ne: return l != r ? 1L : 0L;
             case eq: return l == r ? 1L : 0L;
-            case add:
+            case add: { std::string s; s+= l; s += r; return s; }
             case sub:
             case mul:
             case div:
@@ -235,14 +235,14 @@ namespace expr
             case _or:
             case _and:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type string");
+                (util::show (token) + " for value(s) of type char");
             case lt: return l < r ? 1L : 0L;
             case le: return l <= r ? 1L : 0L;
             case gt: return l > r ? 1L : 0L;
             case ge: return l >= r ? 1L : 0L;
             case ne: return l != r ? 1L : 0L;
             case eq: return l == r ? 1L : 0L;
-            case add:
+            case add: { std::string s; s+= l; s += r; return s; }
             case sub:
             case mul:
             case div:
@@ -252,7 +252,7 @@ namespace expr
             case _pow:
             case _powint:
               throw exception::eval::type_error 
-                (util::show (token) + " for value(s) of type string");
+                (util::show (token) + " for value(s) of type char");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
             default: throw exception::strange ("binary " + util::show(token));
