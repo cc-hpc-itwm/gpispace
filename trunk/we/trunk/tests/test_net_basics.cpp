@@ -1,7 +1,6 @@
 // demonstrate basic usage of the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
 #include <we/net.hpp>
-#include <we/function/cond.hpp>
 #include "timer.hpp"
 
 #include <cstdlib>
@@ -311,18 +310,6 @@ static void delete_all_token (pnet_t & n, const place_t & place, const token_t &
        << endl;
   print_enabled (n);
 }
-
-//static bool cond_in ( const pnet_t & net
-//                    , const token_t & token
-//                    , const petri_net::pid_t & pid
-//                    , const petri_net::eid_t & eid
-//                    )
-//{
-//  const place_t place (net.get_place (pid));
-//  const edge_t edge (net.get_edge (eid));
-//
-//  return (isupper (place[0]) && (token.length() > 0 || edge[0] == '!'));
-//}
 
 int
 main ()
