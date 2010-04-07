@@ -831,6 +831,9 @@ void WorkerSerializationTest::testBackupRecoverOrch()
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	sleep(1);
 
+	ptrCli->shutdown_network();
+	seda::StageRegistry::instance().clear();
+
 	// now try to recover the system
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrRecOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	ptrRecOrch->recover(filename);
@@ -840,8 +843,6 @@ void WorkerSerializationTest::testBackupRecoverOrch()
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrRecOrch);
 	sleep(1);
-
-	ptrCli->shutdown_network();
 
 	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
 }
