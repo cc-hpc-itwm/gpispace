@@ -145,7 +145,7 @@ namespace expr
               break;
             case 'd':
               ++pos;
-              if (pos.end())
+              if (is_eof())
                 throw exception::parse::expected ("'iv' or 'ouble'", pos());
               else
                 switch (*pos)
@@ -170,7 +170,7 @@ namespace expr
               break;
             case 'f':
               ++pos;
-              if (pos.end())
+              if (is_eof())
                 throw exception::parse::expected ("'loor' or 'alse'", pos());
               else
                 switch (*pos)
@@ -185,7 +185,7 @@ namespace expr
               break;
             case 'i':
               ++pos;
-              if (pos.end())
+              if (is_eof())
                 throw exception::parse::expected ("'f' of 'nt'", pos());
               else
                 switch (*pos)
@@ -243,7 +243,7 @@ namespace expr
               break;
             case 't':
               ++pos;
-              if (pos.end())
+              if (is_eof())
                 throw exception::parse::expected ("'hen' or 'rue'", pos());
               else
                 switch (*pos)
@@ -290,7 +290,7 @@ namespace expr
               break;
             case '*':
               ++pos;
-              if (!pos.end() && *pos == '*')
+              if (!is_eof() && *pos == '*')
                 {
                   token = _pow;
                   ++pos;
