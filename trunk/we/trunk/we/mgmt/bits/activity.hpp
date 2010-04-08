@@ -88,8 +88,6 @@ namespace we { namespace mgmt { namespace detail {
       , transition_ (other.transition_)
       , input_ (other.input_)
       , output_ (other.output_)
-      , extracted_ (other.extracted_)
-      , injected_ (other.injected_)
     { }
 
     activity & operator= (const this_type & other)
@@ -103,8 +101,6 @@ namespace we { namespace mgmt { namespace detail {
         transition_ = (other.transition_);
         input_ = (other.input_);
         output_ = (other.output_);
-        extracted_ = (other.extracted_);
-        injected_ = (other.injected_);
       }
       return *this;
     }
@@ -186,7 +182,6 @@ namespace we { namespace mgmt { namespace detail {
 
       this_type act = this->create_activity_from_net_activity (net_activity, id_gen());
 
-      ++extracted_;
       return act;
     }
 
@@ -211,7 +206,6 @@ namespace we { namespace mgmt { namespace detail {
       {
         output_ = mapped_output;
       }
-      ++injected_;
     }
 
     void prepare_input()
@@ -243,7 +237,7 @@ namespace we { namespace mgmt { namespace detail {
       shared_lock_t lock(const_cast<this_type&>(*this));
       if (transition_.is_net())
       {
-        return (extracted_ == injected_) && ( ! has_enabled() );
+        return (this->children_.empty()) && ( ! has_enabled() );
       }
       else
       {
@@ -439,8 +433,6 @@ namespace we { namespace mgmt { namespace detail {
     input_t input_;
     output_t output_;
 
-    size_t extracted_;
-    size_t injected_;
     boost::mt19937 engine_;
   };
 }}}
