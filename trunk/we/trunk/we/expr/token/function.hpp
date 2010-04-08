@@ -74,7 +74,7 @@ namespace expr
             case _round:
               throw exception::eval::type_error
                 (util::show (token) + " (" + util::show(x) + ")");
-            case _toint: return x ? 1L : 0L;
+            case _tolong: return x ? 1L : 0L;
             case _todouble: return x ? 1.0 : 0.0;
             default: throw exception::strange ("unary " + util::show(token));
             }
@@ -94,7 +94,7 @@ namespace expr
             case _floor:
             case _ceil:
             case _round:
-            case _toint: return x;
+            case _tolong: return x;
             case _todouble: return double(x);
             default: throw exception::strange ("unary " + util::show(token));
             }
@@ -118,7 +118,7 @@ namespace expr
             case _round:
               round_half_up = !round_half_up; 
               return round_half_up ? floor (x + 0.5) : ceil (x - 0.5);
-            case _toint: return long(x);
+            case _tolong: return long(x);
             case _todouble: return x;
             default: throw exception::strange ("unary " + util::show(token));
             }

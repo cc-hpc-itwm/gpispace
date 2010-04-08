@@ -183,31 +183,32 @@ namespace expr
                     throw exception::parse::expected ("'loor' or 'alse'", pos());
                   }
               break;
-            case 'i':
-              ++pos;
-              if (is_eof())
-                throw exception::parse::expected ("'f' of 'nt'", pos());
-              else
-                switch (*pos)
-                  {
-                  case 'f': ++pos; token = _if; break;
-                  case 'n': ++pos; require("t"); token = _toint; break;
-                  default: throw exception::parse::expected ("'f' of 'nt'", pos());
-                  }
-              break;
+            case 'i': ++pos; require ("f"); token = _if; break;
             case 'l':
               ++pos;
               if (is_eof())
                 throw exception::parse::expected
-                  ("'en' or 'og'", pos());
+                  ("'en', 'ong' or 'og'", pos());
               else
                 switch (*pos)
                   {
                   case 'e': ++pos; require ("n"); unary (_len, "len"); break;
-                  case 'o': ++pos; require ("g"); unary (_log, "log"); break;
+                  case 'o':
+                    ++pos;
+                    if (is_eof())
+                      throw exception::parse::expected ("'ng' or 'g'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 'n': ++pos; require ("g"); token = _tolong; break;
+                        case 'g': ++pos; unary (_log, "log"); break;
+                        default: throw exception::parse::expected
+                            ("'ng' or 'g'", pos());
+                        }
+                    break;
                   default:
                     throw exception::parse::expected
-                      ("'en' or 'og'", pos());
+                      ("'en', 'ong' or 'og'", pos());
                   }
               break;
             case 'm':

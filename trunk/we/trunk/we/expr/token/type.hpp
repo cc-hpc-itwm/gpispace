@@ -29,7 +29,7 @@ namespace expr
     , _floor, _ceil, _round
     , _sin, _cos
     , _sqrt, _log
-    , _toint, _todouble
+    , _tolong, _todouble
     , _len
     , _substr
 
@@ -78,7 +78,7 @@ namespace expr
         case _cos: return s << "cos";
         case _sqrt: return s << "sqrt";
         case _log: return s << "log";
-        case _toint: return s << "int";
+        case _tolong: return s << "long";
         case _todouble: return s << "double";
         case abs: return s << "abs";
         case sep: return s << ", ";
