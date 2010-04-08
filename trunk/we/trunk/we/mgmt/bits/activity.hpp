@@ -66,7 +66,6 @@ namespace we { namespace mgmt { namespace detail {
     typedef typename traits_type::output_t output_t;
     typedef typename traits_type::pid_t pid_t;
     typedef typename traits_type::tid_t tid_t;
-    typedef typename traits_type::transition_cat_t activity_cat_t;
 
     typedef boost::unordered_set<id_type> children_set_t;
     typedef boost::shared_lock<this_type> shared_lock_t;
