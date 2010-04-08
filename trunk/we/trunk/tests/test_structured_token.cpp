@@ -270,7 +270,7 @@ main (int argc, char ** argv)
       ( net
       , "${slice_in}    := ${splitted};     \
          ${splitted}    := ${splitted} + 1; \
-         ${in_progress} := 1;               "
+         ${in_progress} := [];              "
       , "${splitted} < ${NUM_SLICES}"
       )
     );
@@ -307,7 +307,7 @@ main (int argc, char ** argv)
   petri_net::tid_t tid_finalize 
     ( mk_transition
       ( net
-      , "${done} := 1"
+      , "${done} := []"
       , "${joined} == ${NUM_SLICES} & ${splitted} == ${NUM_SLICES}"
       )
     );

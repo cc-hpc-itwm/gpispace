@@ -21,11 +21,26 @@ namespace expr
 {
   namespace variant
   {
-    typedef boost::variant<bool, long, double, char, std::string> type;
+    struct control {};
+
+    inline bool operator == (const control &, const control &) { return true; }
+
+    typedef boost::variant< control
+                          , bool
+                          , long
+                          , double
+                          , char
+                          , std::string
+                          > type;
 
     class visitor_show : public boost::static_visitor<std::string>
     {
     public:
+      std::string operator () (const control &) const
+      {
+        return "[]";
+      }
+
       std::string operator () (const bool & x) const
       {
         return x ? "true" : "false";
@@ -62,6 +77,11 @@ namespace expr
     class visitor_hash : public boost::static_visitor<std::size_t>
     {
     public:
+      std::size_t operator () (const control &) const
+      {
+        return 42;
+      }
+
       template<typename T>
       std::size_t operator () (const T & x) const
       {

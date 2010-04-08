@@ -109,7 +109,7 @@ namespace we
     {
       switch (t.arity)
         {
-        case 0: return s << "<control>";
+        case 0: return s << expr::variant::show (expr::variant::control());
         case 1: return s << expr::variant::show (t.map.begin()->second);
         default:
           s << "[";

@@ -314,6 +314,12 @@ namespace expr
             case ',': ++pos; token = sep; break;
             case '(': ++pos; token = lpr; break;
             case ')': ++pos; token = rpr; break;
+            case '[':
+              ++pos;
+              require("]");
+              token = val;
+              tokval = variant::control();
+              break;
             case '$':
               ++pos;
               token = ref;

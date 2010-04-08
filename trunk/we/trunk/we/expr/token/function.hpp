@@ -52,6 +52,12 @@ namespace expr
       public:
         unary (const type & _token) : token (_token) {}
 
+        variant::type operator () (const variant::control &) const
+        {
+          throw exception::eval::type_error
+            (util::show (token) + " (control token)");
+        }
+
         variant::type operator () (const bool & x) const
         {
           switch (token)
@@ -147,6 +153,14 @@ namespace expr
         const type & token;
       public:
         binary (const type & _token) : token (_token) {}
+
+        variant::type operator () ( const variant::control &
+                                  , const variant::control &
+                                  ) const
+        {
+          throw exception::eval::type_error 
+            (util::show (token) + " for control token");
+        }
 
         variant::type operator () (const bool & l, const bool & r) const
         {
