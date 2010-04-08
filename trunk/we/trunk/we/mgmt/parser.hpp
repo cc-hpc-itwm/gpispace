@@ -96,7 +96,7 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t map_trans ("map", typename transition_t::expr_type("$1 := (1); $2 := (2); $3 := (3);"));
+          transition_t map_trans ("map", typename transition_t::expr_type("${1} := ${0} + \"-1\"; ${2} := ${0} + \"-2\"; ${3} := ${0} + \"-3\";"));
 
           // emulate ports for now
           map_trans.connect_in ( mr_sn_inp, pid_t (0) ); // port_0
@@ -118,7 +118,7 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t red_trans ("red", typename transition_t::expr_type("$1 := (0);"));
+          transition_t red_trans ("red", typename transition_t::expr_type("${1} := substr(${0}, len(\"token-0\"));"));
           red_trans.connect_out (mr_sn_out, pid_t (NUM_NODES)); // port_1
 
           size_t cnt(0);
