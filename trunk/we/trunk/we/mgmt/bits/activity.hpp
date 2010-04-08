@@ -182,15 +182,14 @@ namespace we { namespace mgmt { namespace detail {
       return transition_;
     }
 
-    template <typename IdGen>
     this_type
-    extract(IdGen id_gen)
+    extract(id_type id)
     {
       unique_lock_t lock(const_cast<this_type&>(*this));
 
       typename net_type::activity_t net_activity = transition_.template as<net_type>()->extract_activity_random(engine_);
 
-      this_type act = this->create_activity_from_net_activity (net_activity, id_gen());
+      this_type act = this->create_activity_from_net_activity (net_activity, id);
 
       return act;
     }
