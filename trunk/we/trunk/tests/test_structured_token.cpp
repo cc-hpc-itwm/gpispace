@@ -19,22 +19,19 @@
 
 // ************************************************************************* //
 
+// WORK HERE: implement as variant
 struct place_t
 {
 public:
-  typedef std::string type_name_t;
-  typedef boost::unordered_map< we::token::type::field_name_t
-                              , type_name_t
-                              > signature_t;
   typedef std::string name_t;
 
 private:
   name_t name;
-  signature_t signature;
+  we::token::signature_t signature;
 
 public:
   const name_t & get_name (void) const { return name; }
-  const signature_t & get_signature (void) const { return signature; }
+  const we::token::signature_t & get_signature (void) const { return signature; }
 
   place_t (const name_t & _name)
     : name (_name)
@@ -42,7 +39,15 @@ public:
   {}
 
   place_t ( const name_t & _name
-          , const signature_t & _signature
+          , const we::token::type_name_t & _type_name
+          )
+    : name (_name)
+  {
+    signature[""] = _type_name;
+  }
+
+  place_t ( const name_t & _name
+          , const we::token::signature_t & _signature
           )
     : name (_name)
     , signature (_signature)
@@ -90,11 +95,19 @@ typedef petri_net::net<place_t, transition_t, edge_t, we::token::type> pnet_t;
 
 // ************************************************************************* //
 
-static place_t::name_t place_name ( const pnet_t & net
-                                  , const petri_net::pid_t & pid
-                                  )
+static const place_t::name_t & place_name ( const pnet_t & net
+                                          , const petri_net::pid_t & pid
+                                          )
 {
   return net.get_place(pid).get_name();
+}
+
+static const we::token::signature_t &
+place_signature ( const pnet_t & net
+                , const petri_net::pid_t & pid
+                )
+{
+  return net.get_place(pid).get_signature();
 }
 
 // ************************************************************************* //
@@ -147,73 +160,99 @@ public:
 
 typedef expr::eval::context<std::string> context_t;
 
-// construct token from context
-
-// WORK HERE: If there is a description of the target place available,
-// then this function can be implemented by a series of lookups
-// instead of a linear search
+// construct token from context, use information from signature
 
 static we::token::type mk_token ( const std::string & pref
+                                , const we::token::signature_t & signature
                                 , const context_t & context
                                 )
 {
-  // first try for single valued token (e.g. no fields)
-  try
+  if (signature.size() == 0)
     {
-      const expr::variant::type & v (context.value (pref));
+      try
+        {
+          const expr::variant::type & v (context.value (pref));
 
-      return we::token::type (v);
+          //          if (variant::is_control (v))
+            return we::token::type (v);
+//           else
+//             throw std::runtime_error ("type error: must be control token!");
+        }
+      catch (expr::exception::eval::missing_binding<std::string> &)
+        {
+          throw no_value_given (pref);
+        }
     }
-  catch (expr::exception::eval::missing_binding<std::string> &)
+  else if (signature.size() == 1)
     {
-      /* check the complete context */
+      try
+        {
+          const expr::variant::type & v (context.value (pref));
 
+          // check type here
+          return we::token::type (v);
+
+            // throw std::runtime_error ("type error:");
+        }
+      catch (expr::exception::eval::missing_binding<std::string> &)
+        {
+          throw no_value_given (pref);
+        }
+    }
+  else
+    {
       we::token::type::map_t m;
 
-      for ( context_t::const_iterator c (context.begin())
-          ; c != context.end()
-          ; ++c
+      for ( we::token::signature_t::const_iterator sig (signature.begin())
+          ; sig != signature.end()
+          ; ++sig
           )
         {
-          const std::string name (c->first);
+          const std::string field (pref + "." + sig->first);
 
-          if (pref == name.substr (0, pref.length()))
+          try
             {
-              const std::string rest (name.substr (pref.length()));
+              const expr::variant::type & v (context.value (field));
 
-              if (rest[0] != '.')
-                throw prefix_not_unique(pref);
-
-              m[rest.substr(1)] = c->second;
+              // check type here
+              m[sig->first] = v;
+              
+              // throw std::runtime_error ("type error:");
+            }
+          catch (expr::exception::eval::missing_binding<std::string> &)
+            {
+              throw no_value_given (field);
             }
         }
 
-      if (m.size() == 0)
-        throw no_value_given (pref);
-
       return we::token::type (m);
     }
-
-  throw no_value_given (pref);
 }
 
 class Transition
 {
 private:
+  const std::string name;
   const std::string expression;
   const expr::parse::parser<std::string> parser;
   expr::eval::context<std::string> context;
   typedef boost::function<std::string (const pid_t &)> translate_t;
+  typedef boost::function<we::token::signature_t (const pid_t &)> sig_t;
   translate_t translate;
-  
+  sig_t signature;
+
 public:
-  explicit Transition ( const std::string & _expression
+  explicit Transition ( const std::string & _name
+                      , const std::string & _expression
                       , const translate_t & _translate
+                      , const sig_t & _signature
                       )
-    : expression (_expression)
+    : name (_name)
+    , expression (_expression)
     , parser (expression)
     , context ()
     , translate (_translate)
+    , signature (_signature)
   {}
 
   pnet_t::output_t operator () ( const pnet_t::input_t & input
@@ -248,7 +287,13 @@ public:
         typedef 
           Function::Transition::Traits<we::token::type>::token_on_place_t top_t;
 
-        output.push_back (top_t (mk_token (translate (pid), context), pid));
+        output.push_back (top_t (mk_token ( translate (pid)
+                                          , signature (pid)
+                                          , context
+                                          )
+                                , pid
+                                )
+                         );
       }
 
     return output;
@@ -263,8 +308,9 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition ( expression
+    , Transition ( name, expression
                  , boost::bind (&place_name, boost::ref(net), _1)
+                 , boost::bind (&place_signature, boost::ref(net), _1)
                  )
     , mk_cond (net, condition)
     );
@@ -277,8 +323,9 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition ( expression
+    , Transition ( name, expression
                  , boost::bind (&place_name, boost::ref(net), _1)
+                 , boost::bind (&place_signature, boost::ref(net), _1)
                  )
     );
 }
@@ -322,15 +369,22 @@ main (int argc, char ** argv)
 
   pnet_t net;
 
-  petri_net::pid_t pid_NUM_SLICES (net.add_place (place_t("NUM_SLICES")));
-  petri_net::pid_t pid_MAX_DEPTH (net.add_place (place_t("MAX_DEPTH")));
-  petri_net::pid_t pid_splitted (net.add_place (place_t("splitted")));
-  petri_net::pid_t pid_slice_in (net.add_place (place_t("slice_in")));
-  petri_net::pid_t pid_slice_depth (net.add_place (place_t("slice_depth")));
-  petri_net::pid_t pid_slice_out (net.add_place (place_t("slice_out")));
-  petri_net::pid_t pid_joined (net.add_place (place_t("joined")));
-  petri_net::pid_t pid_done (net.add_place (place_t("done")));
-  petri_net::pid_t pid_in_progress (net.add_place (place_t("in_progress")));
+  petri_net::pid_t pid_NUM_SLICES (net.add_place (place_t("NUM_SLICES","long")));
+  petri_net::pid_t pid_MAX_DEPTH (net.add_place (place_t("MAX_DEPTH","long")));
+  petri_net::pid_t pid_splitted (net.add_place (place_t("splitted","long")));
+  petri_net::pid_t pid_slice_in (net.add_place (place_t("slice_in","long")));
+  petri_net::pid_t pid_slice_out (net.add_place (place_t("slice_out","long")));
+  petri_net::pid_t pid_joined (net.add_place (place_t("joined","long")));
+
+  we::token::signature_t sig;
+
+  sig["slice"] = "long";
+  sig["depth"] = "long";
+
+  petri_net::pid_t pid_slice_depth (net.add_place (place_t("slice_depth", sig)));
+
+  petri_net::pid_t pid_done (net.add_place (place_t("done"))); // control
+  petri_net::pid_t pid_in_progress (net.add_place (place_t("in_progress"))); // control
 
   petri_net::tid_t tid_split
     ( mk_transition 

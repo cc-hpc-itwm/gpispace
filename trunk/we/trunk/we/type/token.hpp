@@ -27,10 +27,16 @@ namespace we
       };
     }
 
+    // WORK HERE: implement as variant(s)
+
+    typedef std::string type_name_t;
+    typedef std::string field_name_t;
+
+    typedef boost::unordered_map<field_name_t, type_name_t> signature_t;
+
     class type
     {
     public:
-      typedef std::string field_name_t;
       typedef boost::unordered_map<field_name_t,expr::variant::type> map_t;
 
     private:
