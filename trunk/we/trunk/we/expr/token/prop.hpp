@@ -9,12 +9,12 @@ namespace expr
 {
   namespace token
   {
-    static bool is_builtin (const type & token)
+    inline bool is_builtin (const type & token)
     {
       return (token > neg && token < sep);
     }
 
-    static bool is_prefix (const type & token)
+    inline bool is_prefix (const type & token)
     {
       switch (token)
         {
@@ -30,7 +30,7 @@ namespace expr
         }
     }
 
-    static bool next_can_be_unary (const type & token)
+    inline bool next_can_be_unary (const type & token)
     {
       switch (token)
         {
@@ -41,7 +41,7 @@ namespace expr
         }
     }
 
-    static bool is_define (const type & token)
+    inline bool is_define (const type & token)
     {
       return (token == define);
     }
