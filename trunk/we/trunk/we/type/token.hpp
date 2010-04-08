@@ -68,7 +68,7 @@ namespace we
       {
         switch (arity)
           {
-          case 0: c.bind (pref, true); break;
+          case 0: c.bind (pref, expr::variant::control()); break;
           case 1: c.bind (pref, get ("")); break;
           default:
             for (map_t::const_iterator f (map.begin()); f != map.end(); ++f)

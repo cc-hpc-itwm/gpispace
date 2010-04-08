@@ -14,23 +14,88 @@
 
 #include <boost/function.hpp>
 #include <boost/program_options.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/functional/hash.hpp>
 
 // ************************************************************************* //
 
-typedef std::string place_t;
-typedef unsigned int transition_t;
+struct place_t
+{
+public:
+  typedef std::string type_name_t;
+  typedef boost::unordered_map< we::token::type::field_name_t
+                              , type_name_t
+                              > signature_t;
+  typedef std::string name_t;
+
+private:
+  name_t name;
+  signature_t signature;
+
+public:
+  const name_t & get_name (void) const { return name; }
+  const signature_t & get_signature (void) const { return signature; }
+
+  place_t (const name_t & _name)
+    : name (_name)
+    , signature ()
+  {}
+
+  place_t ( const name_t & _name
+          , const signature_t & _signature
+          )
+    : name (_name)
+    , signature (_signature)
+  {}
+};
+
+static std::ostream & operator << (std::ostream & s, const place_t & p)
+{
+  return s << p.get_name();
+}
+
+static bool operator == (const place_t & a, const place_t & b)
+{
+  return a.get_name() == b.get_name();
+}
+
+static inline std::size_t hash_value (const place_t & p)
+{
+  boost::hash<place_t::name_t> h;
+
+  return h(p.get_name());
+}
+
+// ************************************************************************* //
+
+typedef unsigned int transition_cnt_t;
+typedef std::pair<transition_cnt_t,std::string> transition_t;
 typedef unsigned int edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
 static edge_cnt_t e (0);
-static transition_t t (0);
+static transition_cnt_t t (0);
 
 static edge_t mk_edge (const std::string & descr)
 {
   return edge_t (e++, descr);
 }
 
+static transition_t mk_trans (const std::string & descr)
+{
+  return transition_t (t++, descr);
+}
+
 typedef petri_net::net<place_t, transition_t, edge_t, we::token::type> pnet_t;
+
+// ************************************************************************* //
+
+static place_t::name_t place_name ( const pnet_t & net
+                                  , const petri_net::pid_t & pid
+                                  )
+{
+  return net.get_place(pid).get_name();
+}
 
 // ************************************************************************* //
 
@@ -58,7 +123,7 @@ mk_cond (const pnet_t & net, const std::string & exp)
 {
   return Function::Condition::Expression<we::token::type>
     ( exp
-    , boost::bind (&pnet_t::get_place, boost::ref (net), _1)
+    , boost::bind (&place_name, boost::ref (net), _1)
     );
 }
 
@@ -191,27 +256,29 @@ public:
 };
 
 static petri_net::tid_t mk_transition ( pnet_t & net
+                                      , const std::string & name
                                       , const std::string & expression
                                       , const std::string & condition
                                       )
 {
   return net.add_transition 
-    ( t++
+    ( mk_trans (name)
     , Transition ( expression
-                 , boost::bind (&pnet_t::get_place, boost::ref(net), _1)
+                 , boost::bind (&place_name, boost::ref(net), _1)
                  )
     , mk_cond (net, condition)
     );
 }
 
 static petri_net::tid_t mk_transition ( pnet_t & net
+                                      , const std::string & name
                                       , const std::string & expression
                                       )
 {
   return net.add_transition 
-    ( t++
+    ( mk_trans (name)
     , Transition ( expression
-                 , boost::bind (&pnet_t::get_place, boost::ref(net), _1)
+                 , boost::bind (&place_name, boost::ref(net), _1)
                  )
     );
 }
@@ -255,19 +322,20 @@ main (int argc, char ** argv)
 
   pnet_t net;
 
-  petri_net::pid_t pid_NUM_SLICES (net.add_place ("NUM_SLICES"));
-  petri_net::pid_t pid_MAX_DEPTH (net.add_place ("MAX_DEPTH"));
-  petri_net::pid_t pid_splitted (net.add_place ("splitted"));
-  petri_net::pid_t pid_slice_in (net.add_place ("slice_in"));
-  petri_net::pid_t pid_slice_depth (net.add_place ("slice_depth"));
-  petri_net::pid_t pid_slice_out (net.add_place ("slice_out"));
-  petri_net::pid_t pid_joined (net.add_place ("joined"));
-  petri_net::pid_t pid_done (net.add_place ("done"));
-  petri_net::pid_t pid_in_progress (net.add_place ("in_progress"));
+  petri_net::pid_t pid_NUM_SLICES (net.add_place (place_t("NUM_SLICES")));
+  petri_net::pid_t pid_MAX_DEPTH (net.add_place (place_t("MAX_DEPTH")));
+  petri_net::pid_t pid_splitted (net.add_place (place_t("splitted")));
+  petri_net::pid_t pid_slice_in (net.add_place (place_t("slice_in")));
+  petri_net::pid_t pid_slice_depth (net.add_place (place_t("slice_depth")));
+  petri_net::pid_t pid_slice_out (net.add_place (place_t("slice_out")));
+  petri_net::pid_t pid_joined (net.add_place (place_t("joined")));
+  petri_net::pid_t pid_done (net.add_place (place_t("done")));
+  petri_net::pid_t pid_in_progress (net.add_place (place_t("in_progress")));
 
   petri_net::tid_t tid_split
     ( mk_transition 
       ( net
+      , "split"
       , "${slice_in}    := ${splitted};     \
          ${splitted}    := ${splitted} + 1; \
          ${in_progress} := [];              "
@@ -277,12 +345,14 @@ main (int argc, char ** argv)
   petri_net::tid_t tid_tag
     ( mk_transition
       ( net
+      , "tag"
       , "${slice_depth.slice} := ${slice_in}; ${slice_depth.depth} := 0"
       )
     );
   petri_net::tid_t tid_work
     ( mk_transition
       ( net
+      , "work"
       , "${slice_depth.slice} := ${slice_depth.slice};   \
          ${slice_depth.depth} := ${slice_depth.depth} + 1"
       , "${slice_depth.depth} < ${MAX_DEPTH}"
@@ -292,6 +362,7 @@ main (int argc, char ** argv)
   petri_net::tid_t tid_untag
     ( mk_transition
       ( net
+      , "untag"
       , "${slice_out} := ${slice_depth.slice}"
       , "${slice_depth.depth} >= ${MAX_DEPTH}"
       )
@@ -300,6 +371,7 @@ main (int argc, char ** argv)
   petri_net::pid_t tid_join
     ( mk_transition
       ( net
+      , "join"
       , "${joined} := ${joined} + 1"
       )
     );
@@ -307,6 +379,7 @@ main (int argc, char ** argv)
   petri_net::tid_t tid_finalize 
     ( mk_transition
       ( net
+      , "finalize"
       , "${done} := []"
       , "${joined} == ${NUM_SLICES} & ${splitted} == ${NUM_SLICES}"
       )
