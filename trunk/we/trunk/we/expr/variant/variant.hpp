@@ -33,6 +33,17 @@ namespace expr
                           , std::string
                           > type;
 
+    class visitor_type_name : public boost::static_visitor<std::string>
+    {
+    public:
+      std::string operator () (const control &) const { return "control"; }
+      std::string operator () (const bool &) const { return "bool"; }
+      std::string operator () (const long &) const { return "long"; }
+      std::string operator () (const double &) const { return "double"; }
+      std::string operator () (const char &) const { return "char"; }
+      std::string operator () (const std::string &) const { return "string"; }
+    };
+
     class visitor_show : public boost::static_visitor<std::string>
     {
     public:

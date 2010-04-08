@@ -158,6 +158,19 @@ public:
   {}
 };
 
+class type_error : public std::runtime_error
+{
+public:
+  type_error ( const std::string & field
+             , const std::string & required
+             , const std::string & given
+             )
+    : std::runtime_error ( "type error: " + field 
+                         + " requires value of type " + required 
+                         + ", given value of type " + given
+                         ) {};
+};
+
 typedef expr::eval::context<std::string> context_t;
 
 // construct token from context, use information from signature
@@ -173,10 +186,14 @@ static we::token::type mk_token ( const std::string & pref
         {
           const expr::variant::type & v (context.value (pref));
 
-          //          if (variant::is_control (v))
+          const std::string req ("control");
+          const std::string has
+            (boost::apply_visitor (expr::variant::visitor_type_name(), v));
+
+          if (has == req)
             return we::token::type (v);
-//           else
-//             throw std::runtime_error ("type error: must be control token!");
+          else
+            throw type_error (pref, req, has);
         }
       catch (expr::exception::eval::missing_binding<std::string> &)
         {
@@ -189,10 +206,14 @@ static we::token::type mk_token ( const std::string & pref
         {
           const expr::variant::type & v (context.value (pref));
 
-          // check type here
-          return we::token::type (v);
+          const std::string req ((*(signature.begin())).second);
+          const std::string has
+            (boost::apply_visitor (expr::variant::visitor_type_name(), v));
 
-            // throw std::runtime_error ("type error:");
+          if (has == req)
+            return we::token::type (v);
+          else
+            throw type_error (pref, req, has);
         }
       catch (expr::exception::eval::missing_binding<std::string> &)
         {
@@ -214,10 +235,14 @@ static we::token::type mk_token ( const std::string & pref
             {
               const expr::variant::type & v (context.value (field));
 
-              // check type here
-              m[sig->first] = v;
-              
-              // throw std::runtime_error ("type error:");
+              const std::string req (sig->second);
+              const std::string has
+                (boost::apply_visitor (expr::variant::visitor_type_name(), v));
+
+              if (has == req)
+                m[sig->first] = v;
+              else
+                throw type_error (field, req, has);
             }
           catch (expr::exception::eval::missing_binding<std::string> &)
             {
