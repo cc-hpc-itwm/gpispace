@@ -52,7 +52,7 @@ namespace Function { namespace Condition
   };
 
   template<>
-  class Expression<we::token::type>
+  class Expression<token::type>
   {
   private:
     const std::string expression;
@@ -70,16 +70,16 @@ namespace Function { namespace Condition
       , translate (_translate)
     {}
 
-    bool operator () (Traits<we::token::type>::choices_t & choices)
+    bool operator () (Traits<token::type>::choices_t & choices)
     {
       for (; choices.has_more(); ++choices)
         {
-          Traits<we::token::type>::choice_star_it_t choice (*choices);
+          Traits<token::type>::choice_star_it_t choice (*choices);
 
           for ( ; choice.has_more(); ++choice)
             {
               const pid_t pid (choice->first);
-              const we::token::type token (choice->second.first);
+              const token::type token (choice->second.first);
 
               token.bind (translate (pid), context);
             }

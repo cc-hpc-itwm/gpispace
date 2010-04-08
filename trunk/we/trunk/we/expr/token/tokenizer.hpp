@@ -14,6 +14,8 @@
 
 #include <we/util/show.hpp>
 
+#include <we/type/control.hpp>
+
 #include <string>
 #include <iostream>
 
@@ -319,7 +321,7 @@ namespace expr
               ++pos;
               require("]");
               token = val;
-              tokval = variant::control();
+              tokval = control();
               break;
             case '$':
               ++pos;

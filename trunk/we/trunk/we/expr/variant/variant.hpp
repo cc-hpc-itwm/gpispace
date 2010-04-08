@@ -9,6 +9,9 @@
 
 #include <we/util/show.hpp>
 
+#include <we/type/signature.hpp>
+#include <we/type/control.hpp>
+
 #include <boost/variant.hpp>
 
 #include <boost/functional/hash.hpp>
@@ -21,10 +24,6 @@ namespace expr
 {
   namespace variant
   {
-    struct control {};
-
-    inline bool operator == (const control &, const control &) { return true; }
-
     typedef boost::variant< control
                           , bool
                           , long
@@ -33,15 +32,15 @@ namespace expr
                           , std::string
                           > type;
 
-    class visitor_type_name : public boost::static_visitor<std::string>
+    class visitor_type_name : public boost::static_visitor<signature::type_name_t>
     {
     public:
-      std::string operator () (const control &) const { return "control"; }
-      std::string operator () (const bool &) const { return "bool"; }
-      std::string operator () (const long &) const { return "long"; }
-      std::string operator () (const double &) const { return "double"; }
-      std::string operator () (const char &) const { return "char"; }
-      std::string operator () (const std::string &) const { return "string"; }
+      signature::type_name_t operator () (const control &) const { return "control"; }
+      signature::type_name_t operator () (const bool &) const { return "bool"; }
+      signature::type_name_t operator () (const long &) const { return "long"; }
+      signature::type_name_t operator () (const double &) const { return "double"; }
+      signature::type_name_t operator () (const char &) const { return "char"; }
+      signature::type_name_t operator () (const std::string &) const { return "string"; }
     };
 
     class visitor_show : public boost::static_visitor<std::string>
