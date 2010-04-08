@@ -440,17 +440,17 @@ namespace we { namespace mgmt {
             {
               activity_type & act = lookup(active_net);
 
-              // TODO: check status flags
-              if (! is_net_alive (act))
-              {
-                std::cerr << "D: act[" << act.id() << "] is on hold." << std::endl;
-                continue;
-              }
-
               if (is_net_done (act))
               {
                 std::cerr << "D: act[" << act.id() << "] is done." << std::endl;
                 post_finished_notification (active_net);
+                continue;
+              }
+
+              // TODO: check status flags
+              if (! is_net_alive (act))
+              {
+                std::cerr << "D: act[" << act.id() << "] is on hold." << std::endl;
                 continue;
               }
 
@@ -618,7 +618,7 @@ namespace we { namespace mgmt {
           }
           else
           {
-            sig_execute( act.id(), "" );
+            sig_execute( act.id(), ::util::show(act.transition()) );
           }
 		}
 
