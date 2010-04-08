@@ -110,9 +110,9 @@ typedef expr::eval::context<std::string> context_t;
 // construct token from context, use information from signature
 
 static token::type mk_token ( const std::string & pref
-                                , const signature::type & signature
-                                , const context_t & context
-                                )
+                            , const signature::type & signature
+                            , const context_t & context
+                            )
 {
   static signature::visitor_arity va;
   static expr::variant::visitor_type_name vt;
@@ -160,7 +160,7 @@ static token::type mk_token ( const std::string & pref
 
     default:
       {
-        token::type::map_t m;
+        token::structured_t m;
 
         const signature::structured_t structured
           (boost::get<signature::structured_t> (signature));

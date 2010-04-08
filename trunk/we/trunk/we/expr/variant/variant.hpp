@@ -46,9 +46,9 @@ namespace expr
     class visitor_show : public boost::static_visitor<std::string>
     {
     public:
-      std::string operator () (const control &) const
+      std::string operator () (const control & x) const
       {
-        return "[]";
+        return util::show (x);
       }
 
       std::string operator () (const bool & x) const
