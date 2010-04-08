@@ -78,17 +78,13 @@ namespace we { namespace mgmt { namespace detail {
     explicit
     activity (const id_type id)
       : id_ (id)
-    {
-      flags_ = 0;
-    }
+    { }
 
     template <typename T>
     activity (const id_type id, const T & transition)
       : id_ (id)
       , transition_ (transition)
-    {
-      flags_ = 0;
-    }
+    { }
 
     activity (const this_type & other)
       : id_ (other.id_)
