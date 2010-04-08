@@ -89,6 +89,8 @@ int main (int ac, char **)
           }
         cout << prompt;
       }
+
+    return EXIT_SUCCESS;
   }
 
   cout << "measure..." << endl;
