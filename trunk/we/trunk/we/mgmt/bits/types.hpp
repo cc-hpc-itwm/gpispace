@@ -22,6 +22,7 @@
 #include <string>
 #include <cassert>
 #include <we/net.hpp>
+#include <we/expr/parse/parser.hpp>
 #include <we/mgmt/bits/pid_map_t.hpp>
 
 namespace we { namespace mgmt {
@@ -168,8 +169,11 @@ namespace we { namespace mgmt {
       struct expr_t
       {
         expr_t(std::string const &e)
-          : v(e) {}
+          : v(e)
+          , expr(e)
+        {}
         const std::string v;
+        const expr::parse::parser<std::string> expr;
       };
 
       typedef mod_t mod_type;
