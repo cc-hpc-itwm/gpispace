@@ -91,8 +91,12 @@ namespace we { namespace mgmt {
 		typedef detail::queue<cmd_t> cmd_q_t;
 
 		// injector thread
-		typedef std::pair<id_type, std::pair<int, typename net_type::output_t> > inj_cmd_t;
+//		typedef std::pair<id_type, typename net_type::output_t> inj_cmd_t;
+		typedef id_type inj_cmd_t;
 		typedef detail::queue<inj_cmd_t> inj_q_t;
+
+        typedef id_type executor_cmd_t;
+		typedef detail::queue<executor_cmd_t> exec_q_t;
 
 	  public:
 
@@ -174,8 +178,7 @@ namespace we { namespace mgmt {
 		  // TODO: parse results
 		  we::util::remove_unused_variable_warning(result);
 		  // hand results over to injector
-		  typename net_type::output_t output /* (parse_result(result)) */;
-		  inj_q_.put ( std::make_pair (id, std::make_pair(0, output)) );
+		  inj_q_.put ( id );
 		  return true;
 		}
 
@@ -283,10 +286,11 @@ namespace we { namespace mgmt {
 		  layer(E & exec_layer)
 		  : exec_layer_(exec_layer)
 			, id_gen_(&id_traits::generate)
-            , barrier_(4) // injector, manager, executor
+            , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
 			   , cmd_q_(1024)
 			   , active_nets_(1024)
 			   , inj_q_(1024)
+               , exec_q_(1024)
 	  {
 		start();
 	  }
@@ -295,10 +299,11 @@ namespace we { namespace mgmt {
 		  layer(E & exec_layer, G gen)
 		  : exec_layer_(exec_layer)
 		  , id_gen_(gen)
-          , barrier_(4) // 1 + injector, manager, executor
+          , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
 		  , inj_q_(1024)
+          , exec_q_(1024)
 	  {
 		start();
 	  }
@@ -308,10 +313,11 @@ namespace we { namespace mgmt {
 		  : exec_layer_(exec_layer)
 		  , id_gen_(gen)
 		  , validator_(validator)
-          , barrier_(4) // injector, manager, executor
+          , barrier_(4 + 1) // injector, manager, executor, extractor
 		  , cmd_q_(1024)
 		  , active_nets_(1024)
 		  , inj_q_(1024)
+          , exec_q_(1024)
 	  {
 		start();
 	  }
@@ -340,11 +346,16 @@ namespace we { namespace mgmt {
 		  manager_   = boost::thread(boost::bind(&this_type::manager, this));
 		  extractor_ = boost::thread(boost::bind(&this_type::extractor, this));
 		  injector_  = boost::thread(boost::bind(&this_type::injector, this));
+		  executor_  = boost::thread(boost::bind(&this_type::executor, this));
           barrier_.wait();
 		}
 
 		void stop()
 		{
+		  std::cerr << "D: cleaning up executor thread..." << std::endl;
+		  executor_.interrupt();
+		  executor_.join();
+
 		  std::cerr << "D: cleaning up injector thread..." << std::endl;
 		  injector_.interrupt();
 		  injector_.join();
@@ -356,6 +367,7 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: cleaning up extractor thread..." << std::endl;
 		  extractor_.interrupt();
 		  extractor_.join();
+
 		}
 
 		void manager()
@@ -379,13 +391,13 @@ namespace we { namespace mgmt {
 		}
 
 		inline
-		bool is_net_alive ( const activity_type & act ) const
+		bool is_alive ( const activity_type & act ) const
 		{
           return act.is_alive();
 		}
 
 		inline
-		bool is_net_done ( const activity_type & act ) const
+		bool is_done ( const activity_type & act ) const
 		{
 		  return act.done();
 		}
@@ -426,6 +438,18 @@ namespace we { namespace mgmt {
 		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
         }
 
+        inline
+        void post_execute_notification ( const id_type & id )
+        {
+          exec_q_.put ( id );
+        }
+
+        inline
+        void post_inject_activity_results ( const id_type & id )
+        {
+          inj_q_.put ( id );
+        }
+
 		void extractor()
 		{
 		  using namespace we::mgmt::detail::commands;
@@ -440,7 +464,7 @@ namespace we { namespace mgmt {
             {
               activity_type & act = lookup(active_net);
 
-              if (is_net_done (act))
+              if (is_done (act))
               {
                 std::cerr << "D: act[" << act.id() << "] is done." << std::endl;
                 post_finished_notification (active_net);
@@ -448,7 +472,7 @@ namespace we { namespace mgmt {
               }
 
               // TODO: check status flags
-              if (! is_net_alive (act))
+              if (! is_alive (act))
               {
                 std::cerr << "D: act[" << act.id() << "] is on hold." << std::endl;
                 continue;
@@ -461,7 +485,7 @@ namespace we { namespace mgmt {
                   << act.num_enabled()
                   << " enabled transition(s)" << std::endl;
 
-                activity_type sub_act = act.extract(id_gen_);
+                activity_type sub_act = act.extract(id_gen_());
                 insert_activity (sub_act.id(), sub_act);
                 // classify and execute
                 async_execute (lookup (sub_act.id()) );
@@ -485,17 +509,18 @@ namespace we { namespace mgmt {
 			try
 			{
               // TODO: when act is network, probably collect all output?
-			  activity_type & act = lookup( cmd.first );
-              act.inject_results (cmd.second.second);
+			  activity_type & act = lookup( cmd );
               activity_type & par = lookup( act.parent() );
 			  std::cerr << "I: injecting results of "
 						<< "act[" << act.id() << "] into "
 						<< "act[" << par.id() << "]"
 						<< std::endl;
-              par.inject_results (act.output());
-			  remove_activity ( act );
+
+              par.child_finished (act);
 
               post_activity_notification( par.id() );
+
+			  remove_activity ( act );
 			}
 			catch (const std::exception & ex)
 			{
@@ -509,6 +534,31 @@ namespace we { namespace mgmt {
 		void executor()
 		{
 		  std::cerr << "D: executor thread started..." << std::endl;
+          barrier_.wait();
+          for (;;)
+          {
+            executor_cmd_t cmd = exec_q_.get();
+            try
+            {
+              std::cerr << "I: executing: " << cmd << std::endl;
+              activity_type & act = lookup (cmd);
+
+              try
+              {
+                act.execute ( *this );
+                // inject results
+                post_inject_activity_results ( act.id () );
+              }
+              catch (std::exception const & ex)
+              {
+                // activity failed
+              }
+            } catch (const std::exception & ex)
+            {
+			  std::cerr << "E: error during execution: " << ex.what() << std::endl;
+			  // ignore
+            }
+          }
 		  std::cerr << "D: executor thread stopped..." << std::endl;
 		}
 		/** Member variables **/
@@ -522,6 +572,7 @@ namespace we { namespace mgmt {
 		cmd_q_t cmd_q_;
 		active_nets_t active_nets_;
 		inj_q_t inj_q_;
+        exec_q_t exec_q_;
 
 		boost::mutex active_nets_mutex_;
 		boost::condition active_nets_modified_;
@@ -529,6 +580,7 @@ namespace we { namespace mgmt {
 		boost::thread extractor_;
 		boost::thread manager_;
 		boost::thread injector_;
+		boost::thread executor_;
 
 		inline void debug_net(net_type const & n)
 		{
@@ -608,13 +660,19 @@ namespace we { namespace mgmt {
 
 		void async_execute(activity_type & act)
 		{
-		  std::cerr << "D: executing act[" << act.id() << "]..." << std::endl;
 		  debug_activity (act);
           if (act.transition().flags.internal)
           {
-            std::cerr << "D: internal activity" << std::endl;
-            act.prepare_input();
-		    post_activity_notification (act.id());
+            if (act.transition().is_net())
+            {
+              act.prepare_input();
+              post_activity_notification (act.id());
+            }
+            else
+            {
+              act.prepare_input();
+              post_execute_notification (act.id());
+            }
           }
           else
           {
