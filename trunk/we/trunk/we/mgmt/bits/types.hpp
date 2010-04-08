@@ -257,6 +257,16 @@ namespace we { namespace mgmt {
         return type == NET;
       }
 
+      bool is_mod_call (void) const
+      {
+        return type == MOD_CALL;
+      }
+
+      bool is_expr (void) const
+      {
+        return type == EXPRESSION;
+      }
+
       template <typename Tag>
       bool is ( Tag & t ) const
       {
