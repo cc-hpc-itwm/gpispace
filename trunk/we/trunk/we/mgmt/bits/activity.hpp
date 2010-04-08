@@ -217,6 +217,21 @@ namespace we { namespace mgmt { namespace detail {
       }
     }
 
+    template <typename Activity>
+    void
+    child_finished (const Activity & act)
+    {
+      unique_lock_t lock(*this);
+
+      output_t mapped_output;
+      mapped_output.reserve (act.output().size());
+      act.map_from_local (act.output().begin(), act.output().end(), std::back_inserter(mapped_output));
+
+      transition_. template as<net_type>()->inject_activity_result (mapped_output);
+
+      unlink_child (act);
+    }
+
     void prepare_input()
     {
       unique_lock_t lock(*this);
@@ -237,6 +252,15 @@ namespace we { namespace mgmt { namespace detail {
       else
       {
         // nothing to do (TODO?)
+      }
+    }
+
+    template <typename Context>
+    void execute ( Context & )
+    {
+      if (transition_.is_expr())
+      {
+        std::cerr << "executing expression" << std::endl;
       }
     }
 
@@ -283,6 +307,14 @@ namespace we { namespace mgmt { namespace detail {
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return output_;
+    }
+
+    template <typename Output>
+    void
+    set_output ( const Output & o )
+    {
+      unique_lock_t lock(*this);
+      output_ = o;
     }
 
     size_t
@@ -354,7 +386,7 @@ namespace we { namespace mgmt { namespace detail {
 
   private:
     template <typename Iter, typename OutputIterator>
-    void map_from_local(Iter begin, Iter end, OutputIterator dst)
+    void map_from_local(Iter begin, Iter end, OutputIterator dst) const
     {
       for (Iter it (begin); it != end; ++it)
       {
@@ -368,7 +400,7 @@ namespace we { namespace mgmt { namespace detail {
     }
 
     template <typename Iter, typename OutputIterator>
-    void map_to_local(Iter begin, Iter end, OutputIterator dst)
+    void map_to_local(Iter begin, Iter end, OutputIterator dst) const
     {
       for (Iter it (begin); it != end; ++it)
       {
@@ -412,7 +444,7 @@ namespace we { namespace mgmt { namespace detail {
     }
 
     template <typename Activity>
-    void unlink_child(Activity & act)
+    void unlink_child(Activity const & act)
     {
       this->children_.erase ( act.id_ );
     }
