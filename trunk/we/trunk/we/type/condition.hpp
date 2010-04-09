@@ -43,9 +43,10 @@ namespace condition
     {
       for (; choices.has_more(); ++choices)
         {
-          traits::choice_star_it_t choice (*choices);
-
-          for ( ; choice.has_more(); ++choice)
+          for ( traits::choice_it_t choice (*choices)
+              ; choice.has_more()
+              ; ++choice
+              )
             {
               const petri_net::pid_t pid ((*choice).first);
               const token::type token ((*choice).second.first);

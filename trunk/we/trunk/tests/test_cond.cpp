@@ -83,11 +83,12 @@ static bool cond_rem ( const pnet_t & net
 {
   for ( ; choices.has_more(); ++choices)
     {
-      pnet_t::choice_star_it choice (*choices);
-
       bool all_ok (true);
 
-      for ( ; choice.has_more() && all_ok; ++choice)
+      for ( pnet_t::choice_it choice (*choices)
+          ; choice.has_more() && all_ok
+          ; ++choice
+          )
         {
           place_t place (net.get_place ((*choice).first));
           token_t token ((*choice).second.first);

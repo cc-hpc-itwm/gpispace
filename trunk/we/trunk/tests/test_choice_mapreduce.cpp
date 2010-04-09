@@ -233,7 +233,7 @@ static bool cond_join (pnet_t::choices_t & choices)
     {
       ++cnt_map["cond_join: checked"];
 
-      pnet_t::choice_star_it choice (*choices);
+      pnet_t::choice_it choice (*choices);
 
       if (!choice.has_more())
         throw std::runtime_error ("STRANGE: got a choice with no entries");

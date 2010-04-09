@@ -29,7 +29,7 @@ namespace Function { namespace Condition
     typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;
-    typedef cross::iterator<pid_in_map_t> choice_star_it_t;
+    typedef cross::iterator<pid_in_map_t> choice_it_t;
 
     // set the cross product either to the end or to some valid choice
     typedef boost::function<bool (choices_t &)> choice_cond_t;
@@ -84,9 +84,10 @@ namespace Function { namespace Condition
     {
       for (; choices.has_more(); ++choices)
         {
-          typename Traits<token_type>::choice_star_it_t choice (*choices);
-
-          for ( ; choice.has_more(); ++choice)
+          for ( typename Traits<token_type>::choice_it_t choice (*choices)
+              ; choice.has_more()
+              ; ++choice
+              )
             context.bind ((*choice).first, val_t ((*choice).second.first));
 
           if (parser.eval_all_bool (context))

@@ -106,7 +106,7 @@ public:
   typedef typename cd_traits::pid_in_map_t pid_in_map_t;
   typedef typename cd_traits::choices_t choices_t;
 
-  typedef typename cross::iterator<pid_in_map_t> choice_star_it;
+  typedef typename cross::iterator<pid_in_map_t> choice_it;
 
   typedef svector::svector<tid_t> enabled_t;
 
