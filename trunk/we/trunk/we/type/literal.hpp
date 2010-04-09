@@ -17,6 +17,7 @@
 #include <boost/functional/hash.hpp>
 
 #include <string>
+#include <stdexcept>
 
 #include <iostream>
 
@@ -245,6 +246,37 @@ namespace literal
       default:
         read_num (v, pos);
       }
+  }
+
+  namespace exception
+  {
+    class type_error : public std::runtime_error
+    {
+    public:
+      type_error ( const std::string & field
+                 , const std::string & required
+                 , const std::string & given
+                 )
+        : std::runtime_error ( "type error: " + field 
+                             + " requires value of type " + required 
+                             + ", given value of type " + given
+                             ) {};
+    };
+  }
+
+  inline const type & require_type ( const signature::field_name_t & field
+                                   , const signature::type_name_t & req
+                                   , const type & x
+                                   )
+  {
+    static visitor_type_name vtn;
+
+    const signature::type_name_t has (boost::apply_visitor (vtn, x));
+
+    if (has != req)
+      throw exception::type_error (field, req, has);
+
+    return x;
   }
 }
 

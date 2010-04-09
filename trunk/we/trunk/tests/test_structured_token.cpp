@@ -76,126 +76,6 @@ mk_cond (const pnet_t & net, const std::string & exp)
 
 // ************************************************************************* //
 
-class prefix_not_unique : public std::runtime_error
-{
-public:
-  prefix_not_unique (const std::string & pref) 
-    : std::runtime_error ("prefix not unique: " + pref)
-  {}
-};
-
-class no_value_given : public std::runtime_error
-{
-public:
-  no_value_given (const std::string & pref) 
-    : std::runtime_error ("no_value_given for: " + pref)
-  {}
-};
-
-class type_error : public std::runtime_error
-{
-public:
-  type_error ( const std::string & field
-             , const std::string & required
-             , const std::string & given
-             )
-    : std::runtime_error ( "type error: " + field 
-                         + " requires value of type " + required 
-                         + ", given value of type " + given
-                         ) {};
-};
-
-typedef expr::eval::context<std::string> context_t;
-
-// construct token from context, use information from signature
-
-static token::type mk_token ( const std::string & pref
-                            , const signature::type & signature
-                            , const context_t & context
-                            )
-{
-  static signature::visitor_arity va;
-  static literal::visitor_type_name vt;
-
-  switch (boost::apply_visitor (va, signature))
-    {
-    case 0:
-      try
-        {
-          const literal::type & v (context.value (pref));
-
-          const signature::type_name_t req ("control");
-          const signature::type_name_t has (boost::apply_visitor (vt, v));
-
-          if (has == req)
-            return token::type (v);
-          else
-            throw type_error (pref, req, has);
-        }
-      catch (expr::exception::eval::missing_binding<std::string> &)
-        {
-          throw no_value_given (pref);
-        }
-      break;
-
-    case 1:
-      try
-        {
-          const literal::type & v (context.value (pref));
-
-          const signature::type_name_t req
-            (boost::get<signature::type_name_t> (signature));
-          const signature::type_name_t has (boost::apply_visitor (vt, v));
-
-          if (has == req)
-            return token::type (v);
-          else
-            throw type_error (pref, req, has);
-        }
-      catch (expr::exception::eval::missing_binding<std::string> &)
-        {
-          throw no_value_given (pref);
-        }
-      break;
-
-    default:
-      {
-        token::structured_t m;
-
-        const signature::structured_t structured
-          (boost::get<signature::structured_t> (signature));
-
-        for ( signature::structured_t::const_iterator sig (structured.begin())
-            ; sig != structured.end()
-            ; ++sig
-            )
-          {
-            const signature::field_name_t field (pref + "." + sig->first);
-
-            try
-              {
-                const literal::type & v (context.value (field));
-
-                const signature::type_name_t req (sig->second);
-                const signature::type_name_t has (boost::apply_visitor (vt, v));
-
-                if (has == req)
-                  m[sig->first] = v;
-                else
-                  throw type_error (field, req, has);
-              }
-            catch (expr::exception::eval::missing_binding<std::string> &)
-              {
-                throw no_value_given (field);
-              }
-          }
-
-        return token::type (m);
-      }
-      break;
-    }
-}
-
 class Transition
 {
 private:
@@ -254,10 +134,10 @@ public:
         typedef 
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
-        output.push_back (top_t (mk_token ( translate (pid)
-                                          , signature (pid)
-                                          , context
-                                          )
+        output.push_back (top_t (token::type ( translate (pid)
+                                             , signature (pid)
+                                             , context
+                                             )
                                 , pid
                                 )
                          );

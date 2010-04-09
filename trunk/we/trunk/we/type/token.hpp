@@ -119,6 +119,48 @@ namespace token
     }
   };
 
+  class visitor_unbind : public boost::static_visitor<value_t>
+  {
+  private:
+    const signature::field_name_t & field;
+    const context_t & context;
+
+  public:
+    visitor_unbind ( const signature::field_name_t & _field
+                   , const context_t & _context
+                   )
+      : field (_field)
+      , context (_context)
+    {}
+
+    value_t operator () (const control &) const
+    {
+      return literal::require_type (field, "control", context.value (field));
+    }
+
+    value_t operator () (const signature::type_name_t & type_name) const
+    {
+      return literal::require_type (field, type_name, context.value (field));
+    }
+
+    value_t operator () (const signature::structured_t & sig_structured) const
+    {
+      structured_t structured;
+
+      for ( signature::structured_t::const_iterator sig (sig_structured.begin())
+          ; sig != sig_structured.end()
+          ; ++sig
+          )
+        structured[sig->first] = 
+          literal::require_type ( field + "." + sig->first
+                                , sig->second
+                                , context.value (field + "." + sig->first)
+                                );
+
+      return structured;
+    }
+  };
+
   class type
   {
   private:
@@ -129,33 +171,20 @@ namespace token
     type (const literal::type & v) : value (v) {}
     type (const structured_t & x) : value (x) {}
 
-    literal::type & operator [] (const signature::field_name_t & name)
-    {
-      structured_t map (boost::get<structured_t>(value));
-
-      structured_t::iterator pos (map.find (name));
-
-      if (pos == map.end())
-        throw exception::unknown_field (name);
-
-      return pos->second;
-    }
-
-    const literal::type & get (const signature::field_name_t & name) const
-    {
-      structured_t map (boost::get<structured_t>(value));
-
-      structured_t::const_iterator pos (map.find (name));
-
-      if (pos == map.end())
-        throw exception::unknown_field (name);
-
-      return pos->second;
-    }
+    // construct from context, use information from signature
+    type ( const signature::field_name_t & field
+         , const signature::type & signature
+         , const context_t & context
+         )
+      : value (boost::apply_visitor ( visitor_unbind (field, context)
+                                    , signature
+                                    )
+              )
+    {}
       
-    void bind (const signature::field_name_t & pref, context_t & c) const
+    void bind (const signature::field_name_t & field, context_t & c) const
     {
-      boost::apply_visitor (visitor_bind (pref, c), value);
+      boost::apply_visitor (visitor_bind (field, c), value);
     }
 
     friend std::ostream & operator << (std::ostream &, const type &);
