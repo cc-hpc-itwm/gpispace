@@ -167,6 +167,7 @@ namespace token
     value_t value;
 
   public:
+    // WORK HERE: All constructors require a signature!
     type () : value (control()) {}
     type (const literal::type & v) : value (v) {}
     type (const structured_t & x) : value (x) {}

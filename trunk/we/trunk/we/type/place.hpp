@@ -3,6 +3,7 @@
 #ifndef _WE_TYPE_PLACE_HPP
 #define _WE_TYPE_PLACE_HPP
 
+#include <we/type/id.hpp>
 #include <we/type/control.hpp>
 #include <we/type/signature.hpp>
 
@@ -72,16 +73,19 @@ namespace place
     return h(p.get_name());
   }
 
-  template<typename NET, typename ID>
-  static const type::name_t & name (const NET & net, const ID & id)
+  template<typename NET>
+  static const type::name_t & name ( const NET & net
+                                   , const petri_net::pid_t & pid
+                                   )
   {
-    return net.get_place(id).get_name();
+    return net.get_place(pid).get_name();
   }
 
-  template<typename NET, typename ID>
-  static const signature::type & signature (const NET & net, const ID & id)
+  template<typename NET>
+  static const signature::type & signature ( const NET & net
+                                           , const petri_net::pid_t & pid)
   {
-    return net.get_place(id).get_signature();
+    return net.get_place(pid).get_signature();
   }
 }
 

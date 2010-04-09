@@ -2,7 +2,6 @@
 
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
-#include <we/function/cond_exp.hpp>
 #include <we/type/token.hpp>
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
@@ -10,6 +9,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/control.hpp>
 #include <we/type/place.hpp>
+#include <we/type/condition.hpp>
 
 #include <we/util/show.hpp>
 
@@ -65,41 +65,31 @@ static void marking (const pnet_t & n)
 
 // ************************************************************************* //
 
-static Function::Condition::Expression<token::type>
-mk_cond (const pnet_t & net, const std::string & exp)
-{
-  return Function::Condition::Expression<token::type>
-    ( exp
-    , boost::bind (&place::name<pnet_t,petri_net::pid_t>, boost::ref (net), _1)
-    );
-}
-
-// ************************************************************************* //
-
+template<typename NET>
 class Transition
 {
 private:
   const std::string name;
   const std::string expression;
-  const expr::parse::parser<std::string> parser;
-  expr::eval::context<std::string> context;
-  typedef boost::function<std::string (const pid_t &)> translate_t;
-  typedef boost::function<signature::type (const pid_t &)> sig_t;
-  translate_t translate;
-  sig_t signature;
+  const expr::parse::parser<signature::field_name_t> parser;
+  expr::eval::context<signature::field_name_t> context;
+
+  typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
+  typedef boost::function<signature::type (const petri_net::pid_t &)> sig_t;
+  const translate_t translate;
+  const sig_t signature;
 
 public:
   explicit Transition ( const std::string & _name
                       , const std::string & _expression
-                      , const translate_t & _translate
-                      , const sig_t & _signature
+                      , const NET & net
                       )
     : name (_name)
     , expression (_expression)
     , parser (expression)
     , context ()
-    , translate (_translate)
-    , signature (_signature)
+    , translate (boost::bind(&place::name<NET>, boost::ref(net), _1))
+    , signature (boost::bind(&place::signature<NET>, boost::ref(net), _1))
   {}
 
   pnet_t::output_t operator () ( const pnet_t::input_t & input
@@ -155,17 +145,8 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition ( name, expression
-                 , boost::bind ( &place::name<pnet_t,petri_net::pid_t>
-                               , boost::ref(net)
-                               , _1
-                               )
-                 , boost::bind ( &place::signature<pnet_t,petri_net::pid_t>
-                               , boost::ref(net)
-                               , _1
-                               )
-                 )
-    , mk_cond (net, condition)
+    , Transition<pnet_t> (name, expression, net)
+    , condition::type<pnet_t> (expression, net)
     );
 }
 
@@ -176,16 +157,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition ( name, expression
-                 , boost::bind ( &place::name<pnet_t,petri_net::pid_t>
-                               , boost::ref(net)
-                               , _1
-                               )
-                 , boost::bind ( &place::signature<pnet_t,petri_net::pid_t>
-                               , boost::ref(net)
-                               , _1
-                               )
-                 )
+    , Transition<pnet_t> (name, expression, net)
     );
 }
 

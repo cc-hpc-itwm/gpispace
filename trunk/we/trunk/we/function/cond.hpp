@@ -5,10 +5,15 @@
 
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
+#include <we/expr/parse/parser.hpp>
+#include <we/expr/eval/context.hpp>
+#include <we/type/id.hpp>
 
 #include <boost/unordered_map.hpp>
 
 #include <boost/function.hpp>
+
+#include <string>
 
 namespace Function { namespace Condition
 {
@@ -57,6 +62,38 @@ namespace Function { namespace Condition
     bool operator () (typename Traits<token_type>::choices_t &)
     {
       return true;
+    }
+  };
+
+  template<typename token_type>
+  class Expression
+  {
+  private:
+    typedef literal::type val_t;
+    const std::string expression;
+    const expr::parse::parser<petri_net::pid_t> parser;
+    expr::eval::context<petri_net::pid_t> context;
+  public:
+    explicit Expression (const std::string & _expression)
+      : expression (_expression)
+      , parser (expression)
+      , context ()
+    {}
+
+    bool operator () (typename Traits<token_type>::choices_t & choices)
+    {
+      for (; choices.has_more(); ++choices)
+        {
+          typename Traits<token_type>::choice_star_it_t choice (*choices);
+
+          for ( ; choice.has_more(); ++choice)
+            context.bind (choice->first, val_t (choice->second.first));
+
+          if (parser.eval_all_bool (context))
+            return true;
+        }
+
+      return false;
     }
   };
 }}
