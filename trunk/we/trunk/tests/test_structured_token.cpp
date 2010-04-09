@@ -146,7 +146,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
   return net.add_transition 
     ( mk_trans (name)
     , Transition<pnet_t> (name, expression, net)
-    , condition::type<pnet_t> (expression, net)
+    , condition::type<pnet_t> (condition, net)
     );
 }
 
@@ -343,7 +343,7 @@ main (int argc, char ** argv)
   if (CAP_IN_PROGRESS > 0)
     net.set_capacity (pid_in_progress, CAP_IN_PROGRESS);
 
-  // not type safe at the moment
+  // WORK HERE: not type safe at the moment
   net.put_token (pid_splitted, token::type(literal::type(0L)));
   net.put_token (pid_joined, token::type(literal::type(0L)));
   net.put_token (pid_NUM_SLICES, token::type(literal::type(NUM_SLICES)));
