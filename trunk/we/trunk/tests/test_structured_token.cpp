@@ -224,8 +224,12 @@ main (int argc, char ** argv)
     (net.add_place (place::type("slice_depth", sig)));
 
   // control
+  petri_net::pid_t pid_start (net.add_place (place::type("start")));
+  petri_net::pid_t pid_run (net.add_place (place::type("run")));
   petri_net::pid_t pid_done (net.add_place (place::type("done")));
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
+
+  petri_net::tid_t tid_init (mk_transition (net, "init", "${run} := ${start}"));
 
   petri_net::tid_t tid_split
     ( mk_transition 
@@ -276,16 +280,26 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "finalize"
-      , "${done} := []"
+      , "${done} := ${run}"
       , "${joined} == ${NUM_SLICES} & ${splitted} == ${NUM_SLICES}"
       )
     );
+
+  net.add_edge ( mk_edge ("get start")
+               , connection_t (PT, tid_init, pid_start)
+               );
+  net.add_edge ( mk_edge ("put run")
+               , connection_t (TP, tid_init, pid_run)
+               );
 
   net.add_edge ( mk_edge ("get splitted")
                , connection_t (PT, tid_split, pid_splitted)
                );
   net.add_edge ( mk_edge ("read NUM_SLICES")
                , connection_t (PT_READ, tid_split, pid_NUM_SLICES)
+               );
+  net.add_edge ( mk_edge ("read run")
+               , connection_t (PT_READ, tid_split, pid_run)
                );
   net.add_edge ( mk_edge ("put slice_in")
                , connection_t (TP, tid_split, pid_slice_in)
@@ -346,6 +360,9 @@ main (int argc, char ** argv)
   net.add_edge ( mk_edge ("read NUM_SLICES")
                , connection_t (PT_READ, tid_finalize, pid_NUM_SLICES)
                );
+  net.add_edge ( mk_edge ("get run")
+               , connection_t (PT, tid_finalize, pid_run)
+               );
   net.add_edge ( mk_edge ("put done")
                , connection_t (TP, tid_finalize, pid_done)
                );
@@ -358,6 +375,7 @@ main (int argc, char ** argv)
   token::put (net, pid_joined, literal::type(0L));
   token::put (net, pid_NUM_SLICES, literal::type(NUM_SLICES));
   token::put (net, pid_MAX_DEPTH, literal::type(MAX_DEPTH));
+  token::put (net, pid_start);
 
   marking (net);
 
