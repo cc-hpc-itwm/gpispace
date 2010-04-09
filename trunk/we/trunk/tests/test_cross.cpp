@@ -60,7 +60,7 @@ main ()
       {
         cout << setw(2) << k++ << "| ";
 
-        cross_t c (cross.get_vec());
+        cross_t c; cross.get_vec(c);
 
         for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
           cout << *i;

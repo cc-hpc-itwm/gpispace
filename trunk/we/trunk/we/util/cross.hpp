@@ -101,16 +101,12 @@ namespace cross
 
     iterator<MAP> operator * (void) const { return iterator<MAP>(map,pos); }
 
-    typename Traits<MAP>::vec_t get_vec (void) const
+    void get_vec (typename Traits<MAP>::vec_t & v) const
     {
-      iterator<MAP> it (map, pos);
+      v.clear();
 
-      typename Traits<MAP>::vec_t v;
-      
-      for ( ; it.has_more(); ++it)
+      for (iterator<MAP> it (map, pos); it.has_more(); ++it)
         v.push_back (*it);
-
-      return v;
     }
   };
 }

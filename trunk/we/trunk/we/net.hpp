@@ -240,7 +240,7 @@ private:
                   {
                     enabled.insert (tid);
                     
-                    enabled_choice[tid] = cs.get_vec();
+                    cs.get_vec (enabled_choice[tid]);
                   }
                 else
                   {
