@@ -89,8 +89,8 @@ static bool cond_rem ( const pnet_t & net
 
       for ( ; choice.has_more() && all_ok; ++choice)
         {
-          place_t place (net.get_place (choice->first));
-          token_t token (choice->second.first);
+          place_t place (net.get_place ((*choice).first));
+          token_t token ((*choice).second.first);
 
           all_ok = (token.second == ((shift(place) + rem) % branch_factor));
         }

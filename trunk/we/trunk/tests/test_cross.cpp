@@ -70,19 +70,6 @@ main ()
 
   cout << "size = " << cross.size() << endl;
 
-  for (std::size_t k (0); k < cross.size(); ++k)
-    {
-      // traversing as vectors, jumping directly
-
-      cross_t c (cross.get_vec(k));
-
-      cout << "cross[" << k << "] =";
-
-      for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
-        cout << *i;
-      cout << endl;
-    }
-
   cross.rewind();
 
   {
@@ -98,14 +85,6 @@ main ()
           cout << *i;
         cout << endl;
       }
-  }
-
-  {
-    // get iterator, jump directly
-
-    for (cross::bracket_iterator<map_t> i (cross[11]); i.has_more(); ++i)
-      cout << *i;
-    cout << endl;
   }
 
   {

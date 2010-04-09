@@ -238,11 +238,11 @@ static bool cond_join (pnet_t::choices_t & choices)
       if (!choice.has_more())
         throw std::runtime_error ("STRANGE: got a choice with no entries");
 
-      const package_id_t id (package_id (choice->second.first));
+      const package_id_t id (package_id ((*choice).second.first));
       bool all_equal (true);
           
       for (++choice; choice.has_more() && all_equal; ++choice)
-        all_equal = (id == package_id (choice->second.first));
+        all_equal = (id == package_id ((*choice).second.first));
       
       if (all_equal)
         {

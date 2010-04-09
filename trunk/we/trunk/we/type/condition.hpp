@@ -47,8 +47,8 @@ namespace condition
 
           for ( ; choice.has_more(); ++choice)
             {
-              const petri_net::pid_t pid (choice->first);
-              const token::type token (choice->second.first);
+              const petri_net::pid_t pid ((*choice).first);
+              const token::type token ((*choice).second.first);
 
               token.bind (translate (pid), context);
             }

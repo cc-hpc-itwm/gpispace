@@ -87,7 +87,7 @@ namespace Function { namespace Condition
           typename Traits<token_type>::choice_star_it_t choice (*choices);
 
           for ( ; choice.has_more(); ++choice)
-            context.bind (choice->first, val_t (choice->second.first));
+            context.bind ((*choice).first, val_t ((*choice).second.first));
 
           if (parser.eval_all_bool (context))
             return true;

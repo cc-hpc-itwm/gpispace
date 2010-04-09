@@ -22,66 +22,33 @@ namespace cross
     typedef std::vector<ret_t> vec_t;
   };
 
-  template<typename MAP, typename STATE>
-  struct iterator : public it::it<typename Traits<MAP>::map_it_t>
+  template<typename MAP>
+  struct star_iterator : public it::it<typename Traits<MAP>::map_it_t>
   {
-  protected:
+  private:
     typedef typename Traits<MAP>::ret_t ret_t;
 
-    STATE state;
-    ret_t val;
-
-    virtual ret_t get (void) const = 0;
-    virtual void step (void) = 0;
-
-    void set_val (void) { if (iterator::super::has_more()) val = get(); }
+    pos_t::const_iterator pos;
 
   public:
-    iterator (const MAP & map, const STATE & _state)
-      : iterator::super (map.begin(), map.end()), state(_state) {}
+    star_iterator (const MAP & map, const pos_t & _pos)
+      : star_iterator::super (map.begin(), map.end()), pos(_pos.begin())
+    {}
 
-    void operator ++ (void) { step(); iterator::super::operator++(); set_val(); }
-    ret_t operator * (void) const { return val; }
-    const ret_t * operator -> (void) const { return &val; }
-  };
-
-  template<typename MAP>
-  struct star_iterator : public iterator<MAP,pos_t::const_iterator>
-  {
-  private:
-    typedef iterator<MAP,pos_t::const_iterator> super;
-    
-    typename super::ret_t get (void) const
+    void operator ++ (void) 
     {
-      return typename super::ret_t ( super::pos->first
-                                   , super::pos->second[*super::state]
-                                   );
+      if (star_iterator::super::has_more())
+        {
+          star_iterator::super::operator++();
+          ++pos;
+        }
     }
-    void step (void) { ++super::state; }
-
-  public:
-    star_iterator (const MAP & _map, const pos_t & _pos)
-      : super (_map, _pos.begin()) { super::set_val(); }
-  };
-
-  template<typename MAP>
-  struct bracket_iterator : public iterator<MAP,std::size_t>
-  {
-  private:
-    typedef iterator<MAP,std::size_t> super;
-
-    typename super::ret_t get (void) const
+    ret_t operator * (void) const
     {
-      return typename super::ret_t 
-        ( super::pos->first
-        , super::pos->second[super::state % super::pos->second.size()]
-        );
+      return ret_t ( star_iterator::super::pos->first
+                   , star_iterator::super::pos->second[*pos]
+                   );
     }
-    void step (void) { super::state /= super::pos->second.size(); }
-
-  public:
-    bracket_iterator (const MAP & map, const std::size_t & k)
-      : super (map, k) { super::set_val(); }
   };
 
   template<typename MAP>
@@ -163,14 +130,8 @@ namespace cross
       return star_iterator<MAP>(map,p);
     }
 
-    bracket_iterator<MAP> operator [] (const std::size_t & k) const
-    {
-      return bracket_iterator<MAP>(map,k);
-    }
-
     vec_t get_vec (void) const { return get (operator * ()); }
     vec_t get_vec (const pos_t & p) const { return get (by (p)); }
-    vec_t get_vec (std::size_t k) const { return get (operator [] (k)); }
   };
 }
 
