@@ -200,22 +200,32 @@ main (int argc, char ** argv)
 
   pnet_t net;
 
-  petri_net::pid_t pid_NUM_SLICES (net.add_place (place::type("NUM_SLICES","long")));
-  petri_net::pid_t pid_MAX_DEPTH (net.add_place (place::type("MAX_DEPTH","long")));
-  petri_net::pid_t pid_splitted (net.add_place (place::type("splitted","long")));
-  petri_net::pid_t pid_slice_in (net.add_place (place::type("slice_in","long")));
-  petri_net::pid_t pid_slice_out (net.add_place (place::type("slice_out","long")));
-  petri_net::pid_t pid_joined (net.add_place (place::type("joined","long")));
+  // simple
+  petri_net::pid_t pid_NUM_SLICES
+    (net.add_place (place::type("NUM_SLICES","long")));
+  petri_net::pid_t pid_MAX_DEPTH
+    (net.add_place (place::type("MAX_DEPTH","long")));
+  petri_net::pid_t pid_splitted
+    (net.add_place (place::type("splitted","long")));
+  petri_net::pid_t pid_slice_in
+    (net.add_place (place::type("slice_in","long")));
+  petri_net::pid_t pid_slice_out
+    (net.add_place (place::type("slice_out","long")));
+  petri_net::pid_t pid_joined
+    (net.add_place (place::type("joined","long")));
 
+  // structured
   signature::structured_t sig;
 
   sig["slice"] = "long";
   sig["depth"] = "long";
 
-  petri_net::pid_t pid_slice_depth (net.add_place (place::type("slice_depth", sig)));
+  petri_net::pid_t pid_slice_depth
+    (net.add_place (place::type("slice_depth", sig)));
 
-  petri_net::pid_t pid_done (net.add_place (place::type("done"))); // control
-  petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress"))); // control
+  // control
+  petri_net::pid_t pid_done (net.add_place (place::type("done")));
+  petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
 
   petri_net::tid_t tid_split
     ( mk_transition 
