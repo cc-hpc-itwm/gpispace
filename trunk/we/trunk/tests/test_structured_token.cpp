@@ -353,11 +353,11 @@ main (int argc, char ** argv)
   if (CAP_IN_PROGRESS > 0)
     net.set_capacity (pid_in_progress, CAP_IN_PROGRESS);
 
-  // WORK HERE: not type safe at the moment
-  net.put_token (pid_splitted, token::type(literal::type(0L)));
-  net.put_token (pid_joined, token::type(literal::type(0L)));
-  net.put_token (pid_NUM_SLICES, token::type(literal::type(NUM_SLICES)));
-  net.put_token (pid_MAX_DEPTH, token::type(literal::type(MAX_DEPTH)));
+  // type safe!
+  token::put (net, pid_splitted, literal::type(0L));
+  token::put (net, pid_joined, literal::type(0L));
+  token::put (net, pid_NUM_SLICES, literal::type(NUM_SLICES));
+  token::put (net, pid_MAX_DEPTH, literal::type(MAX_DEPTH));
 
   marking (net);
 

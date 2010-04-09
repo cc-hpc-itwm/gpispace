@@ -5,8 +5,10 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/literal.hpp>
 #include <we/type/control.hpp>
+#include <we/type/id.hpp>
+#include <we/type/literal.hpp>
+#include <we/type/place.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/util/show.hpp>
@@ -143,12 +145,12 @@ namespace token
       return literal::require_type (field, type_name, context.value (field));
     }
 
-    value_t operator () (const signature::structured_t & sig_structured) const
+    value_t operator () (const signature::structured_t & signature) const
     {
       structured_t structured;
 
-      for ( signature::structured_t::const_iterator sig (sig_structured.begin())
-          ; sig != sig_structured.end()
+      for ( signature::structured_t::const_iterator sig (signature.begin())
+          ; sig != signature.end()
           ; ++sig
           )
         structured[sig->first] = 
@@ -161,16 +163,84 @@ namespace token
     }
   };
 
+  // binary visiting
+  class visitor_require_type : public boost::static_visitor<value_t>
+  {
+  private:
+    const signature::field_name_t & field_name;
+  public:
+    visitor_require_type (const signature::field_name_t & _field_name)
+      : field_name (_field_name)
+    {}
+
+    value_t operator () (const control &, const control & v) const
+    {
+      return v;
+    }
+
+    value_t operator () ( const signature::type_name_t & type_name
+                        , const literal::type & v
+                        ) const
+    {
+      return literal::require_type (field_name, type_name, v);
+    }
+
+    value_t operator () ( const signature::structured_t & signature
+                        , const structured_t & token
+                        ) const
+    {
+      for ( signature::structured_t::const_iterator sig (signature.begin())
+          ; sig != signature.end()
+          ; ++sig
+          )
+        {
+          const structured_t::const_iterator pos (token.find (sig->first));
+
+          if (pos == token.end())
+            throw std::runtime_error ("type error: missing field " + sig->first);
+          
+          literal::require_type ( field_name + "." + sig->first
+                                , sig->second
+                                , pos->second
+                                );
+        }
+
+      for ( structured_t::const_iterator field (token.begin())
+          ; field != token.end()
+          ; ++field
+          )
+        if (signature.find (field->first) == signature.end())
+          throw std::runtime_error ("type error: unknown field " + field->first);
+
+      return token;
+    }
+
+    template<typename T, typename U>
+    value_t operator () (const T &, const U &) const
+    {
+      throw std::runtime_error ("type error");
+    }
+  };
+
   class type
   {
   private:
     value_t value;
 
   public:
-    // WORK HERE: All constructors require a signature!
     type () : value (control()) {}
-    type (const literal::type & v) : value (v) {}
-    type (const structured_t & x) : value (x) {}
+
+    // construct from value, require type from signature
+    type ( const signature::field_name_t & field
+         , const signature::type & signature
+         , const value_t & v
+         )
+      : value ( boost::apply_visitor ( visitor_require_type (field)
+                                     , signature
+                                     , v
+                                     )
+              )
+    {}
 
     // construct from context, use information from signature
     type ( const signature::field_name_t & field
@@ -215,6 +285,20 @@ namespace token
     static const visitor_show vs;
 
     return s << boost::apply_visitor (vs, t.value);
+  }
+
+  template<typename NET>
+  bool put ( NET & net
+           , const petri_net::pid_t & pid
+           , const value_t & v = control()
+           )
+  {
+    return net.put_token ( pid
+                         , type ( place::name<NET> (net, pid)
+                                , place::signature<NET> (net, pid)
+                                , v
+                                )
+                         );
   }
 }
 
