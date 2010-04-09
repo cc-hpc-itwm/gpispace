@@ -18,12 +18,12 @@ main (int argc, char ** argv)
   expr::parse::parser<int> parser (input);
 
   std::cout << "collatz sequence for " 
-            << expr::variant::show (context.value (0)) << ":" << std::endl;
+            << literal::show (context.value (0)) << ":" << std::endl;
 
   do
     {
       parser.eval_all (context);
-      std::cout << " " << expr::variant::show (context.value (0));
+      std::cout << " " << literal::show (context.value (0));
     }
   while (!expr::token::function::is_true (context.value (1)));
 

@@ -115,14 +115,14 @@ static token::type mk_token ( const std::string & pref
                             )
 {
   static signature::visitor_arity va;
-  static expr::variant::visitor_type_name vt;
+  static literal::visitor_type_name vt;
 
   switch (boost::apply_visitor (va, signature))
     {
     case 0:
       try
         {
-          const expr::variant::type & v (context.value (pref));
+          const literal::type & v (context.value (pref));
 
           const signature::type_name_t req ("control");
           const signature::type_name_t has (boost::apply_visitor (vt, v));
@@ -141,7 +141,7 @@ static token::type mk_token ( const std::string & pref
     case 1:
       try
         {
-          const expr::variant::type & v (context.value (pref));
+          const literal::type & v (context.value (pref));
 
           const signature::type_name_t req
             (boost::get<signature::type_name_t> (signature));
@@ -174,7 +174,7 @@ static token::type mk_token ( const std::string & pref
 
             try
               {
-                const expr::variant::type & v (context.value (field));
+                const literal::type & v (context.value (field));
 
                 const signature::type_name_t req (sig->second);
                 const signature::type_name_t has (boost::apply_visitor (vt, v));
@@ -492,10 +492,10 @@ main (int argc, char ** argv)
     net.set_capacity (pid_in_progress, CAP_IN_PROGRESS);
 
   // not type safe at the moment
-  net.put_token (pid_splitted, token::type(expr::variant::type(0L)));
-  net.put_token (pid_joined, token::type(expr::variant::type(0L)));
-  net.put_token (pid_NUM_SLICES, token::type(expr::variant::type(NUM_SLICES)));
-  net.put_token (pid_MAX_DEPTH, token::type(expr::variant::type(MAX_DEPTH)));
+  net.put_token (pid_splitted, token::type(literal::type(0L)));
+  net.put_token (pid_joined, token::type(literal::type(0L)));
+  net.put_token (pid_NUM_SLICES, token::type(literal::type(NUM_SLICES)));
+  net.put_token (pid_MAX_DEPTH, token::type(literal::type(MAX_DEPTH)));
 
   marking (net);
 

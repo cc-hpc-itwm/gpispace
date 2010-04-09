@@ -8,7 +8,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <we/expr/variant/variant.hpp>
+#include <we/type/literal.hpp>
 
 #include <we/type/token.hpp>
 #include <we/util/show.hpp>
@@ -23,7 +23,7 @@ namespace Function { namespace Condition
   class Expression
   {
   private:
-    typedef expr::variant::type val_t;
+    typedef literal::type val_t;
     const std::string expression;
     const expr::parse::parser<pid_t> parser;
     expr::eval::context<pid_t> context;

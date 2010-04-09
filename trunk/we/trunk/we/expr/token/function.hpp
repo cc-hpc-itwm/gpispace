@@ -7,7 +7,7 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/exception.hpp>
 
-#include <we/expr/variant/variant.hpp>
+#include <we/type/literal.hpp>
 
 #include <math.h>
 
@@ -38,27 +38,27 @@ namespace expr
         }
       };
 
-      static bool is_true (const variant::type & v)
+      static bool is_true (const literal::type & v)
       {
         static const visitor_is_true vt;
 
         return boost::apply_visitor (vt, v);
       }
 
-      class unary : public boost::static_visitor<variant::type>
+      class unary : public boost::static_visitor<literal::type>
       {
       private:
         const type & token;
       public:
         unary (const type & _token) : token (_token) {}
 
-        variant::type operator () (const control &) const
+        literal::type operator () (const control &) const
         {
           throw exception::eval::type_error
             (util::show (token) + " (control token)");
         }
 
-        variant::type operator () (const bool & x) const
+        literal::type operator () (const bool & x) const
         {
           switch (token)
             {
@@ -80,7 +80,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const long & x) const
+        literal::type operator () (const long & x) const
         {
           switch (token)
             {
@@ -100,7 +100,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const double & x) const
+        literal::type operator () (const double & x) const
         {
           static bool round_half_up (true);
 
@@ -124,7 +124,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const char & x) const
+        literal::type operator () (const char & x) const
         {
           switch (token)
           {
@@ -135,7 +135,7 @@ namespace expr
           }
         }
 
-        variant::type operator () (const std::string & x) const
+        literal::type operator () (const std::string & x) const
         {
           switch (token)
           {
@@ -147,20 +147,20 @@ namespace expr
         }
       };
 
-      class binary : public boost::static_visitor<variant::type>
+      class binary : public boost::static_visitor<literal::type>
       {
       private:
         const type & token;
       public:
         binary (const type & _token) : token (_token) {}
 
-        variant::type operator () (const control &, const control &) const
+        literal::type operator () (const control &, const control &) const
         {
           throw exception::eval::type_error 
             (util::show (token) + " for control token");
         }
 
-        variant::type operator () (const bool & l, const bool & r) const
+        literal::type operator () (const bool & l, const bool & r) const
         {
           switch (token)
             {
@@ -189,7 +189,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const long & l, const long & r) const
+        literal::type operator () (const long & l, const long & r) const
         {
           switch (token)
             {
@@ -230,7 +230,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const double & l, const double & r) const
+        literal::type operator () (const double & l, const double & r) const
         {
           switch (token)
             {
@@ -267,7 +267,7 @@ namespace expr
             }
         }
 
-        variant::type operator () ( const std::string & l
+        literal::type operator () ( const std::string & l
                                   , const std::string & r
                                   ) const
         {
@@ -300,7 +300,7 @@ namespace expr
             }
         }
 
-        variant::type operator () ( const std::string & l
+        literal::type operator () ( const std::string & l
                                   , const long & r
                                   ) const
         {
@@ -333,7 +333,7 @@ namespace expr
             }
         }
 
-        variant::type operator () (const char & l, const char & r) const
+        literal::type operator () (const char & l, const char & r) const
         {
           switch (token)
             {
@@ -365,17 +365,17 @@ namespace expr
         }
 
         template<typename T,typename U>
-        variant::type operator () (const T &, const U &) const
+        literal::type operator () (const T &, const U &) const
         {
           throw exception::eval::type_error 
             (util::show (token) + " for values of different types");
         }
       };
 
-      static variant::type ternary ( const type & token 
-                                   , const variant::type & a
-                                   , const variant::type & b
-                                   , const variant::type & c
+      static literal::type ternary ( const type & token 
+                                   , const literal::type & a
+                                   , const literal::type & b
+                                   , const literal::type & c
                                    )
       {
         switch (token)

@@ -3,9 +3,9 @@
 #ifndef _WE_TYPE_TOKEN_HPP
 #define _WE_TYPE_TOKEN_HPP
 
-#include <we/expr/variant/variant.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/literal.hpp>
 #include <we/type/control.hpp>
 #include <we/type/signature.hpp>
 
@@ -32,13 +32,13 @@ namespace token
   }
 
   typedef boost::unordered_map< signature::field_name_t
-                              , expr::variant::type
+                              , literal::type
                               > structured_t;
 
   typedef expr::eval::context<signature::field_name_t> context_t;
 
   typedef boost::variant< control
-                        , expr::variant::type
+                        , literal::type
                         , structured_t
                         > value_t;
 
@@ -54,7 +54,7 @@ namespace token
     {}
 
     void operator () (const control &) const { c.bind (pref, control()); }
-    void operator () (const expr::variant::type & v) const { c.bind (pref, v); }
+    void operator () (const literal::type & v) const { c.bind (pref, v); }
     void operator () (const structured_t & map) const
     {
       for ( structured_t::const_iterator field (map.begin())
@@ -72,7 +72,7 @@ namespace token
     {
       return 42;
     }
-    std::size_t operator () (const expr::variant::type & v) const
+    std::size_t operator () (const literal::type & v) const
     {
       return boost::hash_value(v);
     }
@@ -92,9 +92,9 @@ namespace token
       return util::show (x);
     }
 
-    std::string operator () (const expr::variant::type & v) const
+    std::string operator () (const literal::type & v) const
     {
-      return expr::variant::show (v);
+      return literal::show (v);
     }
 
     std::string operator () (const structured_t & map) const
@@ -110,7 +110,7 @@ namespace token
         s += ((field != map.begin()) ? ", " : "")
           +  field->first 
           +  " := "
-          +  expr::variant::show (field->second)
+          +  literal::show (field->second)
           ;
 
       s += "]";
@@ -126,10 +126,10 @@ namespace token
 
   public:
     type () : value (control()) {}
-    type (const expr::variant::type & v) : value (v) {}
+    type (const literal::type & v) : value (v) {}
     type (const structured_t & x) : value (x) {}
 
-    expr::variant::type & operator [] (const signature::field_name_t & name)
+    literal::type & operator [] (const signature::field_name_t & name)
     {
       structured_t map (boost::get<structured_t>(value));
 
@@ -141,7 +141,7 @@ namespace token
       return pos->second;
     }
 
-    const expr::variant::type & get (const signature::field_name_t & name) const
+    const literal::type & get (const signature::field_name_t & name) const
     {
       structured_t map (boost::get<structured_t>(value));
 

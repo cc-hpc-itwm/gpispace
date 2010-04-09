@@ -22,7 +22,7 @@ namespace signature
   class visitor_arity : public boost::static_visitor<std::size_t>
   {
   public:
-    std::size_t operator () (const control & ) { return 0; }
+    std::size_t operator () (const control &) { return 0; }
     std::size_t operator () (const type_name_t &) { return 1; }
     std::size_t operator () (const structured_t & m) { return m.size(); }
   };

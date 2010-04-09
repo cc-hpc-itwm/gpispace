@@ -5,7 +5,7 @@
 
 #include <we/expr/parse/node.hpp>
 
-#include <we/expr/variant/variant.hpp>
+#include <we/type/literal.hpp>
 
 #include <we/util/show.hpp>
 
@@ -38,16 +38,16 @@ namespace expr
     struct context
     {
     private:
-      typedef boost::unordered_map<Key,variant::type> container_t;
+      typedef boost::unordered_map<Key,literal::type> container_t;
       container_t container;
     public:
       typedef typename container_t::const_iterator const_iterator;
 
-      variant::type bind (const Key & key, const variant::type & value)
+      literal::type bind (const Key & key, const literal::type & value)
       {
         container[key] = value; return value;
       }
-      const variant::type & value (const Key & key) const
+      const literal::type & value (const Key & key) const
       {
         const const_iterator it (container.find (key));
 
@@ -73,7 +73,7 @@ namespace expr
           ; it != cntx.end()
           ; ++it
           )
-        s << it->first << " := " << variant::show (it->second) << std::endl;
+        s << it->first << " := " << literal::show (it->second) << std::endl;
       return s;
     }
 

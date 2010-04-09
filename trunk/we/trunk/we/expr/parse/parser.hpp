@@ -11,7 +11,7 @@
 #include <we/expr/token/tokenizer.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <we/expr/variant/variant.hpp>
+#include <we/type/literal.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/eval.hpp>
@@ -282,7 +282,7 @@ namespace expr
       const nd_t & front (void) const { return nd_stack.front(); }
 
       // eval the first entry in the stack
-      variant::type eval_front (eval::context<Key> & context) const
+      literal::type eval_front (eval::context<Key> & context) const
       {
         return eval::eval (front(), context);
       }
@@ -293,7 +293,7 @@ namespace expr
       }
 
       // get the already evaluated value, throws if entry is not an value
-      const variant::type & get_front () const
+      const literal::type & get_front () const
       {
         return node::get (front());
       }
@@ -304,9 +304,9 @@ namespace expr
       }
 
       // evaluate the hole stack in order, return the last value
-      variant::type eval_all (eval::context<Key> & context) const
+      literal::type eval_all (eval::context<Key> & context) const
       {
-        variant::type v (0L);
+        literal::type v (0L);
 
         for (nd_it_t it (begin()); it != end(); ++it)
           v = eval::eval (*it, context);
@@ -316,7 +316,7 @@ namespace expr
 
       bool eval_all_bool (eval::context<Key> & context) const
       {
-        const variant::type v (eval_all (context));
+        const literal::type v (eval_all (context));
 
         return token::function::is_true(v);
       }

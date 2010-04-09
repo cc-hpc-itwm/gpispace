@@ -51,7 +51,7 @@ int main (int ac, char **)
                       {
                         cout 
                           << "evals to: "
-                          << expr::variant::show (parser.eval_front (context))
+                          << literal::show (parser.eval_front (context))
                           << endl;
                       }
                     catch (expr::exception::eval::missing_binding<std::string> e)

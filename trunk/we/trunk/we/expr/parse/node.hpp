@@ -7,7 +7,7 @@
 #include <we/expr/token/prop.hpp>
 #include <we/expr/exception.hpp>
 
-#include <we/expr/variant/variant.hpp>
+#include <we/type/literal.hpp>
 
 #include <stdexcept>
 #include <iostream>
@@ -44,14 +44,14 @@ namespace expr
         typedef boost::shared_ptr<type> ptr_t;
 
         const flag::flag flag;
-        const variant::type value;
+        const literal::type value;
         const Key ref;
         const token::type token;
         const ptr_t child0;
         const ptr_t child1;
         const ptr_t child2;
 
-        type (const variant::type & _value)
+        type (const literal::type & _value)
           : flag (flag::value)
           , value (_value)
           , ref ()
@@ -112,11 +112,11 @@ namespace expr
       template<typename Key>
       std::ostream & operator << (std::ostream & s, const type<Key> & nd)
       {
-        static const expr::variant::visitor_show vs;
+        static const literal::visitor_show vs;
 
         switch (nd.flag)
           {
-          case flag::value: return s << variant::show (nd.value);
+          case flag::value: return s << literal::show (nd.value);
           case flag::ref: return s << "${" << nd.ref << "}";
           case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
           case flag::binary:
@@ -141,7 +141,7 @@ namespace expr
       }
 
       template<typename Key>
-      const variant::type & get (const type<Key> & node)
+      const literal::type & get (const type<Key> & node)
       {
         if (node.flag != flag::value)
           throw exception::eval::type_error ("get: node is not an value");
