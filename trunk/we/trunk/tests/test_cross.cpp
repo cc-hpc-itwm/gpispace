@@ -68,8 +68,6 @@ main ()
       }
   }
 
-  cout << "size = " << cross.size() << endl;
-
   cross.rewind();
 
   {
@@ -81,25 +79,10 @@ main ()
       {
         cout << setw(2) << k++ << "| ";
 
-        for (cross::star_iterator<map_t> i (*cross); i.has_more(); ++i)
+        for (cross::iterator<map_t> i (*cross); i.has_more(); ++i)
           cout << *i;
         cout << endl;
       }
-  }
-
-  {
-    // get iterator, explicitely specify the elements
-
-    cross::pos_t p;
-
-    p.push_back (3);
-    p.push_back (0);
-    p.push_back (1);
-
-    // should equal to cross[11]
-    for (cross::star_iterator<map_t> i (cross.by(p)); i.has_more(); ++i)
-      cout << *i;
-    cout << endl;
   }
 
   return EXIT_SUCCESS;

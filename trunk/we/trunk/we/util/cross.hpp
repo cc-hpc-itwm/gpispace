@@ -23,31 +23,29 @@ namespace cross
   };
 
   template<typename MAP>
-  struct star_iterator : public it::it<typename Traits<MAP>::map_it_t>
+  struct iterator
   {
   private:
+    typedef typename Traits<MAP>::map_it_t map_it_t;
     typedef typename Traits<MAP>::ret_t ret_t;
 
-    pos_t::const_iterator pos;
+    map_it_t pos;
+    const map_it_t end;
+    pos_t::const_iterator state;
 
   public:
-    star_iterator (const MAP & map, const pos_t & _pos)
-      : star_iterator::super (map.begin(), map.end()), pos(_pos.begin())
+    iterator (const MAP & map, const pos_t & _pos)
+      : pos (map.begin())
+      , end (map.end())
+      , state(_pos.begin())
     {}
 
-    void operator ++ (void) 
-    {
-      if (star_iterator::super::has_more())
-        {
-          star_iterator::super::operator++();
-          ++pos;
-        }
-    }
+    bool has_more (void) const { return pos != end; }
+
+    void operator ++ (void) { if (has_more()) { ++pos; ++state; } }
     ret_t operator * (void) const
     {
-      return ret_t ( star_iterator::super::pos->first
-                   , star_iterator::super::pos->second[*pos]
-                   );
+      return ret_t (pos->first, pos->second[*state]);
     }
   };
 
@@ -84,30 +82,14 @@ namespace cross
         }
     }
 
-    typedef typename Traits<MAP>::vec_t vec_t;
-
-    template<typename IT>
-    vec_t get (IT it) const
-    {
-      vec_t v;
-      
-      for ( ; it.has_more(); ++it)
-        v.push_back (*it);
-
-      return v;
-    }
-
   public:
     void rewind (void)
     {
-      _size = (map.begin() != map.end()) ? 1 : 0;
       _has_more = (map.begin() != map.end());
 
       for (it_t m (map.begin()); m != map.end(); ++m)
         {
           pos.push_back (0);
-
-          _size *= m->second.size();
 
           _has_more &= (!m->second.empty());
         }
@@ -116,22 +98,21 @@ namespace cross
     explicit cross (const MAP & _map) : map (_map), pos () { rewind(); }
 
     bool has_more (void) const { return _has_more; }
-    // beware: overflow!
-    std::size_t size (void) const { return _size; }
     void operator ++ () { step(0, map.begin()); }
 
-    star_iterator<MAP> operator * (void) const 
-    {
-      return star_iterator<MAP>(map,pos);
-    }
+    iterator<MAP> operator * (void) const { return iterator<MAP>(map,pos); }
 
-    star_iterator<MAP> by (const pos_t & p) const
+    typename Traits<MAP>::vec_t get_vec (void) const
     {
-      return star_iterator<MAP>(map,p);
-    }
+      iterator<MAP> it (map, pos);
 
-    vec_t get_vec (void) const { return get (operator * ()); }
-    vec_t get_vec (const pos_t & p) const { return get (by (p)); }
+      typename Traits<MAP>::vec_t v;
+      
+      for ( ; it.has_more(); ++it)
+        v.push_back (*it);
+
+      return v;
+    }
   };
 }
 
