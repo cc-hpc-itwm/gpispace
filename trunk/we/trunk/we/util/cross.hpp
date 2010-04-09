@@ -56,7 +56,6 @@ namespace cross
     const MAP & map;
     pos_t pos;
     bool _has_more;
-    std::size_t _size;
 
     typedef typename Traits<MAP>::map_it_t it_t;
 
