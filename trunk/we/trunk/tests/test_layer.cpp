@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include <stdint.h>
+#include <we/type/transition.hpp>
 #include <we/mgmt/layer.hpp>
 #include "test_layer.hpp"
 
@@ -10,7 +11,7 @@ using namespace test;
 
 // this is ugly
 typedef petri_net::net<we::mgmt::detail::place_t
-                     , we::mgmt::detail::transition_t<we::mgmt::detail::place_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t>
+                     , we::type::transition_t<we::mgmt::detail::place_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t>
                      , we::mgmt::detail::edge_t
                      , we::mgmt::detail::token_t> pnet_t;
 

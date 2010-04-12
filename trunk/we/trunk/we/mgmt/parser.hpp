@@ -20,6 +20,7 @@
 
 #include <we/util/show.hpp>
 #include <we/util/warnings.hpp>
+#include <we/type/transition.hpp>
 #include <we/mgmt/bits/types.hpp>
 #include <we/mgmt/bits/activity.hpp>
 
@@ -34,7 +35,7 @@ namespace we { namespace mgmt {
 	typedef typename detail::place_t place_t;
 	typedef typename detail::edge_t edge_t;
 	typedef typename detail::token_t token_t;
-	typedef typename detail::transition_t<place_t, edge_t, token_t> transition_t;
+	typedef typename we::type::transition_t<place_t, edge_t, token_t> transition_t;
   };
 
   template <typename _Net, typename _Data = std::string, typename _Traits = NetTraits<_Net> >
