@@ -52,14 +52,14 @@ int main (int, char **)
     std::cout << "Port 2 (deserialized): " << p2 << std::endl;
   }
 
-//  we::type::port<signature::type> p3;
-//  {
-//    std::ostringstream oss;
-//    {
-//      boost::archive::text_oarchive oa (oss, boost::archive::no_header);
-//      oa << BOOST_SERIALIZATION_NVP (p3);
-//    }
-//  }
+  we::type::port<signature::type> p3;
+  {
+    std::ostringstream oss;
+    {
+      boost::archive::text_oarchive oa (oss, boost::archive::no_header);
+      oa << BOOST_SERIALIZATION_NVP (p3);
+    }
+  }
 
   return EXIT_SUCCESS;
 }
