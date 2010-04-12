@@ -13,8 +13,9 @@ struct control
 
   friend class boost::serialization::access;
   template<typename Archive>
-  void serialize (Archive & ar, const unsigned int)
-  {}
+  void serialize (Archive & , const unsigned int)
+  {
+  }
 };
 
 inline bool operator == (const control &, const control &) { return true; }
