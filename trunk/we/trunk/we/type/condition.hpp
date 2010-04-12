@@ -13,31 +13,72 @@
 #include <we/type/signature.hpp>
 
 #include <boost/function.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <string>
 
 namespace condition
 {
+  namespace exception
+  {
+    class no_translator_given : std::runtime_error
+    {
+    public:
+      no_translator_given () : std::runtime_error ("no translator given") {};
+    };
+  }
+
+  static inline std::string no_trans (const petri_net::pid_t &)
+  {
+    throw exception::no_translator_given();
+  }
+
   template<typename NET>
   class type
   {
   private:
-    const std::string expression;
-    const expr::parse::parser<signature::field_name_t> parser;
+    std::string expression;
+    expr::parse::parser<signature::field_name_t> parser;
     expr::eval::context<signature::field_name_t> context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
-    const translate_t translate;
+    translate_t translate;
 
     typedef Function::Condition::Traits<token::type> traits;
 
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(expression);
+    }
+
   public:
+    type ()
+      : expression ("true")
+      , parser ("true")
+      , context ()
+      , translate (&no_trans)
+    {};
+
+    type (const std::string & _expression)
+      : expression (_expression)
+      , parser (expression)
+      , context ()
+      , translate (&no_trans)
+    {}
+
     type (const std::string & _expression, const NET & net)
       : expression (_expression)
       , parser (expression)
       , context ()
       , translate (boost::bind (&place::name<NET>, boost::ref(net), _1))
     {}
+
+    void set_net (const NET & net)
+    {
+      translate = boost::bind (&place::name<NET>, boost::ref(net), _1);
+    }
 
     bool operator () (traits::choices_t & choices)
     {

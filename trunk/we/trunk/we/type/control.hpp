@@ -5,9 +5,16 @@
 
 #include <iostream>
 
+#include <boost/serialization/nvp.hpp>
+
 struct control 
 {
   friend std::ostream & operator << (std::ostream &, const control &);
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {}
 };
 
 inline bool operator == (const control &, const control &) { return true; }

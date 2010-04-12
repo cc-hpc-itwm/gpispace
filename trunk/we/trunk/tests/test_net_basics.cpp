@@ -37,7 +37,7 @@ static std::string trans (const pnet_t & n, const petri_net::tid_t & t)
   std::ostringstream s; s << t << brack(n.get_transition (t)); return s.str();
 }
 
-static std::string place (const pnet_t & n, const petri_net::pid_t & p)
+static std::string show_place (const pnet_t & n, const petri_net::pid_t & p)
 {
   std::ostringstream s; s << p << brack(n.get_place (p)); return s.str();
 }
@@ -61,7 +61,7 @@ static void print_enabled (const pnet_t & n)
 
       for (pnet_t::pid_in_map_t::const_iterator i (m.begin()); i != m.end(); ++i)
         {
-          cout << "Place " << place (n, i->first)
+          cout << "Place " << show_place (n, i->first)
                << " [" << i->second.size() << "]"
                << ":";
 
@@ -89,7 +89,7 @@ static void print_enabled (const pnet_t & n)
           ; i != output_descr.end()
           ; ++i
           )
-        cout << " {" << place (n, i->first) << " via " << edge (n, i->second) << "}";
+        cout << " {" << show_place (n, i->first) << " via " << edge (n, i->second) << "}";
 
       cout << endl;
     }
@@ -113,20 +113,20 @@ static void print_net (const pnet_t & n)
           ; pit.has_more()
           ; ++pit
           )
-        cout << " >>-{" << edge (n, pit()) << "}->> " << place (n, *pit) << endl;
+        cout << " >>-{" << edge (n, pit()) << "}->> " << show_place (n, *pit) << endl;
 
       for ( petri_net::adj_place_const_it pit (n.in_to_transition(*t))
           ; pit.has_more()
           ; ++pit
           )
-        cout << " <<-{" << edge (n, pit()) << "}-<< " << place (n, *pit) << endl;
+        cout << " <<-{" << edge (n, pit()) << "}-<< " << show_place (n, *pit) << endl;
     }
 
   cout << "*** by place" << endl;
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << place (n, *p) << endl;
+      cout << show_place (n, *p) << endl;
 
       for ( petri_net::adj_transition_const_it tit (n.out_of_place(*p))
           ; tit.has_more()
@@ -150,7 +150,7 @@ static void print_net (const pnet_t & n)
       const petri_net::connection_t connection (n.get_edge_info (*e));
 
       cout << " -- typ: " << ((connection.type == petri_net::PT) ? "PT" : "TP");
-      cout << ", place: " << place (n, connection.pid);
+      cout << ", place: " << show_place (n, connection.pid);
       cout << " " << ((connection.type == petri_net::PT) ? "-->" : "<--") << " ";
       cout << "transition: " << trans (n, connection.tid);
       cout << endl;
@@ -160,7 +160,7 @@ static void print_net (const pnet_t & n)
 
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "on " << place (n, *p) << ": ";
+      cout << "on " << show_place (n, *p) << ": ";
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << "." << *tp;

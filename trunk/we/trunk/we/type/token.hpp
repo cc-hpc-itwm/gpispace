@@ -20,6 +20,8 @@
 #include <boost/functional/hash.hpp>
 #include <boost/variant.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 #include <iostream>
 
 namespace token
@@ -168,6 +170,7 @@ namespace token
   {
   private:
     const signature::field_name_t & field_name;
+
   public:
     visitor_require_type (const signature::field_name_t & _field_name)
       : field_name (_field_name)
@@ -226,6 +229,13 @@ namespace token
   {
   private:
     value_t value;
+
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(value);
+    }
 
   public:
     type () : value (control()) {}

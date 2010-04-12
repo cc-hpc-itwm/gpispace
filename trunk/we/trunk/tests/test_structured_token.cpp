@@ -22,6 +22,9 @@
 #include <boost/unordered_map.hpp>
 #include <boost/functional/hash.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 // ************************************************************************* //
 
 typedef unsigned int transition_cnt_t;
@@ -394,6 +397,16 @@ main (int argc, char ** argv)
   }
 
   marking (net);
+
+
+  std::ostringstream oss;
+    
+  {
+    boost::archive::text_oarchive oa (oss, boost::archive::no_header);
+    oa << BOOST_SERIALIZATION_NVP(net);
+
+    cout << oss.str() << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }

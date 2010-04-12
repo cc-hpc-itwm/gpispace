@@ -56,17 +56,17 @@ namespace place
     {}
   };
 
-  static std::ostream & operator << (std::ostream & s, const type & p)
+  inline std::ostream & operator << (std::ostream & s, const type & p)
   {
     return s << p.get_name();
   }
 
-  static bool operator == (const type & a, const type & b)
+  inline bool operator == (const type & a, const type & b)
   {
     return a.get_name() == b.get_name();
   }
 
-  static inline std::size_t hash_value (const type & p)
+  inline std::size_t hash_value (const type & p)
   {
     boost::hash<type::name_t> h;
     

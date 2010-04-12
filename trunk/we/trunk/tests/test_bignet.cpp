@@ -23,7 +23,7 @@ namespace {
 static const unsigned int nplace (200);
 static const unsigned int ntrans (200);
 static const unsigned int factor (10);
-static const unsigned int token (10);
+static const unsigned int ntoken (10);
 static const unsigned int branch (25);
 static const unsigned int num_fire (1000);
 
@@ -113,10 +113,10 @@ main ()
     }
 
     {
-      Timer_t timer ("add tokens", factor * nplace * token);
+      Timer_t timer ("add tokens", factor * nplace * ntoken);
 
       for (unsigned int p(0); p < factor * nplace; ++p)
-        for (unsigned int t(0); t < token; ++t)
+        for (unsigned int t(0); t < ntoken; ++t)
           n.put_token (p, 0);
     }
 
