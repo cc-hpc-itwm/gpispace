@@ -25,24 +25,73 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 // ************************************************************************* //
 
-typedef unsigned int transition_cnt_t;
-typedef std::pair<transition_cnt_t,std::string> transition_t;
 typedef unsigned int edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
 static edge_cnt_t e (0);
-static transition_cnt_t t (0);
 
 static edge_t mk_edge (const std::string & descr)
 {
   return edge_t (e++, descr);
 }
 
-static transition_t mk_trans (const std::string & descr)
+// ************************************************************************* //
+
+typedef unsigned int transition_cnt_t;
+
+struct transition_t
 {
-  return transition_t (t++, descr);
+public:
+  transition_cnt_t t;
+  std::string name;
+  mutable condition::type cond;
+
+  transition_t ( const transition_cnt_t & _t
+               , const std::string & _name
+               , const condition::type & _cond
+               )
+    : t(_t), name(_name), cond(_cond)
+  {}
+
+  bool condition (Function::Condition::Traits<token::type>::choices_t & choices)
+    const
+  {
+    return cond (choices);
+  }
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+    ar & BOOST_SERIALIZATION_NVP(name);
+    ar & BOOST_SERIALIZATION_NVP(cond);
+  }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<transition_cnt_t> h;
+
+  return h (t.t);
+}
+
+inline bool operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
+
+static transition_t mk_trans ( const std::string & name
+                             , const condition::type & cond
+                             )
+{
+  static transition_cnt_t t (0);
+
+  return transition_t (t++, name, cond);
 }
 
 typedef petri_net::net<place::type, transition_t, edge_t, token::type> pnet_t;
@@ -147,26 +196,12 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       )
 {
   return net.add_transition 
-    ( mk_trans (name)
-    , TransitionFunction
-      ( name
-      , expression
-      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
-      , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
-      )
-    , condition::type ( condition
-                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
-                      )
-    );
-}
-
-static petri_net::tid_t mk_transition ( pnet_t & net
-                                      , const std::string & name
-                                      , const std::string & expression
-                                      )
-{
-  return net.add_transition 
-    ( mk_trans (name)
+    ( mk_trans ( name
+               , condition::type 
+                 ( condition
+                 , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                 ) 
+               )
     , TransitionFunction
       ( name
       , expression
@@ -244,7 +279,14 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_done (net.add_place (place::type("done")));
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
 
-  petri_net::tid_t tid_init (mk_transition (net, "init", "${run} := ${start}"));
+  petri_net::tid_t tid_init 
+    ( mk_transition 
+      ( net
+      , "init"
+      , "${run} := ${start}"
+      , "true"
+      )
+    );
 
   petri_net::tid_t tid_split
     ( mk_transition 
@@ -262,6 +304,7 @@ main (int argc, char ** argv)
       , "tag"
       , "${slice_depth.slice} := ${slice_in}; \
          ${slice_depth.depth} := 0            "
+      , "true"
       )
     );
   petri_net::tid_t tid_work
@@ -288,6 +331,7 @@ main (int argc, char ** argv)
       ( net
       , "join"
       , "${joined} := ${joined} + 1"
+      , "true"
       )
     );
 

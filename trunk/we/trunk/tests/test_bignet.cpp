@@ -1,6 +1,7 @@
 // some measurements with the pnet interface, mirko.rahn@itwm.fraunhofer.de
 
 #include <we/net.hpp>
+#include <we/type/condition.hpp>
 #include "timer.hpp"
 
 #include <cstdlib>
@@ -14,7 +15,37 @@
 #include <boost/random.hpp>
 
 typedef unsigned int place_t;
-typedef unsigned int transition_t;
+
+struct transition_t
+{
+public:
+  unsigned int t;
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+  }
+
+  transition_t (const unsigned int & _t) : t (_t) {}
+
+  template<typename T>
+  bool condition (const T &) const { return true; }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<unsigned int> h;
+
+  return h (t.t);
+}
+
+inline std::size_t operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
+
 typedef std::pair<unsigned int, unsigned int> pair_t;
 typedef std::pair<pair_t, bool> edge_t;
 typedef unsigned int token_t;
@@ -58,7 +89,7 @@ main ()
     boost::mt19937 engine;
 
     {
-      boost::uniform_int<transition_t> uniform (0, factor * ntrans - 1);
+      boost::uniform_int<unsigned long> uniform (0, factor * ntrans - 1);
 
       unsigned int duplicates (0);
 
@@ -70,12 +101,20 @@ main ()
         for (unsigned int t(0); t < branch; ++t)
           try
             {
-              transition_t rand (uniform (engine));
-              n.add_edge ( edge_t(pair_t(p, rand), true)
-                         , petri_net::connection_t (petri_net::PT, rand, p)
+              const unsigned int r (uniform (engine));
+              const transition_t rand (r);
+
+              n.add_edge ( edge_t(pair_t(p, r), true)
+                         , petri_net::connection_t ( petri_net::PT
+                                                   , n.get_transition_id (rand)
+                                                   , p
+                                                   )
                          );
-              n.add_edge ( edge_t(pair_t(rand, p), false)
-                         , petri_net::connection_t (petri_net::TP, rand, p)
+              n.add_edge ( edge_t(pair_t(r, p), false)
+                         , petri_net::connection_t ( petri_net::TP
+                                                   , n.get_transition_id (rand)
+                                                   , p
+                                                   )
                          );
             }
           catch (bijection::exception::already_there)

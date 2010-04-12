@@ -23,7 +23,36 @@
 
 typedef unsigned int token_t;
 typedef std::string place_t;
-typedef std::string transition_t;
+struct transition_t
+{
+public:
+  std::string t;
+
+  transition_t () : t("transition without a name") {}
+  transition_t (const std::string & _t) : t(_t) {}
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+  }
+
+  template<typename T>
+  bool condition (T &) const { return true; }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<std::string> h;
+
+  return h (t.t);
+}
+
+inline std::size_t operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
 typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
@@ -289,7 +318,7 @@ static std::ostream & operator << ( std::ostream & s
   const pnet_t & net (show_activity.first);
   const pnet_t::activity_t activity (show_activity.second);
 
-  s << "activity" << ": " << net.get_transition (activity.tid) << ":";
+  s << "activity" << ": " << net.get_transition (activity.tid).t << ":";
 
   s << " input: ";
 
@@ -637,10 +666,10 @@ main ()
   pid.done_gen = net.add_place ("done_gen");
   pid.all_done = net.add_place ("all_done");
 
-  petri_net::tid_t tid_gen (net.add_transition ("generate"));
-  petri_net::tid_t tid_work (net.add_transition ("work"));
-  petri_net::tid_t tid_finish (net.add_transition ("finish"));
-  petri_net::tid_t tid_finalize (net.add_transition ("finalize"));
+  petri_net::tid_t tid_gen (net.add_transition (transition_t("generate")));
+  petri_net::tid_t tid_work (net.add_transition (transition_t("work")));
+  petri_net::tid_t tid_finish (net.add_transition (transition_t ("finish")));
+  petri_net::tid_t tid_finalize (net.add_transition (transition_t ("finalize")));
 
   edge e;
 

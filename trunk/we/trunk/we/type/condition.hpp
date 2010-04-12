@@ -38,7 +38,7 @@ namespace condition
   private:
     std::string expression;
     expr::parse::parser<signature::field_name_t> parser;
-    expr::eval::context<signature::field_name_t> context;
+    mutable expr::eval::context<signature::field_name_t> context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
     translate_t translate;
@@ -53,15 +53,20 @@ namespace condition
     }
 
   public:
-    type (const std::string & _expression, const translate_t & _translate)
+    type ( const std::string & _expression
+         , const translate_t & _translate = &no_trans
+         )
       : expression (_expression)
       , parser (expression)
       , context ()
       , translate (_translate)
     {}
 
-    bool operator () (traits::choices_t & choices)
+    bool operator () (traits::choices_t & choices) const
     {
+      if (expression == "true")
+        return true;
+
       for (; choices.has_more(); ++choices)
         {
           for ( traits::choice_it_t choice (*choices)

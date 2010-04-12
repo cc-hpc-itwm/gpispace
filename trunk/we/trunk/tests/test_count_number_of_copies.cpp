@@ -150,7 +150,27 @@ static std::ostream & operator << (std::ostream & s, const ptr_place_t & p)
 // indirect
 typedef ptr_place_t place_t;
 
-typedef std::string transition_t;
+struct transition_t
+{
+public:
+  std::string name;
+
+  template<typename T>
+  bool condition (const T & ) const { return true; }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<std::string> h;
+
+  return h (t.name);
+}
+
+inline bool operator == (const transition_t & x, const transition_t & y)
+{
+  return x.name == y.name;
+}
+
 typedef std::string edge_t;
 typedef std::string token_t;
 

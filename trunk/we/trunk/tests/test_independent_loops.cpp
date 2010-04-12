@@ -18,9 +18,41 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 typedef unsigned int loop_t;
 typedef unsigned int id_t;
-typedef std::pair<loop_t, id_t> node_t;
+
+struct node_t
+{
+public:
+  std::pair<loop_t, id_t> dat;
+
+  node_t () : dat() {}
+  node_t (loop_t l, id_t i) : dat (l,i) {}
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(dat);
+  }
+
+  
+  template<typename T> bool condition (const T &) const { return true; }
+};
+
+inline std::size_t hash_value (const node_t & t)
+{
+  boost::hash<loop_t> h;
+
+  return h (t.dat.first);
+}
+
+inline std::size_t operator == (const node_t & x, const node_t & y)
+{
+  return x.dat == y.dat;
+}
 
 static const loop_t num_loops (2500);
 static const id_t size_loop (15);

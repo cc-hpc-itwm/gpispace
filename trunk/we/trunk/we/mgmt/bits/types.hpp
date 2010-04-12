@@ -183,6 +183,9 @@ namespace we { namespace mgmt {
       typedef typename traits::pid_map_traits<pid_t>::type pid_map_t;
       typedef Category category_t;
 
+          template<typename T>
+          bool condition (const T &) const { return true; }
+
       struct flags_t
       {
         bool internal : 1;

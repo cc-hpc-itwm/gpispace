@@ -10,7 +10,8 @@
 
 #include <boost/function.hpp>
 
-typedef unsigned int transition_t;
+// ************************************************************************* //
+
 typedef unsigned int token_second_t;
 typedef std::pair<char,token_second_t> token_t;
 typedef unsigned int cnt_edge_t;
@@ -18,9 +19,9 @@ typedef std::pair<cnt_edge_t,petri_net::pid_t> edge_t;
 typedef unsigned int cnt_place_t;
 typedef std::pair<cnt_place_t,token_second_t> place_t;
 
-static const token_second_t branch_factor (3);
+// ************************************************************************* //
 
-typedef petri_net::net<place_t,transition_t,edge_t,token_t> pnet_t;
+static const token_second_t branch_factor (3);
 
 typedef Function::Transition::Traits<token_t> traits;
 typedef traits::token_input_t token_input_t;
@@ -38,6 +39,65 @@ static token_second_t shift (const place_t & place)
 {
   return place.second;
 }
+
+// ************************************************************************* //
+
+struct transition_t
+{
+public:
+  token_second_t t;
+  typedef boost::function<place_t (const petri_net::pid_t &)> translate_t;
+  translate_t translate;
+
+  transition_t ( const unsigned int & _t
+               , const translate_t & _translate
+               )
+    : t (_t)
+    , translate (_translate)
+  {}
+
+  bool
+  condition (Function::Condition::Traits<token_t>::choices_t & choices) const 
+  {
+    for ( ; choices.has_more(); ++choices)
+      {
+        bool all_ok (true);
+
+        for ( Function::Condition::Traits<token_t>::choice_it_t choice (*choices)
+            ; choice.has_more() && all_ok
+            ; ++choice
+            )
+          {
+            place_t place (translate ((*choice).first));
+            token_t token ((*choice).second.first);
+
+            all_ok = (token.second == ((shift(place) + t) % branch_factor));
+          }
+
+        if (all_ok)
+          return true;
+      }
+    return false;
+  }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<unsigned int> h;
+
+  return h(t.t);
+}
+
+inline bool operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
+
+// ************************************************************************* //
+
+typedef petri_net::net<place_t,transition_t,edge_t,token_t> pnet_t;
+
+// ************************************************************************* //
 
 // match by pid, means put it there where it comes from
 template<typename T>
@@ -73,34 +133,6 @@ static token_t trans ( const petri_net::pid_t & pid
        << endl;
 
   return inc (token);
-}
-
-// each transition takes only one remainder, shifted by the place
-static bool cond_rem ( const pnet_t & net
-                     , const token_second_t & rem
-                     , pnet_t::choices_t & choices
-                     )
-{
-  for ( ; choices.has_more(); ++choices)
-    {
-      bool all_ok (true);
-
-      for ( pnet_t::choice_it choice (*choices)
-          ; choice.has_more() && all_ok
-          ; ++choice
-          )
-        {
-          place_t place (net.get_place ((*choice).first));
-          token_t token ((*choice).second.first);
-
-          all_ok = (token.second == ((shift(place) + rem) % branch_factor));
-        }
-
-      if (all_ok)
-        return true;
-    }
-
-  return false;
 }
 
 static void marking (const pnet_t & n)
@@ -153,14 +185,14 @@ main ()
     {
       const tid_t tid
         ( n.add_transition
-          ( rem
+          ( transition_t ( rem
+                         , boost::bind (&pnet_t::get_place, boost::ref(n), _1)
+                         )
           , Function::Transition::MatchWithFun<token_t,petri_net::pid_t>
             ( & edge_descr<token_input_t>
             , & edge_descr<place_via_edge_t>
             , & trans
             )
-          , Function::Condition::Generic<token_t>
-            (boost::bind (&cond_rem, boost::ref(n), rem, _1))
           )
         );
 

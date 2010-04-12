@@ -7,7 +7,9 @@
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
+
 #include <boost/serialization/variant.hpp>
+#include <we/serialize/unordered_map.hpp>
 
 #include <string>
 

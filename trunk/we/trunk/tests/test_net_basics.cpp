@@ -15,10 +15,48 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 #include <boost/random.hpp>
 
 typedef std::string place_t;
-typedef std::string transition_t;
+
+struct transition_t
+{
+public:
+  std::string name;
+
+  transition_t () : name ("transition without a name") {}
+  transition_t (const std::string & _name) : name (_name) {}
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(name);
+  }
+
+  template<typename T>
+  bool condition (const T & ) const { return true; }
+};
+
+inline std::ostream & operator << (std::ostream & s, const transition_t & t)
+{
+  return s << t.name;
+}
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<std::string> h;
+
+  return h (t.name);
+}
+
+inline bool operator == (const transition_t & x, const transition_t & y)
+{
+  return x.name == y.name;
+}
+
 typedef std::string edge_t;
 typedef std::string token_t;
 
@@ -34,7 +72,7 @@ static std::string brack (const std::string & x)
 
 static std::string trans (const pnet_t & n, const petri_net::tid_t & t)
 {
-  std::ostringstream s; s << t << brack(n.get_transition (t)); return s.str();
+  std::ostringstream s; s << t << brack(n.get_transition (t).name); return s.str();
 }
 
 static std::string show_place (const pnet_t & n, const petri_net::pid_t & p)
@@ -239,31 +277,31 @@ static void delete_edge (pnet_t & n, const edge_t & edge)
        << endl;
 }
 
-static void delete_transition (pnet_t & n, const transition_t & transition)
+static void delete_transition (pnet_t & n, const std::string & transition)
 {
   cout << "delete_transition (" << transition << ") => "
-       << n.delete_transition (n.get_transition_id (transition))
+       << n.delete_transition (n.get_transition_id (transition_t (transition)))
        << endl;
 }
 
-static void add_transition (pnet_t & n, const transition_t & transition)
+static void add_transition (pnet_t & n, const std::string & transition)
 {
   cout << "add_transition (" << transition
-       << ") => " << n.add_transition (transition)
+       << ") => " << n.add_transition (transition_t (transition))
        << endl;
 }
 
 static void add_edge_place_to_transition ( pnet_t & n
                                          , const edge_t & edge
                                          , const place_t & place
-                                         , const transition_t & transition
+                                         , const std::string & transition
                                          )
 {
   cout << "add_edge_place_to_transition (" << edge << ") => "
        << n.add_edge ( edge
                      , petri_net::connection_t
                        ( petri_net::PT
-                       , n.get_transition_id (transition)
+                       , n.get_transition_id (transition_t (transition))
                        , n.get_place_id (place)
                        )
                      )
@@ -272,7 +310,7 @@ static void add_edge_place_to_transition ( pnet_t & n
 
 static void add_edge_transition_to_place ( pnet_t & n
                                          , const edge_t & edge
-                                         , const transition_t & transition
+                                         , const std::string & transition
                                          , const place_t & place
                                          )
 {
@@ -280,7 +318,7 @@ static void add_edge_transition_to_place ( pnet_t & n
        << n.add_edge ( edge
                      , petri_net::connection_t
                        ( petri_net::TP
-                       , n.get_transition_id (transition)
+                       , n.get_transition_id (transition_t (transition))
                        , n.get_place_id (place)
                        )
                      )
@@ -402,8 +440,8 @@ main ()
   cout << "#### MODIFIED" << endl;
 
   c.modify_place (c.get_place_id("semaphore"),"Semaphore");
-  c.replace_transition (c.get_transition_id ("enterL"), "t_enterL");
-  c.replace_transition (c.get_transition_id ("enterR"), "t_enterR");
+  c.replace_transition (c.get_transition_id (transition_t ("enterL")), transition_t ("t_enterL"));
+  c.replace_transition (c.get_transition_id (transition_t ("enterR")), transition_t ("t_enterR"));
   c.modify_edge (c.get_edge_id ("e_s_el"),"e_S_el");
 
   print_net (c);
@@ -451,12 +489,12 @@ main ()
   print_enabled (c);
 
   cout << "FIRE t_enterL" << endl;
-  c.fire(c.get_transition_id ("t_enterL"));
+  c.fire(c.get_transition_id (transition_t ("t_enterL")));
 
   print_enabled (c);
 
   cout << "FIRE leaveL" << endl;
-  c.fire(c.get_transition_id ("leaveL"));
+  c.fire(c.get_transition_id (transition_t ("leaveL")));
 
   print_enabled (c);
 

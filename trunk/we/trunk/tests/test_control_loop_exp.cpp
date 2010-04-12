@@ -18,9 +18,45 @@ using std::endl;
 
 typedef long token_t;
 typedef std::string place_t;
-typedef std::string transition_t;
+
 typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
+
+struct transition_t
+{
+public:
+  std::string t;
+  mutable Function::Condition::Expression<token_t> cond;
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+    ar & BOOST_SERIALIZATION_NVP(cond);
+  }
+
+  transition_t ( const std::string & _t
+               , const std::string & _cond
+               ) : t (_t), cond (_cond) {}
+
+  bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
+    const
+  {
+    return cond (choices);
+  }
+};
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<std::string> h;
+
+  return h (t.t);
+}
+
+inline std::size_t operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
@@ -82,8 +118,23 @@ main ()
   petri_net::pid_t pid_value (net.add_place ("value"));
   petri_net::pid_t pid_increment (net.add_place ("increment"));
   petri_net::pid_t pid_final (net.add_place ("final"));
-  petri_net::pid_t tid_step (net.add_transition ("step"));
-  petri_net::pid_t tid_break (net.add_transition ("break"));
+
+  petri_net::pid_t tid_step 
+    ( net.add_transition 
+      ( transition_t 
+        ( "step"
+        , "${" + util::show (pid_value) + "}" + " < " + util::show (max)
+        )
+      )
+    );
+  petri_net::pid_t tid_break 
+    ( net.add_transition 
+      ( transition_t 
+        ( "break"
+        , "${" + util::show(pid_value) + "}" + " >= " + util::show (max)
+        )
+      )
+    );
 
   edge_cnt_t e (0);
 
@@ -107,20 +158,9 @@ main ()
                                 )
                               );
 
-  net.set_choice_condition_function 
-    ( tid_step
-    , Function::Condition::Expression<token_t> 
-      ( "${" + util::show (pid_value) + "}" + " < " + util::show (max))
-    );
-
   net.set_transition_function ( tid_break
                               , Function::Transition::Pass<token_t>()
                               );
-  net.set_choice_condition_function 
-    ( tid_break
-    , Function::Condition::Expression<token_t>
-      ("${" + util::show(pid_value) + "}" + " >= " + util::show (max))
-    );
 
   net.put_token (pid_value, 0);
   net.put_token (pid_increment, 1);

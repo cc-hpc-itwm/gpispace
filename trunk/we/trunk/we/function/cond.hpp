@@ -70,9 +70,9 @@ namespace Function { namespace Condition
   {
   private:
     typedef literal::type val_t;
-    const std::string expression;
-    const expr::parse::parser<petri_net::pid_t> parser;
-    expr::eval::context<petri_net::pid_t> context;
+    std::string expression;
+    expr::parse::parser<petri_net::pid_t> parser;
+    mutable expr::eval::context<petri_net::pid_t> context;
   public:
     explicit Expression (const std::string & _expression)
       : expression (_expression)
@@ -80,7 +80,7 @@ namespace Function { namespace Condition
       , context ()
     {}
 
-    bool operator () (typename Traits<token_type>::choices_t & choices)
+    bool operator () (typename Traits<token_type>::choices_t & choices) const
     {
       for (; choices.has_more(); ++choices)
         {

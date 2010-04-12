@@ -97,9 +97,6 @@ public:
 
   // TODO: traits should be template parameters (with default values)
   typedef Function::Condition::Traits<token_type> cd_traits;
-  typedef typename cd_traits::choice_cond_t choice_cond_t;
-
-  typedef boost::unordered_map<tid_t, choice_cond_t> choice_cond_map_t;
 
   typedef typename cd_traits::token_via_edge_t token_via_edge_t;
   typedef typename cd_traits::vec_token_via_edge_t vec_token_via_edge_t;
@@ -147,7 +144,6 @@ private:
   enabled_choice_t enabled_choice;
 
   trans_map_t trans;
-  choice_cond_map_t choice_cond;
 
   capacity_map_t capacity_map;
 
@@ -174,7 +170,6 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled_choice);
     // WORK HERE: serialize the functions
     //    ar & BOOST_SERIALIZATION_NVP(trans);
-    //    ar & BOOST_SERIALIZATION_NVP(choice_cond);
     ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
     ar & BOOST_SERIALIZATION_NVP(out_map);
@@ -236,7 +231,7 @@ private:
                 // call the global condition function here, that sets the
                 // cross product either to the end or to some valid choice
 
-                if (get_fun (choice_cond, tid) (cs))
+                if (get_transition (tid).condition (cs))
                   {
                     enabled.insert (tid);
                     
@@ -488,7 +483,6 @@ public:
     , enabled ()
     , enabled_choice ()
     , trans ()
-    , choice_cond ()
     , capacity_map ()
     , in_map ()
     , out_map ()
@@ -572,24 +566,15 @@ public:
     trans[tid] = f;
   }
 
-  void set_choice_condition_function (const tid_t & tid, const choice_cond_t & f)
-  {
-    choice_cond[tid] = f;
-
-    calculate_in_enabled (tid);
-  }
-
   tid_t add_transition
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
-  , const choice_cond_t & choicec = Function::Condition::Default<token_type>()
   )
     throw (bijection::exception::already_there)
   {
     const tid_t tid (tmap.add (transition));
 
     trans[tid] = tf;
-    choice_cond[tid] = choicec;
 
     calculate_in_enabled (tid);
     calculate_out_enabled (tid);

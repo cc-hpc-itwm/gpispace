@@ -47,12 +47,11 @@ static std::ostream & operator << (std::ostream & s, const token_t token)
 /* ************************************************************************* */
 
 typedef unsigned int cnt_t;
+static cnt_t cnt (0);
 typedef std::pair<cnt_t,std::string> tagged_string_t;
 
 static tagged_string_t mk_tagged_string (const std::string & name)
 {
-  static cnt_t cnt (0);
-
   return tagged_string_t (cnt++, name);
 }
 
@@ -62,12 +61,90 @@ static std::ostream & operator << (std::ostream & s, const tagged_string_t ts)
 }
 
 typedef tagged_string_t place_t;
-typedef tagged_string_t transition_t;
 typedef tagged_string_t edge_t;
 
 static place_t mk_place (const std::string & name) { return mk_tagged_string (name); }
-static transition_t mk_transition (const std::string & name) { return mk_tagged_string (name); }
 static edge_t mk_edge (const std::string & name) { return mk_tagged_string (name); }
+
+/* ************************************************************************* */
+
+typedef std::map<std::string,unsigned long> cnt_map_t;
+static cnt_map_t cnt_map;
+
+/* ************************************************************************* */
+
+struct transition_t
+{
+public:
+  cnt_t cnt;
+  std::string name;
+  bool real_cond;
+
+  transition_t ( const cnt_t & _cnt
+               , const std::string _name
+               , const bool _real_cond = false
+               )
+    : cnt (_cnt)
+    , name (_name)
+    , real_cond (_real_cond)
+  {}
+
+  bool condition (Function::Condition::Traits<token_t>::choices_t & choices) const
+  {
+    ++cnt_map["cond_join: called"];
+
+    for ( ; choices.has_more(); ++choices)
+      {
+        ++cnt_map["cond_join: checked"];
+
+        cross::iterator<Function::Condition::Traits<token_t>::pid_in_map_t>
+          choice (*choices);
+
+        if (!choice.has_more())
+          throw std::runtime_error ("STRANGE: got a choice with no entries");
+
+        const package_id_t id (package_id ((*choice).second.first));
+        bool all_equal (true);
+          
+        for (++choice; choice.has_more() && all_equal; ++choice)
+          all_equal = (id == package_id ((*choice).second.first));
+      
+        if (all_equal)
+          {
+            ++cnt_map["cond_join: accepted"];
+
+            return true;
+          }
+        else
+          ++cnt_map["cond_join: rejected"];
+      }
+
+    ++cnt_map["cond_join: rejected all"];
+
+    return false;
+  };
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<cnt_t> h;
+
+  return h (t.cnt);
+}
+
+inline bool operator == (const transition_t & x, const transition_t & y)
+{
+  return x.cnt == y.cnt;
+}
+
+static transition_t mk_transition ( const std::string & name
+                                  , const bool & real_cond = false
+                                  )
+{
+  return transition_t (cnt++, name, real_cond);
+}
+
+/* ************************************************************************* */
 
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
@@ -89,11 +166,6 @@ static void marking (const pnet_t & n)
     }
   cout << endl;
 }
-
-/* ************************************************************************* */
-
-typedef std::map<std::string,unsigned long> cnt_map_t;
-static cnt_map_t cnt_map;
 
 /* ************************************************************************* */
 
@@ -225,40 +297,6 @@ trans_join ( const pnet_t::input_t & input
   return output;
 }
 
-static bool cond_join (pnet_t::choices_t & choices)
-{
-  ++cnt_map["cond_join: called"];
-
-  for ( ; choices.has_more(); ++choices)
-    {
-      ++cnt_map["cond_join: checked"];
-
-      pnet_t::choice_it choice (*choices);
-
-      if (!choice.has_more())
-        throw std::runtime_error ("STRANGE: got a choice with no entries");
-
-      const package_id_t id (package_id ((*choice).second.first));
-      bool all_equal (true);
-          
-      for (++choice; choice.has_more() && all_equal; ++choice)
-        all_equal = (id == package_id ((*choice).second.first));
-      
-      if (all_equal)
-        {
-          ++cnt_map["cond_join: accepted"];
-
-          return true;
-        }
-      else
-        ++cnt_map["cond_join: rejected"];
-    }
-
-  ++cnt_map["cond_join: rejected all"];
-
-  return false;
-}
-
 /* ************************************************************************* */
 
 using petri_net::connection_t;
@@ -297,9 +335,8 @@ main ()
 
   petri_net::pid_t tid_join 
     ( net.add_transition 
-      ( mk_transition ("sum")
+      ( mk_transition ("sum", true)
       , Function::Transition::Generic<token_t> (trans_join)
-      , Function::Condition::Generic<token_t>(cond_join)
       )
     );
 

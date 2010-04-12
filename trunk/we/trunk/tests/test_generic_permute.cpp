@@ -15,7 +15,37 @@ using std::cout;
 using std::endl;
 
 typedef unsigned int place_t;
-typedef unsigned int transition_t;
+
+struct transition_t
+{
+public:
+  petri_net::tid_t t;
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+  }
+
+  transition_t (const unsigned int & _t) : t (_t) {}
+
+  template<typename T>
+  bool condition (const T &) const { return true; }
+};
+
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<petri_net::tid_t> h;
+
+  return h (t.t);
+}
+
+inline std::size_t operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
+
 typedef char token_t;
 
 namespace {
@@ -95,7 +125,7 @@ main ()
   pnet_t n;
 
   place_t place (0);
-  transition_t transition (0);
+  unsigned int transition (0);
   edge_left_t edge (0);
 
   typedef Function::Transition::MatchEdge<token_t, edge_right_t> TF;
@@ -108,7 +138,7 @@ main ()
 
   do
     {
-      petri_net::tid_t tid (n.add_transition (transition++, TF(f)));
+      petri_net::tid_t tid (n.add_transition (transition_t (transition++), TF(f)));
 
       petri_net::pid_t pid[k];
 

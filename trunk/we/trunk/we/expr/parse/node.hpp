@@ -43,13 +43,13 @@ namespace expr
       {
         typedef boost::shared_ptr<type> ptr_t;
 
-        const flag::flag flag;
-        const literal::type value;
-        const Key ref;
-        const token::type token;
-        const ptr_t child0;
-        const ptr_t child1;
-        const ptr_t child2;
+        flag::flag flag;
+        literal::type value;
+        Key ref;
+        token::type token;
+        ptr_t child0;
+        ptr_t child1;
+        ptr_t child2;
 
         type (const literal::type & _value)
           : flag (flag::value)

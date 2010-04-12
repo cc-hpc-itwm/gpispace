@@ -6,8 +6,10 @@
 
 #include <we/util/read.hpp>
 #include <we/util/show.hpp>
-#include <we/function/cond.hpp>
 #include <we/util/warnings.hpp>
+
+#include <we/type/condition.hpp>
+#include <we/type/token.hpp>
 
 #include "timer.hpp"
 
@@ -21,7 +23,43 @@ using std::endl;
 
 typedef long token_t;
 typedef std::string place_t;
-typedef std::string transition_t;
+
+struct transition_t
+{
+public:
+  std::string t;
+  mutable Function::Condition::Expression<token_t> cond;
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP(t);
+    ar & BOOST_SERIALIZATION_NVP(cond);
+  }
+
+  transition_t ( const std::string & _t
+               , const std::string & _cond
+               ) : t (_t), cond (_cond) {}
+
+  bool condition (Function::Condition::Traits<token_t>::choices_t & choices)
+    const
+  {
+    return cond (choices);
+  }
+};
+inline std::size_t hash_value (const transition_t & t)
+{
+  boost::hash<std::string> h;
+
+  return h (t.t);
+}
+
+inline std::size_t operator == (const transition_t & x, const transition_t & y)
+{
+  return x.t == y.t;
+}
+
 typedef unsigned short edge_cnt_t;
 typedef std::pair<edge_cnt_t,std::string> edge_t;
 
@@ -113,8 +151,23 @@ main ()
   petri_net::pid_t pid_value (net.add_place ("value"));
   petri_net::pid_t pid_sum (net.add_place ("sum"));
 
-  petri_net::pid_t tid_step (net.add_transition ("step"));
-  petri_net::pid_t tid_sum (net.add_transition ("sum"));
+  petri_net::pid_t tid_step 
+    ( net.add_transition 
+      ( transition_t
+        ( "step"
+        , "${" + util::show (pid_state) + "} < ${" + util::show (pid_max) + "}"
+        )
+      )
+    );
+
+  petri_net::pid_t tid_sum 
+    ( net.add_transition 
+      ( transition_t 
+        ( "sum"
+        , "true"
+        )
+      )
+    );
 
   edge_cnt_t e (0);
 
@@ -146,17 +199,11 @@ main ()
     , Function::Transition::Generic<token_t> (trans_sum)
     );
 
-  net.set_choice_condition_function 
-    ( tid_step
-    , Function::Condition::Expression<token_t>
-      ("${" + util::show (pid_state) + "} < ${" + util::show (pid_max) + "}")
-    );
-
   net.set_capacity (pid_value, capacity_value);
 
-  net.put_token (pid_state, 0);
-  net.put_token (pid_state, 0);
-  net.put_token (pid_sum, 0);
+  net.put_token (pid_state, 0L);
+  net.put_token (pid_state, 0L);
+  net.put_token (pid_sum, 0L);
   net.put_token (pid_max, max);
 
   marking (net);
@@ -169,7 +216,7 @@ main ()
     while (!net.enabled_transitions().empty())
       {
         net.fire(net.enabled_transitions().at(0));
-        //        marking (net);
+        // marking (net);
       }
   }
 
