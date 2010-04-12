@@ -33,7 +33,6 @@ namespace condition
     throw exception::no_translator_given();
   }
 
-  template<typename NET>
   class type
   {
   private:
@@ -54,31 +53,12 @@ namespace condition
     }
 
   public:
-    type ()
-      : expression ("true")
-      , parser ("true")
-      , context ()
-      , translate (&no_trans)
-    {};
-
-    type (const std::string & _expression)
+    type (const std::string & _expression, const translate_t & _translate)
       : expression (_expression)
       , parser (expression)
       , context ()
-      , translate (&no_trans)
+      , translate (_translate)
     {}
-
-    type (const std::string & _expression, const NET & net)
-      : expression (_expression)
-      , parser (expression)
-      , context ()
-      , translate (boost::bind (&place::name<NET>, boost::ref(net), _1))
-    {}
-
-    void set_net (const NET & net)
-    {
-      translate = boost::bind (&place::name<NET>, boost::ref(net), _1);
-    }
 
     bool operator () (traits::choices_t & choices)
     {

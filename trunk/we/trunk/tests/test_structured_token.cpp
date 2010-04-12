@@ -68,7 +68,6 @@ static void marking (const pnet_t & n)
 
 // ************************************************************************* //
 
-template<typename NET>
 class Transition
 {
 private:
@@ -85,14 +84,15 @@ private:
 public:
   explicit Transition ( const std::string & _name
                       , const std::string & _expression
-                      , const NET & net
+                      , const translate_t & _translate
+                      , const sig_t & _sig
                       )
     : name (_name)
     , expression (_expression)
     , parser (expression)
     , context ()
-    , translate (boost::bind(&place::name<NET>, boost::ref(net), _1))
-    , signature (boost::bind(&place::signature<NET>, boost::ref(net), _1))
+    , translate (_translate)
+    , signature (_sig)
   {}
 
   pnet_t::output_t operator () ( const pnet_t::input_t & input
@@ -148,8 +148,15 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition<pnet_t> (name, expression, net)
-    , condition::type<pnet_t> (condition, net)
+    , Transition
+      ( name
+      , expression
+      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+      , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
+      )
+    , condition::type ( condition
+                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+                      )
     );
 }
 
@@ -160,7 +167,12 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition<pnet_t> (name, expression, net)
+    , Transition
+      ( name
+      , expression
+      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
+      , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
+      )
     );
 }
 
