@@ -20,6 +20,7 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
+#include <we/type/port.hpp>
 #include <we/expr/parse/parser.hpp>
 #include <we/mgmt/bits/pid_map_t.hpp>
 
@@ -35,7 +36,6 @@ namespace we { namespace type {
       , NET
 	  };
 
-      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
       struct mod_t
       {
         mod_t(std::string const &m_, std::string const &f_)
@@ -56,10 +56,14 @@ namespace we { namespace type {
 
       typedef mod_t mod_type;
       typedef expr_t expr_type;
+      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
 
       typedef petri_net::pid_t pid_t;
       typedef typename we::mgmt::detail::traits::pid_map_traits<pid_t>::type pid_map_t;
       typedef Category category_t;
+
+      typedef std::string signature_type;
+      typedef boost::unordered_map<pid_t, port<signature_type> > port_map_t;
 
       struct flags_t
       {
@@ -268,6 +272,8 @@ namespace we { namespace type {
       flags_t flags;
       pid_map_t i_mapping;
       pid_map_t o_mapping;
+
+      port_map_t ports_;
 	};
 
     template <typename P, typename E, typename T>
