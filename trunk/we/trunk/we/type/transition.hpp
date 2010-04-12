@@ -24,6 +24,11 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/mgmt/bits/pid_map_t.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
+#include <we/type/module_call.hpp>
+#include <we/type/expression.hpp>
+
 namespace we { namespace type {
     namespace exception {
       struct port_already_defined : std::runtime_error
@@ -51,26 +56,8 @@ namespace we { namespace type {
       , NET
 	  };
 
-      struct mod_t
-      {
-        mod_t(std::string const &m_, std::string const &f_)
-          : m(m_), f(f_) {}
-        const std::string m;
-        const std::string f;
-      };
-
-      struct expr_t
-      {
-        expr_t(std::string const &e)
-          : v(e)
-          , expr(e)
-        {}
-        const std::string v;
-        const expr::parse::parser<std::string> expr;
-      };
-
-      typedef mod_t mod_type;
-      typedef expr_t expr_type;
+      typedef module_call_t mod_type;
+      typedef expression_t expr_type;
       typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
 
       typedef petri_net::pid_t pid_t;
@@ -398,9 +385,9 @@ namespace we { namespace type {
       switch (t.type)
       {
         case trans_t::MOD_CALL:
-          return s << "mod:" << t.template as<typename trans_t::mod_type>()->f;
+          return s << "mod:" << *t.template as<typename trans_t::mod_type>();
         case trans_t::EXPRESSION:
-          return s << "expr:" << t.template as<typename trans_t::expr_type>()->v;
+          return s << "expr:" << *t.template as<typename trans_t::expr_type>();
         case trans_t::NET:
 //          return s << "net:" << *t.template as<typename trans_t::net_type>();
           return s << "net-place-holder";
