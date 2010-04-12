@@ -25,6 +25,21 @@
 #include <we/mgmt/bits/pid_map_t.hpp>
 
 namespace we { namespace type {
+    namespace exception {
+      struct port_already_defined : std::runtime_error
+      {
+        explicit port_already_defined (const std::string & msg)
+          : std::runtime_error (msg)
+        {}
+      };
+      struct port_undefined : std::runtime_error
+      {
+        explicit port_undefined (const std::string & msg)
+          : std::runtime_error (msg)
+        {}
+      };
+    }
+
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
@@ -63,7 +78,8 @@ namespace we { namespace type {
       typedef Category category_t;
 
       typedef std::string signature_type;
-      typedef boost::unordered_map<pid_t, port<signature_type> > port_map_t;
+      typedef port<signature_type> port_t;
+      typedef boost::unordered_map<pid_t, port_t> port_map_t;
 
       struct flags_t
       {
@@ -259,6 +275,86 @@ namespace we { namespace type {
         o_mapping.insert (pid_map_t::value_type(outer, inner));
       }
 
+      template <typename SignatureType>
+      pid_t add_input_port (const std::string & name, const SignatureType & signature)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == port_t::IN) && p->second.name() == name)
+          {
+            throw exception::port_already_defined(name);
+          }
+        }
+        port_t port (name, signature, port_t::IN);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (port_map_t::value_type (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      pid_t add_output_port (const std::string & name, const SignatureType & signature)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == port_t::OUT) && p->second.name() == name)
+          {
+            throw exception::port_already_defined(name);
+          }
+        }
+        port_t port (name, signature, port_t::OUT);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (port_map_t::value_type (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      void add_input_output_port (const std::string & name, const SignatureType & signature)
+      {
+        try
+        {
+          input_port_by_name (name);
+        }
+        catch (const exception::port_undefined &)
+        {
+          try
+          {
+            output_port_by_name (name);
+          }
+          catch (const exception::port_undefined &)
+          {
+            add_input_port (name, signature);
+            add_output_port (name, signature);
+          }
+        }
+      }
+
+      pid_t & input_port_by_name (const std::string & name) const
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == port_t::IN) && p->second.name() == name)
+          {
+            return p->first;
+          }
+        }
+        throw exception::port_undefined(name);
+      }
+
+      pid_t & output_port_by_name (const std::string & name) const
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == port_t::OUT) && p->second.name() == name)
+          {
+            return p->first;
+          }
+        }
+        throw exception::port_undefined(name);
+      }
+
+      // WORK: replace by boost::variant
       union
       {
         net_type *net;
@@ -274,6 +370,7 @@ namespace we { namespace type {
       pid_map_t o_mapping;
 
       port_map_t ports_;
+      pid_t port_id_counter_;
 	};
 
     template <typename P, typename E, typename T>
