@@ -68,7 +68,7 @@ static void marking (const pnet_t & n)
 
 // ************************************************************************* //
 
-class Transition
+class TransitionFunction
 {
 private:
   const std::string name;
@@ -82,11 +82,11 @@ private:
   const sig_t signature;
 
 public:
-  explicit Transition ( const std::string & _name
-                      , const std::string & _expression
-                      , const translate_t & _translate
-                      , const sig_t & _sig
-                      )
+  explicit TransitionFunction ( const std::string & _name
+                              , const std::string & _expression
+                              , const translate_t & _translate
+                              , const sig_t & _sig
+                              )
     : name (_name)
     , expression (_expression)
     , parser (expression)
@@ -148,7 +148,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition
+    , TransitionFunction
       ( name
       , expression
       , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
@@ -167,7 +167,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( mk_trans (name)
-    , Transition
+    , TransitionFunction
       ( name
       , expression
       , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
