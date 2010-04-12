@@ -129,6 +129,12 @@ namespace we { namespace type {
         }
       }
 
+      template <typename Choice>
+      bool condition (Choice const &) const
+      {
+        return true;
+      }
+
       void assign( net_type const & net )
       {
         clear();
