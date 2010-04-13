@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/util/bitsetofint.hpp>
+#include <we/type/bitsetofint.hpp>
 
 typedef bitsetofint::type<unsigned int> set_t;
 
