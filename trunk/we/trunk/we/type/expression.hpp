@@ -52,47 +52,27 @@ namespace we { namespace type {
   private:
     std::string expr_;
     ast_t ast_;
+
+    friend class boost::serialization::access;
+    template <typename Archive>
+    void save (Archive & ar, const unsigned int) const
+    {
+      ar << expr_;
+    }
+
+    template <typename Archive>
+    void load (Archive & ar, const unsigned int)
+    {
+      std::string tmp;
+      ar >> tmp;
+      expression (tmp);
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
   };
 
   inline std::ostream & operator << (std::ostream & os, const expression_t & e)
   {
     return os << e.expression();
-  }
-}}
-
-namespace boost { namespace serialization {
-  template<class Archive>
-  inline void save
-  ( Archive & ar
-  , const we::type::expression_t & e
-  , const unsigned int /* file_version */
-  )
-  {
-    ar << e.expression();
-  }
-
-  template<class Archive, class Type, class Key, class Compare, class Allocator>
-  inline void load
-  ( Archive & ar
-  , const we::type::expression_t & e
-  , const unsigned int /* file_version */
-  )
-  {
-    std::string tmp;
-    ar >> tmp;
-    e.expression (tmp);
-  }
-
-  // split non-intrusive serialization function member into separate
-  // non intrusive save/load member functions
-  template<class Archive, class Type, class Key, class Compare, class Allocator>
-  inline void serialize
-  ( Archive & ar
-  , const we::type::expression_t & e
-  , const unsigned int file_version
-  )
-  {
-    boost::serialization::split_free(ar, e, file_version);
   }
 }}
 
