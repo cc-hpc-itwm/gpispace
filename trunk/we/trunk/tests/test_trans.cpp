@@ -38,6 +38,12 @@ int main (int, char **)
     ("max", "long", we::type::PORT_IN)
   ;
 
+  t1.add_connections()
+    (transition_t::pid_t(0), "i")
+    (transition_t::pid_t(1), "max")
+    ("i", transition_t::pid_t(0))
+  ;
+
   std::cout << "i (inp) = " << t1.input_port_by_name ("i") << std::endl;
   std::cout << "max (inp) = " << t1.input_port_by_name ("max") << std::endl;
   std::cout << "i (out) = " << t1.output_port_by_name ("i") << std::endl;

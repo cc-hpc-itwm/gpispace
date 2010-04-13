@@ -26,9 +26,10 @@
 #include <we/type/expression.hpp>
 #include <we/type/condition.hpp>
 #include <we/type/signature.hpp>
-#include <we/mgmt/bits/pid_map_t.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/variant.hpp>
+#include <boost/serialization/variant.hpp>
 #include <boost/serialization/nvp.hpp>
 
 namespace we { namespace type {
@@ -39,11 +40,41 @@ namespace we { namespace type {
           : std::runtime_error (msg)
         {}
       };
+
       struct port_undefined : std::runtime_error
       {
         explicit port_undefined (const std::string & msg)
           : std::runtime_error (msg)
         {}
+      };
+
+      template <typename From>
+      struct not_connected : std::runtime_error
+      {
+        typedef From from_type;
+
+        explicit not_connected(const std::string & msg, const from_type from_)
+          : std::runtime_error (msg)
+          , from(from_)
+        {}
+
+        const from_type from;
+      };
+
+      template <typename From, typename To>
+      struct already_connected : std::runtime_error
+      {
+        typedef From from_type;
+        typedef To to_type;
+
+        explicit already_connected(const std::string & msg, const from_type from_, const to_type to_)
+          : std::runtime_error (msg)
+          , from(from_)
+          , to(to_)
+        {}
+
+        const from_type from;
+        const to_type to;
       };
     }
 
@@ -73,6 +104,31 @@ namespace we { namespace type {
         Transition & transition_;
       };
 
+      template <typename Transition, typename From, typename To>
+      struct connection_adder
+      {
+        typedef From from_type;
+        typedef To to_type;
+
+        explicit connection_adder (Transition & t)
+          : transition_(t)
+        {}
+
+        connection_adder<Transition, from_type, to_type> & operator() (const from_type outer, const std::string & name)
+        {
+          transition_.connect_outer_to_inner (outer, transition_.input_port_by_name (name));
+          return *this;
+        }
+
+        connection_adder<Transition, from_type, to_type> & operator() (const std::string & name, const from_type outer)
+        {
+          transition_.connect_inner_to_outer (transition_.output_port_by_name (name), outer);
+          return *this;
+        }
+      private:
+        Transition & transition_;
+      };
+
       template <typename Transition, typename Pid>
       std::string translate_place_to_port_name (const Transition & trans, const Pid pid)
       {
@@ -91,13 +147,27 @@ namespace we { namespace type {
       , NET
 	  };
 
+      struct nil
+      {
+        friend class boost::serialization::access;
+        template<typename Archive>
+        void serialize (Archive & , const unsigned int)
+        {
+        }
+      };
+
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
       typedef petri_net::net<Place, this_type, Edge, Token> net_type;
+//      typedef boost::variant<nil, mod_type, expr_type, net_type> data_type;
+      typedef boost::variant<nil, mod_type, expr_type> data_type;
 
       typedef petri_net::pid_t pid_t;
-      typedef typename we::mgmt::detail::traits::pid_map_traits<pid_t>::type pid_map_t;
+      typedef pid_t port_id_t;
+
+      typedef boost::unordered_map<pid_t, port_id_t> outer_to_inner_t;
+      typedef boost::unordered_map<port_id_t, pid_t> inner_to_outer_t;
       typedef Category category_t;
 
       typedef signature::type signature_type;
@@ -122,8 +192,9 @@ namespace we { namespace type {
       };
 
       transition_t ()
-        : name ("unknown")
-        , type (UNKNOWN)
+        : name_ ("unknown")
+        , type_ (UNKNOWN)
+        , data_ (nil())
         , condition_( "true"
                     , boost::bind 
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
@@ -132,53 +203,39 @@ namespace we { namespace type {
                       )
                     )
         , port_id_counter_(0)
-      {
-        data.ptr = 0;
-      }
+      { }
 
       template <typename Type>
-	  transition_t (const std::string & name_
+	  transition_t (const std::string & name
                   , Type const & typ
                   , const std::string & condition = "true"
                   , bool intern = false)
-		: name(name_)
-        , condition_(condition)
+		: name_ (name)
+        , type_ (UNKNOWN) //type_of (typ))
+        , data_ (typ)
+        , condition_( condition
+                    , boost::bind 
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
         , port_id_counter_(0)
 	  {
-        data.ptr = 0;
-        assign(typ);
-        flags.internal = intern;
+        flags_.internal = intern;
       }
 
       transition_t (const transition_t &other)
-        : name(other.name)
-        , type(other.type)
-        , flags(other.flags)
+        : name_(other.name_)
+        , type_(other.type_)
+        , data_(other.data_)
+        , flags_(other.flags_)
         , condition_(other.condition_)
-        , i_mapping(other.i_mapping)
-        , o_mapping(other.o_mapping)
+        , outer_to_inner_(other.outer_to_inner_)
+        , inner_to_outer_(other.inner_to_outer_)
         , ports_(other.ports_)
         , port_id_counter_(0)
-      {
-        data.ptr = 0;
-        if (other.data.ptr)
-        {
-          switch (type)
-          {
-            case MOD_CALL:
-              assign ( *other.data.mod );
-              break;
-            case NET:
-              assign ( *other.data.net );
-              break;
-            case EXPRESSION:
-              assign ( *other.data.expr );
-              break;
-            default:
-              assert(false);
-          }
-        }
-      }
+      { }
 
       template <typename Choice>
       bool condition (Choice const &) const
@@ -186,123 +243,62 @@ namespace we { namespace type {
         return true;
       }
 
-      void assign( net_type const & net )
+      const std::string & name (void) const
       {
-        clear();
-        type = NET;
-        data.net = new net_type (net);
+        return name_;
       }
 
-      void assign( expr_type const & expr )
+      category_t type (void) const
       {
-        clear();
-        type = EXPRESSION;
-        data.expr = new expr_type (expr);
+        return type_;
       }
 
-      void assign( mod_type const & mod )
+      bool is_internal (void) const
       {
-        clear();
-        type = MOD_CALL;
-        data.mod = new mod_type (mod);
+        return flags_.internal;
       }
 
       bool is_net (void) const
       {
-        return type == NET;
+        return type_ == NET;
       }
 
       bool is_mod_call (void) const
       {
-        return type == MOD_CALL;
+        return type_ == MOD_CALL;
       }
 
       bool is_expr (void) const
       {
-        return type == EXPRESSION;
+        return type_ == EXPRESSION;
       }
 
-      template <typename T>
-      T * as(void)
+      const data_type & data (void) const
       {
-        return (T*)(data.ptr);
+        return data_;
       }
 
-      template <typename T>
-      const T * as(void) const
+      data_type & data (void)
       {
-        return (const T*)(data.ptr);
-      }
-
-      inline
-      void clear()
-      {
-        if (data.ptr)
-        {
-          switch (type)
-          {
-            case NET:
-              delete data.net;
-              break;
-            case MOD_CALL:
-              delete data.mod;
-              break;
-            case EXPRESSION:
-              delete data.expr;
-              break;
-            default:
-              break;
-          }
-        }
-        type = UNKNOWN;
-        data.ptr = 0;
+        return data_;
       }
 
       transition_t & operator=(const transition_t & other)
       {
         if (this != &other)
         {
-          name = other.name;
-          flags = other.flags;
-          i_mapping = other.i_mapping;
-          o_mapping = other.o_mapping;
+          name_ = other.name_;
+          flags_ = other.flags_;
+          outer_to_inner_ = other.outer_to_inner_;
+          inner_to_outer_ = other.inner_to_outer_;
           ports_ = other.ports_;
-          clear();
-
-          type = other.type;
-
-          if (other.data.ptr)
-          {
-            switch (type) // new type
-            {
-              case MOD_CALL:
-                assign ( *other.data.mod );
-                break;
-              case NET:
-                assign ( *other.data.net );
-                break;
-              case EXPRESSION:
-                assign ( *other.data.expr );
-                break;
-              default:
-                break;
-            }
-          }
+          type_ = other.type_;
+          data_ = other.data_;
         }
         return *this;
       }
 
-      ~transition_t ()
-      {
-        try
-        {
-          clear();
-        }
-        catch (...)
-        {
-
-        }
-      }
+      ~transition_t () { }
 
 	  template <typename Input, typename OutputDescription, typename OutputIterator>
 	  void operator ()(Input const & input, OutputDescription const & desc, OutputIterator output) const
@@ -321,26 +317,59 @@ namespace we { namespace type {
 		}
 	  }
 
-      template <typename Pid>
-      void connect_in(const Pid outer, const Pid inner)
+      template <typename Outer, typename Inner>
+      void connect_outer_to_inner(const Outer outer, const Inner inner)
       {
-        i_mapping.insert (pid_map_t::value_type(outer, inner));
+        if (outer_to_inner_.find (outer) != outer_to_inner_.end())
+        {
+          throw exception::already_connected<Outer, Inner>("already connected", outer, inner);
+        }
+        else
+        {
+          outer_to_inner_.insert (outer_to_inner_t::value_type (outer, inner));
+        }
       }
 
-      template <typename Pid>
-      void connect_out(const Pid outer, const Pid inner)
+      template <typename Inner, typename Outer>
+      void connect_inner_to_outer(const Inner inner, const Outer outer)
       {
-        o_mapping.insert (pid_map_t::value_type(outer, inner));
+        if (inner_to_outer_.find (inner) != inner_to_outer_.end())
+        {
+          throw exception::already_connected<Inner, Outer>("already connected", inner, outer);
+        }
+        else
+        {
+          inner_to_outer_.insert (inner_to_outer_t::value_type (inner, outer));
+        }
       }
 
-      pid_t outer_to_inner (pid_t outer) const
+      template <typename Outer>
+      typename outer_to_inner_t::mapped_type outer_to_inner (Outer outer) const
       {
-        throw std::runtime_error ("outer_to_inner(): not implemented");
+        try
+        {
+          return outer_to_inner_.at(outer);
+        } catch (const std::out_of_range &)
+        {
+          throw exception::not_connected<Outer> ("place not connected: " + ::util::show(outer), outer);
+        }
       }
 
-      pid_t inner_to_outer (pid_t outer) const
+      template <typename Inner>
+      typename inner_to_outer_t::mapped_type inner_to_outer (Inner inner) const
       {
-        throw std::runtime_error ("inner_to_outer(): not implemented");
+        try
+        {
+          return inner_to_outer_.at(inner);
+        } catch (const std::out_of_range &)
+        {
+          throw exception::not_connected<Inner> ("port not connected " + ::util::show(inner), inner);
+        }
+      }
+
+      detail::connection_adder<this_type, pid_t, port_id_t> add_connections()
+      {
+        return detail::connection_adder<this_type, pid_t, port_id_t>(*this);
       }
 
       detail::port_adder<this_type> add_ports()
@@ -403,7 +432,7 @@ namespace we { namespace type {
         }
       }
 
-      pid_t input_port_by_name (const std::string & name) const
+      port_id_t input_port_by_name (const std::string & name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -415,7 +444,7 @@ namespace we { namespace type {
         throw exception::port_undefined(name);
       }
 
-      pid_t output_port_by_name (const std::string & name) const
+      port_id_t output_port_by_name (const std::string & name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -440,22 +469,16 @@ namespace we { namespace type {
         }
       }
 
-      // WORK: replace by boost::variant
-      union
-      {
-        net_type *net;
-        expr_type *expr;
-        mod_type *mod;
-        void *ptr;
-      } data;
+    private:
+	  std::string name_;
+	  category_t type_;
+      data_type data_;
 
-	  std::string name;
-	  category_t type;
-      flags_t flags;
+      flags_t flags_;
       condition::type condition_;
-      pid_map_t i_mapping;
-      pid_map_t o_mapping;
 
+      outer_to_inner_t outer_to_inner_;
+      inner_to_outer_t inner_to_outer_;
       port_map_t ports_;
       pid_t port_id_counter_;
 
@@ -466,45 +489,53 @@ namespace we { namespace type {
       template<typename Archive>
       void serialize (Archive & ar, const unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP(name);
-        ar & BOOST_SERIALIZATION_NVP(type);
-        ar & BOOST_SERIALIZATION_NVP(flags);
+        ar & BOOST_SERIALIZATION_NVP(name_);
+        ar & BOOST_SERIALIZATION_NVP(type_);
+        ar & BOOST_SERIALIZATION_NVP(flags_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(i_mapping);
-        ar & BOOST_SERIALIZATION_NVP(o_mapping);
+        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
+        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
+        ar & BOOST_SERIALIZATION_NVP(data_);
       }
 	};
 
     template <typename P, typename E, typename T>
 	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
 	{
-	  return a.name == b.name;
+	  return a.name() == b.name();
 	}
     template <typename P, typename E, typename T>
 	inline std::size_t hash_value(transition_t<P,E,T> const & t)
 	{
 	  boost::hash<std::string> hasher;
-	  return hasher(t.name);
+	  return hasher(t.name());
 	}
     template <typename P, typename E, typename T>
 	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
 	{
       typedef transition_t<P,E,T> trans_t;
-      s << t.name << "=";
-      switch (t.type)
+      s << "{";
+      s << t.name() << ", ";
+      switch (t.type())
       {
         case trans_t::MOD_CALL:
-          return s << "mod:" << *t.template as<typename trans_t::mod_type>();
+//          s << "mod" << ", " << boost::get<typename trans_t::mod_type>(t.data());
+          break;
         case trans_t::EXPRESSION:
-          return s << "expr:" << *t.template as<typename trans_t::expr_type>();
+//          s << "expr" << ", " << boost::get<typename trans_t::expr_type>(t.data());
+          break;
         case trans_t::NET:
-//          return s << "net:" << *t.template as<typename trans_t::net_type>();
-          return s << "net-place-holder";
+          s << "net" << ", " << "place-holder";
+          break;
         default:
-          return s << "unknown";
+          s << "unknown" << "unknown";
+          break;
       }
+      s << "}";
+
+      return s;
 	}
 }}
 
