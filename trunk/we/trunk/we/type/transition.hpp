@@ -134,6 +134,26 @@ namespace we { namespace type {
       {
         return trans.get_port (trans.outer_to_inner (pid)).name();
       }
+
+      class transition_visitor_show : public boost::static_visitor<std::string>
+      {
+      public:
+        std::string operator () (const expression_t & expr) const
+        {
+          return "{expr, " + ::util::show (expr) + "}";
+        }
+
+        std::string operator () (const module_call_t & mod_call) const
+        {
+          return "{mod, " + ::util::show (mod_call) + "}";
+        }
+
+        template <typename Net>
+        std::string operator () (const Net & net) const
+        {
+          return "{net, " + ::util::show (net) + "}";
+        }
+      };
     }
 
     template <typename Place, typename Edge, typename Token>
@@ -510,26 +530,13 @@ namespace we { namespace type {
     template <typename P, typename E, typename T>
 	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
 	{
+      static const detail::transition_visitor_show visitor;
       typedef transition_t<P,E,T> trans_t;
       s << "{";
       s << t.name() << ", ";
-      switch (t.type())
-      {
-        case trans_t::MOD_CALL:
-//          s << "mod" << ", " << boost::get<typename trans_t::mod_type>(t.data());
-          break;
-        case trans_t::EXPRESSION:
-//          s << "expr" << ", " << boost::get<typename trans_t::expr_type>(t.data());
-          break;
-        case trans_t::NET:
-          s << "net" << ", " << "place-holder";
-          break;
-        default:
-          s << "unknown" << "unknown";
-          break;
-      }
+      s << boost::apply_visitor (visitor, t.data());
+      s << ", {cond, " << t.condition() << "}";
       s << "}";
-
       return s;
 	}
 }}
