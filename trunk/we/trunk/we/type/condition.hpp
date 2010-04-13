@@ -54,6 +54,7 @@ namespace condition
       ar & BOOST_SERIALIZATION_NVP(expression);
     }
 
+    friend std::ostream & operator<<(std::ostream &, const type &);
   public:
     type ( const std::string & _expression
          , const translate_t & _translate = &no_trans
@@ -89,6 +90,11 @@ namespace condition
       return false;
     }
   };
+
+  std::ostream & operator << (std::ostream & os, const type & c)
+  {
+    return os << c.expression;
+  }
 }
 
 #endif
