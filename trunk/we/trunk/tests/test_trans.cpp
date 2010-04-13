@@ -41,6 +41,7 @@ int main (int, char **)
   std::cout << "i (inp) = " << t1.input_port_by_name ("i") << std::endl;
   std::cout << "max (inp) = " << t1.input_port_by_name ("max") << std::endl;
   std::cout << "i (out) = " << t1.output_port_by_name ("i") << std::endl;
+  std::cout << "t1.p0 = " << t1.get_port (t1.input_port_by_name ("i")) << std::endl;
 
   transition_t t2 ("t2", transition_t::expr_type ("true"));
   t2.add_ports()

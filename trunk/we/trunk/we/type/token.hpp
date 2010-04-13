@@ -246,7 +246,7 @@ namespace token
          , const value_t & v
          )
       : value ( boost::apply_visitor ( visitor_require_type (field)
-                                     , signature
+                                     , signature.desc()
                                      , v
                                      )
               )
@@ -258,7 +258,7 @@ namespace token
          , const context_t & context
          )
       : value (boost::apply_visitor ( visitor_unbind (field, context)
-                                    , signature
+                                    , signature.desc()
                                     )
               )
     {}

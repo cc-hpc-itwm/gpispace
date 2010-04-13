@@ -20,6 +20,7 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
+#include <we/util/show.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -392,6 +393,19 @@ namespace we { namespace type {
           }
         }
         throw exception::port_undefined(name);
+      }
+
+      template <typename PortId>
+      const port_t & get_port (const PortId port_id) const
+      {
+        try
+        {
+          return ports_.at (port_id);
+        }
+        catch (const std::out_of_range &)
+        {
+          throw exception::port_undefined (::util::show (port_id));
+        }
       }
 
       // WORK: replace by boost::variant

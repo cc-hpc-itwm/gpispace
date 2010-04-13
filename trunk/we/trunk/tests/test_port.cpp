@@ -19,8 +19,8 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <we/type/port.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/port.hpp>
 
 int main (int, char **)
 {
@@ -53,12 +53,14 @@ int main (int, char **)
   }
 
   we::type::port<signature::type> p3;
+  std::cout << "Port 3: " << p3 << std::endl;
   {
     std::ostringstream oss;
     {
       boost::archive::text_oarchive oa (oss, boost::archive::no_header);
       oa << BOOST_SERIALIZATION_NVP (p3);
     }
+    std::cout << "Port 3 (serialized): " << p3 << std::endl;
   }
 
   return EXIT_SUCCESS;
