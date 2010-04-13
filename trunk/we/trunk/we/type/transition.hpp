@@ -20,7 +20,9 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
+#include <we/util/net_output_operator.hpp>
 #include <we/util/show.hpp>
+#include <we/util/warnings.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -29,6 +31,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/variant.hpp>
+#include <boost/variant/recursive_wrapper.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/nvp.hpp>
 
@@ -151,7 +154,8 @@ namespace we { namespace type {
         template <typename Net>
         std::string operator () (const Net & net) const
         {
-          return "{net, " + ::util::show (net) + "}";
+          we::util::remove_unused_variable_warning (net);
+          return std::string("{net, ") + "placeholder" + "}";
         }
       };
     }
@@ -171,8 +175,7 @@ namespace we { namespace type {
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
       typedef petri_net::net<Place, this_type, Edge, Token> net_type;
-//      typedef boost::variant<mod_type, expr_type, net_type> data_type;
-      typedef boost::variant<mod_type, expr_type> data_type;
+      typedef boost::variant<mod_type, expr_type, boost::recursive_wrapper<net_type> > data_type;
 
       typedef petri_net::pid_t pid_t;
       typedef pid_t port_id_t;
