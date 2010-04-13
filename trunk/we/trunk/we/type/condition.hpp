@@ -45,6 +45,8 @@ namespace condition
 
     typedef Function::Condition::Traits<token::type> traits;
 
+    // WORK TODO split up into save/load, since we need to initialize the
+    // parser
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)

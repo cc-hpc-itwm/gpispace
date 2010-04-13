@@ -454,6 +454,8 @@ namespace we { namespace type {
       pid_t port_id_counter_;
 
     private:
+      // WORK TODO split up into save/load, since we need to initialize the
+      // condition-translate function
       friend class boost::serialization::access;
       template<typename Archive>
       void serialize (Archive & ar, const unsigned int)
