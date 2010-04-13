@@ -147,21 +147,12 @@ namespace we { namespace type {
       , NET
 	  };
 
-      struct nil
-      {
-        friend class boost::serialization::access;
-        template<typename Archive>
-        void serialize (Archive & , const unsigned int)
-        {
-        }
-      };
-
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
       typedef petri_net::net<Place, this_type, Edge, Token> net_type;
-//      typedef boost::variant<nil, mod_type, expr_type, net_type> data_type;
-      typedef boost::variant<nil, mod_type, expr_type> data_type;
+//      typedef boost::variant<mod_type, expr_type, net_type> data_type;
+      typedef boost::variant<mod_type, expr_type> data_type;
 
       typedef petri_net::pid_t pid_t;
       typedef pid_t port_id_t;
@@ -194,7 +185,6 @@ namespace we { namespace type {
       transition_t ()
         : name_ ("unknown")
         , type_ (UNKNOWN)
-        , data_ (nil())
         , condition_( "true"
                     , boost::bind 
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
