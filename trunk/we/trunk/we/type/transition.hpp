@@ -237,10 +237,15 @@ namespace we { namespace type {
         , port_id_counter_(0)
       { }
 
-      template <typename Choice>
-      bool condition (Choice const &) const
+      template <typename Choices>
+      bool condition (Choices const & choices) const
       {
-        return true;
+        return condition_ (choices);
+      }
+
+      const condition::type & condition() const
+      {
+        return condition_;
       }
 
       const std::string & name (void) const
