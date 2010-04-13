@@ -24,37 +24,38 @@
 #include <boost/serialization/nvp.hpp>
 
 namespace we { namespace type {
+  enum PortDirection
+  {
+    PORT_IN
+  , PORT_OUT
+  , PORT_IN_OUT
+  };
+
   template <typename SignatureType>
   struct port
   {
   public:
     typedef SignatureType sig_type;
 
-    enum Direction
-    {
-      IN
-    , OUT
-    , IN_OUT
-    };
-
     port ()
       : name_("default")
-      , direction_(IN_OUT)
+      , direction_(PORT_IN_OUT)
     {}
 
-    port (const std::string & name, Direction direction, const sig_type & signature)
+    template <typename Signature>
+    port (const std::string & name, PortDirection direction, const Signature & signature)
       : name_(name)
       , direction_(direction)
       , signature_(signature)
     {}
 
     const std::string & name() const { return name_; }
-    Direction direction() const { return direction_; }
+    PortDirection direction() const { return direction_; }
     const sig_type & signature() const { return signature_; }
 
   private:
     std::string name_;
-    Direction direction_;
+    PortDirection direction_;
     sig_type signature_;
 
     friend class boost::serialization::access;
@@ -70,7 +71,7 @@ namespace we { namespace type {
   template <typename T>
   std::ostream & operator << ( std::ostream & os, const port <T> & p )
   {
-    os << "{" << (p.direction() == port<T>::IN ? "in" : (p.direction() == port<T>::OUT ? "out" : "inout")) << ", " << p.name() << ", " << p.signature() << "}";
+    os << "{" << (p.direction() == PORT_IN ? "in" : (p.direction() == PORT_OUT ? "out" : "inout")) << ", " << p.name() << ", " << p.signature() << "}";
     return os;
   }
 }}

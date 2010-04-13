@@ -24,7 +24,7 @@
 
 int main (int, char **)
 {
-  we::type::port<std::string> p1("Max", we::type::port<std::string>::IN, "");
+  we::type::port<std::string> p1("Max", we::type::PORT_IN, "");
   we::type::port<std::string> p2;
 
   {

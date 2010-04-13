@@ -44,28 +44,32 @@ namespace we { namespace type {
       };
     }
 
-    template <typename Transition>
-    struct port_adder
-    {
-      explicit port_adder (Transition & t)
-        : transition_(t)
-      {}
-
-      template <typename SignatureType, typename Direction>
-      port_adder<Transition> & operator() (const std::string & name, SignatureType const & signature, Direction direction)
+    namespace detail {
+      template <typename Transition>
+      struct port_adder
       {
-        if (direction == port<SignatureType>::IN)
-          transition_.add_input_port (name, signature);
-        if (direction == port<SignatureType>::OUT)
-          transition_.add_output_port (name, signature);
-        else
-          transition_.add_input_output_port (name, signature);
-        return *this;
-      }
+        explicit port_adder (Transition & t)
+          : transition_(t)
+        {}
 
-    private:
-      Transition & transition_;
-    };
+        template <typename SignatureType, typename Direction>
+        port_adder<Transition> & operator() (const std::string & name
+                                           , SignatureType const & signature
+                                           , Direction direction)
+        {
+          if (direction == PORT_IN)
+            transition_.add_input_port (name, signature);
+          if (direction == PORT_OUT)
+            transition_.add_output_port (name, signature);
+          else
+            transition_.add_input_output_port (name, signature);
+          return *this;
+        }
+
+      private:
+        Transition & transition_;
+      };
+    }
 
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
@@ -306,9 +310,9 @@ namespace we { namespace type {
         o_mapping.insert (pid_map_t::value_type(outer, inner));
       }
 
-      port_adder<this_type> add_ports()
+      detail::port_adder<this_type> add_ports()
       {
-        return port_adder<this_type>(*this);
+        return detail::port_adder<this_type>(*this);
       }
 
       template <typename SignatureType>
@@ -316,15 +320,15 @@ namespace we { namespace type {
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == port_t::IN) && p->second.name() == name)
+          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
           {
             throw exception::port_already_defined(name);
           }
         }
-        port_t port (name, signature, port_t::IN);
+        port_t port (name, PORT_IN, signature);
         pid_t port_id = port_id_counter_++;
 
-        ports_.insert (port_map_t::value_type (port_id, port));
+        ports_.insert (std::make_pair (port_id, port));
         return port_id;
       }
 
@@ -333,15 +337,15 @@ namespace we { namespace type {
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == port_t::OUT) && p->second.name() == name)
+          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
           {
             throw exception::port_already_defined(name);
           }
         }
-        port_t port (name, signature, port_t::OUT);
+        port_t port (name, PORT_OUT, signature);
         pid_t port_id = port_id_counter_++;
 
-        ports_.insert (port_map_t::value_type (port_id, port));
+        ports_.insert (std::make_pair (port_id, port));
         return port_id;
       }
 
@@ -366,11 +370,11 @@ namespace we { namespace type {
         }
       }
 
-      pid_t & input_port_by_name (const std::string & name) const
+      pid_t input_port_by_name (const std::string & name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == port_t::IN) && p->second.name() == name)
+          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
           {
             return p->first;
           }
@@ -378,11 +382,11 @@ namespace we { namespace type {
         throw exception::port_undefined(name);
       }
 
-      pid_t & output_port_by_name (const std::string & name) const
+      pid_t output_port_by_name (const std::string & name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == port_t::OUT) && p->second.name() == name)
+          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
           {
             return p->first;
           }
