@@ -5,6 +5,7 @@
 #include <we/type/transition.hpp>
 #include <we/mgmt/layer.hpp>
 #include "test_layer.hpp"
+#include <we/util/net_output_operator.hpp>
 
 using namespace we::mgmt;
 using namespace test;
@@ -27,36 +28,6 @@ typedef sdpa_daemon<layer_t> daemon_type;
 static void test_execute(unsigned int id, const std::string & a)
 {
   std::cerr << "execute: " << id << " " << a << std::endl;
-}
-
-inline std::ostream & operator << (std::ostream & s, const pnet_t & n)
-{
-  for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
-  {
-    s << "[" << n.get_place (*p) << ":";
-
-    typedef boost::unordered_map<we::mgmt::detail::token_t, size_t> token_cnt_t;
-    token_cnt_t token;
-    for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-    {
-      token[*tp]++;
-    }
-
-    for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
-    {
-      if (t->second > 1)
-      {
-        s << " " << t->second << "x " << t->first;
-      }
-      else
-      {
-        s << " " << t->first;
-      }
-    }
-    s << "]";
-  }
-
-  return s;
 }
 
 int main ()
