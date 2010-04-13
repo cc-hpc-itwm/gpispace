@@ -504,19 +504,42 @@ namespace we { namespace type {
       // WORK TODO split up into save/load, since we need to initialize the
       // condition-translate function
       friend class boost::serialization::access;
-      template<typename Archive>
-      void serialize (Archive & ar, const unsigned int)
+      template <typename Archive>
+      void save(Archive & ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(type_);
         ar & BOOST_SERIALIZATION_NVP(flags_);
-        ar & BOOST_SERIALIZATION_NVP(condition_);
+        ar & BOOST_SERIALIZATION_NVP(condition_.expression());
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(data_);
       }
+
+      template <typename Archive>
+      void load(Archive & ar, const unsigned int)
+      {
+        ar & BOOST_SERIALIZATION_NVP(name_);
+        ar & BOOST_SERIALIZATION_NVP(type_);
+        ar & BOOST_SERIALIZATION_NVP(flags_);
+        std::string cond_expr;
+        ar & BOOST_SERIALIZATION_NVP(cond_expr);
+        condition_ = condition::type ( cond_expr
+                                     , boost::bind
+                                       ( &detail::translate_place_to_port_name<this_type, pid_t>
+                                       , boost::ref(*this)
+                                       , _1
+                                       )
+                                     );
+        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
+        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
+        ar & BOOST_SERIALIZATION_NVP(ports_);
+        ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
+        ar & BOOST_SERIALIZATION_NVP(data_);
+      }
+      BOOST_SERIALIZATION_SPLIT_MEMBER()
 	};
 
     template <typename P, typename E, typename T>
