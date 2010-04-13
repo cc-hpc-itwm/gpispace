@@ -97,7 +97,7 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t map_trans ("map", typename transition_t::expr_type("${1} := ${0} + \"-1\"; ${2} := ${0} + \"-2\"; ${3} := ${0} + \"-3\";"), true);
+          transition_t map_trans ("map", typename transition_t::expr_type("${1} := ${0} + \"-1\"; ${2} := ${0} + \"-2\"; ${3} := ${0} + \"-3\";"), "true", true);
 
           // emulate ports for now
           map_trans.connect_in ( mr_sn_inp, pid_t (0) ); // port_0
@@ -119,7 +119,7 @@ namespace we { namespace mgmt {
         }
 
         {
-          transition_t red_trans ("red", typename transition_t::expr_type("${1} := substr(${0}, len(\"token-0\"));"), true);
+          transition_t red_trans ("red", typename transition_t::expr_type("${1} := substr(${0}, len(\"token-0\"));"), "true", true);
           red_trans.connect_out (mr_sn_out, pid_t (NUM_NODES)); // port_1
 
           size_t cnt(0);
@@ -147,7 +147,7 @@ namespace we { namespace mgmt {
         pid_t mr_inp = map_reduce.add_place(place_t("in"));
         pid_t mr_out = map_reduce.add_place(place_t("out"));
 
-        transition_t map_reduce_sub_trans("map-reduce-subnet", map_reduce_subnet, true);
+        transition_t map_reduce_sub_trans("map-reduce-subnet", map_reduce_subnet, "true", true);
         map_reduce_sub_trans.connect_in  (mr_inp, mr_sn_inp);
         map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
 
@@ -156,7 +156,7 @@ namespace we { namespace mgmt {
         map_reduce.add_edge (edge_t("o"), petri_net::connection_t (petri_net::TP, tid_sub, mr_out));
 
         // dummy transition
-        transition_t map_reduce_trans ("map-reduce", map_reduce, true);
+        transition_t map_reduce_trans ("map-reduce", map_reduce, "true", true);
         map_reduce_trans.connect_in (pid_t(0), mr_inp);
         map_reduce_trans.connect_out (pid_t(1), mr_out);
 

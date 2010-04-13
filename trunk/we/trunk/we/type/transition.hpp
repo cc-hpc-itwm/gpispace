@@ -24,9 +24,11 @@
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
+#include <we/type/condition.hpp>
 #include <we/type/signature.hpp>
 #include <we/mgmt/bits/pid_map_t.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/serialization/nvp.hpp>
 
 namespace we { namespace type {
@@ -70,6 +72,12 @@ namespace we { namespace type {
       private:
         Transition & transition_;
       };
+
+      template <typename Transition, typename Pid>
+      std::string translate_place_to_port_name (const Transition & trans, const Pid pid)
+      {
+        return trans.get_port (trans.outer_to_inner (pid)).name();
+      }
     }
 
     template <typename Place, typename Edge, typename Token>
@@ -116,14 +124,19 @@ namespace we { namespace type {
       transition_t ()
         : name ("unknown")
         , type (UNKNOWN)
+        , condition_("true")
         , port_id_counter_(0)
       {
         data.ptr = 0;
       }
 
       template <typename Type>
-	  transition_t (const std::string & name_, Type const & typ, bool intern = false)
+	  transition_t (const std::string & name_
+                  , Type const & typ
+                  , const std::string & condition = "true"
+                  , bool intern = false)
 		: name(name_)
+        , condition_(condition)
         , port_id_counter_(0)
 	  {
         data.ptr = 0;
@@ -135,8 +148,10 @@ namespace we { namespace type {
         : name(other.name)
         , type(other.type)
         , flags(other.flags)
+        , condition_(other.condition_)
         , i_mapping(other.i_mapping)
         , o_mapping(other.o_mapping)
+        , ports_(other.ports_)
         , port_id_counter_(0)
       {
         data.ptr = 0;
@@ -245,6 +260,7 @@ namespace we { namespace type {
           flags = other.flags;
           i_mapping = other.i_mapping;
           o_mapping = other.o_mapping;
+          ports_ = other.ports_;
           clear();
 
           type = other.type;
@@ -309,6 +325,16 @@ namespace we { namespace type {
       void connect_out(const Pid outer, const Pid inner)
       {
         o_mapping.insert (pid_map_t::value_type(outer, inner));
+      }
+
+      pid_t outer_to_inner (pid_t outer) const
+      {
+        throw std::runtime_error ("outer_to_inner(): not implemented");
+      }
+
+      pid_t inner_to_outer (pid_t outer) const
+      {
+        throw std::runtime_error ("inner_to_outer(): not implemented");
       }
 
       detail::port_adder<this_type> add_ports()
@@ -420,6 +446,7 @@ namespace we { namespace type {
 	  std::string name;
 	  category_t type;
       flags_t flags;
+      condition::type condition_;
       pid_map_t i_mapping;
       pid_map_t o_mapping;
 
@@ -434,6 +461,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(name);
         ar & BOOST_SERIALIZATION_NVP(type);
         ar & BOOST_SERIALIZATION_NVP(flags);
+        ar & BOOST_SERIALIZATION_NVP(condition_);
         ar & BOOST_SERIALIZATION_NVP(i_mapping);
         ar & BOOST_SERIALIZATION_NVP(o_mapping);
         ar & BOOST_SERIALIZATION_NVP(ports_);
