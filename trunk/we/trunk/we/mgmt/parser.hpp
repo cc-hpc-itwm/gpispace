@@ -83,9 +83,15 @@ namespace we { namespace mgmt {
           const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + ::util::show(n)));
           hull_out.push_back (pid_wo);
 
-          transition_t wrk_trans ("work"+::util::show(n), typename transition_t::mod_type("map_reduce", "work"));
-          wrk_trans.connect_in (pid_wi, pid_t(0));
-          wrk_trans.connect_out (pid_wo, pid_t(1));
+          transition_t wrk_trans ("work"+::util::show(n), typename transition_t::mod_type("map_reduce", "work"), "true");
+          wrk_trans.add_ports()
+            ("i", "long", we::type::PORT_IN)
+            ("o", "long", we::type::PORT_OUT)
+          ;
+          wrk_trans.add_connections()
+            (pid_wi, "i")
+            ("o", pid_wo)
+          ;
 
           const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
 
@@ -98,14 +104,19 @@ namespace we { namespace mgmt {
 
         {
           transition_t map_trans ("map", typename transition_t::expr_type("${1} := ${0} + \"-1\"; ${2} := ${0} + \"-2\"; ${3} := ${0} + \"-3\";"), "true", true);
-
-          // emulate ports for now
-          map_trans.connect_in ( mr_sn_inp, pid_t (0) ); // port_0
+          map_trans.add_ports()
+            ("i", "long", we::type::PORT_IN)
+          ;
+          map_trans.add_connections()
+            (mr_sn_inp, "i")
+          ;
 
           size_t cnt(0);
           for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
           {
-            map_trans.connect_out ( *i, pid_t (1 + (cnt++)) ); // port_1 .. port_N
+            map_trans.add_ports() ("o"+::util::show (cnt), "long", we::type::PORT_OUT);
+            map_trans.add_connections() ("o"+::util::show (cnt), *i);
+            cnt++;
           }
           tid_t tid_map = map_reduce_subnet.add_transition ( map_trans );
           map_reduce_subnet.add_edge (edge_t("map"), petri_net::connection_t (petri_net::PT, tid_map, mr_sn_inp));
@@ -120,14 +131,17 @@ namespace we { namespace mgmt {
 
         {
           transition_t red_trans ("red", typename transition_t::expr_type("${1} := substr(${0}, len(\"token-0\"));"), "true", true);
-          red_trans.connect_out (mr_sn_out, pid_t (NUM_NODES)); // port_1
 
           size_t cnt(0);
           for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
           {
-            red_trans.connect_in ( *o, pid_t (0 + (cnt)) );
+            red_trans.add_ports() ("i" + ::util::show(cnt), "long", we::type::PORT_IN);
+            red_trans.add_connections() (*o, "i" + ::util::show(cnt));
             cnt++;
           }
+          red_trans.add_ports() ("o", "long", we::type::PORT_OUT);
+          red_trans.add_connections() ("o", mr_sn_out);
+
           tid_t tid_red = map_reduce_subnet.add_transition ( red_trans );
           map_reduce_subnet.add_edge (edge_t("red"), petri_net::connection_t (petri_net::TP, tid_red, mr_sn_out));
 
@@ -148,8 +162,17 @@ namespace we { namespace mgmt {
         pid_t mr_out = map_reduce.add_place(place_t("out"));
 
         transition_t map_reduce_sub_trans("map-reduce-subnet", map_reduce_subnet, "true", true);
-        map_reduce_sub_trans.connect_in  (mr_inp, mr_sn_inp);
-        map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
+        map_reduce_sub_trans.add_ports ()
+          ("i", "long", we::type::PORT_IN)  // TODO port_id must be: mr_sn_inp
+          ("o", "long", we::type::PORT_OUT) // TODO port_id must be: mr_sn_out
+        ;
+        map_reduce_sub_trans.add_connections ()
+          (mr_inp, "i")
+          ("o", mr_out)
+        ;
+
+//        map_reduce_sub_trans.connect_in  (mr_inp, mr_sn_inp);
+//        map_reduce_sub_trans.connect_out (mr_out, mr_sn_out);
 
         tid_t tid_sub = map_reduce.add_transition( map_reduce_sub_trans );
         map_reduce.add_edge (edge_t("i"), petri_net::connection_t (petri_net::PT, tid_sub, mr_inp));
@@ -157,15 +180,19 @@ namespace we { namespace mgmt {
 
         // dummy transition
         transition_t map_reduce_trans ("map-reduce", map_reduce, "true", true);
-        map_reduce_trans.connect_in (pid_t(0), mr_inp);
-        map_reduce_trans.connect_out (pid_t(1), mr_out);
+        map_reduce_trans.add_ports()
+          ("i", "long", we::type::PORT_IN)  // TODO port_id must be mr_inp
+          ("o", "long", we::type::PORT_OUT) // TODO port_id must be mr_out
+        ;
+//        map_reduce_trans.connect_in (pid_t(0), mr_inp);
+//        map_reduce_trans.connect_out (pid_t(1), mr_out);
 
         act.assign (map_reduce_trans);
 
         // put some tokens on the input
         for (std::size_t t (0); t < NUM_TOKEN; ++t)
         {
-          act.input().push_back( std::make_pair(token_t("token-" + ::util::show(t)), pid_t(0)));
+          act.input().push_back (std::make_pair (token_t ("token-" + ::util::show(t)), map_reduce_trans.input_port_by_name ("i")));
         }
       }
     }
