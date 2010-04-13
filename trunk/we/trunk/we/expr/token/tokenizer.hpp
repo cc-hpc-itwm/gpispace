@@ -132,6 +132,43 @@ namespace expr
           switch (*pos)
             {
             case 'a': ++pos; require ("bs"); unary (abs, "abs"); break;
+            case 'b':
+              ++pos; require ("itset_");
+              if (is_eof())
+                throw exception::parse::expected
+                  ("'insert', 'delete' or 'is_element'", pos());
+              else
+                switch (*pos)
+                  {
+                  case 'd': ++pos; require ("elete"); token = _bitset_delete; break;
+                  case 'i':
+                    ++pos;
+                    if (is_eof())
+                      throw exception::parse::expected
+                        ("'nsert' or 's_element'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 'n':
+                          ++pos;
+                          require ("sert");
+                          token = _bitset_insert;
+                          break;
+                        case 's':
+                          ++pos;
+                          require ("_element");
+                          token = _bitset_is_element;
+                          break;
+                        default:
+                          throw exception::parse::expected
+                            ("'nsert' or 's_element'", pos());
+                        }
+                    break;
+                  default:
+                    throw exception::parse::expected
+                      ("'insert', 'delete' or 'is_element'", pos());
+                  }
+              break;
             case 'c':
               ++pos;
               if (is_eof())

@@ -8,6 +8,7 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/bitsetofint.hpp>
 
 #include <math.h>
 
@@ -52,13 +53,19 @@ namespace expr
       public:
         unary (const type & _token) : token (_token) {}
 
-        literal::type operator () (const control &) const
+        literal::type operator () (control &) const
         {
           throw exception::eval::type_error
             (util::show (token) + " (control token)");
         }
 
-        literal::type operator () (const bool & x) const
+        literal::type operator () (bitsetofint::type &) const
+        {
+          throw exception::eval::type_error
+            (util::show (token) + " (bitset)");
+        }
+
+        literal::type operator () (bool & x) const
         {
           switch (token)
             {
@@ -80,7 +87,7 @@ namespace expr
             }
         }
 
-        literal::type operator () (const long & x) const
+        literal::type operator () (long & x) const
         {
           switch (token)
             {
@@ -100,7 +107,7 @@ namespace expr
             }
         }
 
-        literal::type operator () (const double & x) const
+        literal::type operator () (double & x) const
         {
           static bool round_half_up (true);
 
@@ -124,7 +131,7 @@ namespace expr
             }
         }
 
-        literal::type operator () (const char & x) const
+        literal::type operator () (char & x) const
         {
           switch (token)
           {
@@ -135,7 +142,7 @@ namespace expr
           }
         }
 
-        literal::type operator () (const std::string & x) const
+        literal::type operator () (std::string & x) const
         {
           switch (token)
           {
@@ -154,13 +161,13 @@ namespace expr
       public:
         binary (const type & _token) : token (_token) {}
 
-        literal::type operator () (const control &, const control &) const
+        literal::type operator () (control &, control &) const
         {
           throw exception::eval::type_error 
             (util::show (token) + " for control token");
         }
 
-        literal::type operator () (const bool & l, const bool & r) const
+        literal::type operator () (bool & l, bool & r) const
         {
           switch (token)
             {
@@ -181,6 +188,11 @@ namespace expr
             case mod:
             case _pow:
             case _powint:
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
+            case _substr:
               throw exception::eval::type_error 
                 (util::show (token) + " for values of type bool");
             case min: return std::min (l,r);
@@ -189,7 +201,7 @@ namespace expr
             }
         }
 
-        literal::type operator () (const long & l, const long & r) const
+        literal::type operator () (long & l, long & r) const
         {
           switch (token)
             {
@@ -226,11 +238,18 @@ namespace expr
               }
             case min: return std::min (l,r);
             case max: return std::max (l,r);
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
+            case _substr:
+              throw exception::eval::type_error 
+                (util::show (token) + " for values of type long");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
 
-        literal::type operator () (const double & l, const double & r) const
+        literal::type operator () (double & l, double & r) const
         {
           switch (token)
             {
@@ -263,13 +282,18 @@ namespace expr
                 (util::show (token) + " for values of type double");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
+            case _substr:
+              throw exception::eval::type_error 
+                (util::show (token) + " for values of type double");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
 
-        literal::type operator () ( const std::string & l
-                                  , const std::string & r
-                                  ) const
+        literal::type operator () (std::string & l, std::string & r) const
         {
           switch (token)
             {
@@ -296,13 +320,18 @@ namespace expr
                 (util::show (token) + " for values of type string");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
+            case _substr:
+              throw exception::eval::type_error 
+                (util::show (token) + " for values of type string");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
 
-        literal::type operator () ( const std::string & l
-                                  , const long & r
-                                  ) const
+        literal::type operator () (std::string & l, long & r) const
         {
           switch (token)
             {
@@ -327,13 +356,51 @@ namespace expr
             case min:
             case max:
             case _powint:
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
               throw exception::eval::type_error 
-                (util::show (token) + " for value of type string");
+                (util::show (token) + " for values of type string and long");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
 
-        literal::type operator () (const char & l, const char & r) const
+        literal::type operator () (bitsetofint::type & set, long & l) const
+        {
+          switch (token)
+            {
+            case _bitset_insert: set.ins (l); return set;
+            case _bitset_delete: set.del (l); return set;
+            case _bitset_is_element: return set.is_element (l);
+            case _substr:
+            case _or:
+            case _and:
+            case lt:
+            case le:
+            case gt:
+            case ge:
+            case ne:
+            case eq:
+            case add:
+            case sub:
+            case mul:
+            case div:
+            case divint:
+            case modint:
+            case mod:
+            case _pow:
+            case min:
+            case max:
+            case _powint:
+            case _len:
+              throw exception::eval::type_error 
+                (util::show (token) + " for values of type bitset and long");
+            default: throw exception::strange ("binary " + util::show(token));
+            }
+        }
+
+        literal::type operator () (char & l, char & r) const
         {
           switch (token)
             {
@@ -360,15 +427,22 @@ namespace expr
                 (util::show (token) + " for values of type char");
             case min: return std::min (l,r);
             case max: return std::max (l,r);
+            case _bitset_insert:
+            case _bitset_delete:
+            case _bitset_is_element:
+            case _len:
+            case _substr:
+              throw exception::eval::type_error 
+                (util::show (token) + " for values of type char");
             default: throw exception::strange ("binary " + util::show(token));
             }
         }
 
         template<typename T,typename U>
-        literal::type operator () (const T &, const U &) const
+        literal::type operator () (T & t, U & u) const
         {
           throw exception::eval::type_error 
-            (util::show (token) + " for values of different types");
+            (util::show (token) + " for values of wrong types");
         }
       };
 

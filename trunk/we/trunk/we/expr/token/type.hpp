@@ -30,6 +30,7 @@ namespace expr
     , _sin, _cos
     , _sqrt, _log
     , _tolong, _todouble
+    , _bitset_insert, _bitset_delete, _bitset_is_element
     , _len
     , _substr
 
@@ -80,6 +81,11 @@ namespace expr
         case _log: return s << "log";
         case _tolong: return s << "long";
         case _todouble: return s << "double";
+        case _bitset_insert: return s << "bitset_insert";
+        case _bitset_delete: return s << "bitset_delete";
+        case _bitset_is_element: return s << "bitset_is_element";
+        case _len: return s << "len";
+        case _substr: return s << "substr";
         case abs: return s << "abs";
         case sep: return s << ", ";
         case lpr: return s << "(";

@@ -2,7 +2,7 @@
 
 #include <we/type/bitsetofint.hpp>
 
-typedef bitsetofint::type<unsigned int> set_t;
+typedef bitsetofint::type set_t;
 
 #include <iostream>
 #include <sstream>

@@ -25,6 +25,10 @@ namespace expr
         case _round:
         case _sin:
         case _cos:
+        case _bitset_insert:
+        case _bitset_delete:
+        case _bitset_is_element:
+        case _substr:
         case abs: return true;
         default: return false;
         }

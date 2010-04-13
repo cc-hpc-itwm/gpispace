@@ -23,7 +23,7 @@ namespace expr
         case expr::parse::node::flag::ref: return context.value (node.ref);
         case expr::parse::node::flag::unary:
           {
-            const literal::type c (eval (*node.child0, context));
+            literal::type c (eval (*node.child0, context));
 
             return boost::apply_visitor ( token::function::unary (node.token)
                                         , c
@@ -36,8 +36,8 @@ namespace expr
                                 );
           else
             {
-              const literal::type l (eval (*node.child0, context));
-              const literal::type r (eval (*node.child1, context));
+              literal::type l (eval (*node.child0, context));
+              literal::type r (eval (*node.child1, context));
 
               return boost::apply_visitor ( token::function::binary (node.token)
                                           , l

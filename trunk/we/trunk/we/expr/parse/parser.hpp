@@ -166,6 +166,9 @@ namespace expr
           case token::eq:
           case token::add:
           case token::sub:
+          case token::_bitset_insert:
+          case token::_bitset_delete:
+          case token::_bitset_is_element:
           case token::_substr:
           case token::mul:
           case token::div:

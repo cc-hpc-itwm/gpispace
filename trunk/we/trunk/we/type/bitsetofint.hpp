@@ -9,67 +9,94 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
+
+#include <boost/functional/hash.hpp>
+
 #include <we/util/warnings.hpp>
 
 #include <iostream>
 
+#include <stdint.h>
+
 namespace bitsetofint
 {
-  template<typename Elem = unsigned int>
   struct type
   {
-  private:
-    typedef std::vector<unsigned long> _data_t;
-    _data_t _data;
+  public:
+    typedef uint64_t element_type;
+    typedef std::vector<unsigned long> container_type;
 
-    inline std::size_t _container (const Elem & x) const { return (x >> 6); }
-    inline std::size_t _slot (const Elem & x) const { return (x & 63); }
+  private:
+    container_type container;
+
+    inline std::size_t the_container (const element_type & x) const
+    {
+      return (x >> 6);
+    }
+
+    inline std::size_t the_slot (const element_type & x) const
+    {
+      return (x & 63);
+    }
 
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-	  we::util::remove_unused_variable_warning(version);
-      ar & BOOST_SERIALIZATION_NVP(_data);
+      we::util::remove_unused_variable_warning(version);
+      ar & BOOST_SERIALIZATION_NVP(container);
     }
 
   public:
-    type (const std::size_t num_container = 0) : _data(num_container) {}
+    type (const container_type _container) : container (_container) {}
+    type (const std::size_t num_container = 0) : container (num_container) {}
 
-    void ins (const Elem & x) throw (std::bad_alloc)
+    void ins (const element_type & x) throw (std::bad_alloc)
     {
-      if (_container(x) >= _data.size())
-        _data.resize(_container(x) + 1);
-      _data[_container(x)] |= (1UL << _slot(x));
+      if (the_container(x) >= container.size())
+        container.resize(the_container(x) + 1);
+      container[the_container(x)] |= (1UL << the_slot(x));
     }
 
-    void del (const Elem & x)
+    void del (const element_type & x)
     {
-      if (_container(x) < _data.size())
-        _data[_container(x)] &= ~(1UL << _slot(x));
+      if (the_container(x) < container.size())
+        container[the_container(x)] &= ~(1UL << the_slot(x));
     }
 
-    bool is_element (const Elem & x) const
+    bool is_element (const element_type & x) const
     {
-      return (_container(x) < _data.size())
-        && ((_data[_container(x)] & (1UL << _slot(x))) != 0);
+      return (the_container(x) < container.size())
+        && ((container[the_container(x)] & (1UL << the_slot(x))) != 0);
     }
 
-    template<typename E>
-    friend std::ostream & operator << (std::ostream &, const type<E> &);
+    friend std::ostream & operator << (std::ostream &, const type &);
+    friend std::size_t hash_value (const type &);
+    friend bool operator == (const type &, const type &);
   };
   
-  template<typename E>
-  std::ostream & operator << (std::ostream & s, const type<E> & t)
+  std::ostream & operator << (std::ostream & s, const type & t)
   {
     s << "{";
-    for ( typename type<E>::_data_t::const_iterator it (t._data.begin())
-        ; it != t._data.end()
+    for ( type::container_type::const_iterator it (t.container.begin())
+        ; it != t.container.end()
         ; ++it
         )
-      s << ((it != t._data.begin()) ? "," : "") << *it;
-    return s << "}" << std::endl;
-  };
+      s << ((it != t.container.begin()) ? "," : "") << *it;
+    return s << "}";
+  }
+
+  inline std::size_t hash_value (const type & t)
+  {
+    boost::hash<type::container_type> h;
+
+    return h(t.container);
+  }
+
+  inline bool operator == (const type & x, const type & y)
+  {
+    return x.container == y.container;
+  }
 }
 
 #endif

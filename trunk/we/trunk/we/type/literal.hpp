@@ -11,6 +11,7 @@
 
 #include <we/type/signature.hpp>
 #include <we/type/control.hpp>
+#include <we/type/bitsetofint.hpp>
 
 #include <boost/variant.hpp>
 
@@ -29,6 +30,7 @@ namespace literal
                         , double
                         , char
                         , std::string
+                        , bitsetofint::type
                         > type;
 
   class visitor_type_name : public boost::static_visitor<signature::type_name_t>
@@ -40,16 +42,12 @@ namespace literal
     signature::type_name_t operator () (const double &) const { return "double"; }
     signature::type_name_t operator () (const char &) const { return "char"; }
     signature::type_name_t operator () (const std::string &) const { return "string"; }
+    signature::type_name_t operator () (const bitsetofint::type &) const { return "bitset"; }
   };
 
   class visitor_show : public boost::static_visitor<std::string>
   {
   public:
-    std::string operator () (const control & x) const
-    {
-      return util::show (x);
-    }
-
     std::string operator () (const bool & x) const
     {
       return x ? "true" : "false";
@@ -60,11 +58,6 @@ namespace literal
       return util::show (x) + "L";
     }
 
-    std::string operator () (const double & x) const
-    {
-      return util::show (x);
-    }
-
     std::string operator () (const char & x) const
     {
       return "'" + util::show (x) + "'";
@@ -73,6 +66,12 @@ namespace literal
     std::string operator () (const std::string & x) const
     {
       return "\"" + x + "\"";     
+    }
+
+    template<typename T>
+    std::string operator () (const T & x) const
+    {
+      return util::show (x);
     }
   };
 
@@ -241,6 +240,49 @@ namespace literal
           ++pos;
 
           v = s;
+        }
+        break;
+      case '{':
+        {
+          const unsigned int open (pos());
+
+          ++pos;
+
+          bitsetofint::type::container_type container;
+
+          do
+            {
+              if (pos.end())
+                throw expr::exception::parse::unterminated ("{", open, pos());
+              else
+                switch (*pos)
+                  {
+                  case '}': break;
+                  default:
+                    container.push_back (read_ulong (pos));
+                    if (pos.end())
+                      throw expr::exception::parse::unterminated 
+                        ("{", open, pos());
+                    else
+                      switch (*pos)
+                        {
+                        case '}': break;
+                        case ',': ++pos; break;
+                        default:
+                          throw expr::exception::parse::expected 
+                            ("'}' or ','", pos());
+                        }
+                    break;
+                  }
+            }
+          while (!(pos.end() || *pos == '}'));
+
+          if (pos.end())
+            throw expr::exception::parse::unterminated ("{", open, pos());
+
+          ++pos;
+
+          v = bitsetofint::type (container);
         }
         break;
       default:
