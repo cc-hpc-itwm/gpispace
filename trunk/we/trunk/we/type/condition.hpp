@@ -36,7 +36,7 @@ namespace condition
   class type
   {
   private:
-    std::string expression;
+    std::string expression_;
     expr::parse::parser<signature::field_name_t> parser;
     mutable expr::eval::context<signature::field_name_t> context;
 
@@ -49,25 +49,32 @@ namespace condition
     // parser
     friend class boost::serialization::access;
     template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    void save(Archive & ar, const unsigned int) const
     {
-      ar & BOOST_SERIALIZATION_NVP(expression);
+      ar & BOOST_SERIALIZATION_NVP(expression_);
     }
+    template <typename Archive>
+    void load(Archive & ar, const unsigned int) const
+    {
+      ar & BOOST_SERIALIZATION_NVP(expression_);
+      parser = expr::parse::parser<signature::field_name_t>(expression_);
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     friend std::ostream & operator<<(std::ostream &, const type &);
   public:
     type ( const std::string & _expression
          , const translate_t & _translate = &no_trans
          )
-      : expression (_expression)
-      , parser (expression)
+      : expression_ (_expression)
+      , parser (_expression)
       , context ()
       , translate (_translate)
     {}
 
     bool operator () (traits::choices_t & choices) const
     {
-      if (expression == "true")
+      if (expression_ == "true")
         return true;
 
       for (; choices.has_more(); ++choices)
@@ -89,11 +96,16 @@ namespace condition
 
       return false;
     }
+
+    const std::string & expression() const
+    {
+      return expression_;
+    }
   };
 
   std::ostream & operator << (std::ostream & os, const type & c)
   {
-    return os << c.expression;
+    return os << c.expression_;
   }
 }
 
