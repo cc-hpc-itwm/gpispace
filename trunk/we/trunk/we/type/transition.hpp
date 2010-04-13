@@ -124,7 +124,13 @@ namespace we { namespace type {
       transition_t ()
         : name ("unknown")
         , type (UNKNOWN)
-        , condition_("true")
+        , condition_( "true"
+                    , boost::bind 
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
         , port_id_counter_(0)
       {
         data.ptr = 0;
