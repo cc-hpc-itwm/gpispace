@@ -11,13 +11,16 @@
 #include <boost/serialization/vector.hpp>
 #include <we/util/warnings.hpp>
 
+#include <iostream>
+
 namespace bitsetofint
 {
   template<typename Elem = unsigned int>
   struct type
   {
   private:
-    std::vector<unsigned long> _data;
+    typedef std::vector<unsigned long> _data_t;
+    _data_t _data;
 
     inline std::size_t _container (const Elem & x) const { return (x >> 6); }
     inline std::size_t _slot (const Elem & x) const { return (x & 63); }
@@ -31,7 +34,7 @@ namespace bitsetofint
     }
 
   public:
-    type (const std::size_t num_container = 2) : _data(num_container) {}
+    type (const std::size_t num_container = 0) : _data(num_container) {}
 
     void ins (const Elem & x) throw (std::bad_alloc)
     {
@@ -51,6 +54,21 @@ namespace bitsetofint
       return (_container(x) < _data.size())
         && ((_data[_container(x)] & (1UL << _slot(x))) != 0);
     }
+
+    template<typename E>
+    friend std::ostream & operator << (std::ostream &, const type<E> &);
+  };
+  
+  template<typename E>
+  std::ostream & operator << (std::ostream & s, const type<E> & t)
+  {
+    s << "{";
+    for ( typename type<E>::_data_t::const_iterator it (t._data.begin())
+        ; it != t._data.end()
+        ; ++it
+        )
+      s << ((it != t._data.begin()) ? "," : "") << *it;
+    return s << "}" << std::endl;
   };
 }
 

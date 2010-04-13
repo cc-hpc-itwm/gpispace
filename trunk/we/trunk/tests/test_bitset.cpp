@@ -1,8 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/util/bitsetofint.hpp>
+#include <vector>
 
-typedef bitsetofint::type<unsigned int> set_t;
+typedef std::vector<bool> set_t;
 
 #include <iostream>
 #include <sstream>
@@ -14,36 +14,48 @@ typedef bitsetofint::type<unsigned int> set_t;
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 
+#include <boost/serialization/vector.hpp>
+
 #include "timer.hpp"
 
 using std::cout;
 using std::endl;
 
+static std::ostream & operator << (std::ostream & s, const set_t & t)
+{
+  s << "{";
+  for (set_t::const_iterator it (t.begin()); it != t.end(); ++it)
+    s << ((it != t.begin()) ? "," : "") << *it;
+  return s << "}" << std::endl;
+}
+
 int
 main ()
 {
-  set_t set(1);
+  set_t set;
 
   cout << set;
 
+  set.resize (80);
+
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
+    cout << set[i];
   cout << endl;
 
-  set.ins (13);
-  set.ins (22);
-  set.ins (69);
+  set[13] = true;
+  set[22] = true;
+  set[69] = true;
 
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
+    cout << set[i];
   cout << endl;
 
-  set.ins (13);
-  set.del (22);
-  set.ins (70);
+  set[13] = true;
+  set[22] = false;
+  set[70] = true;
 
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
+    cout << set[i];
   cout << endl;
 
   cout << set;
@@ -65,7 +77,7 @@ main ()
     }
 
     for (unsigned int i (0); i < 80; ++i)
-      cout << c.is_element(i);
+      cout << c[i];
     cout << endl;
   }
 
@@ -86,7 +98,7 @@ main ()
     }
 
     for (unsigned int i (0); i < 80; ++i)
-      cout << c.is_element(i);
+      cout << c[i];
     cout << endl;
   }
 
@@ -107,15 +119,15 @@ main ()
     }
 
     for (unsigned int i (0); i < 80; ++i)
-      cout << c.is_element(i);
+      cout << c[i];
     cout << endl;
   }
 
   cout << "*** filled up to " << (1 << 20) << endl;
 
-  set.ins (1 << 20);
+  set.resize (1 << 20);
 
-  cout << set;
+  set[(1 << 20) - 1] = true;
 
   {
     std::ostringstream oss;
@@ -165,7 +177,11 @@ main ()
 
   cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << endl;
 
-  set.ins (std::numeric_limits<unsigned int>::max());
+  set.resize (std::numeric_limits<unsigned int>::max());
+
+  set[std::numeric_limits<unsigned int>::max()-1] = true;
+
+  cout << set;
 
   {
     std::ostringstream oss;
