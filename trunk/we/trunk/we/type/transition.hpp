@@ -21,13 +21,12 @@
 
 #include <we/net.hpp>
 #include <we/type/port.hpp>
-#include <we/expr/parse/parser.hpp>
+#include <we/type/module_call.hpp>
+#include <we/type/expression.hpp>
+#include <we/type/signature.hpp>
 #include <we/mgmt/bits/pid_map_t.hpp>
 
 #include <boost/serialization/nvp.hpp>
-
-#include <we/type/module_call.hpp>
-#include <we/type/expression.hpp>
 
 namespace we { namespace type {
     namespace exception {
@@ -45,6 +44,29 @@ namespace we { namespace type {
       };
     }
 
+    template <typename Transition>
+    struct port_adder
+    {
+      explicit port_adder (Transition & t)
+        : transition_(t)
+      {}
+
+      template <typename SignatureType, typename Direction>
+      port_adder<Transition> & operator() (const std::string & name, SignatureType const & signature, Direction direction)
+      {
+        if (direction == port<SignatureType>::IN)
+          transition_.add_input_port (name, signature);
+        if (direction == port<SignatureType>::OUT)
+          transition_.add_output_port (name, signature);
+        else
+          transition_.add_input_output_port (name, signature);
+        return *this;
+      }
+
+    private:
+      Transition & transition_;
+    };
+
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
@@ -58,24 +80,38 @@ namespace we { namespace type {
 
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
-      typedef petri_net::net<Place, transition_t<Place, Edge, Token>, Edge, Token> net_type;
+      typedef transition_t<Place, Edge, Token> this_type;
+      typedef petri_net::net<Place, this_type, Edge, Token> net_type;
 
       typedef petri_net::pid_t pid_t;
       typedef typename we::mgmt::detail::traits::pid_map_traits<pid_t>::type pid_map_t;
       typedef Category category_t;
 
-      typedef std::string signature_type;
+      typedef signature::type signature_type;
       typedef port<signature_type> port_t;
       typedef boost::unordered_map<pid_t, port_t> port_map_t;
 
       struct flags_t
       {
-        bool internal : 1;
+        flags_t ()
+          : internal(0)
+        {}
+
+        bool internal;
+
+      private:
+        friend class boost::serialization::access;
+        template<typename Archive>
+        void serialize (Archive & ar, const unsigned int)
+        {
+          ar & BOOST_SERIALIZATION_NVP(internal);
+        }
       };
 
       transition_t ()
         : name ("unknown")
         , type (UNKNOWN)
+        , port_id_counter_(0)
       {
         data.ptr = 0;
       }
@@ -83,6 +119,7 @@ namespace we { namespace type {
       template <typename Type>
 	  transition_t (const std::string & name_, Type const & typ, bool intern = false)
 		: name(name_)
+        , port_id_counter_(0)
 	  {
         data.ptr = 0;
         assign(typ);
@@ -95,6 +132,7 @@ namespace we { namespace type {
         , flags(other.flags)
         , i_mapping(other.i_mapping)
         , o_mapping(other.o_mapping)
+        , port_id_counter_(0)
       {
         data.ptr = 0;
         if (other.data.ptr)
@@ -268,6 +306,11 @@ namespace we { namespace type {
         o_mapping.insert (pid_map_t::value_type(outer, inner));
       }
 
+      port_adder<this_type> add_ports()
+      {
+        return port_adder<this_type>(*this);
+      }
+
       template <typename SignatureType>
       pid_t add_input_port (const std::string & name, const SignatureType & signature)
       {
@@ -364,6 +407,20 @@ namespace we { namespace type {
 
       port_map_t ports_;
       pid_t port_id_counter_;
+
+    private:
+      friend class boost::serialization::access;
+      template<typename Archive>
+      void serialize (Archive & ar, const unsigned int)
+      {
+        ar & BOOST_SERIALIZATION_NVP(name);
+        ar & BOOST_SERIALIZATION_NVP(type);
+        ar & BOOST_SERIALIZATION_NVP(flags);
+        ar & BOOST_SERIALIZATION_NVP(i_mapping);
+        ar & BOOST_SERIALIZATION_NVP(o_mapping);
+        ar & BOOST_SERIALIZATION_NVP(ports_);
+        ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
+      }
 	};
 
     template <typename P, typename E, typename T>
