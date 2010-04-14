@@ -169,6 +169,9 @@ private:
     ar & BOOST_SERIALIZATION_NVP(enabled);
     ar & BOOST_SERIALIZATION_NVP(enabled_choice);
     // WORK HERE: serialize the functions
+    // AP: we do not need this with the new transitions
+    //     because the function is already encapsulated
+    //
     //    ar & BOOST_SERIALIZATION_NVP(trans);
     ar & BOOST_SERIALIZATION_NVP(capacity_map);
     ar & BOOST_SERIALIZATION_NVP(in_map);
