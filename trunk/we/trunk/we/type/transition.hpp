@@ -20,7 +20,6 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
-#include <we/util/net_output_operator.hpp>
 #include <we/util/show.hpp>
 #include <we/util/warnings.hpp>
 #include <we/type/port.hpp>
@@ -137,27 +136,6 @@ namespace we { namespace type {
       {
         return trans.get_port (trans.outer_to_inner (pid)).name();
       }
-
-      class transition_visitor_show : public boost::static_visitor<std::string>
-      {
-      public:
-        std::string operator () (const expression_t & expr) const
-        {
-          return "{expr, " + ::util::show (expr) + "}";
-        }
-
-        std::string operator () (const module_call_t & mod_call) const
-        {
-          return "{mod, " + ::util::show (mod_call) + "}";
-        }
-
-        template <typename Net>
-        std::string operator () (const Net & net) const
-        {
-          we::util::remove_unused_variable_warning (net);
-          return std::string("{net, ") + "placeholder" + "}";
-        }
-      };
     }
 
     template <typename Place, typename Edge, typename Token>
@@ -175,7 +153,10 @@ namespace we { namespace type {
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
       typedef petri_net::net<Place, this_type, Edge, Token> net_type;
-      typedef boost::variant<mod_type, expr_type, boost::recursive_wrapper<net_type> > data_type;
+      typedef boost::variant< mod_type
+                            , expr_type
+                            , boost::recursive_wrapper<net_type>
+                            > data_type;
 
       typedef petri_net::pid_t pid_t;
       typedef pid_t port_id_t;
@@ -216,17 +197,17 @@ namespace we { namespace type {
                       )
                     )
         , port_id_counter_(0)
-      { }
+      {}
 
       template <typename Type>
 	  transition_t (const std::string & name
                   , Type const & typ
-                  , const std::string & condition = "true"
+                  , const std::string & _condition = "true"
                   , bool intern = false)
 		: name_ (name)
         , type_ (UNKNOWN) //type_of (typ))
         , data_ (typ)
-        , condition_( condition
+        , condition_( _condition
                     , boost::bind 
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
                       , boost::ref(*this)
@@ -238,20 +219,26 @@ namespace we { namespace type {
         flags_.internal = intern;
       }
 
-      transition_t (const transition_t &other)
+      transition_t (const this_type &other)
         : name_(other.name_)
         , type_(other.type_)
         , data_(other.data_)
         , flags_(other.flags_)
-        , condition_(other.condition_)
+        , condition_( other.condition_.expression()
+                    , boost::bind 
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
         , outer_to_inner_(other.outer_to_inner_)
         , inner_to_outer_(other.inner_to_outer_)
         , ports_(other.ports_)
-        , port_id_counter_(0)
+        , port_id_counter_(other.port_id_counter_)
       { }
 
       template <typename Choices>
-      bool condition (Choices const & choices) const
+      bool condition (Choices & choices) const
       {
         return condition_ (choices);
       }
@@ -312,6 +299,14 @@ namespace we { namespace type {
           ports_ = other.ports_;
           type_ = other.type_;
           data_ = other.data_;
+          condition_ = condition::type 
+             ( other.condition_.expression()
+             , boost::bind 
+               ( &detail::translate_place_to_port_name<this_type, pid_t>
+               , boost::ref(*this)
+               , _1
+               )
+             );
         }
         return *this;
       }
@@ -553,6 +548,36 @@ namespace we { namespace type {
 	  boost::hash<std::string> hasher;
 	  return hasher(t.name());
 	}
+
+    namespace detail
+    {
+      class transition_visitor_show : public boost::static_visitor<std::string>
+      {
+      public:
+        std::string operator () (const expression_t & expr) const
+        {
+          return "{expr, " + ::util::show (expr) + "}";
+        }
+
+        std::string operator () (const module_call_t & mod_call) const
+        {
+          return "{mod, " + ::util::show (mod_call) + "}";
+        }
+
+        template <typename Place, typename Edge, typename Token>
+        std::string operator () 
+        (const petri_net::net< Place
+                             , transition_t<Place, Edge, Token>
+                             , Edge
+                             , Token
+                             > & net) const
+        {
+          we::util::remove_unused_variable_warning (net);
+          return std::string("{net, ") + ::util::show(net) + "}";
+        }
+      };
+    }
+
     template <typename P, typename E, typename T>
 	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
 	{
@@ -565,6 +590,50 @@ namespace we { namespace type {
       s << "}";
       return s;
 	}
+
+    template<typename P, typename E, typename T>
+    std::ostream & operator << 
+      ( std::ostream & s
+      , const petri_net::net<P, transition_t<P, E, T>, E, T> & n
+      )
+    {
+      typedef petri_net::net<P, transition_t<P, E, T>, E, T> pnet_t;
+
+      for (typename pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+        {
+          s << "[" << n.get_place (*p) << ":";
+
+          typedef boost::unordered_map<T, size_t> token_cnt_t;
+          token_cnt_t token;
+          for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
+            {
+              token[*tp]++;
+            }
+
+          for (typename token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
+            {
+              if (t->second > 1)
+                {
+                  s << " " << t->second << "x " << t->first;
+                }
+              else
+                {
+                  s << " " << t->first;
+                }
+            }
+          s << "]";
+        }
+
+      for (typename pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
+        {
+          s << "/";
+          s << n.get_transition (*t);
+          s << "/";
+        }
+
+      return s;
+    }
+
 }}
 
 #endif
