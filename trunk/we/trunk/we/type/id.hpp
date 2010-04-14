@@ -16,7 +16,22 @@ namespace petri_net
   typedef uint64_t tid_t;
   typedef uint64_t eid_t;
 
-  static const eid_t eid_invalid (std::numeric_limits<eid_t>::max());
+  namespace traits
+  {
+    template <typename IdType>
+    struct id_traits
+    {
+      typedef IdType type;
+
+      inline static type invalid()
+      {
+        return std::numeric_limits<type>::max();
+      }
+    };
+  }
+
+  // deprecated?
+  static const eid_t eid_invalid (traits::id_traits<eid_t>::invalid());
 }
 
 #endif
