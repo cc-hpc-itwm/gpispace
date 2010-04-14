@@ -22,6 +22,7 @@
 #include <string>
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
+#include <we/type/id.hpp>
 
 namespace we { namespace type {
   enum PortDirection
@@ -31,15 +32,17 @@ namespace we { namespace type {
   , PORT_IN_OUT
   };
 
-  template <typename SignatureType>
+  template <typename SignatureType, typename IdType = petri_net::pid_t>
   struct port
   {
   public:
     typedef SignatureType sig_type;
+    typedef IdType pid_type;
 
     port ()
       : name_("default")
       , direction_(PORT_IN_OUT)
+      , associated_place_(0)
     {}
 
     template <typename Signature>
@@ -47,16 +50,27 @@ namespace we { namespace type {
       : name_(name)
       , direction_(direction)
       , signature_(signature)
+      , associated_place_(0)
+    {}
+
+    template <typename Signature, typename PlaceId>
+    port (const std::string & name, PortDirection direction, const Signature & signature, const PlaceId place_id)
+      : name_(name)
+      , direction_(direction)
+      , signature_(signature)
+      , associated_place_(place_id)
     {}
 
     const std::string & name() const { return name_; }
     PortDirection direction() const { return direction_; }
     const sig_type & signature() const { return signature_; }
+    const pid_type & associated_place() const { return associated_place_; }
 
   private:
     std::string name_;
     PortDirection direction_;
     sig_type signature_;
+    pid_type associated_place_; //! associated to a place within a network, only reasonable for transitions with a subnet
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -65,13 +79,22 @@ namespace we { namespace type {
       ar & BOOST_SERIALIZATION_NVP(name_);
       ar & BOOST_SERIALIZATION_NVP(direction_);
       ar & BOOST_SERIALIZATION_NVP(signature_);
+      ar & BOOST_SERIALIZATION_NVP(associated_place_);
     }
   };
 
-  template <typename T>
-  std::ostream & operator << ( std::ostream & os, const port <T> & p )
+  template <typename T, typename I>
+  std::ostream & operator << ( std::ostream & os, const port <T, I> & p )
   {
-    os << "{" << (p.direction() == PORT_IN ? "in" : (p.direction() == PORT_OUT ? "out" : "inout")) << ", " << p.name() << ", " << p.signature() << "}";
+    os << "{port, "
+       << (p.direction() == PORT_IN ? "in" : (p.direction() == PORT_OUT ? "out" : "inout"))
+       << ", "
+       << p.name()
+       << ", "
+       << p.signature()
+       << ", "
+       << p.associated_place()
+       << "}";
     return os;
   }
 }}
