@@ -27,6 +27,7 @@
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>
+#include <we/mgmt/bits/transition_visitors.hpp>
 
 namespace we { namespace mgmt { namespace type {
   template <typename Transition, typename Token>
@@ -221,8 +222,10 @@ namespace we { namespace mgmt { namespace type {
     bool
     has_enabled (void) const
     {
+      static we::mgmt::visitor::has_enabled visitor_has_enabled;
+
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return false;
+      return boost::apply_visitor (visitor_has_enabled,  transition().data());
     }
 
     const input_t & input() const
