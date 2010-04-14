@@ -35,37 +35,69 @@ namespace token
     };
   }
 
-  typedef boost::unordered_map< signature::field_name_t
-                              , literal::type
-                              > structured_t;
+  struct structured_t;
 
   typedef expr::eval::context<signature::field_name_t> context_t;
 
   typedef boost::variant< control
                         , literal::type
-                        , structured_t
+                        , boost::recursive_wrapper<structured_t>
                         > value_t;
+
+  struct structured_t
+  {
+  public:
+    typedef boost::unordered_map< signature::field_name_t
+                                , value_t
+                                > map_t;
+    typedef map_t::const_iterator const_iterator;
+    typedef map_t::const_iterator iterator;
+
+  private:
+    map_t map;
+
+  public:
+    value_t & operator [] (const signature::field_name_t & field_name)
+    {
+      return map[field_name];
+    }
+
+    const_iterator find (const signature::field_name_t & field_name) const
+    {
+      return map.find (field_name);
+    }
+
+    const_iterator begin (void) const { return map.begin(); }
+    const_iterator end (void) const { return map.end(); }
+
+    bool has_field (const signature::field_name_t & field_name) const
+    {
+      return map.find (field_name) != map.end();
+    }
+  };
 
   class visitor_bind : public boost::static_visitor<>
   {
   private:
-    const signature::field_name_t & pref;
+    const signature::field_name_t & name;
     context_t & c;
   public:
-    visitor_bind (const signature::field_name_t & _pref, context_t & _c)
-      : pref (_pref)
+    visitor_bind (const signature::field_name_t & _name, context_t & _c)
+      : name (_name)
       , c (_c)
     {}
 
-    void operator () (const control &) const { c.bind (pref, control()); }
-    void operator () (const literal::type & v) const { c.bind (pref, v); }
+    void operator () (const control &) const { c.bind (name, control()); }
+    void operator () (const literal::type & v) const { c.bind (name, v); }
     void operator () (const structured_t & map) const
     {
       for ( structured_t::const_iterator field (map.begin())
           ; field != map.end()
           ; ++field
           )
-        c.bind (pref + "." + field->first, field->second);
+        boost::apply_visitor ( visitor_bind (name + "." + field->first, c)
+                             , field->second
+                             );
     }
   };
 
@@ -83,7 +115,7 @@ namespace token
 
     std::size_t operator () (const structured_t & map) const
     {
-      return boost::hash_value ((*(map.begin())).second);
+      return boost::apply_visitor (visitor_hash(), (*(map.begin())).second);
     }
   };
 
@@ -114,7 +146,7 @@ namespace token
         s += ((field != map.begin()) ? ", " : "")
           +  field->first 
           +  " := "
-          +  literal::show (field->second)
+          +  boost::apply_visitor (visitor_show(), field->second)
           ;
 
       s += "]";
@@ -156,10 +188,10 @@ namespace token
           ; ++sig
           )
         structured[sig->first] = 
-          literal::require_type ( field + "." + sig->first
-                                , sig->second
-                                , context.value (field + "." + sig->first)
-                                );
+          boost::apply_visitor 
+           ( visitor_unbind (field + "." + sig->first, context)
+           , sig->second
+           );
 
       return structured;
     }
@@ -199,20 +231,21 @@ namespace token
         {
           const structured_t::const_iterator pos (token.find (sig->first));
 
-          if (pos == token.end())
+          if (!token.has_field (sig->first))
             throw std::runtime_error ("type error: missing field " + sig->first);
-          
-          literal::require_type ( field_name + "." + sig->first
-                                , sig->second
-                                , pos->second
-                                );
+
+          boost::apply_visitor
+            ( visitor_require_type (field_name + "." + sig->first)
+            , sig->second
+            , pos->second
+            );
         }
 
       for ( structured_t::const_iterator field (token.begin())
           ; field != token.end()
           ; ++field
           )
-        if (signature.find (field->first) == signature.end())
+        if (!signature.has_field (field->first))
           throw std::runtime_error ("type error: unknown field " + field->first);
 
       return token;
@@ -227,7 +260,7 @@ namespace token
 
   class type
   {
-  private:
+  public:
     value_t value;
 
     friend class boost::serialization::access;
@@ -281,10 +314,57 @@ namespace token
     return boost::apply_visitor (vh, t.value);
   }
 
+  bool smaller_or_equal (const structured_t &, const structured_t &);
+
+  class visitor_eq : public boost::static_visitor<bool>
+  {
+  public:
+    bool operator () (const control &, const control &) const
+    {
+      return true;
+    }
+
+    bool operator () (const literal::type & x, const literal::type & y) const
+    {
+      return x == y;
+    }
+
+    bool operator () (const structured_t & x, const structured_t & y) const
+    {
+      return smaller_or_equal (x, y) && smaller_or_equal (y, x);
+    }
+
+    template<typename A, typename B>
+    bool operator () (const A &, const B &) const
+    {
+      return false;
+    }
+  };
+
+  bool smaller_or_equal (const structured_t & x, const structured_t & y)
+  {
+    bool all_eq (true);
+
+    for ( structured_t::const_iterator field (x.begin())
+        ; field != x.end() && all_eq == true
+        ; ++field
+        )
+      {
+        const structured_t::const_iterator pos (y.find (field->first));
+
+        all_eq = (pos == y.end()) 
+          ? false
+          : boost::apply_visitor (visitor_eq(), field->second, pos->second);
+      }
+
+    return all_eq;
+  }
+
   inline bool operator == (const type & a, const type & b)
   {
-    return a.value == b.value;
+    return boost::apply_visitor (visitor_eq(), a.value, b.value);
   }
+
   inline bool operator != (const type & a, const type & b)
   {
     return !(a == b);
@@ -292,9 +372,7 @@ namespace token
 
   std::ostream & operator << (std::ostream & s, const type & t)
   {
-    static const visitor_show vs;
-
-    return s << boost::apply_visitor (vs, t.value);
+    return s << boost::apply_visitor (visitor_show(), t.value);
   }
 
   template<typename NET>

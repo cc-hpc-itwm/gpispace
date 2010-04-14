@@ -190,9 +190,9 @@ public:
         else if (name == "process")
           {
             std::cout << "PROCESS"
-                      << " vid " << context.value ("vid_buf_filled.vid")
+                      << " vid " << context.value ("vid_buf_filled.vb.vid")
                       << " bid " << context.value ("vid_buf_filled.bid")
-                      << " buf " << context.value ("vid_buf_filled.bufid")
+                      << " buf " << context.value ("vid_buf_filled.vb.bufid")
                       << std::endl;
           }
       }
@@ -317,9 +317,7 @@ main (int argc, char ** argv)
 
   signature::structured_t sig_vid_buffer_filled;
 
-  sig_vid_buffer_filled["vid"] = "long";
-  sig_vid_buffer_filled["bufid"] = "long";
-  sig_vid_buffer_filled["numbid"] = "long";
+  sig_vid_buffer_filled["vb"] = sig_vid_buffer_empty;
   sig_vid_buffer_filled["bid"] = "long";
 
   petri_net::pid_t pid_vid_buf_filled
@@ -382,10 +380,10 @@ main (int argc, char ** argv)
          ${store.sid}    := ${store.sid};                         ;\
          ${store.numvid} := ${store.numvid} + 1                   ;\
                                                                    \
-         ${vid_buf_filled.vid}    := ${vid_buf_empty.vid}         ;\
-         ${vid_buf_filled.bufid}  := ${vid_buf_empty.bufid}       ;\
-         ${vid_buf_filled.bid}    := ${store.bid}                 ;\
-         ${vid_buf_filled.numbid} := ${vid_buf_empty.numbid}       "
+         ${vid_buf_filled.vb.vid}    := ${vid_buf_empty.vid}      ;\
+         ${vid_buf_filled.vb.bufid}  := ${vid_buf_empty.bufid}    ;\
+         ${vid_buf_filled.bid}       := ${store.bid}              ;\
+         ${vid_buf_filled.vb.numbid} := ${vid_buf_empty.numbid}    "
       , "!bitset_is_element (${store.seen}, ${vid_buf_empty.vid})"
       )
     );
@@ -399,9 +397,9 @@ main (int argc, char ** argv)
     ( mk_transition 
       ( net
       , "process"
-      , "${vid_buf_processed.vid}    := ${vid_buf_filled.vid}        ;\
-         ${vid_buf_processed.bufid}  := ${vid_buf_filled.bufid}      ;\
-         ${vid_buf_processed.numbid} := ${vid_buf_filled.numbid} + 1  "
+      , "${vid_buf_processed.vid}    := ${vid_buf_filled.vb.vid}        ;\
+         ${vid_buf_processed.bufid}  := ${vid_buf_filled.vb.bufid}      ;\
+         ${vid_buf_processed.numbid} := ${vid_buf_filled.vb.numbid} + 1  "
       , "true"
       )
     );

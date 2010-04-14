@@ -20,8 +20,38 @@ namespace signature
   typedef std::string type_name_t;
   typedef std::string field_name_t;
 
-  typedef boost::unordered_map<field_name_t,type_name_t> structured_t;
-  typedef boost::variant<control, type_name_t, structured_t> desc_t;
+  struct structured_t;
+
+  typedef boost::variant< control
+                        , type_name_t
+                        , boost::recursive_wrapper<structured_t>
+                        > desc_t;
+
+  struct structured_t
+  {
+  public:
+    typedef boost::unordered_map< field_name_t
+                                , desc_t
+                                > map_t;
+    typedef map_t::const_iterator const_iterator;
+
+  private:
+    map_t map;
+
+  public:
+    desc_t & operator [] (const field_name_t & field_name)
+    {
+      return map[field_name];
+    }
+
+    const_iterator begin (void) const { return map.begin(); }
+    const_iterator end (void) const { return map.end(); }
+
+    bool has_field (const field_name_t & field_name) const
+    {
+      return map.find (field_name) != map.end();
+    }
+  };
 
   class type
   {
