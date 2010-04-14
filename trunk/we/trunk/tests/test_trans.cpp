@@ -108,7 +108,7 @@ int main (int, char **)
   transition_t tnet ("tnet", transition_t::net_type (net));
   tnet.add_ports()
     ("vid", "long", we::type::PORT_IN, pid_vid)
-    ("store", sig_store, we::type::PORT_IN, pid_store)
+    ("store", sig_store, we::type::PORT_IN_OUT, pid_store)
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
   ;
 
