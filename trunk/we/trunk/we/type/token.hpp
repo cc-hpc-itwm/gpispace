@@ -56,6 +56,12 @@ namespace token
   private:
     map_t map;
 
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(map);
+    }
   public:
     value_t & operator [] (const signature::field_name_t & field_name)
     {
