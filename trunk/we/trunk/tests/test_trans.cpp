@@ -121,15 +121,15 @@ int main (int, char **)
     }
     std::cout << "tnet (serialized): " << oss.str() << std::endl;
 
-//    transition_t tnet_d;
-//    {
-//      std::istringstream iss (oss.str());
-//      {
-//        boost::archive::text_iarchive ia (iss, boost::archive::no_header);
-//        ia >> BOOST_SERIALIZATION_NVP (tnet_d);
-//      }
-//    }
-//    std::cout << "tnet (deserialized): " << tnet_d << std::endl;
+    transition_t tnet_d;
+    {
+      std::istringstream iss (oss.str());
+      {
+        boost::archive::text_iarchive ia (iss, boost::archive::no_header);
+        ia >> BOOST_SERIALIZATION_NVP (tnet_d);
+      }
+    }
+    std::cout << "tnet (deserialized): " << std::endl << tnet_d << std::endl;
   }
 
   transition_t t1 ("t1", transition_t::mod_type ("m", "f"));
