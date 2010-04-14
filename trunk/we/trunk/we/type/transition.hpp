@@ -89,16 +89,30 @@ namespace we { namespace type {
         {}
 
         template <typename SignatureType, typename Direction>
-        port_adder<Transition> & operator() (const std::string & name
-                                           , SignatureType const & signature
-                                           , Direction direction)
+        port_adder<Transition> & operator() ( const std::string & name
+                                            , SignatureType const & signature
+                                            , Direction direction
+                                            )
         {
-          if (direction == PORT_IN)
-            transition_.add_input_port (name, signature);
-          if (direction == PORT_OUT)
-            transition_.add_output_port (name, signature);
-          else
-            transition_.add_input_output_port (name, signature);
+          transition_.add_port ( name
+                               , signature
+                               , direction
+                               );
+          return *this;
+        }
+
+        template <typename SignatureType, typename Direction, typename PlaceId>
+        port_adder<Transition> & operator() ( const std::string & name
+                                            , SignatureType const & signature
+                                            , Direction direction
+                                            , const PlaceId associated_place
+                                            )
+        {
+          transition_.add_port ( name
+                               , signature
+                               , direction
+                               , associated_place
+                               );
           return *this;
         }
 
@@ -390,6 +404,44 @@ namespace we { namespace type {
         return detail::port_adder<this_type>(*this);
       }
 
+      template <typename SignatureType, typename Direction>
+      void add_port ( const std::string & name
+                    , SignatureType const & signature
+                    , Direction direction
+                    )
+      {
+        if (direction == PORT_IN)
+          this->add_input_port (name, signature);
+        if (direction == PORT_OUT)
+          this->add_output_port (name, signature);
+        else
+          this->add_input_output_port (name, signature);
+      }
+
+      template <typename SignatureType, typename Direction, typename PlaceId>
+      void add_port ( const std::string & name
+                    , SignatureType const & signature
+                    , const Direction direction
+                    , const PlaceId associated_place
+                    )
+      {
+        if (direction == PORT_IN)
+          this->add_input_port ( name
+                               , signature
+                               , associated_place
+                               );
+        if (direction == PORT_OUT)
+          this->add_output_port ( name
+                                , signature
+                                , associated_place
+                                );
+        else
+          this->add_input_output_port ( name
+                                      , signature
+                                      , associated_place
+                                      );
+      }
+
       template <typename SignatureType>
       pid_t add_input_port (const std::string & name, const SignatureType & signature)
       {
@@ -401,6 +453,23 @@ namespace we { namespace type {
           }
         }
         port_t port (name, PORT_IN, signature);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType, typename PlaceId>
+      pid_t add_input_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
+          {
+            throw exception::port_already_defined(name);
+          }
+        }
+        port_t port (name, PORT_IN, signature, associated_place);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -424,6 +493,23 @@ namespace we { namespace type {
         return port_id;
       }
 
+      template <typename SignatureType, typename PlaceId>
+      pid_t add_output_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
+          {
+            throw exception::port_already_defined(name);
+          }
+        }
+        port_t port (name, PORT_OUT, signature, associated_place);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
       template <typename SignatureType>
       void add_input_output_port (const std::string & name, const SignatureType & signature)
       {
@@ -441,6 +527,27 @@ namespace we { namespace type {
           {
             add_input_port (name, signature);
             add_output_port (name, signature);
+          }
+        }
+      }
+
+      template <typename SignatureType, typename PlaceId>
+      void add_input_output_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      {
+        try
+        {
+          input_port_by_name (name);
+        }
+        catch (const exception::port_undefined &)
+        {
+          try
+          {
+            output_port_by_name (name);
+          }
+          catch (const exception::port_undefined &)
+          {
+            add_input_port (name, signature, associated_place);
+            add_output_port (name, signature, associated_place);
           }
         }
       }
@@ -496,8 +603,11 @@ namespace we { namespace type {
       pid_t port_id_counter_;
 
     private:
-      // WORK TODO split up into save/load, since we need to initialize the
-      // condition-translate function
+      template <typename P, typename E, typename T>
+      friend std::ostream & operator<< ( std::ostream &
+                                       , const transition_t<P,E,T> &
+                                       );
+
       friend class boost::serialization::access;
       template <typename Archive>
       void save(Archive & ar, const unsigned int) const
@@ -579,14 +689,33 @@ namespace we { namespace type {
     }
 
     template <typename P, typename E, typename T>
-	inline std::ostream & operator<< (std::ostream & s, const transition_t<P,E,T> & t)
+	inline std::ostream & operator<< ( std::ostream & s
+                                     , const transition_t<P,E,T> & t
+                                     )
 	{
       static const detail::transition_visitor_show visitor;
       typedef transition_t<P,E,T> trans_t;
       s << "{";
-      s << t.name() << ", ";
+      s << "trans";
+      s << ", ";
+      s << t.name();
+      s << ", ";
       s << boost::apply_visitor (visitor, t.data());
       s << ", {cond, " << t.condition() << "}";
+      s << ", [";
+      for ( typename trans_t::port_map_t::const_iterator p (t.ports_.begin())
+          ; p != t.ports_.end()
+          ; ++p
+          )
+      {
+        s << "(";
+        s << p->first;
+        s << ", ";
+        s << p->second;
+        s << ")";
+        s << ", ";
+      }
+      s << "]";
       s << "}";
       return s;
 	}
