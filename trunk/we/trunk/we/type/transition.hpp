@@ -155,14 +155,6 @@ namespace we { namespace type {
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
-	  enum Category
-	  {
-        UNKNOWN
-      , MOD_CALL
-	  , EXPRESSION
-      , NET
-	  };
-
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
@@ -177,7 +169,6 @@ namespace we { namespace type {
 
       typedef boost::unordered_map<pid_t, port_id_t> outer_to_inner_t;
       typedef boost::unordered_map<port_id_t, pid_t> inner_to_outer_t;
-      typedef Category category_t;
 
       typedef signature::type signature_type;
       typedef port<signature_type> port_t;
@@ -202,7 +193,6 @@ namespace we { namespace type {
 
       transition_t ()
         : name_ ("unknown")
-        , type_ (UNKNOWN)
         , condition_( "true"
                     , boost::bind 
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
@@ -219,7 +209,6 @@ namespace we { namespace type {
                   , const std::string & _condition = "true"
                   , bool intern = false)
 		: name_ (name)
-        , type_ (UNKNOWN) //type_of (typ))
         , data_ (typ)
         , condition_( _condition
                     , boost::bind 
@@ -235,7 +224,6 @@ namespace we { namespace type {
 
       transition_t (const this_type &other)
         : name_(other.name_)
-        , type_(other.type_)
         , data_(other.data_)
         , flags_(other.flags_)
         , condition_( other.condition_.expression()
@@ -267,29 +255,9 @@ namespace we { namespace type {
         return name_;
       }
 
-      category_t type (void) const
-      {
-        return type_;
-      }
-
       bool is_internal (void) const
       {
         return flags_.internal;
-      }
-
-      bool is_net (void) const
-      {
-        return type_ == NET;
-      }
-
-      bool is_mod_call (void) const
-      {
-        return type_ == MOD_CALL;
-      }
-
-      bool is_expr (void) const
-      {
-        return type_ == EXPRESSION;
       }
 
       const data_type & data (void) const
@@ -311,7 +279,6 @@ namespace we { namespace type {
           outer_to_inner_ = other.outer_to_inner_;
           inner_to_outer_ = other.inner_to_outer_;
           ports_ = other.ports_;
-          type_ = other.type_;
           data_ = other.data_;
           condition_ = condition::type 
              ( other.condition_.expression()
@@ -591,7 +558,6 @@ namespace we { namespace type {
 
     private:
 	  std::string name_;
-	  category_t type_;
       data_type data_;
 
       flags_t flags_;
@@ -613,7 +579,6 @@ namespace we { namespace type {
       void save(Archive & ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(type_);
         ar & BOOST_SERIALIZATION_NVP(flags_);
         ar & BOOST_SERIALIZATION_NVP(condition_.expression());
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
@@ -627,7 +592,6 @@ namespace we { namespace type {
       void load(Archive & ar, const unsigned int)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(type_);
         ar & BOOST_SERIALIZATION_NVP(flags_);
         std::string cond_expr;
         ar & BOOST_SERIALIZATION_NVP(cond_expr);
