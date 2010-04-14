@@ -40,9 +40,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "RequestJobEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(DaemonEventHandler *handler)
       {
-        visitor->visitRequestJobEvent(this);
+        handler->handleRequestJobEvent(this);
       }
     private:
       sdpa::job_id_t last_job_id_;

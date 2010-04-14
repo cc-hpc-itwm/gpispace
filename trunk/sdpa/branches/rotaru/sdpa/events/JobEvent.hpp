@@ -31,6 +31,8 @@ namespace events {
         sdpa::job_id_t & job_id() { return job_id_; }
 
         virtual std::string str() const = 0;
+
+        virtual void handleBy(DaemonEventHandler *handler) = 0;
     private:
         sdpa::job_id_t job_id_;
     };

@@ -20,85 +20,85 @@
 %%
 Down
 {
-    StartUp(event: sdpa::events::StartUpEvent&)
+    StartUp(event: const sdpa::events::StartUpEvent&)
         Configuring
         {
         	action_configure(event); 
         }
-	Error(event: sdpa::events::ErrorEvent&)
+	Error(event: const sdpa::events::ErrorEvent&)
 	  nil
 	  {}
 }
 
 Configuring
 {
-    ConfigOk(event: sdpa::events::ConfigOkEvent&)
+    ConfigOk(event: const sdpa::events::ConfigOkEvent&)
         Up
         {
         	action_config_ok(event); 
         }
         
-	ConfigNok(event: sdpa::events::ConfigNokEvent&)
+	ConfigNok(event: const sdpa::events::ConfigNokEvent&)
         Down
         {
         	action_config_nok(event); 
         }
 
-	Error(event: sdpa::events::ErrorEvent&)
+	Error(event: const sdpa::events::ErrorEvent&)
 	  nil
 	  {}
 }
 
 Up
 {
-	Interrupt(event: sdpa::events::InterruptEvent& )
+	Interrupt(event: const sdpa::events::InterruptEvent& )
 	Down
 	{
 		action_interrupt(event);
 	}
 	
-	RegisterWorker(event: sdpa::events::WorkerRegistrationEvent& )
+	RegisterWorker(event: const sdpa::events::WorkerRegistrationEvent& )
 	nil
 	{
 		action_register_worker(event);
 	}
 	
 	//event sent from the upper level
-	DeleteJob(event: sdpa::events::DeleteJobEvent& )
+	DeleteJob(event: const sdpa::events::DeleteJobEvent& )
 	nil
 	{
 		action_delete_job(event);
 	}
 	
 	//event sent from the lower level
-	SubmitJob(event: sdpa::events::SubmitJobEvent& )
+	SubmitJob(event: const sdpa::events::SubmitJobEvent& )
 	nil
 	{
 		action_submit_job(event);
 	}
 		
 	//event sent from the lower level
-	LifeSign(event: sdpa::events::LifeSignEvent& )
+	LifeSign(event: const sdpa::events::LifeSignEvent& )
 	nil
 	{
 		action_lifesign(event);
 	}
 		
 	//event sent from the lower level
-	RequestJob(event: sdpa::events::RequestJobEvent& )
+	RequestJob(event: const sdpa::events::RequestJobEvent& )
 	nil
 	{
 		action_request_job(event);
 	}
 	
 	//event sent from the lower level
-	ConfigRequest(event: sdpa::events::ConfigRequestEvent& )
+	ConfigRequest(event: const sdpa::events::ConfigRequestEvent& )
 	nil
 	{
 		action_config_request(event);
 	}
 
-	Error(event: sdpa::events::ErrorEvent&)
+	Error(event: const sdpa::events::ErrorEvent&)
 	nil
 	{
 		action_error_event(event);

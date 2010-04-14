@@ -33,6 +33,7 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
 #include <sdpa/types.hpp>
 
@@ -56,6 +57,7 @@ namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
+						public sdpa::events::DaemonEventHandler,
 						public IDaemon
 {
   public:
@@ -69,8 +71,8 @@ namespace sdpa { namespace daemon {
 	  void stop();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
-	  virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
-	  virtual void handleJobEvent(const seda::IEvent::Ptr& pEvent);
+	  //virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+	  //virtual void handleJobEvent(const seda::IEvent::Ptr& pEvent);
 
 	  virtual void onStageStart(const std::string &stageName);
 	  virtual void onStageStop(const std::string &stageName);
@@ -88,24 +90,19 @@ namespace sdpa { namespace daemon {
 	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
 	  virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
-	  // management event handlers
 	  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
 	  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
 
 	  // job event handlers
 	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* pEvent);
-
 	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
 	  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
 	  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 	  virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
-
-
 	  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-
-	  virtual void handleRetrieveResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
+	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
@@ -166,8 +163,6 @@ namespace sdpa { namespace daemon {
 	  		  ptr_scheduler_->print();
 	  }
 
-	  //virtual void backup( const std::string& );
-	  //virtual void recover( const std::string& );
 
   protected:
 	  SDPA_DECLARE_LOGGER();

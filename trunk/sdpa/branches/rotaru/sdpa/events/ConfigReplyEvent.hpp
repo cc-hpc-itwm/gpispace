@@ -32,9 +32,9 @@ namespace sdpa { namespace events {
 
     	std::string str() const { return "ConfigReplyEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(DaemonEventHandler *handler)
         {
-          visitor->visitConfigReplyEvent(this);
+          handler->handleConfigReplyEvent(this);
         }
     };
 }}

@@ -38,9 +38,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "LifeSignEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(DaemonEventHandler *handler)
         {
-          visitor->visitLifeSignEvent(this);
+          handler->handleLifeSignEvent(this);
         }
 	private:
 		sdpa::job_id_t last_job_id_;

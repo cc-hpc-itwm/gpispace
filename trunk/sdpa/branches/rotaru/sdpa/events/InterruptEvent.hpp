@@ -26,9 +26,9 @@ namespace sdpa { namespace events {
 
     std::string str() const { return "InterruptEvent"; }
 
-    virtual void accept(EventVisitor *visitor)
+    virtual void handleBy(DaemonEventHandler *handler)
     {
-      visitor->visitInterruptEvent(this);
+      handler->handleInterruptEvent(this);
     }
   };
 }}

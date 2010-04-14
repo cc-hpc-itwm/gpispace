@@ -37,12 +37,13 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
 
-      // see later
+      // obsolete, see later
       //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
       //suiteOfTests->addTest( D2D2DRealWfEngTest:suite() );
 
       suiteOfTests->addTest( TestComponents::suite() );
-	  suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
+
+      suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
 	  suiteOfTests->addTest( TestSerializeJobPtr::suite() );
       suiteOfTests->addTest( WorkerSerializationTest::suite() );
 

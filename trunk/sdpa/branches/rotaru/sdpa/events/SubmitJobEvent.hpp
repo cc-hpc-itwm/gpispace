@@ -9,7 +9,7 @@ namespace sc = boost::statechart;
 #endif
 
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
+#include <sdpa/events/EventHandler.hpp>
 #include <sdpa/types.hpp>
 
 namespace sdpa { namespace events {
@@ -45,9 +45,9 @@ namespace sdpa { namespace events {
       const sdpa::job_id_t &parent_id() const { return parent_; }
       sdpa::job_id_t &parent_id() { return parent_; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(DaemonEventHandler *handler)
       {
-        visitor->visitSubmitJobEvent(this);
+    	  handler->handleSubmitJobEvent(this);
       }
     private:
       sdpa::job_desc_t desc_;

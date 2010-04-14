@@ -227,26 +227,13 @@ void GenericDaemon::stop()
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
 	SDPA_LOG_DEBUG("Perform: Handling event " <<typeid(*pEvent.get()).name());
-
-	if(dynamic_cast<MgmtEvent*>(pEvent.get()))
+	if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
 	{
-		if( WorkerRegistrationAckEvent* pRegAckEvt = dynamic_cast<WorkerRegistrationAckEvent*>(pEvent.get()) )
-			handleWorkerRegistrationAckEvent(pRegAckEvt);
-		else if( ConfigReplyEvent* pCfgReplyEvt = dynamic_cast<ConfigReplyEvent*>(pEvent.get()) )
-			handleConfigReplyEvent(pCfgReplyEvt);
-		else
-			handleDaemonEvent(pEvent);
-	}
-	else if(dynamic_cast<JobEvent*>(pEvent.get()))
-	{
-		if(	dynamic_cast<SubmitJobEvent*>(pEvent.get()) ) handleDaemonEvent(pEvent);
-		else if( dynamic_cast<DeleteJobEvent*>(pEvent.get()) ) handleDaemonEvent(pEvent);
-		else
-			handleJobEvent(pEvent);
+		pSdpaEvt->handleBy(this);
 	}
 	else
 	{
-	  SDPA_LOG_ERROR("got some unexpected event that i cannot handle: " << pEvent->str());
+		SDPA_LOG_ERROR("got some unexpected event that i cannot handle: " << pEvent->str());
 	}
 }
 
@@ -259,11 +246,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
 {
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
-}
-
-void GenericDaemon::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
-{
-	SDPA_LOG_DEBUG("Handle Management Event "<<typeid(*pEvent).name());
 }
 
 void GenericDaemon::onStageStart(const std::string & /* stageName */)
@@ -385,7 +367,6 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
 	// in fact the master name should be red from the configuration file
-
 
 	/*if( name() == sdpa::daemon::AGGREGATOR )
 	{

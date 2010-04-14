@@ -32,7 +32,7 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 
 
-void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
+/*void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
 {
 	// check what type of event is and call transitions
 	if( CancelJobAckEvent* ptr = dynamic_cast<CancelJobAckEvent*>(pEvent.get()) )
@@ -52,8 +52,9 @@ void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
 	else if( CancelJobEvent* ptr = dynamic_cast<CancelJobEvent*>(pEvent.get()) )
 		handleCancelJobEvent(ptr);
 	else if( RetrieveJobResultsEvent* ptr = dynamic_cast<RetrieveJobResultsEvent*>(pEvent.get()) )
-		handleRetrieveResultsEvent(ptr);
+		handleRetrieveJobResultsEvent(ptr);
 }
+*/
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
@@ -180,7 +181,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 	}
 }
 
-void GenericDaemon::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* ptr )
+void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* ptr )
 {
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());

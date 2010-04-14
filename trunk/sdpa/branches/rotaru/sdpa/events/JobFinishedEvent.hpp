@@ -8,7 +8,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -35,9 +35,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "JobFinishedEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(DaemonEventHandler *handler)
       {
-        visitor->visitJobFinishedEvent(this);
+        handler->handleJobFinishedEvent(this);
       }
 
       const job_result_t &result() const { return result_; }

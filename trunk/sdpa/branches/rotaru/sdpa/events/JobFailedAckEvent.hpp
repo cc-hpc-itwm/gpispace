@@ -32,9 +32,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "JobFailedAckEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(DaemonEventHandler *handler)
         {
-          visitor->visitJobFailedAckEvent(this);
+          handler->handleJobFailedAckEvent(this);
         }
 	};
 }}

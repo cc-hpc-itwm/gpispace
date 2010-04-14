@@ -26,9 +26,9 @@ namespace sdpa { namespace events {
 
     	std::string str() const { return "ConfigNokEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(DaemonEventHandler *handler)
         {
-          visitor->visitConfigNokEvent(this);
+          handler->handleConfigNokEvent(this);
         }
     };
 }}

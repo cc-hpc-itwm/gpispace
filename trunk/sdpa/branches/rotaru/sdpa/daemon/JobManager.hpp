@@ -58,6 +58,7 @@ namespace sdpa { namespace daemon {
 	  void serialize(Archive& ar, const unsigned int file_version )
 	  {
 		  ar & job_map_;
+		  ar & job_map_marked_for_del_;
 	  }
 
 	  friend class boost::serialization::access;

@@ -31,7 +31,7 @@ void WorkerTest::testDispatch() {
   job_id_t jobId("1");
   worker.dispatch(jobId);
 
-  CPPUNIT_ASSERT(! worker.pending().empty());
+  CPPUNIT_ASSERT(!worker.pending().empty());
   CPPUNIT_ASSERT( *worker.pending().begin() == jobId );
   worker.pending().clear();
 }
@@ -42,7 +42,7 @@ void WorkerTest::testGetNextJob() {
   job_id_t jobId("1");
   worker.dispatch(jobId);
 
-  CPPUNIT_ASSERT(! worker.pending().empty());
+  CPPUNIT_ASSERT(!worker.pending().empty());
 
   job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
   CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty now
@@ -54,6 +54,7 @@ void WorkerTest::testAcknowledge() {
   Worker worker("w0", "localhost");
 
   job_id_t jobId("1");
+  worker.dispatch(jobId);
 
   CPPUNIT_ASSERT(! worker.pending().empty());
 

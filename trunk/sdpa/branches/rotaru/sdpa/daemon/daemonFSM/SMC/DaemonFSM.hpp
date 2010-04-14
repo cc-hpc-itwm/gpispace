@@ -67,7 +67,19 @@ namespace sdpa {
 						SDPA_LOG_DEBUG("Daemon State machine destroyed");
 					}
 
-					void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+					//void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);void handleStartUpEvent(const StartUpEvent::Ptr& pEvent);
+					virtual void handleStartUpEvent(const sdpa::events::StartUpEvent* pEvent);
+					virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent* pEvent);
+					virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent* pEvent);
+					virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* pEvent);
+					virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pEvent);
+					virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* pEvent);
+					virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* pEvent);
+					virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent* pEvent);
+					virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent* pEvent);
+					virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* pEvent);
+					virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
+
 
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
 

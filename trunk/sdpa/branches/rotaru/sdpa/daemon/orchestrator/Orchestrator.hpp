@@ -63,7 +63,7 @@ namespace daemon {
 		void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
 		void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
 
-		void handleRetrieveResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
+		void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
 		const std::string& url() const {return url_;}
 
@@ -379,7 +379,7 @@ void Orchestrator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 }
 
 template <typename T>
-void Orchestrator<T>::handleRetrieveResultsEvent(const RetrieveJobResultsEvent* pEvt )
+void Orchestrator<T>::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());

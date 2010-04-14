@@ -36,9 +36,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "JobFailedEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(DaemonEventHandler *handler)
         {
-          visitor->visitJobFailedEvent(this);
+          handler->handleJobFailedEvent(this);
         }
 
       const job_result_t &result() const { return result_; }
