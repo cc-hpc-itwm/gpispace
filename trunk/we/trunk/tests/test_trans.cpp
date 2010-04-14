@@ -40,6 +40,7 @@ int main (int, char **)
 
   typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 
+  // ************************************ //
   pnet_t net("the inner net");
 
   petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
@@ -72,7 +73,7 @@ int main (int, char **)
 
   trans_inner.add_ports ()
     ("vid","long",we::type::PORT_IN)
-    ("store",sig_store,we::type::PORT_IN)
+    ("store",sig_store,we::type::PORT_IN_OUT)
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
 
@@ -80,6 +81,7 @@ int main (int, char **)
     (pid_vid,"vid")
     (pid_store,"store")
     ("pair",pid_pair)
+    ("store",pid_store)
     ;
 
   petri_net::tid_t tid (net.add_transition (trans_inner));
@@ -101,6 +103,7 @@ int main (int, char **)
 
     token::put (net, pid_store, m);
   }
+  // ************************************ //
 
   transition_t tnet ("tnet", transition_t::net_type (net));
 
