@@ -36,6 +36,10 @@ namespace place
     const name_t & get_name (void) const { return name; }
     const signature::type & get_signature (void) const { return signature; }
 
+    type ()
+    {}
+
+    explicit
     type (const name_t & _name)
       : name (_name)
       , signature (control())
