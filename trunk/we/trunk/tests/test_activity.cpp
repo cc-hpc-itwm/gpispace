@@ -116,5 +116,7 @@ int main (int, char **)
     std::cout << "act (deserialized): " << std::endl << act_d << std::endl;
   }
 
+  std::cout << "has_enabled = " << act.has_enabled() << std::endl;
+
   return EXIT_SUCCESS;
 }
