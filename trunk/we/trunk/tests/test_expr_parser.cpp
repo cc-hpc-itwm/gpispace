@@ -49,10 +49,9 @@ int main (int ac, char **)
 
                     try
                       {
-                        cout 
-                          << "evals to: "
-                          << literal::show (parser.eval_front (context))
-                          << endl;
+                        cout << "evals to: " 
+                             << parser.eval_front (context)
+                             << endl;
                       }
                     catch (expr::exception::eval::missing_binding<std::string> e)
                       {

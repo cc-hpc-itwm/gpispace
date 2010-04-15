@@ -21,25 +21,28 @@ namespace literal
       return (fabs (x) < 1e-6);
     }
 
-    class visitor_is_true : public boost::static_visitor<bool>
+    namespace visitor
     {
-    public:
-      bool operator () (const bool & x) const
+      class is_true : public boost::static_visitor<bool>
       {
-        return x ? true : false;
-      }
+      public:
+        bool operator () (const bool & x) const
+        {
+          return x ? true : false;
+        }
 
-      template<typename T>
-      bool operator () (const T &) const
-      {
-        throw expr::exception::eval::type_error
-          ("is_true for something that is not of type bool");
-      }
-    };
+        template<typename T>
+        bool operator () (const T &) const
+        {
+          throw expr::exception::eval::type_error
+            ("is_true for something that is not of type bool");
+        }
+      };
+    }
 
     static bool is_true (const literal::type & v)
     {
-      return boost::apply_visitor (visitor_is_true(), v);
+      return boost::apply_visitor (visitor::is_true(), v);
     }
 
     class unary : public boost::static_visitor<literal::type>
@@ -441,19 +444,6 @@ namespace literal
           (util::show (token) + " for values of wrong types: (" + util::show(t) + ", " + util::show(u) + ")");
       }
     };
-
-    static literal::type ternary ( const expr::token::type & token 
-                                 , const literal::type & a
-                                 , const literal::type & b
-                                 , const literal::type & c
-                                 )
-    {
-      switch (token)
-        {
-        case expr::token::_ite: return is_true (a) ? b : c;
-        default: throw expr::exception::strange ("ternary but not ite");
-        }
-    }
   }
 }
 

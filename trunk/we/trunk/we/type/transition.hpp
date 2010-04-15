@@ -657,14 +657,13 @@ namespace we { namespace type {
                                      , const transition_t<P,E,T> & t
                                      )
 	{
-      static const detail::transition_visitor_show visitor;
       typedef transition_t<P,E,T> trans_t;
       s << "{";
       s << "trans";
       s << ", ";
       s << t.name();
       s << ", ";
-      s << boost::apply_visitor (visitor, t.data());
+      s << boost::apply_visitor (detail::transition_visitor_show(), t.data());
       s << ", {cond, " << t.condition() << "}";
       s << ", [";
       for ( typename trans_t::port_map_t::const_iterator p (t.ports_.begin())

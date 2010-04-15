@@ -29,7 +29,7 @@ typedef int package_id_t;
 
 typedef std::pair<value_t,package_id_t> token_t;
 
-static value_t value (const token_t & token)
+static value_t get_value (const token_t & token)
 {
   return token.first;
 }
@@ -41,7 +41,7 @@ static package_id_t package_id (const token_t & token)
 
 static std::ostream & operator << (std::ostream & s, const token_t token)
 {
-  return s << value (token) << "." << package_id (token);
+  return s << get_value (token) << "." << package_id (token);
 }
 
 /* ************************************************************************* */
@@ -173,7 +173,7 @@ static token_t work_fun (const token_t & token)
 {
   ++cnt_map["work_fun"];
 
-  value_t v (value (token));
+  value_t v (get_value (token));
 
   return token_t (v*v, package_id(token));
 }
@@ -206,7 +206,7 @@ trans_start  ( const petri_net::pid_t & pid_split_input
 
   output.push_back (top_t (token, pid_split_input));
 
-  value_t v (value (token));
+  value_t v (get_value (token));
   value_t result ((v * (v + 1) * (2 * v + 1)) / 6);
 
   output.push_back (top_t (token_t (-result, package_id (token)), pid_output));
@@ -238,7 +238,7 @@ trans_split  ( const pnet_t::input_t & input
 
   pnet_t::output_descr_t::const_iterator it (begin);
 
-  for (value_t v (0); v <= value (token); ++v, ++it)
+  for (value_t v (0); v <= get_value (token); ++v, ++it)
     {
       if (it == end)
         it = begin;
@@ -278,13 +278,13 @@ trans_join ( const pnet_t::input_t & input
 
   pnet_t::input_t::const_iterator it (input.begin());
 
-  value_t v (value (Function::Transition::get_token<token_t> (*it)));
+  value_t v (get_value (Function::Transition::get_token<token_t> (*it)));
   const package_id_t id
     (package_id (Function::Transition::get_token<token_t> (*it)));
 
   for (++it; it != input.end(); ++it)
     {
-      v += value (Function::Transition::get_token<token_t> (*it));
+      v += get_value (Function::Transition::get_token<token_t> (*it));
 
       if (id != package_id (Function::Transition::get_token<token_t> (*it)))
         throw std::runtime_error ("BAD: adding tokens of different packages");

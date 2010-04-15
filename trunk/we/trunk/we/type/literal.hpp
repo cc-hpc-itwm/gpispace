@@ -12,6 +12,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/error.hpp>
 
 #include <we/type/literal/name.hpp>
 
@@ -35,69 +36,72 @@ namespace literal
                         , bitsetofint::type
                         > type;
 
-  class visitor_type_name : public boost::static_visitor<type_name_t>
+  namespace visitor
   {
-  public:
-    type_name_t operator () (const control &) const { return CONTROL; }
-    type_name_t operator () (const bool &) const { return BOOL; }
-    type_name_t operator () (const long &) const { return LONG; }
-    type_name_t operator () (const double &) const { return DOUBLE; }
-    type_name_t operator () (const char &) const { return CHAR; }
-    type_name_t operator () (const std::string &) const { return STRING; }
-    type_name_t operator () (const bitsetofint::type &) const { return BITSET; }
-  };
-
-  class visitor_show : public boost::static_visitor<std::string>
-  {
-  public:
-    std::string operator () (const bool & x) const
+    class type_name : public boost::static_visitor<type_name_t>
     {
-      return x ? "true" : "false";
-    }
+    public:
+      type_name_t operator () (const control &) const { return CONTROL; }
+      type_name_t operator () (const bool &) const { return BOOL; }
+      type_name_t operator () (const long &) const { return LONG; }
+      type_name_t operator () (const double &) const { return DOUBLE; }
+      type_name_t operator () (const char &) const { return CHAR; }
+      type_name_t operator () (const std::string &) const { return STRING; }
+      type_name_t operator () (const bitsetofint::type &) const { return BITSET; }
+    };
 
-    std::string operator () (const long & x) const
+    class show : public boost::static_visitor<std::string>
     {
-      return util::show (x) + "L";
-    }
+    public:
+      std::string operator () (const bool & x) const
+      {
+        return x ? "true" : "false";
+      }
 
-    std::string operator () (const char & x) const
-    {
-      return "'" + util::show (x) + "'";
-    }
+      std::string operator () (const long & x) const
+      {
+        return util::show (x) + "L";
+      }
 
-    std::string operator () (const std::string & x) const
-    {
-      return "\"" + x + "\"";     
-    }
+      std::string operator () (const char & x) const
+      {
+        return "'" + util::show (x) + "'";
+      }
 
-    template<typename T>
-    std::string operator () (const T & x) const
+      std::string operator () (const std::string & x) const
+      {
+        return "\"" + x + "\"";     
+      }
+
+      template<typename T>
+      std::string operator () (const T & x) const
+      {
+        return util::show (x);
+      }
+    };
+
+    class hash : public boost::static_visitor<std::size_t>
     {
-      return util::show (x);
-    }
-  };
+    public:
+      std::size_t operator () (const control &) const
+      {
+        return 42;
+      }
+
+      template<typename T>
+      std::size_t operator () (const T & x) const
+      {
+        boost::hash<T> hasher;
+
+        return hasher(x);
+      }
+    };
+  }
 
   static std::string show (const type v)
   {
-    return boost::apply_visitor (visitor_show(), v);
+    return boost::apply_visitor (visitor::show(), v);
   }
-
-  class visitor_hash : public boost::static_visitor<std::size_t>
-  {
-  public:
-    std::size_t operator () (const control &) const
-    {
-      return 42;
-    }
-
-    template<typename T>
-    std::size_t operator () (const T & x) const
-    {
-      boost::hash<T> hasher;
-
-      return hasher(x);
-    }
-  };
 
   static char read_quoted_char (expr::parse::position & pos)
   {
@@ -290,34 +294,15 @@ namespace literal
       }
   }
 
-  namespace exception
-  {
-    class type_error : public std::runtime_error
-    {
-    public:
-      type_error (const std::string & what)
-        : std::runtime_error ("type error: " + what) {};
-
-      type_error ( const std::string & field
-                 , const std::string & required
-                 , const std::string & given
-                 )
-        : std::runtime_error ( "type error: " + field 
-                             + " requires value of type " + required 
-                             + ", given value of type " + given
-                             ) {};
-    };
-  }
-
   inline const type & require_type ( const signature::field_name_t & field
                                    , const type_name_t & req
                                    , const type & x
                                    )
   {
-    const type_name_t has (boost::apply_visitor (visitor_type_name(), x));
+    const type_name_t has (boost::apply_visitor (visitor::type_name(), x));
 
     if (has != req)
-      throw exception::type_error (field, req, has);
+      throw ::type::error (field, req, has);
 
     return x;
   }
@@ -327,7 +312,7 @@ namespace boost
 {
   static inline std::size_t hash_value (const literal::type & v)
   {
-    return boost::apply_visitor (literal::visitor_hash(), v);
+    return boost::apply_visitor (literal::visitor::hash(), v);
   }
 }
 

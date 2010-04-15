@@ -78,42 +78,45 @@ namespace signature
     friend std::ostream & operator << (std::ostream &, const type &);
   };
 
-  class visitor_show : public boost::static_visitor<std::ostream &>
+  namespace visitor
   {
-  private:
-    std::ostream & s;
-
-  public:
-    visitor_show (std::ostream & _s) : s(_s) {};
-
-    std::ostream & operator () (const literal::type_name_t & t) const
+    class show : public boost::static_visitor<std::ostream &>
     {
-      return s << util::show (t);
-    }
+    private:
+      std::ostream & s;
 
-    std::ostream & operator () (const structured_t & map) const
-    {
-      s << "[";
+    public:
+      show (std::ostream & _s) : s(_s) {};
 
-      for ( structured_t::const_iterator field (map.begin())
-          ; field != map.end()
-          ; ++field
-          )
-        s << ((field != map.begin()) ? ", " : "")
-          <<  util::show (field->first)
-          <<  " := "
-          << util::show (field->second)
-          ;
+      std::ostream & operator () (const literal::type_name_t & t) const
+      {
+        return s << util::show (t);
+      }
 
-      s << "]";
+      std::ostream & operator () (const structured_t & map) const
+      {
+        s << "[";
 
-      return s;
-    }
-  };
+        for ( structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          s << ((field != map.begin()) ? ", " : "")
+            <<  util::show (field->first)
+            <<  " := "
+            << util::show (field->second)
+            ;
+
+        s << "]";
+
+        return s;
+      }
+    };
+  }
 
   inline std::ostream & operator << (std::ostream & os, const type & s)
   {
-    return boost::apply_visitor (visitor_show (os), s.desc());
+    return boost::apply_visitor (visitor::show (os), s.desc());
   }
 }
 

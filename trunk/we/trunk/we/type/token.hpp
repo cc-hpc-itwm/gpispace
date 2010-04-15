@@ -34,66 +34,69 @@ namespace token
 
   typedef expr::eval::context<signature::field_name_t> context_t;
 
-  class visitor_bind : public boost::static_visitor<>
+  namespace visitor
   {
-  private:
-    const signature::field_name_t & name;
-    context_t & c;
-  public:
-    visitor_bind (const signature::field_name_t & _name, context_t & _c)
-      : name (_name)
-      , c (_c)
-    {}
-
-    void operator () (const literal::type & v) const { c.bind (name, v); }
-    void operator () (const value::structured_t & map) const
+    class bind : public boost::static_visitor<>
     {
-      for ( value::structured_t::const_iterator field (map.begin())
-          ; field != map.end()
-          ; ++field
-          )
-        boost::apply_visitor ( visitor_bind (name + "." + field->first, c)
-                             , field->second
-                             );
-    }
-  };
+    private:
+      const signature::field_name_t & name;
+      context_t & c;
+    public:
+      bind (const signature::field_name_t & _name, context_t & _c)
+        : name (_name)
+        , c (_c)
+      {}
 
-  class visitor_unbind : public boost::static_visitor<value::type>
-  {
-  private:
-    const signature::field_name_t & field;
-    const context_t & context;
+      void operator () (const literal::type & v) const { c.bind (name, v); }
+      void operator () (const value::structured_t & map) const
+      {
+        for ( value::structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          boost::apply_visitor ( bind (name + "." + field->first, c)
+                               , field->second
+                               );
+      }
+    };
 
-  public:
-    visitor_unbind ( const signature::field_name_t & _field
-                   , const context_t & _context
-                   )
-      : field (_field)
-      , context (_context)
-    {}
-
-    value::type operator () (const literal::type_name_t & type_name) const
+    class unbind : public boost::static_visitor<value::type>
     {
-      return literal::require_type (field, type_name, context.value (field));
-    }
+    private:
+      const signature::field_name_t & field;
+      const context_t & context;
 
-    value::type operator () (const signature::structured_t & signature) const
-    {
-      value::structured_t structured;
+    public:
+      unbind ( const signature::field_name_t & _field
+             , const context_t & _context
+             )
+        : field (_field)
+        , context (_context)
+      {}
 
-      for ( signature::structured_t::const_iterator sig (signature.begin())
-          ; sig != signature.end()
-          ; ++sig
-          )
-        structured[sig->first] = 
-          boost::apply_visitor 
-           ( visitor_unbind (field + "." + sig->first, context)
-           , sig->second
-           );
+      value::type operator () (const literal::type_name_t & type_name) const
+      {
+        return value::require_type (field, type_name, context.value (field));
+      }
 
-      return structured;
-    }
-  };
+      value::type operator () (const signature::structured_t & signature) const
+      {
+        value::structured_t structured;
+
+        for ( signature::structured_t::const_iterator sig (signature.begin())
+                ; sig != signature.end()
+                ; ++sig
+            )
+          structured[sig->first] = 
+            boost::apply_visitor 
+            ( unbind (field + "." + sig->first, context)
+            , sig->second
+            );
+
+        return structured;
+      }
+    };
+  }
 
   class type
   {
@@ -115,7 +118,7 @@ namespace token
          , const signature::type & signature
          , const value::type & v
          )
-      : value ( boost::apply_visitor ( value::visitor_require_type (field)
+      : value ( boost::apply_visitor ( value::visitor::require_type (field)
                                      , signature.desc()
                                      , v
                                      )
@@ -127,7 +130,7 @@ namespace token
          , const signature::type & signature
          , const context_t & context
          )
-      : value (boost::apply_visitor ( visitor_unbind (field, context)
+      : value (boost::apply_visitor ( visitor::unbind (field, context)
                                     , signature.desc()
                                     )
               )
@@ -135,7 +138,7 @@ namespace token
       
     void bind (const signature::field_name_t & field, context_t & c) const
     {
-      boost::apply_visitor (visitor_bind (field, c), value);
+      boost::apply_visitor (visitor::bind (field, c), value);
     }
 
     friend std::ostream & operator << (std::ostream &, const type &);
@@ -146,12 +149,12 @@ namespace token
 
   inline std::size_t hash_value (const type & t)
   {
-    return boost::apply_visitor (value::visitor_hash(), t.value);
+    return boost::apply_visitor (value::visitor::hash(), t.value);
   }
 
   inline bool operator == (const type & a, const type & b)
   {
-    return boost::apply_visitor (value::visitor_eq(), a.value, b.value);
+    return boost::apply_visitor (value::visitor::eq(), a.value, b.value);
   }
 
   inline bool operator != (const type & a, const type & b)
@@ -161,7 +164,7 @@ namespace token
 
   std::ostream & operator << (std::ostream & s, const type & t)
   {
-    return boost::apply_visitor (value::visitor_show (s), t.value);
+    return s << t.value;
   }
 
   template<typename NET>

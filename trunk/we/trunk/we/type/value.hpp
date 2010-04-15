@@ -5,6 +5,7 @@
 
 #include <we/type/literal.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/error.hpp>
 
 #include <we/util/show.hpp>
 
@@ -64,155 +65,204 @@ namespace value
     }
   };
 
-  class visitor_hash : public boost::static_visitor<std::size_t>
+  std::ostream & operator << (std::ostream &, const type &);
+
+  namespace visitor
   {
-  public:
-    std::size_t operator () (const literal::type & v) const
+    class hash : public boost::static_visitor<std::size_t>
     {
-      return boost::hash_value(v);
-    }
-
-    std::size_t operator () (const structured_t & map) const
-    {
-      const structured_t::map_t::const_iterator pos (map.begin());
-
-      return (pos == map.end()) 
-        ? 3141 
-        : boost::apply_visitor (visitor_hash(), pos->second);
-    }
-  };
-
-  class visitor_show : public boost::static_visitor<std::ostream &>
-  {
-  private:
-    std::ostream & s;
-  public:
-    visitor_show (std::ostream & _s) : s(_s) {}
-
-    std::ostream & operator () (const literal::type & v) const
-    {
-      return s << literal::show (v);
-    }
-
-    std::ostream & operator () (const structured_t & map) const
-    {
-      s << "[";
-
-      for ( structured_t::const_iterator field (map.begin())
-          ; field != map.end()
-          ; ++field
-          )
-        s << ((field != map.begin()) ? ", " : "")
-          << field->first 
-          << " := "
-          << boost::apply_visitor (visitor_show(s), field->second)
-          ;
-
-      s << "]";
-
-      return s;
-    }
-  };
-
-  // binary visiting
-  class visitor_require_type : public boost::static_visitor<type>
-  {
-  private:
-    const signature::field_name_t & field_name;
-
-  public:
-    visitor_require_type (const signature::field_name_t & _field_name)
-      : field_name (_field_name)
-    {}
-
-    type operator () ( const literal::type_name_t & type_name
-                     , const literal::type & v
-                     ) const
-    {
-      return literal::require_type (field_name, type_name, v);
-    }
-
-    type operator () ( const signature::structured_t & signature
-                     , const structured_t & v
-                     ) const
-    {
-      for ( signature::structured_t::const_iterator sig (signature.begin())
-          ; sig != signature.end()
-          ; ++sig
-          )
-        {
-          const structured_t::const_iterator pos (v.find (sig->first));
-
-          if (!v.has_field (sig->first))
-            throw literal::exception::type_error ( "missing field " 
-                                                 + sig->first
-                                                 );
-
-          boost::apply_visitor
-            ( visitor_require_type (field_name + "." + sig->first)
-            , sig->second
-            , pos->second
-            );
-        }
-
-      for ( structured_t::const_iterator field (v.begin())
-          ; field != v.end()
-          ; ++field
-          )
-        if (!signature.has_field (field->first))
-          throw literal::exception::type_error ( "unknown field " 
-                                               + field->first
-                                               );
-
-      return v;
-    }
-
-    template<typename T, typename U>
-    type operator () (const T &, const U &) const
-    {
-      throw literal::exception::type_error ("incompatible types");
-    }
-  };
-
-  bool smaller_or_equal (const structured_t &, const structured_t &);
-
-  class visitor_eq : public boost::static_visitor<bool>
-  {
-  public:
-    bool operator () (const literal::type & x, const literal::type & y) const
-    {
-      return x == y;
-    }
-
-    bool operator () (const structured_t & x, const structured_t & y) const
-    {
-      return smaller_or_equal (x, y) && smaller_or_equal (y, x);
-    }
-
-    template<typename A, typename B>
-    bool operator () (const A &, const B &) const
-    {
-      return false;
-    }
-  };
-
-  bool smaller_or_equal (const structured_t & x, const structured_t & y)
-  {
-    bool all_eq (true);
-
-    for ( structured_t::const_iterator field (x.begin())
-        ; field != x.end() && all_eq == true
-        ; ++field
-        )
+    public:
+      std::size_t operator () (const literal::type & v) const
       {
-        const structured_t::const_iterator pos (y.find (field->first));
-
-        all_eq = (pos == y.end()) 
-          ? false
-          : boost::apply_visitor (visitor_eq(), field->second, pos->second);
+        return boost::hash_value(v);
       }
 
-    return all_eq;
+      std::size_t operator () (const structured_t & map) const
+      {
+        const structured_t::map_t::const_iterator pos (map.begin());
+
+        return (pos == map.end()) 
+          ? 3141 
+          : boost::apply_visitor (hash(), pos->second);
+      }
+    };
+
+    class show : public boost::static_visitor<std::ostream &>
+    {
+    private:
+      std::ostream & s;
+
+    public:
+      show (std::ostream & _s) : s(_s) {}
+
+      std::ostream & operator () (const literal::type & v) const
+      {
+        return s << literal::show (v);
+      }
+
+      std::ostream & operator () (const structured_t & map) const
+      {
+        s << "[";
+
+        for ( structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          s << ((field != map.begin()) ? ", " : "")
+            << field->first << " := " << field->second
+            ;
+
+        s << "]";
+
+        return s;
+      }
+    };
+
+    // binary visiting
+    class require_type : public boost::static_visitor<type>
+    {
+    private:
+      const signature::field_name_t & field_name;
+
+    public:
+      require_type (const signature::field_name_t & _field_name)
+        : field_name (_field_name)
+      {}
+
+      type operator () ( const literal::type_name_t & type_name
+                       , const literal::type & v
+                       ) const
+      {
+        return literal::require_type (field_name, type_name, v);
+      }
+
+      type operator () ( const signature::structured_t & signature
+                       , const structured_t & v
+                       ) const
+      {
+        for ( signature::structured_t::const_iterator sig (signature.begin())
+            ; sig != signature.end()
+            ; ++sig
+            )
+          {
+            const structured_t::const_iterator pos (v.find (sig->first));
+
+            if (!v.has_field (sig->first))
+              throw ::type::error ("missing field " + sig->first);
+
+            boost::apply_visitor
+              ( require_type (field_name + "." + sig->first)
+              , sig->second
+              , pos->second
+              );
+          }
+
+        for ( structured_t::const_iterator field (v.begin())
+            ; field != v.end()
+            ; ++field
+            )
+          if (!signature.has_field (field->first))
+            throw ::type::error ("unknown field " + field->first);
+
+        return v;
+      }
+
+      template<typename T, typename U>
+      type operator () (const T &, const U &) const
+      {
+        throw ::type::error ("incompatible types");
+      }
+    };
+
+    bool smaller_or_equal (const structured_t &, const structured_t &);
+
+    class eq : public boost::static_visitor<bool>
+    {
+    public:
+      bool operator () (const literal::type & x, const literal::type & y) const
+      {
+        return x == y;
+      }
+
+      bool operator () (const structured_t & x, const structured_t & y) const
+      {
+        return smaller_or_equal (x, y) && smaller_or_equal (y, x);
+      }
+
+      template<typename A, typename B>
+      bool operator () (const A &, const B &) const
+      {
+        return false;
+      }
+    };
+
+    bool smaller_or_equal (const structured_t & x, const structured_t & y)
+    {
+      bool all_eq (true);
+
+      for ( structured_t::const_iterator field (x.begin())
+              ; field != x.end() && all_eq == true
+              ; ++field
+          )
+        {
+          const structured_t::const_iterator pos (y.find (field->first));
+
+          all_eq = (pos == y.end()) 
+            ? false
+            : boost::apply_visitor (eq(), field->second, pos->second);
+        }
+
+      return all_eq;
+    }
+
+    class type_name : public boost::static_visitor<literal::type_name_t>
+    {
+    public:
+      literal::type_name_t operator () (const literal::type & x) const
+      {
+        return boost::apply_visitor (literal::visitor::type_name(), x);
+      }
+
+      literal::type_name_t operator () (const structured_t & m) const
+      {
+        literal::type_name_t name ("[");
+
+        for ( structured_t::const_iterator field (m.begin())
+            ; field != m.end()
+            ; ++field
+            )
+          name += ((field != m.begin()) ? ", " : "")
+               +  field->first
+               +  ": "
+               +  boost::apply_visitor (type_name(), field->second)
+            ;
+
+        name += "]";
+
+        return name;
+      }
+    };
+  }
+
+  inline const type & require_type ( const signature::field_name_t & field
+                                   , const literal::type_name_t & req
+                                   , const type & x
+                                   )
+  {
+    const literal::type_name_t has ( boost::apply_visitor ( visitor::type_name()
+                                                          , x
+                                                          )
+                                   );
+
+    if (has != req)
+      throw ::type::error (field, req, has);
+
+    return x;
+  }
+
+  std::ostream & operator << (std::ostream & s, const type & x)
+  {
+    return boost::apply_visitor (visitor::show (s), x);
   }
 }
 

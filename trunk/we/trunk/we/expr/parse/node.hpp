@@ -7,7 +7,7 @@
 #include <we/expr/token/prop.hpp>
 #include <we/expr/exception.hpp>
 
-#include <we/type/literal.hpp>
+#include <we/type/value.hpp>
 
 #include <stdexcept>
 #include <iostream>
@@ -44,14 +44,14 @@ namespace expr
         typedef boost::shared_ptr<type> ptr_t;
 
         flag::flag flag;
-        literal::type value;
+        value::type value;
         Key ref;
         token::type token;
         ptr_t child0;
         ptr_t child1;
         ptr_t child2;
 
-        type (const literal::type & _value)
+        type (const value::type & _value)
           : flag (flag::value)
           , value (_value)
           , ref ()
@@ -112,11 +112,12 @@ namespace expr
       template<typename Key>
       std::ostream & operator << (std::ostream & s, const type<Key> & nd)
       {
-        static const literal::visitor_show vs;
-
         switch (nd.flag)
           {
-          case flag::value: return s << literal::show (nd.value);
+          case flag::value: 
+            return boost::apply_visitor ( value::visitor::show (s)
+                                        , nd.value
+                                        );
           case flag::ref: return s << "${" << nd.ref << "}";
           case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
           case flag::binary:
@@ -141,7 +142,7 @@ namespace expr
       }
 
       template<typename Key>
-      const literal::type & get (const type<Key> & node)
+      const value::type & get (const type<Key> & node)
       {
         if (node.flag != flag::value)
           throw exception::eval::type_error ("get: node is not an value");
