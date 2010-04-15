@@ -3,8 +3,8 @@
 #ifndef _WE_TYPE_PLACE_HPP
 #define _WE_TYPE_PLACE_HPP
 
-#include <we/type/id.hpp>
 #include <we/type/control.hpp>
+#include <we/type/literal.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/serialize/unordered_map.hpp>
@@ -46,7 +46,7 @@ namespace place
     {}
 
     type ( const name_t & _name
-         , const signature::type_name_t & _type_name
+         , const literal::type_name_t & _type_name
          )
       : name (_name)
       , signature (_type_name)

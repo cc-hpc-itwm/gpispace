@@ -13,6 +13,8 @@
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
 
+#include <we/type/literal/name.hpp>
+
 #include <boost/variant.hpp>
 
 #include <boost/functional/hash.hpp>
@@ -33,16 +35,16 @@ namespace literal
                         , bitsetofint::type
                         > type;
 
-  class visitor_type_name : public boost::static_visitor<signature::type_name_t>
+  class visitor_type_name : public boost::static_visitor<type_name_t>
   {
   public:
-    signature::type_name_t operator () (const control &) const { return "control"; }
-    signature::type_name_t operator () (const bool &) const { return "bool"; }
-    signature::type_name_t operator () (const long &) const { return "long"; }
-    signature::type_name_t operator () (const double &) const { return "double"; }
-    signature::type_name_t operator () (const char &) const { return "char"; }
-    signature::type_name_t operator () (const std::string &) const { return "string"; }
-    signature::type_name_t operator () (const bitsetofint::type &) const { return "bitset"; }
+    type_name_t operator () (const control &) const { return CONTROL; }
+    type_name_t operator () (const bool &) const { return BOOL; }
+    type_name_t operator () (const long &) const { return LONG; }
+    type_name_t operator () (const double &) const { return DOUBLE; }
+    type_name_t operator () (const char &) const { return CHAR; }
+    type_name_t operator () (const std::string &) const { return STRING; }
+    type_name_t operator () (const bitsetofint::type &) const { return BITSET; }
   };
 
   class visitor_show : public boost::static_visitor<std::string>
@@ -308,13 +310,13 @@ namespace literal
   }
 
   inline const type & require_type ( const signature::field_name_t & field
-                                   , const signature::type_name_t & req
+                                   , const type_name_t & req
                                    , const type & x
                                    )
   {
     static visitor_type_name vtn;
 
-    const signature::type_name_t has (boost::apply_visitor (vtn, x));
+    const type_name_t has (boost::apply_visitor (vtn, x));
 
     if (has != req)
       throw exception::type_error (field, req, has);

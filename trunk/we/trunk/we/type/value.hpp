@@ -23,8 +23,7 @@ namespace value
 {
   struct structured_t;
 
-  typedef boost::variant< control
-                        , literal::type
+  typedef boost::variant< literal::type
                         , boost::recursive_wrapper<structured_t>
                         > type;
 
@@ -141,7 +140,7 @@ namespace value
       return v;
     }
 
-    type operator () ( const signature::type_name_t & type_name
+    type operator () ( const literal::type_name_t & type_name
                      , const literal::type & v
                      ) const
     {

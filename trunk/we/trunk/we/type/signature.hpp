@@ -4,6 +4,7 @@
 #define _WE_TYPE_SIGNATURE_HPP
 
 #include <we/type/control.hpp>
+#include <we/type/literal/name.hpp>
 #include <we/util/show.hpp>
 
 #include <boost/variant.hpp>
@@ -17,13 +18,12 @@
 
 namespace signature
 {
-  typedef std::string type_name_t;
   typedef std::string field_name_t;
 
   struct structured_t;
 
   typedef boost::variant< control
-                        , type_name_t
+                        , literal::type_name_t
                         , boost::recursive_wrapper<structured_t>
                         > desc_t;
 
@@ -71,46 +71,48 @@ namespace signature
       ar & BOOST_SERIALIZATION_NVP(desc_);
     }
   public:
-    type () : desc_ (control()) {}
+    type () : desc_ (literal::CONTROL) {}
     template <typename T>
     type (const T & t) : desc_ (t) {}
-
 
     const desc_t & desc () const { return desc_; }
 
     friend std::ostream & operator << (std::ostream &, const type &);
   };
 
-  class visitor_show : public boost::static_visitor<std::string>
+  class visitor_show : public boost::static_visitor<std::ostream &>
   {
+  private:
+    std::ostream & s;
+
   public:
-    std::string operator () (const control & x) const
+    visitor_show (std::ostream & _s) : s(_s) {};
+
+    std::ostream & operator () (const control & x) const
     {
-      return util::show (x);
+      return s << util::show (x);
     }
 
-    std::string operator () (const type_name_t & t) const
+    std::ostream & operator () (const literal::type_name_t & t) const
     {
-      return util::show (t);
+      return s << util::show (t);
     }
 
-    std::string operator () (const structured_t & map) const
+    std::ostream & operator () (const structured_t & map) const
     {
-      std::string s;
-
-      s += "[";
+      s << "[";
 
       for ( structured_t::const_iterator field (map.begin())
           ; field != map.end()
           ; ++field
           )
-        s += ((field != map.begin()) ? ", " : "")
-          +  util::show (field->first)
-          +  " := "
-          +  util::show (field->second)
+        s << ((field != map.begin()) ? ", " : "")
+          <<  util::show (field->first)
+          <<  " := "
+          << util::show (field->second)
           ;
 
-      s += "]";
+      s << "]";
 
       return s;
     }
@@ -118,9 +120,7 @@ namespace signature
 
   inline std::ostream & operator << (std::ostream & os, const type & s)
   {
-    static const visitor_show vs;
-
-    return os << boost::apply_visitor (vs, s.desc());
+    return boost::apply_visitor (visitor_show (os), s.desc());
   }
 }
 

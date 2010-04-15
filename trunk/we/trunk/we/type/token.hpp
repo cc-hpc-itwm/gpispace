@@ -78,7 +78,7 @@ namespace token
       return literal::require_type (field, "control", context.value (field));
     }
 
-    value::type operator () (const signature::type_name_t & type_name) const
+    value::type operator () (const literal::type_name_t & type_name) const
     {
       return literal::require_type (field, type_name, context.value (field));
     }
