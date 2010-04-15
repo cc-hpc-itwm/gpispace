@@ -5,8 +5,8 @@
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/node.hpp>
-#include <we/expr/token/function.hpp>
 #include <we/type/literal.hpp>
+#include <we/type/literal/function.hpp>
 
 namespace expr
 {
@@ -25,7 +25,7 @@ namespace expr
           {
             literal::type c (eval (*node.child0, context));
 
-            return boost::apply_visitor ( token::function::unary (node.token)
+            return boost::apply_visitor ( literal::function::unary (node.token)
                                         , c
                                         );
           }
@@ -39,13 +39,13 @@ namespace expr
               literal::type l (eval (*node.child0, context));
               literal::type r (eval (*node.child1, context));
 
-              return boost::apply_visitor ( token::function::binary (node.token)
+              return boost::apply_visitor ( literal::function::binary (node.token)
                                           , l
                                           , r
                                           );
             }
         case expr::parse::node::flag::ternary:
-          return token::function::ternary ( node.token
+          return literal::function::ternary ( node.token
                                           , eval (*node.child0, context)
                                           , eval (*node.child1, context)
                                           , eval (*node.child2, context)

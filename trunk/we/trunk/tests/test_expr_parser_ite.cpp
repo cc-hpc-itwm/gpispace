@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/expr/parse/parser.hpp>
+#include <we/type/literal/function.hpp>
 
 #include <iostream>
 #include <string>
@@ -25,7 +26,7 @@ main (int argc, char ** argv)
       parser.eval_all (context);
       std::cout << " " << literal::show (context.value (0));
     }
-  while (!expr::token::function::is_true (context.value (1)));
+  while (!literal::function::is_true (context.value (1)));
 
   std::cout << std::endl;
 

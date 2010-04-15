@@ -6,12 +6,12 @@
 #include <we/expr/parse/action.hpp>
 #include <we/expr/parse/node.hpp>
 
-#include <we/expr/token/function.hpp>
 #include <we/expr/token/prop.hpp>
 #include <we/expr/token/tokenizer.hpp>
 #include <we/expr/token/type.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/literal/function.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/eval.hpp>
@@ -75,7 +75,7 @@ namespace expr
 
         if (c.flag == node::flag::value)
           nd_stack.push_back 
-            (nd_t (boost::apply_visitor ( token::function::unary (token)
+            (nd_t (boost::apply_visitor ( literal::function::unary (token)
                                         , c.value
                                         )
                   )
@@ -102,7 +102,7 @@ namespace expr
 
         if (l.flag == node::flag::value && r.flag == node::flag::value)
           nd_stack.push_back 
-            (nd_t (boost::apply_visitor ( token::function::binary (token)
+            (nd_t (boost::apply_visitor ( literal::function::binary (token)
                                         , l.value
                                         , r.value
                                         )
@@ -136,7 +136,7 @@ namespace expr
 
         if (condition.flag == node::flag::value)
           {
-            if (token::function::is_true(condition.value))
+            if (literal::function::is_true(condition.value))
               nd_stack.push_back (case_true);
             else
               nd_stack.push_back (case_false);
@@ -292,7 +292,7 @@ namespace expr
 
       bool eval_front_bool (eval::context<Key> & context) const
       {
-        return token::function::is_true(eval_front (context));
+        return literal::function::is_true(eval_front (context));
       }
 
       // get the already evaluated value, throws if entry is not an value
@@ -303,7 +303,7 @@ namespace expr
 
       bool get_front_bool () const 
       {
-        return token::function::is_true(get_front ());
+        return literal::function::is_true(get_front ());
       }
 
       // evaluate the hole stack in order, return the last value
@@ -321,7 +321,7 @@ namespace expr
       {
         const literal::type v (eval_all (context));
 
-        return token::function::is_true(v);
+        return literal::function::is_true(v);
       }
 
       template<typename K, typename R>
