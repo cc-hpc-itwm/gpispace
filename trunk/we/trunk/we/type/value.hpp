@@ -3,7 +3,6 @@
 #ifndef _WE_TYPE_VALUE_HPP
 #define _WE_TYPE_VALUE_HPP
 
-#include <we/type/control.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/signature.hpp>
 
@@ -68,10 +67,6 @@ namespace value
   class visitor_hash : public boost::static_visitor<std::size_t>
   {
   public:
-    std::size_t operator () (const control &) const
-    {
-      return 2718;
-    }
     std::size_t operator () (const literal::type & v) const
     {
       return boost::hash_value(v);
@@ -93,11 +88,6 @@ namespace value
     std::ostream & s;
   public:
     visitor_show (std::ostream & _s) : s(_s) {}
-
-    std::ostream & operator () (const control & x) const
-    {
-      return s << util::show (x);
-    }
 
     std::ostream & operator () (const literal::type & v) const
     {
@@ -134,11 +124,6 @@ namespace value
     visitor_require_type (const signature::field_name_t & _field_name)
       : field_name (_field_name)
     {}
-
-    type operator () (const control &, const control & v) const
-    {
-      return v;
-    }
 
     type operator () ( const literal::type_name_t & type_name
                      , const literal::type & v
@@ -194,11 +179,6 @@ namespace value
   class visitor_eq : public boost::static_visitor<bool>
   {
   public:
-    bool operator () (const control &, const control &) const
-    {
-      return true;
-    }
-
     bool operator () (const literal::type & x, const literal::type & y) const
     {
       return x == y;

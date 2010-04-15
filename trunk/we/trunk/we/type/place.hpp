@@ -3,7 +3,6 @@
 #ifndef _WE_TYPE_PLACE_HPP
 #define _WE_TYPE_PLACE_HPP
 
-#include <we/type/control.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/name.hpp>
 #include <we/type/signature.hpp>
