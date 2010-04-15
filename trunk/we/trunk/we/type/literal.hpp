@@ -314,9 +314,7 @@ namespace literal
                                    , const type & x
                                    )
   {
-    static visitor_type_name vtn;
-
-    const type_name_t has (boost::apply_visitor (vtn, x));
+    const type_name_t has (boost::apply_visitor (visitor_type_name(), x));
 
     if (has != req)
       throw exception::type_error (field, req, has);

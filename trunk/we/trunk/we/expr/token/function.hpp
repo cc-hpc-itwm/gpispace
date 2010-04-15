@@ -41,9 +41,7 @@ namespace expr
 
       static bool is_true (const literal::type & v)
       {
-        static const visitor_is_true vt;
-
-        return boost::apply_visitor (vt, v);
+        return boost::apply_visitor (visitor_is_true(), v);
       }
 
       class unary : public boost::static_visitor<literal::type>
