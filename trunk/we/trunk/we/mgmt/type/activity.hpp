@@ -79,6 +79,20 @@ namespace we { namespace mgmt { namespace type {
       , transition_ (transition)
     { }
 
+    template <typename T>
+    activity_t (const T & transition)
+      : id_ (petri_net::traits::id_traits<id_type>::invalid())
+      , parent_ (petri_net::traits::id_traits<id_type>::invalid())
+      , transition_ (transition)
+    { }
+
+    template <typename T>
+    activity_t (const id_type id, const T & transition, const id_type parent)
+      : id_ (id)
+      , parent_ (parent)
+      , transition_ (transition)
+    { }
+
     activity_t (const this_type & other)
       : id_ (other.id_)
       , parent_ (other.parent_)
@@ -104,6 +118,7 @@ namespace we { namespace mgmt { namespace type {
       return *this;
     }
 
+    // TODO remove this?
     template <typename T>
     void assign( T const & t )
     {
@@ -111,7 +126,6 @@ namespace we { namespace mgmt { namespace type {
       transition_ = t;
     }
 
-    // WORK TODO serialization
     struct flags_t
     {
       bool suspended;
@@ -171,6 +185,13 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
+    void set_id ( const id_type new_id )
+    {
+      unique_lock_t lock(*this);
+      id_ = new_id;
+    }
+
+    inline
     id_type parent() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
@@ -186,7 +207,15 @@ namespace we { namespace mgmt { namespace type {
     this_type
     extract(const id_type id)
     {
-      throw std::runtime_error("extract(): not implemented");
+      unique_lock_t lock(*this);
+      we::mgmt::visitor::activity_extractor<this_type, boost::mt19937>
+        extract_activity(engine_);
+      this_type act = boost::apply_visitor ( extract_activity
+                                           , transition_.data()
+                                           );
+      act.set_id (id);
+      this->link_child (act);
+      return act;
     }
 
     // TODO: work here
@@ -222,7 +251,7 @@ namespace we { namespace mgmt { namespace type {
     bool
     has_enabled (void) const
     {
-      static we::mgmt::visitor::has_enabled visitor_has_enabled;
+      static const we::mgmt::visitor::has_enabled visitor_has_enabled;
 
       shared_lock_t lock(const_cast<this_type&>(*this));
       return boost::apply_visitor (visitor_has_enabled,  transition().data());
@@ -233,6 +262,7 @@ namespace we { namespace mgmt { namespace type {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return input_;
     }
+
     input_t & input()
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
@@ -245,9 +275,17 @@ namespace we { namespace mgmt { namespace type {
       return output_;
     }
 
+    template <typename Input>
+    void
+    input ( const Input & i )
+    {
+      unique_lock_t lock(*this);
+      input_ = i;
+    }
+
     template <typename Output>
     void
-    set_output ( const Output & o )
+    output ( const Output & o )
     {
       unique_lock_t lock(*this);
       output_ = o;
@@ -374,6 +412,8 @@ namespace we { namespace mgmt { namespace type {
                              , const activity_t<Transition, Token, Id, Traits> & act
                              )
   {
+    typedef activity_t<Transition, Token, Id, Traits> activity_t;
+
     os << "{";
       os << "act, "
          << act.id()
@@ -382,9 +422,30 @@ namespace we { namespace mgmt { namespace type {
          << ", "
          << act.transition()
          << ", "
-         << "input" // TODO input
-         << "output" // TODO output
-      ;
+         ;
+
+    os << "{input, "
+       << "[";
+    for (typename activity_t::input_t::const_iterator i (act.input().begin()); i != act.input().end(); ++i)
+    {
+      if (i != act.input().begin())
+        os << ", ";
+      os << "(" << i->first << ", " << i->second << ")";
+    }
+    os << "]";
+
+    os << ", ";
+
+    os << "{output, "
+       << "[";
+    for (typename activity_t::output_t::const_iterator o (act.output().begin()); o != act.output().end(); ++o)
+    {
+      if (o != act.output().begin())
+        os << ", ";
+      os << "(" << o->first << ", " << o->second << ")";
+    }
+    os << "]";
+
     os << "}";
     return os;
   }
