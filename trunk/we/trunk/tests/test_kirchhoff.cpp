@@ -24,6 +24,8 @@
 
 #include <boost/serialization/nvp.hpp>
 
+#include <iomanip>
+
 // ************************************************************************* //
 
 static long NUM_VID (4);
@@ -48,6 +50,11 @@ static edge_t mk_edge (const std::string & descr)
 
 // ************************************************************************* //
 
+typedef std::pair<std::string,std::string> pair_t;
+typedef std::map<pair_t,unsigned long> cnt_map_t;
+
+static cnt_map_t cnt_map;
+
 typedef unsigned int transition_cnt_t;
 
 struct transition_t
@@ -67,6 +74,8 @@ public:
   bool condition (Function::Condition::Traits<token::type>::choices_t & choices)
     const
   {
+    cnt_map[pair_t(name, cond.expression())]++;
+
     return cond (choices);
   }
 
@@ -155,6 +164,8 @@ public:
                                , const pnet_t::output_descr_t & output_descr
                                )
   {
+    cnt_map[pair_t(name,"")]++;
+
     for ( pnet_t::input_t::const_iterator top (input.begin())
         ; top != input.end()
         ; ++top
@@ -284,7 +295,8 @@ main (int argc, char ** argv)
   pnet_t net;
 
   petri_net::pid_t pid_NUM_VID (net.add_place (place::type("NUM_VID","long")));
-  petri_net::pid_t pid_NUM_BID (net.add_place (place::type("NUM_BID","long")));
+  petri_net::pid_t pid_NUM_BID_next (net.add_place (place::type("NUM_BID_next","long")));
+  petri_net::pid_t pid_NUM_BID_done (net.add_place (place::type("NUM_BID_done","long")));
   petri_net::pid_t pid_NUM_STORE (net.add_place (place::type("NUM_STORE","long")));
   petri_net::pid_t pid_NUM_BUF (net.add_place (place::type("NUM_BUF","long")));
 
@@ -412,12 +424,12 @@ main (int argc, char ** argv)
       ( net
       , "done_vid"
       , "${vid_out} := ${vid_buf_processed.vid}"
-      , "${vid_buf_processed.numbid} == ${NUM_BID}"
+      , "${vid_buf_processed.numbid} == ${NUM_BID_done}"
       )
     );
 
   net.add_edge (mk_edge ("get vid_buf_processed"), connection_t (PT, tid_done_vid, pid_vid_buf_processed));
-  net.add_edge (mk_edge ("read NUM_BID"), connection_t (PT_READ, tid_done_vid, pid_NUM_BID));
+  net.add_edge (mk_edge ("read NUM_BID_done"), connection_t (PT_READ, tid_done_vid, pid_NUM_BID_done));
   net.add_edge (mk_edge ("set vid_out"), connection_t (TP, tid_done_vid, pid_vid_out));
 
   petri_net::tid_t tid_next_vid
@@ -427,16 +439,17 @@ main (int argc, char ** argv)
       , "${vid_buf_empty.vid}    := ${vid_buf_processed.vid}    ;\
          ${vid_buf_empty.bufid}  := ${vid_buf_processed.bufid}  ;\
          ${vid_buf_empty.numbid} := ${vid_buf_processed.numbid}  "
-      , "${vid_buf_processed.numbid} != ${NUM_BID}"
+      , "${vid_buf_processed.numbid} != ${NUM_BID_next}"
       )
     );
 
   net.add_edge (mk_edge ("get vid_buf_processed"), connection_t (PT, tid_next_vid, pid_vid_buf_processed));
-  net.add_edge (mk_edge ("read NUM_BID"), connection_t (PT_READ, tid_next_vid, pid_NUM_BID));
+  net.add_edge (mk_edge ("read NUM_BID_next"), connection_t (PT_READ, tid_next_vid, pid_NUM_BID_next));
   net.add_edge (mk_edge ("set vid_buf_empty"), connection_t (TP, tid_next_vid, pid_vid_buf_empty));
 
   token::put (net, pid_NUM_VID, NUM_VID);
-  token::put (net, pid_NUM_BID, NUM_BID);
+  token::put (net, pid_NUM_BID_done, NUM_BID);
+  token::put (net, pid_NUM_BID_next, NUM_BID);
   token::put (net, pid_NUM_BUF, NUM_BUF);
   token::put (net, pid_NUM_STORE, NUM_STORE);
 
@@ -469,6 +482,14 @@ main (int argc, char ** argv)
   }
 
   marking (net);
+
+  std::cout << std::endl << "*** cnt_map:" << std::endl;
+
+  for (cnt_map_t::const_iterator it (cnt_map.begin()); it != cnt_map.end(); ++it)
+    std::cout << std::setw(8) << it->second
+              << " [" << std::setw(10) << it->first.first << "]"
+              << " " << it->first.second
+              << std::endl;
 
   return EXIT_SUCCESS;
 }
