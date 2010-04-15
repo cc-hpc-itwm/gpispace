@@ -60,7 +60,6 @@ namespace value
 
     const_iterator begin (void) const { return map.begin(); }
     const_iterator end (void) const { return map.end(); }
-    bool is_empty (void) const { return begin() == end(); }
 
     bool has_field (const signature::field_name_t & field_name) const
     {
