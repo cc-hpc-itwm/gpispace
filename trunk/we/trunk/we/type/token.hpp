@@ -50,6 +50,8 @@ namespace token
       void operator () (const literal::type & v) const { c.bind (name, v); }
       void operator () (const value::structured_t & map) const
       {
+        c.bind (name, map);
+
         for ( value::structured_t::const_iterator field (map.begin())
             ; field != map.end()
             ; ++field
@@ -81,19 +83,54 @@ namespace token
 
       value::type operator () (const signature::structured_t & signature) const
       {
-        value::structured_t structured;
+        value::type sub;
 
+        // first extract the complete subval
+        try
+          {
+            signature::type sig (signature);
+
+            sub = boost::apply_visitor ( value::visitor::require_type (field)
+                                       , sig.desc()
+                                       , context.value (field)
+                                       );
+
+          }
+        catch (expr::exception::eval::missing_binding<signature::field_name_t>)
+          {
+            // there is no complete subval given, just adjust the type of sub
+
+            sub = value::structured_t ();
+          }
+
+        // special settings for the components are prefered
         for ( signature::structured_t::const_iterator sig (signature.begin())
-                ; sig != signature.end()
-                ; ++sig
+            ; sig != signature.end()
+            ; ++sig
             )
-          structured[sig->first] = 
-            boost::apply_visitor 
-            ( unbind (field + "." + sig->first, context)
-            , sig->second
-            );
+          try
+            {
+              boost::apply_visitor
+                ( value::visitor::set_field 
+                  ( sig->first
+                  , boost::apply_visitor 
+                    ( unbind (field + "." + sig->first, context)
+                    , sig->second
+                    )
+                  )
+                , sub
+                );
+            }
+          catch (expr::exception::eval::missing_binding<signature::field_name_t> & miss)
+            {
+              if (!boost::apply_visitor (value::visitor::has_field (sig->first)
+                                        , sub
+                                        )
+                 )
+                throw miss;
+            }
 
-        return structured;
+        return sub;
       }
     };
   }

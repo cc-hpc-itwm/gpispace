@@ -46,6 +46,8 @@ namespace value
       ar & BOOST_SERIALIZATION_NVP(map);
     }
   public:
+    structured_t () : map () {}
+
     type & operator [] (const signature::field_name_t & field_name)
     {
       return map[field_name];
@@ -58,6 +60,7 @@ namespace value
 
     const_iterator begin (void) const { return map.begin(); }
     const_iterator end (void) const { return map.end(); }
+    bool is_empty (void) const { return begin() == end(); }
 
     bool has_field (const signature::field_name_t & field_name) const
     {
@@ -69,6 +72,50 @@ namespace value
 
   namespace visitor
   {
+    class set_field : public boost::static_visitor<void>
+    {
+    private:
+      signature::field_name_t name;
+      type val;
+
+    public:
+      set_field ( const signature::field_name_t & _name
+                , const type & _val
+                )
+        : name (_name)
+        , val (_val)
+      {}
+
+      void operator () (structured_t & s) const
+      {
+        s[name] = val;
+      }
+
+      void operator () (literal::type & l) const
+      {
+        throw std::runtime_error ("cannot set field " + name + " to val " + util::show(val) + " in the literal " + util::show(l));
+      }
+    };
+
+    class has_field : public boost::static_visitor<bool>
+    {
+    private:
+      signature::field_name_t name;
+
+    public:
+      has_field (const signature::field_name_t & _name) : name (_name) {}
+
+      bool operator () (const structured_t & s) const
+      {
+        return s.has_field (name);
+      }
+
+      bool operator () (const literal::type &) const
+      {
+        return false;
+      }
+    };
+
     class hash : public boost::static_visitor<std::size_t>
     {
     public:
