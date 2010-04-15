@@ -5,6 +5,7 @@
 
 #include <we/type/control.hpp>
 #include <we/type/literal.hpp>
+#include <we/type/literal/name.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/serialize/unordered_map.hpp>
@@ -39,14 +40,9 @@ namespace place
     type ()
     {}
 
-    explicit
-    type (const name_t & _name)
-      : name (_name)
-      , signature (control())
-    {}
-
+    explicit 
     type ( const name_t & _name
-         , const literal::type_name_t & _type_name
+         , const literal::type_name_t & _type_name = literal::CONTROL
          )
       : name (_name)
       , signature (_type_name)

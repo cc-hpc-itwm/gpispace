@@ -22,8 +22,7 @@ namespace signature
 
   struct structured_t;
 
-  typedef boost::variant< control
-                        , literal::type_name_t
+  typedef boost::variant< literal::type_name_t
                         , boost::recursive_wrapper<structured_t>
                         > desc_t;
 
@@ -87,11 +86,6 @@ namespace signature
 
   public:
     visitor_show (std::ostream & _s) : s(_s) {};
-
-    std::ostream & operator () (const control & x) const
-    {
-      return s << util::show (x);
-    }
 
     std::ostream & operator () (const literal::type_name_t & t) const
     {

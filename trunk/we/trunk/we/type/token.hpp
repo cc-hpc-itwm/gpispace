@@ -45,7 +45,6 @@ namespace token
       , c (_c)
     {}
 
-    void operator () (const control &) const { c.bind (name, control()); }
     void operator () (const literal::type & v) const { c.bind (name, v); }
     void operator () (const value::structured_t & map) const
     {
@@ -72,11 +71,6 @@ namespace token
       : field (_field)
       , context (_context)
     {}
-
-    value::type operator () (const control &) const
-    {
-      return literal::require_type (field, "control", context.value (field));
-    }
 
     value::type operator () (const literal::type_name_t & type_name) const
     {
