@@ -96,7 +96,7 @@ int main (int, char **)
   token::put (net, pid_vid, literal::type(0L));
 
   {
-    token::structured_t m;
+    value::structured_t m;
 
     m["bid"] = 0L;
     m["seen"] = bitsetofint::type(0);

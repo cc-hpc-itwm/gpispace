@@ -276,7 +276,7 @@ main (int argc, char ** argv)
 
   for (long i (0); i < NUM_BID; ++i)
     {
-      token::structured_t m;
+      value::structured_t m;
 
       m["bid"] = i;
       m["seen"] = bitsetofint::type(0);

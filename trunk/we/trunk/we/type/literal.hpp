@@ -77,9 +77,7 @@ namespace literal
 
   static std::string show (const type v)
   {
-    static const visitor_show vs;
-
-    return boost::apply_visitor (vs, v);
+    return boost::apply_visitor (visitor_show(), v);
   }
 
   class visitor_hash : public boost::static_visitor<std::size_t>
@@ -295,6 +293,9 @@ namespace literal
     class type_error : public std::runtime_error
     {
     public:
+      type_error (const std::string & what)
+        : std::runtime_error ("type error: " + what) {};
+
       type_error ( const std::string & field
                  , const std::string & required
                  , const std::string & given
@@ -326,9 +327,7 @@ namespace boost
 {
   static inline std::size_t hash_value (const literal::type & v)
   {
-    static const literal::visitor_hash h;
-
-    return boost::apply_visitor (h, v);
+    return boost::apply_visitor (literal::visitor_hash(), v);
   }
 }
 

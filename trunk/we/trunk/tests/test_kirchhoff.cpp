@@ -180,6 +180,9 @@ public:
         token.bind (translate (pid), context);
       }
 
+    std::cout << "Bound before eval" << std::endl;
+    std::cout << context << std::endl;
+
     if (PRINT_MODCALL)
       {
         if (name == "load")
@@ -209,6 +212,9 @@ public:
       }
 
     parser.eval_all (context);
+
+    std::cout << "Bound after eval" << std::endl;
+    std::cout << context << std::endl;
 
     pnet_t::output_t output;
 
@@ -394,11 +400,13 @@ main (int argc, char ** argv)
                                                                    \
          ${vid_buf_filled.vb.vid}    := ${vid_buf_empty.vid}      ;\
          ${vid_buf_filled.vb.bufid}  := ${vid_buf_empty.bufid}    ;\
-         ${vid_buf_filled.bid}       := ${store.bid}              ;\
-         ${vid_buf_filled.vb.numbid} := ${vid_buf_empty.numbid}    "
+         ${vid_buf_filled.vb.numbid} := ${vid_buf_empty.numbid}   ;\
+         ${vid_buf_filled.bid}       := ${store.bid}               "
       , "!bitset_is_element (${store.seen}, ${vid_buf_empty.vid})"
       )
     );
+
+  //         ${vid_buf_filled.vb}        := ${vid_buf_empty}
 
   net.add_edge (mk_edge ("get vid_buf_empty"), connection_t (PT, tid_prefetch, pid_vid_buf_empty));
   net.add_edge (mk_edge ("get store"), connection_t (PT, tid_prefetch, pid_store));
