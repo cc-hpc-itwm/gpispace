@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_LITERAL_FUNCTION_HPP
-#define _EXPR_LITERAL_FUNCTION_HPP
+#ifndef _TYPE_LITERAL_FUNCTION_HPP
+#define _TYPE_LITERAL_FUNCTION_HPP
 
 #include <we/util/show.hpp>
 #include <we/expr/token/type.hpp>
