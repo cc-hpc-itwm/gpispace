@@ -96,14 +96,20 @@ int main (int, char **)
 
   activity_t act ( 0, tnet );
 
-  std::cout << "act (original)" << std::endl << act << std::endl;
+  std::cout << "act (original):"
+            << std::endl
+            << act
+            << std::endl;
   {
     std::ostringstream oss;
     {
       boost::archive::text_oarchive oa (oss, boost::archive::no_header);
       oa << BOOST_SERIALIZATION_NVP (act);
     }
-    std::cout << "act (serialized): " << oss.str() << std::endl;
+    std::cout << "act (serialized):"
+              << std::endl
+              << oss.str()
+              << std::endl;
 
     activity_t act_d;
     {
@@ -113,10 +119,21 @@ int main (int, char **)
         ia >> BOOST_SERIALIZATION_NVP (act_d);
       }
     }
-    std::cout << "act (deserialized): " << std::endl << act_d << std::endl;
+    std::cout << "act (deserialized):"
+              << std::endl
+              << act_d
+              << std::endl;
   }
 
   std::cout << "has_enabled = " << act.has_enabled() << std::endl;
+  if (act.has_enabled())
+  {
+    activity_t sub = act.extract (1);
+    std::cout << "sub-act:"
+              << std::endl
+              << sub
+              << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }
