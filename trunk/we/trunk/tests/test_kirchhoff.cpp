@@ -34,6 +34,7 @@ static long NUM_BID (4);
 static long NUM_STORE (3);
 static long NUM_BUF (2);
 static unsigned int SEED (3141);
+static bool NET_LOG(true);
 static bool PRINT_MARKING (true);
 static bool PRINT_MODCALL (true);
 
@@ -127,7 +128,7 @@ static void marking (const pnet_t & n)
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << " " << *tp;
 
-      cout << "}";
+      cout << "}" << endl;
     }
   cout << endl;
 }
@@ -181,21 +182,18 @@ public:
         token.bind (translate (pid), context);
       }
 
-    std::cout << "Bound before eval" << std::endl;
-    std::cout << context << std::endl;
-
     if (PRINT_MODCALL)
       {
         if (name == "load")
           {
-            std::cout << "LOAD"
+            std::cout << "*** LOAD"
                       << " bid " << context.value ("bid_in")
                       << " sid " << context.value ("sid")
                       << std::endl;
           }
         else if (name == "prefetch")
           {
-            std::cout << "PREFETCH"
+            std::cout << "*** PREFETCH"
                       << " bid " << context.value ("store.bid")
                       << " from sid " << context.value ("store.sid")
                       << " to vid " << context.value ("vid_buf_empty.vid")
@@ -204,7 +202,7 @@ public:
           }
         else if (name == "process")
           {
-            std::cout << "PROCESS"
+            std::cout << "*** PROCESS"
                       << " vid " << context.value ("vid_buf_filled.vb.vid")
                       << " bid " << context.value ("vid_buf_filled.bid")
                       << " buf " << context.value ("vid_buf_filled.vb.bufid")
@@ -213,9 +211,6 @@ public:
       }
 
     parser.eval_all (context);
-
-    std::cout << "Bound after eval" << std::endl;
-    std::cout << context << std::endl;
 
     pnet_t::output_t output;
 
@@ -285,6 +280,7 @@ main (int argc, char ** argv)
     ("stores", po::value<long>(&NUM_STORE)->default_value(NUM_STORE), "number of bunch stores")
     ("buffers", po::value<long>(&NUM_BUF)->default_value(NUM_BUF), "number of bunch buffers per subvolume")
     ("seed", po::value<unsigned int>(&SEED)->default_value(SEED), "seed for random number generator")
+    ("net_log", po::value<bool>(&NET_LOG)->default_value(NET_LOG), "log pairs in the net")
     ("print_marking", po::value<bool>(&PRINT_MARKING)->default_value(PRINT_MARKING), "print marking after each fire")
     ("print_modcall", po::value<bool>(&PRINT_MODCALL)->default_value(PRINT_MODCALL), "print modcalls")
     ;
@@ -392,41 +388,52 @@ main (int argc, char ** argv)
     ( mk_transition 
       ( net
       , "prefetch"
-      , "${store.bid}    := ${store.bid} ;                        ;\
-         ${store.seen}   := bitset_insert ( ${store.seen}          \
+      , "${store.seen}   := bitset_insert ( ${store.seen}          \
                                           , ${vid_buf_empty.vid}   \
                                           )                       ;\
-         ${store.sid}    := ${store.sid};                         ;\
          ${store.numvid} := ${store.numvid} + 1                   ;\
                                                                    \
-         ${vid_buf_filled.vb.vid}    := ${vid_buf_empty.vid}      ;\
-         ${vid_buf_filled.vb.bufid}  := ${vid_buf_empty.bufid}    ;\
-         ${vid_buf_filled.vb.numbid} := ${vid_buf_empty.numbid}   ;\
-         ${vid_buf_filled.bid}       := ${store.bid}               "
+         ${vid_buf_filled.vb}  := ${vid_buf_empty}                ;\
+         ${vid_buf_filled.bid} := ${store.bid}                     "
       , "!bitset_is_element (${store.seen}, ${vid_buf_empty.vid})"
       )
     );
-
-  //         ${vid_buf_filled.vb}        := ${vid_buf_empty}
 
   net.add_edge (mk_edge ("get vid_buf_empty"), connection_t (PT, tid_prefetch, pid_vid_buf_empty));
   net.add_edge (mk_edge ("get store"), connection_t (PT, tid_prefetch, pid_store));
   net.add_edge (mk_edge ("set store"), connection_t (TP, tid_prefetch, pid_store));
   net.add_edge (mk_edge ("set vid_buf_filled"), connection_t (TP, tid_prefetch, pid_vid_buf_filled));
 
+  signature::structured_t sig_log;
+
+  sig_log["vid"] = literal::LONG;
+  sig_log["bid"] = literal::LONG;
+
+  petri_net::pid_t pid_log (net.add_place (place::type("log", sig_log)));
+
+  std::string exp_process 
+    ("${vid_buf_processed}        := ${vid_buf_filled.vb}            ;\
+      ${vid_buf_processed.numbid} := ${vid_buf_filled.vb.numbid} + 1  "
+    );
+
+  if (NET_LOG)
+    exp_process += "; ${log.bid} := ${vid_buf_filled.bid}    ;\
+                      ${log.vid} := ${vid_buf_filled.vb.vid}  ";
+
   petri_net::tid_t tid_process
     ( mk_transition 
       ( net
       , "process"
-      , "${vid_buf_processed.vid}    := ${vid_buf_filled.vb.vid}        ;\
-         ${vid_buf_processed.bufid}  := ${vid_buf_filled.vb.bufid}      ;\
-         ${vid_buf_processed.numbid} := ${vid_buf_filled.vb.numbid} + 1  "
+      , exp_process
       , "true"
       )
     );
 
   net.add_edge (mk_edge ("get vid_buf_filled"), connection_t (PT, tid_process, pid_vid_buf_filled));
   net.add_edge (mk_edge ("set vid_buf_processed"), connection_t (TP, tid_process, pid_vid_buf_processed));
+
+  if (NET_LOG)
+    net.add_edge (mk_edge ("set log"), connection_t (TP, tid_process, pid_log));
 
   petri_net::tid_t tid_done_vid
     ( mk_transition 
@@ -445,9 +452,7 @@ main (int argc, char ** argv)
     ( mk_transition 
       ( net
       , "next_vid"
-      , "${vid_buf_empty.vid}    := ${vid_buf_processed.vid}    ;\
-         ${vid_buf_empty.bufid}  := ${vid_buf_processed.bufid}  ;\
-         ${vid_buf_empty.numbid} := ${vid_buf_processed.numbid}  "
+      , "${vid_buf_empty} := ${vid_buf_processed}"
       , "${vid_buf_processed.numbid} != ${NUM_BID_next}"
       )
     );
