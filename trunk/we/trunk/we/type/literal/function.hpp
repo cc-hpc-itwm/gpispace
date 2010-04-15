@@ -441,7 +441,9 @@ namespace literal
       literal::type operator () (T & t, U & u) const
       {
         throw expr::exception::eval::type_error 
-          (util::show (token) + " for values of wrong types: (" + util::show(t) + ", " + util::show(u) + ")");
+          ( util::show (token) 
+          + " for values of wrong types: (" + show(t) + ", "  + show(t) + ")"
+          );
       }
     };
   }
