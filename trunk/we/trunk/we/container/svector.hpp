@@ -10,6 +10,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
 
+#include <boost/random.hpp>
+
 namespace svector
 {
   template<typename T>
@@ -61,6 +63,18 @@ namespace svector
     typename vec_t::const_reference & at (typename vec_t::size_type n) const
     {
       return vec.at (n);
+    }
+
+    typename vec_t::const_reference & first (void) const
+    {
+      return at(0);
+    }
+
+    template<typename Engine>
+    typename vec_t::const_reference & random (Engine & engine) const
+    {
+      boost::uniform_int<size_type> rand (0, size()-1);
+      return vec.at (rand (engine));
     }
 
     const_iterator begin (void) const { return vec.begin(); }

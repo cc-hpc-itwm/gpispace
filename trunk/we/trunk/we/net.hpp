@@ -18,8 +18,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
-#include <boost/random.hpp>
-
 #include <boost/function.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -996,10 +994,7 @@ public:
   template<typename Engine>
   activity_t extract_activity_random (Engine & engine)
   {
-    boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
-    const tid_t tid (enabled.at (rand_tid (engine)));
-
-    return extract_activity (tid);
+    return extract_activity (enabled.random (engine));
   }
 
   tid_t fire (const tid_t & tid)
@@ -1013,10 +1008,7 @@ public:
   template<typename Engine>
   tid_t fire_random (Engine & engine)
   {
-    boost::uniform_int<enabled_t::size_type> rand_tid (0,enabled.size()-1);
-    const tid_t tid (enabled.at (rand_tid (engine)));
-
-    return fire (tid);
+    return fire (enabled.random (engine));
   }
 };
 } // namespace petri_net
