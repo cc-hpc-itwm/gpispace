@@ -6,7 +6,7 @@
 #include <we/container/adjacency.hpp>
 #include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
-#include <we/container/svector.hpp>
+#include <we/container/priostore.hpp>
 #include <we/function/cond.hpp>
 #include <we/function/trans.hpp>
 #include <we/serialize/unordered_map.hpp>
@@ -103,7 +103,7 @@ public:
 
   typedef typename cross::iterator<pid_in_map_t> choice_it;
 
-  typedef svector::svector<tid_t> enabled_t;
+  typedef priostore::type<tid_t> enabled_t;
 
   typedef unsigned long capacity_t;
 

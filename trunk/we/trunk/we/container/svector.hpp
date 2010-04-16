@@ -15,15 +15,19 @@
 namespace svector
 {
   template<typename T>
-  struct svector
+  struct type
   {
-  private:
-    typedef typename std::vector<T> vec_t;
-    typedef std::pair<it,it> pit_t;
-    typedef typename vec_t::const_iterator const_it;
-    typedef std::pair<const_it,const_it> const_pit_t;
+  public:
+    typedef typename std::vector<T> vec_type;
+    typedef typename vec_type::size_type size_type;
+    typedef typename vec_type::const_reference const_reference;
 
-    vec_t vec;
+  private:
+    typedef typename vec_type::iterator it_type;
+    typedef std::pair<it_type,it_type> pit_t;
+    typedef typename vec_type::const_iterator const_it;
+
+    vec_type vec;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -32,32 +36,44 @@ namespace svector
       ar & BOOST_SERIALIZATION_NVP(vec);
     }
 
-  public:
-    typedef typename vec_t::size_type size_type;
-    typedef typename vec_t::iterator it_type;
-    typedef typename vec_t::const_reference const_reference;
-
-    it_type insert (const T & x)
+    pit_t lookup (const T & x)
     {
-      const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
-
-      return (std::distance (pit.first, pit.second) == 0)
-        ? vec.insert (pit.second, x) : pit.first;
+      return std::equal_range (vec.begin(), vec.end(), x);
     }
 
-    it_type erase (const T & x)
-    {
-      const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
+  public:
+    typedef std::pair<const_it,const_it> const_pit_t;
 
-      return (std::distance (pit.first, pit.second) == 0)
-        ? pit.first : vec.erase (pit.first);
+    const_pit_t lookup (const T & x) const
+    {
+      return std::equal_range (vec.begin(), vec.end(), x);
+    }
+
+    template<typename PIT>
+    bool member (const PIT & pit) const
+    {
+      return std::distance (pit.first, pit.second) > 0;
+    }
+
+    void insert (const T & x)
+    {
+      const pit_t pit (lookup (x));
+
+      if (!member (pit))
+        vec.insert (pit.second, x);
+    }
+
+    void erase (const T & x)
+    {
+      const pit_t pit (lookup (x));
+
+      if (member (pit))
+        vec.erase (pit.first);
     }
 
     bool elem (const T & x) const
     {
-      const const_pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
-
-      return (std::distance (pit.first, pit.second) != 0);
+      return member (lookup (x));
     }
 
     const_reference first (void) const
@@ -74,7 +90,7 @@ namespace svector
 
     bool empty (void) const { return vec.empty(); }
 
-    bool operator == (const svector<T> & other) const
+    bool operator == (const type<T> & other) const
     {
       return (vec == other.vec);
     }
