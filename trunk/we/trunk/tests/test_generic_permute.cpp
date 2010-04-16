@@ -109,7 +109,7 @@ static void fire_random_transition (pnet_t & n, Engine & engine)
   assert (!n.enabled_transitions().empty());
   assert (n.enabled_transitions().size() == fac());
 
-  pnet_t::enabled_t::size_type tid (n.enabled_transitions().random (engine));
+  petri_net::tid_t tid (n.enabled_transitions().random (engine));
 
   n.fire (tid);
 
