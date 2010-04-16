@@ -350,6 +350,8 @@ main (int argc, char ** argv)
       )
     );
 
+  net.set_transition_priority (tid_load, 1);
+
   net.add_edge (mk_edge ("get bid_in"), connection_t (PT, tid_load, pid_bid_in));
   net.add_edge (mk_edge ("get sid"), connection_t (PT, tid_load, pid_sid));
   net.add_edge (mk_edge ("set store"), connection_t (TP, tid_load, pid_store));
