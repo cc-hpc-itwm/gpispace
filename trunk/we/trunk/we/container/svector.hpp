@@ -19,7 +19,6 @@ namespace svector
   {
   private:
     typedef typename std::vector<T> vec_t;
-    typedef typename vec_t::iterator it;
     typedef std::pair<it,it> pit_t;
     typedef typename vec_t::const_iterator const_it;
     typedef std::pair<const_it,const_it> const_pit_t;
@@ -34,10 +33,11 @@ namespace svector
     }
 
   public:
-    typedef typename vec_t::const_iterator const_iterator;
     typedef typename vec_t::size_type size_type;
+    typedef typename vec_t::iterator it_type;
+    typedef typename vec_t::const_reference const_reference;
 
-    it insert (const T & x)
+    it_type insert (const T & x)
     {
       const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
 
@@ -45,7 +45,7 @@ namespace svector
         ? vec.insert (pit.second, x) : pit.first;
     }
 
-    it erase (const T & x)
+    it_type erase (const T & x)
     {
       const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
 
@@ -60,28 +60,19 @@ namespace svector
       return (std::distance (pit.first, pit.second) != 0);
     }
 
-    typename vec_t::const_reference & at (typename vec_t::size_type n) const
+    const_reference first (void) const
     {
-      return vec.at (n);
-    }
-
-    typename vec_t::const_reference & first (void) const
-    {
-      return at(0);
+      return vec.at (0);
     }
 
     template<typename Engine>
-    typename vec_t::const_reference & random (Engine & engine) const
+    const_reference random (Engine & engine) const
     {
-      boost::uniform_int<size_type> rand (0, size()-1);
+      boost::uniform_int<size_type> rand (0, vec.size()-1);
       return vec.at (rand (engine));
     }
 
-    const_iterator begin (void) const { return vec.begin(); }
-    const_iterator end (void) const { return vec.end(); }
-
     bool empty (void) const { return vec.empty(); }
-    size_type size (void) const { return vec.size(); }
 
     bool operator == (const svector<T> & other) const
     {
