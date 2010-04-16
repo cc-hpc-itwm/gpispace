@@ -221,18 +221,12 @@ static void marking (const pnet_t & n)
   cout << endl;
 }
 
-static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
+template<typename Engine>
+static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
-
-  if (!t.empty())
-    {
-      boost::uniform_int<pnet_t::enabled_t::size_type>
-        uniform (0,t.size()-1);
-
-      n.fire (t.at(uniform (engine)));
-    }
-}
+  if (!n.enabled_transitions().empty())
+    n.fire_random (engine);
+};
 
 static void step (pnet_t & n, unsigned long k)
 {

@@ -103,21 +103,18 @@ static std::size_t fac (void)
 }
 #endif
 
-static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
+template<typename Engine>
+static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
+  assert (!n.enabled_transitions().empty());
+  assert (n.enabled_transitions().size() == fac());
 
-  assert (!t.empty());
-  assert (t.size() == fac());
-
-  boost::uniform_int<pnet_t::enabled_t::size_type> uniform (0,t.size()-1);
-
-  pnet_t::enabled_t::size_type tid (t.at(uniform (engine)));
+  pnet_t::enabled_t::size_type tid (n.enabled_transitions().random (engine));
 
   n.fire (tid);
 
   marking (n, tid);
-}
+};
 
 int
 main ()

@@ -77,22 +77,18 @@ static void marking (const pnet_t & n)
   cout << endl;
 }
 
-static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
+template<typename Engine>
+static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
-
-  if (!t.empty())
+  if (!n.enabled_transitions().empty())
     {
-      boost::uniform_int<pnet_t::enabled_t::size_type>
-        uniform (0,t.size()-1);
-
-      petri_net::tid_t tid (t.at (uniform (engine)));
+     petri_net::tid_t tid (n.enabled_transitions().random (engine));
 
       cout << "FIRE " << trans (n, tid) << " => ";
 
       n.fire (tid);
     }
-}
+};
 
 using petri_net::connection_t;
 using petri_net::PT;

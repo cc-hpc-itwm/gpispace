@@ -113,11 +113,9 @@ static void marking (const pnet_t & n)
 
 static void fire (pnet_t & n)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
+  assert (n.enabled_transitions().size() == 1);
 
-  assert (t.size() == 1);
-
-  n.fire (t.at(0));
+  n.fire (n.enabled_transitions().first());
 }
 
 using petri_net::connection_t;

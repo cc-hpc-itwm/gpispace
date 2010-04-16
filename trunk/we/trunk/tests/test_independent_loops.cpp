@@ -130,22 +130,14 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 using std::cout;
 using std::endl;
 
-static void fire_random_transition (pnet_t & n, boost::mt19937 & engine)
+template<typename Engine>
+static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  pnet_t::enabled_t t (n.enabled_transitions());
-
-  if (t.empty())
-    {
-      throw std::runtime_error ("no enabled transition");
-    }
+  if (n.enabled_transitions().empty())
+    throw std::runtime_error ("no enabled transition");
   else
-    {
-      boost::uniform_int<pnet_t::enabled_t::size_type>
-        uniform (0,t.size()-1);
-
-      n.fire (t.at(uniform (engine)));
-    }
-}
+    n.fire_random(engine);
+};
 
 int
 main ()

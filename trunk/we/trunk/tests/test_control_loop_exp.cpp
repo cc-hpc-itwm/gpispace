@@ -171,7 +171,7 @@ main ()
     Timer_t timer ("fire", max + 1);
 
     while (!net.enabled_transitions().empty())
-      net.fire(net.enabled_transitions().at(0));
+      net.fire(net.enabled_transitions().first());
   }
 
   marking (net);

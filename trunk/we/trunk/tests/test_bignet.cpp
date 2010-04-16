@@ -241,12 +241,7 @@ main ()
 
           if (!t.empty())
             {
-              boost::uniform_int<pnet_t::enabled_t::size_type>
-                uniform (0, t.size() - 1);
-
-              pnet_t::enabled_t::size_type pos (uniform(engine));
-
-              n.fire (t.at (pos));
+              n.fire_random(engine);
 
               ++fired;
             }
