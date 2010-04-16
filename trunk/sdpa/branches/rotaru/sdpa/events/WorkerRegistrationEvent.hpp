@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  WorkerRegistrationEvent.hpp
+ *
+ *    Description:  WorkerRegistrationEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_WORKER_REGISTRATION_EVENT_HPP
 #define SDPA_WORKER_REGISTRATION_EVENT_HPP 1
 
@@ -29,7 +46,7 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "WorkerRegistrationEvent"; }
 
-      virtual void handleBy(DaemonEventHandler *handler)
+      virtual void handleBy(EventHandler *handler)
       {
         handler->handleWorkerRegistrationEvent(this);
       }

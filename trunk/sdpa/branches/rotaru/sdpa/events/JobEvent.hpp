@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobEvent.hpp
+ *
+ *    Description:  JobEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_JOB_EVENT_HPP
 #define SDPA_JOB_EVENT_HPP 1
 
@@ -32,7 +49,7 @@ namespace events {
 
         virtual std::string str() const = 0;
 
-        virtual void handleBy(DaemonEventHandler *handler) = 0;
+        virtual void handleBy(EventHandler *handler) = 0;
     private:
         sdpa::job_id_t job_id_;
     };

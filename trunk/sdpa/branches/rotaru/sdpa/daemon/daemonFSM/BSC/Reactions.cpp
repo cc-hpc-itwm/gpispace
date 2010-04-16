@@ -66,52 +66,82 @@ void DaemonFSM :: print_states()
 		std::cout<<"State "<<typeid(*it).name()<<std::endl;
 }
 
-void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
+void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 {
 	lock_type lock(mtx_);
-
-	if( StartUpEvent* ptr = dynamic_cast<StartUpEvent*>(pEvent.get()) ){
-		SDPA_LOG_DEBUG("Process StartUpEvent");
-		SDPA_LOG_DEBUG("Call proces_event(e) ...");
-		process_event(*ptr);
-	}
-	else if( ConfigOkEvent* ptr = dynamic_cast<ConfigOkEvent*>(pEvent.get()) ){
-		SDPA_LOG_DEBUG("Process ConfigOkEvent");
-		process_event(*ptr);
-	}
-	else if( ConfigNokEvent* ptr = dynamic_cast<ConfigNokEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process ConfigOkEvent");
-		process_event(*ptr);
-	}
-	else if( InterruptEvent* ptr = dynamic_cast<InterruptEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process InterruptEvent");
-		process_event(*ptr);
-	}
-	else if( WorkerRegistrationEvent* ptr = dynamic_cast<WorkerRegistrationEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process WorkerRegistrationEvent");
-		process_event(*ptr);
-	}
-	else if( DeleteJobEvent* ptr = dynamic_cast<DeleteJobEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process DeleteJobEvent");
-		process_event(*ptr);
-	}
-	else if( SubmitJobEvent* ptr = dynamic_cast<SubmitJobEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process SubmitJobEvent");
-		process_event(*ptr);
-	}
-	else if( LifeSignEvent* ptr = dynamic_cast<LifeSignEvent*>(pEvent.get()) ) {
-		SDPA_LOG_DEBUG("Process LifeSignEvent");
-		process_event(*ptr);
-	}
-	else if( RequestJobEvent* ptr = dynamic_cast<RequestJobEvent*>(pEvent.get()) ){
-		SDPA_LOG_DEBUG("Process RequestJobEvent");
-		process_event(*ptr);
-	}
-	else if( ConfigRequestEvent* ptr = dynamic_cast<ConfigRequestEvent*>(pEvent.get()) ){
-		SDPA_LOG_DEBUG("Process ConfigRequestEvent");
-		process_event(*ptr);
-	}
+	SDPA_LOG_DEBUG("Process StartUpEvent");
+	process_event(*ptr);
 }
+
+void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process ConfigOkEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process ConfigNokEvent");
+	process_event(*ptr);
+}
+void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process InterruptEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process WorkerRegistrationEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleDeleteJobEvent(const DeleteJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process DeleteJobEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process SubmitJobEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process LifeSignEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process RequestJobEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleConfigRequestEvent(const ConfigRequestEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process ConfigRequestEvent");
+	process_event(*ptr);
+}
+
+void DaemonFSM::handleErrorEvent(const ErrorEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	SDPA_LOG_DEBUG("Process ErrorEvent");
+	process_event(*ptr);
+}
+
 
 sc::result Down::react(const StartUpEvent& e)
 {

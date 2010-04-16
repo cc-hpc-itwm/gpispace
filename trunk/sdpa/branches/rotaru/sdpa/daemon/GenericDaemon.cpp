@@ -233,7 +233,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	}
 	else
 	{
-		SDPA_LOG_ERROR("got some unexpected event that i cannot handle: " << pEvent->str());
+		SDPA_LOG_ERROR("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
 	}
 }
 
@@ -366,25 +366,6 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
-	// in fact the master name should be red from the configuration file
-
-	/*if( name() == sdpa::daemon::AGGREGATOR )
-	{
-		if(master().empty())
-			setMaster(sdpa::daemon::ORCHESTRATOR);
-
-		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
-		to_master_stage()->send(pEvtWorkerReg);
-	} else if( name() == sdpa::daemon::NRE )
-	{
-		if(master().empty())
-			setMaster(sdpa::daemon::AGGREGATOR );
-
-		SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
-		to_master_stage()->send(pEvtWorkerReg);
-	}*/
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent&)
@@ -396,7 +377,6 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
-
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)

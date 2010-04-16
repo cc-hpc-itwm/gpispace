@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  ConfigReplyEvent.hpp
+ *
+ *    Description:  ConfigReplyEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_ConfigReplyEvent_HPP
 #define SDPA_ConfigReplyEvent_HPP 1
 
@@ -32,7 +49,7 @@ namespace sdpa { namespace events {
 
     	std::string str() const { return "ConfigReplyEvent"; }
 
-        virtual void handleBy(DaemonEventHandler *handler)
+        virtual void handleBy(EventHandler *handler)
         {
           handler->handleConfigReplyEvent(this);
         }

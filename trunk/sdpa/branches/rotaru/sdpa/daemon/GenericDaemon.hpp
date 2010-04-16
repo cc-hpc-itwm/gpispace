@@ -57,7 +57,7 @@ namespace sdpa { namespace daemon {
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
-						public sdpa::events::DaemonEventHandler,
+						public sdpa::events::EventHandler,
 						public IDaemon
 {
   public:

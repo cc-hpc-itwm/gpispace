@@ -1,23 +1,23 @@
 /*
  * =====================================================================================
  *
- *       Filename:  EventHandler
+ *       Filename:  EventHandler.hpp
  *
- *    Description:
+ *    Description:  EventHandler
  *
  *        Version:  1.0
  *        Created:
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  Dr. Tiberiu Rotaru
+ *         Author:  Tiberiu Rotaru
  *        Company:  Fraunhofer ITWM
  *
  * =====================================================================================
  */
 
-#ifndef SDPA_EVENTS_EVENT_HANDLER_HPP
-#define SDPA_EVENTS_EVENT_HANDLER_HPP 1
+#ifndef SDPA_EVENT_HANDLER_HPP
+#define SDPA_EVENT_HANDLER_HPP 1
 
 #include <sdpa/events/SDPAEvent.hpp>
 
@@ -51,10 +51,10 @@ namespace sdpa {
 	  class WorkerRegistrationAckEvent;
 	  class WorkerRegistrationEvent;
 
-	  class DaemonEventHandler
+	  class EventHandler
 	  {
 	  public:
-		virtual ~DaemonEventHandler() {}
+		virtual ~EventHandler() {}
 
 		virtual void handleCancelJobAckEvent(const CancelJobAckEvent *) {}
 		virtual void handleCancelJobEvent(const CancelJobEvent *) {}

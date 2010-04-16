@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SubmitJobEvent.hpp
+ *
+ *    Description:  SubmitJobEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_SubmitJobEvent_HPP
 #define SDPA_SubmitJobEvent_HPP
 
@@ -45,7 +62,7 @@ namespace sdpa { namespace events {
       const sdpa::job_id_t &parent_id() const { return parent_; }
       sdpa::job_id_t &parent_id() { return parent_; }
 
-      virtual void handleBy(DaemonEventHandler *handler)
+      virtual void handleBy(EventHandler *handler)
       {
     	  handler->handleSubmitJobEvent(this);
       }
