@@ -77,6 +77,12 @@ namespace priostore
         get_prio[x] = prio;
     }
 
+    // NOTE! The object should not be stored.
+    void erase_priority (const T & x)
+    {
+      get_prio.erase (x);
+    }
+
     void insert (const T & x)
     {
       insert (x, get_priority (x));
@@ -87,8 +93,6 @@ namespace priostore
       typename prio_map_t::iterator pos (prio_map.find (get_priority (x)));
 
       erase (x, pos);
-
-      get_prio.erase (x);
     }
 
     bool elem (const T & x) const

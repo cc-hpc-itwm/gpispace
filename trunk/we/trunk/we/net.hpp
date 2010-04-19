@@ -731,6 +731,7 @@ public:
     in_enabled.erase (tid);
     out_enabled.erase (tid);
     enabled.erase (tid);
+    enabled.erase_priority (tid);
     in_map.erase (tid);
     out_map.erase (tid);
 
