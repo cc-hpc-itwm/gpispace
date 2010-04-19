@@ -83,6 +83,7 @@ namespace we { namespace mgmt {
 
         typedef detail::activity<id_type, transition_type> activity_type;
 		typedef typename boost::unordered_map<id_type, activity_type> activities_t;
+        typedef typename activity_type::output_t output_type;
 	  private:
 		typedef detail::set<id_type> active_nets_t;
 
@@ -157,7 +158,8 @@ namespace we { namespace mgmt {
 		{
 		  we::util::remove_unused_variable_warning(id);
 		  we::util::remove_unused_variable_warning(reason);
-		  return true;
+          // TODO: traverse children with a depth first search
+          return true;
 		}
 
 		/**
@@ -650,7 +652,8 @@ namespace we { namespace mgmt {
           }
           else
           {
-            sig_execute( act.id(), ::util::show(act.transition()) );
+            // exec_layer_.submit (act.id(), we::util::text_codec::encode (act));
+            sig_execute( act.id(), we::util::text_codec::encode (act) );
           }
 		}
 
