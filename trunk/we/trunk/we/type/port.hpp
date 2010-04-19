@@ -32,17 +32,18 @@ namespace we { namespace type {
   , PORT_IN_OUT
   };
 
-  template <typename SignatureType, typename IdType = petri_net::pid_t>
+  template <typename SignatureType, typename IdType = petri_net::pid_t, typename Traits = petri_net::traits::id_traits<IdType> >
   struct port
   {
   public:
     typedef SignatureType sig_type;
     typedef IdType pid_type;
+    typedef Traits pid_traits;
 
     port ()
       : name_("default")
       , direction_(PORT_IN_OUT)
-      , associated_place_(0)
+      , associated_place_(pid_traits::invalid())
     {}
 
     template <typename Signature>
@@ -50,7 +51,7 @@ namespace we { namespace type {
       : name_(name)
       , direction_(direction)
       , signature_(signature)
-      , associated_place_(0)
+      , associated_place_(pid_traits::invalid())
     {}
 
     template <typename Signature, typename PlaceId>
@@ -93,8 +94,17 @@ namespace we { namespace type {
        << ", "
        << p.signature()
        << ", "
-       << p.associated_place()
-       << "}";
+       ;
+
+       if (p.associated_place() == port<T,I>::pid_traits::invalid())
+       {
+          os << "n/a";
+       }
+       else
+       {
+          os << p.associated_place();
+       }
+    os << "}";
     return os;
   }
 }}
