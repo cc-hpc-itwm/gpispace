@@ -24,7 +24,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-// part to be replaced by #include </we/mgmt/basic_layer.hpp>
+//#include <we/mgmt/basic_layer.hpp>
 
 #include <string>
 

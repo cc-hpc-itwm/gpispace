@@ -109,9 +109,7 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid);
 
-      // Gwes2Sdpa interface implementation
-	  //virtual workflow_id_t submitWorkflow(const workflow_t &workflow);
-
+      // WE interface
 	  virtual void submit(const id_type & id, const encoded_type & );
 	  virtual bool cancel(const id_type & id, const reason_type & reason);
 	  virtual bool finished(const id_type & id, const result_type & result);

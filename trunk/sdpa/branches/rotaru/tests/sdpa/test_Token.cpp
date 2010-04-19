@@ -17,7 +17,7 @@
 #include <iostream>
 
 #include "test_Token.hpp"
-#include <sdpa/wf/Token.hpp>
+#include <sdpa/modules/types.hpp>
 
 using namespace sdpa;
 using namespace sdpa::wf;

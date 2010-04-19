@@ -144,6 +144,13 @@ namespace sdpa { namespace nre { namespace worker {
     std::string key_;
   };
 
+  enum ExecutionState
+  {
+	  ACTIVITY_FINISHED
+	, ACTIVITY_FAILED
+	, ACTIVITY_CANCELLED
+  };
+
   class ExecuteReply   : public Reply
   {
   public:
@@ -151,8 +158,9 @@ namespace sdpa { namespace nre { namespace worker {
     ExecuteReply() {}
 
     explicit
-    ExecuteReply(const result_type & execution_result)
+    ExecuteReply(const result_type & execution_result, const ExecutionState state)
       : result_(execution_result)
+      , state_ (state)
     {}
 
     virtual void writeTo(std::ostream &os) const
@@ -162,9 +170,28 @@ namespace sdpa { namespace nre { namespace worker {
 
     result_type &result() { return result_; }
     const result_type &result() const { return result_; }
+
+    const ExecutionState & state() const { return state_; }
+    ExecutionState & state() { return state_; }
   private:
     result_type result_; // defined in IWorkflowEngine
+    ExecutionState state_;
   };
+
+  namespace detail {
+	  // TODO implement for the real activity object type
+	  template <typename Activity>
+	  inline std::string get_module_name (const Activity & /*act*/) {
+		  // boost::get<transition_t::mod_call_t> (act.transition().data()).m();
+		  return "dummy";
+	  }
+
+	  template <typename Activity>
+	  inline std::string get_function_name (const Activity & /*act*/) {
+		  // boost::get<transition_t::mod_call_t> (act.transition().data()).f();
+		  return "dummy";
+	  }
+  }
 
   class ExecuteRequest : public Request
   {
@@ -182,13 +209,19 @@ namespace sdpa { namespace nre { namespace worker {
     {
       os << "Execute(";
      // activity().writeTo(os, false);
+      os<<activity_;
       os << ")";
     }
 
     virtual Reply *execute(ExecutionContext *ctxt)
     {
-      /*const std::string mod_name(activity().method().module());
-      const std::string fun_name(activity().method().name());
+    	// decode activity -> activity object
+    	//
+      typedef std::string activity_t;
+      activity_t act ("dummy activity");
+
+      const std::string mod_name (detail::get_module_name (act));
+      const std::string fun_name (detail::get_function_name (act) );
 
       Reply *reply(NULL);
       try
@@ -200,46 +233,43 @@ namespace sdpa { namespace nre { namespace worker {
 
         LOG(INFO, "executing: " << activity());
 
-        bool keep_going = activity().properties().get<bool>("keep_going", false);
+//        bool keep_going = activity().properties().get<bool>("keep_going", false);
+        bool keep_going = true;
 
+/*
         ctxt->loader().get(mod_name).call(fun_name
                                         , activity().parameters()
                                         , keep_going);
         activity().check_parameters(keep_going);
-
+*/
         LOG(INFO, "execution of activity finished");
-        activity().state() = encoded_type::ACTIVITY_FINISHED;
 
-        reply = new ExecuteReply(activity());
+        // encode activity again
+        reply = new ExecuteReply(activity(), ACTIVITY_FINISHED);
       }
       catch (const sdpa::modules::MissingFunctionArgument &mfa)
       {
         LOG(ERROR, "function " << mfa.module() << "." << mfa.function()
                                << " expected argument " << mfa.arguments());
-        activity().state() = encoded_type::ACTIVITY_FAILED;
-        activity().reason() = mfa.what();
-        reply = new ExecuteReply(activity());
+//        activity().reason() = mfa.what();
+        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
       }
       catch (const std::exception &ex)
       {
         LOG(ERROR, "execution of activity failed: " << ex.what());
-        activity().state() = encoded_type::ACTIVITY_FAILED;
-        activity().reason() = ex.what();
-        reply = new ExecuteReply(activity());
+//        activity().reason() = ex.what();
+        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
       }
       catch (...)
       {
         LOG(ERROR, "execution of activity failed: ");
-        activity().state() = encoded_type::ACTIVITY_FAILED;
-        activity().reason() = "unknown reason";
-        reply = new ExecuteReply(activity());
+//        activity().reason() = "unknown reason";
+        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
       }
 
       assert(reply);
       reply->id() = id();
-      return reply;*/
-
-    	return NULL;
+      return reply;
     }
 
     encoded_type &activity() { return activity_; }

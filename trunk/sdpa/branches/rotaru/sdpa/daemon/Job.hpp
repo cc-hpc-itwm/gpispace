@@ -19,7 +19,7 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
-#include <gwdl/IWorkflow.h>
+//#include <gwdl/IWorkflow.h>
 #include <sdpa/types.hpp>
 
 #include <boost/serialization/access.hpp>

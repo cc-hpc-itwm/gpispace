@@ -21,7 +21,7 @@
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <seda/StageRegistry.hpp>
-#include <gwes/GWES.h>
+//#include <gwes/GWES.h>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 namespace po = boost::program_options;
@@ -33,86 +33,6 @@ using namespace sdpa::tests;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
-/*
-namespace unit_tests {
-
-		class SchedulerNRE : public sdpa::daemon::SchedulerNRE
-		{
-		public:
-			typedef sdpa::daemon::SynchronizedQueue<std::list<gwes::activity_t*> > ActivityQueue;
-
-			SDPA_DECLARE_LOGGER();
-
-			SchedulerNRE( sdpa::daemon::IComm* pHandler, std::string workerUrl ):
-				sdpa::daemon::SchedulerNRE(pHandler, workerUrl),
-				SDPA_INIT_LOGGER("sdpa::daemon::Scheduler "+pHandler->name()) {}
-
-
-			 void execute(const  sdpa::daemon::Job::ptr_t& pJob) throw (std::exception)
-			 {
-				id_type act_id = pJob->id().str();
-				SDPA_LOG_DEBUG("Execute the activity "<<act_id);
-
-				if(!ptr_comm_handler_)
-				{
-					SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-					stop();
-					return;
-				}
-
-
-				// call here the NreWorkerClient
-				result_type output; // to be fiile-in by the NreWorkerClient
-				ptr_comm_handler_->gwes()->finished(act_id, output);
-			 }
-	  };
-
-
-	  class NRE : public sdpa::daemon::NRE
-	  {
-	  public:
-		typedef sdpa::shared_ptr<NRE> ptr_t;
-		//SDPA_DECLARE_LOGGER();
-
-		NRE(  const std::string& name, const std::string& url,
-			  const std::string& masterName, const std::string& masterUrl,
-			  const std::string& workerUrl,  const std::string guiUrl = "",
-			  const bool bExtSched = false, const bool bUseDummyWE = false  )
-				: 	sdpa::daemon::NRE<DummyWorkflowEngine>::NRE(  name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE )
-						  //,SDPA_INIT_LOGGER(name)
-		{
-			//SDPA_LOG_DEBUG("TesNRE constructor called ...");
-			//ptr_scheduler_.reset();
-			sdpa::daemon::Scheduler* ptr_scheduler =  new sdpa::daemon::SchedulerNRE(this, workerUrl);
-
-		}
-
-		virtual ~NRE()
-		{
-			//SDPA_LOG_DEBUG("TestNRE destructor called ...");
-			daemon_stage_ = NULL;
-
-		}
-
-		static NRE<DummyWorkflowEngine>::ptr_t create( const std::string& name, const std::string& url,
-								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl = "",
-								  const bool bExtSched = false, const bool bUseDummyWE = false )
-		{
-			 return NRE<DummyWorkflowEngine>::ptr_t(new NRE( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched, bUseDummyWE ));
-		}
-
-		static void start(NRE<DummyWorkflowEngine>::ptr_t ptrNRE)
-		{
-			dsm::DaemonFSM::create_daemon_stage(ptrNRE);
-			ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );
-			sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-			dsm::DaemonFSM::start(ptrNRE, ptrCfg);
-		}
-
-	  };
-}
-*/
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
@@ -173,12 +93,24 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-/*void TestComponents::testComponentsRealGWES()
+void TestComponents::testComponentsRealGWES()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
-	string strAnswer = "finished";
+
+	/*string strAnswer = "finished";
 	string noStage = "";
 	string strGuiUrl = "";
+
+	//sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor>
+	//	executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
+	// /p/hpc/sdpa/fvm-pc/libexec/remig/*.so
+    //executor->loader().load("/path/to/libdummy.so");
+    //executor->start();
+
+    // run tests
+
+	//LD_PRELOAD="/p/hpc/sdpa/fvm-pc"/lib/libfvm-pc_fake.so /p/hpc/sdpa/fvm-pc/bin/nre-pcd -c /p/hpc/sdpa/fvm-pc/etc/fvm.cfg.tpl $@
+
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
@@ -239,10 +171,13 @@ void TestComponents::tearDown()
 	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
 	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
+	 //executor->stop();
+	*/
+
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
 }
-*/
+
 
 void TestComponents::testComponentsDummyGWES()
 {

@@ -43,7 +43,7 @@ namespace sdpa {
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
-			  //void testComponentsRealGWES();
+			  void testComponentsRealGWES();
 			  void testComponentsDummyGWES();
 
 			private:

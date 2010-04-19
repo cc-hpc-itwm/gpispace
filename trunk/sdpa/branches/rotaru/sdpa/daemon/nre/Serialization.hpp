@@ -25,7 +25,6 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
-#include <sdpa/wf/Serialization.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
 namespace boost { namespace serialization {
@@ -99,6 +98,7 @@ namespace boost { namespace serialization {
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.result();
+    ar & rply.state();
   }
 
   /*

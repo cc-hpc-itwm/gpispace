@@ -53,6 +53,7 @@ OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_SMC_SC "Build the project using the state-machine compiler" YES)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
+OPTION(USE_GWES "Use GWES" NO)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
@@ -104,6 +105,7 @@ else(UUID_FOUND)
 endif(UUID_FOUND)
 
 # GWES/GWDL
+if( USE_GWES)
 include(FindGwes)
 # check for gwes/gwdl
 if (GWES_FOUND)
@@ -129,6 +131,7 @@ message(STATUS "LibXml2: Inc:${LIBXML2_INCLUDE_DIR} Lib:${LIBXML2_LIBRARIES}")
 find_package(LibXslt REQUIRED)
 include_directories(${LIBXSLT_INCLUDE_DIR})
 message(STATUS "LibXslt: Inc:${LIBXSLT_INCLUDE_DIR} Lib:${LIBXSLT_LIBRARIES}")
+endif (USE_GWES)
 
 ## find zlib
 find_package(ZLIB REQUIRED)

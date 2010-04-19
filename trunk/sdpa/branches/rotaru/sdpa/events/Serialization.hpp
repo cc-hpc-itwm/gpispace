@@ -50,7 +50,6 @@
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 
-#include <sdpa/wf/Serialization.hpp>
 
 namespace boost { namespace serialization {
   template <class Archive>
