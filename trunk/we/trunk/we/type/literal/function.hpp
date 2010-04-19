@@ -442,7 +442,7 @@ namespace literal
       {
         throw expr::exception::eval::type_error 
           ( util::show (token) 
-          + " for values of wrong types: (" + show(t) + ", "  + show(t) + ")"
+          + " for values of wrong types: (" + show(t) + ", "  + show(u) + ")"
           );
       }
     };
