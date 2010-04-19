@@ -204,6 +204,12 @@ namespace we { namespace mgmt { namespace type {
       return transition_;
     }
 
+    inline
+    transition_type & transition()
+    {
+      return transition_;
+    }
+
     this_type
     extract(const id_type id)
     {
