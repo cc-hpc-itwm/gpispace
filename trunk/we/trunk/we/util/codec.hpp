@@ -78,6 +78,8 @@ namespace we { namespace util {
       return t;
     }
   };
+
+  typedef codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
 }}
 
 #endif
