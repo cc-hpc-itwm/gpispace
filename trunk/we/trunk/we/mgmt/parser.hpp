@@ -53,7 +53,7 @@ namespace we { namespace mgmt {
 	typedef typename traits_type::token_t token_t;
 
     template <typename Activity>
-    static void parse( Activity & act, const data_type &)
+    static Activity parse( const data_type &)
     {
       const std::size_t NUM_NODES=3;
       const std::size_t NUM_TOKEN=1;
@@ -187,13 +187,15 @@ namespace we { namespace mgmt {
 //        map_reduce_trans.connect_in (pid_t(0), mr_inp);
 //        map_reduce_trans.connect_out (pid_t(1), mr_out);
 
-        act.assign (map_reduce_trans);
+        Activity act (map_reduce_trans);
 
         // put some tokens on the input
         for (std::size_t t (0); t < NUM_TOKEN; ++t)
         {
           act.input().push_back (std::make_pair (token_t ("token-" + ::util::show(t)), map_reduce_trans.input_port_by_name ("i")));
         }
+
+        return act;
       }
     }
   };

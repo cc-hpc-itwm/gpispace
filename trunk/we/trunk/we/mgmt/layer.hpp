@@ -124,9 +124,8 @@ namespace we { namespace mgmt {
 		 */
 		void submit(const id_type & id, const encode_type & bytes) throw (std::exception)
 		{
-		  using detail::commands::make_cmd;
-          activity_type act(id);
-          parser<net_type>::parse(act, bytes);
+          activity_type act = parser<net_type>::parse<activity_type>(bytes);
+          act.set_id (id);
           submit (id, act);
           std::cerr << "D: submitted act["<< id << "]" << std::endl;
 //
@@ -235,7 +234,7 @@ namespace we { namespace mgmt {
 		 */
 		bool suspend(const id_type & id) throw()
 		{
-          post_suspend_network_notification(id);
+          post_suspend_activity_notification(id);
 		  return true;
 		}
 
@@ -254,7 +253,7 @@ namespace we { namespace mgmt {
 		 */
 		bool resume(const id_type & id) throw()
 		{
-          post_resume_network_notification(id);
+          post_resume_activity_notification(id);
 		  return true;
 		}
 
@@ -271,7 +270,6 @@ namespace we { namespace mgmt {
 		{
 		  debug_activity (act);
 		  {
-            act.prepare_input();
 			insert_activity(id, act);
 		  }
 		  post_activity_notification (id);
@@ -405,37 +403,37 @@ namespace we { namespace mgmt {
 		inline
 		void post_activity_notification( const id_type & id)
 		{
-		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_needs_attention, this, _1)));
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_needs_attention, this, _1)));
 		}
 
 		inline
 		void post_finished_notification( const id_type & id)
 		{
-		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_finished, this, _1)));
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_finished, this, _1)));
 		}
 
 		inline
 		void post_failed_notification( const id_type & id)
 		{
-		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_failed, this, _1)));
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
 		}
 
 		inline
 		void post_cancelled_notification( const id_type & id)
 		{
-		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::net_cancelled, this, _1)));
+		  cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
 		}
 
         inline
-        void post_suspend_network_notification( const id_type & id )
+        void post_suspend_activity_notification( const id_type & id )
         {
-		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_net, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
         }
 
         inline
-        void post_resume_network_notification( const id_type & id )
+        void post_resume_activity_notification( const id_type & id )
         {
-		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_net, this, _1)));
+		  cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
         }
 
         inline
@@ -481,9 +479,10 @@ namespace we { namespace mgmt {
               // submit new activities
               while (act.has_enabled())
               {
-                std::cerr << "I: act[" << act.id() << "] has "
-                  << act.num_enabled()
-                  << " enabled transition(s)" << std::endl;
+                std::cerr << "I: act["
+                          << act.id()
+                          << "] has enabled transition(s)"
+                          << std::endl;
 
                 activity_type sub_act = act.extract(id_gen_());
                 insert_activity (sub_act.id(), sub_act);
@@ -491,7 +490,7 @@ namespace we { namespace mgmt {
                 async_execute (lookup (sub_act.id()) );
               }
             }
-            catch (const net_not_found<id_type> & ex)
+            catch (const activity_not_found<id_type> & ex)
             {
               std::cerr << "W: activity could not be found: " << ex.id << std::endl;
             }
@@ -582,29 +581,13 @@ namespace we { namespace mgmt {
 		boost::thread injector_;
 		boost::thread executor_;
 
-		inline void debug_net(net_type const & n)
-		{
-		  std::cerr << n << std::endl;
-		}
+        template <typename Activity>
+        inline void debug_activity(Activity const & act)
+        {
+          std::cerr << "D: " << act << std::endl;
+        }
 
-		template <typename Activity>
-		  inline void debug_activity(Activity const & act)
-		  {
-			std::cerr << "D: act[" << act.id() << "](type=" << act.transition().type << " " << act.transition() << "):" << std::endl;
-			{
-			  std::cerr << "\tin:" << std::endl;
-			  for ( typename Activity::input_t::const_iterator it (act.input().begin())
-				  ; it != act.input().end()
-				  ; ++it)
-			  {
-				std::cerr << "\t\t" << it->first
-				  << " on place " << it->second
-				  << std::endl;
-			  }
-			}
-		  }
-
-		void net_needs_attention(const cmd_t & cmd)
+		void activity_needs_attention(const cmd_t & cmd)
 		{
           activity_type & a = lookup ( cmd.dat );
           if (! a.flags().suspended )
@@ -614,7 +597,7 @@ namespace we { namespace mgmt {
           }
 		}
 
-		void net_finished(const cmd_t & cmd)
+		void activity_finished(const cmd_t & cmd)
 		{
 		  exec_layer_.finished ( cmd.dat, "dummy result" );
 		  assert_is_leaf ( cmd.dat );
@@ -622,7 +605,7 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
 		}
 
-		void net_failed(const cmd_t & cmd)
+		void activity_failed(const cmd_t & cmd)
 		{
 		  exec_layer_.failed ( cmd.dat, "dummy result" );
 		  assert_is_leaf ( cmd.dat );
@@ -630,7 +613,7 @@ namespace we { namespace mgmt {
 		  std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
 		}
 
-		void net_cancelled(const cmd_t & cmd)
+		void activity_cancelled(const cmd_t & cmd)
 		{
 		  exec_layer_.cancelled ( cmd.dat );
 		  assert_is_leaf ( cmd.dat );
@@ -645,13 +628,13 @@ namespace we { namespace mgmt {
 		  if (! act.is_leaf()) throw std::runtime_error("not leaf");
 		}
 
-		void suspend_net(const cmd_t & cmd)
+		void suspend_activity(const cmd_t & cmd)
 		{
 		  lookup(cmd.dat).flags().suspended = true;
 		  std::cerr << "I: act[" << cmd.dat << "] suspended" << std::endl;
 		}
 
-		void resume_net(const cmd_t & cmd)
+		void resume_activity(const cmd_t & cmd)
 		{
 		  lookup(cmd.dat).flags().suspended = false;
 		  active_nets_.put (cmd.dat);
@@ -661,18 +644,9 @@ namespace we { namespace mgmt {
 		void async_execute(activity_type & act)
 		{
 		  debug_activity (act);
-          if (act.transition().flags.internal)
+          if (act.transition().is_internal())
           {
-            if (act.transition().is_net())
-            {
-              act.prepare_input();
-              post_activity_notification (act.id());
-            }
-            else
-            {
-              act.prepare_input();
-              post_execute_notification (act.id());
-            }
+            post_execute_notification (act.id());
           }
           else
           {
@@ -702,7 +676,7 @@ namespace we { namespace mgmt {
 		{
 		  boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
 		  typename activities_t::iterator a = activities_.find(id);
-          if (a == activities_.end()) throw net_not_found<id_type>("lookup", id);
+          if (a == activities_.end()) throw activity_not_found<id_type>("lookup", id);
 		  return a->second;
 		}
 
@@ -710,7 +684,7 @@ namespace we { namespace mgmt {
 		{
 		  boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
 		  typename activities_t::const_iterator a = activities_.find(id);
-		  if (a == activities_.end()) throw net_not_found<id_type>("lookup", id);
+		  if (a == activities_.end()) throw activity_not_found<id_type>("lookup", id);
 		  return a->second;
 		}
 	};

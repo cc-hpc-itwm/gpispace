@@ -23,16 +23,16 @@
 
 namespace we { namespace mgmt {
   template <typename Id>
-  struct net_not_found : std::runtime_error
+  struct activity_not_found : std::runtime_error
   {
     typedef Id id_type;
 
-    net_not_found (std::string const& msg, id_type const& id_)
+    activity_not_found (std::string const& msg, id_type const& id_)
       : std::runtime_error(msg)
       , id(id_)
     {}
       
-    virtual ~net_not_found() throw() {}
+    virtual ~activity_not_found() throw() {}
 
     const id_type id;
   };

@@ -153,17 +153,6 @@ namespace we { namespace mgmt { namespace type {
     };
 
     inline
-    flags_t const & flags() const
-    {
-      return flags_;
-    }
-    inline
-    flags_t & flags()
-    {
-      return flags_;
-    }
-
-    inline
     bool is_alive() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
@@ -175,6 +164,34 @@ namespace we { namespace mgmt { namespace type {
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return children_.empty();
+    }
+
+    inline
+    bool is_suspended() const
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return flags_.suspended;
+    }
+
+    inline
+    bool is_cancelling() const
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return flags_.cancelling;
+    }
+
+    inline
+    bool is_cancelled() const
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return flags_.cancelled;
+    }
+
+    inline
+    bool has_failed() const
+    {
+      shared_lock_t lock(const_cast<this_type&>(*this));
+      return flags_.failed;
     }
 
     inline
@@ -238,10 +255,6 @@ namespace we { namespace mgmt { namespace type {
       unlink_child (act);
     }
 
-    void prepare_input()
-    {
-    }
-
     template <typename Context>
     void execute ( Context & )
     { }
@@ -295,13 +308,6 @@ namespace we { namespace mgmt { namespace type {
     {
       unique_lock_t lock(*this);
       output_ = o;
-    }
-
-    size_t
-    num_enabled (void) const
-    {
-      shared_lock_t lock(const_cast<this_type&>(*this));
-      return 0;
     }
 
     // **********************************
@@ -424,7 +430,7 @@ namespace we { namespace mgmt { namespace type {
       os << "act, "
          << act.id()
          << ", "
-         << "flags" // TODO act.flags()
+         << "flags"
          << ", "
          << act.transition()
          << ", "
