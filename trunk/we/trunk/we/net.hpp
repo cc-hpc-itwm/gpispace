@@ -572,6 +572,11 @@ public:
     enabled.set_priority (tid, prio);
   }
 
+  prio_t get_transition_priority (const tid_t & tid)
+  {
+    return enabled.get_priority (tid);
+  }
+
   tid_t add_transition
   ( const transition_type & transition
   , const trans_t & tf = Function::Transition::Default<token_type>()
@@ -728,8 +733,6 @@ public:
     enabled.erase (tid);
     in_map.erase (tid);
     out_map.erase (tid);
-
-    enabled.erase_priority (tid);
 
     return tid;
   }
