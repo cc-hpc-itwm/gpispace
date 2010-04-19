@@ -3,6 +3,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <we/net.hpp>
+#include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
@@ -101,24 +102,13 @@ int main (int, char **)
             << act
             << std::endl;
   {
-    std::ostringstream oss;
-    {
-      boost::archive::text_oarchive oa (oss, boost::archive::no_header);
-      oa << BOOST_SERIALIZATION_NVP (act);
-    }
+    std::string act_encoded = we::util::text_codec::encode (act);
     std::cout << "act (serialized):"
               << std::endl
-              << oss.str()
+              << act_encoded
               << std::endl;
 
-    activity_t act_d;
-    {
-      std::istringstream iss (oss.str());
-      {
-        boost::archive::text_iarchive ia (iss, boost::archive::no_header);
-        ia >> BOOST_SERIALIZATION_NVP (act_d);
-      }
-    }
+    activity_t act_d = we::util::text_codec::decode<activity_t> (act_encoded);
     std::cout << "act (deserialized):"
               << std::endl
               << act_d
