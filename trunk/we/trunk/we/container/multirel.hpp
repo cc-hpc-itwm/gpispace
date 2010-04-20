@@ -102,6 +102,9 @@ namespace multirel
 
       if (dist > 0)
         container.erase (range_it.first);
+      else
+        throw std::runtime_error
+          ("STRANGE! multirel::delete_one for non-existing object");
 
       return dist;
     }
@@ -111,9 +114,15 @@ namespace multirel
       typename traits<L,R>::range_it
         range_it (container.equal_range (typename traits<L,R>::val_t (l, r)));
 
+      const std::size_t dist (std::distance (range_it.first, range_it.second));
+
+      if (dist == 0)
+        throw std::runtime_error
+          ("STRANGE! multirel::delete_all for non-existing object");
+
       container.erase (range_it.first, range_it.second);
 
-      return std::distance (range_it.first, range_it.second);
+      return dist;
     }
 
     void delete_right (const R & r)
