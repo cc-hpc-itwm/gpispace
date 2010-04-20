@@ -91,7 +91,6 @@ static void marking (const pnet_t & n, const petri_net::tid_t & tid)
   cout << endl;
 }
 
-#ifndef NDEBUG
 static std::size_t fac (void)
 {
   std::size_t f (1);
@@ -101,13 +100,15 @@ static std::size_t fac (void)
 
   return f;
 }
-#endif
 
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  assert (!n.enabled_transitions().empty());
-  assert (n.enabled_transitions().size() == fac());
+  if (!n.enabled_transitions().empty())
+    throw std::runtime_error ("!n.enabled_transitions().empty()");
+
+  if (n.enabled_transitions().size() != fac())
+    throw std::runtime_error ("n.enabled_transitions().size() != fac()");
 
   petri_net::tid_t tid (n.enabled_transitions().random (engine));
 

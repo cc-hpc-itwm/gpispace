@@ -76,6 +76,11 @@ namespace svector
       return member (lookup (x));
     }
 
+    size_type size (void) const
+    {
+      return vec.size();
+    }
+
     const_reference first (void) const
     {
       return vec.at (0);

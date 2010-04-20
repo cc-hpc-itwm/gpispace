@@ -102,6 +102,19 @@ namespace priostore
       return (pos != prio_map.end()) ? pos->second.elem (x) : false;
     }
 
+    std::size_t size (void) const
+    {
+      std::size_t s (0);
+
+      for ( typename prio_map_t::const_iterator pos (prio_map.begin())
+          ; pos != prio_map.end()
+          ; ++pos
+          )
+        s += pos->second.size();
+
+      return s;
+    }
+
     typename Store::const_reference first (void) const
     {
       return prio_map.begin()->second.first();
