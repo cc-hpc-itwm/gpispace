@@ -123,6 +123,7 @@ int main (int, char **)
               << std::endl
               << sub
               << std::endl;
+    sub.execute ("");
   }
 
   return EXIT_SUCCESS;
