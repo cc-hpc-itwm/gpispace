@@ -150,6 +150,12 @@ namespace we { namespace type {
       {
         return trans.get_port (trans.outer_to_inner (pid)).name();
       }
+
+      template <typename Transition, typename PortId>
+      std::string translate_port_to_name (const Transition & trans, const PortId port_id)
+      {
+        return trans.get_port (port_id).name();
+      }
     }
 
     template <typename Place, typename Edge, typename Token>
