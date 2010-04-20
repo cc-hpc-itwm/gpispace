@@ -52,6 +52,7 @@ namespace we { namespace mgmt { namespace type {
     typedef Id id_type;
     typedef Traits traits_type;
 
+    typedef typename traits_type::token_type token_type;
     typedef typename traits_type::token_on_place_t token_on_place_t;
     typedef typename traits_type::input_t input_t;
     typedef typename traits_type::output_t output_t;
@@ -257,7 +258,13 @@ namespace we { namespace mgmt { namespace type {
 
     template <typename Context>
     void execute ( Context & )
-    { }
+    {
+      if (transition ().is_internal ())
+      {
+        we::mgmt::visitor::internal_executor<this_type> visitor_executor (*this);
+        boost::apply_visitor (visitor_executor, transition().data());
+      }
+    }
 
     bool
     done (void) const
