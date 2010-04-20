@@ -151,6 +151,8 @@ namespace sdpa { namespace nre { namespace worker {
 	, ACTIVITY_CANCELLED
   };
 
+  typedef std::pair<ExecutionState, result_type> execution_result_t;
+
   class ExecuteReply   : public Reply
   {
   public:

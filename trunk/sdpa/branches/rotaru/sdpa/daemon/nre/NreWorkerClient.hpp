@@ -201,7 +201,7 @@ namespace sdpa { namespace nre { namespace worker {
      * input parameters: encoded activity received from WE, walltime
      * return value: result or error (of type std::string
      */
-    result_type execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (WalltimeExceeded, std::exception)
+    execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (WalltimeExceeded, std::exception)
 	{
          /*sdpa::shared_ptr<Message> msg = request(ExecuteRequest(in_activity), walltime);
          if (msg) {
@@ -215,7 +215,7 @@ namespace sdpa { namespace nre { namespace worker {
         	 throw std::runtime_error("did not get a response from worker!");
          }*/
 
-    	return "FINISHED";
+    	return std::make_pair(ACTIVITY_FINISHED, "empty result");
 	}
 
     /* method: request

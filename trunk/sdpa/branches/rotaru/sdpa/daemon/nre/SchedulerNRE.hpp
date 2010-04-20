@@ -114,7 +114,7 @@ namespace sdpa {
 		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 		id_type act_id = pJob->id().str();
 
-		result_type result;
+		sdpa::nre::worker::execution_result_t result;
 
 		if(!ptr_comm_handler_)
 		{
@@ -123,8 +123,6 @@ namespace sdpa {
 			ptr_comm_handler_->workflowEngine()->failed(act_id, output_fail);
 			return;
 		}
-
-		result_type output; // to be fiile-in by the NreWorkerClient
 
 		// call here the NreWorkerClient
 		encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
@@ -137,30 +135,33 @@ namespace sdpa {
 		}
 		catch( const boost::thread_interrupted &)
 		{
-			SDPA_LOG_ERROR("could not execute activity: interrupted" );
-			result = "FAILED";
+			std::string errmsg("could not execute activity: interrupted");
+			SDPA_LOG_ERROR(errmsg);
+			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, errmsg);
 		}
 		catch (const std::exception &ex)
 		{
-			SDPA_LOG_ERROR("could not execute activity: " << ex.what());
-			result = "FAILED";
+			std::string errmsg("could not execute activity: ");
+			errmsg += std::string(ex.what());
+			SDPA_LOG_ERROR(errmsg);
+			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, errmsg);
 		}
 
 		// check the result state and invoke the NRE's callbacks
 		SDPA_LOG_DEBUG("Finished activity execution: notify WE ...");
-		if( result == "FINISHED" )
+		if( result.first == sdpa::nre::worker::ACTIVITY_FINISHED )
 		{
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->workflowEngine()->finished(act_id, output);
+			ptr_comm_handler_->workflowEngine()->finished(act_id, result.second);
 		}
-		else if( result == "FAILED" )
+		else if( result.first == sdpa::nre::worker::ACTIVITY_FAILED )
 		{
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->workflowEngine()->failed(act_id, output);
+			ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 		}
-		else if( result == "CANCELLED" )
+		else if( result.first == sdpa::nre::worker::ACTIVITY_CANCELLED )
 		{
 
 			// notify the gui
@@ -169,9 +170,8 @@ namespace sdpa {
 		}
 		else
 		{
-			// notify the gui
-			// and then, the workflow engine
-			ptr_comm_handler_->workflowEngine()->failed(act_id, output);
+			SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
+			ptr_comm_handler_->workflowEngine()->failed(act_id, "");
 		}
 	 }
 

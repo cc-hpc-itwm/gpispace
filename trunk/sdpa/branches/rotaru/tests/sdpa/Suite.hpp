@@ -47,6 +47,7 @@ namespace sdpa { namespace tests {
 	  suiteOfTests->addTest( TestSerializeJobPtr::suite() );
       suiteOfTests->addTest( WorkerSerializationTest::suite() );
 
+
       return suiteOfTests;
     }
   };
