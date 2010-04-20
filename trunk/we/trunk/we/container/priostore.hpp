@@ -115,8 +115,6 @@ namespace priostore
 
     bool empty (void) const { return prio_map.empty(); }
 
-    size_t size (void) const { return prio_map.size(); }
-
     bool operator == (const type<T,Prio,Store> & other) const
     {
       return (prio_map == other.prio_map);
