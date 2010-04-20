@@ -16,6 +16,9 @@ set(V_MINOR 2)
 set(V_PATCH 0)
 
 option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
+option(USE_STL_TR1
+ "Use tr1 from stl"
+ 0)
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(PROJECT_DESCRIPTION "FHG Logging Framework")

@@ -4,6 +4,7 @@
 #cmakedefine HAVE_PTHREAD_H 1
 #cmakedefine HAVE_SYSLOG_H 1
 #cmakedefine FHGLOG_WITH_REMOTE_LOGGING
+#cmakedefine USE_STL_TR1 1
 
 #define FHGLOG_VERSION     "@PROJECT_VERSION@"
 #define FHGLOG_DESCRIPTION "@PROJECT_DESCRIPTION@"

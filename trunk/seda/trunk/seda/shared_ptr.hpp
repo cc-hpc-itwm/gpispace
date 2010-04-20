@@ -27,21 +27,20 @@
 #  include <seda/seda-config.hpp>
 #endif
 
-/*#if defined(USE_STL_TR1) && (USE_STL_TR1 == 1)
+#if defined(USE_STL_TR1) && (USE_STL_TR1 == 1)
 #  include <tr1/memory>
-#else
-#  include <boost/tr1/memory.hpp>
-#endif
-
 
 namespace seda {
   using ::std::tr1::shared_ptr;
-}*/
+}
 
+#else
 #include <boost/shared_ptr.hpp>
 
 namespace seda {
     using boost::shared_ptr;
 }
+
+#endif
 
 #endif
