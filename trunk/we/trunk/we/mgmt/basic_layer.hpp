@@ -41,6 +41,9 @@ namespace we { namespace mgmt {
 	virtual bool finished(const id_type & id, const result_type & result) = 0;
 	virtual bool failed(const id_type & id, const result_type & result) = 0;
 	virtual bool cancelled(const id_type & id) = 0;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version ){}
   }; 
 }}
 
