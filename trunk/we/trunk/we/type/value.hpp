@@ -115,6 +115,7 @@ namespace value
       }
     };
 
+    //this is *not* O(1), but safe
     class hash : public boost::static_visitor<std::size_t>
     {
     public:
@@ -125,11 +126,25 @@ namespace value
 
       std::size_t operator () (const structured_t & map) const
       {
-        const structured_t::map_t::const_iterator pos (map.begin());
+        std::size_t v (0);
 
-        return (pos == map.end()) 
-          ? 3141 
-          : boost::apply_visitor (hash(), pos->second);
+        for ( structured_t::map_t::const_iterator pos (map.begin())
+            ; pos != map.end()
+            ; ++pos
+            )
+          {
+            std::size_t hash_field (0);
+
+            boost::hash_combine (hash_field, pos->first);
+
+            boost::hash_combine ( hash_field
+                                , boost::apply_visitor (hash(), pos->second)
+                                );
+
+            v += hash_field;
+          }
+
+        return v;
       }
     };
 
@@ -247,8 +262,8 @@ namespace value
       bool all_eq (true);
 
       for ( structured_t::const_iterator field (x.begin())
-              ; field != x.end() && all_eq == true
-              ; ++field
+          ; field != x.end() && all_eq == true
+          ; ++field
           )
         {
           const structured_t::const_iterator pos (y.find (field->first));
