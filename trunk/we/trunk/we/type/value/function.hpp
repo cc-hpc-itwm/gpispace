@@ -67,11 +67,28 @@ namespace value
         return boost::apply_visitor (literal::function::binary (token), x, y);
       }
 
+      type operator () (structured_t & x, structured_t & y) const
+      {
+        switch (token)
+          {
+          case expr::token::eq:
+            {
+              type tx (x);
+              type ty (y);
+
+              return boost::apply_visitor (value::visitor::eq(), tx, ty);
+            }
+          default:
+            throw expr::exception::eval::type_error
+              (util::show (token) + " for structured values");
+          }
+      }
+
       template<typename A, typename B>
       type operator () (A &, B &) const
       {
         throw expr::exception::eval::type_error
-          (util::show (token) + " for structured value(s)");
+          (util::show (token) + " for literal and structured value");
       }
     };
 
