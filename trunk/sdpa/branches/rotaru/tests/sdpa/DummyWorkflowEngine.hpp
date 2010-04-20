@@ -185,7 +185,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		lock_type lock(mtx_);
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
-		encoded_type act_desc;
+		encoded_type act_desc = wf_desc;
 		if(pIDaemon_)
 		{
 			SDPA_LOG_DEBUG("Submit new activity ...");

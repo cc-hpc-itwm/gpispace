@@ -111,6 +111,12 @@ GenericDaemon::~GenericDaemon()
 {
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 
+	if(ptr_workflow_engine_)
+	{
+		delete ptr_workflow_engine_;
+		ptr_workflow_engine_ = NULL;
+	}
+
 	// Allocated outside and passed as a parameter
 	daemon_stage_ = NULL;
 }

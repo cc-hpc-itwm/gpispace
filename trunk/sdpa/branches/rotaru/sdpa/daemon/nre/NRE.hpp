@@ -38,8 +38,7 @@ namespace sdpa {
 
 		NRE( const std::string& name = "", const std::string& url = "",
 			 const std::string& masterName = "", const std::string& masterUrl = "",
-			 const std::string& workerUrl = "", const std::string& guiUrl = "",
-			 const bool bExtSched = false )
+			 const std::string& workerUrl = "", const std::string& guiUrl = "" )
 		: dsm::DaemonFSM( name, dynamic_cast<IWorkflowEngine*>(new T(this)) ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
@@ -48,8 +47,8 @@ namespace sdpa {
 				  m_guiServ("SDPA", guiUrl)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
-			if(!bExtSched)
-				ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
+
+			ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -65,10 +64,9 @@ namespace sdpa {
 
 		static ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",
-								  const bool bExtSched = false )
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000")
 		{
-			 return ptr_t(new NRE<T>( name, url, masterName, masterUrl, workerUrl, guiUrl, bExtSched ));
+			 return ptr_t(new NRE<T>( name, url, masterName, masterUrl, workerUrl, guiUrl));
 		}
 
 		static void start( NRE<T>::ptr_t ptrNRE );
@@ -82,6 +80,12 @@ namespace sdpa {
 
 		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+
+		void activityCreated( const id_type& id, const std::string& data );
+		void activityStarted( const id_type& id, const std::string& data );
+		void activityFinished( const id_type& id, const std::string& data );
+		void activityFailed( const id_type& id, const std::string& data );
+		void activityCancelled( const id_type& id, const std::string& data );
 
 		const std::string& url() const {return url_;}
 		const std::string& masterName() const { return masterName_; }
@@ -278,32 +282,35 @@ bool  NRE<T>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
-/*
-void NRE<T>::activityCreated(const gwes::activity_t& act)
+template <typename T>
+void NRE<T>::activityCreated( const id_type& id, const std::string& data )
 {
-	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CREATED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
 }
 
-void NRE<T>::activityStarted(const gwes::activity_t& act)
+template <typename T>
+void NRE<T>::activityStarted( const id_type& id, const std::string& data )
 {
-	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_STARTED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
 }
 
-void NRE<T>::activityFinished(const gwes::activity_t& act)
+template <typename T>
+void NRE<T>::activityFinished( const id_type& id, const std::string& data )
 {
-	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_FINISHED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
 }
 
-void NRE<T>::activityFailed(const gwes::activity_t& act)
+template <typename T>
+void NRE<T>::activityFailed( const id_type& id, const std::string& data )
 {
-	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_FAILED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
 }
 
-void NRE<T>::activityCancelled(const gwes::activity_t& act)
+template <typename T>
+void NRE<T>::activityCancelled( const id_type& id, const std::string& data )
 {
-	notifyObservers(NotificationEvent(act.getID(), act.getName(), NotificationEvent::STATE_CANCELLED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
 }
-*/
 
 template <typename T>
 void NRE<T>::backup( const std::string& strArchiveName )

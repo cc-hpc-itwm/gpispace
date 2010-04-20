@@ -21,7 +21,6 @@
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <seda/StageRegistry.hpp>
-//#include <gwes/GWES.h>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 namespace po = boost::program_options;
@@ -32,7 +31,6 @@ using namespace sdpa::tests;
 #define NO_GUI ""
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
-
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
@@ -195,7 +193,7 @@ void TestComponents::testComponentsDummyGWES()
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy GWES
-	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, bUseExtSched );
+	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
 
     try

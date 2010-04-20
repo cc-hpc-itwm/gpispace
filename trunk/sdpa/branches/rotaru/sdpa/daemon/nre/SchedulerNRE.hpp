@@ -129,7 +129,7 @@ namespace sdpa {
 		try
 		{
 			//ptr_comm_handler_->activityStarted(gwes_act);
-			// don't forget to specify the walltime first!!!!!!!!!
+
 			//result = "FAILED";
 			result = m_worker_.execute(enc_act, pJob->walltime());
 		}

@@ -197,6 +197,17 @@ namespace sdpa { namespace nre { namespace worker {
     	throw std::runtime_error("not implemented");
     }
 
+    /* method: request
+     * input parameters: message, timeout
+     * return value: shared pointer to the reply Message
+     */
+	sdpa::shared_ptr<Message> request(const Message &m, unsigned long timeout)
+	{
+		send(m);
+		return sdpa::shared_ptr<Message>(recv(timeout));
+	}
+
+
     /* method: execute
      * input parameters: encoded activity received from WE, walltime
      * return value: result or error (of type std::string
@@ -217,16 +228,6 @@ namespace sdpa { namespace nre { namespace worker {
 
     	return std::make_pair(ACTIVITY_FINISHED, "empty result");
 	}
-
-    /* method: request
-        * input parameters: message, timeout
-        * return value: shared pointer to the reply Message
-        */
-   	sdpa::shared_ptr<Message> request(const Message &m, unsigned long timeout)
-   	{
-   		send(m);
-   		return sdpa::shared_ptr<Message>(recv(timeout));
-   	}
 
   private:
 	void ping() throw (NrePcdIsDead)
@@ -370,7 +371,7 @@ namespace sdpa { namespace nre { namespace worker {
 			// wake up any thread waiting for some execution
 			if (is_pcd_dead())
 			{
-			  LOG(ERROR, "nre-pcd is probably dead, waking blocked threads...");
+			  LOG(ERROR, "The nre-pcd is probably dead, waking up other threads...");
 			  boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
 			  msg_avail_.notify_all();
 			}

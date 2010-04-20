@@ -104,6 +104,14 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
+# uuid library
+include(FindWE)
+if (WE_FOUND)
+  include_directories(${WE_INCLUDE_DIR})
+else(WE_FOUND)
+  message(FATAL_ERROR "WE could not be found but is required")
+endif(WE_FOUND)
+
 # GWES/GWDL
 if( USE_GWES)
 include(FindGwes)
@@ -211,9 +219,9 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Reflect the package structure
 add_subdirectory(sdpa)
-add_subdirectory(apps)
 include(CTest)
 add_subdirectory(tests)
+add_subdirectory(apps)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
