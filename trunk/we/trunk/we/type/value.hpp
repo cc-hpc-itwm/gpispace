@@ -18,8 +18,6 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <iostream>
 
 namespace value
@@ -33,8 +31,8 @@ namespace value
   struct structured_t
   {
   public:
+    // NOTE! sorted container neccessary for operator ==
     typedef std::map<signature::field_name_t, type> map_t;
-    // typedef boost::unordered_map<signature::field_name_t, type> map_t;
     typedef map_t::const_iterator const_iterator;
     typedef map_t::const_iterator iterator;
 
@@ -250,7 +248,23 @@ namespace value
 
       bool operator () (const structured_t & x, const structured_t & y) const
       {
-        return smaller_or_equal (x, y) && smaller_or_equal (y, x);
+        //        return smaller_or_equal (x, y) && smaller_or_equal (y, x);
+
+        structured_t::const_iterator pos_x (x.begin());
+        structured_t::const_iterator pos_y (y.begin());
+        const structured_t::const_iterator end_x (x.end());
+
+        bool all_eq (  std::distance(pos_x, end_x) 
+                    == std::distance(pos_y, y.end())
+                    );
+
+        for ( ; all_eq && pos_x != end_x; ++pos_x, ++pos_y)
+          all_eq =
+            pos_x->first == pos_y->first
+            && 
+            boost::apply_visitor (eq(), pos_x->second, pos_y->second);
+
+        return all_eq; // && (pos_x == end_x) && (pos_y == end_y);
       }
 
       template<typename A, typename B>
