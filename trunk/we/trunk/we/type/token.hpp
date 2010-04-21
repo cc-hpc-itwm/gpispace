@@ -157,16 +157,28 @@ namespace token
   {
   public:
     value::type value;
+    std::size_t hash;
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    void save (Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(value);
     }
+    template<typename Archive>
+    void load (Archive & ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(value);
+      hash = boost::apply_visitor (value::visitor::hash(), value);
+    }
+    
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   public:
-    type () : value (control()) {}
+    type () 
+      : value (control())
+      , hash (boost::apply_visitor (value::visitor::hash(), value))
+    {}
 
     // construct from value, require type from signature
     type ( const signature::field_name_t & field
@@ -178,6 +190,7 @@ namespace token
                                      , v
                                      )
               )
+      , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
 
     // construct from context, use information from signature
@@ -185,14 +198,12 @@ namespace token
          , const signature::type & signature
          , const context_t & context
          )
-//       : value (boost::apply_visitor ( visitor::unbind (field, context)
-//                                     , signature.desc()
-//                                     )
-//               )
     {
       boost::apply_visitor ( visitor::unbind (field, context, value)
                            , signature.desc()
                            );
+
+      hash = boost::apply_visitor (value::visitor::hash(), value);
     }
       
     void bind (const signature::field_name_t & field, context_t & c) const
@@ -208,12 +219,15 @@ namespace token
 
   inline std::size_t hash_value (const type & t)
   {
-    return boost::apply_visitor (value::visitor::hash(), t.value);
+    return t.hash;
   }
 
   inline bool operator == (const type & a, const type & b)
   {
-    return boost::apply_visitor (value::visitor::eq(), a.value, b.value);
+    return 
+      a.hash == b.hash
+      &&
+      boost::apply_visitor (value::visitor::eq(), a.value, b.value);
   }
 
   inline bool operator != (const type & a, const type & b)
