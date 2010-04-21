@@ -19,7 +19,7 @@ function(check_package_search_path NAME INCLUDE_FILE LIBNAME LIBVERSION
   string(TOLOWER ${NAME} _name)
   message(STATUS "  build searchpath for package ${NAME}")
 
-  IF (NOT WIN32)
+  if (NOT WIN32)
     include(FindPkgConfig)
     if ( PKG_CONFIG_FOUND )
 
@@ -29,24 +29,21 @@ function(check_package_search_path NAME INCLUDE_FILE LIBNAME LIBVERSION
     endif(PKG_CONFIG_FOUND)
   endif (NOT WIN32)
 
-# set defaults
-  SET(_${_name}_HOME "/usr/local")
-  SET(${GEN_INCLUDE_SEARCH_DIRS}
+  # set defaults
+  set(_${_name}_HOME "/usr/local")
+  set(${GEN_INCLUDE_SEARCH_DIRS}
     ${CMAKE_INCLUDE_PATH}
-    /usr/local/include
-    /usr/include
+    ${CMAKE_SYSTEM_INCLUDE_PATH}
     )
 
-  SET(${GEN_LIBRARIES_SEARCH_DIRS}
+  set(${GEN_LIBRARIES_SEARCH_DIRS}
     ${CMAKE_LIBRARY_PATH}
-    /usr/local/lib
-    /usr/lib
+    ${CMAKE_SYSTEM_LIBRARY_PATH}
     )
 
-  SET(${GEN_BINARY_SEARCH_DIRS}
+  set(${GEN_BINARY_SEARCH_DIRS}
     ${CMAKE_BINARY_PATH}
-    /usr/local/lib
-    /usr/lib
+    ${CMAKE_SYSTEM_BINARY_PATH}
     )
   #
 
@@ -64,12 +61,12 @@ function(check_package_search_path NAME INCLUDE_FILE LIBNAME LIBVERSION
 
   message(STATUS "    Looking for ${_name} in ${${NAME}_HOME}")
 
-  IF( NOT ${${NAME}_HOME} STREQUAL "" )
-    SET(${GEN_INCLUDE_SEARCH_DIRS} ${${NAME}_HOME}/include ${${GEN_INCLUDE_SEARCH_DIRS}})
-    SET(${GEN_LIBRARIES_SEARCH_DIRS} ${${NAME}_HOME}/lib ${${GEN_LIBRARIES_SEARCH_DIRS}})
-    SET(${GEN_BINARY_SEARCH_DIRS} ${${NAME}_HOME}/bin ${${GEN_BINRAY_SEARCH_DIRS}})
-    SET(${GEN_HOME} ${${NAME}_HOME})
-  ENDIF( NOT ${${NAME}_HOME} STREQUAL "" )
+  if( NOT ${${NAME}_HOME} STREQUAL "" )
+    set(${GEN_INCLUDE_SEARCH_DIRS} ${${NAME}_HOME}/include ${${GEN_INCLUDE_SEARCH_DIRS}})
+    set(${GEN_LIBRARIES_SEARCH_DIRS} ${${NAME}_HOME}/lib ${${GEN_LIBRARIES_SEARCH_DIRS}})
+    set(${GEN_BINARY_SEARCH_DIRS} ${${NAME}_HOME}/bin ${${GEN_BINRAY_SEARCH_DIRS}})
+    set(${GEN_HOME} ${${NAME}_HOME})
+  endif( NOT ${${NAME}_HOME} STREQUAL "" )
 
   IF( NOT $ENV{${NAME}_INCLUDEDIR} STREQUAL "" )
     SET(${GEN_INCLUDE_SEARCH_DIRS} $ENV{${NAME}_INCLUDEDIR} ${${GEN_INCLUDE_SEARCH_DIRS}})
@@ -104,7 +101,7 @@ endfunction()
 #
 #
 #
-function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
+macro(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
   message(STATUS "check for package ${NAME}")
   string(TOLOWER ${NAME} _name)
   string(TOUPPER ${NAME} _NAME_UPPER)
@@ -168,28 +165,28 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
       set(${_NAME_UPPER}_HOME ${_xxx_HOME} PARENT_SCOPE)
     endif( NOT ${_NAME_UPPER}_HOME)
 
-    message(STATUS "    Found ${_name}: -I${${_NAME_UPPER}_INCLUDE_DIR} ${${_NAME_UPPER}_LIBRARY}")
-    GET_FILENAME_COMPONENT (${_NAME_UPPER}_LIBRARY_DIR ${${_NAME_UPPER}_LIBRARY} PATH)
-    GET_FILENAME_COMPONENT (${_NAME_UPPER}_LIBRARIES ${${_NAME_UPPER}_LIBRARY} NAME)
+    message(STATUS "    Found ${_name}: ${${_NAME_UPPER}_INCLUDE_DIRS} ${${_NAME_UPPER}_LIBRARY}")
+    get_filename_component (${_NAME_UPPER}_LIBRARY_DIR ${${_NAME_UPPER}_LIBRARY} PATH)
+    get_filename_component (${_NAME_UPPER}_LIBRARIES ${${_NAME_UPPER}_LIBRARY} NAME)
     set(${_NAME_UPPER}_LIBRARY_DIR ${${_NAME_UPPER}_LIBRARY_DIR} PARENT_SCOPE)
     set(${_NAME_UPPER}_FOUND ${${_NAME_UPPER}_FOUND} PARENT_SCOPE)
   endif(${_NAME_UPPER}_FOUND)
 
-  message(STATUS "    ${_NAME_UPPER} 2: '-I${${_NAME_UPPER}_INCLUDE_DIR}' '-L${${_NAME_UPPER}_LIBRARY_DIR}' ")
-  message(STATUS "             '${${_NAME_UPPER}_LIBRARIES}' '${${_NAME_UPPER}_LIBRARY}'")
-  message(STATUS "    search '${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake'")
-
   #
   if( NOT ${_name}_IN_CACHE )
-    if(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
+    if(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/${_name}Config.cmake)
       message(STATUS "    Include ${_NAME_UPPER} dependencies.")
-      include(${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
+      include(${${_NAME_UPPER}_LIBRARY_DIR}/shared/${_name}Config.cmake)
       set(${_NAME_UPPER}_LIBRARY ${_name} PARENT_SCOPE)
       set(${_NAME_UPPER}_INCLUDE_DIRS ${${_NAME_UPPER}_INCLUDE_DIRS} PARENT_SCOPE)
-    endif(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/lib${_name}Config.cmake)
+    endif(EXISTS ${${_NAME_UPPER}_LIBRARY_DIR}/shared/${_name}Config.cmake)
   else( NOT ${_name}_IN_CACHE )
     message(STATUS "    package ${NAME} was allready in loaded. Do not perform dependencies.")
   endif( NOT ${_name}_IN_CACHE )
+
+  message(STATUS "    ${_NAME_UPPER} 2: '${${_NAME_UPPER}_INCLUDE_DIRS}' '${${_NAME_UPPER}_LIBRARY_DIR}' ")
+  message(STATUS "             '${${_NAME_UPPER}_LIBRARIES}' '${${_NAME_UPPER}_LIBRARY}'")
+  message(STATUS "    search '${${_NAME_UPPER}_LIBRARY_DIR}/shared/${_name}Config.cmake'")
 
 
   MARK_AS_ADVANCED(
@@ -202,8 +199,8 @@ function(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
     ${_NAME_UPPER}_INCLUDE_DIRS
     )
 
-#endfunction(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
-endfunction()
+#endmacro(check_package NAME INCLUDE_FILE LIBNAME LIBVERSION)
+endmacro()
 
 #
 #
