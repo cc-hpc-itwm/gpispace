@@ -29,33 +29,39 @@ namespace expr
             }
           else
             {
-              value::type c (eval (*node.child0, context));
+              value::type c0 (eval (*node.child0, context));
 
               return boost::apply_visitor ( value::function::unary (node.token)
-                                          , c
+                                          , c0
                                           );
             }
         case expr::parse::node::flag::binary:
           if (is_define (node.token))
-            return context.bind ( (*node.child0).ref
-                                , eval (*node.child1, context)
-                                );
+            {
+              value::type c1 (eval (*node.child1, context));
+
+              return context.bind ((*node.child0).ref, c1);
+            }
           else
             {
-              value::type l (eval (*node.child0, context));
-              value::type r (eval (*node.child1, context));
+              value::type c0 (eval (*node.child0, context));
+              value::type c1 (eval (*node.child1, context));
 
               return boost::apply_visitor ( value::function::binary (node.token)
-                                          , l
-                                          , r
+                                          , c0
+                                          , c1
                                           );
             }
         case expr::parse::node::flag::ternary:
-          return value::function::ternary ( node.token
-                                          , eval (*node.child0, context)
-                                          , eval (*node.child1, context)
-                                          , eval (*node.child2, context)
-                                          );
+          if (node.token == expr::token::_ite)
+            {
+              if (value::function::is_true (eval (*node.child0, context)))
+                return eval (*node.child1, context);
+              else
+                return eval (*node.child2, context);
+            }
+          else
+            throw expr::exception::strange ("ternary but not ite");
 
         default: throw parse::node::unknown();
         }
