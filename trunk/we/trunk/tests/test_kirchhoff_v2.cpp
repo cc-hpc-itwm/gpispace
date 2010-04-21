@@ -293,6 +293,7 @@ main (int argc, char ** argv)
     << "BUFFER_PER_SUBVOLUMEN = " << BUFFER_PER_SUBVOLUMEN << endl
     << "SEED                  = " << SEED << endl
     << "PRINT_MARKING         = " << PRINT_MARKING << endl
+    << "PRINT_MARKING         = " << PRINT_FIRE << endl
     ;
 
   pnet_t net;
@@ -329,108 +330,69 @@ main (int argc, char ** argv)
   // *********************************************************************** //
   // generate offsets
 
-  petri_net::pid_t pid_off_num
-    (net.add_place (place::type ("off_num", literal::LONG)));
+  signature::structured_t sig_state;
+
+  sig_state["num"] = literal::LONG;
+  sig_state["state"] = literal::LONG;
+
   petri_net::pid_t pid_off_state
-    (net.add_place (place::type ("off_state", literal::LONG)));
-  petri_net::pid_t pid_off_wait_for
-    (net.add_place (place::type ("off_wait_for", literal::LONG)));
+    (net.add_place (place::type ("off_state", sig_state)));
+  petri_net::pid_t pid_off_try
+    (net.add_place (place::type ("off_try", sig_state)));
 
-  signature::structured_t sig_pair_LL;
-  
-  sig_pair_LL["num"] = literal::LONG;
-  sig_pair_LL["state"] = literal::LONG;
-
-  petri_net::pid_t pid_off_pair
-    (net.add_place (place::type ("off_pair", sig_pair_LL)));
-
-  net.set_capacity (pid_off_pair, 1);
+  net.set_capacity (pid_off_try, 1);
 
   petri_net::pid_t pid_off_to_work
     (net.add_place (place::type ("off_to_work", literal::LONG)));
-  petri_net::pid_t pid_off_done
-    (net.add_place (place::type ("off_done", literal::LONG)));
-  petri_net::pid_t pid_off_all_done
-    (net.add_place (place::type ("off_all_done")));
 
   petri_net::tid_t tid_off_init
     ( mk_transition
       ( net
       , "off_init"
-      , "${off_num}      := ${OFFSETS} ;\
-         ${off_state}    := 0L         ;\
-         ${off_wait_for} := ${OFFSETS}  "
+      , "${off_state.num}   := ${OFFSETS} ;\
+         ${off_state.state} := 0L          "
       )
     );
 
   net.add_edge (mk_edge(), connection_t (PT, tid_off_init, pid_OFFSETS));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_init, pid_off_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_off_init, pid_off_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_init, pid_off_wait_for));
 
-  petri_net::tid_t tid_off_pair
+  petri_net::tid_t tid_off_try
     ( mk_transition
       ( net
-      , "off_pair"
-      , "${off_pair.num}      := ${off_num}   ;\
-         ${off_pair.state}    := ${off_state} ;"
+      , "off_try"
+      , "${off_try} := ${off_state}"
       )
     );
 
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_pair, pid_off_num));
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_pair, pid_off_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_pair, pid_off_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_off_try, pid_off_state));
+  net.add_edge (mk_edge(), connection_t (TP, tid_off_try, pid_off_try));
 
   petri_net::tid_t tid_off_break
     ( mk_transition
       ( net
       , "off_break"
       , ""
-      , "${off_pair.state} >= ${off_pair.num}"
+      , "${off_try.state} >= ${off_try.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_break, pid_off_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_off_break, pid_off_try));
 
   petri_net::tid_t tid_off_step
     ( mk_transition
       ( net
       , "off_step"
-      , "${off_to_work} := ${off_pair.state}     ;\
-         ${off_num}     := ${off_pair.num}       ;\
-         ${off_state}   := ${off_pair.state} + 1  "
-      , "${off_pair.state} < ${off_pair.num}"
+      , "${off_to_work}     := ${off_try.state}     ;\
+         ${off_state}       := ${off_try}           ;\
+         ${off_state.state} := ${off_try.state} + 1  "
+      , "${off_try.state} < ${off_try.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_step, pid_off_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_off_step, pid_off_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_off_step, pid_off_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_step, pid_off_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_off_step, pid_off_state));
-
-  petri_net::tid_t tid_off_dec
-    ( mk_transition
-      ( net
-      , "off_dec"
-      , "${off_wait_for} := ${off_wait_for} - 1"
-      )
-    );
-  
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_dec, pid_off_done));
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_dec, pid_off_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_dec, pid_off_wait_for));
-
-  petri_net::tid_t tid_off_all_done
-    ( mk_transition 
-      ( net
-      , "off_all_done"
-      , "${off_all_done} := []"
-      , "${off_wait_for} == 0L"
-      )
-    );
-
-  net.add_edge (mk_edge(), connection_t (PT, tid_off_all_done, pid_off_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_off_all_done, pid_off_all_done));
 
   // *********************************************************************** //
   // generate packages
@@ -440,119 +402,72 @@ main (int argc, char ** argv)
   sig_package["offset"] = literal::LONG;
   sig_package["package"] = literal::LONG;
 
-  signature::structured_t sig_offset_count;
+  signature::structured_t sig_offset_with_state;
 
-  sig_offset_count["offset"] = literal::LONG;
-  sig_offset_count["count"] = literal::LONG;
+  sig_offset_with_state["offset"] = literal::LONG;
+  sig_offset_with_state["state"] = sig_state;
 
-  petri_net::pid_t pid_pack_num
-    (net.add_place (place::type ("pack_num", sig_offset_count)));
   petri_net::pid_t pid_pack_state
-    (net.add_place (place::type ("pack_state", sig_offset_count)));
-  petri_net::pid_t pid_pack_wait_for
-    (net.add_place (place::type ("pack_wait_for", sig_offset_count)));
+    (net.add_place (place::type ("pack_state", sig_offset_with_state)));
+  petri_net::pid_t pid_pack_try
+    (net.add_place (place::type ("pack_try", sig_offset_with_state)));
 
-  signature::structured_t sig_pair_ococ;
-  
-  sig_pair_ococ["num"] = sig_offset_count;
-  sig_pair_ococ["state"] = sig_offset_count;
-
-  petri_net::pid_t pid_pack_pair
-    (net.add_place (place::type ("pack_pair", sig_pair_ococ)));
-
-  net.set_capacity (pid_pack_pair, 1);
+  net.set_capacity (pid_pack_try, 1);
 
   petri_net::pid_t pid_pack_to_work
     (net.add_place (place::type ("pack_to_work", sig_package)));
-  petri_net::pid_t pid_pack_done
-    (net.add_place (place::type ("pack_done", sig_package)));
 
   petri_net::tid_t tid_pack_init
     ( mk_transition
       ( net
       , "pack_init"
-      , "${pack_num.offset}      := ${off_to_work}         ;\
-         ${pack_num.count}       := ${PACKAGES_PER_OFFSET} ;\
-         ${pack_state.offset}    := ${off_to_work}         ;\
-         ${pack_state.count}     := 0L                     ;\
-         ${pack_wait_for.offset} := ${off_to_work}         ;\
-         ${pack_wait_for.count}  := ${PACKAGES_PER_OFFSET}  "
+      , "${pack_state.offset}      := ${off_to_work}         ;\
+         ${pack_state.state.num}   := ${PACKAGES_PER_OFFSET} ;\
+         ${pack_state.state.state} := 0L                      "
       )
     );
 
   net.add_edge (mk_edge(), connection_t (PT_READ, tid_pack_init, pid_PACKAGES_PER_OFFSET));
   net.add_edge (mk_edge(), connection_t (PT, tid_pack_init, pid_off_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_init, pid_pack_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_pack_init, pid_pack_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_init, pid_pack_wait_for));
 
-  petri_net::tid_t tid_pack_pair
+  petri_net::tid_t tid_pack_try
     ( mk_transition
       ( net
-      , "pack_pair"
-      , "${pack_pair.num}      := ${pack_num}   ;\
-         ${pack_pair.state}    := ${pack_state} ;"
-      , "${pack_num.offset} == ${pack_state.offset}"
+      , "pack_try"
+      , "${pack_try} := ${pack_state}"
       )
     );
 
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_pair, pid_pack_num));
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_pair, pid_pack_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_pair, pid_pack_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_pack_try, pid_pack_state));
+  net.add_edge (mk_edge(), connection_t (TP, tid_pack_try, pid_pack_try));
 
   petri_net::tid_t tid_pack_break
     ( mk_transition
       ( net
       , "pack_break"
       , ""
-      , "${pack_pair.state.count} >= ${pack_pair.num.count}"
+      , "${pack_try.state.state} >= ${pack_try.state.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_break, pid_pack_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_pack_break, pid_pack_try));
 
   petri_net::tid_t tid_pack_step
     ( mk_transition
       ( net
       , "pack_step"
-      , "${pack_to_work.offset}  := ${pack_pair.state.offset}   ;\
-         ${pack_to_work.package} := ${pack_pair.state.count}    ;\
-         ${pack_num}             := ${pack_pair.num}            ;\
-         ${pack_state.offset}    := ${pack_pair.state.offset}   ;\
-         ${pack_state.count}     := ${pack_pair.state.count} + 1 "
-      , "${pack_pair.state.count} < ${pack_pair.num.count}"
+      , "${pack_to_work.offset}    := ${pack_try.offset}          ;\
+         ${pack_to_work.package}   := ${pack_try.state.state}     ;\
+         ${pack_state}             := ${pack_try}                 ;\
+         ${pack_state.state.state} := ${pack_try.state.state} + 1  "
+      , "${pack_try.state.state} < ${pack_try.state.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_step, pid_pack_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_pack_step, pid_pack_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_pack_step, pid_pack_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_step, pid_pack_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_pack_step, pid_pack_state));
-
-  petri_net::tid_t tid_pack_dec
-    ( mk_transition
-      ( net
-      , "pack_dec"
-      , "${pack_wait_for.count} := ${pack_wait_for.count} - 1"
-      , "${pack_wait_for.offset} == ${pack_done.offset}"
-      )
-    );
-  
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_dec, pid_pack_done));
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_dec, pid_pack_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_dec, pid_pack_wait_for));
-
-  petri_net::tid_t tid_pack_all_done
-    ( mk_transition 
-      ( net
-      , "pack_all_done"
-      , "${off_done} := ${pack_wait_for.offset}"
-      , "${pack_wait_for.count} == 0L"
-      )
-    );
-
-  net.add_edge (mk_edge(), connection_t (PT, tid_pack_all_done, pid_pack_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_pack_all_done, pid_off_done));
 
   // *********************************************************************** //
   // generate bunches
@@ -562,119 +477,72 @@ main (int argc, char ** argv)
   sig_bunch["package"] = sig_package;
   sig_bunch["bunch"] = literal::LONG;
 
-  signature::structured_t sig_package_count;
+  signature::structured_t sig_package_with_state;
 
-  sig_package_count["package"] = sig_package;
-  sig_package_count["count"] = literal::LONG;
+  sig_package_with_state["package"] = sig_package;
+  sig_package_with_state["state"] = sig_state;
 
-  petri_net::pid_t pid_bunch_num
-    (net.add_place (place::type ("bunch_num", sig_package_count)));
   petri_net::pid_t pid_bunch_state
-    (net.add_place (place::type ("bunch_state", sig_package_count)));
-  petri_net::pid_t pid_bunch_wait_for
-    (net.add_place (place::type ("bunch_wait_for", sig_package_count)));
+    (net.add_place (place::type ("bunch_state", sig_package_with_state)));
+  petri_net::pid_t pid_bunch_try
+    (net.add_place (place::type ("bunch_try", sig_package_with_state)));
 
-  signature::structured_t sig_pair_pcpc;
-  
-  sig_pair_pcpc["num"] = sig_package_count;
-  sig_pair_pcpc["state"] = sig_package_count;
-
-  petri_net::pid_t pid_bunch_pair
-    (net.add_place (place::type ("bunch_pair", sig_pair_pcpc)));
-
-  net.set_capacity (pid_bunch_pair, 1);
+  net.set_capacity (pid_bunch_try, 1);
 
   petri_net::pid_t pid_bunch_to_work
     (net.add_place (place::type ("bunch_to_work", sig_bunch)));
-  petri_net::pid_t pid_bunch_done
-    (net.add_place (place::type ("bunch_done", sig_bunch)));
 
   petri_net::tid_t tid_bunch_init
     ( mk_transition
       ( net
       , "bunch_init"
-      , "${bunch_num.package}      := ${pack_to_work}        ;\
-         ${bunch_num.count}        := ${BUNCHES_PER_PACKAGE} ;\
-         ${bunch_state.package}    := ${pack_to_work}        ;\
-         ${bunch_state.count}      := 0L                     ;\
-         ${bunch_wait_for.package} := ${pack_to_work}        ;\
-         ${bunch_wait_for.count}   := ${BUNCHES_PER_PACKAGE}  "
+      , "${bunch_state.package}     := ${pack_to_work}        ;\
+         ${bunch_state.state.num}   := ${BUNCHES_PER_PACKAGE} ;\
+         ${bunch_state.state.state} := 0L                      "
       )
     );
 
   net.add_edge (mk_edge(), connection_t (PT_READ, tid_bunch_init, pid_BUNCHES_PER_PACKAGE));
   net.add_edge (mk_edge(), connection_t (PT, tid_bunch_init, pid_pack_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_init, pid_bunch_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_bunch_init, pid_bunch_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_init, pid_bunch_wait_for));
 
-  petri_net::tid_t tid_bunch_pair
+  petri_net::tid_t tid_bunch_try
     ( mk_transition
       ( net
-      , "bunch_pair"
-      , "${bunch_pair.num}      := ${bunch_num}   ;\
-         ${bunch_pair.state}    := ${bunch_state} ;"
-      , "${bunch_num.package} == ${bunch_state.package}"
+      , "bunch_try"
+      , "${bunch_try} := ${bunch_state}"
       )
     );
 
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_pair, pid_bunch_num));
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_pair, pid_bunch_state));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_pair, pid_bunch_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_try, pid_bunch_state));
+  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_try, pid_bunch_try));
 
   petri_net::tid_t tid_bunch_break
     ( mk_transition
       ( net
       , "bunch_break"
       , ""
-      , "${bunch_pair.state.count} >= ${bunch_pair.num.count}"
+      , "${bunch_try.state.state} >= ${bunch_try.state.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_break, pid_bunch_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_break, pid_bunch_try));
 
   petri_net::tid_t tid_bunch_step
     ( mk_transition
       ( net
       , "bunch_step"
-      , "${bunch_to_work.package} := ${bunch_pair.state.package}  ;\
-         ${bunch_to_work.bunch}   := ${bunch_pair.state.count}    ;\
-         ${bunch_num}             := ${bunch_pair.num}            ;\
-         ${bunch_state.package}   := ${bunch_pair.state.package}  ;\
-         ${bunch_state.count}     := ${bunch_pair.state.count} + 1 "
-      , "${bunch_pair.state.count} < ${bunch_pair.num.count}"
+      , "${bunch_to_work.package}   := ${bunch_try.package}         ;\
+         ${bunch_to_work.bunch}     := ${bunch_try.state.state}     ;\
+         ${bunch_state}             := ${bunch_try}                 ;\
+         ${bunch_state.state.state} := ${bunch_try.state.state} + 1  "
+      , "${bunch_try.state.state} < ${bunch_try.state.num}"
       )
     );
   
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_step, pid_bunch_pair));
+  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_step, pid_bunch_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_bunch_step, pid_bunch_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_step, pid_bunch_num));
   net.add_edge (mk_edge(), connection_t (TP, tid_bunch_step, pid_bunch_state));
-
-  petri_net::tid_t tid_bunch_dec
-    ( mk_transition
-      ( net
-      , "bunch_dec"
-      , "${bunch_wait_for.count} := ${bunch_wait_for.count} - 1"
-      , "${bunch_wait_for.package} == ${bunch_done.package}"
-      )
-    );
-  
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_dec, pid_bunch_done));
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_dec, pid_bunch_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_dec, pid_bunch_wait_for));
-
-  petri_net::tid_t tid_bunch_all_done
-    ( mk_transition 
-      ( net
-      , "bunch_all_done"
-      , "${pack_done} := ${bunch_wait_for.package}"
-      , "${bunch_wait_for.count} == 0L"
-      )
-    );
-
-  net.add_edge (mk_edge(), connection_t (PT, tid_bunch_all_done, pid_bunch_wait_for));
-  net.add_edge (mk_edge(), connection_t (TP, tid_bunch_all_done, pid_pack_done));
 
   // *********************************************************************** //
 
@@ -682,12 +550,11 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "tmp"
-      , "${bunch_done} := ${bunch_to_work}"
+      , ""
       )
     );
 
   net.add_edge (mk_edge(), connection_t (PT, tid_tmp, pid_bunch_to_work));
-  net.add_edge (mk_edge(), connection_t (TP, tid_tmp, pid_bunch_done));
 
   // *********************************************************************** //
 
