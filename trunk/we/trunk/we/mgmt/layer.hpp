@@ -128,6 +128,7 @@ namespace we { namespace mgmt {
           activity_type act = parser<net_type>::parse<activity_type>(bytes);
           act.set_id (id);
           submit (id, act);
+          // TODO: clear parent, clear children!
           std::cerr << "D: submitted act["<< id << "]" << std::endl;
 //
 //		  // check network for validity
@@ -517,6 +518,7 @@ namespace we { namespace mgmt {
 						<< "act[" << par.id() << "]"
 						<< std::endl;
 
+              par.inject (act);
               par.child_finished (act);
 
               post_activity_notification( par.id() );
