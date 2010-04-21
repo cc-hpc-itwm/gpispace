@@ -116,7 +116,7 @@ int main (int, char **)
   }
 
   std::cout << "has_enabled = " << act.has_enabled() << std::endl;
-  if (act.has_enabled())
+  while (act.has_enabled())
   {
     activity_t sub = act.extract (1);
 
@@ -130,6 +130,7 @@ int main (int, char **)
               << std::endl
               << sub
               << std::endl;
+    act.inject (sub);
   }
 
   return EXIT_SUCCESS;
