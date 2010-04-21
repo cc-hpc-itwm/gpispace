@@ -55,13 +55,27 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 
     DummyWorkflowEngine( IDaemon* pIDaemon = NULL ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
-    	pIDaemon_ = pIDaemon;
+    	daemon_ = *pIDaemon;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
+	/*template <class E, typename G>
+	DummyWorkflowEngine(E& exec_layer, G gen)
+		  : exec_layer_(exec_layer)
+		  , id_gen_(gen)
+          , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
+		  , cmd_q_(1024)
+		  , active_nets_(1024)
+		  , inj_q_(1024)
+          , exec_q_(1024)
+	  {
+		start();
+	  }*/
+
+    // needed by test_D2D2DDummyWfEng!
     void registerDaemon(IDaemon* pIDaemon )
     {
-    	pIDaemon_ = pIDaemon;
+    	pIDaemon_ = *pIDaemon;
     }
 
     /**
@@ -75,20 +89,15 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-		if(pIDaemon_)
-		{
-			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			result_type wf_result;
-			pIDaemon_->failed(workflowId, wf_result);
+		// find the corresponding workflow_id
+		id_type workflowId = map_Act2Wf_Ids_[activityId];
+		result_type wf_result;
+		daemon_.failed(workflowId, wf_result);
 
-			lock_type lock(mtx_);
-			map_Act2Wf_Ids_.erase(activityId);
+		lock_type lock(mtx_);
+		map_Act2Wf_Ids_.erase(activityId);
 
-			return true;
-		}
-		else
-			return false;
+		return true;
     }
 
     /**
@@ -102,22 +111,17 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
-		if(pIDaemon_)
-		{
-			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
+		// find the corresponding workflow_id
+		id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-			result_type wf_result;
-			pIDaemon_->finished(workflowId, wf_result);
+		result_type wf_result;
+		daemon_.finished(workflowId, wf_result);
 
-			//delete the entry corresp to activityId;
-			lock_type lock(mtx_);
-			map_Act2Wf_Ids_.erase(activityId);
+		//delete the entry corresp to activityId;
+		lock_type lock(mtx_);
+		map_Act2Wf_Ids_.erase(activityId);
 
-			return true;
-		}
-		else
-			return false;
+		return true;
     }
 
     /**
@@ -136,27 +140,22 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		* transition from * to terminated.
 		*/
 
-		if(pIDaemon_)
-		{
-			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			lock_type lock(mtx_);
-			map_Act2Wf_Ids_.erase(activityId);
+		// find the corresponding workflow_id
+		id_type workflowId = map_Act2Wf_Ids_[activityId];
+		lock_type lock(mtx_);
+		map_Act2Wf_Ids_.erase(activityId);
 
-			// check if there are any activities left for that workflow
-			bool bAllActFinished = true;
-			for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
-				if( it->second == workflowId )
-					bAllActFinished = false;
+		// check if there are any activities left for that workflow
+		bool bAllActFinished = true;
+		for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
+			if( it->second == workflowId )
+				bAllActFinished = false;
 
-			// if no activity left, declare the workflow cancelled
-			if(bAllActFinished)
-				pIDaemon_->cancelled(workflowId);
+		// if no activity left, declare the workflow cancelled
+		if(bAllActFinished)
+			daemon_.cancelled(workflowId);
 
-			return true;
-		}
-		else
-			return false;
+		return true;
     }
 
 
@@ -186,11 +185,8 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
 		encoded_type act_desc = wf_desc;
-		if(pIDaemon_)
-		{
-			SDPA_LOG_DEBUG("Submit new activity ...");
-			pIDaemon_->submit(act_id, act_desc);
-		}
+		SDPA_LOG_DEBUG("Submit new activity ...");
+		daemon_.submit(act_id, act_desc);
     }
 
     /**
@@ -205,18 +201,17 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
 		lock_type lock(mtx_);
-		if(pIDaemon_)
-		{
-			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
-			for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
-				if( it->second == wfid )
-				{
-					id_type activityId = it->first;
-					reason_type reason;
-					pIDaemon_->cancel(activityId, reason);
-				}
-		}
+		SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
+
+		for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+			if( it->second == wfid )
+			{
+				id_type activityId = it->first;
+				reason_type reason;
+				daemon_.cancel(activityId, reason);
+			}
+
 
 		return true;
     }
@@ -234,7 +229,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     }
 
   private:
-    mutable IDaemon *pIDaemon_;
+    IDaemon& daemon_;
     map_t map_Act2Wf_Ids_;
     mutex_type mtx_;
 };
