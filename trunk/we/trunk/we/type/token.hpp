@@ -217,6 +217,15 @@ namespace token
                                 )
                          );
   }
+
+  template<typename NET>
+  bool put ( NET & net
+           , const petri_net::pid_t & pid
+           , const type & t
+           )
+  {
+    return put (net, pid, t.value);
+  }
 }
 
 #endif
