@@ -156,6 +156,12 @@ namespace we { namespace type {
       {
         return trans.get_port (port_id).name();
       }
+
+      template <typename Transition>
+      typename Transition::port_id_t translate_name_to_output_port (const Transition & trans, const std::string & name)
+      {
+        return trans.output_port_by_name (name);
+      }
     }
 
     template <typename Place, typename Edge, typename Token>
@@ -179,6 +185,7 @@ namespace we { namespace type {
       typedef signature::type signature_type;
       typedef port<signature_type> port_t;
       typedef boost::unordered_map<pid_t, port_t> port_map_t;
+      typedef typename port_map_t::const_iterator const_iterator;
 
       struct flags_t
       {
@@ -560,6 +567,16 @@ namespace we { namespace type {
         {
           throw exception::port_undefined (::util::show (port_id));
         }
+      }
+
+      // TODO implement port accessor iterator
+      const_iterator ports_begin() const
+      {
+        return ports_.begin();
+      }
+      const_iterator ports_end() const
+      {
+        return ports_.end();
       }
 
     private:
