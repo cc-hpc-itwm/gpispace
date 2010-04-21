@@ -71,13 +71,7 @@ namespace value
       {
         switch (token)
           {
-          case expr::token::eq:
-            {
-              type tx (x);
-              type ty (y);
-
-              return boost::apply_visitor (value::visitor::eq(), tx, ty);
-            }
+          case expr::token::eq: return value::visitor::eq()(x, y);
           default:
             throw expr::exception::eval::type_error
               (util::show (token) + " for structured values");
@@ -91,19 +85,6 @@ namespace value
           (util::show (token) + " for literal and structured value");
       }
     };
-
-    static type ternary ( const expr::token::type & token 
-                        , const type & a
-                        , const type & b
-                        , const type & c
-                        )
-    {
-      switch (token)
-        {
-        case expr::token::_ite: return is_true (a) ? b : c;
-        default: throw expr::exception::strange ("ternary but not ite");
-        }
-    }
   }
 }
 
