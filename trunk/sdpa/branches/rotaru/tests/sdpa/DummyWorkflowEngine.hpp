@@ -53,9 +53,10 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    DummyWorkflowEngine( IDaemon* pIDaemon = NULL ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( IDaemon* pIDaemon = NULL ) :
+			daemon_(*pIDaemon),
+    		SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
-    	daemon_ = *pIDaemon;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
@@ -75,7 +76,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     // needed by test_D2D2DDummyWfEng!
     void registerDaemon(IDaemon* pIDaemon )
     {
-    	pIDaemon_ = *pIDaemon;
+    	daemon_ = *pIDaemon;
     }
 
     /**
