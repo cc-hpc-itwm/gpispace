@@ -67,6 +67,8 @@ namespace we { namespace type {
     const sig_type & signature() const { return signature_; }
     const pid_type & associated_place() const { return associated_place_; }
 
+    inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT; }
+    inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
   private:
     std::string name_;
     PortDirection direction_;
