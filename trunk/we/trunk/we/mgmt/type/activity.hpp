@@ -243,9 +243,9 @@ namespace we { namespace mgmt { namespace type {
     }
 
     // TODO: work here
-    template <typename Output>
+    template <typename SubActivity>
     void
-    inject_results(const Output &)
+    inject(const SubActivity &)
     { }
 
     template <typename Activity>
@@ -285,19 +285,21 @@ namespace we { namespace mgmt { namespace type {
 
     const input_t & input() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
       return input_;
     }
 
     input_t & input()
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
       return input_;
     }
 
     const output_t & output() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      return output_;
+    }
+
+    output_t & output()
+    {
       return output_;
     }
 
@@ -449,7 +451,8 @@ namespace we { namespace mgmt { namespace type {
     {
       if (i != act.input().begin())
         os << ", ";
-      os << "(" << i->first << ", " << i->second << ")";
+      os << we::type::detail::translate_port_to_name (act.transition(), i->second)
+         << "=(" << i->first << ", " << i->second << ")";
     }
     os << "]";
 
@@ -461,7 +464,7 @@ namespace we { namespace mgmt { namespace type {
     {
       if (o != act.output().begin())
         os << ", ";
-      os << "(" << o->first << ", " << o->second << ")";
+      os << we::type::detail::translate_port_to_name (act.transition(), o->second) << "=(" << o->first << ", " << o->second << ")";
     }
     os << "]";
 
