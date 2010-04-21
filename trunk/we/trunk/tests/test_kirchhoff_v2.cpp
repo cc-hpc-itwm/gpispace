@@ -350,8 +350,6 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_off_to_work
     (net.add_place (place::type ("off_to_work", literal::LONG)));
 
-  net.set_capacity (pid_off_to_work, 5);
-
   petri_net::tid_t tid_off_init
     ( mk_transition
       ( net
@@ -424,8 +422,6 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_pack_to_work
     (net.add_place (place::type ("pack_to_work", sig_package)));
-
-  net.set_capacity (pid_pack_to_work, 5);
 
   petri_net::tid_t tid_pack_init
     ( mk_transition
@@ -502,8 +498,6 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_bunch_to_work
     (net.add_place (place::type ("bunch_to_work", sig_bunch)));
-
-  net.set_capacity (pid_bunch_to_work, 5);
 
   petri_net::tid_t tid_bunch_init
     ( mk_transition
