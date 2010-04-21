@@ -56,7 +56,16 @@ namespace expr
         else
           return it->second;
       }
-      void clear () { container.clear(); }
+      value::type clear (const Key & key)
+      {
+        container.erase (key);
+        return control();
+      }
+      value::type clear ()
+      {
+        container.clear();
+        return control();
+      }
 
       const_iterator begin (void) const { return container.begin(); }
       const_iterator end (void) const { return container.end(); }

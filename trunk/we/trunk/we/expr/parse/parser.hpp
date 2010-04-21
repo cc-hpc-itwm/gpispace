@@ -190,6 +190,7 @@ namespace expr
           case token::_len:
           case token::_tolong:
           case token::_todouble:
+          case token::_context_clear:
           case token::abs: unary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           case token::define: binary (op_stack.top(), k); break;
@@ -229,11 +230,12 @@ namespace expr
                     if (  nd_stack.empty() 
                        || (nd_stack.back().flag != node::flag::ref)
                        )
-                      throw exception::parse::exception ( "left hand of " 
-                                                        + util::show(*token) 
-                                                        + " must be reference name"
-                                                        , k
-                                                        );
+                      throw exception::parse::exception
+                        ( "left hand of " 
+                        + util::show(*token) 
+                        + " must be reference name"
+                        , k
+                        );
                     op_stack.push (*token);
                     break;
                   default:
