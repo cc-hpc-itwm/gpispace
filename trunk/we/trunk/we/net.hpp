@@ -329,6 +329,7 @@ private:
                       , pid_in_map.size() == in_to_transition(tid).size()
                       , in_enabled
                       , out_enabled
+                      , !enabled.elem(tid) // WORK HERE: is this valid?
                       );
   }
 
@@ -362,7 +363,6 @@ private:
                       , pid_in_map.size() == in_to_transition(tid).size()
                       , in_enabled
                       , out_enabled
-                      , !enabled.elem(tid)
                       );
   }
 
@@ -863,24 +863,28 @@ public:
 
   std::size_t delete_one_token (const pid_t & pid, const token_type & token)
   {
+    const std::size_t ret (token_place_rel.delete_one (token, pid));
+
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_one_token (*t, pid, token);
 
-    return (token_place_rel.delete_one (token, pid));
+    return ret;
   }
 
   std::size_t delete_all_token (const pid_t & pid, const token_type & token)
   {
+    const std::size_t ret (token_place_rel.delete_all (token, pid));
+
     for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
       update_out_enabled (*t, pid, t());
 
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_all_token (*t, pid, token);
 
-    return token_place_rel.delete_all (token, pid);
+    return ret;
   }
 
   // WORK HERE: implement more efficient?
