@@ -40,8 +40,8 @@ namespace expr
         case token::_if:
         case token::_then:
         case token::_else:
-        case token::_endif: return -98;
-        case token::define: return -99;
+        case token::_endif: return -99;
+        case token::define: return -98;
         default: throw exception::strange ("prec " + util::show(token));
         }
     }
