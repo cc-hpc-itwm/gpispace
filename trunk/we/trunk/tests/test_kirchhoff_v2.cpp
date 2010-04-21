@@ -117,7 +117,11 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "{" << *p << ": " << n.get_place (*p) << ":";
+      cout << "{" 
+           << *p << ": "
+           << n.num_token (*p) << ": "
+           << n.get_place (*p) << ":"
+        ;
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         cout << " " << *tp;
@@ -337,6 +341,7 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_off_state
     (net.add_place (place::type ("off_state", sig_state)));
+
   petri_net::pid_t pid_off_try
     (net.add_place (place::type ("off_try", sig_state)));
 
@@ -344,6 +349,8 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_off_to_work
     (net.add_place (place::type ("off_to_work", literal::LONG)));
+
+  net.set_capacity (pid_off_to_work, 5);
 
   petri_net::tid_t tid_off_init
     ( mk_transition
@@ -409,6 +416,7 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_pack_state
     (net.add_place (place::type ("pack_state", sig_offset_with_state)));
+
   petri_net::pid_t pid_pack_try
     (net.add_place (place::type ("pack_try", sig_offset_with_state)));
 
@@ -416,6 +424,8 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_pack_to_work
     (net.add_place (place::type ("pack_to_work", sig_package)));
+
+  net.set_capacity (pid_pack_to_work, 5);
 
   petri_net::tid_t tid_pack_init
     ( mk_transition
@@ -484,6 +494,7 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_bunch_state
     (net.add_place (place::type ("bunch_state", sig_package_with_state)));
+
   petri_net::pid_t pid_bunch_try
     (net.add_place (place::type ("bunch_try", sig_package_with_state)));
 
@@ -491,6 +502,8 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_bunch_to_work
     (net.add_place (place::type ("bunch_to_work", sig_bunch)));
+
+  net.set_capacity (pid_bunch_to_work, 5);
 
   petri_net::tid_t tid_bunch_init
     ( mk_transition
@@ -567,7 +580,7 @@ main (int argc, char ** argv)
 
     while (!net.enabled_transitions().empty())
       {
-        net.fire_random(engine);
+        net.fire_random (engine); // (net.enabled_transitions().first());
 
         if (PRINT_MARKING)
           marking (net);

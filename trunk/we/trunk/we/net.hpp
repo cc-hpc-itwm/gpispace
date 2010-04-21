@@ -329,7 +329,7 @@ private:
                       , pid_in_map.size() == in_to_transition(tid).size()
                       , in_enabled
                       , out_enabled
-                      , !enabled.elem(tid) // WORK HERE: is this valid?
+                      //                      , !enabled.elem(tid) // WORK HERE: is this valid?
                       );
   }
 
@@ -448,7 +448,7 @@ private:
                       , output_descr.size() == pit.size()
                       , out_enabled
                       , in_enabled
-                      , false
+                      //                      , false
                       );
   }
 
@@ -465,7 +465,7 @@ private:
                       , output_descr.size() == out_of_transition(tid).size()
                       , out_enabled
                       , in_enabled
-                      , false
+                      //                      , false
                       );
   }
 
