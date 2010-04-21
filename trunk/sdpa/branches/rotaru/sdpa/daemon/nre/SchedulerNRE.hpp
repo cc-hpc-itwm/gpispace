@@ -115,22 +115,20 @@ namespace sdpa {
 		id_type act_id = pJob->id().str();
 
 		sdpa::nre::worker::execution_result_t result;
+		encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 
 		if(!ptr_comm_handler_)
 		{
 			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
 			result_type output_fail;
+			ptr_comm_handler_->activityFailed(act_id, enc_act);
 			ptr_comm_handler_->workflowEngine()->failed(act_id, output_fail);
 			return;
 		}
 
-		// call here the NreWorkerClient
-		encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 		try
 		{
-			//ptr_comm_handler_->activityStarted(gwes_act);
-
-			//result = "FAILED";
+			ptr_comm_handler_->activityStarted(act_id, enc_act);
 			result = m_worker_.execute(enc_act, pJob->walltime());
 		}
 		catch( const boost::thread_interrupted &)
@@ -153,12 +151,14 @@ namespace sdpa {
 		{
 			// notify the gui
 			// and then, the workflow engine
+			ptr_comm_handler_->activityFinished(act_id, enc_act);
 			ptr_comm_handler_->workflowEngine()->finished(act_id, result.second);
 		}
 		else if( result.first == sdpa::nre::worker::ACTIVITY_FAILED )
 		{
 			// notify the gui
 			// and then, the workflow engine
+			ptr_comm_handler_->activityFailed(act_id, enc_act);
 			ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 		}
 		else if( result.first == sdpa::nre::worker::ACTIVITY_CANCELLED )
@@ -166,11 +166,13 @@ namespace sdpa {
 
 			// notify the gui
 			// and then, the workflow engine
+			ptr_comm_handler_->activityCancelled(act_id, enc_act);
 			ptr_comm_handler_->workflowEngine()->cancelled(act_id);
 		}
 		else
 		{
 			SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
+			ptr_comm_handler_->activityFailed(act_id, enc_act);
 			ptr_comm_handler_->workflowEngine()->failed(act_id, "");
 		}
 	 }

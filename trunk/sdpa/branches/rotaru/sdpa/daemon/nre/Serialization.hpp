@@ -98,7 +98,7 @@ namespace boost { namespace serialization {
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.result();
-    ar & rply.state();
+    //ar & rply.state();
   }
 
   /*

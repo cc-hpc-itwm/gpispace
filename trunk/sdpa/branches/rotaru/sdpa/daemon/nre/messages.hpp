@@ -160,40 +160,36 @@ namespace sdpa { namespace nre { namespace worker {
     ExecuteReply() {}
 
     explicit
-    ExecuteReply(const result_type & execution_result, const ExecutionState state)
-      : result_(execution_result)
-      , state_ (state)
+    ExecuteReply(const execution_result_t& exec_result)
+      : exec_result_(exec_result)
     {}
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "ExecuteReply: result="<< result();
+      os << "ExecuteReply: result="<< exec_result_.second;
     }
 
-    result_type &result() { return result_; }
-    const result_type &result() const { return result_; }
+    execution_result_t& result() { return exec_result_; }
+    const execution_result_t& result() const { return exec_result_; }
 
-    const ExecutionState & state() const { return state_; }
-    ExecutionState & state() { return state_; }
   private:
-    result_type result_; // defined in IWorkflowEngine
-    ExecutionState state_;
+    execution_result_t exec_result_; // defined in IWorkflowEngine
   };
 
-  namespace detail {
+  /*namespace detail {
 	  // TODO implement for the real activity object type
 	  template <typename Activity>
-	  inline std::string get_module_name (const Activity & /*act*/) {
+	  inline std::string get_module_name (const Activity & ) {
 		  // boost::get<transition_t::mod_call_t> (act.transition().data()).m();
 		  return "dummy";
 	  }
 
 	  template <typename Activity>
-	  inline std::string get_function_name (const Activity & /*act*/) {
+	  inline std::string get_function_name (const Activity & ) {
 		  // boost::get<transition_t::mod_call_t> (act.transition().data()).f();
 		  return "dummy";
 	  }
-  }
+  }*/
 
   class ExecuteRequest : public Request
   {
@@ -217,56 +213,30 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual Reply *execute(ExecutionContext *ctxt)
     {
-    	// decode activity -> activity object
-    	//
       typedef std::string activity_t;
       activity_t act ("dummy activity");
-
-      const std::string mod_name (detail::get_module_name (act));
-      const std::string fun_name (detail::get_function_name (act) );
 
       Reply *reply(NULL);
       try
       {
-        if (mod_name.empty() || fun_name.empty())
-        {
-          throw std::runtime_error("empty module or function: mod="+mod_name+" fun="+fun_name);
-        }
+    	  LOG(INFO, "executing: " << activity());
+    	  //bool keep_going = true;
 
-        LOG(INFO, "executing: " << activity());
-
-//        bool keep_going = activity().properties().get<bool>("keep_going", false);
-        bool keep_going = true;
-
-/*
-        ctxt->loader().get(mod_name).call(fun_name
-                                        , activity().parameters()
-                                        , keep_going);
-        activity().check_parameters(keep_going);
-*/
-        LOG(INFO, "execution of activity finished");
-
-        // encode activity again
-        reply = new ExecuteReply(activity(), ACTIVITY_FINISHED);
-      }
-      catch (const sdpa::modules::MissingFunctionArgument &mfa)
-      {
-        LOG(ERROR, "function " << mfa.module() << "." << mfa.function()
-                               << " expected argument " << mfa.arguments());
-//        activity().reason() = mfa.what();
-        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
+    	  // encode activity again
+    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, activity()));
+    	  reply = new ExecuteReply(exec_res);
       }
       catch (const std::exception &ex)
       {
-        LOG(ERROR, "execution of activity failed: " << ex.what());
-//        activity().reason() = ex.what();
-        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
+    	  LOG(ERROR, "execution of activity failed: " << ex.what());
+    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, activity()));
+    	  reply = new ExecuteReply(exec_res);
       }
       catch (...)
       {
-        LOG(ERROR, "execution of activity failed: ");
-//        activity().reason() = "unknown reason";
-        reply = new ExecuteReply(activity(), ACTIVITY_FAILED);
+    	  LOG(ERROR, "execution of activity failed: ");
+    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, activity()));
+    	  reply = new ExecuteReply(exec_res);
       }
 
       assert(reply);

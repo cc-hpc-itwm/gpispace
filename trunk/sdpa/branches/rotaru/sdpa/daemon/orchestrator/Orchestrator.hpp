@@ -32,7 +32,7 @@ namespace daemon {
 		Orchestrator(  	const std::string &name = "",
 						const std::string& url = "",
 						const std::string &workflow_directory = "")
-			: DaemonFSM( name, dynamic_cast<IWorkflowEngine*>(new T(this))  ),
+			: DaemonFSM( name, new T(this) ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url)
 		{

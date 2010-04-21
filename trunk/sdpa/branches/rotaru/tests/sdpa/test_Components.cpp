@@ -194,7 +194,7 @@ void TestComponents::testComponentsDummyGWES()
 
 	// use external scheduler and dummy GWES
 	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
-	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
+	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8001", strGuiUrl );
 
     try
     {

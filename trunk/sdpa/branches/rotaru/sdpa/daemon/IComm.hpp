@@ -59,11 +59,11 @@ const std::string USER("user");
 	  virtual JobManager::ptr_t jobManager() const = 0;
 
 	  //GUI notification methods
-	  /*virtual void activityCreated(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityStarted(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFinished(const gwes::activity_t&)  { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFailed(const gwes::activity_t&)    { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityCancelled(const gwes::activity_t&) { throw std::runtime_error("not supported in this component"); }*/
+	  virtual void activityCreated(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityStarted(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFinished(const id_type& id, const std::string& data)  { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFailed(const id_type& id, const std::string& data)    { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCancelled(const id_type& id, const std::string& data) { throw std::runtime_error("not supported in this component"); }
 
   };
 }}

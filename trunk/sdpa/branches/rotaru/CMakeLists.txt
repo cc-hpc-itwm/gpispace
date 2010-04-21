@@ -104,7 +104,7 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
-# uuid library
+# we library
 include(FindWE)
 if (WE_FOUND)
   include_directories(${WE_INCLUDE_DIR})
