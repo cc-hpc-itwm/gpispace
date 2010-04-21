@@ -73,28 +73,29 @@ namespace value
 
   namespace visitor
   {
-    class set_field : public boost::static_visitor<void>
+    class is_structured : public boost::static_visitor<bool>
+    {
+    public:
+      bool operator () (const structured_t &) const { return true; }
+      bool operator () (const literal::type &) const { return false; }
+    };
+
+    class field : public boost::static_visitor<type &>
     {
     private:
       signature::field_name_t name;
-      type val;
 
     public:
-      set_field ( const signature::field_name_t & _name
-                , const type & _val
-                )
-        : name (_name)
-        , val (_val)
-      {}
+      field (const signature::field_name_t & _name) : name (_name) {}
 
-      void operator () (structured_t & s) const
+      type & operator () (structured_t & s) const
       {
-        s[name] = val;
+        return s[name];
       }
 
-      void operator () (literal::type & l) const
+      type & operator () (literal::type & l) const
       {
-        throw std::runtime_error ("cannot set field " + name + " to val " + util::show(val) + " in the literal " + util::show(l));
+        throw std::runtime_error ("cannot get field " + name + " from the literal " + util::show(l));
       }
     };
 

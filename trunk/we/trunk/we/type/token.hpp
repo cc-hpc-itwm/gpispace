@@ -62,45 +62,46 @@ namespace token
       }
     };
 
-    class unbind : public boost::static_visitor<value::type>
+    class unbind : public boost::static_visitor<>
     {
     private:
       const signature::field_name_t & field;
       const context_t & context;
+      value::type & val;
 
     public:
       unbind ( const signature::field_name_t & _field
              , const context_t & _context
+             , value::type & _val
              )
         : field (_field)
         , context (_context)
+        , val (_val)
       {}
 
-      value::type operator () (const literal::type_name_t & type_name) const
+      void operator () (const literal::type_name_t & type_name) const
       {
-        return value::require_type (field, type_name, context.value (field));
+        val = value::require_type (field, type_name, context.value (field));
       }
 
-      value::type operator () (const signature::structured_t & signature) const
+      void operator () (const signature::structured_t & signature) const
       {
-        value::type sub;
-
-        // first extract the complete subval
+        // first extract the complete value
         try
           {
             signature::type sig (signature);
 
-            sub = boost::apply_visitor ( value::visitor::require_type (field)
+            val = boost::apply_visitor ( value::visitor::require_type (field)
                                        , sig.desc()
                                        , context.value (field)
                                        );
-
           }
         catch (expr::exception::eval::missing_binding<signature::field_name_t>)
           {
-            // there is no complete subval given, just adjust the type of sub
+            // there is no complete value given, just adjust the type
 
-            sub = value::structured_t ();
+            if (!boost::apply_visitor(value::visitor::is_structured(), val))
+               val = value::structured_t();
           }
 
         // special settings for the components are prefered
@@ -108,29 +109,46 @@ namespace token
             ; sig != signature.end()
             ; ++sig
             )
-          try
-            {
-              boost::apply_visitor
-                ( value::visitor::set_field 
-                  ( sig->first
-                  , boost::apply_visitor 
-                    ( unbind (field + "." + sig->first, context)
+          if (boost::apply_visitor ( value::visitor::has_field (sig->first)
+                                   , val
+                                   )
+             )
+            { // the field is already there
+              // get a reference to the subvalue
+              value::type & subval
+                ( boost::apply_visitor ( value::visitor::field (sig->first)
+                                       , val
+                                       )
+                );
+
+              try
+                {
+                  // try to set the subval
+                  boost::apply_visitor 
+                    ( unbind (field + "." + sig->first, context, subval)
                     , sig->second
-                    )
-                  )
-                , sub
+                    );
+                }
+              catch (expr::exception::eval::missing_binding<signature::field_name_t>)
+                {
+                  // do nothing, the field was already there
+                }
+            }
+          else
+            { // the field is not set already
+              // get a reference to the subvalue, default construct it
+              value::type & subval
+                ( boost::apply_visitor ( value::visitor::field (sig->first)
+                                       , val
+                                       )
+                );
+
+              // try to set the subval, no catch!
+              boost::apply_visitor 
+                ( unbind (field + "." + sig->first, context, subval)
+                , sig->second
                 );
             }
-          catch (expr::exception::eval::missing_binding<signature::field_name_t> & miss)
-            {
-              if (!boost::apply_visitor (value::visitor::has_field (sig->first)
-                                        , sub
-                                        )
-                 )
-                throw miss;
-            }
-
-        return sub;
       }
     };
   }
@@ -167,11 +185,15 @@ namespace token
          , const signature::type & signature
          , const context_t & context
          )
-      : value (boost::apply_visitor ( visitor::unbind (field, context)
-                                    , signature.desc()
-                                    )
-              )
-    {}
+//       : value (boost::apply_visitor ( visitor::unbind (field, context)
+//                                     , signature.desc()
+//                                     )
+//               )
+    {
+      boost::apply_visitor ( visitor::unbind (field, context, value)
+                           , signature.desc()
+                           );
+    }
       
     void bind (const signature::field_name_t & field, context_t & c) const
     {
