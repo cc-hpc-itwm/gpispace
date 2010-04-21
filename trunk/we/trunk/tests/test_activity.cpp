@@ -119,11 +119,17 @@ int main (int, char **)
   if (act.has_enabled())
   {
     activity_t sub = act.extract (1);
-    std::cout << "sub-act:"
+
+    std::cout << "***** sub-act:"
               << std::endl
               << sub
               << std::endl;
     sub.execute ("");
+
+    std::cout << "***** sub-act:"
+              << std::endl
+              << sub
+              << std::endl;
   }
 
   return EXIT_SUCCESS;
