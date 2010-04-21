@@ -10,12 +10,15 @@
 #include <we/util/show.hpp>
 
 #include <string>
+#include <map>
 
-#include <boost/unordered_map.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/variant.hpp>
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+
+#include <boost/unordered_map.hpp>
 
 #include <iostream>
 
@@ -30,9 +33,8 @@ namespace value
   struct structured_t
   {
   public:
-    typedef boost::unordered_map< signature::field_name_t
-                                , type
-                                > map_t;
+    typedef std::map<signature::field_name_t, type> map_t;
+    // typedef boost::unordered_map<signature::field_name_t, type> map_t;
     typedef map_t::const_iterator const_iterator;
     typedef map_t::const_iterator iterator;
 
