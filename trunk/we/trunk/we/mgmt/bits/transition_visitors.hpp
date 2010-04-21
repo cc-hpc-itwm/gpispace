@@ -79,16 +79,14 @@ namespace we { namespace mgmt { namespace visitor {
                                      , Trans
                                      , Edge
                                      , Token
-                                     > & net )
+                                     > & )
     {
       // TODO beautify this
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
-        typedef typename Activity::transition_type::pid_t     pid_t;
 
         const port_id_t port_id  = activity_.transition().outer_to_inner (inp->second.first);
-        const pid_t     place_id = activity_.transition().get_port (port_id).associated_place();
 
         // TODO work here
         activity_.input ().push_back
@@ -97,7 +95,6 @@ namespace we { namespace mgmt { namespace visitor {
                          , port_id
                          )
         );
-        net.put_token ( place_id, inp->first );
       }
     }
 
@@ -221,7 +218,8 @@ namespace we { namespace mgmt { namespace visitor {
 
         const port_id_t port_id  = inp->second;
         const pid_t     place_id = activity_.transition().get_port (port_id).associated_place();
-        net.put_token ( place_id, inp->first );
+
+        token::put (net, place_id, inp->first);
       }
     }
 
@@ -230,17 +228,22 @@ namespace we { namespace mgmt { namespace visitor {
       throw exception::operation_not_supported ("internal_executor (module_call)");
     }
 
-    void operator () (we::type::expression_t & )
+    void operator () (const we::type::expression_t & expr)
     {
       // construct context
       typedef expr::eval::context <signature::field_name_t> context_t;
       context_t context;
 
       typedef typename Activity::input_t input_t;
+      typedef typename Activity::output_t output_t;
       typedef typename Activity::token_type token_type;
       typedef typename Activity::transition_type::port_id_t port_id_t;
+      typedef typename Activity::transition_type::const_iterator port_iterator;
 
-      for (typename input_t::const_iterator top (activity_.input().begin()); top != activity_.input().end(); ++top)
+      for ( typename input_t::const_iterator top (activity_.input().begin())
+          ; top != activity_.input().end()
+          ; ++top
+          )
       {
         const token_type token   = top->first;
         const port_id_t  port_id = top->second;
@@ -249,7 +252,27 @@ namespace we { namespace mgmt { namespace visitor {
       }
 
       // evaluate
+      expr.ast ().eval_all (context);
+
       // collect output
+      for ( port_iterator port_it (activity_.transition().ports_begin())
+          ; port_it != activity_.transition().ports_end()
+          ; ++port_it
+          )
+      {
+        if (port_it->second.is_output())
+        {
+          const port_id_t port_id = port_it->first;
+          const token_type token ( port_it->second.name()
+                                 , port_it->second.signature()
+                                 , context
+                                 );
+          activity_.output ().push_back
+          (
+            typename output_t::value_type (token, port_id)
+          );
+        }
+      }
     }
   };
 }}}
