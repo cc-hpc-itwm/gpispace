@@ -12,7 +12,7 @@ string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 1)
-set(V_MINOR 3)
+set(V_MINOR 4)
 set(V_PATCH 0)
 
 ###################################################################################################
@@ -126,7 +126,7 @@ if (ENABLE_LOGGING)
 
     include (FindLogging)
     if (LOG4CPP_FOUND)
-      include_directories(${LOG4CPP_INCLUDE_DIR})
+      include_directories(${LOG4CPP_INCLUDE_DIRS})
       set(${UPPER_PROJECT_NAME}_HAVE_LOG4CPP 1)
     else (LOG4CPP_FOUND)
       message(FATAL "Log4Cpp could not be found!")
