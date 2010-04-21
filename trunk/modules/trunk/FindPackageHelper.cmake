@@ -51,12 +51,12 @@ function(check_package_search_path NAME INCLUDE_FILE LIBNAME LIBVERSION
   #
 
   if( "${${NAME}_HOME}" STREQUAL "")
-    if("" MATCHES "$ENV{${NAME}_HOME}")
+    if("$ENV{${NAME}_HOME}" MATCHES "")
       message(STATUS "    ${NAME}_HOME env is not set, setting it to /usr/local")
       set (${NAME}_HOME ${_${_name}_HOME})
-    else("" MATCHES "$ENV{${NAME}_HOME}")
+    else("$ENV{${NAME}_HOME}" MATCHES "")
       set (${NAME}_HOME "$ENV{${NAME}_HOME}")
-    endif("" MATCHES "$ENV{${NAME}_HOME}")
+    endif("$ENV{${NAME}_HOME}" MATCHES "")
   else( "${${NAME}_HOME}" STREQUAL "")
     message(STATUS "    ${NAME}_HOME is not empty: \"${${NAME}_HOME}\"")
   endif( "${${NAME}_HOME}" STREQUAL "")
