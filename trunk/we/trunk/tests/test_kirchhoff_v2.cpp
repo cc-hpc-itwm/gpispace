@@ -12,6 +12,8 @@
 #include <we/type/condition.hpp>
 #include <we/type/literal/name.hpp>
 
+#include <we/util/stat.hpp>
+
 #include "timer.hpp"
 
 #include <string>
@@ -24,6 +26,10 @@
 #include <boost/serialization/nvp.hpp>
 
 #include <iomanip>
+
+// ************************************************************************* //
+
+static statistic::muted<std::string> stat;
 
 // ************************************************************************* //
 
@@ -52,13 +58,6 @@ static edge_t mk_edge (void)
 
 // ************************************************************************* //
 
-typedef std::pair<std::string,std::string> pair_t;
-typedef std::map<pair_t,unsigned long> cnt_map_t;
-typedef std::map<std::string,double> time_map_t;
-
-static cnt_map_t cnt_map;
-static time_map_t time_map;
-
 struct transition_t
 {
 public:
@@ -74,13 +73,11 @@ public:
   bool condition (Function::Condition::Traits<token::type>::choices_t & choices)
     const
   {
-    cnt_map[pair_t(name, cond.expression())]++;
-
-    time_map[cond.expression()] -= current_time();
+    stat.start (name, cond.expression());
 
     const bool ret (cond (choices));
 
-    time_map[cond.expression()] += current_time();
+    stat.stop (name, cond.expression());
 
     return ret;
   }
@@ -164,9 +161,7 @@ public:
                                , const pnet_t::output_descr_t & output_descr
                                )
   {
-    cnt_map[pair_t(name,"")]++;
-
-    time_map[name + ".bind"] -= current_time();
+    stat.start (name, "bind");
 
     for ( pnet_t::input_t::const_iterator top (input.begin())
         ; top != input.end()
@@ -182,7 +177,7 @@ public:
         token.bind (translate (pid), context);
       }
 
-    time_map[name + ".bind"] += current_time();
+    stat.stop (name, "bind");
 
     if (PRINT_FIRE)
       {
@@ -194,13 +189,13 @@ public:
         cout << endl;
       }
 
-    time_map[name + ".eval"] -= current_time();
+    stat.start (name, "eval");
 
     parser.eval_all (context);
 
-    time_map[name + ".eval"] += current_time();
+    stat.stop (name, "eval");
 
-    time_map[name + ".unbind"] -= current_time();
+    stat.start (name, "unbind");
 
     pnet_t::output_t output;
 
@@ -223,7 +218,7 @@ public:
                          );
       }
 
-    time_map[name + ".unbind"] += current_time();
+    stat.stop (name, "unbind");
 
     return output;
   }
@@ -582,17 +577,6 @@ main (int argc, char ** argv)
   }
 
   marking (net);
-
-  cout << endl << "*** cnt_map:" << endl;
-
-  for (cnt_map_t::const_iterator it (cnt_map.begin()); it != cnt_map.end(); ++it)
-    cout << std::setw(8) << it->second
-         << " [" << std::setw(15) << it->first.first << "]"
-         << " " << it->first.second
-         << endl;
-
-  for (time_map_t::const_iterator it (time_map.begin()); it != time_map.end(); ++it)
-    cout << std::setw(15) << it->second << " => " << it->first << endl;
 
   return EXIT_SUCCESS;
 }

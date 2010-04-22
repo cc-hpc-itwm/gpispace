@@ -3,20 +3,11 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 
-#include <sys/time.h>
+#include <we/util/stat.hpp>
 
 #include <iostream>
 
 #include <string>
-
-static inline double current_time()
-{
-  struct timeval tv;
-
-  gettimeofday (&tv, NULL);
-
-  return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
-}
 
 struct Timer_t
 {
@@ -30,7 +21,7 @@ public:
                    , const unsigned int & _k = 1
                    , std::ostream & _s = std::cout
                    )
-    : t(-current_time())
+    : t(-statistic::current_time())
     , msg(_msg)
     , k(_k)
     , s(_s)
@@ -38,7 +29,7 @@ public:
 
   ~Timer_t ()
   {
-    t += current_time();
+    t += statistic::current_time();
 
     s << "time " << msg
       << " [" << k << "]: "

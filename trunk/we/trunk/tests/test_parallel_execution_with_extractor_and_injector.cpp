@@ -496,8 +496,8 @@ public:
   descr_t (const unsigned int & _iThread) 
     : iThread (_iThread), time (0.0), cnt_clock (0)
   {}
-  void start_clock (void) { ++cnt_clock; time -= current_time(); }
-  void stop_clock (void) { time += current_time(); }
+  void start_clock (void) { ++cnt_clock; time -= statistic::current_time(); }
+  void stop_clock (void) { time += statistic::current_time(); }
   std::string info (void)
   {
     std::ostringstream s;
