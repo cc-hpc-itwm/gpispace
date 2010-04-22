@@ -77,13 +77,17 @@ int main (int, char **)
   net.add_edge (e++, connection_t (TP, tid, pid_pair));
   
   token::put (net, pid_vid, literal::type(0L));
+  token::put (net, pid_vid, literal::type(1L));
 
   {
     value::structured_t m;
 
-    m["bid"] = 0L;
     m["seen"] = bitsetofint::type(0);
 
+    m["bid"] = 0L;
+    token::put (net, pid_store, m);
+
+    m["bid"] = 1L;
     token::put (net, pid_store, m);
   }
   // ************************************ //
