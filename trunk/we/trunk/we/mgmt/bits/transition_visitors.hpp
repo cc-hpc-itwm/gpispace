@@ -182,6 +182,132 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
+  template<typename Activity>
+  class activity_injector
+    : public boost::static_visitor<>
+  {
+  private:
+    Activity & parent_;
+    Activity & child_;
+  public:
+    activity_injector (Activity & parent, Activity & child)
+      : parent_(parent)
+      , child_(child)
+    {}
+
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    void operator () ( petri_net::net < Place
+                                      , Trans
+                                      , Edge
+                                      , Token
+                                      > & /* parent_net */
+
+                     , petri_net::net < Place
+                                      , Trans
+                                      , Edge
+                                      , Token
+                                      > & /* child_net */
+                     )
+    {
+      typedef petri_net::net < Place
+                             , Trans
+                             , Edge
+                             , Token
+                             > pnet_t;
+
+      // iterate over output places of child
+      // collect tokens from child net
+      // inject output vector into parent net
+    }
+
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    void operator () ( petri_net::net < Place
+                                      , Trans
+                                      , Edge
+                                      , Token
+                                      > & parent_net
+
+                     , we::type::module_call_t &
+                     )
+    {
+      typedef petri_net::net < Place
+                             , Trans
+                             , Edge
+                             , Token
+                             > pnet_t;
+
+      typedef typename Activity::output_t output_t;
+
+      // iterate over output of child
+      for ( typename output_t::const_iterator top (child_.output().begin())
+          ; top != child_.output().end()
+          ; ++top
+          )
+      {
+        try
+        {
+          token::put ( parent_net
+                     , child_.transition().inner_to_outer ( top->second )
+                     , top->first
+                     );
+        } catch ( const we::type::exception::not_connected <port_id_t> &)
+        {
+          std::cerr << "W: transition generated output, but port is not connected: "
+                    << child_.transition().name()
+                    << "[" << top->second <<"]"
+                    << std::endl;
+        }
+      }
+    }
+
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    void operator () ( petri_net::net < Place
+                                      , Trans
+                                      , Edge
+                                      , Token
+                                      > & parent_net
+
+                     , we::type::expression_t &
+                     )
+    {
+      typedef petri_net::net < Place
+                             , Trans
+                             , Edge
+                             , Token
+                             > pnet_t;
+
+      typedef typename Activity::output_t output_t;
+      typedef typename Activity::transition_type::port_id_t port_id_t;
+
+      // iterate over output of child
+      for ( typename output_t::const_iterator top (child_.output().begin())
+          ; top != child_.output().end()
+          ; ++top
+          )
+      {
+        try
+        {
+          token::put ( parent_net
+                     , child_.transition().inner_to_outer ( top->second )
+                     , top->first
+                     );
+        } catch ( const we::type::exception::not_connected <port_id_t> &)
+        {
+          std::cerr << "W: transition generated output, but port is not connected: "
+                    << child_.transition().name()
+                    << "[" << top->second <<"]"
+                    << std::endl;
+        }
+      }
+    }
+
+    template <typename A, typename B>
+    void operator () ( const A &, const B & ) const
+    {
+      throw exception::operation_not_supported ("activity_injector (unknown, unknown)");
+    }
+  };
+
   template <typename Activity>
   class internal_executor
     : public boost::static_visitor<>
