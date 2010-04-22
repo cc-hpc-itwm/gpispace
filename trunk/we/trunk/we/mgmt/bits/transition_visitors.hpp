@@ -182,6 +182,63 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
+  template <typename Activity>
+  class output_collector
+    : public boost::static_visitor<>
+  {
+  private:
+    Activity & activity_;
+
+  public:
+    output_collector (Activity & activity)
+      : activity_(activity)
+    {}
+
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    void operator () ( petri_net::net < Place
+                                      , Trans
+                                      , Edge
+                                      , Token
+                                      > & /* parent_net */
+                     )
+    {
+
+    }
+
+    template <typename T>
+    void operator () ( T & ) const
+    {
+      return; // nothting todo, activity already contains output
+    }
+  };
+
+  template <typename Net, typename Transition, typename Output>
+  void inject_output_to_net ( Net & net, Transition & trans, Output & output)
+  {
+    typedef typename Transition::port_id_t port_id_t;
+
+    // iterate over output of child
+    for ( typename Output::const_iterator top (output.begin())
+        ; top != output.end()
+        ; ++top
+        )
+    {
+      try
+      {
+        token::put ( net
+                   , trans.inner_to_outer ( top->second )
+                   , top->first
+                   );
+      } catch ( const we::type::exception::not_connected <port_id_t> &)
+      {
+        std::cerr << "W: transition generated output, but port is not connected: "
+                  << trans.name()
+                  << "[" << top->second <<"]"
+                  << std::endl;
+      }
+    }
+  }
+
   template<typename Activity>
   class activity_injector
     : public boost::static_visitor<>
@@ -200,7 +257,7 @@ namespace we { namespace mgmt { namespace visitor {
                                       , Trans
                                       , Edge
                                       , Token
-                                      > & /* parent_net */
+                                      > & parent_net
 
                      , petri_net::net < Place
                                       , Trans
@@ -209,15 +266,14 @@ namespace we { namespace mgmt { namespace visitor {
                                       > & /* child_net */
                      )
     {
-      typedef petri_net::net < Place
-                             , Trans
-                             , Edge
-                             , Token
-                             > pnet_t;
+      boost::apply_visitor ( output_collector<Activity>(child_)
+                           , child_.transition().data()
+                           );
 
-      // iterate over output places of child
-      // collect tokens from child net
-      // inject output vector into parent net
+      inject_output_to_net ( parent_net
+                           , child_.transition()
+                           , child_.output()
+                           );
     }
 
     template <typename Place, typename Trans, typename Edge, typename Token>
@@ -230,35 +286,10 @@ namespace we { namespace mgmt { namespace visitor {
                      , we::type::module_call_t &
                      )
     {
-      typedef petri_net::net < Place
-                             , Trans
-                             , Edge
-                             , Token
-                             > pnet_t;
-
-      typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::port_id_t port_id_t;
-
-      // iterate over output of child
-      for ( typename output_t::const_iterator top (child_.output().begin())
-          ; top != child_.output().end()
-          ; ++top
-          )
-      {
-        try
-        {
-          token::put ( parent_net
-                     , child_.transition().inner_to_outer ( top->second )
-                     , top->first
-                     );
-        } catch ( const we::type::exception::not_connected <port_id_t> &)
-        {
-          std::cerr << "W: transition generated output, but port is not connected: "
-                    << child_.transition().name()
-                    << "[" << top->second <<"]"
-                    << std::endl;
-        }
-      }
+      inject_output_to_net ( parent_net
+                           , child_.transition()
+                           , child_.output()
+                           );
     }
 
     template <typename Place, typename Trans, typename Edge, typename Token>
@@ -271,35 +302,10 @@ namespace we { namespace mgmt { namespace visitor {
                      , we::type::expression_t &
                      )
     {
-      typedef petri_net::net < Place
-                             , Trans
-                             , Edge
-                             , Token
-                             > pnet_t;
-
-      typedef typename Activity::output_t output_t;
-      typedef typename Activity::transition_type::port_id_t port_id_t;
-
-      // iterate over output of child
-      for ( typename output_t::const_iterator top (child_.output().begin())
-          ; top != child_.output().end()
-          ; ++top
-          )
-      {
-        try
-        {
-          token::put ( parent_net
-                     , child_.transition().inner_to_outer ( top->second )
-                     , top->first
-                     );
-        } catch ( const we::type::exception::not_connected <port_id_t> &)
-        {
-          std::cerr << "W: transition generated output, but port is not connected: "
-                    << child_.transition().name()
-                    << "[" << top->second <<"]"
-                    << std::endl;
-        }
-      }
+      inject_output_to_net ( parent_net
+                           , child_.transition()
+                           , child_.output()
+                           );
     }
 
     template <typename A, typename B>
