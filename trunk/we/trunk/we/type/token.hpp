@@ -161,7 +161,7 @@ namespace token
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void save (Archive & ar, const unsigned int)
+    void save (Archive & ar, const unsigned int) const
     {
       ar & BOOST_SERIALIZATION_NVP(value);
     }
