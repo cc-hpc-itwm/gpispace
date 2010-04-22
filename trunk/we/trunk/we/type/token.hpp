@@ -161,18 +161,11 @@ namespace token
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void save (Archive & ar, const unsigned int) const
+    void serialize (Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(value);
+      ar & BOOST_SERIALIZATION_NVP(hash);
     }
-    template<typename Archive>
-    void load (Archive & ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP(value);
-      hash = boost::apply_visitor (value::visitor::hash(), value);
-    }
-    
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   public:
     type () 
@@ -202,7 +195,6 @@ namespace token
       boost::apply_visitor ( visitor::unbind (field, context, value)
                            , signature.desc()
                            );
-
       hash = boost::apply_visitor (value::visitor::hash(), value);
     }
       
@@ -224,7 +216,7 @@ namespace token
 
   inline bool operator == (const type & a, const type & b)
   {
-    return 
+    return
       a.hash == b.hash
       &&
       boost::apply_visitor (value::visitor::eq(), a.value, b.value);
