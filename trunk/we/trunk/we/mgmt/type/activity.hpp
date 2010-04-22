@@ -242,18 +242,18 @@ namespace we { namespace mgmt { namespace type {
       return act;
     }
 
-    // TODO: work here
-    template <typename SubActivity>
     void
-    inject(const SubActivity &)
-    { }
-
-    template <typename Activity>
-    void
-    child_finished (const Activity & act)
+    inject (this_type & subact)
     {
-      // WORK TODO
-      unlink_child (act);
+      unique_lock_t lock(*this);
+      we::mgmt::visitor::activity_injector<this_type>
+        inject_activity (*this, subact);
+      boost::apply_visitor ( inject_activity
+                           , transition_.data()
+                           , subact.transition_.data()
+                           );
+
+      unlink_child (subact);
     }
 
     template <typename Context>
