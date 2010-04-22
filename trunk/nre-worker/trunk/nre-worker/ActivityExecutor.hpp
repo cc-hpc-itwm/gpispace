@@ -22,6 +22,8 @@
 #include <iostream>
 #include <list>
 
+#include <sdpa/memory.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 #include <sdpa/daemon/nre/Codec.hpp>
