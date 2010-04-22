@@ -199,10 +199,55 @@ namespace we { namespace mgmt { namespace visitor {
                                       , Trans
                                       , Edge
                                       , Token
-                                      > & /* parent_net */
+                                      > & net
                      )
     {
+      typedef petri_net::net < Place
+                             , Trans
+                             , Edge
+                             , Token
+                             > pnet_t;
 
+      typedef typename Activity::output_t output_t;
+      typedef typename Activity::token_type token_type;
+      typedef typename Activity::transition_type::port_id_t port_id_t;
+      typedef typename Activity::transition_type::pid_t     pid_t;
+      typedef typename Activity::transition_type::const_iterator port_iterator;
+
+      // collect output
+      for ( port_iterator port_it (activity_.transition().ports_begin())
+          ; port_it != activity_.transition().ports_end()
+          ; ++port_it
+          )
+      {
+        if (port_it->second.is_output())
+        {
+          if (port_it->second.has_associated_place())
+          {
+            const port_id_t port_id = port_it->first;
+            const pid_t     pid     = port_it->second.associated_place();
+
+            for ( typename pnet_t::token_place_it top ( net.get_token (pid) )
+                ; top.has_more ()
+                ; ++top
+                )
+            {
+              activity_.output ().push_back
+              (
+                typename output_t::value_type (top->first, port_id)
+              );
+            }
+            net.delete_all_token ( pid );
+          }
+          else
+          {
+            std::cerr << "W: output port "
+                      << "(" << port_it->first << ", " << port_it->second << ") "
+                      << "is not associated with any place!"
+                      << std::endl;
+          }
+        }
+      }
     }
 
     template <typename T>
