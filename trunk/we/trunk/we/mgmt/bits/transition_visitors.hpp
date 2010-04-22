@@ -237,6 +237,7 @@ namespace we { namespace mgmt { namespace visitor {
                              > pnet_t;
 
       typedef typename Activity::output_t output_t;
+      typedef typename Activity::transition_type::port_id_t port_id_t;
 
       // iterate over output of child
       for ( typename output_t::const_iterator top (child_.output().begin())
