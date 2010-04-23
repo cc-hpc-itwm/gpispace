@@ -22,13 +22,19 @@ namespace statistic
   template<typename T>
   struct by_first
   {
-    bool operator () (const T & a, const T & b) { return a.first < b.first; }
+    bool operator () (const T & a, const T & b)
+    {
+      return a < b;
+    }
   };
 
   template<typename T>
   struct by_second
   {
-    bool operator () (const T & a, const T & b) { return a.second < b.second; }
+    bool operator () (const T & a, const T & b)
+    {
+      return a.second < b.second;
+    }
   };
 
   template<typename T>
@@ -158,24 +164,41 @@ namespace statistic
 
     void start (const key_t & key, stat_t & s)
     {
-      elem_t & e (s[key]);
+      typename stat_t::iterator pos (s.find (key));
 
-      ++e.first;
-      e.second -= current_time();
+      if (pos == s.end())
+        {
+          elem_t & e (s[key]);
+
+          e.first = 1;
+          e.second = -current_time();
+        }
+      else
+        {
+          elem_t & e (pos->second);
+
+          ++e.first;
+          e.second -= current_time();
+        }
     }
 
     void stop (const key_t & key, stat_t & s)
     {
-      elem_t & e (s[key]);
+      typename stat_t::iterator pos (s.find (key));
+
+      if (pos == s.end())
+        throw std::runtime_error ("stop before start!?");
+
+      elem_t & e (pos->second);
 
       e.second += current_time();
     }
 
   public:
-    ~loud (void) 
+    void out (const std::string & msg) const
     {
-      out(f,"STAT by first level");
-      out(r,"STAT by second level");
+      out (f, msg + " STAT by first level");
+      out (r, msg + " STAT by second level");
     }
 
     void start (const T & t1, const T & t2)
@@ -197,6 +220,7 @@ namespace statistic
   public:
     inline void start (const T &, const T &) {}
     inline void stop (const T &, const T &) {}
+    inline void out (const std::string &) {}
   };
 }
 
