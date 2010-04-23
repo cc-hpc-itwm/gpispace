@@ -29,7 +29,7 @@
 
 // ************************************************************************* //
 
-static statistic::muted<std::string> stat;
+static statistic::loud<std::string> stat;
 
 // ************************************************************************* //
 
@@ -577,6 +577,9 @@ main (int argc, char ** argv)
   }
 
   marking (net);
+
+  //  stat.out ("Kirchhoff");
+  token::stat.out ("Token");
 
   return EXIT_SUCCESS;
 }
