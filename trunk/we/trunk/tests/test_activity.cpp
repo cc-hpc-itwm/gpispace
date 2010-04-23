@@ -124,18 +124,25 @@ int main (int, char **)
   {
     activity_t sub = act.extract (1);
 
-    std::cout << "***** sub-act:"
+    std::cout << "***** sub-act (pre-execute):"
               << std::endl
               << sub
               << std::endl;
     sub.execute ("");
 
-    std::cout << "***** sub-act:"
+    std::cout << "***** sub-act (post-execute):"
               << std::endl
               << sub
               << std::endl;
     act.inject (sub);
   }
+
+  boost::apply_visitor (we::mgmt::visitor::output_collector<activity_t> (act), act.transition().data());
+
+  std::cout << "act (finished) = "
+            << std::endl
+            << act
+            << std::endl;
 
   return EXIT_SUCCESS;
 }
