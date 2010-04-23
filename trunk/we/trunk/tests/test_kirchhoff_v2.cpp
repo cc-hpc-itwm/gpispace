@@ -578,8 +578,7 @@ main (int argc, char ** argv)
 
   marking (net);
 
-  //  stat.out ("Kirchhoff");
-  token::stat.out ("Token");
+  stat.out ("Kirchhoff");
 
   return EXIT_SUCCESS;
 }
