@@ -144,5 +144,10 @@ int main (int, char **)
             << act
             << std::endl;
 
+  if ( act.output().empty() )
+  {
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }
