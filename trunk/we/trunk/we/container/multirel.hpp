@@ -125,18 +125,26 @@ namespace multirel
       return dist;
     }
 
-    void delete_right (const R & r)
+    std::size_t delete_right (const R & r)
     {
       typename traits<L,R>::right_range_it it (container.right.equal_range (r));
 
+      const std::size_t dist (std::distance (it.first, it.second));
+
       container.right.erase (it.first, it.second);
+
+      return dist;
     }
 
-    void delete_left (const L & l)
+    std::size_t delete_left (const L & l)
     {
       typename traits<L,R>::left_range_it it (container.left.equal_range (l));
 
+      const std::size_t dist (std::distance (it.first, it.second));
+
       container.left.erase (it.first, it.second);
+
+      return dist;
     }
 
     right_const_it<L,R> left_of (const R & r) const
