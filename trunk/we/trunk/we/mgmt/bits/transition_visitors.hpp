@@ -234,7 +234,7 @@ namespace we { namespace mgmt { namespace visitor {
             {
               activity_.output ().push_back
               (
-                typename output_t::value_type (top->first, port_id)
+                typename output_t::value_type (*top, port_id)
               );
             }
             net.delete_all_token ( pid );
@@ -250,10 +250,20 @@ namespace we { namespace mgmt { namespace visitor {
       }
     }
 
-    template <typename T>
-    void operator () ( T & ) const
+    void operator () (const we::type::module_call_t &) const
     {
       return; // nothting todo, activity already contains output
+    }
+
+    void operator () (const we::type::expression_t &) const
+    {
+      return; // nothting todo, activity already contains output
+    }
+
+    template <typename T>
+    void operator () ( T & )
+    {
+      throw exception::operation_not_supported ("output_collector (unknown T)");
     }
   };
 
@@ -311,7 +321,8 @@ namespace we { namespace mgmt { namespace visitor {
                                       > & /* child_net */
                      )
     {
-      boost::apply_visitor ( output_collector<Activity>(child_)
+      output_collector<Activity> collect_output (child_);
+      boost::apply_visitor ( collect_output
                            , child_.transition().data()
                            );
 
