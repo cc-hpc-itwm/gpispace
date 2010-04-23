@@ -16,9 +16,13 @@ set(V_MINOR 1)
 set(V_PATCH 0)
 
 option (WITH_FAKE_PC "Build with fake virtual machine interface library" ON)
+set (FVM_FVM_SIZE 52428800 CACHE STRING "Default FVM size")
+set (FVM_SHM_SIZE 52428800 CACHE STRING "Default SHM size")
+set (FVM_MSQ_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/keyfile"  CACHE STRING "Default MSQ file")
+set (FVM_SHM_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/shmemkey" CACHE STRING "Default SHM file")
 
+message(STATUS "FVM config: shmsize=${FVM_SHM_SIZE} fvmsize=${FVM_FVM_SIZE}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
-
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 #include(CheckCompiler)
@@ -89,13 +93,13 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-message(STATUS "FIXME: make paths to mmgr configurable!")
 include (FindMMGR)
 if (MMGR_FOUND)
   include_directories(${MMGR_INCLUDE_DIR})
 else (MMGR_FOUND)
   message (FATAL_ERROR "Sorry, MemoryManager library is required")
 endif (MMGR_FOUND)
+message(STATUS "MMGR: -I${MMGR_INCLUDE_DIR} -L${MMGR_LIBRARY_DIR} -l${MMGR_LIBRARY}")
 
 # Reflect the package structure
 add_subdirectory(fvm)
@@ -104,6 +108,9 @@ add_subdirectory(fvm-pc)
 include(CTest)
 add_subdirectory(tests)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.tpl
-              ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
-              ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl DESTINATION etc/)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
+              ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl
+              ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
+        DESTINATION etc/
+       )
