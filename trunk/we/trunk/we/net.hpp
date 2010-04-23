@@ -887,6 +887,15 @@ public:
     return ret;
   }
 
+  std::size_t delete_all_token (const pid_t & pid)
+  {
+    const std::size_t ret (token_place_rel.delete_right (pid));
+
+    recalculate_enabled_by_place (pid);
+
+    return ret;
+  }
+
   // WORK HERE: implement more efficient?
   std::size_t replace_one_token
   (const pid_t & pid, const token_type & old_token, const token_type & new_token)
