@@ -29,6 +29,7 @@ target_link_libraries(sdpa-test
 	 seda
 	 seda-comm
      ${CPPUNIT_STATIC_LIBRARIES}
+     ${FAKE_FVM_PC_LIBRARIES}
 	 ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/sdpa_test_suite.cpp)
@@ -42,7 +43,7 @@ target_link_libraries(mini_test_suite dl)
 target_link_libraries(mini_test_suite uuid)
 
 # test module
-add_library(example-mod SHARED example-mod.cpp)
+#add_library(example-mod SHARED example-mod.cpp)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)

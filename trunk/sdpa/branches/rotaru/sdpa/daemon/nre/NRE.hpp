@@ -39,7 +39,7 @@ namespace sdpa {
 		NRE( const std::string& name = "", const std::string& url = "",
 			 const std::string& masterName = "", const std::string& masterUrl = "",
 			 const std::string& workerUrl = "", const std::string& guiUrl = "" )
-		: dsm::DaemonFSM( name, new T(this) ),
+		: dsm::DaemonFSM( name, new T(this, boost::bind(&GenericDaemon::gen_id, this) ) ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
 				  masterName_(masterName),

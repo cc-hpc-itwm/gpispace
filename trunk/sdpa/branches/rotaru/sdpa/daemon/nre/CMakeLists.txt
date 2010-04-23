@@ -3,6 +3,7 @@
 file(GLOB hdrs *.hpp)
 file(GLOB srcs *.cpp)
 
+add_subdirectory(nre-worker)
 ADD_LIBRARY(sdpa-nre ${srcs})
 
 if (USE_SMC_SC)

@@ -3,7 +3,6 @@
 
 #include <cppunit/TestFixture.h>
 
-#include <tests/sdpa/test_Module.hpp>
 #include <tests/sdpa/test_Token.hpp>
 #include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_UUID.hpp>
@@ -27,8 +26,8 @@ namespace sdpa { namespace tests {
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
 
-      /*suiteOfTests->addTest( ModuleTest::suite() );
-      suiteOfTests->addTest( TokenTest::suite() );
+      // disabled for now: suiteOfTests->addTest( ModuleTest::suite() );
+      /*suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
@@ -44,7 +43,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( TestComponents::suite() );
 
       /*suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
-	  suiteOfTests->addTest( TestSerializeJobPtr::suite() );
+      suiteOfTests->addTest( TestSerializeJobPtr::suite() );
       suiteOfTests->addTest( WorkerSerializationTest::suite() );*/
 
 

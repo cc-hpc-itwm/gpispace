@@ -33,7 +33,7 @@ namespace sdpa {
 
 			Aggregator( const std::string& name = "", const std::string& url = "",
 						const std::string& masterName = "", const std::string& masterUrl = "")
-			: DaemonFSM( name, new T(this) ),
+			: DaemonFSM( name, new T(this,  boost::bind(&GenericDaemon::gen_id, this) ) ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
 				  masterName_(masterName),

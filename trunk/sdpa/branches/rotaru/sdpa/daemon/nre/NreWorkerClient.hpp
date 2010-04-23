@@ -203,13 +203,13 @@ namespace sdpa { namespace nre { namespace worker {
      */
 	sdpa::shared_ptr<Message> request(const Message &m, unsigned long timeout)
 	{
-		//send(m);
-		//return sdpa::shared_ptr<Message>(recv(timeout));
+		send(m);
+		return sdpa::shared_ptr<Message>(recv(timeout));
 
 		//just for unit tests
-		execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "dummy result"));
+		/*execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "dummy result"));
 		sdpa::shared_ptr<Message> pReplyMsg(new ExecuteReply());
-		return pReplyMsg;
+		return pReplyMsg;*/
 	}
 
 

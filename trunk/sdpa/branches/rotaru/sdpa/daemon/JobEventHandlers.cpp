@@ -26,35 +26,9 @@
 
 #include <sdpa/daemon/exceptions.hpp>
 
-
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
-
-
-/*void GenericDaemon::handleJobEvent(const seda::IEvent::Ptr& pEvent)
-{
-	// check what type of event is and call transitions
-	if( CancelJobAckEvent* ptr = dynamic_cast<CancelJobAckEvent*>(pEvent.get()) )
-		handleCancelJobAckEvent(ptr);
-	else if( SubmitJobAckEvent* ptr = dynamic_cast<SubmitJobAckEvent*>(pEvent.get()) )
-		handleSubmitJobAckEvent(ptr);
-	else if( JobFinishedEvent* ptr = dynamic_cast<JobFinishedEvent*>(pEvent.get()) )
-		handleJobFinishedEvent(ptr);
-	else if( JobFailedEvent* ptr = dynamic_cast<JobFailedEvent*>(pEvent.get()))
-		handleJobFailedEvent(ptr);
-	else if( QueryJobStatusEvent* ptr = dynamic_cast<QueryJobStatusEvent*>(pEvent.get()) )
-		handleQueryJobStatusEvent(ptr);
-	else if( JobFinishedAckEvent* ptr = dynamic_cast<JobFinishedAckEvent*>(pEvent.get()) )
-		handleJobFinishedAckEvent(ptr);
-	else if( JobFailedAckEvent* ptr = dynamic_cast<JobFailedAckEvent*>(pEvent.get()) )
-		handleJobFailedAckEvent(ptr);
-	else if( CancelJobEvent* ptr = dynamic_cast<CancelJobEvent*>(pEvent.get()) )
-		handleCancelJobEvent(ptr);
-	else if( RetrieveJobResultsEvent* ptr = dynamic_cast<RetrieveJobResultsEvent*>(pEvent.get()) )
-		handleRetrieveJobResultsEvent(ptr);
-}
-*/
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {

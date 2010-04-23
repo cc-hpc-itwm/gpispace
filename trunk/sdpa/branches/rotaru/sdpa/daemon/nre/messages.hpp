@@ -219,11 +219,13 @@ namespace sdpa { namespace nre { namespace worker {
       Reply *reply(NULL);
       try
       {
-    	  LOG(INFO, "executing: " << activity());
-    	  //bool keep_going = true;
-
+    	  //LOG(INFO, "executing: " << activity());
+    	  LOG (DEBUG, "received new activity ... ");
+    	  LOG (DEBUG, "executing activity ... ");
     	  // encode activity again
     	  execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, activity()));
+
+    	  LOG (DEBUG, "creating a reply message ... ");
     	  reply = new ExecuteReply(exec_res);
       }
       catch (const std::exception &ex)
@@ -241,6 +243,7 @@ namespace sdpa { namespace nre { namespace worker {
 
       assert(reply);
       reply->id() = id();
+      LOG (DEBUG, "replying with id "<<reply->id());
       return reply;
     }
 

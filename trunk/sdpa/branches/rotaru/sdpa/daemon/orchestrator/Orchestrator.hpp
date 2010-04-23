@@ -32,7 +32,7 @@ namespace daemon {
 		Orchestrator(  	const std::string &name = "",
 						const std::string& url = "",
 						const std::string &workflow_directory = "")
-			: DaemonFSM( name, new T(this) ),
+			: DaemonFSM( name, new T(this, boost::bind(&GenericDaemon::gen_id, this) ) ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url)
 		{
@@ -41,9 +41,9 @@ namespace daemon {
 			ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 		}
 
-		static ptr_t create( 	const std::string& name,
-						const std::string& url,
-						const std::string &workflow_directory )
+		static ptr_t create( const std::string& name,
+							 const std::string& url,
+							 const std::string &workflow_directory )
 		{
 			return ptr_t(new Orchestrator<T>( name, url, workflow_directory ));
 		}

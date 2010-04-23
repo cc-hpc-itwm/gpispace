@@ -40,11 +40,21 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <boost/function.hpp>
 
 using namespace sdpa;
 
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
+
+/*struct f_id_gen {
+	id_type operator()()
+			{ std::string str; return str; }
+};*/
+
+static std::string id_gen() { JobId jobId; return jobId.str(); }
+
+typedef boost::function<id_type()> Function_t;
 
 class DummyWorkflowEngine : public IWorkflowEngine {
   private:
@@ -53,30 +63,15 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    DummyWorkflowEngine( IDaemon* pIDaemon = NULL ) :
-			daemon_(*pIDaemon),
-    		SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( IDaemon* pIDaemon = NULL, Function_t f = id_gen  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
+    	pIDaemon_ = pIDaemon;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
-	/*template <class E, typename G>
-	DummyWorkflowEngine(E& exec_layer, G gen)
-		  : exec_layer_(exec_layer)
-		  , id_gen_(gen)
-          , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
-		  , cmd_q_(1024)
-		  , active_nets_(1024)
-		  , inj_q_(1024)
-          , exec_q_(1024)
-	  {
-		start();
-	  }*/
-
-    // needed by test_D2D2DDummyWfEng!
     void registerDaemon(IDaemon* pIDaemon )
     {
-    	daemon_ = *pIDaemon;
+    	pIDaemon_ = pIDaemon;
     }
 
     /**
@@ -90,15 +85,20 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-		// find the corresponding workflow_id
-		id_type workflowId = map_Act2Wf_Ids_[activityId];
-		result_type wf_result;
-		daemon_.failed(workflowId, wf_result);
+		if(pIDaemon_)
+		{
+			// find the corresponding workflow_id
+			id_type workflowId = map_Act2Wf_Ids_[activityId];
+			result_type wf_result;
+			pIDaemon_->failed(workflowId, wf_result);
 
-		lock_type lock(mtx_);
-		map_Act2Wf_Ids_.erase(activityId);
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
 
-		return true;
+			return true;
+		}
+		else
+			return false;
     }
 
     /**
@@ -112,17 +112,22 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
-		// find the corresponding workflow_id
-		id_type workflowId = map_Act2Wf_Ids_[activityId];
+		if(pIDaemon_)
+		{
+			// find the corresponding workflow_id
+			id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-		result_type wf_result;
-		daemon_.finished(workflowId, wf_result);
+			result_type wf_result;
+			pIDaemon_->finished(workflowId, wf_result);
 
-		//delete the entry corresp to activityId;
-		lock_type lock(mtx_);
-		map_Act2Wf_Ids_.erase(activityId);
+			//delete the entry corresp to activityId;
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
 
-		return true;
+			return true;
+		}
+		else
+			return false;
     }
 
     /**
@@ -141,22 +146,27 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		* transition from * to terminated.
 		*/
 
-		// find the corresponding workflow_id
-		id_type workflowId = map_Act2Wf_Ids_[activityId];
-		lock_type lock(mtx_);
-		map_Act2Wf_Ids_.erase(activityId);
+		if(pIDaemon_)
+		{
+			// find the corresponding workflow_id
+			id_type workflowId = map_Act2Wf_Ids_[activityId];
+			lock_type lock(mtx_);
+			map_Act2Wf_Ids_.erase(activityId);
 
-		// check if there are any activities left for that workflow
-		bool bAllActFinished = true;
-		for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
-			if( it->second == workflowId )
-				bAllActFinished = false;
+			// check if there are any activities left for that workflow
+			bool bAllActFinished = true;
+			for( map_t ::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end() && bAllActFinished; it++)
+				if( it->second == workflowId )
+					bAllActFinished = false;
 
-		// if no activity left, declare the workflow cancelled
-		if(bAllActFinished)
-			daemon_.cancelled(workflowId);
+			// if no activity left, declare the workflow cancelled
+			if(bAllActFinished)
+				pIDaemon_->cancelled(workflowId);
 
-		return true;
+			return true;
+		}
+		else
+			return false;
     }
 
 
@@ -186,8 +196,11 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
 		encoded_type act_desc = wf_desc;
-		SDPA_LOG_DEBUG("Submit new activity ...");
-		daemon_.submit(act_id, act_desc);
+		if(pIDaemon_)
+		{
+			SDPA_LOG_DEBUG("Submit new activity ...");
+			pIDaemon_->submit(act_id, act_desc);
+		}
     }
 
     /**
@@ -202,17 +215,18 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
 		lock_type lock(mtx_);
+		if(pIDaemon_)
+		{
+			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
-		SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
-
-		for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
-			if( it->second == wfid )
-			{
-				id_type activityId = it->first;
-				reason_type reason;
-				daemon_.cancel(activityId, reason);
-			}
-
+			for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
+				if( it->second == wfid )
+				{
+					id_type activityId = it->first;
+					reason_type reason;
+					pIDaemon_->cancel(activityId, reason);
+				}
+		}
 
 		return true;
     }
@@ -229,11 +243,38 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     		std::cout<<it->second<<" -> "<<it->first<<std::endl;
     }
 
+  public:
+    mutable IDaemon *pIDaemon_;
+
   private:
-    IDaemon& daemon_;
     map_t map_Act2Wf_Ids_;
     mutex_type mtx_;
+    Function_t fct_id_gen_;
 };
+
+
+namespace boost { namespace serialization {
+template<class Archive>
+inline void save_construct_data(
+    Archive & ar, const DummyWorkflowEngine* t, const unsigned int file_version
+){
+    // save data required to construct instance
+    ar << t->pIDaemon_;
+}
+
+template<class Archive>
+inline void load_construct_data(
+    Archive & ar, DummyWorkflowEngine* t, const unsigned int file_version
+){
+    // retrieve data from archive required to construct new instance
+	IDaemon *pIDaemon;
+    ar >> pIDaemon;
+
+    // invoke inplace constructor to initialize instance of my_class
+    ::new(t)DummyWorkflowEngine(pIDaemon, id_gen);
+}
+}} // namespace ...
+
 
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(IWorkflowEngine)

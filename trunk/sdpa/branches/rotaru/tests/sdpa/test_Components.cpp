@@ -34,7 +34,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(10),
+    m_nITER(1),
     m_sleep_interval(1000000)
 {
 }
@@ -101,7 +101,7 @@ void TestComponents::testComponentsRealGWES()
 
 	//sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor>
 	//	executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
-	// /p/hpc/sdpa/fvm-pc/libexec/remig/*.so
+
     //executor->loader().load("/path/to/libdummy.so");
     //executor->start();
 

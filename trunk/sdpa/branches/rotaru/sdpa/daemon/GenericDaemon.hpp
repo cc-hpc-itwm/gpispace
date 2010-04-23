@@ -71,8 +71,6 @@ namespace sdpa { namespace daemon {
 	  void stop();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
-	  //virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
-	  //virtual void handleJobEvent(const seda::IEvent::Ptr& pEvent);
 
 	  virtual void onStageStart(const std::string &stageName);
 	  virtual void onStageStop(const std::string &stageName);
@@ -144,6 +142,9 @@ namespace sdpa { namespace daemon {
 	  virtual bool is_registered() const { return m_bRegistered;}
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
+
+	  //boost::bind(&sdpa_daemon::gen_id, this))
+	  std::string gen_id() { JobId jobId; return jobId.str(); }
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int file_version )

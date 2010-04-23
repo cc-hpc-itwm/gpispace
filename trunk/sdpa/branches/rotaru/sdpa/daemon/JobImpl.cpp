@@ -47,7 +47,7 @@ namespace sdpa { namespace daemon {
           b_local_(false),
           pComm(const_cast<IComm*>(pHandler)),
           SDPA_INIT_LOGGER( string("Job ")+ id.str()),
-          walltime_(std::numeric_limits<unsigned int>::max()) // by default
+          walltime_(2592000) // walltime in seconds: one month by default
     {}
 
 

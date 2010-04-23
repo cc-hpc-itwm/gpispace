@@ -3,7 +3,6 @@
 
 #include <cppunit/TestFixture.h>
 
-#include <tests/sdpa/test_Module.hpp>
 #include <tests/sdpa/test_Token.hpp>
 #include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_UUID.hpp>

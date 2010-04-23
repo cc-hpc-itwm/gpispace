@@ -43,7 +43,29 @@ namespace sdpa {
 	}
 
 
-	 virtual ~SchedulerNRE() {};
+	virtual ~SchedulerNRE() {};
+
+	void start()throw (std::exception)
+	{
+		SchedulerImpl::start();
+
+		SDPA_LOG_DEBUG("Starting nre-worker-client ...");
+		try {
+			m_worker_.start();
+		}catch(const std::exception& val)
+		{
+			SDPA_LOG_ERROR("Could not start the nre-worker-client ...");
+			throw;
+		}
+	}
+
+	void stop()
+	{
+		SchedulerImpl::stop();
+
+		SDPA_LOG_DEBUG("Stopping nre-worker-client ...");
+		m_worker_.stop();
+	}
 
 	 bool post_request(bool force = false)
 	 {
@@ -129,6 +151,7 @@ namespace sdpa {
 		try
 		{
 			ptr_comm_handler_->activityStarted(act_id, enc_act);
+			LOG(INFO, "walltime=" << pJob->walltime());
 			result = m_worker_.execute(enc_act, pJob->walltime());
 		}
 		catch( const boost::thread_interrupted &)
