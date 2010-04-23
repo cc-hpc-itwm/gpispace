@@ -15,6 +15,8 @@ set(V_MAJOR 0)
 set(V_MINOR 1)
 set(V_PATCH 0)
 
+option (WITH_FAKE_PC "Build with fake virtual machine interface library" ON)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
@@ -72,8 +74,28 @@ endif (MAX_FVM_SIZE)
 add_definitions(-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
 add_definitions(-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
 
+## check for boost
+set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0" "1.40" "1.40.0")
+set(Boost_FIND_QUIETLY false)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem serialization program_options)
+# we need at least 1.36 so check for it
+if (Boost_MAJOR_VERSION LESS 1)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif(Boost_MAJOR_VERSION LESS 1)
+if (Boost_MINOR_VERSION LESS 36)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif (Boost_MINOR_VERSION LESS 36)
+message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+
 message(STATUS "FIXME: make paths to mmgr configurable!")
-include_directories(${MMGR_INCLUDE_DIR})
+include (FindMMGR)
+if (MMGR_FOUND)
+  include_directories(${MMGR_INCLUDE_DIR})
+else (MMGR_FOUND)
+  message (FATAL_ERROR "Sorry, MemoryManager library is required")
+endif (MMGR_FOUND)
 
 # Reflect the package structure
 add_subdirectory(fvm)

@@ -7,7 +7,7 @@
 // #include <errno.h>
 // #include <sys/msg.h>
 
-#include "pc.hpp"
+#include <fvm-pc/pc.hpp>
 #if ! defined(MAX_SHMEM_SIZE)
 #error "MAX_SHMEM_SIZE must be defined!"
 #endif

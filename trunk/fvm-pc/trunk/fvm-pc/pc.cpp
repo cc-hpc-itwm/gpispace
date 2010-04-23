@@ -6,7 +6,7 @@
 #include <sys/shm.h>
 #endif
 
-#include "pc.hpp"
+#include <fvm-pc/pc.hpp>
 
 //msgqueue
 static int pcQueueID; 
