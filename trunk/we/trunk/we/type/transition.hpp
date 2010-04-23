@@ -164,6 +164,30 @@ namespace we { namespace type {
       }
     }
 
+    namespace tag
+    {
+      struct external;
+      struct internal;
+
+      template <typename T>
+      struct default_tag
+      {
+        typedef internal tag_type;
+      };
+
+      template <>
+      struct default_tag<module_call_t>
+      {
+        typedef external tag_type;
+      };
+
+      template <>
+      struct default_tag<expression_t>
+      {
+        typedef internal tag_type;
+      };
+    }
+
     template <typename Place, typename Edge, typename Token>
 	struct transition_t
 	{
@@ -306,23 +330,6 @@ namespace we { namespace type {
       }
 
       ~transition_t () { }
-
-	  template <typename Input, typename OutputDescription, typename OutputIterator>
-	  void operator ()(Input const & input, OutputDescription const & desc, OutputIterator output) const
-	  {
-		for ( typename Input::const_iterator in (input.begin())
-			; in != input.end()
-			; ++in)
-		{
-		  for ( typename OutputDescription::const_iterator out (desc.begin())
-			  ; out != desc.end()
-			  ; ++out)
-		  {
-			std::cerr << "D: putting " << in->first << " to place " << out->first << std::endl;
-			*output++ = std::make_pair(in->first, out->first);
-		  }
-		}
-	  }
 
       template <typename Outer, typename Inner>
       void connect_outer_to_inner(const Outer outer, const Inner inner)
