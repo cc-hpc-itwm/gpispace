@@ -30,6 +30,6 @@ else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(FVM_FOUND true)
   set(FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
   set(FVM_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc")
-  set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/libfvm-pc_fake.so")
+  set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fake/libfvm-pc.so")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
