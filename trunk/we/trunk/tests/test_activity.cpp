@@ -136,8 +136,8 @@ int main (int, char **)
               << std::endl;
     act.inject (sub);
   }
-
-  boost::apply_visitor (we::mgmt::visitor::output_collector<activity_t> (act), act.transition().data());
+  we::mgmt::visitor::output_collector<activity_t> output_collector(act);
+  boost::apply_visitor (output_collector, act.transition().data());
 
   std::cout << "act (finished) = "
             << std::endl
