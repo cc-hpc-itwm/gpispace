@@ -556,7 +556,7 @@ main (int argc, char ** argv)
     );
 
   mk_edge (net, connection_t (PT_READ, tid_gen_volume_step, pid_config));
-  mk_edge (net, connection_t (PT_READ, tid_gen_volume_step, buffer_empty));
+  mk_edge (net, connection_t (PT_READ, tid_gen_volume_step, pid_buffer_empty));
   mk_edge (net, connection_t (PT, tid_gen_volume_step, pid_gen_volume_state));
   mk_edge (net, connection_t (TP, tid_gen_volume_step, pid_gen_volume_state));
   mk_edge (net, connection_t (PT, tid_gen_volume_step, pid_wanted_offset));
