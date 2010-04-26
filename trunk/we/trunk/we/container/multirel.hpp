@@ -6,6 +6,8 @@
 
 #include <we/util/it.hpp>
 
+#include <stdexcept>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 
@@ -13,6 +15,16 @@
 
 namespace multirel
 {
+  namespace exception
+  {
+    class delete_non_existing_object : public std::runtime_error
+    {
+    public:
+      explicit delete_non_existing_object (const std::string & msg = "")
+        : std::runtime_error ("multirel: delete non-existing object " + msg) {}
+    };
+  }
+
   template<typename L, typename R>
   class traits
   {
@@ -103,8 +115,7 @@ namespace multirel
       if (dist > 0)
         container.erase (range_it.first);
       else
-        throw std::runtime_error
-          ("STRANGE! multirel::delete_one for non-existing object");
+        throw exception::delete_non_existing_object ("in delete_one");
 
       return dist;
     }
@@ -117,8 +128,7 @@ namespace multirel
       const std::size_t dist (std::distance (range_it.first, range_it.second));
 
       if (dist == 0)
-        throw std::runtime_error
-          ("STRANGE! multirel::delete_all for non-existing object");
+        throw exception::delete_non_existing_object ("in delete_all");
 
       container.erase (range_it.first, range_it.second);
 

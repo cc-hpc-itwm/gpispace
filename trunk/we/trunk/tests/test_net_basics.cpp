@@ -329,17 +329,36 @@ static void put_token (pnet_t & n, const place_t & place, const token_t & token)
 
 static void delete_one_token (pnet_t & n, const place_t & place, const token_t & token)
 {
-  cout << "delete_one_token (" << place << "," << token << ") => "
-       << n.delete_one_token (n.get_place_id (place), token)
-       << endl;
+  cout << "delete_one_token (" << place << "," << token << ") => ";
+
+  try
+    {
+      cout << n.delete_one_token (n.get_place_id (place), token);
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  cout << endl;
+
   print_enabled (n);
 }
 
 static void delete_all_token (pnet_t & n, const place_t & place, const token_t & token)
 {
-  cout << "delete_all_token (" << place << "," << token << ") => "
-       << n.delete_all_token (n.get_place_id (place), token)
-       << endl;
+  cout << "delete_all_token (" << place << "," << token << ") => ";
+
+  try
+    {
+      cout << n.delete_all_token (n.get_place_id (place), token);
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  cout << endl;
   print_enabled (n);
 }
 
@@ -467,16 +486,55 @@ main ()
 
   print_net (c);
 
-  cout << "replace_one_token (readyL,p->m) => "
-       << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
-  cout << "replace_one_token (readyL,p->m) => "
-       << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
-  cout << "replace_one_token (readyL,q->m) => "
-       << c.replace_one_token (c.get_place_id ("readyL"),"q","m") << endl;
-  cout << "replace_all_token (readyL,q->m) => "
-       << c.replace_all_token (c.get_place_id ("readyL"),"q","m") << endl;
-  cout << "replace_all_token (readyR,p->n) => "
-       << c.replace_all_token (c.get_place_id ("readyR"),"p","n") << endl;
+  try
+    {
+      cout << "replace_one_token (readyL,p->m) => "
+           << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  try
+    {
+      cout << "replace_one_token (readyL,p->m) => "
+           << c.replace_one_token (c.get_place_id ("readyL"),"p","m") << endl;
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  try
+    {
+      cout << "replace_one_token (readyL,q->m) => "
+           << c.replace_one_token (c.get_place_id ("readyL"),"q","m") << endl;
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  try
+    {
+      cout << "replace_all_token (readyL,q->m) => "
+           << c.replace_all_token (c.get_place_id ("readyL"),"q","m") << endl;
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
+
+  try
+    {
+      cout << "replace_all_token (readyR,p->n) => "
+           << c.replace_all_token (c.get_place_id ("readyR"),"p","n") << endl;
+    }
+  catch (multirel::exception::delete_non_existing_object & e)
+    {
+      cout << e.what();
+    }
 
   print_net (c);
 
