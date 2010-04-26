@@ -59,12 +59,11 @@ namespace token
          , const signature::type & signature
          , const value::type & v
          )
-      : value (v)
-//       : value ( boost::apply_visitor ( value::visitor::require_type (field)
-//                                      , signature.desc()
-//                                      , v
-//                                      )
-//               )
+      : value ( boost::apply_visitor ( value::visitor::require_type (field)
+                                     , signature.desc()
+                                     , v
+                                     )
+              )
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
 
@@ -73,7 +72,11 @@ namespace token
          , const signature::type & signature
          , const context_t & context
          )
-      : value (context.value (field))
+      : value ( boost::apply_visitor ( value::visitor::require_type (field)
+                                     , signature.desc()
+                                     , context.value (field)
+                                     )
+              )
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
       

@@ -102,8 +102,8 @@ namespace signature
             ; ++field
             )
           s << ((field != map.begin()) ? ", " : "")
-            <<  util::show (field->first)
-            <<  " := "
+            << util::show (field->first)
+            << " :: "
             << util::show (field->second)
             ;
 

@@ -93,7 +93,8 @@ namespace value
 
       type & operator () (literal::type & l) const
       {
-        throw std::runtime_error ("cannot get field " + name + " from the literal " + util::show(l));
+        throw std::runtime_error 
+          ("cannot get field " + name + " from the literal " + util::show(l));
       }
     };
 
@@ -131,7 +132,8 @@ namespace value
 
       const type & operator () (const literal::type & l) const
       {
-        throw std::runtime_error ("cannot get field " + name + " from the literal " + util::show(l));
+        throw std::runtime_error
+          ("cannot get field " + name + " from the literal " + util::show(l));
       }
     };
 
@@ -349,7 +351,7 @@ namespace value
             )
           name += ((field != m.begin()) ? ", " : "")
                +  field->first
-               +  ": "
+               +  " :: "
                +  boost::apply_visitor (type_name(), field->second)
             ;
 
@@ -358,22 +360,6 @@ namespace value
         return name;
       }
     };
-  }
-
-  inline const type & require_type ( const signature::field_name_t & field
-                                   , const literal::type_name_t & req
-                                   , const type & x
-                                   )
-  {
-    const literal::type_name_t has ( boost::apply_visitor ( visitor::type_name()
-                                                          , x
-                                                          )
-                                   );
-
-    if (has != req)
-      throw ::type::error (field, req, has);
-
-    return x;
   }
 
   std::ostream & operator << (std::ostream & s, const type & x)
