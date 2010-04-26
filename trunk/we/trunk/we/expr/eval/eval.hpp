@@ -23,19 +23,13 @@ namespace expr
         case expr::parse::node::flag::value: return node.value;
         case expr::parse::node::flag::ref: return context.value (node.ref);
         case expr::parse::node::flag::unary:
-          if (is_context_clear (node.token))
-            {
-              throw std::runtime_error ("context.clear not implemented");
-              //              return context.clear ((*node.child0).ref);
-            }
-          else
-            {
-              value::type c0 (eval (*node.child0, context));
+          {
+            value::type c0 (eval (*node.child0, context));
 
-              return boost::apply_visitor ( value::function::unary (node.token)
-                                          , c0
-                                          );
-            }
+            return boost::apply_visitor ( value::function::unary (node.token)
+                                        , c0
+                                        );
+          }
         case expr::parse::node::flag::binary:
           if (is_define (node.token))
             {

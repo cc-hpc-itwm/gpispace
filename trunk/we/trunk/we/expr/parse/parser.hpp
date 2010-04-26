@@ -190,7 +190,6 @@ namespace expr
           case token::_len:
           case token::_tolong:
           case token::_todouble:
-          case token::_context_clear:
           case token::abs: unary (op_stack.top(), k); break;
           case token::rpr: op_stack.pop(); break;
           case token::define: binary (op_stack.top(), k); break;

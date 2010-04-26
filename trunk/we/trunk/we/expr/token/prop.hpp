@@ -28,7 +28,6 @@ namespace expr
         case _bitset_insert:
         case _bitset_delete:
         case _bitset_is_element:
-        case _context_clear:
         case _substr:
         case abs: return true;
         default: return false;
@@ -49,11 +48,6 @@ namespace expr
     inline bool is_define (const type & token)
     {
       return (token == define);
-    }
-
-    inline bool is_context_clear (const type & token)
-    {
-      return (token == _context_clear);
     }
   }
 }

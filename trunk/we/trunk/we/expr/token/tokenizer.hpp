@@ -175,25 +175,11 @@ namespace expr
               ++pos;
               if (is_eof())
                 throw exception::parse::expected
-                  ("'os', 'eil' or 'ontext_clear'", pos());
+                  ("'os' or 'eil'", pos());
               else
                 switch (*pos)
                   {
-                  case 'o':
-                    ++pos;
-                    if (is_eof())
-                      throw exception::parse::expected
-                        ("'s' or 'ntext_clear'", pos());
-                    else
-                      switch (*pos)
-                        {
-                        case 's': ++pos; unary (_cos, "cos"); break;
-                        case 'n': ++pos; require ("text_clear"); token = _context_clear; break;
-                        default:
-                          throw exception::parse::expected
-                            ("'s' or 'ntext_clear'", pos());
-                        }
-                    break;
+                  case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
                   case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
                   default: throw exception::parse::expected 
                       ("'os' or 'eil'", pos());

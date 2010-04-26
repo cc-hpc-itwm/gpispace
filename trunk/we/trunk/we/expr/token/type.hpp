@@ -31,7 +31,6 @@ namespace expr
     , _sqrt, _log
     , _tolong, _todouble
     , _bitset_insert, _bitset_delete, _bitset_is_element
-    , _context_clear
     , _len
     , _substr
 
@@ -85,7 +84,6 @@ namespace expr
         case _bitset_insert: return s << "bitset_insert";
         case _bitset_delete: return s << "bitset_delete";
         case _bitset_is_element: return s << "bitset_is_element";
-        case _context_clear: return s << "context_clear";
         case _len: return s << "len";
         case _substr: return s << "substr";
         case abs: return s << "abs";
