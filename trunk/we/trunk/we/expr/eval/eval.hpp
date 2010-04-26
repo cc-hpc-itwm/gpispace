@@ -25,7 +25,8 @@ namespace expr
         case expr::parse::node::flag::unary:
           if (is_context_clear (node.token))
             {
-              return context.clear ((*node.child0).ref);
+              throw std::runtime_error ("context.clear not implemented");
+              //              return context.clear ((*node.child0).ref);
             }
           else
             {

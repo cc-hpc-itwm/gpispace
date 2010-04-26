@@ -97,6 +97,44 @@ namespace value
       }
     };
 
+    class mk_structured : public boost::static_visitor<type>
+    {
+    public:
+      type operator () (const literal::type &) const
+      {
+        return structured_t();
+      }
+
+      type operator () (const structured_t & s) const
+      {
+        return s;
+      }
+    };
+
+    class get_field : public boost::static_visitor<const type &>
+    {
+    private:
+      signature::field_name_t name;
+
+    public:
+      get_field (const signature::field_name_t & _name) : name (_name) {}
+
+      const type & operator () (const structured_t & s) const
+      {
+        structured_t::const_iterator pos (s.find (name));
+
+        if (pos == s.end())
+          throw std::runtime_error ("missing field " + name);
+
+        return pos->second;
+      }
+
+      const type & operator () (const literal::type & l) const
+      {
+        throw std::runtime_error ("cannot get field " + name + " from the literal " + util::show(l));
+      }
+    };
+
     class has_field : public boost::static_visitor<bool>
     {
     private:

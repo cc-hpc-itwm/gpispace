@@ -180,10 +180,6 @@ public:
     if (PRINT_FIRE)
       {
         cout << "*** " << name;
-
-        if (name == "tmp")
-          cout << " package = " << context.value ("bunch_to_work");
-
         cout << endl;
       }
 
@@ -298,6 +294,7 @@ namespace signature
   static structured_t state;
   static structured_t copy;
   static structured_t volume;
+  static structured_t volume_with_count;
   static structured_t offset_with_state;
   static structured_t package;
   static structured_t package_with_state;
@@ -328,13 +325,19 @@ namespace signature
     bunch["package"] = package;
 
     buffer["filled"] = literal::BOOL;
+    buffer["assigned"] = literal::BOOL;
     buffer["bunch"] = bunch;
+    buffer["store"] = literal::LONG;
 
     volume["id"] = literal::LONG;
     volume["copy"] = copy;
     volume["offset_to_work_on"] = literal::LONG;
     volume["buffer_0"] = buffer;
     volume["buffer_1"] = buffer;
+
+    volume_with_count["volume"] = literal::LONG;
+    volume_with_count["offset"] = literal::LONG;
+    volume_with_count["count"] = literal::LONG;
 
     offset_with_state["offset"] = literal::LONG;
     offset_with_state["state"] = state;
@@ -429,6 +432,7 @@ main (int argc, char ** argv)
   pid_t pid_buffer_empty (mk_place (net, "buffer_empty", signature::buffer));
   pid_t pid_volume_state (mk_place (net, "volume_state", signature::volume));
   pid_t pid_volume (mk_place (net, "volume", signature::volume));
+  pid_t pid_volume_count (mk_place (net, "volume_count", signature::volume_with_count));
   pid_t pid_gen_volume_wait (mk_place (net, "gen_volume_wait", literal::LONG));
 
   pid_t pid_gen_package_state
@@ -534,8 +538,10 @@ main (int argc, char ** argv)
   nopackage["offset"] = -1L;
   nobunch["id"] = -1L;
   nobunch["package"] = nopackage;
+  buffer_empty["assigned"] = false;
   buffer_empty["filled"] = false;
   buffer_empty["bunch"] = nobunch;
+  buffer_empty["store"] = -1L;
 
   token::put (net, pid_buffer_empty, buffer_empty);
 
@@ -549,6 +555,9 @@ main (int argc, char ** argv)
          ${volume_state.offset_to_work_on} := 0L;\
          ${volume_state.buffer_0} := ${buffer_empty};\
          ${volume_state.buffer_1} := ${buffer_empty};\
+         ${volume_count.volume} := ${gen_volume_state.state};\
+         ${volume_count.offset} := 0L;\
+         ${volume_count.count} := 0L;\
          ${gen_volume_state.state} := ${gen_volume_state.state} + 1;\
          ${wanted_offset} := bitset_insert (${wanted_offset}, 0L);"
       , "${gen_volume_state.state} < ${gen_volume_state.num}"
@@ -562,6 +571,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT, tid_gen_volume_step, pid_wanted_offset));
   mk_edge (net, connection_t (TP, tid_gen_volume_step, pid_wanted_offset));
   mk_edge (net, connection_t (TP, tid_gen_volume_step, pid_volume_state));
+  mk_edge (net, connection_t (TP, tid_gen_volume_step, pid_volume_count));
 
   tid_t tid_gen_volume_break
     ( mk_transition
@@ -768,6 +778,47 @@ main (int argc, char ** argv)
 
   mk_edge (net, connection_t (PT, tid_reuse_store, pid_loaded_bunch));
   mk_edge (net, connection_t (TP, tid_reuse_store, pid_empty_store));
+
+  // *********************************************************************** //
+
+  tid_t tid_assign_buffer0
+    ( mk_transition
+      ( net
+      , "assign_buffer0"
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+         ${volume.buffer_0.assigned} := true;\
+         ${volume.buffer_0.bunch} := ${loaded_bunch.bunch};\
+         ${volume.buffer_0.store} := ${loaded_bunch.store};"
+      , "!bitset_is_element (${loaded_bunch.seen}, ${volume.id}) &\
+         !${volume.buffer_0.assigned}"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_assign_buffer0, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_assign_buffer0, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_assign_buffer0, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign_buffer0, pid_volume));
+
+  tid_t tid_assign_buffer1
+    ( mk_transition
+      ( net
+      , "assign_buffer1"
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+         ${volume.buffer_1.assigned} := true;\
+         ${volume.buffer_1.bunch} := ${loaded_bunch.bunch};\
+         ${volume.buffer_1.store} := ${loaded_bunch.store};"
+      , "!bitset_is_element (${loaded_bunch.seen}, ${volume.id}) &\
+         !${volume.buffer_1.assigned}"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_assign_buffer1, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_assign_buffer1, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_assign_buffer1, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign_buffer1, pid_volume));
+
+  net.set_transition_priority (tid_assign_buffer1, 1);
+  net.set_transition_priority (tid_assign_buffer0, 2);
 
   // *********************************************************************** //
   // token

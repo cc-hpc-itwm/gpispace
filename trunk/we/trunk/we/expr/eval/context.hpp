@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include <boost/unordered_map.hpp>
 
@@ -37,30 +38,121 @@ namespace expr
     template<typename Key>
     struct context
     {
+    public:
+      typedef std::vector<Key> key_vec_t;
     private:
       typedef boost::unordered_map<Key,value::type> container_t;
       container_t container;
+
+      void modify ( typename key_vec_t::const_iterator pos
+                  , const typename key_vec_t::const_iterator end
+                  , value::type & store
+                  , const value::type & value
+                  )
+      {
+        ++pos;
+
+        if (pos == end)
+          store = value;
+        else
+          {
+            store = boost::apply_visitor ( value::visitor::mk_structured()
+                                         , store
+                                         );
+
+            modify ( pos
+                   , end
+                   , boost::apply_visitor 
+                     ( value::visitor::field (::util::show (*pos))
+                     , store
+                     )
+                   , value
+                   );
+          }
+      }
+
+      const value::type & find ( typename key_vec_t::const_iterator pos
+                               , const typename key_vec_t::const_iterator end
+                               , const value::type & store
+                               ) const
+      {
+        ++pos;
+
+        if (pos == end)
+          return store;
+        else
+          return find ( pos
+                      , end
+                      , boost::apply_visitor 
+                        ( value::visitor::get_field (::util::show (*pos))
+                        , store
+                        )
+                      );
+      }
+
     public:
       typedef typename container_t::const_iterator const_iterator;
+      typedef typename container_t::iterator iterator;
+
+      value::type bind (const key_vec_t & key_vec, const value::type & value)
+      {
+        switch (key_vec.size())
+          {
+          case 0:
+            throw std::runtime_error ("context.bind []");
+          case 1:
+            container[key_vec[0]] = value;
+          default:
+            container[key_vec[0]] = 
+              boost::apply_visitor ( value::visitor::mk_structured()
+                                   , container[key_vec[0]]
+                                   );
+
+            modify ( key_vec.begin()
+                   , key_vec.end()
+                   , container[key_vec[0]]
+                   , value
+                   );
+          }
+        return value;
+      }
 
       value::type bind (const Key & key, const value::type & value)
       {
         container[key] = value; return value;
       }
+
+      const value::type & value (const key_vec_t & key_vec) const
+      {
+        switch (key_vec.size())
+          {
+          case 0:
+            throw std::runtime_error ("context.value []");
+          default:
+            {
+              const const_iterator pos (container.find (key_vec[0]));
+
+              if (pos == container.end())
+                throw exception::eval::missing_binding<Key> (key_vec[0]);
+              else
+                return find ( key_vec.begin()
+                            , key_vec.end()
+                            , pos->second
+                            );
+            }
+          }
+      }
+
       const value::type & value (const Key & key) const
       {
-        const const_iterator it (container.find (key));
+        const const_iterator pos (container.find (key));
 
-        if (it == container.end())
+        if (pos == container.end())
           throw exception::eval::missing_binding<Key> (key);
         else
-          return it->second;
+          return pos->second;
       }
-      value::type clear (const Key & key)
-      {
-        container.erase (key);
-        return control();
-      }
+
       value::type clear ()
       {
         container.clear();
@@ -90,16 +182,16 @@ namespace expr
     template<typename Key>
     parse::node::type<Key>
     refnode_value ( const context<Key> & context
-                  , const Key & key
+                  , const std::vector<Key> & key_vec
                   )
     {
-      return parse::node::type<Key>(context.value(key));
+      return parse::node::type<Key>(context.value(key_vec));
     }
 
     template<typename Key>
-    parse::node::type<Key> refnode_name (const Key & key) 
+    parse::node::type<Key> refnode_name (const std::vector<Key> & key_vec) 
     {
-      return parse::node::type<Key>(key);
+      return parse::node::type<Key>(key_vec);
     }
   }
 }

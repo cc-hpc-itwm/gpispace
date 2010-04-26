@@ -18,6 +18,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include <math.h>
 
@@ -28,13 +29,14 @@ namespace expr
     template<typename Key, typename READER>
     struct tokenizer
     {
+    public:
+      typedef std::vector<Key> key_vec_t;
     private:
       parse::position pos;
 
       token::type token;
       literal::type tokval;
-      std::string _refname;
-      Key _ref;
+      key_vec_t _ref;
 
       inline void set_E (void)
       {
@@ -384,15 +386,27 @@ namespace expr
                 switch (*pos)
                   {
                   case '{':
-                    ++pos;
-                    _refname.clear();
-                    while (!pos.end() && *pos != '}')
-                      {
-                        _refname.push_back (*pos);
-                        ++pos;
-                      }
-                    require ("}");
-                    _ref = READER::read(_refname);
+                    {
+                      ++pos;
+                      std::string _aref;
+                      _ref.clear();
+                      while (!pos.end() && *pos != '}')
+                        {
+                          switch (*pos)
+                            {
+                            case '.':
+                              _ref.push_back (READER::read (_aref));
+                              _aref.clear();
+                              break;
+                            default:
+                              _aref.push_back(*pos);
+                              break;
+                            }
+                          ++pos;
+                        }
+                      require ("}");
+                      _ref.push_back (READER::read (_aref));
+                    }
                     break;
                   default: throw exception::parse::expected ("'{'", pos());
                   }
@@ -415,8 +429,22 @@ namespace expr
       const literal::type & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
       void operator ++ (void) { get(); }
-      const Key & get_ref (void) const { return _ref; }
+      const key_vec_t & get_ref (void) const { return _ref; }
     };
+
+    template<typename Key>
+    static std::string show_key_vec (const typename std::vector<Key> & key_vec)
+    {
+      std::string s;
+
+      for ( typename std::vector<Key>::const_iterator pos (key_vec.begin())
+          ; pos != key_vec.end()
+          ; ++pos
+          )
+        s += ((pos != key_vec.begin()) ? "." : "") + ::util::show (*pos);
+
+      return s;
+    }
 
     template<typename Key, typename R>
     static std::ostream & operator << ( std::ostream & s
@@ -426,7 +454,7 @@ namespace expr
       switch (*t)
         {
         case val: return s << t();
-        case ref: return s << "${" << show(t.ref()) << "}";
+        case ref: return s << "${" << show_key_vec (t.ref()) << "}";
         default: return s << *t;
         }
     }

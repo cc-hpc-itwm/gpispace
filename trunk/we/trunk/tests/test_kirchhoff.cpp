@@ -135,6 +135,35 @@ static void marking (const pnet_t & n)
 
 // ************************************************************************* //
 
+static std::vector<std::string>
+mk_vec (const std::string & s)
+{
+  std::vector<std::string> v;
+  std::string e;
+
+  std::string::const_iterator pos (s.begin());
+  const std::string::const_iterator end (s.end());
+
+  while (pos != end)
+    {
+      switch (*pos)
+        {
+        case '.':
+          v.push_back (e);
+          e.clear();
+          break;
+        default:
+          e.push_back (*pos);
+          break;
+        }
+      ++pos;
+    }
+
+  v.push_back (e);
+
+  return v;
+}
+
 class TransitionFunction
 {
 private:
@@ -187,25 +216,25 @@ public:
         if (name == "load")
           {
             std::cout << "*** LOAD"
-                      << " bid " << context.value ("bid_in")
-                      << " sid " << context.value ("sid")
+                      << " bid " << context.value (mk_vec("bid_in"))
+                      << " sid " << context.value (mk_vec("sid"))
                       << std::endl;
           }
         else if (name == "prefetch")
           {
             std::cout << "*** PREFETCH"
-                      << " bid " << context.value ("store.bid")
-                      << " from sid " << context.value ("store.sid")
-                      << " to vid " << context.value ("vid_buf_empty.vid")
-                      << " into buf " << context.value ("vid_buf_empty.bufid")
+                      << " bid " << context.value (mk_vec("store.bid"))
+                      << " from sid " << context.value (mk_vec("store.sid"))
+                      << " to vid " << context.value (mk_vec("vid_buf_empty.vid"))
+                      << " into buf " << context.value (mk_vec("vid_buf_empty.bufid"))
                       << std::endl;
           }
         else if (name == "process")
           {
             std::cout << "*** PROCESS"
-                      << " vid " << context.value ("vid_buf_filled.vb.vid")
-                      << " bid " << context.value ("vid_buf_filled.bid")
-                      << " buf " << context.value ("vid_buf_filled.vb.bufid")
+                      << " vid " << context.value (mk_vec("vid_buf_filled.vb.vid"))
+                      << " bid " << context.value (mk_vec("vid_buf_filled.bid"))
+                      << " buf " << context.value (mk_vec("vid_buf_filled.vb.bufid"))
                       << std::endl;
           }
       }

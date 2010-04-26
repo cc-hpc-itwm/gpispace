@@ -5,12 +5,14 @@
 
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/prop.hpp>
+#include <we/expr/token/tokenizer.hpp>
 #include <we/expr/exception.hpp>
 
 #include <we/type/value.hpp>
 
 #include <stdexcept>
 #include <iostream>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -42,10 +44,11 @@ namespace expr
       struct type
       {
         typedef boost::shared_ptr<type> ptr_t;
+        typedef std::vector<Key> key_vec_t;
 
         flag::flag flag;
         value::type value;
-        Key ref;
+        key_vec_t ref;
         token::type token;
         ptr_t child0;
         ptr_t child1;
@@ -61,7 +64,7 @@ namespace expr
           , child2 ()
         {}
 
-        type (const Key & _ref)
+        type (const key_vec_t & _ref)
           : flag (flag::ref)
           , value ()
           , ref (_ref)
@@ -118,7 +121,7 @@ namespace expr
             return boost::apply_visitor ( value::visitor::show (s)
                                         , nd.value
                                         );
-          case flag::ref: return s << "${" << nd.ref << "}";
+          case flag::ref: return s << "${" << token::show_key_vec (nd.ref) << "}";
           case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
           case flag::binary:
             if (token::is_prefix (nd.token))

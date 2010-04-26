@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <algorithm>
+#include <iostream>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
@@ -99,7 +100,24 @@ namespace svector
     {
       return (vec == other.vec);
     }
+
+    template<typename A>
+    friend std::ostream & operator << (std::ostream &, const type<A> &);
   };
+
+  template<typename A>
+  std::ostream & operator << (std::ostream & s, const type<A> & v)
+  {
+    s << "[";
+    
+    for ( typename type<A>::vec_type::const_iterator pos (v.vec.begin())
+        ; pos != v.vec.end()
+        ; ++pos
+        )
+      s << ((pos != v.vec.begin()) ? ", " : "") << *pos;
+
+    return s << "]";
+  }
 }
 
 #endif

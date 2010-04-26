@@ -201,7 +201,7 @@ namespace expr
       }
 
       void parse ( const std::string input
-                 , const boost::function<nd_t (const Key &)> & refnode
+                 , const boost::function<nd_t (const std::vector<Key> &)> & refnode
                  )
       {
         std::string::const_iterator pos (input.begin());

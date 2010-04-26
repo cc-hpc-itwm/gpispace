@@ -82,6 +82,9 @@ namespace Function { namespace Condition
 
     bool operator () (typename Traits<token_type>::choices_t & choices) const
     {
+      if (expression == "true")
+        return true;
+
       for (; choices.has_more(); ++choices)
         {
           for ( typename Traits<token_type>::choice_it_t choice (*choices)

@@ -9,6 +9,7 @@
 #include <map>
 
 #include <stdexcept>
+#include <iostream>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
@@ -65,22 +66,28 @@ namespace priostore
 
     void set_priority (const T & x, const Prio & prio)
     {
-      typename get_prio_t::iterator pos (get_prio.find (x));
+      const bool is_elem (elem (x));
 
-      if (pos != get_prio.end())
-        {
-          erase (x, prio_map.find (pos->second));
-          insert (x, prio);
-          pos->second = prio;
-        }
-      else
-        get_prio[x] = prio;
+      if (is_elem)
+        erase (x);
+
+      get_prio[x] = prio;
+
+      if (is_elem)
+        insert (x, prio);
     }
 
-    // NOTE! The object should not be stored.
     void erase_priority (const T & x)
     {
+      const bool is_elem (elem (x));
+
+      if (elem (x))
+        erase (x);
+
       get_prio.erase (x);
+
+      if (is_elem)
+        insert (x);
     }
 
     void insert (const T & x)
@@ -90,14 +97,13 @@ namespace priostore
 
     void erase (const T & x)
     {
-      typename prio_map_t::iterator pos (prio_map.find (get_priority (x)));
-
-      erase (x, pos);
+      erase (x, prio_map.find (get_priority (x)));
     }
 
     bool elem (const T & x) const
     {
-      typename prio_map_t::const_iterator pos (prio_map.find (get_priority (x)));
+      typename prio_map_t::const_iterator pos 
+        (prio_map.find (get_priority (x)));
 
       return (pos != prio_map.end()) ? pos->second.elem (x) : false;
     }
@@ -132,7 +138,24 @@ namespace priostore
     {
       return (prio_map == other.prio_map);
     }
+
+    template<typename A, typename B, typename C>
+    friend std::ostream & operator << (std::ostream &, const type<A,B,C> &);
   };
+
+  template<typename A, typename B, typename C>
+  std::ostream & operator << (std::ostream & s, const type<A,B,C> & p)
+  {
+    for ( typename type<A,B,C>::prio_map_t::const_iterator prio (p.prio_map.begin())
+        ; prio != p.prio_map.end()
+        ; ++prio
+        )
+      s << "Prio = " << prio->first
+        << std::endl << prio->second
+        << std::endl;
+
+    return s << std::endl;
+  }
 }
 
 #endif

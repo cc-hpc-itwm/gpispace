@@ -95,53 +95,6 @@ int main (int ac, char **)
   cout << "measure..." << endl;
 
   {
-    typedef int ref_t;
-    typedef expr::parse::parser<ref_t, we::util::int_reader<int> > parser_t;
-    typedef expr::eval::context<ref_t> context_t;
-    {
-      const long round (1000);
-      const long max (1000);
-      const std::string input ("${0} < ${1}");
-
-      {
-        Timer_t timer ("parse<int> once, eval often", max * round);
-
-        context_t context;
-
-        context.bind(1,max);
-      
-        parser_t parser (input);
-
-        for (int r (0); r < round; ++r)
-          {
-            long i (0);
-
-            do
-              context.bind (0,i++);
-            while (parser.eval_front_bool (context));
-          }
-      }
-
-      {
-        Timer_t timer ("often parse<int> and eval", max * round);
-
-        context_t context;
-
-        context.bind(1,max);
-
-        for (int r (0); r < round; ++r)
-          {
-            long i (0);
-
-            do
-              context.bind (0,i++);
-            while (parser_t (input, context).get_front_bool ());
-          }
-      }
-    }
-  }
-
-  {
     typedef std::string ref_t;
     typedef expr::parse::parser<ref_t> parser_t;
     typedef expr::eval::context<ref_t> context_t;
