@@ -112,7 +112,7 @@ static void marking (const pnet_t & n)
            << *p << ": "
            << n.num_token (*p) << ": "
            << n.get_place (*p) << ":"
-           << endl;
+           << endl
         ;
 
       for (pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
@@ -326,18 +326,20 @@ namespace signature
 
     buffer["filled"] = literal::BOOL;
     buffer["assigned"] = literal::BOOL;
+    buffer["processed"] = literal::BOOL;
     buffer["bunch"] = bunch;
     buffer["store"] = literal::LONG;
 
     volume["id"] = literal::LONG;
     volume["copy"] = copy;
-    volume["offset_to_work_on"] = literal::LONG;
+    volume["offset"] = literal::LONG;
     volume["buffer_0"] = buffer;
     volume["buffer_1"] = buffer;
 
     volume_with_count["volume"] = literal::LONG;
     volume_with_count["offset"] = literal::LONG;
-    volume_with_count["count"] = literal::LONG;
+    volume_with_count["wait_bunch"] = literal::LONG;
+    volume_with_count["wait_copy"] = literal::LONG;
 
     offset_with_state["offset"] = literal::LONG;
     offset_with_state["state"] = state;
@@ -447,6 +449,10 @@ main (int argc, char ** argv)
 
   pid_t pid_loaded_bunch (mk_place (net, "loaded_bunch", signature::loaded_bunch));
 
+  pid_t pid_volume_processed
+    (mk_place (net, "volume_processed", signature::volume));
+  pid_t pid_volume_back (mk_place (net, "volume_back", signature::volume));
+
   // *********************************************************************** //
   // transition
 
@@ -540,6 +546,7 @@ main (int argc, char ** argv)
   nobunch["package"] = nopackage;
   buffer_empty["assigned"] = false;
   buffer_empty["filled"] = false;
+  buffer_empty["processed"] = false;
   buffer_empty["bunch"] = nobunch;
   buffer_empty["store"] = -1L;
 
@@ -552,12 +559,13 @@ main (int argc, char ** argv)
       , "${volume_state.id} := ${gen_volume_state.state};\
          ${volume_state.copy.id} := 0L;\
          ${volume_state.copy.of} := ${config.SUBVOLUME_MULTIPLICITY};\
-         ${volume_state.offset_to_work_on} := 0L;\
+         ${volume_state.offset} := 0L;\
          ${volume_state.buffer_0} := ${buffer_empty};\
          ${volume_state.buffer_1} := ${buffer_empty};\
          ${volume_count.volume} := ${gen_volume_state.state};\
          ${volume_count.offset} := 0L;\
-         ${volume_count.count} := 0L;\
+         ${volume_count.wait_bunch} := ${config.BUNCHES_PER_PACKAGE} * ${config.PACKAGES_PER_OFFSET};\
+         ${volume_count.wait_copy} := ${config.SUBVOLUME_MULTIPLICITY};\
          ${gen_volume_state.state} := ${gen_volume_state.state} + 1;\
          ${wanted_offset} := bitset_insert (${wanted_offset}, 0L);"
       , "${gen_volume_state.state} < ${gen_volume_state.num}"
@@ -817,9 +825,124 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT, tid_assign_buffer1, pid_volume));
   mk_edge (net, connection_t (TP, tid_assign_buffer1, pid_volume));
 
+  net.set_transition_priority (tid_assign_buffer0, 1);
   net.set_transition_priority (tid_assign_buffer1, 1);
-  net.set_transition_priority (tid_assign_buffer0, 2);
 
+  // *********************************************************************** //
+
+  tid_t tid_process
+    ( mk_transition
+      ( net
+      , "process"
+      , "${volume_processed} := ${volume} ;\
+         ${volume_processed.buffer_0.processed} := ${volume.buffer_0.assigned};\
+         ${volume_processed.buffer_0.filled} := ${volume.buffer_0.assigned} & !${volume.buffer_0.filled};\
+         ${volume_processed.buffer_0.assigned} := ${volume.buffer_0.assigned} & !${volume.buffer_0.filled};\
+         ${volume_processed.buffer_1.processed} := ${volume.buffer_1.assigned};\
+         ${volume_processed.buffer_1.filled} := ${volume.buffer_1.assigned} & !${volume.buffer_0.filled};\
+         ${volume_processed.buffer_1.assigned} := ${volume.buffer_1.assigned} & !${volume.buffer_0.filled}"
+      , "${volume.buffer_0.assigned} | ${volume.buffer_1.assigned}"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_process, pid_volume));
+  mk_edge (net, connection_t (TP, tid_process, pid_volume_processed));
+
+  // *********************************************************************** //
+
+  tid_t tid_update_store0
+    ( mk_transition
+      ( net
+      , "update_store0"
+      , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
+         ${volume_processed.buffer_0.processed} := false"
+      , "${volume_processed.buffer_0.processed} &\
+         (${loaded_bunch.bunch} == ${volume_processed.buffer_0.bunch})\
+        "
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_update_store0, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_update_store0, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_update_store0, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_update_store0, pid_volume_processed));
+
+  tid_t tid_update_store1
+    ( mk_transition
+      ( net
+      , "update_store1"
+      , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
+         ${volume_processed.buffer_1.processed} := false"
+      , "${volume_processed.buffer_1.processed} &\
+         (${loaded_bunch.bunch} == ${volume_processed.buffer_1.bunch})\
+        "
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_update_store1, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_update_store1, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_update_store1, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_update_store1, pid_volume_processed));
+
+//   net.set_transition_priority (tid_update_store0, 1);
+//   net.set_transition_priority (tid_update_store1, 1);
+
+  tid_t tid_volume_back
+    ( mk_transition
+      ( net
+      , "volume_back"
+      , "${volume_back} := ${volume_processed}"
+      , "!${volume_processed.buffer_0.processed} &\
+         !${volume_processed.buffer_1.processed}"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_back, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_volume_back, pid_volume_back));
+
+  tid_t tid_volume_real_back
+    ( mk_transition
+      ( net
+      , "volume_real_back"
+      , "${volume_count.wait_bunch} := ${volume_count.wait_bunch} - 1;\
+         ${volume} := ${volume_back}"
+      , "(${volume_count.volume} == ${volume_back.id}) &\
+         (${volume_count.offset} == ${volume_back.offset}) &\
+         (${volume_count.wait_bunch} > 0L)"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_real_back, pid_volume_back));
+  mk_edge (net, connection_t (PT, tid_volume_real_back, pid_volume_count));
+  mk_edge (net, connection_t (TP, tid_volume_real_back, pid_volume_count));
+  mk_edge (net, connection_t (TP, tid_volume_real_back, pid_volume));
+
+  tid_t tid_volume_break
+    ( mk_transition
+      ( net
+      , "volume_break"
+      , "${volume_count.wait_copy} := ${volume_count.wait_copy} - 1"
+      , "(${volume_count.volume} == ${volume_back.id}) &\
+         (${volume_count.offset} == ${volume_back.offset}) &\
+         (${volume_count.wait_bunch} == 0L)"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_back));
+  mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_count));
+  mk_edge (net, connection_t (TP, tid_volume_break, pid_volume_count));
+
+  tid_t tid_volume_erase
+    ( mk_transition
+      ( net
+      , "volume_erase"
+      , ""
+      , "${volume_count.wait_copy} == 0L"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_erase, pid_volume_count));
+ 
   // *********************************************************************** //
   // token
 
