@@ -104,9 +104,6 @@ static std::size_t fac (void)
 template<typename Engine>
 static void fire_random_transition (pnet_t & n, Engine & engine)
 {
-  if (!n.enabled_transitions().empty())
-    throw std::runtime_error ("!n.enabled_transitions().empty()");
-
   if (n.enabled_transitions().size() != fac())
     throw std::runtime_error ("n.enabled_transitions().size() != fac()");
 
