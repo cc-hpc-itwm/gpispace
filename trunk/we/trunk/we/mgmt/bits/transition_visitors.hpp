@@ -437,7 +437,12 @@ namespace we { namespace mgmt { namespace visitor {
         const token_type token   = top->first;
         const port_id_t  port_id = top->second;
 
-        token.bind ( we::type::detail::translate_port_to_name (activity_.transition(), port_id), context);
+        context.bind
+          ( we::type::detail::translate_port_to_name ( activity_.transition()
+                                                     , port_id
+                                                     )
+          , token.value
+          );
       }
 
       // evaluate

@@ -159,7 +159,7 @@ public:
         const petri_net::pid_t
           pid (Function::Transition::get_pid<token::type> (*top));
 
-        token.bind (translate (pid), context);
+        context.bind (translate (pid), token.value);
       }
 
     parser.eval_all (context);

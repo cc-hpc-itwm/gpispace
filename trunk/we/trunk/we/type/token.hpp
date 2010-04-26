@@ -77,11 +77,6 @@ namespace token
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
       
-    void bind (const signature::field_name_t & field, context_t & c) const
-    {
-      c.bind (field, value);
-    }
-
     friend std::ostream & operator << (std::ostream &, const type &);
     friend bool operator == (const type &, const type &);
     friend bool operator != (const type &, const type &);

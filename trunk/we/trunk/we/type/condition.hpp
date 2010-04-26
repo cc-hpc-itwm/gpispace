@@ -87,7 +87,7 @@ namespace condition
               const petri_net::pid_t pid ((*choice).first);
               const token::type token ((*choice).second.first);
 
-              token.bind (translate (pid), context);
+              context.bind (translate (pid), token.value);
             }
 
           if (parser.eval_all_bool (context))
