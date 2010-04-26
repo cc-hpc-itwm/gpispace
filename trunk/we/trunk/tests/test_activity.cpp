@@ -29,22 +29,21 @@ int main (int, char **)
   petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
 
   signature::structured_t sig_store;
-
   sig_store["bid"] = "long";
   sig_store["seen"] = "bitset";
 
   petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
 
-  transition_t trans_inner 
+  transition_t trans_inner
     ( "trans_inner"
-    , transition_t::expr_type
-      ( "${store.seen} := bitset_insert (${store.seen}, ${vid}); \
-         ${store.bid}  := ${store.bid}                         ; \
-         ${pair.bid}   := ${store.bid}                         ; \
-         ${pair.vid}   := ${vid}                                 "
+      , transition_t::expr_type
+      ( "${store.seen} := bitset_insert (${store.seen}, ${vid});"
+        "${store.bid}  := ${store.bid}                         ;"
+        "${pair.bid}   := ${store.bid}                         ;"
+        "${pair.vid}   := ${vid}                               "
       )
-    , "!bitset_is_element (${store.seen}, ${vid})"
-    , true
+      , "!bitset_is_element (${store.seen}, ${vid})"
+      , true
     );
 
   signature::structured_t sig_pair;
@@ -75,7 +74,7 @@ int main (int, char **)
   net.add_edge (e++, connection_t (TP, tid, pid_store));
   net.add_edge (e++, connection_t (PT_READ, tid, pid_vid));
   net.add_edge (e++, connection_t (TP, tid, pid_pair));
-  
+
   token::put (net, pid_vid, literal::type(0L));
   token::put (net, pid_vid, literal::type(1L));
 
@@ -97,7 +96,7 @@ int main (int, char **)
     ("vid", "long", we::type::PORT_IN, pid_vid)
     ("store", sig_store, we::type::PORT_IN_OUT, pid_store)
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
-  ;
+    ;
 
   activity_t act ( 0, tnet );
 
@@ -136,6 +135,7 @@ int main (int, char **)
               << std::endl;
     act.inject (sub);
   }
+
   we::mgmt::visitor::output_collector<activity_t> output_collector(act);
   boost::apply_visitor (output_collector, act.transition().data());
 
