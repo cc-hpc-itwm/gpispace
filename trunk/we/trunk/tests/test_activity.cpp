@@ -127,7 +127,13 @@ int main (int, char **)
               << std::endl
               << sub
               << std::endl;
-    sub.execute ("");
+
+    const bool handle_internally = sub.execute ();
+
+    if (! handle_internally)
+    {
+      std::cerr << "E: external activity not supported!" << std::endl;
+    }
 
     std::cout << "***** sub-act (post-execute):"
               << std::endl
