@@ -207,11 +207,14 @@ public:
 
     if (PRINT_FIRE)
       {
+        const std::string ext ("***");
+        const std::string intern ("~~~");
+        
         if (name == "process")
           {
             if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.filled"))))
               {
-                cout << "*** " << name;
+                cout << ext << " " << name;
                 cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
                      << "." << context.value (mk_vec ("volume_selected.id"));
                 cout << " process " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
@@ -221,7 +224,7 @@ public:
               {
                 if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.assigned"))))
                   {
-                    cout << "*** " << name;
+                    cout << ext << " " << name;
                     cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
                          << "." << context.value (mk_vec ("volume_selected.id"));
                     cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
@@ -231,7 +234,7 @@ public:
 
             if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.filled"))))
               {
-                cout << "*** " << name;
+                cout << ext << " " << name;
                 cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
                      << "." << context.value (mk_vec ("volume_selected.id"));
                 cout << " process " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
@@ -241,7 +244,7 @@ public:
               {
                 if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.assigned"))))
                   {
-                    cout << "*** " << name;
+                    cout << ext << " " << name;
                     cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
                          << "." << context.value (mk_vec ("volume_selected.id"));
                     cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
@@ -251,13 +254,34 @@ public:
           }
         else if (name == "load")
           {
-            cout << "*** load"
+            cout << ext << " " << name
                  << " bunch " << context.value ("bunch")
                  << " into " << context.value ("empty_store")
                  << endl;
           }
+        else if (name == "write")
+          {
+            cout << ext << " " << name
+                 << " vol " << context.value (mk_vec ("volume_to_be_written.offset"))
+                 << "." << context.value (mk_vec ("volume_to_be_written.id"))
+                 << endl;
+          }
+        else if (name == "gen_config")
+          {
+            cout << ext << " " << name << endl;
+          }
+        else if (name == "loadTT")
+          {
+            cout << ext << " " << name << endl;
+          }
+        else if (name == "finalize")
+          {
+            cout << ext << " " << name << endl;
+          }
         else
-          cout << "*** " << name << endl;
+          {
+            cout << intern << " " << name << endl;
+          }
       }
 
     stat.start (name, "eval");
