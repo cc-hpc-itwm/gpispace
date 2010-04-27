@@ -29,7 +29,7 @@
 
 // ************************************************************************* //
 
-static statistic::loud<std::string> stat;
+static statistic::muted<std::string> stat;
 
 // ************************************************************************* //
 
@@ -256,6 +256,8 @@ public:
                  << " into " << context.value ("empty_store")
                  << endl;
           }
+        else
+          cout << "*** " << name << endl;
       }
 
     stat.start (name, "eval");
@@ -501,6 +503,7 @@ main (int argc, char ** argv)
   pid_t pid_config_file (mk_place (net, "config_file", literal::STRING));
   pid_t pid_config (mk_place (net, "config", signature::config));
   pid_t pid_trigger_gen_store (mk_place (net, "trigger_gen_store"));
+  pid_t pid_trigger_loadTT (mk_place (net, "trigger_loadTT"));
   pid_t pid_gen_store_state (mk_place (net, "gen_store_state", signature::state));
   pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG));
   pid_t pid_trigger_gen_offset (mk_place (net, "trigger_gen_offset"));
@@ -532,15 +535,28 @@ main (int argc, char ** argv)
       + "${config.BUNCHES_PER_OFFSET} := " + util::show(BUNCHES_PER_OFFSET) + ";"
       + "${config.STORES} := " + util::show (STORES) + ";"
       + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
-      + "${trigger_gen_store} := [];"
+      + "${trigger_loadTT} := [];"
       + "${wanted_offset} := bitset_insert ({}, 0L);"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_gen_config, pid_config_file));
   mk_edge (net, connection_t (TP, tid_gen_config, pid_config));
-  mk_edge (net, connection_t (TP, tid_gen_config, pid_trigger_gen_store));
+  mk_edge (net, connection_t (TP, tid_gen_config, pid_trigger_loadTT));
   mk_edge (net, connection_t (TP, tid_gen_config, pid_wanted_offset));
+
+  // *********************************************************************** //
+
+  tid_t tid_loadTT
+    ( mk_transition
+      ( net
+      , "loadTT"
+      , "${trigger_gen_store} := []"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_loadTT, pid_trigger_loadTT));
+  mk_edge (net, connection_t (TP, tid_loadTT, pid_trigger_gen_store));
 
   // *********************************************************************** //
 
