@@ -170,27 +170,24 @@ namespace we { namespace type {
       }
     }
 
-    namespace tag
+    namespace detail
     {
-      struct external;
-      struct internal;
-
       template <typename T>
-      struct default_tag
+      struct is_internal
       {
-        typedef internal tag_type;
+        static const bool value = true;
       };
 
       template <>
-      struct default_tag<module_call_t>
+      struct is_internal<expression_t>
       {
-        typedef external tag_type;
+        static const bool value = true;
       };
 
       template <>
-      struct default_tag<expression_t>
+      struct is_internal<module_call_t>
       {
-        typedef internal tag_type;
+        static const bool value = false;
       };
     }
 
@@ -248,13 +245,13 @@ namespace we { namespace type {
                       )
                     )
         , port_id_counter_(0)
-      {}
+      { }
 
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
                    , const std::string & _condition = "true"
-                   , bool intern = false
+                   , bool intern = detail::is_internal<Type>::value
                    )
         : name_ (name)
         , data_ (typ)
