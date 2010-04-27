@@ -162,6 +162,12 @@ namespace we { namespace type {
       {
         return trans.output_port_by_name (name);
       }
+
+      template <typename Transition>
+      typename Transition::port_id_t translate_name_to_input_port (const Transition & trans, const std::string & name)
+      {
+        return trans.input_port_by_name (name);
+      }
     }
 
     namespace tag
