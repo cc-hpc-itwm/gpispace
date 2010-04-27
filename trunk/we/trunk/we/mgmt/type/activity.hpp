@@ -184,14 +184,10 @@ namespace we { namespace mgmt { namespace type {
                            );
     }
 
-    template <typename Context>
-    void execute ( Context & )
+    bool execute (void)
     {
-      if (transition ().is_internal ())
-      {
-        we::mgmt::visitor::internal_executor<this_type> visitor_executor (*this);
-        boost::apply_visitor (visitor_executor, transition().data());
-      }
+      we::mgmt::visitor::executor<this_type> visitor_executor (*this);
+      return boost::apply_visitor (visitor_executor, transition().data());
     }
 
     bool
@@ -221,22 +217,6 @@ namespace we { namespace mgmt { namespace type {
     output_t & output()
     {
       return output_;
-    }
-
-    template <typename Input>
-    void
-    input ( const Input & i )
-    {
-      unique_lock_t lock(*this);
-      input_ = i;
-    }
-
-    template <typename Output>
-    void
-    output ( const Output & o )
-    {
-      unique_lock_t lock(*this);
-      output_ = o;
     }
 
     // **********************************
