@@ -116,7 +116,7 @@ namespace we { namespace tests { namespace gen {
         }
 
         // create the visible transition
-        transition_type trans_net ( "net", net_inner );
+        transition_type trans_net ("net", net_inner, "true", transition_type::external);
         trans_net.add_ports ()
           ("input", "long", we::type::PORT_IN,   pid_i)
           ("output", "long", we::type::PORT_OUT, pid_o)
