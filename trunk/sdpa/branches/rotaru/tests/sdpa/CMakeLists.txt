@@ -20,7 +20,7 @@ ADD_LIBRARY(sdpa-test ${test_hdrs} ${test_srcs})
 target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
-	 sdpa-nre
+#	 sdpa-nre
 #	 sdpa-aggregator
 #	 sdpa-orchestrator
 	 sdpa-events
