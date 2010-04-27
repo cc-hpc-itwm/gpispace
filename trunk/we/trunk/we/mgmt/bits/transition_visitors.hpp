@@ -51,7 +51,7 @@ namespace we { namespace mgmt { namespace visitor {
     template <typename T>
     bool operator () (const T &) const
     {
-      throw exception::operation_not_supported ("has_enabled");
+      return false;
     }
   };
 
