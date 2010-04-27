@@ -17,22 +17,100 @@ namespace we {
       typedef typename transition_type::expr_type expr_type;
 
       typedef typename transition_type::pid_t pid_t;
+      typedef typename net_type::tid_t tid_t;
       typedef typename transition_type::port_id_t port_id_t;
 
       static transition_type generate_inner ()
       {
-        // In:  input (some token), nodes (number of nodes)
+        // In:  input (some token), num_nodes (number of nodes)
         // Out: output (result after map-reduce)
         net_type map_reduce_subnet ("map-reduce-subnet");
+
+        // **************
+        // *** places ***
+        // **************
+
         pid_t pid_input  (map_reduce_subnet.add_place (place_t ("input", "long")));
-        pid_t pid_nodes  (map_reduce_subnet.add_place (place_t ("nodes", "long")));
+        pid_t pid_num_nodes  (map_reduce_subnet.add_place (place_t ("num_nodes", "long")));
+
+        pid_t pid_node_count (map_reduce_subnet.add_place (place_t ("node_count", "long")));
+
+        pid_t pid_work_in (map_reduce_subnet.add_place (place_t ("work_in", "long")));
+        pid_t pid_work_out (map_reduce_subnet.add_place (place_t ("work_out", "long")));
         pid_t pid_output (map_reduce_subnet.add_place (place_t ("output", "long")));
 
-        transition_type map_reduce_transition (map_reduce_subnet);
-        map_reduce_transition.add_ports ()
-          ("input", "long", we::type::PORT_IN)
+        pid_t pid_reduce_state (map_reduce_subnet.add_place (place_t ("reduce_state", "long")));
+
+        signature::structured_t sig_reduce_counter;
+        sig_reduce_counter["max"] = "long";
+        sig_reduce_counter["i"] = "long";
+
+        pid_t pid_reduce_counter
+          ( map_reduce_subnet.add_place
+            ( place_t ( "reduce_counter", sig_reduce_counter )));
+
+        // *******************
+        // *** transitions ***
+        // *******************
+
+        // init
+        transition_type trans_init
+          ( "init"
+          , expr_type
+            ( "${reduce_counter.max} := ${nodes};"
+              "${reduce_counter.i}   := 0;"
+            )
+          , "true"
+          , true
+          );
+        trans_init.add_ports ()
+          ("nodes",          "long",             we::type::PORT_IN)
+          ("reduce_counter", sig_reduce_counter, we::type::PORT_OUT)
           ;
-        return transition_type (map_reduce_subnet);
+        trans_init.add_connections ()
+          (pid_nodes, "nodes")
+          ("reduce_counter", pid_reduce_counter)
+          ;
+        tid_t tid_init (map_reduce_subnet.add_transition (trans_init));
+
+        // map
+        transition_type trans_map
+          ( "map"
+          , expr_type
+            ( "${output} := ${input};"
+              "${node_count} := ${node_count} - 1;"
+            )
+          , "true"
+          , true
+          )
+          ;
+
+        trans_map.add_ports ()
+          ("input", "long", we::type::PORT_IN)
+          ("output", "long", we::type::PORT_OUT)
+          ;
+        tid_t tid_map (map_reduce_subnet.add_transition (trans_map));
+
+        // edges
+        {
+          using petri_net::connection_t;
+          using petri_net::PT;
+          using petri_net::PT_READ;
+          using petri_net::TP;
+
+          edge_type e (0);
+          map_reduce_subnet.add_edge (e++, connection_t ( PT, tid_init, pid_input ));
+          map_reduce_subnet.add_edge (e++, connection_t ( PT, tid_init, pid_nodes ));
+          map_reduce_subnet.add_edge (e++, connection_t ( TP, tid_init, pid_node_count ));
+        }
+
+        transition_type trans_map_reduce (map_reduce_subnet);
+        trans_map_reduce.add_ports ()
+          ("input", "long", we::type::PORT_IN,   pid_input)
+          ("nodes", "long", we::type::PORT_IN,   pid_nodes)
+          ("output", "long", we::type::PORT_OUT, pid_output)
+          ;
+        return trans_map_reduce;
       }
 
       static activity_type generate()
