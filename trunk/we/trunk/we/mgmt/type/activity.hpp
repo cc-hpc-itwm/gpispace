@@ -190,6 +190,40 @@ namespace we { namespace mgmt { namespace type {
       return boost::apply_visitor (visitor_executor, transition().data());
     }
 
+    template <typename Context>
+    void execute ( Context & ctxt )
+    {
+      //we::mgmt::visitor::executor<this_type, Context> visitor_executor (*this, ctxt);
+
+      /* context requirements
+
+      internal
+      ========
+
+      net:
+        inject tokens into net
+        ctxt.handle_internally (act, net)
+            -> extractor
+
+      expr:
+        evaluate expression
+        ctxt.handle_internally (act, expr)
+            -> injector
+
+      mod:
+        prepare input
+           [(token-on-place)], { place <-> name }
+        ctxt.handle_internally (act, mod_call_t)
+
+      external
+      ========
+
+        ctxt.handle_external (act)
+
+      */
+      //boost::apply_visitor (visitor_executor, transition().data());
+    }
+
     bool
     has_enabled (void) const
     {
