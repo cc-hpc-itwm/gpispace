@@ -24,6 +24,36 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
 typedef activity_t::input_t input_t;
 
+static void execute_loop ( activity_t & act )
+{
+  if (! act.execute ())
+  {
+    std::cout << "internal activity" << std::endl;
+  }
+  else
+  {
+    std::cout << "external activity" << std::endl;
+  }
+
+  while (act.has_enabled())
+  {
+    activity_t sub = act.extract ();
+
+    std::cout << "***** sub-act (pre-execute):"
+              << std::endl
+              << sub
+              << std::endl;
+
+    execute_loop (sub);
+
+    std::cout << "***** sub-act (post-execute):"
+              << std::endl
+              << sub
+              << std::endl;
+    act.inject (sub);
+  }
+}
+
 int main (int, char **)
 {
   transition_t simple_trans ( we::tests::gen::simple<activity_t>::generate());
@@ -35,12 +65,15 @@ int main (int, char **)
 
   activity_t act ( simple_trans );
 
-  act.input ().push_back
-    ( input_t::value_type
-      ( token_t ("", "long", 0L)
-      , simple_trans.input_port_by_name ("input")
-      )
-    );
+  for (std::size_t i (0); i < 42; ++i)
+  {
+    act.input ().push_back
+      ( input_t::value_type
+        ( token_t ("", "long", long(i))
+        , simple_trans.input_port_by_name ("input")
+        )
+      );
+  }
 
   std::cout << "act (original):"
             << std::endl
@@ -60,38 +93,7 @@ int main (int, char **)
               << std::endl;
   }
 
-  if (act.execute ())
-  {
-    std::cout << "internal activity" << std::endl;
-  }
-  else
-  {
-    std::cout << "external activity" << std::endl;
-  }
-
-  std::cout << "has_enabled = " << act.has_enabled() << std::endl;
-  while (act.has_enabled())
-  {
-    activity_t sub = act.extract ();
-
-    std::cout << "***** sub-act (pre-execute):"
-              << std::endl
-              << sub
-              << std::endl;
-
-    const bool handle_internally = sub.execute ();
-
-    if (! handle_internally)
-    {
-      std::cerr << "E: external activity not supported!" << std::endl;
-    }
-
-    std::cout << "***** sub-act (post-execute):"
-              << std::endl
-              << sub
-              << std::endl;
-    act.inject (sub);
-  }
+  execute_loop (act);
 
   we::mgmt::visitor::output_collector<activity_t> output_collector(act);
   boost::apply_visitor (output_collector, act.transition().data());
