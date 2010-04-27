@@ -191,6 +191,10 @@ namespace we { namespace type {
     template <typename Place, typename Edge, typename Token>
     struct transition_t
     {
+      typedef Place place_type;
+      typedef Edge edge_type;
+      typedef Token token_type;
+
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
