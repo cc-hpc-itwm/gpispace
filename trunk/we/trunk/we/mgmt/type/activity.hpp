@@ -42,14 +42,13 @@ namespace we { namespace mgmt { namespace type {
     typedef std::vector<token_on_place_t> output_t;
   };
 
-  template <typename Transition, typename Token, typename Id = petri_net::pid_t, typename Traits = activity_traits<Transition, Token> >
+  template <typename Transition, typename Token, typename Traits = activity_traits<Transition, Token> >
   class activity_t
   {
-    typedef activity_t<Transition, Token, Id, Traits> this_type;
+    typedef activity_t<Transition, Token, Traits> this_type;
 
   public:
     typedef Transition transition_type;
-    typedef Id id_type;
     typedef Traits traits_type;
 
     typedef typename traits_type::token_type token_type;
@@ -58,47 +57,19 @@ namespace we { namespace mgmt { namespace type {
     typedef typename traits_type::output_t output_t;
     typedef typename traits_type::pid_t pid_t;
 
-    typedef boost::unordered_set<id_type> children_set_t;
     typedef boost::shared_lock<this_type> shared_lock_t;
     typedef boost::unique_lock<this_type> unique_lock_t;
 
     activity_t ()
-      : id_ (petri_net::traits::id_traits<id_type>::invalid())
-      , parent_ (petri_net::traits::id_traits<id_type>::invalid())
-    { }
-
-    explicit
-    activity_t (const id_type id)
-      : id_ (id)
-      , parent_ (petri_net::traits::id_traits<id_type>::invalid())
-    { }
-
-    template <typename T>
-    activity_t (const id_type id, const T & transition)
-      : id_ (id)
-      , parent_ (petri_net::traits::id_traits<id_type>::invalid())
-      , transition_ (transition)
     { }
 
     template <typename T>
     activity_t (const T & transition)
-      : id_ (petri_net::traits::id_traits<id_type>::invalid())
-      , parent_ (petri_net::traits::id_traits<id_type>::invalid())
-      , transition_ (transition)
-    { }
-
-    template <typename T>
-    activity_t (const id_type id, const T & transition, const id_type parent)
-      : id_ (id)
-      , parent_ (parent)
-      , transition_ (transition)
+      : transition_ (transition)
     { }
 
     activity_t (const this_type & other)
-      : id_ (other.id_)
-      , parent_ (other.parent_)
-      , flags_ (other.flags_)
-      , children_ (other.children_)
+      : flags_ (other.flags_)
       , transition_ (other.transition_)
       , input_ (other.input_)
       , output_ (other.output_)
@@ -108,23 +79,12 @@ namespace we { namespace mgmt { namespace type {
     {
       if (this != &other)
       {
-        id_  = (other.id_);
-        parent_ = (other.parent_);
         flags_ = (other.flags_);
-        children_ = (other.children_);
         transition_ = (other.transition_);
         input_ = (other.input_);
         output_ = (other.output_);
       }
       return *this;
-    }
-
-    // TODO remove this?
-    template <typename T>
-    void assign( T const & t )
-    {
-      unique_lock_t lock(*this);
-      transition_ = t;
     }
 
     struct flags_t
@@ -161,13 +121,6 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    bool is_leaf() const
-    {
-      shared_lock_t lock(const_cast<this_type&>(*this));
-      return children_.empty();
-    }
-
-    inline
     bool is_suspended() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
@@ -196,27 +149,6 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    id_type id() const
-    {
-      shared_lock_t lock(const_cast<this_type&>(*this));
-      return id_;
-    }
-
-    inline
-    void set_id ( const id_type new_id )
-    {
-      unique_lock_t lock(*this);
-      id_ = new_id;
-    }
-
-    inline
-    id_type parent() const
-    {
-      shared_lock_t lock(const_cast<this_type&>(*this));
-      return parent_;
-    }
-
-    inline
     const transition_type & transition() const
     {
       return transition_;
@@ -229,7 +161,7 @@ namespace we { namespace mgmt { namespace type {
     }
 
     this_type
-    extract(const id_type id)
+    extract()
     {
       unique_lock_t lock(*this);
       we::mgmt::visitor::activity_extractor<this_type, boost::mt19937>
@@ -237,8 +169,6 @@ namespace we { namespace mgmt { namespace type {
       this_type act = boost::apply_visitor ( extract_activity
                                            , transition_.data()
                                            );
-      act.set_id (id);
-      this->link_child (act);
       return act;
     }
 
@@ -252,8 +182,6 @@ namespace we { namespace mgmt { namespace type {
                            , transition_.data()
                            , subact.transition_.data()
                            );
-
-      unlink_child (subact);
     }
 
     template <typename Context>
@@ -264,14 +192,6 @@ namespace we { namespace mgmt { namespace type {
         we::mgmt::visitor::internal_executor<this_type> visitor_executor (*this);
         boost::apply_visitor (visitor_executor, transition().data());
       }
-    }
-
-    bool
-    done (void) const
-    {
-      // WORK TODO
-      shared_lock_t lock(const_cast<this_type&>(*this));
-      return (this->children_.empty()) && ( ! has_enabled());
     }
 
     bool
@@ -377,47 +297,19 @@ namespace we { namespace mgmt { namespace type {
     }
 
   private:
-    template <typename NetActivity>
-    this_type
-    create_activity_from_net_activity (NetActivity const & net_act, const id_type id)
-    {
-      this_type act(id);
-      this->link_child(act);
-      return act;
-    }
-
-    template <typename Activity>
-    void link_child(Activity & act)
-    {
-      act.parent_ = this->id_;
-      this->children_.insert( act.id_ );
-    }
-
-    template <typename Activity>
-    void unlink_child(Activity const & act)
-    {
-      this->children_.erase ( act.id_ );
-    }
-
     friend class boost::serialization::access;
     template<class Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(id_);
-      ar & BOOST_SERIALIZATION_NVP(parent_);
       ar & BOOST_SERIALIZATION_NVP(flags_);
-      ar & BOOST_SERIALIZATION_NVP(children_);
       ar & BOOST_SERIALIZATION_NVP(transition_);
       ar & BOOST_SERIALIZATION_NVP(input_);
       ar & BOOST_SERIALIZATION_NVP(output_);
     }
 
   private:
-    id_type id_;
-    id_type parent_;
     flags_t flags_;
     mutable boost::shared_mutex mutex_;
-    children_set_t children_;
 
     transition_type transition_;
 
@@ -428,17 +320,15 @@ namespace we { namespace mgmt { namespace type {
   };
 
 
-  template <typename Transition, typename Token, typename Id, typename Traits>
+  template <typename Transition, typename Token, typename Traits>
   std::ostream & operator << ( std::ostream & os
-                             , const activity_t<Transition, Token, Id, Traits> & act
+                             , const activity_t<Transition, Token, Traits> & act
                              )
   {
-    typedef activity_t<Transition, Token, Id, Traits> activity_t;
+    typedef activity_t<Transition, Token, Traits> activity_t;
 
     os << "{";
       os << "act, "
-         << act.id()
-         << ", "
          << "flags"
          << ", "
          << act.transition()

@@ -98,7 +98,7 @@ int main (int, char **)
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
     ;
 
-  activity_t act ( 0, tnet );
+  activity_t act ( tnet );
 
   std::cout << "act (original):"
             << std::endl
@@ -121,7 +121,7 @@ int main (int, char **)
   std::cout << "has_enabled = " << act.has_enabled() << std::endl;
   while (act.has_enabled())
   {
-    activity_t sub = act.extract (1);
+    activity_t sub = act.extract ();
 
     std::cout << "***** sub-act (pre-execute):"
               << std::endl
