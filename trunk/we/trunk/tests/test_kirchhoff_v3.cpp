@@ -449,10 +449,6 @@ main (int argc, char ** argv)
 
   pid_t pid_loaded_bunch (mk_place (net, "loaded_bunch", signature::loaded_bunch));
 
-  pid_t pid_volume_processed
-    (mk_place (net, "volume_processed", signature::volume));
-  pid_t pid_volume_back (mk_place (net, "volume_back", signature::volume));
-
   // *********************************************************************** //
   // transition
 
@@ -789,160 +785,55 @@ main (int argc, char ** argv)
 
   // *********************************************************************** //
 
-  tid_t tid_assign_buffer0
+  tid_t tid_assign0
     ( mk_transition
       ( net
-      , "assign_buffer0"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
-         ${volume.buffer_0.assigned} := true;\
-         ${volume.buffer_0.bunch} := ${loaded_bunch.bunch};\
-         ${volume.buffer_0.store} := ${loaded_bunch.store};"
-      , "!bitset_is_element (${loaded_bunch.seen}, ${volume.id}) &\
-         !${volume.buffer_0.assigned}"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_assign_buffer0, pid_loaded_bunch));
-  mk_edge (net, connection_t (TP, tid_assign_buffer0, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign_buffer0, pid_volume));
-  mk_edge (net, connection_t (TP, tid_assign_buffer0, pid_volume));
-
-  tid_t tid_assign_buffer1
-    ( mk_transition
-      ( net
-      , "assign_buffer1"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
-         ${volume.buffer_1.assigned} := true;\
-         ${volume.buffer_1.bunch} := ${loaded_bunch.bunch};\
-         ${volume.buffer_1.store} := ${loaded_bunch.store};"
-      , "!bitset_is_element (${loaded_bunch.seen}, ${volume.id}) &\
-         !${volume.buffer_1.assigned}"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_assign_buffer1, pid_loaded_bunch));
-  mk_edge (net, connection_t (TP, tid_assign_buffer1, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign_buffer1, pid_volume));
-  mk_edge (net, connection_t (TP, tid_assign_buffer1, pid_volume));
-
-  net.set_transition_priority (tid_assign_buffer0, 1);
-  net.set_transition_priority (tid_assign_buffer1, 1);
-
-  // *********************************************************************** //
-
-  tid_t tid_process
-    ( mk_transition
-      ( net
-      , "process"
-      , "${volume_processed} := ${volume} ;\
-         ${volume_processed.buffer_0.processed} := ${volume.buffer_0.assigned};\
-         ${volume_processed.buffer_0.filled} := ${volume.buffer_0.assigned} & !${volume.buffer_0.filled};\
-         ${volume_processed.buffer_0.assigned} := ${volume.buffer_0.assigned} & !${volume.buffer_0.filled};\
-         ${volume_processed.buffer_1.processed} := ${volume.buffer_1.assigned};\
-         ${volume_processed.buffer_1.filled} := ${volume.buffer_1.assigned} & !${volume.buffer_0.filled};\
-         ${volume_processed.buffer_1.assigned} := ${volume.buffer_1.assigned} & !${volume.buffer_0.filled}"
-      , "${volume.buffer_0.assigned} | ${volume.buffer_1.assigned}"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_process, pid_volume));
-  mk_edge (net, connection_t (TP, tid_process, pid_volume_processed));
-
-  // *********************************************************************** //
-
-  tid_t tid_update_store0
-    ( mk_transition
-      ( net
-      , "update_store0"
-      , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
-         ${volume_processed.buffer_0.processed} := false"
-      , "${volume_processed.buffer_0.processed} &\
-         (${loaded_bunch.bunch} == ${volume_processed.buffer_0.bunch})\
+      , "assign0"
+      , "${volume.buffer_0.assigned} := true;\
+         ${volume.buffer_0.bunch} := ${loaded_bunch.bunch} ;\
+         ${loaded_bunch.seen} := bitset_insert ( ${loaded_bunch.seen} \
+                                               , ${volume.id}         \
+                                               );\
+         ${volume.buffer_0.store} := ${loaded_bunch.store}\
+        "
+      , "(!${volume.buffer_0.assigned}) &\
+         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id})) \
         "
       )
     );
 
-  mk_edge (net, connection_t (PT, tid_update_store0, pid_loaded_bunch));
-  mk_edge (net, connection_t (TP, tid_update_store0, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_update_store0, pid_volume_processed));
-  mk_edge (net, connection_t (TP, tid_update_store0, pid_volume_processed));
+  mk_edge (net, connection_t (PT, tid_assign0, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_assign0, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_assign0, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign0, pid_volume));
 
-  tid_t tid_update_store1
+  tid_t tid_assign1
     ( mk_transition
       ( net
-      , "update_store1"
-      , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
-         ${volume_processed.buffer_1.processed} := false"
-      , "${volume_processed.buffer_1.processed} &\
-         (${loaded_bunch.bunch} == ${volume_processed.buffer_1.bunch})\
+      , "assign1"
+      , "${volume.buffer_1.assigned} := true;\
+         ${volume.buffer_1.bunch} := ${loaded_bunch.bunch} ;\
+         ${loaded_bunch.seen} := bitset_insert ( ${loaded_bunch.seen} \
+                                               , ${volume.id}         \
+                                               );\
+         ${volume.buffer_1.store} := ${loaded_bunch.store}\
+        "
+      , "(!${volume.buffer_1.assigned}) &\
+         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id})) \
         "
       )
     );
 
-  mk_edge (net, connection_t (PT, tid_update_store1, pid_loaded_bunch));
-  mk_edge (net, connection_t (TP, tid_update_store1, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_update_store1, pid_volume_processed));
-  mk_edge (net, connection_t (TP, tid_update_store1, pid_volume_processed));
+  mk_edge (net, connection_t (PT, tid_assign1, pid_loaded_bunch));
+  mk_edge (net, connection_t (TP, tid_assign1, pid_loaded_bunch));
+  mk_edge (net, connection_t (PT, tid_assign1, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign1, pid_volume));
 
-//   net.set_transition_priority (tid_update_store0, 1);
-//   net.set_transition_priority (tid_update_store1, 1);
+  net.set_transition_priority (tid_assign0, 1);
+  net.set_transition_priority (tid_assign1, 1);
 
-  tid_t tid_volume_back
-    ( mk_transition
-      ( net
-      , "volume_back"
-      , "${volume_back} := ${volume_processed}"
-      , "!${volume_processed.buffer_0.processed} &\
-         !${volume_processed.buffer_1.processed}"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_volume_back, pid_volume_processed));
-  mk_edge (net, connection_t (TP, tid_volume_back, pid_volume_back));
-
-  tid_t tid_volume_real_back
-    ( mk_transition
-      ( net
-      , "volume_real_back"
-      , "${volume_count.wait_bunch} := ${volume_count.wait_bunch} - 1;\
-         ${volume} := ${volume_back}"
-      , "(${volume_count.volume} == ${volume_back.id}) &\
-         (${volume_count.offset} == ${volume_back.offset}) &\
-         (${volume_count.wait_bunch} > 0L)"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_volume_real_back, pid_volume_back));
-  mk_edge (net, connection_t (PT, tid_volume_real_back, pid_volume_count));
-  mk_edge (net, connection_t (TP, tid_volume_real_back, pid_volume_count));
-  mk_edge (net, connection_t (TP, tid_volume_real_back, pid_volume));
-
-  tid_t tid_volume_break
-    ( mk_transition
-      ( net
-      , "volume_break"
-      , "${volume_count.wait_copy} := ${volume_count.wait_copy} - 1"
-      , "(${volume_count.volume} == ${volume_back.id}) &\
-         (${volume_count.offset} == ${volume_back.offset}) &\
-         (${volume_count.wait_bunch} == 0L)"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_back));
-  mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_count));
-  mk_edge (net, connection_t (TP, tid_volume_break, pid_volume_count));
-
-  tid_t tid_volume_erase
-    ( mk_transition
-      ( net
-      , "volume_erase"
-      , ""
-      , "${volume_count.wait_copy} == 0L"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_volume_erase, pid_volume_count));
- 
   // *********************************************************************** //
   // token
 
