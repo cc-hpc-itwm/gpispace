@@ -1,3 +1,3 @@
 #!/bin/bash
 export LD_LIBRARY_PATH="@CMAKE_INSTALL_PREFIX@/lib/fake:@CMAKE_INSTALL_PREFIX@/lib"
-"@CMAKE_INSTALL_PREFIX@/bin/nre-pcd" -c "@CMAKE_INSTALL_PREFIX@/etc/fvm.cfg" $@
+FHGLOG_level=MIN  "@CMAKE_INSTALL_PREFIX@/bin/nre-pcd" -c "@CMAKE_INSTALL_PREFIX@/etc/fvm.cfg" $@

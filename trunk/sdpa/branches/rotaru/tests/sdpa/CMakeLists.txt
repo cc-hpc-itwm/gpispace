@@ -10,7 +10,7 @@ if (USE_SMC_SC)
 	add_state_machine(PERFORMANCETEST_FSM_CPP PERFORMANCETEST_FSM_H PerformanceTest)
 endif (USE_SMC_SC)
 
-file(GLOB test_srcs "test_*.cpp" SchedulerTestImpl.cpp)
+file(GLOB test_srcs "test_*.cpp" SchedulerTestImpl.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp)
 file(GLOB test_hdrs "*.hpp")
 
 set(test_hdrs ${PERFORMANCETEST_FSM_H} ${test_hdrs})
@@ -29,7 +29,8 @@ target_link_libraries(sdpa-test
 	 seda
 	 seda-comm
      ${CPPUNIT_STATIC_LIBRARIES}
-     ${FAKE_FVM_PC_LIBRARIES}
+     ${FVM_FAKE_STATIC_LIBRARY}
+     ${MMGR_LIBRARY}
 	 ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/sdpa_test_suite.cpp)

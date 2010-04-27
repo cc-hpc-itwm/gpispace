@@ -23,6 +23,8 @@
 #include <seda/StageRegistry.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
+#include <sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd.hpp>
+
 namespace po = boost::program_options;
 
 using namespace std;
@@ -34,7 +36,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(1),
+    m_nITER(10),
     m_sleep_interval(1000000)
 {
 }
@@ -91,89 +93,97 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-void TestComponents::testComponentsRealGWES()
+void TestComponents::testCompWithFvmPC()
 {
-	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
-
-	/*string strAnswer = "finished";
+	SDPA_LOG_DEBUG("*****testComponents with fvm-pc*****"<<std::endl);
+	string strAnswer = "finished";
 	string noStage = "";
-	string strGuiUrl = "";
+	string strGuiUrl   = "";
 
-	//sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor>
-	//	executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
-
-    //executor->loader().load("/path/to/libdummy.so");
-    //executor->start();
-
-    // run tests
-
-	//LD_PRELOAD="/p/hpc/sdpa/fvm-pc"/lib/libfvm-pc_fake.so /p/hpc/sdpa/fvm-pc/bin/nre-pcd -c /p/hpc/sdpa/fvm-pc/etc/fvm.cfg.tpl $@
-
-
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows" );
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
 
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
-	// use external scheduler and real GWES
-	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl, true );
-	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001" );
+	// use external scheduler and dummy GWES
+	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
-    try
-    {
-    	sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_1);
-    }
-    catch (const std::exception &ex)
-    {
-    	LOG(FATAL, "could not start NRE: " << ex.what());
-    	LOG(WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+	// connect to FVM
+	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
 
-    	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
-    	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
-    	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
+	fvm_pc_connection_mgr fvm_pc;
+	try {
+		fvm_pc.init(pc_cfg);
+	} catch (const std::exception &ex) {
+		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
+		CPPUNIT_ASSERT (false);
+	}
 
-    	return;
-    }
+	using namespace sdpa::modules;
+	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
 
-	for(int k=0; k<m_nITER; k++ )
+	try {
+		executor->start();
+	}
+	catch (const std::exception &ex) {
+	  SDPA_LOG_ERROR ("could not start executor: " << ex.what());
+	  CPPUNIT_ASSERT (false);
+	}
+
+	try {
+		sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
+	}
+	catch (const std::exception &ex) {
+		SDPA_LOG_FATAL("Could not start NRE: " << ex.what());
+		SDPA_LOG_WARN("TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+
+		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+
+		return;
+	}
+
+	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = m_ptrUser->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user = m_ptrCli->submitJob(m_strWorkflow);
 
 		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
 
-		std::string job_status =  m_ptrUser->queryJob(job_id_user);
+		std::string job_status =  m_ptrCli->queryJob(job_id_user);
 		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
 
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
 			   job_status.find("Cancelled") == std::string::npos)
 		{
-			job_status = m_ptrUser->queryJob(job_id_user);
+			job_status = m_ptrCli->queryJob(job_id_user);
 			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
 
 			usleep(m_sleep_interval);
 		}
 
 		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
-		m_ptrUser->retrieveResults(job_id_user);
+		m_ptrCli->retrieveResults(job_id_user);
 
 		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
-		m_ptrUser->deleteJob(job_id_user);
+		m_ptrCli->deleteJob(job_id_user);
 	}
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
-	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
 
-	 //executor->stop();
-	*/
+	// processor container terminates ...
+	fvm_pc.leave();
+	SDPA_LOG_INFO("terminating...");
+	if (! executor->stop())
+		SDPA_LOG_WARN("executor did not stop correctly...");
 
-    sleep(1);
-	SDPA_LOG_DEBUG("Test finished!");
+	sleep(1);
+	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
 }
 
 
@@ -183,7 +193,6 @@ void TestComponents::testComponentsDummyGWES()
 	string strAnswer = "finished";
 	string noStage = "";
 
-	bool bUseExtSched  = false;
 	string strGuiUrl   = "";
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");

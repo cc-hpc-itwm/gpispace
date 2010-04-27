@@ -40,16 +40,22 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
+      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank = 0)
+		  : MgmtEvent(a_from, a_to), rank_(rank) { }
 
       virtual ~WorkerRegistrationEvent() { }
 
       std::string str() const { return "WorkerRegistrationEvent"; }
+      const int& rank() const { return rank_; }
+      int& rank() { return rank_; }
 
       virtual void handleBy(EventHandler *handler)
       {
-        handler->handleWorkerRegistrationEvent(this);
+    	  handler->handleWorkerRegistrationEvent(this);
       }
+
+    private:
+      int rank_;
   };
 }}
 

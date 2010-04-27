@@ -27,14 +27,14 @@ namespace sdpa { namespace tests {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "SdpaTestSuite" );
 
       // disabled for now: suiteOfTests->addTest( ModuleTest::suite() );
-      /*suiteOfTests->addTest( TokenTest::suite() );
+      suiteOfTests->addTest( TokenTest::suite() );
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
       suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
-      suiteOfTests->addTest( JobFSMTest_SMC::suite() );*/
+      suiteOfTests->addTest( JobFSMTest_SMC::suite() );
 
       // obsolete, see later
       //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
@@ -42,9 +42,9 @@ namespace sdpa { namespace tests {
 
       suiteOfTests->addTest( TestComponents::suite() );
 
-      /*suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
+      suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
       suiteOfTests->addTest( TestSerializeJobPtr::suite() );
-      suiteOfTests->addTest( WorkerSerializationTest::suite() );*/
+      suiteOfTests->addTest( WorkerSerializationTest::suite() );
 
 
       return suiteOfTests;

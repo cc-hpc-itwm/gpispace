@@ -25,7 +25,7 @@ void WorkerTest::tearDown() {
 }
 
 void WorkerTest::testDispatch() {
-  Worker worker("w0", "localhost");
+  Worker worker("w0", 0, "localhost");
   CPPUNIT_ASSERT(worker.pending().empty());
 
   job_id_t jobId("1");
@@ -37,7 +37,7 @@ void WorkerTest::testDispatch() {
 }
 
 void WorkerTest::testGetNextJob() {
-  Worker worker("w0", "localhost");
+  Worker worker("w0", 0, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
@@ -51,7 +51,7 @@ void WorkerTest::testGetNextJob() {
 }
 
 void WorkerTest::testAcknowledge() {
-  Worker worker("w0", "localhost");
+  Worker worker("w0", 0, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);

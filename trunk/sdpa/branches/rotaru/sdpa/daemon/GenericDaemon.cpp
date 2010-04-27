@@ -55,8 +55,9 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
 	  master_(""),
-	  m_bRegistered(false)
-	  , delivery_service_(service_thread_.io_service(), 500)
+	  m_bRegistered(false),
+	  m_nRank(0),
+	  delivery_service_(service_thread_.io_service(), 500)
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
 
@@ -73,8 +74,9 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_scheduler_(new SchedulerImpl(this)),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  master_(""),
-	  m_bRegistered(false)
-	  , delivery_service_(service_thread_.io_service(), 500)
+	  m_bRegistered(false),
+	  m_nRank(0),
+	  delivery_service_(service_thread_.io_service(), 500)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -102,8 +104,9 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_scheduler_(new SchedulerImpl(this)),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  master_(""),
-	  m_bRegistered(false)
-	  , delivery_service_(service_thread_.io_service(), 500)
+	  m_bRegistered(false),
+	  m_nRank(0),
+	  delivery_service_(service_thread_.io_service(), 500)
 {
 }
 
@@ -618,9 +621,9 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 
-		Worker::ptr_t pWorker(new Worker(evtRegWorker.from()));
+		Worker::ptr_t pWorker( new Worker( evtRegWorker.from(), evtRegWorker.rank(), ""/*location*/ ));
 		addWorker(pWorker);
-		SDPA_LOG_INFO("Registered the worker "<<pWorker->name());
+		SDPA_LOG_INFO( "Registered the worker "<<pWorker->name()<<", withn the rank "<<pWorker->rank() );
 	}
 	catch(const QueueFull&)
 	{
@@ -643,13 +646,13 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 	}
 	case ErrorEvent::SDPA_EWORKERNOTREG:
 	{
-	  MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
-	  WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from()));
-	  sendEventToMaster(pWorkerRegEvt);
-	  break;
+		MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
+		WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from()));
+		sendEventToMaster(pWorkerRegEvt);
+		break;
 	}
 	default:
-	  MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
   }
 }
 

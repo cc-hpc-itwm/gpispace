@@ -142,6 +142,7 @@ namespace sdpa { namespace daemon {
 	  virtual bool is_registered() const { return m_bRegistered;}
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
+	  const int rank() const { return m_nRank; }
 
 	  //boost::bind(&sdpa_daemon::gen_id, this))
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
@@ -188,6 +189,7 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
+	  int  m_nRank;
 
 	private:
 	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;

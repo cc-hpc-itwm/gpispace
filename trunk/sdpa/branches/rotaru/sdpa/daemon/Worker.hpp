@@ -43,7 +43,7 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    explicit Worker(const worker_id_t name = "", const location_t &location = "");
+    explicit Worker(const worker_id_t name = "", const int rank = 0, const location_t &location = "");
 
     /**
       Take an event related to that particular worker and update the internal
@@ -80,7 +80,10 @@ namespace sdpa { namespace daemon {
       */
     const location_t &location() const { return location_; }
 
-
+    /**
+         Return the rank of the worker.
+     */
+    const int rank() const { return rank_; }
     /**
       Return the next pending job or throw an exception.
 
@@ -138,6 +141,7 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
+    int rank_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 

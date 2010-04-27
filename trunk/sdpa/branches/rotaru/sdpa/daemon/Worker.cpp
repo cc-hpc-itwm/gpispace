@@ -6,9 +6,10 @@
 
 using namespace sdpa::daemon;
 
-Worker::Worker(const worker_id_t name, const location_t &location)
+Worker::Worker(const worker_id_t name, const int rank, const location_t &location)
   : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
+    rank_(rank),
     location_(location),
     tstamp_(sdpa::util::now()) {
 
