@@ -38,7 +38,7 @@ namespace we { namespace mgmt { namespace visitor {
     };
   }
 
-  class has_enabled 
+  class has_enabled
     : public boost::static_visitor<bool>
   {
   public:
@@ -372,20 +372,22 @@ namespace we { namespace mgmt { namespace visitor {
   };
 
   template <typename Activity>
-  class internal_executor
-    : public boost::static_visitor<>
+  class executor
+    : public boost::static_visitor<bool>
   {
   private:
     Activity & activity_;
+    const bool internal_;
 
   public:
     explicit
-    internal_executor (Activity & activity)
+    executor (Activity & activity)
       : activity_(activity)
+      , internal_(activity.transition().is_internal())
     {}
 
     template <typename Place, typename Trans, typename Edge, typename Token>
-    void operator () (petri_net::net < Place
+    bool operator () (petri_net::net < Place
                                          , Trans
                                          , Edge
                                          , Token
@@ -410,14 +412,21 @@ namespace we { namespace mgmt { namespace visitor {
 
         token::put (net, place_id, inp->first);
       }
+
+      if (internal_)
+        return false;
+      else
+        return true;
     }
 
-    void operator () (we::type::module_call_t &)
+    bool operator () (we::type::module_call_t &)
     {
-      throw exception::operation_not_supported ("internal_executor (module_call)");
+      //      if ( internal_ )
+      //        throw exception::operation_not_supported ("executor (internal module_call)");
+      return true;
     }
 
-    void operator () (const we::type::expression_t & expr)
+    bool operator () (const we::type::expression_t & expr)
     {
       // construct context
       typedef expr::eval::context <signature::field_name_t> context_t;
@@ -467,6 +476,8 @@ namespace we { namespace mgmt { namespace visitor {
           );
         }
       }
+
+      return false;
     }
   };
 }}}
