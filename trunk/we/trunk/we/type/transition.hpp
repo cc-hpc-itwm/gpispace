@@ -218,6 +218,9 @@ namespace we { namespace type {
       typedef boost::unordered_map<pid_t, port_t> port_map_t;
       typedef typename port_map_t::const_iterator const_iterator;
 
+      const static bool internal = true;
+      const static bool external = false;
+
       transition_t ()
         : name_ ("unknown")
         , condition_( "true"
