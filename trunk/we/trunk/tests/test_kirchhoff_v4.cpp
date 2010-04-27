@@ -517,6 +517,9 @@ main (int argc, char ** argv)
   pid_t pid_gen_volume_state (mk_place (net, "gen_volume_state", signature::offset_with_state));
   pid_t pid_volume (mk_place (net, "volume", signature::volume));
   pid_t pid_volume_processed (mk_place (net, "volume_processed", signature::volume));
+  pid_t pid_volume_to_be_written (mk_place (net, "volume_to_be_written", signature::volume));
+  pid_t pid_volume_written (mk_place (net, "volume_written", signature::volume));
+  pid_t pid_volume_wait (mk_place (net, "volume_wait", literal::LONG));
   pid_t pid_buffer_empty (mk_place (net, "buffer_empty", signature::buffer));
   token::put (net, pid_buffer_empty, value::buffer::empty);
   pid_t pid_volume_selected (mk_place (net, "volume_selected", signature::volume));
@@ -537,6 +540,7 @@ main (int argc, char ** argv)
       + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
       + "${trigger_loadTT} := [];"
       + "${wanted_offset} := bitset_insert ({}, 0L);"
+      + "${volume_wait} := ${config.SUBVOLUMES_PER_OFFSET}"
       )
     );
 
@@ -544,6 +548,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (TP, tid_gen_config, pid_config));
   mk_edge (net, connection_t (TP, tid_gen_config, pid_trigger_loadTT));
   mk_edge (net, connection_t (TP, tid_gen_config, pid_wanted_offset));
+  mk_edge (net, connection_t (TP, tid_gen_config, pid_volume_wait));
 
   // *********************************************************************** //
 
@@ -909,40 +914,74 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (TP, tid_volume_step, pid_trigger_volume_select));
   mk_edge (net, connection_t (PT, tid_volume_step, pid_trigger_volume_process));
 
+  tid_t tid_volume_break
+    ( mk_transition
+      ( net
+      , "volume_break"
+      , "${volume_to_be_written} := ${volume_processed};\
+         ${trigger_volume_select} := []"
+      , "${volume_processed.wait} == 0L"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_volume_break, pid_volume_to_be_written));
+  mk_edge (net, connection_t (TP, tid_volume_break, pid_trigger_volume_select));
+  mk_edge (net, connection_t (PT, tid_volume_break, pid_trigger_volume_process));
+
+  tid_t tid_write
+    ( mk_transition
+      ( net
+      , "write"
+      , "${volume_written} := ${volume_to_be_written}"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_write, pid_volume_to_be_written));
+  mk_edge (net, connection_t (TP, tid_write, pid_volume_written));
+
   tid_t tid_volume_next_offset
     ( mk_transition
       ( net
       , "volume_next_offset"
       , "${wanted_offset} := bitset_insert ( ${wanted_offset} \
-                                           , ${volume_processed.offset} + 1 \
-                                           );\
-         ${trigger_volume_select} := []"
-      , "(${volume_processed.wait} == 0L) &\
-         (${volume_processed.offset} + 1 < ${config.OFFSETS})"
+                                           , ${volume_written.offset} + 1 \
+                                           );"
+      , "${volume_written.offset} + 1 < ${config.OFFSETS}"
       )
     );
 
   mk_edge (net, connection_t (PT_READ, tid_volume_next_offset, pid_config));
   mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_wanted_offset));
   mk_edge (net, connection_t (TP, tid_volume_next_offset, pid_wanted_offset));
-  mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_volume_processed));
-  mk_edge (net, connection_t (TP, tid_volume_next_offset, pid_trigger_volume_select));
-  mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_trigger_volume_process));
+  mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_volume_written));
 
   tid_t tid_volume_done
     ( mk_transition
       ( net
       , "volume_done"
-      , "${trigger_volume_select} := []"
-      , "(${volume_processed.wait} == 0L) &\
-         (${volume_processed.offset} + 1 >= ${config.OFFSETS})"
+      , "${volume_wait} := ${volume_wait} - 1"
+      , "${volume_written.offset} + 1 >= ${config.OFFSETS}"
       )
     );
 
   mk_edge (net, connection_t (PT_READ, tid_volume_done, pid_config));
-  mk_edge (net, connection_t (PT, tid_volume_done, pid_volume_processed));
-  mk_edge (net, connection_t (TP, tid_volume_done, pid_trigger_volume_select));
-  mk_edge (net, connection_t (PT, tid_volume_done, pid_trigger_volume_process));
+  mk_edge (net, connection_t (PT, tid_volume_done, pid_volume_written));
+  mk_edge (net, connection_t (PT, tid_volume_done, pid_volume_wait));
+  mk_edge (net, connection_t (TP, tid_volume_done, pid_volume_wait));
+
+  // *********************************************************************** //
+
+  tid_t tid_finalize
+    ( mk_transition
+      ( net
+      , "finalize"
+      , ""
+      , "${volume_wait} == 0L"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_finalize, pid_volume_wait));
 
   // *********************************************************************** //
   // token
