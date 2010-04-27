@@ -33,7 +33,6 @@ static statistic::loud<std::string> stat;
 
 // ************************************************************************* //
 
-static long NUMBER_OF_NODES (8);
 static long OFFSETS (2);
 static long BUNCHES_PER_OFFSET (3);
 static long STORES (8);
@@ -210,22 +209,52 @@ public:
       {
         if (name == "process")
           {
-            if (value::function::is_true (context.value (mk_vec ("volume.buffer0.filled"))))
+            if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.filled"))))
               {
                 cout << "*** " << name;
-                cout << " vol " << context.value (mk_vec ("volume.offset"))
-                     << "." << context.value (mk_vec ("volume.id"));
-                cout << " " << context.value (mk_vec ("volume.buffer0.bunch"));
+                cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
+                     << "." << context.value (mk_vec ("volume_selected.id"));
+                cout << " process " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
                 cout << endl;
               }
-            if (value::function::is_true (context.value (mk_vec ("volume.buffer1.filled"))))
+            else
+              {
+                if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.assigned"))))
+                  {
+                    cout << "*** " << name;
+                    cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
+                         << "." << context.value (mk_vec ("volume_selected.id"));
+                    cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
+                    cout << endl;
+                  }
+              }
+
+            if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.filled"))))
               {
                 cout << "*** " << name;
-                cout << " vol " << context.value (mk_vec ("volume.offset"))
-                     << "." << context.value (mk_vec ("volume.id"));
-                cout << " " << context.value (mk_vec ("volume.buffer1.bunch"));
+                cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
+                     << "." << context.value (mk_vec ("volume_selected.id"));
+                cout << " process " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
                 cout << endl;
               }
+            else
+              {
+                if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.assigned"))))
+                  {
+                    cout << "*** " << name;
+                    cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
+                         << "." << context.value (mk_vec ("volume_selected.id"));
+                    cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
+                    cout << endl;
+                  }
+              }
+          }
+        else if (name == "load")
+          {
+            cout << "*** load"
+                 << " bunch " << context.value ("bunch")
+                 << " into " << context.value ("empty_store")
+                 << endl;
           }
       }
 
@@ -350,7 +379,6 @@ namespace signature
 
   static void init (void)
   {
-    config["NUMBER_OF_NODES"] = literal::LONG;
     config["OFFSETS"] = literal::LONG;
     config["BUNCHES_PER_OFFSET"] = literal::LONG;
     config["STORES"] = literal::LONG;
@@ -427,7 +455,6 @@ main (int argc, char ** argv)
 
   desc.add_options()
     ("help", "this message")
-    ("nodes", po::value<long>(&NUMBER_OF_NODES)->default_value(NUMBER_OF_NODES), "number of nodes")
     ("offsets", po::value<long>(&OFFSETS)->default_value(OFFSETS), "number of offsets")
     ("bunches", po::value<long>(&BUNCHES_PER_OFFSET)->default_value(BUNCHES_PER_OFFSET), "number of bunches per offset")
     ("stores", po::value<long>(&STORES)->default_value(STORES), "number of bunch stores")
@@ -449,7 +476,6 @@ main (int argc, char ** argv)
     }
 
   cout 
-    << "NUMBER_OF_NODES        = " << NUMBER_OF_NODES << endl
     << "OFFSETS                = " << OFFSETS << endl
     << "BUNCHES_PER_OFFSET     = " << BUNCHES_PER_OFFSET << endl
     << "STORES                 = " << STORES << endl
@@ -488,9 +514,12 @@ main (int argc, char ** argv)
   pid_t pid_gen_volume_state (mk_place (net, "gen_volume_state", signature::offset_with_state));
   pid_t pid_volume (mk_place (net, "volume", signature::volume));
   pid_t pid_volume_processed (mk_place (net, "volume_processed", signature::volume));
-  net.set_capacity (pid_volume_processed, 1);
   pid_t pid_buffer_empty (mk_place (net, "buffer_empty", signature::buffer));
   token::put (net, pid_buffer_empty, value::buffer::empty);
+  pid_t pid_volume_selected (mk_place (net, "volume_selected", signature::volume));
+  pid_t pid_trigger_volume_select (mk_place (net, "trigger_volume_select"));
+  token::put (net, pid_trigger_volume_select);
+  pid_t pid_trigger_volume_process (mk_place (net, "trigger_volume_process"));
 
   // *********************************************************************** //
   // transition
@@ -499,8 +528,7 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "gen_config"
-      , "${config.NUMBER_OF_NODES} := " + util::show(NUMBER_OF_NODES) + ";"
-      + "${config.OFFSETS} := " + util::show (OFFSETS) + ";"
+      , "${config.OFFSETS} := " + util::show (OFFSETS) + ";"
       + "${config.BUNCHES_PER_OFFSET} := " + util::show(BUNCHES_PER_OFFSET) + ";"
       + "${config.STORES} := " + util::show (STORES) + ";"
       + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
@@ -688,6 +716,19 @@ main (int argc, char ** argv)
 
   mk_edge (net, connection_t (PT, tid_gen_volume_break, pid_gen_volume_state));
 
+  tid_t tid_volume_select
+    ( mk_transition
+      ( net
+      , "volume_select"
+      , "${volume_selected} := ${volume}; ${trigger_volume_process} := []"
+      )
+    );
+
+  mk_edge (net, connection_t (PT, tid_volume_select, pid_volume));
+  mk_edge (net, connection_t (TP, tid_volume_select, pid_volume_selected));
+  mk_edge (net, connection_t (PT, tid_volume_select, pid_trigger_volume_select));
+  mk_edge (net, connection_t (TP, tid_volume_select, pid_trigger_volume_process));
+
   // *********************************************************************** //
 
   tid_t tid_load
@@ -724,39 +765,39 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "assign0"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
-         ${volume.buffer0.assigned} := true;\
-         ${volume.buffer0.bunch} := ${loaded_bunch.bunch};\
-         ${volume.buffer0.store} := ${loaded_bunch.store}"
-      , "(!${volume.buffer0.assigned}) &\
-         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume_selected.id});\
+         ${volume_selected.buffer0.assigned} := true;\
+         ${volume_selected.buffer0.bunch} := ${loaded_bunch.bunch};\
+         ${volume_selected.buffer0.store} := ${loaded_bunch.store}"
+      , "(!${volume_selected.buffer0.assigned}) &\
+         (${volume_selected.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume_selected.id}))"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_assign0, pid_loaded_bunch));
   mk_edge (net, connection_t (TP, tid_assign0, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign0, pid_volume));
-  mk_edge (net, connection_t (TP, tid_assign0, pid_volume));
+  mk_edge (net, connection_t (PT, tid_assign0, pid_volume_selected));
+  mk_edge (net, connection_t (TP, tid_assign0, pid_volume_selected));
 
   tid_t tid_assign1
     ( mk_transition
       ( net
       , "assign1"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
-         ${volume.buffer1.assigned} := true;\
-         ${volume.buffer1.bunch} := ${loaded_bunch.bunch};\
-         ${volume.buffer1.store} := ${loaded_bunch.store}"
-      , "(!${volume.buffer1.assigned}) &\
-         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume_selected.id});\
+         ${volume_selected.buffer1.assigned} := true;\
+         ${volume_selected.buffer1.bunch} := ${loaded_bunch.bunch};\
+         ${volume_selected.buffer1.store} := ${loaded_bunch.store}"
+      , "(!${volume_selected.buffer1.assigned}) &\
+         (${volume_selected.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume_selected.id}))"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_assign1, pid_loaded_bunch));
   mk_edge (net, connection_t (TP, tid_assign1, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign1, pid_volume));
-  mk_edge (net, connection_t (TP, tid_assign1, pid_volume));
+  mk_edge (net, connection_t (PT, tid_assign1, pid_volume_selected));
+  mk_edge (net, connection_t (TP, tid_assign1, pid_volume_selected));
 
   net.set_transition_priority (tid_assign0, 1);
   net.set_transition_priority (tid_assign1, 1);
@@ -767,22 +808,36 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "process"
-      , "${volume_processed} := ${volume};\
-         ${volume_processed.buffer0.assigned} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer0.filled} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer0.prefetched} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer1.assigned} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.buffer1.filled} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.buffer1.prefetched} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.wait} := ${volume.wait}\
-                                  - (if ${volume.buffer0.filled} then 1L else 0L endif)\
-                                  - (if ${volume.buffer1.filled} then 1L else 0L endif)"
-      , "${volume.buffer0.assigned} | ${volume.buffer1.assigned}"
+      , "${volume_processed} := ${volume_selected};\
+         ${volume_processed.buffer0.assigned} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
+         ${volume_processed.buffer0.filled} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
+         ${volume_processed.buffer0.prefetched} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
+         ${volume_processed.buffer1.assigned} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
+         ${volume_processed.buffer1.filled} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
+         ${volume_processed.buffer1.prefetched} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
+         ${volume_processed.wait} := ${volume_selected.wait}\
+                                  - (if ${volume_selected.buffer0.filled} then 1L else 0L endif)\
+                                  - (if ${volume_selected.buffer1.filled} then 1L else 0L endif)"
+      , "${volume_selected.buffer0.assigned} | ${volume_selected.buffer1.assigned}"
       )
     );
 
-  mk_edge (net, connection_t (PT, tid_process, pid_volume));
+  mk_edge (net, connection_t (PT, tid_process, pid_volume_selected));
   mk_edge (net, connection_t (TP, tid_process, pid_volume_processed));
+
+  tid_t tid_volume_unselect
+    ( mk_transition
+      ( net
+      , "volume_unselect"
+      , "${volume} := ${volume_selected}; ${trigger_volume_select} := []"
+      , "!(${volume_selected.buffer0.assigned} | ${volume_selected.buffer1.assigned})"
+      )
+    );
+
+  mk_edge (net, connection_t (TP, tid_volume_unselect, pid_volume));
+  mk_edge (net, connection_t (PT, tid_volume_unselect, pid_volume_selected));
+  mk_edge (net, connection_t (TP, tid_volume_unselect, pid_trigger_volume_select));
+  mk_edge (net, connection_t (PT, tid_volume_unselect, pid_trigger_volume_process));
 
   // *********************************************************************** //
 
@@ -827,13 +882,16 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "volume_step"
-      , "${volume} := ${volume_processed}"
+      , "${volume} := ${volume_processed};\
+         ${trigger_volume_select} := []"
       , "${volume_processed.wait} > 0L"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_volume_step, pid_volume_processed));
   mk_edge (net, connection_t (TP, tid_volume_step, pid_volume));
+  mk_edge (net, connection_t (TP, tid_volume_step, pid_trigger_volume_select));
+  mk_edge (net, connection_t (PT, tid_volume_step, pid_trigger_volume_process));
 
   tid_t tid_volume_next_offset
     ( mk_transition
@@ -841,7 +899,8 @@ main (int argc, char ** argv)
       , "volume_next_offset"
       , "${wanted_offset} := bitset_insert ( ${wanted_offset} \
                                            , ${volume_processed.offset} + 1 \
-                                           );"
+                                           );\
+         ${trigger_volume_select} := []"
       , "(${volume_processed.wait} == 0L) &\
          (${volume_processed.offset} + 1 < ${config.OFFSETS})"
       )
@@ -851,12 +910,14 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_wanted_offset));
   mk_edge (net, connection_t (TP, tid_volume_next_offset, pid_wanted_offset));
   mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_volume_next_offset, pid_trigger_volume_select));
+  mk_edge (net, connection_t (PT, tid_volume_next_offset, pid_trigger_volume_process));
 
   tid_t tid_volume_done
     ( mk_transition
       ( net
       , "volume_done"
-      , ""
+      , "${trigger_volume_select} := []"
       , "(${volume_processed.wait} == 0L) &\
          (${volume_processed.offset} + 1 >= ${config.OFFSETS})"
       )
@@ -864,6 +925,8 @@ main (int argc, char ** argv)
 
   mk_edge (net, connection_t (PT_READ, tid_volume_done, pid_config));
   mk_edge (net, connection_t (PT, tid_volume_done, pid_volume_processed));
+  mk_edge (net, connection_t (TP, tid_volume_done, pid_trigger_volume_select));
+  mk_edge (net, connection_t (PT, tid_volume_done, pid_trigger_volume_process));
 
   // *********************************************************************** //
   // token
