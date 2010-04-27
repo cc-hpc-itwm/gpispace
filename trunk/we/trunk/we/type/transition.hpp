@@ -189,8 +189,8 @@ namespace we { namespace type {
     }
 
     template <typename Place, typename Edge, typename Token>
-	struct transition_t
-	{
+    struct transition_t
+    {
       typedef module_call_t mod_type;
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
@@ -231,7 +231,7 @@ namespace we { namespace type {
       transition_t ()
         : name_ ("unknown")
         , condition_( "true"
-                    , boost::bind 
+                    , boost::bind
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
                       , boost::ref(*this)
                       , _1
@@ -241,21 +241,22 @@ namespace we { namespace type {
       {}
 
       template <typename Type>
-	  transition_t (const std::string & name
-                  , Type const & typ
-                  , const std::string & _condition = "true"
-                  , bool intern = false)
-		: name_ (name)
+      transition_t ( const std::string & name
+                   , Type const & typ
+                   , const std::string & _condition = "true"
+                   , bool intern = false
+                   )
+        : name_ (name)
         , data_ (typ)
         , condition_( _condition
-                    , boost::bind 
+                    , boost::bind
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
                       , boost::ref(*this)
                       , _1
                       )
                     )
         , port_id_counter_(0)
-	  {
+      {
         flags_.internal = intern;
       }
 
@@ -264,7 +265,7 @@ namespace we { namespace type {
         , data_(other.data_)
         , flags_(other.flags_)
         , condition_( other.condition_.expression()
-                    , boost::bind 
+                    , boost::bind
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
                       , boost::ref(*this)
                       , _1
@@ -317,14 +318,14 @@ namespace we { namespace type {
           inner_to_outer_ = other.inner_to_outer_;
           ports_ = other.ports_;
           data_ = other.data_;
-          condition_ = condition::type 
-             ( other.condition_.expression()
-             , boost::bind 
-               ( &detail::translate_place_to_port_name<this_type, pid_t>
-               , boost::ref(*this)
-               , _1
-               )
-             );
+          condition_ = condition::type
+            ( other.condition_.expression()
+            , boost::bind
+              ( &detail::translate_place_to_port_name<this_type, pid_t>
+              , boost::ref(*this)
+              , _1
+              )
+            );
         }
         return *this;
       }
@@ -587,7 +588,7 @@ namespace we { namespace type {
       }
 
     private:
-	  std::string name_;
+      std::string name_;
       data_type data_;
 
       flags_t flags_;
@@ -639,19 +640,19 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
-	};
+    };
 
     template <typename P, typename E, typename T>
-	inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
-	{
-	  return a.name() == b.name();
-	}
+    inline bool operator==(const transition_t<P,E,T> & a, const transition_t<P,E,T> & b)
+    {
+      return a.name() == b.name();
+    }
     template <typename P, typename E, typename T>
-	inline std::size_t hash_value(transition_t<P,E,T> const & t)
-	{
-	  boost::hash<std::string> hasher;
-	  return hasher(t.name());
-	}
+    inline std::size_t hash_value(transition_t<P,E,T> const & t)
+    {
+      boost::hash<std::string> hasher;
+      return hasher(t.name());
+    }
 
     namespace detail
     {
@@ -669,12 +670,12 @@ namespace we { namespace type {
         }
 
         template <typename Place, typename Edge, typename Token>
-        std::string operator () 
-        (const petri_net::net< Place
-                             , transition_t<Place, Edge, Token>
-                             , Edge
-                             , Token
-                             > & net) const
+        std::string operator () ( const petri_net::net< Place
+                                , transition_t<Place, Edge, Token>
+                                , Edge
+                                , Token
+                                > & net
+                                ) const
         {
           we::util::remove_unused_variable_warning (net);
           return std::string("{net, ") + ::util::show(net) + "}";
@@ -683,10 +684,10 @@ namespace we { namespace type {
     }
 
     template <typename P, typename E, typename T>
-	inline std::ostream & operator<< ( std::ostream & s
+    inline std::ostream & operator<< ( std::ostream & s
                                      , const transition_t<P,E,T> & t
                                      )
-	{
+    {
       typedef transition_t<P,E,T> trans_t;
       s << "{";
       s << "trans";
@@ -697,9 +698,9 @@ namespace we { namespace type {
       s << ", {cond, " << t.condition() << "}";
       s << ", [";
       for ( typename trans_t::port_map_t::const_iterator p (t.ports_.begin())
-          ; p != t.ports_.end()
-          ; ++p
-          )
+              ; p != t.ports_.end()
+              ; ++p
+            )
       {
         s << "(";
         s << p->first;
@@ -711,51 +712,50 @@ namespace we { namespace type {
       s << "]";
       s << "}";
       return s;
-	}
+    }
 
     template<typename P, typename E, typename T>
-    std::ostream & operator << 
-      ( std::ostream & s
-      , const petri_net::net<P, transition_t<P, E, T>, E, T> & n
-      )
+    std::ostream & operator << ( std::ostream & s
+                               , const petri_net::net<P, transition_t<P, E, T>, E, T> & n
+                               )
     {
       typedef petri_net::net<P, transition_t<P, E, T>, E, T> pnet_t;
 
       for (typename pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
+      {
+        s << "[" << n.get_place (*p) << ":";
+
+        typedef boost::unordered_map<T, size_t> token_cnt_t;
+        token_cnt_t token;
+        for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
         {
-          s << "[" << n.get_place (*p) << ":";
-
-          typedef boost::unordered_map<T, size_t> token_cnt_t;
-          token_cnt_t token;
-          for (typename pnet_t::token_place_it tp (n.get_token (*p)); tp.has_more(); ++tp)
-            {
-              token[*tp]++;
-            }
-
-          for (typename token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
-            {
-              if (t->second > 1)
-                {
-                  s << " " << t->second << "x " << t->first;
-                }
-              else
-                {
-                  s << " " << t->first;
-                }
-            }
-          s << "]";
+          token[*tp]++;
         }
+
+        for (typename token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
+        {
+          if (t->second > 1)
+          {
+            s << " " << t->second << "x " << t->first;
+          }
+          else
+          {
+            s << " " << t->first;
+          }
+        }
+        s << "]";
+      }
 
       for (typename pnet_t::transition_const_it t (n.transitions()); t.has_more(); ++t)
-        {
-          s << "/";
-          s << n.get_transition (*t);
-          s << "/";
-        }
+      {
+        s << "/";
+        s << n.get_transition (*t);
+        s << "/";
+      }
 
       return s;
     }
-
-}}
+  }
+}
 
 #endif
