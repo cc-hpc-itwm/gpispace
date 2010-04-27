@@ -3,13 +3,25 @@
 
 #include <fvm/fvmAllocatorTypes.h>
 #include <fvm/fvm_common.h>
-
+#include <cstring>
 
 typedef struct fvmPcConfig {
+  static const size_t max_len = 1024;
+
+  fvmPcConfig () {}
+  fvmPcConfig (const char * path_to_msq_file, const char * path_to_shm_file, const fvmSize_t shmem_size, const fvmSize_t fvm_size)
+    : shmemsize (shmem_size)
+    , fvmsize (fvm_size)
+  {
+     if (path_to_msq_file)
+        strncpy (msqfile, path_to_msq_file, max_len);
+     if (path_to_shm_file)
+        strncpy (shmemfile, path_to_shm_file, max_len);
+  }
   fvmSize_t shmemsize;
   fvmSize_t fvmsize;
-  char msqfile[1024];
-  char shmemfile[1024];
+  char msqfile[max_len];
+  char shmemfile[max_len];
 } fvm_pc_config_t;
 
 int fvmConnect(fvm_pc_config_t);
