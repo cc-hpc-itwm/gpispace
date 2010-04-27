@@ -218,23 +218,6 @@ namespace we { namespace type {
       typedef boost::unordered_map<pid_t, port_t> port_map_t;
       typedef typename port_map_t::const_iterator const_iterator;
 
-      struct flags_t
-      {
-        flags_t ()
-          : internal(0)
-        {}
-
-        bool internal;
-
-      private:
-        friend class boost::serialization::access;
-        template<typename Archive>
-        void serialize (Archive & ar, const unsigned int)
-        {
-          ar & BOOST_SERIALIZATION_NVP(internal);
-        }
-      };
-
       transition_t ()
         : name_ ("unknown")
         , condition_( "true"
@@ -255,6 +238,7 @@ namespace we { namespace type {
                    )
         : name_ (name)
         , data_ (typ)
+        , internal_ (intern)
         , condition_( _condition
                     , boost::bind
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
@@ -263,14 +247,12 @@ namespace we { namespace type {
                       )
                     )
         , port_id_counter_(0)
-      {
-        flags_.internal = intern;
-      }
+      { }
 
       transition_t (const this_type &other)
         : name_(other.name_)
         , data_(other.data_)
-        , flags_(other.flags_)
+        , internal_ (other.internal_)
         , condition_( other.condition_.expression()
                     , boost::bind
                       ( &detail::translate_place_to_port_name<this_type, pid_t>
@@ -302,7 +284,7 @@ namespace we { namespace type {
 
       bool is_internal (void) const
       {
-        return flags_.internal;
+        return internal_;
       }
 
       const data_type & data (void) const
@@ -320,7 +302,7 @@ namespace we { namespace type {
         if (this != &other)
         {
           name_ = other.name_;
-          flags_ = other.flags_;
+          internal_ = other.internal_;
           outer_to_inner_ = other.outer_to_inner_;
           inner_to_outer_ = other.inner_to_outer_;
           ports_ = other.ports_;
@@ -597,8 +579,7 @@ namespace we { namespace type {
     private:
       std::string name_;
       data_type data_;
-
-      flags_t flags_;
+      bool internal_;
       condition::type condition_;
 
       outer_to_inner_t outer_to_inner_;
@@ -617,20 +598,21 @@ namespace we { namespace type {
       void save(Archive & ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(flags_);
+        ar & BOOST_SERIALIZATION_NVP(data_);
+        ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_.expression());
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
-        ar & BOOST_SERIALIZATION_NVP(data_);
       }
 
       template <typename Archive>
       void load(Archive & ar, const unsigned int)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(flags_);
+        ar & BOOST_SERIALIZATION_NVP(data_);
+        ar & BOOST_SERIALIZATION_NVP(internal_);
         std::string cond_expr;
         ar & BOOST_SERIALIZATION_NVP(cond_expr);
         condition_ = condition::type ( cond_expr
@@ -644,7 +626,6 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
-        ar & BOOST_SERIALIZATION_NVP(data_);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
@@ -700,6 +681,8 @@ namespace we { namespace type {
       s << "trans";
       s << ", ";
       s << t.name();
+      s << ", ";
+      s << (t.is_internal() ? "intern" : "extern");
       s << ", ";
       s << boost::apply_visitor (detail::transition_visitor_show(), t.data());
       s << ", {cond, " << t.condition() << "}";
