@@ -28,6 +28,7 @@ namespace sdpa { namespace nre { namespace worker {
     virtual ~ExecutionContext() {}
 
     virtual sdpa::modules::ModuleLoader &loader() = 0;
+    virtual int getRank() const = 0;
   };
 }}}
 

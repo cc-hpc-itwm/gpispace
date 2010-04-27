@@ -87,7 +87,7 @@ int main(int ac, char **av)
   using namespace sdpa::modules;
 
   std::clog << "I: starting on location: " << vm["location"].as<std::string>() << "..." << std::endl;
-  sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>()));
+  sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>(), fvmGetRank()));
 
   try
   {

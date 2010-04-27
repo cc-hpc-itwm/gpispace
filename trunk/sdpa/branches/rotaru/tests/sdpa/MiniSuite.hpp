@@ -24,9 +24,6 @@ namespace sdpa { namespace tests {
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "MiniTestSuite" );
 
-      //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
-      //suiteOfTests->addTest( D2D2DRealWfEngTest:suite() );
-
 	  suiteOfTests->addTest( TestComponents::suite() );
 
       return suiteOfTests;

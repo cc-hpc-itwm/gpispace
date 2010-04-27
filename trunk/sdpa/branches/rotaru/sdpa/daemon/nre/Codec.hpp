@@ -57,6 +57,9 @@ namespace sdpa { namespace nre { namespace worker {
       ar.register_type(static_cast<sdpa::nre::worker::PingRequest*>(NULL));
       ar.register_type(static_cast<sdpa::nre::worker::PingReply*>(NULL));
 
+      ar.register_type(static_cast<sdpa::nre::worker::InfoRequest*>(NULL));
+      ar.register_type(static_cast<sdpa::nre::worker::InfoReply*>(NULL));
+
       ar.register_type(static_cast<sdpa::nre::worker::ExecuteRequest*>(NULL));
       ar.register_type(static_cast<sdpa::nre::worker::ExecuteReply*>(NULL));
 

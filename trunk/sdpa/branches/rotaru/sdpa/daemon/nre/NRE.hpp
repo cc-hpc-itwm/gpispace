@@ -164,7 +164,7 @@ void NRE<T>::action_config_ok(const ConfigOkEvent&)
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
 
 	SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
 	to_master_stage()->send(pEvtWorkerReg);
 }
 

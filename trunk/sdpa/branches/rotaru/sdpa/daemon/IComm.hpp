@@ -57,6 +57,7 @@ const std::string USER("user");
 	  virtual sdpa::util::Config* cfg() const = 0;
 
 	  virtual JobManager::ptr_t jobManager() const = 0;
+	  virtual unsigned int& rank() = 0;
 
 	  //GUI notification methods
 	  virtual void activityCreated(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }

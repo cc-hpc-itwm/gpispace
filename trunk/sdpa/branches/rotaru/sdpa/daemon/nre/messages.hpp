@@ -115,6 +115,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     const usage_t &usage() const { return usage_; }
     usage_t &usage() { return usage_; }
+
   private:
     pid_t pid_;
     usage_t usage_;
@@ -139,6 +140,75 @@ namespace sdpa { namespace nre { namespace worker {
     virtual Reply *execute(ExecutionContext *)
     {
       return new PingReply(id());
+    }
+  private:
+    std::string key_;
+  };
+
+  struct pc_info_t
+  {
+    pc_info_t ()
+      : pid_(getpid())
+      , rank_(0)
+    {}
+
+    explicit
+    pc_info_t(int rank)
+      : pid_(getpid())
+      , rank_(rank)
+    {}
+
+    int & rank() { return rank_; }
+    const int & rank() const { return rank_; }
+
+    pid_t & pid() { return pid_; }
+    const pid_t & pid() const { return pid_; }
+  private:
+    pid_t pid_;
+    int rank_;
+  };
+
+  class InfoReply : public Reply
+  {
+  public:
+    InfoReply()
+    { }
+
+    InfoReply(const std::string &a_id, ExecutionContext *ctxt)
+      : Reply(a_id)
+      , info_(ctxt->getRank())
+    { }
+
+    virtual void writeTo(std::ostream &os) const
+    {
+      os << "InfoReply: id=" << id() << " pid=" << info_.pid() << " rank=" << info_.rank();
+    }
+
+    pc_info_t & info() { return info_; }
+    const pc_info_t & info() const { return info_; }
+  private:
+    pc_info_t info_;
+  };
+
+  class InfoRequest : public Request
+  {
+  public:
+    InfoRequest()
+      : key_("")
+    {}
+
+    explicit InfoRequest(const std::string &a_msg_id)
+      : Request(a_msg_id)
+    {}
+
+    virtual void writeTo(std::ostream &os) const
+    {
+      os << "InfoRequest: id=" << id();
+    }
+
+    virtual Reply *execute(ExecutionContext *ctxt)
+    {
+      return new InfoReply(id(), ctxt);
     }
   private:
     std::string key_;

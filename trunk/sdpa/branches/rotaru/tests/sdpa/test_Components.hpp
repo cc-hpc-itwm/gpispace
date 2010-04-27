@@ -31,7 +31,7 @@ namespace sdpa {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
 			  CPPUNIT_TEST( testCompWithFvmPC );
-			  CPPUNIT_TEST( testComponentsDummyGWES );
+			  //CPPUNIT_TEST( testComponentsDummyGWES );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:

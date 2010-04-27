@@ -623,7 +623,11 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 		Worker::ptr_t pWorker( new Worker( evtRegWorker.from(), evtRegWorker.rank(), ""/*location*/ ));
 		addWorker(pWorker);
-		SDPA_LOG_INFO( "Registered the worker "<<pWorker->name()<<", withn the rank "<<pWorker->rank() );
+		SDPA_LOG_INFO( "Registered the worker "<<pWorker->name()<<", with the rank "<<pWorker->rank() );
+	}
+	catch(WorkerAlreadyExistException& ex) {
+		SDPA_LOG_FATAL( "An worker with either the same id or the same rank already exist into the worker map! "
+				        "id="<<ex.worker_id()<<", rank="<<ex.rank());
 	}
 	catch(const QueueFull&)
 	{

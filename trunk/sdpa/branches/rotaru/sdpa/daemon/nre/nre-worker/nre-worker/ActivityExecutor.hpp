@@ -39,9 +39,10 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    ActivityExecutor(const std::string &my_location)
+    ActivityExecutor(const std::string &my_location, int rank)
       : loader_(sdpa::modules::ModuleLoader::create())
       , location_(my_location)
+      , rank_(rank)
       , socket_(NULL)
       , barrier_(2)
       , service_thread_(NULL)
@@ -65,6 +66,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     // message context
     sdpa::modules::ModuleLoader &loader() { return *loader_; }
+    int getRank() const { return rank_; }
 
     void operator()();
   private:
@@ -75,6 +77,7 @@ namespace sdpa { namespace nre { namespace worker {
     
     sdpa::modules::ModuleLoader::ptr_t loader_;
     std::string location_;
+    int rank_;
 
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint sender_endpoint_;

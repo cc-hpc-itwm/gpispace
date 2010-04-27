@@ -114,12 +114,12 @@ namespace sdpa { namespace nre { namespace worker {
       return not_responded_to_ping_ >= ping_trials_;
     }
 
-    void start() throw (std::exception)
+    unsigned int start() throw (std::exception)
     {
 		if(service_thread_)
 		{
 			DLOG(WARN, "still running, cannot start again!");
-			return;
+			throw std::runtime_error( "Service still running, cannot start again!");
 		}
 
 		DLOG(INFO, "starting connection to nre-worker process at: " << worker_location());
@@ -167,7 +167,11 @@ namespace sdpa { namespace nre { namespace worker {
 		not_responded_to_ping_ = 0;
 		LOG(INFO, "started connection to nre-pcd");
 
+		pc_info_t pc_info ( request_pc_info () );
+
 		start_ping_interval_timer();
+
+		return (unsigned int)(pc_info.rank());
     }
 
     void stop() throw (std::exception)
@@ -244,6 +248,20 @@ namespace sdpa { namespace nre { namespace worker {
 		catch (...) {
 			throw NrePcdIsDead();
 		}
+	}
+
+        pc_info_t request_pc_info ()
+        {
+		try {
+			sdpa::shared_ptr<Message> msg = request(InfoRequest("tag-1"), timer_timeout_);
+			LOG(TRACE, "got reply to info request: " << *msg);
+			return ((InfoReply*)(msg.get()))->info();
+		}
+		catch (const std::exception & ex) {
+			LOG(ERROR, "could not request information from pc: " << ex.what());
+			throw NrePcdIsDead();
+		}
+		
 	}
 
     void send(const Message &m)

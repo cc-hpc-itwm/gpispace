@@ -45,16 +45,16 @@ namespace sdpa {
 
 	virtual ~SchedulerNRE() {};
 
-	void start()throw (std::exception)
+	void start() throw (std::exception)
 	{
 		SchedulerImpl::start();
 
 		SDPA_LOG_DEBUG("Starting nre-worker-client ...");
 		try {
-			m_worker_.start();
+			ptr_comm_handler_->rank() = m_worker_.start();
 		}catch(const std::exception& val)
 		{
-			SDPA_LOG_ERROR("Could not start the nre-worker-client ...");
+			SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
 			throw;
 		}
 	}
@@ -152,6 +152,7 @@ namespace sdpa {
 		{
 			ptr_comm_handler_->activityStarted(act_id, enc_act);
 			LOG(INFO, "walltime=" << pJob->walltime());
+
 			result = m_worker_.execute(enc_act, pJob->walltime());
 		}
 		catch( const boost::thread_interrupted &)
