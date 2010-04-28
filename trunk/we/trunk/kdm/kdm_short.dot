@@ -1,0 +1,115 @@
+digraph KDM {
+p0 [label = "config_file", shape = "ellipse"];
+p10 [label = "offset_volume", shape = "ellipse"];
+p12 [label = "bunch", shape = "ellipse"];
+p13 [label = "loaded_bunch", shape = "ellipse"];
+p15 [label = "volume", shape = "ellipse"];
+p16 [label = "processed", shape = "ellipse"];
+p17 [label = "to_be_written", shape = "ellipse"];
+p18 [label = "written", shape = "ellipse"];
+p19 [label = "#", shape = "circle"];
+p2 [label = "", shape = "circle"];
+p20 [label = "buffer_empty", shape = "ellipse"];
+p3 [label = "", shape = "circle"];
+p5 [label = "empty_store", shape = "ellipse"];
+p6 [label = "", shape = "circle"];
+p7 [label = "wanted_offset", shape = "ellipse"];
+p8 [label = "state", shape = "ellipse"];
+p9 [label = "offset_bunch", shape = "ellipse"];
+t1 [label = "loadTT", shape = "rectangle", style="filled", fillcolor="yellow"];
+t11 [label = "gen_volume", shape = "rectangle"];
+t15 [label = "reuse_store", shape = "rectangle"];
+t19 [label = "unassign", shape = "rectangle"];
+t2 [label = "gen_store", shape = "rectangle"];
+t22 [label = "break", shape = "rectangle"];
+t26 [label = "finalize", shape = "rectangle", style="filled", fillcolor="yellow"];
+t5 [label = "gen_offset", shape = "rectangle"];
+t6 [label = "step", shape = "rectangle"];
+t8 [label = "gen_bunch", shape = "rectangle"];
+subgraph {
+rank = same;
+t18 [label = "process", shape = "rectangle", style="filled", fillcolor="yellow"];
+t21 [label = "step", shape = "rectangle"];
+}
+subgraph {
+rank = same;
+t23 [label = "write", shape = "rectangle", style="filled", fillcolor="yellow"];
+t24 [label = "next_offset", shape = "rectangle"];
+t25 [label = "done", shape = "rectangle"];
+}
+subgraph {
+rank = same;
+p1 [label = "config", shape = "ellipse"];
+t0 [label = "gen_config", shape = "rectangle", style="filled", fillcolor="yellow"];
+}
+subgraph {
+rank=same;
+t14 [label = "load", shape = "rectangle", style="filled", fillcolor="yellow"];
+t16 [label = "assign", shape = "rectangle"];
+}
+p0 -> t0 [];
+p10 -> t11 [];
+p12 -> t14 [];
+p13 -> t15 [];
+p13 -> t16 [dir="both"];
+p13 -> t19 [dir="both"];
+p15 -> t16 [dir="both"];
+p15 -> t18 [];
+p16 -> t19 [dir="both"];
+p16 -> t21 [];
+p16 -> t22 [];
+p17 -> t23 [];
+p18 -> t24 [];
+p18 -> t25 [];
+p19 -> t25 [dir="both"];
+p19 -> t26 [];
+p1t1 -> t1 [style="dotted"]
+p1t1 [label="config", shape="none"];
+p1t11 -> t11 [style = "dotted"];
+p1t11 [label="config", shape="none"];
+p1t14 -> t14 [style = "dotted"];
+p1t14 [label="config", shape="none"];
+p1t18 -> t18 [style="dotted"]
+p1t18 [label="config", shape="none"];
+p1t2 -> t2 [style = "dotted"];
+p1t2 [label="config", shape="none"];
+p1t23 -> t23 [style="dotted"]
+p1t23 [label="config", shape="none"];
+p1t24 -> t24 [style = "dotted"];
+p1t24 [label="config", shape="none"];
+p1t25 -> t25 [style = "dotted"];
+p1t25 [label="config", shape="none"];
+p1t26 -> t26 [style="dotted"]
+p1t26 [label="config", shape="none"];
+p1t5 -> t5 [style = "dotted"];
+p1t5 [label="config", shape="none"];
+p1t8 -> t8 [style = "dotted"];
+p1t8 [label="config", shape="none"];
+p2 -> t2 [];
+p20 -> t11 [style = "dotted"];
+p3 -> t1 [];
+p5 -> t14 [];
+p6 -> t5 [];
+p7 -> t24 [dir="both"];
+p7 -> t6 [style = "dotted"];
+p8 -> t6 [dir="both"];
+p9 -> t8 [];
+t0 -> p1 [];
+t0 -> p19 [];
+t0 -> p3 [];
+t0 -> p7 [];
+t1 -> p2 [];
+t11 -> p15 [];
+t14 -> p13 [];
+t15 -> p5 [];
+t18 -> p16 [];
+t2 -> p5 [];
+t2 -> p6 [];
+t21 -> p15 [];
+t22 -> p17 [];
+t23 -> p18 [];
+t5 -> p8 [];
+t6 -> p10 [];
+t6 -> p9 [];
+t8 -> p12 [];
+}

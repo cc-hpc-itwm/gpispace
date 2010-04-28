@@ -1,0 +1,3 @@
+- sincInterpolator magisch im Prozeßcontainer vorhanden, nutze
+  gleiches Schema, das den Funktionen die Aufrufe zur FVM erlaubt.
+

@@ -168,6 +168,75 @@ mk_vec (const std::string & s)
 
 // ************************************************************************* //
 
+template<typename NET>
+static void dot ( std::ostream & s
+                , const NET & n
+                , const std::string & name = "generic"
+                )
+{
+  s << "digraph " << name << " {" << endl;
+
+  for (typename NET::transition_const_it t (n.transitions()); t.has_more(); ++t)
+    s << "t" << ::util::show (*t)
+      << " ["
+      << "label = \"" + n.get_transition(*t).name + "\""
+      << ", shape = \"rectangle\""
+      << "];" 
+      << endl
+      ;
+
+  for (typename NET::place_const_it p (n.places()); p.has_more(); ++p)
+    s << "p" << ::util::show (*p)
+      << " ["
+      << "label = \"" + n.get_place(*p).get_name() + "\""
+      << ", shape = \"circle\""
+      << "];" 
+      << endl
+      ;
+
+  for (typename NET::edge_const_it e (n.edges()); e.has_more(); ++e)
+    {
+      const petri_net::connection_t connection (n.get_edge_info (*e));
+
+      switch (connection.type)
+        {
+        case petri_net::TP:
+          s << "t" << ::util::show (connection.tid)
+            << " -> "
+            << "p" << ::util::show (connection.pid)
+            << " []"
+            << ";"
+            << endl
+            ;
+          break;
+        case petri_net::PT:
+          s << "p" << ::util::show (connection.pid)
+            << " -> "
+            << "t" << ::util::show (connection.tid)
+            << " []"
+            << ";"
+            << endl
+            ;
+          break;
+        case petri_net::PT_READ:
+          s << "p" << ::util::show (connection.pid)
+            << " -> "
+            << "t" << ::util::show (connection.tid)
+            << " [style = \"dotted\"]"
+            << ";"
+            << endl
+            ;
+          break;
+        default:
+          throw std::runtime_error ("STRANGE! unkown connection type");
+        }
+    }
+
+  s << "}" << endl;
+}
+
+// ************************************************************************* //
+
 struct count_t
 {
 private:
@@ -203,10 +272,10 @@ public:
       {
         const std::string name (pos->first);
 
-        std::cout << std::setw(30) << std::left << name << std::right
-                  << " | sum " << std::setw(10) << sum[name]
-                  << " | max " << std::setw(10) << max[name]
-                  << std::endl
+        cout << std::setw(30) << std::left << name << std::right
+             << " | sum " << std::setw(10) << sum[name]
+             << " | max " << std::setw(10) << max[name]
+             << endl
           ;
       }
   }
@@ -694,6 +763,7 @@ main (int argc, char ** argv)
 
   mk_edge (net, connection_t (PT, tid_loadTT, pid_trigger_loadTT));
   mk_edge (net, connection_t (TP, tid_loadTT, pid_trigger_gen_store));
+  mk_edge (net, connection_t (PT_READ, tid_loadTT, pid_config));
 
   // *********************************************************************** //
 
@@ -968,6 +1038,7 @@ main (int argc, char ** argv)
       )
     );
 
+  mk_edge (net, connection_t (PT_READ, tid_process, pid_config));
   mk_edge (net, connection_t (PT, tid_process, pid_volume));
   mk_edge (net, connection_t (TP, tid_process, pid_volume_processed));
 
@@ -1050,6 +1121,7 @@ main (int argc, char ** argv)
       )
     );
 
+  mk_edge (net, connection_t (PT_READ, tid_write, pid_config));
   mk_edge (net, connection_t (PT, tid_write, pid_volume_to_be_written));
   mk_edge (net, connection_t (TP, tid_write, pid_volume_written));
 
@@ -1095,12 +1167,17 @@ main (int argc, char ** argv)
     );
 
   mk_edge (net, connection_t (PT, tid_finalize, pid_volume_wait));
+  mk_edge (net, connection_t (PT_READ, tid_finalize, pid_config));
 
   // *********************************************************************** //
   // token
 
   token::put (net, pid_config_file, std::string("/scratch/KDM.conf"));
   
+  // *********************************************************************** //
+
+  dot (std::cerr, net, "KDM");
+
   // *********************************************************************** //
 
   marking (net);
