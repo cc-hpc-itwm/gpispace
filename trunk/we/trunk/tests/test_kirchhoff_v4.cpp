@@ -6,6 +6,9 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/concurrent/net.hpp>
+#include <pthread.h>
+
 #include <we/type/signature.hpp>
 #include <we/type/control.hpp>
 #include <we/type/place.hpp>
@@ -40,6 +43,10 @@ static long SUBVOLUMES_PER_OFFSET (3);
 
 static bool PRINT_MARKING (true);
 static bool PRINT_FIRE (true);
+
+static long NUM_WORKER (10);
+static long QUEUE_WORK (NUM_WORKER);
+static long QUEUE_RESULT (NUM_WORKER);
 
 static unsigned int SEED (3141);
 
@@ -161,7 +168,6 @@ private:
   const std::string name;
   const std::string expression;
   const expr::parse::parser<signature::field_name_t> parser;
-  context_t context;
 
   typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
   typedef boost::function<signature::type (const petri_net::pid_t &)> sig_t;
@@ -173,12 +179,10 @@ public:
                               , const std::string & _expression
                               , const translate_t & _translate
                               , const sig_t & _sig
-                              , const context_t & _context
                               )
     : name (_name)
     , expression (_expression)
     , parser (expression)
-    , context (_context)
     , translate (_translate)
     , signature (_sig)
   {}
@@ -187,6 +191,8 @@ public:
                                , const pnet_t::output_descr_t & output_descr
                                )
   {
+    context_t context;
+
     stat.start (name, "bind");
 
     for ( pnet_t::input_t::const_iterator top (input.begin())
@@ -334,7 +340,6 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & name
                                       , const std::string & expression
                                       , const std::string & condition = "true"
-                                      , const context_t & context = context_t()
                                       )
 {
   return net.add_transition 
@@ -349,7 +354,6 @@ static petri_net::tid_t mk_transition ( pnet_t & net
       , strip (expression)
       , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
       , boost::bind(&place::signature<pnet_t>, boost::ref(net), _1)
-      , context
       )
     );
 }
@@ -472,6 +476,21 @@ namespace value
   }
 }
 
+// ************************************************************************* //
+
+// as many as you like
+template<typename NET>
+static void * worker (void * arg)
+{
+  petri_net::thread_safe_t<pnet_t> * thread_safe 
+    ((petri_net::thread_safe_t<pnet_t> *)arg);
+
+  while (1)
+    thread_safe->fire();
+
+  return NULL;
+}
+
 // *********************************************************************** //
 
 int
@@ -489,6 +508,10 @@ main (int argc, char ** argv)
     ("seed", po::value<unsigned int>(&SEED)->default_value(SEED), "seed for random number generator")
     ("print_marking", po::value<bool>(&PRINT_MARKING)->default_value(PRINT_MARKING), "print marking after each fire")
     ("print_fire", po::value<bool>(&PRINT_FIRE)->default_value(PRINT_FIRE), "print information about each firing")
+
+    ("worker", po::value<long>(&NUM_WORKER)->default_value(NUM_WORKER), "number of worker")
+    ("queue_work", po::value<long>(&QUEUE_WORK)->default_value(QUEUE_WORK), "depth of work queue")
+    ("queue_result", po::value<long>(&QUEUE_RESULT)->default_value(QUEUE_RESULT), "depth of result queue")
     ;
 
   po::variables_map vm;
@@ -511,6 +534,10 @@ main (int argc, char ** argv)
 
     << "PRINT_MARKING          = " << PRINT_MARKING << endl
     << "PRINT_FIRE             = " << PRINT_FIRE << endl
+
+    << "WORKER                 = " << NUM_WORKER << endl
+    << "QUEUE_WORK             = " << QUEUE_WORK << endl
+    << "QUEUE_RESULT           = " << QUEUE_RESULT << endl
     ;
 
   pnet_t net;
@@ -1016,19 +1043,43 @@ main (int argc, char ** argv)
 
   marking (net);
 
-  {
-    boost::mt19937 engine (SEED);
+  pthread_attr_t attr;
 
-    Timer_t timer ("fire");
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    while (!net.enabled_transitions().empty())
-      {
-        net.fire_random (engine); // (net.enabled_transitions().first());
+  pthread_t t_worker[NUM_WORKER];
 
-        if (PRINT_MARKING)
-          marking (net);
-      }
-  }
+  petri_net::thread_safe_t<pnet_t> thread_safe ( net
+                                               , QUEUE_WORK
+                                               , QUEUE_RESULT
+                                               , 1
+                                               );
+
+  for (unsigned int w(0); w < NUM_WORKER; ++w)
+    pthread_create(t_worker + w, &attr, worker<pnet_t>, &thread_safe);
+
+  thread_safe.wait();
+
+  for (unsigned int w(0); w < NUM_WORKER; ++w)
+    pthread_cancel (t_worker[w]);
+
+  for (unsigned int w(0); w < NUM_WORKER; ++w)
+    pthread_join (t_worker[w], NULL);
+
+//   {
+//     boost::mt19937 engine (SEED);
+
+//     Timer_t timer ("fire");
+
+//     while (!net.enabled_transitions().empty())
+//       {
+//         net.fire_random (engine); // (net.enabled_transitions().first());
+
+//         if (PRINT_MARKING)
+//           marking (net);
+//       }
+//   }
 
   marking (net);
 
