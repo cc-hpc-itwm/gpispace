@@ -32,10 +32,10 @@ typedef sdpa::daemon::NotificationService gui_service;
 
 namespace sdpa {
 	namespace daemon {
-	  template <typename T>
+	  template <typename T, typename U>
 	  class NRE : public dsm::DaemonFSM,  public sdpa::daemon::Observable {
 	  public:
-		typedef sdpa::shared_ptr<NRE<T> > ptr_t;
+		typedef sdpa::shared_ptr<NRE<T, U> > ptr_t;
 		SDPA_DECLARE_LOGGER();
 
 		NRE( const std::string& name = "", const std::string& url = "",
@@ -50,7 +50,7 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
-			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<sdpa::nre::worker::NreWorkerClient>(this, workerUrl));
+			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>(this, workerUrl));
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -68,11 +68,11 @@ namespace sdpa {
 								  const std::string& masterName, const std::string& masterUrl,
 								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000")
 		{
-			 return ptr_t(new NRE<T>( name, url, masterName, masterUrl, workerUrl, guiUrl));
+			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl));
 		}
 
-		static void start( NRE<T>::ptr_t ptrNRE );
-		static void shutdown(NRE<T>::ptr_t ptrNRE );
+		static void start( NRE<T, U>::ptr_t ptrNRE );
+		static void shutdown(NRE<T, U>::ptr_t ptrNRE );
 
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
@@ -130,8 +130,8 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 
 
-template <typename T>
-void NRE<T>:: start(NRE<T>::ptr_t ptrNRE)
+template <typename T, typename U>
+void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 {
 	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );
@@ -139,8 +139,8 @@ void NRE<T>:: start(NRE<T>::ptr_t ptrNRE)
 	dsm::DaemonFSM::start(ptrNRE, ptrCfg);
 }
 
-template <typename T>
-void NRE<T>::shutdown(NRE<T>::ptr_t ptrNRE)
+template <typename T, typename U>
+void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 {
 	ptrNRE->shutdown_network();
 	ptrNRE->stop();
@@ -149,8 +149,8 @@ void NRE<T>::shutdown(NRE<T>::ptr_t ptrNRE)
 	ptrNRE->ptr_workflow_engine_ = NULL;
 }
 
-template <typename T>
-void NRE<T>::action_configure(const StartUpEvent&)
+template <typename T, typename U>
+void NRE<T, U>::action_configure(const StartUpEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
@@ -159,8 +159,8 @@ void NRE<T>::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 60 * 1000 * 1000); //60s
 }
 
-template <typename T>
-void NRE<T>::action_config_ok(const ConfigOkEvent&)
+template <typename T, typename U>
+void NRE<T, U>::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_config_ok'");
@@ -170,16 +170,16 @@ void NRE<T>::action_config_ok(const ConfigOkEvent&)
 	to_master_stage()->send(pEvtWorkerReg);
 }
 
-template <typename T>
-void NRE<T>::action_interrupt(const InterruptEvent&)
+template <typename T, typename U>
+void NRE<T, U>::action_interrupt(const InterruptEvent&)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
 
 }
 
-template <typename T>
-void NRE<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
+template <typename T, typename U>
+void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
@@ -221,8 +221,8 @@ void NRE<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	}
 }
 
-template <typename T>
-void NRE<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
+template <typename T, typename U>
+void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 {
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
@@ -273,8 +273,8 @@ void NRE<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-template <typename T>
-bool  NRE<T>::cancel(const id_type& activityId, const reason_type& reason )
+template <typename T, typename U>
+bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 {
 	SDPA_LOG_DEBUG("GWES asked SDPA to cancel the activity "<<activityId<<" ...");
 	/*job_id_t job_id(activityId);
@@ -284,38 +284,38 @@ bool  NRE<T>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
-template <typename T>
-void NRE<T>::activityCreated( const id_type& id, const std::string& data )
+template <typename T, typename U>
+void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
 }
 
-template <typename T>
-void NRE<T>::activityStarted( const id_type& id, const std::string& data )
+template <typename T, typename U>
+void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
 }
 
-template <typename T>
-void NRE<T>::activityFinished( const id_type& id, const std::string& data )
+template <typename T, typename U>
+void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
 }
 
-template <typename T>
-void NRE<T>::activityFailed( const id_type& id, const std::string& data )
+template <typename T, typename U>
+void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
 }
 
-template <typename T>
-void NRE<T>::activityCancelled( const id_type& id, const std::string& data )
+template <typename T, typename U>
+void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
 }
 
-template <typename T>
-void NRE<T>::backup( const std::string& strArchiveName )
+template <typename T, typename U>
+void NRE<T, U>::backup( const std::string& strArchiveName )
 {
 	try
 	{
@@ -324,12 +324,13 @@ void NRE<T>::backup( const std::string& strArchiveName )
 		ptr_t ptrNRE_0(this);
 		std::ofstream ofs(strArchiveName.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<NRE<T>*>(NULL));
+		oa.register_type(static_cast<NRE<T, U>*>(NULL));
 		oa.register_type(static_cast<T*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
+		//oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
+		oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		oa << ptrNRE_0;
@@ -340,20 +341,21 @@ void NRE<T>::backup( const std::string& strArchiveName )
 	}
 }
 
-template <typename T>
-void NRE<T>::recover( const std::string& strArchiveName )
+template <typename T, typename U>
+void NRE<T, U>::recover( const std::string& strArchiveName )
 {
 	try
 	{
 		ptr_t ptrRestoredNRE_0(this);
 		std::ifstream ifs(strArchiveName.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<NRE<T>*>(NULL));
+		ia.register_type(static_cast<NRE<T, U>*>(NULL));
 		ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
+		//ia.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
+		ia.register_type(static_cast<SchedulerNRE<U>*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
 		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		ia >> ptrRestoredNRE_0;

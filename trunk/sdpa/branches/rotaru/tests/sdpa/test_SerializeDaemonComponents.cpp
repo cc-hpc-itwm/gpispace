@@ -129,7 +129,7 @@ void WorkerSerializationTest::testNRESerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
 	std::string filename = "testSerializeNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
 
 	ptrNRE_0->ptr_scheduler_ = sdpa::daemon::SchedulerNRE<sdpa::nre::worker::NreWorkerClient>::ptr_t(new sdpa::daemon::SchedulerNRE<sdpa::nre::worker::NreWorkerClient>());
 	sdpa::daemon::SchedulerImpl* pScheduler = dynamic_cast< sdpa::daemon::SchedulerImpl*>(ptrNRE_0->ptr_scheduler_.get());
@@ -172,7 +172,7 @@ void WorkerSerializationTest::testNRESerialization()
 
 		std::ofstream ofs(filename.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<NRE<DummyWorkflowEngine>*>(NULL));
+		oa.register_type(static_cast<NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
@@ -191,11 +191,11 @@ void WorkerSerializationTest::testNRESerialization()
 	std::cout<<"----------------Try now to restore the NRE:----------------"<<std::endl;
 	try
 	{
-		NRE<DummyWorkflowEngine>::ptr_t ptrRestoredNRE_0;
+		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t ptrRestoredNRE_0;
 
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<NRE<DummyWorkflowEngine>*>(NULL));
+		ia.register_type(static_cast<NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));

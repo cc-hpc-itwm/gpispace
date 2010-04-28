@@ -18,9 +18,6 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-// change this to the real workflow engine
-typedef DummyWorkflowEngine WorkflowEngine;
-
 int main (int argc, char **argv)
 {
 	string orchName;
@@ -50,8 +47,8 @@ int main (int argc, char **argv)
 	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Orchestrator<WorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<WorkflowEngine>::create( orchName, orchUrl, workflow_directory );
-		sdpa::daemon::Orchestrator<WorkflowEngine>::start(ptrOrch);
+		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create( orchName, orchUrl, workflow_directory );
+		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -87,7 +84,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Orchestrator<WorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

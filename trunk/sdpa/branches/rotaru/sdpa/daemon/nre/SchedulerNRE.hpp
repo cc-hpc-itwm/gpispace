@@ -28,7 +28,7 @@ using namespace std;
 
 namespace sdpa {
 	namespace daemon {
-	template <typename T>
+	template <typename U>
   class SchedulerNRE : public SchedulerImpl {
 
   public:
@@ -235,7 +235,7 @@ namespace sdpa {
 
   private:
 	  SDPA_DECLARE_LOGGER();
-	  T m_worker_;
+	  U m_worker_;
   };
 }}
 

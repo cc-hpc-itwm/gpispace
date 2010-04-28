@@ -24,6 +24,7 @@
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd.hpp>
+#include <sdpa/daemon/nre/messages.hpp>
 
 namespace po = boost::program_options;
 
@@ -61,6 +62,34 @@ string TestComponents::read_workflow(string strFileName)
 
 	return os.str();
 }
+
+namespace sdpa { namespace tests { namespace worker {
+  class NreWorkerClient
+  {
+  public:
+    explicit
+    NreWorkerClient(const std::string &nre_worker_location) :   SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+
+    void set_ping_interval(unsigned long seconds){}
+    void set_ping_timeout(unsigned long seconds){}
+    void set_ping_trials(std::size_t max_tries){}
+
+    unsigned int start() throw (std::exception){ SDPA_LOG_INFO("Start the test NreWorkerClient ..."); return 0;}
+    void stop() throw (std::exception) { SDPA_LOG_INFO("Stop the test NreWorkerClient ...");}
+
+    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
+
+    sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
+	{
+    	SDPA_LOG_INFO("Report activity finished ...");
+    	return std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result");
+	}
+
+  private:
+    SDPA_DECLARE_LOGGER();
+  };
+}}}
+
 
 void TestComponents::setUp()
 { //initialize and start the finite state machine
@@ -108,7 +137,8 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy GWES
-	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
 	// connect to FVM
 	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
@@ -134,7 +164,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	}
 
 	try {
-		sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
+		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		SDPA_LOG_FATAL("Could not start NRE: " << ex.what());
@@ -142,7 +172,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 
 		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 		sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
-		sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
 	}
@@ -175,7 +205,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
-	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	// processor container terminates ...
 	fvm_pc.leave();
@@ -203,13 +233,16 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy GWES
-	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
-	//sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8001", strGuiUrl );
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
+	/*sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8001", strGuiUrl );
+	*/
 
     try
     {
-    	sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyWorkflowEngine>::start(ptrNRE_1);
+    	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::start(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::start(ptrNRE_1);
     }
     catch (const std::exception &ex)
     {
@@ -218,8 +251,8 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 
     	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
     	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
-    	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
-    	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
+    	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+    	//sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_1);
 
     	return;
     }
@@ -252,8 +285,8 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
-	sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_0);
-	//sdpa::daemon::NRE<DummyWorkflowEngine>::shutdown(ptrNRE_1);
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	//sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_1);
 
     sleep(1);
 	SDPA_LOG_DEBUG("Test finished!");
