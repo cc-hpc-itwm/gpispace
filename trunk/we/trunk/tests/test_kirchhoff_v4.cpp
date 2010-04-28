@@ -224,42 +224,42 @@ public:
         
         if (name == "process")
           {
-            if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.filled"))))
+            if (value::function::is_true (context.value (mk_vec ("volume.buffer0.filled"))))
               {
                 cout << ext << " " << name;
-                cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
-                     << "." << context.value (mk_vec ("volume_selected.id"));
-                cout << " process " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
+                cout << " vol " << context.value (mk_vec ("volume.offset"))
+                     << "." << context.value (mk_vec ("volume.id"));
+                cout << " process " << context.value (mk_vec ("volume.buffer0.bunch"));
                 cout << endl;
               }
             else
               {
-                if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer0.assigned"))))
+                if (value::function::is_true (context.value (mk_vec ("volume.buffer0.assigned"))))
                   {
                     cout << ext << " " << name;
-                    cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
-                         << "." << context.value (mk_vec ("volume_selected.id"));
-                    cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer0.bunch"));
+                    cout << " vol " << context.value (mk_vec ("volume.offset"))
+                         << "." << context.value (mk_vec ("volume.id"));
+                    cout << " prefetch " << context.value (mk_vec ("volume.buffer0.bunch"));
                     cout << endl;
                   }
               }
 
-            if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.filled"))))
+            if (value::function::is_true (context.value (mk_vec ("volume.buffer1.filled"))))
               {
                 cout << ext << " " << name;
-                cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
-                     << "." << context.value (mk_vec ("volume_selected.id"));
-                cout << " process " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
+                cout << " vol " << context.value (mk_vec ("volume.offset"))
+                     << "." << context.value (mk_vec ("volume.id"));
+                cout << " process " << context.value (mk_vec ("volume.buffer1.bunch"));
                 cout << endl;
               }
             else
               {
-                if (value::function::is_true (context.value (mk_vec ("volume_selected.buffer1.assigned"))))
+                if (value::function::is_true (context.value (mk_vec ("volume.buffer1.assigned"))))
                   {
                     cout << ext << " " << name;
-                    cout << " vol " << context.value (mk_vec ("volume_selected.offset"))
-                         << "." << context.value (mk_vec ("volume_selected.id"));
-                    cout << " prefetch " << context.value (mk_vec ("volume_selected.buffer1.bunch"));
+                    cout << " vol " << context.value (mk_vec ("volume.offset"))
+                         << "." << context.value (mk_vec ("volume.id"));
+                    cout << " prefetch " << context.value (mk_vec ("volume.buffer1.bunch"));
                     cout << endl;
                   }
               }
@@ -594,11 +594,6 @@ main (int argc, char ** argv)
   pid_t pid_volume_wait (mk_place (net, "volume_wait", literal::LONG));
   pid_t pid_buffer_empty (mk_place (net, "buffer_empty", signature::buffer));
   token::put (net, pid_buffer_empty, value::buffer::empty);
-  pid_t pid_volume_selected (mk_place (net, "volume_selected", signature::volume));
-  pid_t pid_trigger_volume_select (mk_place (net, "trigger_volume_select"));
-  token::put (net, pid_trigger_volume_select);
-  token::put (net, pid_trigger_volume_select);
-  pid_t pid_trigger_volume_process (mk_place (net, "trigger_volume_process"));
   pid_t pid_assign_xor_reuse_store (mk_place (net, "assign_xor_reuse_store"));
   token::put (net, pid_assign_xor_reuse_store);
 
@@ -812,19 +807,6 @@ main (int argc, char ** argv)
 
   mk_edge (net, connection_t (PT, tid_gen_volume_break, pid_gen_volume_state));
 
-  tid_t tid_volume_select
-    ( mk_transition
-      ( net
-      , "volume_select"
-      , "${volume_selected} := ${volume}; ${trigger_volume_process} := []"
-      )
-    );
-
-  mk_edge (net, connection_t (PT, tid_volume_select, pid_volume));
-  mk_edge (net, connection_t (TP, tid_volume_select, pid_volume_selected));
-  mk_edge (net, connection_t (PT, tid_volume_select, pid_trigger_volume_select));
-  mk_edge (net, connection_t (TP, tid_volume_select, pid_trigger_volume_process));
-
   // *********************************************************************** //
 
   tid_t tid_load
@@ -861,21 +843,21 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "assign0"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume_selected.id});\
-         ${volume_selected.buffer0.assigned} := true;\
-         ${volume_selected.buffer0.bunch} := ${loaded_bunch.bunch};\
-         ${volume_selected.buffer0.store} := ${loaded_bunch.store};\
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+         ${volume.buffer0.assigned} := true;\
+         ${volume.buffer0.bunch} := ${loaded_bunch.bunch};\
+         ${volume.buffer0.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
-      , "(!${volume_selected.buffer0.assigned}) &\
-         (${volume_selected.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume_selected.id}))"
+      , "(!${volume.buffer0.assigned}) &\
+         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_assign0, pid_loaded_bunch));
   mk_edge (net, connection_t (TP, tid_assign0, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign0, pid_volume_selected));
-  mk_edge (net, connection_t (TP, tid_assign0, pid_volume_selected));
+  mk_edge (net, connection_t (PT, tid_assign0, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign0, pid_volume));
   mk_edge (net, connection_t (PT, tid_assign0, pid_assign_xor_reuse_store));
   mk_edge (net, connection_t (TP, tid_assign0, pid_assign_xor_reuse_store));
         
@@ -883,21 +865,21 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "assign1"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume_selected.id});\
-         ${volume_selected.buffer1.assigned} := true;\
-         ${volume_selected.buffer1.bunch} := ${loaded_bunch.bunch};\
-         ${volume_selected.buffer1.store} := ${loaded_bunch.store};\
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+         ${volume.buffer1.assigned} := true;\
+         ${volume.buffer1.bunch} := ${loaded_bunch.bunch};\
+         ${volume.buffer1.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
-      , "(!${volume_selected.buffer1.assigned}) &\
-         (${volume_selected.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume_selected.id}))"
+      , "(!${volume.buffer1.assigned}) &\
+         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_assign1, pid_loaded_bunch));
   mk_edge (net, connection_t (TP, tid_assign1, pid_loaded_bunch));
-  mk_edge (net, connection_t (PT, tid_assign1, pid_volume_selected));
-  mk_edge (net, connection_t (TP, tid_assign1, pid_volume_selected));
+  mk_edge (net, connection_t (PT, tid_assign1, pid_volume));
+  mk_edge (net, connection_t (TP, tid_assign1, pid_volume));
   mk_edge (net, connection_t (PT, tid_assign1, pid_assign_xor_reuse_store));
   mk_edge (net, connection_t (TP, tid_assign1, pid_assign_xor_reuse_store));
 
@@ -910,36 +892,22 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "process"
-      , "${volume_processed} := ${volume_selected};\
-         ${volume_processed.buffer0.assigned} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
-         ${volume_processed.buffer0.filled} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
-         ${volume_processed.buffer0.prefetched} := (${volume_selected.buffer0.assigned} & !${volume_selected.buffer0.filled});\
-         ${volume_processed.buffer1.assigned} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
-         ${volume_processed.buffer1.filled} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
-         ${volume_processed.buffer1.prefetched} := (${volume_selected.buffer1.assigned} & !${volume_selected.buffer1.filled});\
-         ${volume_processed.wait} := ${volume_selected.wait}\
-                                  - (if ${volume_selected.buffer0.filled} then 1L else 0L endif)\
-                                  - (if ${volume_selected.buffer1.filled} then 1L else 0L endif)"
-      , "${volume_selected.buffer0.assigned} | ${volume_selected.buffer1.assigned}"
+      , "${volume_processed} := ${volume};\
+         ${volume_processed.buffer0.assigned} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
+         ${volume_processed.buffer0.filled} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
+         ${volume_processed.buffer0.prefetched} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
+         ${volume_processed.buffer1.assigned} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
+         ${volume_processed.buffer1.filled} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
+         ${volume_processed.buffer1.prefetched} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
+         ${volume_processed.wait} := ${volume.wait}\
+                                  - (if ${volume.buffer0.filled} then 1L else 0L endif)\
+                                  - (if ${volume.buffer1.filled} then 1L else 0L endif)"
+      , "${volume.buffer0.assigned} | ${volume.buffer1.assigned}"
       )
     );
 
-  mk_edge (net, connection_t (PT, tid_process, pid_volume_selected));
+  mk_edge (net, connection_t (PT, tid_process, pid_volume));
   mk_edge (net, connection_t (TP, tid_process, pid_volume_processed));
-
-  tid_t tid_volume_unselect
-    ( mk_transition
-      ( net
-      , "volume_unselect"
-      , "${volume} := ${volume_selected}; ${trigger_volume_select} := []"
-      , "!(${volume_selected.buffer0.assigned} | ${volume_selected.buffer1.assigned})"
-      )
-    );
-
-  mk_edge (net, connection_t (TP, tid_volume_unselect, pid_volume));
-  mk_edge (net, connection_t (PT, tid_volume_unselect, pid_volume_selected));
-  mk_edge (net, connection_t (TP, tid_volume_unselect, pid_trigger_volume_select));
-  mk_edge (net, connection_t (PT, tid_volume_unselect, pid_trigger_volume_process));
 
   // *********************************************************************** //
 
@@ -990,32 +958,26 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "volume_step"
-      , "${volume} := ${volume_processed};\
-         ${trigger_volume_select} := []"
+      , "${volume} := ${volume_processed}"
       , "${volume_processed.wait} > 0L"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_volume_step, pid_volume_processed));
   mk_edge (net, connection_t (TP, tid_volume_step, pid_volume));
-  mk_edge (net, connection_t (TP, tid_volume_step, pid_trigger_volume_select));
-  mk_edge (net, connection_t (PT, tid_volume_step, pid_trigger_volume_process));
   mk_edge (net, connection_t (PT_READ, tid_volume_step, pid_assign_xor_reuse_store));
 
   tid_t tid_volume_break
     ( mk_transition
       ( net
       , "volume_break"
-      , "${volume_to_be_written} := ${volume_processed};\
-         ${trigger_volume_select} := []"
+      , "${volume_to_be_written} := ${volume_processed}"
       , "${volume_processed.wait} == 0L"
       )
     );
 
   mk_edge (net, connection_t (PT, tid_volume_break, pid_volume_processed));
   mk_edge (net, connection_t (TP, tid_volume_break, pid_volume_to_be_written));
-  mk_edge (net, connection_t (TP, tid_volume_break, pid_trigger_volume_select));
-  mk_edge (net, connection_t (PT, tid_volume_break, pid_trigger_volume_process));
   mk_edge (net, connection_t (PT_READ, tid_volume_break, pid_assign_xor_reuse_store));
 
   tid_t tid_write
