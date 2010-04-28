@@ -62,12 +62,14 @@ struct transition_t
 {
 public:
   std::string name;
+  std::string expression;
   mutable condition::type cond;
 
   transition_t ( const std::string & _name
+               , const std::string & _expression
                , const condition::type & _cond
                )
-    : name(_name), cond(_cond)
+    : name(_name), expression (_expression), cond(_cond)
   {}
 
   bool condition (Function::Condition::Traits<token::type>::choices_t & choices)
@@ -168,6 +170,21 @@ mk_vec (const std::string & s)
 
 // ************************************************************************* //
 
+static std::string break_at (const char & c, const std::string & s)
+{
+  std::string r;
+
+  for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+    if (*pos  == c)
+      r += ";\\n";
+    else
+      r.push_back (*pos);
+
+  return r;
+}
+
+// ************************************************************************* //
+
 template<typename NET>
 static void dot ( std::ostream & s
                 , const NET & n
@@ -179,8 +196,20 @@ static void dot ( std::ostream & s
   for (typename NET::transition_const_it t (n.transitions()); t.has_more(); ++t)
     s << "t" << ::util::show (*t)
       << " ["
-      << "label = \"" + n.get_transition(*t).name + "\""
+      << "label = \""
+      << n.get_transition(*t).name
+      << "\\n"
+      << "exp:\\n" << break_at (';', n.get_transition(*t).expression)
+      << "\\n"
+      << "cond:\\n" << break_at (';', n.get_transition(*t).cond.expression())
+      << "\""
       << ", shape = \"rectangle\""
+      << ((n.get_transition(*t).name == "gen_config") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition(*t).name == "loadTT") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition(*t).name == "finalize") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition(*t).name == "load") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition(*t).name == "process") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition(*t).name == "write") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
       << "];" 
       << endl
       ;
@@ -188,8 +217,12 @@ static void dot ( std::ostream & s
   for (typename NET::place_const_it p (n.places()); p.has_more(); ++p)
     s << "p" << ::util::show (*p)
       << " ["
-      << "label = \"" + n.get_place(*p).get_name() + "\""
-      << ", shape = \"circle\""
+      << "label = \""
+      << n.get_place(*p).get_name()
+      << "\\n"
+      << n.get_place(*p).get_signature()
+      << "\""
+      << ", shape = \"ellipse\""
       << "];" 
       << endl
       ;
@@ -468,10 +501,21 @@ public:
 static std::string strip (const std::string & s)
 {
   std::string r;
+  bool last_was_space (false);
 
   for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
-    if (!isspace(*pos))
-      r.push_back (*pos);
+    if (isspace (*pos))
+      {
+        if (!last_was_space)
+          r.push_back (*pos);
+        
+        last_was_space = true;
+      }
+    else
+      {
+        r.push_back (*pos);
+        last_was_space = false;
+      }
 
   return r;
 }
@@ -484,6 +528,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 {
   return net.add_transition 
     ( transition_t ( name
+                   , strip(expression)
                    , condition::type 
                      ( strip (condition)
                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
@@ -570,7 +615,7 @@ namespace signature
 
     buffer["filled"] = literal::BOOL;
     buffer["assigned"] = literal::BOOL;
-    buffer["prefetched"] = literal::BOOL;
+    buffer["free"] = literal::BOOL;
     buffer["bunch"] = bunch;
     buffer["store"] = literal::LONG;
 
@@ -603,7 +648,7 @@ namespace value
     {
       empty["assigned"] = false;
       empty["filled"] = false;
-      empty["prefetched"] = false;
+      empty["free"] = false;
       empty["store"] = -1L;
       empty["bunch"] = bunch::invalid;
     }
@@ -1027,10 +1072,10 @@ main (int argc, char ** argv)
       , "${volume_processed} := ${volume};\
          ${volume_processed.buffer0.assigned} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
          ${volume_processed.buffer0.filled} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer0.prefetched} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
+         ${volume_processed.buffer0.free} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
          ${volume_processed.buffer1.assigned} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
          ${volume_processed.buffer1.filled} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.buffer1.prefetched} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
+         ${volume_processed.buffer1.free} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
          ${volume_processed.wait} := ${volume.wait}\
                                   - (if ${volume.buffer0.filled} then 1L else 0L endif)\
                                   - (if ${volume.buffer1.filled} then 1L else 0L endif)"
@@ -1049,10 +1094,10 @@ main (int argc, char ** argv)
       ( net
       , "reuse_store0"
       , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
-         ${volume_processed.buffer0.prefetched} := false;\
+         ${volume_processed.buffer0.free} := false;\
          ${assign_xor_reuse_store} := []"
       , "(${volume_processed.buffer0.bunch} == ${loaded_bunch.bunch}) &\
-         (${volume_processed.buffer0.prefetched})"
+         (${volume_processed.buffer0.free})"
       )
     );
 
@@ -1068,10 +1113,10 @@ main (int argc, char ** argv)
       ( net
       , "reuse_store1"
       , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
-         ${volume_processed.buffer1.prefetched} := false;\
+         ${volume_processed.buffer1.free} := false;\
          ${assign_xor_reuse_store} := []"
       , "(${volume_processed.buffer1.bunch} == ${loaded_bunch.bunch}) &\
-         (${volume_processed.buffer1.prefetched})"
+         (${volume_processed.buffer1.free})"
       )
     );
 
