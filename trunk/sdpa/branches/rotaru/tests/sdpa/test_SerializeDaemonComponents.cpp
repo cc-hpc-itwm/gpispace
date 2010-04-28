@@ -261,7 +261,7 @@ void WorkerSerializationTest::testAggregatorSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str()) );
+		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
@@ -370,7 +370,7 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str()) );
+		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
@@ -483,7 +483,7 @@ void WorkerSerializationTest::testDaemonSerializationWithFSMs()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str()) );
+		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
@@ -584,7 +584,7 @@ void WorkerSerializationTest::testDaemonSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str()) );
+		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
@@ -658,7 +658,7 @@ void WorkerSerializationTest::testSchedulerSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str()) );
+		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
