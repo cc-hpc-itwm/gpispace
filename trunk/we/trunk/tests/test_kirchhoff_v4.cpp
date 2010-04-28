@@ -36,17 +36,19 @@ static statistic::muted<std::string> stat;
 
 // ************************************************************************* //
 
-static long OFFSETS (2);
-static long BUNCHES_PER_OFFSET (3);
-static long STORES (8);
-static long SUBVOLUMES_PER_OFFSET (3);
+static long NUM_WORKER (5);
+static long STORES_PER_WORKER (3);
+
+static long OFFSETS (3);
+static long BUNCHES_PER_OFFSET (10);
+static long STORES (STORES_PER_WORKER * NUM_WORKER);
+static long SUBVOLUMES_PER_OFFSET (NUM_WORKER);
 
 static bool PRINT_MARKING (true);
 static bool PRINT_FIRE (true);
 
-static long NUM_WORKER (10);
-static long QUEUE_WORK (NUM_WORKER);
-static long QUEUE_RESULT (NUM_WORKER);
+static long QUEUE_WORK (2 * NUM_WORKER);
+static long QUEUE_RESULT (2 * NUM_WORKER);
 
 static long TIME_LOAD (150);
 static long TIME_WRITE (150);
@@ -166,7 +168,57 @@ mk_vec (const std::string & s)
 
 // ************************************************************************* //
 
+struct count_t
+{
+private:
+  typedef boost::unordered_map<std::string, unsigned long> cnt_map_t;
+  cnt_map_t sum;
+  cnt_map_t max;
+  cnt_map_t run;
+  boost::mutex mutex;
+
+public:
+  void start (const std::string & name)
+  {
+    boost::lock_guard<boost::mutex> lock (mutex);
+
+    sum[name] += 1;
+    run[name] += 1;
+    max[name] = std::max (max[name], run[name]);
+  }
+
+  void stop (const std::string & name)
+  {
+    boost::lock_guard<boost::mutex> lock (mutex);
+
+    if (run[name] == 0)
+      throw std::runtime_error ("STRANGE! run == 0 for " + name);
+
+    run[name] -= 1;
+  }
+
+  void out (void)
+  {
+    for (cnt_map_t::const_iterator pos (sum.begin()); pos != sum.end(); ++pos)
+      {
+        const std::string name (pos->first);
+
+        std::cout << std::setw(30) << std::left << name << std::right
+                  << " | sum " << std::setw(10) << sum[name]
+                  << " | max " << std::setw(10) << max[name]
+                  << std::endl
+          ;
+      }
+  }
+};
+
+static count_t count;
+
+// ************************************************************************* //
+
 typedef expr::eval::context<signature::field_name_t> context_t;
+
+static boost::mutex mutex_print_fire;
 
 class TransitionFunction
 {
@@ -197,6 +249,8 @@ public:
                                , const pnet_t::output_descr_t & output_descr
                                )
   {
+    count.start (name);
+
     context_t context;
 
     stat.start (name, "bind");
@@ -219,6 +273,8 @@ public:
 
     if (PRINT_FIRE)
       {
+        boost::lock_guard<boost::mutex> lock (mutex_print_fire);
+
         const std::string ext ("***");
         const std::string intern ("~~~");
         
@@ -333,6 +389,8 @@ public:
       }
 
     stat.stop (name, "unbind");
+
+    count.stop (name);
 
     return output;
   }
@@ -515,8 +573,7 @@ main (int argc, char ** argv)
     ("help", "this message")
     ("offsets", po::value<long>(&OFFSETS)->default_value(OFFSETS), "number of offsets")
     ("bunches", po::value<long>(&BUNCHES_PER_OFFSET)->default_value(BUNCHES_PER_OFFSET), "number of bunches per offset")
-    ("stores", po::value<long>(&STORES)->default_value(STORES), "number of bunch stores")
-    ("subvolumes", po::value<long>(&SUBVOLUMES_PER_OFFSET)->default_value(SUBVOLUMES_PER_OFFSET), "number of subvolumes per offset")
+    ("stores_per_worker", po::value<long>(&STORES_PER_WORKER)->default_value(STORES_PER_WORKER), "number of bunch stores per worker")
 
     ("seed", po::value<unsigned int>(&SEED)->default_value(SEED), "seed for random number generator")
     ("print_marking", po::value<bool>(&PRINT_MARKING)->default_value(PRINT_MARKING), "print marking after each fire")
@@ -541,24 +598,29 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
+  SUBVOLUMES_PER_OFFSET = NUM_WORKER;
+  STORES = STORES_PER_WORKER * NUM_WORKER;
+
   cout 
+    << "NUM_WORKER             = " << NUM_WORKER << endl
+    << "STORES_PER_WORKER      = " << STORES_PER_WORKER << endl
+
     << "OFFSETS                = " << OFFSETS << endl
     << "BUNCHES_PER_OFFSET     = " << BUNCHES_PER_OFFSET << endl
     << "STORES                 = " << STORES << endl
     << "SUBVOLUMES_PER_OFFSET  = " << SUBVOLUMES_PER_OFFSET << endl
 
-    << "SEED                   = " << SEED << endl
-
     << "PRINT_MARKING          = " << PRINT_MARKING << endl
     << "PRINT_FIRE             = " << PRINT_FIRE << endl
 
-    << "WORKER                 = " << NUM_WORKER << endl
     << "QUEUE_WORK             = " << QUEUE_WORK << endl
     << "QUEUE_RESULT           = " << QUEUE_RESULT << endl
 
     << "TIME_LOAD              = " << TIME_LOAD << endl
     << "TIME_WRITE             = " << TIME_WRITE << endl
     << "TIME_PROCESS           = " << TIME_PROCESS << endl
+
+    << "SEED                   = " << SEED << endl
     ;
 
   pnet_t net;
@@ -610,7 +672,7 @@ main (int argc, char ** argv)
       + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
       + "${trigger_loadTT} := [];"
       + "${wanted_offset} := bitset_insert ({}, 0L);"
-      + "${volume_wait} := ${config.SUBVOLUMES_PER_OFFSET}"
+      + "${volume_wait} := ${config.SUBVOLUMES_PER_OFFSET};"
       )
     );
 
@@ -815,8 +877,8 @@ main (int argc, char ** argv)
       , "load"
       , "${loaded_bunch.bunch} := ${bunch};\
          ${loaded_bunch.store} := ${empty_store};\
-         ${loaded_bunch.seen} := {};\
-         ${loaded_bunch.wait} := ${config.SUBVOLUMES_PER_OFFSET}"
+         ${loaded_bunch.seen}  := {};\
+         ${loaded_bunch.wait}  := ${config.SUBVOLUMES_PER_OFFSET}"
       )
     );
 
@@ -1043,47 +1105,38 @@ main (int argc, char ** argv)
 
   marking (net);
 
-  pthread_attr_t attr;
+  {
+    Timer_t timer ("execute");
 
-  pthread_attr_init(&attr);
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_t attr;
 
-  pthread_t t_worker[NUM_WORKER];
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-  petri_net::thread_safe_t<pnet_t> thread_safe ( net
-                                               , QUEUE_WORK
-                                               , QUEUE_RESULT
-                                               , 1
-                                               );
+    pthread_t t_worker[NUM_WORKER];
 
-  for (unsigned int w(0); w < NUM_WORKER; ++w)
-    pthread_create(t_worker + w, &attr, worker<pnet_t>, &thread_safe);
+    petri_net::thread_safe_t<pnet_t> thread_safe ( net
+                                                 , QUEUE_WORK
+                                                 , QUEUE_RESULT
+                                                 , 1
+                                                 );
 
-  thread_safe.wait();
+    for (unsigned int w(0); w < NUM_WORKER; ++w)
+      pthread_create(t_worker + w, &attr, worker<pnet_t>, &thread_safe);
 
-  for (unsigned int w(0); w < NUM_WORKER; ++w)
-    pthread_cancel (t_worker[w]);
+    thread_safe.wait();
 
-  for (unsigned int w(0); w < NUM_WORKER; ++w)
-    pthread_join (t_worker[w], NULL);
+    for (unsigned int w(0); w < NUM_WORKER; ++w)
+      pthread_cancel (t_worker[w]);
 
-//   {
-//     boost::mt19937 engine (SEED);
-
-//     Timer_t timer ("fire");
-
-//     while (!net.enabled_transitions().empty())
-//       {
-//         net.fire_random (engine); // (net.enabled_transitions().first());
-
-//         if (PRINT_MARKING)
-//           marking (net);
-//       }
-//   }
+    for (unsigned int w(0); w < NUM_WORKER; ++w)
+      pthread_join (t_worker[w], NULL);
+  }
 
   marking (net);
 
   stat.out ("Kirchhoff");
+  count.out();
 
   return EXIT_SUCCESS;
 }
