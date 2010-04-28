@@ -51,6 +51,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/weak_ptr.hpp>
+#include <boost/utility.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -59,7 +60,8 @@ namespace sdpa { namespace daemon {
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
 						public sdpa::events::EventHandler,
-						public IDaemon
+						public IDaemon,
+						boost::noncopyable
 {
   public:
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
