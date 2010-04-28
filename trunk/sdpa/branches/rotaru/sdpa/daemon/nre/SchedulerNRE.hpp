@@ -21,14 +21,14 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
-
-#include <sdpa/daemon/nre/NreWorkerClient.hpp>
+#include <sdpa/daemon/nre/messages.hpp>
 
 using namespace sdpa::events;
 using namespace std;
 
 namespace sdpa {
 	namespace daemon {
+	template <typename T>
   class SchedulerNRE : public SchedulerImpl {
 
   public:
@@ -235,7 +235,7 @@ namespace sdpa {
 
   private:
 	  SDPA_DECLARE_LOGGER();
-	  sdpa::nre::worker::NreWorkerClient m_worker_;
+	  T m_worker_;
   };
 }}
 

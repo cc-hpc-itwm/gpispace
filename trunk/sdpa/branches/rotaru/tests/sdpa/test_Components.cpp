@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 #include "test_Components.hpp"
+#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
-#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
@@ -62,7 +62,8 @@ string TestComponents::read_workflow(string strFileName)
 	return os.str();
 }
 
-void TestComponents::setUp() { //initialize and start the finite state machine
+void TestComponents::setUp()
+{ //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
@@ -93,7 +94,7 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-void TestComponents::testCompWithFvmPC()
+void TestComponents::testCompDummyGwesAndFakeFvmPC()
 {
 	SDPA_LOG_DEBUG("*****testComponents with fvm-pc*****"<<std::endl);
 	string strAnswer = "finished";
@@ -187,7 +188,7 @@ void TestComponents::testCompWithFvmPC()
 }
 
 
-void TestComponents::testComponentsDummyGWES()
+void TestComponents::testComponentsDummyGwesNoFvmPC()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
 	string strAnswer = "finished";

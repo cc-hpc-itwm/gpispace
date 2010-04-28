@@ -131,7 +131,7 @@ void WorkerSerializationTest::testNRESerialization()
 	std::string filename = "testSerializeNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 	sdpa::daemon::NRE<DummyWorkflowEngine>::ptr_t ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000" );
 
-	ptrNRE_0->ptr_scheduler_ = sdpa::daemon::SchedulerNRE::ptr_t(new sdpa::daemon::SchedulerNRE());
+	ptrNRE_0->ptr_scheduler_ = sdpa::daemon::SchedulerNRE<sdpa::nre::worker::NreWorkerClient>::ptr_t(new sdpa::daemon::SchedulerNRE<sdpa::nre::worker::NreWorkerClient>());
 	sdpa::daemon::SchedulerImpl* pScheduler = dynamic_cast< sdpa::daemon::SchedulerImpl*>(ptrNRE_0->ptr_scheduler_.get());
 
 	JobId id1("_1");
@@ -177,7 +177,7 @@ void WorkerSerializationTest::testNRESerialization()
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		oa.register_type(static_cast<SchedulerNRE*>(NULL));
+		oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 
 		oa << ptrNRE_0;
@@ -200,7 +200,7 @@ void WorkerSerializationTest::testNRESerialization()
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia.register_type(static_cast<SchedulerNRE*>(NULL));
+		ia.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
 
 		ia >> ptrRestoredNRE_0;

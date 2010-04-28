@@ -24,6 +24,8 @@
 #include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
+#include <sdpa/daemon/nre/NreWorkerClient.hpp>
+
 
 typedef sdpa::daemon::NotificationService gui_service;
 
@@ -48,7 +50,7 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
-			ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE(this, workerUrl));
+			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<sdpa::nre::worker::NreWorkerClient>(this, workerUrl));
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -327,7 +329,7 @@ void NRE<T>::backup( const std::string& strArchiveName )
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		oa.register_type(static_cast<SchedulerNRE*>(NULL));
+		oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		oa << ptrNRE_0;
@@ -351,7 +353,7 @@ void NRE<T>::recover( const std::string& strArchiveName )
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia.register_type(static_cast<SchedulerNRE*>(NULL));
+		ia.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
 		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
 		ia >> ptrRestoredNRE_0;
