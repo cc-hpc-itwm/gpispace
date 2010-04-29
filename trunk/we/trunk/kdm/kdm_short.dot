@@ -1,6 +1,6 @@
 digraph KDM {
 p0 [label = "config_file", shape = "ellipse"];
-p10 [label = "offset_volume", shape = "ellipse"];
+p10 [label = "offset", shape = "ellipse"];
 p12 [label = "bunch", shape = "ellipse"];
 p13 [label = "loaded_bunch", shape = "ellipse"];
 p15 [label = "volume", shape = "ellipse"];
@@ -14,8 +14,7 @@ p3 [label = "", shape = "circle"];
 p5 [label = "empty_store", shape = "ellipse"];
 p6 [label = "", shape = "circle"];
 p7 [label = "wanted_offset", shape = "ellipse"];
-p8 [label = "state", shape = "ellipse"];
-p9 [label = "offset_bunch", shape = "ellipse"];
+p9 [label = "offset", shape = "ellipse"];
 t1 [label = "loadTT", shape = "rectangle", style="filled", fillcolor="yellow"];
 t11 [label = "gen_volume", shape = "rectangle"];
 t15 [label = "reuse_store", shape = "rectangle"];
@@ -24,7 +23,6 @@ t2 [label = "gen_store", shape = "rectangle"];
 t22 [label = "break", shape = "rectangle"];
 t26 [label = "finalize", shape = "rectangle", style="filled", fillcolor="yellow"];
 t5 [label = "gen_offset", shape = "rectangle"];
-t6 [label = "step", shape = "rectangle"];
 t8 [label = "gen_bunch", shape = "rectangle"];
 subgraph {
 rank = same;
@@ -91,8 +89,7 @@ p3 -> t1 [];
 p5 -> t14 [];
 p6 -> t5 [];
 p7 -> t24 [dir="both"];
-p7 -> t6 [style = "dotted"];
-p8 -> t6 [dir="both"];
+p7 -> t5 [style = "dotted"];
 p9 -> t8 [];
 t0 -> p1 [];
 t0 -> p19 [];
@@ -108,8 +105,7 @@ t2 -> p6 [];
 t21 -> p15 [];
 t22 -> p17 [];
 t23 -> p18 [];
-t5 -> p8 [];
-t6 -> p10 [];
-t6 -> p9 [];
+t5 -> p10 [];
+t5 -> p9 [];
 t8 -> p12 [];
 }
