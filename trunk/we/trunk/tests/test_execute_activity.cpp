@@ -105,28 +105,21 @@ namespace module
         ; ++ton
         )
     {
-      try
-      {
-        const port_id_t port_id =
-          we::type::detail::translate_name_to_output_port (act.transition(), ton->second);
+      const port_id_t port_id =
+        we::type::detail::translate_name_to_output_port (act.transition(), ton->second);
 
-        const port_t & port =
-          act.transition().get_port (port_id);
+      const port_t & port =
+        act.transition().get_port (port_id);
 
-        act.output().push_back
-          ( std::make_pair
-            ( token_type ( port.name()
-                         , port.signature()
-                         , ton->first
-                         )
-            , port_id
-            )
-          );
-      }
-      catch (...)
-      {
-        // ignore
-      }
+      act.output().push_back
+        ( std::make_pair
+          ( token_type ( port.name()
+                       , port.signature()
+                       , ton->first
+                       )
+          , port_id
+          )
+        );
     }
   }
 }
