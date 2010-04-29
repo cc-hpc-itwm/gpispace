@@ -87,7 +87,8 @@ namespace we { namespace mgmt { namespace visitor {
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
 
-        const port_id_t port_id  = activity_.transition().outer_to_inner (inp->second.first);
+        const port_id_t port_id 
+          (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
         activity_.input ().push_back
@@ -105,7 +106,8 @@ namespace we { namespace mgmt { namespace visitor {
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id  = activity_.transition().outer_to_inner (inp->second.first);
+        const port_id_t port_id 
+          (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
         activity_.input ().push_back
@@ -123,7 +125,8 @@ namespace we { namespace mgmt { namespace visitor {
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id  = activity_.transition().outer_to_inner (inp->second.first);
+        const port_id_t port_id 
+          (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
         activity_.input ().push_back
