@@ -689,20 +689,26 @@ namespace we { namespace type {
       s << ", ";
       s << boost::apply_visitor (detail::transition_visitor_show(), t.data());
       s << ", {cond, " << t.condition() << "}";
-      s << ", [";
+      s << ", {ports, ";
+      s << "[";
       for ( typename trans_t::port_map_t::const_iterator p (t.ports_.begin())
               ; p != t.ports_.end()
               ; ++p
             )
       {
+        if (p != t.ports_.begin())
+          s << ", ";
+
         s << "(";
         s << p->first;
         s << ", ";
         s << p->second;
         s << ")";
-        s << ", ";
       }
+
       s << "]";
+      s << "}";
+
       s << "}";
       return s;
     }

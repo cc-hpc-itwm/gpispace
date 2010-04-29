@@ -38,8 +38,9 @@ namespace we { namespace mgmt { namespace type {
     typedef Token token_type;
 
     typedef std::pair<token_type, pid_t> token_on_place_t;
-    typedef std::vector<token_on_place_t> input_t;
-    typedef std::vector<token_on_place_t> output_t;
+    typedef std::vector<token_on_place_t> token_on_place_list_t;
+    typedef token_on_place_list_t input_t;
+    typedef token_on_place_list_t output_t;
   };
 
   template <typename Transition, typename Token, typename Traits = activity_traits<Transition, Token> >
@@ -53,6 +54,7 @@ namespace we { namespace mgmt { namespace type {
 
     typedef typename traits_type::token_type token_type;
     typedef typename traits_type::token_on_place_t token_on_place_t;
+    typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
     typedef typename traits_type::input_t input_t;
     typedef typename traits_type::output_t output_t;
     typedef typename traits_type::pid_t pid_t;
@@ -329,6 +331,51 @@ namespace we { namespace mgmt { namespace type {
     boost::mt19937 engine_;
   };
 
+      namespace detail
+      {
+        template <typename Activity, typename Stream = std::ostream>
+        struct printer
+        {
+          typedef printer<Activity, Stream> this_type;
+          typedef typename Activity::token_on_place_list_t top_list_t;
+
+          printer (const Activity & act, Stream & stream)
+            : act_(act)
+            , os (stream)
+          { }
+
+          this_type & operator << ( const top_list_t & top_list )
+          {
+            os << "[";
+
+            for ( typename top_list_t::const_iterator top (top_list.begin())
+                ; top != top_list.end()
+                ; ++top
+                )
+            {
+              if (top != top_list.begin())
+                os << ", ";
+              os << we::type::detail::translate_port_to_name (act_.transition(), top->second)
+                 << "=(" << top->first << ", " << top->second << ")";
+            }
+
+            os << "]";
+            return *this;
+          }
+
+          template <typename T>
+          this_type & operator << ( const T & t )
+          {
+            os << t;
+            return *this;
+          }
+
+        private:
+          const Activity & act_;
+          Stream & os;
+        };
+      }
+
 
   template <typename Transition, typename Token, typename Traits>
   std::ostream & operator << ( std::ostream & os
@@ -345,29 +392,13 @@ namespace we { namespace mgmt { namespace type {
          << ", "
          ;
 
-    os << "{input, "
-       << "[";
-    for (typename activity_t::input_t::const_iterator i (act.input().begin()); i != act.input().end(); ++i)
-    {
-      if (i != act.input().begin())
-        os << ", ";
-      os << we::type::detail::translate_port_to_name (act.transition(), i->second)
-         << "=(" << i->first << ", " << i->second << ")";
-    }
-    os << "]";
-
+    detail::printer<activity_t> printer (act, os);
+    os << "{input, ";
+    printer << act.input();
+    os << "}";
     os << ", ";
-
-    os << "{output, "
-       << "[";
-    for (typename activity_t::output_t::const_iterator o (act.output().begin()); o != act.output().end(); ++o)
-    {
-      if (o != act.output().begin())
-        os << ", ";
-      os << we::type::detail::translate_port_to_name (act.transition(), o->second) << "=(" << o->first << ", " << o->second << ")";
-    }
-    os << "]";
-
+    os << "{output, ";
+    printer << act.output();
     os << "}";
     return os;
   }

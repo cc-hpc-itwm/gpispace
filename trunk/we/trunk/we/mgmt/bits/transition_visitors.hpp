@@ -23,6 +23,7 @@
 #include <string>
 
 #include <boost/variant.hpp>
+#include <we/util/show.hpp>
 #include <we/util/warnings.hpp>
 #include <we/type/transition.hpp>
 
@@ -241,10 +242,11 @@ namespace we { namespace mgmt { namespace visitor {
           }
           else
           {
-            std::cerr << "W: output port "
-                      << "(" << port_it->first << ", " << port_it->second << ") "
-                      << "is not associated with any place!"
-                      << std::endl;
+            throw std::runtime_error ( "output port ("
+                                       + ::util::show (port_it->first)
+                                       + ", " + ::util::show (port_it->second) + ") "
+                                     + "is not associated with any place!"
+                                     );
           }
         }
       }
@@ -260,11 +262,13 @@ namespace we { namespace mgmt { namespace visitor {
       return; // nothting todo, activity already contains output
     }
 
+    /*
     template <typename T>
     void operator () ( T & )
     {
       throw exception::operation_not_supported ("output_collector (unknown T)");
     }
+    */
   };
 
   template <typename Net, typename Transition, typename Output>
@@ -286,9 +290,14 @@ namespace we { namespace mgmt { namespace visitor {
                    );
       } catch ( const we::type::exception::not_connected <port_id_t> &)
       {
-        std::cerr << "W: transition generated output, but port is not connected: "
-                  << trans.name()
-                  << "[" << top->second <<"]"
+        std::cerr << "W: transition generated output, but port is not connected:"
+                  << " trans=\"" << trans.name() << "\""
+                  << " port="
+                  << we::type::detail::translate_port_to_name ( trans
+                                                              , top->second
+                                                              )
+                  << "(" << top->second << ")"
+                  << " token=" << ::util::show (top->first)
                   << std::endl;
       }
     }
@@ -371,6 +380,21 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
+  template <typename Net, typename Transition, typename Input>
+  void inject_input_to_net ( Net & net, Transition & trans, const Input & input)
+  {
+    for (typename Input::const_iterator inp (input.begin()); inp != input.end(); ++inp)
+    {
+      typedef typename Transition::port_id_t port_id_t;
+      typedef typename Transition::pid_t     pid_t;
+
+      const port_id_t port_id  = inp->second;
+      const pid_t     place_id = trans.get_port (port_id).associated_place();
+
+      token::put (net, place_id, inp->first);
+    }
+  }
+
   template <typename Activity, typename Context>
   class executor
     : public boost::static_visitor<void>
@@ -395,30 +419,16 @@ namespace we { namespace mgmt { namespace visitor {
                                      , Token
                                      > & net)
     {
-      typedef petri_net::net < Place
-                             , Trans
-                             , Edge
-                             , Token
-                             > pnet_t;
-
-      typedef typename Activity::input_t input_t;
-
-      // TODO beautify this
-      for (typename input_t::const_iterator inp (activity_.input().begin()); inp != activity_.input().end(); ++inp)
-      {
-        typedef typename Activity::transition_type::port_id_t port_id_t;
-        typedef typename Activity::transition_type::pid_t     pid_t;
-
-        const port_id_t port_id  = inp->second;
-        const pid_t     place_id = activity_.transition().get_port (port_id).associated_place();
-
-        token::put (net, place_id, inp->first);
-      }
+      inject_input_to_net (net, activity_.transition(), activity_.input());
 
       if (internal_)
+      {
         ctxt_.handle_internally ( activity_, net );
+      }
       else
+      {
         ctxt_.handle_externally ( activity_, net );
+      }
     }
 
     void operator () (const we::type::module_call_t & mod)
