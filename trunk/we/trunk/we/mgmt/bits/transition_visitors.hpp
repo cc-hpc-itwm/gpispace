@@ -395,6 +395,42 @@ namespace we { namespace mgmt { namespace visitor {
     }
   }
 
+  template <typename Activity>
+  class injector
+    : public boost::static_visitor<void>
+  {
+  private:
+    typedef typename Activity::input_t input_t;
+
+    Activity & activity_;
+    input_t & input_;
+
+  public:
+    explicit
+    injector (Activity & activity, input_t & input)
+      : activity_(activity)
+      , input_(input)
+    {}
+
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    void operator () (petri_net::net < Place
+                                     , Trans
+                                     , Edge
+                                     , Token
+                                     > & net)
+    {
+      inject_input_to_net (net, activity_.transition(), input_);
+    }
+
+    void operator () (const we::type::module_call_t & )
+    {
+    }
+
+    void operator () (const we::type::expression_t & )
+    {
+    }
+  };
+
   template <typename Activity, typename Context>
   class executor
     : public boost::static_visitor<void>
@@ -419,8 +455,6 @@ namespace we { namespace mgmt { namespace visitor {
                                      , Token
                                      > & net)
     {
-      inject_input_to_net (net, activity_.transition(), activity_.input());
-
       if (internal_)
       {
         ctxt_.handle_internally ( activity_, net );

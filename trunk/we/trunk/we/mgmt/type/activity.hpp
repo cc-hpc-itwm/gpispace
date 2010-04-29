@@ -186,6 +186,17 @@ namespace we { namespace mgmt { namespace type {
                            );
     }
 
+    void
+    inject_input ()
+    {
+      unique_lock_t lock(*this);
+      we::mgmt::visitor::injector<this_type>
+        inject_input (*this, input_);
+      boost::apply_visitor ( inject_input
+                           , transition_.data()
+                           );
+    }
+
     template <typename Context>
     void execute ( Context & ctxt )
     {

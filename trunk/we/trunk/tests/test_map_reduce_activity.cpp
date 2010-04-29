@@ -138,8 +138,10 @@ struct exec_context
   typedef transition_t::mod_type mod_t;
   typedef transition_t::expr_type expr_t;
 
-  void handle_internally ( activity_t & act, const net_t &)
+  void handle_internally ( activity_t & act, net_t &)
   {
+    act.inject_input ();
+
     // submit to self
     while (act.has_enabled())
     {
@@ -186,14 +188,14 @@ struct exec_context
     // nothing to do
   }
 
-  std::string fake_external ( const std::string & act_enc, const net_t & n )
+  std::string fake_external ( const std::string & act_enc, net_t & n )
   {
     activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
     handle_internally ( act, n );
     return we::util::text_codec::encode (act);
   }
 
-  void handle_externally ( activity_t & act, const net_t & n)
+  void handle_externally ( activity_t & act, net_t & n)
   {
     activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
     act = result;
