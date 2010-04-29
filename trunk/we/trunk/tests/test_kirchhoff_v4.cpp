@@ -210,22 +210,32 @@ static void dot ( std::ostream & s
       << ((n.get_transition(*t).name == "load") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
       << ((n.get_transition(*t).name == "process") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
       << ((n.get_transition(*t).name == "write") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
+      << ((n.get_transition_priority (*t) == 1) ?  ", style=\"filled\", fillcolor=\"#eeeeee\"" : "")
       << "];" 
       << endl
       ;
 
   for (typename NET::place_const_it p (n.places()); p.has_more(); ++p)
-    s << "p" << ::util::show (*p)
-      << " ["
-      << "label = \""
-      << n.get_place(*p).get_name()
-      << "\\n"
-      << n.get_place(*p).get_signature()
-      << "\""
-      << ", shape = \"ellipse\""
-      << "];" 
-      << endl
-      ;
+    {
+      s << "p" << ::util::show (*p)
+        << " ["
+        << "label = \""
+        << n.get_place(*p).get_name()
+        << "\\ntype: " << n.get_place(*p).get_signature()
+        ;
+
+      for ( typename NET::token_place_it tp (n.get_token (*p))
+          ; tp.has_more()
+          ; ++tp
+          )
+        s << "\\ntoken: " << *tp;
+
+      s << "\""
+        << ", shape = \"ellipse\""
+        << "];" 
+        << endl
+        ;
+    }
 
   for (typename NET::edge_const_it e (n.edges()); e.has_more(); ++e)
     {
@@ -252,13 +262,27 @@ static void dot ( std::ostream & s
             ;
           break;
         case petri_net::PT_READ:
-          s << "p" << ::util::show (connection.pid)
-            << " -> "
-            << "t" << ::util::show (connection.tid)
-            << " [style = \"dotted\"]"
-            << ";"
-            << endl
-            ;
+          if (n.get_place (connection.pid).get_name() == "config")
+            s << "p" << ::util::show (connection.pid)
+              << "t" << ::util::show (connection.tid)
+              << " [label = \"config\", shape=\"none\"];"
+              << endl
+              << "p" << ::util::show (connection.pid)
+              << "t" << ::util::show (connection.tid)
+              << " -> "
+              << "t" << ::util::show (connection.tid)
+              << " [style = \"dotted\"]"
+              << ";"
+              << endl
+              ;
+          else
+            s << "p" << ::util::show (connection.pid)
+              << " -> "
+              << "t" << ::util::show (connection.tid)
+              << " [style = \"dotted\"]"
+              << ";"
+              << endl
+              ;
           break;
         default:
           throw std::runtime_error ("STRANGE! unkown connection type");
@@ -385,8 +409,8 @@ public:
             if (value::function::is_true (context.value (mk_vec ("volume.buffer0.filled"))))
               {
                 cout << ext << " " << name;
-                cout << " vol " << context.value (mk_vec ("volume.offset"))
-                     << "." << context.value (mk_vec ("volume.id"));
+                cout << " vol " << context.value (mk_vec ("volume.volume.offset"))
+                     << "." << context.value (mk_vec ("volume.volume.id"));
                 cout << " process " << context.value (mk_vec ("volume.buffer0.bunch"));
                 cout << endl;
               }
@@ -395,8 +419,8 @@ public:
                 if (value::function::is_true (context.value (mk_vec ("volume.buffer0.assigned"))))
                   {
                     cout << ext << " " << name;
-                    cout << " vol " << context.value (mk_vec ("volume.offset"))
-                         << "." << context.value (mk_vec ("volume.id"));
+                    cout << " vol " << context.value (mk_vec ("volume.volume.offset"))
+                         << "." << context.value (mk_vec ("volume.volume.id"));
                     cout << " prefetch " << context.value (mk_vec ("volume.buffer0.bunch"));
                     cout << endl;
                   }
@@ -405,8 +429,8 @@ public:
             if (value::function::is_true (context.value (mk_vec ("volume.buffer1.filled"))))
               {
                 cout << ext << " " << name;
-                cout << " vol " << context.value (mk_vec ("volume.offset"))
-                     << "." << context.value (mk_vec ("volume.id"));
+                cout << " vol " << context.value (mk_vec ("volume.volume.offset"))
+                     << "." << context.value (mk_vec ("volume.volume.id"));
                 cout << " process " << context.value (mk_vec ("volume.buffer1.bunch"));
                 cout << endl;
               }
@@ -415,8 +439,8 @@ public:
                 if (value::function::is_true (context.value (mk_vec ("volume.buffer1.assigned"))))
                   {
                     cout << ext << " " << name;
-                    cout << " vol " << context.value (mk_vec ("volume.offset"))
-                         << "." << context.value (mk_vec ("volume.id"));
+                    cout << " vol " << context.value (mk_vec ("volume.volume.offset"))
+                         << "." << context.value (mk_vec ("volume.volume.id"));
                     cout << " prefetch " << context.value (mk_vec ("volume.buffer1.bunch"));
                     cout << endl;
                   }
@@ -591,6 +615,7 @@ namespace signature
   static structured_t loaded_bunch;
   static structured_t buffer;
   static structured_t volume;
+  static structured_t volume_with_buffer;
 
   static void init (void)
   {
@@ -621,9 +646,11 @@ namespace signature
 
     volume["id"] = literal::LONG;
     volume["offset"] = literal::LONG;
-    volume["wait"] = literal::LONG;
-    volume["buffer0"] = buffer;
-    volume["buffer1"] = buffer;
+
+    volume_with_buffer["volume"] = volume;
+    volume_with_buffer["wait"] = literal::LONG;
+    volume_with_buffer["buffer0"] = buffer;
+    volume_with_buffer["buffer1"] = buffer;
   }
 }
 
@@ -763,8 +790,8 @@ main (int argc, char ** argv)
   pid_t pid_bunch (mk_place (net, "bunch", signature::bunch));
   pid_t pid_loaded_bunch (mk_place (net, "loaded_bunch", signature::loaded_bunch));
   pid_t pid_gen_volume_state (mk_place (net, "gen_volume_state", signature::offset_with_state));
-  pid_t pid_volume (mk_place (net, "volume", signature::volume));
-  pid_t pid_volume_processed (mk_place (net, "volume_processed", signature::volume));
+  pid_t pid_volume (mk_place (net, "volume", signature::volume_with_buffer));
+  pid_t pid_volume_processed (mk_place (net, "volume_processed", signature::volume_with_buffer));
   pid_t pid_volume_to_be_written (mk_place (net, "volume_to_be_written", signature::volume));
   pid_t pid_volume_written (mk_place (net, "volume_written", signature::volume));
   pid_t pid_volume_wait (mk_place (net, "volume_wait", literal::LONG));
@@ -957,8 +984,8 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "gen_volume_step"
-      , "${volume.id} := ${gen_volume_state.state.state};\
-         ${volume.offset} := ${gen_volume_state.offset};\
+      , "${volume.volume.id} := ${gen_volume_state.state.state};\
+         ${volume.volume.offset} := ${gen_volume_state.offset};\
          ${volume.wait} := ${config.BUNCHES_PER_OFFSET};\
          ${volume.buffer0} := ${buffer_empty};\
          ${volume.buffer1} := ${buffer_empty};\
@@ -1020,14 +1047,14 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "assign0"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.volume.id});\
          ${volume.buffer0.assigned} := true;\
          ${volume.buffer0.bunch} := ${loaded_bunch.bunch};\
          ${volume.buffer0.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
       , "(!${volume.buffer0.assigned}) &\
-         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
+         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
       )
     );
 
@@ -1042,14 +1069,14 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "assign1"
-      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.id});\
+      , "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.volume.id});\
          ${volume.buffer1.assigned} := true;\
          ${volume.buffer1.bunch} := ${loaded_bunch.bunch};\
          ${volume.buffer1.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
       , "(!${volume.buffer1.assigned}) &\
-         (${volume.offset} == ${loaded_bunch.bunch.offset}) &\
-         (!bitset_is_element (${loaded_bunch.seen}, ${volume.id}))"
+         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &\
+         (!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
       )
     );
 
@@ -1149,7 +1176,7 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "volume_break"
-      , "${volume_to_be_written} := ${volume_processed}"
+      , "${volume_to_be_written} := ${volume_processed.volume}"
       , "${volume_processed.wait} == 0L"
       )
     );
@@ -1215,13 +1242,13 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT_READ, tid_finalize, pid_config));
 
   // *********************************************************************** //
+
+  dot (std::cerr, net, "KDM");
+
+  // *********************************************************************** //
   // token
 
   token::put (net, pid_config_file, std::string("/scratch/KDM.conf"));
-  
-  // *********************************************************************** //
-
-  dot (std::cerr, net, "KDM");
 
   // *********************************************************************** //
 
