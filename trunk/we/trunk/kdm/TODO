@@ -124,3 +124,7 @@
   alle Traces am Volumen vorbei führen.
   Vorteil: Einfach zu erklären. Nachteil: langsamer, weil alle Traces
   mehrfach geladen werden
+
+- Erzeuge eine XML-Beschreibung zum KDM Workflow! Händisch im Moment,
+  sollte aber sinnvoll sein. Das ist dann auch gleich der
+  Ausgangspunkt für die ausstehenden Sprachbeschreibung.
