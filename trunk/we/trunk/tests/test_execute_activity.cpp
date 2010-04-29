@@ -197,8 +197,7 @@ struct exec_context
   void handle_externally ( activity_t & act, net_t & n)
   {
     activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
-    act = result;
-    //    act.output().swap (result.output());
+    act.output().swap (result.output());
   }
 
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
@@ -211,8 +210,7 @@ struct exec_context
   void handle_externally ( activity_t & act, const mod_t & module_call )
   {
     activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
-    act = result;
-    //    act.output().swap (result.output());
+    act.output().swap (result.output());
   }
 
   void handle_externally ( activity_t & act, const expr_t & e)
