@@ -32,6 +32,7 @@ namespace we
       {
         PORT_IN
       , PORT_OUT
+      , PORT_READ
       , PORT_IN_OUT
       };
 
@@ -41,6 +42,11 @@ namespace we
         struct i_port
         {
           static const PortDirection value = PORT_IN;
+        };
+
+        struct r_port
+        {
+          static const PortDirection value = PORT_READ;
         };
 
         struct o_port
@@ -60,6 +66,12 @@ namespace we
         struct tag<PORT_IN>
         {
           typedef i_port type;
+        };
+
+        template <>
+        struct tag<PORT_READ>
+        {
+          typedef r_port type;
         };
 
         template <>
@@ -88,11 +100,10 @@ namespace we
 
       typedef detail::direction::i_port I_PORT;
       typedef detail::direction::o_port O_PORT;
-      typedef detail::direction::io_port IO_PORT;
 
       port ()
         : name_("default")
-        , direction_(IO_PORT::value)
+        , direction_(I_PORT::value)
         , associated_place_(pid_traits::invalid())
       {}
 
@@ -131,7 +142,7 @@ namespace we
       const sig_type & signature() const { return signature_; }
       const pid_type & associated_place() const { return associated_place_; }
 
-      inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT; }
+      inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
       inline bool has_associated_place (void) const { return associated_place_ != pid_traits::invalid(); }
     private:
@@ -156,7 +167,11 @@ namespace we
     std::ostream & operator << ( std::ostream & os, const port <T, I> & p )
     {
       os << "{port, "
-         << (p.direction() == PORT_IN ? "in" : (p.direction() == PORT_OUT ? "out" : "inout"))
+         << ( p.direction() == PORT_IN ? "in" :
+              p.direction() == PORT_OUT ? "out" :
+              p.direction() == PORT_READ ? "read" :
+              "inout"
+            )
          << ", "
          << p.name()
          << ", "
