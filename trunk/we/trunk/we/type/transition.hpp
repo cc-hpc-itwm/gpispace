@@ -38,16 +38,28 @@ namespace we { namespace type {
     namespace exception {
       struct port_already_defined : std::runtime_error
       {
-        explicit port_already_defined (const std::string & msg)
+        explicit port_already_defined (const std::string & msg, const std::string & port_name)
           : std::runtime_error (msg)
+          , port (port_name)
         {}
+
+        ~port_already_defined () throw ()
+        {}
+
+        const std::string port;
       };
 
       struct port_undefined : std::runtime_error
       {
-        explicit port_undefined (const std::string & msg)
+        explicit port_undefined (const std::string & msg, const std::string & port_name)
           : std::runtime_error (msg)
+          , port(port_name)
         {}
+
+        ~port_undefined () throw ()
+        {}
+
+        const std::string port;
       };
 
       template <typename From>
@@ -58,6 +70,9 @@ namespace we { namespace type {
         explicit not_connected(const std::string & msg, const from_type from_)
           : std::runtime_error (msg)
           , from(from_)
+        {}
+
+        ~not_connected () throw ()
         {}
 
         const from_type from;
@@ -73,6 +88,9 @@ namespace we { namespace type {
           : std::runtime_error (msg)
           , from(from_)
           , to(to_)
+        {}
+
+        ~already_connected () throw ()
         {}
 
         const from_type from;
@@ -358,7 +376,7 @@ namespace we { namespace type {
           return outer_to_inner_.at(outer);
         } catch (const std::out_of_range &)
         {
-          throw exception::not_connected<Outer> ("place not connected: " + ::util::show(outer), outer);
+          throw exception::not_connected<Outer> ("trans: " + name() + ": not connected: " + ::util::show(outer), outer);
         }
       }
 
@@ -370,7 +388,7 @@ namespace we { namespace type {
           return inner_to_outer_.at(inner);
         } catch (const std::out_of_range &)
         {
-          throw exception::not_connected<Inner> ("port not connected " + ::util::show(inner), inner);
+          throw exception::not_connected<Inner> ("trans: " + name() + ": port not connected: " + ::util::show(inner), inner);
         }
       }
 
@@ -423,16 +441,16 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType>
-      pid_t add_input_port (const std::string & name, const SignatureType & signature)
+      pid_t add_input_port (const std::string & port_name, const SignatureType & signature)
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
+          if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined(name);
+            throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (name, PORT_IN, signature);
+        port_t port (port_name, PORT_IN, signature);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -440,16 +458,16 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
-      pid_t add_input_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      pid_t add_input_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
+          if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined(name);
+            throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (name, PORT_IN, signature, associated_place);
+        port_t port (port_name, PORT_IN, signature, associated_place);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -457,16 +475,16 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType>
-      pid_t add_output_port (const std::string & name, const SignatureType & signature)
+      pid_t add_output_port (const std::string & port_name, const SignatureType & signature)
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
+          if ((p->second.is_output()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined(name);
+            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (name, PORT_OUT, signature);
+        port_t port (port_name, PORT_OUT, signature);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -474,16 +492,16 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
-      pid_t add_output_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      pid_t add_output_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
+          if ((p->second.is_output()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined(name);
+            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (name, PORT_OUT, signature, associated_place);
+        port_t port (port_name, PORT_OUT, signature, associated_place);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -491,69 +509,69 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType>
-      void add_input_output_port (const std::string & name, const SignatureType & signature)
+      void add_input_output_port (const std::string & port_name, const SignatureType & signature)
       {
         try
         {
-          input_port_by_name (name);
+          input_port_by_name (port_name);
         }
         catch (const exception::port_undefined &)
         {
           try
           {
-            output_port_by_name (name);
+            output_port_by_name (port_name);
           }
           catch (const exception::port_undefined &)
           {
-            add_input_port (name, signature);
-            add_output_port (name, signature);
+            add_input_port (port_name, signature);
+            add_output_port (port_name, signature);
           }
         }
       }
 
       template <typename SignatureType, typename PlaceId>
-      void add_input_output_port (const std::string & name, const SignatureType & signature, const PlaceId associated_place)
+      void add_input_output_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
       {
         try
         {
-          input_port_by_name (name);
+          input_port_by_name (port_name);
         }
         catch (const exception::port_undefined &)
         {
           try
           {
-            output_port_by_name (name);
+            output_port_by_name (port_name);
           }
           catch (const exception::port_undefined &)
           {
-            add_input_port (name, signature, associated_place);
-            add_output_port (name, signature, associated_place);
+            add_input_port (port_name, signature, associated_place);
+            add_output_port (port_name, signature, associated_place);
           }
         }
       }
 
-      port_id_t input_port_by_name (const std::string & name) const
+      port_id_t input_port_by_name (const std::string & port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_IN) && p->second.name() == name)
+          if ((p->second.is_input()) && p->second.name() == port_name)
           {
             return p->first;
           }
         }
-        throw exception::port_undefined(name);
+        throw exception::port_undefined("trans: "+name()+": input port not defined:"+port_name, port_name);
       }
 
-      port_id_t output_port_by_name (const std::string & name) const
+      port_id_t output_port_by_name (const std::string & port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
-          if ((p->second.direction() == PORT_OUT) && p->second.name() == name)
+          if ((p->second.is_output()) && p->second.name() == port_name)
           {
             return p->first;
           }
         }
-        throw exception::port_undefined(name);
+        throw exception::port_undefined("trans: "+name()+": output port not defined:"+port_name, port_name);
       }
 
       template <typename PortId>
@@ -565,7 +583,8 @@ namespace we { namespace type {
         }
         catch (const std::out_of_range &)
         {
-          throw exception::port_undefined (::util::show (port_id));
+          const std::string port_name (::util::show (port_id) );
+          throw exception::port_undefined("trans: "+name()+": port not defined:"+port_name, port_name);
         }
       }
 
