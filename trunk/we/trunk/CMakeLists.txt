@@ -132,6 +132,7 @@ include(CTest)
 # Reflect the package structure
 add_subdirectory(we)
 add_subdirectory(tests)
+add_subdirectory(kdm)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
