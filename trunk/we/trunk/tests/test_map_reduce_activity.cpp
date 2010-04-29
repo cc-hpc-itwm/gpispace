@@ -1,4 +1,5 @@
 #include <sstream>
+#include <fstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -232,10 +233,16 @@ int main (int, char **)
   {
     act.input ().push_back
       ( input_t::value_type
-        ( token_t ("", "long", long(i))
+        ( token_t ("input", "long", long(i))
         , simple_trans.input_port_by_name ("input")
         )
       );
+  }
+
+  // dump activity for test purposes
+  {
+    std::ofstream ofs ("simple-net.pnet");
+    ofs << we::util::text_codec::encode (act);
   }
 
   std::cout << "act (initial):"
