@@ -403,17 +403,19 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename Direction>
-      void add_port ( const std::string & name
+      void add_port ( const std::string & port_name
                     , SignatureType const & signature
                     , Direction direction
                     )
       {
         if (direction == PORT_IN)
-          this->add_input_port (name, signature);
+          this->add_input_port (port_name, signature);
         if (direction == PORT_OUT)
-          this->add_output_port (name, signature);
+          this->add_output_port (port_name, signature);
+        if (direction == PORT_READ)
+          this->add_read_port (port_name, signature);
         else
-          this->add_input_output_port (name, signature);
+          this->add_input_output_port (port_name, signature);
       }
 
       template <typename SignatureType, typename Direction, typename PlaceId>
@@ -433,6 +435,11 @@ namespace we { namespace type {
                                 , signature
                                 , associated_place
                                 );
+        if (direction == PORT_READ)
+          this->add_read_port ( name
+                              , signature
+                              , associated_place
+                              );
         else
           this->add_input_output_port ( name
                                       , signature
@@ -468,6 +475,40 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_IN, signature, associated_place);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      pid_t add_read_port (const std::string & port_name, const SignatureType & signature)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.is_input()) && p->second.name() == port_name)
+          {
+            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined", port_name);
+          }
+        }
+        port_t port (port_name, PORT_READ, signature);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType, typename PlaceId>
+      pid_t add_read_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.is_input()) && p->second.name() == port_name)
+          {
+            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined", port_name);
+          }
+        }
+        port_t port (port_name, PORT_READ, signature, associated_place);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
