@@ -134,12 +134,9 @@ namespace module
               (get_value_of_literal<std::string> (ctxt.value("config_file")));
             long wait (0);
             const value::type config (kdm::initialize (filename, wait));
-
-            std::cout << "eval: got config " << config << std::endl;
             output.push_back (std::make_pair (config, "config"));
             output.push_back (std::make_pair (literal::type(wait), "wait"));
             output.push_back (std::make_pair (control(), "trigger"));
-            std::cout << "eval: done " << config << std::endl;
           }
         else if (mf.function() == "finalize")
           {
@@ -166,9 +163,7 @@ namespace module
             const value::type & config (ctxt.value("config"));
             const value::type & bunch (ctxt.value("bunch"));
             long wait (get_value_of_literal<long> (ctxt.value("wait")));
-
             kdm::process (config, bunch, wait);
-
             output.push_back (std::make_pair (wait, "wait"));
           }
       }

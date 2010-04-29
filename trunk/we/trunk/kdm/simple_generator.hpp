@@ -132,7 +132,7 @@ namespace kdm
       subnet.add_edge (e++, connection_t (PT, tid_break, pid_state));
 
       transition_type generate
-        ( "generate_" + name
+        ( "generate_from_" + name
         , subnet
         , "true"
         , transition_type::internal
@@ -252,7 +252,7 @@ namespace kdm
       tid_t tid_generate_bunch (net.add_transition (generate_bunch));
 
       net.add_edge (e++, connection_t (PT_READ, tid_generate_bunch, pid_config));
-      net.add_edge (e++, connection_t (PT, tid_generate_bunch, pid_volume));
+      net.add_edge (e++, connection_t (PT, tid_generate_bunch, pid_volume_gen_bunch));
       net.add_edge (e++, connection_t (TP, tid_generate_bunch, pid_bunch));
 
       // ******************************************************************* //
@@ -503,6 +503,7 @@ namespace kdm
 
       // ******************************************************************* //
 
+#if 0
       transition_type process_volume
         ( "process_volume"
         , expr_type ("${done} := []")
@@ -514,7 +515,10 @@ namespace kdm
         ("config", signature::config, we::type::PORT_IN)
         ("done", literal::CONTROL, we::type::PORT_OUT)
         ;
-
+#else
+      transition_type process_volume
+        (mk_process (sig_volume, signature::config));
+#endif
       process_volume.add_connections ()
         (pid_volume, "volume")
         (pid_config, "config")
@@ -526,21 +530,6 @@ namespace kdm
       net.add_edge (e++, connection_t (PT_READ, tid_process_volume, pid_config));
       net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume));
       net.add_edge (e++, connection_t (TP, tid_process_volume, pid_trigger_dec));
-
-//       transition_type process_volume
-//         (mk_process (sig_volume, signature::config));
-
-//       process_volume.add_connections ()
-//         (pid_volume, "volume")
-//         (pid_config, "config")
-//         ("done", pid_trigger_dec)
-//         ;
-
-//       tid_t tid_process_volume (net.add_transition (process_volume));
-
-//       net.add_edge (e++, connection_t (PT_READ, tid_process_volume, pid_config));
-//       net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume));
-//       net.add_edge (e++, connection_t (TP, tid_process_volume, pid_trigger_dec));
 
       // ******************************************************************* //
 
