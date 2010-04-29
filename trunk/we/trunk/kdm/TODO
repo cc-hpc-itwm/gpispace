@@ -1,3 +1,126 @@
+
 - sincInterpolator magisch im Prozeßcontainer vorhanden, nutze
   gleiches Schema, das den Funktionen die Aufrufe zur FVM erlaubt.
 
+- typ vom config token muß angepasst werden
+
+- Speicherlayout:
+
+  ---------------------------------------------
+  |          :          :          :          |
+  |          :          :          :          | Traveltime table
+  |          :          :          :          |
+  |-------------------------------------------|
+  |          :          :          :          | Store for Bunches
+  |          :          :          :          | $k$ per node
+  |--------------------------------------------
+  |          :          :          :          |
+  |          :          :          :          | Subvolumina, one per node
+  |--------------------------------------------
+  |    :     :    :     :    :     :    :     | Bunchbuffer, 2 per subvolumen
+  |--------------------------------------------
+
+  => 4 global allocs
+
+- Wichtige Typen:
+
+* config: simpler container mit benamten werten, kann beliebig
+  erweitert werden, zum Beispiel die Handles für die globalen
+  Alloktionen kommen da noch rein
+
+* bunch: (offset,id), reicht aus, um koinkrete Größe auszurechnen
+
+* volume: (offset,id), dito
+
+* buffer: (filled::bool, assigned::bool, free::bool, bunch, store)
+  das ist ein Buffer, der an ein Volumen attached ist
+  initial: filled=assigned=free=false
+  assigned=true: der Buffer ist dem Bündel 'bunch' zugeordnet
+  filled=true: der Buffer ist mit dem Bündel 'bunch' gefüllt
+  filled=true => assigned=true!
+  free=true: Der Store, in dem das Bündel 'bunch' liegt, kann (aus
+  Sicht des Volumens) freigegeben werden. Das kann sein, nachdem das
+  Bündel geladen wurde (also assigned=filled=true), aber noch nicht
+  verarbeitet. Es kann auch sein, dass das Bündel komplett verarbeitet
+  wurde (assigned=filled=false). Wird von unassign ausgewertet.
+
+- Was müssen die externen Transitionen machen:
+
+*** gen_config:
+    - lies config file
+    - globale allokationen
+    - schreibe config token (siehe expressions im Workflow)
+    - lege eine Outputdatei richtiger Größe an
+
+*** finalize:
+    - gib speicher frei
+
+*** loadTT:
+    - lade travel time table, verwende handle aus config
+    - routine gibt es prinzipiell, muß umgestellt werden von direkter
+      VM Nutzung auf indirekt
+
+*** load:
+    - lade Bündel in leeren Store
+    - Bündel beschrieben durch Offset und ID, zusammen mit Daten aus
+      Config kann ausgerechnet werden, wie groß das Bündel konkret ist
+    - Store beschrieben durch ID, zusammen mit Daten aus Config kann
+      ausgerechnet werden, welcher Offset angesprochen werden soll
+
+*** write:
+    - schreibe komplettes Subvolumen
+    - beschrieben durch Volumen ID und Offset, zusammen mit Config
+      kann berechnet werden, wohin in der Ausgabedatei geschrieben
+      werden soll
+
+*** process:
+    - Eingabe ist Volumen und Zustand der beiden Buffer
+    - Ausgabe dito
+    - Steuert die Basistransition 'migrate_and_prefetch'
+    - siehe Expressions im Workflow!!
+    - Folgende Möglichkeiten für Eingaben:
+        assigned0 filled0 free assigned1 filled1 free
+      a false     false        true      false
+      b false     false        true      true
+
+      c true      false        false     false
+      d true      true         false     false
+
+      e true      false        true      false
+
+      f true      false        true      true
+      g true      true         true      false
+
+      h true      true         true      true
+    - Was tun:
+      case a: Buffer1 ist zugewiesen aber noch nicht geladen
+              Wir laden lediglich das Bündel (bid2mig = 0)
+              Rückgabe: ((false,false,false),(true,true,true))
+              Meint: Der Store des Bündels kann aus Sicht des Volumens
+              erneut verwendet werden (das Bündel ist zum Volumen
+              geführt worden)
+      case b: Buffer1 ist bereits geladen, wird verarbeitet und nichts
+              neues wird geladen
+              Rückgabe: ((false,false,false),(false,false,false))
+              Meint: Buffer1 wieder komplett frei
+      case c: wie a für Buffer0
+      case d: wie b für Buffer0
+      case e: Beide Buffer müssen zum Volumen geführt werden. Suche
+              einen aus und verhalte dich prinzipiell wie bei a oder
+              c.
+      case f: Buffer1 ist fertig geladen und Buffer0 muss geladen
+              werden. Tue das.
+              Rückgabe: ((true,true,true),(false,false,false))
+              Meint: Buffer0 geladen, Store kann zurück, Buffer1 komplett frei
+      case g: wie f für Buffer0
+      case h: Beide Buffer sind geladen (sollte nicht vorkommen!?)
+              Jedenfalls suche einen aus und verhalte Dich prinzipiell
+              wie bei f oder g
+    - Nochmal: Die Expressions im Workflowausdruck sollten eigentlich
+      das Richtige tun!!
+
+- Implementiere einen einfacheren KDM-Workflow: Generiere pro
+  Offsetklasse alle Subvolumen. Pro Subvolumen im Subworkflow einfach
+  alle Traces am Volumen vorbei führen.
+  Vorteil: Einfach zu erklären. Nachteil: langsamer, weil alle Traces
+  mehrfach geladen werden
