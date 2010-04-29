@@ -36,7 +36,7 @@ namespace kdm
     typedef typename transition_type::net_type net_type;
     typedef typename transition_type::mod_type mod_type;
     typedef typename transition_type::expr_type expr_type;
-    
+
     typedef typename transition_type::pid_t pid_t;
     typedef typename petri_net::tid_t tid_t;
     typedef typename transition_type::port_id_t port_id_t;
@@ -52,7 +52,7 @@ namespace kdm
       net_type subnet ("generate_" + name + "_sub");
 
       ::signature::structured_t sig_with_state;
-      
+
       sig_with_state[name] = sig;
       sig_with_state["state"] = signature::state;
 
@@ -66,7 +66,7 @@ namespace kdm
 
       transition_type trans_init
         ( "init"
-        , expr_type 
+        , expr_type
         ( "${state.state.state}  := 0L;"
           "${state.state.num}    := ${config." + source + "};"
           "${state." + name + "} := ${trigger};"
@@ -102,7 +102,7 @@ namespace kdm
 
       transition_type trans_step
         ( "step"
-        , expr_type 
+        , expr_type
           ( "${" + name + ".id}           := ${state.state.state};"
             "${" + name + "." + name + "} := ${state." + name + "};"
             "${state.state.state}         := ${state.state.state} + 1"
@@ -120,15 +120,17 @@ namespace kdm
         (name, pid_name)
         ;
       tid_t tid_step (subnet.add_transition (trans_step));
-        
+
       edge_type e (0);
 
       subnet.add_edge (e++, connection_t (PT, tid_init, pid_trigger));
       subnet.add_edge (e++, connection_t (PT, tid_init, pid_config));
       subnet.add_edge (e++, connection_t (TP, tid_init, pid_state));
+
       subnet.add_edge (e++, connection_t (PT, tid_step, pid_state));
       subnet.add_edge (e++, connection_t (TP, tid_step, pid_state));
       subnet.add_edge (e++, connection_t (TP, tid_step, pid_name));
+
       subnet.add_edge (e++, connection_t (PT, tid_break, pid_state));
 
       transition_type generate
@@ -139,7 +141,7 @@ namespace kdm
         );
       generate.add_ports ()
         ("trigger", sig, we::type::PORT_IN, pid_trigger)
-        ("config", signature::config, we::type::PORT_IN, pid_config)
+        ("config", signature::config, we::type::PORT_READ, pid_config)
         (name + "_with_id", sig_with_id, we::type::PORT_OUT, pid_name)
         ;
 
@@ -151,7 +153,7 @@ namespace kdm
     {
       transition_type dup
         ( "dup"
-        , expr_type 
+        , expr_type
           ( "${one} := ${in};"
             "${two} := ${in};"
           )
@@ -164,7 +166,7 @@ namespace kdm
         ("one", sig, we::type::PORT_OUT)
         ("two", sig, we::type::PORT_OUT)
         ;
-      
+
       return dup;
     }
 
@@ -205,7 +207,7 @@ namespace kdm
 
       // ******************************************************************* //
 
-      transition_type init_wait 
+      transition_type init_wait
         ( "init_wait"
         , expr_type ("${num} := ${config.BUNCHES_PER_OFFSET}")
         , "true"
@@ -268,7 +270,7 @@ namespace kdm
         );
 
       load.add_ports ()
-        ("config", sig_config, we::type::PORT_IN)
+        ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN_OUT)
         ;
       load.add_connections ()
@@ -293,7 +295,7 @@ namespace kdm
         );
 
       process.add_ports ()
-        ("config", sig_config, we::type::PORT_IN)
+        ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN)
         ("wait", literal::LONG, we::type::PORT_IN_OUT)
         ;
@@ -360,7 +362,7 @@ namespace kdm
       return process_volume;
     }
 
-    static transition_type generate (void)  
+    static transition_type generate (void)
     {
       signature::init();
 
@@ -407,7 +409,7 @@ namespace kdm
       net.add_edge (e++, connection_t (TP, tid_initialize, pid_trigger_loadTT));
 
       // ******************************************************************* //
-      
+
       transition_type loadTT
         ( "loadTT"
         , mod_type ("kdm","loadTT")
@@ -416,7 +418,7 @@ namespace kdm
         );
 
       loadTT.add_ports ()
-        ("config", signature::config, we::type::PORT_IN)
+        ("config", signature::config, we::type::PORT_READ)
         ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
         ;
       loadTT.add_connections ()
