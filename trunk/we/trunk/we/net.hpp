@@ -572,7 +572,7 @@ public:
     enabled.set_priority (tid, prio);
   }
 
-  prio_t get_transition_priority (const tid_t & tid)
+  prio_t get_transition_priority (const tid_t & tid) const
   {
     return enabled.get_priority (tid);
   }
