@@ -122,7 +122,7 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "{" 
+      cout << "{"
            << *p << ": "
            << n.num_token (*p) << ": "
            << n.get_place (*p) << ":"
@@ -211,7 +211,7 @@ static void dot ( std::ostream & s
       << ((n.get_transition(*t).name == "process") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
       << ((n.get_transition(*t).name == "write") ? ", style=\"filled\", fillcolor=\"yellow\"" : "")
       << ((n.get_transition_priority (*t) == 1) ?  ", style=\"filled\", fillcolor=\"#eeeeee\"" : "")
-      << "];" 
+      << "];"
       << endl
       ;
 
@@ -232,7 +232,7 @@ static void dot ( std::ostream & s
 
       s << "\""
         << ", shape = \"ellipse\""
-        << "];" 
+        << "];"
         << endl
         ;
     }
@@ -386,7 +386,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -403,7 +403,7 @@ public:
 
         const std::string ext ("***");
         const std::string intern ("~~~");
-        
+
         if (name == "process")
           {
             if (value::function::is_true (context.value (mk_vec ("volume.buffer0.filled"))))
@@ -502,7 +502,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -532,7 +532,7 @@ static std::string strip (const std::string & s)
       {
         if (!last_was_space)
           r.push_back (*pos);
-        
+
         last_was_space = true;
       }
     else
@@ -550,10 +550,10 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition = "true"
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( transition_t ( name
                    , strip(expression)
-                   , condition::type 
+                   , condition::type
                      ( strip (condition)
                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
                      )
@@ -694,7 +694,7 @@ namespace value
 template<typename NET>
 static void * worker (void * arg)
 {
-  petri_net::thread_safe_t<pnet_t> * thread_safe 
+  petri_net::thread_safe_t<pnet_t> * thread_safe
     ((petri_net::thread_safe_t<pnet_t> *)arg);
 
   while (1)
@@ -742,7 +742,7 @@ main (int argc, char ** argv)
   SUBVOLUMES_PER_OFFSET = NUM_WORKER;
   STORES = STORES_PER_WORKER * NUM_WORKER;
 
-  cout 
+  cout
     << "NUM_WORKER             = " << NUM_WORKER << endl
     << "STORES_PER_WORKER      = " << STORES_PER_WORKER << endl
 
@@ -937,7 +937,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT_READ, tid_gen_bunch, pid_config));
   mk_edge (net, connection_t (PT, tid_gen_bunch, pid_offset_bunch));
   mk_edge (net, connection_t (TP, tid_gen_bunch, pid_gen_bunch_state));
-  
+
   tid_t tid_gen_bunch_step
     ( mk_transition
       ( net
@@ -1064,7 +1064,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (TP, tid_assign0, pid_volume));
   mk_edge (net, connection_t (PT, tid_assign0, pid_assign_xor_reuse_store));
   mk_edge (net, connection_t (TP, tid_assign0, pid_assign_xor_reuse_store));
-        
+
   tid_t tid_assign1
     ( mk_transition
       ( net
@@ -1134,7 +1134,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (TP, tid_reuse_store0, pid_volume_processed));
   mk_edge (net, connection_t (PT, tid_reuse_store0, pid_assign_xor_reuse_store));
   mk_edge (net, connection_t (TP, tid_reuse_store0, pid_assign_xor_reuse_store));
-  
+
   tid_t tid_reuse_store1
     ( mk_transition
       ( net
@@ -1270,15 +1270,15 @@ main (int argc, char ** argv)
                                                  , 1
                                                  );
 
-    for (unsigned int w(0); w < NUM_WORKER; ++w)
+    for (long w(0); w < NUM_WORKER; ++w)
       pthread_create(t_worker + w, &attr, worker<pnet_t>, &thread_safe);
 
     thread_safe.wait();
 
-    for (unsigned int w(0); w < NUM_WORKER; ++w)
+    for (long w(0); w < NUM_WORKER; ++w)
       pthread_cancel (t_worker[w]);
 
-    for (unsigned int w(0); w < NUM_WORKER; ++w)
+    for (long w(0); w < NUM_WORKER; ++w)
       pthread_join (t_worker[w], NULL);
   }
 
