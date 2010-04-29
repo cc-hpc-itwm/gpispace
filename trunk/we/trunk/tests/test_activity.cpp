@@ -21,6 +21,38 @@ typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
 
+struct exec_context
+{
+  typedef transition_t::net_type net_t;
+  typedef transition_t::mod_type mod_t;
+  typedef transition_t::expr_type expr_t;
+
+  void handle_internally ( activity_t & , const net_t & )
+  {
+  }
+
+  void handle_internally ( activity_t & , const mod_t & )
+  {
+  }
+
+  void handle_internally ( activity_t & , const expr_t & )
+  {
+  }
+
+  void handle_externally ( activity_t & , const net_t & )
+  {
+  }
+
+  void handle_externally ( activity_t & , const mod_t & )
+  {
+  }
+
+  void handle_externally ( activity_t & , const expr_t & )
+  {
+  }
+};
+
+
 int main (int, char **)
 {
   // ************************************ //
@@ -128,12 +160,8 @@ int main (int, char **)
               << sub
               << std::endl;
 
-    const bool handle_internally = sub.execute ();
-
-    if (! handle_internally)
-    {
-      std::cerr << "E: external activity not supported!" << std::endl;
-    }
+    exec_context ctxt;
+    sub.execute (ctxt);
 
     std::cout << "***** sub-act (post-execute):"
               << std::endl

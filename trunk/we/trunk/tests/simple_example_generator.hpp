@@ -60,8 +60,6 @@ namespace we { namespace tests { namespace gen {
         transition_type trans_mod
           ( "module call"
           , mod_type ("dummy", "dummy")
-          , "true"
-          , false
           );
         trans_mod.add_ports ()
           ("input", "long", we::type::PORT_IN)

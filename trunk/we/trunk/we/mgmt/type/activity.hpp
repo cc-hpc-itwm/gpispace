@@ -184,17 +184,9 @@ namespace we { namespace mgmt { namespace type {
                            );
     }
 
-    bool execute (void)
-    {
-      we::mgmt::visitor::executor<this_type> visitor_executor (*this);
-      return boost::apply_visitor (visitor_executor, transition().data());
-    }
-
     template <typename Context>
     void execute ( Context & ctxt )
     {
-      //we::mgmt::visitor::executor<this_type, Context> visitor_executor (*this, ctxt);
-
       /* context requirements
 
       internal
@@ -218,10 +210,14 @@ namespace we { namespace mgmt { namespace type {
       external
       ========
 
-        ctxt.handle_external (act)
+        ctxt.handle_externally (act, net)
+        ctxt.handle_externally (act, expr)
+        ctxt.handle_externally (act, mod)
 
       */
-      //boost::apply_visitor (visitor_executor, transition().data());
+
+      we::mgmt::visitor::executor<this_type, Context> visitor_executor (*this, ctxt);
+      boost::apply_visitor (visitor_executor, transition().data());
     }
 
     bool

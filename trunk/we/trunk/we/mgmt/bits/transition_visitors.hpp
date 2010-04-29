@@ -371,27 +371,29 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
-  template <typename Activity>
+  template <typename Activity, typename Context>
   class executor
-    : public boost::static_visitor<bool>
+    : public boost::static_visitor<void>
   {
   private:
     Activity & activity_;
+    Context & ctxt_;
     const bool internal_;
 
   public:
     explicit
-    executor (Activity & activity)
+    executor (Activity & activity, Context & ctxt)
       : activity_(activity)
+      , ctxt_(ctxt)
       , internal_(activity.transition().is_internal())
     {}
 
     template <typename Place, typename Trans, typename Edge, typename Token>
-    bool operator () (petri_net::net < Place
-                                         , Trans
-                                         , Edge
-                                         , Token
-                                         > & net)
+    void operator () (petri_net::net < Place
+                                     , Trans
+                                     , Edge
+                                     , Token
+                                     > & net)
     {
       typedef petri_net::net < Place
                              , Trans
@@ -414,19 +416,17 @@ namespace we { namespace mgmt { namespace visitor {
       }
 
       if (internal_)
-        return false;
+        ctxt_.handle_internally ( activity_, net );
       else
-        return true;
+        ctxt_.handle_externally ( activity_, net );
     }
 
-    bool operator () (we::type::module_call_t &)
+    void operator () (const we::type::module_call_t & mod)
     {
-      //      if ( internal_ )
-      //        throw exception::operation_not_supported ("executor (internal module_call)");
-      return true;
+      ctxt_.handle_externally ( activity_, mod );
     }
 
-    bool operator () (const we::type::expression_t & expr)
+    void operator () (const we::type::expression_t & expr)
     {
       // construct context
       typedef expr::eval::context <signature::field_name_t> context_t;
@@ -477,7 +477,7 @@ namespace we { namespace mgmt { namespace visitor {
         }
       }
 
-      return false;
+      ctxt_.handle_internally ( activity_, expr );
     }
   };
 }}}
