@@ -18,7 +18,7 @@ p9 [label = "offset", shape = "ellipse"];
 t1 [label = "loadTT", shape = "rectangle", style="filled", fillcolor="yellow"];
 t11 [label = "gen_volume", shape = "rectangle"];
 t15 [label = "reuse_store", shape = "rectangle"];
-t19 [label = "unassign", shape = "rectangle"];
+t19 [label = "unassign", shape = "rectangle", style="filled", fillcolor="#eeeeee"];
 t2 [label = "gen_store", shape = "rectangle"];
 t22 [label = "break", shape = "rectangle"];
 t26 [label = "finalize", shape = "rectangle", style="filled", fillcolor="yellow"];
@@ -43,7 +43,7 @@ t0 [label = "gen_config", shape = "rectangle", style="filled", fillcolor="yellow
 subgraph {
 rank=same;
 t14 [label = "load", shape = "rectangle", style="filled", fillcolor="yellow"];
-t16 [label = "assign", shape = "rectangle"];
+t16 [label = "assign", shape = "rectangle", style="filled", fillcolor="#eeeeee"];
 }
 p0 -> t0 [];
 p10 -> t11 [];
