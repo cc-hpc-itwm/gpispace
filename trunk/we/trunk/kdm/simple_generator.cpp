@@ -25,46 +25,153 @@ typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
 typedef activity_t::input_t input_t;
 
-namespace dummy
+template <typename T>
+class visitor_get_value_of_literal : public boost::static_visitor<T>
 {
-  static long dummy (const long input)
+public:
+  T operator () (const literal::type & literal) const
   {
-    return input + 42;
+    return boost::get<T> (literal);
   }
+
+  T operator () (const value::structured_t & o) const
+  {
+    throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
+  }
+};
+
+template <typename T, typename V>
+T get_value_of_literal (const V & v)
+{
+  return boost::apply_visitor (visitor_get_value_of_literal<T>(), v);
+}
+
+namespace kdm
+{
+  static value::type initialize (const std::string & filename, long & wait)
+  {
+    value::structured_t config;
+
+    std::cout << "initialize: use file " << filename << std::endl;
+
+    std::ifstream file (filename.c_str());
+
+    if (!file)
+      throw std::runtime_error ("Lurcks, config file not good");
+
+    while (!file.eof())
+      {
+        std::string s;
+        file >> s;
+        long v;
+        file >> v;
+        if (s.size())
+          config[s] = v;
+      }
+
+    std::cout << "initialize: got config " << config << std::endl;
+
+    wait = get_value_of_literal<long> (value::get_field ("OFFSETS", config))
+         * get_value_of_literal<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+      ;
+
+    std::cout << "initialize: wait = " << wait << std::endl;
+
+    return config;
+  }
+
+  static void loadTT (const value::type & v)
+  {
+    std::cout << "loadTT: got config " << v << std::endl;
+  }
+
+  static void finalize (const value::type & v)
+  {
+    std::cout << "finalize: got config " << v << std::endl;
+  }
+
+  static void load (const value::type & config, const value::type & bunch)
+  {
+    std::cout << "load: got config " << config << std::endl;
+    std::cout << "load: got bunch " << bunch << std::endl;
+  }
+  static void write (const value::type & config, const value::type & volume)
+  {
+    std::cout << "write: got config " << config << std::endl;
+    std::cout << "write: got volume " << volume << std::endl;
+  }
+  static void
+  process ( const value::type & config
+          , const value::type & bunch
+          , long & wait
+          )
+  {
+    std::cout << "process: got config " << config << std::endl;
+    std::cout << "process: got bunch " << bunch << std::endl;
+    std::cout << "process: got wait " << wait << std::endl;
+
+    --wait;
+  }
+
 }
 
 namespace module
 {
-  template <typename T>
-  class visitor_get_value_of_literal : public boost::static_visitor<T>
-  {
-  public:
-    T operator () (const literal::type & literal) const
-    {
-      return boost::get<T> (literal);
-    }
-
-    T operator () (const value::structured_t & o) const
-    {
-      throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
-    }
-  };
-
-  template <typename T, typename V>
-  T get_value_of_literal (const V & v)
-  {
-    return boost::apply_visitor (visitor_get_value_of_literal<T>(), v);
-  }
-
   template <typename ModuleCall, typename Context, typename OutputList>
   void eval (const ModuleCall & mf, const Context & ctxt, OutputList & output)
   {
-    if ( mf.module() == "dummy" && mf.function() == "dummy" )
-    {
-      const long result
-        (dummy::dummy (get_value_of_literal<long> (ctxt.value("input"))));
-      output.push_back (std::make_pair (result, "output"));
-    }
+    if (mf.module() == "kdm")
+      {
+        if (mf.function() == "loadTT")
+          {
+            const value::type & v (ctxt.value("config"));
+            kdm::loadTT (v);
+            output.push_back (std::make_pair (control(), "trigger"));
+          }
+        else if (mf.function() == "initialize")
+          {
+            const std::string filename 
+              (get_value_of_literal<std::string> (ctxt.value("config_file")));
+            long wait (0);
+            const value::type config (kdm::initialize (filename, wait));
+
+            std::cout << "eval: got config " << config << std::endl;
+            output.push_back (std::make_pair (config, "config"));
+            output.push_back (std::make_pair (literal::type(wait), "wait"));
+            output.push_back (std::make_pair (control(), "trigger"));
+            std::cout << "eval: done " << config << std::endl;
+          }
+        else if (mf.function() == "finalize")
+          {
+            const value::type & v (ctxt.value("config"));
+            kdm::finalize (v);
+            output.push_back (std::make_pair (control(), "trigger"));
+          }
+        else if (mf.function() == "load")
+          {
+            const value::type & config (ctxt.value("config"));
+            const value::type & bunch (ctxt.value("bunch"));
+            kdm::load (config, bunch);
+            output.push_back (std::make_pair (bunch, "bunch"));
+          }
+        else if (mf.function() == "write")
+          {
+            const value::type & config (ctxt.value("config"));
+            const value::type & volume (ctxt.value("volume"));
+            kdm::write (config, volume);
+            output.push_back (std::make_pair (control(), "done"));
+          }
+        else if (mf.function() == "process")
+          {
+            const value::type & config (ctxt.value("config"));
+            const value::type & bunch (ctxt.value("bunch"));
+            long wait (get_value_of_literal<long> (ctxt.value("wait")));
+
+            kdm::process (config, bunch, wait);
+
+            output.push_back (std::make_pair (wait, "wait"));
+          }
+      }
   }
 
   static void call (activity_t & act, const transition_t::mod_type & module_call)
@@ -100,6 +207,7 @@ namespace module
     typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
 
     mod_output_t mod_output;
+
     module::eval ( module_call, context, mod_output );
 
     for ( mod_output_t::const_iterator ton (mod_output.begin())
@@ -125,9 +233,11 @@ namespace module
             )
           );
       }
-      catch (...)
+      catch (const std::exception & e)
       {
-        // ignore
+        std::cout << "During collect output: " << e.what() << std::endl;
+
+        throw;
       }
     }
   }
@@ -225,7 +335,7 @@ struct exec_context
 
 int main (int argc, char ** argv)
 {
-  transition_t simple_trans ( kdm::kdm<activity_t>::generate());
+  transition_t simple_trans (kdm::kdm<activity_t>::generate());
 
   activity_t act ( simple_trans );
 
@@ -233,7 +343,7 @@ int main (int argc, char ** argv)
     ( input_t::value_type
       ( token_t ( "config_file"
                 , literal::STRING
-                , std::string ("/scratch/KDM.conf")
+                , std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf")
                 )
       , simple_trans.input_port_by_name ("config_file")
       )
@@ -245,10 +355,10 @@ int main (int argc, char ** argv)
     ofs << we::util::text_codec::encode (act);
   }
 
-  std::cout << "act (initial):"
-            << std::endl
-            << act
-            << std::endl;
+//   std::cout << "act (initial):"
+//             << std::endl
+//             << act
+//             << std::endl;
 
   struct exec_context ctxt;
   act.execute (ctxt);

@@ -270,9 +270,9 @@ namespace value
       }
 
       template<typename T, typename U>
-      type operator () (const T &, const U &) const
+      type operator () (const T & t, const U & u) const
       {
-        throw ::type::error ("incompatible types");
+        throw ::type::error ("incompatible types: wanted type " + util::show (t) + " given value " + util::show (u));
       }
     };
 
@@ -360,6 +360,12 @@ namespace value
         return name;
       }
     };
+  }
+  
+  inline const type &
+  get_field (const signature::field_name_t & field, const type & v)
+  {
+    return boost::apply_visitor (visitor::get_field (field), v);
   }
 
   std::ostream & operator << (std::ostream & s, const type & x)

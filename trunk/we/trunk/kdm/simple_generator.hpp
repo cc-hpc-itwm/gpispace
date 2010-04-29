@@ -146,7 +146,221 @@ namespace kdm
       return generate;
     }
 
-    static transition_type generate (void)
+    template<typename T>
+    static transition_type mk_dup (const T & sig)
+    {
+      transition_type dup
+        ( "dup"
+        , expr_type 
+          ( "${one} := ${in};"
+            "${two} := ${in};"
+          )
+        , "true"
+        , transition_type::internal
+        );
+
+      dup.add_ports ()
+        ("in", sig, we::type::PORT_IN)
+        ("one", sig, we::type::PORT_OUT)
+        ("two", sig, we::type::PORT_OUT)
+        ;
+      
+      return dup;
+    }
+
+    static transition_type
+    mk_process ( const ::signature::structured_t & sig_volume
+               , const ::signature::structured_t & sig_config
+               )
+    {
+      edge_type e (0);
+
+      net_type net ("process_volume");
+
+      // ******************************************************************* //
+
+      pid_t pid_volume_in (net.add_place (place_type ("volume_in", sig_volume)));
+      pid_t pid_volume_gen_bunch (net.add_place (place_type ("volume_gen_bunch", sig_volume)));
+      pid_t pid_volume (net.add_place (place_type ("volume", sig_volume)));
+      pid_t pid_config_in (net.add_place (place_type ("config_in", sig_config)));
+      pid_t pid_config (net.add_place (place_type ("config", sig_config)));
+      pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG)));
+      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
+
+      // ******************************************************************* //
+
+      transition_type dup (mk_dup (sig_volume));
+
+      dup.add_connections ()
+        (pid_volume_in, "in")
+        ("one", pid_volume)
+        ("two", pid_volume_gen_bunch)
+        ;
+
+      tid_t tid_dup (net.add_transition (dup));
+
+      net.add_edge (e++, connection_t (PT, tid_dup, pid_volume_in));
+      net.add_edge (e++, connection_t (TP, tid_dup, pid_volume));
+      net.add_edge (e++, connection_t (TP, tid_dup, pid_volume_gen_bunch));
+
+      // ******************************************************************* //
+
+      transition_type init_wait 
+        ( "init_wait"
+        , expr_type ("${num} := ${config.BUNCHES_PER_OFFSET}")
+        , "true"
+        , transition_type::internal
+        );
+
+      init_wait.add_ports ()
+        ("config", sig_config, we::type::PORT_IN_OUT)
+        ("num", literal::LONG, we::type::PORT_OUT)
+        ;
+
+      init_wait.add_connections()
+        (pid_config_in, "config")
+        ("config", pid_config)
+        ("num", pid_wait)
+        ;
+
+      tid_t tid_init_wait (net.add_transition (init_wait));
+
+      net.add_edge (e++, connection_t (PT, tid_init_wait, pid_config_in));
+      net.add_edge (e++, connection_t (TP, tid_init_wait, pid_config));
+      net.add_edge (e++, connection_t (TP, tid_init_wait, pid_wait));
+
+      // ******************************************************************* //
+
+      ::signature::structured_t sig_bunch;
+
+      transition_type generate_bunch
+        ( mk_generate ( sig_volume
+                      , "BUNCHES_PER_OFFSET"
+                      , "volume"
+                      , sig_bunch
+                      )
+        );
+
+      pid_t pid_bunch (net.add_place (place_type ("bunch", sig_bunch)));
+
+      generate_bunch.add_connections ()
+        (pid_volume_gen_bunch, "trigger")
+        (pid_config, "config")
+        ("volume_with_id", pid_bunch)
+        ;
+
+      tid_t tid_generate_bunch (net.add_transition (generate_bunch));
+
+      net.add_edge (e++, connection_t (PT_READ, tid_generate_bunch, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_generate_bunch, pid_volume));
+      net.add_edge (e++, connection_t (TP, tid_generate_bunch, pid_bunch));
+
+      // ******************************************************************* //
+
+      pid_t pid_trigger_process
+        (net.add_place (place_type ("trigger_process", sig_bunch)));
+
+      transition_type load
+        ( "load"
+        , mod_type ("kdm", "load")
+        , "true"
+        , transition_type::external
+        );
+
+      load.add_ports ()
+        ("config", sig_config, we::type::PORT_IN)
+        ("bunch", sig_bunch, we::type::PORT_IN_OUT)
+        ;
+      load.add_connections ()
+        (pid_bunch, "bunch")
+        ("bunch", pid_trigger_process)
+        (pid_config, "config")
+        ;
+
+      tid_t tid_load (net.add_transition (load));
+
+      net.add_edge (e++, connection_t (PT_READ, tid_load, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_load, pid_bunch));
+      net.add_edge (e++, connection_t (TP, tid_load, pid_trigger_process));
+
+      // ******************************************************************* //
+
+      transition_type process
+        ( "process"
+        , mod_type ("kdm", "process")
+        , "true"
+        , transition_type::external
+        );
+
+      process.add_ports ()
+        ("config", sig_config, we::type::PORT_IN)
+        ("bunch", sig_bunch, we::type::PORT_IN)
+        ("wait", literal::LONG, we::type::PORT_IN_OUT)
+        ;
+
+      process.add_connections ()
+        (pid_trigger_process, "bunch")
+        (pid_config, "config")
+        ("wait", pid_wait)
+        (pid_wait, "wait")
+        ;
+
+      tid_t tid_process (net.add_transition (process));
+
+      net.add_edge (e++, connection_t (PT_READ, tid_process, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_process, pid_trigger_process));
+      net.add_edge (e++, connection_t (PT, tid_process, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_process, pid_wait));
+
+      // ******************************************************************* //
+
+      transition_type write
+        ( "write"
+        , mod_type ("kdm", "write")
+        , "${wait} == 0L"
+        , transition_type::external
+        );
+
+      write.add_ports ()
+        ("config", sig_config, we::type::PORT_IN)
+        ("wait", literal::LONG, we::type::PORT_IN)
+        ("volume", sig_volume, we::type::PORT_IN)
+        ("done", literal::CONTROL, we::type::PORT_OUT)
+        ;
+
+      write.add_connections ()
+        (pid_config, "config")
+        (pid_wait, "wait")
+        (pid_volume, "volume")
+        ("done", pid_done)
+        ;
+
+      tid_t tid_write (net.add_transition (write));
+
+      net.add_edge (e++, connection_t (PT, tid_write, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_write, pid_volume));
+      net.add_edge (e++, connection_t (PT, tid_write, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_write, pid_done));
+
+      // ******************************************************************* //
+
+      transition_type process_volume
+        ( "process_volume"
+        , net
+        , "true"
+        , transition_type::external
+        );
+
+      process_volume.add_ports ()
+        ("volume", sig_volume, we::type::PORT_IN, pid_volume_in)
+        ("config", sig_config, we::type::PORT_IN, pid_config_in)
+        ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
+        ;
+
+      return process_volume;
+    }
+
+    static transition_type generate (void)  
     {
       signature::init();
 
@@ -160,49 +374,45 @@ namespace kdm
       pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG)));
       pid_t pid_trigger_loadTT (net.add_place (place_type ("trigger_loadTT", literal::CONTROL)));
       pid_t pid_trigger_generate_offsets (net.add_place (place_type ("trigger_generate_offsets", literal::CONTROL)));
+      pid_t pid_trigger_dec (net.add_place (place_type ("trigger_dec", literal::CONTROL)));
+      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
       pid_t pid_config (net.add_place (place_type ("config", signature::config)));
 
       // ******************************************************************* //
 
-      transition_type generate_config
-        ( "generate_config"
-        , expr_type 
-          ( "${config.OFFSETS} := 2L;"
-            "${config.SUBVOLUMES_PER_OFFSET} := 3L;"
-            "${config.BUNCHES_PER_OFFSET} := 5L;"
-            "${wait} := ${config.OFFSETS} * ${config.SUBVOLUMES_PER_OFFSET};"
-            "${trigger} := [];"
-          )
+      transition_type initialize
+        ( "initialize"
+        , mod_type ("kdm", "initialize")
         , "true"
-        , transition_type::internal
+        , transition_type::external
         );
 
-      generate_config.add_ports ()
+      initialize.add_ports ()
         ("config_file", literal::STRING, we::type::PORT_IN)
         ("config", signature::config, we::type::PORT_OUT)
         ("wait", literal::LONG, we::type::PORT_OUT)
         ("trigger", literal::CONTROL, we::type::PORT_OUT)
         ;
-      generate_config.add_connections ()
+      initialize.add_connections ()
         (pid_config_file, "config_file")
         ("config", pid_config)
         ("wait", pid_wait)
         ("trigger", pid_trigger_loadTT)
         ;
-      tid_t tid_generate_config (net.add_transition (generate_config));
+      tid_t tid_initialize (net.add_transition (initialize));
 
-      net.add_edge (e++, connection_t (PT, tid_generate_config, pid_config_file));
-      net.add_edge (e++, connection_t (TP, tid_generate_config, pid_config));
-      net.add_edge (e++, connection_t (TP, tid_generate_config, pid_wait));
-      net.add_edge (e++, connection_t (TP, tid_generate_config, pid_trigger_loadTT));
+      net.add_edge (e++, connection_t (PT, tid_initialize, pid_config_file));
+      net.add_edge (e++, connection_t (TP, tid_initialize, pid_config));
+      net.add_edge (e++, connection_t (TP, tid_initialize, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_initialize, pid_trigger_loadTT));
 
       // ******************************************************************* //
       
       transition_type loadTT
         ( "loadTT"
-        , expr_type ("${trigger} := []")
+        , mod_type ("kdm","loadTT")
         , "true"
-        , transition_type::internal
+        , transition_type::external
         );
 
       loadTT.add_ports ()
@@ -293,6 +503,98 @@ namespace kdm
 
       // ******************************************************************* //
 
+      transition_type process_volume
+        ( "process_volume"
+        , expr_type ("${done} := []")
+        )
+        ;
+
+      process_volume.add_ports ()
+        ("volume", sig_volume, we::type::PORT_IN)
+        ("config", signature::config, we::type::PORT_IN)
+        ("done", literal::CONTROL, we::type::PORT_OUT)
+        ;
+
+      process_volume.add_connections ()
+        (pid_volume, "volume")
+        (pid_config, "config")
+        ("done", pid_trigger_dec)
+        ;
+
+      tid_t tid_process_volume (net.add_transition (process_volume));
+
+      net.add_edge (e++, connection_t (PT_READ, tid_process_volume, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume));
+      net.add_edge (e++, connection_t (TP, tid_process_volume, pid_trigger_dec));
+
+//       transition_type process_volume
+//         (mk_process (sig_volume, signature::config));
+
+//       process_volume.add_connections ()
+//         (pid_volume, "volume")
+//         (pid_config, "config")
+//         ("done", pid_trigger_dec)
+//         ;
+
+//       tid_t tid_process_volume (net.add_transition (process_volume));
+
+//       net.add_edge (e++, connection_t (PT_READ, tid_process_volume, pid_config));
+//       net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume));
+//       net.add_edge (e++, connection_t (TP, tid_process_volume, pid_trigger_dec));
+
+      // ******************************************************************* //
+
+      transition_type dec
+        ( "dec"
+        , expr_type ("${wait} := ${wait} - 1")
+        , "true"
+        , transition_type::internal
+        );
+
+      dec.add_ports ()
+        ("trigger", literal::CONTROL, we::type::PORT_IN)
+        ("wait", literal::LONG, we::type::PORT_IN_OUT)
+        ;
+      dec.add_connections ()
+        (pid_trigger_dec, "trigger")
+        (pid_wait, "wait")
+        ("wait", pid_wait)
+        ;
+
+      tid_t tid_dec (net.add_transition (dec));
+
+      net.add_edge (e++, connection_t (PT, tid_dec, pid_trigger_dec));
+      net.add_edge (e++, connection_t (PT, tid_dec, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_dec, pid_wait));
+
+      // ******************************************************************* //
+
+      transition_type finalize
+        ( "finalize"
+        , mod_type ("kdm", "finalize")
+        , "${wait} == 0L"
+        , transition_type::external
+        );
+
+      finalize.add_ports ()
+        ("wait", literal::LONG, we::type::PORT_IN)
+        ("config", signature::config, we::type::PORT_IN)
+        ("trigger", literal::CONTROL, we::type::PORT_OUT)
+        ;
+      finalize.add_connections ()
+        (pid_wait, "wait")
+        (pid_config, "config")
+        ("trigger", pid_done)
+        ;
+
+      tid_t tid_finalize (net.add_transition (finalize));
+
+      net.add_edge (e++, connection_t (PT, tid_finalize, pid_config));
+      net.add_edge (e++, connection_t (PT, tid_finalize, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_finalize, pid_done));
+
+      // ******************************************************************* //
+
       transition_type trans_net
         ( "trans_net"
         , net
@@ -301,9 +603,7 @@ namespace kdm
         );
       trans_net.add_ports ()
         ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
-        ("volume", sig_volume, we::type::PORT_OUT, pid_volume)
-        ("config", signature::config, we::type::PORT_OUT, pid_config)
-        ("wait", literal::LONG, we::type::PORT_OUT, pid_wait)
+        ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
         ;
 
       return trans_net;
