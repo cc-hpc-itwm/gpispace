@@ -197,6 +197,16 @@ namespace we { namespace mgmt { namespace type {
                            );
     }
 
+    void
+    collect_output ()
+    {
+      unique_lock_t lock(*this);
+      we::mgmt::visitor::output_collector<this_type> collect_output (*this);
+      boost::apply_visitor ( collect_output
+                           , transition_.data()
+                           );
+    }
+
     template <typename Context>
     void execute ( Context & ctxt )
     {
@@ -378,6 +388,13 @@ namespace we { namespace mgmt { namespace type {
           this_type & operator << ( const T & t )
           {
             os << t;
+            return *this;
+          }
+
+          // make std::endl work
+          this_type & operator << ( std::ostream & (*fn)(std::ostream &) )
+          {
+            fn (os);
             return *this;
           }
 
