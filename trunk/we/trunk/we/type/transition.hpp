@@ -449,7 +449,6 @@ namespace we { namespace type {
 
       template <typename SignatureType>
       pid_t add_input_port (const std::string & port_name, const SignatureType & signature)
-<<<<<<< HEAD
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
