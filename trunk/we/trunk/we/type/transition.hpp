@@ -449,6 +449,7 @@ namespace we { namespace type {
 
       template <typename SignatureType>
       pid_t add_input_port (const std::string & port_name, const SignatureType & signature)
+<<<<<<< HEAD
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -488,7 +489,7 @@ namespace we { namespace type {
         {
           if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined", port_name);
+            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
           }
         }
         port_t port (port_name, PORT_READ, signature);
@@ -505,7 +506,7 @@ namespace we { namespace type {
         {
           if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined", port_name);
+            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
           }
         }
         port_t port (port_name, PORT_READ, signature, associated_place);
