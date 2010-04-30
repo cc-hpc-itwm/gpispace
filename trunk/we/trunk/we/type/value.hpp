@@ -93,7 +93,7 @@ namespace value
 
       type & operator () (literal::type & l) const
       {
-        throw std::runtime_error 
+        throw std::runtime_error
           ("cannot get field " + name + " from the literal " + util::show(l));
       }
     };
@@ -294,14 +294,14 @@ namespace value
         structured_t::const_iterator pos_y (y.begin());
         const structured_t::const_iterator end_x (x.end());
 
-        bool all_eq (  std::distance(pos_x, end_x) 
+        bool all_eq (  std::distance(pos_x, end_x)
                     == std::distance(pos_y, y.end())
                     );
 
         for ( ; all_eq && pos_x != end_x; ++pos_x, ++pos_y)
           all_eq =
             pos_x->first == pos_y->first
-            && 
+            &&
             boost::apply_visitor (eq(), pos_x->second, pos_y->second);
 
         return all_eq; // && (pos_x == end_x) && (pos_y == end_y);
@@ -325,7 +325,7 @@ namespace value
         {
           const structured_t::const_iterator pos (y.find (field->first));
 
-          all_eq = (pos == y.end()) 
+          all_eq = (pos == y.end())
             ? false
             : boost::apply_visitor (eq(), field->second, pos->second);
         }
@@ -360,8 +360,29 @@ namespace value
         return name;
       }
     };
+
+    template <typename T>
+    class get_literal_value : public boost::static_visitor<T>
+    {
+    public:
+      T const & operator () (const literal::type & literal) const
+      {
+        return boost::get<T> (literal);
+      }
+
+      T const &operator () (const value::structured_t & o) const
+      {
+        throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
+      }
+    };
   }
-  
+
+  template <typename T, typename V>
+  T const & get_literal_value (const V & v)
+  {
+    return boost::apply_visitor (visitor::get_literal_value<T const &>(), v);
+  }
+
   inline const type &
   get_field (const signature::field_name_t & field, const type & v)
   {
