@@ -141,6 +141,10 @@ namespace kdm
     const bool filled1
       (get_value_of_literal<bool>(::value::get_field ("filled", buffer1)));
 
+    // die hier implementierte Logik ist noch nicht optimal: es wird
+    // einfach nur jeder bufffer geladen, der assigned aber nicht
+    // gefüllt ist und die buffer, die geladen sind, werden verarbeitet.
+
     const long wait
       (get_value_of_literal<long>(::value::get_field ("wait", volume)));
 
