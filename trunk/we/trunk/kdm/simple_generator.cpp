@@ -4,16 +4,13 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <we/we.hpp>
-
 #include "simple_generator.hpp"
 
 // specific
 #include "kdm_simple.hpp"
 
-// partly generic
-#include "module.hpp"
-
 // generic
+#include "module.hpp"
 #include "context.hpp"
 
 int main (int argc, char ** argv)
@@ -34,7 +31,7 @@ int main (int argc, char ** argv)
 
   // dump activity for test purposes
   {
-    std::ofstream ofs ("simple-net.pnet");
+    std::ofstream ofs ("kdm_simple.pnet");
     ofs << we::util::text_codec::encode (act);
   }
 

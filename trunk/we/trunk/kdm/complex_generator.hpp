@@ -114,7 +114,7 @@ namespace kdm
       value::init();
 
       edge_type e (0);
-    
+
       net_type net ("kdm_complex");
 
       // ******************************************************************* //
@@ -192,7 +192,7 @@ namespace kdm
           (pid_config, "config")
           ;
         tid_t tid_loadTT (net.add_transition (loadTT));
-    
+
         net.add_edge (e++, connection_t (PT, tid_loadTT, pid_trigger_loadTT));
         net.add_edge (e++, connection_t (TP, tid_loadTT, pid_trigger_gen_store));
         net.add_edge (e++, connection_t (PT_READ, tid_loadTT, pid_config));
@@ -231,7 +231,7 @@ namespace kdm
       {
         transition_type gen_store_step
           ( "gen_store_step"
-          , expr_type 
+          , expr_type
             ( "${empty_store} := ${state.state};"
               "${state.state} := ${state.state} + 1"
             )
@@ -332,14 +332,14 @@ namespace kdm
           ;
 
         tid_t tid_gen_offset_step (net.add_transition (gen_offset_step));
-    
+
         net.add_edge (e++, connection_t (PT_READ, tid_gen_offset_step, pid_wanted_offset));
         net.add_edge (e++, connection_t (PT, tid_gen_offset_step, pid_gen_offset_state));
         net.add_edge (e++, connection_t (TP, tid_gen_offset_step, pid_gen_offset_state));
         net.add_edge (e++, connection_t (TP, tid_gen_offset_step, pid_offset_bunch));
         net.add_edge (e++, connection_t (TP, tid_gen_offset_step, pid_offset_volume));
       }
-  
+
       // ******************************************************************* //
 
       {
@@ -365,7 +365,7 @@ namespace kdm
       {
         transition_type gen_bunch
           ( "gen_bunch"
-          , expr_type 
+          , expr_type
             ( "${state.state.num} := ${config.BUNCHES_PER_OFFSET};"
               "${state.state.state} := 0L;"
               "${state.offset} := ${offset}"
@@ -471,7 +471,7 @@ namespace kdm
       {
         transition_type gen_volume_step
           ( "gen_volume_step"
-          , expr_type 
+          , expr_type
             ( "${volume.volume.id} := ${state.state.state};"
               "${volume.volume.offset} := ${state.offset};"
               "${volume.wait} := ${config.BUNCHES_PER_OFFSET};"
@@ -565,7 +565,7 @@ namespace kdm
           (pid_loaded_bunch, "loaded_bunch")
           ("empty_store", pid_empty_store)
           ;
-      
+
         tid_t tid_reuse_store (net.add_transition (reuse_store));
 
         net.add_edge (e++, connection_t (PT, tid_reuse_store, pid_loaded_bunch));
@@ -573,11 +573,11 @@ namespace kdm
       }
 
       // ********************************************************************* //
-    
+
       {
         transition_type assign0
           ( "assign0"
-          , expr_type 
+          , expr_type
             ( "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.volume.id});"
               "${volume.buffer0.assigned} := true;"
               "${volume.buffer0.bunch} := ${loaded_bunch.bunch};"
@@ -617,7 +617,7 @@ namespace kdm
       {
         transition_type assign1
           ( "assign1"
-          , expr_type 
+          , expr_type
             ( "${loaded_bunch.seen} := bitset_insert (${loaded_bunch.seen}, ${volume.volume.id});"
               "${volume.buffer1.assigned} := true;"
               "${volume.buffer1.bunch} := ${loaded_bunch.bunch};"
@@ -781,17 +781,17 @@ namespace kdm
       {
         transition_type volume_break
           ( "volume_break"
-          , expr_type ("${volume_to_be_written} := ${volume_processed.volume}")
+          , expr_type ("${volume} := ${volume_processed.volume}")
           , "${volume_processed.wait} == 0L"
           );
         volume_break.add_ports ()
           ("volume_processed", signature::volume_with_buffer, we::type::PORT_IN)
-          ("volume_to_be_written", signature::volume, we::type::PORT_OUT)
+          ("volume", signature::volume, we::type::PORT_OUT)
           ("trigger", literal::LONG, we::type::PORT_READ)
           ;
         volume_break.add_connections ()
           (pid_volume_processed, "volume_processed")
-          ("volume_to_be_written", pid_volume_to_be_written)
+          ("volume", pid_volume_to_be_written)
           (pid_assign_xor_reuse_store, "trigger")
           ;
 
@@ -807,13 +807,12 @@ namespace kdm
       {
         transition_type write ("write", mod_type ("kdm", "write"));
         write.add_ports ()
-          ("volume_to_be_written", signature::volume, we::type::PORT_IN)
-          ("volume_written", signature::volume, we::type::PORT_OUT)
+          ("volume", signature::volume, we::type::PORT_IN_OUT)
           ("config", signature::config, we::type::PORT_READ)
           ;
         write.add_connections ()
-          (pid_volume_to_be_written, "volume_to_be_written")
-          ("volume_written", pid_volume_written)
+          (pid_volume_to_be_written, "volume")
+          ("volume", pid_volume_written)
           (pid_config, "config")
           ;
 
@@ -829,7 +828,7 @@ namespace kdm
       {
         transition_type volume_next_offset
           ( "volume_next_offset"
-          , expr_type 
+          , expr_type
             ( "${wanted_offset} := "
               "bitset_insert (${wanted_offset}, ${volume_written.offset} + 1)"
             )
@@ -920,7 +919,7 @@ namespace kdm
         ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
         ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
         ;
-    
+
       return trans_net;
     }
   };
