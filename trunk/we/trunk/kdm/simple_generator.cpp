@@ -3,27 +3,29 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#include <we/net.hpp>
-#include <we/util/codec.hpp>
-#include <we/type/transition.hpp>
-#include <we/type/place.hpp>
-#include <we/type/token.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/we.hpp>
+
+// #include <we/net.hpp>
+// #include <we/util/codec.hpp>
+// #include <we/type/transition.hpp>
+// #include <we/type/place.hpp>
+// #include <we/type/token.hpp>
+// #include <we/mgmt/type/activity.hpp>
 
 #include "simple_generator.hpp"
 
-using petri_net::connection_t;
-using petri_net::PT;
-using petri_net::PT_READ;
-using petri_net::TP;
+// using petri_net::connection_t;
+// using petri_net::PT;
+// using petri_net::PT_READ;
+// using petri_net::TP;
 
-typedef place::type place_t;
-typedef token::type token_t;
-typedef unsigned int edge_t;
-typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
-typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
-typedef activity_t::input_t input_t;
+// typedef place::type place_t;
+// typedef token::type token_t;
+// typedef unsigned int edge_t;
+// typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
+// typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+// typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
+// typedef activity_t::input_t input_t;
 
 template <typename T>
 class visitor_get_value_of_literal : public boost::static_visitor<T>
@@ -130,7 +132,7 @@ namespace module
           }
         else if (mf.function() == "initialize")
           {
-            const std::string filename 
+            const std::string filename
               (get_value_of_literal<std::string> (ctxt.value("config_file")));
             long wait (0);
             const value::type config (kdm::initialize (filename, wait));
@@ -169,18 +171,18 @@ namespace module
       }
   }
 
-  static void call (activity_t & act, const transition_t::mod_type & module_call)
+  static void call (we::activity_t & act, const we::transition_t::mod_type & module_call)
   {
-    we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
+    we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
 
     // construct context
     typedef expr::eval::context <signature::field_name_t> context_t;
-    typedef activity_t::input_t input_t;
-    typedef activity_t::output_t output_t;
-    typedef activity_t::token_type token_type;
-    typedef activity_t::transition_type::port_id_t port_id_t;
-    typedef activity_t::transition_type::port_t port_t;
-    typedef activity_t::transition_type::const_iterator port_iterator;
+    typedef we::activity_t::input_t input_t;
+    typedef we::activity_t::output_t output_t;
+    typedef we::activity_t::token_type token_type;
+    typedef we::activity_t::transition_type::port_id_t port_id_t;
+    typedef we::activity_t::transition_type::port_t port_t;
+    typedef we::activity_t::transition_type::const_iterator port_iterator;
 
     context_t context;
     for ( input_t::const_iterator top (act.input().begin())
@@ -240,11 +242,11 @@ namespace module
 
 struct exec_context
 {
-  typedef transition_t::net_type net_t;
-  typedef transition_t::mod_type mod_t;
-  typedef transition_t::expr_type expr_t;
+  typedef we::transition_t::net_type net_t;
+  typedef we::transition_t::mod_type mod_t;
+  typedef we::transition_t::expr_type expr_t;
 
-  void handle_internally ( activity_t & act, net_t &)
+  void handle_internally ( we::activity_t & act, net_t &)
   {
     act.inject_input ();
 
@@ -256,7 +258,7 @@ struct exec_context
 //                 << act
 //                 << std::endl;
 
-      activity_t sub = act.extract ();
+      we::activity_t sub = act.extract ();
 
 //       std::cout << "***** sub-act (pre-execute):"
 //                 << std::endl
@@ -278,51 +280,51 @@ struct exec_context
 //                 << std::endl;
     }
 
-    we::mgmt::visitor::output_collector<activity_t> collect_output (act);
+    we::mgmt::visitor::output_collector<we::activity_t> collect_output (act);
     boost::apply_visitor ( collect_output
                          , act.transition().data()
                          );
   }
 
-  void handle_internally ( activity_t & , const mod_t & )
+  void handle_internally ( we::activity_t & , const mod_t & )
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  void handle_internally ( activity_t & , const expr_t & )
+  void handle_internally ( we::activity_t & , const expr_t & )
   {
     // nothing to do
   }
 
   std::string fake_external ( const std::string & act_enc, net_t & n )
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
+    we::activity_t act = we::util::text_codec::decode<we::activity_t> (act_enc);
     handle_internally ( act, n );
     return we::util::text_codec::encode (act);
   }
 
-  void handle_externally ( activity_t & act, net_t & n)
+  void handle_externally ( we::activity_t & act, net_t & n)
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
+    we::activity_t result ( we::util::text_codec::decode<we::activity_t> (fake_external (we::util::text_codec::encode(act), n)));
     act = result;
     //    act.output().swap (result.output());
   }
 
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
+    we::activity_t act = we::util::text_codec::decode<we::activity_t> (act_enc);
     module::call ( act, mod );
     return we::util::text_codec::encode (act);
   }
 
-  void handle_externally ( activity_t & act, const mod_t & module_call )
+  void handle_externally ( we::activity_t & act, const mod_t & module_call )
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
+    we::activity_t result ( we::util::text_codec::decode<we::activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
     act = result;
     //    act.output().swap (result.output());
   }
 
-  void handle_externally ( activity_t & act, const expr_t & e)
+  void handle_externally ( we::activity_t & act, const expr_t & e)
   {
     handle_internally ( act, e );
   }
@@ -330,13 +332,13 @@ struct exec_context
 
 int main (int argc, char ** argv)
 {
-  transition_t simple_trans (kdm::kdm<activity_t>::generate());
+  we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 
-  activity_t act ( simple_trans );
+  we::activity_t act ( simple_trans );
 
-  act.input().push_back 
-    ( input_t::value_type
-      ( token_t ( "config_file"
+  act.input().push_back
+    ( we::input_t::value_type
+      ( we::token_t ( "config_file"
                 , literal::STRING
                 , std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf")
                 )
@@ -358,7 +360,7 @@ int main (int argc, char ** argv)
   struct exec_context ctxt;
   act.execute (ctxt);
 
-  we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
+  we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
   printer << act.output();
 
 //   std::cout << "act (final):"
