@@ -1,0 +1,4 @@
+OFFSETS                10
+SUBVOLUMES_PER_OFFSET  10
+STORES                 20
+BUNCHES_PER_OFFSET     20

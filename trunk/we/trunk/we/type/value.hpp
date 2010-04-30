@@ -368,6 +368,12 @@ namespace value
     return boost::apply_visitor (visitor::get_field (field), v);
   }
 
+  inline type &
+  field (const signature::field_name_t & field, type & v)
+  {
+    return boost::apply_visitor (visitor::field (field), v);
+  }
+
   std::ostream & operator << (std::ostream & s, const type & x)
   {
     return boost::apply_visitor (visitor::show (s), x);

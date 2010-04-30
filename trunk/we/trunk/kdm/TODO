@@ -1,4 +1,6 @@
 
+** KDM COMPLEX
+
 - sincInterpolator magisch im Prozeßcontainer vorhanden, nutze
   gleiches Schema, das den Funktionen die Aufrufe zur FVM erlaubt.
 
@@ -119,11 +121,15 @@
     - Nochmal: Die Expressions im Workflowausdruck sollten eigentlich
       das Richtige tun!!
 
+** KDM SIMPLE
+
 - Implementiere einen einfacheren KDM-Workflow: Generiere pro
   Offsetklasse alle Subvolumen. Pro Subvolumen im Subworkflow einfach
   alle Traces am Volumen vorbei führen.
   Vorteil: Einfach zu erklären. Nachteil: langsamer, weil alle Traces
   mehrfach geladen werden
+
+  => ist implementiert
 
 - Erzeuge eine XML-Beschreibung zum KDM Workflow! Händisch im Moment,
   sollte aber sinnvoll sein. Das ist dann auch gleich der
