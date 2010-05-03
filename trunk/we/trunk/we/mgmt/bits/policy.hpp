@@ -47,12 +47,35 @@ namespace we
             return base_codec::template encode<T>(thing);
           }
         };
+
+        template <typename T, bool valid=true>
+        struct validator
+        {
+          typedef T type;
+          static void validate (T const &) throw (std::exception)
+          {
+            return valid;
+          };
+          static bool is_valid (T const & t)
+          {
+            try
+            {
+              validate (t);
+            }
+            catch (...)
+            {
+              return false;
+            }
+            return true;
+          }
+        };
       }
 
       template <typename Traits>
       struct layer_policy
       {
         typedef def::codec<typename Traits::activity_type> codec;
+        typedef def::validator<Activity, true> validator;
       };
     }
   }

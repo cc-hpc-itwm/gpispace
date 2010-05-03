@@ -31,8 +31,10 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
+#include <we/mgmt/basic_layer.hpp>
+#include <we/mgmt/parser.hpp>
+
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/types.hpp>
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/policy.hpp>
 #include <we/mgmt/bits/commands.hpp>
@@ -40,48 +42,44 @@
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
-#include <we/mgmt/bits/activity.hpp>
-#include <we/mgmt/basic_layer.hpp>
-#include <we/mgmt/parser.hpp>
 
 namespace we { namespace mgmt {
+    namespace exception
+    {
+      struct validation_error : public std::runtime_error
+      {
+        activity_invalid (const std::string & msg, const std::string & act_name)
+          : runtime_error (msg)
+          , name (act_name)
+        {}
+
+        ~activity_invalid () throw ()
+        {}
+
+        const std::string name;
+      };
+    }
 
     template < typename ExecutionLayer
-             , typename Net
-             , typename Traits = detail::layer_traits<Net, typename ExecutionLayer::id_type>
-             , typename Policy = detail::layer_policy<Traits>
+             , typename Activity
+             , typename Traits = traits::layer_traits<Activity>
+             , typename Policy = policy::layer_policy<Traits>
              >
     class layer : public basic_layer<typename Traits::id_traits::type>
     {
     public:
-      typedef layer<ExecutionLayer, Net, Traits, Policy> this_type;
+      typedef layer<ExecutionLayer, Activity, Traits, Policy> this_type;
       typedef ExecutionLayer exec_layer_type;
-      typedef Net net_type;
+      typedef Activity activity_type;
       typedef Traits traits_type;
+      typedef Policy policy;
 
-      typedef typename traits_type::net_traits net_traits;
-      typedef typename net_traits::validator_type net_validator;
-
-      typedef typename traits_type::id_traits  id_traits;
+      typedef typename exec_layer_type::id_type external_id_type;
+      typedef typename traits_type::id_traits  internal_id_traits;
       typedef typename id_traits::type id_type;
 
-      typedef typename traits_type::status_traits status_traits;
-      typedef typename status_traits::type status_type;
-
-      typedef typename traits_type::result_traits result_traits;
-      typedef typename result_traits::type result_type;
-
       typedef std::string encode_type;
-      //		typedef typename traits_type::codec_type codec_type;
-      //		typedef typename codec_type::encode_type encode_type;
-      typedef typename traits_type::reason_traits::type reason_type;
 
-      typedef typename net_type::place_type place_type;
-      typedef typename net_type::edge_type edge_type;
-      typedef typename net_type::transition_type transition_type;
-      typedef typename net_type::token_type token_type;
-
-      typedef detail::activity<transition_type, token_type> activity_type;
       typedef typename boost::unordered_map<id_type, activity_type> activities_t;
       typedef typename activity_type::output_t output_type;
     private:
@@ -92,7 +90,6 @@ namespace we { namespace mgmt {
       typedef detail::queue<cmd_t> cmd_q_t;
 
       // injector thread
-      //		typedef std::pair<id_type, typename net_type::output_t> inj_cmd_t;
       typedef id_type inj_cmd_t;
       typedef detail::queue<inj_cmd_t> inj_q_t;
 
@@ -125,20 +122,8 @@ namespace we { namespace mgmt {
        */
       void submit(const id_type & id, const encode_type & bytes) throw (std::exception)
       {
-        activity_type act = parser<net_type>::parse<activity_type>(bytes);
+        activity_type act = policy::codec::decode(bytes);
         submit (id, act);
-        // TODO: clear parent, clear children!
-        std::cerr << "D: submitted act["<< id << "]" << std::endl;
-        //
-        //		  // check network for validity
-        //		  if (net_validator::is_valid(*act.data.net))
-        //		  {
-        //		  }
-        //		  else
-        //		  {
-        //			// TODO: detailed error analysis
-        //			throw std::runtime_error("network invalid!");
-        //		  }
       }
 
       /**
@@ -272,9 +257,22 @@ namespace we { namespace mgmt {
       {
         debug_activity (act);
         {
-          insert_activity(id, act);
+          try
+          {
+            policy::validator::validate (act);
+            insert_activity(id, act);
+            std::cerr << "D: submitted act["<< id << "]" << act << std::endl;
+            post_activity_notification (id);
+          }
+          catch (const std::exception & ex)
+          {
+            throw exception::validation_error( "layer::submit(): invalid activity:"
+                                               + " id := " + ::util::show(id)
+                                               + " name := " + act.name()
+                                             , act.name()
+                                             );
+          }
         }
-        post_activity_notification (id);
       }
 
     public:
@@ -308,11 +306,10 @@ namespace we { namespace mgmt {
         start();
       }
 
-      template <class E, typename G, typename V>
-      layer(E & exec_layer, G gen, V validator)
+      template <class E, typename G>
+      layer(E & exec_layer, G gen)
         : exec_layer_(exec_layer)
         , id_gen_(gen)
-        , validator_(validator)
         , barrier_(4 + 1) // injector, manager, executor, extractor
         , cmd_q_(1024)
         , active_nets_(1024)
@@ -588,7 +585,6 @@ namespace we { namespace mgmt {
     private:
       exec_layer_type & exec_layer_;
       boost::function<id_type()> id_gen_;
-      boost::function<bool (const net_type&)> validator_;
       boost::barrier barrier_;
       mutable boost::shared_mutex activities_mutex_;
       activities_t activities_;

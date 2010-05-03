@@ -32,27 +32,6 @@ namespace we
     {
       namespace def
       {
-        template <typename T, bool valid=true>
-        struct null_validator
-        {
-          typedef T type;
-          static bool is_valid (T const &)
-          {
-            return valid;
-          };
-        };
-
-        template <typename Activity>
-        struct basic_validator
-        {
-          typedef Activity type;
-
-          static bool is_valid(const type & t)
-          {
-            return null_validator<type, true>::is_valid(t);
-          }
-        };
-
         template <typename IdType>
         struct id_traits
         {
@@ -103,7 +82,6 @@ namespace we
       struct layer_traits
       {
         typedef Activity activity_type;
-        typedef def::basic_validator<Activity> validator;
         typedef def::id_traits<typename Activity::id_t> id_traits;
       };
     }
