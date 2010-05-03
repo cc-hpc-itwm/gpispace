@@ -30,13 +30,13 @@
 #include <we/mgmt/bits/transition_visitors.hpp>
 
 namespace we { namespace mgmt { namespace type {
-  template <typename Transition, typename Token>
+  template <typename Transition>
   struct activity_traits
   {
     typedef petri_net::pid_t pid_t;
     typedef petri_net::pid_t activity_id_t;
     typedef Transition transition_type;
-    typedef Token token_type;
+    typedef typename Transition::token_type token_type;
 
     typedef std::pair<token_type, pid_t> token_on_place_t;
     typedef std::vector<token_on_place_t> token_on_place_list_t;
@@ -90,10 +90,10 @@ namespace we { namespace mgmt { namespace type {
   }
 
 
-  template <typename Transition, typename Token, typename Traits = activity_traits<Transition, Token> >
+  template <typename Transition, typename Traits = activity_traits<Transition> >
   class activity_t
   {
-    typedef activity_t<Transition, Token, Traits> this_type;
+    typedef activity_t<Transition, Traits> this_type;
 
   public:
     typedef Transition transition_type;
@@ -398,6 +398,18 @@ namespace we { namespace mgmt { namespace type {
     boost::mt19937 engine_;
   };
 
+      template <typename Trans, typename Traits>
+      inline bool operator==(const activity_t<Trans,Traits> & a, const activity_t<Trans,Traits> & b)
+      {
+        return a.id() == b.id();
+      }
+      template <typename Trans, typename Traits>
+      inline std::size_t hash_value(activity_t<Trans, Traits> const & a)
+      {
+        boost::hash<typename activity_t<Trans, Traits>::id_t> hasher;
+        return hasher(a.id());
+      }
+
       namespace detail
       {
         template <typename Activity, typename Stream = std::ostream>
@@ -451,12 +463,12 @@ namespace we { namespace mgmt { namespace type {
       }
 
 
-  template <typename Transition, typename Token, typename Traits>
+  template <typename Transition, typename Traits>
   std::ostream & operator << ( std::ostream & os
-                             , const activity_t<Transition, Token, Traits> & act
+                             , const activity_t<Transition, Traits> & act
                              )
   {
-    typedef activity_t<Transition, Token, Traits> activity_t;
+    typedef activity_t<Transition, Traits> activity_t;
 
     os << "{";
       os << "act, "

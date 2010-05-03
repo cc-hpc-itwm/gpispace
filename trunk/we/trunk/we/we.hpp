@@ -22,7 +22,7 @@ namespace we
   typedef unsigned int edge_t;
   typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
   typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
-  typedef we::mgmt::type::activity_t<transition_t, token_t> activity_t;
+  typedef we::mgmt::type::activity_t<transition_t> activity_t;
   typedef activity_t::input_t input_t;
 
   using we::type::PORT_IN;
