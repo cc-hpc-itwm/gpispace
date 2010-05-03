@@ -22,30 +22,38 @@
 #include <string>
 #include <limits>
 
-#include <we/mgmt/parser.hpp>
+#include <we/util/codec.hpp>
 
-namespace we { namespace mgmt { namespace detail {
-      namespace def {
-	template <typename Net, bool default_value = true>
-        struct basic_net_validator
+namespace we
+{
+  namespace mgmt
+  {
+    namespace traits
+    {
+      namespace def
+      {
+        template <typename T, bool valid=true>
+        struct null_validator
         {
-          typedef Net net_type;
-
-          static bool is_valid(const net_type & n)
+          typedef T type;
+          static bool is_valid (T const &)
           {
-            we::util::remove_unused_variable_warning(n);
-            return default_value;
+            return valid;
+          };
+        };
+
+        template <typename Activity>
+        struct basic_validator
+        {
+          typedef Activity type;
+
+          static bool is_valid(const type & t)
+          {
+            return null_validator<type, true>::is_valid(t);
           }
         };
 
-	template <typename Net>
-        struct net_traits
-        {
-          typedef Net type;
-          typedef basic_net_validator<Net> validator_type;
-        };
-
-	template <typename IdType>
+        template <typename IdType>
         struct id_traits
         {
           typedef IdType type;
@@ -53,7 +61,7 @@ namespace we { namespace mgmt { namespace detail {
           static const type nil() { return std::numeric_limits<type>::max(); }
         };
 
-	template <>
+        template <>
         struct id_traits<std::string>
         {
           typedef std::string type;
@@ -61,7 +69,7 @@ namespace we { namespace mgmt { namespace detail {
           inline static const type nil() { return ""; }
         };
 
-	template <>
+        template <>
         struct id_traits<long unsigned int>
         {
         public:
@@ -84,72 +92,22 @@ namespace we { namespace mgmt { namespace detail {
           }
         };
 
-	template <typename StatusType=int>
-        struct status_traits
-        {
-          typedef StatusType type;
-
-          static type RUNNING() { return 0; }
-        };
-
-	template <typename ReasonType>
-        struct reason_traits
-        {
-          typedef ReasonType type;
-
-          static type USER_CANCEL();
-          static type SYSTEM_CANCEL();
-        };
-	template <>
-        struct reason_traits<std::string>
-        {
-          typedef std::string type;
-
-          static const type USER_CANCEL() { return "USER_CANCEL"; }
-          static const type SYSTEM_CANCEL() { return "SYSTEM_CANCEL"; }
-        };
-
-	template <typename Net, typename BytesType=std::string>
-        struct codec
-        {
-          typedef BytesType bytes_type;
-          typedef Net net_type;
-
-          typedef bytes_type encode_type;
-          typedef net_type decode_type;
-
-          static decode_type decode(const encode_type & data)
-          {
-            we::util::remove_unused_variable_warning(data);
-            decode_type n;
-            parser<decode_type>::parse(n, data);
-            return n;
-          }
-
-          static encode_type encode(const decode_type & data)
-          {
-            we::util::remove_unused_variable_warning(data);
-            bytes_type b;
-            return b;
-          }
-        };
-
-	template <typename T>
+        template <typename T>
         struct result_traits
         {
           typedef T type;
         };
       }
 
-      template <typename Net, typename IdType>
+      template <typename Activity>
       struct layer_traits
       {
-        typedef def::id_traits<IdType> id_traits;
-        typedef def::status_traits<int> status_traits;
-        typedef def::net_traits<Net> net_traits;
-        typedef def::result_traits<std::string> result_traits;
-        typedef def::reason_traits<std::string> reason_traits;
+        typedef Activity activity_type;
+        typedef def::basic_validator<Activity> validator;
+        typedef def::id_traits<typename Activity::id_t> id_traits;
       };
-    }}}
+    }
+  }
+}
 
 #endif

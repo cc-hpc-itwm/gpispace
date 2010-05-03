@@ -27,6 +27,7 @@
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>
+#include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
 namespace we { namespace mgmt { namespace type {
@@ -46,7 +47,7 @@ namespace we { namespace mgmt { namespace type {
     inline static
     activity_id_t invalid_id (void)
     {
-      return petri_net::traits::id_traits<activity_id_t>::invalid ();
+      return ::we::mgmt::traits::def::id_traits<activity_id_t>::nil();
     }
   };
 
