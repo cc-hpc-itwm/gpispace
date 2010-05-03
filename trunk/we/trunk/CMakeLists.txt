@@ -23,6 +23,8 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
+option (ENABLE_TESTS "Build with test binaries" YES)
+
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 if (${CMAKE_ADDITIONAL_PATH} NOT STREQUAL "")
@@ -131,8 +133,10 @@ include(CTest)
 
 # Reflect the package structure
 add_subdirectory(we)
-add_subdirectory(tests)
 add_subdirectory(kdm)
+if (ENABLE_TESTS)
+  add_subdirectory(tests)
+endif (ENABLE_TESTS)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
