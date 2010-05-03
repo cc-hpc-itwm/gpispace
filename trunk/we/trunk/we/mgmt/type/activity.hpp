@@ -34,6 +34,7 @@ namespace we { namespace mgmt { namespace type {
   struct activity_traits
   {
     typedef petri_net::pid_t pid_t;
+    typedef petri_net::pid_t activity_id_t;
     typedef Transition transition_type;
     typedef Token token_type;
 
@@ -41,54 +42,16 @@ namespace we { namespace mgmt { namespace type {
     typedef std::vector<token_on_place_t> token_on_place_list_t;
     typedef token_on_place_list_t input_t;
     typedef token_on_place_list_t output_t;
+
+    inline static
+    activity_id_t invalid_id (void)
+    {
+      return petri_net::traits::id_traits<activity_id_t>::invalid ();
+    }
   };
 
-  template <typename Transition, typename Token, typename Traits = activity_traits<Transition, Token> >
-  class activity_t
-  {
-    typedef activity_t<Transition, Token, Traits> this_type;
-
-  public:
-    typedef Transition transition_type;
-    typedef Traits traits_type;
-
-    typedef typename traits_type::token_type token_type;
-    typedef typename traits_type::token_on_place_t token_on_place_t;
-    typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
-    typedef typename traits_type::input_t input_t;
-    typedef typename traits_type::output_t output_t;
-    typedef typename traits_type::pid_t pid_t;
-
-    typedef boost::shared_lock<this_type> shared_lock_t;
-    typedef boost::unique_lock<this_type> unique_lock_t;
-
-    activity_t ()
-    { }
-
-    template <typename T>
-    activity_t (const T & transition)
-      : transition_ (transition)
-    { }
-
-    activity_t (const this_type & other)
-      : flags_ (other.flags_)
-      , transition_ (other.transition_)
-      , input_ (other.input_)
-      , output_ (other.output_)
-    { }
-
-    this_type & operator= (const this_type & other)
-    {
-      if (this != &other)
-      {
-        flags_ = (other.flags_);
-        transition_ = (other.transition_);
-        input_ = (other.input_);
-        output_ = (other.output_);
-      }
-      return *this;
-    }
-
+   namespace detail
+   {
     struct flags_t
     {
       bool suspended;
@@ -114,6 +77,87 @@ namespace we { namespace mgmt { namespace type {
         ar & BOOST_SERIALIZATION_NVP(failed);
       }
     };
+
+     inline
+     std::ostream & operator << (std::ostream & os, const flags_t & flags)
+     {
+       os << (flags.suspended ? "S" : "s");
+       os << (flags.cancelling ? "C" : "c");
+       os << (flags.cancelled ? "T" : "t");
+       os << (flags.failed ? "F" : "f");
+       return os;
+     }
+  }
+
+
+  template <typename Transition, typename Token, typename Traits = activity_traits<Transition, Token> >
+  class activity_t
+  {
+    typedef activity_t<Transition, Token, Traits> this_type;
+
+  public:
+    typedef Transition transition_type;
+    typedef Traits traits_type;
+
+    typedef typename traits_type::token_type token_type;
+    typedef typename traits_type::token_on_place_t token_on_place_t;
+    typedef typename traits_type::token_on_place_list_t token_on_place_list_t;
+    typedef typename traits_type::input_t input_t;
+    typedef typename traits_type::output_t output_t;
+    typedef typename traits_type::pid_t pid_t;
+    typedef typename traits_type::activity_id_t id_t;
+
+    typedef boost::shared_lock<this_type> shared_lock_t;
+    typedef boost::unique_lock<this_type> unique_lock_t;
+
+    activity_t ()
+      : id_ (traits_type::invalid_id())
+    { }
+
+    template <typename T>
+    activity_t (const T & transition)
+      : id_ (traits_type::invalid_id())
+      , transition_ (transition)
+    { }
+
+    activity_t (const this_type & other)
+      : id_ (other.id_)
+      , flags_ (other.flags_)
+      , transition_ (other.transition_)
+      , input_ (other.input_)
+      , output_ (other.output_)
+    { }
+
+    this_type & operator= (const this_type & other)
+    {
+      if (this != &other)
+      {
+        id_ = other.id_;
+        flags_ = (other.flags_);
+        transition_ = (other.transition_);
+        input_ = (other.input_);
+        output_ = (other.output_);
+      }
+      return *this;
+    }
+
+    inline
+    void set_id (const id_t & new_id)
+    {
+      id_ = new_id;
+    }
+
+    inline
+    id_t const & id (void) const
+    {
+      return id_;
+    }
+
+    inline
+    const detail::flags_t & flags (void) const
+    {
+      return flags_;
+    }
 
     inline
     bool is_alive() const
@@ -334,6 +378,7 @@ namespace we { namespace mgmt { namespace type {
     template<class Archive>
     void serialize (Archive & ar, const unsigned int)
     {
+      ar & BOOST_SERIALIZATION_NVP(id_);
       ar & BOOST_SERIALIZATION_NVP(flags_);
       ar & BOOST_SERIALIZATION_NVP(transition_);
       ar & BOOST_SERIALIZATION_NVP(input_);
@@ -341,7 +386,8 @@ namespace we { namespace mgmt { namespace type {
     }
 
   private:
-    flags_t flags_;
+    id_t id_;
+    detail::flags_t flags_;
     mutable boost::shared_mutex mutex_;
 
     transition_type transition_;
@@ -414,7 +460,7 @@ namespace we { namespace mgmt { namespace type {
 
     os << "{";
       os << "act, "
-         << "flags"
+         << act.flags()
          << ", "
          << act.transition()
          << ", "
