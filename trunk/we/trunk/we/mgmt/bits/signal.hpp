@@ -115,7 +115,7 @@ namespace we
 	}
 
       private:
-        std::string name_;
+        const std::string name_;
 	std::vector<boost::function<F> > targets_;
       };
 
