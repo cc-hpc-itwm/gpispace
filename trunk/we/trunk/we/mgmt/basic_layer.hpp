@@ -3,7 +3,7 @@
  *
  *       Filename:  basic_layer.hpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  03/03/2010 03:32:41 PM
@@ -21,30 +21,33 @@
 
 #include <string>
 
-namespace we { namespace mgmt {
-  // WORK: should probably be template<typename Net, typename Traits>
-  template <typename IdType
-		  , typename ResultType=std::string
-		  , typename ReasonType=std::string
-		  , typename EncodedType=std::string
-  >
-  struct basic_layer
-  {
-	typedef IdType id_type;
-	typedef ResultType result_type;
-	typedef ReasonType reason_type;
-	typedef EncodedType encoded_type;
+namespace we
+{
+  namespace mgmt {
 
-	virtual void submit(const id_type & id, const encoded_type & ) = 0;
-	virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
+    template < typename IdType
+             , typename ResultType=std::string
+             , typename ReasonType=std::string
+             , typename EncodedType=std::string
+             >
+    struct basic_layer
+    {
+      typedef IdType id_type;
+      typedef ResultType result_type;
+      typedef ReasonType reason_type;
+      typedef EncodedType encoded_type;
 
-	virtual bool finished(const id_type & id, const result_type & result) = 0;
-	virtual bool failed(const id_type & id, const result_type & result) = 0;
-	virtual bool cancelled(const id_type & id) = 0;
+      virtual void submit(const id_type & id, const encoded_type & ) = 0;
+      virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
-	template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version ){}
-  }; 
-}}
+      virtual bool finished(const id_type & id, const result_type & result) = 0;
+      virtual bool failed(const id_type & id, const result_type & result) = 0;
+      virtual bool cancelled(const id_type & id) = 0;
+
+      template <class Archive>
+      void serialize(Archive&, const unsigned int ){}
+    };
+  }
+}
 
 #endif
