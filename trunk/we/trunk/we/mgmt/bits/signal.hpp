@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <ostream>
+#include <iostream>
 #include <boost/function.hpp>
 
 namespace we
