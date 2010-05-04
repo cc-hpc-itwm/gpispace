@@ -21,7 +21,7 @@ struct control
 
 inline bool operator == (const control &, const control &) { return true; }
 
-std::ostream & operator << (std::ostream & s, const control &)
+inline std::ostream & operator << (std::ostream & s, const control &)
 {
   return s << "[]";
 }

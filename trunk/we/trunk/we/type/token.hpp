@@ -80,7 +80,7 @@ namespace token
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
       
-    friend std::ostream & operator << (std::ostream &, const type &);
+    friend inline std::ostream & operator << (std::ostream &, const type &);
     friend bool operator == (const type &, const type &);
     friend bool operator != (const type &, const type &);
     friend std::size_t hash_value (const type &);
@@ -104,7 +104,7 @@ namespace token
     return !(a == b);
   }
 
-  std::ostream & operator << (std::ostream & s, const type & t)
+  inline std::ostream & operator << (std::ostream & s, const type & t)
   {
     return s << t.value;
   }

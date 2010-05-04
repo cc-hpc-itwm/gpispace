@@ -314,7 +314,7 @@ namespace value
       }
     };
 
-    bool smaller_or_equal (const structured_t & x, const structured_t & y)
+    inline bool smaller_or_equal (const structured_t & x, const structured_t & y)
     {
       bool all_eq (true);
 
@@ -395,7 +395,7 @@ namespace value
     return boost::apply_visitor (visitor::field (field), v);
   }
 
-  std::ostream & operator << (std::ostream & s, const type & x)
+  inline std::ostream & operator << (std::ostream & s, const type & x)
   {
     return boost::apply_visitor (visitor::show (s), x);
   }

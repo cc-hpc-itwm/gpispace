@@ -9,13 +9,13 @@
 namespace util
 {
   template<typename T>
-  std::string show (const T & x)
+  inline std::string show (const T & x)
   {
     std::ostringstream s; s << x; return s.str();
   }
 
   template<>
-  std::string show<std::string> (const std::string & x)
+  inline std::string show<std::string> (const std::string & x)
   {
     return x;
   }

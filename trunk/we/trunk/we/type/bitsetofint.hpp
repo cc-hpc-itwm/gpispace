@@ -75,7 +75,7 @@ namespace bitsetofint
     friend bool operator == (const type &, const type &);
   };
   
-  std::ostream & operator << (std::ostream & s, const type & t)
+  inline std::ostream & operator << (std::ostream & s, const type & t)
   {
     s << "{";
     for ( type::container_type::const_iterator it (t.container.begin())

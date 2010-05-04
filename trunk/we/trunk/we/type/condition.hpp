@@ -103,7 +103,7 @@ namespace condition
     }
   };
 
-  std::ostream & operator << (std::ostream & os, const type & c)
+  inline std::ostream & operator << (std::ostream & os, const type & c)
   {
     return os << c.expression_;
   }
