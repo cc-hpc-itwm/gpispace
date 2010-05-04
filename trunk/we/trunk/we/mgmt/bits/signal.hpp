@@ -21,6 +21,7 @@
 #define WE_MGMT_BITS_SIGNAL_HPP 1
 
 #include <vector>
+#include <ostream>
 #include <boost/function.hpp>
 
 namespace we
