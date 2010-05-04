@@ -23,15 +23,20 @@
 #include <vector>
 #include <boost/function.hpp>
 
-namespace we { namespace mgmt { namespace detail {
-  template <typename F = void (void) >
-  class signal
+namespace we
+{
+  namespace mgmt
   {
-  public:
-    explicit
-    signal(const std::string & name = "noname")
-      : name_(name)
-    { }
+    namespace util
+    {
+      template <typename F = void (void) >
+      class signal
+      {
+      public:
+        explicit
+        signal(const std::string & name = "noname")
+          : name_(name)
+        { }
 
 	template <typename C>
 	void connect(C f)
@@ -39,73 +44,87 @@ namespace we { namespace mgmt { namespace detail {
 	  targets_.push_back(f);
 	}
 
-    const std::string &name() const { return name_; }
+        void clear ()
+        {
+          targets_.clear();
+        }
+
+        const std::string &name() const { return name_; }
 
 	void operator() ()
 	{
-      if (targets_.empty())
-      {
-        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-        return;
-      }
+          if (targets_.empty())
+          {
+            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+            return;
+          }
 
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
-		(*t)();
+            (*t)();
 	  }
 	}
-	
+
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-      if (targets_.empty())
-      {
-        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-        return;
-      }
+          if (targets_.empty())
+          {
+            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+            return;
+          }
 
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
-		(*t)(a1);
+            (*t)(a1);
 	  }
 	}
 
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-      if (targets_.empty())
-      {
-        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-        return;
-      }
+          if (targets_.empty())
+          {
+            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+            return;
+          }
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
-		(*t)(a1, a2);
+            (*t)(a1, a2);
 	  }
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-      if (targets_.empty())
-      {
-        std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-        return;
-      }
+          if (targets_.empty())
+          {
+            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+            return;
+          }
 	  typedef typename std::vector<boost::function<F> > funcs_t;
 	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
 	  {
-		(*t)(a1, a2, a3);
+            (*t)(a1, a2, a3);
 	  }
 	}
 
-  private:
-    std::string name_;
+      private:
+        std::string name_;
 	std::vector<boost::function<F> > targets_;
-  };
-}}}
+      };
+
+      template <typename F>
+      inline std::ostream & operator << (std::ostream & os, const signal<F> & sig)
+      {
+        os << "SIG_" << sig.name();
+        return os;
+      }
+    }
+  }
+}
 
 #endif
