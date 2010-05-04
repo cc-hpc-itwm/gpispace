@@ -54,8 +54,12 @@ namespace we
           typedef T type;
           static void validate (T const &) throw (std::exception)
           {
-            return valid;
+            if (! valid)
+            {
+              throw std::runtime_error ("validator<false>:: forced validation error!");
+            }
           };
+
           static bool is_valid (T const & t)
           {
             try
@@ -75,7 +79,29 @@ namespace we
       struct layer_policy
       {
         typedef def::codec<typename Traits::activity_type> codec;
-        typedef def::validator<Activity, true> validator;
+        typedef def::validator<typename Traits::activity_type, true> validator;
+
+        static const size_t DEFAULT_COMMAND_QUEUE_SIZE = 1024;
+        static const size_t DEFAULT_ACTIVE_NETS_SIZE = 1024;
+        static const size_t DEFAULT_INJECTOR_QUEUE_SIZE = 1024;
+        static const size_t DEFAULT_EXECUTOR_QUEUE_SIZE = 1024;
+
+        static size_t max_command_queue_size ()
+        {
+          return DEFAULT_COMMAND_QUEUE_SIZE;
+        }
+        static size_t max_active_nets ()
+        {
+          return DEFAULT_ACTIVE_NETS_SIZE;
+        }
+        static size_t max_injector_queue_size ()
+        {
+          return DEFAULT_INJECTOR_QUEUE_SIZE;
+        }
+        static size_t max_executor_queue_size ()
+        {
+          return DEFAULT_EXECUTOR_QUEUE_SIZE;
+        }
       };
     }
   }

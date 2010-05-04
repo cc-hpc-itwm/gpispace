@@ -32,7 +32,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/basic_layer.hpp>
-#include <we/mgmt/parser.hpp>
 
 #include <we/mgmt/exception.hpp>
 #include <we/mgmt/bits/traits.hpp>
@@ -48,12 +47,12 @@ namespace we { namespace mgmt {
     {
       struct validation_error : public std::runtime_error
       {
-        activity_invalid (const std::string & msg, const std::string & act_name)
+        validation_error (const std::string & msg, const std::string & act_name)
           : runtime_error (msg)
           , name (act_name)
         {}
 
-        ~activity_invalid () throw ()
+        ~validation_error () throw ()
         {}
 
         const std::string name;
@@ -76,9 +75,12 @@ namespace we { namespace mgmt {
 
       typedef typename exec_layer_type::id_type external_id_type;
       typedef typename traits_type::id_traits  internal_id_traits;
-      typedef typename id_traits::type id_type;
+      typedef typename internal_id_traits::type id_type;
 
       typedef std::string encode_type;
+      typedef std::string reason_type;
+      typedef std::string result_type;
+      typedef std::string status_type;
 
       typedef typename boost::unordered_map<id_type, activity_type> activities_t;
       typedef typename activity_type::output_t output_type;
@@ -103,10 +105,10 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      detail::signal<void (id_type, std::string)> sig_finished;
-      detail::signal<void (id_type, std::string)> sig_failed;
-      detail::signal<void (id_type, std::string)> sig_cancelled;
-      detail::signal<void (id_type, std::string)> sig_execute;
+      detail::signal<void (id_type const &, std::string const &)> sig_finished;
+      detail::signal<void (id_type const &, std::string const &)> sig_failed;
+      detail::signal<void (id_type const &, std::string const &)> sig_cancelled;
+      detail::signal<void (id_type const &, std::string const &)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -255,7 +257,7 @@ namespace we { namespace mgmt {
     private:
       void submit (const id_type & id, activity_type & act)
       {
-        debug_activity (act);
+        std::cerr << "D: pre-submit act["<< id << "]" << act << std::endl;
         {
           try
           {
@@ -266,10 +268,10 @@ namespace we { namespace mgmt {
           }
           catch (const std::exception & ex)
           {
-            throw exception::validation_error( "layer::submit(): invalid activity:"
+            throw exception::validation_error( std::string("layer::submit(): invalid activity:")
                                                + " id := " + ::util::show(id)
-                                               + " name := " + act.name()
-                                             , act.name()
+                                               + " name := " + act.transition().name()
+                                             , act.transition().name()
                                              );
           }
         }
@@ -283,12 +285,12 @@ namespace we { namespace mgmt {
       explicit
       layer(E & exec_layer)
         : exec_layer_(exec_layer)
-        , id_gen_(&id_traits::generate)
+        , id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
-        , cmd_q_(1024)
-        , active_nets_(1024)
-        , inj_q_(1024)
-        , exec_q_(1024)
+        , cmd_q_(policy::max_command_queue_size())
+        , active_nets_(policy::max_active_nets())
+        , inj_q_(policy::max_injector_queue_size())
+        , exec_q_(policy::max_executor_queue_size())
       {
         start();
       }
@@ -298,23 +300,10 @@ namespace we { namespace mgmt {
         : exec_layer_(exec_layer)
         , id_gen_(gen)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
-        , cmd_q_(1024)
-        , active_nets_(1024)
-        , inj_q_(1024)
-        , exec_q_(1024)
-      {
-        start();
-      }
-
-      template <class E, typename G>
-      layer(E & exec_layer, G gen)
-        : exec_layer_(exec_layer)
-        , id_gen_(gen)
-        , barrier_(4 + 1) // injector, manager, executor, extractor
-        , cmd_q_(1024)
-        , active_nets_(1024)
-        , inj_q_(1024)
-        , exec_q_(1024)
+        , cmd_q_(policy::max_command_queue_size())
+        , active_nets_(policy::max_active_nets())
+        , inj_q_(policy::max_injector_queue_size())
+        , exec_q_(policy::max_executor_queue_size())
       {
         start();
       }
@@ -402,6 +391,8 @@ namespace we { namespace mgmt {
       inline
       size_t activity_child_count ( const activity_type & act ) const
       {
+        we::util::remove_unused_variable_warning (act);
+
         throw std::runtime_error ("activity_child_count (act) not implemented!");
       }
 
@@ -491,7 +482,7 @@ namespace we { namespace mgmt {
 
               activity_type sub_act = act.extract();
 
-              const id_type sub_act_id = id_gen();
+              const id_type sub_act_id = id_gen_();
               insert_activity (sub_act_id, sub_act);
 
               // TODO:
@@ -513,7 +504,16 @@ namespace we { namespace mgmt {
       inline
       void establish_parent_child_relationship ( const id_type & parent, const id_type & child )
       {
-        throw std::runtime_error ("establish_parent_child_relationship (parent, child) not implemented")
+        we::util::remove_unused_variable_warning (parent);
+        we::util::remove_unused_variable_warning (child);
+
+        throw std::runtime_error ("establish_parent_child_relationship (parent, child) not implemented");
+      }
+
+      inline
+      id_type parent_of ( const id_type & id )
+      {
+        throw std::runtime_error( "parent_of (" + ::util::show(id) + " not yet implemented!" );
       }
 
       void injector()
@@ -565,7 +565,9 @@ namespace we { namespace mgmt {
 
             try
             {
-              act.execute ( *this );
+              std::cerr << "going to execute: " << act << std::endl;
+
+              //              act.execute ( *this );
               // inject results
               post_inject_activity_results ( act_id );
             }
@@ -600,12 +602,6 @@ namespace we { namespace mgmt {
       boost::thread manager_;
       boost::thread injector_;
       boost::thread executor_;
-
-      template <typename Activity>
-      inline void debug_activity(Activity const & act)
-      {
-        std::cerr << "D: " << act << std::endl;
-      }
 
       void activity_needs_attention(const cmd_t & cmd)
       {
@@ -642,37 +638,30 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void assert_is_leaf (const id_type & id) const
+      void assert_is_leaf (const id_type &) const
       {
-        const activity_type & act = lookup (id);
-        if (! act.is_leaf()) throw std::runtime_error("not leaf");
+        //        const activity_type & act = lookup (id);
+        //        if (! act.is_leaf()) throw std::runtime_error("not leaf");
       }
 
       void suspend_activity(const cmd_t & cmd)
       {
-        lookup(cmd.dat).flags().suspended = true;
+        //        lookup(cmd.dat).flags().suspended = true;
         std::cerr << "I: act[" << cmd.dat << "] suspended" << std::endl;
       }
 
       void resume_activity(const cmd_t & cmd)
       {
-        lookup(cmd.dat).flags().suspended = false;
+        //        lookup(cmd.dat).flags().suspended = false;
         active_nets_.put (cmd.dat);
         std::cerr << "I: act[" << cmd.dat << "] resumed" << std::endl;
       }
 
       void async_execute(activity_type & act)
       {
-        debug_activity (act);
-        if (act.transition().is_internal())
-        {
-          post_execute_notification (act.id());
-        }
-        else
-        {
-          // exec_layer_.submit (act.id(), we::util::text_codec::encode (act));
-          sig_execute( act.id(), we::util::text_codec::encode (act) );
-        }
+        std::cerr << "D: layer: " << act << std::endl;
+        sig_executing ( act.id(), "execute" );
+        post_execute_notification (act.id());
       }
 
       inline void insert_activity(const id_type & id, const activity_type & act)

@@ -487,6 +487,9 @@ namespace we { namespace mgmt { namespace type {
     os << "{output, ";
     printer << act.output();
     os << "}";
+
+    os << "}";
+
     return os;
   }
 }}}

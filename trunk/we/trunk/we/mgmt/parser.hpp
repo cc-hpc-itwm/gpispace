@@ -3,7 +3,7 @@
  *
  *       Filename:  parser.hpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  02/25/2010 05:05:32 PM
@@ -22,7 +22,6 @@
 #include <we/util/warnings.hpp>
 #include <we/type/transition.hpp>
 #include <we/mgmt/bits/types.hpp>
-#include <we/mgmt/bits/activity.hpp>
 
 namespace we { namespace mgmt {
   template <typename Net>
