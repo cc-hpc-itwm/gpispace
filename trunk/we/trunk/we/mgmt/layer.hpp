@@ -57,45 +57,62 @@ namespace we { namespace mgmt {
 
         const std::string name;
       };
+
+      template <typename ExternalId>
+      struct already_there : public std::runtime_error
+      {
+        already_there (const std::string & msg, ExternalId const & ext_id)
+          : runtime_error (msg)
+          , id (ext_id)
+        { }
+
+        ~already_there () throw ()
+        { }
+
+        const ExternalId id;
+      };
     }
 
-    template < typename ExecutionLayer
+    template < typename IdType
              , typename Activity
              , typename Traits = traits::layer_traits<Activity>
              , typename Policy = policy::layer_policy<Traits>
              >
-    class layer : public basic_layer<typename Traits::id_traits::type>
+    class layer : public basic_layer<IdType>
     {
     public:
-      typedef layer<ExecutionLayer, Activity, Traits, Policy> this_type;
-      typedef ExecutionLayer exec_layer_type;
+      typedef layer<IdType, Activity, Traits, Policy> this_type;
+      // external ids
+      typedef IdType id_type;
+      typedef id_type external_id_type;
+
       typedef Activity activity_type;
       typedef Traits traits_type;
       typedef Policy policy;
 
-      typedef typename exec_layer_type::id_type external_id_type;
+      // internal ids
       typedef typename traits_type::id_traits  internal_id_traits;
-      typedef typename internal_id_traits::type id_type;
+      typedef typename internal_id_traits::type internal_id_type;
 
-      typedef std::string encode_type;
+      typedef std::string encoded_type;
       typedef std::string reason_type;
       typedef std::string result_type;
       typedef std::string status_type;
 
-      typedef typename boost::unordered_map<id_type, activity_type> activities_t;
+      typedef typename boost::unordered_map<internal_id_type, activity_type> activities_t;
       typedef typename activity_type::output_t output_type;
     private:
-      typedef detail::set<id_type> active_nets_t;
+      typedef detail::set<internal_id_type> active_nets_t;
 
       // manager thread
-      typedef detail::commands::command_t<detail::commands::CMD_ID, id_type> cmd_t;
+      typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
       typedef detail::queue<cmd_t> cmd_q_t;
 
       // injector thread
-      typedef id_type inj_cmd_t;
+      typedef internal_id_type inj_cmd_t;
       typedef detail::queue<inj_cmd_t> inj_q_t;
 
-      typedef id_type executor_cmd_t;
+      typedef internal_id_type executor_cmd_t;
       typedef detail::queue<executor_cmd_t> exec_q_t;
 
     public:
@@ -105,10 +122,10 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      detail::signal<void (id_type const &, std::string const &)> sig_finished;
-      detail::signal<void (id_type const &, std::string const &)> sig_failed;
-      detail::signal<void (id_type const &, std::string const &)> sig_cancelled;
-      detail::signal<void (id_type const &, std::string const &)> sig_executing;
+      util::signal<void (id_type const &, std::string const &)> sig_finished;
+      util::signal<void (id_type const &, std::string const &)> sig_failed;
+      util::signal<void (id_type const &, std::string const &)> sig_cancelled;
+      util::signal<void (id_type const &, std::string const &)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -122,7 +139,7 @@ namespace we { namespace mgmt {
        *	  post-conditions: the net is registered is with id "id"
        *
        */
-      void submit(const id_type & id, const encode_type & bytes) throw (std::exception)
+      void submit(const external_id_type & id, const encoded_type & bytes) throw (std::exception)
       {
         activity_type act = policy::codec::decode(bytes);
         submit (id, act);
@@ -141,7 +158,7 @@ namespace we { namespace mgmt {
        *		  - the internal state of the network switches to CANCELLING
        *		  - all children of the network will be terminated
        * */
-      bool cancel(const id_type & id, const reason_type & reason) throw ()
+      bool cancel(const external_id_type & id, const reason_type & reason) throw ()
       {
         we::util::remove_unused_variable_warning(id);
         we::util::remove_unused_variable_warning(reason);
@@ -161,7 +178,7 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this is activity is removed
        **/
-      bool finished(const id_type & id, const result_type & result) throw()
+      bool finished(const external_id_type & id, const result_type & result) throw()
       {
         // TODO: parse results
         we::util::remove_unused_variable_warning(result);
@@ -182,7 +199,7 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this activity is removed
        **/
-      bool failed(const id_type & id, const result_type & result) throw()
+      bool failed(const external_id_type & id, const result_type & result) throw()
       {
         we::util::remove_unused_variable_warning(id);
         we::util::remove_unused_variable_warning(result);
@@ -202,7 +219,7 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this activity is removed
        **/
-      bool cancelled(const id_type & id) throw()
+      bool cancelled(const external_id_type & id) throw()
       {
         we::util::remove_unused_variable_warning(id);
         return true;
@@ -221,7 +238,7 @@ namespace we { namespace mgmt {
        *		  - the network will not be considered in the selection of new activities
        *		  - the execution of the network is on hold
        */
-      bool suspend(const id_type & id) throw()
+      bool suspend(const external_id_type & id) throw()
       {
         post_suspend_activity_notification(id);
         return true;
@@ -240,7 +257,7 @@ namespace we { namespace mgmt {
        *		  - the network will again be considered in the selection of new activities
        *
        */
-      bool resume(const id_type & id) throw()
+      bool resume(const external_id_type & id) throw()
       {
         post_resume_activity_notification(id);
         return true;
@@ -248,14 +265,21 @@ namespace we { namespace mgmt {
 
       // END: EXTERNAL API
 
-      status_type status(const id_type & id) throw (std::exception)
+      status_type status(const external_id_type & id) throw (std::exception)
       {
         we::util::remove_unused_variable_warning(id);
         throw std::runtime_error("not yet implemented: status");
       }
 
     private:
-      void submit (const id_type & id, activity_type & act)
+      // handle execution layer
+      util::signal<void (external_id_type const &, encoded_type const &)> ext_submit;
+      util::signal<bool (external_id_type const &, reason_type const &)>  ext_cancel;
+      util::signal<bool (external_id_type const &, result_type const &)>  ext_finished;
+      util::signal<bool (external_id_type const &, result_type const &)>  ext_failed;
+      util::signal<bool (external_id_type const &)>                       ext_cancelled;
+
+      void submit (const internal_id_type & id, activity_type & act)
       {
         std::cerr << "D: pre-submit act["<< id << "]" << act << std::endl;
         {
@@ -277,15 +301,22 @@ namespace we { namespace mgmt {
         }
       }
 
+      const internal_id_type & map_to_internal (const id_type & external_id) const
+      {
+        throw std::runtime_error ("map_to_internal (" + external_id + ") not implemented");
+      }
+
+      const external_id_type & map_to_external (const internal_id_type & internal_id) const
+      {
+        throw std::runtime_error ("map_to_external (" + internal_id + ") not implemented");
+      }
+
     public:
       /**
        * Constructor calls
        */
-      template <class E>
-      explicit
-      layer(E & exec_layer)
-        : exec_layer_(exec_layer)
-        , id_gen_(&internal_id_traits::generate)
+      layer()
+        : id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -295,17 +326,59 @@ namespace we { namespace mgmt {
         start();
       }
 
-      template <class E, typename G>
-      layer(E & exec_layer, G gen)
-        : exec_layer_(exec_layer)
-        , id_gen_(gen)
+      template <class E>
+      explicit
+      layer(E * exec_layer)
+        : id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
         , inj_q_(policy::max_injector_queue_size())
         , exec_q_(policy::max_executor_queue_size())
       {
+        connect (exec_layer);
         start();
+      }
+
+      template <class E, typename G>
+      layer(E * exec_layer, G gen)
+        : id_gen_(gen)
+        , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
+        , cmd_q_(policy::max_command_queue_size())
+        , active_nets_(policy::max_active_nets())
+        , inj_q_(policy::max_injector_queue_size())
+        , exec_q_(policy::max_executor_queue_size())
+      {
+        connect (exec_layer);
+        start();
+      }
+
+      template <typename T>
+      void connect ( T * t )
+      {
+        disconnect ();
+
+        // for now extract the functions from a given class
+        ext_submit.connect (boost::bind (& T::submit, t, _1, _2));
+        ext_cancel.connect (boost::bind (& T::cancel, t, _1, _2));
+        ext_finished.connect (boost::bind (& T::finished, t, _1, _2));
+        ext_failed.connect (boost::bind (& T::failed, t, _1, _2));
+        ext_cancelled.connect (boost::bind (& T::cancelled, t, _1));
+      }
+
+      void disconnect ()
+      {
+        ext_submit.clear();
+        ext_cancel.clear();
+        ext_finished.clear();
+        ext_failed.clear();
+        ext_cancelled.clear();
+      }
+
+      template <typename IdGen>
+      void set_id_generator ( IdGen gen )
+      {
+        id_gen_ = gen;
       }
 
       ~layer()
@@ -585,7 +658,6 @@ namespace we { namespace mgmt {
       }
       /** Member variables **/
     private:
-      exec_layer_type & exec_layer_;
       boost::function<id_type()> id_gen_;
       boost::barrier barrier_;
       mutable boost::shared_mutex activities_mutex_;
@@ -615,7 +687,7 @@ namespace we { namespace mgmt {
 
       void activity_finished(const cmd_t & cmd)
       {
-        exec_layer_.finished ( cmd.dat, "dummy result" );
+        ext_finished ( cmd.dat, "dummy result" );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
@@ -623,7 +695,7 @@ namespace we { namespace mgmt {
 
       void activity_failed(const cmd_t & cmd)
       {
-        exec_layer_.failed ( cmd.dat, "dummy result" );
+        ext_failed ( cmd.dat, "dummy result" );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
@@ -631,7 +703,7 @@ namespace we { namespace mgmt {
 
       void activity_cancelled(const cmd_t & cmd)
       {
-        exec_layer_.cancelled ( cmd.dat );
+        ext_cancelled ( cmd.dat );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] cancelled" << std::endl;

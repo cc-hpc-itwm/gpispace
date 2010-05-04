@@ -15,7 +15,7 @@ using namespace test;
 //  typedef std::string id_type;
 typedef uint64_t id_type;
 
-typedef we::mgmt::layer<basic_layer<id_type>, we::activity_t> layer_t;
+typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 
 // observe workflow engine
@@ -45,12 +45,12 @@ int main (int argc, char **argv)
   // instantiate daemon and layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
-
-  std::vector<id_type> ids;
   mgmt_layer.sig_finished.connect  ( &observe_finished );
   mgmt_layer.sig_failed.connect    ( &observe_failed );
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
   mgmt_layer.sig_executing.connect ( &observe_executing );
+
+  std::vector<id_type> ids;
 
   for (std::size_t i (0); i < 1; ++i)
   {

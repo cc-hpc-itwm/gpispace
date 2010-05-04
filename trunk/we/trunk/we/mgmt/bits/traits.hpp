@@ -49,10 +49,10 @@ namespace we
         };
 
         template <>
-        struct id_traits<long unsigned int>
+        struct id_traits<long long unsigned int>
         {
         public:
-          typedef long unsigned int type;
+          typedef long long unsigned int type;
 
           inline static type nil()
           {
