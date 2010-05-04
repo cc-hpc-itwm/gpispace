@@ -34,6 +34,11 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
+#include <we/we.hpp>
+// generic
+#include <kdm/module.hpp>
+#include <kdm/context.hpp>
+
 namespace sdpa { namespace nre { namespace worker {
   class ActivityExecutor : public ExecutionContext
   {
@@ -70,8 +75,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     void operator()();
   private:
-    void handle_receive_from(const boost::system::error_code &error
-                           , size_t bytes_recv);
+    void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
     void execution_thread();
     void trigger_shutdown();
     

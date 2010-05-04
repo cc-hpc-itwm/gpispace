@@ -28,6 +28,15 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <we/we.hpp>
+
+#include <kdm/kdm_simple.hpp>
+
+// generic
+#include <kdm/module.hpp>
+#include <kdm/context.hpp>
+
+
 namespace sdpa { namespace nre { namespace worker {
   class Message
   {
@@ -134,12 +143,12 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "PingRequest: id=" << id();
+    	os << "PingRequest: id=" << id();
     }
 
     virtual Reply *execute(ExecutionContext *)
     {
-      return new PingReply(id());
+    	return new PingReply(id());
     }
   private:
     std::string key_;
@@ -203,12 +212,12 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "InfoRequest: id=" << id();
+    	os << "InfoRequest: id=" << id();
     }
 
     virtual Reply *execute(ExecutionContext *ctxt)
     {
-      return new InfoReply(id(), ctxt);
+    	return new InfoReply(id(), ctxt);
     }
   private:
     std::string key_;
@@ -223,7 +232,7 @@ namespace sdpa { namespace nre { namespace worker {
 
   typedef std::pair<ExecutionState, result_type> execution_result_t;
 
-  class ExecuteReply   : public Reply
+  class ExecuteReply : public Reply
   {
   public:
 
@@ -261,6 +270,8 @@ namespace sdpa { namespace nre { namespace worker {
 	  }
   }*/
 
+
+
   class ExecuteRequest : public Request
   {
   public:
@@ -281,19 +292,23 @@ namespace sdpa { namespace nre { namespace worker {
       os << ")";
     }
 
-    virtual Reply *execute(ExecutionContext *ctxt)
+    virtual Reply *execute(ExecutionContext *pCtx)
     {
-      typedef std::string activity_t;
-      activity_t act ("dummy activity");
-
       Reply *reply(NULL);
       try
       {
     	  //LOG(INFO, "executing: " << activity());
-    	  LOG (DEBUG, "received new activity ... ");
+    	  LOG (DEBUG, "received new activity: "<<activity_);
     	  LOG (DEBUG, "executing activity ... ");
-    	  // encode activity again
-    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, activity()));
+
+    	  we::activity_t act(we::util::text_codec::decode<we::activity_t>(activity_));
+
+    	  // Use this in the future with real modules
+    	  // struct exec_context ctxt(pCtx->loader());
+    	  struct exec_context ctxt;
+    	  act.execute(ctxt);
+
+    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));
 
     	  LOG (DEBUG, "creating a reply message ... ");
     	  reply = new ExecuteReply(exec_res);

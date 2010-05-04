@@ -195,6 +195,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		lock_type lock(mtx_);
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
+		// ship the same activity/workflow description
 		encoded_type act_desc = wf_desc;
 		if(pIDaemon_)
 		{

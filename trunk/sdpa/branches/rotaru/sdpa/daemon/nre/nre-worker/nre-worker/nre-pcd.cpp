@@ -1,4 +1,5 @@
 #include <sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd.hpp>
+#include <sdpa/daemon/nre/messages.hpp>
 
 int main(int ac, char **av)
 {

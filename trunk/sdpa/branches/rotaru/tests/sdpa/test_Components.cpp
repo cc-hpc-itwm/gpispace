@@ -37,7 +37,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TestComponents );
 
 TestComponents::TestComponents() :
 	SDPA_INIT_LOGGER("sdpa.tests.TestComponents"),
-    m_nITER(10),
+    m_nITER(1),
     m_sleep_interval(1000000)
 {
 }
@@ -81,6 +81,7 @@ namespace sdpa { namespace tests { namespace worker {
 
     sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
 	{
+    	SDPA_LOG_INFO("Execute the activity "<<in_activity);
     	SDPA_LOG_INFO("Report activity finished ...");
     	return std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result");
 	}
@@ -107,10 +108,6 @@ void TestComponents::setUp()
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrCli->input_stage());
 
-	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
-				    //read_workflow("workflows/remig.master.gwdl");
-
-	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 }
 
 void TestComponents::tearDown()
@@ -122,13 +119,111 @@ void TestComponents::tearDown()
 	m_ptrCli.reset();
 	seda::StageRegistry::instance().clear();
 }
+void TestComponents::testActivityDummyGwesAllCompAndNreWorker()
+{
+	SDPA_LOG_DEBUG("***** test kdm Activity, with all components, dummy we and NreWorker *****"<<std::endl);
+	string strGuiUrl   = "";
+
+	m_strWorkflow = read_workflow("workflows/simple-net.pnet");
+	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
+
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
+
+	// use external scheduler and dummy GWES
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
+
+	// connect to FVM
+	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
+
+	fvm_pc_connection_mgr fvm_pc;
+	try {
+		fvm_pc.init(pc_cfg);
+	} catch (const std::exception &ex) {
+		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
+		CPPUNIT_ASSERT (false);
+	}
+
+	using namespace sdpa::modules;
+	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
+
+	try {
+		executor->start();
+	}
+	catch (const std::exception &ex) {
+	  SDPA_LOG_ERROR ("could not start executor: " << ex.what());
+	  CPPUNIT_ASSERT (false);
+	}
+
+	try {
+		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+	}
+	catch (const std::exception &ex) {
+		SDPA_LOG_FATAL("Could not start NRE: " << ex.what());
+		SDPA_LOG_WARN("TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+
+		sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+
+		return;
+	}
+
+	for( int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = m_ptrCli->submitJob(m_strWorkflow);
+
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
+
+		std::string job_status =  m_ptrCli->queryJob(job_id_user);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = m_ptrCli->queryJob(job_id_user);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(m_sleep_interval);
+		}
+
+		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
+		m_ptrCli->retrieveResults(job_id_user);
+
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		m_ptrCli->deleteJob(job_id_user);
+	}
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+
+	// processor container terminates ...
+	fvm_pc.leave();
+	SDPA_LOG_INFO("terminating...");
+	if (! executor->stop())
+		SDPA_LOG_WARN("executor did not stop correctly...");
+
+	sleep(1);
+	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
+}
+
 
 void TestComponents::testCompDummyGwesAndFakeFvmPC()
 {
 	SDPA_LOG_DEBUG("*****testComponents with fvm-pc*****"<<std::endl);
-	string strAnswer = "finished";
-	string noStage = "";
 	string strGuiUrl   = "";
+
+	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+					    //read_workflow("workflows/remig.master.gwdl");
+
+	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
@@ -221,10 +316,12 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 void TestComponents::testComponentsDummyGwesNoFvmPC()
 {
 	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
-	string strAnswer = "finished";
-	string noStage = "";
-
 	string strGuiUrl   = "";
+
+	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+					    //read_workflow("workflows/remig.master.gwdl");
+
+	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);

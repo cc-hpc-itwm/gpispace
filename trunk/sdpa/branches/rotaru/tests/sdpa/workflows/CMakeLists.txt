@@ -6,4 +6,6 @@ foreach (wf ${gwdls})
   configure_file(${wf}    ${CMAKE_CURRENT_BINARY_DIR}/${wf_name}.gwdl COPYONLY)
 endforeach (wf ${gwdls})
 
+configure_file(simple-net.pnet  ${CMAKE_CURRENT_BINARY_DIR}/simple-net.pnet COPYONLY)
+
 install(FILES ${gwdls} DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/workflows)

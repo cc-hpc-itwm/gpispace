@@ -80,16 +80,13 @@ namespace sdpa { namespace nre { namespace worker {
 
     ~NreWorkerClient() throw ()
     {
-      try
-      {
+      try {
         stop();
       }
-      catch (const std::exception &ex)
-      {
+      catch (const std::exception &ex) {
         LOG(ERROR, "stopping of nre-pcd connection failed: " << ex.what());
       }
-      catch (...)
-      {
+      catch (...) {
         LOG(ERROR, "stopping of nre-pcd connection failed (unknown reason)");
       }
     }
@@ -250,8 +247,8 @@ namespace sdpa { namespace nre { namespace worker {
 		}
 	}
 
-        pc_info_t request_pc_info ()
-        {
+	pc_info_t request_pc_info ()
+    {
 		try {
 			sdpa::shared_ptr<Message> msg = request(InfoRequest("tag-1"), timer_timeout_);
 			LOG(TRACE, "got reply to info request: " << *msg);
@@ -355,7 +352,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     void start_ping_interval_timer()
     {
-		DLOG(TRACE, "starting ping timer ("<<ping_interval_<<"s)");
+    	DLOG(TRACE, "starting ping timer ("<<ping_interval_<<"s)");
 		// schedule next ping
 		ping_interval_timer_.expires_from_now(boost::posix_time::seconds(ping_interval_));
 		ping_interval_timer_.async_wait(boost::bind(&NreWorkerClient::send_ping, this, boost::asio::placeholders::error));
@@ -386,9 +383,9 @@ namespace sdpa { namespace nre { namespace worker {
 
     void timer_timedout(const boost::system::error_code &error)
     {
-      if (! error)
-      {
-			++not_responded_to_ping_;
+    	if (! error)
+    	{
+    		++not_responded_to_ping_;
 			DLOG(WARN, "nre-pcd is not responding... (" << not_responded_to_ping_ << "/" << ping_trials_ << ")");
 
 			// wake up any thread waiting for some execution
@@ -398,64 +395,62 @@ namespace sdpa { namespace nre { namespace worker {
 			  boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
 			  msg_avail_.notify_all();
 			}
-      }
-      timer_active_ = false;
+    	}
+    	timer_active_ = false;
     }
 
-    void handle_send_to(const boost::system::error_code &error
-                      , size_t bytes_sent)
+    void handle_send_to(const boost::system::error_code &error, size_t bytes_sent)
     {
     	DLOG(TRACE, "sent " << bytes_sent << " bytes of data (error_code=" << error << ")...");
     }
 
-    void handle_receive_from(const boost::system::error_code &error
-                           , size_t bytes_recv)
+    void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv)
     {
-      if (!error && bytes_recv > 0)
-      {
-        std::string tmp(data_, bytes_recv);
-        DLOG(TRACE, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << tmp);
-        try
-        {
-          Message *msg(codec_.decode(tmp));
-          if (started_)
-          {
-				if (PingReply *pong = dynamic_cast<PingReply*>(msg))
-				{
-					// handle internal pings
-					sdpa::shared_ptr<PingReply> ping_reply(pong);
-					ping_reply_received(ping_reply);
-				}
-				else
-				{
-					boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
-					incoming_messages_.push_back(msg);
-					msg_avail_.notify_one();
-				}
-          }
-          else
-				if (dynamic_cast<PingReply*>(msg))
-				{
-					boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
-					// notify initial start() synchronous ping request
-					incoming_messages_.push_back(msg);
-					msg_avail_.notify_one();
-				}
-				else
-				  LOG(WARN, "ignoring message (not completely started yet): " << *msg);
+    	if (!error && bytes_recv > 0)
+    	{
+    		std::string tmp(data_, bytes_recv);
+    		DLOG(TRACE, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << tmp);
+    		try
+    		{
+    			Message *msg(codec_.decode(tmp));
+    			if (started_)
+    			{
+    				if (PingReply *pong = dynamic_cast<PingReply*>(msg))
+    				{
+    					// handle internal pings
+    					sdpa::shared_ptr<PingReply> ping_reply(pong);
+    					ping_reply_received(ping_reply);
+    				}
+    				else
+    				{
+    					boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+    					incoming_messages_.push_back(msg);
+    					msg_avail_.notify_one();
+    				}
+    			}
+    			else
+    				if (dynamic_cast<PingReply*>(msg))
+    				{
+    					boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
+    					// notify initial start() synchronous ping request
+    					incoming_messages_.push_back(msg);
+    					msg_avail_.notify_one();
+    				}
+    				else
+    					LOG(WARN, "ignoring message (not completely started yet): " << *msg);
 
-        } catch (const std::exception &ex) {
-          LOG(ERROR, "could not decode message: " << ex.what());
-        } catch (...) {
-          LOG(ERROR, "could not decode message due to an unknwon reason");
-        }
-      }
-      else
-      {
-        LOG(ERROR, "error during receive: " << error);
-      }
+    		} catch (const std::exception &ex) {
+    			LOG(ERROR, "could not decode message: " << ex.what());
+    		} catch (...) {
+    			LOG(ERROR, "could not decode message due to an unknwon reason");
+    		}
+    	}
+    	else
+    	{
+    		LOG(ERROR, "error during receive: " << error);
+    	}
 
-      schedule_receive();
+    	schedule_receive();
     }
 
     void service_thread()
