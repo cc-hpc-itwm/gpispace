@@ -27,6 +27,7 @@
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>
+#include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
@@ -50,46 +51,6 @@ namespace we { namespace mgmt { namespace type {
       return ::we::mgmt::traits::def::id_traits<activity_id_t>::nil();
     }
   };
-
-   namespace detail
-   {
-    struct flags_t
-    {
-      bool suspended;
-      bool cancelling;
-      bool cancelled;
-      bool failed;
-
-      flags_t ()
-        : suspended(false)
-        , cancelling(false)
-        , cancelled(false)
-        , failed(false)
-      { }
-
-    private:
-      friend class boost::serialization::access;
-      template<class Archive>
-      void serialize (Archive & ar, const unsigned int)
-      {
-        ar & BOOST_SERIALIZATION_NVP(suspended);
-        ar & BOOST_SERIALIZATION_NVP(cancelling);
-        ar & BOOST_SERIALIZATION_NVP(cancelled);
-        ar & BOOST_SERIALIZATION_NVP(failed);
-      }
-    };
-
-     inline
-     std::ostream & operator << (std::ostream & os, const flags_t & flags)
-     {
-       os << (flags.suspended ? "S" : "s");
-       os << (flags.cancelling ? "C" : "c");
-       os << (flags.cancelled ? "T" : "t");
-       os << (flags.failed ? "F" : "f");
-       return os;
-     }
-  }
-
 
   template <typename Transition, typename Traits = activity_traits<Transition> >
   class activity_t
@@ -155,7 +116,7 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
-    const detail::flags_t & flags (void) const
+    const flags::flags_t & flags (void) const
     {
       return flags_;
     }
@@ -164,35 +125,35 @@ namespace we { namespace mgmt { namespace type {
     bool is_alive() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return ( flags_.suspended || flags_.cancelling || flags_.cancelled ) == false;
+      return ( flags::flag_traits<flags::flags_t>::is_alive (flags_) );
     }
 
     inline
     bool is_suspended() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return flags_.suspended;
+      return ( flags::flag_traits<flags::flags_t>::is_suspended (flags_) );
     }
 
     inline
     bool is_cancelling() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return flags_.cancelling;
+      return ( flags::flag_traits<flags::flags_t>::is_cancelling (flags_) );
     }
 
     inline
     bool is_cancelled() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return flags_.cancelled;
+      return ( flags::flag_traits<flags::flags_t>::is_cancelled (flags_) );
     }
 
     inline
-    bool has_failed() const
+    bool is_failed() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
-      return flags_.failed;
+      return ( flags::flag_traits<flags::flags_t>::is_failed (flags_) );
     }
 
     inline
@@ -388,7 +349,7 @@ namespace we { namespace mgmt { namespace type {
 
   private:
     id_t id_;
-    detail::flags_t flags_;
+    flags::flags_t flags_;
     mutable boost::shared_mutex mutex_;
 
     transition_type transition_;
