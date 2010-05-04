@@ -2,60 +2,85 @@
 #include <sstream>
 
 #include <stdint.h>
-#include <we/type/transition.hpp>
+#include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
+
+#include <kdm/simple_generator.hpp>
+
 #include "test_layer.hpp"
-#include <we/util/net_output_operator.hpp>
 
 using namespace we::mgmt;
 using namespace test;
 
-// this is ugly
-typedef petri_net::net<we::mgmt::detail::place_t
-                     , we::type::transition_t<we::mgmt::detail::place_t, we::mgmt::detail::edge_t, we::mgmt::detail::token_t>
-                     , we::mgmt::detail::edge_t
-                     , we::mgmt::detail::token_t> pnet_t;
-
-typedef uint64_t id_type;
-//  typedef unsigned long id_type;
-//  typedef unsigned int id_type;
-//  typedef int id_type;
 //  typedef std::string id_type;
+typedef uint64_t id_type;
 
-typedef we::mgmt::layer<basic_layer<id_type>, pnet_t> layer_t;
+typedef we::mgmt::layer<basic_layer<id_type>, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 
-static void test_execute(unsigned int id, const std::string & a)
+// observe workflow engine
+static
+void observe_finished (id_type const & id, std::string const & str)
 {
-  std::cerr << "execute: " << id << " " << a << std::endl;
+  std::cerr << "activity finished: id := " << id << " data := " << str << std::endl;
+}
+static
+void observe_failed (id_type const & id, std::string const & str)
+{
+  std::cerr << "activity failed: id := " << id << " data := " << str << std::endl;
+}
+static
+void observe_cancelled (id_type const & id, std::string const & str)
+{
+  std::cerr << "activity cancelled: id := " << id << " data := " << str << std::endl;
+}
+static
+void observe_executing (id_type const & id, std::string const & str)
+{
+  std::cerr << "activity executing: id := " << id << " data := " << str << std::endl;
 }
 
-int main ()
+int main (int argc, char **argv)
 {
-  // instantiate layer
+  // instantiate daemon and layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
   std::vector<id_type> ids;
-  mgmt_layer.sig_execute.connect ( &test_execute );
+  mgmt_layer.sig_finished.connect  ( &observe_finished );
+  mgmt_layer.sig_failed.connect    ( &observe_failed );
+  mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
+  mgmt_layer.sig_executing.connect ( &observe_executing );
+
   for (std::size_t i (0); i < 1; ++i)
   {
-	daemon_type::id_type id = daemon.gen_id();
-	ids.push_back(id);
+    we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
+    we::activity_t act ( simple_trans );
+    act.input().push_back
+      ( we::input_t::value_type
+        ( we::token_t ( "config_file"
+                      , literal::STRING
+                      , std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf")
+                      )
+        , simple_trans.input_port_by_name ("config_file")
+      )
+    );
 
-	mgmt_layer.submit(id, "");
+    daemon_type::id_type id = daemon.gen_id();
+    ids.push_back(id);
+    mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
   }
 
   for (std::vector<id_type>::const_iterator id (ids.begin()); id != ids.end(); ++id)
   {
-	mgmt_layer.suspend(*id);
+    mgmt_layer.suspend(*id);
     sleep(3);
-	mgmt_layer.resume(*id);
-//	mgmt_layer.failed(*id, "");
-//	mgmt_layer.finished(*id, "");
-	mgmt_layer.cancel(*id, "");
+    mgmt_layer.resume(*id);
+    //	mgmt_layer.failed(*id, "");
+    //	mgmt_layer.finished(*id, "");
+    mgmt_layer.cancel(*id, "");
     sleep(1);
-	mgmt_layer.suspend(*id);
+    mgmt_layer.suspend(*id);
   }
 
   sleep(1); // not nice, but we cannot wait for a network to finish right now
