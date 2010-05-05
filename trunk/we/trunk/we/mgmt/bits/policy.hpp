@@ -21,6 +21,7 @@
 
 #include <string>
 #include <we/util/codec.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
 
 namespace we
 {
@@ -80,6 +81,7 @@ namespace we
       {
         typedef def::codec<typename Traits::activity_type> codec;
         typedef def::validator<typename Traits::activity_type, true> validator;
+        typedef execution_policy<typename Traits::activity_type> exec_policy;
 
         static const size_t DEFAULT_COMMAND_QUEUE_SIZE = 1024;
         static const size_t DEFAULT_ACTIVE_NETS_SIZE = 1024;
