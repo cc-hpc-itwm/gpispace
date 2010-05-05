@@ -24,6 +24,7 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/random.hpp>
 
 #include <we/type/id.hpp>

@@ -30,6 +30,7 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/serialization/access.hpp>
 
 #include <we/mgmt/basic_layer.hpp>
 
