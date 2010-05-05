@@ -834,11 +834,11 @@ namespace we { namespace mgmt {
       template<class Archive>
       void serialize (Archive & ar, const unsigned int)
       {
-        ar & activities_;
-        ar & active_nets_;
+        //        ar & activities_;
+        //        ar & active_nets_;
         // TODO: serialize queues
-        ar & ex_to_in_;
-        ar & in_to_ex_;
+        //        ar & ex_to_in_;
+        //        ar & in_to_ex_;
       }
     };
   }}

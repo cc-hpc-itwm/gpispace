@@ -20,6 +20,7 @@
 #define WE_MGMT_BASIC_LAYER_HPP 1
 
 #include <string>
+#include <boost/serialization/access.hpp>
 
 namespace we
 {
@@ -44,6 +45,7 @@ namespace we
       virtual bool failed(const id_type & id, const result_type & result) = 0;
       virtual bool cancelled(const id_type & id) = 0;
 
+      friend class boost::serialization::access;
       template <class Archive>
       void serialize(Archive&, const unsigned int ){}
     };
