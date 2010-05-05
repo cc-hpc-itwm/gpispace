@@ -48,7 +48,7 @@ namespace we { namespace mgmt {
       struct validation_error : public std::runtime_error
       {
         validation_error (const std::string & msg, const std::string & act_name)
-          : runtime_error (msg)
+          : std::runtime_error (msg)
           , name (act_name)
         {}
 
@@ -62,7 +62,7 @@ namespace we { namespace mgmt {
       struct already_there : public std::runtime_error
       {
         already_there (const std::string & msg, ExternalId const & ext_id)
-          : runtime_error (msg)
+          : std::runtime_error (msg)
           , id (ext_id)
         { }
 
@@ -70,6 +70,20 @@ namespace we { namespace mgmt {
         { }
 
         const ExternalId id;
+      };
+
+      template <typename IdType>
+      struct no_such_mapping : public std::runtime_error
+      {
+        no_such_mapping (const std::string & msg, IdType const & an_id)
+          : std::runtime_error (msg)
+          , id (an_id)
+        {}
+
+        ~no_such_mapping () throw ()
+        {}
+
+        const IdType id;
       };
     }
 
@@ -103,6 +117,8 @@ namespace we { namespace mgmt {
       typedef typename activity_type::output_t output_type;
     private:
       typedef detail::set<internal_id_type> active_nets_t;
+      typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
+      typedef boost::unordered_map<internal_id_type, external_id_type> internal_to_external_map_t;
 
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
@@ -305,17 +321,48 @@ namespace we { namespace mgmt {
 
       internal_id_type add_external_id (const external_id_type & external_id)
       {
-        throw std::runtime_error ("add_external_id ("+external_id+") not implemented");
+        internal_id_type internal_id ( internal_id_gen_() );
+        add_external_to_internal_mapping (external_id, internal_id);
+        return internal_id;
       }
 
-      const internal_id_type & map_to_internal (const id_type & external_id) const
+      void add_external_to_internal_mapping ( const external_id_type & external_id
+                                            , const internal_id_type & internal_id
+                                            )
       {
-        throw std::runtime_error ("map_to_internal (" + external_id + ") not implemented");
+        typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
+        if (mapping != ex_to_in_.end())
+        {
+          throw exception::already_there<external_id_type> ("already_there: ext_id := " + ::util::show(external_id) + " -> int_id := " + ::util::show(mapping->second), external_id);
+        }
+        ex_to_in_.insert ( typename external_to_internal_map_t::value_type (external_id, internal_id) );
+        in_to_ex_.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
       }
 
-      const external_id_type & map_to_external (const internal_id_type & internal_id) const
+      typename external_to_internal_map_t::mapped_type map_to_internal (const external_id_type & external_id) const
       {
-        throw std::runtime_error ("map_to_external (" + internal_id + ") not implemented");
+        typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
+        if (mapping != ex_to_in_.end())
+        {
+          return mapping->second;
+        }
+        else
+        {
+          throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + ::util::show (external_id), external_id);
+        }
+      }
+
+      typename internal_to_external_map_t::mapped_type map_to_external (const internal_id_type & internal_id) const
+      {
+        typename internal_to_external_map_t::const_iterator mapping (in_to_ex_.find(internal_id));
+        if (mapping != in_to_ex_.end())
+        {
+          return mapping->second;
+        }
+        else
+        {
+          throw exception::no_such_mapping<internal_id_type> ("no_such_mapping: int_id := " + ::util::show (internal_id), internal_id);
+        }
       }
 
     public:
@@ -680,6 +727,9 @@ namespace we { namespace mgmt {
       inj_q_t inj_q_;
       exec_q_t exec_q_;
 
+      external_to_internal_map_t ex_to_in_;
+      internal_to_external_map_t in_to_ex_;
+
       boost::mutex active_nets_mutex_;
       boost::condition active_nets_modified_;
 
@@ -777,6 +827,17 @@ namespace we { namespace mgmt {
         typename activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup", id);
         return a->second;
+      }
+
+      friend class boost::serialization::access;
+      template<class Archive>
+      void serialize (Archive & ar, const unsigned int)
+      {
+        ar & activities_;
+        ar & active_nets_;
+        // TODO: serialize queues
+        ar & ex_to_in_;
+        ar & in_to_ex_;
       }
     };
   }}
