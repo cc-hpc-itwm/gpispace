@@ -17,25 +17,31 @@ typedef std::string id_type;
 
 typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
+typedef layer_t::internal_id_type layer_id_type;
 
 // observe workflow engine
 static
-void observe_finished (id_type const & id, std::string const & str)
+void observe_submitted (layer_id_type const & id, std::string const & str)
+{
+  std::cerr << "activity submitted: id := " << id << " data := " << str << std::endl;
+}
+static
+void observe_finished (layer_id_type const & id, std::string const & str)
 {
   std::cerr << "activity finished: id := " << id << " data := " << str << std::endl;
 }
 static
-void observe_failed (id_type const & id, std::string const & str)
+void observe_failed (layer_id_type const & id, std::string const & str)
 {
   std::cerr << "activity failed: id := " << id << " data := " << str << std::endl;
 }
 static
-void observe_cancelled (id_type const & id, std::string const & str)
+void observe_cancelled (layer_id_type const & id, std::string const & str)
 {
   std::cerr << "activity cancelled: id := " << id << " data := " << str << std::endl;
 }
 static
-void observe_executing (id_type const & id, std::string const & str)
+void observe_executing (layer_id_type const & id, std::string const & str)
 {
   std::cerr << "activity executing: id := " << id << " data := " << str << std::endl;
 }
@@ -45,6 +51,7 @@ int main (int argc, char **argv)
   // instantiate daemon and layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
+  mgmt_layer.sig_submitted.connect ( &observe_submitted );
   mgmt_layer.sig_finished.connect  ( &observe_finished );
   mgmt_layer.sig_failed.connect    ( &observe_failed );
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
