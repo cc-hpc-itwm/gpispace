@@ -71,7 +71,7 @@ namespace we
           }
           catch (const std::exception & ex)
           {
-
+            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
           }
 	}
 
@@ -84,11 +84,18 @@ namespace we
             return;
           }
 
-	  typedef typename std::vector<boost::function<F> > funcs_t;
-	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-	  {
-            (*t)(a1);
-	  }
+          try
+          {
+            typedef typename std::vector<boost::function<F> > funcs_t;
+            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+            {
+              (*t)(a1);
+            }
+          }
+          catch (const std::exception & ex)
+          {
+            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+          }
 	}
 
 	template <typename Arg1, typename Arg2>
@@ -99,11 +106,19 @@ namespace we
             std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
             return;
           }
-	  typedef typename std::vector<boost::function<F> > funcs_t;
-	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-	  {
-            (*t)(a1, a2);
-	  }
+
+          try
+          {
+            typedef typename std::vector<boost::function<F> > funcs_t;
+            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+            {
+              (*t)(a1, a2);
+            }
+          }
+          catch (const std::exception & ex)
+          {
+            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+          }
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3>
@@ -114,11 +129,18 @@ namespace we
             std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
             return;
           }
-	  typedef typename std::vector<boost::function<F> > funcs_t;
-	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-	  {
-            (*t)(a1, a2, a3);
-	  }
+          try
+          {
+            typedef typename std::vector<boost::function<F> > funcs_t;
+            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+            {
+              (*t)(a1, a2, a3);
+            }
+          }
+          catch (const std::exception & ex)
+          {
+            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+          }
 	}
 
       private:
