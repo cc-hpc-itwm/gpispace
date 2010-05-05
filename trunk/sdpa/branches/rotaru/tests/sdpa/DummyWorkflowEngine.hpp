@@ -66,6 +66,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     DummyWorkflowEngine( IDaemon* pIDaemon = NULL, Function_t f = id_gen  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
     	pIDaemon_ = pIDaemon;
+    	fct_id_gen_ = f;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
@@ -189,7 +190,14 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 
 		// assign new id
 		sdpa::JobId id;
-		id_type act_id = id.str();
+		//id_type act_id = id.str();
+		id_type act_id;
+		try {
+			act_id  = fct_id_gen_();
+		}
+		catch(boost::bad_function_call& ex) {
+			SDPA_LOG_ERROR("Bad function call excecption occurred!");
+		}
 
 		// either you assign here an id or it be assigned by daemon
 		lock_type lock(mtx_);
