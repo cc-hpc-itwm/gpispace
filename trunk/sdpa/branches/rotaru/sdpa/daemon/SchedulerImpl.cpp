@@ -95,9 +95,9 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	{
 		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 	}
-	catch (std::exception& )
+	catch (std::exception& ex)
 	{
-		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to WE!");
+		SDPA_LOG_DEBUG("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
 		//send a JobFailed event
 		sdpa::job_result_t result;

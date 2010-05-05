@@ -32,7 +32,8 @@ namespace sdpa {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
 			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
 			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
-			  CPPUNIT_TEST( testActivityDummyGwesAllCompAndNreWorker );
+			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
+			  //CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorker );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -47,7 +48,8 @@ namespace sdpa {
 			  void testAny();
 			  void testCompDummyGwesAndFakeFvmPC();
 			  void testComponentsDummyGwesNoFvmPC();
-			  void testActivityDummyGwesAllCompAndNreWorker();
+			  void testActivityDummyWeAllCompAndNreWorker();
+			  void testActivityRealWeAllCompAndNreWorker();
 
 			private:
 			  SDPA_DECLARE_LOGGER();

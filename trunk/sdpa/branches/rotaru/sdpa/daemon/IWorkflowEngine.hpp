@@ -26,6 +26,8 @@
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <we/mgmt/basic_layer.hpp>
+#include <we/we.hpp>
+#include <we/mgmt/layer.hpp>
 
 
 // Assume ids of type string
@@ -36,5 +38,8 @@ typedef std::string encoded_type;
 
 typedef we::mgmt::basic_layer<id_type, result_type, reason_type, encoded_type> IWorkflowEngine;
 typedef IWorkflowEngine IDaemon;
+
+typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
+
 
 #endif //IWORKFLOWENGINE_HPP
