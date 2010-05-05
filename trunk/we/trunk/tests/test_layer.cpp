@@ -12,8 +12,8 @@
 using namespace we::mgmt;
 using namespace test;
 
-//  typedef std::string id_type;
-typedef uint64_t id_type;
+typedef std::string id_type;
+//typedef uint64_t id_type;
 
 typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;

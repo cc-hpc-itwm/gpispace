@@ -122,10 +122,11 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      util::signal<void (id_type const &, std::string const &)> sig_finished;
-      util::signal<void (id_type const &, std::string const &)> sig_failed;
-      util::signal<void (id_type const &, std::string const &)> sig_cancelled;
-      util::signal<void (id_type const &, std::string const &)> sig_executing;
+      util::signal<void (internal_id_type const &, std::string const &)> sig_submitted;
+      util::signal<void (internal_id_type const &, std::string const &)> sig_finished;
+      util::signal<void (internal_id_type const &, std::string const &)> sig_failed;
+      util::signal<void (internal_id_type const &, std::string const &)> sig_cancelled;
+      util::signal<void (internal_id_type const &, std::string const &)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -134,15 +135,16 @@ namespace we { namespace mgmt {
        *
        *	  side-effects: parses the passed data
        *					registeres the petri-net with the mgmt layer
-       *					returns a newly generated id
        *
        *	  post-conditions: the net is registered is with id "id"
        *
        */
       void submit(const external_id_type & id, const encoded_type & bytes) throw (std::exception)
       {
+        const internal_id_type internal_id ( add_external_id (id) );
         activity_type act = policy::codec::decode(bytes);
-        submit (id, act);
+        act.set_id (internal_id);
+        submit (internal_id, act);
       }
 
       /**
@@ -183,7 +185,7 @@ namespace we { namespace mgmt {
         // TODO: parse results
         we::util::remove_unused_variable_warning(result);
         // hand results over to injector
-        inj_q_.put ( id );
+        inj_q_.put ( map_to_internal(id) );
         return true;
       }
 
@@ -240,7 +242,7 @@ namespace we { namespace mgmt {
        */
       bool suspend(const external_id_type & id) throw()
       {
-        post_suspend_activity_notification(id);
+        post_suspend_activity_notification( map_to_internal(id) );
         return true;
       }
 
@@ -259,7 +261,7 @@ namespace we { namespace mgmt {
        */
       bool resume(const external_id_type & id) throw()
       {
-        post_resume_activity_notification(id);
+        post_resume_activity_notification( map_to_internal(id) );
         return true;
       }
 
@@ -301,6 +303,11 @@ namespace we { namespace mgmt {
         }
       }
 
+      internal_id_type add_external_id (const external_id_type & external_id)
+      {
+        throw std::runtime_error ("add_external_id ("+external_id+") not implemented");
+      }
+
       const internal_id_type & map_to_internal (const id_type & external_id) const
       {
         throw std::runtime_error ("map_to_internal (" + external_id + ") not implemented");
@@ -316,7 +323,8 @@ namespace we { namespace mgmt {
        * Constructor calls
        */
       layer()
-        : id_gen_(&internal_id_traits::generate)
+        : external_id_gen_(&traits::def::id_traits<external_id_type>::generate)
+        , internal_id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -329,7 +337,8 @@ namespace we { namespace mgmt {
       template <class E>
       explicit
       layer(E * exec_layer)
-        : id_gen_(&internal_id_traits::generate)
+        : external_id_gen_(&traits::def::id_traits<external_id_type>::generate)
+        , internal_id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -342,7 +351,8 @@ namespace we { namespace mgmt {
 
       template <class E, typename G>
       layer(E * exec_layer, G gen)
-        : id_gen_(gen)
+        : external_id_gen_(gen)
+        , internal_id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -378,7 +388,7 @@ namespace we { namespace mgmt {
       template <typename IdGen>
       void set_id_generator ( IdGen gen )
       {
-        id_gen_ = gen;
+        external_id_gen_ = gen;
       }
 
       ~layer()
@@ -470,49 +480,49 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_activity_notification( const id_type & id)
+      void post_activity_notification( const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_needs_attention, this, _1)));
       }
 
       inline
-      void post_finished_notification( const id_type & id)
+      void post_finished_notification( const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_finished, this, _1)));
       }
 
       inline
-      void post_failed_notification( const id_type & id)
+      void post_failed_notification( const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
       }
 
       inline
-      void post_cancelled_notification( const id_type & id)
+      void post_cancelled_notification( const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
       }
 
       inline
-      void post_suspend_activity_notification( const id_type & id )
+      void post_suspend_activity_notification( const internal_id_type & id )
       {
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
       }
 
       inline
-      void post_resume_activity_notification( const id_type & id )
+      void post_resume_activity_notification( const internal_id_type & id )
       {
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
       }
 
       inline
-      void post_execute_notification ( const id_type & id )
+      void post_execute_notification ( const internal_id_type & id )
       {
         exec_q_.put ( id );
       }
 
       inline
-      void post_inject_activity_results ( const id_type & id )
+      void post_inject_activity_results ( const internal_id_type & id )
       {
         inj_q_.put ( id );
       }
@@ -525,7 +535,7 @@ namespace we { namespace mgmt {
         for (;;)
         {
           // TODO: probably timed wait?
-          id_type active_id = active_nets_.get();
+          internal_id_type active_id = active_nets_.get();
 
           try
           {
@@ -555,7 +565,7 @@ namespace we { namespace mgmt {
 
               activity_type sub_act = act.extract();
 
-              const id_type sub_act_id = id_gen_();
+              const internal_id_type sub_act_id = internal_id_gen_();
               insert_activity (sub_act_id, sub_act);
 
               // TODO:
@@ -575,7 +585,9 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void establish_parent_child_relationship ( const id_type & parent, const id_type & child )
+      void establish_parent_child_relationship ( const internal_id_type & parent
+                                               , const internal_id_type & child
+                                               )
       {
         we::util::remove_unused_variable_warning (parent);
         we::util::remove_unused_variable_warning (child);
@@ -584,7 +596,7 @@ namespace we { namespace mgmt {
       }
 
       inline
-      id_type parent_of ( const id_type & id )
+      internal_id_type parent_of ( const internal_id_type & id )
       {
         throw std::runtime_error( "parent_of (" + ::util::show(id) + " not yet implemented!" );
       }
@@ -598,8 +610,8 @@ namespace we { namespace mgmt {
           inj_cmd_t cmd = inj_q_.get();
           try
           {
-            const id_type act_id = cmd;
-            const id_type par_id = parent_of (cmd);
+            const internal_id_type act_id = cmd;
+            const internal_id_type par_id = parent_of (cmd);
 
             activity_type & act = lookup( act_id );
             activity_type & par = lookup( par_id );
@@ -631,7 +643,7 @@ namespace we { namespace mgmt {
           executor_cmd_t cmd = exec_q_.get();
           try
           {
-            const id_type act_id = cmd;
+            const internal_id_type act_id = cmd;
 
             std::cerr << "I: executing: " << act_id << std::endl;
             activity_type & act = lookup (act_id);
@@ -658,7 +670,8 @@ namespace we { namespace mgmt {
       }
       /** Member variables **/
     private:
-      boost::function<id_type()> id_gen_;
+      boost::function<external_id_type()> external_id_gen_;
+      boost::function<internal_id_type()> internal_id_gen_;
       boost::barrier barrier_;
       mutable boost::shared_mutex activities_mutex_;
       activities_t activities_;
@@ -687,7 +700,6 @@ namespace we { namespace mgmt {
 
       void activity_finished(const cmd_t & cmd)
       {
-        ext_finished ( cmd.dat, "dummy result" );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
@@ -695,7 +707,6 @@ namespace we { namespace mgmt {
 
       void activity_failed(const cmd_t & cmd)
       {
-        ext_failed ( cmd.dat, "dummy result" );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
@@ -703,14 +714,13 @@ namespace we { namespace mgmt {
 
       void activity_cancelled(const cmd_t & cmd)
       {
-        ext_cancelled ( cmd.dat );
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] cancelled" << std::endl;
       }
 
       inline
-      void assert_is_leaf (const id_type &) const
+      void assert_is_leaf (const internal_id_type &) const
       {
         //        const activity_type & act = lookup (id);
         //        if (! act.is_leaf()) throw std::runtime_error("not leaf");
@@ -732,11 +742,10 @@ namespace we { namespace mgmt {
       void async_execute(activity_type & act)
       {
         std::cerr << "D: layer: " << act << std::endl;
-        sig_executing ( act.id(), "execute" );
         post_execute_notification (act.id());
       }
 
-      inline void insert_activity(const id_type & id, const activity_type & act)
+      inline void insert_activity(const internal_id_type & id, const activity_type & act)
       {
         boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
         activities_.insert(std::make_pair(id, act));
@@ -747,26 +756,26 @@ namespace we { namespace mgmt {
         remove_activity (act.id());
       }
 
-      inline void remove_activity(const id_type & id)
+      inline void remove_activity(const internal_id_type & id)
       {
         boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
         // TODO: work here
         activities_.erase (id);
       }
 
-      inline activity_type & lookup(const id_type & id)
+      inline activity_type & lookup(const internal_id_type & id)
       {
         boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<id_type>("lookup", id);
+        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup", id);
         return a->second;
       }
 
-      inline const activity_type & lookup(const id_type & id) const
+      inline const activity_type & lookup(const internal_id_type & id) const
       {
         boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<id_type>("lookup", id);
+        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup", id);
         return a->second;
       }
     };

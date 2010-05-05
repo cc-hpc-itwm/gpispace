@@ -61,11 +61,18 @@ namespace we
             return;
           }
 
-	  typedef typename std::vector<boost::function<F> > funcs_t;
-	  for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-	  {
-            (*t)();
-	  }
+          try
+          {
+            typedef typename std::vector<boost::function<F> > funcs_t;
+            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+            {
+              (*t)();
+            }
+          }
+          catch (const std::exception & ex)
+          {
+
+          }
 	}
 
 	template <typename Arg1>
