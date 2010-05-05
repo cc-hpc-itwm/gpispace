@@ -371,8 +371,7 @@ namespace we { namespace mgmt {
        * Constructor calls
        */
       layer()
-        : external_id_gen_(&traits::def::id_traits<external_id_type>::generate)
-        , internal_id_gen_(&internal_id_traits::generate)
+        : internal_id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -385,8 +384,7 @@ namespace we { namespace mgmt {
       template <class E>
       explicit
       layer(E * exec_layer)
-        : external_id_gen_(&traits::def::id_traits<external_id_type>::generate)
-        , internal_id_gen_(&internal_id_traits::generate)
+        : internal_id_gen_(&internal_id_traits::generate)
         , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
@@ -698,9 +696,11 @@ namespace we { namespace mgmt {
 
             try
             {
-              std::cerr << "going to execute: " << act << std::endl;
+              static typename policy::exec_policy exec_policy;
 
-              //              act.execute ( *this );
+              std::cerr << "going to execute: " << act << std::endl;
+              act.execute (exec_policy);
+
               // inject results
               post_inject_activity_results ( act_id );
             }
