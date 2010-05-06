@@ -21,33 +21,35 @@ typedef layer_t::internal_id_type layer_id_type;
 
 // observe workflow engine
 static
-void observe_submitted (layer_id_type const & id, std::string const & str)
+void observe_submitted (layer_id_type const & id, std::string const &)
 {
-  std::cerr << "activity submitted: id := " << id << " data := " << str << std::endl;
+  std::cerr << "activity submitted: id := " << id << std::endl;
 }
 static
-void observe_finished (layer_id_type const & id, std::string const & str)
+void observe_finished (layer_id_type const & id, std::string const &)
 {
-  std::cerr << "activity finished: id := " << id << " data := " << str << std::endl;
+  std::cerr << "activity finished: id := " << id << std::endl;
 }
 static
-void observe_failed (layer_id_type const & id, std::string const & str)
+void observe_failed (layer_id_type const & id, std::string const &)
 {
-  std::cerr << "activity failed: id := " << id << " data := " << str << std::endl;
+  std::cerr << "activity failed: id := " << id << std::endl;
 }
 static
-void observe_cancelled (layer_id_type const & id, std::string const & str)
+void observe_cancelled (layer_id_type const & id, std::string const &)
 {
-  std::cerr << "activity cancelled: id := " << id << " data := " << str << std::endl;
+  std::cerr << "activity cancelled: id := " << id << std::endl;
 }
 static
-void observe_executing (layer_id_type const & id, std::string const & str)
+void observe_executing (layer_id_type const & id, std::string const &)
 {
-  std::cerr << "activity executing: id := " << id << " data := " << str << std::endl;
+  std::cerr << "activity executing: id := " << id << std::endl;
 }
 
 int main (int argc, char **argv)
 {
+  layer_t layer;
+
   // instantiate daemon and layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
@@ -80,14 +82,19 @@ int main (int argc, char **argv)
 
   for (std::vector<id_type>::const_iterator id (ids.begin()); id != ids.end(); ++id)
   {
-    mgmt_layer.suspend(*id);
-    sleep(3);
-    mgmt_layer.resume(*id);
-    //	mgmt_layer.failed(*id, "");
-    //	mgmt_layer.finished(*id, "");
-    mgmt_layer.cancel(*id, "");
-    sleep(1);
-    mgmt_layer.suspend(*id);
+    try
+    {
+      mgmt_layer.suspend(*id);
+      mgmt_layer.resume(*id);
+      //	mgmt_layer.failed(*id, "");
+      //	mgmt_layer.finished(*id, "");
+      mgmt_layer.cancel(*id, "");
+      mgmt_layer.suspend(*id);
+    }
+    catch (const std::runtime_error & ex)
+    {
+      std::cerr << "mgmt layer removed activity " << *id << ": " << ex.what() << std::endl;
+    }
   }
 
   sleep(1); // not nice, but we cannot wait for a network to finish right now
