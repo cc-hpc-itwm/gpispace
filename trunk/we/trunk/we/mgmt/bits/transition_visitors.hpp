@@ -56,6 +56,31 @@ namespace we { namespace mgmt { namespace visitor {
     }
   };
 
+  class type_to_string_visitor
+    : public boost::static_visitor<std::string>
+  {
+  public:
+    template <typename Place, typename Trans, typename Edge, typename Token>
+    std::string operator () (const petri_net::net < Place
+                                                  , Trans
+                                                  , Edge
+                                                  , Token
+                                                  > & ) const
+    {
+      return "net";
+    }
+
+    std::string operator () (const we::type::module_call_t &) const
+    {
+      return "module";
+    }
+
+    std::string operator () (const we::type::expression_t &) const
+    {
+      return "expr";
+    }
+  };
+
   template <typename Activity, typename OriginalInput>
   class input_mapper
     : public boost::static_visitor<>
@@ -87,7 +112,7 @@ namespace we { namespace mgmt { namespace visitor {
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
 
-        const port_id_t port_id 
+        const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
@@ -106,7 +131,7 @@ namespace we { namespace mgmt { namespace visitor {
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id 
+        const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
@@ -125,7 +150,7 @@ namespace we { namespace mgmt { namespace visitor {
       for (typename input_t::const_iterator inp (original_input_.begin()); inp != original_input_.end(); ++inp)
       {
         typedef typename Activity::transition_type::port_id_t port_id_t;
-        const port_id_t port_id 
+        const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
         // TODO work here
