@@ -133,6 +133,15 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
+	act.input().push_back
+    ( we::input_t::value_type
+      ( we::token_t ( "config_file"
+                    , literal::STRING
+                    , std::string ("workflows/kdm.simple.conf")
+                    )
+      , simple_trans.input_port_by_name ("config_file")
+      )
+    );
 	m_strWorkflow = we::util::text_codec::encode (act);
 
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
