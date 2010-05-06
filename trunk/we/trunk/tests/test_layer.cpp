@@ -19,6 +19,8 @@ typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 
+static bool done (false);
+
 // observe workflow engine
 static
 void observe_submitted (const layer_t * l, layer_id_type const & id, std::string const &)
@@ -31,6 +33,8 @@ void observe_finished (const layer_t * l, layer_id_type const & id, std::string 
 {
   std::cerr << "activity finished: id := " << id << std::endl;
   l->print_statistics( std::cerr );
+  if ( id == 0 )
+    done = true;
 }
 static
 void observe_failed (const layer_t * l, layer_id_type const & id, std::string const &)
@@ -53,8 +57,6 @@ void observe_executing (const layer_t * l, layer_id_type const & id, std::string
 
 int main (int argc, char **argv)
 {
-  layer_t layer;
-
   // instantiate daemon and layer
   daemon_type daemon;
   daemon_type::layer_type & mgmt_layer = daemon.layer();
@@ -89,12 +91,10 @@ int main (int argc, char **argv)
   {
     try
     {
-      mgmt_layer.suspend(*id);
-      mgmt_layer.resume(*id);
-      //	mgmt_layer.failed(*id, "");
-      //	mgmt_layer.finished(*id, "");
-      mgmt_layer.cancel(*id, "");
-      mgmt_layer.suspend(*id);
+      // mgmt_layer.suspend(*id);
+      // mgmt_layer.resume(*id);
+      // mgmt_layer.suspend(*id);
+      // mgmt_layer.resume(*id);
     }
     catch (const std::runtime_error & ex)
     {
@@ -102,7 +102,13 @@ int main (int argc, char **argv)
     }
   }
 
-  sleep(1); // not nice, but we cannot wait for a network to finish right now
+  size_t max_wait (5);
 
-  return EXIT_SUCCESS;
+  while (! done && (--max_wait > 0))
+  {
+    std::cerr << "." << std::flush;
+    sleep (1);
+  }
+
+  return (done ? EXIT_SUCCESS : EXIT_FAILURE);
 }
