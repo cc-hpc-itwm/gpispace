@@ -317,7 +317,9 @@ namespace we { namespace mgmt {
           try
           {
             policy::validator::validate (act);
+
             insert_activity(id, act);
+
             std::cerr << "D: submitted act["<< id << "]" << std::endl;
             sig_submitted (this, id, policy::codec::encode (act));
 
@@ -488,27 +490,34 @@ namespace we { namespace mgmt {
         s << "==== begin layer statistics ====" << std::endl;
         s << "   #activities := " << activities_.size() << std::endl;
         s << "   ext <-> int := [";
-        for ( typename external_to_internal_map_t::const_iterator e_to_i (ex_to_in_.begin())
-            ; e_to_i != ex_to_in_.end()
-            ; ++e_to_i
-            )
         {
-          if (e_to_i != ex_to_in_.begin())
+          boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+          for ( typename external_to_internal_map_t::const_iterator e_to_i (ex_to_in_.begin())
+                  ; e_to_i != ex_to_in_.end()
+                  ; ++e_to_i
+                )
           {
-            s << ", ";
+            if (e_to_i != ex_to_in_.begin())
+            {
+              s << ", ";
+            }
+            s << e_to_i->first << " == " << e_to_i->second;
           }
-          s << e_to_i->first << " == " << e_to_i->second;
+          s << "]";
         }
-        s << "]";
+
         s << std::endl;
         s << std::endl;
 
-        for ( typename activities_t::const_iterator act (activities_.begin())
-            ; act != activities_.end()
-            ; ++act
-            )
         {
-          print_activity_info (s, act->second);
+          boost::shared_lock<boost::shared_mutex> lock (activities_mutex_);
+          for ( typename activities_t::const_iterator act (activities_.begin())
+                  ; act != activities_.end()
+                  ; ++act
+                )
+          {
+            print_activity_info (s, act->second);
+          }
         }
 
         s << "==== end layer statistics ====" << std::endl;
@@ -592,7 +601,7 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_execute_externally ( const internal_id_type & id)
+      void post_execute_externally (const internal_id_type & id)
       {
         // create external id
         external_id_type ext_id ( external_id_gen_() );
@@ -908,8 +917,8 @@ namespace we { namespace mgmt {
         }
         else
         {
-          ext_finished (map_to_external (internal_id), policy::codec::encode (lookup (internal_id)));
-
+          external_id_type external_id ( map_to_external(internal_id) );
+          ext_finished (external_id, policy::codec::encode (lookup (internal_id)));
           assert_is_leaf ( cmd.dat );
           remove_activity ( cmd.dat );
         }
@@ -931,8 +940,8 @@ namespace we { namespace mgmt {
         }
         else
         {
-          ext_failed (map_to_external (internal_id), policy::codec::encode (lookup (internal_id)));
-
+          external_id_type external_id ( map_to_external(internal_id) );
+          ext_failed (external_id, policy::codec::encode (lookup (internal_id)));
           assert_is_leaf ( cmd.dat );
           remove_activity ( cmd.dat );
         }
@@ -995,10 +1004,20 @@ namespace we { namespace mgmt {
           internal_id_type parent ( parent_of (id) );
           remove_parent_child_relationship ( parent, id );
         }
-        catch (const exception::no_such_mapping<internal_id_type> & )
+        catch (const exception::no_such_mapping<internal_id_type> &)
         {
-          // ignore, don't have a parent
+          // ignore
         }
+
+        try
+        {
+          remove_external_to_internal_mapping ( map_to_external(id), id );
+        }
+        catch (const exception::no_such_mapping<internal_id_type> &)
+        {
+          // ignore
+        }
+
         activities_.erase (id);
       }
 

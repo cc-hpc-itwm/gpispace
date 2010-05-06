@@ -32,27 +32,24 @@ static
 void observe_finished (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity finished: id := " << id << std::endl;
-  l->print_statistics( std::cerr );
   if ( id == 0 )
     done = true;
+  l->print_statistics( std::cerr );
 }
 static
-void observe_failed (const layer_t * l, layer_id_type const & id, std::string const &)
+void observe_failed (const layer_t *, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity failed: id := " << id << std::endl;
-  l->print_statistics( std::cerr );
 }
 static
-void observe_cancelled (const layer_t * l, layer_id_type const & id, std::string const &)
+void observe_cancelled (const layer_t *, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity cancelled: id := " << id << std::endl;
-  l->print_statistics( std::cerr );
 }
 static
-void observe_executing (const layer_t * l, layer_id_type const & id, std::string const &)
+void observe_executing (const layer_t *, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity executing: id := " << id << std::endl;
-  l->print_statistics( std::cerr );
 }
 
 int main (int argc, char **argv)
@@ -102,6 +99,7 @@ int main (int argc, char **argv)
     }
   }
 
+#if 0
   size_t max_wait (5);
 
   while (! done && (--max_wait > 0))
@@ -109,6 +107,13 @@ int main (int argc, char **argv)
     std::cerr << "." << std::flush;
     sleep (1);
   }
+#else
+  while (! done)
+  {
+    std::cerr << "." << std::flush;
+    sleep (1);
+  }
+#endif
 
   return (done ? EXIT_SUCCESS : EXIT_FAILURE);
 }

@@ -308,6 +308,11 @@ namespace we { namespace type {
         return internal_;
       }
 
+      void set_internal(bool internal)
+      {
+        internal_ = internal;
+      }
+
       const data_type & data (void) const
       {
         return data_;
