@@ -169,6 +169,13 @@ namespace we { namespace mgmt { namespace type {
       return transition_;
     }
 
+    inline
+    std::string type_to_string (void) const
+    {
+      static const we::mgmt::visitor::type_to_string_visitor v;
+      return boost::apply_visitor (v, transition_.data());
+    }
+
     this_type
     extract()
     {
