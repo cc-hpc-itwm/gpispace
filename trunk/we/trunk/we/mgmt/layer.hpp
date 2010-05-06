@@ -345,6 +345,8 @@ namespace we { namespace mgmt {
                                             , const internal_id_type & internal_id
                                             )
       {
+        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+
         typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
         if (mapping != ex_to_in_.end())
         {
@@ -354,8 +356,19 @@ namespace we { namespace mgmt {
         in_to_ex_.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
       }
 
+      void remove_external_to_internal_mapping ( const external_id_type & external_id
+                                               , const internal_id_type & internal_id
+                                               )
+      {
+        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        ex_to_in_.erase (ex_to_in_.find (external_id));
+        in_to_ex_.erase (in_to_ex_.find (internal_id));
+      }
+
       typename external_to_internal_map_t::mapped_type map_to_internal (const external_id_type & external_id) const
       {
+        boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+
         typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
         if (mapping != ex_to_in_.end())
         {
@@ -369,6 +382,8 @@ namespace we { namespace mgmt {
 
       typename internal_to_external_map_t::mapped_type map_to_external (const internal_id_type & internal_id) const
       {
+        boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+
         typename internal_to_external_map_t::const_iterator mapping (in_to_ex_.find(internal_id));
         if (mapping != in_to_ex_.end())
         {
@@ -847,6 +862,7 @@ namespace we { namespace mgmt {
       boost::function<internal_id_type()> internal_id_gen_;
       boost::barrier barrier_;
       mutable boost::shared_mutex activities_mutex_;
+      mutable boost::shared_mutex id_map_mutex_;
       activities_t activities_;
       cmd_q_t cmd_q_;
       active_nets_t active_nets_;
