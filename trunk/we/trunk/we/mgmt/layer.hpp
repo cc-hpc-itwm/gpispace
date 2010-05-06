@@ -118,6 +118,11 @@ namespace we { namespace mgmt {
       typedef typename activity_type::output_t output_type;
     private:
       typedef detail::set<internal_id_type> active_nets_t;
+
+      typedef boost::unordered_set<internal_id_type> child_set_t;
+      typedef boost::unordered_map<internal_id_type, internal_id_type> child_to_parent_map_t;
+      typedef boost::unordered_map<internal_id_type, child_set_t> parent_to_children_map_t;
+
       typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
       typedef boost::unordered_map<internal_id_type, external_id_type> internal_to_external_map_t;
 
@@ -160,7 +165,6 @@ namespace we { namespace mgmt {
       {
         const internal_id_type internal_id ( add_external_id (id) );
         activity_type act = policy::codec::decode(bytes);
-        act.set_id (internal_id);
         submit (internal_id, act);
       }
 
@@ -300,14 +304,16 @@ namespace we { namespace mgmt {
 
       void submit (const internal_id_type & id, activity_type & act)
       {
-        std::cerr << "D: pre-submit act["<< id << "]" << act << std::endl;
+        std::cerr << "D: pre-submit act["<< id << "]" << std::endl;
         {
           try
           {
             policy::validator::validate (act);
             insert_activity(id, act);
-            std::cerr << "D: submitted act["<< id << "]" << act << std::endl;
-            post_activity_notification (id);
+            std::cerr << "D: submitted act["<< id << "]" << std::endl;
+            post_execute_notification (id);
+
+            sig_submitted (id, policy::codec::encode (act));
           }
           catch (const std::exception & ex)
           {
@@ -514,15 +520,21 @@ namespace we { namespace mgmt {
       inline
       bool is_done ( const activity_type & act ) const
       {
-        return ! (act.has_enabled() || activity_child_count (act));
+        return ! (act.has_enabled() || activity_child_count (act.id()));
       }
 
       inline
-      size_t activity_child_count ( const activity_type & act ) const
+      size_t activity_child_count ( const internal_id_type & id ) const
       {
-        we::util::remove_unused_variable_warning (act);
-
-        throw std::runtime_error ("activity_child_count (act) not implemented!");
+        typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
+        if (children != parent_to_child_.end())
+        {
+          return children->second.size();
+        }
+        else
+        {
+          return 0;
+        }
       }
 
       inline
@@ -618,8 +630,8 @@ namespace we { namespace mgmt {
               // establish parent <-> child relationship
               establish_parent_child_relationship ( active_id, sub_act_id );
 
-              // classify and execute
-              async_execute (lookup (sub_act_id));
+              print_info (std::cerr);
+              post_execute_notification (sub_act_id);
             }
           }
           catch (const activity_not_found<id_type> & ex)
@@ -635,16 +647,48 @@ namespace we { namespace mgmt {
                                                , const internal_id_type & child
                                                )
       {
-        we::util::remove_unused_variable_warning (parent);
-        we::util::remove_unused_variable_warning (child);
-
-        throw std::runtime_error ("establish_parent_child_relationship (parent, child) not implemented");
+        parent_to_child_[parent].insert (child);
+        child_to_parent_[child] = parent;
       }
 
       inline
-      internal_id_type parent_of ( const internal_id_type & id )
+      void remove_parent_child_relationship ( const internal_id_type & parent
+                                            , const internal_id_type & child
+                                            )
       {
-        throw std::runtime_error( "parent_of (" + ::util::show(id) + " not yet implemented!" );
+        child_to_parent_.erase (child);
+        parent_to_child_[parent].erase (child);
+      }
+
+      inline
+      internal_id_type parent_of ( const internal_id_type & id ) const
+      {
+        if (has_parent (id))
+        {
+          return child_to_parent_.at (id);
+        }
+        else
+        {
+          throw exception::no_such_mapping<internal_id_type> ( "child id := "
+                                                             + ::util::show(id)
+                                                             + " does not have a parent!"
+                                                             , id
+                                                             );
+        }
+      }
+
+      inline
+      bool has_parent (const internal_id_type & id) const
+      {
+        typename child_to_parent_map_t::const_iterator p (child_to_parent_.find( id ));
+        if (p == child_to_parent_.end())
+        {
+          return false;
+        }
+        else
+        {
+          return true;
+        }
       }
 
       void injector()
@@ -691,18 +735,16 @@ namespace we { namespace mgmt {
           {
             const internal_id_type act_id = cmd;
 
-            std::cerr << "I: executing: " << act_id << std::endl;
+            std::cerr << "I: executing id := " << act_id << std::endl;
             activity_type & act = lookup (act_id);
 
             try
             {
               static typename policy::exec_policy exec_policy;
 
-              std::cerr << "going to execute: " << act << std::endl;
+              print_info (std::cerr);
+              act.inject_input ();
               act.execute (exec_policy);
-
-              // inject results
-              post_inject_activity_results ( act_id );
             }
             catch (std::exception const & ex)
             {
@@ -716,6 +758,68 @@ namespace we { namespace mgmt {
         }
         std::cerr << "D: executor thread stopped..." << std::endl;
       }
+
+      void print_info (std::ostream & s)
+      {
+        s << "==== begin layer statistics ====" << std::endl;
+        s << "   #activities := " << activities_.size() << std::endl;
+        s << "   ext <-> int := [";
+        for ( typename external_to_internal_map_t::const_iterator e_to_i (ex_to_in_.begin())
+            ; e_to_i != ex_to_in_.end()
+            ; ++e_to_i
+            )
+        {
+          if (e_to_i != ex_to_in_.begin())
+          {
+            s << ", ";
+          }
+          s << e_to_i->first << " == " << e_to_i->second;
+        }
+        s << "]";
+        s << std::endl;
+        s << std::endl;
+
+        for ( typename activities_t::const_iterator act (activities_.begin())
+            ; act != activities_.end()
+            ; ++act
+            )
+        {
+          print_activity_info (s, act->second);
+        }
+
+        s << "==== end layer statistics ====" << std::endl;
+      }
+
+      void print_activity_info (std::ostream & s, const activity_type & act)
+      {
+        we::mgmt::type::detail::printer <activity_type> p (act, s);
+        p << "   **** activity [" << act.id() << "]:" << std::endl;
+        p << "         name := " << act.transition().name() << std::endl;
+        p << "     internal := " << act.transition().is_internal() << std::endl;
+        p << "         type := " << act.type_to_string () << std::endl;
+        p << "        input := " << act.input() << std::endl;
+        p << "       output := " << act.output() << std::endl;
+        p << "       parent := " << (has_parent (act.id()) ? ::util::show(parent_of (act.id())) : "n/a") << std::endl;
+        p << "     children := [";
+        typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(act.id()));
+        if (children != parent_to_child_.end())
+        {
+          for ( typename child_set_t::const_iterator child (children->second.begin())
+              ; child != children->second.end()
+              ; ++child
+              )
+          {
+            if (child != children->second.begin())
+            {
+              p << ", ";
+            }
+            p << *child;
+          }
+        }
+        p << "]";
+        p << std::endl;
+      }
+
       /** Member variables **/
     private:
       boost::function<external_id_type()> external_id_gen_;
@@ -730,6 +834,9 @@ namespace we { namespace mgmt {
 
       external_to_internal_map_t ex_to_in_;
       internal_to_external_map_t in_to_ex_;
+
+      parent_to_children_map_t parent_to_child_;
+      child_to_parent_map_t child_to_parent_;
 
       boost::mutex active_nets_mutex_;
       boost::condition active_nets_modified_;
@@ -751,6 +858,8 @@ namespace we { namespace mgmt {
 
       void activity_finished(const cmd_t & cmd)
       {
+        sig_finished ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
@@ -758,6 +867,8 @@ namespace we { namespace mgmt {
 
       void activity_failed(const cmd_t & cmd)
       {
+        sig_failed ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
@@ -765,6 +876,8 @@ namespace we { namespace mgmt {
 
       void activity_cancelled(const cmd_t & cmd)
       {
+        sig_cancelled ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
         std::cerr << "D: act[" << cmd.dat << "] cancelled" << std::endl;
@@ -792,13 +905,14 @@ namespace we { namespace mgmt {
 
       void async_execute(activity_type & act)
       {
-        std::cerr << "D: layer: " << act << std::endl;
+        std::cerr << "D: async_execute " << act.id() << std::endl;
         post_execute_notification (act.id());
       }
 
-      inline void insert_activity(const internal_id_type & id, const activity_type & act)
+      inline void insert_activity(const internal_id_type & id, activity_type & act)
       {
         boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
+        act.set_id (id);
         activities_.insert(std::make_pair(id, act));
       }
 
@@ -810,7 +924,15 @@ namespace we { namespace mgmt {
       inline void remove_activity(const internal_id_type & id)
       {
         boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
-        // TODO: work here
+        try
+        {
+          internal_id_type parent ( parent_of (id) );
+          remove_parent_child_relationship ( parent, id );
+        }
+        catch (const exception::no_such_mapping<internal_id_type> & )
+        {
+          // ignore, don't have a parent
+        }
         activities_.erase (id);
       }
 
@@ -818,7 +940,7 @@ namespace we { namespace mgmt {
       {
         boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup", id);
+        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
       }
 
@@ -826,7 +948,7 @@ namespace we { namespace mgmt {
       {
         boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup", id);
+        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
       }
 
