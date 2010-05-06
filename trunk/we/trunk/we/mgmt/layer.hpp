@@ -805,7 +805,7 @@ namespace we { namespace mgmt {
               static typename policy::exec_policy exec_policy
                 ( boost::bind ( &this_type::post_activity_notification, this, _1 )
                 , boost::bind ( &this_type::post_execute_externally, this, _1 )
-                , boost::bind ( &this_type::post_finished_notification, this, _1 )
+                , boost::bind ( &this_type::post_inject_activity_results, this, _1 )
                 );
 
               sig_executing (this, act_id, policy::codec::encode (act));
@@ -895,20 +895,47 @@ namespace we { namespace mgmt {
 
       void activity_finished(const cmd_t & cmd)
       {
-        sig_finished (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        const internal_id_type internal_id (cmd.dat);
 
-        assert_is_leaf ( cmd.dat );
-        remove_activity ( cmd.dat );
-        std::cerr << "D: act[" << cmd.dat << "] finished" << std::endl;
+        std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
+
+        lookup (internal_id).collect_output ();
+        sig_finished (this, internal_id, policy::codec::encode(lookup(internal_id)));
+
+        if ( has_parent (internal_id) )
+        {
+          post_inject_activity_results (internal_id);
+        }
+        else
+        {
+          ext_finished (map_to_external (internal_id), policy::codec::encode (lookup (internal_id)));
+
+          assert_is_leaf ( cmd.dat );
+          remove_activity ( cmd.dat );
+        }
       }
 
       void activity_failed(const cmd_t & cmd)
       {
-        sig_failed (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        const internal_id_type internal_id (cmd.dat);
 
-        assert_is_leaf ( cmd.dat );
-        remove_activity ( cmd.dat );
-        std::cerr << "D: act[" << cmd.dat << "] failed" << std::endl;
+        std::cerr << "D: act[" << internal_id << "] failed" << std::endl;
+
+        lookup (internal_id).collect_output ();
+        sig_finished (this, internal_id, policy::codec::encode(lookup(internal_id)));
+
+        if ( has_parent (internal_id) )
+        {
+          // TODO cancel strategy
+          post_inject_activity_results (internal_id);
+        }
+        else
+        {
+          ext_failed (map_to_external (internal_id), policy::codec::encode (lookup (internal_id)));
+
+          assert_is_leaf ( cmd.dat );
+          remove_activity ( cmd.dat );
+        }
       }
 
       void activity_cancelled(const cmd_t & cmd)
@@ -921,10 +948,12 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void assert_is_leaf (const internal_id_type &) const
+      void assert_is_leaf (const internal_id_type &id) const
       {
-        //        const activity_type & act = lookup (id);
-        //        if (! act.is_leaf()) throw std::runtime_error("not leaf");
+        if (activity_child_count (id) > 0)
+        {
+          throw std::runtime_error("not leaf: activity-id := " + ::util::show (id));
+        }
       }
 
       void suspend_activity(const cmd_t & cmd)
