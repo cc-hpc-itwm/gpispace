@@ -1,6 +1,8 @@
 #ifndef KDM_SIMPLE_KDM_HPP
 #define KDM_SIMPLE_KDM_HPP 1
 
+#include <fstream>
+
 namespace kdm
 {
   static value::type initialize (const std::string & filename, long & wait)
