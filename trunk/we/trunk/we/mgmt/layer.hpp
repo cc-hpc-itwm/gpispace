@@ -144,11 +144,11 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      util::signal<void (internal_id_type const &, std::string const &)> sig_submitted;
-      util::signal<void (internal_id_type const &, std::string const &)> sig_finished;
-      util::signal<void (internal_id_type const &, std::string const &)> sig_failed;
-      util::signal<void (internal_id_type const &, std::string const &)> sig_cancelled;
-      util::signal<void (internal_id_type const &, std::string const &)> sig_executing;
+      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_submitted;
+      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_finished;
+      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_failed;
+      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_cancelled;
+      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -203,10 +203,13 @@ namespace we { namespace mgmt {
        **/
       bool finished(const external_id_type & id, const result_type & result) throw()
       {
-        // TODO: parse results
-        we::util::remove_unused_variable_warning(result);
-        // hand results over to injector
-        inj_q_.put ( map_to_internal(id) );
+        internal_id_type internal_id ( map_to_internal (id) );
+
+        activity_type res_act ( policy::codec::decode (result) );
+        res_act.collect_output();
+
+        lookup (internal_id).output().swap (res_act.output());
+        inj_q_.put ( internal_id );
         return true;
       }
 
@@ -224,8 +227,13 @@ namespace we { namespace mgmt {
        **/
       bool failed(const external_id_type & id, const result_type & result) throw()
       {
-        we::util::remove_unused_variable_warning(id);
-        we::util::remove_unused_variable_warning(result);
+        internal_id_type internal_id ( map_to_internal (id) );
+
+        activity_type res_act ( policy::codec::decode (result) );
+        res_act.collect_output();
+
+        lookup (internal_id).output().swap (res_act.output());
+        inj_q_.put ( internal_id );
         return true;
       }
 
@@ -311,9 +319,9 @@ namespace we { namespace mgmt {
             policy::validator::validate (act);
             insert_activity(id, act);
             std::cerr << "D: submitted act["<< id << "]" << std::endl;
-            post_execute_notification (id);
+            sig_submitted (this, id, policy::codec::encode (act));
 
-            sig_submitted (id, policy::codec::encode (act));
+            post_execute_notification (id);
           }
           catch (const std::exception & ex)
           {
@@ -460,6 +468,37 @@ namespace we { namespace mgmt {
         }
       }
 
+      void print_statistics (std::ostream & s) const
+      {
+        s << "==== begin layer statistics ====" << std::endl;
+        s << "   #activities := " << activities_.size() << std::endl;
+        s << "   ext <-> int := [";
+        for ( typename external_to_internal_map_t::const_iterator e_to_i (ex_to_in_.begin())
+            ; e_to_i != ex_to_in_.end()
+            ; ++e_to_i
+            )
+        {
+          if (e_to_i != ex_to_in_.begin())
+          {
+            s << ", ";
+          }
+          s << e_to_i->first << " == " << e_to_i->second;
+        }
+        s << "]";
+        s << std::endl;
+        s << std::endl;
+
+        for ( typename activities_t::const_iterator act (activities_.begin())
+            ; act != activities_.end()
+            ; ++act
+            )
+        {
+          print_activity_info (s, act->second);
+        }
+
+        s << "==== end layer statistics ====" << std::endl;
+      }
+
       /* internal functions */
     private:
       void start()
@@ -535,6 +574,15 @@ namespace we { namespace mgmt {
         {
           return 0;
         }
+      }
+
+      inline
+      void post_execute_externally ( const internal_id_type & id)
+      {
+        // create external id
+        external_id_type ext_id ( external_id_gen_() );
+        add_external_to_internal_mapping ( ext_id, id );
+        ext_submit ( ext_id, policy::codec::encode ( lookup (id) ) );
       }
 
       inline
@@ -629,8 +677,6 @@ namespace we { namespace mgmt {
               // TODO:
               // establish parent <-> child relationship
               establish_parent_child_relationship ( active_id, sub_act_id );
-
-              print_info (std::cerr);
               post_execute_notification (sub_act_id);
             }
           }
@@ -710,6 +756,7 @@ namespace we { namespace mgmt {
                       << "act[" << par_id << "]"
                       << std::endl;
 
+            act.collect_output ();
             par.inject (act);
             remove_activity ( act_id );
 
@@ -740,9 +787,14 @@ namespace we { namespace mgmt {
 
             try
             {
-              static typename policy::exec_policy exec_policy;
+              static typename policy::exec_policy exec_policy
+                ( boost::bind ( &this_type::post_activity_notification, this, _1 )
+                , boost::bind ( &this_type::post_execute_externally, this, _1 )
+                , boost::bind ( &this_type::post_finished_notification, this, _1 )
+                );
 
-              print_info (std::cerr);
+              sig_executing (this, act_id, policy::codec::encode (act));
+
               act.inject_input ();
               act.execute (exec_policy);
             }
@@ -759,38 +811,7 @@ namespace we { namespace mgmt {
         std::cerr << "D: executor thread stopped..." << std::endl;
       }
 
-      void print_info (std::ostream & s)
-      {
-        s << "==== begin layer statistics ====" << std::endl;
-        s << "   #activities := " << activities_.size() << std::endl;
-        s << "   ext <-> int := [";
-        for ( typename external_to_internal_map_t::const_iterator e_to_i (ex_to_in_.begin())
-            ; e_to_i != ex_to_in_.end()
-            ; ++e_to_i
-            )
-        {
-          if (e_to_i != ex_to_in_.begin())
-          {
-            s << ", ";
-          }
-          s << e_to_i->first << " == " << e_to_i->second;
-        }
-        s << "]";
-        s << std::endl;
-        s << std::endl;
-
-        for ( typename activities_t::const_iterator act (activities_.begin())
-            ; act != activities_.end()
-            ; ++act
-            )
-        {
-          print_activity_info (s, act->second);
-        }
-
-        s << "==== end layer statistics ====" << std::endl;
-      }
-
-      void print_activity_info (std::ostream & s, const activity_type & act)
+      void print_activity_info (std::ostream & s, const activity_type & act) const
       {
         we::mgmt::type::detail::printer <activity_type> p (act, s);
         p << "   **** activity [" << act.id() << "]:" << std::endl;
@@ -858,7 +879,7 @@ namespace we { namespace mgmt {
 
       void activity_finished(const cmd_t & cmd)
       {
-        sig_finished ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        sig_finished (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
 
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
@@ -867,7 +888,7 @@ namespace we { namespace mgmt {
 
       void activity_failed(const cmd_t & cmd)
       {
-        sig_failed ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        sig_failed (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
 
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );
@@ -876,7 +897,7 @@ namespace we { namespace mgmt {
 
       void activity_cancelled(const cmd_t & cmd)
       {
-        sig_cancelled ( cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        sig_cancelled (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
 
         assert_is_leaf ( cmd.dat );
         remove_activity ( cmd.dat );

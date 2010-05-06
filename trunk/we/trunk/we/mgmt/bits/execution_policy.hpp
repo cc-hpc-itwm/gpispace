@@ -1,13 +1,14 @@
 #ifndef WE_MGMT_BITS_EXECUTION_POLICY_HPP
 #define WE_MGMT_BITS_EXECUTION_POLICY_HPP 1
 
+#include <we/util/show.hpp>
+
 namespace we
 {
   namespace mgmt
   {
     namespace policy
     {
-
       /**
          The pupose of this class to implement an execution policy of a workflow
          management layer.
@@ -20,58 +21,48 @@ namespace we
       struct execution_policy
       {
         typedef Activity activity_t;
+        typedef typename activity_t::id_t id_type;
 
         typedef typename activity_t::transition_type::net_type net_t;
         typedef typename activity_t::transition_type::mod_type mod_t;
         typedef typename activity_t::transition_type::expr_type expr_t;
 
-        void handle_internally (activity_t &, net_t &)
+        typedef boost::function <void (id_type)> extractor_cb_type;
+        typedef boost::function <void (id_type)> external_cb_type;
+        typedef boost::function <void (id_type)> injector_cb_type;
+
+        execution_policy ( extractor_cb_type extractor_cb
+                         , external_cb_type external_cb
+                         , injector_cb_type injector_cb
+                         )
+          : extractor (extractor_cb)
+          , external (external_cb)
+          , injector (injector_cb)
+        { }
+
+        void handle_internally (activity_t & act, net_t &)
         {
-          /*
-          act.inject_input ();
-
-          while (act.has_enabled())
-          {
-            we::activity_t sub = act.extract ();
-            sub.execute (*this);
-            act.inject (sub);
-          }
-
-          act.collect_output ();
-          */
-
-          // act.inject_input ();
-          // post_activity_notification (act.id());
-          // return;
+          extractor (act.id());
         }
 
-        void handle_internally (activity_t &, const mod_t &)
+        void handle_internally (activity_t &act, const mod_t & m)
         {
-          // throw exception
+          handle_externally (act, m);
         }
 
-        void handle_internally (activity_t & , const expr_t & )
+        void handle_internally (activity_t & act, const expr_t &)
         {
-          // inform injector to inject
-          // act.collect_output()
-          // parent_of (act.id()).inject (act)
-          // nothing to do
+          injector ( act.id() );
         }
 
-        void handle_externally (activity_t &, net_t &)
+        void handle_externally (activity_t & act, net_t &)
         {
-          /*
-          we::activity_t result ( we::util::text_codec::decode<we::activity_t> (fake_external (we::util::text_codec::encode(act), n)));
-          act = result;
-          */
+          external (act.id());
         }
 
-        void handle_externally (activity_t &, const mod_t &)
+        void handle_externally (activity_t &act, const mod_t &)
         {
-          /*
-          we::activity_t result ( we::util::text_codec::decode<we::activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
-          act = result;
-          */
+          external (act.id());
         }
 
         void handle_externally (activity_t & act, const expr_t & e)
@@ -79,6 +70,10 @@ namespace we
           // print warning?
           handle_internally ( act, e );
         }
+      private:
+        extractor_cb_type extractor;
+        external_cb_type external;
+        injector_cb_type injector;
       };
     }
   }

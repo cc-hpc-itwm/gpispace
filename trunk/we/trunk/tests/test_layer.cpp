@@ -21,29 +21,34 @@ typedef layer_t::internal_id_type layer_id_type;
 
 // observe workflow engine
 static
-void observe_submitted (layer_id_type const & id, std::string const &)
+void observe_submitted (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity submitted: id := " << id << std::endl;
+  l->print_statistics( std::cerr );
 }
 static
-void observe_finished (layer_id_type const & id, std::string const &)
+void observe_finished (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity finished: id := " << id << std::endl;
+  l->print_statistics( std::cerr );
 }
 static
-void observe_failed (layer_id_type const & id, std::string const &)
+void observe_failed (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity failed: id := " << id << std::endl;
+  l->print_statistics( std::cerr );
 }
 static
-void observe_cancelled (layer_id_type const & id, std::string const &)
+void observe_cancelled (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity cancelled: id := " << id << std::endl;
+  l->print_statistics( std::cerr );
 }
 static
-void observe_executing (layer_id_type const & id, std::string const &)
+void observe_executing (const layer_t * l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity executing: id := " << id << std::endl;
+  l->print_statistics( std::cerr );
 }
 
 int main (int argc, char **argv)
