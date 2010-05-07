@@ -209,7 +209,14 @@ namespace we { namespace mgmt {
         res_act.collect_output();
 
         lookup (internal_id).output().swap (res_act.output());
-        inj_q_.put ( internal_id );
+        if (has_parent (internal_id))
+        {
+           inj_q_.put ( internal_id );
+        }
+        else
+        {
+           post_finished_notification (internal_id);
+        }
 
         remove_external_mapping (id);
 
@@ -328,6 +335,7 @@ namespace we { namespace mgmt {
             sig_submitted (this, id, policy::codec::encode (act));
 
             post_execute_notification (id);
+            print_statistics (std::cerr);
           }
           catch (const std::exception & ex)
           {
@@ -354,11 +362,13 @@ namespace we { namespace mgmt {
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
 
+	{
         typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
         if (mapping != ex_to_in_.end())
         {
           throw exception::already_there<external_id_type> ("already_there: ext_id := " + ::util::show(external_id) + " -> int_id := " + ::util::show(mapping->second), external_id);
         }
+	}
         ex_to_in_.insert ( typename external_to_internal_map_t::value_type (external_id, internal_id) );
       }
 
@@ -627,6 +637,8 @@ namespace we { namespace mgmt {
         // create external id
         external_id_type ext_id ( external_id_gen_() );
         add_external_to_internal_mapping ( ext_id, id );
+	std::cerr << "D: submitting activity [" << ext_id << "==" << id << "] to external." << std::endl;
+	print_statistics (std::cerr);
         ext_submit ( ext_id, policy::codec::encode ( lookup (id) ) );
       }
 
@@ -845,7 +857,7 @@ namespace we { namespace mgmt {
             }
             catch (std::exception const & ex)
             {
-              // activity failed
+		std::cerr << "W: exception during execute of activity [" << act_id << "]:" << ex.what() << std::endl;
             }
           } catch (const std::exception & ex)
           {
