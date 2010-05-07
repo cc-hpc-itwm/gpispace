@@ -29,7 +29,13 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(FVM_FOUND true)
   set(FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
-  set(FVM_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc")
-  set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fake/libfvm-pc.so")
+
+  set(FVM_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc")
+  set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.so")
+  set(FVM_STATIC_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.a")
+
+  set(FVM_FAKE_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake")
+  set(FVM_FAKE_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.so")
+  set(FVM_FAKE_STATIC_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.a")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
