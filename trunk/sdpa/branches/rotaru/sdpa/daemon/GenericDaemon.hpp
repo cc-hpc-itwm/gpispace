@@ -167,6 +167,10 @@ namespace sdpa { namespace daemon {
 	  		  ptr_scheduler_->print();
 	  }
 
+	 virtual void print_statistics (std::ostream & s) const
+	 {
+
+	 }
 
   protected:
 	  SDPA_DECLARE_LOGGER();
