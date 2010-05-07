@@ -1,7 +1,7 @@
 #ifndef SEDA_CONFIG_H
 #define SEDA_CONFIG_H
 
-#cmakedefine SEDA_ENABLE_LOGGING 1
+#cmakedefine SEDA_ENABLE_LOGGING 0
 #cmakedefine SEDA_HAVE_LOG4CPP 1
 #cmakedefine SEDA_HAVE_FHGLOG 1
 #cmakedefine HAVE_PTHREAD_H 1
