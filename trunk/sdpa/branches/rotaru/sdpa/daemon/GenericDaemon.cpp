@@ -727,6 +727,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
 	job_id_t job_id(activityId);
 	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
 	sendEventToSelf(pEvtCancelJob);
+	return true;
 }
 
 /**
@@ -748,6 +749,7 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::WE, name(), job_id, result));
 	sendEventToSelf(pEvtJobFinished);
+	return true;
 }
 
 /**
@@ -772,6 +774,7 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
 
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::WE, name(), job_id, result ));
 	sendEventToSelf(pEvtJobFailed);
+	return true;
 }
 
 /**
@@ -789,6 +792,7 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
 	sendEventToSelf(pEvtCancelJobAck);
+	return true;
 }
 
 void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )

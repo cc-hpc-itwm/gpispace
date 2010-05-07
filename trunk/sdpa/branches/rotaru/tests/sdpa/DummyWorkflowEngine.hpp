@@ -42,10 +42,14 @@
 #include <sdpa/daemon/IWorkflowEngine.hpp>
 #include <boost/function.hpp>
 
+#include <we/mgmt/bits/traits.hpp>
+#include <we/mgmt/bits/signal.hpp>
+
 using namespace sdpa;
 
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
+
 
 /*struct f_id_gen {
 	id_type operator()()
@@ -62,6 +66,8 @@ class DummyWorkflowEngine : public IWorkflowEngine {
   public:
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
+    typedef std::string internal_id_type;
+
 
     DummyWorkflowEngine( IDaemon* pIDaemon, Function_t f  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
@@ -74,6 +80,14 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	pIDaemon_ = pIDaemon;
     }
+
+    /*
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_submitted;
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_executing;
+    */
 
     /**
      * Notify the GWES that an activity has failed
@@ -254,7 +268,6 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 
     virtual void print_statistics (std::ostream & s) const
     {
-
     }
 
   public:

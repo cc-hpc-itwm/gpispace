@@ -36,6 +36,7 @@ namespace sdpa {
 	  class NRE : public dsm::DaemonFSM,  public sdpa::daemon::Observable {
 	  public:
 		typedef sdpa::shared_ptr<NRE<T, U> > ptr_t;
+		typedef typename T::internal_id_type we_internal_id_t;
 		SDPA_DECLARE_LOGGER();
 
 		NRE( const std::string& name = "", const std::string& url = "",
