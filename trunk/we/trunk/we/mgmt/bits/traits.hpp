@@ -22,6 +22,7 @@
 #include <string>
 #include <limits>
 
+#include <we/type/id.hpp>
 #include <we/util/codec.hpp>
 
 namespace we
@@ -49,10 +50,10 @@ namespace we
         };
 
         template <>
-        struct id_traits<long long unsigned int>
+        struct id_traits<petri_net::pid_t>
         {
         public:
-          typedef long long unsigned int type;
+          typedef petri_net::pid_t type;
 
           inline static type nil()
           {
