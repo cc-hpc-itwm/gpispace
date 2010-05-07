@@ -210,6 +210,9 @@ namespace we { namespace mgmt {
 
         lookup (internal_id).output().swap (res_act.output());
         inj_q_.put ( internal_id );
+
+        remove_external_mapping (id);
+
         return true;
       }
 
@@ -234,6 +237,7 @@ namespace we { namespace mgmt {
 
         lookup (internal_id).output().swap (res_act.output());
         inj_q_.put ( internal_id );
+        remove_external_mapping (id);
         return true;
       }
 
@@ -252,7 +256,7 @@ namespace we { namespace mgmt {
        **/
       bool cancelled(const external_id_type & id) throw()
       {
-        we::util::remove_unused_variable_warning(id);
+        remove_external_mapping (id);
         return true;
       }
 
@@ -340,6 +344,7 @@ namespace we { namespace mgmt {
       {
         internal_id_type internal_id ( internal_id_gen_() );
         add_external_to_internal_mapping (external_id, internal_id);
+        add_internal_to_external_mapping (internal_id, external_id);
         return internal_id;
       }
 
@@ -355,16 +360,32 @@ namespace we { namespace mgmt {
           throw exception::already_there<external_id_type> ("already_there: ext_id := " + ::util::show(external_id) + " -> int_id := " + ::util::show(mapping->second), external_id);
         }
         ex_to_in_.insert ( typename external_to_internal_map_t::value_type (external_id, internal_id) );
+      }
+
+      void add_internal_to_external_mapping ( const internal_id_type & internal_id
+                                            , const external_id_type & external_id
+                                            )
+      {
+        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+
+        typename internal_to_external_map_t::const_iterator mapping (in_to_ex_.find(internal_id));
+        if (mapping != in_to_ex_.end())
+        {
+          throw exception::already_there<internal_id_type> ("already_there: int_id := " + ::util::show(internal_id) + " -> ext_id := " + ::util::show(mapping->second), internal_id);
+        }
         in_to_ex_.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
       }
 
-      void remove_external_to_internal_mapping ( const external_id_type & external_id
-                                               , const internal_id_type & internal_id
-                                               )
+      void remove_external_mapping ( const external_id_type & external_id )
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
-        ex_to_in_.erase (ex_to_in_.find (external_id));
-        in_to_ex_.erase (in_to_ex_.find (internal_id));
+        ex_to_in_.erase (external_id);
+      }
+
+      void remove_internal_mapping ( const internal_id_type & internal_id )
+      {
+        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        in_to_ex_.erase (internal_id);
       }
 
       typename external_to_internal_map_t::mapped_type map_to_internal (const external_id_type & external_id) const
@@ -811,7 +832,7 @@ namespace we { namespace mgmt {
 
             try
             {
-              static typename policy::exec_policy exec_policy
+              typename policy::exec_policy exec_policy
                 ( boost::bind ( &this_type::post_activity_notification, this, _1 )
                 , boost::bind ( &this_type::post_execute_externally, this, _1 )
                 , boost::bind ( &this_type::post_inject_activity_results, this, _1 )
@@ -1011,11 +1032,20 @@ namespace we { namespace mgmt {
 
         try
         {
-          remove_external_to_internal_mapping ( map_to_external(id), id );
+          remove_external_mapping ( map_to_external(id) );
         }
         catch (const exception::no_such_mapping<internal_id_type> &)
         {
-          // ignore
+          std::cerr << "W: could not remove external mapping for internal id := " << id << std::endl;
+        }
+
+        try
+        {
+          remove_internal_mapping (id);
+        }
+        catch (const exception::no_such_mapping<internal_id_type> &)
+        {
+          std::cerr << "W: could not remove internal mapping for internal id := " << id << std::endl;
         }
 
         activities_.erase (id);

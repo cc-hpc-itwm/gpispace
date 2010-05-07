@@ -147,8 +147,10 @@ namespace test {
       }
       else
       {
-        std::cout << "finished[" << id << "] = " << desc << std::endl; return true;
         mgmt_layer_.print_statistics (std::cout);
+        we::activity_t act ( we::util::text_codec::decode<we::activity_t> (desc) );
+        we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
+        p << "finished [" << id << "] = " << act.output() << std::endl;
       }
       return true;
     }
