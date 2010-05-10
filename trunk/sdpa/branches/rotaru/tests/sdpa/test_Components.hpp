@@ -30,9 +30,9 @@ namespace sdpa {
 		namespace tests {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
-			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
-			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
-			  //CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
+			  CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
+			  CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
+			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorker );
 			  CPPUNIT_TEST_SUITE_END();
 
