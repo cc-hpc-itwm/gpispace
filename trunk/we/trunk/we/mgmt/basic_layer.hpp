@@ -45,7 +45,7 @@ namespace we
       virtual bool failed(const id_type & id, const result_type & result) = 0;
       virtual bool cancelled(const id_type & id) = 0;
 
-      virtual void print_statistics (std::ostream & s) const = 0;
+      //virtual void print_statistics (std::ostream & s) const = 0;
 
       friend class boost::serialization::access;
       template <class Archive>
