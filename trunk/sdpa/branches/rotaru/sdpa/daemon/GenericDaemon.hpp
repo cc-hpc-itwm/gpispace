@@ -167,12 +167,60 @@ namespace sdpa { namespace daemon {
 	  		  ptr_scheduler_->print();
 	  }
 
-	 virtual void print_statistics (std::ostream & s) const
-	 {
 
-	 }
+	  // should be overriden by the end components
+	  //virtual void print_statistics (std::ostream & s) const {}
+
+	  template <typename T>
+	  T* create_workflow_engine()
+	  {
+		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
+		  pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
+		  pWfE->sig_finished.connect(  &GenericDaemon::observe_finished<T> );
+		  pWfE->sig_failed.connect(    &GenericDaemon::observe_failed<T> );
+		  pWfE->sig_cancelled.connect( &GenericDaemon::observe_cancelled<T> );
+		  pWfE->sig_executing.connect( &GenericDaemon::observe_executing<T> );
+
+		  return pWfE;
+	  }
 
   protected:
+	 // observe workflow engine
+	 template <typename T>
+	 static void observe_submitted (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 {
+		 std::cerr << "activity submitted: id := " << id << std::endl;
+		 l->print_statistics( std::cerr );
+	 }
+
+	 template <typename T>
+	 static void observe_finished (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 {
+		 std::cerr << "activity finished: id := " << id << std::endl;
+		 l->print_statistics( std::cerr );
+	 }
+
+	 template <typename T>
+	 static void observe_failed (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 {
+		 std::cerr << "activity failed: id := " << id << std::endl;
+		 l->print_statistics( std::cerr );
+	 }
+
+	 template <typename T>
+	 static void observe_cancelled (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 {
+		 std::cerr << "activity cancelled: id := " << id << std::endl;
+		 l->print_statistics( std::cerr );
+	 }
+
+	 template <typename T>
+	 static void observe_executing (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 {
+		 std::cerr << "activity executing: id := " << id << std::endl;
+		 l->print_statistics( std::cerr );
+	 }
+
 	  SDPA_DECLARE_LOGGER();
 
 	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );

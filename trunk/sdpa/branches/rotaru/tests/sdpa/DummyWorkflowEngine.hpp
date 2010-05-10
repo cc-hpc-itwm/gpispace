@@ -264,7 +264,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     		std::cout<<it->second<<" -> "<<it->first<<std::endl;
     }
 
-    virtual void print_statistics (std::ostream & s) const
+    void print_statistics (std::ostream & s) const
     {
     }
 

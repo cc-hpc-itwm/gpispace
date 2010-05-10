@@ -42,7 +42,7 @@ namespace sdpa {
 		NRE( const std::string& name = "", const std::string& url = "",
 			 const std::string& masterName = "", const std::string& masterUrl = "",
 			 const std::string& workerUrl = "", const std::string& guiUrl = "" )
-		: dsm::DaemonFSM( name,  create_workflow_engine() ),
+		: dsm::DaemonFSM( name,  create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
 				  masterName_(masterName),
@@ -72,20 +72,7 @@ namespace sdpa {
 			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl));
 		}
 
-        //modify this and the observe functions as template methods of the GenericDaemon!
-		T* create_workflow_engine()
-		{
-			T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-			pWfE->sig_submitted.connect( &NRE<T,U>::observe_submitted );
-			pWfE->sig_finished.connect(  &NRE<T,U>::observe_finished );
-			pWfE->sig_failed.connect( 	 &NRE<T,U>::observe_failed );
-			pWfE->sig_cancelled.connect( &NRE<T,U>::observe_cancelled );
-			pWfE->sig_executing.connect( &NRE<T,U>::observe_executing );
-
-			return pWfE;
-		}
-
-		static void start( NRE<T, U>::ptr_t ptrNRE );
+      	static void start( NRE<T, U>::ptr_t ptrNRE );
 		static void shutdown(NRE<T, U>::ptr_t ptrNRE );
 
 		void action_configure( const sdpa::events::StartUpEvent& );
@@ -106,37 +93,6 @@ namespace sdpa {
 		const std::string& url() const {return url_;}
 		const std::string& masterName() const { return masterName_; }
 		const std::string& masterUrl() const { return masterUrl_; }
-
-		// observe workflow engine
-		static void observe_submitted (const T* l, typename T::internal_id_type const & id, std::string const &)
-		{
-		  std::cerr << "activity submitted: id := " << id << std::endl;
-		  l->print_statistics( std::cerr );
-		}
-
-		static void observe_finished (const T* l, typename T::internal_id_type const & id, std::string const &)
-		{
-		  std::cerr << "activity finished: id := " << id << std::endl;
-		  l->print_statistics( std::cerr );
-		}
-
-		static void observe_failed (const T* l, typename T::internal_id_type const & id, std::string const &)
-		{
-		  std::cerr << "activity failed: id := " << id << std::endl;
-		  l->print_statistics( std::cerr );
-		}
-
-		static void observe_cancelled (const T* l, typename T::internal_id_type const & id, std::string const &)
-		{
-		  std::cerr << "activity cancelled: id := " << id << std::endl;
-		  l->print_statistics( std::cerr );
-		}
-
-		static void observe_executing (const T* l, typename T::internal_id_type const & id, std::string const &)
-		{
-		  std::cerr << "activity executing: id := " << id << std::endl;
-		  l->print_statistics( std::cerr );
-		}
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int file_version )

@@ -33,7 +33,7 @@ namespace sdpa {
 
 			Aggregator( const std::string& name = "", const std::string& url = "",
 						const std::string& masterName = "", const std::string& masterUrl = "")
-			: DaemonFSM( name, create_workflow_engine() ),
+			: DaemonFSM( name, create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
 				  masterName_(masterName),
@@ -54,18 +54,6 @@ namespace sdpa {
 				 return ptr_t( new Aggregator<T>( name, url, masterName, masterUrl));
 			}
 
-			T* create_workflow_engine()
-			{
-				T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-				pWfE->sig_submitted.connect( &Aggregator<T>::observe_submitted );
-				pWfE->sig_finished.connect(  &Aggregator<T>::observe_finished );
-				pWfE->sig_failed.connect( 	 &Aggregator<T>::observe_failed );
-				pWfE->sig_cancelled.connect( &Aggregator<T>::observe_cancelled );
-				pWfE->sig_executing.connect( &Aggregator<T>::observe_executing );
-
-				return pWfE;
-			}
-
 			static void start(ptr_t ptrAgg);
 			static void shutdown(ptr_t ptrAgg);
 
@@ -82,37 +70,6 @@ namespace sdpa {
 			const std::string& url() const {return url_;}
 			const std::string& masterName() const { return masterName_; }
 			const std::string& masterUrl() const { return masterUrl_; }
-
-			// observe workflow engine
-			static void observe_submitted (const T* l, typename T::internal_id_type const & id, std::string const &)
-			{
-			  std::cerr << "activity submitted: id := " << id << std::endl;
-			  l->print_statistics( std::cerr );
-			}
-
-			static void observe_finished (const T* l, typename T::internal_id_type const & id, std::string const &)
-			{
-			  std::cerr << "activity finished: id := " << id << std::endl;
-			  l->print_statistics( std::cerr );
-			}
-
-			static void observe_failed (const T* l, typename T::internal_id_type const & id, std::string const &)
-			{
-			  std::cerr << "activity failed: id := " << id << std::endl;
-			  l->print_statistics( std::cerr );
-			}
-
-			static void observe_cancelled (const T* l, typename T::internal_id_type const & id, std::string const &)
-			{
-			  std::cerr << "activity cancelled: id := " << id << std::endl;
-			  l->print_statistics( std::cerr );
-			}
-
-			static void observe_executing (const T* l, typename T::internal_id_type const & id, std::string const &)
-			{
-			  std::cerr << "activity executing: id := " << id << std::endl;
-			  l->print_statistics( std::cerr );
-			}
 
 			template <class Archive>
 			void serialize(Archive& ar, const unsigned int file_version )
