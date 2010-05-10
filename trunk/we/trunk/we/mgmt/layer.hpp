@@ -520,8 +520,8 @@ namespace we { namespace mgmt {
         //
         // clean up all activity
         for (typename activities_t::iterator a (activities_.begin())
-               ; a != activities_.end()
-               ; ++a
+            ; a != activities_.end()
+            ; ++a
             )
         {
           std::cerr << "D: removing act[" << a->first << "]" << std::endl;
@@ -536,9 +536,9 @@ namespace we { namespace mgmt {
         {
           boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
           for ( typename external_to_internal_map_t::const_iterator e_to_i
-                  (ex_to_in_.begin())
-                  ; e_to_i != ex_to_in_.end()
-                  ; ++e_to_i
+              (ex_to_in_.begin())
+              ; e_to_i != ex_to_in_.end()
+              ; ++e_to_i
               )
           {
             if (e_to_i != ex_to_in_.begin())
@@ -556,8 +556,8 @@ namespace we { namespace mgmt {
         {
           boost::shared_lock<boost::shared_mutex> lock (activities_mutex_);
           for ( typename activities_t::const_iterator act (activities_.begin())
-                  ; act != activities_.end()
-                  ; ++act
+              ; act != activities_.end()
+              ; ++act
               )
           {
             print_activity_info (s, act->second);
