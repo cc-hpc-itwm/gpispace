@@ -31,12 +31,12 @@ namespace we
   {
     namespace util
     {
-      template <typename F = void (void) >
+      template <typename F = void (void), bool debug=false>
       class signal
       {
       public:
         explicit
-        signal(const std::string & name = "noname")
+        signal(const std::string & name = "sig_noname")
           : name_(name)
         { }
 
@@ -55,9 +55,9 @@ namespace we
 
 	void operator() ()
 	{
-          if (targets_.empty())
+          if (debug && targets_.empty())
           {
-            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
+            std::cerr << "W: " << name() << " not connected!" << std::endl;
             return;
           }
 
@@ -78,7 +78,7 @@ namespace we
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-          if (targets_.empty())
+          if (debug && targets_.empty())
           {
             std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
             return;
@@ -101,7 +101,7 @@ namespace we
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-          if (targets_.empty())
+          if (debug && targets_.empty())
           {
             std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
             return;
@@ -124,11 +124,11 @@ namespace we
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-          if (targets_.empty())
+          if (debug && targets_.empty())
           {
             std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-            return;
           }
+
           try
           {
             typedef typename std::vector<boost::function<F> > funcs_t;
