@@ -62,9 +62,9 @@ namespace test {
       typedef we::transition_t::mod_type mod_t;
       typedef we::transition_t::expr_type expr_t;
 
-      void handle_internally ( we::activity_t &, net_t &)
+      void handle_internally ( we::activity_t &act, net_t &n)
       {
-        throw std::runtime_error ( "NO internal net here!" );
+        handle_externally (act, n);
       }
 
       void handle_internally ( we::activity_t &, const mod_t &)
@@ -79,7 +79,6 @@ namespace test {
 
       void handle_externally (we::activity_t &act, net_t &)
       {
-        act.transition().set_internal (true);
         id_type new_id ( daemon.gen_id() );
         daemon.add_mapping ( id, new_id );
         daemon.layer().submit (new_id,  we::util::text_codec::encode(act));
