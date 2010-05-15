@@ -19,7 +19,7 @@ typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 
-static bool done (false);
+std::vector<id_type> jobs;
 
 // observe workflow engine
 static
@@ -28,11 +28,12 @@ void observe_submitted (const layer_t *, layer_id_type const & id, std::string c
   std::cerr << "activity submitted: id := " << id << std::endl;
 }
 static
-void observe_finished (const layer_t *, layer_id_type const & id, std::string const &)
+void observe_finished (const layer_t *, layer_id_type const & id, std::string const &s)
 {
   std::cerr << "activity finished: id := " << id << std::endl;
-  if ( id == 0 )
-    done = true;
+  we::activity_t act (we::util::text_codec::decode<we::activity_t>(s));
+  if (act.transition().name() == "trans_net")
+    jobs.pop_back();
 }
 static
 void observe_failed (const layer_t *, layer_id_type const & id, std::string const &)
@@ -61,9 +62,8 @@ int main (int argc, char **argv)
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
   mgmt_layer.sig_executing.connect ( &observe_executing );
 
-  std::vector<id_type> ids;
-
-  for (std::size_t i (0); i < 1; ++i)
+  const std::size_t num_jobs = ((argc > 2) ? (size_t)atoi(argv[2]) : 1);
+  for (std::size_t i (0); i < num_jobs; ++i)
   {
     we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
     we::activity_t act ( simple_trans );
@@ -78,11 +78,11 @@ int main (int argc, char **argv)
     );
 
     daemon_type::id_type id = daemon.gen_id();
-    ids.push_back(id);
+    jobs.push_back(id);
     mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
   }
 
-  for (std::vector<id_type>::const_iterator id (ids.begin()); id != ids.end(); ++id)
+  for (std::vector<id_type>::const_iterator id (jobs.begin()); id != jobs.end(); ++id)
   {
     try
     {
@@ -100,18 +100,18 @@ int main (int argc, char **argv)
 #if 0
   size_t max_wait (5);
 
-  while (! done && (--max_wait > 0))
+  while (jobs.size() > 0 && (--max_wait > 0))
   {
     std::cerr << "." << std::flush;
     sleep (1);
   }
 #else
-  while (! done)
+  while (jobs.size() > 0)
   {
     std::cerr << "." << std::flush;
     sleep (1);
   }
 #endif
 
-  return (done ? EXIT_SUCCESS : EXIT_FAILURE);
+  return ( (num_jobs == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
