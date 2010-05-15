@@ -790,6 +790,7 @@ namespace we { namespace mgmt {
                                                , const internal_id_type & child
                                                )
       {
+        boost::unique_lock<boost::shared_mutex> lock (child_parent_mutex_);
         parent_to_child_[parent].insert (child);
         child_to_parent_[child] = parent;
       }
@@ -799,6 +800,7 @@ namespace we { namespace mgmt {
                                             , const internal_id_type & child
                                             )
       {
+        boost::unique_lock<boost::shared_mutex> lock (child_parent_mutex_);
         child_to_parent_.erase (child);
         parent_to_child_[parent].erase (child);
       }
@@ -806,6 +808,8 @@ namespace we { namespace mgmt {
       inline
       internal_id_type parent_of ( const internal_id_type & id ) const
       {
+        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+
         if (has_parent (id))
         {
           return child_to_parent_.at (id);
@@ -822,8 +826,17 @@ namespace we { namespace mgmt {
       }
 
       inline
+      bool is_valid (const internal_id_type & id) const
+      {
+        boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
+        return activities_.find(id) != activities_.end();
+      }
+
+      inline
       bool has_parent (const internal_id_type & id) const
       {
+        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+
         typename child_to_parent_map_t::const_iterator p
           (child_to_parent_.find( id ));
 
@@ -844,9 +857,16 @@ namespace we { namespace mgmt {
         for (;;)
         {
           inj_cmd_t cmd = inj_q_.get();
+
           try
           {
             const internal_id_type act_id = cmd;
+            if ( ! is_valid (act_id))
+            {
+              std::cerr << "W: *** got inject request for invalid id: " << act_id << std::endl;
+              continue;
+            }
+
             activity_type & act = lookup( act_id );
 
             if (has_parent (act_id))
@@ -980,8 +1000,9 @@ namespace we { namespace mgmt {
       external_to_internal_map_t sub_to_ext_eti_;
       internal_to_external_map_t sub_to_ext_ite_;
 
+      mutable boost::shared_mutex child_parent_mutex_;
       parent_to_children_map_t parent_to_child_;
-      child_to_parent_map_t child_to_parent_;
+      child_to_parent_map_t    child_to_parent_;
 
       boost::mutex active_nets_mutex_;
       boost::condition active_nets_modified_;
