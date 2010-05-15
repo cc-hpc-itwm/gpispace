@@ -23,17 +23,19 @@ std::vector<id_type> jobs;
 
 // observe workflow engine
 static
-void observe_submitted (const layer_t *, layer_id_type const & id, std::string const &)
+void observe_submitted (const layer_t *, layer_id_type const &)
 {
-  std::cerr << "activity submitted: id := " << id << std::endl;
 }
 static
-void observe_finished (const layer_t *, layer_id_type const & id, std::string const &s)
+void observe_finished (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  std::cerr << "activity finished: id := " << id << std::endl;
   we::activity_t act (layer_t::policy::codec::decode (s));
   if (act.transition().name() == "trans_net")
+  {
+    std::cerr << "job finished: id := " << id << std::endl;
+    l->print_statistics(std::cerr);
     jobs.pop_back();
+  }
 }
 static
 void observe_failed (const layer_t *, layer_id_type const & id, std::string const &)
@@ -46,9 +48,8 @@ void observe_cancelled (const layer_t *, layer_id_type const & id, std::string c
   std::cerr << "activity cancelled: id := " << id << std::endl;
 }
 static
-void observe_executing (const layer_t *, layer_id_type const & id, std::string const &)
+void observe_executing (const layer_t *, layer_id_type const &)
 {
-  std::cerr << "activity executing: id := " << id << std::endl;
 }
 
 int main (int argc, char **argv)
