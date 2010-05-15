@@ -116,6 +116,7 @@ namespace we { namespace mgmt {
 
       typedef typename boost::unordered_map<internal_id_type, activity_type> activities_t;
       typedef typename activity_type::output_t output_type;
+
     private:
       typedef detail::set<internal_id_type> active_nets_t;
 
@@ -164,8 +165,17 @@ namespace we { namespace mgmt {
       void submit(const external_id_type & id, const encoded_type & bytes) throw (std::exception)
       {
         const internal_id_type internal_id ( add_external_id (id) );
-        activity_type act = policy::codec::decode(bytes);
-        submit (internal_id, act);
+        try
+        {
+          activity_type act = policy::codec::decode(bytes);
+          submit (internal_id, act);
+        }
+        catch (...)
+        {
+          remove_external_mapping ( id, sub_from_ext_eti_ );
+          remove_internal_mapping ( internal_id, sub_from_ext_ite_ );
+          throw;
+        }
       }
 
       /**
@@ -203,14 +213,13 @@ namespace we { namespace mgmt {
        **/
       bool finished(const external_id_type & id, const result_type & result) throw()
       {
-        internal_id_type internal_id ( map_to_internal (id) );
+        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
+        remove_external_mapping (id, sub_to_ext_eti_);
+        remove_internal_mapping (internal_id, sub_to_ext_ite_);
 
         activity_type res_act ( policy::codec::decode (result) );
-        res_act.collect_output();
-
         lookup (internal_id).output().swap (res_act.output());
         inj_q_.put ( internal_id );
-        remove_external_mapping (id);
 
         return true;
       }
@@ -227,16 +236,18 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this activity is removed
        **/
-      bool failed(const external_id_type & id, const result_type & result) throw()
+      bool failed ( const external_id_type & id
+                  , const result_type & result
+                  ) throw()
       {
-        internal_id_type internal_id ( map_to_internal (id) );
+        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
+        remove_external_mapping (id, sub_to_ext_eti_);
+        remove_internal_mapping (internal_id, sub_to_ext_ite_);
 
         activity_type res_act ( policy::codec::decode (result) );
-        res_act.collect_output();
-
         lookup (internal_id).output().swap (res_act.output());
-        inj_q_.put ( internal_id );
-        remove_external_mapping (id);
+
+        post_failed_notification (internal_id);
         return true;
       }
 
@@ -255,7 +266,11 @@ namespace we { namespace mgmt {
        **/
       bool cancelled(const external_id_type & id) throw()
       {
-        remove_external_mapping (id);
+        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
+        remove_external_mapping (id, sub_to_ext_eti_);
+        remove_internal_mapping (internal_id, sub_to_ext_ite_);
+
+        std::cerr << "TODO: cancelled [" << id << " == " << internal_id << " not implemented!" << std::endl;
         return true;
       }
 
@@ -274,7 +289,7 @@ namespace we { namespace mgmt {
        */
       bool suspend(const external_id_type & id) throw()
       {
-        post_suspend_activity_notification( map_to_internal(id) );
+        post_suspend_activity_notification( map_to_internal(id, sub_from_ext_eti_) );
         return true;
       }
 
@@ -293,7 +308,7 @@ namespace we { namespace mgmt {
        */
       bool resume(const external_id_type & id) throw()
       {
-        post_resume_activity_notification( map_to_internal(id) );
+        post_suspend_activity_notification( map_to_internal(id, sub_from_ext_eti_));
         return true;
       }
 
@@ -302,7 +317,7 @@ namespace we { namespace mgmt {
       status_type status(const external_id_type & id) throw (std::exception)
       {
         std::ostringstream os;
-        print_activity_info ( lookup(map_to_internal(id)), os );
+        print_activity_info ( lookup(map_to_internal(id, sub_from_ext_eti_)), os );
         return os.str();
       }
 
@@ -349,21 +364,22 @@ namespace we { namespace mgmt {
       internal_id_type add_external_id (const external_id_type & external_id)
       {
         internal_id_type internal_id ( internal_id_gen_() );
-        add_external_to_internal_mapping (external_id, internal_id);
-        add_internal_to_external_mapping (internal_id, external_id);
+        add_external_to_internal_mapping (external_id, internal_id, sub_from_ext_eti_);
+        add_internal_to_external_mapping (internal_id, external_id, sub_from_ext_ite_);
         return internal_id;
       }
 
       void add_external_to_internal_mapping ( const external_id_type & external_id
                                             , const internal_id_type & internal_id
+                                            , external_to_internal_map_t & ex_to_in
                                             )
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
 
 	{
           typename external_to_internal_map_t::const_iterator mapping
-            (ex_to_in_.find(external_id));
-          if (mapping != ex_to_in_.end())
+            (ex_to_in.find(external_id));
+          if (mapping != ex_to_in.end())
           {
             throw exception::already_there<external_id_type>
               ( "already_there: ext_id := "
@@ -374,43 +390,46 @@ namespace we { namespace mgmt {
               );
           }
 	}
-        ex_to_in_.insert ( typename external_to_internal_map_t::value_type
-                         (external_id, internal_id)
-                         );
+        ex_to_in.insert ( typename external_to_internal_map_t::value_type
+                        (external_id, internal_id)
+                        );
       }
 
       void add_internal_to_external_mapping ( const internal_id_type & internal_id
                                             , const external_id_type & external_id
+                                            , internal_to_external_map_t & in_to_ex
                                             )
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
 
-        typename internal_to_external_map_t::const_iterator mapping (in_to_ex_.find(internal_id));
-        if (mapping != in_to_ex_.end())
+        typename internal_to_external_map_t::const_iterator mapping (in_to_ex.find(internal_id));
+        if (mapping != in_to_ex.end())
         {
           throw exception::already_there<internal_id_type> ("already_there: int_id := " + ::util::show(internal_id) + " -> ext_id := " + ::util::show(mapping->second), internal_id);
         }
-        in_to_ex_.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
+        in_to_ex.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
       }
 
-      void remove_external_mapping ( const external_id_type & external_id )
+      void remove_external_mapping ( const external_id_type & external_id, external_to_internal_map_t & ex_to_in )
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
-        ex_to_in_.erase (external_id);
+        ex_to_in.erase (external_id);
       }
 
-      void remove_internal_mapping ( const internal_id_type & internal_id )
+      void remove_internal_mapping ( const internal_id_type & internal_id, internal_to_external_map_t & in_to_ex )
       {
         boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
-        in_to_ex_.erase (internal_id);
+        in_to_ex.erase (internal_id);
       }
 
-      typename external_to_internal_map_t::mapped_type map_to_internal (const external_id_type & external_id) const
+      typename external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id
+                                                                       , const external_to_internal_map_t & m
+                                                                       ) const
       {
         boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
 
-        typename external_to_internal_map_t::const_iterator mapping (ex_to_in_.find(external_id));
-        if (mapping != ex_to_in_.end())
+        typename external_to_internal_map_t::const_iterator mapping (m.find(external_id));
+        if (mapping != m.end())
         {
           return mapping->second;
         }
@@ -420,12 +439,14 @@ namespace we { namespace mgmt {
         }
       }
 
-      typename internal_to_external_map_t::mapped_type map_to_external (const internal_id_type & internal_id) const
+      typename internal_to_external_map_t::mapped_type map_to_external ( const internal_id_type & internal_id
+                                                                       , const internal_to_external_map_t & m
+                                                                       ) const
       {
         boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
 
-        typename internal_to_external_map_t::const_iterator mapping (in_to_ex_.find(internal_id));
-        if (mapping != in_to_ex_.end())
+        typename internal_to_external_map_t::const_iterator mapping (m.find(internal_id));
+        if (mapping != m.end())
         {
           return mapping->second;
         }
@@ -536,12 +557,12 @@ namespace we { namespace mgmt {
         {
           boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
           for ( typename external_to_internal_map_t::const_iterator e_to_i
-              (ex_to_in_.begin())
-              ; e_to_i != ex_to_in_.end()
+              (sub_from_ext_eti_.begin())
+              ; e_to_i != sub_from_ext_eti_.end()
               ; ++e_to_i
               )
           {
-            if (e_to_i != ex_to_in_.begin())
+            if (e_to_i != sub_from_ext_eti_.begin())
             {
               s << ", ";
             }
@@ -649,12 +670,15 @@ namespace we { namespace mgmt {
       inline
       void post_execute_externally (const internal_id_type & id)
       {
-        // create external id
-        external_id_type ext_id ( external_id_gen_() );
-        add_external_to_internal_mapping ( ext_id, id );
-	std::cerr << "D: submitting activity [" << ext_id << "==" << id << "] to external." << std::endl;
         activity_t ext_act (lookup(id));
         ext_act.transition().set_internal(true);
+
+        // create external id
+        external_id_type ext_id ( external_id_gen_() );
+        add_external_to_internal_mapping ( ext_id, id, sub_to_ext_eti_ );
+        add_internal_to_external_mapping ( id, ext_id, sub_to_ext_ite_ );
+	std::cerr << "D: submitting activity [" << ext_id << "==" << id << "] to external." << std::endl;
+
         ext_submit ( ext_id, policy::codec::encode (ext_act));
       }
 
@@ -833,20 +857,23 @@ namespace we { namespace mgmt {
                         << "act[" << act_id << "] into "
                         << "act[" << par_id << "]"
                         << std::endl;
-              act.collect_output ();
               par.inject (act);
-              post_activity_notification( par_id );
-              remove_activity ( act_id );
+              remove_activity (act_id);
+
+              post_activity_notification (par_id);
             }
             else
             {
-              post_finished_notification (act_id);
+              external_id_type external_id (map_to_external(act_id, sub_from_ext_ite_));
+              ext_finished (external_id, policy::codec::encode (act));
+              assert_is_leaf ( act_id );
+              remove_activity ( act_id );
             }
           }
           catch (const std::exception & ex)
           {
-            std::cerr << "E: error during injecting: " << ex.what() << std::endl;
-            // ignore
+            std::cerr << "E: TODO: error during injecting: " << ex.what() << std::endl;
+            throw;
           }
         }
         std::cerr << "D: injector thread stopped..." << std::endl;
@@ -863,8 +890,12 @@ namespace we { namespace mgmt {
           {
             const internal_id_type act_id = cmd;
 
-            std::cerr << "I: executing id := " << act_id << std::endl;
             activity_type & act = lookup (act_id);
+            std::cerr << "I: executing id := "
+                      << act_id
+                      << " (" << act.transition().name()
+                      << ")"
+                      << std::endl;
 
             try
             {
@@ -900,7 +931,7 @@ namespace we { namespace mgmt {
         p << "     internal := " << act.transition().is_internal() << std::endl;
         try
         {
-          p << "  external-id := " << map_to_external (act.id()) << std::endl;
+          p << "  external-id := " << map_to_external (act.id(), sub_from_ext_ite_) << std::endl;
         }
         catch (const exception::no_such_mapping<internal_id_type> &)
         {
@@ -943,8 +974,11 @@ namespace we { namespace mgmt {
       inj_q_t inj_q_;
       exec_q_t exec_q_;
 
-      external_to_internal_map_t ex_to_in_;
-      internal_to_external_map_t in_to_ex_;
+      external_to_internal_map_t sub_from_ext_eti_;
+      internal_to_external_map_t sub_from_ext_ite_;
+
+      external_to_internal_map_t sub_to_ext_eti_;
+      internal_to_external_map_t sub_to_ext_ite_;
 
       parent_to_children_map_t parent_to_child_;
       child_to_parent_map_t child_to_parent_;
@@ -962,7 +996,6 @@ namespace we { namespace mgmt {
         activity_type & a = lookup ( cmd.dat );
         if (! a.flags().suspended )
         {
-          std::cerr << "D: act[" << cmd.dat << "] active" << std::endl;
           active_nets_.put (cmd.dat);
         }
       }
@@ -972,20 +1005,22 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id (cmd.dat);
 
         std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
+        activity_type & act (lookup(internal_id));
+        act.collect_output();
 
-        lookup (internal_id).collect_output ();
-        sig_finished (this, internal_id, policy::codec::encode(lookup(internal_id)));
+        print_activity_info (std::cerr, act);
+        sig_finished (this, internal_id, policy::codec::encode(act));
 
-        if ( has_parent (internal_id) )
+        if (has_parent (internal_id))
         {
           post_inject_activity_results (internal_id);
         }
         else
         {
-          external_id_type external_id ( map_to_external(internal_id) );
-          ext_finished (external_id, policy::codec::encode (lookup (internal_id)));
-          assert_is_leaf ( cmd.dat );
-          remove_activity ( cmd.dat );
+          external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
+          ext_finished (external_id, policy::codec::encode (act));
+          assert_is_leaf ( internal_id );
+          remove_activity ( internal_id );
         }
       }
 
@@ -994,31 +1029,41 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id (cmd.dat);
 
         std::cerr << "D: act[" << internal_id << "] failed" << std::endl;
+        activity_type & act (lookup(internal_id));
+        act.collect_output();
+        act.set_failed (true);
 
-        lookup (internal_id).collect_output ();
-        sig_finished (this, internal_id, policy::codec::encode(lookup(internal_id)));
+        sig_failed (this, internal_id, policy::codec::encode(act));
 
         if ( has_parent (internal_id) )
         {
           // TODO cancel strategy
-          post_inject_activity_results (internal_id);
+          //          cancel_activity ( parent_of (internal_id) );
+          remove_activity (internal_id);
         }
         else
         {
-          external_id_type external_id ( map_to_external(internal_id) );
-          ext_failed (external_id, policy::codec::encode (lookup (internal_id)));
-          assert_is_leaf ( cmd.dat );
-          remove_activity ( cmd.dat );
+          external_id_type external_id ( map_to_external(internal_id, sub_from_ext_ite_));
+          ext_failed (external_id, policy::codec::encode (act));
+          assert_is_leaf (internal_id);
         }
+        remove_activity ( internal_id );
       }
 
       void activity_cancelled(const cmd_t & cmd)
       {
-        sig_cancelled (this, cmd.dat, policy::codec::encode(lookup(cmd.dat)) );
+        const internal_id_type internal_id (cmd.dat);
+        activity_type & act (lookup(internal_id));
+        act.collect_output();
 
-        assert_is_leaf ( cmd.dat );
-        remove_activity ( cmd.dat );
-        std::cerr << "D: act[" << cmd.dat << "] cancelled" << std::endl;
+        sig_cancelled ( this
+                      , internal_id
+                      , policy::codec::encode(act)
+                      );
+
+        assert_is_leaf ( internal_id );
+        remove_activity ( internal_id );
+        std::cerr << "D: act[" << internal_id << "] cancelled" << std::endl;
       }
 
       inline
@@ -1076,15 +1121,37 @@ namespace we { namespace mgmt {
 
         try
         {
-          remove_external_mapping ( map_to_external(id) );
+          remove_external_mapping (map_to_external(id, sub_from_ext_ite_), sub_from_ext_eti_);
         }
         catch (const exception::no_such_mapping<internal_id_type> &)
         {
           // ignore
         }
-        remove_internal_mapping (id);
+        remove_internal_mapping (id, sub_from_ext_ite_);
+
+        try
+        {
+          remove_external_mapping (map_to_external(id, sub_to_ext_ite_), sub_to_ext_eti_);
+        }
+        catch (const exception::no_such_mapping<internal_id_type> &)
+        {
+          // ignore
+        }
+        remove_internal_mapping (id, sub_to_ext_ite_);
 
         activities_.erase (id);
+      }
+
+      void cancel_activity (const internal_id_type & id)
+      {
+        activity_type & act (lookup (id));
+        act.set_cancelling (true);
+
+        // is handled externally?
+        //    ext_cancel (map_to_external(id))
+        // else
+        //    for child in children_of(act)
+        //       cancel child
       }
 
       inline activity_type & lookup(const internal_id_type & id)
