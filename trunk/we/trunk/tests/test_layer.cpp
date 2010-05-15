@@ -23,18 +23,16 @@ static bool done (false);
 
 // observe workflow engine
 static
-void observe_submitted (const layer_t * l, layer_id_type const & id, std::string const &)
+void observe_submitted (const layer_t *, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity submitted: id := " << id << std::endl;
-  l->print_statistics( std::cerr );
 }
 static
-void observe_finished (const layer_t * l, layer_id_type const & id, std::string const &)
+void observe_finished (const layer_t *, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity finished: id := " << id << std::endl;
   if ( id == 0 )
     done = true;
-  l->print_statistics( std::cerr );
 }
 static
 void observe_failed (const layer_t *, layer_id_type const & id, std::string const &)
