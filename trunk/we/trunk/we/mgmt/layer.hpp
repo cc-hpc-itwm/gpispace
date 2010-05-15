@@ -851,7 +851,7 @@ namespace we { namespace mgmt {
 
             if (has_parent (act_id))
             {
-              const internal_id_type par_id = parent_of (cmd);
+              const internal_id_type par_id = parent_of (act_id);
               activity_type & par = lookup( par_id );
               std::cerr << "I: injecting results of "
                         << "act[" << act_id << "] into "
@@ -1004,23 +1004,30 @@ namespace we { namespace mgmt {
       {
         const internal_id_type internal_id (cmd.dat);
 
-        std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
-        activity_type & act (lookup(internal_id));
-        act.collect_output();
-
-        print_activity_info (std::cerr, act);
-        sig_finished (this, internal_id, policy::codec::encode(act));
-
-        if (has_parent (internal_id))
+        try
         {
-          post_inject_activity_results (internal_id);
+          activity_type & act (lookup(internal_id));
+          std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
+          act.collect_output();
+
+          print_activity_info (std::cerr, act);
+          sig_finished (this, internal_id, policy::codec::encode(act));
+
+          if (has_parent (internal_id))
+          {
+            post_inject_activity_results (internal_id);
+          }
+          else
+          {
+            external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
+            ext_finished (external_id, policy::codec::encode (act));
+            assert_is_leaf ( internal_id );
+            remove_activity ( internal_id );
+          }
         }
-        else
+        catch (const activity_not_found<internal_id_type> &)
         {
-          external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
-          ext_finished (external_id, policy::codec::encode (act));
-          assert_is_leaf ( internal_id );
-          remove_activity ( internal_id );
+          // ignore old notification
         }
       }
 
