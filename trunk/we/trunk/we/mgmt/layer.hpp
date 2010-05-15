@@ -468,7 +468,6 @@ namespace we { namespace mgmt {
         , sig_cancelled("sig_finished")
         , sig_executing("sig_finished")
         , internal_id_gen_(&internal_id_traits::generate)
-        , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
         , inj_q_(policy::max_injector_queue_size())
@@ -486,7 +485,6 @@ namespace we { namespace mgmt {
         , sig_executing("sig_finished")
         , external_id_gen_(gen)
         , internal_id_gen_(&internal_id_traits::generate)
-        , barrier_(4 + 1) // 1 + injector, manager, executor, extractor
         , cmd_q_(policy::max_command_queue_size())
         , active_nets_(policy::max_active_nets())
         , inj_q_(policy::max_injector_queue_size())
@@ -586,7 +584,6 @@ namespace we { namespace mgmt {
         extractor_ = boost::thread(boost::bind(&this_type::extractor, this));
         injector_  = boost::thread(boost::bind(&this_type::injector, this));
         executor_  = boost::thread(boost::bind(&this_type::executor, this));
-        barrier_.wait();
       }
 
       void stop()
@@ -612,7 +609,6 @@ namespace we { namespace mgmt {
       {
         using namespace we::mgmt::detail::commands;
         std::cerr << "D: manager thread started..." << std::endl;
-        barrier_.wait();
         for (;;)
         {
           cmd_t cmd = cmd_q_.get();
@@ -729,7 +725,6 @@ namespace we { namespace mgmt {
       {
         using namespace we::mgmt::detail::commands;
         std::cerr << "D: extractor thread started..." << std::endl;
-        barrier_.wait();
         for (;;)
         {
           std::cerr << "# active activities: " << active_nets_.size() << std::endl;
@@ -852,7 +847,6 @@ namespace we { namespace mgmt {
       void injector()
       {
         std::cerr << "D: injector thread started..." << std::endl;
-        barrier_.wait();
         for (;;)
         {
           inj_cmd_t cmd = inj_q_.get();
@@ -901,7 +895,6 @@ namespace we { namespace mgmt {
       void executor()
       {
         std::cerr << "D: executor thread started..." << std::endl;
-        barrier_.wait();
         for (;;)
         {
           executor_cmd_t cmd = exec_q_.get();
@@ -984,7 +977,6 @@ namespace we { namespace mgmt {
     private:
       boost::function<external_id_type()> external_id_gen_;
       boost::function<internal_id_type()> internal_id_gen_;
-      boost::barrier barrier_;
       mutable boost::recursive_mutex activities_mutex_;
       mutable boost::recursive_mutex id_map_mutex_;
       mutable boost::recursive_mutex id_gen_mutex_;
