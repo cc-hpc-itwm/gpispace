@@ -42,12 +42,12 @@ namespace we {
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
-	explicit set(const size_type capacity) : capacity_(capacity), container_(capacity) {}
+        set()
+        {}
 
 	void put (param_type item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
-	  not_full_.wait (lock, boost::bind(&this_type::is_not_full, this));
 	  container_.insert (item);
 	  lock.unlock();
 	  not_empty_.notify_one();
@@ -56,16 +56,16 @@ namespace we {
 	value_type get ()
 	{
 	  value_type v;
-	  get(&v);
+	  get(v);
 	  return v;
 	}
 
-	void get (value_type *item)
+	void get (value_type & item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
 	  not_empty_.wait (lock, boost::bind(&this_type::is_not_empty, this));
           typename container_type::iterator i (container_.begin());
-          *item = *i;
+          item = *i;
           container_.erase (i);
 	  lock.unlock();
 	  not_full_.notify_one();
@@ -82,9 +82,8 @@ namespace we {
 	set & operator=(set const &);
 
 	inline bool is_not_empty() const { return container_.size() > 0; }
-	inline bool is_not_full() const { return container_.size() < capacity_; }
+	inline bool is_not_full() const { return true; }
 
-	const size_type capacity_;
 	container_type container_;
 	boost::mutex mutex_;
 	boost::condition not_empty_;

@@ -83,18 +83,13 @@ namespace we
         typedef def::validator<typename Traits::activity_type, true> validator;
         typedef execution_policy<typename Traits::activity_type> exec_policy;
 
-        static const size_t DEFAULT_COMMAND_QUEUE_SIZE = 1024;
-        static const size_t DEFAULT_ACTIVE_NETS_SIZE = 1024;
-        static const size_t DEFAULT_INJECTOR_QUEUE_SIZE = 1024;
-        static const size_t DEFAULT_EXECUTOR_QUEUE_SIZE = 1024;
+        static const size_t DEFAULT_COMMAND_QUEUE_SIZE = 128;
+        static const size_t DEFAULT_INJECTOR_QUEUE_SIZE = 128;
+        static const size_t DEFAULT_EXECUTOR_QUEUE_SIZE = 128;
 
         static size_t max_command_queue_size ()
         {
           return DEFAULT_COMMAND_QUEUE_SIZE;
-        }
-        static size_t max_active_nets ()
-        {
-          return DEFAULT_ACTIVE_NETS_SIZE;
         }
         static size_t max_injector_queue_size ()
         {

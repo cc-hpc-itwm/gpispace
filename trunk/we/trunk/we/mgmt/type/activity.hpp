@@ -23,7 +23,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/random.hpp>
 
@@ -70,7 +70,7 @@ namespace we { namespace mgmt { namespace type {
     typedef typename traits_type::pid_t pid_t;
     typedef typename traits_type::activity_id_t id_t;
 
-    typedef boost::shared_lock<this_type> shared_lock_t;
+    typedef boost::unique_lock<this_type> shared_lock_t;
     typedef boost::unique_lock<this_type> unique_lock_t;
 
     activity_t ()
@@ -333,44 +333,6 @@ namespace we { namespace mgmt { namespace type {
     {
       mutex_.unlock();
     }
-
-    // timed lockable concept implementation
-    bool timed_lock(boost::system_time const& abs_time)
-    {
-      return mutex_.timed_lock(abs_time);
-    }
-
-    template<typename DurationType> bool timed_lock(DurationType const& rel_time)
-    {
-      return mutex_.timed_lock(rel_time);
-    }
-
-    // shared lockable concept implementation
-    void lock_shared()
-    {
-      mutex_.lock_shared();
-    }
-
-    bool try_lock_shared()
-    {
-      return mutex_.try_lock_shared();
-    }
-
-    bool timed_lock_shared(boost::system_time const& abs_time)
-    {
-      return mutex_.timed_lock_shared(abs_time);
-    }
-
-    template<typename DurationType> bool timed_lock_shared(DurationType const& rel_time)
-    {
-      return mutex_.timed_lock_shared(rel_time);
-    }
-
-    void unlock_shared()
-    {
-      mutex_.unlock_shared();
-    }
-
   private:
     friend class boost::serialization::access;
     template<class Archive>
@@ -386,7 +348,7 @@ namespace we { namespace mgmt { namespace type {
   private:
     id_t id_;
     flags::flags_t flags_;
-    mutable boost::shared_mutex mutex_;
+    mutable boost::recursive_mutex mutex_;
 
     transition_type transition_;
 

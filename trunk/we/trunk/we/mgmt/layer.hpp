@@ -127,6 +127,8 @@ namespace we { namespace mgmt {
       typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
       typedef boost::unordered_map<internal_id_type, external_id_type> internal_to_external_map_t;
 
+      typedef std::vector<boost::thread *> thread_list_t;
+
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
       typedef detail::queue<cmd_t> cmd_q_t;
@@ -145,11 +147,13 @@ namespace we { namespace mgmt {
        *****************************/
 
       // observe
-      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_submitted;
+      util::signal<void (const this_type *, internal_id_type const &)> sig_submitted;
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_finished;
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_failed;
       util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_cancelled;
-      util::signal<void (const this_type *, internal_id_type const &, std::string const &)> sig_executing;
+      util::signal<void (const this_type *, internal_id_type const &)> sig_executing;
+      util::signal<void (const this_type *, internal_id_type const &)> sig_suspended;
+      util::signal<void (const this_type *, internal_id_type const &)> sig_resumed;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -167,7 +171,6 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id ( add_external_id (id) );
         try
         {
-          std::cerr << "D: submit ext_id := " << id << " int_id := " << internal_id << std::endl;
           activity_type act = policy::codec::decode(bytes);
           act.set_id(internal_id);
           submit (act);
@@ -272,7 +275,6 @@ namespace we { namespace mgmt {
         remove_external_mapping (id, sub_to_ext_eti_);
         remove_internal_mapping (internal_id, sub_to_ext_ite_);
 
-        std::cerr << "TODO: cancelled [" << id << " == " << internal_id << " not implemented!" << std::endl;
         return true;
       }
 
@@ -319,7 +321,7 @@ namespace we { namespace mgmt {
       status_type status(const external_id_type & id) throw (std::exception)
       {
         std::ostringstream os;
-        print_activity_info ( lookup(map_to_internal(id, sub_from_ext_eti_)), os );
+        print_activity_info (os, lookup(map_to_internal(id, sub_from_ext_eti_)));
         return os.str();
       }
 
@@ -346,8 +348,7 @@ namespace we { namespace mgmt {
 
             insert_activity(act);
 
-            std::cerr << "D: submitted act["<< act.id() << "]" << std::endl;
-            sig_submitted (this, act.id(), policy::codec::encode (act));
+            sig_submitted (this, act.id());
 
             post_execute_notification (act.id());
           }
@@ -467,9 +468,10 @@ namespace we { namespace mgmt {
         , sig_failed("sig_finished")
         , sig_cancelled("sig_finished")
         , sig_executing("sig_finished")
+        , sig_suspended("sig_suspended")
+        , sig_resumed("sig_resumed")
         , internal_id_gen_(&internal_id_traits::generate)
         , cmd_q_(policy::max_command_queue_size())
-        , active_nets_(policy::max_active_nets())
         , inj_q_(policy::max_injector_queue_size())
         , exec_q_(policy::max_executor_queue_size())
       {
@@ -483,10 +485,11 @@ namespace we { namespace mgmt {
         , sig_failed("sig_finished")
         , sig_cancelled("sig_finished")
         , sig_executing("sig_finished")
+        , sig_suspended("sig_suspended")
+        , sig_resumed("sig_resumed")
         , external_id_gen_(gen)
         , internal_id_gen_(&internal_id_traits::generate)
         , cmd_q_(policy::max_command_queue_size())
-        , active_nets_(policy::max_active_nets())
         , inj_q_(policy::max_injector_queue_size())
         , exec_q_(policy::max_executor_queue_size())
       {
@@ -581,28 +584,52 @@ namespace we { namespace mgmt {
       void start()
       {
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
-        extractor_ = boost::thread(boost::bind(&this_type::extractor, this));
-        injector_  = boost::thread(boost::bind(&this_type::injector, this));
-        executor_  = boost::thread(boost::bind(&this_type::executor, this));
+
+        const std::size_t num_extractors(2);
+        start_threads (num_extractors, extractor_, boost::bind(&this_type::extractor, this, _1));
+
+        const std::size_t num_injectors(2);
+        start_threads (num_injectors, injector_, boost::bind(&this_type::injector, this, _1));
+
+        const std::size_t num_executors(2);
+        start_threads (num_executors, executor_, boost::bind(&this_type::executor, this, _1));
+      }
+
+      template <typename ThreadList, typename ThreadFunc>
+      void start_threads( const std::size_t num, ThreadList & list, ThreadFunc tf)
+      {
+        for (std::size_t rank(0); rank < num; ++rank)
+        {
+          list.push_back (new boost::thread (boost::bind (tf, rank)));
+        }
+      }
+
+      template <typename ThreadList>
+      void stop_threads( ThreadList & list )
+      {
+        for (typename ThreadList::iterator t (list.begin()); t != list.end(); ++t)
+        {
+          (*t)->interrupt();
+          (*t)->join();
+          delete (*t);
+        }
+        list.clear();
       }
 
       void stop()
       {
-        std::cerr << "D: cleaning up executor thread..." << std::endl;
-        executor_.interrupt();
-        executor_.join();
-
-        std::cerr << "D: cleaning up injector thread..." << std::endl;
-        injector_.interrupt();
-        injector_.join();
-
         std::cerr << "D: cleaning up manager thread..." << std::endl;
         manager_.interrupt();
         manager_.join();
 
-        std::cerr << "D: cleaning up extractor thread..." << std::endl;
-        extractor_.interrupt();
-        extractor_.join();
+        std::cerr << "D: cleaning up executor threads..." << std::endl;
+        stop_threads (executor_);
+
+        std::cerr << "D: cleaning up injector threads..." << std::endl;
+        stop_threads (injector_);
+
+        std::cerr << "D: cleaning up extractor threads..." << std::endl;
+        stop_threads (extractor_);
       }
 
       void manager()
@@ -618,9 +645,10 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const& ex)
           {
-            std::cerr << "W: error during command handling: "
+            std::cerr << "W: error during manager command handling: "
                       << ex.what()
                       << std::endl;
+            throw;
           }
         }
         std::cerr << "D: manager thread stopped..." << std::endl;
@@ -635,7 +663,7 @@ namespace we { namespace mgmt {
       inline
       bool is_done ( const activity_type & act ) const
       {
-        return ! (act.has_enabled() || activity_child_count (act.id()));
+        return ( (! act.has_enabled()) && (activity_child_count (act.id()) == 0));
       }
 
       inline
@@ -666,81 +694,78 @@ namespace we { namespace mgmt {
         external_id_type ext_id ( generate_external_id() );
         add_external_to_internal_mapping ( ext_id, id, sub_to_ext_eti_ );
         add_internal_to_external_mapping ( id, ext_id, sub_to_ext_ite_ );
-	std::cerr << "D: submitting activity [" << ext_id << "==" << id << "] to external." << std::endl;
 
         ext_submit ( ext_id, policy::codec::encode (ext_act));
       }
 
       inline
-      void post_activity_notification( const internal_id_type & id)
+      void post_activity_notification (const internal_id_type & id)
       {
-        // cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_needs_attention, this, _1)));
-        std::cerr << "act[" << id << "] needs attention" << std::endl;
         active_nets_.put(id);
       }
 
       inline
-      void post_finished_notification( const internal_id_type & id)
+      void post_finished_notification (const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_finished, this, _1)));
       }
 
       inline
-      void post_failed_notification( const internal_id_type & id)
+      void post_failed_notification (const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
       }
 
       inline
-      void post_cancelled_notification( const internal_id_type & id)
+      void post_cancelled_notification (const internal_id_type & id)
       {
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
       }
 
       inline
-      void post_suspend_activity_notification( const internal_id_type & id )
+      void post_suspend_activity_notification (const internal_id_type & id)
       {
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
       }
 
       inline
-      void post_resume_activity_notification( const internal_id_type & id )
+      void post_resume_activity_notification (const internal_id_type & id)
       {
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
       }
 
       inline
-      void post_execute_notification ( const internal_id_type & id )
+      void post_execute_notification (const internal_id_type & id)
       {
         exec_q_.put ( id );
       }
 
       inline
-      void post_inject_activity_results ( const internal_id_type & id )
+      void post_inject_activity_results (const internal_id_type & id)
       {
         inj_q_.put ( id );
       }
 
-      void extractor()
+      void extractor(const std::size_t rank)
       {
-        using namespace we::mgmt::detail::commands;
-        std::cerr << "D: extractor thread started..." << std::endl;
+        std::cerr << "D: extractor[" << rank << "] thread started..." << std::endl;
         for (;;)
         {
-          std::cerr << "# active activities: " << active_nets_.size() << std::endl;
-
-          // TODO: probably timed wait?
           internal_id_type active_id = active_nets_.get();
-
-          std::cerr << "extractor: considering " << active_id << std::endl;
 
           try
           {
             activity_type & act = lookup(active_id);
+            boost::unique_lock<activity_type> lock(act);
 
             if (is_done (act))
             {
-              std::cerr << "D: act[" << active_id << "] is done." << std::endl;
+              // std::cerr << "extractor ["
+              //           << rank
+              //           << "]: activity := "
+              //           << active_id
+              //           << " done."
+              //           << std::endl;
               post_finished_notification (active_id);
               continue;
             }
@@ -748,31 +773,33 @@ namespace we { namespace mgmt {
             // TODO: check status flags
             if (! is_alive (act))
             {
-              std::cerr << "D: act[" << active_id << "] is on hold." << std::endl;
               continue;
             }
 
             // submit new activities
             while (act.has_enabled())
             {
-              std::cerr << "I: act["
-                        << active_id
-                        << "] has enabled transition(s)"
-                        << std::endl;
+              try
+              {
+                activity_type sub_act = act.extract();
+                const internal_id_type sub_act_id = generate_internal_id();
 
-              activity_type sub_act = act.extract();
+                sub_act.set_id (sub_act_id);
+                insert_activity (sub_act);
 
-              const internal_id_type sub_act_id = generate_internal_id();
-              sub_act.set_id (sub_act_id);
-              insert_activity (sub_act);
-
-              establish_parent_child_relationship ( active_id, sub_act_id );
-              post_execute_notification (sub_act_id);
+                establish_parent_child_relationship ( active_id, sub_act_id );
+                post_execute_notification (sub_act_id);
+              }
+              catch (const std::out_of_range &)
+              {
+                // extraction not possible (check for enabled and extract is not atomic)
+                break;
+              }
             }
           }
           catch (const activity_not_found<internal_id_type> & ex)
           {
-            std::cerr << "W: activity could not be found: " << ex.id << std::endl;
+            std::cerr << "W: extractor: activity could not be found: " << ex.id << std::endl;
             throw;
           }
         }
@@ -844,92 +871,80 @@ namespace we { namespace mgmt {
         }
       }
 
-      void injector()
+      void injector(const std::size_t rank)
       {
-        std::cerr << "D: injector thread started..." << std::endl;
+        std::cerr << "D: injector[" << rank << "] thread started..." << std::endl;
         for (;;)
         {
           inj_cmd_t cmd = inj_q_.get();
 
-          try
+          const internal_id_type act_id = cmd;
+          if ( ! is_valid (act_id))
           {
-            const internal_id_type act_id = cmd;
-            if ( ! is_valid (act_id))
-            {
-              std::cerr << "W: *** got inject request for invalid id: " << act_id << std::endl;
-              continue;
-            }
-
-            activity_type & act = lookup( act_id );
-
-            if (has_parent (act_id))
-            {
-              const internal_id_type par_id = parent_of (act_id);
-              activity_type & par = lookup( par_id );
-              std::cerr << "I: injecting results of "
-                        << "act[" << act_id << "] into "
-                        << "act[" << par_id << "]"
-                        << std::endl;
-              par.inject (act);
-              remove_activity (act_id);
-
-              post_activity_notification (par_id);
-            }
-            else
-            {
-              external_id_type external_id (map_to_external(act_id, sub_from_ext_ite_));
-              ext_finished (external_id, policy::codec::encode (act));
-              assert_is_leaf ( act_id );
-              remove_activity ( act_id );
-            }
+            continue;
           }
-          catch (const std::exception & ex)
+
+          activity_type & act = lookup( act_id );
+
+          if (has_parent (act_id))
           {
-            std::cerr << "E: TODO: error during injecting: " << ex.what() << std::endl;
-            throw;
+            const internal_id_type par_id = parent_of (act_id);
+            activity_type & par = lookup( par_id );
+            // std::cerr << "I: injecting results of "
+            //           << "act[" << act_id << "] into "
+            //           << "act[" << par_id << "]"
+            //           << std::endl;
+            par.inject (act);
+            remove_activity (act_id);
+
+            post_activity_notification (par_id);
+          }
+          else
+          {
+            external_id_type external_id (map_to_external(act_id, sub_from_ext_ite_));
+            ext_finished (external_id, policy::codec::encode (act));
+            remove_activity ( act_id );
           }
         }
         std::cerr << "D: injector thread stopped..." << std::endl;
       }
 
-      void executor()
+      void executor(const std::size_t rank)
       {
-        std::cerr << "D: executor thread started..." << std::endl;
+        std::cerr << "D: executor[" << rank << "] thread started..." << std::endl;
         for (;;)
         {
           executor_cmd_t cmd = exec_q_.get();
+
+          const internal_id_type act_id = cmd;
+
+          activity_type & act = lookup (act_id);
+          // std::cerr << "I: executing id := "
+          //           << act_id
+          //           << " (" << act.transition().name()
+          //           << ")"
+          //           << std::endl;
+
           try
           {
-            const internal_id_type act_id = cmd;
+            typename policy::exec_policy exec_policy
+              ( boost::bind ( &this_type::post_activity_notification, this, _1 )
+              , boost::bind ( &this_type::post_execute_externally, this, _1 )
+              , boost::bind ( &this_type::post_finished_notification, this, _1 )
+              );
 
-            activity_type & act = lookup (act_id);
-            std::cerr << "I: executing id := "
-                      << act_id
-                      << " (" << act.transition().name()
-                      << ")"
-                      << std::endl;
+            sig_executing (this, act_id);
 
-            try
-            {
-              typename policy::exec_policy exec_policy
-                ( boost::bind ( &this_type::post_activity_notification, this, _1 )
-                , boost::bind ( &this_type::post_execute_externally, this, _1 )
-                , boost::bind ( &this_type::post_finished_notification, this, _1 )
-                );
-
-              sig_executing (this, act_id, policy::codec::encode (act));
-
-              act.inject_input ();
-              act.execute (exec_policy);
-            }
-            catch (std::exception const & ex)
-            {
-		std::cerr << "W: exception during execute of activity [" << act_id << "]:" << ex.what() << std::endl;
-            }
-          } catch (const std::exception & ex)
+            act.execute (exec_policy);
+          }
+          catch (std::exception const & ex)
           {
-            std::cerr << "E: error during execution: " << ex.what() << std::endl;
-            // ignore
+            std::cerr << "W: exception during execute of activity ["
+                      << act_id
+                      << "]:"
+                      << ex.what()
+                      << std::endl;
+            std::cerr << "W: TODO: mark parent as failed!" << std::endl;
           }
         }
         std::cerr << "D: executor thread stopped..." << std::endl;
@@ -940,7 +955,11 @@ namespace we { namespace mgmt {
         we::mgmt::type::detail::printer <activity_type> p (act, s);
         p << "   **** activity [" << act.id() << "]:" << std::endl;
         p << "         name := " << act.transition().name() << std::endl;
-        p << "     internal := " << act.transition().is_internal() << std::endl;
+        p << "     internal := "
+          << std::boolalpha
+          << act.transition().is_internal()
+          << std::noboolalpha
+          << std::endl;
         try
         {
           p << "  external-id := " << map_to_external (act.id(), sub_from_ext_ite_) << std::endl;
@@ -996,10 +1015,10 @@ namespace we { namespace mgmt {
       parent_to_children_map_t parent_to_child_;
       child_to_parent_map_t    child_to_parent_;
 
-      boost::thread extractor_;
       boost::thread manager_;
-      boost::thread injector_;
-      boost::thread executor_;
+      thread_list_t extractor_;
+      thread_list_t injector_;
+      thread_list_t executor_;
 
       external_id_type generate_external_id (void) const
       {
@@ -1015,7 +1034,6 @@ namespace we { namespace mgmt {
 
       void activity_needs_attention(const cmd_t & cmd)
       {
-        std::cerr << "act[" << cmd.dat << "] needs attention" << std::endl;
         active_nets_.put(cmd.dat);
       }
 
@@ -1032,15 +1050,12 @@ namespace we { namespace mgmt {
 
           if (has_parent (internal_id))
           {
-            std::cerr << "D: child[" << internal_id << "] of act[" << parent_of(internal_id) << "] finished" << std::endl;
             post_inject_activity_results (internal_id);
           }
           else
           {
             external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
-            std::cerr << "D: submitted act[" << external_id << "] (int_id := " << internal_id << ") finished" << std::endl;
             ext_finished (external_id, policy::codec::encode (act));
-            assert_is_leaf ( internal_id );
             remove_activity ( internal_id );
           }
         }
@@ -1054,7 +1069,6 @@ namespace we { namespace mgmt {
       {
         const internal_id_type internal_id (cmd.dat);
 
-        std::cerr << "D: act[" << internal_id << "] failed" << std::endl;
         activity_type & act (lookup(internal_id));
         act.collect_output();
         act.set_failed (true);
@@ -1065,15 +1079,13 @@ namespace we { namespace mgmt {
         {
           // TODO cancel strategy
           //          cancel_activity ( parent_of (internal_id) );
-          remove_activity (internal_id);
         }
         else
         {
           external_id_type external_id ( map_to_external(internal_id, sub_from_ext_ite_));
           ext_failed (external_id, policy::codec::encode (act));
-          assert_is_leaf (internal_id);
         }
-        remove_activity ( internal_id );
+        remove_activity (internal_id);
       }
 
       void activity_cancelled(const cmd_t & cmd)
@@ -1087,16 +1099,28 @@ namespace we { namespace mgmt {
                       , policy::codec::encode(act)
                       );
 
-        assert_is_leaf ( internal_id );
         remove_activity ( internal_id );
-        std::cerr << "D: act[" << internal_id << "] cancelled" << std::endl;
       }
 
       inline
       void assert_is_leaf (const internal_id_type &id) const
       {
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
         if (activity_child_count (id) > 0)
         {
+          typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
+          std::cerr << "E: **** activity is not a leaf: " << std::endl;
+
+          print_activity_info (std::cerr, lookup(id));
+
+          std::cerr << "**** remaining children: " << std::endl;
+          for (typename child_set_t::const_iterator c (children->second.begin()); c != children->second.end(); ++c)
+          {
+            std::cerr << "\t" << *c << std::endl;
+            print_activity_info (std::cerr, lookup(*c));
+          }
+          std::cerr << std::endl;
+
           throw std::runtime_error("not leaf: activity-id := " + ::util::show (id));
         }
       }
@@ -1104,14 +1128,14 @@ namespace we { namespace mgmt {
       void suspend_activity(const cmd_t & cmd)
       {
         lookup(cmd.dat).flags().set_suspended(true);
-        std::cerr << "I: act[" << cmd.dat << "] suspended" << std::endl;
+        sig_suspended (this, cmd.dat);
       }
 
       void resume_activity(const cmd_t & cmd)
       {
         lookup(cmd.dat).flags().set_suspended(false);
         active_nets_.put (cmd.dat);
-        std::cerr << "I: act[" << cmd.dat << "] resumed" << std::endl;
+        sig_resumed (this, cmd.dat);
       }
 
       inline void insert_activity(const activity_type & act)
@@ -1128,6 +1152,8 @@ namespace we { namespace mgmt {
       inline void remove_activity(const internal_id_type & id)
       {
         boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
+        assert_is_leaf ( id );
+
         try
         {
           internal_id_type parent ( parent_of (id) );
