@@ -498,8 +498,6 @@ namespace we { namespace mgmt {
       template <typename T>
       void connect ( T * t )
       {
-        disconnect ();
-
         // for now extract the functions from a given class
         // ext_submit.connect (boost::bind (& T::submit, t, _1, _2));
         // ext_cancel.connect (boost::bind (& T::cancel, t, _1, _2));
@@ -512,15 +510,6 @@ namespace we { namespace mgmt {
         ext_finished = (boost::bind (& T::finished, t, _1, _2));
         ext_failed = (boost::bind (& T::failed, t, _1, _2));
         ext_cancelled = (boost::bind (& T::cancelled, t, _1));
-      }
-
-      void disconnect ()
-      {
-        ext_submit.clear();
-        ext_cancel.clear();
-        ext_finished.clear();
-        ext_failed.clear();
-        ext_cancelled.clear();
       }
 
       template <typename IdGen>
@@ -539,7 +528,7 @@ namespace we { namespace mgmt {
         //
         // delete memory allocations
         //
-        // clean up all activity
+        // clean up all activities
         for (typename activities_t::iterator a (activities_.begin())
             ; a != activities_.end()
             ; ++a
@@ -616,7 +605,6 @@ namespace we { namespace mgmt {
         std::cerr << "D: cleaning up extractor thread..." << std::endl;
         extractor_.interrupt();
         extractor_.join();
-
       }
 
       void manager()
@@ -656,6 +644,8 @@ namespace we { namespace mgmt {
       inline
       size_t activity_child_count ( const internal_id_type & id ) const
       {
+        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+
         typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
         if (children != parent_to_child_.end())
         {
@@ -670,11 +660,13 @@ namespace we { namespace mgmt {
       inline
       void post_execute_externally (const internal_id_type & id)
       {
+        // copy the activity  and switch specify to handle  it internally on the
+        // next level
         activity_t ext_act (lookup(id));
         ext_act.transition().set_internal(true);
 
         // create external id
-        external_id_type ext_id ( external_id_gen_() );
+        external_id_type ext_id ( generate_external_id() );
         add_external_to_internal_mapping ( ext_id, id, sub_to_ext_eti_ );
         add_internal_to_external_mapping ( id, ext_id, sub_to_ext_ite_ );
 	std::cerr << "D: submitting activity [" << ext_id << "==" << id << "] to external." << std::endl;
@@ -768,7 +760,7 @@ namespace we { namespace mgmt {
 
               activity_type sub_act = act.extract();
 
-              const internal_id_type sub_act_id = internal_id_gen_();
+              const internal_id_type sub_act_id = generate_internal_id();
               insert_activity (sub_act_id, sub_act);
 
               // TODO:
@@ -988,6 +980,7 @@ namespace we { namespace mgmt {
       boost::barrier barrier_;
       mutable boost::shared_mutex activities_mutex_;
       mutable boost::shared_mutex id_map_mutex_;
+      mutable boost::shared_mutex id_gen_mutex_;
       activities_t activities_;
       cmd_q_t cmd_q_;
       active_nets_t active_nets_;
@@ -1011,6 +1004,18 @@ namespace we { namespace mgmt {
       boost::thread manager_;
       boost::thread injector_;
       boost::thread executor_;
+
+      external_id_type generate_external_id (void) const
+      {
+        boost::unique_lock<boost::shared_mutex> lock (id_gen_mutex_);
+        return external_id_gen_();
+      }
+
+      internal_id_type generate_internal_id (void) const
+      {
+        boost::unique_lock<boost::shared_mutex> lock (id_gen_mutex_);
+        return internal_id_gen_();
+      }
 
       void activity_needs_attention(const cmd_t & cmd)
       {
