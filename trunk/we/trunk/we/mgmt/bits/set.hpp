@@ -28,12 +28,14 @@
 #include <boost/progress.hpp>
 #include <boost/bind.hpp>
 
-namespace we { namespace mgmt { namespace detail {
-  template <typename T>
-  class set
-  {
-  public:
-    typedef set<T> this_type;
+namespace we {
+  namespace mgmt {
+    namespace detail {
+      template <typename T>
+      class set
+      {
+      public:
+        typedef set<T> this_type;
 
 	typedef boost::unordered_set<T> container_type;
 	typedef typename container_type::size_type size_type;
@@ -69,13 +71,13 @@ namespace we { namespace mgmt { namespace detail {
 	  not_full_.notify_one();
 	}
 
-    inline
-    size_type size (void) const
-    {
-      return container_.size();
-    }
+        inline
+        size_type size (void) const
+        {
+          return container_.size();
+        }
 
-  private:
+      private:
 	set(set const &);
 	set & operator=(set const &);
 
@@ -87,7 +89,9 @@ namespace we { namespace mgmt { namespace detail {
 	boost::mutex mutex_;
 	boost::condition not_empty_;
 	boost::condition not_full_;
-  };
-}}}
+      };
+    }
+  }
+}
 
 #endif
