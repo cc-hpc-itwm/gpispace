@@ -13,12 +13,14 @@ namespace we
         bool cancelling;
         bool cancelled;
         bool failed;
+        bool finished;
 
         flags_t ()
           : suspended(false)
           , cancelling(false)
           , cancelled(false)
           , failed(false)
+          , finished(false)
         { }
 
       private:
@@ -30,6 +32,7 @@ namespace we
           ar & BOOST_SERIALIZATION_NVP(cancelling);
           ar & BOOST_SERIALIZATION_NVP(cancelled);
           ar & BOOST_SERIALIZATION_NVP(failed);
+          ar & BOOST_SERIALIZATION_NVP(finished);
         }
       };
 
@@ -40,6 +43,7 @@ namespace we
         os << (flags.cancelling ? "C" : "c");
         os << (flags.cancelled ? "T" : "t");
         os << (flags.failed ? "F" : "f");
+        os << (flags.finished ? "D" : "d");
         return os;
       }
 
@@ -51,7 +55,7 @@ namespace we
       {
         inline static bool is_alive ( const flags_t & f )
         {
-          return ( f.suspended || f.cancelling || f.cancelled ) == false;
+          return ( f.suspended || f.cancelling || f.cancelled || f.failed || f.finished ) == false;
         }
 
         inline static bool is_suspended ( const flags_t & f )
@@ -92,6 +96,16 @@ namespace we
         inline static void set_failed ( flags_t & f, const bool val )
         {
           f.failed = val;
+        }
+
+        inline static bool is_finished ( const flags_t & f )
+        {
+          return f.finished;
+        }
+
+        inline static void set_finished ( flags_t & f, const bool val )
+        {
+          f.finished = val;
         }
       };
     }
