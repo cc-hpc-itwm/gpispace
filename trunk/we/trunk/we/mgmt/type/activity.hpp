@@ -137,10 +137,24 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
+    void set_suspended(bool value = true)
+    {
+      unique_lock_t lock(*this);
+      flags::flag_traits<flags::flags_t>::set_suspended(flags_, value);
+    }
+
+    inline
     bool is_cancelling() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return ( flags::flag_traits<flags::flags_t>::is_cancelling (flags_) );
+    }
+
+    inline
+    void set_cancelling(bool value = true)
+    {
+      unique_lock_t lock(*this);
+      flags::flag_traits<flags::flags_t>::set_cancelling (flags_, value);
     }
 
     inline
@@ -151,10 +165,24 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
+    void set_cancelled(bool value = true)
+    {
+      unique_lock_t lock(*this);
+      flags::flag_traits<flags::flags_t>::set_cancelled (flags_, value);
+    }
+
+    inline
     bool is_failed() const
     {
       shared_lock_t lock(const_cast<this_type&>(*this));
       return ( flags::flag_traits<flags::flags_t>::is_failed (flags_) );
+    }
+
+    inline
+    void set_failed(bool value = true)
+    {
+      unique_lock_t lock(*this);
+      flags::flag_traits<flags::flags_t>::set_failed (flags_, value);
     }
 
     inline

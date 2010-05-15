@@ -59,9 +59,19 @@ namespace we
           return f.suspended;
         }
 
+        inline static void set_suspended ( flags_t & f, const bool val )
+        {
+          f.suspended = val;
+        }
+
         inline static bool is_cancelling ( const flags_t & f )
         {
           return f.cancelling;
+        }
+
+        inline static void set_cancelling ( flags_t & f, const bool val )
+        {
+          f.cancelling = val;
         }
 
         inline static bool is_cancelled ( const flags_t & f )
@@ -69,9 +79,19 @@ namespace we
           return f.cancelled;
         }
 
+        inline static void set_cancelled ( flags_t & f, const bool val )
+        {
+          f.cancelled = val;
+        }
+
         inline static bool is_failed ( const flags_t & f )
         {
           return f.failed;
+        }
+
+        inline static void set_failed ( flags_t & f, const bool val )
+        {
+          f.failed = val;
         }
       };
     }
