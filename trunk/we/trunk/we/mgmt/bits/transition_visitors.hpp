@@ -358,11 +358,12 @@ namespace we { namespace mgmt { namespace visitor {
                                       > & /* child_net */
                      )
     {
+      /*
       output_collector<Activity> collect_output (child_);
       boost::apply_visitor ( collect_output
                            , child_.transition().data()
                            );
-
+      */
       inject_output_to_net ( parent_net
                            , child_.transition()
                            , child_.output()
