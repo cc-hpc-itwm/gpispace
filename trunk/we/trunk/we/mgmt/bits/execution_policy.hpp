@@ -42,6 +42,7 @@ namespace we
 
         void handle_internally (activity_t & act, net_t &)
         {
+          act.inject_input ();
           extractor (act.id());
         }
 
