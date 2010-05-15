@@ -167,8 +167,10 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id ( add_external_id (id) );
         try
         {
+          std::cerr << "D: submit ext_id := " << id << " int_id := " << internal_id << std::endl;
           activity_type act = policy::codec::decode(bytes);
-          submit (internal_id, act);
+          act.set_id(internal_id);
+          submit (act);
         }
         catch (...)
         {
@@ -335,26 +337,25 @@ namespace we { namespace mgmt {
       boost::function<bool (external_id_type const &, result_type const &)>  ext_failed;
       boost::function<bool (external_id_type const &)>                       ext_cancelled;
 
-      void submit (const internal_id_type & id, activity_type & act)
+      void submit (const activity_type & act)
       {
-        std::cerr << "D: pre-submit act["<< id << "]" << std::endl;
         {
           try
           {
             policy::validator::validate (act);
 
-            insert_activity(id, act);
+            insert_activity(act);
 
-            std::cerr << "D: submitted act["<< id << "]" << std::endl;
-            sig_submitted (this, id, policy::codec::encode (act));
+            std::cerr << "D: submitted act["<< act.id() << "]" << std::endl;
+            sig_submitted (this, act.id(), policy::codec::encode (act));
 
-            post_execute_notification (id);
+            post_execute_notification (act.id());
           }
           catch (const std::exception & ex)
           {
             throw exception::validation_error( std::string("layer::submit(): invalid activity:")
-                                               + " id := " + ::util::show(id)
-                                               + " name := " + act.transition().name()
+                                             + " id := " + ::util::show(act.id())
+                                             + " name := " + act.transition().name()
                                              , act.transition().name()
                                              );
           }
@@ -374,7 +375,7 @@ namespace we { namespace mgmt {
                                             , external_to_internal_map_t & ex_to_in
                                             )
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
 
 	{
           typename external_to_internal_map_t::const_iterator mapping
@@ -400,7 +401,7 @@ namespace we { namespace mgmt {
                                             , internal_to_external_map_t & in_to_ex
                                             )
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
 
         typename internal_to_external_map_t::const_iterator mapping (in_to_ex.find(internal_id));
         if (mapping != in_to_ex.end())
@@ -412,13 +413,13 @@ namespace we { namespace mgmt {
 
       void remove_external_mapping ( const external_id_type & external_id, external_to_internal_map_t & ex_to_in )
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
         ex_to_in.erase (external_id);
       }
 
       void remove_internal_mapping ( const internal_id_type & internal_id, internal_to_external_map_t & in_to_ex )
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
         in_to_ex.erase (internal_id);
       }
 
@@ -426,7 +427,7 @@ namespace we { namespace mgmt {
                                                                        , const external_to_internal_map_t & m
                                                                        ) const
       {
-        boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
 
         typename external_to_internal_map_t::const_iterator mapping (m.find(external_id));
         if (mapping != m.end())
@@ -443,7 +444,7 @@ namespace we { namespace mgmt {
                                                                        , const internal_to_external_map_t & m
                                                                        ) const
       {
-        boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
 
         typename internal_to_external_map_t::const_iterator mapping (m.find(internal_id));
         if (mapping != m.end())
@@ -544,7 +545,7 @@ namespace we { namespace mgmt {
         s << "   #activities := " << activities_.size() << std::endl;
         s << "   ext -> int := [";
         {
-          boost::shared_lock<boost::shared_mutex> lock (id_map_mutex_);
+          boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
           for ( typename external_to_internal_map_t::const_iterator e_to_i
               (sub_from_ext_eti_.begin())
               ; e_to_i != sub_from_ext_eti_.end()
@@ -564,7 +565,7 @@ namespace we { namespace mgmt {
         s << std::endl;
 
         {
-          boost::shared_lock<boost::shared_mutex> lock (activities_mutex_);
+          boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
           for ( typename activities_t::const_iterator act (activities_.begin())
               ; act != activities_.end()
               ; ++act
@@ -644,7 +645,7 @@ namespace we { namespace mgmt {
       inline
       size_t activity_child_count ( const internal_id_type & id ) const
       {
-        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
 
         typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
         if (children != parent_to_child_.end())
@@ -677,7 +678,9 @@ namespace we { namespace mgmt {
       inline
       void post_activity_notification( const internal_id_type & id)
       {
-        cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_needs_attention, this, _1)));
+        // cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_needs_attention, this, _1)));
+        std::cerr << "act[" << id << "] needs attention" << std::endl;
+        active_nets_.put(id);
       }
 
       inline
@@ -729,8 +732,12 @@ namespace we { namespace mgmt {
         barrier_.wait();
         for (;;)
         {
+          std::cerr << "# active activities: " << active_nets_.size() << std::endl;
+
           // TODO: probably timed wait?
           internal_id_type active_id = active_nets_.get();
+
+          std::cerr << "extractor: considering " << active_id << std::endl;
 
           try
           {
@@ -761,17 +768,17 @@ namespace we { namespace mgmt {
               activity_type sub_act = act.extract();
 
               const internal_id_type sub_act_id = generate_internal_id();
-              insert_activity (sub_act_id, sub_act);
+              sub_act.set_id (sub_act_id);
+              insert_activity (sub_act);
 
-              // TODO:
-              // establish parent <-> child relationship
               establish_parent_child_relationship ( active_id, sub_act_id );
               post_execute_notification (sub_act_id);
             }
           }
-          catch (const activity_not_found<id_type> & ex)
+          catch (const activity_not_found<internal_id_type> & ex)
           {
             std::cerr << "W: activity could not be found: " << ex.id << std::endl;
+            throw;
           }
         }
         std::cerr << "D: extractor thread stopped..." << std::endl;
@@ -782,7 +789,7 @@ namespace we { namespace mgmt {
                                                , const internal_id_type & child
                                                )
       {
-        boost::unique_lock<boost::shared_mutex> lock (child_parent_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
         parent_to_child_[parent].insert (child);
         child_to_parent_[child] = parent;
       }
@@ -792,7 +799,7 @@ namespace we { namespace mgmt {
                                             , const internal_id_type & child
                                             )
       {
-        boost::unique_lock<boost::shared_mutex> lock (child_parent_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
         child_to_parent_.erase (child);
         parent_to_child_[parent].erase (child);
       }
@@ -800,7 +807,7 @@ namespace we { namespace mgmt {
       inline
       internal_id_type parent_of ( const internal_id_type & id ) const
       {
-        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
 
         if (has_parent (id))
         {
@@ -820,14 +827,14 @@ namespace we { namespace mgmt {
       inline
       bool is_valid (const internal_id_type & id) const
       {
-        boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
+        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
         return activities_.find(id) != activities_.end();
       }
 
       inline
       bool has_parent (const internal_id_type & id) const
       {
-        boost::shared_lock<boost::shared_mutex> lock (child_parent_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
 
         typename child_to_parent_map_t::const_iterator p
           (child_to_parent_.find( id ));
@@ -914,7 +921,7 @@ namespace we { namespace mgmt {
               typename policy::exec_policy exec_policy
                 ( boost::bind ( &this_type::post_activity_notification, this, _1 )
                 , boost::bind ( &this_type::post_execute_externally, this, _1 )
-                , boost::bind ( &this_type::post_inject_activity_results, this, _1 )
+                , boost::bind ( &this_type::post_finished_notification, this, _1 )
                 );
 
               sig_executing (this, act_id, policy::codec::encode (act));
@@ -978,9 +985,9 @@ namespace we { namespace mgmt {
       boost::function<external_id_type()> external_id_gen_;
       boost::function<internal_id_type()> internal_id_gen_;
       boost::barrier barrier_;
-      mutable boost::shared_mutex activities_mutex_;
-      mutable boost::shared_mutex id_map_mutex_;
-      mutable boost::shared_mutex id_gen_mutex_;
+      mutable boost::recursive_mutex activities_mutex_;
+      mutable boost::recursive_mutex id_map_mutex_;
+      mutable boost::recursive_mutex id_gen_mutex_;
       activities_t activities_;
       cmd_q_t cmd_q_;
       active_nets_t active_nets_;
@@ -993,12 +1000,9 @@ namespace we { namespace mgmt {
       external_to_internal_map_t sub_to_ext_eti_;
       internal_to_external_map_t sub_to_ext_ite_;
 
-      mutable boost::shared_mutex child_parent_mutex_;
+      mutable boost::recursive_mutex child_parent_mutex_;
       parent_to_children_map_t parent_to_child_;
       child_to_parent_map_t    child_to_parent_;
-
-      boost::mutex active_nets_mutex_;
-      boost::condition active_nets_modified_;
 
       boost::thread extractor_;
       boost::thread manager_;
@@ -1007,23 +1011,20 @@ namespace we { namespace mgmt {
 
       external_id_type generate_external_id (void) const
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_gen_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_gen_mutex_);
         return external_id_gen_();
       }
 
       internal_id_type generate_internal_id (void) const
       {
-        boost::unique_lock<boost::shared_mutex> lock (id_gen_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (id_gen_mutex_);
         return internal_id_gen_();
       }
 
       void activity_needs_attention(const cmd_t & cmd)
       {
-        activity_type & a = lookup ( cmd.dat );
-        if (! a.flags().suspended )
-        {
-          active_nets_.put (cmd.dat);
-        }
+        std::cerr << "act[" << cmd.dat << "] needs attention" << std::endl;
+        active_nets_.put(cmd.dat);
       }
 
       void activity_finished(const cmd_t & cmd)
@@ -1033,18 +1034,19 @@ namespace we { namespace mgmt {
         try
         {
           activity_type & act (lookup(internal_id));
-          std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
           act.collect_output();
 
           sig_finished (this, internal_id, policy::codec::encode(act));
 
           if (has_parent (internal_id))
           {
+            std::cerr << "D: child[" << internal_id << "] of act[" << parent_of(internal_id) << "] finished" << std::endl;
             post_inject_activity_results (internal_id);
           }
           else
           {
             external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
+            std::cerr << "D: submitted act[" << external_id << "] (int_id := " << internal_id << ") finished" << std::endl;
             ext_finished (external_id, policy::codec::encode (act));
             assert_is_leaf ( internal_id );
             remove_activity ( internal_id );
@@ -1052,7 +1054,7 @@ namespace we { namespace mgmt {
         }
         catch (const activity_not_found<internal_id_type> &)
         {
-          // ignore old notification
+          std::cerr << "W: got finished notification for old activity: " << internal_id << std::endl;
         }
       }
 
@@ -1109,28 +1111,21 @@ namespace we { namespace mgmt {
 
       void suspend_activity(const cmd_t & cmd)
       {
-        //        lookup(cmd.dat).flags().suspended = true;
+        lookup(cmd.dat).flags().set_suspended(true);
         std::cerr << "I: act[" << cmd.dat << "] suspended" << std::endl;
       }
 
       void resume_activity(const cmd_t & cmd)
       {
-        //        lookup(cmd.dat).flags().suspended = false;
+        lookup(cmd.dat).flags().set_suspended(false);
         active_nets_.put (cmd.dat);
         std::cerr << "I: act[" << cmd.dat << "] resumed" << std::endl;
       }
 
-      void async_execute(activity_type & act)
+      inline void insert_activity(const activity_type & act)
       {
-        std::cerr << "D: async_execute " << act.id() << std::endl;
-        post_execute_notification (act.id());
-      }
-
-      inline void insert_activity(const internal_id_type & id, activity_type & act)
-      {
-        boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
-        act.set_id (id);
-        activities_.insert(std::make_pair(id, act));
+        boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
+        activities_.insert(std::make_pair(act.id(), act));
       }
 
       inline void remove_activity(const activity_type & act)
@@ -1140,7 +1135,7 @@ namespace we { namespace mgmt {
 
       inline void remove_activity(const internal_id_type & id)
       {
-        boost::unique_lock<boost::shared_mutex> lock (activities_mutex_);
+        boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
         try
         {
           internal_id_type parent ( parent_of (id) );
@@ -1188,7 +1183,7 @@ namespace we { namespace mgmt {
 
       inline activity_type & lookup(const internal_id_type & id)
       {
-        boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
+        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
         typename activities_t::iterator a = activities_.find(id);
         if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
@@ -1196,7 +1191,7 @@ namespace we { namespace mgmt {
 
       inline const activity_type & lookup(const internal_id_type & id) const
       {
-        boost::shared_lock <boost::shared_mutex> lock (activities_mutex_);
+        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
