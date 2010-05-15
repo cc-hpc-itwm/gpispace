@@ -1010,7 +1010,6 @@ namespace we { namespace mgmt {
           std::cerr << "D: act[" << internal_id << "] finished" << std::endl;
           act.collect_output();
 
-          print_activity_info (std::cerr, act);
           sig_finished (this, internal_id, policy::codec::encode(act));
 
           if (has_parent (internal_id))
