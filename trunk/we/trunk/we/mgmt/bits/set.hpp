@@ -1,3 +1,6 @@
+#ifndef WE_MGMT_LAYER_SET_HPP
+#define WE_MGMT_LAYER_SET_HPP 1
+
 /*
  * =====================================================================================
  *
@@ -86,3 +89,5 @@ namespace we { namespace mgmt { namespace detail {
 	boost::condition not_full_;
   };
 }}}
+
+#endif
