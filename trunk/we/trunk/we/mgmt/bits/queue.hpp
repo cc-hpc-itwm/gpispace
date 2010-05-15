@@ -1,9 +1,12 @@
+#ifndef WE_MGMT_LAYER_BITS_HPP
+#define WE_MGMT_LAYER_BITS_HPP 1
+
 /*
  * =====================================================================================
  *
  *       Filename:  queue.hpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  03/10/2010 11:28:22 AM
@@ -63,6 +66,11 @@ namespace we { namespace mgmt { namespace detail {
 	  not_full_.notify_one();
 	}
 
+    size_type size (void) const
+    {
+      return unread_;
+    }
+
   private:
 	queue(queue const &);
 	queue & operator=(queue const &);
@@ -78,3 +86,5 @@ namespace we { namespace mgmt { namespace detail {
 	boost::condition not_full_;
   };
 }}}
+
+#endif

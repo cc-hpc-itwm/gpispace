@@ -3,7 +3,7 @@
  *
  *       Filename:  set.hpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  03/10/2010 11:28:22 AM
@@ -30,17 +30,19 @@ namespace we { namespace mgmt { namespace detail {
   class set
   {
   public:
+    typedef set<T> this_type;
+
 	typedef boost::unordered_set<T> container_type;
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
-	explicit set(size_type capacity) : capacity_(capacity), container_(capacity) {}
+	explicit set(const size_type capacity) : capacity_(capacity), container_(capacity) {}
 
 	void put (param_type item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
-	  not_full_.wait (lock, boost::bind(&set<value_type>::is_not_full, this));
+	  not_full_.wait (lock, boost::bind(&this_type::is_not_full, this));
 	  container_.insert (item);
 	  lock.unlock();
 	  not_empty_.notify_one();
@@ -56,12 +58,19 @@ namespace we { namespace mgmt { namespace detail {
 	void get (value_type *item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
-	  not_empty_.wait (lock, boost::bind(&set<value_type>::is_not_empty, this));
-	  *item = *container_.begin();
-	  container_.erase(container_.begin());
+	  not_empty_.wait (lock, boost::bind(&this_type::is_not_empty, this));
+          typename container_type::iterator i (container_.begin());
+          *item = *i;
+          container_.erase (i);
 	  lock.unlock();
 	  not_full_.notify_one();
 	}
+
+    inline
+    size_type size (void) const
+    {
+      return container_.size();
+    }
 
   private:
 	set(set const &);
