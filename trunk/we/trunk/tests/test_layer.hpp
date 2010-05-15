@@ -20,9 +20,11 @@
 #define WE_TESTS_TEST_LAYER_HPP 1
 
 #include <sstream>
+#include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <we/util/show.hpp>
 #include <we/mgmt/layer.hpp>
+#include <we/mgmt/bits/queue.hpp>
 
 #include <we/we.hpp>
 #include <kdm/kdm_simple.hpp>
@@ -106,6 +108,26 @@ namespace test {
     };
   }
 
+  template <typename IdType>
+  struct job_t
+  {
+    job_t ()
+    {}
+
+    job_t (const job_t<IdType> & other)
+      : id (other.id)
+      , desc(other.desc)
+    { }
+
+    job_t (const IdType & id_, const std::string & desc_)
+      : id (id_)
+      , desc(desc_)
+    { }
+
+    IdType id;
+    std::string desc;
+  };
+
   template <typename Layer>
   struct sdpa_daemon
   {
@@ -113,31 +135,81 @@ namespace test {
     typedef sdpa_daemon<Layer> this_type;
     typedef typename layer_type::id_type id_type;
     typedef std::map<id_type, id_type> id_map_t;
+    typedef job_t<id_type> job_type;
+    typedef we::mgmt::detail::queue<job_type> job_q_t;
+    typedef std::vector<boost::thread*> worker_list_t;
 
-    sdpa_daemon()
+    explicit
+    sdpa_daemon(std::size_t num_worker = 1)
       : mgmt_layer_(this, boost::bind(&sdpa_daemon::gen_id, this))
-    {}
+      , jobs_(1024)
+    {
+      start(num_worker);
+    }
 
-    id_type gen_id() { return ++id_; }
+    ~sdpa_daemon()
+    {
+      stop();
+    }
+
+    void start(const std::size_t num_worker = 1)
+    {
+      for (std::size_t n (0); n < num_worker; ++n)
+      {
+        worker_.push_back( new boost::thread( boost::bind(&this_type::worker, this, n)));
+      }
+    }
+
+    void stop()
+    {
+      for (std::vector<boost::thread*>::iterator it (worker_.begin()); it != worker_.end(); ++it)
+      {
+        (*it)->interrupt();
+        (*it)->join();
+        delete (*it);
+      }
+      worker_.clear();
+    }
+
+    void worker(const std::size_t rank)
+    {
+      std::cout << "SDPA Layer worker-" << rank << " started." << std::endl;
+      for (;;)
+      {
+        job_type job (jobs_.get());
+
+        we::activity_t act ( we::util::text_codec::decode<we::activity_t> (job.desc));
+        detail::context<this_type, id_type> ctxt (*this, job.id);
+        act.execute (ctxt);
+      }
+      std::cout << "SDPA Layer worker-" << rank << " stopped." << std::endl;
+    }
+
+    id_type gen_id()
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      return ++id_;
+    }
     void add_mapping ( const id_type & old_id, const id_type & new_id)
     {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       id_map_[new_id] = old_id;
     }
 
     void submit(const id_type & id, const std::string & desc)
     {
-      std::cout << "submit[" << id << "]" << std::endl;
-      we::activity_t act ( we::util::text_codec::decode<we::activity_t> (desc) );
-      detail::context<this_type, id_type> ctxt (*this, id);
-      act.execute (ctxt);
+      job_type job (id, desc);
+      jobs_.put(job);
     }
     bool cancel(const id_type & id, const std::string & desc)
     {
-      std::cout << "cancel[" << id << "] = " << desc << std::endl; return true;
+      std::cout << "cancel[" << id << "] = " << desc << std::endl;
+
       return true;
     }
     bool finished(const id_type & id, const std::string & desc)
     {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       if (id_map_.find (id) != id_map_.end())
       {
         // inform layer
@@ -154,6 +226,7 @@ namespace test {
     }
     bool failed(const id_type & id, const std::string & desc)
     {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       if (id_map_.find (id) != id_map_.end())
       {
         // inform layer
@@ -168,6 +241,7 @@ namespace test {
     }
     bool cancelled(const id_type & id)
     {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       if (id_map_.find (id) != id_map_.end())
       {
         // inform layer
@@ -184,9 +258,12 @@ namespace test {
     inline layer_type & layer() { return mgmt_layer_; }
 
   private:
+    boost::recursive_mutex mutex_;
     detail::id_generator<id_type> id_;
     layer_type mgmt_layer_;
     id_map_t  id_map_;
+    job_q_t jobs_;
+    worker_list_t worker_;
   };
 }
 

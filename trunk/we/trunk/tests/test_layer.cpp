@@ -31,7 +31,7 @@ static
 void observe_finished (const layer_t *, layer_id_type const & id, std::string const &s)
 {
   std::cerr << "activity finished: id := " << id << std::endl;
-  we::activity_t act (we::util::text_codec::decode<we::activity_t>(s));
+  we::activity_t act (layer_t::policy::codec::decode (s));
   if (act.transition().name() == "trans_net")
     jobs.pop_back();
 }
@@ -53,16 +53,20 @@ void observe_executing (const layer_t *, layer_id_type const & id, std::string c
 
 int main (int argc, char **argv)
 {
+  const std::string cfg_file = std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf");
+  const std::size_t num_jobs = ((argc > 2) ? (size_t)atoi(argv[2]) : 1);
+  const std::size_t num_worker = ((argc > 3) ? (size_t)atoi(argv[3]) : 1);
+
   // instantiate daemon and layer
-  daemon_type daemon;
+  daemon_type daemon(num_worker);
   daemon_type::layer_type & mgmt_layer = daemon.layer();
+
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
   mgmt_layer.sig_finished.connect  ( &observe_finished );
   mgmt_layer.sig_failed.connect    ( &observe_failed );
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
   mgmt_layer.sig_executing.connect ( &observe_executing );
 
-  const std::size_t num_jobs = ((argc > 2) ? (size_t)atoi(argv[2]) : 1);
   for (std::size_t i (0); i < num_jobs; ++i)
   {
     we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
@@ -71,7 +75,7 @@ int main (int argc, char **argv)
       ( we::input_t::value_type
         ( we::token_t ( "config_file"
                       , literal::STRING
-                      , std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf")
+                      , cfg_file
                       )
         , simple_trans.input_port_by_name ("config_file")
       )
