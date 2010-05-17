@@ -187,7 +187,7 @@ namespace sdpa { namespace daemon {
   protected:
 	 // observe workflow engine
 	 template <typename T>
-	 static void observe_submitted (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 static void observe_submitted (const T* l, typename T::internal_id_type const & id)
 	 {
 		 std::cerr << "activity submitted: id := " << id << std::endl;
 		 l->print_statistics( std::cerr );
@@ -215,7 +215,7 @@ namespace sdpa { namespace daemon {
 	 }
 
 	 template <typename T>
-	 static void observe_executing (const T* l, typename T::internal_id_type const & id, std::string const &)
+	 static void observe_executing (const T* l, typename T::internal_id_type const & id )
 	 {
 		 std::cerr << "activity executing: id := " << id << std::endl;
 		 l->print_statistics( std::cerr );
