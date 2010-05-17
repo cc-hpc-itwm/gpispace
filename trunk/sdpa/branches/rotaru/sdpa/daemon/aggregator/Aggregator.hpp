@@ -40,7 +40,7 @@ namespace sdpa {
 				  masterUrl_(masterUrl)
 			{
 				SDPA_LOG_DEBUG("Aggregator constructor called ...");
-				ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
+				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
 			}
 
 
@@ -87,6 +87,11 @@ namespace sdpa {
 			friend class sdpa::tests::WorkerSerializationTest;
 
 			private:
+			Scheduler* create_scheduler(const std::string& worker_url = "")
+			{
+				return new SchedulerAgg(this);
+			}
+
 			std::string url_;
 			std::string masterName_;
 			std::string masterUrl_;

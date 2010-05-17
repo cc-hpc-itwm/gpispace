@@ -112,6 +112,12 @@ namespace sdpa {
 
 
 	  protected:
+
+		Scheduler* create_scheduler(const std::string& workerUrl = "")
+		{
+			return new SchedulerNRE<U>(this, workerUrl);
+		}
+
 		std::string url_;
 		std::string masterName_;
 		std::string masterUrl_;

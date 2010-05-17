@@ -38,7 +38,7 @@ namespace daemon {
 		{
 			SDPA_LOG_DEBUG("Orchestrator constructor called ...");
 
-			ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
+			//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 		}
 
 		static ptr_t create( const std::string& name,
@@ -81,6 +81,11 @@ namespace daemon {
 		friend class sdpa::tests::WorkerSerializationTest;
 
 	  private:
+		Scheduler* create_scheduler(const std::string& worker_url = "")
+		{
+			return new SchedulerOrch(this);
+		}
+
 		std::string url_;
 	  };
 	}

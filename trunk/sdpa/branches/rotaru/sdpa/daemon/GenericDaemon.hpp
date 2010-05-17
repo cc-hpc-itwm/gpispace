@@ -185,6 +185,7 @@ namespace sdpa { namespace daemon {
 	  }
 
   protected:
+
 	 // observe workflow engine
 	 template <typename T>
 	 static void observe_submitted (const T* l, typename T::internal_id_type const & id)
@@ -226,6 +227,11 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
 	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
+
+	  virtual Scheduler* create_scheduler(const std::string& worker_url = "")
+	  {
+		  return new SchedulerImpl(this);
+	  }
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
