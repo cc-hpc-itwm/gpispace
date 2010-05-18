@@ -101,6 +101,19 @@ else (MMGR_FOUND)
 endif (MMGR_FOUND)
 message(STATUS "MMGR: -I${MMGR_INCLUDE_DIR} -L${MMGR_LIBRARY_DIR} -l${MMGR_LIBRARY}")
 
+find_path (WE_INCLUDE_DIR
+  NAMES "we/net.hpp"
+  HINTS ${WE_HOME} ENV WE_HOME
+  PATH_SUFFIXES include
+)
+
+if (WE_INCLUDE_DIR)
+  include_directories(${WE_INCLUDE_DIR})
+else (WE_INCLUDE_DIR)
+  message (FATAL_ERROR "Sorry, workflow engine's module loader required!")
+endif(WE_INCLUDE_DIR)
+message(STATUS "WE: -I${WE_INCLUDE_DIR}")
+
 # Reflect the package structure
 add_subdirectory(fvm)
 add_subdirectory(fvm-pc)
