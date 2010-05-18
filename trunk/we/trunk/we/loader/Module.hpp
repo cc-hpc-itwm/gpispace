@@ -64,6 +64,11 @@ namespace we
         return state_;
       }
 
+      const void * state (void) const
+      {
+        return state_;
+      }
+
       void * state (void * new_state)
       {
         void * old_state (state_);
@@ -164,13 +169,14 @@ namespace we
       void writeTo(std::ostream &os) const
       {
         os << "{mod, " << name() << ", ";
-        os << "[ ";
+        os << state() << ", ";
+        os << "[";
         {
           call_table_t::const_iterator fun(call_table_.begin());
           while (fun != call_table_.end())
           {
             os << fun->first; // function name
-            os << "( ";
+            os << "(";
 
             param_names_list_t::const_iterator exp_inp(fun->second.second.begin());
             while (exp_inp != fun->second.second.end())
@@ -180,14 +186,14 @@ namespace we
               if (exp_inp != fun->second.second.end()) os << ", ";
             }
 
-            os << " )";
+            os << ")";
 
             fun++;
             if (fun != call_table_.end()) os << ", ";
           }
         }
 
-        os << " ]";
+        os << "]";
         os << "}";
       }
 
@@ -281,7 +287,6 @@ namespace we
 
         dlclose(handle_);
         handle_ = 0;
-        std::cerr << "module unloaded" << std::endl;
       }
 
     private:
