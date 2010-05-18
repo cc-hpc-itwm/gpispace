@@ -88,7 +88,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef TMMGR_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define TMMGR_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"Tmmgr",fun)
 #endif
 
