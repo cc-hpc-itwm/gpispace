@@ -32,7 +32,7 @@ namespace we {
       loader()
         : module_table_()
       {
-        push_back (".");
+        append_search_path (".");
       }
 
       ~loader()
@@ -106,12 +106,12 @@ namespace we {
         }
       }
 
-      void push_back (const boost::filesystem::path & p)
+      void append_search_path (const boost::filesystem::path & p)
       {
         search_path_.push_back (p);
       }
 
-      void push_front (const boost::filesystem::path & p)
+      void prepend_search_path (const boost::filesystem::path & p)
       {
         search_path_.push_front (p);
       }
@@ -127,7 +127,7 @@ namespace we {
           os << "\"" << *p << "\"";
         }
         os << "}";
-
+        os << ", ";
         os << "{modules, ";
 
         os << "[";
