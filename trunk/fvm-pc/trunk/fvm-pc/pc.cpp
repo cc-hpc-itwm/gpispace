@@ -8,8 +8,10 @@
 
 #include <fvm-pc/pc.hpp>
 
+#include <we/loader/macros.hpp>
+
 //msgqueue
-static int pcQueueID; 
+static int pcQueueID;
 static key_t pcQueueKey;
 
 //shmem vars
@@ -34,7 +36,7 @@ static int doRequest(fvmRequest_t op_request)
 #ifndef NDEBUGMSG
   printf("PC: Sending msg on queue %d type 2 (doRequest)\n", pcQueueID);
 #endif
-	
+
   if(msgsnd(pcQueueID, &msg, sizeof(msgQueueMsg_t), 0) < 0){
     perror("Error answering request");
     return -1;
@@ -108,13 +110,13 @@ int fvmConnect(fvm_pc_config_t config)
   //establish connection with shared component (shmem, qp,...)
 #ifdef SHMEM
 
-	
+
   //Locate the segment.
   if((pcShmKey = ftok(config.shmemfile, 'R')) == -1){
     perror("connecto fvm:ftok");
     return -1;
   }
-	 
+
   if ((pcShmid = shmget(pcShmKey, config.shmemsize, IPC_CREAT | 0666)) < 0) {
     perror("connect to fvm:shmget");
     return -1;
@@ -153,7 +155,7 @@ int fvmLeave()
 #ifdef SHMEM
   shmdt(pcShm);
 #endif
-	 
+
   op_request.op = LEAVE;
   doRequest(op_request);
 
@@ -204,7 +206,7 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 	ret =  getAck();
 
 #ifndef NDEBUGALLOC
-      printf("PC: global free returns %d \n", ret);	
+      printf("PC: global free returns %d \n", ret);
 #endif
 	return ret;
 }
@@ -255,7 +257,7 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   ret = getAck();
 
 #ifndef NDEBUGALLOC
-      printf("PC: local free returns %d \n", ret);	
+      printf("PC: local free returns %d \n", ret);
 #endif
       return ret;
 
@@ -286,7 +288,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 
   return commhandle;
 }
- 
+
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
@@ -299,7 +301,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 #ifndef NDEBUGCOMM
   printf("PC: GetGlobal received handle %d\n",commhandle);
 #endif
-  
+
   return commhandle;
 }
 
@@ -311,13 +313,13 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
-  
+
 #ifndef NDEBUGCOMM
   printf("PC: PutGlobal received handle %d\n",commhandle);
 #endif
-  
+
   return commhandle;
-  
+
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
@@ -327,11 +329,11 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 {
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, PUTLOCAL);
-  
+
 #ifndef NDEBUGCOMM
   printf("PC: PutLocal received handle %d\n",commhandle);
 #endif
-  
+
   return commhandle;
 }
 
@@ -341,13 +343,13 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  
+
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, 0, GETLOCAL);
-  
+
 #ifndef NDEBUGCOMM
   printf("PC: GetLocal received handle %d\n",commhandle);
 #endif
-  
+
   return commhandle;
 
 }
@@ -358,13 +360,13 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
   fvmRequest_t request;
   request.op = WAITCOMM;
   request.args.arg_commhandle  = handle;
-  
+
   if(doRequest(request))
     perror("error doing request");
-  
-  
+
+
   return (fvmCommHandleState_t) getAck();
-  
+
 }
 
 void *fvmGetShmemPtr()
@@ -397,3 +399,28 @@ int fvmGetNodeCount()
 {
   return nodeCount;
 }
+
+static void selftest (void *, const we::loader::input_t &, we::loader::output_t & out)
+{
+  std::cerr << "running self test" << std::endl;
+  we::loader::put_output (out, "result", 0L);
+}
+
+WE_MOD_INITIALIZE_START (fvm);
+{
+  fvm_pc_config_t cfg (getenv("FVM_PC_MSQ"), getenv("FVM_PC_SHM"), 0, 0);
+  int res(0);
+  if ( (res = fvmConnect (cfg)) != 0)
+  {
+    throw std::runtime_error("could not initialize fvm-connection: "+::util::show(res));
+  }
+
+  WE_REGISTER_FUN (selftest);
+}
+WE_MOD_INITIALIZE_END (fvm);
+
+WE_MOD_FINALIZE_START (fvm);
+{
+  fvmLeave ();
+}
+WE_MOD_FINALIZE_END (fvm);

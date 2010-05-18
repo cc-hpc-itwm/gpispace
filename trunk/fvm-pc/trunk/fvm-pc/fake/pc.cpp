@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include <mmgr/dtmmgr.h>
-
+#include <we/loader/macros.hpp>
 #include <fvm-pc/pc.hpp>
 #if ! defined(MAX_SHMEM_SIZE)
 #error "MAX_SHMEM_SIZE must be defined!"
@@ -400,3 +400,23 @@ int fvmGetNodeCount()
 {
   return 1;
 }
+
+static void selftest (void *, const we::loader::input_t &, we::loader::output_t & out)
+{
+  std::cerr << "running self test" << std::endl;
+  we::loader::put_output (out, "result", 0L);
+}
+
+WE_MOD_INITIALIZE_START (fvm);
+{
+  fvm_pc_config_t cfg (getenv("FVM_PC_MSQ"), getenv("FVM_PC_SHM"), 50*1024*1024, 100*1024*1024);
+  fvmConnect (cfg);
+  WE_REGISTER_FUN (selftest);
+}
+WE_MOD_INITIALIZE_END (fvm);
+
+WE_MOD_FINALIZE_START (fvm);
+{
+  fvmLeave ();
+}
+WE_MOD_FINALIZE_END (fvm);
