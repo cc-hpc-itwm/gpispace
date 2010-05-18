@@ -86,11 +86,11 @@ namespace we {
       {
         module_ptr_t mod(new Module(module_name, path.string()));
         std::pair<module_table_t::iterator, bool> insert_result =
-          module_table_.insert(std::make_pair(mod->name(), mod));
+          module_table_.insert(std::make_pair(module_name, mod));
 
         if (! insert_result.second)
         {
-          throw ModuleLoadFailed("module already registered", mod->name(), path.string());
+          throw ModuleLoadFailed("module already registered", module_name, path.string());
         }
         else
         {
