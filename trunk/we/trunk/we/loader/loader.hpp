@@ -118,8 +118,19 @@ namespace we {
 
       void writeTo(std::ostream &os) const
       {
-        os << "[";
+        os << "{loader, ";
+        os << "{path, ";
+        for (search_path_t::const_iterator p (search_path_.begin()); p != search_path_.end(); ++p)
+        {
+          if (p != search_path_.begin())
+            os << ":";
+          os << "\"" << *p << "\"";
+        }
+        os << "}";
 
+        os << "{modules, ";
+
+        os << "[";
         module_table_t::const_iterator m(module_table_.begin());
         while (m != module_table_.end())
         {
@@ -131,6 +142,8 @@ namespace we {
         }
 
         os << "]";
+        os << "}";
+        os << "}";
       }
     private:
       loader(const loader&);
