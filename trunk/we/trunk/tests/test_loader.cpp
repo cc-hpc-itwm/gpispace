@@ -18,6 +18,13 @@ int main (int, char **)
 
   loader["answer"] ("answer", inp, out);
 
+  loader.unload ("answer");
+  std::cerr << loader << std::endl;
+
+  loader["question"] ("question", inp, out);
+  loader["answer"] ("answer", inp, out);
+  std::cerr << loader << std::endl;
+
   return EXIT_SUCCESS;
 }
 
