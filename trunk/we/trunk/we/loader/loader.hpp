@@ -53,12 +53,12 @@ namespace we {
         }
       }
 
-      Module & operator[] (const std::string &module) throw(ModuleNotLoaded)
+      Module & operator[] (const std::string &module) throw(ModuleNotLoaded, ModuleLoadFailed)
       {
         return *get(module);
       }
 
-      module_ptr_t get(const std::string &module) throw(ModuleNotLoaded)
+      module_ptr_t get(const std::string &module) throw(ModuleNotLoaded, ModuleLoadFailed)
       {
         module_table_t::const_iterator mod = module_table_.find(module);
         if (mod != module_table_.end()) {
