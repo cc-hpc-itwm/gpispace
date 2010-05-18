@@ -23,6 +23,7 @@
 
 namespace sdpa { namespace nre { namespace worker {
 
+    class InfoRequest;
 	class ExecuteRequest;
 	class Reply;
 
@@ -31,7 +32,8 @@ namespace sdpa { namespace nre { namespace worker {
 	public:
 		virtual ~ExecutionContext() {}
 
-		virtual Reply* reply( ExecuteRequest* ) { return NULL; }
+		virtual Reply* reply(InfoRequest *pMsgInfoReq) = 0;
+		virtual Reply* reply( ExecuteRequest* ) = 0;
 		virtual we::loader::loader &loader() = 0;
 		virtual int getRank() const = 0;
 	};

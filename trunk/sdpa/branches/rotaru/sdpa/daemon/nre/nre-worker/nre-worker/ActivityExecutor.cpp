@@ -307,20 +307,20 @@ cont:
     }
   }
 
-Reply* ActivityExecutor::reply(ExecuteRequest* msgExecReq)
+Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
 {
   	Reply *reply(NULL);
 
-  	/*try
+  	try
   	{
   		//LOG(INFO, "executing: " << activity());
-  		LOG (DEBUG, "received new activity: "<<msgExecReq.activity());
+  		LOG (DEBUG, "received new activity: "<<pMsgExecReq->activity());
   		LOG (DEBUG, "executing activity ... ");
 
-  		we::activity_t act(we::util::text_codec::decode<we::activity_t>(msgExecReq.activity()));
+  		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
   		// Use this in the future with real modules
-  		// struct exec_context ctxt(pCtx->loader());
+  		//struct exec_context ctxt(pCtx->loader());
   		struct exec_context ctxt;
   		act.execute(ctxt);
 
@@ -332,22 +332,26 @@ Reply* ActivityExecutor::reply(ExecuteRequest* msgExecReq)
   	catch (const std::exception &ex)
   	{
   		LOG(ERROR, "execution of activity failed: " << ex.what());
-  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, msgExecReq.activity()));
+  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, pMsgExecReq->activity()));
   		reply = new ExecuteReply(exec_res);
   	}
   	catch (...)
   	{
   		LOG(ERROR, "execution of activity failed: ");
-  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, msgExecReq.activity()));
+  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, pMsgExecReq->activity()));
   		reply = new ExecuteReply(exec_res);
   	}
 
   	assert(reply);
-  	reply->id() = id();
+  	reply->id() = pMsgExecReq->id();
   	LOG (DEBUG, "replying with id "<<reply->id());
-  	*/
 
   	return reply;
+}
+
+Reply* ActivityExecutor::reply(InfoRequest* pMsgInfoReq)
+{
+	return new InfoReply(pMsgInfoReq->id(), this);
 }
 
 }}}

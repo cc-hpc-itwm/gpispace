@@ -41,15 +41,9 @@ namespace sdpa { namespace nre { namespace worker {
   class Message
   {
   public:
-    Message()
-      : id_("unset id")
-    {}
+    Message() : id_("unset id"){}
 
-    explicit
-    Message(const std::string &msg_id)
-      : id_(msg_id)
-    {}
-
+    explicit Message(const std::string &msg_id): id_(msg_id){}
     virtual ~Message() {}
 
     virtual Message *execute(ExecutionContext *context) = 0;
@@ -86,12 +80,7 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     Request() {}
-
-    explicit
-    Request (const std::string &a_id)
-      : Message(a_id)
-    {}
-
+    explicit Request (const std::string &a_id): Message(a_id){}
     virtual ~Request() {}
   };
 
@@ -100,23 +89,19 @@ namespace sdpa { namespace nre { namespace worker {
   public:
     typedef struct rusage  usage_t;
 
-    PingReply()
-      : pid_(getpid())
+    PingReply(): pid_(getpid())
     {
-      getrusage(RUSAGE_SELF, &usage_);
+    	getrusage(RUSAGE_SELF, &usage_);
     }
 
-    explicit
-    PingReply(const std::string &a_id)
-      : Reply(a_id)
-      , pid_(getpid())
+    explicit PingReply(const std::string &a_id) : Reply(a_id), pid_(getpid())
     {
-      getrusage(RUSAGE_SELF, &usage_);
+    	getrusage(RUSAGE_SELF, &usage_);
     }
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
+    	os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
     }
 
     pid_t &pid() { return pid_; }
@@ -133,13 +118,8 @@ namespace sdpa { namespace nre { namespace worker {
   class PingRequest : public Request
   {
   public:
-    PingRequest()
-      : key_("")
-    {}
-
-    explicit PingRequest(const std::string &a_msg_id)
-      : Request(a_msg_id)
-    {}
+    PingRequest() : key_("") {}
+    explicit PingRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
 
     virtual void writeTo(std::ostream &os) const
     {
@@ -156,16 +136,8 @@ namespace sdpa { namespace nre { namespace worker {
 
   struct pc_info_t
   {
-    pc_info_t ()
-      : pid_(getpid())
-      , rank_(0)
-    {}
-
-    explicit
-    pc_info_t(int rank)
-      : pid_(getpid())
-      , rank_(rank)
-    {}
+    pc_info_t() : pid_(getpid()), rank_(0){}
+    explicit pc_info_t(int rank) : pid_(getpid()), rank_(rank) {}
 
     int & rank() { return rank_; }
     const int & rank() const { return rank_; }
@@ -180,13 +152,8 @@ namespace sdpa { namespace nre { namespace worker {
   class InfoReply : public Reply
   {
   public:
-    InfoReply()
-    { }
-
-    InfoReply(const std::string &a_id, ExecutionContext *ctxt)
-      : Reply(a_id)
-      , info_(ctxt->getRank())
-    { }
+    InfoReply() { }
+    InfoReply(const std::string &a_id, ExecutionContext *ctxt) : Reply(a_id), info_(ctxt->getRank()){ }
 
     virtual void writeTo(std::ostream &os) const
     {
@@ -202,22 +169,18 @@ namespace sdpa { namespace nre { namespace worker {
   class InfoRequest : public Request
   {
   public:
-    InfoRequest()
-      : key_("")
-    {}
-
-    explicit InfoRequest(const std::string &a_msg_id)
-      : Request(a_msg_id)
-    {}
+    InfoRequest() : key_(""){}
+    explicit InfoRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
 
     virtual void writeTo(std::ostream &os) const
     {
     	os << "InfoRequest: id=" << id();
     }
 
-    virtual Reply *execute(ExecutionContext *ctxt)
+    virtual Reply *execute(ExecutionContext *pCtx)
     {
-    	return new InfoReply(id(), ctxt);
+    	return pCtx->reply(this);
+    	//return new InfoReply(id(), ctxt);
     }
   private:
     std::string key_;
@@ -237,11 +200,7 @@ namespace sdpa { namespace nre { namespace worker {
   public:
 
     ExecuteReply() {}
-
-    explicit
-    ExecuteReply(const execution_result_t& exec_result)
-      : exec_result_(exec_result)
-    {}
+    explicit ExecuteReply(const execution_result_t& exec_result) : exec_result_(exec_result) {}
 
     virtual void writeTo(std::ostream &os) const
     {
@@ -275,12 +234,8 @@ namespace sdpa { namespace nre { namespace worker {
   class ExecuteRequest : public Request
   {
   public:
-    ExecuteRequest()
-    {}
-
-    ExecuteRequest(const encoded_type &act)
-      : activity_(act)
-    {}
+    ExecuteRequest() {}
+    ExecuteRequest(const encoded_type &act) : activity_(act) {}
 
     virtual bool would_block() const { return true; }
 
@@ -294,42 +249,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     virtual Reply *execute(ExecutionContext *pCtx)
     {
-      Reply *reply(NULL);
-      try
-      {
-    	  //LOG(INFO, "executing: " << activity());
-    	  LOG (DEBUG, "received new activity: "<<activity_);
-    	  LOG (DEBUG, "executing activity ... ");
-
-    	  we::activity_t act(we::util::text_codec::decode<we::activity_t>(activity_));
-
-    	  // Use this in the future with real modules
-    	  //struct exec_context ctxt(pCtx->loader());
-    	  struct exec_context ctxt;
-    	  act.execute(ctxt);
-
-    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));
-
-    	  LOG (DEBUG, "creating a reply message ... ");
-    	  reply = new ExecuteReply(exec_res);
-      }
-      catch (const std::exception &ex)
-      {
-    	  LOG(ERROR, "execution of activity failed: " << ex.what());
-    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, activity()));
-    	  reply = new ExecuteReply(exec_res);
-      }
-      catch (...)
-      {
-    	  LOG(ERROR, "execution of activity failed: ");
-    	  execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, activity()));
-    	  reply = new ExecuteReply(exec_res);
-      }
-
-      assert(reply);
-      reply->id() = id();
-      LOG (DEBUG, "replying with id "<<reply->id());
-      return reply;
+    	return pCtx->reply(this);
     }
 
     encoded_type &activity() { return activity_; }

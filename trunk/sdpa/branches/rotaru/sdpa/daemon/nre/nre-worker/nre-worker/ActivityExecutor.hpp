@@ -75,7 +75,9 @@ namespace sdpa { namespace nre { namespace worker {
 
     void operator()();
 
-    Reply* reply(ExecuteRequest* pCtx);
+    Reply* reply(ExecuteRequest* );
+    Reply* reply(InfoRequest* );
+
 
   private:
     void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
