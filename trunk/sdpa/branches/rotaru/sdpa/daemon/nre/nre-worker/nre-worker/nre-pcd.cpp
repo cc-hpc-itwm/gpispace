@@ -85,7 +85,7 @@ int main(int ac, char **av)
   signal(SIGSEGV, &sig_handler);
   signal(SIGABRT, &sig_handler);
 
-  using namespace sdpa::modules;
+  using namespace we::loader;
 
   std::clog << "I: starting on location: " << vm["location"].as<std::string>() << "..." << std::endl;
   sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>(), fvmGetRank()));

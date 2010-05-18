@@ -28,7 +28,7 @@
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 #include <sdpa/daemon/nre/Codec.hpp>
-#include <sdpa/modules/ModuleLoader.hpp>
+
 
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -45,7 +45,7 @@ namespace sdpa { namespace nre { namespace worker {
   public:
     explicit
     ActivityExecutor(const std::string &my_location, int rank)
-      : loader_(sdpa::modules::ModuleLoader::create())
+      : loader_(we::loader::loader::create())
       , location_(my_location)
       , rank_(rank)
       , socket_(NULL)
@@ -70,16 +70,19 @@ namespace sdpa { namespace nre { namespace worker {
     bool stop();
 
     // message context
-    sdpa::modules::ModuleLoader &loader() { return *loader_; }
+    virtual we::loader::loader &loader() { return *loader_; }
     int getRank() const { return rank_; }
 
     void operator()();
+
+    Reply* reply(ExecuteRequest* pCtx);
+
   private:
     void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
     void execution_thread();
     void trigger_shutdown();
     
-    sdpa::modules::ModuleLoader::ptr_t loader_;
+    we::loader::loader::ptr_t loader_;
     std::string location_;
     int rank_;
 

@@ -170,7 +170,6 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 		CPPUNIT_ASSERT (false);
 	}
 
-	using namespace sdpa::modules;
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
 
@@ -271,7 +270,6 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 		CPPUNIT_ASSERT (false);
 	}
 
-	using namespace sdpa::modules;
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
 
@@ -368,7 +366,6 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 		CPPUNIT_ASSERT (false);
 	}
 
-	using namespace sdpa::modules;
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
 

@@ -3,7 +3,8 @@ add_subdirectory(events)
 
 #obsolete
 #add_subdirectory(wf)
-add_subdirectory(modules)
+#add_subdirectory(modules)
+
 add_subdirectory(daemon)
 add_subdirectory(client)
 

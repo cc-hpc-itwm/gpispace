@@ -19,7 +19,7 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/util.hpp>
 #include <sdpa/daemon/nre/NreWorkerClient.hpp>
-#include <sdpa/wf/Activity.hpp>
+
 
 #include <boost/program_options.hpp>
 

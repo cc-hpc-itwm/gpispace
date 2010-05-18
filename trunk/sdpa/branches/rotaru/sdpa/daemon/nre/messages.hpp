@@ -304,7 +304,7 @@ namespace sdpa { namespace nre { namespace worker {
     	  we::activity_t act(we::util::text_codec::decode<we::activity_t>(activity_));
 
     	  // Use this in the future with real modules
-    	  // struct exec_context ctxt(pCtx->loader());
+    	  //struct exec_context ctxt(pCtx->loader());
     	  struct exec_context ctxt;
     	  act.execute(ctxt);
 
