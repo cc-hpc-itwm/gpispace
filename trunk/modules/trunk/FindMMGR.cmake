@@ -25,7 +25,7 @@
 message(STATUS "FindMMGR check")
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include(FindPackageHelper)
-  check_package(MMGR dtmmgr.h mmgr 1.0)
+  check_package(MMGR mmgr/dtmmgr.h mmgr 1.0)
 else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(MMGR_FOUND true)
   set(MMGR_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/mmgr/mmgr")
