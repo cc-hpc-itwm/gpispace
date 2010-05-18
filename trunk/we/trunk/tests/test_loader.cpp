@@ -4,12 +4,17 @@
 
 #include "answer.hpp"
 
-int main (int, char **)
+int main (int ac, char **argv)
 {
   we::loader::loader loader;
 
-  loader.load ( "answer", "./libanswer.so" );
-  loader.load ( "question", "./libquestion.so" );
+  for (int i = 1; i < ac; ++i)
+  {
+    loader.append_search_path (argv[i]);
+  }
+
+  loader.load ( "answer" );
+  loader.load ( "question" );
 
   std::cerr << loader << std::endl;
 
