@@ -1,11 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dtmmgr.h>
 
-// #include <unistd.h>
-// #include <errno.h>
-// #include <sys/msg.h>
+#include <mmgr/dtmmgr.h>
 
 #include <fvm-pc/pc.hpp>
 #if ! defined(MAX_SHMEM_SIZE)
@@ -67,7 +64,7 @@ int fvmConnect(fvm_pc_config_t cfg)
     fprintf(stderr, "fvm-pc: shared-memory size (0) is illegal!\n");
     return FVM_EINVALSZ;
   }
-  
+
   if (cfg.shmemsize > MAX_SHMEM_SIZE)
   {
     fprintf(stderr, "fvm-pc: sorry, the configured shared-memory size is too large for me! maximum: %lu, wanted: %lu\n", (fvmSize_t)(MAX_SHMEM_SIZE), cfg.shmemsize);
@@ -225,7 +222,7 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   }
 }
 
-static fvmCommHandleState_t check_bounds 
+static fvmCommHandleState_t check_bounds
 ( const fvmAllocHandle_t handle
 , const fvmOffset_t fvmOffset /* relative to handle */
 , const fvmSize_t size /* should stay inside the space allocated for handle */
@@ -290,7 +287,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	  {
 	    fvmCommHandleState_t fvmCommHandleState =
 	      check_bounds (handle, fvmOffset, size, ARENA_GLOBAL, &BaseOffset, "PutGlobalData");
-	  
+
 	    if (fvmCommHandleState == COMM_HANDLE_OK)
 	      {
 		memcpy((char*)(pcFVM) + BaseOffset + fvmOffset, (char*)(pcShm) + shmemOffset, size);
@@ -329,7 +326,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 
   return COMM_HANDLE_OK;
 }
- 
+
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
@@ -349,7 +346,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   fvmCommHandle_t commhandle = fvmCommData(handle, fvmOffset, size, shmemOffset, scratchHandle, PUTGLOBAL);
   return commhandle;
-  
+
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
