@@ -278,6 +278,10 @@ namespace we
           handle_ = 0;
           throw;
         }
+
+        dlclose(handle_);
+        handle_ = 0;
+        std::cerr << "module unloaded" << std::endl;
       }
 
     private:
