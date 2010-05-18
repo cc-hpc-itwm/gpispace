@@ -1,16 +1,19 @@
 #ifndef WE_LOADER_MODULE_LOADER_HPP
 #define WE_LOADER_MODULE_LOADER_HPP 1
 
+#include <list>
 #include <string>
 #include <cassert>
 #include <dlfcn.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/filesystem.hpp>
 
 #include <we/loader/exceptions.hpp>
 #include <we/loader/types.hpp>
 #include <we/loader/Module.hpp>
+#include <we/loader/module_traits.hpp>
 
 namespace we {
   namespace loader {
@@ -20,6 +23,7 @@ namespace we {
     public:
       typedef shared_ptr<Module> module_ptr_t;
       typedef shared_ptr<loader> ptr_t;
+      typedef std::list<boost::filesystem::path> search_path_t;
 
       static ptr_t create() { return ptr_t(new loader()); }
 
@@ -27,7 +31,9 @@ namespace we {
 
       loader()
         : module_table_()
-      {}
+      {
+        push_back (".");
+      }
 
       ~loader()
       {
@@ -67,20 +73,24 @@ namespace we {
         //    file_name = "lib" + module_name + ".so"
         // iterate over search path
         //    path = prefix + file_name
-        return load (module_name, "./lib"+module_name+".so");
+        boost::filesystem::path module_file_path;
+        if (locate (module_name, module_file_path))
+          return load (module_name, module_file_path);
+        else
+          throw ModuleLoadFailed("module '" + module_name + "' could not be located", module_name, "");
       }
 
       module_ptr_t load( const std::string & module_name
-                         , const std::string & path
-                         ) throw(ModuleException)
+                       , const boost::filesystem::path & path
+                       ) throw(ModuleException)
       {
-        module_ptr_t mod(new Module(module_name, path));
+        module_ptr_t mod(new Module(module_name, path.string()));
         std::pair<module_table_t::iterator, bool> insert_result =
           module_table_.insert(std::make_pair(mod->name(), mod));
 
         if (! insert_result.second)
         {
-          throw ModuleLoadFailed("module already registered", mod->name(), path);
+          throw ModuleLoadFailed("module already registered", mod->name(), path.string());
         }
         else
         {
@@ -94,6 +104,16 @@ namespace we {
         if (mod != module_table_.end()) {
           unload(mod);
         }
+      }
+
+      void push_back (const boost::filesystem::path & p)
+      {
+        search_path_.push_back (p);
+      }
+
+      void push_front (const boost::filesystem::path & p)
+      {
+        search_path_.push_front (p);
       }
 
       void writeTo(std::ostream &os) const
@@ -116,6 +136,25 @@ namespace we {
       loader(const loader&);
       loader & operator = (const loader &);
 
+      bool locate (const std::string & module, boost::filesystem::path & path_found)
+      {
+        namespace fs = boost::filesystem;
+        const std::string file_name (module_traits<Module>::file_name (module));
+        for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
+        {
+          if (! fs::exists (*dir))
+            continue;
+
+          fs::path path (*dir / file_name);
+          if (fs::exists (path))
+          {
+            path_found = path;
+            return true;
+          }
+        }
+        return false;
+      }
+
       void unload_all()
       {
         while (! module_table_.empty()) {
@@ -130,6 +169,7 @@ namespace we {
       }
 
       module_table_t module_table_;
+      search_path_t search_path_;
     };
 
     inline std::ostream &operator<< ( std::ostream &os
