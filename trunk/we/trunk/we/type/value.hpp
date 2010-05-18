@@ -365,12 +365,14 @@ namespace value
     class get_literal_value : public boost::static_visitor<T>
     {
     public:
-      T const & operator () (const literal::type & literal) const
+      typedef T const & result_type;
+
+      result_type operator () (const literal::type & literal) const
       {
         return boost::get<T> (literal);
       }
 
-      T const &operator () (const value::structured_t & o) const
+      result_type operator () (const value::structured_t & o) const
       {
         throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
       }
@@ -378,7 +380,7 @@ namespace value
   }
 
   template <typename T, typename V>
-  T const & get_literal_value (const V & v)
+  typename visitor::get_literal_value<T const &>::result_type get_literal_value (const V & v)
   {
     return boost::apply_visitor (visitor::get_literal_value<T const &>(), v);
   }
