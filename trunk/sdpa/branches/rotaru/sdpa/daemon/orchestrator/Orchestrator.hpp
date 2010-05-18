@@ -81,7 +81,7 @@ namespace daemon {
 		friend class sdpa::tests::WorkerSerializationTest;
 
 	  private:
-		Scheduler* create_scheduler(const std::string& worker_url = "")
+		Scheduler* create_scheduler()
 		{
 			return new SchedulerOrch(this);
 		}

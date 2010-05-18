@@ -228,7 +228,7 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
 	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
-	  virtual Scheduler* create_scheduler(const std::string& worker_url = "")
+	  virtual Scheduler* create_scheduler()
 	  {
 		  return new SchedulerImpl(this);
 	  }

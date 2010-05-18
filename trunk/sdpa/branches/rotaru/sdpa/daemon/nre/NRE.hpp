@@ -26,6 +26,8 @@
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/nre/NreWorkerClient.hpp>
 
+#include <boost/pointer_cast.hpp>
+
 
 typedef sdpa::daemon::NotificationService gui_service;
 
@@ -47,11 +49,13 @@ namespace sdpa {
 				  url_(url),
 				  masterName_(masterName),
 				  masterUrl_(masterUrl),
+				  //workerUrl_(workerUrl),
 				  m_guiServ("SDPA", guiUrl)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
 			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>(this, workerUrl));
+			//boost::dynamic_pointer_cast<SchedulerNRE<U> >(ptr_scheduler_)->nre_worker_client().set_location(workerUrl);
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -101,6 +105,7 @@ namespace sdpa {
 			ar & url_; //boost::serialization::make_nvp("url_", url_);
 			ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
 			ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
+			//ar & workerUrl_;
 			//ar & m_guiServ;
 		}
 
@@ -113,14 +118,15 @@ namespace sdpa {
 
 	  protected:
 
-		Scheduler* create_scheduler(const std::string& workerUrl = "")
+		Scheduler* create_scheduler()
 		{
-			return new SchedulerNRE<U>(this, workerUrl);
+			return NULL; //new SchedulerNRE<U>(this);
 		}
 
 		std::string url_;
 		std::string masterName_;
 		std::string masterUrl_;
+		//std::string workerUrl_;
 		gui_service m_guiServ;
 	  };
 	}

@@ -92,6 +92,7 @@ namespace sdpa { namespace nre { namespace worker {
     }
 
     const std::string &worker_location() const { return nre_worker_location_; }
+    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
 
     void set_ping_interval(unsigned long seconds)
     {

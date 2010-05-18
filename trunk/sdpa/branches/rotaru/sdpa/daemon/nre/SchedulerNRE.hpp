@@ -233,6 +233,8 @@ namespace sdpa {
 		//ar & m_worker_;  //NreWorkerClient
 	 }
 
+	 U& nre_worker_client() { return m_worker_;}
+
   private:
 	  SDPA_DECLARE_LOGGER();
 	  U m_worker_;

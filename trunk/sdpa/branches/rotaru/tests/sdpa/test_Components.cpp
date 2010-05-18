@@ -77,6 +77,8 @@ namespace sdpa { namespace tests { namespace worker {
     void set_ping_timeout(unsigned long seconds){}
     void set_ping_trials(std::size_t max_tries){}
 
+    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
+
     unsigned int start() throw (std::exception){ SDPA_LOG_INFO("Start the test NreWorkerClient ..."); return 0;}
     void stop() throw (std::exception) { SDPA_LOG_INFO("Stop the test NreWorkerClient ...");}
 
@@ -90,6 +92,7 @@ namespace sdpa { namespace tests { namespace worker {
 	}
 
   private:
+    std::string nre_worker_location_;
     SDPA_DECLARE_LOGGER();
   };
 }}}
