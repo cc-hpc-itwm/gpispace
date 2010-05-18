@@ -1,16 +1,16 @@
 #ifndef WE_LOADER_MODULE_LOADER_HPP
 #define WE_LOADER_MODULE_LOADER_HPP 1
 
-#include <boost/unordered_map.hpp>
 #include <string>
 #include <cassert>
 #include <dlfcn.h>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/unordered_map.hpp>
+
 #include <we/loader/exceptions.hpp>
 #include <we/loader/types.hpp>
 #include <we/loader/Module.hpp>
-
-#include <boost/shared_ptr.hpp>
 
 namespace we {
   namespace loader {
@@ -30,7 +30,6 @@ namespace we {
         try {
           unload_all();
         } catch (const std::exception &ex) {
-          LOG(ERROR, "could not unload module: " << ex.what());
         }
       }
 
