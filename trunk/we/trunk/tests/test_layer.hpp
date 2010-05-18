@@ -27,6 +27,7 @@
 #include <we/mgmt/bits/queue.hpp>
 
 #include <we/we.hpp>
+#include <we/loader/loader.hpp>
 #include <kdm/kdm_simple.hpp>
 #include <kdm/module.hpp>
 
@@ -88,7 +89,7 @@ namespace test {
 
       void handle_externally (we::activity_t & act, const mod_t &mod)
       {
-        module::call ( act, mod );
+        module::call (daemon.loader(), act, mod );
         daemon.layer().finished (id, we::util::text_codec::encode(act));
       }
 
@@ -97,7 +98,7 @@ namespace test {
         throw std::runtime_error ( "NO external expr here!" );
       }
 
-      context ( Daemon & d, const id_type & an_id)
+      context (Daemon & d, const id_type & an_id)
         : daemon (d)
         , id(an_id)
       {}
@@ -256,6 +257,7 @@ namespace test {
     }
 
     inline layer_type & layer() { return mgmt_layer_; }
+    inline we::loader::loader & loader() { return loader_; }
 
   private:
     boost::recursive_mutex mutex_;
@@ -264,6 +266,7 @@ namespace test {
     id_map_t  id_map_;
     job_q_t jobs_;
     worker_list_t worker_;
+    we::loader::loader loader_;
   };
 }
 

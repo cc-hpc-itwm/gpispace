@@ -54,12 +54,15 @@ void observe_executing (const layer_t *, layer_id_type const &)
 
 int main (int argc, char **argv)
 {
-  const std::string cfg_file = std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf");
-  const std::size_t num_jobs = ((argc > 2) ? (size_t)atoi(argv[2]) : 1);
-  const std::size_t num_worker = ((argc > 3) ? (size_t)atoi(argv[3]) : 1);
+  const std::string cfg_file = std::string ((argc > 1) ? argv[1] : "/scratch/KDM/KDM.conf");
+  const std::string mod_path = std::string ((argc > 2) ? argv[2] : "/scratch/KDM/");
+  const std::size_t num_jobs = ((argc > 3) ? (size_t)atoi(argv[3]) : 1);
+  const std::size_t num_worker = ((argc > 4) ? (size_t)atoi(argv[4]) : 1);
 
   // instantiate daemon and layer
   daemon_type daemon(num_worker);
+  daemon.loader().append_search_path (mod_path);
+
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
