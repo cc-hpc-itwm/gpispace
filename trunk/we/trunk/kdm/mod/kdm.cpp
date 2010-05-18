@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <fvm-pc/pc.hpp>
 
 static value::type kdm_initialize (const std::string & filename, long & wait)
 {
@@ -123,6 +124,12 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
   we::loader::put_output (output, "trigger", control());
 }
 
+static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
+{
+  std::cerr << "rank := " << fvmGetRank() << std::endl;
+  we::loader::put_output (output, "result", 0L);
+}
+
 WE_MOD_INITIALIZE_START (kdm);
 {
   WE_REGISTER_FUN (initialize);
@@ -131,6 +138,7 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (process);
   WE_REGISTER_FUN (write);
   WE_REGISTER_FUN (finalize);
+  WE_REGISTER_FUN (selftest);
 }
 WE_MOD_INITIALIZE_END (kdm);
 
