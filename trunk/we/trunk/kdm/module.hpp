@@ -1,9 +1,11 @@
 #ifndef WE_KDM_MODULE_CALL_HPP
 #define WE_KDM_MODULE_CALL_HPP 1
 
+#include <we/loader/loader.hpp>
+
 namespace module
 {
-  static void call (we::activity_t & act, const we::transition_t::mod_type & module_call)
+  static void call (we::loader::loader & loader, we::activity_t & act, const we::transition_t::mod_type & module_call)
   {
     we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
 
@@ -37,7 +39,15 @@ namespace module
 
     mod_output_t mod_output;
 
-    module::eval ( module_call, context, mod_output );
+    try
+    {
+      loader[module_call.module()] (module_call.function(), context, mod_output);
+    }
+    catch (const std::exception & ex)
+    {
+      std::cerr << "could not call real module, falling back to internal: " << ex.what() << std::endl;
+      module::eval ( module_call, context, mod_output );
+    }
 
     for ( mod_output_t::const_iterator ton (mod_output.begin())
         ; ton != mod_output.end()

@@ -1,11 +1,17 @@
 #ifndef WE_KDM_EXEC_CONTEXT_HPP
 #define WE_KDM_EXEC_CONTEXT_HPP 1
 
+#include <we/loader/loader.hpp>
+
 struct exec_context
 {
   typedef we::transition_t::net_type net_t;
   typedef we::transition_t::mod_type mod_t;
   typedef we::transition_t::expr_type expr_t;
+
+  exec_context (we::loader::loader & module_loader)
+    : loader (module_loader)
+  { }
 
   void handle_internally ( we::activity_t & act, net_t &)
   {
@@ -23,7 +29,7 @@ struct exec_context
 
   void handle_internally ( we::activity_t & act, const mod_t & mod)
   {
-    module::call ( act, mod );
+    module::call ( loader, act, mod );
   }
 
   void handle_internally ( we::activity_t & , const expr_t & )
@@ -47,7 +53,7 @@ struct exec_context
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
   {
     we::activity_t act = we::util::text_codec::decode<we::activity_t> (act_enc);
-    module::call ( act, mod );
+    module::call (loader, act, mod );
     return we::util::text_codec::encode (act);
   }
 
@@ -61,6 +67,9 @@ struct exec_context
   {
     handle_internally ( act, e );
   }
+
+private:
+  we::loader::loader & loader;
 };
 
 #endif

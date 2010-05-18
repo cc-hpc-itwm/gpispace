@@ -35,7 +35,8 @@ int main (int argc, char ** argv)
     ofs << we::util::text_codec::encode (act);
   }
 
-  struct exec_context ctxt;
+  we::loader::loader loader;
+  struct exec_context ctxt (loader);
   act.execute (ctxt);
 
   we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
