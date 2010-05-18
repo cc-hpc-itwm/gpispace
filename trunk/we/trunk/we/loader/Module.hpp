@@ -11,6 +11,8 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/exceptions.hpp>
 
+#include <dlfcn.h>
+
 namespace we
 {
   namespace loader
@@ -38,7 +40,14 @@ namespace we
         , state_(0)
       { }
 
-      virtual ~Module() throw () {}
+      virtual ~Module() throw ()
+      {
+        if (handle_)
+        {
+          dlclose(handle_);
+          handle_ = 0;
+        }
+      }
 
       inline const std::string &name() const { return name_; }
       inline void name(const std::string &a_name) { name_ = a_name; }
