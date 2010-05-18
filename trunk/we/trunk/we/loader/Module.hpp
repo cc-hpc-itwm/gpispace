@@ -1,8 +1,6 @@
 #ifndef WE_LOADER_MODULE_HPP
 #define WE_LOADER_MODULE_HPP 1
 
-#include <fhglog/fhglog.hpp>
-
 #include <iostream>
 #include <boost/unordered_map.hpp>
 #include <string>
@@ -33,24 +31,33 @@ namespace we
 
       typedef boost::unordered_map<std::string, parameterized_function_t> call_table_t;
     public:
-      Module(const std::string & a_name, handle_t a_handle)
+      Module( const std::string & a_name
+            , const std::string & a_path
+            , int flags = RTLD_NOW | RTLD_GLOBAL
+            )
         : name_(a_name)
-        , handle_(a_handle)
+        , path_(a_path)
+        , handle_(0)
         , call_table_()
         , state_(0)
-      { }
+      {
+        handle_ = open (a_path, flags);
+      }
 
       virtual ~Module() throw ()
       {
-        if (handle_)
+        try
         {
-          dlclose(handle_);
-          handle_ = 0;
+          close ();
+        }
+        catch (const std::exception & ex)
+        {
+          std::cerr << "E: **** module " << name() << " had errors during close: " << ex.what() << std::endl;
         }
       }
 
+      inline void name (const std::string & a_name) { name_ = a_name; }
       inline const std::string &name() const { return name_; }
-      inline void name(const std::string &a_name) { name_ = a_name; }
 
       void * state (void)
       {
@@ -64,12 +71,22 @@ namespace we
         return old_state;
       }
 
-      inline const handle_t &handle() { return handle_; }
+      void operator () ( const std::string &function
+                       , const input_t &input
+                       , output_t &output
+                       ) throw ( FunctionNotFound
+                               , BadFunctionArgument
+                               , FunctionException
+                               , std::exception
+                               )
+      {
+        return call (function, input, output);
+      }
 
       void call( const std::string &function
                , const input_t &input
                , output_t &output
-               ) const throw ( FunctionNotFound
+               ) throw ( FunctionNotFound
                              , BadFunctionArgument
                              , FunctionException
                              , std::exception
@@ -78,13 +95,7 @@ namespace we
         call_table_t::const_iterator fun = call_table_.find(function);
         if (fun == call_table_.end())
         {
-          throw FunctionNotFound ( "module "
-                                 + name()
-                                 + " does not provide "
-                                 + "'" + function + "'"
-                                 , name()
-                                 , function
-                                 );
+          throw FunctionNotFound ( name(), function );
         }
         else
         {
@@ -131,7 +142,7 @@ namespace we
                                , FunctionException
                                )
       {
-#ifndef NDEBUG
+#if 0
         {
           std::ostringstream ostr;
           param_names_list_t::const_iterator exp_inp(parameters.begin());
@@ -181,18 +192,108 @@ namespace we
       }
 
     private:
+      handle_t open (const std::string & a_path, int flags = RTLD_NOW | RTLD_GLOBAL)
+      {
+        handle_t handle = dlopen(a_path.c_str(), flags);
+        if (! handle)
+        {
+          throw ModuleLoadFailed( std::string("could not load module '")
+                                + name()
+                                + "' from '"+ a_path + "': "
+                                + std::string(dlerror())
+                                , name()
+                                , a_path
+                                );
+        }
+
+        // clear any errors
+        dlerror();
+
+        InitializeFunction init (NULL);
+        {
+          struct
+          {
+            union
+            {
+              void * symbol;
+              InitializeFunction function;
+            };
+          } func_ptr;
+
+          func_ptr.symbol = dlsym(handle, "we_mod_initialize");
+          init = func_ptr.function;
+        }
+
+        if (init != NULL)
+        {
+          try {
+            const unsigned int LOADER_VERSION (1U);
+
+            init( this, LOADER_VERSION );
+          } catch (const std::exception &ex) {
+            dlclose(handle);
+            throw ModuleLoadFailed("error during mod-init function: " + std::string(ex.what()), name(), a_path);
+          } catch (...) {
+            dlclose(handle);
+            throw ModuleLoadFailed("unknown error during mod-init function", name(), a_path);
+          }
+        }
+
+        return handle;
+      }
+
+      void close ()
+      {
+        if (! handle_)
+          return;
+
+        // clear any errors
+        dlerror();
+
+        FinalizeFunction finalize (NULL);
+        {
+          struct
+          {
+            union
+            {
+              void * symbol;
+              FinalizeFunction function;
+            };
+          } func_ptr;
+
+          func_ptr.symbol = dlsym(handle_, "we_mod_finalize");
+          finalize = func_ptr.function;
+        }
+
+        try
+        {
+          if (finalize != NULL)
+          {
+            finalize( this );
+          }
+        }
+        catch (...)
+        {
+          dlclose(handle_);
+          handle_ = 0;
+          throw;
+        }
+      }
+
+    private:
       // currently we do not want copy operations, thus, define them, but don't
       // implement them
       Module(const Module&);
       Module &operator=(const Module &);
 
       std::string name_;
+      std::string path_;
       handle_t handle_;
       call_table_t call_table_;
       void *state_;
     };
 
-    inline std::ostream &operator<<(std::ostream &os, const sdpa::modules::Module &mod)
+    inline std::ostream &operator<<(std::ostream &os, const Module &mod)
     {
       mod.writeTo(os);
       return os;

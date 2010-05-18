@@ -24,9 +24,11 @@
 #define WE_MOD_INITIALIZE_START(modname)\
   extern "C"\
   {\
-     void we_mod_initialize(::we::loader::IModule *mod)\
+     void we_mod_initialize(::we::loader::IModule *, unsigned int);     \
+     void we_mod_initialize(::we::loader::IModule *mod, unsigned int)                \
      {\
-        mod->name(#modname);
+        (void)(mod);                               \
+        mod->name (#modname)
 
 #define WE_REGISTER_FUN_START(fun)\
         {\
@@ -41,21 +43,23 @@
            mod->add_function(#fun, &fun, params);\
         }
 
-#define WE_REGISTER_FUN(fun)\
+#define WE_REGISTER_FUN(fun)                   \
         mod->add_function(#fun, &fun)
 
 #define WE_SET_STATE(s)\
         mod->state (s)
 
-#define WE_MOD_INIT_END(modname)\
+#define WE_MOD_INITIALIZE_END(modname)\
     }\
   }
 
 #define WE_MOD_FINALIZE_START(modname)\
   extern "C"\
   {\
+     void we_mod_finalize(::we::loader::IModule *);\
      void we_mod_finalize(::we::loader::IModule *mod)\
      {\
+        (void)(mod)
 
 #define WE_GET_STATE()\
          mod->state()

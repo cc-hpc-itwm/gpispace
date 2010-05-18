@@ -31,7 +31,7 @@ namespace we {
     public:
       virtual ~IModule() throw () {}
 
-      virtual void name(const std::string &) = 0;
+      virtual void name (const std::string &name) = 0;
 
       virtual void add_function( const std::string &function
                                , WrapperFunction f

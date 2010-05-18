@@ -8,7 +8,11 @@ foreach (tc_src ${tc_srcs})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name} ${Boost_LIBRARIES})
+  target_link_libraries(${tc_name} ${Boost_LIBRARIES} dl)
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
+
+# answer module
+add_library(answer SHARED answer.cpp)
+add_library(question SHARED question.cpp)
