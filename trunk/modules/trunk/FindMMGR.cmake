@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 # This file defines:
 # * MMGR_FOUND if workflow engine was found
-# * MMGR_LIBRARY The lib to link to (currently only a static unix lib, not portable) 
+# * MMGR_LIBRARY The lib to link to (currently only a static unix lib, not portable)
 # * MMGR_INCLUDE_DIR The path to the include directory
 # *  PKG_CHECK_MODULE used to set the following variables
 # *
@@ -32,4 +32,3 @@ else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(MMGR_LIBRARY_DIR "${CMAKE_BINARY_DIR}/mmgr/mmgr")
   set(MMGR_LIBRARY "${CMAKE_BINARY_DIR}/mmgr/mmgr/libmmgr.so")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-
