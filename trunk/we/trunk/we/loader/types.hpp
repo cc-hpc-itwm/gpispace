@@ -49,6 +49,13 @@ namespace we
     {
       put_output(o, key, value::type (val));
     }
+
+    template <typename T>
+    inline
+    typename value::visitor::get_literal_value<T>::result_type const & get_input (const input_t & i, const std::string & key)
+    {
+      return value::get_literal_value<T>(i.value(key));
+    }
   }
 }
 
