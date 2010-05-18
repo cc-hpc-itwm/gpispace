@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#include <fseg.h>
+#include <mmgr/fseg.h>
 
 static void
 ins (PFSeg_t PFSeg, const Key_t Key, const Value_t Value)

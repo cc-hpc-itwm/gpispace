@@ -1,8 +1,8 @@
 
 #include <stdlib.h>
 
-#include <ostab.h>
-#include <unused.h>
+#include <mmgr/ostab.h>
+#include <mmgr/unused.h>
 
 typedef struct
 {

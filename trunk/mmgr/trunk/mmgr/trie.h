@@ -4,9 +4,9 @@
 #ifndef TRIE_H
 #define TRIE_H
 
-#include <bool.h>
-#include <null.h>
-#include <word.h>
+#include <mmgr/bool.h>
+#include <mmgr/null.h>
+#include <mmgr/word.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -38,7 +38,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef TRIE_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define TRIE_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"Trie",fun)
 #endif
 

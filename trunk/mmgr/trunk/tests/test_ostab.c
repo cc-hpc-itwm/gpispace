@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <ostab.h>
-#include <unused.h>
+#include <mmgr/ostab.h>
+#include <mmgr/unused.h>
 
 static void
 try_look (OStab_t ostab, const Key_t Key)

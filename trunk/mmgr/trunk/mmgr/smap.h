@@ -6,8 +6,8 @@
 #ifndef SMAP_H
 #define SMAP_H
 
-#include <bool.h>
-#include <word.h>
+#include <mmgr/bool.h>
+#include <mmgr/word.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -49,7 +49,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef SMAP_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define SMAP_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"Smap",fun)
 #endif
 

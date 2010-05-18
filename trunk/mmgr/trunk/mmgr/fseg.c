@@ -1,9 +1,9 @@
 
 #include <stdlib.h>
 
-#include <fseg.h>
-#include <trie.h>
-#include <unused.h>
+#include <mmgr/fseg.h>
+#include <mmgr/trie.h>
+#include <mmgr/unused.h>
 
 void
 fseg_ins (PFSeg_t PFSeg, const Key_t Key, const Value_t Value)

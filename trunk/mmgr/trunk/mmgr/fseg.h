@@ -6,7 +6,7 @@
 #ifndef FSEG_H
 #define FSEG_H
 
-#include <smap.h>
+#include <mmgr/smap.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -29,7 +29,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef FSEG_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define FSEG_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"FSeg",fun)
 #endif
 

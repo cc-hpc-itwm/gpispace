@@ -8,7 +8,7 @@
 #ifndef DTMMGR_H
 #define DTMMGR_H
 
-#include <tmmgr.h>
+#include <mmgr/tmmgr.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -54,7 +54,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef DTMMGR_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define DTMMGR_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"DTmmgr",fun)
 #endif
 

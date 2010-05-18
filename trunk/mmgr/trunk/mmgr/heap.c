@@ -1,7 +1,7 @@
 
-#include <heap.h>
+#include <mmgr/heap.h>
 
-#include <bool.h>
+#include <mmgr/bool.h>
 
 #include <stdlib.h>
 #include <string.h>

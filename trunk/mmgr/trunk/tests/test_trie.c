@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <trie.h>
-#include <unused.h>
+#include <mmgr/trie.h>
+#include <mmgr/unused.h>
 
 static void
 getany (const TrieMap_t tm)

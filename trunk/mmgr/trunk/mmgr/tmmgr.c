@@ -1,12 +1,12 @@
 
-#include <tmmgr.h>
+#include <mmgr/tmmgr.h>
 
-#include <ostab.h>
-#include <trie.h>
-#include <fseg.h>
-#include <heap.h>
+#include <mmgr/ostab.h>
+#include <mmgr/trie.h>
+#include <mmgr/fseg.h>
+#include <mmgr/heap.h>
 
-#include <unused.h>
+#include <mmgr/unused.h>
 
 #include <assert.h>
 

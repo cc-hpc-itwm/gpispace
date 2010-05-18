@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <trie.h>
-#include <smap.h>
-#include <unused.h>
+#include <mmgr/trie.h>
+#include <mmgr/smap.h>
+#include <mmgr/unused.h>
 
 #include <sys/time.h>
 

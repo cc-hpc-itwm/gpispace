@@ -2,7 +2,7 @@
 #ifndef BOOL_H
 #define BOOL_H
 
-#include <null.h>
+#include <mmgr/null.h>
 
 #ifdef __cplusplus
 extern "C"

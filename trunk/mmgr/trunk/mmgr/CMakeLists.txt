@@ -1,8 +1,6 @@
 file(GLOB hdrs *.h)
 file(GLOB srcs "*.c")
 
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/mmgr)
-
 ADD_LIBRARY(mmgr ${hdrs} ${srcs})
 ADD_LIBRARY(mmgr.shared SHARED ${hdrs} ${srcs})
 set_target_properties(mmgr.shared PROPERTIES OUTPUT_NAME mmgr)

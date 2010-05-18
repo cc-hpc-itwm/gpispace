@@ -2,8 +2,8 @@
 #ifndef TMMGR_H
 #define TMMGR_H
 
-#include <word.h>
-#include <bool.h>
+#include <mmgr/word.h>
+#include <mmgr/bool.h>
 
 #ifdef __cplusplus
 extern "C"

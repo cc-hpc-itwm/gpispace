@@ -1,9 +1,9 @@
-
-#include <dtmmgr.h>
-
-#include <unused.h>
-
+#include <stdlib.h>
 #include <assert.h>
+
+#include <mmgr/dtmmgr.h>
+
+#include <mmgr/unused.h>
 
 #define FOR_ARENA(id) for (Arena_t id = ARENA_GLOBAL; id <= ARENA_LOCAL; ++id)
 
@@ -118,7 +118,7 @@ dtmmgr_offset_size (const PDTmmgr_t PDTmmgr, const Handle_t Handle,
       if (Arena == ARENA_LOCAL && POffset != NULL)
         {
           assert (pdtmmgr->mem_size >= *POffset + Size);
-        
+
           *POffset = pdtmmgr->mem_size - (*POffset + Size);
         }
 

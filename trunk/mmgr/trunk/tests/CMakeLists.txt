@@ -1,30 +1,14 @@
 # -*- mode: cmake; -*-
 
-## add the CPPUNIT stuff
-#include_directories(${CPPUNIT_INCLUDE_DIRS})
-#link_directories(${CPPUNIT_LIBRARY_DIRS})
-#link_libraries(${CPPUNIT_LIBRARIES} ${CPPUNIT_STATIC_LDFLAGS})
+file(GLOB tc_srcs "test_*.cpp")
+list(SORT tc_srcs)
+foreach (tc_src ${tc_srcs})
+  # get the filename without extension
+  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" tc_name ${tc_src})
+  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
-include_directories(${${PROJECT_NAME}_SOURCE_DIR}/mmgr)
-
-#add_subdirectory(fhglog)
-add_executable(test_smap test_smap.c)
-target_link_libraries(test_smap mmgr)
-
-add_executable(test_heap test_heap.c)
-target_link_libraries(test_heap mmgr)
-
-add_executable(test_trie test_trie.c)
-target_link_libraries(test_trie mmgr)
-
-add_executable(test_fseg test_fseg.c)
-target_link_libraries(test_fseg mmgr)
-
-add_executable(test_ostab test_ostab.c)
-target_link_libraries(test_ostab mmgr)
-
-add_executable(test_tmmgr test_tmmgr.c)
-target_link_libraries(test_tmmgr mmgr)
-
-add_executable(test_dtmmgr test_dtmmgr.c)
-target_link_libraries(test_dtmmgr mmgr)
+  add_executable(${tc_name} ${tc_src})
+  target_link_libraries(${tc_name} mmgr)
+  get_target_property(LOC ${tc_name} LOCATION_)
+  add_test(${tc_name} ${LOC})
+endforeach(tc_src ${tc_srcs})

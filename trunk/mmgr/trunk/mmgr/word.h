@@ -2,7 +2,7 @@
 #ifndef WORD_H
 #define WORD_H
 
-#include <null.h>
+#include <mmgr/null.h>
 
 #ifdef __cplusplus
 extern "C"

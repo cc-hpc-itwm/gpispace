@@ -2,7 +2,7 @@
 #ifndef HEAP_H
 #define HEAP_H
 
-#include <word.h>
+#include <mmgr/word.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -25,7 +25,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef HEAP_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define HEAP_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"Tmmgr",fun)
 #endif
 

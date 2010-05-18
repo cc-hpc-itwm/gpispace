@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <smap.h>
-#include <unused.h>
+#include <mmgr/smap.h>
+#include <mmgr/unused.h>
 
 static void
 get (const SMap_t sm, const Key_t key)

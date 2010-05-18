@@ -4,9 +4,9 @@
 #ifndef OSTAB_H
 #define OSTAB_H
 
-#include <word.h>
+#include <mmgr/word.h>
 
-#include <trie.h>
+#include <mmgr/trie.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -34,7 +34,7 @@ extern "C"
   /* *********************************************************************** */
 
 #ifndef OSTAB_ERROR_HANDLER
-#include <error.h>
+#include <mmgr/error.h>
 #define OSTAB_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"OStab",fun)
 #endif
 
