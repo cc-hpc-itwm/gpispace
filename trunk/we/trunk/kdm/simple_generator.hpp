@@ -14,6 +14,11 @@ namespace kdm
       config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
       config["BUNCHES_PER_OFFSET"] = literal::LONG;
 
+      config["handle_Job"] = literal::LONG;
+      config["scratch_Job"] = literal::LONG;
+      config["handle_TT"] = literal::LONG;
+      config["NThreads"] = literal::LONG;
+
       state["state"] = literal::LONG;
       state["num"] = literal::LONG;
     }
