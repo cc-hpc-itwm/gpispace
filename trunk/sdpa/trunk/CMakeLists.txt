@@ -169,14 +169,9 @@ else (ENABLE_LOGGING)
 endif (ENABLE_LOGGING)
 
 # logging
-include(FindFhgLog)
-if (FHGLOG_FOUND)
-  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
-  include_directories(${FHGLOG_INCLUDE_DIR})
-  set(SDPA_HAVE_FHGLOG 1)
-else (FHGLOG_FOUND)
-  message(FATAL_ERROR "Sorry, FhgLog is required!")
-endif(FHGLOG_FOUND)
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+set(SDPA_HAVE_FHGLOG 1)
 
 # check for Fraunhofer Virtual Machine
 message(STATUS "****** FIXME: Checking for Fraunhofer Virtual Machine...")
