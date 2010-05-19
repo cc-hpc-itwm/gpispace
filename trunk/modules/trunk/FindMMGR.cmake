@@ -24,8 +24,37 @@
 
 message(STATUS "FindMMGR check")
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include(FindPackageHelper)
-  check_package(MMGR mmgr/dtmmgr.h mmgr 1.0)
+  #  include(FindPackageHelper)
+  #  check_package(MMGR mmgr/dtmmgr.h mmgr 1.0)
+
+  find_path (MMGR_INCLUDE_DIR
+	NAMES "mmgr/dtmmgr.h"
+	HINTS ${MMGR_HOME} ENV MMGR_HOME
+	PATH_SUFFIXES include
+  )
+
+  find_library (MMGR_LIBRARY
+	NAMES libmmgr.a
+	HINTS ${MMGR_HOME} ENV MMGR_HOME
+	PATH_SUFFIXES lib
+  )
+  find_library (MMGR_LIBRARY_SHARED
+	NAMES libmmgr.so
+	HINTS ${MMGR_HOME} ENV MMGR_HOME
+	PATH_SUFFIXES lib
+  )
+
+  if (MMGR_INCLUDE_DIR AND MMGR_LIBRARY)
+	set (MMGR_FOUND TRUE)
+	if (NOT MMGR_FIND_QUIETLY)
+	  message (STATUS "Found MMGR headers in ${MMGR_INCLUDE_DIR} and libraries ${MMGR_LIBRARY} ${MMGR_LIBRARY_SHARED}")
+	endif (NOT MMGR_FIND_QUIETLY)
+  else (MMGR_INCLUDE_DIR AND MMGR_LIBRARY)
+	if (MMGR_FIND_REQUIRED)
+	  message (FATA_ERROR "MMGR could not be found!")
+	endif (MMGR_FIND_REQUIRED)
+  endif (MMGR_INCLUDE_DIR AND MMGR_LIBRARY)
+
 else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(MMGR_FOUND true)
   set(MMGR_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/mmgr/mmgr")
