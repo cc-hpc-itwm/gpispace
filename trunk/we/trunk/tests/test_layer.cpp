@@ -7,10 +7,12 @@
 
 #include <kdm/simple_generator.hpp>
 
+#include <boost/program_options.hpp>
 #include "test_layer.hpp"
 
 using namespace we::mgmt;
 using namespace test;
+namespace po = boost::program_options;
 
 typedef std::string id_type;
 //typedef uint64_t id_type;
@@ -54,15 +56,44 @@ void observe_executing (const layer_t *, layer_id_type const &)
 
 int main (int argc, char **argv)
 {
-  const std::string cfg_file = std::string ((argc > 1) ? argv[1] : "/scratch/KDM/KDM.conf");
-  const std::string mod_path = std::string ((argc > 2) ? argv[2] : "/scratch/KDM/");
-  const std::size_t num_jobs = ((argc > 3) ? (size_t)atoi(argv[3]) : 1);
-  const std::size_t num_worker = ((argc > 4) ? (size_t)atoi(argv[4]) : 1);
+  po::options_description desc("options");
+
+  std::string cfg_file;
+  std::string mod_path;
+  std::vector<std::string> mods_to_load;
+
+  const std::size_t num_jobs = 1;
+  const std::size_t num_worker = 2;
+
+  desc.add_options()
+    ("help", "this message")
+    ("cfg", po::value<std::string>(&cfg_file)->default_value("/scratch/KDM/KDM.conf"), "config file")
+    ("mod-path", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "modules")
+    ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
+    ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help"))
+    {
+      std::cout << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
 
   // instantiate daemon and layer
   daemon_type daemon(num_worker);
-  daemon.loader().append_search_path (mod_path);
 
+  for ( std::vector<std::string>::const_iterator m (mods_to_load.begin())
+      ; m != mods_to_load.end()
+      ; ++m
+      )
+  {
+    daemon.loader().load (*m, *m);
+  }
+
+  daemon.loader().append_search_path (mod_path);
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
