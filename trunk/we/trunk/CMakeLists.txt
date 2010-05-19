@@ -106,6 +106,10 @@ find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
+## fhglog
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/we/we-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/we/we-config.hpp DESTINATION include/we)
 add_definitions(-DHAVE_CONFIG_H)
