@@ -22,7 +22,10 @@
 # *   <XPREFIX> = <PREFIX>  when |MODULES| == 1, else
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
-message(STATUS "FindMMGR check")
+if (NOT MMGR_FIND_QUIETLY)
+  message(STATUS "FindMMGR check")
+endif (NOT MMGR_FIND_QUIETLY)
+
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   #  include(FindPackageHelper)
   #  check_package(MMGR mmgr/dtmmgr.h mmgr 1.0)
