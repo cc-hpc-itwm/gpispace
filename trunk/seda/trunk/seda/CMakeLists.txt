@@ -10,9 +10,9 @@ if (WITH_LOG4CPP AND LOG4CPP_FOUND)
   target_link_libraries(seda ${LOG4CPP_LIBRARY})
 endif (WITH_LOG4CPP AND LOG4CPP_FOUND)
 
-if (WITH_FHGLOG AND FHGLOG_FOUND)
-  target_link_libraries(seda ${FHGLOG_LIBRARY})
-endif (WITH_FHGLOG AND FHGLOG_FOUND)
+if (WITH_FHGLOG AND FhgLog_FOUND)
+  target_link_libraries(seda ${FhgLog_LIBRARY})
+endif (WITH_FHGLOG AND FhgLog_FOUND)
 
 target_link_libraries(seda ${Boost_LIBRARIES})
 
