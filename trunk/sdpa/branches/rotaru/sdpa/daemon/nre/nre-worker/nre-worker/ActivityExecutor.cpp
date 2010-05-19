@@ -320,8 +320,8 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
   		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
   		// Use this in the future with real modules
-  		//struct exec_context ctxt(pCtx->loader());
-  		struct exec_context ctxt;
+  		struct exec_context ctxt( loader() );
+  		//struct exec_context ctxt;
   		act.execute(ctxt);
 
   		execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));

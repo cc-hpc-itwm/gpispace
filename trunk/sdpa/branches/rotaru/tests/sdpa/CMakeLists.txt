@@ -1,10 +1,19 @@
 # -*- mode: cmake; -*-
 ## add the CPPUNIT stuff
+
+set(TESTS_KDM_MODULES_PATH "${CMAKE_BINARY_DIR}/we/kdm/mod")
+message(STATUS "kdm modules are in: ${TESTS_KDM_MODULES_PATH}")
+
+set(TESTS_KDM_FAKE_MODULES_PATH "${TESTS_KDM_MODULES_PATH}/fake")
+message(STATUS "kdm fake modules are in: ${TESTS_KDM_FAKE_MODULES_PATH}")
+
 include_directories(${CPPUNIT_INCLUDE_DIRS})
 link_directories(${CPPUNIT_LIBRARY_DIRS})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/tests_config.hpp)
 
 if (USE_SMC_SC)
 	add_state_machine(PERFORMANCETEST_FSM_CPP PERFORMANCETEST_FSM_H PerformanceTest)

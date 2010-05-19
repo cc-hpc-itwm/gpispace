@@ -16,6 +16,8 @@
  * =====================================================================================
  */
 #include "test_Components.hpp"
+#include "tests_config.hpp"
+
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
@@ -126,6 +128,7 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
+
 void TestComponents::testActivityRealWeAllCompAndNreWorker()
 {
 	SDPA_LOG_DEBUG("***** test kdm Activity, with all components, real we and NreWorker *****"<<std::endl);
@@ -171,7 +174,8 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 	}
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", fvmGetRank() ));
+	executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
 
 	try {
 		executor->start();
@@ -272,6 +276,7 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
+    executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
 
 	try {
 		executor->start();

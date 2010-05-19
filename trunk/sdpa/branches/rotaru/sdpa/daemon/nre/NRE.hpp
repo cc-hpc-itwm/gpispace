@@ -28,6 +28,12 @@
 
 #include <boost/pointer_cast.hpp>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+using namespace std;
+
 
 typedef sdpa::daemon::NotificationService gui_service;
 
@@ -112,6 +118,8 @@ namespace sdpa {
 		virtual void backup( const std::string& strArchiveName );
 	    virtual void recover( const std::string& strArchiveName );
 
+	    void launch_pcd() throw (std::exception);
+
 		friend class boost::serialization::access;
 		friend class sdpa::tests::WorkerSerializationTest;
 
@@ -142,10 +150,57 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
+template <typename T, typename U>
+void NRE<T, U>::launch_pcd() throw (std::exception)
+{
+   	int c;
+   	int nStatus;
+   	string strID;
+
+   	pid_t pID = fork();
+   	if (pID == 0)  // child
+   	{
+		// Code only executed by child process
+
+		strID = "nre-pcd: ";
+		LOG(INFO, "Try to launch the nre-pcd ...");
+		execl("nre-pcd", "nre-pcd", "-l ", "127.0.0.1:8000", NULL );
+	}
+	else if (pID < 0)            // failed to fork
+	{
+		LOG(ERROR, "Failed to fork!");
+		exit(1);
+		// Throw exception
+	}
+	else                                   // parent
+	{
+	  // Code only executed by parent process
+
+	  strID = "NREWorkerClient";
+	}
+
+   	c = wait(&nStatus);
+   	if( WIFEXITED(nStatus) )
+   	{
+   		if( WEXITSTATUS(nStatus) != 0 )
+   		{
+   			std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+   			LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+   		}
+   		else
+   			if( WIFSIGNALED(nStatus) )
+   			{
+   				std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+   				LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+   			}
+   	}
+}
 
 template <typename T, typename U>
 void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 {
+	//launch_pcd();
+
 	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();

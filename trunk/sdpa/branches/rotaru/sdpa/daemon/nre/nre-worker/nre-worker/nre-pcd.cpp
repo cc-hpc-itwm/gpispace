@@ -12,6 +12,7 @@ int main(int ac, char **av)
     ("location,l", po::value<std::string>()->default_value("127.0.0.1:8000"), "where to listen")
     ("config,c" , po::value<std::string>()->default_value(NRE_PCD_DEFAULT_CFG), "input parameter to the activity")
     ("load" , po::value<std::vector<std::string> >(), "shared modules that shall be loaded")
+    ("search-path,p", po::value<std::string>()->default_value(""), "search path for the modules")
     ("verbose,v", "verbose output")
     ("keep-going,k", "keep going, even if the FVM is not there")
   ;
@@ -45,10 +46,11 @@ int main(int ac, char **av)
   fhg::log::Configurator::configure();
 
   // connect to FVM
-  fvm_pc_config_t pc_cfg;
+  // initialize it with some default values
+  fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
 
   // read those from the config file!
-  try
+  /*try
   {
     read_fvm_config(vm["config"].as<std::string>(), pc_cfg);
   }
@@ -63,7 +65,7 @@ int main(int ac, char **av)
     {
       return 2;
     }
-  }
+  }*/
 
   fvm_pc_connection_mgr fvm_pc;
   try
@@ -87,8 +89,9 @@ int main(int ac, char **av)
 
   using namespace we::loader;
 
-  std::clog << "I: starting on location: " << vm["location"].as<std::string>() << "..." << std::endl;
+  LOG(INFO, "starting on location: " << vm["location"].as<std::string>() << "...");
   sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>(), fvmGetRank()));
+  executor->loader().append_search_path( vm["search-path"].as<std::string>() );
 
   try
   {

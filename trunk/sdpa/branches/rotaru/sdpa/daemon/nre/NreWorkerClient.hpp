@@ -35,6 +35,9 @@
 #include <sdpa/daemon/nre/Codec.hpp>
 #include <sdpa/daemon/IWorkflowEngine.hpp>
 
+#include <iostream>
+#include <string>
+
 namespace sdpa { namespace nre { namespace worker {
   using boost::asio::ip::udp;
 
