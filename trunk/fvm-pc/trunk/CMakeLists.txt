@@ -67,6 +67,7 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUG -DDEBUGCOMM  -DSHMEM)
+
 if (MAX_SHMEM_SIZE)
 else (MAX_SHMEM_SIZE)
   set (MAX_SHMEM_SIZE 536870912) # 512 MB
@@ -93,14 +94,6 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-include (FindMMGR)
-if (MMGR_FOUND)
-  include_directories(${MMGR_INCLUDE_DIR})
-else (MMGR_FOUND)
-  message (FATAL_ERROR "Sorry, MemoryManager library is required")
-endif (MMGR_FOUND)
-message(STATUS "MMGR: -I${MMGR_INCLUDE_DIR} -L${MMGR_LIBRARY_DIR} -l${MMGR_LIBRARY}")
-
 find_path (WE_INCLUDE_DIR
   NAMES "we/net.hpp"
   HINTS ${WE_HOME} ENV WE_HOME
@@ -113,6 +106,11 @@ else (WE_INCLUDE_DIR)
   message (FATAL_ERROR "Sorry, workflow engine's module loader required!")
 endif(WE_INCLUDE_DIR)
 message(STATUS "WE: -I${WE_INCLUDE_DIR}")
+
+if (WITH_FAKE_PC)
+  find_package (MMGR REQUIRED)
+  include_directories (${MMGR_INCLUDE_DIR})
+endif (WITH_FAKE_PC)
 
 # Reflect the package structure
 add_subdirectory(fvm)
