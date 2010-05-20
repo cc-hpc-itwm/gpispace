@@ -18,7 +18,8 @@ namespace fhg { namespace log {
         , to_file_("")
         , to_server_("")
         , fmt_string_("")
-		, threaded_(true)
+          // FIXME: broken if set to true
+        , threaded_(false)
       {}
 
       void operator() () throw() {
@@ -89,8 +90,8 @@ namespace fhg { namespace log {
           std::clog << "D: setting format to \"" << fmt_string_ << "\"" << std::endl;
 #endif
           if      (fmt_string_ == "full")    fmt = Formatter::Full();
-          else if (fmt_string_ == "short")   fmt = Formatter::Short(); 
-          else if (fmt_string_ == "default") fmt = Formatter::Default(); 
+          else if (fmt_string_ == "short")   fmt = Formatter::Short();
+          else if (fmt_string_ == "default") fmt = Formatter::Default();
           else                               fmt = Formatter::Custom(fmt_string_);
         }
 
