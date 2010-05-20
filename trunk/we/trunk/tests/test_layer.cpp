@@ -63,7 +63,7 @@ int main (int argc, char **argv)
   std::vector<std::string> mods_to_load;
 
   const std::size_t num_jobs = 1;
-  const std::size_t num_worker = 2;
+  const std::size_t num_worker = 1;
 
   desc.add_options()
     ("help", "this message")
@@ -151,6 +151,8 @@ int main (int argc, char **argv)
     sleep (1);
   }
 #endif
+
+  std::cerr << "Everything done." << std::endl;
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
