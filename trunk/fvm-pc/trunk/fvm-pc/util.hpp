@@ -13,7 +13,7 @@ namespace fvm
   namespace util {
 
     template < fvmAllocHandle_t (*Alloc)(fvmSize_t)
-             , void (*Delete)(fvmAllocHandle_t)
+             , int (*Delete)(fvmAllocHandle_t)
              >
     struct generic_allocation
     {
