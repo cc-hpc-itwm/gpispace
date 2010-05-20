@@ -13,13 +13,13 @@
 #endif
 
 // global variables
-static void * pcShm(0);
-static fvmSize_t pcShmSize(0);
-
-static void * pcFVM(0);
-static fvmSize_t pcFVMSize(0);
-
 static DTmmgr_t dtmmgr(NULL);
+
+static fvmSize_t pcFVMSize(0);
+static void * pcFVM(0);
+
+static fvmSize_t pcShmSize(0);
+static void * pcShm(0);
 
 enum FVM_PC_API_ERRORS
 {
@@ -124,22 +124,18 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   switch (AllocReturn)
   {
 	case ALLOC_SUCCESS:
-#ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: global alloc handle %lu -> %lu bytes\n", ptr, size);
-	  dtmmgr_status (dtmmgr);
-#endif
 	  return ptr;
 	case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: global alloc failed: not enough contigiuous memory!\n");
-	  dtmmgr_status (dtmmgr);
+          fprintf(stderr, "fvm-pc: global alloc failed: not enough contigiuous memory of size %lu!\n", size);
+      dtmmgr_status (dtmmgr);
 #endif
 	  // FIXME: set errno!
 	  return 0;
 	default:
 #ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: global alloc failed!\n");
-	  dtmmgr_status (dtmmgr);
+          fprintf(stderr, "fvm-pc: global alloc of size %lu failed!\n", size);
+      dtmmgr_status (dtmmgr);
 #endif
 	  return 0;
   }
@@ -147,23 +143,25 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
-#ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: global free: handle=%lu\n", ptr);
-#endif
-
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_GLOBAL))
   {
 	case RET_SUCCESS:
-#ifndef NDEBUG
-	  dtmmgr_status (dtmmgr);
-#endif
 	  return 0;
 	case RET_HANDLE_UNKNOWN:
+#ifndef NDEBUG
+          dtmmgr_status (dtmmgr);
+#endif
 	  return FVM_ESRCH;
 	case RET_FAILURE:
+#ifndef NDEBUG
+          dtmmgr_status (dtmmgr);
+#endif
 	  return FVM_EGENERAL;
 	default:
-      fprintf(stderr, "fvm-pc: global free failed: unknown return code: %d\n", ret);
+          fprintf(stderr, "fvm-pc: global free failed: unknown return code: %d\n", ret);
+#ifndef NDEBUG
+          dtmmgr_status (dtmmgr);
+#endif
 	  return FVM_EGENERAL;
   }
 }
@@ -177,21 +175,17 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
   switch (AllocReturn)
   {
 	case ALLOC_SUCCESS:
-#ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: local alloc handle %lu -> %lu bytes\n", ptr, size);
-	  dtmmgr_status (dtmmgr);
-#endif
 	  return ptr;
 	case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: local alloc failed: not enough contigiuous memory!\n");
+          fprintf(stderr, "fvm-pc: local alloc failed: not enough contigiuous memory of size %lu!\n", size);
 	  dtmmgr_status (dtmmgr);
 #endif
 	  // FIXME: set errno!
 	  return 0;
 	default:
 #ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: local alloc failed!\n");
+          fprintf(stderr, "fvm-pc: local alloc of size %lu failed!\n", size);
 	  dtmmgr_status (dtmmgr);
 #endif
 	  return 0;
@@ -200,24 +194,26 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
 int fvmLocalFree(fvmAllocHandle_t ptr)
 {
-#ifndef NDEBUG
-      fprintf(stderr, "fvm-pc: local free: handle=%lu\n", ptr);
-#endif
-
   switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_LOCAL))
   {
 	case RET_SUCCESS:
+	  return 0;
+	case RET_HANDLE_UNKNOWN:
 #ifndef NDEBUG
 	  dtmmgr_status (dtmmgr);
 #endif
-	  return 0;
-	case RET_HANDLE_UNKNOWN:
 	  return FVM_ESRCH;
 	case RET_FAILURE:
+#ifndef NDEBUG
+	  dtmmgr_status (dtmmgr);
+#endif
 	  return FVM_EGENERAL;
 	default:
+#ifndef NDEBUG
+	  dtmmgr_status (dtmmgr);
+#endif
 	  // FIXME: set errno instead!
-      fprintf(stderr, "fvm-pc: local free failed: unknown return code: %d\n", ret);
+          fprintf(stderr, "fvm-pc: local free failed: unknown return code: %d\n", ret);
 	  return FVM_EGENERAL;
   }
 }
