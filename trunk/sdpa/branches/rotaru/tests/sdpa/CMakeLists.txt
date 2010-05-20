@@ -7,6 +7,18 @@ message(STATUS "kdm modules are in: ${TESTS_KDM_MODULES_PATH}")
 set(TESTS_KDM_FAKE_MODULES_PATH "${TESTS_KDM_MODULES_PATH}/fake")
 message(STATUS "kdm fake modules are in: ${TESTS_KDM_FAKE_MODULES_PATH}")
 
+set(TESTS_FVM_PC_MODULE "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.so")
+message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
+
+set(TESTS_FVM_PC_FAKE_MODULE "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.so")
+message(STATUS "fvm fake module is in: ${TESTS_FVM_PC_FAKE_MODULE}")
+
+set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
+message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
+
+set(TESTS_NRE_PCD_BIN_PATH "${CMAKE_BINARY_DIR}/sdpa/sdpa/daemon/nre/nre-worker/nre-worker")
+message(STATUS "nre-pcd binary path set to: ${TESTS_NRE_PCD_BIN_PATH}")
+
 include_directories(${CPPUNIT_INCLUDE_DIRS})
 link_directories(${CPPUNIT_LIBRARY_DIRS})
 
@@ -58,6 +70,8 @@ target_link_libraries(mini_test_suite uuid)
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
+
+configure_file(run_pcd.fake.test ${CMAKE_CURRENT_BINARY_DIR}/run_pcd.fake.test COPYONLY)
 
 # copy workflows over to the build directory
 add_subdirectory(workflows)

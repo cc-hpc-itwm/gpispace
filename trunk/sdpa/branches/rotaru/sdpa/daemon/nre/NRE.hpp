@@ -118,7 +118,7 @@ namespace sdpa {
 		virtual void backup( const std::string& strArchiveName );
 	    virtual void recover( const std::string& strArchiveName );
 
-	    void launch_pcd() throw (std::exception);
+	    void launch_pcd(const std::string& workerUrl) throw (std::exception);
 
 		friend class boost::serialization::access;
 		friend class sdpa::tests::WorkerSerializationTest;
@@ -151,20 +151,30 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 
 template <typename T, typename U>
-void NRE<T, U>::launch_pcd() throw (std::exception)
+void NRE<T, U>::launch_pcd(const std::string& workerUrl) throw (std::exception)
 {
    	int c;
    	int nStatus;
    	string strID;
 
    	pid_t pID = fork();
+   	LOG(INFO, "Try to launch the nre-pcd ...");
+
    	if (pID == 0)  // child
    	{
 		// Code only executed by child process
 
 		strID = "nre-pcd: ";
-		LOG(INFO, "Try to launch the nre-pcd ...");
-		execl("nre-pcd", "nre-pcd", "-l ", "127.0.0.1:8000", NULL );
+		//LD_PRELOAD="/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/fvm-pc/fvm-pc/fake/libfvm-pc.so"
+		//FHGLOG_level=MIN ./nre-pcd -l "127.0.0.1:9000" -a "/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/we/kdm/mod/fake"
+
+		const char* envp[] = {"LD_PRELOAD=/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/fvm-pc/fvm-pc/fake/libfvm-pc.so", NULL};
+	    execle( "/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/sdpa/sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd",
+	    	   "nre-pcd",
+				"-l ", workerUrl.c_str(),
+				"-a ", "/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/we/kdm/mod/fake",
+				NULL,
+				envp );
 	}
 	else if (pID < 0)            // failed to fork
 	{
@@ -199,7 +209,7 @@ void NRE<T, U>::launch_pcd() throw (std::exception)
 template <typename T, typename U>
 void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 {
-	//launch_pcd();
+	//launch_pcd("127.0.0.1:9000");
 
 	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );

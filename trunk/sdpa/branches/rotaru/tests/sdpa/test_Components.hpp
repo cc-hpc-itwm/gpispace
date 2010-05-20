@@ -30,10 +30,14 @@ namespace sdpa {
 		namespace tests {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
-			  /*CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
+
+			  CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
 			  CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
-			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );*/
+			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorker );
+
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndStandaloneNreWorker );
+
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -50,6 +54,11 @@ namespace sdpa {
 			  void testComponentsDummyGwesNoFvmPC();
 			  void testActivityDummyWeAllCompAndNreWorker();
 			  void testActivityRealWeAllCompAndNreWorker();
+
+			  void testActivityRealWeAllCompAndStandaloneNreWorker();
+
+			  void startDaemons();
+			  void startPcdAndDaemons(const std::string& workerUrl) throw (std::exception);
 
 			private:
 			  SDPA_DECLARE_LOGGER();
