@@ -187,6 +187,7 @@ namespace kdm
       // ******************************************************************* //
 
       pid_t pid_volume_in (net.add_place (place_type ("volume_in", sig_volume)));
+      pid_t pid_volume_initialized (net.add_place (place_type ("volume_initialized", sig_volume)));
       pid_t pid_volume_gen_bunch (net.add_place (place_type ("volume_gen_bunch", sig_volume)));
       pid_t pid_volume (net.add_place (place_type ("volume", sig_volume)));
       pid_t pid_config_in (net.add_place (place_type ("config_in", sig_config)));
@@ -199,17 +200,41 @@ namespace kdm
 
       // ******************************************************************* //
 
+      transition_type init
+        ( "init_volume"
+        , mod_type ("kdm", "init_volume")
+        );
+
+      init.add_ports ()
+        ("volume", sig_volume, we::type::PORT_IN_OUT)
+        ("config", sig_config, we::type::PORT_READ)
+        ;
+
+      init.add_connections ()
+        ("volume", pid_volume_initialized)
+        (pid_volume_in, "volume")
+        (pid_config, "config")
+        ;
+
+      tid_t tid_init (net.add_transition (init));
+
+      net.add_edge (e++, connection_t (PT, tid_init, pid_volume_in));
+      net.add_edge (e++, connection_t (PT_READ, tid_init, pid_config));
+      net.add_edge (e++, connection_t (TP, tid_init, pid_volume_initialized));
+
+      // ******************************************************************* //
+
       transition_type dup (mk_dup (sig_volume));
 
       dup.add_connections ()
-        (pid_volume_in, "in")
+        (pid_volume_initialized, "in")
         ("one", pid_volume)
         ("two", pid_volume_gen_bunch)
         ;
 
       tid_t tid_dup (net.add_transition (dup));
 
-      net.add_edge (e++, connection_t (PT, tid_dup, pid_volume_in));
+      net.add_edge (e++, connection_t (PT, tid_dup, pid_volume_initialized));
       net.add_edge (e++, connection_t (TP, tid_dup, pid_volume));
       net.add_edge (e++, connection_t (TP, tid_dup, pid_volume_gen_bunch));
 
@@ -218,8 +243,6 @@ namespace kdm
       transition_type init_wait
         ( "init_wait"
         , expr_type ("${num} := ${config.BUNCHES_PER_OFFSET}")
-        , "true"
-        , transition_type::internal
         );
 
       init_wait.add_ports ()
