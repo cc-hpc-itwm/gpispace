@@ -193,6 +193,9 @@ namespace kdm
       pid_t pid_config (net.add_place (place_type ("config", sig_config)));
       pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG)));
       pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
+      pid_t pid_trigger_load (net.add_place (place_type ("trigger_load", literal::CONTROL)));
+
+      token::put (net, pid_trigger_load);
 
       // ******************************************************************* //
 
@@ -277,17 +280,20 @@ namespace kdm
       load.add_ports ()
         ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN_OUT)
+        ("trigger", literal::CONTROL, we::type::PORT_IN)
         ;
       load.add_connections ()
         (pid_bunch, "bunch")
         ("bunch", pid_trigger_process)
         (pid_config, "config")
+        (pid_trigger_load, "trigger")
         ;
 
       tid_t tid_load (net.add_transition (load));
 
       net.add_edge (e++, connection_t (PT_READ, tid_load, pid_config));
       net.add_edge (e++, connection_t (PT, tid_load, pid_bunch));
+      net.add_edge (e++, connection_t (PT, tid_load, pid_trigger_load));
       net.add_edge (e++, connection_t (TP, tid_load, pid_trigger_process));
 
       // ******************************************************************* //
@@ -303,6 +309,7 @@ namespace kdm
         ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN)
         ("wait", literal::LONG, we::type::PORT_IN_OUT)
+        ("trigger", literal::CONTROL, we::type::PORT_OUT)
         ;
 
       process.add_connections ()
@@ -310,6 +317,7 @@ namespace kdm
         (pid_config, "config")
         ("wait", pid_wait)
         (pid_wait, "wait")
+        ("trigger", pid_trigger_load)
         ;
 
       tid_t tid_process (net.add_transition (process));
@@ -318,6 +326,7 @@ namespace kdm
       net.add_edge (e++, connection_t (PT, tid_process, pid_trigger_process));
       net.add_edge (e++, connection_t (PT, tid_process, pid_wait));
       net.add_edge (e++, connection_t (TP, tid_process, pid_wait));
+      net.add_edge (e++, connection_t (TP, tid_process, pid_trigger_load));
 
       // ******************************************************************* //
 
