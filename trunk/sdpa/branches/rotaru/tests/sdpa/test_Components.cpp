@@ -75,7 +75,7 @@ namespace sdpa { namespace tests { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location) :   SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+    NreWorkerClient(const std::string &nre_worker_location, const bool bLaunchNrePcd = false) :   SDPA_INIT_LOGGER("TestNreWorkerClient") { }
 
     void set_ping_interval(unsigned long seconds){}
     void set_ping_timeout(unsigned long seconds){}

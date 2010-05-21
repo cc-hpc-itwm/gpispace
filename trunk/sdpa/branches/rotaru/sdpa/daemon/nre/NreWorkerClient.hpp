@@ -71,7 +71,7 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location, unsigned short my_port=0)
+    NreWorkerClient(const std::string &nre_worker_location, const bool bLaunchNrePcd, unsigned short my_port=0)
       : nre_worker_location_(nre_worker_location)
       , my_reply_port_(my_port)
       , barrier_(2)
@@ -86,19 +86,20 @@ namespace sdpa { namespace nre { namespace worker {
       , ping_trials_(3)
       , num_waiting_receiver_(0)
       , started_(false)
+      , bLaunchNrePcd_(bLaunchNrePcd)
     { }
 
     ~NreWorkerClient() throw ()
     {
-      try {
-        stop();
-      }
-      catch (const std::exception &ex) {
-        LOG(ERROR, "stopping of nre-pcd connection failed: " << ex.what());
-      }
-      catch (...) {
-        LOG(ERROR, "stopping of nre-pcd connection failed (unknown reason)");
-      }
+		try {
+			stop();
+		}
+		catch (const std::exception &ex) {
+			LOG(ERROR, "stopping of nre-pcd connection failed: " << ex.what());
+		}
+		catch (...) {
+			LOG(ERROR, "stopping of nre-pcd connection failed (unknown reason)");
+		}
     }
 
     const std::string &worker_location() const { return nre_worker_location_; }
@@ -106,20 +107,20 @@ namespace sdpa { namespace nre { namespace worker {
 
     void set_ping_interval(unsigned long seconds)
     {
-      ping_interval_ = seconds;
+    	ping_interval_ = seconds;
     }
     void set_ping_timeout(unsigned long seconds)
     {
-      timer_timeout_ = seconds;
+    	timer_timeout_ = seconds;
     }
     void set_ping_trials(std::size_t max_tries)
     {
-      ping_trials_ = max_tries;
+    	ping_trials_ = max_tries;
     }
 
     bool is_pcd_dead() const
     {
-      return not_responded_to_ping_ >= ping_trials_;
+    	return not_responded_to_ping_ >= ping_trials_;
     }
 
     unsigned int start() throw (std::exception)
@@ -129,54 +130,71 @@ namespace sdpa { namespace nre { namespace worker {
        	string strID;
        	int rank = 0;
 
-       	/*pid_t pID = fork();
-       	LOG(INFO, "Try to launch the nre-pcd ...");
+       	// check here whether the nre-pcd is running or not
 
-       	if (pID == 0)  // child
+       	if( bLaunchNrePcd_ )
        	{
-    		// Code only executed by child process
-    		strID = "nre-pcd: ";
+       		pid_t pID = fork();
+			LOG(INFO, "Try to launch the nre-pcd ...");
 
-    		std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
-    		strNrePcdBin += "/nre-pcd";
+			if (pID == 0)  // child
+			{
+				// Code only executed by child process
+				strID = "nre-pcd: ";
 
-    		try {
-    	    execl( strNrePcdBin.c_str(),
-    	            "nre-pcd",
-    				"-l", worker_location().c_str(),
-    				"-a", TESTS_KDM_FAKE_MODULES_PATH,
-    				"--load", TESTS_FVM_PC_FAKE_MODULE,
-    				NULL );
-    		}
-    		catch(const std::exception& ex)
-    		{
-    			LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
-    			throw ex;
-    			exit;
-    		}
-    	}
-    	else if (pID < 0)            // failed to fork
-    	{
-    		LOG(ERROR, "Failed to fork!");
-    		exit(1);
-    		// Throw exception
-    	}
-    	else  // parent */
-    	{
-    	  	// Code only executed by parent process
-    	   	strID = "NREWorkerClient";
+				std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
+				strNrePcdBin += "/nre-pcd";
 
-    	   	sleep(1);
+				try {
+				execl( strNrePcdBin.c_str(),
+						"nre-pcd",
+						"-l", worker_location().c_str(),
+						"-a", TESTS_KDM_FAKE_MODULES_PATH,
+						"--load", TESTS_FVM_PC_FAKE_MODULE,
+						NULL );
+				}
+				catch(const std::exception& ex)
+				{
+					LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
+					throw ex;
+					exit;
+				}
+			}
+			else if (pID < 0)            // failed to fork
+			{
+				LOG(ERROR, "Failed to fork!");
+				exit(1);
+				// Throw exception
+			}
+			else  // parent
+			{
+				// Code only executed by parent process
+				strID = "NREWorkerClient";
 
-    	   	try {
-    	   		rank = startNreWorkerClient();
-    	   	}
-    	   	catch(std::exception& exc)
-    	   	{
-    	   		LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
-    	   		throw exc;
-    	   	}
-    	}
+				sleep(1);
+
+				try {
+					rank = startNreWorkerClient();
+				}
+				catch(std::exception& exc)
+				{
+					LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
+					throw exc;
+				}
+			}
+       	}
+       	else
+       	{
+       		try {
+				rank = startNreWorkerClient();
+			}
+			catch(std::exception& exc)
+			{
+				LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
+				throw exc;
+			}
+       	}
+
 
        	return rank;
     }
@@ -529,9 +547,17 @@ namespace sdpa { namespace nre { namespace worker {
 
     void service_thread()
     {
-      LOG(DEBUG, "thread started");
-      barrier_.wait();
-      io_service_.run();
+    	LOG(DEBUG, "thread started");
+    	barrier_.wait();
+
+    	try {
+    		io_service_.run();
+    	}
+    	catch (std::exception& e)
+    	{
+    		LOG(ERROR, "Exception occurred in service_thread: "<<e.what());
+    	}
+
     }
 
     std::string nre_worker_location_;
@@ -568,6 +594,8 @@ namespace sdpa { namespace nre { namespace worker {
 
     enum { max_length = ((2<<16) - 1) };
     char data_[max_length];
+
+    bool bLaunchNrePcd_;
   };
 }}}
 
