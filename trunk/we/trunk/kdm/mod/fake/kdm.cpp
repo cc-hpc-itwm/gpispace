@@ -70,6 +70,14 @@ static void kdm_process ( const value::type & config
   --wait;
 }
 
+static void kdm_init_volume ( const value::type & config
+                            , const value::type & volume
+                            )
+{
+  std::cout << "init_volume: got config " << config << std::endl;
+  std::cout << "init_volume: got volume " << volume << std::endl;
+}
+
 // wrapper functions
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -124,6 +132,14 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
   we::loader::put_output (output, "trigger", control());
 }
 
+static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+  const value::type & volume (input.value("volume"));
+  kdm_init_volume (config, volume);
+  we::loader::put_output (output, "volume", volume);
+}
+
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
 {
   std::cerr << "rank := " << fvmGetRank() << std::endl;
@@ -137,6 +153,7 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (load);
   WE_REGISTER_FUN (process);
   WE_REGISTER_FUN (write);
+  WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
   WE_REGISTER_FUN (selftest);
 }
