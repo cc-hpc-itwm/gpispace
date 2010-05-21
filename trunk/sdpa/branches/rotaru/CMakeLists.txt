@@ -180,22 +180,12 @@ else (ENABLE_LOGGING)
 endif (ENABLE_LOGGING)
 
 # logging
-include(FindFhgLog)
-if (FHGLOG_FOUND)
-  message(STATUS "Found FhgLog: Inc:${FHGLOG_INCLUDE_DIR} Lib:${FHGLOG_LIBRARY}")
-  include_directories(${FHGLOG_INCLUDE_DIR})
-  set(SDPA_HAVE_FHGLOG 1)
-else (FHGLOG_FOUND)
-  message(FATAL_ERROR "Sorry, FhgLog is required!")
-endif(FHGLOG_FOUND)
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+set(SDPA_HAVE_FHGLOG 1)
 
-include (FindMMGR)
-if (MMGR_FOUND)
-  include_directories(${MMGR_INCLUDE_DIR})
-else (MMGR_FOUND)
-  message (FATAL_ERROR "Sorry, MemoryManager library is required")
-endif (MMGR_FOUND)
-message(STATUS "MMGR: -I${MMGR_INCLUDE_DIR} -L${MMGR_LIBRARY_DIR} -l${MMGR_LIBRARY}")
+find_package(MMGR REQUIRED)
+include_directories(${MMGR_INCLUDE_DIR})
 
 message(STATUS "*** Fixme: FVM includes...")
 # TODO add a STATIC parameter to FindFVM
@@ -207,7 +197,6 @@ else (FVM_FOUND)
   message (FATAL_ERROR "Sorry, FVM process container library required!")
 endif (FVM_FOUND)
 message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
-
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)

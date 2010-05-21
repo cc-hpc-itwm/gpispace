@@ -34,9 +34,10 @@ namespace sdpa {
 			  CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
 			  CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
 			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorker );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
 
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndStandaloneNreWorker );
+			  //CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpywnedByNRE );
 
 			  CPPUNIT_TEST_SUITE_END();
 
@@ -53,11 +54,13 @@ namespace sdpa {
 			  void testCompDummyGwesAndFakeFvmPC();
 			  void testComponentsDummyGwesNoFvmPC();
 			  void testActivityDummyWeAllCompAndNreWorker();
-			  void testActivityRealWeAllCompAndNreWorker();
 
-			  void testActivityRealWeAllCompAndStandaloneNreWorker();
+			  void testActivityRealWeAllCompAndActExec();
 
-			  void startDaemons();
+			  void testActivityRealWeAllCompAndNreWorkerSpawnedByTest();
+			  void testActivityRealWeAllCompAndNreWorkerSpywnedByNRE();
+
+			  void startDaemons(const std::string& workerUrl);
 			  void startPcdAndDaemons(const std::string& workerUrl) throw (std::exception);
 
 			private:

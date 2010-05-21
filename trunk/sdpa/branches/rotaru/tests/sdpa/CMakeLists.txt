@@ -50,8 +50,8 @@ target_link_libraries(sdpa-test
 	 seda
 	 seda-comm
      ${CPPUNIT_STATIC_LIBRARIES}
-     ${FVM_FAKE_STATIC_LIBRARY}
-     ${MMGR_LIBRARY}
+#     ${FVM_FAKE_STATIC_LIBRARY}
+#     ${MMGR_LIBRARY}
 	 ${Boost_LIBRARIES})
 
 add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/sdpa_test_suite.cpp)

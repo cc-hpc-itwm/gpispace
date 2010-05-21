@@ -38,6 +38,13 @@
 #include <iostream>
 #include <string>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#include <tests/sdpa/tests_config.hpp>
+
+
 namespace sdpa { namespace nre { namespace worker {
   using boost::asio::ip::udp;
 
@@ -117,6 +124,67 @@ namespace sdpa { namespace nre { namespace worker {
 
     unsigned int start() throw (std::exception)
     {
+       	int c;
+       	int nStatus;
+       	string strID;
+       	int rank = 0;
+
+       	/*pid_t pID = fork();
+       	LOG(INFO, "Try to launch the nre-pcd ...");
+
+       	if (pID == 0)  // child
+       	{
+    		// Code only executed by child process
+    		strID = "nre-pcd: ";
+
+    		std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
+    		strNrePcdBin += "/nre-pcd";
+
+    		try {
+    	    execl( strNrePcdBin.c_str(),
+    	            "nre-pcd",
+    				"-l", worker_location().c_str(),
+    				"-a", TESTS_KDM_FAKE_MODULES_PATH,
+    				"--load", TESTS_FVM_PC_FAKE_MODULE,
+    				NULL );
+    		}
+    		catch(const std::exception& ex)
+    		{
+    			LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
+    			throw ex;
+    			exit;
+    		}
+    	}
+    	else if (pID < 0)            // failed to fork
+    	{
+    		LOG(ERROR, "Failed to fork!");
+    		exit(1);
+    		// Throw exception
+    	}
+    	else  // parent */
+    	{
+    	  	// Code only executed by parent process
+    	   	strID = "NREWorkerClient";
+
+    	   	sleep(1);
+
+    	   	try {
+    	   		rank = startNreWorkerClient();
+    	   	}
+    	   	catch(std::exception& exc)
+    	   	{
+    	   		LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
+    	   		throw exc;
+    	   	}
+    	}
+
+       	return rank;
+    }
+
+
+    unsigned int startNreWorkerClient() throw (std::exception)
+    {
+    	// start first the nre-pcd!!!! if bSpawnNrepcd is set
 		if(service_thread_)
 		{
 			DLOG(WARN, "still running, cannot start again!");
@@ -163,6 +231,8 @@ namespace sdpa { namespace nre { namespace worker {
 		barrier_.wait();
 
 		ping (); // send a synchronous ping
+
+		//if not working re-start the nre-pcd here!!!!
 
 		started_ = true;
 		not_responded_to_ping_ = 0;

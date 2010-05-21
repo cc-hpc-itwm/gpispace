@@ -11,6 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
+ *     Updated by:  Tiberiu Rotaru
  *        Company:  Fraunhofer ITWM
  *
  * =====================================================================================
@@ -24,6 +25,7 @@
 #include <fhglog/fhglog.hpp>
 #include <sdpa/daemon/IWorkflowEngine.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
+#include <sdpa/memory.hpp>
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -41,53 +43,53 @@ namespace sdpa { namespace nre { namespace worker {
   class Message
   {
   public:
-    Message() : id_("unset id"){}
+	  typedef sdpa::shared_ptr<Message> Ptr;
+	  Message() : id_("unset id"){}
 
-    explicit Message(const std::string &msg_id): id_(msg_id){}
-    virtual ~Message() {}
+	  explicit Message(const std::string &msg_id): id_(msg_id){}
+	  virtual ~Message() {}
 
-    virtual Message *execute(ExecutionContext *context) = 0;
-    virtual void writeTo(std::ostream &) const = 0;
+	  virtual Message *execute(ExecutionContext *context) = 0;
+	  virtual void writeTo(std::ostream &) const = 0;
 
-    // indicate a long-running execution request
-    virtual bool would_block() const { return false; }
+	  // indicate a long-running execution request
+	  virtual bool would_block() const { return false; }
 
-    const std::string &id() const { return id_; }
-    std::string &id() { return id_; }
+	  const std::string &id() const { return id_; }
+	  std::string &id() { return id_; }
   private:
-    std::string id_;
+	  std::string id_;
   };
 
   class Reply : public Message
   {
   public:
-    Reply() {}
+	  typedef sdpa::shared_ptr<Reply> Ptr;
+	  Reply() {}
 
-    explicit
-    Reply(const std::string &a_id)
-      : Message(a_id)
-    {}
+	  explicit Reply(const std::string &a_id) : Message(a_id) {}
+	  virtual ~Reply() {}
 
-    virtual ~Reply() {}
-
-    virtual Message *execute(ExecutionContext *)
-    {
-      return NULL;
-    }
+	  virtual Message *execute(ExecutionContext *)
+	  {
+		  return NULL;
+	  }
   };
 
   class Request : public Message
   {
   public:
-    Request() {}
-    explicit Request (const std::string &a_id): Message(a_id){}
-    virtual ~Request() {}
+	  typedef sdpa::shared_ptr<Request> Ptr;
+	  Request() {}
+	  explicit Request (const std::string &a_id): Message(a_id){}
+	  virtual ~Request() {}
   };
 
   class PingReply : public Reply
   {
   public:
     typedef struct rusage  usage_t;
+    typedef sdpa::shared_ptr<PingReply> Ptr;
 
     PingReply(): pid_(getpid())
     {
@@ -118,20 +120,21 @@ namespace sdpa { namespace nre { namespace worker {
   class PingRequest : public Request
   {
   public:
-    PingRequest() : key_("") {}
-    explicit PingRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
+	  typedef sdpa::shared_ptr<PingRequest> Ptr;
+	  PingRequest() : key_("") {}
+	  explicit PingRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
 
-    virtual void writeTo(std::ostream &os) const
-    {
-    	os << "PingRequest: id=" << id();
-    }
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "PingRequest: id=" << id();
+	  }
 
-    virtual Reply *execute(ExecutionContext *)
-    {
-    	return new PingReply(id());
-    }
+	  virtual Reply *execute(ExecutionContext *)
+	  {
+		  return new PingReply(id());
+	  }
   private:
-    std::string key_;
+	  std::string key_;
   };
 
   struct pc_info_t
@@ -152,38 +155,40 @@ namespace sdpa { namespace nre { namespace worker {
   class InfoReply : public Reply
   {
   public:
-    InfoReply() { }
-    InfoReply(const std::string &a_id, ExecutionContext *ctxt) : Reply(a_id), info_(ctxt->getRank()){ }
+	  typedef sdpa::shared_ptr<InfoReply> Ptr;
+	  InfoReply() { }
+	  InfoReply(const std::string &a_id, ExecutionContext *ctxt) : Reply(a_id), info_(ctxt->getRank()){ }
 
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "InfoReply: id=" << id() << " pid=" << info_.pid() << " rank=" << info_.rank();
-    }
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "InfoReply: id=" << id() << " pid=" << info_.pid() << " rank=" << info_.rank();
+	  }
 
-    pc_info_t & info() { return info_; }
-    const pc_info_t & info() const { return info_; }
+	  pc_info_t & info() { return info_; }
+	  const pc_info_t & info() const { return info_; }
   private:
-    pc_info_t info_;
+	  pc_info_t info_;
   };
 
   class InfoRequest : public Request
   {
   public:
-    InfoRequest() : key_(""){}
-    explicit InfoRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
+	  typedef sdpa::shared_ptr<InfoRequest> Ptr;
+	  InfoRequest() : key_(""){}
+	  explicit InfoRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
 
-    virtual void writeTo(std::ostream &os) const
-    {
-    	os << "InfoRequest: id=" << id();
-    }
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "InfoRequest: id=" << id();
+	  }
 
-    virtual Reply *execute(ExecutionContext *pCtx)
-    {
-    	return pCtx->reply(this);
-    	//return new InfoReply(id(), ctxt);
-    }
+	  virtual Reply *execute(ExecutionContext *pCtx)
+	  {
+		  return pCtx->reply(this);
+		  //return new InfoReply(id(), ctxt);
+	  }
   private:
-    std::string key_;
+	  std::string key_;
   };
 
   enum ExecutionState
@@ -198,20 +203,20 @@ namespace sdpa { namespace nre { namespace worker {
   class ExecuteReply : public Reply
   {
   public:
+	  typedef sdpa::shared_ptr<ExecuteReply> Ptr;
+	  ExecuteReply() {}
+	  explicit ExecuteReply(const execution_result_t& exec_result) : exec_result_(exec_result) {}
 
-    ExecuteReply() {}
-    explicit ExecuteReply(const execution_result_t& exec_result) : exec_result_(exec_result) {}
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "ExecuteReply: result="<< exec_result_.second;
+	  }
 
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ExecuteReply: result="<< exec_result_.second;
-    }
-
-    execution_result_t& result() { return exec_result_; }
-    const execution_result_t& result() const { return exec_result_; }
+	  execution_result_t& result() { return exec_result_; }
+	  const execution_result_t& result() const { return exec_result_; }
 
   private:
-    execution_result_t exec_result_; // defined in IWorkflowEngine
+	  execution_result_t exec_result_; // defined in IWorkflowEngine
   };
 
   /*namespace detail {
@@ -234,28 +239,29 @@ namespace sdpa { namespace nre { namespace worker {
   class ExecuteRequest : public Request
   {
   public:
-    ExecuteRequest() {}
-    ExecuteRequest(const encoded_type &act) : activity_(act) {}
+	  typedef sdpa::shared_ptr<ExecuteRequest> Ptr;
+	  ExecuteRequest() {}
+	  ExecuteRequest(const encoded_type &act) : activity_(act) {}
 
-    virtual bool would_block() const { return true; }
+	  virtual bool would_block() const { return true; }
 
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "Execute(";
-     // activity().writeTo(os, false);
-      os<<activity_;
-      os << ")";
-    }
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "Execute(";
+		  // activity().writeTo(os, false);
+		  os<<activity_;
+		  os << ")";
+	  }
 
-    virtual Reply *execute(ExecutionContext *pCtx)
-    {
-    	return pCtx->reply(this);
-    }
+	  virtual Reply *execute(ExecutionContext *pCtx)
+	  {
+		  return pCtx->reply(this);
+	  }
 
-    encoded_type &activity() { return activity_; }
-    const encoded_type &activity() const { return activity_; }
+	  encoded_type &activity() { return activity_; }
+	  const encoded_type &activity() const { return activity_; }
   private:
-    encoded_type activity_;
+	  encoded_type activity_;
   };
 
 

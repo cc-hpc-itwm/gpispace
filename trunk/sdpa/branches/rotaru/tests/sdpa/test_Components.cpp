@@ -25,7 +25,7 @@
 #include <seda/StageRegistry.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
-#include <sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd.hpp>
+#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
 #include <kdm/simple_generator.hpp>
@@ -130,80 +130,13 @@ void TestComponents::tearDown()
 	seda::StageRegistry::instance().clear();
 }
 
-void TestComponents::startPcdAndDaemons(const std::string& workerUrl) throw (std::exception)
+
+void TestComponents::testActivityRealWeAllCompAndNreWorkerSpywnedByNRE()
 {
-   	int c;
-   	int nStatus;
-   	string strID;
-
-   	pid_t pID = fork();
-   	LOG(INFO, "Try to launch the nre-pcd ...");
-
-   	if (pID == 0)  // child
-   	{
-		// Code only executed by child process
-
-		strID = "nre-pcd: ";
-		std::string strEnv("LD_PRELOAD=");
-		strEnv += TESTS_FVM_PC_FAKE_MODULE;
-
-		std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
-		strNrePcdBin += "/nre-pcd";
-
-		const char* envp[] = { strEnv.c_str(), NULL};
-	    execle( strNrePcdBin.c_str(),
-	            "nre-pcd",
-				"-l", workerUrl.c_str(),
-				"-a", TESTS_KDM_FAKE_MODULES_PATH,
-				NULL,
-				envp );
-	}
-	else if (pID < 0)            // failed to fork
-	{
-		LOG(ERROR, "Failed to fork!");
-		exit(1);
-		// Throw exception
-	}
-	else                                   // parent
-	{
-	  	// Code only executed by parent process
-	   	strID = "NREWorkerClient";
-	  	startDaemons();
-
-	  	//kill pcd here
-	  	kill( pID, SIGKILL);
-	}
-
-   	c = wait(&nStatus);
-   	if( WIFEXITED(nStatus) )
-   	{
-   		if( WEXITSTATUS(nStatus) != 0 )
-   		{
-   			std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-   			LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-   		}
-   		else
-   			if( WIFSIGNALED(nStatus) )
-   			{
-   				std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-   				LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
-   			}
-   	}
-}
-
-
-void TestComponents::testActivityRealWeAllCompAndStandaloneNreWorker()
-{
-	string workerUrl = "127.0.0.1:9000";
-	startPcdAndDaemons(workerUrl);
-}
-
-
-void TestComponents::startDaemons()
-{
-	SDPA_LOG_DEBUG("***** test kdm Activity, with all components, real we and NreWorker *****"<<std::endl);
+	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpywnedByNRE *****"<<std::endl);
 	string strGuiUrl = "";
-	string workerUrl = "127.0.0.1:9000";
+	string workerUrl = "127.0.0.1:8200";
+
 	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
 	// generate the test workflow simple-net.pnet
 
@@ -229,14 +162,9 @@ void TestComponents::startDaemons()
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
-	//system("run_pcd.fake.test");
-
 	// use external scheduler and real GWES
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", workerUrl, strGuiUrl );
-
-	//ptrNRE_0->launch_pcd(workerUrl);
-
 
 	try {
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
@@ -283,17 +211,86 @@ void TestComponents::startDaemons()
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	sleep(1);
-	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
+	SDPA_LOG_DEBUG("testActivityRealWeAllCompAndNreWorkerSpywnedByNRE finished!");
 }
 
 
-void TestComponents::testActivityRealWeAllCompAndNreWorker()
+void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByTest()
 {
-	SDPA_LOG_DEBUG("***** test kdm Activity, with all components, real we and NreWorker *****"<<std::endl);
-	string strGuiUrl   = "";
+	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
+	string workerUrl = "127.0.0.1:8100";
+	startPcdAndDaemons(workerUrl);
+	SDPA_LOG_DEBUG("testActivityRealWeAllCompAndNreWorkerSpawnedByTest finished!");
+}
 
-	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
-	// generate the test workflow simple-net.pnet
+void TestComponents::startPcdAndDaemons(const std::string& workerUrl) throw (std::exception)
+{
+   	int c;
+   	int nStatus;
+   	string strID;
+
+   	pid_t pID = fork();
+   	LOG(INFO, "Try to launch the nre-pcd ...");
+
+   	if (pID == 0)  // child
+   	{
+		// Code only executed by child process
+
+		strID = "nre-pcd: ";
+
+		//std::string strEnv("LD_PRELOAD=");
+		//strEnv += TESTS_FVM_PC_FAKE_MODULE;
+
+		std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
+		strNrePcdBin += "/nre-pcd";
+
+		//const char* envp[] = { strEnv.c_str(), NULL};
+
+	    execl( strNrePcdBin.c_str(),
+	            "nre-pcd",
+				"-l", workerUrl.c_str(),
+				"-a", TESTS_KDM_FAKE_MODULES_PATH,
+				"--load", TESTS_FVM_PC_FAKE_MODULE,
+				NULL );
+				//,envp );
+	}
+	else if (pID < 0)            // failed to fork
+	{
+		LOG(ERROR, "Failed to fork!");
+		exit(1);
+		// Throw exception
+	}
+	else                                   // parent
+	{
+	  	// Code only executed by parent process
+	   	strID = "NREWorkerClient";
+	  	startDaemons(workerUrl);
+
+	  	//kill pcd here
+	  	kill( pID, SIGKILL);
+
+		c = wait(&nStatus);
+	   	if( WIFEXITED(nStatus) )
+	   	{
+	   		if( WEXITSTATUS(nStatus) != 0 )
+	   		{
+	   			std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+	   			LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+	   		}
+	   		else
+	   			if( WIFSIGNALED(nStatus) )
+	   			{
+	   				std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+	   				LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+	   			}
+	   	}
+	}
+}
+
+
+void TestComponents::startDaemons(const std::string& workerUrl)
+{
+	string strGuiUrl = "";
 
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
@@ -318,10 +315,93 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 
 	// use external scheduler and real GWES
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", workerUrl, strGuiUrl );
+
+	try {
+		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+	}
+	catch (const std::exception &ex) {
+		SDPA_LOG_FATAL("Could not start NRE: " << ex.what());
+		SDPA_LOG_WARN("TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+
+		sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+
+		return;
+	}
+
+	for( int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = m_ptrCli->submitJob(m_strWorkflow);
+
+		SDPA_LOG_DEBUG("*****JOB #"<<k<<"******");
+
+		std::string job_status =  m_ptrCli->queryJob(job_id_user);
+		SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = m_ptrCli->queryJob(job_id_user);
+			SDPA_LOG_DEBUG("The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(m_sleep_interval);
+		}
+
+		SDPA_LOG_DEBUG("User: retrieve results of the job "<<job_id_user);
+		m_ptrCli->retrieveResults(job_id_user);
+
+		SDPA_LOG_DEBUG("User: delete the job "<<job_id_user);
+		m_ptrCli->deleteJob(job_id_user);
+	}
+
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+
+	sleep(1);
+}
+
+
+void TestComponents::testActivityRealWeAllCompAndActExec()
+{
+	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
+	string workerUrl = "127.0.0.1:8000";
+	string strGuiUrl   = "";
+
+	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
+	// generate the test workflow simple-net.pnet
+
+	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
+	we::activity_t act ( simple_trans );
+	act.input().push_back
+    ( we::input_t::value_type
+      ( we::token_t ( "config_file"
+                    , literal::STRING
+                    , std::string (TESTS_WORKFLOWS_PATH) + "/kdm.simple.conf"
+                    )
+      , simple_trans.input_port_by_name ("config_file")
+      )
+    );
+	m_strWorkflow = we::util::text_codec::encode (act);
+
+	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
+
+	SDPA_LOG_DEBUG("starting the Orchestrator ...");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
+
+	SDPA_LOG_DEBUG("starting the Aggregator ...");
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+
+	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", workerUrl, strGuiUrl );
 
 	// connect to FVM
-	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
+	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
 
 	fvm_pc_connection_mgr fvm_pc;
 	try {
@@ -329,10 +409,10 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 	} catch (const std::exception &ex) {
 		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
 		CPPUNIT_ASSERT (false);
-	}
+	}*/
 
-	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", fvmGetRank() ));
+	SDPA_LOG_DEBUG("starting process container on location: "<<workerUrl<< std::endl);
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
 	executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
 
 	try {
@@ -354,6 +434,7 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 	  CPPUNIT_ASSERT (false);
 	}
 
+	SDPA_LOG_DEBUG("starting the NRE ...");
 	try {
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
@@ -399,19 +480,19 @@ void TestComponents::testActivityRealWeAllCompAndNreWorker()
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	// processor container terminates ...
-	fvm_pc.leave();
+	//fvm_pc.leave();
 	SDPA_LOG_INFO("terminating...");
 	if (! executor->stop())
 		SDPA_LOG_WARN("executor did not stop correctly...");
 
 	sleep(1);
-	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
+	SDPA_LOG_DEBUG("testActivityRealWeAllCompAndActExec with fvm-pc finished!");
 }
 
 
 void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 {
-	SDPA_LOG_DEBUG("***** test kdm Activity, with all components, dummy we and NreWorker *****"<<std::endl);
+	SDPA_LOG_DEBUG("***** testActivityDummyWeAllCompAndNreWorker *****"<<std::endl);
 	string strGuiUrl   = "";
 
 	//m_strWorkflow = read_workflow("workflows/simple-net.pnet");
@@ -433,7 +514,7 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
 	// connect to FVM
-	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
+	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
 
 	fvm_pc_connection_mgr fvm_pc;
 	try {
@@ -441,10 +522,10 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 	} catch (const std::exception &ex) {
 		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
 		CPPUNIT_ASSERT (false);
-	}
+	}*/
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
     executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
 
 	try {
@@ -500,18 +581,19 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	// processor container terminates ...
-	fvm_pc.leave();
+	//fvm_pc.leave();
+
 	SDPA_LOG_INFO("terminating...");
 	if (! executor->stop())
 		SDPA_LOG_WARN("executor did not stop correctly...");
 
 	sleep(1);
-	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
+	SDPA_LOG_DEBUG("testActivityDummyWeAllCompAndNreWorker finished!");
 }
 
 void TestComponents::testCompDummyGwesAndFakeFvmPC()
 {
-	SDPA_LOG_DEBUG("*****testComponents with fvm-pc*****"<<std::endl);
+	SDPA_LOG_DEBUG("*****testCompDummyGwesAndFakeFvmPC*****"<<std::endl);
 	string strGuiUrl   = "";
 
 	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
@@ -530,7 +612,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
 	// connect to FVM
-	fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
+	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
 
 	fvm_pc_connection_mgr fvm_pc;
 	try {
@@ -538,10 +620,10 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	} catch (const std::exception &ex) {
 		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
 		CPPUNIT_ASSERT (false);
-	}
+	}*/
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000", 42));
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
 
 	try {
 		executor->start();
@@ -596,19 +678,20 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	// processor container terminates ...
-	fvm_pc.leave();
+	//fvm_pc.leave();
+
 	SDPA_LOG_INFO("terminating...");
 	if (! executor->stop())
 		SDPA_LOG_WARN("executor did not stop correctly...");
 
 	sleep(1);
-	SDPA_LOG_DEBUG("testComponents with fvm-pc finished!");
+	SDPA_LOG_DEBUG("testCompDummyGwesAndFakeFvmPC finished!");
 }
 
 
 void TestComponents::testComponentsDummyGwesNoFvmPC()
 {
-	SDPA_LOG_DEBUG("*****testComponents*****"<<std::endl);
+	SDPA_LOG_DEBUG("*****testComponentsDummyGwesNoFvmPC*****"<<std::endl);
 	string strGuiUrl   = "";
 
 	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
@@ -679,5 +762,5 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 	//sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_1);
 
     sleep(1);
-	SDPA_LOG_DEBUG("Test finished!");
+	SDPA_LOG_DEBUG("testComponentsDummyGwesNoFvmPC finished!");
 }
