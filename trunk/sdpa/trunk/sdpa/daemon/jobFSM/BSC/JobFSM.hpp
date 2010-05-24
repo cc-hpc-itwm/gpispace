@@ -28,6 +28,7 @@
 #include <boost/statechart/in_state_reaction.hpp>
 
 #include <sdpa/logging.hpp>
+#include <boost/serialization/access.hpp>
 
 namespace mpl = boost::mpl;
 namespace sc = boost::statechart;
@@ -55,8 +56,10 @@ struct EvtBSCDispatch : sc::event< EvtBSCDispatch > {};
 // The FSM
 struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, Pending>
 {
-	JobFSM( const sdpa::job_id_t &id,
-			const sdpa::job_desc_t &desc,
+	typedef sdpa::shared_ptr<JobFSM> Ptr;
+
+	JobFSM( const sdpa::job_id_t id = JobId(""),
+			const sdpa::job_desc_t desc = "",
 		    const sdpa::daemon::IComm* pHandler = NULL,
 		    const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
 			: JobImpl(id, desc, pHandler, parent),
@@ -104,6 +107,13 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	virtual void action_retrieve_job_results( const sdpa::events::RetrieveJobResultsEvent& evt )
 	{
 		return JobImpl::action_retrieve_job_results(evt);
+	}
+
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<JobImpl>(*this);
 	}
 
 	sdpa::status_t getStatus()
@@ -154,7 +164,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::JobFinishedEvent>,
     sc::result react( const sc::exception_thrown & );
 };
 
-// superstate wit 2 states Cncelling and Cancelled
+// superstate wit 2 states Cancelling and Cancelled
 struct Cancel : sc::simple_state<Cancel, JobFSM, Cancelling>
 {
 	typedef mpl::list< sc::custom_reaction< sc::exception_thrown > > reactions;

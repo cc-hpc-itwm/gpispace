@@ -1,7 +1,7 @@
 add_executable(aggregator main.cpp)
-add_dependencies(aggregator sdpa-aggregator)
 
-target_link_libraries(aggregator sdpa-aggregator)
+#add_dependencies(aggregator sdpa-aggregator)
+#target_link_libraries(aggregator sdpa-aggregator)
 target_link_libraries(aggregator sdpa-events)
 target_link_libraries(aggregator sdpa-daemon)
 target_link_libraries(aggregator sdpa-util)

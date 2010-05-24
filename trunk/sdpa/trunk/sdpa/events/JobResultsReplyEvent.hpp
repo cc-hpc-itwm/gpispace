@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobResultsReplyEvent.hpp
+ *
+ *    Description:  JobResultsReplyEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_RESULTS_REPLY_EVENT_HPP
 #define SDPA_RESULTS_REPLY_EVENT_HPP 1
 
@@ -8,9 +25,8 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
-#include <sdpa/wf/GwesGlue.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -39,9 +55,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "JobResultsReplyEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitJobResultsReplyEvent(this);
+    	  //handler->handleJobResultsReplyEvent(this);
       }
 
       const job_result_t &result() const { return result_; }

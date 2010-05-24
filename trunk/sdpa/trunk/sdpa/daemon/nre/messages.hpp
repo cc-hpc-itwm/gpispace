@@ -11,6 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
+ *     Updated by:  Tiberiu Rotaru
  *        Company:  Fraunhofer ITWM
  *
  * =====================================================================================
@@ -22,92 +23,87 @@
 #include <ostream>
 #include <string>
 #include <fhglog/fhglog.hpp>
-#include <sdpa/wf/Activity.hpp>
+#include <sdpa/daemon/IWorkflowEngine.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
+#include <sdpa/memory.hpp>
 
 #include <sys/time.h>
 #include <sys/resource.h>
+
+#include <we/we.hpp>
+
+#include <kdm/kdm_simple.hpp>
+
+// generic
+#include <kdm/module.hpp>
+#include <kdm/context.hpp>
+
 
 namespace sdpa { namespace nre { namespace worker {
   class Message
   {
   public:
-    Message()
-      : id_("unset id")
-    {}
+	  typedef sdpa::shared_ptr<Message> Ptr;
+	  Message() : id_("unset id"){}
 
-    explicit
-    Message(const std::string &msg_id)
-      : id_(msg_id)
-    {}
+	  explicit Message(const std::string &msg_id): id_(msg_id){}
+	  virtual ~Message() {}
 
-    virtual ~Message() {}
+	  virtual Message *execute(ExecutionContext *context) = 0;
+	  virtual void writeTo(std::ostream &) const = 0;
 
-    virtual Message *execute(ExecutionContext *context) = 0;
-    virtual void writeTo(std::ostream &) const = 0;
+	  // indicate a long-running execution request
+	  virtual bool would_block() const { return false; }
 
-    // indicate a long-running execution request
-    virtual bool would_block() const { return false; }
-
-    const std::string &id() const { return id_; }
-    std::string &id() { return id_; }
+	  const std::string &id() const { return id_; }
+	  std::string &id() { return id_; }
   private:
-    std::string id_;
+	  std::string id_;
   };
 
   class Reply : public Message
   {
   public:
-    Reply() {}
+	  typedef sdpa::shared_ptr<Reply> Ptr;
+	  Reply() {}
 
-    explicit
-    Reply(const std::string &a_id)
-      : Message(a_id)
-    {}
+	  explicit Reply(const std::string &a_id) : Message(a_id) {}
+	  virtual ~Reply() {}
 
-    virtual ~Reply() {}
-
-    virtual Message *execute(ExecutionContext *)
-    {
-      return NULL;
-    }
+	  virtual Message *execute(ExecutionContext *)
+	  {
+		  return NULL;
+	  }
   };
 
   class Request : public Message
   {
   public:
-    Request() {}
-
-    explicit
-    Request (const std::string &a_id)
-      : Message(a_id)
-    {}
-
-    virtual ~Request() {}
+	  typedef sdpa::shared_ptr<Request> Ptr;
+	  Request() {}
+	  explicit Request (const std::string &a_id): Message(a_id){}
+	  virtual ~Request() {}
   };
 
   class PingReply : public Reply
   {
   public:
     typedef struct rusage  usage_t;
+    typedef sdpa::shared_ptr<PingReply> Ptr;
 
-    PingReply()
-      : pid_(getpid())
+    PingReply(): pid_(getpid())
     {
-      getrusage(RUSAGE_SELF, &usage_);
+    	getrusage(RUSAGE_SELF, &usage_);
     }
 
-    explicit
-    PingReply(const std::string &a_id)
-      : Reply(a_id)
-      , pid_(getpid())
+    explicit PingReply(const std::string &a_id) : Reply(a_id), pid_(getpid())
     {
-      getrusage(RUSAGE_SELF, &usage_);
+    	getrusage(RUSAGE_SELF, &usage_);
     }
 
     virtual void writeTo(std::ostream &os) const
     {
-      os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
+    	os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
     }
 
     pid_t &pid() { return pid_; }
@@ -115,6 +111,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     const usage_t &usage() const { return usage_; }
     usage_t &usage() { return usage_; }
+
   private:
     pid_t pid_;
     usage_t usage_;
@@ -123,211 +120,151 @@ namespace sdpa { namespace nre { namespace worker {
   class PingRequest : public Request
   {
   public:
-    PingRequest()
-      : key_("")
-    {}
+	  typedef sdpa::shared_ptr<PingRequest> Ptr;
+	  PingRequest() : key_("") {}
+	  explicit PingRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
 
-    explicit PingRequest(const std::string &a_msg_id)
-      : Request(a_msg_id)
-    {}
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "PingRequest: id=" << id();
+	  }
 
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "PingRequest: id=" << id();
-    }
-
-    virtual Reply *execute(ExecutionContext *)
-    {
-      return new PingReply(id());
-    }
+	  virtual Reply *execute(ExecutionContext *)
+	  {
+		  return new PingReply(id());
+	  }
   private:
-    std::string key_;
+	  std::string key_;
   };
 
-  class ExecuteReply   : public Reply
+  struct pc_info_t
+  {
+    pc_info_t() : pid_(getpid()), rank_(0){}
+    explicit pc_info_t(int rank) : pid_(getpid()), rank_(rank) {}
+
+    int & rank() { return rank_; }
+    const int & rank() const { return rank_; }
+
+    pid_t & pid() { return pid_; }
+    const pid_t & pid() const { return pid_; }
+  private:
+    pid_t pid_;
+    int rank_;
+  };
+
+  class InfoReply : public Reply
   {
   public:
-    typedef sdpa::wf::Activity result_t;
+	  typedef sdpa::shared_ptr<InfoReply> Ptr;
+	  InfoReply() { }
+	  InfoReply(const std::string &a_id, ExecutionContext *ctxt) : Reply(a_id), info_(ctxt->getRank()){ }
 
-    ExecuteReply() {}
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "InfoReply: id=" << id() << " pid=" << info_.pid() << " rank=" << info_.rank();
+	  }
 
-    explicit
-    ExecuteReply(const result_t & execution_result)
-      : result_(execution_result)
-    {}
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ExecuteReply: result="<< result();
-    }
-
-    result_t &result() { return result_; }
-    const result_t &result() const { return result_; }
+	  pc_info_t & info() { return info_; }
+	  const pc_info_t & info() const { return info_; }
   private:
-    result_t result_;
+	  pc_info_t info_;
   };
+
+  class InfoRequest : public Request
+  {
+  public:
+	  typedef sdpa::shared_ptr<InfoRequest> Ptr;
+	  InfoRequest() : key_(""){}
+	  explicit InfoRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
+
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "InfoRequest: id=" << id();
+	  }
+
+	  virtual Reply *execute(ExecutionContext *pCtx)
+	  {
+		  return pCtx->reply(this);
+		  //return new InfoReply(id(), ctxt);
+	  }
+  private:
+	  std::string key_;
+  };
+
+  enum ExecutionState
+  {
+	  ACTIVITY_FINISHED
+	, ACTIVITY_FAILED
+	, ACTIVITY_CANCELLED
+  };
+
+  typedef std::pair<ExecutionState, result_type> execution_result_t;
+
+  class ExecuteReply : public Reply
+  {
+  public:
+	  typedef sdpa::shared_ptr<ExecuteReply> Ptr;
+	  ExecuteReply() {}
+	  explicit ExecuteReply(const execution_result_t& exec_result) : exec_result_(exec_result) {}
+
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "ExecuteReply: result="<< exec_result_.second;
+	  }
+
+	  execution_result_t& result() { return exec_result_; }
+	  const execution_result_t& result() const { return exec_result_; }
+
+  private:
+	  execution_result_t exec_result_; // defined in IWorkflowEngine
+  };
+
+  /*namespace detail {
+	  // TODO implement for the real activity object type
+	  template <typename Activity>
+	  inline std::string get_module_name (const Activity & ) {
+		  // boost::get<transition_t::mod_call_t> (act.transition().data()).m();
+		  return "dummy";
+	  }
+
+	  template <typename Activity>
+	  inline std::string get_function_name (const Activity & ) {
+		  // boost::get<transition_t::mod_call_t> (act.transition().data()).f();
+		  return "dummy";
+	  }
+  }*/
+
+
 
   class ExecuteRequest : public Request
   {
   public:
-    ExecuteRequest()
-    {}
+	  typedef sdpa::shared_ptr<ExecuteRequest> Ptr;
+	  ExecuteRequest() {}
+	  ExecuteRequest(const encoded_type &act) : activity_(act) {}
 
-    ExecuteRequest(const sdpa::wf::Activity &act)
-      : activity_(act)
-    {}
+	  virtual bool would_block() const { return true; }
 
-    virtual bool would_block() const { return true; }
+	  virtual void writeTo(std::ostream &os) const
+	  {
+		  os << "Execute(";
+		  // activity().writeTo(os, false);
+		  os<<activity_;
+		  os << ")";
+	  }
 
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "Execute(";
-      activity().writeTo(os, false);
-      os << ")";
-    }
+	  virtual Reply *execute(ExecutionContext *pCtx)
+	  {
+		  return pCtx->reply(this);
+	  }
 
-    virtual Reply *execute(ExecutionContext *ctxt)
-    {
-      const std::string mod_name(activity().method().module());
-      const std::string fun_name(activity().method().name());
-
-      Reply *reply(NULL);
-      try
-      {
-        if (mod_name.empty() || fun_name.empty())
-        {
-          throw std::runtime_error("empty module or function: mod="+mod_name+" fun="+fun_name);
-        }
-
-        LOG(INFO, "executing: " << activity());
-
-        bool keep_going = activity().properties().get<bool>("keep_going", false);
-
-        ctxt->loader().get(mod_name).call(fun_name
-                                        , activity().parameters()
-                                        , keep_going);
-        activity().check_parameters(keep_going);
-
-        LOG(INFO, "execution of activity finished");
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FINISHED;
-
-        reply = new ExecuteReply(activity());
-      }
-      catch (const sdpa::modules::MissingFunctionArgument &mfa)
-      {
-        LOG(ERROR, "function " << mfa.module() << "." << mfa.function()
-                               << " expected argument " << mfa.arguments());
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().reason() = mfa.what();
-        reply = new ExecuteReply(activity());
-      }
-      catch (const std::exception &ex)
-      {
-        LOG(ERROR, "execution of activity failed: " << ex.what());
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().reason() = ex.what();
-        reply = new ExecuteReply(activity());
-      }
-      catch (...)
-      {
-        LOG(ERROR, "execution of activity failed: ");
-        activity().state() = sdpa::wf::Activity::ACTIVITY_FAILED;
-        activity().reason() = "unknown reason";
-        reply = new ExecuteReply(activity());
-      }
-
-      assert(reply);
-      reply->id() = id();
-      return reply;
-    }
-
-    sdpa::wf::Activity &activity() { return activity_; }
-    const sdpa::wf::Activity &activity() const { return activity_; }
+	  encoded_type &activity() { return activity_; }
+	  const encoded_type &activity() const { return activity_; }
   private:
-    sdpa::wf::Activity activity_;
+	  encoded_type activity_;
   };
 
-  class ModuleLoaded : public Reply
-  {
-  public:
-    ModuleLoaded()
-    {}
 
-    ModuleLoaded(const std::string &path_to_module)
-      : path_(path_to_module)
-    {}
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ModuleLoaded: path="<< path();
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-  private:
-    std::string path_;
-  };
-
-  class ModuleNotLoaded : public Reply
-  {
-  public:
-    ModuleNotLoaded()
-    {}
-
-    ModuleNotLoaded(const std::string &path_to_module, const std::string &reason_for_failure)
-      : path_(path_to_module)
-      , reason_(reason_for_failure)
-    {}
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "ModuleNotLoaded: path="<< path() << " reason=" << reason();
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-
-    const std::string &reason() const { return reason_; }
-    std::string &reason() { return reason_; }
-  private:
-    std::string path_;
-    std::string reason_;
-  };
-
-  class LoadModuleRequest : public Request
-  {
-  public:
-    LoadModuleRequest()
-    {}
-
-    explicit LoadModuleRequest(const std::string &path_to_module)
-      : path_(path_to_module)
-    { }
-
-    virtual void writeTo(std::ostream &os) const
-    {
-      os << "LoadModule: path="<< path();
-    }
-
-    virtual Reply *execute(ExecutionContext *ctxt)
-    {
-      try
-      {
-        ctxt->loader().load(path());
-        return new ModuleLoaded(path());
-      }
-      catch (const std::exception &ex)
-      {
-        LOG(WARN, "execution of activity failed: " << ex.what());
-        return new ModuleNotLoaded(path(), ex.what());
-      }
-    }
-
-    const std::string &path() const { return path_; }
-    std::string &path() { return path_; }
-  private:
-    std::string path_;
-  };
 }}}
 
 inline std::ostream &operator<<(std::ostream &os, const sdpa::nre::worker::Message &m)

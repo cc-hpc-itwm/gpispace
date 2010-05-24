@@ -28,7 +28,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
   if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor")
+    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -frepo -fno-implicit-templates")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(CMAKE_CXX_FLAGS_DEBUG "-Werror -O0 -g -ggdb -Wreturn-type -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
@@ -50,9 +50,10 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
-OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." YES)
+OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_SMC_SC "Build the project using the state-machine compiler" YES)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
+OPTION(USE_GWES "Use GWES" NO)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
@@ -103,7 +104,16 @@ else(UUID_FOUND)
   message(FATAL_ERROR "UUID library could not be found but is required")
 endif(UUID_FOUND)
 
+# we library
+include(FindWE)
+if (WE_FOUND)
+  include_directories(${WE_INCLUDE_DIR})
+else(WE_FOUND)
+  message(FATAL_ERROR "WE could not be found but is required")
+endif(WE_FOUND)
+
 # GWES/GWDL
+if( USE_GWES)
 include(FindGwes)
 # check for gwes/gwdl
 if (GWES_FOUND)
@@ -129,6 +139,7 @@ message(STATUS "LibXml2: Inc:${LIBXML2_INCLUDE_DIR} Lib:${LIBXML2_LIBRARIES}")
 find_package(LibXslt REQUIRED)
 include_directories(${LIBXSLT_INCLUDE_DIR})
 message(STATUS "LibXslt: Inc:${LIBXSLT_INCLUDE_DIR} Lib:${LIBXSLT_LIBRARIES}")
+endif (USE_GWES)
 
 ## find zlib
 find_package(ZLIB REQUIRED)
@@ -173,22 +184,19 @@ find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 set(SDPA_HAVE_FHGLOG 1)
 
-# check for Fraunhofer Virtual Machine
-message(STATUS "****** FIXME: Checking for Fraunhofer Virtual Machine...")
-include(FindFVM OPTIONAL)
-if (AP_QUICK_HACK_FVM)
-  set (FVM_FOUND "Yes")
-  set (FVM_INCLUDE_DIR "/opt/sdpa/fvm/include")
-  set (FVM_LIBRARY "/opt/sdpa/fvm/lib/libfvm-pc.a")
-  set (HAVE_FVM 1)
-endif (AP_QUICK_HACK_FVM)
+find_package(MMGR REQUIRED)
+include_directories(${MMGR_INCLUDE_DIR})
+
+message(STATUS "*** Fixme: FVM includes...")
+# TODO add a STATIC parameter to FindFVM
+# to locate the static version in preference to the dynamic
+include (FindFVM)
 if (FVM_FOUND)
-  # this should actually be specific to the sdpa/modules/ directory (i think)
   include_directories(${FVM_INCLUDE_DIR})
-  set (HAVE_FVM 1)
 else (FVM_FOUND)
-  set (HAVE_FVM 0)
+  message (FATAL_ERROR "Sorry, FVM process container library required!")
 endif (FVM_FOUND)
+message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 add_definitions(-DHAVE_CONFIG_H)
@@ -203,10 +211,9 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Reflect the package structure
 add_subdirectory(sdpa)
-add_subdirectory(apps)
 include(CTest)
 add_subdirectory(tests)
-
+add_subdirectory(apps)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION

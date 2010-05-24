@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobFailedEvent.hpp
+ *
+ *    Description:  JobFailedEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_JOB_FAILED_EVENT_HPP
 #define SDPA_JOB_FAILED_EVENT_HPP 1
 
@@ -36,9 +53,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "JobFailedEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(EventHandler *handler)
         {
-          visitor->visitJobFailedEvent(this);
+          handler->handleJobFailedEvent(this);
         }
 
       const job_result_t &result() const { return result_; }

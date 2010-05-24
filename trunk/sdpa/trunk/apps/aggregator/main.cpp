@@ -11,6 +11,8 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
+
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -47,8 +49,8 @@ int main (int argc, char **argv)
 	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::Aggregator::create( aggName, aggUrl, orchName, orchUrl );
-		sdpa::daemon::Aggregator::start(ptrAgg);
+		sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create( aggName, aggUrl, orchName, orchUrl );
+		sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -84,7 +86,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}

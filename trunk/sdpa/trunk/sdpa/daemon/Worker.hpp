@@ -9,10 +9,13 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa { namespace daemon {
-
-
 
   /**
     This class holds all information about an attached worker.
@@ -28,7 +31,7 @@ namespace sdpa { namespace daemon {
     typedef sdpa::worker_id_t worker_id_t;
 
     // TODO: to be replaced by a real class (synchronization!)
-    typedef SynchronizedQueue<std::list<Job::ptr_t> > JobQueue;
+    typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
     /**
       A worker has a globally unique name and a location.
@@ -40,7 +43,7 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    explicit Worker(const worker_id_t &name, const location_t &location = "");
+    explicit Worker(const worker_id_t name = "", const int rank = 0, const location_t &location = "");
 
     /**
       Take an event related to that particular worker and update the internal
@@ -50,8 +53,17 @@ namespace sdpa { namespace daemon {
 
     /**
       Add a new job to the pending queue of this worker.
+      Move it to the pending_ queue.
       */
-    void dispatch(const Job::ptr_t &job);
+    void dispatch(const sdpa::job_id_t &job);
+
+    /**
+	 Acknowledge a given job id and move it to the acknowledged_ queue.
+
+	 @param job_id the job_id to acknowledge
+	 @return true iff a job was moved
+	 */
+    bool acknowledge(const sdpa::job_id_t &job_id);
 
     /**
       Time of last received event designated to this worker.
@@ -69,19 +81,15 @@ namespace sdpa { namespace daemon {
     const location_t &location() const { return location_; }
 
     /**
-      Acknowledge a given job id and move it to the submitted_queue.
-
-      @param job_id the job_id to acknowledge
-      @return true iff a job was moved
-      */
-    bool acknowledge(const sdpa::job_id_t &job_id);
-
+         Return the rank of the worker.
+     */
+    const int rank() const { return rank_; }
     /**
       Return the next pending job or throw an exception.
 
       @param last_job_id the id of the last sucessfully submitted job
       */
-    Job::ptr_t get_next_job( const sdpa::job_id_t &last_job_id ) throw (NoJobScheduledException);
+    sdpa::job_id_t get_next_job( const sdpa::job_id_t &last_job_id ) throw (NoJobScheduledException);
 
     /**
 	  Remove a job that was finished or failed from the acknowledged_ queue
@@ -114,10 +122,26 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& acknowledged() { return acknowledged_; }
+
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+    	ar & name_;
+    	ar & tstamp_;
+    	ar & pending_;
+    	ar & submitted_;
+    	ar & acknowledged_;
+	}
+
+    friend class boost::serialization::access;
+
+    void print();
+
   private:
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
+    int rank_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 

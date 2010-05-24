@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  WorkerRegistrationAckEvent.hpp
+ *
+ *    Description:  WorkerRegistrationAckEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_WORKER_REGISTRATION_ACK_EVENT_HPP
 #define SDPA_WORKER_REGISTRATION_ACK_EVENT_HPP 1
 
@@ -28,9 +45,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "WorkerRegistrationAckEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitWorkerRegistrationAckEvent(this);
+        handler->handleWorkerRegistrationAckEvent(this);
       }
   };
 }}

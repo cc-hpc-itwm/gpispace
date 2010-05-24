@@ -20,30 +20,68 @@
 using namespace sdpa::fsm::smc;
 using namespace sdpa::events;
 
-void DaemonFSM::handleDaemonEvent(const seda::IEvent::Ptr& pEvent)
+void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 {
 	lock_type lock(mtx_);
-
-	if( StartUpEvent* ptr = dynamic_cast<StartUpEvent*>(pEvent.get()) )
-		GetContext().StartUp(*ptr);
-	else if( ConfigOkEvent* ptr = dynamic_cast<ConfigOkEvent*>(pEvent.get()) )
-		GetContext().ConfigOk(*ptr);
-	else if( ConfigNokEvent* ptr = dynamic_cast<ConfigNokEvent*>(pEvent.get()) )
-		GetContext().ConfigNok(*ptr);
-	else if( InterruptEvent* ptr = dynamic_cast<InterruptEvent*>(pEvent.get()) )
-		GetContext().Interrupt(*ptr);
-	else if( WorkerRegistrationEvent* ptr = dynamic_cast<WorkerRegistrationEvent*>(pEvent.get()) )
-		GetContext().RegisterWorker(*ptr);
-	else if( DeleteJobEvent* ptr = dynamic_cast<DeleteJobEvent*>(pEvent.get()) )
-		GetContext().DeleteJob(*ptr);
-	else if( SubmitJobEvent* ptr = dynamic_cast<SubmitJobEvent*>(pEvent.get()) )
-		GetContext().SubmitJob(*ptr);
-	else if( LifeSignEvent* ptr = dynamic_cast<LifeSignEvent*>(pEvent.get()) )
-		GetContext().LifeSign(*ptr);
-	else if( RequestJobEvent* ptr = dynamic_cast<RequestJobEvent*>(pEvent.get()) )
-		GetContext().RequestJob(*ptr);
-	else if( ConfigRequestEvent* ptr = dynamic_cast<ConfigRequestEvent*>(pEvent.get()) )
-		GetContext().ConfigRequest(*ptr);
-	else if( ErrorEvent *ptr = dynamic_cast<ErrorEvent*>(pEvent.get()) )
-		GetContext().Error(*ptr);
+	GetContext().StartUp(*pEvent);
 }
+
+void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().ConfigOk(*pEvent);
+}
+
+void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().ConfigNok(*pEvent);
+}
+void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().Interrupt(*pEvent);
+}
+
+void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().RegisterWorker(*pEvent);
+}
+
+void DaemonFSM::handleDeleteJobEvent(const DeleteJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().DeleteJob(*pEvent);
+}
+
+void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().SubmitJob(*pEvent);
+}
+
+void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().LifeSign(*pEvent);
+}
+
+void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().RequestJob(*pEvent);
+}
+
+void DaemonFSM::handleConfigRequestEvent(const ConfigRequestEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().ConfigRequest(*pEvent);
+}
+
+void DaemonFSM::handleErrorEvent(const ErrorEvent* pEvent)
+{
+	lock_type lock(mtx_);
+	GetContext().Error(*pEvent);
+}
+

@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  RetrieveJobResultsEvent.hpp
+ *
+ *    Description:  RetrieveJobResultsEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_RETRIEVEJOBRESULTSEVENT_HPP
 #define SDPA_RETRIEVEJOBRESULTSEVENT_HPP 1
 
@@ -8,7 +25,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -33,9 +50,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "RetrieveJobResultsEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitRetrieveJobResultsEvent(this);
+        handler->handleRetrieveJobResultsEvent(this);
       }
   };
 }}

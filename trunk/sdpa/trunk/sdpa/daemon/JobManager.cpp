@@ -17,6 +17,15 @@
  */
 #include <sdpa/daemon/JobManager.hpp>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/map.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -27,6 +36,7 @@ JobManager::JobManager(): SDPA_INIT_LOGGER("sdpa::daemon::JobManager")  {
 JobManager::~JobManager(){
 
 }
+
 
 //helpers
 Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
@@ -119,4 +129,29 @@ std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 		v.push_back(it->first);
 
 	return v;
+}
+
+std::string JobManager::print()
+{
+	//lock_type lock(mtx_);
+	std::ostringstream os;
+
+	os<<"Begin dump ..."<<std::endl;
+
+	if(begin() != end())
+	{
+		os<<"The list of jobs still owned by the JobManager:"<<std::endl;
+		iterator it;
+		for(it = begin(); it != end(); it++)
+		{
+			os<<"       -> job "<<(*it).second->id()<<std::endl;
+		}
+	}
+	else
+		os<<"No job left to the JobManager!"<<std::endl;
+
+	os<<"End dump ..."<<std::endl;
+	//retStr = cout.str();
+
+	return os.str();
 }

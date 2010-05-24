@@ -23,7 +23,6 @@
 #include "sdpa/logging.hpp"
 #include "SchedulerTestImpl.hpp"
 
-
 namespace sdpa {
 		namespace tests {
 			class SchedulerTest : public CPPUNIT_NS::TestFixture {

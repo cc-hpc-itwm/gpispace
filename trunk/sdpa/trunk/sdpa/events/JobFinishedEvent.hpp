@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobFinishedEvent.hpp
+ *
+ *    Description:  JobFinishedEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_JOB_FINISHED_EVENT_HPP
 #define SDPA_JOB_FINISHED_EVENT_HPP 1
 
@@ -8,9 +25,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventVisitor.hpp>
-
-#include <sdpa/wf/GwesGlue.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -37,9 +52,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "JobFinishedEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitJobFinishedEvent(this);
+        handler->handleJobFinishedEvent(this);
       }
 
       const job_result_t &result() const { return result_; }

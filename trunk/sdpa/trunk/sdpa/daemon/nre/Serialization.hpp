@@ -25,7 +25,6 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
-#include <sdpa/wf/Serialization.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
 namespace boost { namespace serialization {
@@ -89,6 +88,26 @@ namespace boost { namespace serialization {
   }
 
   template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::InfoRequest &rqst, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Request>(rqst);
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::pc_info_t &pc_info, const unsigned int /* version */)
+  {
+    ar & pc_info.pid();
+    ar & pc_info.rank();
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::nre::worker::InfoReply &rply, const unsigned int /* version */)
+  {
+    ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
+    ar & rply.info();
+  }
+
+  template <class Archive>
   void serialize(Archive & ar, sdpa::nre::worker::ExecuteRequest &rqst, const unsigned int /* version */)
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Request>(rqst);
@@ -99,27 +118,29 @@ namespace boost { namespace serialization {
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.result();
+    //ar & rply.state();
   }
 
+  /*
   template <class Archive>
-  void serialize(Archive & ar, sdpa::nre::worker::LoadModuleRequest &rqst, const unsigned int /* version */)
+  void serialize(Archive & ar, sdpa::nre::worker::LoadModuleRequest &rqst, const unsigned int )
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Request>(rqst);
     ar & rqst.path();
   }
   template <class Archive>
-  void serialize(Archive & ar, sdpa::nre::worker::ModuleLoaded &rply, const unsigned int /* version */)
+  void serialize(Archive & ar, sdpa::nre::worker::ModuleLoaded &rply, const unsigned int )
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.path();
   }
   template <class Archive>
-  void serialize(Archive & ar, sdpa::nre::worker::ModuleNotLoaded &rply, const unsigned int /* version */)
+  void serialize(Archive & ar, sdpa::nre::worker::ModuleNotLoaded &rply, const unsigned int )
   {
     ar & boost::serialization::base_object<sdpa::nre::worker::Reply>(rply);
     ar & rply.path();
     ar & rply.reason();
-  }
+  }*/
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Message)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::nre::worker::Request)

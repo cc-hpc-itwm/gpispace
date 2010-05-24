@@ -41,7 +41,7 @@
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 
-#include "DummyGwes.hpp"
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
@@ -75,7 +75,9 @@ public:
 		{
 			try
 			{
-				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				const sdpa::job_id_t& jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+
 				sdpa::job_result_t results;
 
 				// execute the job and ...
@@ -83,20 +85,20 @@ public:
 				if( m_answerStrategy == "finished" )
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFinishedEvent to "<<ptr_comm_handler_->master());
-					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
+					JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), jobId, results ) );
 					ptr_comm_handler_->sendEventToMaster(pJobFinEvt);
 				}
 				else if( m_answerStrategy == "failed" )
 				{
 					SDPA_LOG_DEBUG("Slave: send JobFailedEvent to "<<ptr_comm_handler_->master());
-					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), results ) );
+					JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), jobId, results ) );
 					ptr_comm_handler_->sendEventToMaster(pJobFailEvt);
 				}
 				else if( m_answerStrategy == "cancelled" )
 				{
 					SDPA_LOG_DEBUG("Slave: send CancelJobAckEvent to "<<ptr_comm_handler_->master());
 					SDPA_LOG_FATAL("TODO: this test requires the message-id of the original cancel request!");
-					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), pJob->id(), "0xdeadbeef"));
+					CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(), jobId, "0xdeadbeef"));
 					ptr_comm_handler_->sendEventToMaster(pCancelAckEvt);
 				}
 
@@ -127,7 +129,7 @@ public:
 	NreDaemon(	const std::string &name,
 				seda::Stage* ptrToMasterStage,
 				seda::Stage* ptrToSlaveStage,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				IWorkflowEngine*  pArgSdpa2Gwes,
 				std::string& answerStrategy)
 	: DaemonFSM( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
 	  SDPA_INIT_LOGGER(name)
@@ -136,7 +138,7 @@ public:
 	}
 
 	NreDaemon(  const std::string &name,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				IWorkflowEngine*  pArgSdpa2Gwes,
 				const std::string& toMasterStageName,
 				const std::string& toSlaveStageName,
 				std::string& answerStrategy)
@@ -173,35 +175,49 @@ public:
 		{
 			try
 			{
-				//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
-				Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				check_post_request();
 
+				const sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+				Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 				if(pJob->is_local())
-					schedule_local(pJob);
+					schedule_local(jobId);
 				else
-					start_job(pJob);
-
-				check_post_request();
+				{
+					// if it's an NRE just execute it!
+					// Attention!: an NRE has no WorkerManager!!!!
+					// or has an Worker Manager and the workers are threads
+					schedule_remote(jobId);
+				}
+			}
+			catch(JobNotFoundException& ex)
+			{
+				SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 			}
 			catch( const boost::thread_interrupted & )
 			{
 				SDPA_LOG_DEBUG("Thread interrupted ...");
-				bStopRequested = true;
+				bStopRequested = true; // FIXME: can probably be removed
+				break;
 			}
 			catch( const sdpa::daemon::QueueEmpty &)
 			{
-				//SDPA_LOG_DEBUG("Queue empty exception");
-				check_post_request();
+			  // ignore
+			}
+			catch ( const std::exception &ex )
+			{
+				SDPA_LOG_ERROR("Exception in scheduler thread: " << ex.what());
 			}
 		}
 	}
 
-	void start_job(const Job::ptr_t &pJob)
+	void start_job(const sdpa::job_id_t &jobId)
 	{
 		SDPA_LOG_DEBUG("Execute job ...");
 
 		string worker = "Scheduler";
+
+		Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
 		//first put the job into the running state
 		pJob->Dispatch();
@@ -228,7 +244,7 @@ public:
 	SDPA_DECLARE_LOGGER();
 
 	NreDaemonWithGwes(  const std::string &name,
-						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						IWorkflowEngine*  pArgSdpa2Gwes,
 						const std::string& toMasterStageName,
 						const std::string& toSlaveStageName,
 						std::string& answerStrategy)
@@ -248,7 +264,7 @@ public:
 	SDPA_DECLARE_LOGGER();
 
 	TestDaemon(  const  std::string &name,
-						sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+						IWorkflowEngine*  pArgSdpa2Gwes,
 						std::string& answerStrategy)
 	: DaemonFSM( name, pArgSdpa2Gwes ),
 	  SDPA_INIT_LOGGER(name)
@@ -361,13 +377,13 @@ public:
 			os<<"Slave: Popped-up event "<<typeid(*(pEvent.get())).name();
 			SDPA_LOG_DEBUG(os.str());
 
-#if USE_STL_TR1
+/*#if USE_STL_TR1
 			ptrT = std::tr1::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
 			pErrorEvt = std::tr1::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#else
+#else*/
 			ptrT = boost::dynamic_pointer_cast<T, seda::IEvent>( pEvent );
 			pErrorEvt = boost::dynamic_pointer_cast<sdpa::events::ErrorEvent, seda::IEvent>( pEvent );
-#endif
+//#endif
 
 		 }while( !ptrT.get() && !pErrorEvt.get());
 

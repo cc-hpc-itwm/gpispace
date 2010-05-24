@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  SDPAEvent.hpp
+ *
+ *    Description:  SDPAEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Alexander Petry
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_EVENT_HPP
 #define SDPA_EVENT_HPP 1
 
@@ -5,7 +22,7 @@
 
 #include <seda/IEvent.hpp>
 #include <sdpa/memory.hpp>
-#include <sdpa/events/EventVisitor.hpp>
+#include <sdpa/events/EventHandler.hpp>
 
 namespace sdpa { namespace events {
   class SDPAEvent : public seda::IEvent {
@@ -26,7 +43,7 @@ namespace sdpa { namespace events {
 
       virtual std::string str() const = 0;
 
-      virtual void accept(EventVisitor *) = 0;
+      virtual void handleBy(EventHandler *) = 0;
     protected:
       SDPAEvent()
         : IEvent()

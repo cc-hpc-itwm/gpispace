@@ -88,7 +88,7 @@ int main (int argc, char **argv) {
 
   sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
   cfg.tool_opts().add_options()
-    ("output,o", su::po::value<std::string>(),
+    ("output,o", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
     ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
     ("force,f", "force the operation")
@@ -284,30 +284,23 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return 4;
       }
-	  const std::string job_id = args.front();
 
-	  std::string output_file;
-	  if (cfg.is_set("output"))
-		output_file = cfg.get("output");
-	  else
-		output_file = "sdpa-job-" + job_id + ".out";
-
-	  if (file_exists(output_file) && (! cfg.is_set("force")))
+	  if (file_exists(cfg.get("output")) && (! cfg.is_set("force")))
 	  {
-		std::cerr << "E: output-file " << output_file << " does already exist!" << std::endl;
+		std::cerr << "E: output-file " << cfg.get("output") << " does already exist!" << std::endl;
 		return 4;
 	  }
 
-      std::ofstream ofs(output_file.c_str());
+      std::ofstream ofs(cfg.get("output").c_str());
 	  if (! ofs)
 	  {
-		std::cerr << "E: could not open " << output_file << " for writing!" << std::endl;
+		std::cerr << "E: could not open " << cfg.get("output") << " for writing!" << std::endl;
 		return 4;
 	  }
 
-      sdpa::client::result_t results(api->retrieveResults(job_id));
+      sdpa::client::result_t results(api->retrieveResults(args.front()));
       ofs << results << std::flush;
-      std::cout << "stored results in: " << output_file << std::endl;
+      std::cout << "stored results in: " << cfg.get("output") << std::endl;
     }
     else if (command == "delete")
     {

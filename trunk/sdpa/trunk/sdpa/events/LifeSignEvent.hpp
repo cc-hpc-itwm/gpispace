@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  LifeSignEvent.hpp
+ *
+ *    Description:  LifeSignEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_LIFESIGNEVENT_HPP
 #define SDPA_LIFESIGNEVENT_HPP 1
 
@@ -38,9 +55,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "LifeSignEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(EventHandler *handler)
         {
-          visitor->visitLifeSignEvent(this);
+          handler->handleLifeSignEvent(this);
         }
 	private:
 		sdpa::job_id_t last_job_id_;

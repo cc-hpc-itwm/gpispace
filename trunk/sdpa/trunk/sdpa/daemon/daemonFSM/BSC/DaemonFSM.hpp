@@ -47,22 +47,45 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	DaemonFSM(	const std::string &name,
 				seda::Stage* ptrToMasterStage,
 				seda::Stage* ptrToSlaveStage,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes);
+				IWorkflowEngine*  pArgSdpa2Gwes);
 
 	DaemonFSM(  const std::string &name,
-				sdpa::Sdpa2Gwes*  pArgSdpa2Gwes,
+				IWorkflowEngine*  pArgSdpa2Gwes,
 				const std::string& toMasterStageName,
 				const std::string& toSlaveStageName = std::string(""));
 
-	DaemonFSM( const std::string &name, sdpa::Sdpa2Gwes*  pArgSdpa2Gwes );
+	DaemonFSM( const std::string &name = "", IWorkflowEngine*  pArgSdpa2Gwes = NULL);
 
 	virtual ~DaemonFSM();
 
-	virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+	//virtual void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);
+
+	//void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);void handleStartUpEvent(const StartUpEvent::Ptr& pEvent);
+	virtual void handleStartUpEvent(const sdpa::events::StartUpEvent* pEvent);
+	virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent* pEvent);
+	virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent* pEvent);
+	virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* pEvent);
+	virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pEvent);
+	virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* pEvent);
+	virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* pEvent);
+	virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent* pEvent);
+	virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent* pEvent);
+	virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* pEvent);
+	virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
+
 
 	virtual void process_event( const boost::statechart::event_base & e) {
 		 sc::state_machine<DaemonFSM, Down>::process_event(e);
 	}
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int file_version )
+	{
+		ar & boost::serialization::base_object<GenericDaemon>(*this);
+	}
+
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
 
 	void print_states();
 private:

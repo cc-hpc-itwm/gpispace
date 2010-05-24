@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  ErrorEvent.hpp
+ *
+ *    Description:  ErrorEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Alexander Petry
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_ERROREVENT_HPP
 #define SDPA_ERROREVENT_HPP 1
 
@@ -55,9 +72,9 @@ namespace sdpa { namespace events {
 
       std::string str() const { return "ErrorEvent"; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitErrorEvent(this);
+        handler->handleErrorEvent(this);
       }
     private:
       error_code_t error_code_;

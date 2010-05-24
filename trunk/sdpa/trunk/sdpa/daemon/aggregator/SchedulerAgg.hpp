@@ -30,9 +30,9 @@ namespace sdpa {
   class SchedulerAgg : public SchedulerImpl {
 
   public:
-	 SchedulerAgg(sdpa::daemon::IComm* pCommHandler):
+	 SchedulerAgg(sdpa::daemon::IComm* pCommHandler = NULL):
 		 SchedulerImpl(pCommHandler),
-		 SDPA_INIT_LOGGER("Scheduler " + pCommHandler->name())
+		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"AGG"))
 	{
 
 	}
@@ -101,6 +101,16 @@ namespace sdpa {
 		 {
 		  DMLOG(DEBUG, "not requesting job, i am not registered yet");
 		 }
+	 }
+
+
+	friend class boost::serialization::access;
+	friend class sdpa::tests::WorkerSerializationTest;
+
+	 template <class Archive>
+	 void serialize(Archive& ar, const unsigned int file_version )
+	 {
+		ar & boost::serialization::base_object<SchedulerImpl>(*this);
 	 }
 
   private:

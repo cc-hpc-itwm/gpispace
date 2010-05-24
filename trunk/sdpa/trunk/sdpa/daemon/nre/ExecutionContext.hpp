@@ -19,16 +19,24 @@
 #ifndef SDPA_NRE_WORKER_EXECUTION_CONTEXT_HPP
 #define SDPA_NRE_WORKER_EXECUTION_CONTEXT_HPP 1
 
-#include <sdpa/modules/ModuleLoader.hpp>
+#include <we/loader/loader.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
-  class ExecutionContext
-  {
-  public:
-    virtual ~ExecutionContext() {}
 
-    virtual sdpa::modules::ModuleLoader &loader() = 0;
-  };
+    class InfoRequest;
+	class ExecuteRequest;
+	class Reply;
+
+	class ExecutionContext
+	{
+	public:
+		virtual ~ExecutionContext() {}
+
+		virtual Reply* reply(InfoRequest *pMsgInfoReq) = 0;
+		virtual Reply* reply( ExecuteRequest* ) = 0;
+		virtual we::loader::loader &loader() = 0;
+		virtual int getRank() const = 0;
+	};
 }}}
 
 #endif

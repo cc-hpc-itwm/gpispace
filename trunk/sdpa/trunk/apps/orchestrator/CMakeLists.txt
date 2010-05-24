@@ -1,7 +1,6 @@
 add_executable(orchestrator main.cpp)
-add_dependencies(orchestrator sdpa-orchestrator)
-
-target_link_libraries(orchestrator sdpa-orchestrator)
+#add_dependencies(orchestrator sdpa-orchestrator)
+#target_link_libraries(orchestrator sdpa-orchestrator)
 target_link_libraries(orchestrator sdpa-events)
 target_link_libraries(orchestrator sdpa-daemon)
 target_link_libraries(orchestrator sdpa-util)

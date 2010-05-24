@@ -15,20 +15,20 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_I_SEND_EVENT_HANDLER_HPP
-#define SDPA_I_SEND_EVENT_HANDLER_HPP 1
+#ifndef SDPA_ICOMM_HPP
+#define SDPA_ICOMM_HPP 1
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
 
-#include <gwes/Gwes2Sdpa.h>
-#include <sdpa/Sdpa2Gwes.hpp>
+#include <sdpa/daemon/IWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
 #include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/daemon/JobManager.hpp>
 
-#include <gwes/IActivity.h>
+#define MSG_RETRY_CNT 5
 
 #define MSG_RETRY_CNT 5
 
@@ -36,8 +36,8 @@ namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;
 const std::string AGGREGATOR("aggregator") ;
-const std::string NRE("NRE");
-const std::string GWES("GWES");
+//const std::string NRE("NRE");
+const std::string WE("WE");
 const std::string USER("user");
 
   class IComm{
@@ -51,19 +51,23 @@ const std::string USER("user");
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
 	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;
 
-	  // only for testing with DummyGwes, change it
-	  virtual sdpa::Sdpa2Gwes* gwes() const = 0;
+	  // only for testing with DummyWorkflowEngine, change it
+	  virtual IWorkflowEngine* workflowEngine() const = 0;
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
 	  virtual sdpa::util::Config* cfg() const = 0;
 
+	  virtual JobManager::ptr_t jobManager() const = 0;
+	  virtual unsigned int& rank() = 0;
+
 	  //GUI notification methods
-	  virtual void activityCreated(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityStarted(const gwes::activity_t&)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFinished(const gwes::activity_t&)  { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFailed(const gwes::activity_t&)    { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityCancelled(const gwes::activity_t&) { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCreated(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityStarted(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFinished(const id_type& id, const std::string& data)  { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFailed(const id_type& id, const std::string& data)    { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCancelled(const id_type& id, const std::string& data) { throw std::runtime_error("not supported in this component"); }
+
   };
 }}
 

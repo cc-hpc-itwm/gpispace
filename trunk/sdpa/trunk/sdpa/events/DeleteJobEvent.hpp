@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  DeleteJobEvent.hpp
+ *
+ *    Description:  DeleteJobEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_DELETE_JOB_EVENT_HPP
 #define SDPA_DELETE_JOB_EVENT_HPP 1
 
@@ -32,9 +49,9 @@ namespace sdpa { namespace events {
 
 		std::string str() const { return "DeleteJobEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(EventHandler *handler)
         {
-          visitor->visitDeleteJobEvent(this);
+          handler->handleDeleteJobEvent(this);
         }
 	};
 }}

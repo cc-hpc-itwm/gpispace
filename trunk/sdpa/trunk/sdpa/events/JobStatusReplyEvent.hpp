@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  JobStatusReplyEvent.hpp
+ *
+ *    Description:  JobStatusReplyEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_ReplyJobStatusEvent_HPP
 #define SDPA_ReplyJobStatusEvent_HPP
 
@@ -38,9 +55,9 @@ namespace sdpa { namespace events {
       const status_t &status() const { return status_; }
       status_t &status() { return status_; }
 
-      virtual void accept(EventVisitor *visitor)
+      virtual void handleBy(EventHandler *handler)
       {
-        visitor->visitJobStatusReplyEvent(this);
+    	  //handler->handleJobStatusReplyEvent(this);
       }
     private:
       status_t status_;

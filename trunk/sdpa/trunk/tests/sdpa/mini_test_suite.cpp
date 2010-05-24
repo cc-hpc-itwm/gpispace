@@ -39,11 +39,25 @@ int main(int /* argc */, char ** /* argv */)
 
   runner.run (testresult);
 
-  std::cout << "running testsuite  done" << std::endl;
-  // print and save results
-  std::ofstream outStream("out.xml");
-  CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
-  xmloutputter.write ();
+  {
+	  // print and save results
+	  std::ofstream outStream("out.xml");
+
+	  CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, outStream);
+	  xmloutputter.write ();
+  }
+
+
+  if (collectedresults.wasSuccessful ())
+  {
+	  std::cout << "running testsuite  done" << std::endl;
+  }
+  else
+  {
+	  std::cout << "testsuite failed:" << std::endl;
+  	  CPPUNIT_NS::XmlOutputter xmloutputter (&collectedresults, std::cerr);
+	  xmloutputter.write ();
+  }
 
   return collectedresults.wasSuccessful () ? 0 : 1;
 }

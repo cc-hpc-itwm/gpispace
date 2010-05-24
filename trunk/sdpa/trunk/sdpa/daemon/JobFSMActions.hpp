@@ -29,6 +29,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 
+#include <boost/serialization/access.hpp>
+
 namespace sdpa {
 	namespace fsm {
 		class JobFSMActions {
@@ -43,6 +45,11 @@ namespace sdpa {
 				virtual void action_job_failed(const sdpa::events::JobFailedEvent&)=0;
 				virtual void action_job_finished(const sdpa::events::JobFinishedEvent&)=0;
 				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&)=0;
+
+				friend class boost::serialization::access;
+				template<class Archive>
+					void serialize(Archive& , const unsigned int /* file version */){}
+
 		};
 	}
 }

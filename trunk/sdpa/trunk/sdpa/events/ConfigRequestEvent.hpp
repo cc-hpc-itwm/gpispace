@@ -1,3 +1,20 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  ConfigRequestEvent.hpp
+ *
+ *    Description:  ConfigRequestEvent
+ *
+ *        Version:  1.0
+ *        Created:
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+ *        Company:  Fraunhofer ITWM
+ *
+ * =====================================================================================
+ */
 #ifndef SDPA_CONFIGREQUESTEVENT_HPP
 #define SDPA_CONFIGREQUESTEVENT_HPP 1
 
@@ -32,9 +49,9 @@ namespace events {
 
     	std::string str() const { return "ConfigRequestEvent"; }
 
-        virtual void accept(EventVisitor *visitor)
+        virtual void handleBy(EventHandler *handler)
         {
-          visitor->visitConfigRequestEvent(this);
+          handler->handleConfigRequestEvent(this);
         }
     };
 }}

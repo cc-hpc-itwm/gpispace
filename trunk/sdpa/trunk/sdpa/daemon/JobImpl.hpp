@@ -21,11 +21,17 @@
 #include <sdpa/daemon/JobFSMActions.hpp>
 #include <sdpa/daemon/IComm.hpp>
 #include <sdpa/common.hpp>
-#include <map>
 #include <boost/thread.hpp>
 
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/access.hpp>
+
+#include <sstream>
+#include <map>
+
 namespace sdpa { namespace daemon {
-    class JobImpl : public Job, public sdpa::fsm::JobFSMActions  {
+    class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
     public:
         typedef std::map<sdpa::job_id_t, Job::ptr_t> job_list_t;
         typedef sdpa::shared_ptr<JobImpl> ptr_t;
@@ -33,23 +39,25 @@ namespace sdpa { namespace daemon {
         typedef boost::recursive_mutex mutex_type;
       	typedef boost::unique_lock<mutex_type> lock_type;
 
-        JobImpl(const sdpa::job_id_t &id,
-                const sdpa::job_desc_t &desc,
-                const sdpa::daemon::IComm* pHandler = NULL,
-                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
+      	JobImpl(const sdpa::job_id_t id = JobId(""),
+      	                const sdpa::job_desc_t desc = "",
+      	                const sdpa::daemon::IComm* pHandler = NULL,
+      	                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
         virtual ~JobImpl() throw();
 
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
-
         virtual const sdpa::job_desc_t& description() const;
+        virtual sdpa::worker_id_t& worker() { return worker_id_;}
 
         virtual bool is_marked_for_deletion();
         virtual bool mark_for_deletion();
 
         virtual bool is_local();
         virtual void set_local(bool);
+
+        virtual unsigned long &walltime() { return walltime_;}
 
         // job FSM actions
 		virtual void action_run_job();
@@ -63,6 +71,29 @@ namespace sdpa { namespace daemon {
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
 		virtual void setResult(const sdpa::job_result_t& arg_results) { result = arg_results; }
+
+
+		virtual std::string print_info()
+		{
+			std::ostringstream os;
+			os<<id_<<std::endl;
+			os<<desc_<<std::endl;
+			os<<parent_<<std::endl;
+			os<<worker_id_<<std::endl;
+			return os.str();
+		}
+
+		template <class Archive> void serialize(Archive& ar, const unsigned int file_version )
+		{
+			ar & boost::serialization::base_object<Job>(*this);
+			ar & id_;
+			ar & desc_;
+			ar & parent_;
+			ar & worker_id_;
+			ar & result;
+			ar & walltime_;
+		}
+
     private:
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
@@ -70,11 +101,16 @@ namespace sdpa { namespace daemon {
 
         bool b_marked_for_del_;
         bool b_local_;
-        SDPA_DECLARE_LOGGER();
         sdpa::job_result_t result;
+        SDPA_DECLARE_LOGGER();
+
+        friend class boost::serialization::access;
+        sdpa::worker_id_t worker_id_;
+        unsigned long walltime_;
     protected:
-       	mutable IComm* pComm;
+       	/*mutable*/ IComm* pComm;
         mutex_type mtx_;
+
     };
 }}
 

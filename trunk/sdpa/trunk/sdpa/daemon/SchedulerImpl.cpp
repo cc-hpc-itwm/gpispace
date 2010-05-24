@@ -25,10 +25,10 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler)
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
-  , SDPA_INIT_LOGGER(pCommHandler->name() + "::SchedulerImpl")
+  , SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name():"tests::sdpa::SchedulerImpl")
   , m_timeout(boost::posix_time::milliseconds(100))
   , m_last_request_time(0)
   , m_last_life_sign_time(0)
@@ -48,46 +48,60 @@ SchedulerImpl::~SchedulerImpl()
 }
 
 /*
-	Schedule a job locally, send the job to GWES
+	Schedule a job locally, send the job to WE
 */
-void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
+void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
+{
 	SDPA_LOG_DEBUG("Called schedule_local ...");
 
-	gwes::workflow_id_t wf_id = pJob->id().str();
-	gwes::workflow_t::ptr_t ptrWorkflow;
+	id_type wf_id = jobId.str();
 
-	// put the job into the running state
-	pJob->Dispatch();
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
+		stop();
+		return;
+	}
 
 	try {
-		if( ptr_comm_handler_->gwes() )
+
+		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		// put the job into the running state
+		pJob->Dispatch();
+
+		if( ptr_comm_handler_->workflowEngine() )
 		{
-			// Use gwes workflow here!
-
-			ptrWorkflow = ptr_comm_handler_->gwes()->deserializeWorkflow( pJob->description() ) ;
-			ptrWorkflow->setID(wf_id);
-
 			// Should set the workflow_id here, or send it together with the workflow description
-			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to GWES");
-
-			ptr_comm_handler_->gwes()->submitWorkflow(ptrWorkflow);
+			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
+			ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
 		}
 		else
 		{
 			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
 			//send a JobFailed event
-			sdpa::job_result_t sdpa_result;
-			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+
+			sdpa::job_result_t result;
+			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), result) );
 			ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+
+			if(!ptr_comm_handler_)
+		    {
+				stop();
+				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		    }
 		}
 	}
-	catch (std::exception& )
+	catch(JobNotFoundException& ex)
 	{
-		SDPA_LOG_DEBUG("Exception occured when trying to submit the workflow "<<wf_id<<" to GWES!");
+		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+	}
+	catch (std::exception& ex)
+	{
+		SDPA_LOG_DEBUG("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
 		//send a JobFailed event
-		sdpa::job_result_t sdpa_result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), sdpa_result) );
+		sdpa::job_result_t result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 }
@@ -95,39 +109,53 @@ void SchedulerImpl::schedule_local(const Job::ptr_t &pJob) {
 /*
  * Implement here in a first phase a simple round-robin schedule
  */
-void SchedulerImpl::schedule_remote(const Job::ptr_t &pJob) {
+void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+{
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
+
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		stop();
+		return;
+	}
 
 	try {
 
 		if( ptr_worker_man_ )
 		{
+			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
 			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-			pWorker->dispatch(pJob);
+
+			pJob->worker() = pWorker->name();
+			pWorker->dispatch(jobId);
 		}
+	}
+	catch(JobNotFoundException& ex)
+	{
+		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 	}
 	catch(const NoWorkerFoundException&)
 	{
 		// put the job back into the queue
-		jobs_to_be_scheduled.push(pJob);
+		jobs_to_be_scheduled.push(jobId);
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
 	}
 }
 
-void SchedulerImpl::start_job(const Job::ptr_t& pJob) {
-	SDPA_LOG_DEBUG("Start the job "<<pJob->id());
+// obsolete, only for testing purposes!
+void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
+	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
 }
 
-void SchedulerImpl::schedule(Job::ptr_t& pJob)
+void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
 {
-	ostringstream os;
-	os<<"Handle job "<<pJob->id();
-	SDPA_LOG_DEBUG(os.str());
-
-	jobs_to_be_scheduled.push(pJob);
+	SDPA_LOG_DEBUG("Handle job "<<jobId.str());
+	jobs_to_be_scheduled.push(jobId);
 }
 
 Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -150,6 +178,12 @@ void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
 void SchedulerImpl::start()
 {
    bStopRequested = false;
+   if(!ptr_comm_handler_)
+   {
+	   SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+	   return;
+   }
+
    m_thread = boost::thread(boost::bind(&SchedulerImpl::run, this));
    SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
@@ -167,6 +201,13 @@ void SchedulerImpl::stop()
 
 bool SchedulerImpl::post_request(bool force)
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return false;
+	}
+
 	bool bReqPosted = false;
 	sdpa::util::time_type current_time = sdpa::util::now();
 	sdpa::util::time_type difftime = current_time - m_last_request_time;
@@ -190,6 +231,13 @@ bool SchedulerImpl::post_request(bool force)
 
 void SchedulerImpl::send_life_sign()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return ;
+	}
+
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
@@ -207,6 +255,13 @@ void SchedulerImpl::send_life_sign()
 
 void SchedulerImpl::check_post_request()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return;
+	}
+
 	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 {
 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
@@ -218,9 +273,15 @@ void SchedulerImpl::check_post_request()
 	 }
 }
 
-
 void SchedulerImpl::run()
 {
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return;
+	}
+
 	SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 	while(!bStopRequested)
@@ -228,26 +289,22 @@ void SchedulerImpl::run()
 		try
 		{
 			check_post_request();
+			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
-			//Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait();
-			Job::ptr_t pJob = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-
-			if( pJob )
+			if(pJob->is_local())
+				schedule_local(jobId);
+			else
 			{
-				if(pJob->is_local())
-					schedule_local(pJob);
-				else
-				{
-					// if it's an NRE just execute it!
-					// Attention!: an NRE has no WorkerManager!!!!
-					// or has an Worker Manager and the workers are threads
-					schedule_remote(pJob);
-				}
-
-				// if I'm not the orchestrator (i.e. either aggregator or nre)
-				// if the job queue's length is less than twice the number of workers
-				// and the elapased time since the last request is > polling_interval_time
+				// if it's an NRE just execute it!
+				// Attention!: an NRE has no WorkerManager!!!!
+				// or has an Worker Manager and the workers are threads
+				schedule_remote(jobId);
 			}
+		}
+		catch(JobNotFoundException& ex)
+		{
+			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -264,4 +321,10 @@ void SchedulerImpl::run()
 		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
 		}
 	}
+}
+
+void SchedulerImpl::print()
+{
+	jobs_to_be_scheduled.print();
+	ptr_worker_man_->print();
 }

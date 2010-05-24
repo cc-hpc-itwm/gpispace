@@ -19,14 +19,16 @@ namespace daemon {
 
 	class WorkerException : public sdpa::SDPAException {
 	public:
-		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id)
-			: sdpa::SDPAException(reason), worker_id_(worker_id) {}
+		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id, const unsigned int rank = 0 )
+			: sdpa::SDPAException(reason), worker_id_(worker_id), rank_(rank) {}
 
 		virtual ~WorkerException() throw() {}
 		const sdpa::worker_id_t& worker_id() const { return worker_id_; }
+		const unsigned int& rank() const { return rank_; }
 
 		private:
 		sdpa::worker_id_t worker_id_;
+		unsigned int rank_;
 	};
 
 	class JobNotFoundException : public JobException {
@@ -53,10 +55,16 @@ namespace daemon {
 	class NoJobScheduledException : public WorkerException {
 		public:
 			NoJobScheduledException( const sdpa::worker_id_t& worker_id)
-			: WorkerException("Worker not found!", worker_id) {}
+			: WorkerException("No job was scheduled!", worker_id) {}
 		virtual ~NoJobScheduledException() throw() {}
 	};
 
+	class WorkerAlreadyExistException : public WorkerException {
+		public:
+		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const unsigned int rank)
+			: WorkerException("A worker with either the same name or the same rank already registerd!", worker_id,rank) {}
+		virtual ~WorkerAlreadyExistException() throw() {}
+	};
 
 	class JobNotAddedException : public JobException {
 		public:

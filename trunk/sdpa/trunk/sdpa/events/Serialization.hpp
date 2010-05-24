@@ -50,7 +50,6 @@
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 
-#include <sdpa/wf/Serialization.hpp>
 
 namespace boost { namespace serialization {
   template <class Archive>
@@ -101,6 +100,7 @@ namespace boost { namespace serialization {
   void serialize(Archive & ar, sdpa::events::WorkerRegistrationEvent & e, unsigned int /* version */)
   {
     ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+    ar & e.rank();
   }
 
   template <class Archive>

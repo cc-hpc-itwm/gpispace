@@ -30,7 +30,15 @@ namespace sdpa {
 		namespace tests {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
-			  CPPUNIT_TEST( testComponents );
+
+			  CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
+			  CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
+			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
+
+			  //CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpywnedByNRE );
+
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -42,12 +50,23 @@ namespace sdpa {
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
-			  void testComponents();
+			  void testAny();
+			  void testCompDummyGwesAndFakeFvmPC();
+			  void testComponentsDummyGwesNoFvmPC();
+			  void testActivityDummyWeAllCompAndNreWorker();
+
+			  void testActivityRealWeAllCompAndActExec();
+
+			  void testActivityRealWeAllCompAndNreWorkerSpawnedByTest();
+			  void testActivityRealWeAllCompAndNreWorkerSpywnedByNRE();
+
+			  void startDaemons(const std::string& workerUrl);
+			  void startPcdAndDaemons(const std::string& workerUrl) throw (std::exception);
 
 			private:
 			  SDPA_DECLARE_LOGGER();
 
-			  sdpa::client::ClientApi::ptr_t m_ptrUser;
+			  sdpa::client::ClientApi::ptr_t m_ptrCli;
 			  std::string m_strWorkflow;
 
 			  int m_nITER;
