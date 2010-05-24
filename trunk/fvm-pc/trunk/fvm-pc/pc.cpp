@@ -148,7 +148,16 @@ int fvmConnect(fvm_pc_config_t config)
 
 int fvmLeave()
 {
-  fvmRequest_t op_request; //just for the leave
+  fvmRequest_t op_request = {
+    LEAVE
+    , { 0
+        , 0
+        , 0
+        , 0
+        , 0
+        , 0
+    }
+  };
 
   /* just detach from the shmem, the rest should be done by the
      FVM */
@@ -156,7 +165,6 @@ int fvmLeave()
   shmdt(pcShm);
 #endif
 
-  op_request.op = LEAVE;
   doRequest(op_request);
 
   return 0;
@@ -168,10 +176,16 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   fvmAllocHandle_t ptr=0;
 
   msgQueueAllocMsg_t allocmsg;
-
-  fvmRequest_t request;
-  request.op = FGLOBALLOC;
-  request.args.arg_size = size;
+  fvmRequest_t request = {
+    FGLOBALLOC
+    , { 0
+        , 0
+        , size
+        , 0
+        , 0
+        , 0
+    }
+  };
 
   if(doRequest(request)){
     perror("error doing request");
@@ -196,9 +210,16 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
 	int ret;
-	fvmRequest_t request;
-	request.op = FGLOBALFREE;
-	request.args.arg_allochandle = ptr;
+        fvmRequest_t request = {
+          FGLOBALFREE
+          , { 0
+              , 0
+              , 0
+              , 0
+              , ptr
+              , 0
+          }
+        };
 
 	if(doRequest(request))
 		perror("error doing request");
@@ -218,9 +239,16 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
   msgQueueAllocMsg_t allocmsg;
 
-  fvmRequest_t request;
-  request.op = FLOCALLOC;
-  request.args.arg_size = size;
+  fvmRequest_t request = {
+    FLOCALLOC
+    , { 0
+        , 0
+        , size
+        , 0
+        , 0
+        , 0
+    }
+  };
 
   if(doRequest(request)){
     perror("error doing request");
@@ -247,9 +275,16 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 {
 
   int ret;
-  fvmRequest_t request;
-  request.op = FLOCALFREE;
-  request.args.arg_allochandle = ptr;
+  fvmRequest_t request = {
+    FLOCALFREE
+    , { 0
+        , 0
+        , 0
+        , ptr
+        , 0
+        , 0
+    }
+  };
 
   if(doRequest(request))
     perror("error doing request");
@@ -270,13 +305,16 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 				   const fvmAllocHandle_t scratchHandle,
 				   const fvmOperation_t op)
 {
-  fvmRequest_t request;
-  request.op = op;
-  request.args.arg_allochandle = handle;
-  request.args.arg_fvmOffset = fvmOffset;
-  request.args.arg_size = size;
-  request.args.arg_shmOffset = shmemOffset;
-  request.args.arg_scratchhandle = scratchHandle;
+  fvmRequest_t request = {
+    op
+    , { fvmOffset
+        , shmemOffset
+        , size
+        , 0
+        , handle
+        , scratchHandle
+    }
+  };
 
   if(doRequest(request)){
     perror("error doing request");
@@ -357,9 +395,16 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  fvmRequest_t request;
-  request.op = WAITCOMM;
-  request.args.arg_commhandle  = handle;
+  fvmRequest_t request = {
+    WAITCOMM
+    , { 0
+        , 0
+        , 0
+        , handle
+        , 0
+        , 0
+    }
+  };
 
   if(doRequest(request))
     perror("error doing request");
