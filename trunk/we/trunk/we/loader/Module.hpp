@@ -15,6 +15,8 @@ namespace we
 {
   namespace loader
   {
+    class loader;
+
     /**
        @brief
        This class describes a loaded module, it keeps a mapping of function names
@@ -41,7 +43,7 @@ namespace we
         , call_table_()
         , state_(0)
       {
-        handle_ = open (a_path, flags);
+        open (a_path, flags);
       }
 
       virtual ~Module() throw ()
@@ -52,12 +54,25 @@ namespace we
         }
         catch (const std::exception & ex)
         {
-          std::cerr << "E: **** module " << name() << " had errors during close: " << ex.what() << std::endl;
+          std::cerr << "E: **** module " << name()
+                    << " from file " << path()
+                    << " had errors during close: "
+                    << ex.what()
+                    << std::endl;
+        }
+        catch (...)
+        {
+          std::cerr << "E: **** module " << name()
+                    << " from file " << path()
+                    << " had unknow errors during close!"
+                    << std::endl;
         }
       }
 
       inline void name (const std::string & a_name) { name_ = a_name; }
       inline const std::string &name() const { return name_; }
+
+      inline const std::string &path() const { return path_; }
 
       void * state (void)
       {
@@ -197,11 +212,51 @@ namespace we
         os << "}";
       }
 
-    private:
-      handle_t open (const std::string & a_path, int flags = RTLD_NOW | RTLD_GLOBAL)
+      void init (loader *) throw (ModuleException)
       {
-        handle_t handle = dlopen(a_path.c_str(), flags);
-        if (! handle)
+        if (! handle_)
+        {
+          throw ModuleInitFailed
+            ("initialization of module " + name() + " from " + path() + " failed: handle is 0", name(), path());
+        }
+
+        InitializeFunction initialize (NULL);
+        {
+          struct
+          {
+            union
+            {
+              void * symbol;
+              InitializeFunction function;
+            };
+          } func_ptr;
+
+          func_ptr.symbol = dlsym(handle_, "we_mod_initialize");
+          initialize = func_ptr.function;
+        }
+
+        if (initialize != NULL)
+        {
+          try {
+            const unsigned int LOADER_VERSION (1U);
+
+            initialize( this, LOADER_VERSION );
+          } catch (const std::exception &ex) {
+            throw ModuleInitFailed("error during mod-init function: " + std::string(ex.what()), name(), path());
+          } catch (...) {
+            throw ModuleInitFailed("unknown error during mod-init function", name(), path());
+          }
+        }
+      }
+
+    private:
+      void open (const std::string & a_path, int flags = RTLD_NOW | RTLD_GLOBAL)
+      {
+        if (handle_)
+          return;
+
+        handle_ = dlopen(a_path.c_str(), flags);
+        if (! handle_)
         {
           throw ModuleLoadFailed( std::string("could not load module '")
                                 + name()
@@ -215,37 +270,15 @@ namespace we
         // clear any errors
         dlerror();
 
-        InitializeFunction init (NULL);
+        try
         {
-          struct
-          {
-            union
-            {
-              void * symbol;
-              InitializeFunction function;
-            };
-          } func_ptr;
-
-          func_ptr.symbol = dlsym(handle, "we_mod_initialize");
-          init = func_ptr.function;
+          init (0);
         }
-
-        if (init != NULL)
+        catch (...)
         {
-          try {
-            const unsigned int LOADER_VERSION (1U);
-
-            init( this, LOADER_VERSION );
-          } catch (const std::exception &ex) {
-            dlclose(handle);
-            throw ModuleLoadFailed("error during mod-init function: " + std::string(ex.what()), name(), a_path);
-          } catch (...) {
-            dlclose(handle);
-            throw ModuleLoadFailed("unknown error during mod-init function", name(), a_path);
-          }
+          close();
+          throw;
         }
-
-        return handle;
       }
 
       void close ()
@@ -271,18 +304,18 @@ namespace we
           finalize = func_ptr.function;
         }
 
-        try
+        if (finalize != NULL)
         {
-          if (finalize != NULL)
+          try
           {
             finalize( this );
           }
-        }
-        catch (...)
-        {
-          dlclose(handle_);
-          handle_ = 0;
-          throw;
+          catch (...)
+          {
+            dlclose(handle_);
+            handle_ = 0;
+            throw;
+          }
         }
 
         dlclose(handle_);

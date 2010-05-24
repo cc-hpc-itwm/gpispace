@@ -90,7 +90,7 @@ int main (int argc, char **argv)
       ; ++m
       )
   {
-    daemon.loader().load (*m, *m);
+    daemon.loader().load (*m);
   }
 
   daemon.loader().append_search_path (mod_path);

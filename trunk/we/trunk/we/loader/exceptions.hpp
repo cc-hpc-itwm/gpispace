@@ -41,6 +41,18 @@ namespace we
       std::string file_;
     };
 
+    class ModuleInitFailed : public ModuleException {
+    public:
+      explicit
+      ModuleInitFailed(const std::string &a_reason, const std::string &a_module, const std::string &a_file)
+        : ModuleException(a_reason, a_module), file_(a_file) {}
+      virtual ~ModuleInitFailed() throw() {}
+
+      const std::string &file() const { return file_; }
+    private:
+      std::string file_;
+    };
+
     /**
        All exceptions related to a specific function.
     */

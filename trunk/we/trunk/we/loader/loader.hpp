@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 
@@ -31,8 +32,8 @@ namespace we {
 
       loader()
         : module_table_()
+        , module_counter_(0)
       {
-        append_search_path (".");
       }
 
       ~loader()
@@ -45,6 +46,7 @@ namespace we {
 
       const module_ptr_t get(const std::string &module) const throw(ModuleNotLoaded)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         module_table_t::const_iterator mod = module_table_.find(module);
         if (mod != module_table_.end()) {
           return mod->second;
@@ -60,24 +62,22 @@ namespace we {
 
       module_ptr_t get(const std::string &module) throw(ModuleNotLoaded, ModuleLoadFailed)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         module_table_t::const_iterator mod = module_table_.find(module);
         if (mod != module_table_.end()) {
           return mod->second;
         } else {
-          return load(module);
+          boost::filesystem::path module_file_path;
+          if (locate (module, module_file_path))
+            return load (module, module_file_path);
+          else
+            throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
         }
       }
 
-      module_ptr_t load ( const std::string & module_name ) throw (ModuleLoadFailed)
+      module_ptr_t load ( const boost::filesystem::path & path ) throw (ModuleLoadFailed)
       {
-        //    file_name = "lib" + module_name + ".so"
-        // iterate over search path
-        //    path = prefix + file_name
-        boost::filesystem::path module_file_path;
-        if (locate (module_name, module_file_path))
-          return load (module_name, module_file_path);
-        else
-          throw ModuleLoadFailed("module '" + module_name + "' could not be located", module_name, "");
+        return load ( "mod-"+::util::show(module_counter_), path);
       }
 
       module_ptr_t load( const std::string & module_name
@@ -85,6 +85,8 @@ namespace we {
                        ) throw(ModuleException)
       {
         module_ptr_t mod(new Module(module_name, path.string()));
+
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         std::pair<module_table_t::iterator, bool> insert_result =
           module_table_.insert(std::make_pair(module_name, mod));
 
@@ -94,30 +96,47 @@ namespace we {
         }
         else
         {
+          ++module_counter_;
           return mod;
         }
       }
 
       void unload(const std::string &module_name)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         module_table_t::iterator mod = module_table_.find(module_name);
         if (mod != module_table_.end()) {
           unload(mod);
         }
       }
 
+      const search_path_t & search_path (void) const
+      {
+        return search_path_;
+      }
+
+      void clear_search_path (void)
+      {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+        search_path_.clear();
+      }
+
       void append_search_path (const boost::filesystem::path & p)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         search_path_.push_back (p);
       }
 
       void prepend_search_path (const boost::filesystem::path & p)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         search_path_.push_front (p);
       }
 
       void writeTo(std::ostream &os) const
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+
         os << "{loader, ";
         os << "{path, ";
         for (search_path_t::const_iterator p (search_path_.begin()); p != search_path_.end(); ++p)
@@ -151,6 +170,7 @@ namespace we {
 
       bool locate (const std::string & module, boost::filesystem::path & path_found)
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         namespace fs = boost::filesystem;
         const std::string file_name (module_traits<Module>::file_name (module));
         for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
@@ -170,6 +190,7 @@ namespace we {
 
       void unload_all()
       {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         while (! module_table_.empty()) {
           unload(module_table_.begin());
         }
@@ -182,7 +203,9 @@ namespace we {
       }
 
       module_table_t module_table_;
+      unsigned long module_counter_;
       search_path_t search_path_;
+      mutable boost::recursive_mutex mtx_;
     };
 
     inline std::ostream &operator<< ( std::ostream &os
