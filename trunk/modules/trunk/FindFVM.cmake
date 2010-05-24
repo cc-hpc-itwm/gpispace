@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 # This file defines:
 # * FVM_FOUND if workflow engine was found
-# * FVM_LIBRARY The lib to link to (currently only a static unix lib, not portable) 
+# * FVM_LIBRARY The lib to link to (currently only a static unix lib, not portable)
 # * FVM_INCLUDE_DIR The path to the include directory
 # *  PKG_CHECK_MODULE used to set the following variables
 # *
@@ -22,10 +22,57 @@
 # *   <XPREFIX> = <PREFIX>  when |MODULES| == 1, else
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
-message(STATUS "FindFVM check")
+if (NOT FVM_FIND_QUIETLY)
+  message(STATUS "FindFVM check")
+endif (NOT FVM_FIND_QUIETLY)
+
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include(FindPackageHelper)
-  check_package(FVM fvm-pc/pc.hpp fvm 1.0)
+  find_path (FVM_INCLUDE_DIR
+    NAMES "fvm-pc/pc.hpp"
+    HINTS ${FVM_HOME} ENV FVM_HOME
+    PATH_SUFFIXES include
+    )
+
+  find_library (FVM_LIBRARY
+    NAMES libfvm-pc.a
+    HINTS ${FVM_HOME} ENV FVM_HOME
+    PATH_SUFFIXES lib
+    )
+  find_library (FVM_LIBRARY_SHARED
+    NAMES libfvm-pc.so
+    HINTS ${FVM_HOME} ENV FVM_HOME
+    PATH_SUFFIXES lib
+    )
+
+  find_library (FVM_FAKE_LIBRARY
+    NAMES libfvm-pc.a
+    HINTS ${FVM_HOME} ENV FVM_HOME
+    PATH_SUFFIXES lib/fake
+    )
+  find_library (FVM_FAKE_LIBRARY_SHARED
+    NAMES libfvm-pc.so
+    HINTS ${FVM_HOME} ENV FVM_HOME
+    PATH_SUFFIXES lib/fake
+    )
+
+  if (FVM_INCLUDE_DIR)
+    set (FVM_FOUND TRUE)
+    if (NOT FVM_FIND_QUIETLY)
+      message(STATUS "Found FVM headers in ${FVM_INCLUDE_DIR}")
+      if (FVM_LIBRARY)
+	message(STATUS "Found FVM static library in ${FVM_LIBRARY}")
+	message(STATUS "Found FVM static fake-library in ${FVM_FAKE_LIBRARY}")
+      endif (FVM_LIBRARY)
+      if (FVM_LIBRARY_SHARED)
+	message(STATUS "Found FVM shared library in ${FVM_LIBRARY_SHARED}")
+	message(STATUS "Found FVM shared fake-library in ${FVM_FAKE_LIBRARY_SHARED}")
+      endif (FVM_LIBRARY_SHARED)
+    endif (NOT FVM_FIND_QUIETLY)
+  else (FVM_INCLUDE_DIR)
+    if (FVM_FIND_REQUIRED)
+      message (FATAL_ERROR "FVM could not be found!")
+    endif (FVM_FIND_REQUIRED)
+  endif (FVM_INCLUDE_DIR)
 else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(FVM_FOUND true)
   set(FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
