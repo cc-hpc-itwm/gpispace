@@ -1,0 +1,3 @@
+# Reflect the package structure
+add_subdirectory(nre-worker)
+add_subdirectory(bin)
