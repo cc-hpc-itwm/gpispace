@@ -36,7 +36,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused")
 
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type -Wshadow")
