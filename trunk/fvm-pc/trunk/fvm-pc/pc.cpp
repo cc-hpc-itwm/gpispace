@@ -37,7 +37,31 @@ static int doRequest(fvmRequest_t op_request)
   printf("PC: Sending msg on queue %d type 2 (doRequest)\n", pcQueueID);
 #endif
 
-  if(msgsnd(pcQueueID, &msg, sizeof(msgQueueMsg_t), 0) < 0){
+  // man msgsnd:
+  //    int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+  
+  //        The application shall ensure that the argument msgp points
+  //        to a  user-defined buffer that  contains first a  field of
+  //        type long specifying  the type of the message,  and then a
+  //        data portion that holds the data bytes of the message. The
+  //        structure below  is an  example of what  this user-defined
+  //        buffer might look like:
+
+
+  //               struct mymsg {
+  //                   long   mtype;       /* Message type. */
+  //                   char   mtext[1];    /* Message text. */
+  //               }
+
+  //        The  structure member  mtype is  a non-zero  positive type
+  //        long that can be used by the receiving process for message
+  //        selection.
+
+  //        The  structure member mtext  is any  text of  length msgsz
+  //        bytes.  The   argument  msgsz  can  range  from   0  to  a
+  //        system-imposed maximum.
+
+  if(msgsnd(pcQueueID, &msg, sizeof(fvmRequest_t), 0) < 0){
     perror("Error answering request");
     return -1;
   }
@@ -53,7 +77,27 @@ static int getAck()
   printf("PC: Receiving  msg on queue %d type 4 (doRequest)\n", pcQueueID);
 #endif
 
-  if((msgrcv(pcQueueID, &msg, sizeof(msgq_ack_t), ACKMSG, 0)) == -1){
+//   man msgrcv:
+//      ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp,
+
+//      struct mymsg {
+//                   long    mtype;     /* Message type. */
+//                   char    mtext[1];  /* Message text. */
+//               }
+
+//        The structure member mtype is the received message's type as
+//        specified by the sending process.
+
+//        The structure member mtext is the text of the message.
+
+//        The  argument msgsz specifies  the size  in bytes  of mtext.
+//        The received message shall be truncated to msgsz bytes if it
+//        is larger than msgsz and (msgflg & MSG_NOERROR) is non-zero.
+//        The  truncated part  of the  message  shall be  lost and  no
+//        indication of  the truncation shall be given  to the calling
+//        process.
+
+  if((msgrcv(pcQueueID, &msg, sizeof(int), ACKMSG, 0)) == -1) {
     perror("get ack failed");
     return (-1);
   }
@@ -102,7 +146,7 @@ int fvmConnect(fvm_pc_config_t config)
   printf("PC:Sending  msg on queue %d type 1 (fvmConnect)\n",pcQueueID);
 #endif
 
-  if(msgsnd(pcQueueID,&msg,sizeof(msgQueueMsg_t),0) < 0){
+  if(msgsnd(pcQueueID,&msg,sizeof(msgQueueMsg_t) - sizeof(long),0) < 0){
     perror("Sending OK");
     return (-1);
   }
@@ -135,7 +179,7 @@ int fvmConnect(fvm_pc_config_t config)
 
 #endif
 
-  if((msgrcv(pcQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t), CONNECTMSG, 0)) == -1){
+  if((msgrcv(pcQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t) - sizeof(long), CONNECTMSG, 0)) == -1){
     perror("PC: error receiving connect msg");
     return 0;
   }
