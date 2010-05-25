@@ -71,7 +71,7 @@ target_link_libraries(mini_test_suite uuid)
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
-configure_file(run_pcd.fake.test ${CMAKE_CURRENT_BINARY_DIR}/run_pcd.fake.test COPYONLY)
+#configure_file(run_pcd.fake.test ${CMAKE_CURRENT_BINARY_DIR}/run_pcd.fake.test COPYONLY)
 
 # copy workflows over to the build directory
 add_subdirectory(workflows)
