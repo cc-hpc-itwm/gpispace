@@ -11,7 +11,6 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -56,9 +55,9 @@ int main (int argc, char **argv)
   fhg::log::Configurator::configure();
 
   try {
-    sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( nreName, nreUrl, aggName, aggUrl, workerUrl, guiUrl );
-    sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE);
+    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( nreName, nreUrl, aggName, aggUrl, workerUrl, guiUrl );
+    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE);
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -94,7 +93,7 @@ int main (int argc, char **argv)
 
     LOG(INFO, "terminating...");
 
-    sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE);
+    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE);
   } catch( std::exception& ) {
     std::cout<<"Could not start the NRE!"<<std::endl;
   }
