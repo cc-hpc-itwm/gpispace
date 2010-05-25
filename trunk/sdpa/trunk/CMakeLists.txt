@@ -17,6 +17,8 @@ else (V_MAJOR)
   set(V_PATCH 0)
 endif (V_MAJOR)
 
+option (ENABLE_TESTS "Build with test binaries" YES)
+
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
@@ -215,9 +217,11 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Reflect the package structure
 add_subdirectory(sdpa)
-include(CTest)
-add_subdirectory(tests)
 add_subdirectory(apps)
+if (ENABLE_TESTS)
+  include(CTest)
+  add_subdirectory(tests)
+endif (ENABLE_TESTS)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
