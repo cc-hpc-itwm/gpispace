@@ -13,8 +13,8 @@
 #include <sys/select.h>
 #include <pthread.h>
 
-#include <dtmmgr.h>
-#include <tmmgr.h>
+#include <mmgr/dtmmgr.h>
+#include <mmgr/tmmgr.h>
 #include <Pv4dVM4.h>
 
 #include <fvmAllocator.h>

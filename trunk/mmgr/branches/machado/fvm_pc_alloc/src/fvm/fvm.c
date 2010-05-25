@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #endif
 
-#include <dtmmgr.h>
+#include <mmgr/dtmmgr.h>
 #include <stack.h>
 
 
@@ -136,7 +136,8 @@ int fvmWait4PC(configFile_t config)
 #endif
 
 
-  if((msgrcv(fvmQueueID, &msg, sizeof(msgQueueMsg_t), STARTMSG, 0)) == -1)
+//  if((msgrcv(fvmQueueID, &msg, sizeof(msgQueueMsg_t), STARTMSG, 0)) == -1)
+  if((msgrcv(fvmQueueID, &msg, sizeof(msgQueueMsg_t) - sizeof(long), STARTMSG, 0)) == -1)
   {
 	perror("msg recv failed");
 	return (-1);
@@ -175,7 +176,8 @@ int fvmWait4PC(configFile_t config)
   connectMsg.rank = myRank;
   connectMsg.nodecount = getNodeCountVM();
 
-  if(msgsnd(fvmQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t), 0) < 0){
+//  if(msgsnd(fvmQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t), 0) < 0){
+    if(msgsnd(fvmQueueID, &connectMsg, sizeof(msgQueueConnectMsg_t) - sizeof(long), 0) < 0){
 	perror("FVM: Sending connect msg");
 	return (-1);
   }
@@ -231,7 +233,8 @@ static int sendAck(int ret)
   pv4d_printf("FVM: Sending msg on queue %d type 4 (sendAck) \n", fvmQueueID);
 #endif
 
-  if(msgsnd(fvmQueueID, &msg, sizeof(msgq_ack_t),0) < 0)
+//  if(msgsnd(fvmQueueID, &msg, sizeof(msgq_ack_t),0) < 0)
+  if(msgsnd(fvmQueueID, &msg, sizeof(int),0) < 0)
   {
 	perror("Sending ACK");
 	return (-1);
@@ -755,7 +758,8 @@ int fvmListenRequests()
 	pv4d_printf("FVM: Receiving  msg on queue %d type 2 (listenRequests)\n",fvmQueueID);
 #endif
 
-	if((msgrcv(fvmQueueID,&msg, sizeof(msgQueueMsg_t),REQUESTMSG,0)) == -1){
+//	if((msgrcv(fvmQueueID,&msg, sizeof(msgQueueMsg_t),REQUESTMSG,0)) == -1){
+	if((msgrcv(fvmQueueID,&msg, sizeof(msgQueueMsg_t)-sizeof(long),REQUESTMSG,0)) == -1){
 	  perror("msg recv failed");
 	  return (-1);
 	}
@@ -781,7 +785,8 @@ int fvmListenRequests()
 		  pv4d_printf("FVM: Sending  msg on queue %d type 3 (globalalloc)\n",fvmQueueID);
 #endif
 
-		  if(msgsnd(fvmQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t),0) < 0)
+//		  if(msgsnd(fvmQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t),0) < 0)
+		  if(msgsnd(fvmQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t) - sizeof(long),0) < 0)
 			perror("Error answering request");
 		  break;
 		}
@@ -800,7 +805,7 @@ int fvmListenRequests()
 		  pv4d_printf("FVM: Sending  msg on queue %d type 3 (localalloc)\n",fvmQueueID);
 #endif
 
-		  if(msgsnd(fvmQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t),0) < 0)
+		  if(msgsnd(fvmQueueID,&allocmsg,sizeof(msgQueueAllocMsg_t) - sizeof(long),0) < 0)
 			perror("Error answering request");
 		  break;
 		}
