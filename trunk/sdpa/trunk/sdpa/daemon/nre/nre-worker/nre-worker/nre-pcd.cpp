@@ -105,12 +105,22 @@ int main(int ac, char **av)
 
 	LOG(INFO, "starting on location: " << vm["location"].as<std::string>() << "...");
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>() ));
-	{
-		const std::vector<std::string>& search_path= vm["append-search-path"].as<std::vector<std::string> >();
+	if (vm.count("prepend-search-path"))
+	  {
+	    const std::vector<std::string>& search_path= vm["prepend-search-path"].as<std::vector<std::string> >();
+	    
+	    for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
+	      executor->loader().prepend_search_path( *p );
+	  }
 
-		for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
-			executor->loader().append_search_path( *p );
-	}
+	if (vm.count("append-search-path"))
+	  {
+	    const std::vector<std::string>& search_path= vm["append-search-path"].as<std::vector<std::string> >();
+	    
+	    for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
+	      executor->loader().append_search_path( *p );
+	  }
+	
 
 	if (vm.count("load"))
 	{
