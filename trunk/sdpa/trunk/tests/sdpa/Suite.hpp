@@ -31,7 +31,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
-      suiteOfTests->addTest( FSMPerformanceTest::suite() );
+//      suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
 
