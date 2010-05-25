@@ -148,16 +148,8 @@ int fvmConnect(fvm_pc_config_t config)
 
 int fvmLeave()
 {
-  fvmRequest_t op_request = {
-    LEAVE
-    , { 0
-        , 0
-        , 0
-        , 0
-        , 0
-        , 0
-    }
-  };
+  
+  fvmRequest_t op_request; //just for the leave
 
   /* just detach from the shmem, the rest should be done by the
      FVM */
@@ -165,6 +157,7 @@ int fvmLeave()
   shmdt(pcShm);
 #endif
 
+  op_request.op = LEAVE;
   doRequest(op_request);
 
   return 0;
@@ -176,16 +169,10 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   fvmAllocHandle_t ptr=0;
 
   msgQueueAllocMsg_t allocmsg;
-  fvmRequest_t request = {
-    FGLOBALLOC
-    , { 0
-        , 0
-        , size
-        , 0
-        , 0
-        , 0
-    }
-  };
+
+  fvmRequest_t request;
+  request.op = FGLOBALLOC;
+  request.args.arg_size = size;
 
   if(doRequest(request)){
     perror("error doing request");
@@ -210,16 +197,9 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
 	int ret;
-        fvmRequest_t request = {
-          FGLOBALFREE
-          , { 0
-              , 0
-              , 0
-              , 0
-              , ptr
-              , 0
-          }
-        };
+	fvmRequest_t request;
+	request.op = FGLOBALFREE;
+	request.args.arg_allochandle = ptr;
 
 	if(doRequest(request))
 		perror("error doing request");
@@ -239,16 +219,9 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
   msgQueueAllocMsg_t allocmsg;
 
-  fvmRequest_t request = {
-    FLOCALLOC
-    , { 0
-        , 0
-        , size
-        , 0
-        , 0
-        , 0
-    }
-  };
+  fvmRequest_t request;
+  request.op = FLOCALLOC;
+  request.args.arg_size = size;
 
   if(doRequest(request)){
     perror("error doing request");
@@ -275,16 +248,9 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
 {
 
   int ret;
-  fvmRequest_t request = {
-    FLOCALFREE
-    , { 0
-        , 0
-        , 0
-        , ptr
-        , 0
-        , 0
-    }
-  };
+  fvmRequest_t request;
+  request.op = FLOCALFREE;
+  request.args.arg_allochandle = ptr;
 
   if(doRequest(request))
     perror("error doing request");
@@ -305,16 +271,24 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 				   const fvmAllocHandle_t scratchHandle,
 				   const fvmOperation_t op)
 {
-  fvmRequest_t request = {
-    op
-    , { fvmOffset
-        , shmemOffset
-        , size
-        , 0
-        , handle
-        , scratchHandle
-    }
-  };
+  fvmRequest_t request;
+  request.op = op;
+  request.args.arg_allochandle = handle;
+  request.args.arg_fvmOffset = fvmOffset;
+  request.args.arg_size = size;
+  request.args.arg_shmOffset = shmemOffset;
+  request.args.arg_scratchhandle = scratchHandle;
+
+//   fvmRequest_t request = {
+//     op
+//     , { fvmOffset
+//         , shmemOffset
+//         , size
+//         , (fvmCommHandle_t)0
+//         , handle
+//         , scratchHandle
+//     }
+//   };
 
   if(doRequest(request)){
     perror("error doing request");
@@ -395,16 +369,19 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  fvmRequest_t request = {
-    WAITCOMM
-    , { 0
-        , 0
-        , 0
-        , handle
-        , 0
-        , 0
-    }
-  };
+//   fvmRequest_t request = {
+//     WAITCOMM
+//     , { 0
+//         , 0
+//         , 0
+//         , handle
+//         , 0
+//         , 0
+//     }
+//   };
+  fvmRequest_t request;
+  request.op = WAITCOMM;
+  request.args.arg_commhandle  = handle;
 
   if(doRequest(request))
     perror("error doing request");
@@ -453,7 +430,19 @@ static void selftest (void *, const we::loader::input_t &, we::loader::output_t 
 
 WE_MOD_INITIALIZE_START (fvm);
 {
-  fvm_pc_config_t cfg (getenv("FVM_PC_MSQ"), getenv("FVM_PC_SHM"), 0, 0);
+  fvmSize_t shmem_size (0);
+  fvmSize_t fvm_size (0);
+  if (getenv("FVM_PC_SHMSZ"))
+  {
+	shmem_size = (fvmSize_t)atoll(getenv("FVM_PC_SHMSZ"));
+  }
+  if (getenv("FVM_PC_FVMSZ"))
+  {
+	fvm_size = (fvmSize_t)atoll(getenv("FVM_PC_FVMSZ"));
+  }
+  std::cerr << "fvm-pc: init: FVM_PC_SHMSZ=" << shmem_size << std::endl;
+  std::cerr << "fvm-pc: init: FVM_PC_FVMSZ=" << fvm_size << std::endl;
+  fvm_pc_config_t cfg (getenv("FVM_PC_MSQ"), getenv("FVM_PC_SHM"), shmem_size, fvm_size);
   int res(0);
   if ( (res = fvmConnect (cfg)) != 0)
   {
