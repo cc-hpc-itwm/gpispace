@@ -2,12 +2,13 @@
 # 
 # Bootstrap the project from a clean checkout.
 #
-if [ -z $BUILD_DIR ]; then
-    BUILD_DIR = "build"
+build_dir="$BUILD_DIR"
+if [ -n $build_dir ]; then
+    build_dir="build"
 fi
 
-if test ! -d "${BUILD_DIR}"; then
-	mkdir -p "${BUILD_DIR}"
+if test ! -d "${build_dir}"; then
+	mkdir -p "${build_dir}"
 fi
 
-cd "${BUILD_DIR}" && cmake .. $@
+cd "${build_dir}" && cmake .. $@
