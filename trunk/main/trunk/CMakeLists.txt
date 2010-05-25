@@ -2,7 +2,7 @@
 project(sdpa_main)
 
 # have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE false)
+set(CMAKE_VERBOSE_MAKEFILE true)
 
 set(V_MAJOR 0)
 set(V_MINOR 1)
@@ -20,9 +20,8 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION(USE_SMC "Build the project using the state-machine compiler" YES)
 
-cmake_minimum_required(VERSION "2.6.2" FATAL_ERROR)
+cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
@@ -52,13 +51,15 @@ info_compiler()
 include(CTest)
 message(STATUS "========== Add project fhglog")
 add_subdirectory(fhglog)
-message(STATUS "========== Add project gwes")
-add_subdirectory(gwes)
+message(STATUS "========== Add project we")
+add_subdirectory(we)
 message(STATUS "========== Add project mmgr")
 add_subdirectory(mmgr)
-message(STATUS "========== Add project sdpa")
-add_subdirectory(sdpa)
+message(STATUS "========== Add project fvm-pc")
+add_subdirectory(fvm-pc)
 message(STATUS "========== Add project seda")
 add_subdirectory(seda)
+message(STATUS "========== Add project sdpa")
+add_subdirectory(sdpa)
 
 include(TargetDoc.cmake OPTIONAL)
