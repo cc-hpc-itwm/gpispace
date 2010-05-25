@@ -159,14 +159,14 @@ namespace sdpa {
 		{
 			std::string errmsg("could not execute activity: interrupted");
 			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, errmsg);
+			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, enc_act);
 		}
 		catch (const std::exception &ex)
 		{
 			std::string errmsg("could not execute activity: ");
 			errmsg += std::string(ex.what());
 			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, errmsg);
+			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, enc_act);
 		}
 
 		// check the result state and invoke the NRE's callbacks
@@ -197,7 +197,7 @@ namespace sdpa {
 		{
 			SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
 			ptr_comm_handler_->activityFailed(act_id, enc_act);
-			ptr_comm_handler_->workflowEngine()->failed(act_id, "");
+			ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 		}
 	 }
 
