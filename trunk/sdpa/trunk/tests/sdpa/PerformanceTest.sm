@@ -8,9 +8,11 @@
 #  pragma GCC diagnostic ignored "-Weffc++"
 #  pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#
+#include <string.h>
+#include <cstring>
 %}
 
-%include <string.h>
 %include <tests/sdpa/PerformanceTestFSMEvent.hpp>
 
 %package sdpa::tests
