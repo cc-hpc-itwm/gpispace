@@ -50,7 +50,7 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	lock_type lock(mtx_);
 
 	Worker::worker_id_t workerId = pWorker->name();
-	unsigned int rank = pWorker->rank();
+	int rank = pWorker->rank();
 
 	bool bFound = false;
 	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
