@@ -10,9 +10,12 @@ project(sdpa)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-set(V_MAJOR 0)
-set(V_MINOR 2)
-set(V_PATCH 0)
+if (V_MAJOR)
+else (V_MAJOR)
+  set(V_MAJOR 0)
+  set(V_MINOR 2)
+  set(V_PATCH 0)
+endif (V_MAJOR)
 
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
