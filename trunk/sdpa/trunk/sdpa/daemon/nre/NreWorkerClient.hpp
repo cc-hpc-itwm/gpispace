@@ -157,7 +157,7 @@ namespace sdpa { namespace nre { namespace worker {
 				{
 					LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
 					throw ex;
-					exit;
+					exit(1);
 				}
 			}
 			else if (pID < 0)            // failed to fork
