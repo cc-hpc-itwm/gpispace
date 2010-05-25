@@ -116,9 +116,9 @@ namespace seda { namespace comm {
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
     DLOG(TRACE, "starting UDPConnection(" << name() << ") on " << my_endpoint);
 
-    socket_ = new udp::socket(io_service_);
-	socket_->set_option (boost::asio::socket_base::reuse_address (true));
-	socket_->open(my_endpoint);
+    socket_ = new udp::socket(io_service_, my_endpoint);
+//     socket_->set_option (boost::asio::socket_base::reuse_address (true));
+//    socket_->open(my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
 
     socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
