@@ -47,6 +47,23 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-co
 include(CheckCompiler)
 info_compiler()
 
+# cpack configuration
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
+set(CPACK_PACKAGE_VENDOR ${PROJECT_VENDOR})
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_PACKAGE_NAME "sdpa")
+set(CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
+if(WIN32 AND NOT UNIX)
+else(WIN32 AND NOT UNIX)
+  set(CPACK_RPM_SOURCE_STRIP_FILES "")
+endif(WIN32 AND NOT UNIX)
+set(CPACK_BINARY_RPM ON)
+include(CPack)
+
 ##########################################################
 include(CTest)
 message(STATUS "========== Add project fhglog")
