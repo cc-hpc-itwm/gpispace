@@ -365,7 +365,7 @@ namespace value
     class get_literal_value : public boost::static_visitor<T>
     {
     public:
-      typedef T const & result_type;
+      typedef T result_type;
 
       result_type operator () (const literal::type & literal) const
       {
