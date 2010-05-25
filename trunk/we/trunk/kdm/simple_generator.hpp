@@ -542,41 +542,88 @@ namespace kdm
 
       // ******************************************************************* //
 
-#if 0
-      transition_type process_volume
-        ( "process_volume"
-        , expr_type ("${done} := []")
-        )
-        ;
+#define SERIALIZE_PROC
+#ifdef SERIALIZE_PROC
+      pid_t pid_serialize_proc (net.add_place (place_type ("serialize_proc", literal::CONTROL)));
+      pid_t pid_done_proc (net.add_place (place_type ("done_proc", literal::CONTROL)));
+      pid_t pid_volume_to_process (net.add_place (place_type ("volume_to_process", sig_volume)));
 
-      process_volume.add_ports ()
-        ("volume", sig_volume, we::type::PORT_IN)
-        ("config", signature::config, we::type::PORT_IN)
-        ("done", literal::CONTROL, we::type::PORT_OUT)
+      token::put (net, pid_serialize_proc);
+
+      transition_type start_process 
+        ( "start_proc"
+        , expr_type ("${out} := ${in}")
+        );
+
+      start_process.add_ports ()
+        ("in", sig_volume, we::type::PORT_IN)
+        ("out", sig_volume, we::type::PORT_OUT)
+        ("trigger", literal::CONTROL, we::type::PORT_IN)
         ;
-#else
+      start_process.add_connections ()
+        (pid_volume, "in")
+        (pid_serialize_proc, "trigger")
+        ("out", pid_volume_to_process)
+        ;
+      tid_t tid_start_process (net.add_transition (start_process));
+
+      net.add_edge (e++, connection_t (PT, tid_start_process, pid_volume));
+      net.add_edge (e++, connection_t (PT, tid_start_process, pid_serialize_proc));
+      net.add_edge (e++, connection_t (TP, tid_start_process, pid_volume_to_process));
+#endif
+
       transition_type process_volume
         (mk_process (sig_volume, signature::config));
-#endif
+
       process_volume.add_connections ()
+#ifdef SERIALIZE_PROC
+        (pid_volume_to_process, "volume")
+        ("done", pid_done_proc)
+#else
         (pid_volume, "volume")
-        (pid_config, "config")
         ("done", pid_trigger_dec)
+#endif
+        (pid_config, "config")
         ;
 
       tid_t tid_process_volume (net.add_transition (process_volume));
 
       net.add_edge (e++, connection_t (PT_READ, tid_process_volume, pid_config));
+#ifdef SERIALIZE_PROC
+      net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume_to_process));
+      net.add_edge (e++, connection_t (TP, tid_process_volume, pid_done_proc));
+#else
       net.add_edge (e++, connection_t (PT, tid_process_volume, pid_volume));
       net.add_edge (e++, connection_t (TP, tid_process_volume, pid_trigger_dec));
+#endif
+
+#ifdef SERIALIZE_PROC
+      transition_type done_proc
+        ( "done_proc"
+        , expr_type ("${a} := ${i}; ${b} := ${i}")
+        );
+      done_proc.add_ports ()
+        ("i", literal::CONTROL, we::type::PORT_IN)
+        ("a", literal::CONTROL, we::type::PORT_OUT)
+        ("b", literal::CONTROL, we::type::PORT_OUT)
+        ;
+      done_proc.add_connections ()
+        (pid_done_proc, "i")
+        ("a", pid_trigger_dec)
+        ("b", pid_serialize_proc)
+        ;
+      tid_t tid_done_proc (net.add_transition (done_proc));
+
+      net.add_edge (e++, connection_t (PT, tid_done_proc, pid_done_proc));
+      net.add_edge (e++, connection_t (TP, tid_done_proc, pid_trigger_dec));
+      net.add_edge (e++, connection_t (TP, tid_done_proc, pid_serialize_proc));
+#endif
 
       // ******************************************************************* //
 
       transition_type dec
         ( "dec"
         , expr_type ("${wait} := ${wait} - 1")
-        , "true"
-        , transition_type::internal
         );
 
       dec.add_ports ()
