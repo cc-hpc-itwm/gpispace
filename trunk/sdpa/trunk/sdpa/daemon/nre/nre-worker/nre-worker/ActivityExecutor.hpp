@@ -44,10 +44,10 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    ActivityExecutor(const std::string &my_location)
+    ActivityExecutor(const std::string &my_location, int rank = 0)
       : loader_(we::loader::loader::create())
       , location_(my_location)
-      , rank_(0)
+      , rank_(rank)
       , socket_(NULL)
       , barrier_(2)
       , service_thread_(NULL)

@@ -38,6 +38,7 @@ int main(int ac, char **av)
 		("prepend-search-path,p", po::value<std::vector<std::string> >(), "prepend path for the modules")
 		("verbose,v", "verbose output")
 		("keep-going,k", "keep going, even if the FVM is not there")
+		("rank,r", po::value<int>()->default_value(0), "the rank of this pc")
 	  ;
 
 	po::positional_options_description positional; // positional parameters used for command line parsing
@@ -104,7 +105,7 @@ int main(int ac, char **av)
 	using namespace we::loader;
 
 	LOG(INFO, "starting on location: " << vm["location"].as<std::string>() << "...");
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>() ));
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>(), vm["rank"].as<int>()));
 	if (vm.count("prepend-search-path"))
 	  {
 	    const std::vector<std::string>& search_path= vm["prepend-search-path"].as<std::vector<std::string> >();
