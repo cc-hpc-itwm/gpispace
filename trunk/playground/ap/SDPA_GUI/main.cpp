@@ -165,13 +165,21 @@ class GuiAppender : public fhg::log::Appender
 
 int main(int argc, char *argv[])
 {
+  if (argc <= 1)
+  {
+      std::cerr << "usage: " << argv[0] << " port" << std::endl;
+      std::cerr << "\thint: default SDPA-port is 9001" << std::endl;
+      return (EXIT_FAILURE);
+  }
+  int port (atoi(argv[1]));
+
   pthread_t service_thread;
   
   QApplication qa(argc, argv);
   SdpaWnd *wnd = new SdpaWnd();
   boost::asio::io_service io_service;
   fhg::log::Appender::ptr_t gui_appender(new GuiAppender(wnd));
-  fhg::log::remote::LogServer logserver(gui_appender, io_service, (argc > 1 ? atoi(argv[1]) : 9001));
+  fhg::log::remote::LogServer logserver(gui_appender, io_service, port);
   pthread_create( &service_thread, NULL, service_thread_entry, &io_service );
   wnd->show();
   qa.connect(&qa,SIGNAL(lastWindowClosed()),&qa,SLOT(quit()));
