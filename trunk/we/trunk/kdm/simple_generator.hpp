@@ -542,7 +542,7 @@ namespace kdm
 
       // ******************************************************************* //
 
-#define SERIALIZE_PROC
+#undef SERIALIZE_PROC
 #ifdef SERIALIZE_PROC
       pid_t pid_serialize_proc (net.add_place (place_type ("serialize_proc", literal::CONTROL)));
       pid_t pid_done_proc (net.add_place (place_type ("done_proc", literal::CONTROL)));
@@ -674,7 +674,7 @@ namespace kdm
         ( "trans_net"
         , net
         , "true"
-        , transition_type::internal
+        , transition_type::external
         );
       trans_net.add_ports ()
         ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
