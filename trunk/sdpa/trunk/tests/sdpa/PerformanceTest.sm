@@ -10,6 +10,7 @@
 #endif
 %}
 
+%include <string.h>
 %include <tests/sdpa/PerformanceTestFSMEvent.hpp>
 
 %package sdpa::tests
