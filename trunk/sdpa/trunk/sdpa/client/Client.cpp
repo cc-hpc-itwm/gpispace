@@ -24,6 +24,8 @@
 
 #include <sdpa/events/CodecStrategy.hpp>
 
+#include <sdpa/version.hpp>
+
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
@@ -37,6 +39,17 @@ Client::ptr_t Client::create(const std::string &name_prefix
   client_stage->start();
   return client;
 }
+
+Client::Client(const std::string &a_name, const std::string &output_stage)
+  : seda::Strategy(a_name)
+  , version_(SDPA_VERSION)
+  , copyright_(SDPA_COPYRIGHT)
+  , contact_(SDPA_CONTACT)
+  , name_(a_name)
+  , output_stage_(output_stage)
+  , fsm_(*this)
+  , timeout_(5000U)
+{ }
 
 Client::~Client()
 {

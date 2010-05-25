@@ -199,6 +199,7 @@ endif (FVM_FOUND)
 message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp)
 add_definitions(-DHAVE_CONFIG_H)
 
 link_directories(${CMAKE_LIBRARY_PATH})
