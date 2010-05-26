@@ -6,25 +6,25 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   m_nMinHeight = 20;
   m_nMinWidth = 150;
   m_nNbColumn = 4;
-  
+
   m_ColorCreate = QColor( 155, 155, 255 );
   m_ColorRun = QColor( 255, 255, 0 );
   m_ColorOk = QColor( 0, 255, 0 );
   m_ColorFailed = QColor( 255, 0, 0 );;
-      
+
   m_pScrollArea = new QScrollArea();
   m_pResetB = new QPushButton( "Reset" );
-  
+
   m_pWidget = new QWidget();
   m_pWidget->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Ignored );
   m_pWidget->setMinimumHeight( 200 );
 
   m_pLastGL = new QGridLayout();
   m_pLastGL->setRowMinimumHeight( 0, m_nMinHeight );
-  
+
   m_pGridL = new QGridLayout();
   m_pGridL->setRowMinimumHeight( -1, m_nMinHeight );
-  
+
   for( int i = 0; i< m_nNbColumn; i++)
   {
     m_pLastGL->setColumnMinimumWidth( i, m_nMinWidth );
@@ -33,43 +33,44 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 
   m_pLastGL->addWidget( new QLabel(""), 0, m_nNbColumn );
   m_pLastGL->setColumnStretch( m_nNbColumn, 1 );
-  
+
   m_pGridL->setVerticalSpacing ( 0 );
   m_pGridL->setMargin ( 0 );
-  
+
   m_pWidget->setLayout( m_pGridL );
   m_pScrollArea->setWidget( m_pWidget );
-  
+
   // legend
-  QLabel *lCreate = new QLabel();
-  lCreate->setFixedSize( 20, 20 );
-  QPixmap *p = new QPixmap(20, 20);
-  p->fill( m_ColorCreate );
-  lCreate->setPixmap( *p );
-  
+  //  QLabel *lCreate = new QLabel();
+  //  lCreate->setFixedSize( 20, 20 );
+  //  QPixmap *p = new QPixmap(20, 20);
+  //  p->fill( m_ColorCreate );
+  //  lCreate->setPixmap( *p );
+  QPixmap *p = 0;
+
   QLabel *lRun = new QLabel();
   lRun->setFixedSize( 20, 20 );
   p = new QPixmap(20, 20);
   p->fill( m_ColorRun );
   lRun->setPixmap( *p );
-  
+
   QLabel *lOk = new QLabel();
   lOk->setFixedSize( 20, 20 );
   p = new QPixmap(20, 20);
   p->fill( m_ColorOk );
   lOk->setPixmap( *p );
-  
+
   QLabel *lFailed = new QLabel();
   lFailed->setFixedSize( 20, 20 );
   p = new QPixmap(20, 20);
   p->fill( m_ColorFailed );
   lFailed->setPixmap( *p );
-  
+
   QGridLayout *g = new QGridLayout();
   g->addWidget( m_pScrollArea, 0, 0, 6, 1 );
   g->addWidget( m_pResetB, 0, 1, 1, 2 );
-  g->addWidget( lCreate, 1, 1 );
-  g->addWidget( new QLabel( "create" ), 1, 2 );
+  //  g->addWidget( lCreate, 1, 1 );
+  //  g->addWidget( new QLabel( "create" ), 1, 2 );
   g->addWidget( lRun, 2, 1 );
   g->addWidget( new QLabel( "run" ), 2, 2 );
   g->addWidget( lOk, 3, 1 );
@@ -79,7 +80,7 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   g->addLayout( m_pLastGL, 6, 0 );
   g->setRowStretch( 5, 1 );
   setLayout( g );
-  
+
   connect( m_pResetB, SIGNAL( clicked() ), this, SLOT( resetSlot() ) );
   m_nCounter = 0;
   m_nFirstID = -1;
@@ -89,61 +90,61 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 bool SdpaWnd::event( QEvent * e )
 {
   DataCostumerEvent<WndUpdateParameter> * dce = NULL;
-  
-  
-  switch(e->type()) 
+
+
+  switch(e->type())
   {
     case 1001:
     {
       dce = (DataCostumerEvent<WndUpdateParameter> *)e;
-      
+
       WndUpdateParameter param = dce->getData();
       int pos;
       QColor c;
-      
+
       switch( param.state )
       {
-        case STATE_CREATE: 
+        case STATE_CREATE:
         {
           pos = 1;
           c = m_ColorCreate;
           break;
         }
-        case STATE_RUN: 
+        case STATE_RUN:
         {
           pos = 2;
           c = m_ColorRun;
           break;
         }
-        case STATE_OK: 
+        case STATE_OK:
         {
           pos = 3;
           c = m_ColorOk;
           break;
         }
-        case STATE_FAILED: 
+        case STATE_FAILED:
         {
           pos = 3;
           c = m_ColorFailed;
           break;
         }
-        
+
       }
-      
+
       if( m_nFirstID == -1 )
 	  m_nFirstID = param.id;
       if( param.id < m_nFirstID ) break;
-      
+
       QPushButton *l = new QPushButton(param.info);
       l->setFixedSize( m_nMinWidth, m_nMinHeight );
       l->setDefault( false );
       l->setFocusPolicy( Qt::NoFocus );
       l->setPalette( c );
-      
+
       m_pGridL->addWidget(l, param.id-m_nFirstID, pos );
-      
+
       QLayoutItem *item = m_pGridL->itemAtPosition( param.id-m_nFirstID, 0 );
-      
+
       if( item == NULL)
       {
         QPushButton *p = new QPushButton( param.name );
@@ -169,7 +170,7 @@ bool SdpaWnd::event( QEvent * e )
           m_pLastGL->removeItem( item );
         }
       }
-      
+
       for( int j = 0; j < m_nNbColumn; j++ )
       {
         QLayoutItem *item = m_pGridL->itemAtPosition( param.id-m_nFirstID, j );
@@ -187,7 +188,7 @@ bool SdpaWnd::event( QEvent * e )
           }
         }
       }
-      
+
       m_nCounter = MAX( m_nCounter, param.id-m_nFirstID+1);
       m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
 

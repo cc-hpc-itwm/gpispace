@@ -305,36 +305,36 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
-	const std::string name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, name, NotificationEvent::STATE_CREATED) );
+	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 {
-	const std::string name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, name, NotificationEvent::STATE_STARTED) );
+	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 {
-	const std::string name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, name, NotificationEvent::STATE_FINISHED) );
+	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 {
-	const std::string name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, name, NotificationEvent::STATE_FAILED) );
+	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
-	const std::string name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, name, NotificationEvent::STATE_CANCELLED) );
+	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 }
 
 template <typename T, typename U>
