@@ -20,6 +20,7 @@
 #define SDPA_DAEMON_OBSERVABLE_HPP 1
 
 #include <list>
+#include <stdexcept>
 #include <boost/thread.hpp>
 #include <sdpa/daemon/Observer.hpp>
 
