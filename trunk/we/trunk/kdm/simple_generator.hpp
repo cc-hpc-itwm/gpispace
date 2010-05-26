@@ -396,7 +396,40 @@ namespace kdm
         ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
         ;
 
-      return process_volume;
+      // ******************************************************************* //
+
+      net_type wrap ("wrap");
+
+      pid_t pid_wrap_volume (wrap.add_place (place_type ("volume", sig_volume)));
+      pid_t pid_wrap_config (wrap.add_place (place_type ("config", sig_config)));
+      pid_t pid_wrap_done (wrap.add_place (place_type ("done", literal::CONTROL)));
+
+      process_volume.add_connections ()
+        (pid_wrap_volume, "volume")
+        (pid_wrap_config, "config")
+        ("done", pid_wrap_done)
+        ;
+
+      tid_t tid_wrapped_proc (wrap.add_transition (process_volume));
+
+      wrap.add_edge (e++, connection_t (PT, tid_wrapped_proc, pid_wrap_volume));
+      wrap.add_edge (e++, connection_t (PT, tid_wrapped_proc, pid_wrap_config));
+      wrap.add_edge (e++, connection_t (TP, tid_wrapped_proc, pid_wrap_done));
+
+      transition_type process_volume_wrapped
+        ( "process_volume_wrapped"
+        , wrap
+        , "true"
+        , transition_type::external
+        );
+
+      process_volume_wrapped.add_ports ()
+        ("volume", sig_volume, we::type::PORT_IN, pid_wrap_volume)
+        ("config", sig_config, we::type::PORT_IN, pid_wrap_config)
+        ("done", literal::CONTROL, we::type::PORT_OUT, pid_wrap_done)
+        ;
+
+      return process_volume_wrapped;
     }
 
     static transition_type generate (void)
