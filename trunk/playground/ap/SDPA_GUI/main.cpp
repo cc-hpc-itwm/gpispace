@@ -41,7 +41,7 @@ class GuiAppender : public fhg::log::Appender
 	    update_thread_.join();
 	}
 
-    
+
   void append(const fhg::log::LogEvent &evt)
   {
       typedef std::map<std::string, int> id_map_t;
@@ -65,7 +65,7 @@ class GuiAppender : public fhg::log::Appender
 
     const std::string act_id = n_event.activity_id();
     std::string act_nm = n_event.activity_name();
-    act_nm = act_nm.substr(act_nm.find_first_of(".")+1); 
+    act_nm = act_nm.substr(act_nm.find_first_of(".")+1);
 
     const sdpa::daemon::NotificationEvent::state_t act_st = n_event.activity_state();
 
@@ -91,7 +91,7 @@ class GuiAppender : public fhg::log::Appender
 	    break;
 	case sdpa::daemon::NotificationEvent::STATE_STARTED:
 	    param.state = STATE_RUN;
-	    strncpy(param.info, "", WndUpdateParameter::max_len);
+	    strncpy(param.info, sender.c_str(), WndUpdateParameter::max_len);
 	    break;
 	case sdpa::daemon::NotificationEvent::STATE_FINISHED:
 	    param.state = STATE_OK;
@@ -153,7 +153,7 @@ class GuiAppender : public fhg::log::Appender
 	    }
 	}
     }
-    
+
     SdpaWnd *gui_;
     boost::recursive_mutex mtx_;
     boost::condition_variable_any event_available_;
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
   int port (atoi(argv[1]));
 
   pthread_t service_thread;
-  
+
   QApplication qa(argc, argv);
   SdpaWnd *wnd = new SdpaWnd();
   boost::asio::io_service io_service;
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
   qa.exec();
   io_service.stop();
   pthread_join(service_thread, NULL);
-  
+
   return 0;
 
 }
