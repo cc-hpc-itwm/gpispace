@@ -57,6 +57,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
@@ -76,6 +77,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 	if(!toMasterStageName.empty())
@@ -106,6 +108,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 }
@@ -359,12 +362,28 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 	ptr_scheduler_->addWorker(pWorker);
 }
 
+bool GenericDaemon::requestsAllowed()
+{
+	bool bAllowReq = true;
+
+	try {
+		( bAllowReq = m_nExternalJobs < cfg()->get<unsigned int>("nmax_ext_job_req"));
+	}
+	catch(std::exception& ex)
+	{
+		SDPA_LOG_WARN("Exception occurred: "<<ex.what());
+	}
+
+	return bAllowReq;
+}
+
 //actions
 void GenericDaemon::action_configure(const StartUpEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
 	// use for now as below, later read from config file
+	ptr_daemon_cfg_->put<unsigned int>("nmax_ext_job_req", 10);
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval",    1 * 1000 * 1000);
 	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 30 * 1000 * 1000);
 }
@@ -576,6 +595,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 			// There is a problem with this if uncommented
 			sendEventToMaster(pSubmitJobAckEvt, 0);
+
+			lock_type lock(mtx_);
+			m_nExternalJobs++;
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException&) {
@@ -709,7 +731,6 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
 
 }
 
-
 /**
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
@@ -746,9 +767,12 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 
 	SDPA_LOG_DEBUG(" notified SDPA that the workflow "<<workflowId<<" finished!");
 	job_id_t job_id(workflowId);
-
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::WE, name(), job_id, result));
 	sendEventToSelf(pEvtJobFinished);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
@@ -774,6 +798,10 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
 
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::WE, name(), job_id, result ));
 	sendEventToSelf(pEvtJobFailed);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
@@ -792,9 +820,14 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
 	sendEventToSelf(pEvtCancelJobAck);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
+/*
 void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
 {
 	sdpa::job_result_t results;
@@ -814,3 +847,4 @@ void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), SDPAEvent::message_id_type() ) );
 	sendEventToSelf(pCancelAckEvt);
 }
+*/

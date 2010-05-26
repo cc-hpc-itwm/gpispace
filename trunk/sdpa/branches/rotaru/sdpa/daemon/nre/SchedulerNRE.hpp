@@ -42,18 +42,17 @@ namespace sdpa {
 		m_worker_.set_ping_trials(3);
 	}
 
-
 	virtual ~SchedulerNRE() {};
 
 	void start() throw (std::exception)
 	{
 		SchedulerImpl::start();
 
-		SDPA_LOG_DEBUG("Starting nre-worker-client ...");
+		SDPA_LOG_DEBUG("Starting NreWorkerClient ...");
 		try {
 			ptr_comm_handler_->rank() = m_worker_.start();
-		}catch(const std::exception& val)
-		{
+		}
+		catch(const std::exception& val) {
 			SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
 			throw;
 		}
@@ -67,14 +66,15 @@ namespace sdpa {
 		m_worker_.stop();
 	}
 
-	 bool post_request(bool force = false)
-	 {
+	bool post_request(bool force = false)
+	{
 		DMLOG(TRACE, "post request: force=" << force);
 	 	bool bReqPosted = false;
 	 	sdpa::util::time_type current_time = sdpa::util::now();
 	 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	 	if(force || (difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") ))
+	 	if( force || ( 	difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") &&
+						ptr_comm_handler_->requestsAllowed()) )
 	 	{
 	 		// post a new request to the master
 	 		// the slave posts a job request
@@ -86,7 +86,7 @@ namespace sdpa {
 	 	}
 		else
 		{
-		  DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
+			DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
 		}
 
 	 	return bReqPosted;
@@ -101,7 +101,7 @@ namespace sdpa {
 	 	 {
 	 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
 	 		 {
-				DMLOG(DEBUG, "sending life-sign to: " << ptr_comm_handler_->master());
+				 DMLOG(DEBUG, "sending life-sign to: " << ptr_comm_handler_->master());
 	 			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 	 			 ptr_comm_handler_->sendEventToMaster(pEvtLS);
 	 			 m_last_life_sign_time = current_time;
@@ -109,7 +109,7 @@ namespace sdpa {
 	 	 }
 		 else
 		 {
-		  DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
+			 DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
 		 }
 	 }
 
@@ -119,9 +119,8 @@ namespace sdpa {
 	 	 {
 	 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
 	 		 // post job request if number_of_jobs() < #registered workers +1
-	 		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 1)
-	 			 post_request();
-	 		 else //send a LS
+	 		 if( !post_request() )
+	 			 //send a LS
 	 			 send_life_sign();
 	 	 }
 		 else

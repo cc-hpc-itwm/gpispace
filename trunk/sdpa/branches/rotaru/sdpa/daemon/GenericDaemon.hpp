@@ -64,6 +64,9 @@ namespace sdpa { namespace daemon {
 						boost::noncopyable
 {
   public:
+	  typedef boost::recursive_mutex mutex_type;
+	  typedef boost::unique_lock<mutex_type> lock_type;
+
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 	  virtual ~GenericDaemon();
 
@@ -117,9 +120,9 @@ namespace sdpa { namespace daemon {
 	  virtual bool failed(const id_type & id, const result_type & result);
 	  virtual bool cancelled(const id_type & id);
 
-	  virtual void jobFinished(std::string workerName, const job_id_t &);
+	  /*virtual void jobFinished(std::string workerName, const job_id_t &);
 	  virtual void jobFailed(std::string workerName, const job_id_t &);
-	  virtual void jobCancelled(std::string workerName, const job_id_t &);
+	  virtual void jobCancelled(std::string workerName, const job_id_t &);*/
 
 	  //virtual void configure_network();
 	  virtual void configure_network( std::string daemonUrl, std::string masterName = "", std::string masterUrl = "" );
@@ -150,6 +153,8 @@ namespace sdpa { namespace daemon {
 
 	  //boost::bind(&sdpa_daemon::gen_id, this))
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
+
+	  virtual bool requestsAllowed();
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int file_version )
@@ -251,7 +256,8 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
-	  unsigned int  m_nRank;
+	  unsigned int m_nRank;
+	  unsigned int m_nExternalJobs;
 
 	private:
 	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
@@ -259,6 +265,8 @@ namespace sdpa { namespace daemon {
 	  sdpa_msg_delivery_service delivery_service_;
 
 	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
+
+	  mutable mutex_type mtx_;
   };
 }}
 

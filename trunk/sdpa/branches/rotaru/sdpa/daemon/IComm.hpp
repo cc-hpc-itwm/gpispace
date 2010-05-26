@@ -45,9 +45,9 @@ const std::string USER("user");
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid) = 0;
 
-	  virtual void jobFinished(std::string workerName, const job_id_t &)=0;
+	  /*virtual void jobFinished(std::string workerName, const job_id_t &)=0;
 	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
-	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;
+	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;*/
 
 	  // only for testing with DummyWorkflowEngine, change it
 	  virtual IWorkflowEngine* workflowEngine() const = 0;
@@ -58,6 +58,8 @@ const std::string USER("user");
 
 	  virtual JobManager::ptr_t jobManager() const = 0;
 	  virtual unsigned int& rank() = 0;
+
+	  virtual bool requestsAllowed() = 0;
 
 	  //GUI notification methods
 	  virtual void activityCreated(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }

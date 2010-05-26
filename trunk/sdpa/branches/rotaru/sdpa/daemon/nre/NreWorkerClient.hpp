@@ -44,6 +44,7 @@
 
 #include <tests/sdpa/tests_config.hpp>
 
+#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
   using boost::asio::ip::udp;
@@ -123,10 +124,10 @@ namespace sdpa { namespace nre { namespace worker {
     	return not_responded_to_ping_ >= ping_trials_;
     }
 
-    unsigned int start() throw (std::exception)
+    unsigned int startNrePcd() throw (std::exception)
     {
-       	int c;
-       	int nStatus;
+       	//int c;
+       	//int nStatus;
        	string strID;
        	int rank = 0;
 
@@ -159,6 +160,30 @@ namespace sdpa { namespace nre { namespace worker {
 					throw ex;
 					exit;
 				}
+
+				// the variant with no spawned binary
+				/*DLOG(DEBUG, "starting process container on location: "<<worker_location()<< std::endl);
+				sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(worker_location()));
+				executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
+
+				try {
+					LOG(INFO, "Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
+					boost::filesystem::path pathFakeFvmModule(TESTS_FVM_PC_FAKE_MODULE);
+					executor->loader().load("fvm", pathFakeFvmModule);
+				}
+				catch(const we::loader::ModuleLoadFailed& ex)
+				{
+					 LOG(ERROR, "Could not load the module "<<TESTS_FVM_PC_FAKE_MODULE<<"!!!");
+					 throw ex;
+				}
+
+				try {
+					executor->start();
+				}
+				catch (const std::exception &ex) {
+				  LOG( ERROR, "could not start executor: " << ex.what());
+				  throw ex;
+				}*/
 			}
 			else if (pID < 0)            // failed to fork
 			{
@@ -173,34 +198,14 @@ namespace sdpa { namespace nre { namespace worker {
 
 				sleep(1);
 
-				try {
-					rank = startNreWorkerClient();
-				}
-				catch(std::exception& exc)
-				{
-					LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
-					throw exc;
-				}
 			}
        	}
-       	else
-       	{
-       		try {
-				rank = startNreWorkerClient();
-			}
-			catch(std::exception& exc)
-			{
-				LOG(ERROR, "Exception occurred when trying to start the nre worker client: "<<exc.what());
-				throw exc;
-			}
-       	}
-
 
        	return rank;
     }
 
 
-    unsigned int startNreWorkerClient() throw (std::exception)
+    unsigned int start() throw (std::exception)
     {
     	// start first the nre-pcd!!!! if bSpawnNrepcd is set
 		if(service_thread_)
@@ -248,7 +253,25 @@ namespace sdpa { namespace nre { namespace worker {
 		service_thread_ = new boost::thread(boost::bind(&NreWorkerClient::service_thread, this));
 		barrier_.wait();
 
-		ping (); // send a synchronous ping
+	    LOG(DEBUG, "Send a synchronous ping ... ");
+
+	    try {
+	    	ping (); // send a synchronous ping
+	    	LOG(WARN, "An instance of the NRE-PCD daemon is already running!");
+	    }
+	    catch (const NrePcdIsDead& ex)
+	    {
+	    	 LOG(WARN, "The NRE-PCD process didn't reply to ping requests. It is probably dead or not yet started!");
+	    	 try {
+	    		 LOG(DEBUG, "Try to start the NRE-PCD ...");
+	    		 startNrePcd();
+	    	 }
+	    	 catch(std::exception& excpt) {
+	    		 LOG(ERROR, "Couldn't start the NRE-PCD process!");
+	    		 throw excpt;
+	    	 }
+	    	 // one should start it here!
+	    }
 
 		//if not working re-start the nre-pcd here!!!!
 

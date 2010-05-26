@@ -46,7 +46,8 @@ namespace sdpa {
 	 	sdpa::util::time_type current_time = sdpa::util::now();
 	 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	 	if(force || (difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") ))
+	 	if( force || ( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") &&
+					   ptr_comm_handler_->requestsAllowed()) )
 	 	{
 	 		// post a new request to the master
 	 		// the slave posts a job request
@@ -92,9 +93,8 @@ namespace sdpa {
 	 	 {
 	 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
 	 		 // post job request if number_of_jobs() < #registered workers +1
-	 		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 1)
-	 			 post_request();
-	 		 else //send a LS
+	 		 if( !post_request() )
+				 //send a LS
 	 			 send_life_sign();
 	 	 }
 		 else

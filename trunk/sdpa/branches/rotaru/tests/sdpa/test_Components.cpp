@@ -135,11 +135,15 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpywnedByNRE()
 {
 	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpywnedByNRE *****"<<std::endl);
 	string strGuiUrl = "";
-	string workerUrl = "127.0.0.1:8200";
+	string workerUrl = "127.0.0.1:12500";
+	string orchestratorPort = "127.0.0.1:12000";
+	string aggregatorPort = "127.0.0.1:12001";
+	string nrePort = "127.0.0.1:12002";
+
+	bool bLaunchNrePcd = true;
 
 	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
 	// generate the test workflow simple-net.pnet
-
 
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
@@ -154,17 +158,20 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpywnedByNRE()
     );
 	m_strWorkflow = we::util::text_codec::encode (act);
 
-	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
+	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	SDPA_LOG_DEBUG("Create the Orchestrator ...");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
 
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	SDPA_LOG_DEBUG("Create the Aggregator ...");
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and real GWES
+	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", workerUrl, strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl, bLaunchNrePcd );
 
 	try {
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);

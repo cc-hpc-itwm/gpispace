@@ -43,9 +43,13 @@ namespace sdpa {
 		typedef typename T::internal_id_type we_internal_id_t;
 		SDPA_DECLARE_LOGGER();
 
-		NRE( const std::string& name = "", const std::string& url = "",
-			 const std::string& masterName = "", const std::string& masterUrl = "",
-			 const std::string& workerUrl = "", const std::string& guiUrl = "" )
+		NRE( const std::string& name = "",
+			 const std::string& url = "",
+			 const std::string& masterName = "",
+			 const std::string& masterUrl = "",
+			 const std::string& workerUrl = "",
+			 const std::string& guiUrl = "",
+			 bool bLaunchNrePcd = false )
 		: dsm::DaemonFSM( name,  create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
@@ -56,7 +60,7 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
-			bool bLaunchNrePcd = false;
+			//bool bLaunchNrePcd = false;
 			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>(this, workerUrl, bLaunchNrePcd ));
 			//boost::dynamic_pointer_cast<SchedulerNRE<U> >(ptr_scheduler_)->nre_worker_client().set_location(workerUrl);
 
@@ -74,9 +78,9 @@ namespace sdpa {
 
 		static ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000")
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",  bool bLaunchNrePcd = false)
 		{
-			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl));
+			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl, bLaunchNrePcd));
 		}
 
       	static void start( NRE<T, U>::ptr_t ptrNRE );
@@ -90,6 +94,7 @@ namespace sdpa {
 
 		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+		void handleCancelJobAckEvent(const CancelJobAckEvent* pEvt );
 
 		void activityCreated( const id_type& id, const std::string& data );
 		void activityStarted( const id_type& id, const std::string& data );
@@ -225,11 +230,11 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		}
 		catch(QueueFull)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
 		}
 		catch(seda::StageNotFound)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_DEBUG("Stage not found when trying to submit JobFinishedEvent");
 		}
 		catch(...) {
 			SDPA_LOG_DEBUG("Unexpected exception occurred!");
@@ -272,11 +277,55 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		}
 		catch(QueueFull)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
 		}
 		catch(seda::StageNotFound)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_DEBUG("Stage not found when trying to send JobFailedEvent");
+		}
+		catch(...) {
+			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		}
+	}
+}
+
+template <typename T, typename U>
+void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
+{
+	SDPA_LOG_DEBUG("Call 'handleJobFailedEvent'");
+
+	//put the job into the state Finished
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->CancelJobAck(pEvt);
+	}
+	catch(JobNotFoundException){
+		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+	}
+
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	{
+		// the message comes from GWES, this is a local job
+		// if I'm not the orchestrator
+		//send JobFinished event to the master if daemon == aggregator || NRE
+
+		try {
+			// forward it up
+			const sdpa::events::SDPAEvent::message_id_type mid;
+			CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), master(), pEvt->job_id(), mid));
+
+			// send the event to the master
+			sendEventToMaster(pEvtCancelJobAck);
+			// delete it from the map when you receive a JobFaileddAckEvent!
+		}
+		catch(QueueFull)
+		{
+			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" CancelJobAckEvent");
+		}
+		catch(seda::StageNotFound)
+		{
+			SDPA_LOG_DEBUG("Stage not found when trying to submit CancelJobAckEvent");
 		}
 		catch(...) {
 			SDPA_LOG_DEBUG("Unexpected exception occurred!");

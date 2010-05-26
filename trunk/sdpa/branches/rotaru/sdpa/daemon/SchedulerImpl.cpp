@@ -252,7 +252,6 @@ void SchedulerImpl::send_life_sign()
 	 }
 }
 
-
 void SchedulerImpl::check_post_request()
 {
 	if(!ptr_comm_handler_)
@@ -266,7 +265,7 @@ void SchedulerImpl::check_post_request()
 	 {
 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
 		 // post job request if number_of_jobs() < #registered workers +1
-		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
+		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 3 )
 			 post_request();
 		 else //send a LS
 			 send_life_sign();
