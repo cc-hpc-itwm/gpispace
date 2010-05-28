@@ -86,7 +86,7 @@ Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
         if (iter_last_worker_ == worker_map_.end())
           iter_last_worker_ = worker_map_.begin();
 
-        Worker::ptr_t worker (iter_last_worker_->second);
+        worker_map_t::iterator iter (iter_last_worker);
         iter_last_worker_++;
-        return worker;
+        return iter->second;
 }
