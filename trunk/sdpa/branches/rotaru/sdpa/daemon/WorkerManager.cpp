@@ -73,6 +73,8 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(),pWorker));
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
+
+	//redistribute fairly the load among the workers, if necessary
 }
 
 /**
@@ -85,8 +87,11 @@ Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
-	if(iter_last_worker_ != worker_map_.end())
-		return iter_last_worker_++->second;
-	else
-		return (iter_last_worker_= worker_map_.begin())->second;
+	if (iter_last_worker_ == worker_map_.end())
+		iter_last_worker_ = worker_map_.begin();
+
+	worker_map_t::iterator iter(iter_last_worker_);
+	iter_last_worker_++;
+
+	return iter->second;
 }

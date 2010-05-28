@@ -31,13 +31,15 @@ namespace sdpa {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
 
-			  CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
-			  CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
+
+			  //obsolete
+			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
+			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
+
 			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
-
-			  //CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpywnedByNRE );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpywnedByNRE );
 
 			  CPPUNIT_TEST_SUITE_END();
 

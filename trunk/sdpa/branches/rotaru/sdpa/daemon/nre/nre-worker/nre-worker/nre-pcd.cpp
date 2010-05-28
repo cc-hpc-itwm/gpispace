@@ -15,14 +15,6 @@
 
 static bool verbose (false);
 
-static
-void sig_handler(int sig)
-{
-	std::cout << "Lethal signal (" << sig << ") received" << " - I will do my best to save the world!" << std::endl;
-	exit(15);
-}
-
-
 int main(int ac, char **av)
 {
 	typedef std::vector<std::string> mod_list;
@@ -38,6 +30,7 @@ int main(int ac, char **av)
 		("prepend-search-path,p", po::value<std::vector<std::string> >(), "prepend path for the modules")
 		("verbose,v", "verbose output")
 		("keep-going,k", "keep going, even if the FVM is not there")
+		("rank,r", po::value<int>()->default_value(0), "the rank of this pc")
 	  ;
 
 	po::positional_options_description positional; // positional parameters used for command line parsing
@@ -65,51 +58,28 @@ int main(int ac, char **av)
 
 	fhg::log::Configurator::configure();
 
-	// connect to FVM
-	// initialize it with some default values
-	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
-
-	// read those from the config file!
-	try
-	{
-		read_fvm_config(vm["config"].as<std::string>(), pc_cfg);
-	}
-	catch (const std::exception &ex)
-	{
-		std::cerr << "E: could not read config file: " << ex.what() << std::endl;
-		if (vm.count("keep-going"))
-			std::cerr << "**** ignoring this error (keep going=true)" << std::endl;
-		else
-			return 2;
-	}
-
-	fvm_pc_connection_mgr fvm_pc;
-	try
-	{
-		fvm_pc.init(pc_cfg);
-	}
-	catch (const std::exception &ex)
-	{
-		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
-		if (vm.count("keep-going"))
-			std::cerr << "**** ignoring this error (keep going=true)" << std::endl;
-		else
-			return 2;
-	}
-	*/
-
-	signal(SIGSEGV, &sig_handler);
-	signal(SIGABRT, &sig_handler);
-
 	using namespace we::loader;
 
 	LOG(INFO, "starting on location: " << vm["location"].as<std::string>() << "...");
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>() ));
+	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(vm["location"].as<std::string>(), vm["rank"].as<int>() ));
 	{
 		const std::vector<std::string>& search_path= vm["append-search-path"].as<std::vector<std::string> >();
 
-		for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
-			executor->loader().append_search_path( *p );
+		if (vm.count("prepend-search-path"))
+		{
+			const std::vector<std::string>& search_path= vm["prepend-search-path"].as<std::vector<std::string> >();
+
+		 	for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
+		 		executor->loader().prepend_search_path( *p );
+		}
+
+		if (vm.count("append-search-path"))
+		{
+			const std::vector<std::string>& search_path= vm["append-search-path"].as<std::vector<std::string> >();
+
+		 	for (std::vector<std::string>::const_iterator p(search_path.begin()); p != search_path.end(); ++p)
+		 		executor->loader().append_search_path( *p );
+		}
 	}
 
 	if (vm.count("load"))
@@ -132,56 +102,6 @@ int main(int ac, char **av)
 		}
 	}
 
-	try
-	{
-		executor->start();
-	}
-	catch (const std::exception &ex)
-	{
-		std::cerr << "could not start executor: " << ex.what() << std::endl;
-		return 4;
-	}
+	return executor->run();
 
-	LOG(DEBUG, "waiting for signals...");
-	sigset_t waitset;
-	int sig(0);
-	int result(0);
-  
-	sigfillset(&waitset);
-	sigprocmask(SIG_BLOCK, &waitset, NULL);
-
-	bool signal_ignored = true;
-	while (signal_ignored)
-	{
-		result = sigwait(&waitset, &sig);
-		if (result == 0)
-		{
-			LOG(DEBUG, "got signal: " << sig);
-			switch (sig)
-			{
-			case SIGTERM:
-			case SIGHUP:
-			case SIGINT:
-				signal_ignored = false;
-				break;
-			default:
-				LOG(INFO, "ignoring signal: " << sig);
-				break;
-			}
-		}
-		else
-		{
-			LOG(ERROR, "error while waiting for signal: " << result);
-		}
-	}
-
-	//fvm_pc.leave();
-
-	LOG(INFO, "terminating...");
-	if (! executor->stop())
-	{
-		LOG(WARN, "executor did not stop correctly...");
-	}
-
-	return 0;
 }

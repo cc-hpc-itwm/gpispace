@@ -139,37 +139,49 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 	SDPA_LOG_DEBUG("configuring network components...");
 	const std::string prefix(daemon_stage_->name()+".net");
 
-	SDPA_LOG_DEBUG("setting up decoding...");
-	seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
-	sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
-	seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
-	seda::StageRegistry::instance().insert(decode_stage);
-	decode_stage->start();
-
-	SDPA_LOG_DEBUG("setting up the network stage...");
-	seda::comm::ConnectionFactory connFactory;
-	seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
-	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
-	// master known service: give the port as a parameter
-	if( !masterName.empty() &&  !masterUrl.empty() )
+	try {
+		SDPA_LOG_DEBUG("setting up decoding...");
+		seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
+		sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
+		seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
+		seda::StageRegistry::instance().insert(decode_stage);
+		decode_stage->start();
+	}
+	catch(std::exception& ex)
 	{
-		setMaster(masterName);
-		conn->locator()->insert( masterName, masterUrl);
+		SDPA_LOG_ERROR("Exception occurred when thying to start the decoding stage: "<<ex.what());
 	}
 
-	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
-	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
-	seda::StageRegistry::instance().insert(network_stage);
-	network_stage->start();
+	try {
+		SDPA_LOG_DEBUG("setting up the network stage...");
+		seda::comm::ConnectionFactory connFactory;
+		seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
+		seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
+		// master known service: give the port as a parameter
+		if( !masterName.empty() &&  !masterUrl.empty() )
+		{
+			setMaster(masterName);
+			conn->locator()->insert( masterName, masterUrl);
+		}
 
-	SDPA_LOG_DEBUG("setting up the output/encoding stage...");
-	seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
-	sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
-	seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
-	seda::StageRegistry::instance().insert(encode_stage);
+		seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
+		seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
+		seda::StageRegistry::instance().insert(network_stage);
+		network_stage->start();
 
-	ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
-	encode_stage->start();
+		SDPA_LOG_DEBUG("setting up the output/encoding stage...");
+		seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
+		sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
+		seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
+		seda::StageRegistry::instance().insert(encode_stage);
+
+		ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
+		encode_stage->start();
+	}
+	catch(std::exception& ex)
+	{
+		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
+	}
 }
 
 void GenericDaemon::shutdown_network()

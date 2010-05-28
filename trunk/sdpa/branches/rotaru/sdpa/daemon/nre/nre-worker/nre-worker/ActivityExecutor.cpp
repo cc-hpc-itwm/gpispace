@@ -25,22 +25,29 @@
 
 using boost::asio::ip::udp;
 
+static
+void sig_handler(int sig)
+{
+	std::cout << "Lethal signal (" << sig << ") received" << " - I will do my best to save the world!" << std::endl;
+	exit(15);
+}
+
 namespace sdpa { namespace nre { namespace worker {
   enum { max_length = ((2<<16) - 1) };
 
   void
   ActivityExecutor::start()
   {
-    boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+	  boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 
-    if (service_thread_) return; // already started
+	  if (service_thread_) return; // already started
 
-    io_service_.reset();
+	  io_service_.reset();
 
-    LOG(DEBUG, "opening connection on: " << location());
+	  LOG(DEBUG, "opening connection on: " << location());
 
-    std::string host(location());
-    unsigned short port(0);
+	  std::string host(location());
+	  unsigned short port(0);
 
     std::string::size_type sep_pos(location().find(":"));
     if (sep_pos != std::string::npos)
@@ -306,6 +313,67 @@ cont:
             boost::asio::placeholders::bytes_transferred));
     }
   }
+
+  unsigned int ActivityExecutor::run()
+  {
+     	signal(SIGSEGV, &sig_handler);
+     	signal(SIGABRT, &sig_handler);
+
+     	try
+     	{
+     		start();
+     	}
+     	catch (const std::exception &ex)
+     	{
+     		std::cerr << "could not start executor: " << ex.what() << std::endl;
+     		return 4;
+     	}
+
+     	LOG(DEBUG, "waiting for signals...");
+     	sigset_t waitset;
+     	int sig(0);
+     	int result(0);
+
+     	sigfillset(&waitset);
+     	sigprocmask(SIG_BLOCK, &waitset, NULL);
+
+     	bool signal_ignored = true;
+     	while (signal_ignored)
+     	{
+     		result = sigwait(&waitset, &sig);
+     		if (result == 0)
+     		{
+     			LOG(DEBUG, "got signal: " << sig);
+     			switch (sig)
+     			{
+     			case SIGTERM:
+     			case SIGKILL:
+     			case SIGHUP:
+     			case SIGINT:
+     				signal_ignored = false;
+     				break;
+     			default:
+     				LOG(INFO, "ignoring signal: " << sig);
+     				break;
+     			}
+     		}
+     		else
+     		{
+     			LOG(ERROR, "error while waiting for signal: " << result);
+     		}
+     	}
+
+     	//fvm_pc.leave();
+
+     	LOG(INFO, "terminating...");
+     	if (!stop())
+     	{
+     		LOG(WARN, "executor did not stop correctly...");
+     	}
+
+     	return 0;
+  }
+
 
 Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
 {

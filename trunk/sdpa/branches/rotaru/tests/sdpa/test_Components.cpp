@@ -33,6 +33,8 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <sys/wait.h>
+
 namespace po = boost::program_options;
 
 using namespace std;
@@ -50,8 +52,10 @@ TestComponents::TestComponents() :
 }
 
 TestComponents::~TestComponents()
-{}
-
+{
+  	kill(0,SIGTERM);
+	SDPA_LOG_INFO("The test suite finished!");
+}
 
 string TestComponents::read_workflow(string strFileName)
 {
@@ -75,7 +79,9 @@ namespace sdpa { namespace tests { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location, const bool bLaunchNrePcd = false) :   SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+    NreWorkerClient(const std::string &nre_worker_location, const bool bLaunchNrePcd = false,
+					const char* szNrePcdBinPath = "", const char* szKDMModulesPath = "", const char* szFvmPCModule = "" )
+    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
 
     void set_ping_interval(unsigned long seconds){}
     void set_ping_timeout(unsigned long seconds){}
@@ -171,7 +177,8 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpywnedByNRE()
 	// use external scheduler and real GWES
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl, bLaunchNrePcd );
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl,
+				                             bLaunchNrePcd, TESTS_NRE_PCD_BIN_PATH, TESTS_KDM_FAKE_MODULES_PATH, TESTS_FVM_PC_FAKE_MODULE );
 
 	try {
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);

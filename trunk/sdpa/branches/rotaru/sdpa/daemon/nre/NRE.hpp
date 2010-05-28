@@ -28,6 +28,8 @@
 
 #include <boost/pointer_cast.hpp>
 
+#include <sys/wait.h>
+
 using namespace std;
 
 
@@ -49,7 +51,10 @@ namespace sdpa {
 			 const std::string& masterUrl = "",
 			 const std::string& workerUrl = "",
 			 const std::string& guiUrl = "",
-			 bool bLaunchNrePcd = false )
+			 bool bLaunchNrePcd = false,
+			 const char* szNrePcdBinPath = "",
+			 const char* szKDMModulesPath = "",
+			 const char* szFvmPCModule = "")
 		: dsm::DaemonFSM( name,  create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
@@ -61,7 +66,9 @@ namespace sdpa {
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
 			//bool bLaunchNrePcd = false;
-			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>(this, workerUrl, bLaunchNrePcd ));
+			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>( this, workerUrl, bLaunchNrePcd,
+					                                                             szNrePcdBinPath, szKDMModulesPath, szFvmPCModule ));
+
 			//boost::dynamic_pointer_cast<SchedulerNRE<U> >(ptr_scheduler_)->nre_worker_client().set_location(workerUrl);
 
 			// attach gui observer
@@ -74,13 +81,40 @@ namespace sdpa {
 			SDPA_LOG_DEBUG("NRE destructor called ...");
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
+
+			/*int c;
+		   	int nStatus;
+
+			//kill pcd here
+		   	kill(0,SIGTERM);
+
+			c = wait(&nStatus);
+			if( WIFEXITED(nStatus) )
+			{
+				if( WEXITSTATUS(nStatus) != 0 )
+				{
+					std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+					LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+				}
+				else
+					if( WIFSIGNALED(nStatus) )
+					{
+						std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+						LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+					}
+			}
+			*/
+
 		}
 
 		static ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",  bool bLaunchNrePcd = false)
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",
+								  bool bLaunchNrePcd = false,  const char* szNrePcdBinPath = "",
+								  const char* szKDMModulesPath = "", const char* szFvmPCModule = "")
 		{
-			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl, bLaunchNrePcd));
+			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl, bLaunchNrePcd,
+					                     szNrePcdBinPath, szKDMModulesPath, szFvmPCModule ));
 		}
 
       	static void start( NRE<T, U>::ptr_t ptrNRE );
@@ -349,6 +383,7 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
+/*
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
@@ -377,6 +412,46 @@ template <typename T, typename U>
 void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
 	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
+}*/
+
+template <typename T, typename U>
+void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 }
 
 template <typename T, typename U>

@@ -172,6 +172,7 @@ Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) 
 void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
 {
 	ptr_worker_man_->addWorker(pWorker);
+	// do a re-scheduling here
 }
 
 

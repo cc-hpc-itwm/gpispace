@@ -72,9 +72,13 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location, const bool bLaunchNrePcd, unsigned short my_port=0)
+    NreWorkerClient(const std::string &nre_worker_location,
+					const bool bLaunchNrePcd = false,
+					const char* szNrePcdBinPath = "",
+					const char* szKDMModulesPath = "",
+					const char* szFvmPCModule = "" )
       : nre_worker_location_(nre_worker_location)
-      , my_reply_port_(my_port)
+      , my_reply_port_(0)
       , barrier_(2)
       , service_thread_(NULL)
       , socket_(NULL)
@@ -88,6 +92,9 @@ namespace sdpa { namespace nre { namespace worker {
       , num_waiting_receiver_(0)
       , started_(false)
       , bLaunchNrePcd_(bLaunchNrePcd)
+	  , strNrePcdBinPath_(szNrePcdBinPath)
+      , strKDMModulesPath_(szKDMModulesPath)
+      , strFvmPCModule_(szFvmPCModule)
     { }
 
     ~NreWorkerClient() throw ()
@@ -124,7 +131,7 @@ namespace sdpa { namespace nre { namespace worker {
     	return not_responded_to_ping_ >= ping_trials_;
     }
 
-    unsigned int startNrePcd() throw (std::exception)
+    unsigned int startNrePcd( ) throw (std::exception)
     {
        	//int c;
        	//int nStatus;
@@ -135,41 +142,41 @@ namespace sdpa { namespace nre { namespace worker {
 
        	if( bLaunchNrePcd_ )
        	{
+       		LOG(INFO, "Try to launch the nre-pcd ...");
        		pid_t pID = fork();
-			LOG(INFO, "Try to launch the nre-pcd ...");
-
+			
 			if (pID == 0)  // child
 			{
 				// Code only executed by child process
 				strID = "nre-pcd: ";
 
-				std::string strNrePcdBin(TESTS_NRE_PCD_BIN_PATH);
+				std::string strNrePcdBin(strNrePcdBinPath_.c_str());
 				strNrePcdBin += "/nre-pcd";
 
 				try {
 				execl( strNrePcdBin.c_str(),
 						"nre-pcd",
 						"-l", worker_location().c_str(),
-						"-a", TESTS_KDM_FAKE_MODULES_PATH,
-						"--load", TESTS_FVM_PC_FAKE_MODULE,
+						"-a", strKDMModulesPath_.c_str(),
+						"--load", strFvmPCModule_.c_str(),
 						NULL );
 				}
 				catch(const std::exception& ex)
 				{
 					LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
-					throw ex;
-					exit;
+					exit(1);
 				}
-
+				
+				/*
 				// the variant with no spawned binary
-				/*DLOG(DEBUG, "starting process container on location: "<<worker_location()<< std::endl);
-				sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(worker_location()));
-				executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
+				DLOG(DEBUG, "starting process container on location: "<<worker_location()<< std::endl);
+				sdpa::nre::worker::ActivityExecutor executor(worker_location());
+				executor.loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
 
 				try {
 					LOG(INFO, "Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
 					boost::filesystem::path pathFakeFvmModule(TESTS_FVM_PC_FAKE_MODULE);
-					executor->loader().load("fvm", pathFakeFvmModule);
+					executor.loader().load("fvm", pathFakeFvmModule);
 				}
 				catch(const we::loader::ModuleLoadFailed& ex)
 				{
@@ -177,13 +184,8 @@ namespace sdpa { namespace nre { namespace worker {
 					 throw ex;
 				}
 
-				try {
-					executor->start();
-				}
-				catch (const std::exception &ex) {
-				  LOG( ERROR, "could not start executor: " << ex.what());
-				  throw ex;
-				}*/
+				executor.run();
+				*/
 			}
 			else if (pID < 0)            // failed to fork
 			{
@@ -195,9 +197,7 @@ namespace sdpa { namespace nre { namespace worker {
 			{
 				// Code only executed by parent process
 				strID = "NREWorkerClient";
-
 				sleep(1);
-
 			}
        	}
 
@@ -205,7 +205,7 @@ namespace sdpa { namespace nre { namespace worker {
     }
 
 
-    unsigned int start() throw (std::exception)
+    unsigned int start( ) throw (std::exception)
     {
     	// start first the nre-pcd!!!! if bSpawnNrepcd is set
 		if(service_thread_)
@@ -321,11 +321,6 @@ namespace sdpa { namespace nre { namespace worker {
 	{
 		send(m);
 		return sdpa::shared_ptr<Message>(recv(timeout));
-
-		//just for unit tests
-		/*execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "dummy result"));
-		sdpa::shared_ptr<Message> pReplyMsg(new ExecuteReply());
-		return pReplyMsg;*/
 	}
 
 
@@ -619,6 +614,9 @@ namespace sdpa { namespace nre { namespace worker {
     char data_[max_length];
 
     bool bLaunchNrePcd_;
+    std::string strNrePcdBinPath_;
+    std::string strKDMModulesPath_;
+    std::string strFvmPCModule_;
   };
 }}}
 
