@@ -22,7 +22,7 @@ using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {
-	iter_last_worker_ = worker_map_.begin();
+	iter_last_worker_ = worker_map_.end();
 }
 
 WorkerManager::~WorkerManager(){
@@ -86,7 +86,7 @@ Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
         if (iter_last_worker_ == worker_map_.end())
           iter_last_worker_ = worker_map_.begin();
 
-        worker_map_t::iterator iter (iter_last_worker);
+        worker_map_t::iterator iter (iter_last_worker_);
         iter_last_worker_++;
         return iter->second;
 }
