@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -116,9 +116,10 @@ namespace seda { namespace comm {
     udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
     DLOG(TRACE, "starting UDPConnection(" << name() << ") on " << my_endpoint);
 
-    socket_ = new udp::socket(io_service_, my_endpoint);
-//     socket_->set_option (boost::asio::socket_base::reuse_address (true));
-//    socket_->open(my_endpoint);
+    socket_ = new udp::socket(io_service_);
+    socket_->open (my_endpoint.protocol());
+    socket_->set_option (boost::asio::socket_base::reuse_address (true));
+    socket_->bind (my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
 
     socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
@@ -141,7 +142,7 @@ namespace seda { namespace comm {
       locator_->remove(name());
 
       DLOG(TRACE, "interrupting service thread");
-      service_thread_->interrupt(); 
+      service_thread_->interrupt();
       io_service_.stop();
       DLOG(TRACE, "joining service thread");
       service_thread_->join();
@@ -181,7 +182,7 @@ namespace seda { namespace comm {
           // update location
           locator_->insert(msg.from(), sender_endpoint_.address().to_string(), sender_endpoint_.port());
         }
-        
+
         if (! has_listeners())
         {
           boost::unique_lock<boost::recursive_mutex> lock(mtx_);
