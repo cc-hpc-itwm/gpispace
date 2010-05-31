@@ -84,6 +84,7 @@ namespace sdpa { namespace daemon {
          Return the rank of the worker.
      */
     int rank() const { return rank_; }
+
     /**
       Return the next pending job or throw an exception.
 
