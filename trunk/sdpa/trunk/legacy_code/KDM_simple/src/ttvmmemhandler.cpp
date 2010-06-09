@@ -105,6 +105,8 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
                              , const grid3D& GVol
                              , const int _Ntid
                              , const int mtid
+                             , const long myPart
+                             , const long numPart
                              , const fvmAllocHandle_t handle_TT
                              )
 {
@@ -149,7 +151,7 @@ void TTVMMemHandler::InitVol ( const MigrationJob& MigJob
 	      const unsigned long SrcIndex = iSrcx*NSrfy + iSrcy;
 
               //	      if ( (SrcIndex % PSize) == PRank )
-	      if (true)
+	      if (SrcIndex % numPart == myPart)
 		{
 		  const unsigned long HeaderAddress
                     //                    = Ntid*8*TTLength + (SrcIndex/PSize) * TTLength;

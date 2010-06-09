@@ -280,7 +280,10 @@ static void kdm_loadTT (const value::type & config)
 
   TTVMMemHandler TTVMMem;
 
-  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, handle_TT);
+  const long myPart (0);
+  const long numPart (1);
+
+  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, myPart, numPart, handle_TT);
 }
 
 // ************************************************************************* //

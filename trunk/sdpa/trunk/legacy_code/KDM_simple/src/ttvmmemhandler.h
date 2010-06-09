@@ -36,7 +36,7 @@ class TTVMMemHandler {
   void Reset();
   /// Estimate total amount of memory needed
   unsigned long GetMem(const char* NameBase, const grid2D& GSrc, const grid3D& GVol, const int NodeCount, const int CoreCount);
-  void InitVol(const MigrationJob& MigJob, const char* NameBase, const grid2D& GSrc, const grid3D& GVol, const int _Ntid, const int mtid, const fvmAllocHandle_t handle_TT);
+  void InitVol(const MigrationJob& MigJob, const char* NameBase, const grid2D& GSrc, const grid3D& GVol, const int _Ntid, const int mtid, const long myPart, const long numPart, const fvmAllocHandle_t handle_TT);
   bool Init(const char* NameBase, const int& _ixS, const int& _iyS, const int& _ixR, const int& _iyR,
             float* &_Src00, float* &_Src01, float* &_Src10, float* &_Src11,
             float* &_Rcv00, float* &_Rcv01, float* &_Rcv10, float* &_Rcv11,

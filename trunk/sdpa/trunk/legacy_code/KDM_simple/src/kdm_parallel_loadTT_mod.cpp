@@ -243,11 +243,13 @@ static void get_Job (const value::type & config, MigrationJob & Job)
 static void kdm_loadTT (const value::type & config, const long & TT)
 {
   LOG (INFO, "loadTT: got config " << config);
-  LOG ( INFO
-      , "loadTT: got TT " << TT 
-      << " out of " << value::get_literal_value<long> 
-                       (value::get_field ("PARALLEL_LOADTT", config))
-      );
+
+  const long & Parallel_loadTT
+    (value::get_literal_value<long> 
+     (value::get_field ("PARALLEL_LOADTT", config))
+    );
+
+  LOG (INFO, "loadTT: got TT " << TT << " out of " << Parallel_loadTT);
 
   MigrationJob Job;
 
@@ -291,7 +293,7 @@ static void kdm_loadTT (const value::type & config, const long & TT)
 
   TTVMMemHandler TTVMMem;
 
-  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, handle_TT);
+  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, TT, Parallel_loadTT, handle_TT);
 }
 
 // ************************************************************************* //
