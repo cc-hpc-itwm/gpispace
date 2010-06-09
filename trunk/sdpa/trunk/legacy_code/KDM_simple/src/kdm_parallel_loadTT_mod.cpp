@@ -200,9 +200,9 @@ static value::type kdm_initialize ( const std::string & filename
   config["OFFSETS"] = static_cast<long>(Job.n_offset);
   config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
-  config["PARALLEL_LOADTT"] = 1L;
+  config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
-  parallel_loadTT = 1L;
+  parallel_loadTT = static_cast<long>(fvmGetNodeCount());
 
   wait = value::get_literal_value<long> (value::get_field ("OFFSETS", config))
        * value::get_literal_value<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
