@@ -151,7 +151,7 @@ namespace kdm
       {
         transition_type initialize
           ( "initialize"
-          , mod_type ("kdm", "initialize")
+          , mod_type ("kdm_complex", "initialize")
           , "true"
           , transition_type::external
           );
@@ -181,7 +181,7 @@ namespace kdm
       // ******************************************************************* //
 
       {
-        transition_type loadTT ("loadTT", mod_type ("kdm", "loadTT"));
+        transition_type loadTT ("loadTT", mod_type ("kdm_complex", "loadTT"));
         loadTT.add_ports ()
           ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
           ("config", signature::config, we::type::PORT_READ)
@@ -527,7 +527,7 @@ namespace kdm
       // ********************************************************************* //
 
       {
-        transition_type load ("load", mod_type ("kdm", "load"));
+        transition_type load ("load", mod_type ("kdm_complex", "load"));
         load.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_OUT)
           ("bunch", signature::bunch, we::type::PORT_IN)
@@ -657,7 +657,7 @@ namespace kdm
       {
         transition_type process
           ( "process"
-          , mod_type ("kdm", "process")
+          , mod_type ("kdm_complex", "process")
           , "${volume.buffer0.assigned} | ${volume.buffer1.assigned}"
           );
         process.add_ports ()
@@ -805,7 +805,7 @@ namespace kdm
       // ******************************************************************* //
 
       {
-        transition_type write ("write", mod_type ("kdm", "write"));
+        transition_type write ("write", mod_type ("kdm_complex", "write"));
         write.add_ports ()
           ("volume", signature::volume, we::type::PORT_IN_OUT)
           ("config", signature::config, we::type::PORT_READ)
@@ -886,7 +886,7 @@ namespace kdm
       {
         transition_type finalize
           ( "finalize"
-          , mod_type ("kdm", "finalize")
+          , mod_type ("kdm_complex", "finalize")
           , "${volume_wait} == 0L"
           );
         finalize.add_ports ()
@@ -909,12 +909,7 @@ namespace kdm
 
       // *********************************************************************** //
 
-      transition_type trans_net
-        ( "kdm_complex"
-        , net
-        , "true"
-        , transition_type::internal
-        );
+      transition_type trans_net ("kdm_complex", net);
       trans_net.add_ports ()
         ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
         ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)

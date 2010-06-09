@@ -7,8 +7,6 @@
 #include "complex_generator.hpp"
 
 // specific
-#include "kdm_complex.hpp"
-
 // generic
 #include "module.hpp"
 #include "context.hpp"
@@ -36,10 +34,14 @@ int main (int argc, char ** argv)
   }
 
   we::loader::loader loader;
+  loader.append_search_path 
+    (std::string ((argc> 2) ? argv[2] : "/amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk/we/trunk/build/kdm/mod/"));
   struct exec_context ctxt (loader);
   act.execute (ctxt);
 
-  we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
+  we::mgmt::type::detail::printer<we::activity_t, std::ostream>
+    printer (act, std::cout);
+
   printer << "output := "
           << act.output()
           << std::endl;

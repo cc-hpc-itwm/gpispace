@@ -142,7 +142,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
 {
-  std::cerr << "rank := " << fvmGetRank() << std::endl;
+  //  std::cerr << "rank := " << fvmGetRank() << std::endl;
   we::loader::put_output (output, "result", 0L);
 }
 
