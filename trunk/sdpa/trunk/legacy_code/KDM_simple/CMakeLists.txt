@@ -55,24 +55,6 @@ set(SRC ./src/main.cpp
 	./src/SeismicRayTracer/receiver.cpp
 )
 
-FIND_PATH(FVM_INCLUDE_DIR Pv4dVM4.h ./lib/FVM/include /opt/cluster/PV-4D.pspro/include)
-FIND_LIBRARY(FVM_LIBRARIES Pv4dVM4 ibverbs12 PATH ./lib/FVM/lib64 /opt/cluster/PV-4D.pspro/lib64)
-
-IF (FVM_INCLUDE_DIR AND FVM_LIBRARIES)
-  SET(FVM_LIB ${FVM_LIBRARIES})
-ENDIF (FVM_INCLUDE_DIR AND FVM_LIBRARIES)
-
-include_directories(${FVM_INCLUDE_DIR})
-
-add_executable(kdm ${SRC})
-
-list(APPEND CMAKE_CXX_FLAGS "-O0 -ggdb")
-
-set_source_files_properties(./src/main.cpp PROPERTIES COMPILE_FLAGS -O0)
-
-target_link_libraries(kdm pthread ibverbs ${FVM_LIB})
-
-
 # sdpa kdm module
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 
@@ -152,6 +134,12 @@ set(KDM_MOD_SRCS src/kdm_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
+set (KDM_PARALLEL_LOADTT_MOD_SRCS src/kdm_parallel_loadTT_mod.cpp
+  ${KDM_MOD_INITIALIZE_SRCS}
+  ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
+  ${KDM_MOD_PROCESS_SRCS}
+)
+
 set(SINC_INT_MOD_SRCS
 	./src/sinc_mod.cpp
 	./src/utils/sincinterpolator.cpp
@@ -176,6 +164,10 @@ add_library(kdm_mod SHARED ${KDM_MOD_SRCS})
 set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
 target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_mod sinc_mod)
+
+add_library(kdm_parallel_loadTT_mod SHARED ${KDM_PARALLEL_LOADTT_MOD_SRCS})
+set_target_properties(kdm_parallel_loadTT_mod PROPERTIES OUTPUT_NAME kdm_parallel_loadTT)
+target_link_libraries (kdm_parallel_loadTT_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
 add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
