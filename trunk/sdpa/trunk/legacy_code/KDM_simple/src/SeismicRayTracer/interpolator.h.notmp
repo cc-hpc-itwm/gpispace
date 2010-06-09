@@ -1,0 +1,550 @@
+/***************************************************************************
+                          interpolator.h  -  description
+                             -------------------
+    begin                : Tue Nov 29 2005
+    copyright            : (C) 2005 by Dirk Merten
+    email                : merten@itwm.fhg.de
+ ***************************************************************************/
+
+
+#ifndef INTERPOLATOR_H
+#define INTERPOLATOR_H
+
+
+/**
+  *@author Dirk Merten
+  */
+#include "memman3d_bucket.h"
+#include "velgridpointbspline.h"
+
+class Interpolator {
+public: 
+	Interpolator();
+	~Interpolator();
+  /** No descriptions */
+  int InitCoeffs(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                 const int& Nx, const int& Ny, const int& Nz);
+  /** */
+  float Interpolate(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float>& p);
+  void Interpolate_Init(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k);
+  float Interpolate_old(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float>& p, point3D<float>& grad);
+  float Interpolate_newold(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float>& p, point3D<float>& grad);
+  float Interpolate(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float>& p, point3D<float>& grad);    
+  void Interpolate(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float> p[4], float v[4], point3D<float> grad[4]);
+  float Interpolate_again(const point3D<float>& p);
+  float Interpolate_again(const point3D<float>& p, point3D<float>& grad);
+  void Interpolate_again(const point3D<float> p[4], float v[4]);
+  void Interpolate_again(const point3D<float> p[4], float v[4], point3D<float> grad[4]);
+  float Interpolate_tmp(MemMan3D_bucket<VelGridPointBSpline>& MM,
+                     const int& i, const int& j, const int& k,
+                     const int& Nx, const int& Ny, const int& Nz,
+                     const point3D<float>& p, point3D<float>& grad);
+private:
+  void spline(float x[], float y[], int n, float yp1, float ypn, float y2[]);
+
+  int i_old, j_old, k_old;
+  float x0, x1, x2;
+  float hx, hy, hz;
+  float hx_inv, hy_inv, hz_inv;
+
+  float V000;
+  float V001;
+  float V002;
+  float V003;
+
+  float V010;
+  float V011;
+  float V012;
+  float V013;
+
+  float V020;
+  float V021;
+  float V022;
+  float V023;
+
+  float V030;
+  float V031;
+  float V032;
+  float V033;
+
+  float V100;
+  float V101;
+  float V102;
+  float V103;
+
+  float V110;
+  float V111;
+  float V112;
+  float V113;
+
+  float V120;
+  float V121;
+  float V122;
+  float V123;
+
+  float V130;
+  float V131;
+  float V132;
+  float V133;
+
+  float V200;
+  float V201;
+  float V202;
+  float V203;
+
+  float V210;
+  float V211;
+  float V212;
+  float V213;
+
+  float V220;
+  float V221;
+  float V222;
+  float V223;
+
+  float V230;
+  float V231;
+  float V232;
+  float V233;
+
+  float V300;
+  float V301;
+  float V302;
+  float V303;
+
+  float V310;
+  float V311;
+  float V312;
+  float V313;
+
+  float V320;
+  float V321;
+  float V322;
+  float V323;
+
+  float V330;
+  float V331;
+  float V332;
+  float V333;
+};
+
+inline float Interpolator::Interpolate_again(const point3D<float>& p)
+{
+  float Ex((x0 - p[0]) * hx_inv);
+  float Ey((x1 - p[1]) * hy_inv);
+  float Ez((x2 - p[2]) * hz_inv);
+
+  float y_xyz_tmp(V330 + Ez*( V331 + Ez*( V332 + Ez*V333)));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V320 + Ez*( V321 + Ez*( V322 + Ez*V323));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V310 + Ez*( V311 + Ez*( V312 + Ez*V313));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V300 + Ez*( V301 + Ez*( V302 + Ez*V303));
+
+  float y_xyz = y_xyz_tmp;
+
+  y_xyz_tmp = V230 + Ez*( V231 + Ez*( V232 + Ez*V233));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V220 + Ez*( V221 + Ez*( V222 + Ez*V223));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V210 + Ez*( V211 + Ez*( V212 + Ez*V213));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V200 + Ez*( V201 + Ez*( V202 + Ez*V203));
+
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+
+  y_xyz_tmp = V130 + Ez*( V131 + Ez*( V132 + Ez*V133));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V120 + Ez*( V121 + Ez*( V122 + Ez*V123));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V110 + Ez*( V111 + Ez*( V112 + Ez*V113));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V100 + Ez*( V101 + Ez*( V102 + Ez*V103));
+
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+
+  y_xyz_tmp = V030 + Ez*( V031 + Ez*( V032 + Ez*V033));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V020 + Ez*( V021 + Ez*( V022 + Ez*V023));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V010 + Ez*( V011 + Ez*( V012 + Ez*V013));
+
+  y_xyz_tmp = y_xyz_tmp * Ey + V000 + Ez*( V001 + Ez*( V002 + Ez*V003));
+
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+
+  return y_xyz;
+}
+
+inline float Interpolator::Interpolate_again(const point3D<float>& p, point3D<float>& grad)
+{
+  float Ex((x0 - p[0]) * hx_inv);
+  float Ey((x1 - p[1]) * hy_inv);
+  float Ez((x2 - p[2]) * hz_inv);
+
+  float tmp(V330 + Ez*( V331 + Ez*( V332 + Ez*V333)));
+  float y_xyz_tmp(tmp);
+  float grady_tmp(tmp);
+  float gradz_tmp(-hz_inv * (V331 + Ez*( 2*V332 + 3*Ez*V333)));
+
+  tmp = V320 + Ez*( V321 + Ez*( V322 + Ez*V323));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * 3 * Ey + 2*tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V321 + Ez*( 2*V322 + 3*Ez*V323));
+
+  tmp = V310 + Ez*( V311 + Ez*( V312 + Ez*V313));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * Ey + tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V311 + Ez*( 2*V312 + 3*Ez*V313));
+
+  tmp = V300 + Ez*( V301 + Ez*( V302 + Ez*V303));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * (-hx_inv);
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V301 + Ez*( 2*V302 + 3*Ez*V303));
+
+  float y_xyz = y_xyz_tmp;
+  float grady = grady_tmp;
+  float gradz = gradz_tmp;
+
+  tmp = V230 + Ez*( V231 + Ez*( V232 + Ez*V233));
+  y_xyz_tmp = tmp;
+  grady_tmp = tmp;
+  gradz_tmp = -hz_inv * (V231 + Ez*( 2*V232 + 3*Ez*V233));
+
+  tmp = V220 + Ez*( V221 + Ez*( V222 + Ez*V223));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * 3 * Ey + 2*tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V221 + Ez*( 2*V222 + 3*Ez*V223));
+
+  tmp = V210 + Ez*( V211 + Ez*( V212 + Ez*V213));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * Ey + tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V211 + Ez*( 2*V212 + 3*Ez*V213));
+
+  tmp = V200 + Ez*( V201 + Ez*( V202 + Ez*V203));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * (-hy_inv);
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V201 + Ez*( 2*V202 + 3*Ez*V203));
+
+  float gradx(y_xyz * 3 * Ex + 2*y_xyz_tmp);
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+  grady = grady * Ex + grady_tmp;
+  gradz = gradz * Ex + gradz_tmp;
+
+  tmp = V130 + Ez*( V131 + Ez*( V132 + Ez*V133));
+  y_xyz_tmp = tmp;
+  grady_tmp = tmp;
+  gradz_tmp = -hz_inv * (V131 + Ez*( 2*V132 + 3*Ez*V133));
+
+  tmp = V120 + Ez*( V121 + Ez*( V122 + Ez*V123));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * 3 * Ey + 2*tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V121 + Ez*( 2*V122 + 3*Ez*V123));
+
+  tmp = V110 + Ez*( V111 + Ez*( V112 + Ez*V113));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * Ey + tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V111 + Ez*( 2*V112 + 3*Ez*V113));
+
+  tmp = V100 + Ez*( V101 + Ez*( V102 + Ez*V103));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * (-hy_inv);
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V101 + Ez*( 2*V102 + 3*Ez*V103));
+
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+  gradx = gradx * Ex + y_xyz_tmp;
+  grady = grady * Ex + grady_tmp;
+  gradz = gradz * Ex + gradz_tmp;
+
+  tmp = V030 + Ez*( V031 + Ez*( V032 + Ez*V033));
+  y_xyz_tmp = tmp;
+  grady_tmp = tmp;
+  gradz_tmp = -hz_inv * (V031 + Ez*( 2*V032 + 3*Ez*V033));
+
+  tmp = V020 + Ez*( V021 + Ez*( V022 + Ez*V023));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * 3 * Ey + 2*tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V021 + Ez*( 2*V022 + 3*Ez*V023));
+
+  tmp = V010 + Ez*( V011 + Ez*( V012 + Ez*V013));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * Ey + tmp;
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V011 + Ez*( 2*V012 + 3*Ez*V013));
+
+  tmp = V000 + Ez*( V001 + Ez*( V002 + Ez*V003));
+
+  float gradx_tmp(y_xyz_tmp * (-hx_inv));
+  y_xyz_tmp = y_xyz_tmp * Ey + tmp;
+  grady_tmp = grady_tmp * (-hy_inv);
+  gradz_tmp = gradz_tmp * Ey - hz_inv * (V001 + Ez*( 2*V002 + 3*Ez*V003));
+
+  y_xyz = y_xyz * Ex + y_xyz_tmp;
+  gradx = gradx * Ex + gradx_tmp;
+  grady = grady * Ex + grady_tmp;
+  gradz = gradz * Ex + gradz_tmp;
+
+  grad[0] = gradx;
+  grad[1] = grady;
+  grad[2] = gradz;
+  return y_xyz;
+}
+
+inline void Interpolator::Interpolate_again(const point3D<float> p[4], float v[4], point3D<float> grad[4])
+{
+  float Ex[4];
+  float Ey[4];
+  float Ez[4];
+
+  for (int i = 0; i < 4; i++)
+  {
+    Ex[i] = (x0 - p[i][0]) * hx_inv;
+    Ey[i] = (x1 - p[i][1]) * hy_inv;
+    Ez[i] = (x2 - p[i][2]) * hz_inv;
+  }
+
+  float y_xyz_tmp[4];
+  float grady_tmp[4];
+  float gradz_tmp[4];
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float tmp = (V330 + Ez[i]*( V331 + Ez[i]*( V332 + Ez[i]*V333)));
+    y_xyz_tmp[i] = tmp;
+    grady_tmp[i] = tmp;
+    gradz_tmp[i] = -hz_inv * (V331 + Ez[i]*( 2*V332 + 3*Ez[i]*V333));
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    float tmp = V320 + Ez_tmp*( V321 + Ez_tmp*( V322 + Ez_tmp*V323));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * 3 * Ey[i] + 2*tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V321 + Ez_tmp*( 2*V322 + 3*Ez_tmp*V323));
+
+    tmp = V310 + Ez_tmp*( V311 + Ez_tmp*( V312 + Ez_tmp*V313));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * Ey[i] + tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V311 + Ez_tmp*( 2*V312 + 3*Ez_tmp*V313));
+
+    tmp = V300 + Ez_tmp*( V301 + Ez_tmp*( V302 + Ez_tmp*V303));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * (-hx_inv);
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V301 + Ez_tmp*( 2*V302 + 3*Ez_tmp*V303));
+  }
+
+  float y_xyz[4];
+  float grady[4];
+  float gradz[4];
+
+
+  for (int i = 0; i < 4; i++)
+  {
+    y_xyz[i] = y_xyz_tmp[i];
+    grady[i] = grady_tmp[i];
+    gradz[i] = gradz_tmp[i];
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    float tmp = V230 + Ez_tmp*( V231 + Ez_tmp*( V232 + Ez_tmp*V233));
+    y_xyz_tmp[i] = tmp;
+    grady_tmp[i] = tmp;
+    gradz_tmp[i] = -hz_inv * (V231 + Ez_tmp*( 2*V232 + 3*Ez_tmp*V233));
+
+    tmp = V220 + Ez_tmp*( V221 + Ez_tmp*( V222 + Ez_tmp*V223));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * 3 * Ey[i] + 2*tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V221 + Ez_tmp*( 2*V222 + 3*Ez_tmp*V223));
+
+    tmp = V210 + Ez_tmp*( V211 + Ez_tmp*( V212 + Ez_tmp*V213));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * Ey[i] + tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V211 + Ez_tmp*( 2*V212 + 3*Ez_tmp*V213));
+
+    tmp = V200 + Ez_tmp*( V201 + Ez_tmp*( V202 + Ez_tmp*V203));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * (-hy_inv);
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V201 + Ez_tmp*( 2*V202 + 3*Ez_tmp*V203));
+  }
+
+  float gradx[4];
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    gradx[i] = y_xyz[i] * 3 * Ex[i] + 2*y_xyz_tmp[i];
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+    grady[i] = grady[i] * Ex[i] + grady_tmp[i];
+    gradz[i] = gradz[i] * Ex[i] + gradz_tmp[i];
+
+    float tmp = V130 + Ez_tmp*( V131 + Ez_tmp*( V132 + Ez_tmp*V133));
+    y_xyz_tmp[i] = tmp;
+    grady_tmp[i] = tmp;
+    gradz_tmp[i] = -hz_inv * (V131 + Ez_tmp*( 2*V132 + 3*Ez_tmp*V133));
+
+    tmp = V120 + Ez_tmp*( V121 + Ez_tmp*( V122 + Ez_tmp*V123));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * 3 * Ey[i] + 2*tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V121 + Ez_tmp*( 2*V122 + 3*Ez_tmp*V123));
+
+    tmp = V110 + Ez_tmp*( V111 + Ez_tmp*( V112 + Ez_tmp*V113));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * Ey[i] + tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V111 + Ez_tmp*( 2*V112 + 3*Ez_tmp*V113));
+
+    tmp = V100 + Ez_tmp*( V101 + Ez_tmp*( V102 + Ez_tmp*V103));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * (-hy_inv);
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V101 + Ez_tmp*( 2*V102 + 3*Ez_tmp*V103));
+
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+    gradx[i] = gradx[i] * Ex[i] + y_xyz_tmp[i];
+    grady[i] = grady[i] * Ex[i] + grady_tmp[i];
+    gradz[i] = gradz[i] * Ex[i] + gradz_tmp[i];
+
+    tmp = V030 + Ez_tmp*( V031 + Ez_tmp*( V032 + Ez_tmp*V033));
+    y_xyz_tmp[i] = tmp;
+    grady_tmp[i] = tmp;
+    gradz_tmp[i] = -hz_inv * (V031 + Ez_tmp*( 2*V032 + 3*Ez_tmp*V033));
+
+    tmp = V020 + Ez_tmp*( V021 + Ez_tmp*( V022 + Ez_tmp*V023));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * 3 * Ey[i] + 2*tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V021 + Ez_tmp*( 2*V022 + 3*Ez_tmp*V023));
+
+    tmp = V010 + Ez_tmp*( V011 + Ez_tmp*( V012 + Ez_tmp*V013));
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * Ey[i] + tmp;
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V011 + Ez_tmp*( 2*V012 + 3*Ez_tmp*V013));
+  }
+
+  float gradx_tmp[4];
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    const float tmp = V000 + Ez_tmp*( V001 + Ez_tmp*( V002 + Ez_tmp*V003));
+    gradx_tmp[i] = y_xyz_tmp[i] * (-hx_inv);
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + tmp;
+    grady_tmp[i] = grady_tmp[i] * (-hy_inv);
+    gradz_tmp[i] = gradz_tmp[i] * Ey[i] - hz_inv * (V001 + Ez_tmp*( 2*V002 + 3*Ez_tmp*V003));
+
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+    gradx[i] = gradx[i] * Ex[i] + gradx_tmp[i];
+    grady[i] = grady[i] * Ex[i] + grady_tmp[i];
+    gradz[i] = gradz[i] * Ex[i] + gradz_tmp[i];
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    v[i] = y_xyz[i];
+    grad[i][0] = gradx[i];
+    grad[i][1] = grady[i];
+    grad[i][2] = gradz[i];
+  }
+}
+inline void Interpolator::Interpolate_again(const point3D<float> p[4], float v[4])
+{
+  float Ex[4];
+  float Ey[4];
+  float Ez[4];
+
+  for (int i = 0; i < 4; i++)
+  {
+    Ex[i] = (x0 - p[i][0]) * hx_inv;
+    Ey[i] = (x1 - p[i][1]) * hy_inv;
+    Ez[i] = (x2 - p[i][2]) * hz_inv;
+  }
+
+  float y_xyz_tmp[4];
+
+  for (int i = 0; i < 4; i++)
+  {
+    y_xyz_tmp[i] = (V330 + Ez[i]*( V331 + Ez[i]*( V332 + Ez[i]*V333)));
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V320 + Ez_tmp*( V321 + Ez_tmp*( V322 + Ez_tmp*V323));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V310 + Ez_tmp*( V311 + Ez_tmp*( V312 + Ez_tmp*V313));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V300 + Ez_tmp*( V301 + Ez_tmp*( V302 + Ez_tmp*V303));
+  }
+
+  float y_xyz[4];
+
+
+  for (int i = 0; i < 4; i++)
+  {
+    y_xyz[i] = y_xyz_tmp[i];
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    y_xyz_tmp[i] = V230 + Ez_tmp*( V231 + Ez_tmp*( V232 + Ez_tmp*V233));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V220 + Ez_tmp*( V221 + Ez_tmp*( V222 + Ez_tmp*V223));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V210 + Ez_tmp*( V211 + Ez_tmp*( V212 + Ez_tmp*V213));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V200 + Ez_tmp*( V201 + Ez_tmp*( V202 + Ez_tmp*V203));
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+
+    y_xyz_tmp[i] = V130 + Ez_tmp*( V131 + Ez_tmp*( V132 + Ez_tmp*V133));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V120 + Ez_tmp*( V121 + Ez_tmp*( V122 + Ez_tmp*V123));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V110 + Ez_tmp*( V111 + Ez_tmp*( V112 + Ez_tmp*V113));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V100 + Ez_tmp*( V101 + Ez_tmp*( V102 + Ez_tmp*V103));
+
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+
+    y_xyz_tmp[i] = V030 + Ez_tmp*( V031 + Ez_tmp*( V032 + Ez_tmp*V033));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V020 + Ez_tmp*( V021 + Ez_tmp*( V022 + Ez_tmp*V023));
+
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V010 + Ez_tmp*( V011 + Ez_tmp*( V012 + Ez_tmp*V013));
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    const float Ez_tmp = Ez[i];
+    y_xyz_tmp[i] = y_xyz_tmp[i] * Ey[i] + V000 + Ez_tmp*( V001 + Ez_tmp*( V002 + Ez_tmp*V003));
+
+    y_xyz[i] = y_xyz[i] * Ex[i] + y_xyz_tmp[i];
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    v[i] = y_xyz[i];
+  }
+}
+
+#endif

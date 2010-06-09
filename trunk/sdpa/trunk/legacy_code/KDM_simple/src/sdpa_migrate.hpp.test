@@ -1,0 +1,81 @@
+/***************************************************************************
+                          sdpa_routines.hpp  -  description
+*/
+
+/** 
+    Doxygen Style
+    Multi-Line Documentation
+**/
+
+/*                           -------------------
+    begin                : 
+    copyright            : (C) 2010 by Daniel Grünewald
+    email                : Daniel.Gruenewald@itwm.fraunhofer.de
+ ***************************************************************************/
+
+
+#ifndef SDPA_MIGRATE_H
+#define SDPA_MIGRATE_H
+
+// user defined includes
+#include <sdpa_loadalltraces.hpp>
+#include <MigSubVol.hpp>
+#include <TravTimeTab.hpp>
+#include <TraceBunch.hpp>
+#include <./structures/migrationjob.h>
+#include <./structures/coordinates.h>
+#include <./utils/taper.h>
+
+#include LOGGERINCLUDE 
+
+// standard includes
+#include <iostream>
+
+typedef struct {
+  const MigrationJob * Job;
+  ParallelEnvironment *PE;
+  TraceBunch * Bunch;
+  MigSubVol3D * SubVol;
+  SincInterpolator * SincInt;
+  int Ntid;
+  int mtid;
+} thread_param_t;
+
+typedef struct {
+  const MigrationJob * Job;
+  TraceData * Trace;
+  TravTimeTab *TT;
+  MigSubVol3D * SubVol;
+  SincInterpolator * SincInt;
+  int Ntid;
+  int mtid;
+} thread_param_mig_t;
+
+typedef struct {
+  const MigrationJob * Job;
+  TraceData * Trace;
+  MigSubVol3D * SubVol;
+  TravTimeTab * TT;
+} thread_param_load_t;
+
+/**
+  *@author Daniel Grünewald doxygen stale
+  */
+
+bool SDPA_mig_and_pref(int _oid, int _pid2mig,int _bid2mig, int _pid2load, int _bid2load, int actbuf, 
+                       MigrationJob &_Job, ParallelEnvironment &_PE,SincInterpolator &_SincInt);
+
+//bool MigBunch2SubVol(const MigrationJob &Job, ParallelEnvironment &PE,TraceBunch &Bunch, 
+//		     MigSubVol3D &SubVol,SincInterpolator &SincInt);
+bool MigBunch2SubVol2(const MigrationJob &Job, ParallelEnvironment &PE, TraceBunch &Bunch, 
+		      MigSubVol3D &SubVol,SincInterpolator &SincInt);
+
+//void *MigBunch2SubVol_ST(void *_param);
+void *MigTrace2SubVol_ST(void *_param);
+
+void *LoadTT_ST(void *_param);
+
+bool MigTrace2SubVol(const MigrationJob &Job, TraceData &Trace, 
+		     TravTimeTab &TT, MigSubVol3D &SubVol, SincInterpolator &SincInt);
+
+#endif

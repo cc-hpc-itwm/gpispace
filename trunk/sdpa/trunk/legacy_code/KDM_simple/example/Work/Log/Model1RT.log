@@ -1,0 +1,36 @@
+      
+      
+
+
+      SeismicRayTracer Version 2.0.3
+
+      (C) 2009 by Dirk Merten, Norman Ettrich
+                  Fraunhofer ITWM
+                  grt-support@itwm.fraunhofer.de 
+
+                                                 
+
+                                                 
+
+LOGGING     : Configuration File /u/herc/gruenewa/Seis3D/example/Kirchhoff_Model.xml
+LOGGING     : has been read successfully.
+      Starting in Wave Front Mode.
+      Starting on 4 nodes.
+LOGGING     : Perform checks on the parallel environment
+LOGGING     : Check for running processes on 4 nodes ...
+LOGGING     : Ok
+      Start-Up has been successful.
+LOGGING     : Initializing Property/Velocity Model.
+LOGGING     : The datacube has been read successfully.
+LOGGING     : The datacube has been initialized successfully.
+       
+      0 % ..........       
+     10 % ..........       
+     20 % ..........       
+     30 % ..........       
+     40 % ..........       
+     50 % ..........       
+     60 % ..........       
+     70 % ..........       
+     80 % ..........       
+     90 % .........      Done.

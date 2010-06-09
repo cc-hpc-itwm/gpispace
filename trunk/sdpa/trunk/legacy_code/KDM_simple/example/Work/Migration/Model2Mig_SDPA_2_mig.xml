@@ -1,0 +1,115 @@
+<?xml version = '1.0'?>
+<Kirchhoff3D>
+  <common>
+     <Parameters>
+        <ProjectName>TestModel</ProjectName>
+        <LoggingDirectory>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Log</LoggingDirectory>
+        <frac>yes</frac>
+        <anti_aliasing>no</anti_aliasing>
+     </Parameters>
+     <Geometry>
+        <one_inline_num>1</one_inline_num>
+        <one_xline_num>1</one_xline_num>
+        <one_x>0</one_x>
+        <one_y>0</one_y>
+        <dx_between_xlines unit="[m]">20</dx_between_xlines>
+        <dy_between_inlines unit="[m]">20</dy_between_inlines>
+        <angle_rot_deg unit="[deg]">0</angle_rot_deg>
+        <inlinedir values="-1,+1">1</inlinedir>
+     </Geometry>
+  </common>
+
+  <Migration>
+    <OutputVol>
+      <MigDirectoryName>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Migration</MigDirectoryName>
+      <MigFileMode>0</MigFileMode>
+      <zMinDepth unit="[m]">410</zMinDepth>
+      <Nz>28</Nz>
+      <dz unit="[m]">10</dz>
+      <nx_along_const_inline>14</nx_along_const_inline>
+      <ny_along_const_xline>14</ny_along_const_xline>
+      <first_inline_num>14</first_inline_num>
+      <first_xline_num>14</first_xline_num>
+      <dx_along_const_inline unit="[m]">12.5</dx_along_const_inline>
+      <dy_along_const_xline unit="[m]">12.5</dy_along_const_xline>
+      <Off0>20</Off0>
+      <NOff>1</NOff>
+      <dOff>20</dOff>
+      <NtotOff>1</NtotOff>
+      <N0Off>0</N0Off>
+    </OutputVol>
+
+    <SeismicData>
+      <TraceFileName>/p/hpc/sdpa/ap/git/KDM_VM/example/Data/grt3d-inittest_data.segy</TraceFileName>
+      <TraceFileMode>0</TraceFileMode>
+
+      <first_offset>20</first_offset>
+      <n_offset>15</n_offset>
+      <d_offset>20</d_offset>
+
+      <nx_along_const_inline>20</nx_along_const_inline>
+      <ny_along_const_xline>20</ny_along_const_xline>
+      <first_inline_num>11</first_inline_num>
+      <first_xline_num>11</first_xline_num>
+      <dx_along_const_inline unit="[m]">20</dx_along_const_inline>
+      <dy_along_const_xline unit="[m]">20</dy_along_const_xline>
+      <nx_start_along_const_inline>0</nx_start_along_const_inline>
+      <ny_start_along_const_xline>0</ny_start_along_const_xline>
+      <nx_use_along_const_inline>20</nx_use_along_const_inline>
+      <ny_use_along_const_xline>20</ny_use_along_const_xline>
+
+      <Offx0>20</Offx0>
+      <NtotOffx>15</NtotOffx>
+      <N0Offx>0</N0Offx>
+      <NOffx>15</NOffx>
+      <Offdx>20</Offdx>
+
+      <Offy0>0</Offy0>
+      <NtotOffy>1</NtotOffy>
+      <N0Offy>0</N0Offy>
+      <NOffy>1</NOffy>
+      <Offdy>1</Offdy>
+
+      <CDPx0>-60</CDPx0>
+      <NtotCDPx>20</NtotCDPx>
+      <N0CDPx>0</N0CDPx>
+      <NCDPx>20</NCDPx>
+      <CDPdx>20</CDPdx>
+
+      <CDPy0>-60</CDPy0>
+      <NtotCDPy>20</NtotCDPy>
+      <N0CDPy>0</N0CDPy>
+      <NCDPy>20</NCDPy>
+      <CDPdy>20</CDPdy>
+       <BandPass>0,1.4013e-45,0,-3.51126e+23</BandPass>
+    </SeismicData>
+
+     <TTTables>
+        <TTFileName>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Tracing/RUN1_LZ</TTFileName>
+
+        <SrfcGridX0>-260</SrfcGridX0>
+        <SrfcGridY0>-260</SrfcGridY0>
+        <SrfcGridNx>20</SrfcGridNx>
+        <SrfcGridNy>20</SrfcGridNy>
+        <SrfcGriddx>50</SrfcGriddx>
+        <SrfcGriddy>50</SrfcGriddy>
+
+        <VolGridX0>-80</VolGridX0>
+        <VolGridY0>-80</VolGridY0>
+        <VolGridZ0>-680</VolGridZ0>
+        <VolGridNx>11</VolGridNx>
+        <VolGridNy>11</VolGridNy>
+        <VolGridNz>20</VolGridNz>
+        <VolGriddx>50</VolGriddx>
+        <VolGriddy>50</VolGriddy>
+        <VolGriddz>20</VolGriddz>
+
+    </TTTables>
+    <Parameters>
+      <jobname_M>Model2Mig_SDPA_2</jobname_M>
+      <LoggingLevel>3</LoggingLevel>
+      <TTMasterFile>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Tracing/RUN1_TTTable.xml</TTMasterFile>
+      <ApertureAngle>60</ApertureAngle>
+    </Parameters>
+  </Migration>
+</Kirchhoff3D>

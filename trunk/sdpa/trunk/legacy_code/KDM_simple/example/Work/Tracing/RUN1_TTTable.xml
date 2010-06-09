@@ -1,0 +1,83 @@
+<?xml version = '1.0'?>
+<GRT3D_version_2.0.3>
+  <common>
+     <Parameters>
+        <ProjectName>TestModel</ProjectName>
+        <LoggingDirectory>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Log</LoggingDirectory>
+     </Parameters>
+     <Geometry>
+        <one_inline_num>1</one_inline_num>
+        <one_xline_num>1</one_xline_num>
+        <one_x>0</one_x>
+        <one_y>0</one_y>
+        <dx_between_xlines unit="[m]">20</dx_between_xlines>
+        <dy_between_inlines unit="[m]">20</dy_between_inlines>
+        <angle_rot_deg unit="[deg]">0</angle_rot_deg>
+        <inlinedir values="-1,+1">1</inlinedir>
+     </Geometry>
+  </common>
+  <RayTracing>
+     <Parameters>
+       <jobname_R>Model1RT</jobname_R>
+       <LoggingLevel values="0,1,2,3">2</LoggingLevel>
+       <Restart values="no,yes">no</Restart>
+       <ApertureAngle unit="[deg]">180</ApertureAngle>
+       <MaxTracingTime unit="[s]">10</MaxTracingTime>
+       <TracingStepSize unit="[s]">0.02</TracingStepSize>
+       <RecordingDepth unit="[m]">0</RecordingDepth>
+       <InitialAngleResolution unit="[deg]">2</InitialAngleResolution>
+       <TracingMode>0</TracingMode>
+       <REF_LEN>10000</REF_LEN>
+       <SrcElev>0</SrcElev>
+       <ElevFileName></ElevFileName>
+     </Parameters>
+     <VelocityModel>
+       <VelFileName>/p/hpc/sdpa/ap/git/KDM_VM/example/Data/grt3d-inittest_vmod.segy</VelFileName>
+       <VelFileMode>0</VelFileMode>
+       <zMinDepth unit="[m]">0</zMinDepth>
+       <Nz>21</Nz>
+       <dz unit="[m]">50</dz>
+       <first_inline_num>1</first_inline_num>
+       <first_xline_num>1</first_xline_num>
+       <nx_along_const_inline>21</nx_along_const_inline>
+       <dx_along_const_inline unit="[m]">50</dx_along_const_inline>
+       <ny_along_const_xline>21</ny_along_const_xline>
+       <dy_along_const_xline unit="[m]">50</dy_along_const_xline>
+       <smoothOnly values="no,yes">no</smoothOnly>
+     </VelocityModel>
+     <TTTables>
+        <TTDirectoryName>/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Tracing</TTDirectoryName>
+        <TTFilePrefix>RUN1</TTFilePrefix>
+        <zMinDepth unit="[m]">0</zMinDepth>
+        <Nz>1</Nz>
+        <dz unit="[m]">20</dz>
+        <first_inline_num>1</first_inline_num>
+        <first_xline_num>1</first_xline_num>
+        <nx_along_const_inline>20</nx_along_const_inline>
+        <dx_along_const_inline unit="[m]">50</dx_along_const_inline>
+        <ny_along_const_xline>20</ny_along_const_xline>
+        <dy_along_const_xline unit="[m]">50</dy_along_const_xline>
+
+        <SubSurfaceGrid_first_inline_num>10</SubSurfaceGrid_first_inline_num>
+        <SubSurfaceGrid_first_xline_num>10</SubSurfaceGrid_first_xline_num>
+        <SubSurfaceGrid_nx_along_const_inline>11</SubSurfaceGrid_nx_along_const_inline>
+        <SubSurfaceGrid_ny_along_const_xline>11</SubSurfaceGrid_ny_along_const_xline>
+        <SubSurfaceGrid_dx_along_const_inline unit="[m]">50</SubSurfaceGrid_dx_along_const_inline>
+        <SubSurfaceGrid_dy_along_const_xline unit="[m]">50</SubSurfaceGrid_dy_along_const_xline>
+        <SubSurfaceGrid_zMinDepth unit="[m]">300</SubSurfaceGrid_zMinDepth>
+        <SubSurfaceGrid_Nz>20</SubSurfaceGrid_Nz>
+        <SubSurfaceGrid_dz unit="[m]">20</SubSurfaceGrid_dz>
+
+        <X0Rcvx>180</X0Rcvx>
+        <X0Rcvy>180</X0Rcvy>
+        <X0Rcvz>-680</X0Rcvz>
+        <NxRcv>11</NxRcv>
+        <NyRcv>11</NyRcv>
+        <NzRcv>20</NzRcv>
+        <dxRcv>50</dxRcv>
+        <dyRcv>50</dyRcv>
+        <dzRcv>20</dzRcv>
+
+    </TTTables>
+  </RayTracing>
+</GRT3D_version_2.0.3>

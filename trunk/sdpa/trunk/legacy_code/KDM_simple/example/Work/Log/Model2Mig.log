@@ -1,0 +1,78 @@
+      
+LOGGING     : Logfilename /u/herc/gruenewa/Seis3D/example/Work/Log/Model2Mig.log
+DEBUG       : TTVMMemHandler::GetMem  Srcx 20 Srcy 20 Nx 11 Ny 11 Nz 20 --> TTLength 9920 total (4 nodes) 5761536.0 Bytes
+      
+Starting with 1.0 GByte of shared memory per node
+       on 4 nodes.
+
+DEBUG       : VM QueueDepth : 1024.
+LOGGING     : Perform checks on the parallel environment
+DEBUG       : Ping the VM demons on 4 nodes ...
+DEBUG       : ok
+DEBUG       : Run IB tests on 4 nodes ...
+DEBUG       : Ok
+DEBUG       : Check shared libs on 4 nodes ...
+DEBUG       : Ok
+DEBUG       : Search for a free port on 4 nodes ...
+DEBUG       :  Check port  10820.
+DEBUG       : node214 10820 : 0 0
+DEBUG       : node174 10820 : 0 0
+DEBUG       : node095 10820 : 0 0
+DEBUG       : node165 10820 : 0 0
+DEBUG       : Set to Port: 10820
+DEBUG       : Using VM port 10820.
+LOGGING     : Check for running processes on 4 nodes ...
+LOGGING     : Ok
+      Start-Up has been successful.
+      Starting with Job.GatherMode = 1
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+      Starting with Job.GatherMode = 1
+      Starting with Job.GatherMode = 1
+      Starting with Job.GatherMode = 1
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+DEBUG       : Initialize BlockVolume with 24 kBytes
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+LOGGING     : Open Trace file /u/herc/gruenewa/Seis3D/example/Data/grt3d-inittest_data.segy
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'
+DEBUG       : Write to '/u/herc/gruenewa/Seis3D/example/Work/Migration/Model2Mig_migout.sgy'

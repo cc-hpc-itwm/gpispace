@@ -1,0 +1,36 @@
+import os
+Import('*')
+
+sEXE = "SeisRay_main"
+
+sLIB = "srt"
+
+lLibModules = """ boundaryoperator.cpp 
+	       outputclass.cpp	     
+	       trisplit.cpp 
+	       boundarytubeoperator.cpp 
+	       polygon.cpp 
+	       checkclass.cpp 
+	       polyhedron.cpp 
+	       icosahedron.cpp 
+	       ray3d.cpp 
+	       triray3d.cpp 
+	       kinray3d.cpp 
+	       receiver.cpp 
+	       receivergrid.cpp 
+	       smoothingclass.cpp
+	       wfptsrc.cpp 
+	       reflectionoperator.cpp 
+	       interface.cpp 
+	       sophehedron.cpp """.split()
+
+lModules = [lLibModules, "main_vm.cpp"]
+
+
+bObj = env.StaticObject(lModules)
+bExe = env.Program(target=sEXE, source=bObj)
+
+bLibObj = env.StaticObject(lLibModules)
+bAr = env.StaticLibrary(target=sLIB, source=bLibObj)
+
+

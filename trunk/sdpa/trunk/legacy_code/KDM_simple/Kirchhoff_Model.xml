@@ -1,0 +1,128 @@
+<!DOCTYPE GRT3D>
+<GRT3D>
+ <common>
+  <Control>
+   <NBunchesPerPackage unit="" > 10 </NBunchesPerPackage>
+   <NTracesPerBunch unit="" > 10 </NTracesPerBunch>
+   <NPackagesInNet unit="" > 1 </NPackagesInNet>
+   <NSubVols unit="" > 4 </NSubVols>
+  </Control>
+  <Parameters>
+   <ProjectName unit="" >TestModel</ProjectName>
+   <LoggingDirectory unit="DIRDIALOG">/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Log</LoggingDirectory>
+  </Parameters>
+  <Geometry>
+   <one_inline_num unit="" >1</one_inline_num>
+   <one_xline_num unit="" >1</one_xline_num>
+   <one_x unit="[m]" >0</one_x>
+   <one_y unit="[m]" >0</one_y>
+   <dx_between_xlines unit="[m]" >20</dx_between_xlines>
+   <dy_between_inlines unit="[m]" >20</dy_between_inlines>
+   <angle_rot_deg unit="[deg]" >0</angle_rot_deg>
+   <inlinedir values="1,-1" >1</inlinedir>
+  </Geometry>
+  <Acquisition>
+   <first_inline_num unit="" ></first_inline_num>
+   <first_xline_num unit="" ></first_xline_num>
+   <num_of_inlines unit="" ></num_of_inlines>
+   <num_of_xlines unit="" ></num_of_xlines>
+  </Acquisition>
+ </common>
+ <RayTracing>
+  <Parameters>
+   <jobname_R unit="" >Model1RT</jobname_R>
+   <Restart values="no,yes" >no</Restart>
+   <LoggingLevel values="0,1,2,3" >2</LoggingLevel>
+   <ApertureAngle unit="[deg]" >180</ApertureAngle>
+   <ApertureWidth unit="[m]" >8000.0</ApertureWidth>
+   <MaxTracingTime unit="[s]" >10</MaxTracingTime>
+   <TracingStepSize unit="[s]" >0.02</TracingStepSize>
+   <InitialAngleResolution unit="[deg]" >2.0</InitialAngleResolution>
+   <RecordingDepth unit="[m]" >0.0</RecordingDepth>
+   <TracingMode>0</TracingMode>
+   <RAY_MIN>20000</RAY_MIN>
+   <REF_LEN>10000</REF_LEN>
+   <SrcElev>0</SrcElev>
+   <ElevFileName></ElevFileName>
+  </Parameters>
+  <VelocityModel>
+   <VelFileName unit="FILEDIALOG" >/p/hpc/sdpa/ap/git/KDM_VM/example/Data/grt3d-inittest_vmod.segy</VelFileName>
+   <zMinDepth unit="[m]" >0</zMinDepth>
+   <Nz unit="" >21</Nz>
+   <dz unit="[m]" >50</dz>
+   <first_inline_num unit="" >1</first_inline_num>
+   <first_xline_num unit="" >1</first_xline_num>
+   <nx_along_const_inline unit="" >21</nx_along_const_inline>
+   <ny_along_const_xline unit="" >21</ny_along_const_xline>
+   <dx_along_const_inline unit="[m]" >50</dx_along_const_inline>
+   <dy_along_const_xline unit="[m]" >50</dy_along_const_xline>
+  </VelocityModel>
+  <TTTables>
+   <TTDirectoryName unit="DIRDIALOG" >/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Tracing</TTDirectoryName>
+   <TTFilePrefix>RUN1</TTFilePrefix>
+   <zMinDepth unit="[m]" >0</zMinDepth>
+   <Nz unit="" >1</Nz>
+   <dz unit="[m]" >20.0</dz>
+   <first_inline_num unit="" >1</first_inline_num>
+   <first_xline_num unit="" >1</first_xline_num>
+   <nx_along_const_inline unit="" >20</nx_along_const_inline>
+   <ny_along_const_xline unit="" >20</ny_along_const_xline>
+   <dx_along_const_inline unit="[m]" >50</dx_along_const_inline>
+   <dy_along_const_xline unit="[m]" >50</dy_along_const_xline>
+   <SubSurfaceGrid_zMinDepth unit="[m]" >300</SubSurfaceGrid_zMinDepth>
+   <SubSurfaceGrid_Nz unit="" >20</SubSurfaceGrid_Nz>
+   <SubSurfaceGrid_dz unit="[m]" >20.0</SubSurfaceGrid_dz>
+   <SubSurfaceGrid_first_inline_num unit="" >10</SubSurfaceGrid_first_inline_num>
+   <SubSurfaceGrid_first_xline_num unit="" >10</SubSurfaceGrid_first_xline_num>
+   <SubSurfaceGrid_nx_along_const_inline unit="" >11</SubSurfaceGrid_nx_along_const_inline>
+   <SubSurfaceGrid_ny_along_const_xline unit="" >11</SubSurfaceGrid_ny_along_const_xline>
+   <SubSurfaceGrid_dx_along_const_inline unit="[m]" >50</SubSurfaceGrid_dx_along_const_inline>
+   <SubSurfaceGrid_dy_along_const_xline unit="[m]" >50</SubSurfaceGrid_dy_along_const_xline>
+  </TTTables>
+ </RayTracing>
+ <Migration>
+  <Parameters>
+   <jobname_M unit="" >Model2Mig_SDPA_2</jobname_M>
+   <Restart values="no,yes" >no</Restart>
+   <LoggingLevel values="0,1,2,3" >3</LoggingLevel>
+   <TTMasterFile unit="FILEDIALOGXML" >/p/hpc/sdpa/ap/git/KDM_VM/example/Work/Tracing/RUN1_TTTable.xml</TTMasterFile>
+   <ApertureAngle unit="[deg]" >60</ApertureAngle>
+   <clip unit="" >0</clip>
+   <tpow unit="" >0</tpow>
+   <frac values="yes,no" >yes</frac>
+   <anti_aliasing values="yes,no" >no</anti_aliasing>
+  </Parameters>
+  <SeismicData>
+   <TraceFileName unit="FILEDIALOG" >/p/hpc/sdpa/ap/git/KDM_VM/example/Data/grt3d-inittest_data.segy</TraceFileName>
+   <TraceFileMode values="0,1,2,3,4" >0</TraceFileMode>
+   <first_inline_num unit="" >11</first_inline_num>
+   <first_xline_num unit="" >11</first_xline_num>
+   <nx_along_const_inline unit="" >20</nx_along_const_inline>
+   <dx_along_const_inline unit="[m]" >20</dx_along_const_inline>
+   <ny_along_const_xline unit="" >20</ny_along_const_xline>
+   <dy_along_const_xline unit="[m]" >20</dy_along_const_xline>
+   <first_offset unit="" >20</first_offset>
+   <n_offset unit="" >15</n_offset>
+   <d_offset unit="" >20</d_offset>
+   <T0 unit="[s]" >0.0</T0>
+   <Tmin unit="[s]" >0.0</Tmin>
+   <CDPtaperwidth unit="[m]" >150.0</CDPtaperwidth>
+   <BandPass unit="[f1,f2,f3,f4]" ></BandPass>
+  </SeismicData>
+  <OutputVol>
+   <MigDirectoryName unit="DIRDIALOG" >/u/herc/rahn/kdm</MigDirectoryName>
+   <zMinDepth unit="[m]" >410.</zMinDepth>
+   <Nz unit="" >28</Nz>
+   <dz unit="[m]" >10.</dz>
+   <first_inline_num unit="" >14</first_inline_num>
+   <first_xline_num unit="" >14</first_xline_num>
+   <nx_along_const_inline unit="" >14</nx_along_const_inline>
+   <ny_along_const_xline unit="" >14</ny_along_const_xline>
+   <dx_along_const_inline unit="[m]" >12.5</dx_along_const_inline>
+   <dy_along_const_xline unit="[m]" >12.5</dy_along_const_xline>
+   <Off0 unit="[m]" >20</Off0>
+   <NOff unit="" >15</NOff>
+   <dOff unit="[m]" >20</dOff>
+  </OutputVol>
+ </Migration>
+</GRT3D>

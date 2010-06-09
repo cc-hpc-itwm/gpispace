@@ -1,0 +1,646 @@
+#include <we/loader/macros.hpp>
+#include <fhglog/fhglog.hpp>
+#include <fvm-pc/pc.hpp>
+#include <fvm-pc/util.hpp>
+
+#include <iostream>
+#include <string>
+#include <fstream>
+
+// KDM include files
+#include "structures/migrationjob.h"
+#include "filehandler/checkreadmigrationjob.h"
+#include "filehandler/migrationfilehandler.h"
+#include "TraceBunch.hpp"
+#include "MigSubVol.hpp"
+#include "sdpa_migrate.hpp"
+
+#include "ttvmmemhandler.h"
+
+#include "sinc_mod.hpp"
+
+// ************************************************************************* //
+
+static unsigned long sizeofBunchBuffer (const MigrationJob & Job)
+{
+//   return ( NTrace_in_bid (1, 1, 1, Job)
+//          * ( 5 * Job.traceNt * sizeof(float)
+//            + sizeof(int) + 7 * sizeof (float)
+//            )
+//          );
+  return getSizeofTD (Job);
+}
+
+static unsigned long sizeofJob (void)
+{
+  return sizeof(MigrationJob);
+}
+
+// ************************************************************************* //
+
+static value::type kdm_initialize (const std::string & filename, long & wait)
+{
+  // FIXME: doesn't work with > 1
+  const int NThreads (4);
+
+  MigrationJob Job;
+  CheckReadMigrationJob JobReader;
+  std::string CfgFileName (filename);
+
+  LOG (INFO, "filename = " << filename);
+
+  if (JobReader.ReadConfigFileXML((char*)(CfgFileName.c_str()), Job) != 0)
+  {
+    throw std::runtime_error("KDM::initialize JobReader.ReadConfigFileXML(CfgFileName, Job) != 0");
+  }
+
+  char JobFile[2*199 + 16];
+  sprintf(JobFile, "%s/%s_mig.xml", Job.MigDirName, Job.JobName);
+
+  if (JobReader.WriteConfigFileXML(JobFile, Job) == -1)
+  {
+    throw std::runtime_error("KDM::initialize JobReader.WriteConfigFileXML(JobFile, Job) == -1");
+  }
+
+  // Check whether the output volume is totally covered by the
+  // travel time tables
+  // if not, leave the program !
+  {
+    int ierr;
+    BlockVolume BoxVolume(Job.MigVol,Job.TTVol,ierr);
+    if(ierr==-1)
+    {
+      throw std::runtime_error ("KDM::initialize ierr==-1");
+    }
+  }
+
+  Job.locbufsize=getSizeofTD(Job); // local buffer size in bytes
+
+  // determine the required size for the traveltime tables
+  {
+    TTVMMemHandler TTVMMem;
+    grid2D GSrc;
+    grid3D GVol;
+
+    // Create the 2-D surface grid description
+    double x0Srfc = Job.SrfcGridX0.v;
+    double y0Srfc = Job.SrfcGridY0.v;
+
+    double dxSrfc = Job.SrfcGriddx;
+    double dySrfc = Job.SrfcGriddy;
+
+    int NxSrc = Job.SrfcGridNx;
+    int NySrc = Job.SrfcGridNy;
+
+    GSrc.Init(x0Srfc, y0Srfc, NxSrc, NySrc, dxSrfc, dySrfc);
+
+    // Create the 3-D subsurface grid description
+    int Nx = Job.TTVol.nx_xlines;
+    int Ny = Job.TTVol.ny_inlines;
+    int Nz = Job.TTVol.nz;
+
+    point3D<float> X0, dx;
+    X0[0] = Job.TTVol.first_x_coord.v;
+    X0[1] = Job.TTVol.first_y_coord.v;
+    X0[2] = Job.TTVol.first_z_coord;
+    dx[0] = Job.TTVol.dx_between_xlines;
+    dx[1] = Job.TTVol.dy_between_inlines;
+    dx[2] = Job.TTVol.dz;
+
+    GVol.Init(X0, point3D<int>(Nx,Ny,Nz), dx);
+
+    // Load the entire travel time table data into memory
+    const int NodeCount (fvmGetNodeCount());
+
+    Job.globTTbufsizelocal
+      = TTVMMem.GetMem (Job.RTFileName,GSrc,GVol,NodeCount,NThreads)
+      / NodeCount;
+  }
+
+  // determine required size of subvolumina
+  // First construct the total volume
+  {
+    point3D<float> X0(Job.MigVol.first_x_coord.v,
+                     Job.MigVol.first_y_coord.v,
+                     Job.MigVol.first_z_coord);
+    point3D<int>   Nx(Job.MigVol.nx_xlines,
+                     Job.MigVol.ny_inlines,
+                     Job.MigVol.nz);
+    point3D<float> dx(Job.MigVol.dx_between_xlines,
+                     Job.MigVol.dy_between_inlines,
+                     Job.MigVol.dz);
+    MigVol3D MigVol(X0,Nx,dx);
+
+    // Then, define the Subvolume
+    MigSubVol3D MigSubVol(MigVol,1,Job.NSubVols);
+
+    // At last, determine the size of the subvolume in memory
+    Job.SubVolMemSize=MigSubVol.getSizeofSVD(); //subvol mem size
+
+    LOG (INFO, "SubVolMemSize = " << Job.SubVolMemSize);
+  }
+
+  LOG (DEBUG, "sizeofBunchBuffer =  " << sizeofBunchBuffer(Job));
+  LOG (DEBUG, "sizeofJob =  " << sizeof(Job));
+
+  //WORK HERE: add sizeof scratch space here
+  Job.ReqVMMemSize = Job.globTTbufsizelocal + 2 * sizeofJob();
+
+  Job.BunchMemSize = getSizeofTD(Job);
+
+  // Check whether the travel time table covers the entire output volume
+
+  // Touch the offset gather
+  MigrationFileHandler MFHandler;
+  MFHandler.TouchOffsetGather(Job,Job.MigFileName,Job.N0OffVol,
+                             Job.NOffVol,Job.NtotOffVol,Job.MigFileMode);
+
+
+  Job.shift_for_TT = sizeofJob() + sizeofBunchBuffer(Job) + Job.SubVolMemSize;
+  Job.shift_for_Vol = sizeofJob() + sizeofBunchBuffer(Job);
+
+  LOG (DEBUG, "shift_for_TT = " << Job.shift_for_TT);
+  LOG (DEBUG, "shift_for_Vol = " << Job.shift_for_Vol);
+
+  const fvmAllocHandle_t handle_Job (fvmGlobalAlloc (sizeofJob()));
+  if (handle_Job == 0)
+    throw std::runtime_error ("KDM::initialize handle_Job == 0");
+
+//   const fvmAllocHandle_t scratch_Job (fvmGlobalAlloc (sizeofJob()));
+//   if (scratch_Job == 0)
+//     throw std::runtime_error ("KDM::initialize scratch_Job == 0");
+
+  
+  fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
+  if (scratch_Job == 0)
+    throw std::runtime_error ("KDM::initialize scratch_Job == 0");
+  memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
+
+  for (int p (0); p < fvmGetNodeCount(); ++p)
+    waitComm (fvmPutGlobalData (handle_Job, p * sizeofJob(), sizeofJob(), 0, scratch_Job));
+
+  fvmLocalFree (scratch_Job); scratch_Job = 0;
+
+  const fvmAllocHandle_t handle_TT (fvmGlobalAlloc (Job.globTTbufsizelocal));
+  if (handle_TT == 0)
+    throw std::runtime_error ("KDM::initialize handle_TT == 0");
+
+  LOG (DEBUG, "handle_TT " << Job.globTTbufsizelocal);
+
+  value::structured_t config;
+
+  config["handle_Job"] = static_cast<long>(handle_Job);
+  config["scratch_Job"] = static_cast<long>(scratch_Job);
+  config["handle_TT"] = static_cast<long>(handle_TT);
+  config["NThreads"] = static_cast<long>(NThreads);
+
+  config["OFFSETS"] = static_cast<long>(Job.n_offset);
+  config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
+  config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
+
+  wait = value::get_literal_value<long> (value::get_field ("OFFSETS", config))
+       * value::get_literal_value<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+       ;
+
+  LOG (DEBUG, "initialize: wait = " << wait);
+  LOG (DEBUG, "initialize: config = " << config);
+
+  return config;
+}
+
+// ************************************************************************* //
+
+static void get_Job (const value::type & config, MigrationJob & Job)
+{
+  const fvmAllocHandle_t handle_Job
+    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+//   const fvmAllocHandle_t scratch_Job
+//     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+  fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
+  if (scratch_Job == 0)
+    throw std::runtime_error ("KDM::get_Job scratch_Job == 0");
+
+  waitComm (fvmGetGlobalData ( handle_Job
+                             , fvmGetRank() * sizeofJob()
+                             , sizeofJob()
+                             , 0
+                             , scratch_Job
+                             )
+           );
+  fvmLocalFree (scratch_Job); scratch_Job = 0;
+
+  memcpy (&Job, fvmGetShmemPtr(), sizeofJob());
+}
+
+// ************************************************************************* //
+
+static void kdm_loadTT (const value::type & config)
+{
+  LOG (INFO, "loadTT: got config " << config);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  grid2D GSrc;
+  grid3D GVol;
+
+  // Create the 2-D surface grid description
+  double x0Srfc = Job.SrfcGridX0.v;
+  double y0Srfc = Job.SrfcGridY0.v;
+
+  double dxSrfc = Job.SrfcGriddx;
+  double dySrfc = Job.SrfcGriddy;
+
+  int NxSrc = Job.SrfcGridNx;
+  int NySrc = Job.SrfcGridNy;
+
+  GSrc.Init(x0Srfc, y0Srfc, NxSrc, NySrc, dxSrfc, dySrfc);
+
+  // Create the 3-D subsurface grid description
+  int Nx = Job.TTVol.nx_xlines;
+  int Ny = Job.TTVol.ny_inlines;
+  int Nz = Job.TTVol.nz;
+
+  point3D<float> X0, dx;
+  X0[0] = Job.TTVol.first_x_coord.v;
+  X0[1] = Job.TTVol.first_y_coord.v;
+  X0[2] = Job.TTVol.first_z_coord;
+  dx[0] = Job.TTVol.dx_between_xlines;
+  dx[1] = Job.TTVol.dy_between_inlines;
+  dx[2] = Job.TTVol.dz;
+
+  GVol.Init(X0, point3D<int>(Nx,Ny,Nz), dx);
+
+  // Load the entire travel time table data into memory
+  const int NThreads
+    (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+  const fvmAllocHandle_t handle_TT
+    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+
+  TTVMMemHandler TTVMMem;
+
+  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, handle_TT);
+}
+
+// ************************************************************************* //
+
+static void kdm_finalize (const value::type & config)
+{
+  LOG (INFO, "finalize: got config " << config);
+
+  const fvmAllocHandle_t handle_Job
+    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+//   const fvmAllocHandle_t scratch_Job
+//     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+  const fvmAllocHandle_t handle_TT
+    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+
+  fvmGlobalFree (handle_Job);
+  //  fvmGlobalFree (scratch_Job);
+  fvmGlobalFree (handle_TT);
+}
+
+// ************************************************************************* //
+
+static void kdm_load (const value::type & config, const value::type & bunch)
+{
+  //  LOG (INFO, "load: got bunch " << bunch);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  const long oid
+    (1 + value::get_literal_value<long>
+         (value::get_field ("offset"
+                           , value::get_field ("volume"
+                                              , bunch
+                                              )
+                           )
+         )
+    );
+  const long bid
+    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+
+  char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
+
+  TraceBunch Bunch(pBunchData,oid,1,bid,Job);
+
+  Bunch.LoadFromDisk_CO_MT(Job);
+
+  //  LOG (INFO, "load: bunch loaded");
+}
+
+// ************************************************************************* //
+
+static void kdm_write (const value::type & config, const value::type & volume)
+{
+  LOG (INFO, "write: got volume " << volume);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  // write offset class for a  given subvolume to disk
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + Job.shift_for_Vol);
+
+  // Reconstruct the subvolume out of memory
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+        	    Job.MigVol.first_y_coord.v,
+                    Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+   		    Job.MigVol.ny_inlines,
+                    Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+   	            Job.MigVol.dy_between_inlines,
+                    Job.MigVol.dz);
+  MigVol3D MigVol(X0,Nx,dx);
+
+  grid3D G(X0,Nx,dx);
+
+  // create the subvolume
+  const long vid
+    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+  const long oid
+    (1 + value::get_literal_value<long> (value::get_field ("offset", volume)));
+
+  MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
+
+  MigrationFileHandler MFHandler;
+
+  MFHandler.WriteOffsetClassForSubVol
+    ( Job.MigFileName
+    , G
+    , (float *)pVMMemSubVol
+    , MigSubVol.getix0(), MigSubVol.getNx()
+    , MigSubVol.getiy0(), MigSubVol.getNy()
+    , oid-1
+    , 1
+    , Job.NtotOffVol
+    , Job.MigFileMode
+    );
+
+  LOG (INFO, "write: volume written " << volume);
+}
+
+// ************************************************************************* //
+
+static void kdm_init_volume ( const value::type & config
+                            , const value::type & volume
+                            )
+{
+  LOG (INFO, "init_volume: got volume " << volume);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  if (!Job.sinc_initialized)
+  {
+    LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
+
+    const long NThreads
+      (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+
+    initSincIntArray(NThreads, Job.tracedt);
+
+    Job.sinc_initialized = true;
+
+    memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
+
+    // rewrite Job
+    const fvmAllocHandle_t handle_Job
+      (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
+    if (scratch_Job == 0)
+      throw std::runtime_error ("KDM::init_volume scratch_Job == 0");
+//     const fvmAllocHandle_t scratch_Job
+//       (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+
+    waitComm (fvmPutGlobalData ( handle_Job
+                               , fvmGetRank() * sizeofJob()
+                               , sizeofJob()
+                               , 0
+                               , scratch_Job
+                               )
+             );
+    fvmLocalFree (scratch_Job); scratch_Job = 0;
+  }
+
+  // init subvolume
+
+  LOG(INFO, "Init Subvolume");
+
+  // initialize subvol to 0.
+
+  // Reconstruct the subvolume out of memory
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+        	    Job.MigVol.first_y_coord.v,
+                    Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+   		    Job.MigVol.ny_inlines,
+                    Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+   	            Job.MigVol.dy_between_inlines,
+                    Job.MigVol.dz);
+  MigVol3D MigVol(X0,Nx,dx);
+
+  // create the subvolume
+  const long vid
+    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+
+  MigSubVol3D MigSubVol(MigVol, vid, Job.NSubVols);
+
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + Job.shift_for_Vol);
+
+  MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
+
+  // now, initialize the subvol
+  MigSubVol.clear();
+}
+
+// ************************************************************************* //
+
+static void kdm_process ( const value::type & config
+                        , const value::type & bunch
+                        , long & wait
+                        )
+{
+  //  LOG (INFO, "process: got bunch " << bunch);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  // the migrate part of migrate_and_prefetch only
+
+  // Reconstruct the subvolume out of memory
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+                   Job.MigVol.first_y_coord.v,
+                   Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+                   Job.MigVol.ny_inlines,
+                   Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+                   Job.MigVol.dy_between_inlines,
+                   Job.MigVol.dz);
+  MigVol3D MigVol(X0,Nx,dx);
+
+  // create the subvolume
+  const long vid
+    (1 + value::get_literal_value<long>
+         (value::get_field ("id"
+                           , value::get_field ("volume"
+                                              , bunch
+                                              )
+                           )
+         )
+    );
+
+  MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
+
+  // Attach the mem ptr to the subvolume
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + Job.shift_for_Vol);
+
+  MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
+
+  // Reconstruct the tracebunch out of memory
+  const long oid
+    (1 + value::get_literal_value<long>
+         (value::get_field ("offset"
+                           , value::get_field ("volume"
+                                              , bunch
+                                              )
+                           )
+         )
+    );
+  const long bid
+    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+
+  char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
+
+  TraceBunch Bunch(migbuf,oid,1,bid,Job);
+
+  // migrate the bunch to the subvolume
+  const int NThreads
+    (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+
+  char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
+ 
+  const fvmAllocHandle_t handle_TT
+    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+
+  MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
+
+  --wait;
+
+  //  LOG (INFO, "process: bunch done " << bunch);
+}
+
+// ************************************************************************* //
+// wrapper functions
+
+static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const std::string & filename
+    (we::loader::get_input<std::string> (input, "config_file"));
+
+  long wait (0);
+  const value::type & config (kdm_initialize (filename, wait));
+
+  we::loader::put_output (output, "config", config);
+  we::loader::put_output (output, "wait", literal::type(wait));
+  we::loader::put_output (output, "trigger", control());
+}
+
+static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & v (input.value("config"));
+  kdm_loadTT (v);
+  we::loader::put_output (output, "trigger", control());
+}
+
+static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+  const value::type & bunch (input.value("bunch"));
+  kdm_load (config, bunch);
+  we::loader::put_output (output, "bunch", bunch);
+}
+
+static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+  const value::type & bunch (input.value("bunch"));
+  long wait (we::loader::get_input<long>(input, "wait"));
+  kdm_process (config, bunch, wait);
+  we::loader::put_output (output, "wait", wait);
+  we::loader::put_output (output, "trigger", control());
+}
+
+static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+  const value::type & volume (input.value("volume"));
+  kdm_write (config, volume);
+  we::loader::put_output (output, "done", control());
+}
+
+static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+
+  kdm_finalize (config);
+
+  we::loader::put_output (output, "trigger", control());
+}
+
+static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & config (input.value("config"));
+  const value::type & volume (input.value("volume"));
+  kdm_init_volume (config, volume);
+  we::loader::put_output (output, "volume", volume);
+}
+
+// ************************************************************************* //
+
+static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
+{
+  std::cerr << "rank := " << fvmGetRank() << std::endl;
+  we::loader::put_output (output, "result", 0L);
+
+  long wait(0);
+
+  const value::type & config
+    (kdm_initialize ("/p/hpc/sdpa/ap/git/KDM_VM/Kirchhoff_Model.xml", wait));
+
+  kdm_loadTT (config);
+
+  kdm_finalize (config);
+}
+
+// ************************************************************************* //
+
+WE_MOD_INITIALIZE_START (kdm);
+{
+  //  fhg::log::Configurator::configure();
+  LOG(INFO, "WE_MOD_INITIALIZE_START (kdm)");
+
+  WE_REGISTER_FUN (initialize);
+  WE_REGISTER_FUN (loadTT);
+  WE_REGISTER_FUN (load);
+  WE_REGISTER_FUN (process);
+  WE_REGISTER_FUN (write);
+  WE_REGISTER_FUN (init_volume);
+  WE_REGISTER_FUN (finalize);
+  WE_REGISTER_FUN (selftest);
+}
+WE_MOD_INITIALIZE_END (kdm);
+
+WE_MOD_FINALIZE_START (kdm);
+{
+  LOG(INFO, "WE_MOD_FINALIZE_START (kdm)");
+}
+WE_MOD_FINALIZE_END (kdm);
