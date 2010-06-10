@@ -62,6 +62,7 @@ static void initialize ( void *
     (we::loader::get_input<std::string> (input, "config_file"));
 
   const int NThreads (4);
+  const unsigned long STORES_PER_NODE (2);
 
   MigrationJob Job;
   CheckReadMigrationJob JobReader;
@@ -93,6 +94,11 @@ static void initialize ( void *
       throw std::runtime_error ("KDM::initialize ierr==-1");
     }
   }
+
+  if (Job.NSubVols != fvmGetNodeCount())
+    {
+      throw std::runtime_error ("Job.NSubVols != fvmGetNodeCount()");
+    }
 
   Job.locbufsize=getSizeofTD(Job); // local buffer size in bytes
 
@@ -163,9 +169,22 @@ static void initialize ( void *
   LOG (INFO, "sizeofBunchBuffer =  " << sizeofBunchBuffer(Job));
   LOG (INFO, "sizeofJob =  " << sizeof(Job));
 
-  // WORK HERE:
-  Job.ReqVMMemSize = Job.globTTbufsizelocal + 2 * sizeofJob();
+  const unsigned long SizeVolWithBuffer
+    (Job.SubVolMemSize + 2 * sizeofBunchBuffer (Job));
+
+  Job.ReqVMMemSize = 2 * sizeofJob()
+                   + Job.globTTbufsizelocal
+                   + (STORES_PER_NODE + 1) * sizeofBunchBuffer (Job)
+                   + 2 * SizeVolWithBuffer
+    ;
   Job.BunchMemSize = getSizeofTD(Job);
+
+  Job.shift_for_TT = sizeofJob() + SizeVolWithBuffer;
+  Job.shift_for_Vol = sizeofJob();
+
+  LOG (INFO, "ReqVMMemSize =  " << Job.ReqVMMemSize 
+      << " (" <<  (Job.ReqVMMemSize>>20) << " MiB)"
+      );
 
   // Check whether the travel time table covers the entire output volume
 
@@ -174,12 +193,6 @@ static void initialize ( void *
   MFHandler.TouchOffsetGather(Job,Job.MigFileName,Job.N0OffVol,
                              Job.NOffVol,Job.NtotOffVol,Job.MigFileMode);
 
-
-  Job.shift_for_TT = sizeofJob() + sizeofBunchBuffer(Job) + Job.SubVolMemSize;
-  Job.shift_for_Vol = sizeofJob() + sizeofBunchBuffer(Job);
-
-  LOG (INFO, "shift_for_TT = " << Job.shift_for_TT);
-  LOG (INFO, "shift_for_Vol = " << Job.shift_for_Vol);
 
   const fvmAllocHandle_t handle_Job (fvmGlobalAlloc (sizeofJob()));
   if (handle_Job == 0)
@@ -198,19 +211,40 @@ static void initialize ( void *
   if (handle_TT == 0)
     throw std::runtime_error ("KDM::initialize handle_TT == 0");
 
-  LOG (DEBUG, "handle_TT " << Job.globTTbufsizelocal);
+  const fvmAllocHandle_t handle_Store 
+    (fvmGlobalAlloc (STORES_PER_NODE * sizeofBunchBuffer (Job)));
+  if (handle_Store == 0)
+    throw std::runtime_error ("KDM::initialize handle_Store == 0");
+
+  const fvmAllocHandle_t scratch_Store 
+    (fvmGlobalAlloc (sizeofBunchBuffer (Job)));
+  if (handle_Store == 0)
+    throw std::runtime_error ("KDM::initialize scratch_Store == 0");
+
+  const fvmAllocHandle_t handle_Volume (fvmGlobalAlloc (SizeVolWithBuffer));
+  if (handle_Volume == 0)
+    throw std::runtime_error ("KDM::initialize handle_Volume == 0");
+
+  const fvmAllocHandle_t scratch_Volume (fvmGlobalAlloc (SizeVolWithBuffer));
+  if (scratch_Volume == 0)
+    throw std::runtime_error ("KDM::initialize scratch_Volume == 0");
 
   value::structured_t config;
 
-  config["handle_Job"] = static_cast<long>(handle_Job);
   config["handle_TT"] = static_cast<long>(handle_TT);
+  config["handle_Job"] = static_cast<long>(handle_Job);
+  config["scratch_Job"] = static_cast<long>(scratch_Job);
+  config["handle_Store"] = static_cast<long>(handle_Store);
+  config["scratch_Store"] = static_cast<long>(scratch_Store);
+  config["handle_Volume"] = static_cast<long>(handle_Volume);
+  config["scratch_Volume"] = static_cast<long>(scratch_Volume);
   config["NThreads"] = static_cast<long>(NThreads);
 
   config["OFFSETS"] = static_cast<long>(Job.n_offset);
   config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
-  config["STORES"] = static_cast<long>(2 * fvmGetNodeCount());
+  config["STORES"] = static_cast<long>(STORES_PER_NODE * fvmGetNodeCount());
 
   const long wait 
     (value::get_literal_value<long> 
@@ -312,9 +346,36 @@ static void load ( void *
   const value::type & bunch (input.value("bunch"));
   const long & empty_store (we::loader::get_input<long> (input, "empty_store"));
 
-  std::cout << "load: got config " << config << std::endl;
-  std::cout << "load: got bunch " << bunch << std::endl;
-  std::cout << "load: got empty store " << empty_store << std::endl;
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  const long oid
+    (1 + value::get_literal_value<long>(value::get_field ("offset", bunch)));
+  const long bid
+    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+
+  char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
+
+  TraceBunch Bunch(pBunchData,oid,1,bid,Job);
+
+  Bunch.LoadFromDisk_CO_MT(Job);
+
+  LOG (INFO, "load: loaded bunch " << bunch);
+
+  const fvmAllocHandle_t handle_Store
+    (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+  const fvmAllocHandle_t scratch_Store
+     (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+
+  waitComm ( fvmPutGlobalData
+             ( handle_Store
+             , empty_store * sizeofBunchBuffer (Job)
+             , sizeofBunchBuffer (Job)
+             , sizeofJob()
+             , scratch_Store
+             )
+           );
 
   value::structured_t loaded_bunch;
 
@@ -324,9 +385,9 @@ static void load ( void *
   loaded_bunch["wait"] = value::get_literal_value<long> 
     (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
 
-  we::loader::put_output (output, "loaded_bunch", loaded_bunch);
+  LOG (INFO, "load: stored bunch " << loaded_bunch);
 
-  std::cout << "load: loaded_bunch " << loaded_bunch << std::endl;
+  we::loader::put_output (output, "loaded_bunch", loaded_bunch);
 }
 
 /* ************************************************************************* */
@@ -339,8 +400,90 @@ static void process ( void *
   const value::type & config (input.value("config"));
   const value::type & volume (input.value("volume"));
 
-  std::cout << "process: got config " << config << std::endl;
-  std::cout << "process: got volume " << volume << std::endl;
+  LOG (INFO, "process: got config " << config);
+  LOG (INFO, "process: got volume " << volume);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  if (!Job.sinc_initialized)
+  {
+    LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
+
+    const long NThreads
+      (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+
+    initSincIntArray(NThreads, Job.tracedt);
+
+    Job.sinc_initialized = true;
+
+    memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
+
+    // rewrite Job
+    const fvmAllocHandle_t handle_Job
+      (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    const fvmAllocHandle_t scratch_Job
+      (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+
+    waitComm (fvmPutGlobalData ( handle_Job
+                               , fvmGetRank() * sizeofJob()
+                               , sizeofJob()
+                               , 0
+                               , scratch_Job
+                               )
+             );
+  }
+
+  // the migrate part of migrate_and_prefetch
+  // Reconstruct the subvolume out of memory
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+                   Job.MigVol.first_y_coord.v,
+                   Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+                   Job.MigVol.ny_inlines,
+                   Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+                   Job.MigVol.dy_between_inlines,
+                   Job.MigVol.dz);
+  MigVol3D MigVol(X0,Nx,dx);
+
+  // create the subvolume
+  const long vid
+    (1 + value::get_literal_value<long> (value::get_field ("id", value::get_field ("volume", volume))));
+
+  MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
+
+  const fvmAllocHandle_t handle_Volume
+    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+  const fvmAllocHandle_t scratch_Volume
+    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
+
+  const unsigned long SizeVolWithBuffer
+    (Job.SubVolMemSize + 2 * sizeofBunchBuffer (Job));
+
+  waitComm ( fvmGetGlobalData
+             ( handle_Volume
+             , vid * SizeVolWithBuffer
+             , SizeVolWithBuffer
+             , Job.shift_for_Vol
+             , scratch_Volume
+             )
+           );
+
+  // Attach the mem ptr to the subvolume
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + Job.shift_for_Vol);
+
+  MigSubVol.setMemPtr((float *)pVMMemSubVol, Job.SubVolMemSize);
+
+  const long wait
+    (value::get_literal_value<long>(value::get_field ("wait", volume)));
+
+  const long bunches
+    (value::get_literal_value<long>(value::get_field ("BUNCHES_PER_OFFSET", config)));
+
+  if (wait == bunches)
+    MigSubVol.clear();
 
   value::type volume_processed (volume);
 
@@ -356,24 +499,105 @@ static void process ( void *
   const bool filled1
     (value::get_literal_value<bool>(value::get_field ("filled", buffer1)));
 
-  // die hier implementierte Logik ist noch nicht optimal: es wird
-  // einfach nur jeder bufffer geladen, der assigned aber nicht
-  // gefüllt ist und die buffer, die geladen sind, werden verarbeitet.
+  const int buf_to_prefetch 
+    ((assigned0 && !filled0) ? 0 : ((assigned1 && !filled1) ? 1 : (-1)));
+  const int buf_to_migrate (filled0 ? 0 : (filled1 ? 1 : (-1)));
 
-  const long wait
-    (value::get_literal_value<long>(value::get_field ("wait", volume)));
+  fvmCommHandle_t comm_handle;
 
-  value::field("assigned", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
-  value::field("filled", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
-  value::field("free", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
-  value::field("assigned", value::field("buffer1", volume_processed)) = assigned1 && !filled1;
-  value::field("filled", value::field("buffer1", volume_processed)) = assigned1 && !filled1;
-  value::field("free", value::field("buffer1", volume_processed)) = assigned1 && !filled1;
-  value::field("wait", volume_processed) = wait - ((filled0) ? 1 : 0) - ((filled1) ? 1 : 0);
+  if (buf_to_prefetch >= 0)
+    {
+      // start prefetch
+      const std::string buf ((buf_to_prefetch == 0) ? "buffer0" : "buffer1");
+
+      const fvmAllocHandle_t handle_Store
+        (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+      const fvmAllocHandle_t scratch_Store
+        (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+      const long store 
+        ( value::get_literal_value<long> 
+          (value::get_field ("store", value::get_field (buf, volume)))
+        );
+
+      comm_handle = fvmGetGlobalData
+        ( handle_Store
+        , store * sizeofBunchBuffer (Job)
+        , sizeofBunchBuffer (Job)
+        , sizeofJob() + Job.SubVolMemSize + buf_to_prefetch * sizeofBunchBuffer (Job)
+        , scratch_Store
+        );
+    }
+
+  if (buf_to_migrate >= 0)
+    {
+      const std::string buf ((buf_to_migrate == 0) ? "buffer0" : "buffer1");
+
+      // Reconstruct the tracebunch out of memory
+      const long oid
+        (1 + value::get_literal_value<long> 
+        (value::get_field ("offset", value::get_field ("volume", volume))));
+
+      const long bid
+        (1 + value::get_literal_value<long> 
+             ( value::get_field ( "id"
+                                , value::get_field ("bunch"
+                                                   , value::get_field ( buf
+                                                                      , volume
+                                                                      )
+                                                   )
+                                )
+             )
+        );
+
+      char * migbuf ( ((char *)fvmGetShmemPtr()) 
+                    + sizeofJob() 
+                    + Job.SubVolMemSize
+                    + buf_to_migrate * sizeofBunchBuffer (Job)
+                    );
+
+      TraceBunch Bunch(migbuf,oid,1,bid,Job);
+
+      // migrate the bunch to the subvolume
+      const int NThreads
+        (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+
+      char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
+ 
+      const fvmAllocHandle_t handle_TT
+        (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+
+      MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
+
+      value::field("assigned", value::field(buf, volume_processed)) = false;
+      value::field("filled", value::field(buf, volume_processed)) = false;
+      value::field("free", value::field(buf, volume_processed)) = false;
+
+      value::field("wait", volume_processed) = wait - 1;
+    }
+
+  if (buf_to_prefetch >= 0)
+    {
+      // finish prefetch
+      waitComm (comm_handle);
+
+      const std::string buf ((buf_to_prefetch == 0) ? "buffer0" : "buffer1");
+
+      value::field("free", value::field(buf, volume_processed)) = true;
+      value::field("filled", value::field(buf, volume_processed)) = true;
+    }
+
+  waitComm ( fvmPutGlobalData
+             ( handle_Volume
+             , vid * SizeVolWithBuffer
+             , SizeVolWithBuffer
+             , Job.shift_for_Vol
+             , scratch_Volume
+             )
+           );
 
   we::loader::put_output (output, "volume_processed", volume_processed);
 
-  std::cout << "process: volume_processed " << volume_processed << std::endl;
+  LOG (INFO, "process: volume_processed " << volume_processed);
 }
 
 /* ************************************************************************* */
@@ -386,8 +610,68 @@ static void write ( void *
   const value::type & config (input.value("config"));
   const value::type & volume (input.value("volume"));
 
-  std::cout << "write: got config " << config << std::endl;
-  std::cout << "write: got volume " << volume << std::endl;
+  LOG (INFO, "write: got config " << config);
+  LOG (INFO, "write: got volume " << volume);
+
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  // write offset class for a  given subvolume to disk
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + Job.shift_for_Vol);
+
+  // Reconstruct the subvolume out of memory
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+        	    Job.MigVol.first_y_coord.v,
+                    Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+   		    Job.MigVol.ny_inlines,
+                    Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+   	            Job.MigVol.dy_between_inlines,
+                    Job.MigVol.dz);
+  MigVol3D MigVol(X0,Nx,dx);
+
+  grid3D G(X0,Nx,dx);
+
+  // create the subvolume
+  const long vid
+    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+  const long oid
+    (1 + value::get_literal_value<long> (value::get_field ("offset", volume)));
+
+  MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
+
+  const fvmAllocHandle_t handle_Volume
+    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+  const fvmAllocHandle_t scratch_Volume
+    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
+
+  const unsigned long SizeVolWithBuffer
+    (Job.SubVolMemSize + 2 * sizeofBunchBuffer (Job));
+
+  waitComm ( fvmGetGlobalData
+             ( handle_Volume
+             , vid * SizeVolWithBuffer
+             , SizeVolWithBuffer
+             , Job.shift_for_Vol
+             , scratch_Volume
+             )
+           );
+
+  MigrationFileHandler MFHandler;
+
+  MFHandler.WriteOffsetClassForSubVol
+    ( Job.MigFileName
+    , G
+    , (float *)pVMMemSubVol
+    , MigSubVol.getix0(), MigSubVol.getNx()
+    , MigSubVol.getiy0(), MigSubVol.getNy()
+    , oid-1
+    , 1
+    , Job.NtotOffVol
+    , Job.MigFileMode
+    );
 
   we::loader::put_output (output, "volume", volume);
 }
@@ -403,13 +687,28 @@ static void finalize ( void *
 
   LOG (INFO, "finalize: got config " << config);
 
-  const fvmAllocHandle_t handle_Job
-    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t handle_TT
     (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+  const fvmAllocHandle_t handle_Job
+    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+  const fvmAllocHandle_t scratch_Job
+    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+  const fvmAllocHandle_t handle_Store
+    (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+  const fvmAllocHandle_t scratch_Store
+    (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+  const fvmAllocHandle_t handle_Volume
+    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+  const fvmAllocHandle_t scratch_Volume
+    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
 
-  fvmGlobalFree (handle_Job);
   fvmGlobalFree (handle_TT);
+  fvmGlobalFree (handle_Job);
+  fvmGlobalFree (scratch_Job);
+  fvmGlobalFree (handle_Store);
+  fvmGlobalFree (scratch_Store);
+  fvmGlobalFree (handle_Volume);
+  fvmGlobalFree (scratch_Volume);
 
   we::loader::put_output (output, "done", control());
 }
