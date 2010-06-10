@@ -134,6 +134,7 @@ namespace kdm
       pid_t pid_trigger_gen_store (net.add_place (place_type ("trigger_gen_store", literal::CONTROL)));
       pid_t pid_trigger_generate_TT (net.add_place (place_type ("trigger_generate_TT", literal::CONTROL)));
       pid_t pid_waitTT (net.add_place (place_type ("waitTT", literal::LONG)));
+      pid_t pid_trigger_decTT (net.add_place (place_type ("decTT", literal::CONTROL)));
       pid_t pid_state_generate_TT (net.add_place (place_type ("state_generate_TT", literal::LONG)));
       pid_t pid_TT (net.add_place (place_type ("TT", literal::LONG)));
       pid_t pid_doneTT (net.add_place (place_type ("doneTT", literal::LONG)));
@@ -243,21 +244,28 @@ namespace kdm
       // ******************************************************************* //
 
       {
-        transition_type breakTT ("breakTT", expr_type(), "${state} >= ${max}");
+        transition_type breakTT 
+          ( "breakTT"
+          , expr_type ("${trigger} := []")
+          , "${state} >= ${max}"
+          );
 
         breakTT.add_ports ()
           ("state", literal::LONG, we::type::PORT_IN)
           ("max", literal::LONG, we::type::PORT_READ)
+          ("trigger", literal::CONTROL, we::type::PORT_OUT)
           ;
         breakTT.add_connections ()
           (pid_waitTT, "max")
           (pid_state_generate_TT, "state")
+          ("trigger", pid_trigger_decTT)
           ;
 
         tid_t tid_breakTT (net.add_transition (breakTT));
 
         net.add_edge (e++, connection_t (PT, tid_breakTT, pid_state_generate_TT));
         net.add_edge (e++, connection_t (PT_READ, tid_breakTT, pid_waitTT));
+        net.add_edge (e++, connection_t (TP, tid_breakTT, pid_trigger_decTT));
       }
 
       // ******************************************************************* //
@@ -286,17 +294,20 @@ namespace kdm
         transition_type decTT ("decTT", expr_type ("${wait} := ${wait} - 1"));
         decTT.add_ports ()
           ("wait", literal::LONG, we::type::PORT_IN_OUT)
-          ("trigger", literal::LONG, we::type::PORT_IN)
+          ("doneTT", literal::LONG, we::type::PORT_IN)
+          ("trigger", literal::CONTROL, we::type::PORT_READ)
           ;
         decTT.add_connections()
           ("wait", pid_waitTT)
           (pid_waitTT, "wait")
-          (pid_doneTT, "trigger")
+          (pid_doneTT, "doneTT")
+          (pid_trigger_decTT, "trigger")
           ;
         tid_t tid_decTT (net.add_transition (decTT));
         
         net.add_edge (e++, connection_t (PT, tid_decTT, pid_waitTT));
         net.add_edge (e++, connection_t (PT, tid_decTT, pid_doneTT));
+        net.add_edge (e++, connection_t (PT_READ, tid_decTT, pid_trigger_decTT));
         net.add_edge (e++, connection_t (TP, tid_decTT, pid_waitTT));
       }
 
@@ -309,16 +320,18 @@ namespace kdm
           , "${wait} == 0L"
           );
         finalize_generate_TT.add_ports()
-          ("trigger", literal::CONTROL, we::type::PORT_OUT)
+          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
           ("wait", literal::LONG, we::type::PORT_IN)
           ;
         finalize_generate_TT.add_connections()
           (pid_waitTT, "wait")
           ("trigger", pid_trigger_gen_store)
+          (pid_trigger_decTT, "trigger")
           ;
         tid_t tid_finalize_generate_TT (net.add_transition (finalize_generate_TT));
 
         net.add_edge (e++, connection_t (PT, tid_finalize_generate_TT, pid_waitTT));
+        net.add_edge (e++, connection_t (PT, tid_finalize_generate_TT, pid_trigger_decTT));
         net.add_edge (e++, connection_t (TP, tid_finalize_generate_TT, pid_trigger_gen_store));
       }
 
