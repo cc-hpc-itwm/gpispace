@@ -19,17 +19,11 @@ struct exec_context
 
     while (act.has_enabled())
     {
-      std::cout << "*** pre extract " << act;
-
       we::activity_t sub = act.extract ();
-
-      std::cout << "*** post extract " << act;
 
       sub.execute (*this);
 
       act.inject (sub);
-
-      std::cout << "*** post inject " << act;
     }
 
     act.collect_output ();
