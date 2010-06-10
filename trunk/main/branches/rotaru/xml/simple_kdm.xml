@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defun name="kdm_simple" xsi:noNamespaceSchemaLocation="SDPAPetriNet.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<in name="config_file" type="STRING" place="config_file"/>
+	<out name="done" type="CONTROL" place="done"/>
+	<net>
+		<typedef name="STRING"/>
+		<place name="config_file" type="STRING">
+			<token type="STRING">
+				<value>/tmp/test.cfg</value>
+			</token>
+		</place>
+		<typedef name="CONTROL"/>
+		<place name="done" type="CONTROL"/>
+		
+		<defun name="f_expr" internal="true">
+			<in name="i" type="STRING"/>
+			<out name="o" type="CONTROL"/>
+			<expression>${o} := ${i};</expression>
+		</defun>
+		<defun name="f_mod" internal="true">
+			<in name="i" type="STRING"/>
+			<out name="o" type="CONTROL"/>
+			<module name="kdm" function="init"/>
+		</defun>
+		<defun name="f_net" internal="true">
+			<in name="i" type="STRING"/>
+			<out name="o" type="CONTROL"/>
+			<net>
+				<place name="in" type="STRING"/>
+				<place name="out" type="STRING"/>
+				<defun name="f_expr" internal="true">
+					<in name="i" type="STRING"/>
+					<out name="o" type="CONTROL"/>
+					<expression>${o} := ${i};</expression>
+				</defun>
+			</net>
+		</defun>
+		<defun name="f_file">
+		   <url>file:test.xml</url>
+		</defun>
+		
+		<transition name="init" use="f_expr">
+			<connect-in place="config_file" port="i" read-only="true" />
+			<connect-out port="o" place="done" />
+			<condition>true</condition>
+		</transition>
+		
+		<typedef name="LONG" />
+		<typedef name="sig_config">
+			<field name="OFFSETS" type="LONG"/>
+			<field name="NTHREADS" type="LONG"/>
+		</typedef>
+		<place name="config" type="config">
+			<token type="config">
+ 				<field name="OFFSETS"><value>23</value></field>
+				<field name="NTHREADS"><value>4</value></field>
+			</token>
+		</place>
+	</net>
+</defun>
