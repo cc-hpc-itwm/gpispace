@@ -140,6 +140,12 @@ set (KDM_PARALLEL_LOADTT_MOD_SRCS src/kdm_parallel_loadTT_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
+set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
+  ${KDM_MOD_INITIALIZE_SRCS}
+  ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
+  ${KDM_MOD_PROCESS_SRCS}
+)
+
 set(SINC_INT_MOD_SRCS
 	./src/sinc_mod.cpp
 	./src/utils/sincinterpolator.cpp
@@ -165,9 +171,15 @@ set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
 target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_mod sinc_mod)
 
+add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
+set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
+target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+target_link_libraries (kdm_complex_mod sinc_mod)
+
 add_library(kdm_parallel_loadTT_mod SHARED ${KDM_PARALLEL_LOADTT_MOD_SRCS})
 set_target_properties(kdm_parallel_loadTT_mod PROPERTIES OUTPUT_NAME kdm_parallel_loadTT)
 target_link_libraries (kdm_parallel_loadTT_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+target_link_libraries (kdm_parallel_loadTT_mod sinc_mod)
 
 add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)

@@ -166,20 +166,15 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   if (handle_Job == 0)
     throw std::runtime_error ("KDM::initialize handle_Job == 0");
 
-//   const fvmAllocHandle_t scratch_Job (fvmGlobalAlloc (sizeofJob()));
-//   if (scratch_Job == 0)
-//     throw std::runtime_error ("KDM::initialize scratch_Job == 0");
+  const fvmAllocHandle_t scratch_Job (fvmGlobalAlloc (sizeofJob()));
+  if (scratch_Job == 0)
+     throw std::runtime_error ("KDM::initialize scratch_Job == 0");
 
   
-  fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
-  if (scratch_Job == 0)
-    throw std::runtime_error ("KDM::initialize scratch_Job == 0");
   memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
   for (int p (0); p < fvmGetNodeCount(); ++p)
     waitComm (fvmPutGlobalData (handle_Job, p * sizeofJob(), sizeofJob(), 0, scratch_Job));
-
-  fvmLocalFree (scratch_Job); scratch_Job = 0;
 
   const fvmAllocHandle_t handle_TT (fvmGlobalAlloc (Job.globTTbufsizelocal));
   if (handle_TT == 0)
@@ -214,11 +209,8 @@ static void get_Job (const value::type & config, MigrationJob & Job)
 {
   const fvmAllocHandle_t handle_Job
     (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
-//   const fvmAllocHandle_t scratch_Job
-//     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
-  fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
-  if (scratch_Job == 0)
-    throw std::runtime_error ("KDM::get_Job scratch_Job == 0");
+  const fvmAllocHandle_t scratch_Job
+     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -227,8 +219,6 @@ static void get_Job (const value::type & config, MigrationJob & Job)
                              , scratch_Job
                              )
            );
-  fvmLocalFree (scratch_Job); scratch_Job = 0;
-
   memcpy (&Job, fvmGetShmemPtr(), sizeofJob());
 }
 
@@ -294,13 +284,13 @@ static void kdm_finalize (const value::type & config)
 
   const fvmAllocHandle_t handle_Job
     (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
-//   const fvmAllocHandle_t scratch_Job
-//     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+  const fvmAllocHandle_t scratch_Job
+    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
   const fvmAllocHandle_t handle_TT
     (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
 
   fvmGlobalFree (handle_Job);
-  //  fvmGlobalFree (scratch_Job);
+  fvmGlobalFree (scratch_Job);
   fvmGlobalFree (handle_TT);
 }
 
@@ -415,11 +405,8 @@ static void kdm_init_volume ( const value::type & config
     // rewrite Job
     const fvmAllocHandle_t handle_Job
       (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
-    fvmAllocHandle_t scratch_Job (fvmLocalAlloc (sizeofJob()));
-    if (scratch_Job == 0)
-      throw std::runtime_error ("KDM::init_volume scratch_Job == 0");
-//     const fvmAllocHandle_t scratch_Job
-//       (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+    const fvmAllocHandle_t scratch_Job
+      (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
 
     waitComm (fvmPutGlobalData ( handle_Job
                                , fvmGetRank() * sizeofJob()
@@ -428,7 +415,6 @@ static void kdm_init_volume ( const value::type & config
                                , scratch_Job
                                )
              );
-    fvmLocalFree (scratch_Job); scratch_Job = 0;
   }
 
   // init subvolume
