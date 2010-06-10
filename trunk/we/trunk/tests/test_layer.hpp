@@ -28,7 +28,7 @@
 
 #include <we/we.hpp>
 #include <we/loader/loader.hpp>
-#include <kdm/kdm_simple.hpp>
+//#include <kdm/kdm_complex.hpp>
 #include <kdm/module.hpp>
 
 namespace test {

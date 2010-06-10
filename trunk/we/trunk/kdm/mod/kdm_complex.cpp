@@ -58,7 +58,7 @@ static void initialize ( void *
     )
     ;
 
-  we::loader::put_output (output, "parallel_loadTT", parallel_loadTT);
+  we::loader::put_output (output, "parallel_loadTT", literal::type(parallel_loadTT));
 }
 
 /* ************************************************************************* */

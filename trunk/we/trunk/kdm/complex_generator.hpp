@@ -23,6 +23,15 @@ namespace kdm
       config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
       config["PARALLEL_LOADTT"] = literal::LONG;
 
+      config["handle_TT"] = literal::LONG;
+      config["handle_Job"] = literal::LONG;
+      config["scratch_Job"] = literal::LONG;
+      config["handle_Store"] = literal::LONG;
+      config["scratch_Store"] = literal::LONG;
+      config["handle_Volume"] = literal::LONG;
+      config["scratch_Volume"] = literal::LONG;
+      config["NThreads"] = literal::LONG;
+
       state["num"] = literal::LONG;
       state["state"] = literal::LONG;
 
@@ -1024,7 +1033,11 @@ namespace kdm
 
       // *********************************************************************** //
 
-      transition_type trans_net ("kdm_complex", net);
+      transition_type trans_net ( "kdm_complex"
+                                , net
+                                , "true"
+                                , transition_type::external
+                                );
       trans_net.add_ports ()
         ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
         ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)

@@ -13,15 +13,23 @@ struct exec_context
     : loader (module_loader)
   { }
 
-  void handle_internally ( we::activity_t & act, net_t &)
+  void handle_internally ( we::activity_t & act, net_t & n)
   {
     act.inject_input ();
 
     while (act.has_enabled())
     {
+      std::cout << "*** pre extract " << act;
+
       we::activity_t sub = act.extract ();
+
+      std::cout << "*** post extract " << act;
+
       sub.execute (*this);
+
       act.inject (sub);
+
+      std::cout << "*** post inject " << act;
     }
 
     act.collect_output ();

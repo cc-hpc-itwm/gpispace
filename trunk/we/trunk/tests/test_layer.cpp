@@ -5,7 +5,7 @@
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 
-#include <kdm/simple_generator.hpp>
+#include <kdm/complex_generator.hpp>
 
 #include <boost/program_options.hpp>
 #include "test_layer.hpp"
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
   std::vector<std::string> mods_to_load;
 
   const std::size_t num_jobs = 1;
-  const std::size_t num_worker = 1;
+  const std::size_t num_worker = 8;
 
   desc.add_options()
     ("help", "this message")

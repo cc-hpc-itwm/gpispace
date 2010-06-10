@@ -46,6 +46,8 @@ int main (int argc, char ** argv)
           << act.output()
           << std::endl;
 
+  std::cout << act << std::endl;
+
   if ( act.output().empty() )
   {
     return EXIT_FAILURE;
