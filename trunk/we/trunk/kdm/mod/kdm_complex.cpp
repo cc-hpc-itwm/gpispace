@@ -34,7 +34,7 @@ static void initialize ( void *
       config[s] = v;
   }
 
-  std::cout << "initialize: got config " << config << std::endl;
+   std::cout << "initialize: got config " << config << std::endl;
 
   const long wait 
     (value::get_literal_value<long> 
@@ -51,20 +51,30 @@ static void initialize ( void *
   bitsetofint::type bs; bs.ins (0);
 
   we::loader::put_output (output, "wanted", bs);
+
+  const long parallel_loadTT
+    (value::get_literal_value<long> 
+     (value::get_field ("PARALLEL_LOADTT", config))
+    )
+    ;
+
+  we::loader::put_output (output, "parallel_loadTT", parallel_loadTT);
 }
 
 /* ************************************************************************* */
 
 static void loadTT ( void *
-                   , const we::loader::input_t & input
+                   , const we::loader::input_t &  input
                    , we::loader::output_t & output
                    )
 {
   const value::type & config (input.value("config"));
+  const long & TT (we::loader::get_input<long> (input, "TT"));
 
   std::cout << "loadTT: got config " << config << std::endl;
+  std::cout << "loadTT: got TT " << TT << std::endl;
 
-  we::loader::put_output (output, "trigger", control());
+  we::loader::put_output (output, "TT", TT);
 }
 
 /* ************************************************************************* */
@@ -161,7 +171,7 @@ static void write ( void *
 /* ************************************************************************* */
 
 static void finalize ( void *
-                     , const we::loader::input_t & input
+                     , const we::loader::input_t &  input
                      , we::loader::output_t & output
                      )
 {
