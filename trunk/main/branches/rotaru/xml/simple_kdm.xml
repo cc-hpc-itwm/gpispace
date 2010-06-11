@@ -9,6 +9,7 @@
 				<value>/tmp/test.cfg</value>
 			</token>
 		</place>
+		
 		<typedef name="CONTROL"/>
 		<place name="done" type="CONTROL"/>
 		
@@ -17,11 +18,13 @@
 			<out name="o" type="CONTROL"/>
 			<expression>${o} := ${i};</expression>
 		</defun>
+	
 		<defun name="f_mod" internal="true">
 			<in name="i" type="STRING"/>
 			<out name="o" type="CONTROL"/>
 			<module name="kdm" function="init"/>
 		</defun>
+	
 		<defun name="f_net" internal="true">
 			<in name="i" type="STRING"/>
 			<out name="o" type="CONTROL"/>
@@ -35,6 +38,7 @@
 				</defun>
 			</net>
 		</defun>
+	
 		<defun name="f_file">
 		   <url>file:test.xml</url>
 		</defun>
@@ -50,8 +54,8 @@
 			<field name="OFFSETS" type="LONG"/>
 			<field name="NTHREADS" type="LONG"/>
 		</typedef>
-		<place name="config" type="config">
-			<token type="config">
+		<place name="config" type="sig_config">
+			<token type="sig_config">
  				<field name="OFFSETS"><value>23</value></field>
 				<field name="NTHREADS"><value>4</value></field>
 			</token>

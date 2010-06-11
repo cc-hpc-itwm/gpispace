@@ -19,7 +19,7 @@
    		<xsd:attribute name="name" type="xsd:string" use="required" />
    		
    		<!--  references a typedef_type -->
-    	<xsd:attribute name="type" type="xsd:IDREF" use="optional"  />  
+    	<xsd:attribute name="type" type="xsd:string" use="optional"  />  
     </xsd:complexType>
      
     <xsd:complexType name="token_field_type" >
@@ -30,7 +30,7 @@
    		<xsd:attribute name="name" type="xsd:string" use="required" />
    		
    		<!--  references a typedef_type -->
-    	<xsd:attribute name="type" type="xsd:IDREF" use="optional"  />  
+    	<xsd:attribute name="type" type="xsd:string" use="optional"  />  
     </xsd:complexType>
       
     <xsd:complexType name="typedef_type">
@@ -46,7 +46,7 @@
 	   		<xsd:element name="field" type="token_field_type" minOccurs="0" maxOccurs="unbounded" />
 	   	</xsd:choice>
 		<!--  references a typedef_type -->
-		<xsd:attribute name="type" type="xsd:IDREF" use="required"/>
+		<xsd:attribute name="type" type="xsd:string" use="required"/>
     </xsd:complexType>
     
 	<xsd:complexType name="place_type">
@@ -58,13 +58,13 @@
 		<xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional" />
 	
 		<!--  references a typedef_type -->
-		<xsd:attribute name="type" type="xsd:IDREF" use="required"/>
+		<xsd:attribute name="type" type="xsd:string" use="required"/>
 	</xsd:complexType> 
 	
 	 <xsd:complexType name="port_type">
 	  <!-- this should be the name of a place -->
 		<xsd:attribute name="name" type="xsd:string" use="required"/>     
-		<xsd:attribute name="type" type="xsd:IDREF" use="required"/>
+		<xsd:attribute name="type" type="xsd:string" use="required"/>
 		<xsd:attribute name="place" type="xsd:string" use="optional" />
 	</xsd:complexType>
 	
@@ -72,7 +72,12 @@
     	<xsd:attribute name="name" type="xsd:string" use="required" />
       	<xsd:attribute name="function" type="xsd:string" use="required" />
     </xsd:complexType>
-      	
+
+    <xsd:complexType name="type_map_type">
+    	<xsd:attribute name="from" type="xsd:string" use="required" />
+      	<xsd:attribute name="to"   type="xsd:string" use="required" />
+    </xsd:complexType>
+          	
 	<!--  this corresponds to transition_type -->
 	<xsd:complexType name="function_type" >
 	    <xsd:choice>
@@ -86,7 +91,9 @@
 					<xsd:element name="net" type="net_type" />
 				</xsd:choice>
 			</xsd:sequence>
-			<xsd:element name="url" type="xsd:anyURI" maxOccurs="1" />
+			<xsd:sequence>
+				<xsd:element name="url" type="xsd:anyURI" maxOccurs="1" />
+			</xsd:sequence>
 	    </xsd:choice>
 		<xsd:attribute name="name" type="xsd:string" />
 		<xsd:attribute name="internal" type="xsd:boolean" default="false" use="optional" />
@@ -103,6 +110,7 @@
 			<xsd:element name="connect-in" type="connect_type" />
 			<xsd:element name="connect-out" type="connect_type" />
 			<xsd:element name="condition" type="xsd:string" minOccurs="0" default="true" />
+			<xsd:element name="map-type" type="type_map_type" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
 		
