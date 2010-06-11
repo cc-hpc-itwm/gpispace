@@ -179,8 +179,8 @@ static void initialize ( void *
     ;
   Job.BunchMemSize = getSizeofTD(Job);
 
-  Job.shift_for_TT = sizeofJob() + SizeVolWithBuffer;
   Job.shift_for_Vol = sizeofJob();
+  Job.shift_for_TT = Job.shift_for_TT + SizeVolWithBuffer;
 
   LOG (INFO, "ReqVMMemSize =  " << Job.ReqVMMemSize 
       << " (" <<  (Job.ReqVMMemSize>>20) << " MiB)"
@@ -476,15 +476,6 @@ static void process ( void *
 
   MigSubVol.setMemPtr((float *)pVMMemSubVol, Job.SubVolMemSize);
 
-  const long wait
-    (value::get_literal_value<long>(value::get_field ("wait", volume)));
-
-  const long bunches
-    (value::get_literal_value<long>(value::get_field ("BUNCHES_PER_OFFSET", config)));
-
-  if (wait == bunches)
-    MigSubVol.clear();
-
   value::type volume_processed (volume);
 
   const value::type buffer0 (value::get_field ("buffer0", volume));
@@ -523,14 +514,36 @@ static void process ( void *
         ( handle_Store
         , store * sizeofBunchBuffer (Job)
         , sizeofBunchBuffer (Job)
-        , sizeofJob() + Job.SubVolMemSize + buf_to_prefetch * sizeofBunchBuffer (Job)
+        , Job.shift_for_Vol
+        + Job.SubVolMemSize
+        + buf_to_prefetch * sizeofBunchBuffer (Job)
         , scratch_Store
         );
     }
 
   if (buf_to_migrate >= 0)
     {
+      const long wait
+        (value::get_literal_value<long>(value::get_field ("wait", volume)));
+
+      const long bunches
+        (value::get_literal_value<long>(value::get_field ("BUNCHES_PER_OFFSET", config)));
+
+      if (wait == bunches)
+        {
+          const value::type vol (value::get_field ("volume", volume));
+
+          LOG (INFO, "clear vol " << vol);
+
+          MigSubVol.clear();
+        }
+
       const std::string buf ((buf_to_migrate == 0) ? "buffer0" : "buffer1");
+
+      const value::type vol (value::get_field ("volume", volume));
+      const value::type bunch (value::get_field ("bunch",value::get_field (buf, volume)));
+
+      LOG (INFO, "migrate vol " << vol << " with bunch " << bunch);
 
       // Reconstruct the tracebunch out of memory
       const long oid
@@ -550,7 +563,7 @@ static void process ( void *
         );
 
       char * migbuf ( ((char *)fvmGetShmemPtr()) 
-                    + sizeofJob() 
+                    + Job.shift_for_Vol
                     + Job.SubVolMemSize
                     + buf_to_migrate * sizeofBunchBuffer (Job)
                     );
