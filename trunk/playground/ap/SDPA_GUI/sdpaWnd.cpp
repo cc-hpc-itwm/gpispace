@@ -3,6 +3,7 @@
 
 SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 {
+  m_parallelActivities = 0;
   m_nMinHeight = 20;
   m_nMinWidth = 150;
   m_nNbColumn = 4;
@@ -13,6 +14,7 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   m_ColorFailed = QColor( 255, 0, 0 );;
 
   m_pScrollArea = new QScrollArea();
+  m_pScrollArea->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
   m_pResetB = new QPushButton( "Reset" );
 
   m_pWidget = new QWidget();
@@ -31,7 +33,8 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
     m_pGridL->setColumnMinimumWidth( i, m_nMinWidth );
   }
 
-  m_pLastGL->addWidget( new QLabel(""), 0, m_nNbColumn );
+  m_pParActLabel = (new QLabel ("# parallel activities: ") );
+  m_pLastGL->addWidget( m_pParActLabel, 0, m_nNbColumn );
   m_pLastGL->setColumnStretch( m_nNbColumn, 1 );
 
   m_pGridL->setVerticalSpacing ( 0 );
@@ -66,9 +69,13 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   p->fill( m_ColorFailed );
   lFailed->setPixmap( *p );
 
+  m_cbAutoFollow  = new QCheckBox("auto follow");
+  m_cbAutoFollow->setChecked(true);
+
   QGridLayout *g = new QGridLayout();
   g->addWidget( m_pScrollArea, 0, 0, 6, 1 );
   g->addWidget( m_pResetB, 0, 1, 1, 2 );
+  g->addWidget( m_cbAutoFollow, 1, 1 );
   //  g->addWidget( lCreate, 1, 1 );
   //  g->addWidget( new QLabel( "create" ), 1, 2 );
   g->addWidget( lRun, 2, 1 );
@@ -81,10 +88,19 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   g->setRowStretch( 5, 1 );
   setLayout( g );
 
+  connect( this, SIGNAL( numParallelActivitiesChanged(int) ), this, SLOT( updateParallelActivities(int))  );
+
   connect( m_pResetB, SIGNAL( clicked() ), this, SLOT( resetSlot() ) );
   m_nCounter = 0;
   m_nFirstID = -1;
   setMinimumSize( 800, 600 );
+
+  emit numParallelActivitiesChanged (0);
+}
+
+void SdpaWnd::updateParallelActivities (int activities)
+{
+  m_pParActLabel->setText ( QString ("# parallel activities: ") + QString::number(activities));
 }
 
 bool SdpaWnd::event( QEvent * e )
@@ -99,7 +115,7 @@ bool SdpaWnd::event( QEvent * e )
       dce = (DataCostumerEvent<WndUpdateParameter> *)e;
 
       WndUpdateParameter param = dce->getData();
-      int pos;
+      int pos(0);
       QColor c;
 
       switch( param.state )
@@ -114,22 +130,28 @@ bool SdpaWnd::event( QEvent * e )
         {
           pos = 2;
           c = m_ColorRun;
+		  m_parallelActivities++;
           break;
         }
         case STATE_OK:
         {
           pos = 3;
           c = m_ColorOk;
+		  m_parallelActivities--;
           break;
         }
         case STATE_FAILED:
         {
           pos = 3;
           c = m_ColorFailed;
+		  m_parallelActivities--;
           break;
         }
-
+	    default:
+		  return QWidget::event(e);
       }
+      if (m_parallelActivities < 0)
+	     m_parallelActivities = 0;
 
       if( m_nFirstID == -1 )
 	  m_nFirstID = param.id;
@@ -154,46 +176,53 @@ bool SdpaWnd::event( QEvent * e )
         m_pGridL->addWidget( p, param.id-m_nFirstID, 0 );
       }
 
-      // update Last grid
-      // delete all
-      for( int j = 0; j < m_nNbColumn; j++ )
-      {
-        QLayoutItem *item = m_pLastGL->itemAtPosition( 0, j );
-        if( item )
-        {
-          QWidget *ptr = item->widget();
-          if( ptr )
-          {
-            m_pLastGL->removeWidget( ptr );
-            delete ptr;
-          }
-          m_pLastGL->removeItem( item );
-        }
-      }
+//      // update Last grid
+//      // delete all
+//      for( int j = 0; j < m_nNbColumn; j++ )
+//      {
+//        QLayoutItem *item = m_pLastGL->itemAtPosition( 0, j );
+//        if( item )
+//        {
+//          QWidget *ptr = item->widget();
+//          if( ptr )
+//          {
+//            m_pLastGL->removeWidget( ptr );
+//            delete ptr;
+//          }
+//          m_pLastGL->removeItem( item );
+//        }
+//      }
 
-      for( int j = 0; j < m_nNbColumn; j++ )
-      {
-        QLayoutItem *item = m_pGridL->itemAtPosition( param.id-m_nFirstID, j );
-        if( item )
-        {
-          QPushButton *ptr = (QPushButton*)item->widget();
-          if( ptr )
-          {
-            QPushButton *t = new QPushButton(ptr->text());
-            t->setFixedSize( m_nMinWidth, m_nMinHeight );
-            t->setDefault( false );
-            t->setFocusPolicy( Qt::NoFocus );
-            t->setPalette( ptr->palette() );
-            m_pLastGL->addWidget( t, 0, j );
-          }
-        }
-      }
+//      for( int j = 0; j < m_nNbColumn; j++ )
+//      {
+//        QLayoutItem *item = m_pGridL->itemAtPosition( param.id-m_nFirstID, j );
+//        if( item )
+//        {
+//          QPushButton *ptr = (QPushButton*)item->widget();
+//          if( ptr )
+//          {
+//            QPushButton *t = new QPushButton(ptr->text());
+//            t->setFixedSize( m_nMinWidth, m_nMinHeight );
+//            t->setDefault( false );
+//            t->setFocusPolicy( Qt::NoFocus );
+//            t->setPalette( ptr->palette() );
+//            m_pLastGL->addWidget( t, 0, j );
+//          }
+//        }
+//      }
 
       m_nCounter = MAX( m_nCounter, param.id-m_nFirstID+1);
       m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
 
+	  if (m_cbAutoFollow->isChecked())
+	  {
+		m_pScrollArea->verticalScrollBar()->setValue (m_pScrollArea->verticalScrollBar()->maximum());
+	  }
+	  emit numParallelActivitiesChanged (m_parallelActivities);
       break;
     }
+	default:
+	  break;
   }
   return QWidget::event(e);
 }
@@ -231,9 +260,9 @@ void SdpaWnd::resetSlot()
 //          m_pLastGL->removeItem( item );
 //      }
 //  }
-
   m_pGridL->update();
   m_nFirstID = -1;
   m_nCounter = 0;
   m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
+  emit numParallelActivitiesChanged (0);
 }

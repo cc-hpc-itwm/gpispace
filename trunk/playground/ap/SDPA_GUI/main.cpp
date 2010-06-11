@@ -134,11 +134,7 @@ class GuiAppender : public fhg::log::Appender
 		    event_available_.timed_wait(lock, timeout);
 		    if (! event_queue_.empty())
 		    {
-			evt = event_queue_.front(); event_queue_.pop_front();
-			if ( (event_queue_.size() % 100) == 0)
-			{
-			    std::cout << event_queue_.size() << " events remaining..." << std::endl;
-			}
+			  evt = event_queue_.front(); event_queue_.pop_front();
 		    }
 		}
 		if (evt)

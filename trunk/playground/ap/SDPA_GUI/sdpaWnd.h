@@ -35,7 +35,9 @@ class SdpaWnd : public QWidget
     
   public slots:
     void resetSlot();
-    
+	void updateParallelActivities(int);
+  signals:
+    void numParallelActivitiesChanged(int);
     
   private:
     bool event( QEvent * e );
@@ -43,11 +45,14 @@ class SdpaWnd : public QWidget
     QGridLayout *m_pGridL;
     QGridLayout *m_pLastGL;
     QScrollArea *m_pScrollArea;
+	QCheckBox *m_cbAutoFollow;
     QWidget *m_pWidget;
+	QLabel *m_pParActLabel;
     int m_nFirstID, m_nCounter;
     int m_nMinHeight, m_nMinWidth;
     int m_nNbColumn;
     QColor m_ColorCreate, m_ColorRun, m_ColorOk, m_ColorFailed;
+	int m_parallelActivities;
 };
 
 #endif
