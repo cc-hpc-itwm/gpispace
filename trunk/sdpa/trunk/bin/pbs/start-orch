@@ -1,0 +1,36 @@
+#!/bin/sh
+test -r ~/.init-screen.env && source ~/.init-screen.env
+
+debug=false
+url="0.0.0.0:5000"
+
+while getopts ":hgo:l:" opt; do
+  case $opt in
+	g)
+	  debug=true
+	;;
+	l)
+	  url=$OPTARG
+	;;
+	h)
+	  echo "usage: $0 [-h] [-g] [-l url]" >&2
+	  echo "    -h : print this help" >&2
+	  echo "    -l : url to listen on (default: $url)" >&2
+	  echo "    -g : run within gdb" >&2
+	  exit 0
+	;;
+	\?)
+	  echo "Invalid option: -$OPTARG" >&2
+	  exit 1
+  esac
+done
+
+echo "Running Orchestrator at: $url on `hostname`"
+
+if $debug ; then
+  export FHGLOG_level=DEBUG
+  echo "running within gdb..."
+  gdb -ex run --args orchestrator -u $url -n orchestrator
+else
+  orchestrator -u $url -n orchestrator >/scratch/$USER/sdpa/orch.log 2>&1
+fi

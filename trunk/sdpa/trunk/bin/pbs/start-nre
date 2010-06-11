@@ -1,0 +1,77 @@
+#!/bin/sh
+
+if [ -r ~/.init-screen.env ]; then
+    source ~/.init-screen.env
+fi
+
+if [ -r /p/herc/itwm/hpc/soft/sdpa/etc/sdpa.env ]; then
+    source /p/herc/itwm/hpc/soft/sdpa/etc/sdpa.env
+fi
+
+name="nre.`hostname`"
+agg="aggregator"
+agg_host=
+agg_port=5001
+gui_url="$SDPA_GUI"
+if [ -z "$gui_url" ]
+then
+  gui_url="lts019.itwm.fhg.de:9001"
+fi
+
+rank=0
+if [ -n "$1" ]; then
+  rank=$1
+fi
+
+if [ -n "$SDPA_MASTER" ]; then
+  agg_host="$SDPA_MASTER"
+else
+  echo "E: i don't know where my aggregator is, sorry!"
+  exit 1
+fi
+
+agg_url="$agg_host:$agg_port"
+
+fvm_pc_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
+while read k v; do
+  case "$k" in
+	SHMSZ)
+	  echo "using shmsz $v"
+	  export FVM_PC_SHMSZ="$v"
+	  ;;
+	FVMSZ)
+	  echo "using fvmsz $v"
+	  export FVM_PC_FVMSZ="$v"
+	  ;;
+    MSQFILE)
+	  echo "using msq $v"
+	  export FVM_PC_MSQ="$v"
+	  ;;
+	SHMFILE)
+	  echo "using shm $v"
+	  export FVM_PC_SHM="$v"
+	  ;;
+  esac
+done < "$fvm_pc_cfg"
+
+echo "using aggregator at: $agg_url"
+
+echo -n "killing process-container..."
+killall nre-pcd >/dev/null 2>&1
+sleep 1
+echo ""
+echo -n "killing old nre..."
+killall nre >/dev/null 2>&1
+sleep 1
+echo ""
+
+test -d "/scratch/$USER/sdpa" || mkdir -p "/scratch/$USER/sdpa"
+
+prefix="/p/herc/itwm/hpc/soft/sdpa"
+nre-pcd --rank "$rank" \
+                          --load $prefix/sdpa/lib/libfvm-pc.so \
+                          --load $prefix/libsinc/libsinc.so \
+						  -p $prefix/kdm \
+  >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
+sleep 1
+nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &

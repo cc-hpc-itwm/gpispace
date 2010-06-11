@@ -1,0 +1,159 @@
+#!/bin/sh
+
+# get the list of nodes
+nodes=
+switch_to_master=0
+rename_master=0
+on_master=0
+master=
+node_name=`hostname`
+start_fhglog=0
+start_fvm=0
+
+case "$1" in
+  -h|--help)
+	cat <<EOF
+usage $0 [-h|--help] [node...]
+  initializes a screen session on the given nodes or on all
+  nodes
+
+environment variables:
+	export IN_INIT_SCREEN="$IN_INIT_SCREEN"
+	export PBS_O_HOST="$PBS_O_HOST"
+	export SDPA_GUI="$SDPA_GUI"
+	export SDPA_MASTER="$SDPA_MASTER"
+	export FHGLOG_to_console="$FHGLOG_to_console"
+	export FHGLOG_to_server="$FHGLOG_to_server"
+	export FHGLOG_threaded="$FHGLOG_threaded"
+EOF
+    exit 1
+	;;
+  *)
+	# ignore
+	;;
+esac
+
+test -d /scratch/$USER/sdpa || mkdir -p /scratch/$USER/sdpa
+
+if [ -r "$PBS_NODEFILE" ]; then
+	echo "Running on the initial master node..."
+	on_master=1
+	master="$node_name"
+else
+	echo "Running on slave $node_name..."
+fi
+
+if [ $on_master -eq 1 ]; then
+	if [ -r ~/.init-screen.act ]; then
+	  if ! grep -q "$master" ~/.init-screen.act; then
+		echo "It seems, that there is already another screen environment running."
+		echo
+		echo "hint:"
+		echo "   possibly running on: `cat ~/.init-screen.act | awk '{print $1}'`"
+		echo
+		echo "Please remove ~/.init-screen.act if I am wrong and retry." 
+		exit 1
+	  fi
+	fi
+	tmp=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
+	tmp=`echo $master $tmp`
+	echo $tmp > ~/.init-screen.act
+
+	env_file="$HOME/.init-screen.env"
+
+	echo "clearing .init-screen.env..."
+	rm -f "$env_file"
+	echo "writing environment info to $env_file..."
+	cat > "$env_file" <<EOF
+export IN_INIT_SCREEN="yes"
+export PBS_O_HOST="$PBS_O_HOST"
+export SDPA_MASTER="$master"
+export FHGLOG_to_server="$master"
+export FHGLOG_to_console="false"
+export FHGLOG_threaded="false"
+export FHGLOG_level="WARN"
+# user config follows (may override above values, please be careful)
+test -r "$HOME/.init-screen.rc" && source "$HOME/.init-screen.rc"
+EOF
+fi
+
+if [ $# -gt 0 ]; then
+	nodes=$@
+else
+	if [ -r "$PBS_NODEFILE" ]; then
+		echo "using nodes from $PBS_NODEFILE"
+		nodes=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
+		nodes=`echo $master $nodes`
+		rename_master=1
+		switch_to_master=1
+		start_fhglog=1
+		start_fvm=1
+	fi
+fi
+
+if [ -z "$nodes" ]; then
+	echo "Nothing to do"
+	exit 0
+fi
+
+headnode="$PBS_O_HOST"
+
+if [ $start_fhglog -eq 1 ]; then
+	killall fhglog-server
+	echo "starting log-server on master node"
+	ssh -X -t "$headnode" screen -D -RR -X "screen -t log ssh -X -t $master" # fhglog-server short"
+fi
+
+if [ $start_fvm -eq 1 ]; then
+	echo "starting fvm-server on master node"
+	ssh -X -t "$headnode" screen -D -RR -X "screen -t fvm ssh -X -t $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
+	ssh -X -t "$headnode" screen -D -RR -X "screen -t orch ssh -X -t $master"
+	ssh -X -t "$headnode" screen -D -RR -X "screen -t agg ssh -X -t $master"
+fi
+
+
+if [ -z "$headnode" ]; then
+	echo "I don't know what my headnode is"
+	exit 1
+fi
+
+numnodes=`echo $nodes | wc -w`
+maxnodes=10
+
+if [ $numnodes -gt $maxnodes ]; then
+	echo -n "do you really want to start screen sessions on $numnodes nodes (configured maximum=$maxnodes)? [y/N]: "
+	read answer
+	case "$answer" in
+		y|Y|yes|Yes)
+			echo "ok, I'll do as you whish"
+			;;
+		*)
+			echo "Puh."
+			exit 0
+			;;
+	esac
+fi
+echo "going to start screen session on nodes:" $nodes
+
+echo -n 'starting sessions...'
+for n in $nodes; do
+	title="$n"
+
+	if [ $rename_master -eq 1 -a x"$n" == x"$master" ]; then
+		title="master:$n"
+	fi
+	echo -n " $n"
+	if [ x"$n" == x"$master" ]; then
+		ssh -X -t "$headnode" screen -D -RR -X "screen -t $title ssh -X -t $n"
+		ssh -X -t "$headnode" screen -D -RR -X "screen -t $n ssh -X -t $n" &
+	else
+		ssh -X -t "$headnode" screen -D -RR -X "screen -t $title ssh -X -t $n" &
+	fi
+done
+wait
+echo
+
+if [ $switch_to_master -eq 1 ]; then
+	echo "switching to master-node screen"
+	ssh -X -t "$headnode" screen -X select master
+fi

@@ -1,0 +1,47 @@
+#!/bin/sh
+test -r ~/.init-screen.env && source ~/.init-screen.env
+
+debug=false
+url="0.0.0.0:5001"
+master="$SDPA_MASTER"
+if [ -z "$master" ]; then
+  echo "assuming local host, since SDPA_MASTER is not set!"
+  master="`hostname`"
+fi
+orch_url="$master:5000"
+
+while getopts ":hgo:l:" opt; do
+  case $opt in
+	o)
+	  orch_url=$OPTARG
+	;;
+	g)
+	  debug=true
+	;;
+	l)
+	  url=$OPTARG
+	;;
+	h)
+	  echo "usage: $0 [-h] [-g] [-l url] [-o orch-url]" >&2
+	  echo "    -h : print this help" >&2
+	  echo "    -l : url to listen on (default: $url)" >&2
+	  echo "    -o : orchestrator (default: $orch_url)" >&2
+	  echo "    -g : run within gdb" >&2
+	  exit 0
+	;;
+	\?)
+	  echo "Invalid option: -$OPTARG" >&2
+	  exit 1
+  esac
+done
+
+echo "Running Aggregator at: $url on `hostname`"
+echo "Using Orchestrator at: $orch_url"
+
+if $debug ; then
+  export FHGLOG_level=DEBUG
+  echo "running within gdb..."
+  gdb -ex run --args aggregator -n aggregator -m orchestrator -p $orch_url -u $url
+else
+  aggregator -n aggregator -m orchestrator -p $orch_url -u $url >/scratch/$USER/sdpa/agg.log 2>&1
+fi

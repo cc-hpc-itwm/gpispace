@@ -218,6 +218,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 # Reflect the package structure
 add_subdirectory(sdpa)
 add_subdirectory(apps)
+add_subdirectory(bin)
 if (ENABLE_TESTS)
   include(CTest)
   add_subdirectory(tests)

@@ -1,0 +1,35 @@
+#!/bin/sh
+if [ ! -r "$PBS_NODEFILE" ]; then
+  echo "E: must be run on head node"
+  exit 2
+fi
+
+ps aux | grep -q "[f]vm_sdpa_standalone"
+if [ $? -ne 0 ]; then
+  echo "E: FVM is not running, please start it first!"
+  exit 2
+fi
+
+node_max=$( uniq $PBS_NODEFILE | wc -l )
+nodes=$( echo $( seq 1 $node_max ) )
+if [ $# -lt 1 ]; then
+  echo "booting all NREs..."
+else
+  nodes=$@
+fi
+
+for node_num in $nodes; do
+  if [ $node_num -lt 1 -o $node_num -gt "$node_max" ]; then
+	echo "W: ignoring node number $node_num: out of range: must be within [1,$node_max]"
+    continue
+  fi
+
+  node_name=$( uniq $PBS_NODEFILE | sort -n | tail -n +$node_num | head -n 1 )
+  rm -f /scratch/$USER/sdpa/nre.$node_name.log
+  rm -f /scratch/$USER/sdpa/pc.$node_name.log
+
+  echo "starting nre on $node_name..."
+  ssh $node_name $HOME/bin/start-nre $node_num >/dev/null 2>&1 &
+done
+wait
+status-nre $nodes
