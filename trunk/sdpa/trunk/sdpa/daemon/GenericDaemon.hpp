@@ -175,12 +175,14 @@ namespace sdpa { namespace daemon {
 	  T* create_workflow_engine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-		  pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
+
+                  /*
+                  pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
 		  pWfE->sig_finished.connect(  &GenericDaemon::observe_finished<T> );
 		  pWfE->sig_failed.connect(    &GenericDaemon::observe_failed<T> );
 		  pWfE->sig_cancelled.connect( &GenericDaemon::observe_cancelled<T> );
 		  pWfE->sig_executing.connect( &GenericDaemon::observe_executing<T> );
-
+                  */
 		  return pWfE;
 	  }
 
