@@ -29,7 +29,7 @@ for node_num in $nodes; do
   rm -f /scratch/$USER/sdpa/pc.$node_name.log
 
   echo "starting nre on $node_name..."
-  ssh $node_name $HOME/bin/start-nre $node_num >/dev/null 2>&1 &
+  ssh $node_name start-nre $node_num >/dev/null 2>&1 &
 done
 wait
 status-nre $nodes
