@@ -53,6 +53,58 @@ namespace we { namespace mgmt { namespace type {
     }
   };
 
+      namespace detail
+      {
+        template <typename Activity, typename Stream = std::ostream>
+        struct printer
+        {
+          typedef printer<Activity, Stream> this_type;
+          typedef typename Activity::token_on_place_list_t top_list_t;
+
+          printer (const Activity & act, Stream & stream)
+            : act_(act)
+            , os (stream)
+          { }
+
+          this_type & operator << ( const top_list_t & top_list )
+          {
+            os << "[";
+
+            for ( typename top_list_t::const_iterator top (top_list.begin())
+                ; top != top_list.end()
+                ; ++top
+                )
+            {
+              if (top != top_list.begin())
+                os << ", ";
+              os << we::type::detail::translate_port_to_name (act_.transition(), top->second)
+                 << "=(" << top->first << ", " << top->second << ")";
+            }
+
+            os << "]";
+            return *this;
+          }
+
+          template <typename T>
+          this_type & operator << ( const T & t )
+          {
+            os << t;
+            return *this;
+          }
+
+          // make std::endl work
+          this_type & operator << ( std::ostream & (*fn)(std::ostream &) )
+          {
+            fn (os);
+            return *this;
+          }
+
+        private:
+          const Activity & act_;
+          Stream & os;
+        };
+      }
+
   template <typename Transition, typename Traits = activity_traits<Transition> >
   class activity_t
   {
@@ -70,8 +122,8 @@ namespace we { namespace mgmt { namespace type {
     typedef typename traits_type::pid_t pid_t;
     typedef typename traits_type::activity_id_t id_t;
 
-    typedef boost::unique_lock<this_type> shared_lock_t;
-    typedef boost::unique_lock<this_type> unique_lock_t;
+    typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
+    typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
 
     activity_t ()
       : id_ (traits_type::invalid_id())
@@ -125,75 +177,77 @@ namespace we { namespace mgmt { namespace type {
     inline
     bool is_alive() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return ( flags::flag_traits<flags::flags_t>::is_alive (flags_) );
     }
 
     inline
     bool is_suspended() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return ( flags::flag_traits<flags::flags_t>::is_suspended (flags_) );
     }
 
     inline
     void set_suspended(bool value = true)
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       flags::flag_traits<flags::flags_t>::set_suspended(flags_, value);
     }
 
     inline
     bool is_cancelling() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return ( flags::flag_traits<flags::flags_t>::is_cancelling (flags_) );
     }
 
     inline
     void set_cancelling(bool value = true)
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       flags::flag_traits<flags::flags_t>::set_cancelling (flags_, value);
     }
 
     inline
     bool is_cancelled() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return ( flags::flag_traits<flags::flags_t>::is_cancelled (flags_) );
     }
 
     inline
     void set_cancelled(bool value = true)
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       flags::flag_traits<flags::flags_t>::set_cancelled (flags_, value);
     }
 
     inline
     bool is_failed() const
     {
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return ( flags::flag_traits<flags::flags_t>::is_failed (flags_) );
     }
 
     inline
     void set_failed(bool value = true)
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       flags::flag_traits<flags::flags_t>::set_failed (flags_, value);
     }
 
     inline
     const transition_type & transition() const
     {
+      shared_lock_t lock(mutex_);
       return transition_;
     }
 
     inline
     transition_type & transition()
     {
+      unique_lock_t lock(mutex_);
       return transition_;
     }
 
@@ -207,7 +261,7 @@ namespace we { namespace mgmt { namespace type {
     this_type
     extract()
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       we::mgmt::visitor::activity_extractor<this_type, boost::mt19937>
         extract_activity(engine_);
       this_type act = boost::apply_visitor ( extract_activity
@@ -219,7 +273,7 @@ namespace we { namespace mgmt { namespace type {
     void
     inject (this_type & subact)
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       we::mgmt::visitor::activity_injector<this_type>
         inject_activity (*this, subact);
       boost::apply_visitor ( inject_activity
@@ -231,7 +285,7 @@ namespace we { namespace mgmt { namespace type {
     void
     inject_input ()
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       we::mgmt::visitor::injector<this_type>
         inject_input (*this, input_);
       boost::apply_visitor ( inject_input
@@ -242,7 +296,7 @@ namespace we { namespace mgmt { namespace type {
     void
     collect_output ()
     {
-      unique_lock_t lock(*this);
+      unique_lock_t lock(mutex_);
       we::mgmt::visitor::output_collector<this_type> collect_output (*this);
       boost::apply_visitor ( collect_output
                            , transition_.data()
@@ -252,6 +306,7 @@ namespace we { namespace mgmt { namespace type {
     template <typename Context>
     void execute ( Context & ctxt )
     {
+      unique_lock_t lock(mutex_);
       /* context requirements
 
       internal
@@ -290,28 +345,56 @@ namespace we { namespace mgmt { namespace type {
     {
       static const we::mgmt::visitor::has_enabled visitor_has_enabled;
 
-      shared_lock_t lock(const_cast<this_type&>(*this));
+      shared_lock_t lock(mutex_);
       return boost::apply_visitor (visitor_has_enabled,  transition().data());
     }
 
     const input_t & input() const
     {
+      shared_lock_t lock(mutex_);
       return input_;
     }
 
     input_t & input()
     {
+      unique_lock_t lock(mutex_);
       return input_;
     }
 
     const output_t & output() const
     {
+      shared_lock_t lock(mutex_);
       return output_;
     }
 
     output_t & output()
     {
+      unique_lock_t lock(mutex_);
       return output_;
+    }
+
+    void writeTo (std::ostream & os) const
+    {
+      unique_lock_t lock(mutex_);
+
+      os << "{";
+      os << "act, "
+         << flags()
+         << ", "
+         << transition()
+         << ", "
+        ;
+
+      detail::printer<activity_t> printer (*this, os);
+      os << "{input, ";
+      printer << input();
+      os << "}";
+      os << ", ";
+      os << "{output, ";
+      printer << output();
+      os << "}";
+
+      os << "}";
     }
 
     // **********************************
@@ -370,57 +453,6 @@ namespace we { namespace mgmt { namespace type {
         return hasher(a.id());
       }
 
-      namespace detail
-      {
-        template <typename Activity, typename Stream = std::ostream>
-        struct printer
-        {
-          typedef printer<Activity, Stream> this_type;
-          typedef typename Activity::token_on_place_list_t top_list_t;
-
-          printer (const Activity & act, Stream & stream)
-            : act_(act)
-            , os (stream)
-          { }
-
-          this_type & operator << ( const top_list_t & top_list )
-          {
-            os << "[";
-
-            for ( typename top_list_t::const_iterator top (top_list.begin())
-                ; top != top_list.end()
-                ; ++top
-                )
-            {
-              if (top != top_list.begin())
-                os << ", ";
-              os << we::type::detail::translate_port_to_name (act_.transition(), top->second)
-                 << "=(" << top->first << ", " << top->second << ")";
-            }
-
-            os << "]";
-            return *this;
-          }
-
-          template <typename T>
-          this_type & operator << ( const T & t )
-          {
-            os << t;
-            return *this;
-          }
-
-          // make std::endl work
-          this_type & operator << ( std::ostream & (*fn)(std::ostream &) )
-          {
-            fn (os);
-            return *this;
-          }
-
-        private:
-          const Activity & act_;
-          Stream & os;
-        };
-      }
 
 
   template <typename Transition, typename Traits>
@@ -428,27 +460,7 @@ namespace we { namespace mgmt { namespace type {
                              , const activity_t<Transition, Traits> & act
                              )
   {
-    typedef activity_t<Transition, Traits> activity_t;
-
-    os << "{";
-      os << "act, "
-         << act.flags()
-         << ", "
-         << act.transition()
-         << ", "
-         ;
-
-    detail::printer<activity_t> printer (act, os);
-    os << "{input, ";
-    printer << act.input();
-    os << "}";
-    os << ", ";
-    os << "{output, ";
-    printer << act.output();
-    os << "}";
-
-    os << "}";
-
+    act.writeTo (os);
     return os;
   }
 }}}
