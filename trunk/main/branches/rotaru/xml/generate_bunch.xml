@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defun name="f_generate_bunch" xmlns:xi="http://www.w3.org/2001/XInclude">
+	<in name="amount" type="LONG" place="amount" />
+	<in name="volume" type="LONG" place="volume" />
+	<out name="out"   type="BUNCH" place="out" />
+
+	<net>
+		<place name="amount" type="LONG" />
+		<place name="volume" type="VOLUME" />
+		<place name="out" type="BUNCH" />
+
+		<transition name="generate_ids">			
+			<xi:include href="generate_sequence.xml" />
+			<connect-in place="amount" port="amount" />
+			<connect-out place="id" port="out" />
+		</transition>
+		<place name="id" type="LONG" />
+
+		<transition name="tag">
+			<defun name="f_tag">
+				<in name="id" type="LONG" />
+				<in name="value" type="VOLUME" />
+				<out name="bunch" type="BUNCH" />
+				<expression>
+					${bunch.id} := ${id};
+					${bunch.volume} := ${value};
+				</expression>
+			</defun>
+			<connect-read place="volume" port="value" />
+			<connect-in   place="id"     port="id" />
+			<connect-out  port="bunch"  place="out" />
+		</transition>
+	</net>
+</defun>

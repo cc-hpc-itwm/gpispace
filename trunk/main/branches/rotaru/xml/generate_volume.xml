@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defun name="f_generate_volume" xmlns:xi="http://www.w3.org/2001/XInclude">
+	<in name="amount" type="LONG" place="amount" />
+	<in name="offset" type="LONG" place="offset" />
+	<out name="out" type="VOLUME" place="out" />
+
+	<net>
+		<typedef name="VOLUME">
+			<field name="id" type="LONG"/>
+			<field name="offset" type="LONG"/>
+		</typedef>
+
+		<place name="amount" type="LONG" />
+		<place name="offset" type="LONG" />
+		<place name="out" type="VOLUME" />
+
+		<transition name="generate_ids">			
+			<xi:include href="generate_sequence.xml" />
+			<connect-in place="amount" port="amount" />
+			<connect-out place="id" port="out" />
+		</transition>
+		<place name="id" type="LONG" />
+
+		<transition name="tag">
+			<defun name="f_tag">
+				<in name="id" type="LONG" />
+				<in name="offset" type="LONG" />
+				<out name="volume" type="VOLUME" />
+				<expression>
+					${volume.id} := ${id};
+					${volume.offset} := ${offset};
+				</expression>
+			</defun>
+			<connect-read place="offset" port="offset" />
+			<connect-in   place="id"     port="id" />
+			<connect-out  port="volume"  place="out" />
+		</transition>
+	</net>
+</defun>

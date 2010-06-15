@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 	<xsd:annotation>
 		<xsd:documentation>
 		      SDPA Petri Net XML Schema
@@ -80,42 +80,44 @@
           	
 	<!--  this corresponds to transition_type -->
 	<xsd:complexType name="function_type" >
-	    <xsd:choice>
-			<xsd:sequence>
-				<xsd:element maxOccurs="unbounded" minOccurs="1" name="in" type="port_type" />
-				<xsd:element maxOccurs="unbounded" minOccurs="1" name="out" type="port_type" />
+		<xsd:sequence>
+	    	<xsd:choice>
+				<xsd:sequence minOccurs="0">
+					<xsd:element maxOccurs="unbounded" minOccurs="1" name="in" type="port_type" />
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="port_type" />
 
-				<xsd:choice minOccurs="1">
-					<xsd:element name="expression" type="xsd:string" />
-					<xsd:element name="module" type="mod_type" />
-					<xsd:element name="net" type="net_type" />
-				</xsd:choice>
-			</xsd:sequence>
-			<xsd:sequence>
-				<xsd:element name="url" type="xsd:anyURI" maxOccurs="1" />
-			</xsd:sequence>
-	    </xsd:choice>
+					<xsd:choice minOccurs="1">
+						<xsd:element name="expression" type="xsd:string" />
+						<xsd:element name="module" type="mod_type" />
+						<xsd:element name="net" type="net_type" />
+					</xsd:choice>
+				</xsd:sequence>
+	    	</xsd:choice>
+		    <xsd:element name="condition" type="xsd:string" minOccurs="0" maxOccurs="1" default="true" />
+		</xsd:sequence>	    
 		<xsd:attribute name="name" type="xsd:string" />
-		<xsd:attribute name="internal" type="xsd:boolean" default="false" use="optional" />
+		<xsd:attribute name="internal" type="xsd:boolean" use="optional" />
 	</xsd:complexType>
 	
 	<xsd:complexType name="connect_type">
 		<xsd:attribute name="place" type="xsd:string" use="required" />
 		<xsd:attribute name="port" type="xsd:string" use="required" />
-		<xsd:attribute name="read-only" type="xsd:boolean" use="optional" default="false" />
 	</xsd:complexType>
 	
 	<xsd:complexType name="transition_type" >
 		<xsd:sequence>
-			<xsd:element name="connect-in" type="connect_type" />
-			<xsd:element name="connect-out" type="connect_type" />
-			<xsd:element name="condition" type="xsd:string" minOccurs="0" default="true" />
-			<xsd:element name="map-type" type="type_map_type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="defun" type="function_type" minOccurs="0" maxOccurs="1" />
+		    <xsd:choice maxOccurs="unbounded">
+				<xsd:element name="connect-in" type="connect_type"  />
+				<xsd:element name="connect-out" type="connect_type" />
+				<xsd:element name="connect-read" type="connect_type" />
+			</xsd:choice>
+<!-- 		<xsd:element name="map-type" type="type_map_type" minOccurs="0" maxOccurs="unbounded"/> -->	
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
 		
 		<!--  refers to a function_type name -->
-		<xsd:attribute name="use" type="xsd:string" use="required"/>
+		<xsd:attribute name="use" type="xsd:string" use="optional"/>
 	</xsd:complexType>
 	
 	<xsd:complexType name="net_type">
