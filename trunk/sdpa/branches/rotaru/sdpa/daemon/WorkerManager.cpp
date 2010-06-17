@@ -74,13 +74,74 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
 
-	//redistribute fairly the load among the workers, if necessary
+	balanceWorkers();
 }
+
+void WorkerManager::balanceWorkers()
+{
+	lock_type lock(mtx_);
+	typedef std::map<Worker::worker_id_t, unsigned int> load_map_t;
+	typedef pair<Worker::worker_id_t, unsigned int> loadPair;
+	load_map_t loadVector;
+
+	size_t loadBal = 0;
+	size_t N = worker_map_.size();
+
+	if( N==0 )
+		return;
+
+	for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
+		loadBal += it->second->pending().size();
+
+	loadBal = loadBal%N?loadBal/N:loadBal/N + 1;
+
+	bool bFinished = false;
+
+	while( !bFinished )
+	{
+		bFinished = true;;
+		for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++ )
+		{
+			size_t loadCurrNode = it->second->pending().size();
+
+			if( loadCurrNode > loadBal )
+			{
+				for( worker_map_t::iterator itNb = worker_map_.begin(); itNb!=worker_map_.end(); itNb++)
+				{
+					size_t loadNb = itNb->second->pending().size();
+					if( loadCurrNode > loadNb )
+					{
+						// transfer load = (loadCurrNode - loadNb)/N from the current node to the neighboring node
+						size_t delta = (loadCurrNode - loadNb)/N;
+						if(delta)
+						{
+							bFinished = false;
+							for( int k=0; k<delta; k++)
+							{
+								 sdpa::job_id_t jobId = it->second->pending().pop();
+								 itNb->second->pending().push(jobId);
+							}
+						}
+						else if( loadCurrNode - loadNb > 1 ) //still unbalanced
+						{
+							bFinished = false;
+							loadCurrNode--;
+							// move just one job
+							sdpa::job_id_t jobId = it->second->pending().pop();
+							itNb->second->pending().push(jobId);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 
 /**
  * get next worker to be served
  */
-Worker::ptr_t &WorkerManager::getNextWorker() throw (NoWorkerFoundException)
+Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 

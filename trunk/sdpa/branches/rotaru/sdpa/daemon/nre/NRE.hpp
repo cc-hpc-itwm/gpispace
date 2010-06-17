@@ -65,11 +65,13 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
-			//bool bLaunchNrePcd = false;
-			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>( this, workerUrl, bLaunchNrePcd,
-					                                                             szNrePcdBinPath, szKDMModulesPath, szFvmPCModule ));
+			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>( this,
+					                                                             workerUrl,
+					                                                             bLaunchNrePcd,
+					                                                             szNrePcdBinPath,
+					                                                             szKDMModulesPath,
+					                                                             szFvmPCModule ));
 
-			//boost::dynamic_pointer_cast<SchedulerNRE<U> >(ptr_scheduler_)->nre_worker_client().set_location(workerUrl);
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");

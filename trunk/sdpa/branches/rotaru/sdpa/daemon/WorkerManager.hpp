@@ -44,6 +44,8 @@ namespace sdpa { namespace daemon {
 	  Worker::ptr_t &getNextWorker() throw (NoWorkerFoundException);
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 
+	  void balanceWorkers();
+
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;

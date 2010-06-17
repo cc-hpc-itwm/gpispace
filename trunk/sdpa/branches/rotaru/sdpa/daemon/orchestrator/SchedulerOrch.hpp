@@ -39,8 +39,8 @@ namespace sdpa {
 	 virtual ~SchedulerOrch() {};
 
 	 bool post_request( bool ) { return false; }
-	 void send_life_sign() {}
-	 void check_post_request() {}
+	 void send_life_sign() { /*do nothing*/ }
+	 void check_post_request() { /*do nothing*/}
 
 	 template <class Archive>
 	 void serialize(Archive& ar, const unsigned int file_version )

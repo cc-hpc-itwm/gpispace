@@ -65,6 +65,7 @@ namespace sdpa {
 	@param job a pointer to the job that shall be executed on a remote node
 	*/
 	virtual void schedule_remote(const sdpa::job_id_t &job);
+
 	virtual void start_job(const sdpa::job_id_t &job);
 
 	virtual Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);

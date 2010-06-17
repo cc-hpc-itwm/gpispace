@@ -273,6 +273,12 @@ void SchedulerImpl::check_post_request()
 	 }
 }
 
+void fairly_reschedule_work()
+{
+
+}
+
+
 void SchedulerImpl::run()
 {
 	if(!ptr_comm_handler_)
@@ -300,6 +306,9 @@ void SchedulerImpl::run()
 				// Attention!: an NRE has no WorkerManager!!!!
 				// or has an Worker Manager and the workers are threads
 				schedule_remote(jobId);
+
+				// fairly re-distribute tasks, if necessary
+				ptr_worker_man_->balanceWorkers();
 			}
 		}
 		catch(JobNotFoundException& ex)

@@ -137,9 +137,9 @@ void TestComponents::tearDown()
 }
 
 
-void TestComponents::testActivityRealWeAllCompAndNreWorkerSpywnedByNRE()
+void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 {
-	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpywnedByNRE *****"<<std::endl);
+	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
 	string strGuiUrl = "";
 	string workerUrl = "127.0.0.1:12500";
 	string orchestratorPort = "127.0.0.1:12000";
@@ -413,17 +413,6 @@ void TestComponents::testActivityRealWeAllCompAndActExec()
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", workerUrl, strGuiUrl );
-
-	// connect to FVM
-	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
-
-	fvm_pc_connection_mgr fvm_pc;
-	try {
-		fvm_pc.init(pc_cfg);
-	} catch (const std::exception &ex) {
-		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
-		CPPUNIT_ASSERT (false);
-	}*/
 
 	SDPA_LOG_DEBUG("starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
