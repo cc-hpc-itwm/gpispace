@@ -80,7 +80,7 @@ bool Logger::isLevelEnabled(const LogLevel &level) const
 
 bool Logger::isFiltered(const LogEvent &evt) const
 {
-  return (*filter_)(evt);
+  return (! hasAppender()) || (*filter_)(evt);
 }
 
 void Logger::log(const LogEvent &event) const
@@ -109,6 +109,10 @@ void Logger::log(const LogEvent &event) const
   }
 }
 
+bool Logger::hasAppender (void) const
+{
+  return ! appenders_.empty();
+}
 const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
