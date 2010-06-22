@@ -223,7 +223,7 @@ namespace we { namespace mgmt {
         remove_internal_mapping (internal_id, sub_to_ext_ite_);
 
         activity_type res_act ( policy::codec::decode (result) );
-        lookup (internal_id).output().swap (res_act.output());
+        lookup (internal_id).set_output(res_act.output());
         inj_q_.put ( internal_id );
 
         return true;
@@ -250,7 +250,7 @@ namespace we { namespace mgmt {
         remove_internal_mapping (internal_id, sub_to_ext_ite_);
 
         activity_type res_act ( policy::codec::decode (result) );
-        lookup (internal_id).output().swap (res_act.output());
+        lookup (internal_id).set_output(res_act.output());
 
         post_failed_notification (internal_id);
         return true;
