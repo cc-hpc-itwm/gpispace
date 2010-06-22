@@ -12,8 +12,8 @@ namespace we
   {
     namespace pref
     {
-      struct mandatory {};
-      struct preferred {};
+      struct mandatory_tag {};
+      struct preferred_tag {};
       struct yes_no_maybe
       {
         yes_no_maybe ()
@@ -233,6 +233,19 @@ namespace we
         os << "}";
 
         return os;
+      }
+
+      template <typename T>
+      inline
+      preference_t<T> mk_pref ( mandatory_tag )
+      {
+        return preference_t<T> (true);
+      }
+      template <typename T>
+      inline
+      preference_t<T> mk_pref ( preferred_tag )
+      {
+        return preference_t<T> (false);
       }
     }
   }

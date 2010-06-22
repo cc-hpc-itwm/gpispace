@@ -8,10 +8,10 @@ using namespace we::mgmt::pref;
 
 int main()
 {
-  preference_t<unsigned int> p(false);
+  preference_t<unsigned int> p (mk_pref<unsigned int> (preferred_tag()));
 
-  p.want (5).want (6).want (10);
-  p.cant (1).cant (8).cant (3).cant (4);
+  p.want (1).want (0).want (2);
+  p.cant (9).cant (7).cant (3).cant (4);
 
   std::cout << p << std::endl;
   {
@@ -36,15 +36,18 @@ int main()
     std::cout << "can (" << *w << ")? " << p.can(*w) << std::endl;
   }
 
-  std::vector<unsigned int>::iterator new_end
-    ( std::remove_if ( workers.begin()
-                     , workers.end()
-                     , std::not1 ( p )
-                     )
+  std::vector<unsigned int>::iterator bound
+    ( std::stable_partition ( workers.begin()
+                            , workers.end()
+                            , p
+                            )
     );
 
   std::cout << "possible workers: "
-            << util::show (workers.begin (), new_end)
+            << util::show (workers.begin (), bound)
+            << std::endl;
+  std::cout << "impossible workers: "
+            << util::show (bound, workers.end())
             << std::endl;
 
   return EXIT_SUCCESS;
