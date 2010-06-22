@@ -75,10 +75,12 @@ namespace we
         return is;
       }
 
+      template <typename T>
       struct preference_t
       {
-        typedef unsigned int rank_type;
+        typedef T rank_type;
         typedef rank_type value_type;
+        typedef rank_type argument_type;
 
         typedef boost::unordered_set<value_type> exclude_set_type;
         typedef std::vector<value_type> rank_list_type;
@@ -107,9 +109,13 @@ namespace we
           }
         }
 
-        yes_no_maybe operator () (const rank_type rank) const
+        bool operator () (const rank_type rank) const
         {
-          return can (rank);
+          const yes_no_maybe ynm (can(rank));
+          if (mandatory_)
+            return ynm.yes();
+          else
+            return ynm.yes() || ynm.maybe();
         }
 
         bool is_mandatory (void) const
@@ -208,8 +214,9 @@ namespace we
         exclude_set_type excluded_ranks_;
       };
 
+      template <typename T>
       inline
-      std::ostream & operator << (std::ostream & os, const preference_t & p)
+      std::ostream & operator << (std::ostream & os, const preference_t<T> & p)
       {
         os << "{pref, ";
 
