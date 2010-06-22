@@ -8,12 +8,10 @@ endif(POLICY CMP0011)
 project(libfhglog)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
+include (./version.cmake)
+
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
-
-set(V_MAJOR 1)
-set(V_MINOR 2)
-set(V_PATCH 0)
 
 option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 option(USE_STL_TR1
