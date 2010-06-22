@@ -12,66 +12,76 @@ namespace we
   {
     namespace pref
     {
-      struct mandatory_tag {};
-      struct preferred_tag {};
-      struct yes_no_maybe
+      struct yes_no_may
       {
-        yes_no_maybe ()
-          : value_ (0)
+        enum YNM
+        {
+          NO = 0
+        , YES
+        , MAY
+        };
+
+        yes_no_may ()
+          : value_ (NO)
         { }
 
         // no - 0
         // yes - 1
-        // maybe - 2
-        explicit
-        yes_no_maybe (const int i)
-          : value_ (i)
+        // may - 2
+        yes_no_may (const YNM v)
+          : value_ (v)
         { }
 
         bool yes (void) const
         {
-          return value_ == 1;
+          return value_ == YES;
         }
 
         bool no (void) const
         {
-          return value_ == 0;
+          return value_ == NO;
         }
 
-        bool maybe (void) const
+        bool may (void) const
         {
-          return value_ == 2;
+          return value_ == MAY;
         }
 
-        void set (int v)
+        void set (const YNM v)
         {
           value_ = v;
         }
 
+        operator bool ()
+        {
+          return yes() || may();
+        }
+
       private:
-        int value_;
+        YNM value_;
       };
 
       inline
-      std::ostream & operator << (std::ostream & os, const yes_no_maybe & ynm)
+      std::ostream & operator << (std::ostream & os, const yes_no_may & ynm)
       {
         if (ynm.yes())
           os << "yes";
         if (ynm.no())
           os << "no";
-        if (ynm.maybe())
-          os << "maybe";
+        if (ynm.may())
+          os << "may";
 
         return os;
       }
+
       inline
-      std::istream & operator >> (std::istream & is, yes_no_maybe & ynm)
+      std::istream & operator >> (std::istream & is, yes_no_may & ynm)
       {
         std::string s;
         is >> s;
-        if (s == "yes") ynm.set(1);
-        if (s == "no") ynm.set(0);
-        if (s == "maybe") ynm.set(2);
+        if (s == "yes") ynm.set(yes_no_may::YES);
+        if (s == "no") ynm.set(yes_no_may::NO);
+        if (s == "may") ynm.set(yes_no_may::MAY);
         return is;
       }
 
@@ -85,40 +95,32 @@ namespace we
         typedef boost::unordered_set<value_type> exclude_set_type;
         typedef std::vector<value_type> rank_list_type;
 
-        preference_t ()
-          : mandatory_(false)
-        {}
-
         explicit
         preference_t (const bool _mandatory)
           : mandatory_(_mandatory)
-        {}
+        { }
 
-        yes_no_maybe can (const rank_type rank) const
+        yes_no_may can (const rank_type rank) const
         {
-          if (mandatory_)
+          if (is_mandatory())
           {
-            if (is_wanted (rank)) return yes_no_maybe(1);
-            return yes_no_maybe(0);
+            if (is_wanted (rank)) return yes_no_may::YES;
+            return yes_no_may::NO;
           }
           else
           {
-            if (is_wanted (rank)) return yes_no_maybe(1);
-            if (is_excluded (rank)) return yes_no_maybe(0);
-            return yes_no_maybe(2);
+            if (is_wanted (rank)) return yes_no_may::YES;
+            if (is_excluded (rank)) return yes_no_may::NO;
+            return yes_no_may::MAY;
           }
         }
 
         bool operator () (const rank_type rank) const
         {
-          const yes_no_maybe ynm (can(rank));
-          if (mandatory_)
-            return ynm.yes();
-          else
-            return ynm.yes() || ynm.maybe();
+          return can(rank);
         }
 
-        bool is_mandatory (void) const
+        virtual bool is_mandatory (void) const
         {
           return mandatory_;
         }
@@ -138,9 +140,8 @@ namespace we
           return *this;
         }
 
-        /*
-        template <typename InputIterator>
-        preference_t & want (InputIterator first, InputIterator last)
+        template <typename ForwardIterator>
+        preference_t & want (ForwardIterator first, ForwardIterator last)
         {
           while (first != last)
           {
@@ -149,7 +150,6 @@ namespace we
           }
           return *this;
         }
-        */
 
         bool is_excluded (rank_type rank) const
         {
@@ -162,8 +162,8 @@ namespace we
           return *this;
         }
 
-        template <typename InputIterator>
-        preference_t & cant (InputIterator first, InputIterator last)
+        template <typename ForwardIterator>
+        preference_t & cant (ForwardIterator first, ForwardIterator last)
         {
           while (first != last)
           {
@@ -173,12 +173,12 @@ namespace we
           return *this;
         }
 
-        preference_t & operator+= (const rank_type r)
+        preference_t & operator+= (rank_type const & r)
         {
           return want (r);
         }
 
-        preference_t & operator-= (const rank_type r)
+        preference_t & operator-= (rank_type const & r)
         {
           return cant (r);
         }
@@ -209,10 +209,22 @@ namespace we
         }
 
       private:
-        bool mandatory_;
+        const bool mandatory_;
         rank_list_type ranks_;
         exclude_set_type excluded_ranks_;
       };
+
+      template <typename T>
+      preference_t<T> make_mandatory ()
+      {
+        return preference_t<T> (true);
+      }
+
+      template <typename T>
+      preference_t<T> make_preferred ()
+      {
+        return preference_t<T> (false);
+      }
 
       template <typename T>
       inline
@@ -221,31 +233,26 @@ namespace we
         os << "{pref, ";
 
         if (p.is_mandatory())
-          os << "{must, ";
+          os << "must";
         else
-          os << "{want, ";
-        os << ::util::show (p.ranks().begin(), p.ranks().end());
-        os << "}, ";
+          os << "want";
+        os << ", ";
 
-        os << "{cant, ";
-        os << ::util::show (p.exclusion().begin(), p.exclusion().end());
+        os << "{ranks, ";
+        os << ::util::show (p.ranks().begin(), p.ranks().end());
         os << "}";
+
+        if (! p.is_mandatory())
+        {
+          os << ", ";
+          os << "{cant, ";
+          os << ::util::show (p.exclusion().begin(), p.exclusion().end());
+          os << "}";
+        }
+
         os << "}";
 
         return os;
-      }
-
-      template <typename T>
-      inline
-      preference_t<T> mk_pref ( mandatory_tag )
-      {
-        return preference_t<T> (true);
-      }
-      template <typename T>
-      inline
-      preference_t<T> mk_pref ( preferred_tag )
-      {
-        return preference_t<T> (false);
       }
     }
   }

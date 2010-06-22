@@ -8,16 +8,25 @@ using namespace we::mgmt::pref;
 
 int main()
 {
-  preference_t<unsigned int> p (mk_pref<unsigned int> (preferred_tag()));
+  preference_t<unsigned int> p_preferred = make_preferred<unsigned int>();
+  preference_t<unsigned int> p_mandatory = make_mandatory<unsigned int>();
 
-  p.want (1).want (0).want (2);
-  p.cant (9).cant (7).cant (3).cant (4);
+  const unsigned int wanted[] =
+    {
+      1, 0, 2
+    };
+  const unsigned int blocked[] =
+    {
+      9, 7, 3, 4
+    };
+  p_preferred.want (wanted, wanted+sizeof(wanted)/sizeof(unsigned int));
+  p_mandatory.want (wanted, wanted+sizeof(wanted)/sizeof(unsigned int));
 
-  std::cout << p << std::endl;
-  {
-    preference_t<unsigned int> p1 (p);
-    std::cout << p1 << std::endl;
-  }
+  p_preferred.cant (blocked, blocked+sizeof(blocked)/sizeof(unsigned int));
+  p_mandatory.cant (blocked, blocked+sizeof(blocked)/sizeof(unsigned int));
+
+  std::cout << "preferred: " << p_preferred << std::endl;
+  std::cout << "mandatory: " << p_mandatory << std::endl;
 
   std::vector<unsigned int> workers;
   for (preference_t<unsigned int>::value_type rank(0); rank < 10; ++rank)
@@ -33,15 +42,38 @@ int main()
       ; ++w
       )
   {
-    std::cout << "can (" << *w << ")? " << p.can(*w) << std::endl;
+    std::cout << "pref/mand: can (" << *w << ")? "
+              << p_preferred.can(*w) << "/" << p_mandatory.can(*w)
+              << std::endl;
   }
 
-  std::vector<unsigned int>::iterator bound
-    ( std::stable_partition ( workers.begin()
-                            , workers.end()
-                            , p
-                            )
-    );
+  std::vector<unsigned int>::iterator bound;
+  std::cout << std::endl;
+  std::cout << "preferred" << std::endl;
+  std::cout << "=========" << std::endl << std::endl;
+
+  bound = ( std::stable_partition ( workers.begin()
+                                  , workers.end()
+                                  , p_preferred
+                                  )
+          );
+
+  std::cout << "possible workers: "
+            << util::show (workers.begin (), bound)
+            << std::endl;
+  std::cout << "impossible workers: "
+            << util::show (bound, workers.end())
+            << std::endl;
+
+  std::cout << std::endl;
+  std::cout << "mandatory" << std::endl;
+  std::cout << "=========" << std::endl << std::endl;
+
+  bound = ( std::stable_partition ( workers.begin()
+                                  , workers.end()
+                                  , p_mandatory
+                                  )
+          );
 
   std::cout << "possible workers: "
             << util::show (workers.begin (), bound)
