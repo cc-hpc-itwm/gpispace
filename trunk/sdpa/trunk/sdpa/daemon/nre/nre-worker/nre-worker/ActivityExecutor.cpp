@@ -23,6 +23,11 @@
 
 #include "ActivityExecutor.hpp"
 
+#include <we/we.hpp>
+
+#include "module.hpp"
+#include "context.hpp"
+
 using boost::asio::ip::udp;
 
 namespace sdpa { namespace nre { namespace worker {

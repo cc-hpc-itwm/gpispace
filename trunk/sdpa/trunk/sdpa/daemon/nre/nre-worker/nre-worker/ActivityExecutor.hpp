@@ -34,10 +34,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-#include <we/we.hpp>
-// generic
-#include <kdm/module.hpp>
-#include <kdm/context.hpp>
+#include <we/loader/loader.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
   class ActivityExecutor : public ExecutionContext
