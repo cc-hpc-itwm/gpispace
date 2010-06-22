@@ -32,13 +32,6 @@
 
 #include <we/we.hpp>
 
-#include <kdm/kdm_simple.hpp>
-
-// generic
-#include <kdm/module.hpp>
-#include <kdm/context.hpp>
-
-
 namespace sdpa { namespace nre { namespace worker {
   class Message
   {

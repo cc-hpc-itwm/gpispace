@@ -41,15 +41,15 @@ namespace sdpa { namespace daemon {
                      const sdpa::job_desc_t desc,
                      const sdpa::daemon::IComm* pHandler,
                      const sdpa::job_id_t &parent)
-        : id_(id), desc_(desc),
-          parent_(parent),
-          b_marked_for_del_(false),
-          b_local_(false),
-          pComm(const_cast<IComm*>(pHandler)),
-          SDPA_INIT_LOGGER( string("Job ")+ id.str()),
-          walltime_(2592000) // walltime in seconds: one month by default
+        : SDPA_INIT_LOGGER( string("Job ")+ id.str())
+		, id_(id)
+		, desc_(desc)
+		, parent_(parent)
+		, b_marked_for_del_(false)
+		, b_local_(false)
+		, pComm(const_cast<IComm*>(pHandler))
+		, walltime_(2592000) // walltime in seconds: one month by default
     {}
-
 
     JobImpl::~JobImpl() throw () {
     	std::ostringstream os;

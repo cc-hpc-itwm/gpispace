@@ -95,6 +95,7 @@ namespace sdpa { namespace daemon {
 		}
 
     private:
+        SDPA_DECLARE_LOGGER();
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
@@ -102,7 +103,6 @@ namespace sdpa { namespace daemon {
         bool b_marked_for_del_;
         bool b_local_;
         sdpa::job_result_t result;
-        SDPA_DECLARE_LOGGER();
 
         friend class boost::serialization::access;
         sdpa::worker_id_t worker_id_;

@@ -139,23 +139,26 @@ void Aggregator<T>::shutdown(Aggregator<T>::ptr_t ptrAgg)
 }
 
 template <typename T>
-void Aggregator<T>::action_configure(const StartUpEvent&)
+void Aggregator<T>::action_configure(const StartUpEvent &se)
 {
+	GenericDaemon::action_configure (se);
+
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_configure'");
-	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval", 1000000); //1s
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 1000000); //1s
+	SDPA_LOG_INFO("Configuring myeself (aggregator)...");
 }
 
 template <typename T>
 void Aggregator<T>::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_config_ok'");
-	// in fact the master name should be red from the configuration file
+	SDPA_LOG_INFO("Configuration (aggregator) was ok");
+	{
+	  std::ostringstream sstr;
+	  ptr_daemon_cfg_->writeTo (sstr);
+	  SDPA_LOG_INFO("config: " << sstr.str());
+	}
 
-	SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
+	SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
 	to_master_stage()->send(pEvtWorkerReg);
 }

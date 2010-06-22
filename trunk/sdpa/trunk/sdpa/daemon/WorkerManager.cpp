@@ -22,7 +22,7 @@ using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {
-	iter_last_worker_ = worker_map_.end();
+	iter_last_worker_ = worker_map_.begin();
 }
 
 WorkerManager::~WorkerManager(){
@@ -50,7 +50,7 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	lock_type lock(mtx_);
 
 	Worker::worker_id_t workerId = pWorker->name();
-	unsigned int rank = pWorker->rank();
+	const int rank = pWorker->rank();
 
 	bool bFound = false;
 	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
@@ -64,17 +64,18 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 
 		if( it->second->rank() == rank )
 		{
-			SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
+			SDPA_LOG_WARN("An worker with the rank "<<rank<<" already exists in the worker map!");
 			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank);
 		}
 	}
 
+  if (! bFound)
+  {
 	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(),pWorker));
-	if(worker_map_.size() == 1)
-		iter_last_worker_ = worker_map_.begin();
+  }
 
-	balanceWorkers();
+  balanceWorkers();
 }
 
 void WorkerManager::balanceWorkers()
@@ -85,7 +86,7 @@ void WorkerManager::balanceWorkers()
 	load_map_t loadVector;
 
 	size_t loadBal = 0;
-	size_t N = worker_map_.size();
+	const size_t N = worker_map_.size();
 
 	if( N==0 )
 		return;
@@ -116,7 +117,7 @@ void WorkerManager::balanceWorkers()
 						if(delta)
 						{
 							bFinished = false;
-							for( int k=0; k<delta; k++)
+							for( size_t k=0; k<delta; k++)
 							{
 								 sdpa::job_id_t jobId = it->second->pending().pop();
 								 itNb->second->pending().push(jobId);

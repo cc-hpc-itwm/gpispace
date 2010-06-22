@@ -207,22 +207,28 @@ void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 }
 
 template <typename T, typename U>
-void NRE<T, U>::action_configure(const StartUpEvent&)
+void NRE<T, U>::action_configure(const StartUpEvent &se)
 {
+	GenericDaemon::action_configure (se);
+
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_configure'");
+	SDPA_LOG_INFO("Configuring myeself (nre)...");
 	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval",          50 * 1000); //0.1s
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 60 * 1000 * 1000); //60s
+	ptr_daemon_cfg_->put("polling interval",          50 * 1000); //0.1s
 }
 
 template <typename T, typename U>
 void NRE<T, U>::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+	SDPA_LOG_INFO("Configuration (nre) was ok");
+	{
+	  std::ostringstream sstr;
+	  ptr_daemon_cfg_->writeTo (sstr);
+	  SDPA_LOG_INFO("config: " << sstr.str());
+	}
 
-	SDPA_LOG_DEBUG("Send WorkerRegistrationEvent to "<<master());
+	SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
 	to_master_stage()->send(pEvtWorkerReg);
 }
@@ -385,41 +391,9 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
-/*
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
-}*/
-
-template <typename T, typename U>
-void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
 }
@@ -427,7 +401,6 @@ void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
 }
@@ -435,7 +408,6 @@ void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
 }
@@ -443,7 +415,6 @@ void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
 }
@@ -451,7 +422,6 @@ void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 }

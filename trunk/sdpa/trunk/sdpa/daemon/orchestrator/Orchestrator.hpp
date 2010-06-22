@@ -133,16 +133,24 @@ void Orchestrator<T>::shutdown( Orchestrator<T>::ptr_t ptrOrch )
 }
 
 template <typename T>
-void Orchestrator<T>::action_configure(const StartUpEvent&)
+void Orchestrator<T>::action_configure(const StartUpEvent &se)
 {
-	SDPA_LOG_DEBUG("Call 'action_configure'");
+	GenericDaemon::action_configure (se);
+
+	// should be overriden by the orchestrator, aggregator and NRE
+	SDPA_LOG_INFO("Configuring myeself (orchestrator)...");
 }
 
 template <typename T>
 void Orchestrator<T>::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
+	{
+	  std::ostringstream sstr;
+	  ptr_daemon_cfg_->writeTo (sstr);
+	  SDPA_LOG_INFO("config: " << sstr.str());
+	}
 }
 
 template <typename T>

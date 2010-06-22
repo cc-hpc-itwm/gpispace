@@ -57,6 +57,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
@@ -76,6 +77,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 	if(!toMasterStageName.empty())
@@ -106,6 +108,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
 }
@@ -136,37 +139,49 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 	SDPA_LOG_DEBUG("configuring network components...");
 	const std::string prefix(daemon_stage_->name()+".net");
 
-	SDPA_LOG_DEBUG("setting up decoding...");
-	seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
-	sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
-	seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
-	seda::StageRegistry::instance().insert(decode_stage);
-	decode_stage->start();
-
-	SDPA_LOG_DEBUG("setting up the network stage...");
-	seda::comm::ConnectionFactory connFactory;
-	seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
-	seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
-	// master known service: give the port as a parameter
-	if( !masterName.empty() &&  !masterUrl.empty() )
+	try {
+		SDPA_LOG_DEBUG("setting up decoding...");
+		seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
+		sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
+		seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
+		seda::StageRegistry::instance().insert(decode_stage);
+		decode_stage->start();
+	}
+	catch(std::exception& ex)
 	{
-		setMaster(masterName);
-		conn->locator()->insert( masterName, masterUrl);
+		SDPA_LOG_ERROR("Exception occurred when thying to start the decoding stage: "<<ex.what());
 	}
 
-	seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
-	seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
-	seda::StageRegistry::instance().insert(network_stage);
-	network_stage->start();
+	try {
+		SDPA_LOG_DEBUG("setting up the network stage...");
+		seda::comm::ConnectionFactory connFactory;
+		seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
+		seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
+		// master known service: give the port as a parameter
+		if( !masterName.empty() &&  !masterUrl.empty() )
+		{
+			setMaster(masterName);
+			conn->locator()->insert( masterName, masterUrl);
+		}
 
-	SDPA_LOG_DEBUG("setting up the output/encoding stage...");
-	seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
-	sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
-	seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
-	seda::StageRegistry::instance().insert(encode_stage);
+		seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
+		seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
+		seda::StageRegistry::instance().insert(network_stage);
+		network_stage->start();
 
-	ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
-	encode_stage->start();
+		SDPA_LOG_DEBUG("setting up the output/encoding stage...");
+		seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
+		sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
+		seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
+		seda::StageRegistry::instance().insert(encode_stage);
+
+		ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
+		encode_stage->start();
+	}
+	catch(std::exception& ex)
+	{
+		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
+	}
 }
 
 void GenericDaemon::shutdown_network()
@@ -359,14 +374,31 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 	ptr_scheduler_->addWorker(pWorker);
 }
 
+bool GenericDaemon::requestsAllowed()
+{
+	bool bAllowReq = true;
+
+	try {
+		( bAllowReq = m_nExternalJobs < cfg()->get<unsigned int>("nmax_ext_job_req", 10));
+	}
+	catch(std::exception& ex)
+	{
+		SDPA_LOG_WARN("Exception occurred: "<<ex.what());
+	}
+
+	return bAllowReq;
+}
+
 //actions
 void GenericDaemon::action_configure(const StartUpEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_configure'");
+	SDPA_LOG_INFO("Configuring myself (generic)...");
+
 	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval",    1 * 1000 * 1000);
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 30 * 1000 * 1000);
+	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
+	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
+	ptr_daemon_cfg_->put("life-sign interval", 60 * 1000 * 1000);
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
@@ -374,12 +406,12 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	// check if the system should be recovered
 
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_DEBUG("Call 'action_config_ok'");
+	SDPA_LOG_INFO("configuration was ok");
 }
 
-void GenericDaemon::action_config_nok(const ConfigNokEvent&)
+void GenericDaemon::action_config_nok(const ConfigNokEvent &cne)
 {
-	SDPA_LOG_DEBUG("Call 'action_config_nok'");
+	SDPA_LOG_FATAL("configuration was not ok!");
 }
 
 void GenericDaemon::action_interrupt(const InterruptEvent&)
@@ -576,6 +608,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 			// There is a problem with this if uncommented
 			sendEventToMaster(pSubmitJobAckEvt, 0);
+
+			lock_type lock(mtx_);
+			m_nExternalJobs++;
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException&) {
@@ -709,7 +744,6 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
 
 }
 
-
 /**
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
@@ -746,9 +780,12 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 
 	SDPA_LOG_DEBUG(" notified SDPA that the workflow "<<workflowId<<" finished!");
 	job_id_t job_id(workflowId);
-
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::WE, name(), job_id, result));
 	sendEventToSelf(pEvtJobFinished);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
@@ -774,6 +811,10 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
 
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::WE, name(), job_id, result ));
 	sendEventToSelf(pEvtJobFailed);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
@@ -792,9 +833,14 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
 	sendEventToSelf(pEvtCancelJobAck);
+
+	lock_type lock(mtx_);
+	m_nExternalJobs--;
+
 	return true;
 }
 
+/*
 void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
 {
 	sdpa::job_result_t results;
@@ -814,3 +860,4 @@ void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
 	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), SDPAEvent::message_id_type() ) );
 	sendEventToSelf(pCancelAckEvt);
 }
+*/
