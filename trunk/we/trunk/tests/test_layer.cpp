@@ -39,36 +39,40 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
   }
 }
 static
-void observe_failed (const layer_t *, layer_id_type const & id, std::string const &)
+void observe_failed (const layer_t *l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity failed: id := " << id << std::endl;
+  l->print_statistics(std::cerr);
 }
 static
-void observe_cancelled (const layer_t *, layer_id_type const & id, std::string const &)
+void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string const &)
 {
   std::cerr << "activity cancelled: id := " << id << std::endl;
+  l->print_statistics(std::cerr);
 }
 static
-void observe_executing (const layer_t *, layer_id_type const &)
+void observe_executing (const layer_t *l, layer_id_type const &)
 {
+  l->print_statistics(std::cerr);
 }
 
 int main (int argc, char **argv)
 {
   po::options_description desc("options");
 
-  std::string cfg_file;
+  std::string path_to_act;
   std::string mod_path;
   std::vector<std::string> mods_to_load;
-
-  const std::size_t num_jobs = 1;
-  const std::size_t num_worker = 8;
+  std::vector<std::string> input_spec;
+  std::size_t num_worker = 8;
 
   desc.add_options()
     ("help", "this message")
-    ("cfg", po::value<std::string>(&cfg_file)->default_value("/scratch/KDM/KDM.conf"), "config file")
-    ("mod-path", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "modules")
+    ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
+    ("mod-path", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "where can modules be located")
+    ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
+    ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity")
     ;
 
   po::variables_map vm;
