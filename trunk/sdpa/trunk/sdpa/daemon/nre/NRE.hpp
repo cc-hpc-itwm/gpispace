@@ -28,7 +28,7 @@
 
 #include <boost/pointer_cast.hpp>
 
-#include <we/we.hpp>
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -45,9 +45,16 @@ namespace sdpa {
 		typedef typename T::internal_id_type we_internal_id_t;
 		SDPA_DECLARE_LOGGER();
 
-		NRE( const std::string& name = "", const std::string& url = "",
-			 const std::string& masterName = "", const std::string& masterUrl = "",
-			 const std::string& workerUrl = "", const std::string& guiUrl = "" )
+		NRE( const std::string& name = "",
+			 const std::string& url = "",
+			 const std::string& masterName = "",
+			 const std::string& masterUrl = "",
+			 const std::string& workerUrl = "",
+			 const std::string& guiUrl = "",
+			 bool bLaunchNrePcd = false,
+			 const char* szNrePcdBinPath = "",
+			 const char* szKDMModulesPath = "",
+			 const char* szFvmPCModule = "")
 		: dsm::DaemonFSM( name,  create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
@@ -58,9 +65,13 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
-			bool bLaunchNrePcd = false;
-			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>(this, workerUrl, bLaunchNrePcd ));
-			//boost::dynamic_pointer_cast<SchedulerNRE<U> >(ptr_scheduler_)->nre_worker_client().set_location(workerUrl);
+			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>( this,
+					                                                             workerUrl,
+					                                                             bLaunchNrePcd,
+					                                                             szNrePcdBinPath,
+					                                                             szKDMModulesPath,
+					                                                             szFvmPCModule ));
+
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -72,13 +83,40 @@ namespace sdpa {
 			SDPA_LOG_DEBUG("NRE destructor called ...");
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
+
+			/*int c;
+		   	int nStatus;
+
+			//kill pcd here
+		   	kill(0,SIGTERM);
+
+			c = wait(&nStatus);
+			if( WIFEXITED(nStatus) )
+			{
+				if( WEXITSTATUS(nStatus) != 0 )
+				{
+					std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+					LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+				}
+				else
+					if( WIFSIGNALED(nStatus) )
+					{
+						std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+						LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+					}
+			}
+			*/
+
 		}
 
 		static ptr_t create( const std::string& name, const std::string& url,
 								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000")
+								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",
+								  bool bLaunchNrePcd = false,  const char* szNrePcdBinPath = "",
+								  const char* szKDMModulesPath = "", const char* szFvmPCModule = "")
 		{
-			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl));
+			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl, bLaunchNrePcd,
+					                     szNrePcdBinPath, szKDMModulesPath, szFvmPCModule ));
 		}
 
       	static void start( NRE<T, U>::ptr_t ptrNRE );
@@ -92,6 +130,7 @@ namespace sdpa {
 
 		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+		void handleCancelJobAckEvent(const CancelJobAckEvent* pEvt );
 
 		void activityCreated( const id_type& id, const std::string& data );
 		void activityStarted( const id_type& id, const std::string& data );
@@ -227,11 +266,11 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		}
 		catch(QueueFull)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
 		}
 		catch(seda::StageNotFound)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_DEBUG("Stage not found when trying to submit JobFinishedEvent");
 		}
 		catch(...) {
 			SDPA_LOG_DEBUG("Unexpected exception occurred!");
@@ -274,11 +313,55 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		}
 		catch(QueueFull)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
 		}
 		catch(seda::StageNotFound)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_DEBUG("Stage not found when trying to send JobFailedEvent");
+		}
+		catch(...) {
+			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		}
+	}
+}
+
+template <typename T, typename U>
+void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
+{
+	SDPA_LOG_DEBUG("Call 'handleJobFailedEvent'");
+
+	//put the job into the state Finished
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->CancelJobAck(pEvt);
+	}
+	catch(JobNotFoundException){
+		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+	}
+
+	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	{
+		// the message comes from GWES, this is a local job
+		// if I'm not the orchestrator
+		//send JobFinished event to the master if daemon == aggregator || NRE
+
+		try {
+			// forward it up
+			const sdpa::events::SDPAEvent::message_id_type mid;
+			CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), master(), pEvt->job_id(), mid));
+
+			// send the event to the master
+			sendEventToMaster(pEvtCancelJobAck);
+			// delete it from the map when you receive a JobFaileddAckEvent!
+		}
+		catch(QueueFull)
+		{
+			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" CancelJobAckEvent");
+		}
+		catch(seda::StageNotFound)
+		{
+			SDPA_LOG_DEBUG("Stage not found when trying to submit CancelJobAckEvent");
 		}
 		catch(...) {
 			SDPA_LOG_DEBUG("Unexpected exception occurred!");
@@ -302,39 +385,75 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
+/*
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
-	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 {
-	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 {
-	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 {
-	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
 }
 
 template <typename T, typename U>
 void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
-	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
-	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
+}*/
+
+template <typename T, typename U>
+void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
+}
+
+template <typename T, typename U>
+void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
+{
+	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
+ 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+ 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 }
 
 template <typename T, typename U>
