@@ -3,10 +3,11 @@
 
 SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 {
-  m_parallelActivities = 0;
   m_nMinHeight = 20;
   m_nMinWidth = 150;
   m_nNbColumn = 4;
+  m_nCounter = 0;
+  m_nFirstID = -1;
 
   m_ColorCreate = QColor( 155, 155, 255 );
   m_ColorRun = QColor( 255, 255, 0 );
@@ -33,8 +34,10 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
     m_pGridL->setColumnMinimumWidth( i, m_nMinWidth );
   }
 
-  m_pParActLabel = (new QLabel ("# parallel activities: ") );
-  m_pLastGL->addWidget( m_pParActLabel, 0, m_nNbColumn );
+  m_pParActLabel = (new QLabel ("# parallel activities: 0") );
+  m_pActLabel = (new QLabel ("# activities: 0") );
+  m_pLastGL->addWidget( m_pActLabel, 0, 0 );
+  m_pLastGL->addWidget( m_pParActLabel, 0, 2 );
   m_pLastGL->setColumnStretch( m_nNbColumn, 1 );
 
   m_pGridL->setVerticalSpacing ( 0 );
@@ -91,8 +94,6 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   connect( this, SIGNAL( numParallelActivitiesChanged(int) ), this, SLOT( updateParallelActivities(int))  );
 
   connect( m_pResetB, SIGNAL( clicked() ), this, SLOT( resetSlot() ) );
-  m_nCounter = 0;
-  m_nFirstID = -1;
   setMinimumSize( 800, 600 );
 
   emit numParallelActivitiesChanged (0);
@@ -101,6 +102,7 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 void SdpaWnd::updateParallelActivities (int activities)
 {
   m_pParActLabel->setText ( QString ("# parallel activities: ") + QString::number(activities));
+  m_pActLabel->setText ( QString ("# activities: ") + QString::number(m_nCounter));
 }
 
 bool SdpaWnd::event( QEvent * e )
@@ -130,28 +132,23 @@ bool SdpaWnd::event( QEvent * e )
         {
           pos = 2;
           c = m_ColorRun;
-		  m_parallelActivities++;
           break;
         }
         case STATE_OK:
         {
           pos = 3;
           c = m_ColorOk;
-		  m_parallelActivities--;
           break;
         }
         case STATE_FAILED:
         {
           pos = 3;
           c = m_ColorFailed;
-		  m_parallelActivities--;
           break;
         }
 	    default:
 		  return QWidget::event(e);
       }
-      if (m_parallelActivities < 0)
-	     m_parallelActivities = 0;
 
       if( m_nFirstID == -1 )
 	  m_nFirstID = param.id;
@@ -214,17 +211,31 @@ bool SdpaWnd::event( QEvent * e )
       m_nCounter = MAX( m_nCounter, param.id-m_nFirstID+1);
       m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
 
-	  if (m_cbAutoFollow->isChecked())
-	  {
-		m_pScrollArea->verticalScrollBar()->setValue (m_pScrollArea->verticalScrollBar()->maximum());
-	  }
-	  emit numParallelActivitiesChanged (m_parallelActivities);
+      if (m_cbAutoFollow->isChecked())
+      {
+        m_pScrollArea->verticalScrollBar()->setValue (m_pScrollArea->verticalScrollBar()->maximum());
+      }
+
+      emit numParallelActivitiesChanged (calculateParallelActivities());
       break;
     }
 	default:
 	  break;
   }
   return QWidget::event(e);
+}
+
+int SdpaWnd::calculateParallelActivities()
+{
+  int parallel (0);
+
+  for (int r (0); r < m_nCounter; ++r)
+  {
+    QLayoutItem *item_running = m_pGridL->itemAtPosition (r, 2);
+    QLayoutItem *item_finished = m_pGridL->itemAtPosition (r, 3);
+    if (item_running && !item_finished) parallel++;
+  }
+  return parallel;
 }
 
 void SdpaWnd::resetSlot()
@@ -260,9 +271,10 @@ void SdpaWnd::resetSlot()
 //          m_pLastGL->removeItem( item );
 //      }
 //  }
-  m_pGridL->update();
+//  m_pGridL->update();
   m_nFirstID = -1;
   m_nCounter = 0;
   m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
+  //  m_pActLabel->setText ( QString ("# activities: ") + QString::number(m_nCounter));
   emit numParallelActivitiesChanged (0);
 }

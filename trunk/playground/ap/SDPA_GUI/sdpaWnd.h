@@ -5,7 +5,7 @@
 #include <QCustomEvent>
 //#include "Universal.h"
 //#include "Datastructs.h"
-enum STATE_WND 
+enum STATE_WND
 {
   STATE_RUN = 1,
   STATE_FAILED = 2,
@@ -25,34 +25,36 @@ typedef struct
 
 
 
-  
+
 class SdpaWnd : public QWidget
 {
  Q_OBJECT
   public:
     SdpaWnd(QWidget *parent = 0);
     ~SdpaWnd(){};
-    
+
   public slots:
     void resetSlot();
 	void updateParallelActivities(int);
   signals:
     void numParallelActivitiesChanged(int);
-    
+
   private:
+    int calculateParallelActivities();
+
     bool event( QEvent * e );
     QPushButton *m_pResetB;
     QGridLayout *m_pGridL;
     QGridLayout *m_pLastGL;
     QScrollArea *m_pScrollArea;
-	QCheckBox *m_cbAutoFollow;
+    QCheckBox *m_cbAutoFollow;
     QWidget *m_pWidget;
-	QLabel *m_pParActLabel;
+    QLabel *m_pParActLabel;
+    QLabel *m_pActLabel;
     int m_nFirstID, m_nCounter;
     int m_nMinHeight, m_nMinWidth;
     int m_nNbColumn;
     QColor m_ColorCreate, m_ColorRun, m_ColorOk, m_ColorFailed;
-	int m_parallelActivities;
 };
 
 #endif
