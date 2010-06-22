@@ -355,10 +355,10 @@ namespace we { namespace mgmt { namespace type {
       return input_;
     }
 
-    input_t & input()
+    void add_input (const typename input_t::value_type & inp)
     {
       unique_lock_t lock(mutex_);
-      return input_;
+      input_.push_back (inp);
     }
 
     const output_t & output() const
@@ -367,10 +367,16 @@ namespace we { namespace mgmt { namespace type {
       return output_;
     }
 
-    output_t & output()
+    void set_output (const output_t & outp)
     {
       unique_lock_t lock(mutex_);
-      return output_;
+      output_ = outp;
+    }
+
+    void add_output (const typename output_t::value_type & outp)
+    {
+      unique_lock_t lock(mutex_);
+      output_.push_back (outp);
     }
 
     void writeTo (std::ostream & os) const

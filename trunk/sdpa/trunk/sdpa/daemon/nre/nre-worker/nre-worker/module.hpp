@@ -54,8 +54,8 @@ namespace module
         const port_t & port =
           act.transition().get_port (port_id);
 
-        act.output().push_back
-          ( std::make_pair
+        act.add_output
+          ( output_t::value_type
             ( token_type ( port.name()
                          , port.signature()
                          , ton->first

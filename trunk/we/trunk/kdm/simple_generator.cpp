@@ -41,7 +41,7 @@ int main (int argc, char ** argv)
 
   we::activity_t act ( simple_trans );
 
-  act.input().push_back
+  act.add_input
     ( we::input_t::value_type
       ( we::token_t ( "config_file"
                     , literal::STRING
@@ -53,6 +53,6 @@ int main (int argc, char ** argv)
 
   // dump activity for test purposes
   std::cout << we::util::text_codec::encode (act);
-  
+
   return EXIT_SUCCESS;
 }

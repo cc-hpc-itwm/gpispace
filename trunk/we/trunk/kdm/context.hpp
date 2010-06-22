@@ -13,7 +13,7 @@ struct exec_context
     : loader (module_loader)
   { }
 
-  void handle_internally ( we::activity_t & act, net_t & n)
+  void handle_internally ( we::activity_t & act, net_t &)
   {
     act.inject_input ();
 

@@ -111,8 +111,8 @@ namespace module
       const port_t & port =
         act.transition().get_port (port_id);
 
-      act.output().push_back
-        ( std::make_pair
+      act.add_output
+        ( output_t::value_type
           ( token_type ( port.name()
                        , port.signature()
                        , ton->first
@@ -190,7 +190,7 @@ struct exec_context
   void handle_externally ( activity_t & act, net_t & n)
   {
     activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
-    act.output().swap (result.output());
+    act.set_output(result.output());
   }
 
   std::string fake_external ( const std::string & act_enc, const mod_t & mod )
@@ -203,7 +203,7 @@ struct exec_context
   void handle_externally ( activity_t & act, const mod_t & module_call )
   {
     activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
-    act.output().swap (result.output());
+    act.set_output(result.output());
   }
 
   void handle_externally ( activity_t & act, const expr_t & e)

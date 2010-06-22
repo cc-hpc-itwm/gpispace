@@ -115,13 +115,7 @@ namespace we { namespace mgmt { namespace visitor {
         const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
-        // TODO work here
-        activity_.input ().push_back
-        (
-          std::make_pair ( inp->first
-                         , port_id
-                         )
-        );
+        activity_.add_input (std::make_pair (inp->first, port_id));
       }
     }
 
@@ -134,13 +128,7 @@ namespace we { namespace mgmt { namespace visitor {
         const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
-        // TODO work here
-        activity_.input ().push_back
-        (
-          std::make_pair ( inp->first
-                         , port_id
-                         )
-        );
+        activity_.add_input (std::make_pair (inp->first, port_id));
       }
     }
 
@@ -153,13 +141,7 @@ namespace we { namespace mgmt { namespace visitor {
         const port_id_t port_id
           (activity_.transition().outer_to_inner (inp->second.first));
 
-        // TODO work here
-        activity_.input ().push_back
-        (
-          std::make_pair ( inp->first
-                         , port_id
-                         )
-        );
+        activity_.add_input (std::make_pair (inp->first, port_id));
       }
     }
   };
@@ -261,10 +243,7 @@ namespace we { namespace mgmt { namespace visitor {
                 ; ++top
                 )
             {
-              activity_.output ().push_back
-              (
-                typename output_t::value_type (*top, port_id)
-              );
+              activity_.add_output (typename output_t::value_type (*top, port_id));
             }
             net.delete_all_token ( pid );
           }
@@ -300,7 +279,7 @@ namespace we { namespace mgmt { namespace visitor {
   };
 
   template <typename Net, typename Transition, typename Output>
-  void inject_output_to_net ( Net & net, Transition & trans, Output & output)
+  void inject_output_to_net ( Net & net, Transition & trans, Output const & output)
   {
     typedef typename Transition::port_id_t port_id_t;
 
@@ -543,10 +522,7 @@ namespace we { namespace mgmt { namespace visitor {
                                  , port_it->second.signature()
                                  , context
                                  );
-          activity_.output ().push_back
-          (
-            typename output_t::value_type (token, port_id)
-          );
+          activity_.add_output (typename output_t::value_type (token, port_id));
         }
       }
 

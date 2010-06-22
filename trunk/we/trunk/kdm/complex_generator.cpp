@@ -17,7 +17,7 @@ int main (int argc, char ** argv)
 
   we::activity_t act (kdm_complex);
 
-  act.input().push_back
+  act.add_input
     ( we::input_t::value_type
       ( we::token_t ( "config_file"
                 , literal::STRING
@@ -34,7 +34,7 @@ int main (int argc, char ** argv)
   }
 
   we::loader::loader loader;
-  loader.append_search_path 
+  loader.append_search_path
     (std::string ((argc> 2) ? argv[2] : "/amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk/we/trunk/build/kdm/mod/"));
   struct exec_context ctxt (loader);
   act.execute (ctxt);

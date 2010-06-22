@@ -1,11 +1,10 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
 #include <stdint.h>
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
-
-#include <kdm/complex_generator.hpp>
 
 #include <boost/program_options.hpp>
 #include "test_layer.hpp"
@@ -102,39 +101,48 @@ int main (int argc, char **argv)
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
   mgmt_layer.sig_executing.connect ( &observe_executing );
 
-  for (std::size_t i (0); i < num_jobs; ++i)
+  we::activity_t act;
+
+  if (path_to_act != "-")
   {
-    we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-    we::activity_t act ( simple_trans );
-    act.input().push_back
-      ( we::input_t::value_type
-        ( we::token_t ( "config_file"
-                      , literal::STRING
-                      , cfg_file
-                      )
-        , simple_trans.input_port_by_name ("config_file")
+    std::ifstream ifs (path_to_act.c_str());
+    if (! ifs)
+    {
+      std::cerr << "Could not open: " << path_to_act << std::endl;
+      return 1;
+    }
+    act = layer_t::policy::codec::decode(ifs);
+  }
+  else
+  {
+    std::cerr << "Reading from stdin..." << std::endl;
+    act = layer_t::policy::codec::decode(std::cin);
+  }
+
+  for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
+      ; inp != input_spec.end()
+      ; ++inp
       )
-    );
-
-    daemon_type::id_type id = daemon.gen_id();
-    jobs.push_back(id);
-    mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
-  }
-
-  for (std::vector<id_type>::const_iterator id (jobs.begin()); id != jobs.end(); ++id)
   {
-    try
-    {
-      // mgmt_layer.suspend(*id);
-      // mgmt_layer.resume(*id);
-      // mgmt_layer.suspend(*id);
-      // mgmt_layer.resume(*id);
-    }
-    catch (const std::runtime_error & ex)
-    {
-      std::cerr << "mgmt layer removed activity " << *id << ": " << ex.what() << std::endl;
-    }
+    const std::string port_name
+      ( inp->substr (0, inp->find('=') ));
+    const std::string value
+      ( inp->substr (inp->find('=')+1) );
+
+    act.add_input (
+                   we::input_t::value_type
+                   ( we::token_t ( port_name
+                                 , literal::STRING
+                                 , value
+                                 )
+                   , act.transition().input_port_by_name (port_name)
+                   )
+                  );
   }
+
+  daemon_type::id_type id = daemon.gen_id();
+  jobs.push_back(id);
+  mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
 
 #if 0
   size_t max_wait (5);
