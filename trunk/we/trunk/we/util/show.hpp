@@ -19,6 +19,29 @@ namespace util
   {
     return x;
   }
+
+  template <typename InputIterator>
+  inline std::string show (InputIterator first, InputIterator last, const std::string & delimiter = ", ", const std::string & start_end = "[]")
+  {
+    InputIterator start (first);
+    std::ostringstream s;
+
+    if (start_end.size() == 2)
+      s << start_end[0];
+
+    while (first != last)
+    {
+      if (first != start)
+        s << delimiter;
+      s << *first;
+      ++first;
+    }
+
+    if (start_end.size() == 2)
+      s << start_end[1];
+
+    return s.str();
+  }
 }
 
 #endif
