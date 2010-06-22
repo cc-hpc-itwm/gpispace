@@ -23,63 +23,66 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-namespace we { namespace util {
-
-  template < typename OA = boost::archive::text_oarchive
-           , typename IA = boost::archive::text_iarchive
-           >
-  struct codec
+namespace we
+{
+  namespace util
   {
-    typedef OA oarchive;
-    typedef IA iarchive;
-
-    template <typename T>
-    static void encode (std::ostream & s, const T & t)
+    template < typename OA = boost::archive::text_oarchive
+             , typename IA = boost::archive::text_iarchive
+             >
+    struct codec
     {
-      oarchive ar ( s, boost::archive::no_header );
-      ar << BOOST_SERIALIZATION_NVP (t);
-    }
+      typedef OA oarchive;
+      typedef IA iarchive;
 
-    template <typename T>
-    static std::string encode (const T & t)
-    {
-      std::ostringstream oss;
-      encode (oss, t);
-      return oss.str();
-    }
+      template <typename T>
+      static void encode (std::ostream & s, const T & t)
+      {
+        oarchive ar ( s, boost::archive::no_header );
+        ar << BOOST_SERIALIZATION_NVP (t);
+      }
 
-    template <typename T>
-    static void decode (std::istream & s, T & t)
-    {
-      iarchive ar ( s, boost::archive::no_header );
-      ar >> BOOST_SERIALIZATION_NVP (t);
-    }
+      template <typename T>
+      static std::string encode (const T & t)
+      {
+        std::ostringstream oss;
+        encode (oss, t);
+        return oss.str();
+      }
 
-    template <typename T>
-    static void decode (const std::string & s, T & t)
-    {
-      std::istringstream iss (s);
-      decode (iss, t);
-    }
+      template <typename T>
+      static void decode (std::istream & s, T & t)
+      {
+        iarchive ar ( s, boost::archive::no_header );
+        ar >> BOOST_SERIALIZATION_NVP (t);
+      }
 
-    template <typename T>
-    static T decode (std::istream & s)
-    {
-      T t;
-      decode (s, t);
-      return t;
-    }
+      template <typename T>
+      static void decode (const std::string & s, T & t)
+      {
+        std::istringstream iss (s);
+        decode (iss, t);
+      }
 
-    template <typename T>
-    static T decode (const std::string & s)
-    {
-      T t;
-      decode (s, t);
-      return t;
-    }
-  };
+      template <typename T>
+      static T decode (std::istream & s)
+      {
+        T t;
+        decode (s, t);
+        return t;
+      }
 
-  typedef codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
-}}
+      template <typename T>
+      static T decode (const std::string & s)
+      {
+        T t;
+        decode (s, t);
+        return t;
+      }
+    };
+
+    typedef codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
+  }
+}
 
 #endif

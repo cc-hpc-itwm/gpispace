@@ -43,9 +43,19 @@ namespace we
             return base_codec::template decode<T>(data);
           }
 
+          static type decode(std::istream & is)
+          {
+            return base_codec::template decode<T>(is);
+          }
+
           static bytes_type encode(type const & thing)
           {
             return base_codec::template encode<T>(thing);
+          }
+
+          static void encode (std::ostream & os, type const & thing)
+          {
+            base_codec::template encode<T>(os, thing);
           }
         };
 
