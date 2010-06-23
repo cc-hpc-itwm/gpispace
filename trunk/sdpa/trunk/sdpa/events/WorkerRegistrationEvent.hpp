@@ -40,7 +40,7 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank = 0)
+      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank)
 		  : MgmtEvent(a_from, a_to), rank_(rank) { }
 
       virtual ~WorkerRegistrationEvent() { }
