@@ -72,7 +72,6 @@ namespace sdpa {
 					                                                             szKDMModulesPath,
 					                                                             szFvmPCModule ));
 
-
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
 			attach_observer(&m_guiServ);

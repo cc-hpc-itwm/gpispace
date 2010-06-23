@@ -151,29 +151,29 @@ int main(int ac, char **av)
 
   sdpa::wf::parameters_t params;
   {
-    if (vm.count("iparam"))
-    {
-      const std::vector<std::string> &i_params = vm["iparam"].as<std::vector<std::string> >();
-      parse_parameters(i_params.begin(), i_params.end(), params, sdpa::wf::Parameter::INPUT_EDGE);
-    }
+	  if (vm.count("iparam"))
+	  {
+		  const std::vector<std::string> &i_params = vm["iparam"].as<std::vector<std::string> >();
+		  parse_parameters(i_params.begin(), i_params.end(), params, sdpa::wf::Parameter::INPUT_EDGE);
+	  }
 
-    if (vm.count("oparam"))
-    {
-      const std::vector<std::string> &o_params = vm["oparam"].as<std::vector<std::string> >();
-      parse_parameters(o_params.begin(), o_params.end(), params, sdpa::wf::Parameter::OUTPUT_EDGE);
-    }
+	  if (vm.count("oparam"))
+	  {
+		  const std::vector<std::string> &o_params = vm["oparam"].as<std::vector<std::string> >();
+		  parse_parameters(o_params.begin(), o_params.end(), params, sdpa::wf::Parameter::OUTPUT_EDGE);
+	  }
 
-    if (vm.count("rparam"))
-    {
-      const std::vector<std::string> &r_params = vm["rparam"].as<std::vector<std::string> >();
-      parse_parameters(r_params.begin(), r_params.end(), params, sdpa::wf::Parameter::READ_EDGE);
-    }
+	  if (vm.count("rparam"))
+	  {
+		  const std::vector<std::string> &r_params = vm["rparam"].as<std::vector<std::string> >();
+		  parse_parameters(r_params.begin(), r_params.end(), params, sdpa::wf::Parameter::READ_EDGE);
+	  }
 
-    if (vm.count("wparam"))
-    {
-      const std::vector<std::string> &w_params = vm["wparam"].as<std::vector<std::string> >();
-      parse_parameters(w_params.begin(), w_params.end(), params, sdpa::wf::Parameter::WRITE_EDGE);
-    }
+	  if (vm.count("wparam"))
+	  {
+		  const std::vector<std::string> &w_params = vm["wparam"].as<std::vector<std::string> >();
+		  parse_parameters(w_params.begin(), w_params.end(), params, sdpa::wf::Parameter::WRITE_EDGE);
+	  }
   }
 
   // try to execute an activity
