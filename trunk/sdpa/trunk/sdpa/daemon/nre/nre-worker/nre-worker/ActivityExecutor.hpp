@@ -65,6 +65,7 @@ namespace sdpa { namespace nre { namespace worker {
 
     void start();
     bool stop();
+    unsigned int run();
 
     // message context
     virtual we::loader::loader &loader() { return *loader_; }
@@ -75,12 +76,11 @@ namespace sdpa { namespace nre { namespace worker {
     Reply* reply(ExecuteRequest* );
     Reply* reply(InfoRequest* );
 
-
   private:
     void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
     void execution_thread();
     void trigger_shutdown();
-    
+
     we::loader::loader::ptr_t loader_;
     std::string location_;
     int rank_;
@@ -105,5 +105,7 @@ namespace sdpa { namespace nre { namespace worker {
     sdpa::nre::worker::Codec codec_;
   };
 }}}
+
+
 
 #endif

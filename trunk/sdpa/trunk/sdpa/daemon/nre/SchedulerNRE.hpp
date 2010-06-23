@@ -32,15 +32,14 @@ namespace sdpa {
   class SchedulerNRE : public SchedulerImpl {
 
   public:
-		SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = "" ,
+		SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = "",
 				const bool bLaunchNrePcd = false,
 				const char* szNrePcdBinPath = "",
 				const char* szKDMModulesPath = "",
 				const char* szFvmPCModule = "" ):
 				sdpa::daemon::SchedulerImpl(pHandler)
 				, SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
-//				, m_worker_(workerUrl, bLaunchNrePcd, szNrePcdBinPath, szKDMModulesPath, szFvmPCModule )
-				, m_worker_(workerUrl, bLaunchNrePcd, 0)
+				, m_worker_(workerUrl, bLaunchNrePcd, szNrePcdBinPath, szKDMModulesPath, szFvmPCModule )
 	{
 		m_worker_.set_ping_interval(60);
 		m_worker_.set_ping_timeout(3);
