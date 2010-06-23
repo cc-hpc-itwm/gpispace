@@ -184,20 +184,25 @@ Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
  */
 unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
 {
+	SDPA_LOG_DEBUG("Get the least loaded worker ...");
+
+	lock_type lock(mtx_);
+
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
 	worker_map_t::const_iterator it = worker_map_.begin();
 
 	// at leas one worker
+	size_t min_size =  it->second->pending().size();
 	unsigned int rank_ll = it->second->rank();
 
-	const Worker::JobQueue& job_queue = it->second->pending();
-	size_t min_size = job_queue.size();
+	if(min_size==0)
+		return rank_ll;
 
 	while( it != worker_map_.end() )
 	{
-		size_t curr_size = job_queue.size();
+		size_t curr_size = it->second->pending().size();
 		if( curr_size < min_size )
 		{
 			min_size = curr_size;
