@@ -462,25 +462,24 @@ void NRE<T, U>::backup( const std::string& strArchiveName )
 {
 	try
 	{
-		print();
-
-		ptr_t ptrNRE_0(this);
-		std::ofstream ofs(strArchiveName.c_str());
-		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<NRE<T, U>*>(NULL));
-		oa.register_type(static_cast<T*>(NULL));
-		oa.register_type(static_cast<DaemonFSM*>(NULL));
-		oa.register_type(static_cast<GenericDaemon*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		//oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
-		oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
-		oa.register_type(static_cast<JobFSM*>(NULL));
-		//oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
-		oa << ptrNRE_0;
+          print();
+          ptr_t ptrNRE_0(this);
+          std::ofstream ofs(strArchiveName.c_str());
+          boost::archive::text_oarchive oa(ofs);
+          oa.register_type(static_cast<NRE<T, U>*>(NULL));
+          oa.register_type(static_cast<T*>(NULL));
+          oa.register_type(static_cast<DaemonFSM*>(NULL));
+          oa.register_type(static_cast<GenericDaemon*>(NULL));
+          oa.register_type(static_cast<SchedulerImpl*>(NULL));
+          //oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
+          oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+          oa.register_type(static_cast<JobFSM*>(NULL));
+          //oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
+          oa << ptrNRE_0;
 	}
 	catch(exception &e)
 	{
-		cout <<"Exception occurred: "<< e.what() << endl;
+          cout <<"Exception occurred: "<< e.what() << endl;
 	}
 }
 
