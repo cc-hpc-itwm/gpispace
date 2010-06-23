@@ -47,8 +47,8 @@ namespace sdpa { namespace daemon {
 		, parent_(parent)
 		, b_marked_for_del_(false)
 		, b_local_(false)
-		, pComm(const_cast<IComm*>(pHandler))
 		, walltime_(2592000) // walltime in seconds: one month by default
+		, pComm(const_cast<IComm*>(pHandler))
     {}
 
     JobImpl::~JobImpl() throw () {
