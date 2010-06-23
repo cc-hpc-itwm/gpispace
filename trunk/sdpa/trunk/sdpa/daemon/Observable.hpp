@@ -20,6 +20,7 @@
 #define SDPA_DAEMON_OBSERVABLE_HPP 1
 
 #include <list>
+#include <stdexcept>
 #include <boost/thread.hpp>
 #include <sdpa/daemon/Observer.hpp>
 
@@ -54,7 +55,14 @@ namespace sdpa { namespace daemon {
       lock_t lock(const_cast<mutex_t&>(mtx_));
       for (observer_list_t::const_iterator o(observers_.begin()); o != observers_.end(); ++o)
       {
-        (*o)->update(event);
+        try
+        {
+          (*o)->update(event);
+        }
+        catch (const std::exception & ex)
+        {
+          std::cerr << "E: exception during notification handling: " << ex.what() << std::endl;
+        }
       }
     }
   private:
