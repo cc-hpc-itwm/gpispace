@@ -52,28 +52,22 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	Worker::worker_id_t workerId = pWorker->name();
 	const int rank = pWorker->rank();
 
-	bool bFound = false;
-	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
+	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
 	{
 		if( it->second->name() ==  workerId)
 		{
 			SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
-			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank);
 		}
 
 		if( it->second->rank() == rank )
 		{
 			SDPA_LOG_WARN("An worker with the rank "<<rank<<" already exists in the worker map!");
-			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank);
 		}
 	}
 
-  if (! bFound)
-  {
 	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(),pWorker));
-  }
 
   balanceWorkers();
 }
