@@ -96,7 +96,7 @@ namespace we
         typedef std::vector<value_type> rank_list_type;
 
         explicit
-        preference_t (const bool _mandatory)
+        preference_t (const bool _mandatory = false)
           : mandatory_(_mandatory)
         { }
 
