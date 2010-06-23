@@ -159,7 +159,7 @@ void Aggregator<T>::action_config_ok(const ConfigOkEvent&)
 	}
 
 	SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master()));
+	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
 	to_master_stage()->send(pEvtWorkerReg);
 }
 
@@ -174,12 +174,13 @@ void Aggregator<T>::action_interrupt(const InterruptEvent&)
 template <typename T>
 void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
+        assert (pEvt);
+
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-	ostringstream os;
-	SDPA_LOG_DEBUG("Call 'handleJobFinishedEvent'");
+        DLOG(TRACE, "job finished: " << pEvt->job_id());
 
 	//put the job into the state Finished
 	Job::ptr_t pJob;
@@ -188,7 +189,8 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		pJob->JobFinished(pEvt);
 	}
 	catch(JobNotFoundException){
-		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
+                return;
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
@@ -201,16 +203,21 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
-		catch(QueueFull)
+		catch(QueueFull const &)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
 		}
-		catch(seda::StageNotFound)
+		catch(seda::StageNotFound const &)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+		}
+		catch(std::exception const & ex) {
+                  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+                  throw;
 		}
 		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+                  SDPA_LOG_FATAL("Unexpected exception occurred!");
+                  throw;
 		}
 	}
 	else //event sent by a worker
@@ -241,7 +248,8 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				}
 				catch(WorkerNotFoundException)
 				{
-					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+					SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+                                        throw;
 				}
 
 				try {
@@ -250,17 +258,25 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				}
 				catch(JobNotDeletedException&)
 				{
-					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
+					SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+                                        throw;
 				}
 			}
 			else
-				SDPA_LOG_ERROR("Gwes not initialized!");
-
+                        {
+                          SDPA_LOG_FATAL("workflow engine has not been initialized!");
+                          throw std::runtime_error ("aggregator: workflow engine not initialized!");
+                        }
+                }
+                catch(std::exception const & ex) {
+                  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
 		}
-		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
-		}
-	}
+                catch(...)
+                {
+                  SDPA_LOG_FATAL("Unexpected exception occurred!");
+                  throw;
+                }
+        }
 }
 
 template <typename T>
@@ -294,16 +310,21 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			sendEventToMaster(pEvtJobFailedEvent, MSG_RETRY_CNT);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
-		catch(QueueFull)
+		catch(QueueFull const &)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobEvent");
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
 		}
-		catch(seda::StageNotFound)
+		catch(seda::StageNotFound const &)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobEvent");
+			SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
+		}
+		catch(std::exception const & ex) {
+                        SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+                        throw;
 		}
 		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+			SDPA_LOG_ERROR("Unexpected exception occurred!");
+                        throw;
 		}
 
 	}
@@ -331,26 +352,33 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 					Worker::ptr_t ptrWorker = findWorker(worker_id);
 					// delete job from worker's queues
 
-					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
+					DLOG(TRACE, "Deleting the job " << pEvt->job_id() << " from the worker's queues!");
 					ptrWorker->delete_job(pEvt->job_id());
 
-				} catch(WorkerNotFoundException) {
-					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+				} catch(WorkerNotFoundException const &) {
+					SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 				}
 
 				try {
 					//delete it also from job_map_
 					ptr_job_man_->deleteJob(pEvt->job_id());
-				}catch(JobNotDeletedException&){
-					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
+				}catch(JobNotDeletedException const &){
+					SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
 				}
 			}
 			else
-				SDPA_LOG_ERROR("Gwes not initialized!");
-
+                        {
+                          SDPA_LOG_ERROR("workflow engine not initialized!");
+                          throw std::runtime_error ("workflow engine has not been initialized");
+                        }
 		}
-		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		catch(std::exception const & ex) {
+                  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+                  throw;
+		}
+                catch(...) {
+                  SDPA_LOG_ERROR("Unexpected exception occurred!");
+                  throw;
 		}
 	}
 }
@@ -358,34 +386,34 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 template <typename T>
 void Aggregator<T>::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-	ostringstream os;
-	os<<"Call 'handleCancelJobEvent'";
-	SDPA_LOG_DEBUG(os.str());
+  LOG(INFO, "cancelling job: " << pEvt->job_id());
 
 	Job::ptr_t pJob;
 	// put the job into the state Cancelling
 	try {
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->CancelJob(pEvt);
-		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+                DLOG(TRACE, "The job state is: "<<pJob->getStatus());
 	}
-	catch(JobNotFoundException){
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+	catch(JobNotFoundException const &){
+          SDPA_LOG_ERROR ("job " << pEvt->job_id() << " could not be found!");
+          throw;
 	}
 }
 
 template <typename T>
 void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
+  assert (pEvt);
+
+  LOG(TRACE, "cancel acknowledgement received: " << pEvt->job_id());
+
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
 	// transition from Cancelling to Cancelled
 
-	ostringstream os;
 	Worker::worker_id_t worker_id = pEvt->from();
 	Job::ptr_t pJob;
 	try {
@@ -393,12 +421,11 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 		// put the job into the state Cancelled
 	    pJob->CancelJobAck(pEvt);
-	    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+	    DLOG(TRACE, "The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
     	if( pEvt->from() == sdpa::daemon::WE  ) // the message comes from GWES, forward it to the master
 		{
-			os<<std::endl<<"Sent CancelJobAckEvent to "<<master();
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
 			// only if the job was already submitted, send ack to master
@@ -408,44 +435,39 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 			ptr_job_man_->deleteJob(pEvt->job_id());
 
 		}
-    	else // the message comes from an worker, forward it to GWES
+    	else // the message comes from an worker, forward it to workflow engine
     	{
     		try {
     			Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-				// in the message comes from a worker
+				// the message comes from a worker
 				ptrWorker->delete_job(pEvt->job_id());
     		 }
-    		 catch(WorkerNotFoundException)
+    		 catch(WorkerNotFoundException const &)
     		 {
-    			os.str("");
-    			os<<"Worker "<<worker_id<<" not found!";
-    			SDPA_LOG_DEBUG(os.str());
+                   SDPA_LOG_ERROR("worker " << worker_id << " could not be found!");
     		}
 
-    		// tell to GWES that the activity ob_id() was cancelled
+    		// tell WE that the activity was cancelled
     		id_type actId = pJob->id();
-
-    		// inform gwes that the activity was canceled
     		ptr_workflow_engine_->cancelled(actId);
     	}
 	}
-	catch(JobNotFoundException)
+	catch(JobNotFoundException const &)
 	{
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("job could not be found: " << pEvt->job_id());
 	}
-	catch(JobNotDeletedException&)
+	catch(JobNotDeletedException const &)
 	{
-		os.str("");
-		os<<"The JobManager could not delete the job "<<pEvt->job_id();
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("Job Manager could not delete job: " << pEvt->job_id());
 	}
-	catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+	catch (std::exception const &ex)
+        {
+          SDPA_LOG_ERROR("unexpected exception during cancel of: " << pEvt->job_id() << ": " << ex.what());
+	}
+	catch(...)
+        {
+          SDPA_LOG_ERROR("unexpected exception during cancel of: " << pEvt->job_id());
 	}
 }
 
