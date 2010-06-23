@@ -25,7 +25,7 @@
 
 #if ! defined(FHGLOG_DEFAULT_PORT)
 // ascii codes of fhgl: 102 104 103 108
-#define FHGLOG_DEFAULT_PORT  "2438"
+#define FHGLOG_DEFAULT_PORT  2438
 #endif
 
 #if ! defined(FHGLOG_DEFAULT_HOST)

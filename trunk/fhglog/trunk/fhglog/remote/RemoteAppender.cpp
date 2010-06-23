@@ -22,6 +22,7 @@
 #include <fhglog/util.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fhglog/remote/Serialization.hpp>
 
 using namespace fhg::log::remote;
@@ -34,7 +35,7 @@ RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &loc
   host_ = host_port.first;
   if (host_port.second.empty())
   {
-    host_port.second = FHGLOG_DEFAULT_PORT;
+    host_port.second = boost::lexical_cast<std::string>(FHGLOG_DEFAULT_PORT);
   }
 
   std::stringstream sstr(host_port.second);
