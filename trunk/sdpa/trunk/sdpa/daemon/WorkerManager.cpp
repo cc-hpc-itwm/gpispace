@@ -138,7 +138,6 @@ void WorkerManager::balanceWorkers()
 	}
 }
 
-
 /**
  * get next worker to be served
  */

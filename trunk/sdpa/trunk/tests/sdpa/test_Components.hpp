@@ -31,7 +31,6 @@ namespace sdpa {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
 
-
 			  //obsolete
 			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
 			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
@@ -39,7 +38,7 @@ namespace sdpa {
 			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpywnedByNRE );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE );
 
 			  CPPUNIT_TEST_SUITE_END();
 
@@ -60,7 +59,7 @@ namespace sdpa {
 			  void testActivityRealWeAllCompAndActExec();
 
 			  void testActivityRealWeAllCompAndNreWorkerSpawnedByTest();
-			  void testActivityRealWeAllCompAndNreWorkerSpywnedByNRE();
+			  void testActivityRealWeAllCompAndNreWorkerSpawnedByNRE();
 
 			  void startDaemons(const std::string& workerUrl);
 			  void startPcdAndDaemons(const std::string& workerUrl) throw (std::exception);

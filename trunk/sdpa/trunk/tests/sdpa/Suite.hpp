@@ -14,6 +14,7 @@
 //#include <tests/sdpa/test_D2D2DRealWfEng.hpp>
 #include <tests/sdpa/test_Components.hpp>
 
+#include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 #include <tests/sdpa/test_SerializeSharedPtr.hpp>
 #include <tests/sdpa/test_SerializeJobPtr.hpp>
@@ -34,6 +35,7 @@ namespace sdpa { namespace tests {
 //      suiteOfTests->addTest( FSMPerformanceTest::suite() );
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
+      suiteOfTests->addTest( LoadBalancerTest::suite() );
 
       // obsolete, see later
       //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
