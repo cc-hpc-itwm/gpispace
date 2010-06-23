@@ -115,7 +115,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 
 GenericDaemon::~GenericDaemon()
 {
-	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
+  DLOG(TRACE, "GenericDaemon destructor called ...");
 
 	if(ptr_workflow_engine_)
 	{
@@ -147,9 +147,10 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 		seda::StageRegistry::instance().insert(decode_stage);
 		decode_stage->start();
 	}
-	catch(std::exception& ex)
+	catch(std::exception const& ex)
 	{
 		SDPA_LOG_ERROR("Exception occurred when thying to start the decoding stage: "<<ex.what());
+                throw;
 	}
 
 	try {
@@ -178,9 +179,10 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 		ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
 		encode_stage->start();
 	}
-	catch(std::exception& ex)
+	catch(std::exception const & ex)
 	{
 		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
+                throw;
 	}
 }
 
@@ -257,7 +259,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	}
 	else
 	{
-		SDPA_LOG_ERROR("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
+		SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
 	}
 }
 
@@ -274,8 +276,8 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 
 void GenericDaemon::onStageStart(const std::string & /* stageName */)
 {
-	DMLOG(DEBUG, "daemon stage is being started");
-	MLOG(DEBUG, "registering myself (" << name() << ") with GS...");
+	DMLOG(TRACE, "daemon stage is being started");
+        //	MLOG(INFO, "registering myself (" << name() << ")...");
 
 	// Obsolete, pass directly the pointer to the daemon into the constructor of
 	// the Workflow Engine object!!!!!!!!!!!!!!
@@ -285,7 +287,7 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	DMLOG(TRACE, "starting delivery service...");
 	delivery_service_.start();
 	service_thread_.start();
-	DMLOG(DEBUG, "starting my scheduler...");
+	DMLOG(TRACE, "starting my scheduler...");
 	ptr_scheduler_->start();
 
 	delivery_service_.register_callback_handler(boost::bind(&GenericDaemon::messageDeliveryFailed, this, _1));
@@ -293,7 +295,7 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
-	DMLOG(DEBUG, "daemon stage is being stopped");
+	DMLOG(TRACE, "daemon stage is being stopped");
 	// stop the scheduler thread
 
 	ptr_scheduler_->stop();
@@ -316,12 +318,12 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 		{
 			daemon_stage_->send(pEvt);
 
-			SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 		}
 	}
 	catch(const QueueFull&)
 	{
-		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
 	}
 }
 
@@ -329,11 +331,11 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 {
 	try {
 		delivery_service_.send(to_master_stage(), pEvt, pEvt->id(), timeout, retries);
-		SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
+                DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
-	catch(QueueFull)
+	catch(QueueFull const &)
 	{
-		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
 	}
 }
 
@@ -341,11 +343,11 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, s
 {
 	try {
 		delivery_service_.send(to_slave_stage(), pEvt, pEvt->id(), timeout, retries);
-		SDPA_LOG_DEBUG("Sent " <<pEvt->str()<<" to "<<pEvt->to());
+                DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
-	catch(QueueFull)
+	catch(QueueFull const &)
 	{
-		SDPA_LOG_DEBUG("Could not send event. The queue is full!");
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
 	}
 }
 
@@ -356,7 +358,7 @@ bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &
 
 void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
 {
-  LOG(WARN, "delivery of message[" << e->id() << "] failed: " << e->str());
+  MLOG(WARN, "delivery of message[" << e->id() << "] failed: " << e->str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -364,8 +366,8 @@ Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) t
 	try {
 		return  ptr_scheduler_->findWorker(worker_id);
 	}
-	catch(WorkerNotFoundException) {
-		throw WorkerNotFoundException(worker_id);
+	catch(WorkerNotFoundException const &) {
+          throw;
 	}
 }
 
@@ -376,17 +378,7 @@ void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
 
 bool GenericDaemon::requestsAllowed()
 {
-	bool bAllowReq = true;
-
-	try {
-		( bAllowReq = m_nExternalJobs < cfg()->get<unsigned int>("nmax_ext_job_req", 10));
-	}
-	catch(std::exception& ex)
-	{
-		SDPA_LOG_WARN("Exception occurred: "<<ex.what());
-	}
-
-	return bAllowReq;
+  return (m_nExternalJobs < cfg()->get<unsigned int>("nmax_ext_job_req", 10));
 }
 
 //actions
@@ -422,7 +414,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-	SDPA_LOG_DEBUG("Call 'action_lifesign'");
+  LOG(TRACE, "action_lifesign");
     /*
     o timestamp, load, other probably useful information
     o last_job_id the id of the last received job identification
@@ -445,47 +437,38 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 
 		sendEventToSlave(pErrorEvt);
 	} catch(...) {
-		SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		SDPA_LOG_ERROR("Unexpected exception occurred!");
 	}
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
-	ostringstream os;
-	os<<"Call 'action_delete_job'";
-	SDPA_LOG_DEBUG(os.str());
-
-	os.str("");
-	os<<"received DeleteJobEvent from "<<e.from()<<" addressed to "<<e.to();
-	SDPA_LOG_DEBUG(os.str());
+  LOG(INFO, e.from() << " requesting to delete job " << e.job_id());
 
 	try{
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
 		pJob->DeleteJob(&e);
 
 		ptr_job_man_->deleteJob(e.job_id());
-	} catch(JobNotFoundException&){
-		os.str("");
-		os<<"Job "<<e.job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
-	} catch(JobNotMarkedException& ){
-		os.str("");
-		os<<"Job "<<e.job_id()<<" not marked for deletion!";
-		SDPA_LOG_DEBUG(os.str());
-	}catch(JobNotDeletedException& ){
-		os.str("");
-		os<<"Job "<<e.job_id()<<" not deleted!";
-		SDPA_LOG_DEBUG(os.str());
+	} catch(JobNotFoundException const &){
+          SDPA_LOG_ERROR("Job " << e.job_id() << " could not be found!");
+	} catch(JobNotMarkedException const &){
+          SDPA_LOG_WARN("Job " << e.job_id() << " not ready for deletion!");
+	}catch(JobNotDeletedException const &){
+          SDPA_LOG_ERROR("Job " << e.job_id() << " could not be deleted!");
+        } catch(std::exception const & ex) {
+          SDPA_LOG_ERROR("unexpected exception during job-deletion: " << ex.what());
+          throw;
 	} catch(...) {
-		os.str("");
-		os<<"Unexpected exception. Most probably the job to be deleted was not in a final state!"<<e.job_id()<<"!";
-		SDPA_LOG_DEBUG(os.str());
+          SDPA_LOG_ERROR("unexpected exception during job-deletion!");
+          throw;
 	}
 }
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-	SDPA_LOG_DEBUG("got job request from: " << e.from());
+  DLOG(TRACE, "got job request from: " << e.from());
+
 	/*
 	the slave(aggregator) requests new executable jobs
 	this message is sent in regular frequencies depending on the load of the slave(aggregator)
@@ -516,7 +499,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			ptrJob->Dispatch(); // no event need to be sent
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
-			SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
+			SDPA_LOG_INFO("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
 
 			// Post a SubmitJobEvent to the slave who made the request
@@ -529,11 +512,11 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const NoJobScheduledException&)
 	{
-		SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
+          DLOG(TRACE, "No job was scheduled to be executed on the worker '"<<worker_id);
 	}
 	catch(const WorkerNotFoundException&)
 	{
-		SDPA_LOG_DEBUG("worker " << worker_id << " is not registered, asking him to do so first");
+		SDPA_LOG_WARN("worker " << worker_id << " is not registered, asking him to do so first");
 
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
@@ -547,22 +530,24 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	catch(const seda::StageNotFound&)
 	{
 		SDPA_LOG_FATAL("Could not lookup stage: " << ptr_to_slave_stage_->name());
+                throw;
 	}
 	catch(const std::exception &ex)
 	{
 		SDPA_LOG_FATAL("Error during request-job handling: " << ex.what());
+                throw;
 	}
 	catch(...)
 	{
 		SDPA_LOG_FATAL("Unknown error during request-job handling!");
+                throw;
 	}
 }
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-	ostringstream os;
-	SDPA_LOG_DEBUG("Call 'action_submit_job' FROM "<<e.from());
-	/*
+  DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+  /*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens
     * contains a flag for simulation
@@ -573,16 +558,17 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     * put the job into the job-map
     * send a submitJobAck back
     */
+  static const JobId job_id_empty ("");
 
 	// First, check if the job 'job_id' wasn't already submitted!
 	try {
 		ptr_job_man_->findJob(e.job_id());
 		return;
 	} catch(const JobNotFoundException&){
-		SDPA_LOG_DEBUG("Receive new job from "<<e.from());
+		SDPA_LOG_INFO("Receive new job from "<<e.from());
 	}
 
-	JobId job_id, job_id_empty(""); //already assigns an unique job_id (i.e. the constructor calls the generator)
+	JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
 	if(e.job_id() != job_id_empty)  //use the job_id already  assigned by the master
 		job_id = e.job_id();        //the orchestrator will assign a new job_id for the user jobs, the Agg/NRE will use the job_id assigned by the master
 
@@ -613,31 +599,34 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			m_nExternalJobs++;
 		}
 		//catch also workflow exceptions
-	}catch(JobNotAddedException&) {
-		os.str("");
-		os<<"Job "<<job_id<<" could not be added!";
-		SDPA_LOG_DEBUG(os.str());
-		//send back an ErrorEvent
+	}catch(JobNotAddedException const &) {
+		SDPA_LOG_ERROR("job " << job_id << " could not be added!");
+		// the worker should register first, before posting a job request
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN) );
+		sendEventToMaster(pErrorEvt);
 	}
-	catch(QueueFull&)
+	catch(QueueFull const &)
 	{
-		SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id);
+		SDPA_LOG_WARN("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id);
 	}
-	catch(seda::StageNotFound&)
+	catch(seda::StageNotFound const &)
 	{
-		SDPA_LOG_DEBUG("Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
+		SDPA_LOG_FATAL("Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
+                throw;
+	}
+	catch(std::exception const & ex) {
+          SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
+          throw;
 	}
 	catch(...) {
-		SDPA_LOG_DEBUG("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
-		//send back an ErrorEvent
+          SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
+          throw;
 	}
 }
 
 void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 {
-	ostringstream os;
-	os<<"Call 'action_configure_request'";
-	SDPA_LOG_DEBUG(os.str());
+  DLOG(TRACE, "got config request from " << e.from());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator
 	 * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
@@ -660,9 +649,9 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		addWorker(pWorker);
 		SDPA_LOG_INFO( "Registered the worker "<<pWorker->name()<<", with the rank "<<pWorker->rank() );
 	}
-	catch(WorkerAlreadyExistException& ex) {
-		SDPA_LOG_FATAL( "An worker with either the same id or the same rank already exist into the worker map! "
-				        "id="<<ex.worker_id()<<", rank="<<ex.rank());
+	catch(WorkerAlreadyExistException const & ex) {
+		SDPA_LOG_ERROR("An worker with either the same id or the same rank already exist into the worker map! "
+                              "id="<<ex.worker_id()<<", rank="<<ex.rank());
 	}
 	catch(const QueueFull&)
 	{
@@ -671,11 +660,13 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 	catch(const seda::StageNotFound& snf)
 	{
 		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
+                throw;
 	}
 }
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
+  LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code());
   switch (error.error_code())
   {
 	case ErrorEvent::SDPA_ENOERROR:
@@ -714,8 +705,6 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
 
 	// simple generate a SubmitJobEvent cu from = to = name()
 	// send an external job
-	ostringstream os;
-
 	try {
 		SDPA_LOG_DEBUG(" submitted the activity "<<activityId);
 
@@ -725,23 +714,29 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(sdpa::daemon::WE, name(), job_id, desc, parent_id));
 		sendEventToSelf(pEvtSubmitJob);
 	}
-	catch(QueueFull&)
+	catch(QueueFull const &)
 	{
-		os.str("");
-		os<<"Failed to send to the daemon stage a SubmitJobEvent";
-		SDPA_LOG_DEBUG(os.str());
+          SDPA_LOG_ERROR("could not send event to my stage, queue is full!");
+          workflowEngine()->failed( activityId, "" ); // why?
 	}
-	catch(seda::StageNotFound&)
+	catch(seda::StageNotFound const &)
 	{
-		os.str("");
-		os<<"Stage not found when trying to submit SubmitJobEvent";
-		SDPA_LOG_DEBUG(os.str());
+          SDPA_LOG_ERROR("Stage not found when trying to submit SubmitJobEvent!");
+          workflowEngine()->failed( activityId, "" ); // why?
+          throw;
 	}
-	catch(std::exception&)
+	catch(std::exception const & ex)
 	{
-		workflowEngine()->cancelled( activityId ); // why?
+          SDPA_LOG_ERROR("unexpected exception during submitJob: " << ex.what());
+          workflowEngine()->failed( activityId, "" ); // why?
+          throw;
 	}
-
+	catch(...)
+	{
+          SDPA_LOG_ERROR("unexpected exception during submitJob!");
+          workflowEngine()->failed( activityId, "" ); // why?
+          throw;
+	}
 }
 
 /**
@@ -750,6 +745,8 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc)
  */
 bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
 {
+  SDPA_LOG_INFO ("cancelling activity " << activityId << " reason: " << reason);
+
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
 	// in fact they should be the same!
@@ -757,7 +754,6 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
 	// Job& job = job_map_[job_id];
 	// call job.CancelJob(event);
 
-	SDPA_LOG_DEBUG(" asked SDPA to cancel the activity "<<activityId<<" ...");
 	job_id_t job_id(activityId);
 	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
 	sendEventToSelf(pEvtCancelJob);
@@ -770,6 +766,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
  */
 bool GenericDaemon::finished(const id_type& workflowId, const result_type& result)
 {
+  SDPA_LOG_INFO ("activity finished: " << workflowId);
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
@@ -778,7 +775,6 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 	// Job& job = job_map_[job_id];
 	// call job.JobFinished(event);
 
-	SDPA_LOG_DEBUG(" notified SDPA that the workflow "<<workflowId<<" finished!");
 	job_id_t job_id(workflowId);
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::WE, name(), job_id, result));
 	sendEventToSelf(pEvtJobFinished);
@@ -795,6 +791,7 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
  */
 bool GenericDaemon::failed(const id_type& workflowId, const result_type & result)
 {
+  SDPA_LOG_WARN ("activity failed: " << workflowId);
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
@@ -806,7 +803,6 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
 	// kill the siblings and the master job, else kill the master job
 	// The master process (User, Orch, Agg) should be informed that the job failed or  was canceled
 
-	SDPA_LOG_DEBUG(" notified SDPA that the workflow "<<workflowId<<" failed!");
 	job_id_t job_id(workflowId);
 
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::WE, name(), job_id, result ));
@@ -824,11 +820,11 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
  */
 bool GenericDaemon::cancelled(const id_type& workflowId)
 {
+  SDPA_LOG_INFO ("activity cancelled: " << workflowId);
 	// generate a JobCancelledEvent for self!
 	// identify the job with the job_id == workflow_id_t
 	// trigger a CancelJobAck for that job
 
-	SDPA_LOG_DEBUG(" notified SDPA that the workflow "<<workflowId<<" was cancelled!");
 	job_id_t job_id(workflowId);
 
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
@@ -839,25 +835,3 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	return true;
 }
-
-/*
-void GenericDaemon::jobFinished(std::string workerName, const job_id_t& jobID )
-{
-	sdpa::job_result_t results;
-	JobFinishedEvent::Ptr pJobFinEvt( new JobFinishedEvent( workerName, name(), jobID.str(), results ) );
-	sendEventToSelf(pJobFinEvt);
-}
-
-void GenericDaemon::jobFailed(std::string workerName, const job_id_t& jobID)
-{
-	sdpa::job_result_t results;
-	JobFailedEvent::Ptr pJobFailEvt( new JobFailedEvent( workerName, name(), jobID.str(), results ) );
-	sendEventToSelf(pJobFailEvt);
-}
-
-void GenericDaemon::jobCancelled(std::string workerName, const job_id_t& jobID)
-{
-	CancelJobAckEvent::Ptr pCancelAckEvt( new CancelJobAckEvent( workerName, name(), jobID.str(), SDPAEvent::message_id_type() ) );
-	sendEventToSelf(pCancelAckEvt);
-}
-*/
