@@ -15,7 +15,7 @@ namespace fhg { namespace log {
       typedef std::string function_type;
       typedef std::size_t line_type;
       typedef std::string message_type;
-      typedef time_t tstamp_type;
+      typedef unsigned long long tstamp_type;
       typedef pid_t     pid_type;
       typedef pthread_t tid_type;
 

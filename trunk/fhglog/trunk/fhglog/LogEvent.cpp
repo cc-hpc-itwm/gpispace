@@ -1,10 +1,17 @@
 #include "LogEvent.hpp"
-#include <time.h>
+#include <sys/time.h>
 #include <iostream>
 #include <pthread.h>
 #include "util.hpp"
 
 using namespace fhg::log;
+
+static LogEvent::tstamp_type now()
+{
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  return tv.tv_sec * 1000 * 1000 + tv.tv_usec;
+}
 
 LogEvent::LogEvent(const severity_type &a_severity
                  , const file_type &a_path
@@ -17,7 +24,7 @@ LogEvent::LogEvent(const severity_type &a_severity
   , function_(a_function)
   , line_(a_line)
   , message_(a_message)
-  , tstamp_(time(NULL))
+  , tstamp_(now())
   , pid_(getpid())
   , tid_(static_cast<tid_type>(pthread_self()))
 {
