@@ -112,14 +112,19 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 {
 	lock_type lock(mtx_);
 	ostringstream os;
+
+	// delete the preferences
+	preference_map_t::size_type rc = job_preferences_.erase(job_id);
+	if( !rc )
+		SDPA_LOG_WARN("The job "<<job_id.str()<<" had no preferences");
+	else
+		SDPA_LOG_DEBUG("Erased the preferences of the job "<<job_id.str());
+
 	job_map_t::size_type ret = job_map_.erase(job_id);
 	if( !ret )
 		throw JobNotDeletedException(job_id);
 	else
-	{
-		os<<"Erased job "<<job_id<<" from job map";
-		SDPA_LOG_DEBUG(os.str());
-	}
+		SDPA_LOG_DEBUG("Erased job "<<job_id.str()<<" from job map");
 }
 
 std::vector<sdpa::job_id_t> JobManager::getJobIDList()

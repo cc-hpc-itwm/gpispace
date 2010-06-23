@@ -66,6 +66,8 @@ namespace sdpa {
 	*/
 	virtual void schedule_remote(const sdpa::job_id_t &job);
 
+	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank );
+
 	virtual void start_job(const sdpa::job_id_t &job);
 
 	virtual Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);

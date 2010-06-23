@@ -151,8 +151,27 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
 	// generate the test workflow simple-net.pnet
 
+	std::string cfg_file(TESTS_WORKFLOWS_PATH);
+	cfg_file += "/kdm.simple.conf";
+
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
+
+	  act.add_input
+	    ( we::input_t::value_type
+	      ( we::token_t ( "config_file"
+	                    , literal::STRING
+	                    , cfg_file
+	                    )
+	      , simple_trans.input_port_by_name ("config_file")
+	      )
+	    );
+
+	//obsolete
+	/*
+	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
+	we::activity_t act ( simple_trans );
+
 	act.input().push_back
     ( we::input_t::value_type
       ( we::token_t ( "config_file"
@@ -162,6 +181,8 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
       , simple_trans.input_port_by_name ("config_file")
       )
     );
+    */
+
 	m_strWorkflow = we::util::text_codec::encode (act);
 
 	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
@@ -306,7 +327,24 @@ void TestComponents::startDaemons(const std::string& workerUrl)
 {
 	string strGuiUrl = "";
 
+	std::string cfg_file(TESTS_WORKFLOWS_PATH);
+	cfg_file += "/kdm.simple.conf";
+
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
+	we::activity_t act ( simple_trans );
+
+	act.add_input
+		( we::input_t::value_type
+		  ( we::token_t ( "config_file"
+						, literal::STRING
+						, cfg_file
+						)
+		  , simple_trans.input_port_by_name ("config_file")
+		  )
+		);
+
+	//obsolete
+	/*we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
 	act.input().push_back
     ( we::input_t::value_type
@@ -316,7 +354,8 @@ void TestComponents::startDaemons(const std::string& workerUrl)
                     )
       , simple_trans.input_port_by_name ("config_file")
       )
-    );
+    );*/
+
 	m_strWorkflow = we::util::text_codec::encode (act);
 
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
@@ -388,7 +427,24 @@ void TestComponents::testActivityRealWeAllCompAndActExec()
 	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
 	// generate the test workflow simple-net.pnet
 
+	std::string cfg_file(TESTS_WORKFLOWS_PATH);
+	cfg_file += "/kdm.simple.conf";
+
 	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
+	we::activity_t act ( simple_trans );
+
+	act.add_input
+		( we::input_t::value_type
+		  ( we::token_t ( "config_file"
+						, literal::STRING
+						, cfg_file
+						)
+		  , simple_trans.input_port_by_name ("config_file")
+		  )
+		);
+
+    // obsolete
+	/*we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
 	we::activity_t act ( simple_trans );
 	act.input().push_back
     ( we::input_t::value_type
@@ -398,7 +454,8 @@ void TestComponents::testActivityRealWeAllCompAndActExec()
                     )
       , simple_trans.input_port_by_name ("config_file")
       )
-    );
+    );*/
+
 	m_strWorkflow = we::util::text_codec::encode (act);
 
 	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
@@ -516,17 +573,6 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
-	// connect to FVM
-	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
-
-	fvm_pc_connection_mgr fvm_pc;
-	try {
-		fvm_pc.init(pc_cfg);
-	} catch (const std::exception &ex) {
-		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
-		CPPUNIT_ASSERT (false);
-	}*/
-
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
     executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
@@ -583,9 +629,6 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
-	// processor container terminates ...
-	//fvm_pc.leave();
-
 	SDPA_LOG_INFO("terminating...");
 	if (! executor->stop())
 		SDPA_LOG_WARN("executor did not stop correctly...");
@@ -614,16 +657,6 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
 
-	// connect to FVM
-	/*fvm_pc_config_t pc_cfg ("/tmp/msq", "/tmp/shmem", 52428800, 52428800);
-
-	fvm_pc_connection_mgr fvm_pc;
-	try {
-		fvm_pc.init(pc_cfg);
-	} catch (const std::exception &ex) {
-		std::cerr << "E: could not connect to FVM: " << ex.what() << std::endl;
-		CPPUNIT_ASSERT (false);
-	}*/
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
@@ -679,9 +712,6 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-
-	// processor container terminates ...
-	//fvm_pc.leave();
 
 	SDPA_LOG_INFO("terminating...");
 	if (! executor->stop())

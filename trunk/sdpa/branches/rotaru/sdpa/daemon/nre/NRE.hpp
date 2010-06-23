@@ -61,7 +61,8 @@ namespace sdpa {
 				  masterName_(masterName),
 				  masterUrl_(masterUrl),
 				  //workerUrl_(workerUrl),
-				  m_guiServ("SDPA", guiUrl)
+				  m_guiServ("SDPA", guiUrl),
+				  bLaunchNrePcd_(bLaunchNrePcd)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
@@ -84,28 +85,30 @@ namespace sdpa {
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
 
-			/*int c;
-		   	int nStatus;
-
-			//kill pcd here
-		   	kill(0,SIGTERM);
-
-			c = wait(&nStatus);
-			if( WIFEXITED(nStatus) )
+			if(bLaunchNrePcd_)
 			{
-				if( WEXITSTATUS(nStatus) != 0 )
+				int c;
+				int nStatus;
+
+				//kill pcd here
+				kill(0,SIGTERM);
+
+				c = wait(&nStatus);
+				if( WIFEXITED(nStatus) )
 				{
-					std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-					LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-				}
-				else
-					if( WIFSIGNALED(nStatus) )
+					if( WEXITSTATUS(nStatus) != 0 )
 					{
-						std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-						LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+						std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+						LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
 					}
+					else
+						if( WIFSIGNALED(nStatus) )
+						{
+							std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+							LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+						}
+				}
 			}
-			*/
 
 		}
 
@@ -172,6 +175,7 @@ namespace sdpa {
 		std::string masterUrl_;
 		//std::string workerUrl_;
 		gui_service m_guiServ;
+		bool bLaunchNrePcd_;
 	  };
 	}
 }
@@ -207,13 +211,12 @@ void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 }
 
 template <typename T, typename U>
-void NRE<T, U>::action_configure(const StartUpEvent&)
+void NRE<T, U>::action_configure(const StartUpEvent& stupEvt)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_DEBUG("Call 'action_configure'");
-	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("polling interval",          50 * 1000); //0.1s
-	ptr_daemon_cfg_->put<sdpa::util::time_type>("life-sign interval", 60 * 1000 * 1000); //60s
+
+	GenericDaemon::action_configure(stupEvt);
 }
 
 template <typename T, typename U>
@@ -385,41 +388,9 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
-/*
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
-}*/
-
-template <typename T, typename U>
-void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
 }
@@ -427,7 +398,6 @@ void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
 }
@@ -435,7 +405,6 @@ void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
 }
@@ -443,7 +412,6 @@ void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
 }
@@ -451,7 +419,6 @@ void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
 template <typename T, typename U>
 void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
 {
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
  	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
  	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 }

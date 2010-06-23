@@ -332,7 +332,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 					ptrWorker->delete_job(pEvt->job_id());
 
 				} catch(WorkerNotFoundException) {
-					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+					SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
 				}
 
 				try {

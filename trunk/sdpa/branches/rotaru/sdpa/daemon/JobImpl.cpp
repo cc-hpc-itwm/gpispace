@@ -144,7 +144,7 @@ namespace sdpa { namespace daemon {
 		{
     		try
     		{
-				sdpa::worker_id_t worker_id = worker(); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
+				sdpa::worker_id_t worker_id = worker();//pComm->workerManager->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
 				if( !worker().empty() )
 				{
@@ -155,7 +155,7 @@ namespace sdpa { namespace daemon {
 				else
 					SDPA_LOG_WARN("The job was not assigned to any worker!");
 
-			} catch(sdpa::util::PropertyLookupFailed& ) {
+			} catch(const NoWorkerFoundException& ) {
 				SDPA_LOG_WARN("The job was not assigned to any worker!");
 			} catch(...) {
 				SDPA_LOG_ERROR("Unexpected exception occurred!");

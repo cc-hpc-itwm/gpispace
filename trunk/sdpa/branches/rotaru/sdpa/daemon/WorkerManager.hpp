@@ -35,13 +35,18 @@ namespace sdpa { namespace daemon {
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
 	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+	  typedef std::map<unsigned int, Worker::worker_id_t> rank_map_t;
 
 	  WorkerManager();
 	  virtual ~WorkerManager();
 
 	  Worker::ptr_t &findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
+
+	  Worker::ptr_t &findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+
 	  void addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlreadyExistException);
-	  Worker::ptr_t &getNextWorker() throw (NoWorkerFoundException);
+	  Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
+	  unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 
 	  void balanceWorkers();
@@ -64,6 +69,7 @@ namespace sdpa { namespace daemon {
 	  }
 
 	  worker_map_t worker_map_;
+	  rank_map_t rank_map_;
   protected:
 	  SDPA_DECLARE_LOGGER();
 	  worker_map_t::iterator iter_last_worker_;

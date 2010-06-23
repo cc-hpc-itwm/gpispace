@@ -15,6 +15,23 @@ Worker::Worker(const worker_id_t name, const int rank, const location_t &locatio
 
 }
 
+bool Worker::has_job( const sdpa::job_id_t& job_id )
+{
+	for( JobQueue::iterator iter=pending_.begin(); iter!=pending_.end(); iter++ )
+		if( *iter==job_id )
+			return true;
+
+	for( JobQueue::iterator iter=submitted_.begin(); iter!=submitted_.end(); iter++ )
+		if( *iter==job_id )
+			return true;
+
+	for( JobQueue::iterator iter=acknowledged_.begin(); iter!=acknowledged_.end(); iter++ )
+		if( *iter==job_id )
+			return true;
+
+	return false;
+}
+
 void Worker::update(const sdpa::events::SDPAEvent &)
 {
   tstamp_ = sdpa::util::now();

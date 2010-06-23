@@ -27,10 +27,14 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <we/we.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
+
+  typedef std::map<sdpa::JobId, we::preference_t> preference_map_t;
+
   class JobManager  {
   public:
 	  typedef sdpa::shared_ptr<JobManager> ptr_t;
@@ -50,6 +54,7 @@ namespace sdpa { namespace daemon {
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
+	  preference_map_t preferences() const { return job_preferences_; }
 
 	  std::string print();
 	  size_t number_of_jobs() { return job_map_.size(); }
@@ -71,6 +76,7 @@ namespace sdpa { namespace daemon {
 	  job_map_t job_map_;
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
+	  preference_map_t job_preferences_;
   };
 }}
 
