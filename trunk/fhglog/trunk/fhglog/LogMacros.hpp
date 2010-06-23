@@ -21,7 +21,7 @@ namespace fhg { namespace log {
 #define __LOG(logger, level, msg)\
     do {\
       using namespace fhg::log;\
-      if (logger.isLevelEnabled(LogLevel::level) && logger.hasAppender()) \
+      if (logger.isLevelEnabled(LogLevel::level)) \
       {\
         FHGLOG_MKEVENT(__log_evt, level, "");\
         if (! logger.isFiltered(__log_evt))\
