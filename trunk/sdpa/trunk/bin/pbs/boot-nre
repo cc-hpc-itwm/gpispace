@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-trap 'exit 0' INT
+trap 'wait; exit 0' INT
 
 node_max=$( uniq $PBS_NODEFILE | wc -l )
 nodes=$( echo $( seq 1 $node_max ) )
