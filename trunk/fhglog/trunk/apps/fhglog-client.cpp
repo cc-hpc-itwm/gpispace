@@ -23,7 +23,7 @@
 void usage()
 {
   std::cerr << "usage: fhglog-client [-h] ip:port message..." << std::endl;
-  std::cerr << "\thost:port - server to use (default: " << FHGLOG_DEFAULT_HOST << ")" << std::endl;
+  std::cerr << "\thost:port - server to use (default: " << FHGLOG_DEFAULT_HOST << ":" << FHGLOG_DEFAULT_PORT << ")" << std::endl;
   std::cerr << "\tmessage - the message to log" << std::endl;
 }
 
