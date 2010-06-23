@@ -23,8 +23,11 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/util.hpp>
 #include <fhglog/remote/LogServer.hpp>
+#include <fhglog/FilteringAppender.hpp>
+#include <boost/program_options.hpp>
 
 boost::asio::io_service io_service;
+namespace po = boost::program_options;
 
 void signal_handler(int)
 {
@@ -33,62 +36,136 @@ void signal_handler(int)
 
 int main(int argc, char **argv)
 {
+  po::options_description desc("options");
+
+  desc.add_options()
+    ("help,h", "this message")
+    ("port,p", po::value<unsigned short>()->default_value(FHGLOG_DEFAULT_PORT), "port to listen on")
+    ("version,V", "print version information")
+    ("dumpversion", "dump version information")
+    ("quiet,q", "be quiet")
+    ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
+    ( "format,f", po::value<std::string>()->default_value("short")
+    , "possible values:\n"
+    "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
+    "   full:\t use a long logging format (eq. to \"%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n\")\n"
+    " custom:\t provide your own format\n"
+    "   format flags:\n"
+    "      %s - log level (short)\n"
+    "      %S - log level (long)\n"
+    "      %p - file name\n"
+    "      %P - file path\n"
+    "      %F - function\n"
+    "      %L - line number\n"
+    "      %m - log message\n"
+    "      %d - date\n"
+    "      %t - timestamp\n"
+    "      %T - thread id\n"
+    "      %R - process id\n"
+    "      %n - new line\n"
+    "      %l - logger name"
+    )
+    ;
+
+  po::variables_map vm;
   try
   {
-    std::string port_string(FHGLOG_DEFAULT_PORT);
-    std::string fmt_string("full");
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
+  }
+  po::notify(vm);
 
-    if (argc > 1)
+  if (vm.count("version"))
+  {
+    std::cerr << "FhgLog Server v" << FHGLOG_VERSION << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (vm.count("dumpversion"))
+  {
+    std::cerr << FHGLOG_VERSION << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (vm.count("help"))
+  {
+    std::cerr << "usage: fhglog-server [options]" << std::endl;
+    std::cerr << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  const unsigned short port (vm["port"].as<unsigned short>());
+  const std::string fmt_string (vm["format"].as<std::string>());
+
+  signal(SIGINT, signal_handler);
+  signal(SIGTERM, signal_handler);
+
+  // my own output goes to stderr
+  fhg::log::getLogger().addAppender
+    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
+                                                            , std::cerr
+                                                            )
+                               )
+    )->setFormat(fhg::log::Formatter::Default());
+
+  fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
+  if (vm.count("quiet"))
+  {
+    level = fhg::log::LogLevel::ERROR;
+  }
+  else
+  {
+    switch (vm["verbose"].as<unsigned int> ())
     {
-      const std::string a1(argv[1]);
-      if (a1 == "-h")
-      {
-        std::cerr << "Usage: " << argv[0] << "[fmt [port]]" << std::endl;
-        std::cerr << "\tfmt  - format to use {short, full, custom} (default: full)" << std::endl;
-        std::cerr << "\tport - udp port to listen on (default:" << FHGLOG_DEFAULT_PORT << ")" << std::endl;
-        return 1;
-      }
-      else
-      {
-        fmt_string = a1;
-      }
+    case 0:
+      level = fhg::log::LogLevel::WARN;
+      break;
+    case 1:
+      level = fhg::log::LogLevel::INFO;
+      break;
+    case 2:
+      level = fhg::log::LogLevel::DEBUG;
+      break;
+    default:
+      level = fhg::log::LogLevel::TRACE;
+      break;
     }
+  }
 
-    if (argc > 2)
-    {
-      port_string = argv[2];
-    }
+  fhg::log::getLogger().setLevel (level);
 
-    unsigned short port;
-    std::istringstream isstr(port_string);
-    isstr >> port;
-    if (! isstr)
-    {
-      std::cerr << "invalid port specified: " << argv[1] << std::endl;
-      return 2;
-    }
+  // remote messages go to stdout
+  fhg::log::Appender::ptr_t appender
+    (new fhg::log::StreamAppender( "console"
+                                 , std::cout
+                                 )
+    );
 
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
+  if      (fmt_string == "full")  appender->setFormat(fhg::log::Formatter::Full());
+  else if (fmt_string == "short") appender->setFormat(fhg::log::Formatter::Short());
+  else                            appender->setFormat(fhg::log::Formatter::Custom(fmt_string));
 
-    // my own output goes to stderr
-    fhg::log::getLogger().addAppender(fhg::log::Appender::ptr_t(new fhg::log::StreamAppender("console", std::cerr)))->setFormat(fhg::log::Formatter::Default());
+  appender = fhg::log::Appender::ptr_t
+    ( new fhg::log::FilteringAppender ( appender
+                                      , fhg::log::Filter::ptr_t
+                                      (new fhg::log::LevelFilter(level))
+                                      )
+    );
 
-    // remote messages go to stdout
-    fhg::log::Appender::ptr_t appender(new fhg::log::StreamAppender("console", std::cout));
-
-    if      (fmt_string == "full")  appender->setFormat(fhg::log::Formatter::Full());
-    else if (fmt_string == "short") appender->setFormat(fhg::log::Formatter::Short());
-    else                            appender->setFormat(fhg::log::Formatter::Custom(fmt_string));
-
+  try
+  {
     fhg::log::remote::LogServer server(appender, io_service, port);
-
     io_service.run();
     LOG(INFO, "done.");
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Exception: " << e.what() << "\n";
+    std::cerr << "Exception occured: " << e.what() << std::endl;
   }
 
   return 0;
