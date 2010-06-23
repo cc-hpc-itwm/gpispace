@@ -18,12 +18,25 @@ namespace fhg { namespace log {
 #if FHGLOG_DISABLE_LOGGING == 1
 #define __LOG(logger, level, msg)
 #else
-#define __LOG(logger, level, msg) do { using namespace fhg::log; if (logger.isLevelEnabled(LogLevel::level)) { FHGLOG_MKEVENT(__log_evt, level, ""); if (! logger.isFiltered(__log_evt)) { __log_evt.stream() << msg; logger.log(__log_evt); }}} while(0)
+#define __LOG(logger, level, msg)\
+    do {\
+      using namespace fhg::log;\
+      if (logger.isLevelEnabled(LogLevel::level) && logger.hasAppender()) \
+      {\
+        FHGLOG_MKEVENT(__log_evt, level, "");\
+        if (! logger.isFiltered(__log_evt))\
+        {\
+          __log_evt.stream() << msg;\
+          logger.log(__log_evt);\
+        }\
+      }\
+    } while(0)
 #endif // if FHGLOG_ENABLED == 0
 
 #ifndef NDEBUG
-// support for log output only when: logging activated at all and NDEBUG is not defined
-// this can be useful to introduce extra log output for debugging purposes but not in releases
+// support for log output only when:  logging activated at all and NDEBUG is not
+// defined  this can  be  useful to  introduce  extra log  output for  debugging
+// purposes but not in releases
 #define __DLOG(logger, level, msg) __LOG(logger, level, msg)
 #else
 #define __DLOG(logger, level, msg)
@@ -32,10 +45,12 @@ namespace fhg { namespace log {
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
+#define LOG_IF(condition, level, msg) do { if ((condition)) { LOG(level, msg); } while (0)
 
 #define DLLOG(level, logger, msg) __DLOG(logger, level, msg)
 #define DMLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define DLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(), msg)
+#define DLOG_IF(condition, level, msg) do { if ((condition)) { DLOG(level, msg); } while (0)
 
 // regular logging messages
 #define LOG_TRACE(logger, msg) __LOG(logger, TRACE, msg)
