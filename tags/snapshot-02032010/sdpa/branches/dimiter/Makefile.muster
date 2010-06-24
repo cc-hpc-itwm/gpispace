@@ -1,9 +1,0 @@
-DEFINES = -Dpc_test_EXPORTS -DSHMEM -DDEBUGALLOC -DDEBUGCOMM -DSHMEM -DUSE_STL_TR1 -DNDEBUG
-INCLUDES =-I/p/herc/itwm/hpc/soft/fhglog/1.1.0/intel/include
-INCLUDES+=-I/p/herc/itwm/hpc/soft/sdpa/fvm/include
-INCLUDES+=-I/p/herc/itwm/hpc/ap/SDPA/sdpa/trunk
-INCLUDES+=-I/p/herc/itwm/hpc/ap/SDPA/nre-worker/trunk
-
-libpc-test.so: pc-test.cpp
-        /opt/cluster/Intel/cce/9.1.047/bin/icpc $(DEFINES) -wd383 -wd981 -O3 -fPIC $(INCLUDES) -o pc-test.cpp.o -c pc-test.cpp
-        /opt/cluster/Intel/cce/9.1.047/bin/icpc  -fPIC -wd383 -wd981 -O3 -DNDEBUG  -shared -Wl,-soname,libpc-test.so -o libpc-test.so pc-test.cpp.o

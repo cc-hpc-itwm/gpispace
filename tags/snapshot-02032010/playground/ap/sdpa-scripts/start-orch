@@ -1,7 +1,0 @@
-#!/bin/sh
-orch_host="`hostname`"
-orch_port=5000
-orch_url="$orch_host:$orch_port"
-
-echo "running Orchestrator at: $orch_url"
-FHGLOG_level=INFO /p/herc/itwm/hpc/soft/sdpa/sdpa/bin/orchestrator -u 0.0.0.0:$orch_port -n orchestrator --workflow-directory=/p/herc/itwm/hpc/ap/SDPA/sdpa/trunk/tests/sdpa/workflows >/scratch/petry/sdpa/orch.log 2>&1
