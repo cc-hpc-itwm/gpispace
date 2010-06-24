@@ -317,16 +317,18 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			sendEventToMaster(pEvtJobFailedEvent);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
-		catch(QueueFull)
+		catch(QueueFull const &)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+			SDPA_LOG_WARN("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
 		}
-		catch(seda::StageNotFound)
+		catch(seda::StageNotFound const &)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to send JobFailedEvent");
+			SDPA_LOG_FATAL("Stage not found when trying to send JobFailedEvent");
+                        throw;
 		}
 		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+			SDPA_LOG_FATAL("Unexpected exception occurred!");
+                        throw;
 		}
 	}
 }
