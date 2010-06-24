@@ -52,7 +52,7 @@ namespace sdpa {
 	{
 		SchedulerImpl::start();
 
-		LOG(DEBUG, "Starting NreWorkerClient ...");
+		SDPA_LOG_DEBUG("Starting NreWorkerClient ...");
 		try {
 			ptr_comm_handler_->rank() = m_worker_.start();
 		}
