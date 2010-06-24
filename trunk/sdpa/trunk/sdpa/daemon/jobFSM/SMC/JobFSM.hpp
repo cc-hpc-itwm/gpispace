@@ -39,7 +39,7 @@ namespace sdpa { namespace fsm { namespace smc {
 				SDPA_LOG_DEBUG("Job state machine created");
 			}
 
-			virtual ~JobFSM()  throw () { SDPA_LOG_DEBUG("Job state machine destroyed"); }
+                        virtual ~JobFSM() { SDPA_LOG_DEBUG("Job state machine destroyed"); }
 
 			//transitions
 			void CancelJob(const sdpa::events::CancelJobEvent*);

@@ -51,10 +51,8 @@ namespace sdpa { namespace daemon {
 		, pComm(const_cast<IComm*>(pHandler))
     {}
 
-    JobImpl::~JobImpl() throw () {
-    	std::ostringstream os;
-    	os<<"Destructor of the job "<<id_.str()<<" called!";
-    	SDPA_LOG_DEBUG(os.str());
+    JobImpl::~JobImpl() {
+      DLOG(TRACE, "Destructor of the job "<<id_.str()<<" called!");
     }
 
 
@@ -89,13 +87,13 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_run_job()
     {
-    	SDPA_LOG_DEBUG("Process 'action_run_job'");
+      DLOG(TRACE, "Process 'action_run_job'");
     }
 
     // transition from Pending to Cancelled
 	void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& evt)
 	{
-		SDPA_LOG_DEBUG("Process 'action_cancel_job_from_pending'");
+          DLOG(TRACE, "Process 'action_cancel_job_from_pending'");
 
 		// the message comes from WE, should identify the worker to which the activity was assigned
 		// and send him a CancelJob
@@ -110,8 +108,12 @@ namespace sdpa { namespace daemon {
 
 				pComm->workflowEngine()->cancelled( actId );
 
+			}  catch(std::exception const & ex) {
+                          SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+                                throw;
 			}  catch(...) {
 				SDPA_LOG_ERROR("Unexpected exception occurred!");
+                                throw;
 			} //handle here NoSuchWorkflow,NoSuchActivity exceptions
 		}
 		else //the master sent a Cancel message -> forward it to the workflow engine
@@ -133,8 +135,7 @@ namespace sdpa { namespace daemon {
 	// transition from Cancelling to Cancelled
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& evt)
     {
-    	// cancel the job
-    	SDPA_LOG_DEBUG("Process 'action_cancel_job'");
+      DLOG(TRACE, "cancelling job " << id());
 
     	/*else // the message comes from WE, should identify the worker to which the activity was assigned
 		 * and send him a CancelJob
@@ -171,25 +172,23 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& /* evt */)
     {
-    	// Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
-
-    	SDPA_LOG_DEBUG("Process 'action_cancel_job_ack'");
+      DLOG(TRACE, "acknowledged cancelling job " << id());
+    	// TODO: Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
+      DLOG(TRACE, "delete job " << id());
     	b_marked_for_del_ = true;
 
     	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id(), e.id()) );
     	//send ack to master
     	pComm->sendEventToMaster(pDelJobReply);
-
-    	SDPA_LOG_DEBUG("Process 'action_delete_job'");
     }
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
-    	SDPA_LOG_DEBUG("Process 'action_query_job_status'");
+      DLOG(TRACE, "query status of job " << id() << " status: " << getStatus());
 
     	JobStatusReplyEvent::status_t status = getStatus();
 
@@ -198,32 +197,24 @@ namespace sdpa { namespace daemon {
 
 		// send status reply to master
 		pComm->sendEventToMaster(pStatReply);
-
-    	SDPA_LOG_DEBUG("Posted an event of type StatusReplyEvent");
     }
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& /* evt */)
     {
-    	// inform WFE (send a JobFinishedEvent event to the stage WFE)
-    	// obsolete: post a JobFinishedAckEvent to e.from()
-    	SDPA_LOG_DEBUG("Process 'action_job_finished'");
+      DLOG(TRACE, "job finished " << id());
     }
 
     void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& /* evt */)
     {
-    	// inform WFE (send a JobFailedEvent event to the stage WFE)
-    	// obsolete: post a JobFailedAckEvent to e.from()
-    	SDPA_LOG_DEBUG("Process 'action_job_failed'");
+      DLOG(TRACE, "job failed " << id());
     }
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
+      DLOG(TRACE, "retrieving results of job " << id());
     	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), result));
 
     	// reply the results to master
     	pComm->sendEventToMaster(pResReply);
-
-    	// Post a JobResultsReplyEvent to e.from()
-    	SDPA_LOG_DEBUG("Process 'action_retrieve_results'");
     }
 }}

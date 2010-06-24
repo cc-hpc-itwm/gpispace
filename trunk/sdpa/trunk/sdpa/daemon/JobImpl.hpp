@@ -44,7 +44,7 @@ namespace sdpa { namespace daemon {
       	                const sdpa::daemon::IComm* pHandler = NULL,
       	                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
-        virtual ~JobImpl() throw();
+      virtual ~JobImpl();
 
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
