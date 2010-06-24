@@ -536,7 +536,7 @@ int main(int, char **)
 
   {
     std::clog << "testing WorkerRegistrationEvent...";
-    WorkerRegistrationEvent e("foo", "bar");
+    WorkerRegistrationEvent e("foo", "bar", 100);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 

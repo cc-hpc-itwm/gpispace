@@ -41,7 +41,6 @@ namespace sdpa { namespace daemon {
 	  virtual ~WorkerManager();
 
 	  Worker::ptr_t &findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
-
 	  Worker::ptr_t &findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
 	  void addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlreadyExistException);
