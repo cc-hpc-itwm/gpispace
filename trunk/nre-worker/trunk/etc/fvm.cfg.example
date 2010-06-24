@@ -1,4 +1,0 @@
-SHMSZ 52428800
-FVMSZ 52428800
-MSQFILE <path-to-msqfile>
-SHMFILE <path-to-shmemfile>
