@@ -92,7 +92,7 @@ void LoadBalancerTest::testLoadBalancer()
 		}
 	}
 
-	// submit jobs to the workers
+	// print loads before balancing
 	for(int k=0; k<NWORKERS; k++)
 	{
 		try {
@@ -109,7 +109,7 @@ void LoadBalancerTest::testLoadBalancer()
 	cout<<"Balance the workers now ..."<<endl<<endl;
 	wm.balanceWorkers();
 
-	// submit jobs to the workers
+	// print load after balancing
 	for(int k=0; k<NWORKERS; k++)
 	{
 		try {

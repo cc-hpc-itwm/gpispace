@@ -207,27 +207,72 @@ namespace sdpa {
 		}
 	 }
 
-	 /*
-	  * hand it over to the NREClient!
-	  */
 	 void schedule_remote(const sdpa::job_id_t& jobId)
 	 {
-	 	DLOG(TRACE, "Called schedule_remote ...");
+           throw std::runtime_error ("Schedule remote not implemented for the NREs!");
+	 }
 
-	 	try {
-	 		execute(jobId);
-	 	}
-	 	catch(const JobNotFoundException& ex)
+	 void run()
+	 {
+	 	if(!ptr_comm_handler_)
 	 	{
-	 		SDPA_LOG_DEBUG("Job not found! Could not execute job:"<<ex.job_id().str());
+	 		SDPA_LOG_FATAL("The scheduler cannot be started. Invalid communication handler. ");
+	 		stop();
+	 		return;
 	 	}
-	 	catch(const NoWorkerFoundException&)
+
+	 	SDPA_LOG_DEBUG("Scheduler thread running ...");
+
+	 	while(!bStopRequested)
 	 	{
-	 		// put the job back into the queue
-	 		jobs_to_be_scheduled.push(jobId);
-	 		SDPA_LOG_ERROR("Could not schedule the job. No worker available! Put the job back into the queue.");
+	 		try
+	 		{
+	 			check_post_request();
+	 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+	 			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+
+	 			if(pJob->is_local())
+	 				schedule_local(jobId);
+	 			else
+	 			{
+					try {
+
+						SDPA_LOG_DEBUG("Try to execute the job "<<jobId.str()<<" ...");
+						execute(jobId);
+					}
+					catch(JobNotFoundException& ex)
+					{
+						SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+					}
+					catch(const NoWorkerFoundException&)
+					{
+						// put the job back into the queue
+						jobs_to_be_scheduled.push(jobId);
+						SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
+					}
+	 			}
+	 		}
+	 		catch(JobNotFoundException& ex)
+	 		{
+	 			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+	 		}
+	 		catch( const boost::thread_interrupted & )
+	 		{
+	 			DMLOG(DEBUG, "Thread interrupted ...");
+	 			bStopRequested = true; // FIXME: can probably be removed
+	 			break;
+	 		}
+	 		catch( const sdpa::daemon::QueueEmpty &)
+	 		{
+	 		  // ignore
+	 		}
+	 		catch ( const std::exception &ex )
+	 		{
+	 		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+	 		}
 	 	}
 	 }
+
 
 	 friend class boost::serialization::access;
 	 friend class sdpa::tests::WorkerSerializationTest;

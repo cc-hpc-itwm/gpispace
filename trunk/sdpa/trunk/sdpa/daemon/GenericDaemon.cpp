@@ -491,6 +491,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 		// you should consume from the  worker's pending list; put the job into the worker's submitted list
 		sdpa::job_id_t jobId = ptrWorker->get_next_job(e.last_job_id());
+
 		const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
 		if( ptrJob.get() )

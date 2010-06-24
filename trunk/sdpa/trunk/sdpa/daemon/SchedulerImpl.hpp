@@ -65,7 +65,8 @@ namespace sdpa {
 	@param job a pointer to the job that shall be executed on a remote node
 	*/
 	virtual void schedule_remote(const sdpa::job_id_t &job);
-
+	void schedule_round_robin(const sdpa::job_id_t &job);
+	bool schedule_with_constraints(const sdpa::job_id_t &job);
 	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank );
 
 	virtual void start_job(const sdpa::job_id_t &job);
