@@ -457,7 +457,9 @@ namespace sdpa { namespace nre { namespace worker {
 			timer_active_ = true;
 		}
 		else
+                {
 			DLOG(TRACE, "timeout timer still active (expires in: "<< timer_.expires_from_now() <<")");
+                }
     }
 
     void start_ping_interval_timer()
