@@ -47,6 +47,16 @@ SchedulerImpl::~SchedulerImpl()
 	}
 }
 
+void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
+{
+	ptr_worker_man_->addWorker(pWorker);
+
+	// only with a round-robin schedule
+	ptr_worker_man_->balanceWorkers();
+
+	// with the "schedule job to the least loaded worker" strategy -> apply work stealing
+}
+
 /*
 	Schedule a job locally, send the job to WE
 */
@@ -107,9 +117,9 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 }
 
 /*
- * Implement here in a first phase a simple round-robin schedule
+ * Round-Robin schedule
  */
-void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 {
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
@@ -147,9 +157,12 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	}
 }
 
+
 // test if the specified rank is valid
 bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 {
+	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to rank "<<rank);
+
 	if( ptr_worker_man_->rank_map_.find(rank) == ptr_worker_man_->rank_map_.end() )
 	{
 		SDPA_LOG_WARN( "There is no worker with the rank= "<<rank<<"!" );
@@ -184,9 +197,9 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 
 
 /*
- * Implement here in a first phase a simple round-robin schedule
+ * Scheduling with constraints
  */
-/*void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 {
 	SDPA_LOG_DEBUG("Called schedule_remote ...");
 
@@ -194,7 +207,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 	{
 		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
 		stop();
-		return;
+		return false;
 	}
 
 	if( ptr_worker_man_ )
@@ -202,25 +215,28 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
         unsigned int rank_ll_worker;
 
-		preference_map_t::const_iterator it_pref = ptr_comm_handler_->jobManager()->preferences().find(jobId);
-
 		// if no preferences are explicitly set for this job
-		if( it_pref == ptr_comm_handler_->jobManager()->preferences().end() )
+        SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
+		if( ptr_comm_handler_->jobManager()->preferences().empty() )
 		{
+			SDPA_LOG_DEBUG("No preferences exists for the job "<<jobId.str()<<"!");
+
 			try {
+				SDPA_LOG_DEBUG("Find the least loaded worker ...");
 				rank_ll_worker  = ptr_worker_man_->getLeastLoadedWorker();
-				schedule_to(jobId, rank_ll_worker);
+				return schedule_to(jobId, rank_ll_worker);
 			}
 			catch(const NoWorkerFoundException& exc)
 			{
 				SDPA_LOG_ERROR("Could not schedule the job "<<jobId.str()<<". No worker available!");
 				ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "No worker available!");
 				ptr_comm_handler_->jobManager()->deleteJob(jobId);
-
+				return false;
 			}
-
-			return;
 		}
+
+		SDPA_LOG_DEBUG("Locate preferences of the job "<<jobId.str());
+		preference_map_t::const_iterator it_pref = ptr_comm_handler_->jobManager()->preferences().find(jobId);
 
 		const we::preference_t& job_pref = it_pref->second;
 
@@ -232,6 +248,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 				// declare the job as failed
 				ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "The list of needed nodes is empty!");
 				ptr_comm_handler_->jobManager()->deleteJob(jobId);
+				return false;
 			}
 			else
 			{
@@ -240,7 +257,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 
 				try {
 					rank_ll_worker  = ptr_worker_man_->getLeastLoadedWorker();
-					schedule_to(jobId, rank_ll_worker);
+					return schedule_to(jobId, rank_ll_worker);
 				}
 				catch(const NoWorkerFoundException& exc)
 				{
@@ -248,11 +265,11 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 					ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "No worker available!");
 					ptr_comm_handler_->jobManager()->deleteJob(jobId);
 
-					return;
+					return false;
 				}
 			}
 		}
-		else // there are preferences set
+		else // the job has preferences
 		{
 			bool bAssigned = false;
 			we::preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
@@ -262,8 +279,8 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 				if(!(bAssigned=schedule_to(jobId, *it)))
 					uset_excluded.insert(*it);
 
-			// if the assignement on one of preferred workers
-			// fails and mandatory is set then -> throw exception and declare the job failed
+			// if the assignment to one of the preferred workers
+			// fails and mandatory is set then -> declare the job failed
 			if( !bAssigned && job_pref.is_mandatory() )
 			{
 				//ptr_comm_handler_->failed(jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
@@ -271,7 +288,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 						"Couldn't match the mandatory preferences with an existing registered worker!");
 
 				ptr_comm_handler_->jobManager()->deleteJob(jobId);
-				return;
+				return false;
 			}
 
 			// if the assignement on one of preferred workers
@@ -289,10 +306,20 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 							uset_excluded.insert(rank);
 				}
 			}
+
+			return bAssigned;
 		}
 	}
 }
-*/
+
+void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+{
+	// schedule_with_constraints(jobId);
+
+	// fairly re-distribute tasks, if necessary
+	schedule_round_robin(jobId);
+	ptr_worker_man_->balanceWorkers();
+}
 
 // obsolete, only for testing purposes!
 void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
@@ -315,13 +342,6 @@ Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) 
 		throw WorkerNotFoundException(worker_id);
 	}
 }
-
-void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
-{
-	ptr_worker_man_->addWorker(pWorker);
-	// do a re-scheduling here
-}
-
 
 void SchedulerImpl::start()
 {
@@ -420,11 +440,6 @@ void SchedulerImpl::check_post_request()
 	 }
 }
 
-void fairly_reschedule_work()
-{
-
-}
-
 void SchedulerImpl::run()
 {
 	if(!ptr_comm_handler_)
@@ -452,9 +467,6 @@ void SchedulerImpl::run()
 				// Attention!: an NRE has no WorkerManager!!!!
 				// or has an Worker Manager and the workers are threads
 				schedule_remote(jobId);
-
-				// fairly re-distribute tasks, if necessary
-				ptr_worker_man_->balanceWorkers();
 			}
 		}
 		catch(JobNotFoundException& ex)

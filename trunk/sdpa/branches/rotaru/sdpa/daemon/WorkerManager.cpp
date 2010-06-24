@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <algorithm>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -89,8 +90,6 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
-
-	balanceWorkers();
 }
 
 // you should here delete_worker as well, for the
@@ -161,7 +160,7 @@ void WorkerManager::balanceWorkers()
 
 
 /**
- * get next worker to be served
+ * get next worker to be served (Round-Robin scheduling)
  */
 Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
@@ -179,8 +178,22 @@ Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 	return iter->second;
 }
 
+
 /**
- * get next worker to be served
+ * compare the workers
+ */
+struct compare_workers
+{
+	typedef WorkerManager::worker_map_t::value_type T;
+	bool operator()( T const& a, T const& b)
+	{
+		return a.second->pending().size() < a.second->pending().size();
+	}
+};
+
+
+/**
+ * get the least loaded worker
  */
 unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
 {
@@ -191,26 +204,10 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
-	worker_map_t::const_iterator it = worker_map_.begin();
-
-	// at leas one worker
-	size_t min_size =  it->second->pending().size();
+	worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
 	unsigned int rank_ll = it->second->rank();
 
-	if(min_size==0)
-		return rank_ll;
-
-	while( it != worker_map_.end() )
-	{
-		size_t curr_size = it->second->pending().size();
-		if( curr_size < min_size )
-		{
-			min_size = curr_size;
-			rank_ll = it->second->rank();
-		}
-
-		it++;
-	}
 
 	return rank_ll;
 }
+
