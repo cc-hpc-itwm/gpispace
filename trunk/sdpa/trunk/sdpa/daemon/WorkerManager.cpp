@@ -17,7 +17,6 @@
  */
 #include <sdpa/daemon/WorkerManager.hpp>
 
-using namespace std;
 using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
@@ -40,6 +39,20 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) 
 		return it->second;
 	else
 		throw WorkerNotFoundException(worker_id);
+}
+
+/**
+ * find worker
+ */
+Worker::ptr_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+	lock_type lock(mtx_);
+
+	for( worker_map_t::iterator it = worker_map_.begin(); it!= worker_map_.end(); it++ )
+		if( it->second->has_job(job_id))
+			return  it->second;
+
+	throw NoWorkerFoundException();
 }
 
 /**
@@ -67,16 +80,20 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 		}
 	}
 
-	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(),pWorker));
+	worker_map_.insert(std::make_pair (pWorker->name(), pWorker));
+	rank_map_.insert(std::make_pair (rank, pWorker->name()));
 
   balanceWorkers();
 }
+
+// you should here delete_worker as well, for the
+// case when the workers unregisters
 
 void WorkerManager::balanceWorkers()
 {
 	lock_type lock(mtx_);
 	typedef std::map<Worker::worker_id_t, unsigned int> load_map_t;
-	typedef pair<Worker::worker_id_t, unsigned int> loadPair;
+	typedef std::pair<Worker::worker_id_t, unsigned int> loadPair;
 	load_map_t loadVector;
 
 	size_t loadBal = 0;
@@ -113,8 +130,11 @@ void WorkerManager::balanceWorkers()
 							bFinished = false;
 							for( size_t k=0; k<delta; k++)
 							{
-								 sdpa::job_id_t jobId = it->second->pending().pop();
-								 itNb->second->pending().push(jobId);
+								// look for nodes who prefer the neighboring worker
+								// if there are any, move them first and then, the nodes
+								// for which no preference was expressed
+								sdpa::job_id_t jobId = it->second->pending().pop();
+								itNb->second->pending().push(jobId);
 							}
 						}
 						else if( loadCurrNode - loadNb > 1 ) //still unbalanced
@@ -149,4 +169,35 @@ Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 	iter_last_worker_++;
 
 	return iter->second;
+}
+
+/**
+ * get next worker to be served
+ */
+unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
+{
+	if( worker_map_.empty() )
+		throw NoWorkerFoundException();
+
+	worker_map_t::const_iterator it = worker_map_.begin();
+
+	// at leas one worker
+	unsigned int rank_ll = it->second->rank();
+
+	const Worker::JobQueue& job_queue = it->second->pending();
+	size_t min_size = job_queue.size();
+
+	while( it != worker_map_.end() )
+	{
+		size_t curr_size = job_queue.size();
+		if( curr_size < min_size )
+		{
+			min_size = curr_size;
+			rank_ll = it->second->rank();
+		}
+
+		it++;
+	}
+
+	return rank_ll;
 }

@@ -61,7 +61,8 @@ namespace sdpa {
 				  masterName_(masterName),
 				  masterUrl_(masterUrl),
 				  //workerUrl_(workerUrl),
-				  m_guiServ("SDPA", guiUrl)
+				  m_guiServ("SDPA", guiUrl),
+				  bLaunchNrePcd_(bLaunchNrePcd)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
 
@@ -84,28 +85,30 @@ namespace sdpa {
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
 
-			/*int c;
-		   	int nStatus;
-
-			//kill pcd here
-		   	kill(0,SIGTERM);
-
-			c = wait(&nStatus);
-			if( WIFEXITED(nStatus) )
+			if(bLaunchNrePcd_)
 			{
-				if( WEXITSTATUS(nStatus) != 0 )
+				int c;
+				int nStatus;
+
+				//kill pcd here
+				kill(0,SIGTERM);
+
+				c = wait(&nStatus);
+				if( WIFEXITED(nStatus) )
 				{
-					std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-					LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-				}
-				else
-					if( WIFSIGNALED(nStatus) )
+					if( WEXITSTATUS(nStatus) != 0 )
 					{
-						std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-						LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+						std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+						LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
 					}
+					else
+						if( WIFSIGNALED(nStatus) )
+						{
+							std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+							LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+						}
+				}
 			}
-			*/
 
 		}
 
@@ -172,6 +175,7 @@ namespace sdpa {
 		std::string masterUrl_;
 		//std::string workerUrl_;
 		gui_service m_guiServ;
+		bool bLaunchNrePcd_;
 	  };
 	}
 }
@@ -211,7 +215,6 @@ void NRE<T, U>::action_configure(const StartUpEvent &se)
 {
 	GenericDaemon::action_configure (se);
 
-	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuring myeself (nre)...");
 	// use for now as below, later read from config file
 	ptr_daemon_cfg_->put("polling interval",          50 * 1000); //0.1s

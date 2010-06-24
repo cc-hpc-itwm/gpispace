@@ -86,6 +86,11 @@ namespace sdpa { namespace daemon {
     int rank() const { return rank_; }
 
     /**
+         Checks if the worker has job
+    */
+    bool has_job( const sdpa::job_id_t& job_id );
+
+    /**
       Return the next pending job or throw an exception.
 
       @param last_job_id the id of the last sucessfully submitted job
