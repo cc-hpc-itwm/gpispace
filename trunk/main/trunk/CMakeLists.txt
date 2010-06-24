@@ -19,6 +19,7 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 # add a path where some libraries might be stored
 set(CMAKE_ADDITIONAL_PATH $ENV{CMAKE_ADDITIONAL_PATH} CACHE PATH "Path where many locally installed libraries can be found")
 
+OPTION(ENABLE_TESTS "Build with tests" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
@@ -92,10 +93,10 @@ message(STATUS "========== Add project fhglog")
 add_subdirectory(fhglog)
 message(STATUS "========== Add project we")
 add_subdirectory(we)
-message(STATUS "========== Add project mmgr")
-add_subdirectory(mmgr)
 message(STATUS "========== Add project fvm-pc")
 add_subdirectory(fvm-pc)
+message(STATUS "========== Add project mmgr")
+add_subdirectory(mmgr)
 message(STATUS "========== Add project seda")
 add_subdirectory(seda)
 message(STATUS "========== Add project sdpa")

@@ -32,6 +32,8 @@ set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
 set(CMAKE_C_FLAGS_PROFILE "-O0 -g -pg")
 
+option (ENABLE_TESTS "Build with tests" YES)
+
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
@@ -40,11 +42,16 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
+include(CTest)
+
 # Reflect the package structure
 add_subdirectory(mmgr)
-enable_testing()
 add_subdirectory(app)
-add_subdirectory(tests)
+
+if (ENABLE_TESTS)
+  add_subdirectory(tests)
+endif (ENABLE_TESTS)
+
 
 # add some files to the installation target
 INSTALL(FILES README COPYING DESTINATION

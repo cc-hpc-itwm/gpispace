@@ -40,7 +40,7 @@ OPTION(USE_STL_TR1
  "Use tr1 from stl"
  0)
 
-OPTION(ENABLE_UNIT_TESTS
+OPTION(ENABLE_TESTS
   "Build and perform unit tests"
   YES)
 
@@ -106,10 +106,10 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
-  if (ENABLE_UNIT_TESTS)
+  if (ENABLE_TESTS)
     pkg_check_modules (CPPUNIT cppunit>=1.12)
     message(STATUS "CPPUnit: ${CPPUNIT_CFLAGS} ${CPPUNIT_LDFLAGS} STATIC=${CPPUNIT_STATIC_LDFLAGS}")
-  endif (ENABLE_UNIT_TESTS)
+  endif (ENABLE_TESTS)
 
 else  ( PKG_CONFIG_FOUND )
   message("No PKGCONFIG found - hoping for the best.")
@@ -183,10 +183,10 @@ if (WITH_COMM)
   add_subdirectory(seda/comm)
 endif (WITH_COMM)
 
-if (ENABLE_UNIT_TESTS)
+if (ENABLE_TESTS)
   enable_testing()
   add_subdirectory(tests)
-endif (ENABLE_UNIT_TESTS)
+endif (ENABLE_TESTS)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION

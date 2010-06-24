@@ -17,8 +17,6 @@ else (V_MAJOR)
   set(V_PATCH 0)
 endif (V_MAJOR)
 
-option (ENABLE_TESTS "Build with test binaries" YES)
-
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
@@ -53,6 +51,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
+option(ENABLE_TESTS "Build with test binaries" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
