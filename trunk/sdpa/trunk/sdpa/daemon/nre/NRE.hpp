@@ -391,37 +391,6 @@ bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
 	return true;
 }
 
-/*
-template <typename T, typename U>
-void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CREATED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityStarted( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_STARTED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFinished( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FINISHED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityFailed( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_FAILED) );
-}
-
-template <typename T, typename U>
-void NRE<T, U>::activityCancelled( const id_type& id, const std::string& data )
-{
-	notifyObservers( NotificationEvent( id, data, NotificationEvent::STATE_CANCELLED) );
-}*/
-
 template <typename T, typename U>
 void NRE<T, U>::activityCreated( const id_type& id, const std::string& data )
 {

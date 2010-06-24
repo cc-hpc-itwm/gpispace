@@ -144,7 +144,6 @@ namespace sdpa { namespace nre { namespace worker {
        	{
        		LOG(INFO, "Try to launch the nre-pcd ...");
        		pid_t pID = fork();
-
 			if (pID == 0)  // child
 			{
 				// Code only executed by child process
@@ -166,7 +165,6 @@ namespace sdpa { namespace nre { namespace worker {
 					LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
 					exit(1);
 				}
-
 				/*
 				// the variant with no spawned binary
 				DLOG(DEBUG, "starting process container on location: "<<worker_location()<< std::endl);
