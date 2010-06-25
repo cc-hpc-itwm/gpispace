@@ -49,7 +49,7 @@ namespace sdpa { namespace daemon {
       Take an event related to that particular worker and update the internal
       data structures.
       */
-    void update(const sdpa::events::SDPAEvent &event);
+    void update();
 
     /**
       Add a new job to the pending queue of this worker.
@@ -83,7 +83,7 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    int rank() const { return rank_; }
+    const int rank() const { return rank_; }
 
     /**
          Checks if the worker has job

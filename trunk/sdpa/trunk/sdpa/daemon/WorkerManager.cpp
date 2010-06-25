@@ -18,14 +18,16 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <algorithm>
 
+using namespace std;
 using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {
-	iter_last_worker_ = worker_map_.begin();
+	iter_last_worker_ = worker_map_.end();
 }
 
-WorkerManager::~WorkerManager(){
+WorkerManager::~WorkerManager()
+{
 
 }
 
@@ -64,27 +66,31 @@ void WorkerManager::addWorker(const Worker::ptr_t &pWorker) throw (WorkerAlready
 	lock_type lock(mtx_);
 
 	Worker::worker_id_t workerId = pWorker->name();
-	const int rank = pWorker->rank();
+	unsigned int rank = pWorker->rank();
 
-	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
+	bool bFound = false;
+	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
 	{
 		if( it->second->name() ==  workerId)
 		{
 			SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
+			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank);
 		}
 
 		if( it->second->rank() == rank )
 		{
-			SDPA_LOG_WARN("An worker with the rank "<<rank<<" already exists in the worker map!");
+			SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
+			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank);
 		}
 	}
 
-	worker_map_.insert(std::make_pair (pWorker->name(), pWorker));
-	rank_map_.insert(std::make_pair (rank, pWorker->name()));
+	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(), pWorker));
+	rank_map_.insert( pair<unsigned int, Worker::worker_id_t>(rank, pWorker->name()) );
 
-  balanceWorkers();
+	if(worker_map_.size() == 1)
+		iter_last_worker_ = worker_map_.begin();
 }
 
 // you should here delete_worker as well, for the
@@ -94,11 +100,11 @@ void WorkerManager::balanceWorkers()
 {
 	lock_type lock(mtx_);
 	typedef std::map<Worker::worker_id_t, unsigned int> load_map_t;
-	typedef std::pair<Worker::worker_id_t, unsigned int> loadPair;
+	typedef pair<Worker::worker_id_t, unsigned int> loadPair;
 	load_map_t loadVector;
 
 	size_t loadBal = 0;
-	const size_t N = worker_map_.size();
+	size_t N = worker_map_.size();
 
 	if( N==0 )
 		return;
@@ -129,7 +135,7 @@ void WorkerManager::balanceWorkers()
 						if(delta)
 						{
 							bFinished = false;
-							for( size_t k=0; k<delta; k++)
+							for( int k=0; k<delta; k++)
 							{
 								// look for nodes who prefer the neighboring worker
 								// if there are any, move them first and then, the nodes
@@ -152,6 +158,7 @@ void WorkerManager::balanceWorkers()
 		}
 	}
 }
+
 
 /**
  * get next worker to be served (Round-Robin scheduling)
@@ -204,4 +211,40 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 
 	return rank_ll;
 }
+
+sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id,  const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+{
+	SDPA_LOG_DEBUG("Get the next job ...");
+
+	sdpa::job_id_t jobId;
+	Worker::ptr_t ptrWorker = findWorker(worker_id);
+	ptrWorker->update();
+
+	// look first into the worker's queue
+	try {
+		jobId = ptrWorker->get_next_job(last_job_id);
+		return jobId;
+	}
+	catch(const NoJobScheduledException& ex)
+	{
+		// if there is a job into the common queue serve it
+		try {
+			jobId = common_queue_.pop();
+			ptrWorker->submitted().push(jobId);
+			return jobId;
+		}
+		catch(const QueueEmpty& ex)
+		{
+			// throw an exception if not possible
+			throw NoJobScheduledException(worker_id);
+		}
+	}
+}
+
+void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
+{
+	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the common queue");
+	common_queue_.push(jobId);
+}
+
 

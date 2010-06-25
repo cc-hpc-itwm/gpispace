@@ -52,7 +52,7 @@ void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
 	ptr_worker_man_->addWorker(pWorker);
 
 	// only with a round-robin schedule
-	ptr_worker_man_->balanceWorkers();
+	// ptr_worker_man_->balanceWorkers();
 
 	// with the "schedule job to the least loaded worker" strategy -> apply work stealing
 }
@@ -219,23 +219,12 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
         SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
 		if( ptr_comm_handler_->jobManager()->preferences().empty() )
 		{
-			SDPA_LOG_DEBUG("No preferences exists for the job "<<jobId.str()<<"!");
-
-			try {
-				SDPA_LOG_DEBUG("Find the least loaded worker ...");
-				rank_ll_worker  = ptr_worker_man_->getLeastLoadedWorker();
-				return schedule_to(jobId, rank_ll_worker);
-			}
-			catch(const NoWorkerFoundException& exc)
-			{
-				SDPA_LOG_ERROR("Could not schedule the job "<<jobId.str()<<". No worker available!");
-				ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "No worker available!");
-				ptr_comm_handler_->jobManager()->deleteJob(jobId);
-				return false;
-			}
+			//Put the job into the common_queue of the WorkerManager
+			ptr_worker_man_->dispatchJob(jobId);
+			return true;
 		}
 
-		SDPA_LOG_DEBUG("Locate preferences of the job "<<jobId.str());
+		SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
 		preference_map_t::const_iterator it_pref = ptr_comm_handler_->jobManager()->preferences().find(jobId);
 
 		const we::preference_t& job_pref = it_pref->second;
@@ -252,21 +241,9 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			}
 			else
 			{
-				SDPA_LOG_DEBUG("Get worker ...");
-				// look for the least-loaded worker which is not into the uset_excluded list !!!
-
-				try {
-					rank_ll_worker  = ptr_worker_man_->getLeastLoadedWorker();
-					return schedule_to(jobId, rank_ll_worker);
-				}
-				catch(const NoWorkerFoundException& exc)
-				{
-					SDPA_LOG_ERROR("Could not schedule the job "<<jobId.str()<<". No worker available!");
-					ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "No worker available!");
-					ptr_comm_handler_->jobManager()->deleteJob(jobId);
-
-					return false;
-				}
+				//Put the job into the common_queue of the WorkerManager
+				ptr_worker_man_->dispatchJob(jobId);
+				return true;
 			}
 		}
 		else // the job has preferences
@@ -314,11 +291,11 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-	// schedule_with_constraints(jobId);
+	schedule_with_constraints(jobId);
 
+	// schedule_round_robin(jobId);
 	// fairly re-distribute tasks, if necessary
-	schedule_round_robin(jobId);
-	ptr_worker_man_->balanceWorkers();
+	// ptr_worker_man_->balanceWorkers();
 }
 
 // obsolete, only for testing purposes!
@@ -495,3 +472,15 @@ void SchedulerImpl::print()
 	jobs_to_be_scheduled.print();
 	ptr_worker_man_->print();
 }
+
+sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+{
+	try {
+		return ptr_worker_man_->getNextJob(worker_id, last_job_id);
+	}
+	catch(const NoJobScheduledException& ex)
+	{
+		throw ex;
+	}
+}
+

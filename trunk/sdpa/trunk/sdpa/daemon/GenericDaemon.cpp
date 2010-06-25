@@ -414,7 +414,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-  LOG(TRACE, "action_lifesign");
+	LOG(TRACE, "action_lifesign");
     /*
     o timestamp, load, other probably useful information
     o last_job_id the id of the last received job identification
@@ -426,7 +426,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	Worker::worker_id_t worker_id = e.from();
 	try {
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
-		ptrWorker->update(e);
+		ptrWorker->update();
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
 	}
 	catch(WorkerNotFoundException&)
@@ -443,7 +443,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
-  LOG(INFO, e.from() << " requesting to delete job " << e.job_id());
+	LOG( INFO, e.from() << " requesting to delete job " << e.job_id() );
 
 	try{
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
@@ -467,8 +467,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-  DLOG(TRACE, "got job request from: " << e.from());
-
+	SDPA_LOG_DEBUG("got job request from: " << e.from());
 	/*
 	the slave(aggregator) requests new executable jobs
 	this message is sent in regular frequencies depending on the load of the slave(aggregator)
@@ -486,11 +485,9 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	//To do: replace this with schedule
 	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t ptrWorker = findWorker(worker_id);
-		ptrWorker->update(e);
 
 		// you should consume from the  worker's pending list; put the job into the worker's submitted list
-		sdpa::job_id_t jobId = ptrWorker->get_next_job(e.last_job_id());
+		sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, e.last_job_id());
 
 		const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
@@ -500,7 +497,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			ptrJob->Dispatch(); // no event need to be sent
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
-			SDPA_LOG_INFO("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
+			SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
 
 			// Post a SubmitJobEvent to the slave who made the request
@@ -513,11 +510,11 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const NoJobScheduledException&)
 	{
-          DLOG(TRACE, "No job was scheduled to be executed on the worker '"<<worker_id);
+		SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
 	}
 	catch(const WorkerNotFoundException&)
 	{
-		SDPA_LOG_WARN("worker " << worker_id << " is not registered, asking him to do so first");
+		SDPA_LOG_DEBUG("worker " << worker_id << " is not registered, asking him to do so first");
 
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
@@ -531,19 +528,17 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	catch(const seda::StageNotFound&)
 	{
 		SDPA_LOG_FATAL("Could not lookup stage: " << ptr_to_slave_stage_->name());
-                throw;
 	}
 	catch(const std::exception &ex)
 	{
 		SDPA_LOG_FATAL("Error during request-job handling: " << ex.what());
-                throw;
 	}
 	catch(...)
 	{
 		SDPA_LOG_FATAL("Unknown error during request-job handling!");
-                throw;
 	}
 }
+
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {

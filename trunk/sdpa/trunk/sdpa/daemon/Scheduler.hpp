@@ -31,6 +31,7 @@ namespace daemon {
 	 typedef sdpa::shared_ptr<Scheduler> ptr_t;
 
 	 virtual Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException) = 0;
+	 virtual sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException) =0;
 	 virtual void addWorker(const  Worker::ptr_t& ) = 0;
 	 virtual size_t  numberOfWorkers() = 0;
 	 virtual void schedule(sdpa::job_id_t& jobId) = 0;

@@ -29,6 +29,7 @@ class SchedulerTestImpl : public Scheduler {
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
     void addWorker(const  Worker::ptr_t& );
     size_t numberOfWorkers() { return 1; }
+    virtual sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
 
     // thread related functions
     void start();

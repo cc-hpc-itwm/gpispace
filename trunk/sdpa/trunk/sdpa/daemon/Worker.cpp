@@ -32,7 +32,7 @@ bool Worker::has_job( const sdpa::job_id_t& job_id )
 	return false;
 }
 
-void Worker::update(const sdpa::events::SDPAEvent &)
+void Worker::update()
 {
   tstamp_ = sdpa::util::now();
 }
@@ -103,7 +103,7 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 		  submitted().push(jobId);
 		  return jobId;
 	  }
-	  catch(QueueEmpty)
+	  catch(const QueueEmpty& )
 	  {
 		  throw NoJobScheduledException(name());
 	  }

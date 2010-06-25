@@ -84,3 +84,10 @@ void SchedulerTestImpl::print()
 	jobs_to_be_scheduled.print();
 	ptr_worker_man_->print();
 }
+
+sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+{
+	sdpa::job_id_t jobId;
+	return jobId;
+}
+
