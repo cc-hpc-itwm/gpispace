@@ -129,7 +129,8 @@ namespace sdpa { namespace daemon {
 	  virtual void shutdown_network();
 
 	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
-	  void addWorker(const  Worker::ptr_t );
+
+	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
 
 	  std::string master()const { return master_;}
 	  void setMaster( std::string masterName ){ master_=masterName;}

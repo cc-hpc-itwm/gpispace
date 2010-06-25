@@ -47,14 +47,19 @@ SchedulerImpl::~SchedulerImpl()
 	}
 }
 
-void SchedulerImpl::addWorker(const Worker::ptr_t &pWorker)
+void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
 {
-	ptr_worker_man_->addWorker(pWorker);
+	try {
+		ptr_worker_man_->addWorker(workerId, rank);
+		// only with a round-robin schedule
+		// ptr_worker_man_->balanceWorkers();
 
-	// only with a round-robin schedule
-	// ptr_worker_man_->balanceWorkers();
-
-	// with the "schedule job to the least loaded worker" strategy -> apply work stealing
+		// with the "schedule job to the least loaded worker" strategy -> apply work stealing
+	}
+	catch( const WorkerAlreadyExistException& ex)
+	{
+		throw ex;
+	}
 }
 
 /*
@@ -213,7 +218,6 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 	if( ptr_worker_man_ )
 	{
 		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
-        unsigned int rank_ll_worker;
 
 		// if no preferences are explicitly set for this job
         SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
@@ -287,6 +291,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			return bAssigned;
 		}
 	}
+
+	return false;
 }
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
@@ -484,3 +490,23 @@ sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, c
 	}
 }
 
+void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
+{
+
+	SDPA_LOG_DEBUG("Acknowledge the job "<<job_id.str());
+
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+
+		//put the job into the Running state: do this in acknowledge!
+		if( !ptrWorker->acknowledge(job_id) )
+			throw JobNotFoundException(job_id);
+
+	}
+	catch(WorkerNotFoundException)
+	{
+		SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+	} catch(...) {
+		SDPA_LOG_DEBUG("Unexpected exception occurred!");
+	}
+}

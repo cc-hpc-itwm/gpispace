@@ -38,23 +38,15 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 
 	acknowledge(pEvent->id());
 
-	// a slave posted an acknowledgement for a job request
-	// put the job from pending into submitted
-	// call worker :: acknowledge(const sdpa::job_id_t& job_id ) = ;
 	Worker::worker_id_t worker_id = pEvent->from();
 	try {
-		Worker::ptr_t ptrWorker = findWorker(worker_id);
-		//put the job into the Running state: do this in acknowledge!
-		ptrWorker->acknowledge(pEvent->job_id());
+		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
 
 	} catch(WorkerNotFoundException) {
-		os.str("");
-		os<<"Worker "<<worker_id<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+		(os.str());
 	} catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_DEBUG("Unexpected exception occurred!");
 	}
 }
 

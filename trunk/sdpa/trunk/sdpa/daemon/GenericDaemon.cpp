@@ -371,9 +371,14 @@ Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) t
 	}
 }
 
-void GenericDaemon::addWorker(const  Worker::ptr_t pWorker)
+void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
 {
-	ptr_scheduler_->addWorker(pWorker);
+	try {
+		ptr_scheduler_->addWorker(workerId, rank);
+	}catch( const WorkerAlreadyExistException& ex )
+	{
+		throw ex;
+	}
 }
 
 bool GenericDaemon::requestsAllowed()
@@ -641,22 +646,22 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 
-		Worker::ptr_t pWorker( new Worker( evtRegWorker.from(), evtRegWorker.rank(), ""/*location*/ ));
-		addWorker(pWorker);
-		SDPA_LOG_INFO( "Registered the worker "<<pWorker->name()<<", with the rank "<<pWorker->rank() );
+		addWorker( evtRegWorker.from(), evtRegWorker.rank() );
+		SDPA_LOG_INFO( "Registered the worker "<<evtRegWorker.from()<<", with the rank "<<evtRegWorker.rank() );
 	}
 	catch(WorkerAlreadyExistException const & ex) {
-		SDPA_LOG_ERROR("An worker with either the same id or the same rank already exist into the worker map! "
-                              "id="<<ex.worker_id()<<", rank="<<ex.rank());
+		SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
+                        "id="<<ex.worker_id()<<", rank="<<ex.rank());
 	}
-	catch(const QueueFull&)
+	catch(const QueueFull& ex)
 	{
-		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: queue is full, this should never happen!");
+		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: queue is full, this should never happen!"<<ex.what());
+		throw;
 	}
 	catch(const seda::StageNotFound& snf)
 	{
 		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
-                throw;
+		throw;
 	}
 }
 

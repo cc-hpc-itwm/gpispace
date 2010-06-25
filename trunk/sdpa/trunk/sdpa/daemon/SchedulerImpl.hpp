@@ -72,9 +72,14 @@ namespace sdpa {
 	virtual void start_job(const sdpa::job_id_t &job);
 
 	virtual Worker::ptr_t &findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
-	virtual void addWorker(const Worker::ptr_t &);
+
+	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+
 	virtual sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
+
+	virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
 	virtual void check_post_request();
 	virtual bool post_request(bool force = false);

@@ -24,12 +24,15 @@
 #include <sdpa/util/util.hpp>
 #include <fstream>
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
+#include <sdpa/daemon/SchedulerImpl.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::smc;
 
+const int NWORKERS = 5;
+const int NJOBS    = 20;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SchedulerTest );
 
@@ -53,18 +56,33 @@ void SchedulerTest::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 }
 
-void SchedulerTest::testSchedulerImpl()
+void SchedulerTest::testSchedulerWithNoPrefs()
 {
-	 sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerTestImpl());
+	 ostringstream oss;
+	 sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl());
 	 ptr_scheduler_->start();
+
+
+	 // add a number of workers
+	 for( int k=0; k<NWORKERS; k++ )
+	 {
+		 oss.str("");
+		 oss<<"Worker "<<k;
+		 ptr_scheduler_->addWorker(oss.str(), k);
+	 }
+
+
+	 // submit a number of remote jobs and schedule them
 	 for(int i=0; i<10; i++)
 	 {
 		JobId job_id;
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
-		pJob->set_local(true);
+		pJob->set_local(false);
 		ptr_scheduler_->schedule(job_id);
 	 }
 
-	 sleep(5);
+	 // the workers request jobs
+
+
 	 ptr_scheduler_->stop();
 }

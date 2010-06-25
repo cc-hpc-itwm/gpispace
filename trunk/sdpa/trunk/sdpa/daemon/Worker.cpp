@@ -43,12 +43,14 @@ void Worker::dispatch(const sdpa::job_id_t& jobId)
   pending_.push(jobId);
 }
 
-bool Worker::acknowledge(const sdpa::job_id_t &job_id) {
+bool Worker::acknowledge(const sdpa::job_id_t &job_id)
+{
   JobQueue::lock_type lockSub(submitted().mutex());
   JobQueue::lock_type lockAck(acknowledged().mutex());
 
   for (JobQueue::iterator iter = submitted().begin(); iter != submitted().end(); iter++) {
-    if (job_id == *iter) {
+    if (job_id == *iter)
+    {
       // remove it and put it to the acknowledged queue
       SDPA_LOG_DEBUG("appending job(" << job_id.str() << ") to the achknowledged queue");
       acknowledged().push(*iter);

@@ -166,8 +166,6 @@ void WorkerSerializationTest::testNRESerialization()
 		pScheduler->jobs_to_be_scheduled.push(jobId);
 	}
 
-	int nWorkers=0; // no workers
-
 	try
 	{
 		std::cout<<"----------------The NRE's content before backup is:----------------"<<std::endl;
@@ -264,22 +262,23 @@ void WorkerSerializationTest::testAggregatorSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
+		Worker::worker_id_t workerId(ossWorkerId.str());
+		pScheduler->addWorker(workerId, k);
+
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
-			pWorker->dispatch(jobId);
+
+			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
-				sdpa::job_id_t jobToSubmit = pWorker->get_next_job("");
+				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
 				if(l>=2)
-					pWorker->acknowledge(jobToSubmit);
+					pScheduler->acknowledgeJob(workerId, jobToSubmit);
 			}
 		}
-
-		pScheduler->addWorker(pWorker);
 	}
 
 	try
@@ -373,22 +372,23 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
+		Worker::worker_id_t workerId(ossWorkerId.str());
+		pScheduler->addWorker(workerId, k);
+
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
-			pWorker->dispatch(jobId);
+
+			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
-				sdpa::job_id_t jobToSubmit = pWorker->get_next_job("");
+				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
 				if(l>=2)
-					pWorker->acknowledge(jobToSubmit);
+					pScheduler->acknowledgeJob(workerId, jobToSubmit);
 			}
 		}
-
-		pScheduler->addWorker(pWorker);
 	}
 
 	try
@@ -486,22 +486,23 @@ void WorkerSerializationTest::testDaemonSerializationWithFSMs()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
+		Worker::worker_id_t workerId(ossWorkerId.str());
+		pScheduler->addWorker(workerId, k);
+
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
-			pWorker->dispatch(jobId);
+
+			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
-				sdpa::job_id_t jobToSubmit = pWorker->get_next_job("");
+				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
 				if(l>=2)
-					pWorker->acknowledge(jobToSubmit);
+					pScheduler->acknowledgeJob(workerId, jobToSubmit);
 			}
 		}
-
-		pScheduler->addWorker(pWorker);
 	}
 
 	try
@@ -587,22 +588,23 @@ void WorkerSerializationTest::testDaemonSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
+		Worker::worker_id_t workerId(ossWorkerId.str());
+		pScheduler->addWorker(workerId, k);
+
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
-			pWorker->dispatch(jobId);
+
+			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
-				sdpa::job_id_t jobToSubmit = pWorker->get_next_job("");
+				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
 				if(l>=2)
-					pWorker->acknowledge(jobToSubmit);
+					pScheduler->acknowledgeJob(workerId, jobToSubmit);
 			}
 		}
-
-		pScheduler->addWorker(pWorker);
 	}
 
 	try
@@ -661,22 +663,23 @@ void WorkerSerializationTest::testSchedulerSerialization()
 	{
 		std::ostringstream ossWorkerId;;
 		ossWorkerId<<"Worker_"<<k;
-		Worker::ptr_t pWorker( new Worker(ossWorkerId.str(), k) );
+		Worker::worker_id_t workerId(ossWorkerId.str());
+		pScheduler->addWorker(workerId, k);
+
 		for( int l=0; l<3; l++)
 		{
 			std::ostringstream ossJobId;
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
-			pWorker->dispatch(jobId);
+
+			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
-				sdpa::job_id_t jobToSubmit = pWorker->get_next_job("");
+				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
 				if(l>=2)
-					pWorker->acknowledge(jobToSubmit);
+					pScheduler->acknowledgeJob(workerId, jobToSubmit);
 			}
 		}
-
-		dynamic_cast<SchedulerImpl*>(pScheduler.get())->addWorker(pWorker);
 	}
 
 	std::cout<<"Scheduler dump before serialzation: "<<std::endl;

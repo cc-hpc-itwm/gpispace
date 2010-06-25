@@ -83,7 +83,7 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    const int rank() const { return rank_; }
+    const unsigned int rank() const { return rank_; }
 
     /**
          Checks if the worker has job
@@ -147,7 +147,7 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    int rank_;
+    const unsigned int rank_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
 

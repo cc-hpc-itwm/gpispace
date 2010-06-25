@@ -25,11 +25,14 @@ class SchedulerTestImpl : public Scheduler {
 	 virtual ~SchedulerTestImpl();
 
     void schedule(sdpa::job_id_t& );
+    bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank );
 
     Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
-    void addWorker(const  Worker::ptr_t& );
+    void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
     size_t numberOfWorkers() { return 1; }
-    virtual sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
+    sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
+
+	void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
     // thread related functions
     void start();

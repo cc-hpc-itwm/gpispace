@@ -19,13 +19,19 @@ void SchedulerTestImpl::schedule(sdpa::job_id_t& jobId)
 	jobs_to_be_scheduled.push(jobId);
 }
 
+bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
+{
+	return false;
+}
+
 Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	throw WorkerNotFoundException(worker_id);
 }
 
-void SchedulerTestImpl::addWorker(const Worker::ptr_t&)
+void SchedulerTestImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
 {
+
 }
 
 void SchedulerTestImpl::start()
@@ -91,3 +97,6 @@ sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& worker_i
 	return jobId;
 }
 
+void SchedulerTestImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
+{
+}

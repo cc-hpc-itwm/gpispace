@@ -67,8 +67,7 @@ void LoadBalancerTest::testLoadBalancer()
 	{
 		oss.str("");
 		oss<<"Worker "<<k;
-		Worker::ptr_t pWorker(new Worker(oss.str(), k));
-		wm.addWorker(pWorker);
+		wm.addWorker(oss.str(), k);
 	}
 
 	// submit jobs to the workers
