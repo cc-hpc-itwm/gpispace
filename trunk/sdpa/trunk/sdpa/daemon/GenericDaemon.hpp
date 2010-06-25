@@ -139,6 +139,8 @@ namespace sdpa { namespace daemon {
 
 	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
+	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException);
+
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
 	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
 	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }

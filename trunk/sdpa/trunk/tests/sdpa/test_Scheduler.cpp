@@ -67,22 +67,43 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 	 for( int k=0; k<NWORKERS; k++ )
 	 {
 		 oss.str("");
-		 oss<<"Worker "<<k;
+		 oss<<"Worker"<<k;
 		 ptr_scheduler_->addWorker(oss.str(), k);
 	 }
 
 
 	 // submit a number of remote jobs and schedule them
-	 for(int i=0; i<10; i++)
+	 for(int i=0; i<NJOBS; i++)
 	 {
 		JobId job_id;
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
 		pJob->set_local(false);
+
+		//add later preferences to the jobs
+
 		ptr_scheduler_->schedule(job_id);
 	 }
 
 	 // the workers request jobs
+	 /*int nJobsCompleted = 0;
+	 while( nJobsCompleted<NJOBS )
+		 for( int k=0; k<NWORKERS; k++ )
+		 {
+			 oss.str("");
+			 oss<<"Worker"<<k;
+			 Worker::worker_id_t workerId(oss.str());
 
+			 try {
+				 sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
+				 SDPA_LOG_DEBUG("The worker "<<workerId<<" was served the job "<<jobId.str() );
+				 nJobsCompleted++;
+			 }
+			 catch( const NoJobScheduledException& ex )
+			 {
+				 SDPA_LOG_WARN("No job could be scheduled on the worker  "<<workerId );
+			 }
+		 }
 
+	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );*/
 	 ptr_scheduler_->stop();
 }

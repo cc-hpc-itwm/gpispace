@@ -80,7 +80,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
 	try {
 
-		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 		// put the job into the running state
 		pJob->Dispatch();
 
@@ -139,7 +139,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 
 		if( ptr_worker_man_ )
 		{
-			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 			SDPA_LOG_DEBUG("Get the next worker ...");
 			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
@@ -176,7 +176,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 
 	try {
 
-		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		Worker::worker_id_t worker_id = ptr_worker_man_->rank_map_.at(rank);
 
@@ -217,7 +217,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 	if( ptr_worker_man_ )
 	{
-		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// if no preferences are explicitly set for this job
         SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
@@ -440,7 +440,7 @@ void SchedulerImpl::run()
 		{
 			check_post_request();
 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 			if(pJob->is_local())
 				schedule_local(jobId);

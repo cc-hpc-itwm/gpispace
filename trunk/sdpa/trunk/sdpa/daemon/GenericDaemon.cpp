@@ -838,3 +838,15 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	return true;
 }
+
+
+Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
+{
+	try {
+		return ptr_job_man_->findJob(job_id);
+	}
+	catch(const JobNotFoundException& ex)
+	{
+		throw ex;
+	}
+}

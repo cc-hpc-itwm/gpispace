@@ -137,7 +137,7 @@ namespace sdpa {
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
 	 {
 		DLOG(TRACE, "Execute activity: " << jobId);
-		const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 		id_type act_id = pJob->id().str();
 
 		sdpa::nre::worker::execution_result_t result;
@@ -229,7 +229,7 @@ namespace sdpa {
 	 		{
 	 			check_post_request();
 	 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-	 			const Job::ptr_t& pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+	 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 	 			if(pJob->is_local())
 	 				schedule_local(jobId);

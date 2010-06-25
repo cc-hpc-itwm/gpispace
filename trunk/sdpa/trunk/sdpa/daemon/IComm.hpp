@@ -57,6 +57,9 @@ const std::string USER("user");
 	  virtual sdpa::util::Config* cfg() const = 0;
 
 	  virtual JobManager::ptr_t jobManager() const = 0;
+
+	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException) = 0;
+
 	  virtual unsigned int& rank() = 0;
 
 	  virtual bool requestsAllowed() = 0;

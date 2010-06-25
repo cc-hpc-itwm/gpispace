@@ -49,23 +49,6 @@ Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFound
 		throw JobNotFoundException( job_id );
 }
 
-/*
-Job::ptr_t JobManager::getJob()
-{
-	Job::ptr_t ptrJob;
-	ptrJob.reset();
-
-	//find a job that is into the Pending state. Leave it there don't erase it!
-	if(!job_map_.empty())
-	{
-		job_map_t::iterator it = job_map_.begin();
-		ptrJob = it->second;
-	}
-
-	return ptrJob;
-}*/
-
-
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
 	lock_type lock(mtx_);

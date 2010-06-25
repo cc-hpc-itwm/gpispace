@@ -46,8 +46,8 @@ namespace sdpa {
 
 
 	virtual void schedule(sdpa::job_id_t& job);
-	virtual void registerHandler(sdpa::daemon::IComm* pHandler) { ptr_comm_handler_ = pHandler; }
-	virtual void unregisterHandler(sdpa::daemon::IComm* pHandler) { if(pHandler == ptr_comm_handler_) ptr_comm_handler_=NULL;}
+	//virtual void registerHandler(sdpa::daemon::IComm* pHandler) { ptr_comm_handler_ = pHandler; }
+	//virtual void unregisterHandler(sdpa::daemon::IComm* pHandler) { if(pHandler == ptr_comm_handler_) ptr_comm_handler_=NULL;}
 
 	/**
 	Scheduling a job locally means that it will not leave the executing node.
