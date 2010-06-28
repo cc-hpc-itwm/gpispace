@@ -73,7 +73,7 @@ int fvmInit(configFile_t config)
   fvmQueueKey = ftok(config.msqfile,'b');
   if(fvmQueueKey == -1)
 	return -1;
-#ifdef NDEBUGMSG
+#ifndef NDEBUGMSG
   pv4d_printf("Starting queue  with key %d\n",fvmQueueKey);
 #endif
 

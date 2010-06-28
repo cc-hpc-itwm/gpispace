@@ -802,9 +802,7 @@ void *allocator_thread_f(void * args)
 	      
 	      if (p == NULL)
 		{
-#ifndef NDEBUG
-		  fvm_printf("Thread allocator: error\n");						
-#endif
+		  fvm_printf("Thread allocator: error, no usable sockets");
 		  pthread_exit(NULL);
 		  
 		}			
