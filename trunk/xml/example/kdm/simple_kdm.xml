@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun name="kdm_simple" internal="false"
-						 xsi:noNamespaceSchemaLocation="SDPAPetriNet.xsd"  
+			 xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                          xmlns:xi="http://www.w3.org/2001/XInclude">
 	<in name="config_file" type="STRING" place="config_file"/>
