@@ -143,3 +143,16 @@ std::string JobManager::print()
 
 	return os.str();
 }
+
+const we::preference_t& JobManager::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
+{
+	if( job_preferences_.empty() )
+		throw NoJobPreferences(jobId);
+
+	SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
+	preference_map_t::const_iterator it_pref = job_preferences_.find(jobId);
+
+	const we::preference_t& job_pref = it_pref->second;
+
+	return job_pref;
+}

@@ -54,7 +54,10 @@ namespace sdpa { namespace daemon {
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
-	  preference_map_t preferences() const { return job_preferences_; }
+
+	  //preference_map_t preferences() const { return job_preferences_; }
+
+	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
 	  std::string print();
 	  size_t number_of_jobs() { return job_map_.size(); }

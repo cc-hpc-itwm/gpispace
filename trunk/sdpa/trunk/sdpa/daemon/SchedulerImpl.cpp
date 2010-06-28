@@ -217,80 +217,86 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 	if( ptr_worker_man_ )
 	{
+		if( ptr_worker_man_->numberOfWorkers()==0 )
+		{
+			ptr_comm_handler_->jobFailed( jobId, "No worker available!");
+			return false;
+		}
+
 		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// if no preferences are explicitly set for this job
         SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
-		if( ptr_comm_handler_->jobManager()->preferences().empty() )
+
+		try
+		{
+			const we::preference_t& job_pref = ptr_comm_handler_->getJobPreferences(jobId);
+
+			// the preferences not specified
+			if( job_pref.empty() )
+			{
+				if(job_pref.is_mandatory())
+				{
+					ptr_comm_handler_->jobFailed( jobId, "The list of nodes needed is empty!");
+					return false;
+				}
+				else
+				{
+					//Put the job into the common_queue of the WorkerManager
+					ptr_worker_man_->dispatchJob(jobId);
+					return true;
+				}
+			}
+			else // the job has preferences
+			{
+				bool bAssigned = false;
+				we::preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
+
+				const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
+				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end() && !bAssigned; it++ )
+					if(!(bAssigned=schedule_to(jobId, *it)))
+						uset_excluded.insert(*it);
+
+				// if the assignment to one of the preferred workers
+				// fails and mandatory is set then -> declare the job failed
+				if( !bAssigned && job_pref.is_mandatory() )
+				{
+					ptr_comm_handler_->jobFailed( jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
+					return false;
+				}
+
+				// if the assignement on one of preferred workers
+				// fails and NOT mandatory is set then try to schedule it successively on one
+				// of the remaining nodes that are not into the uset_excluded list and least loaded
+				if( !bAssigned && job_pref.is_mandatory() ) // continue with the rest of the workers not uset_excluded
+				{
+					bAssigned = false;
+
+					// declare the job failed!!!
+					for( WorkerManager::rank_map_t::const_iterator iter = ptr_worker_man_->rank_map_.begin(); iter != ptr_worker_man_->rank_map_.end() && !bAssigned; iter++ )
+					{
+						unsigned int rank = iter->first;
+						if( uset_excluded.find(rank) != uset_excluded.end() && !(bAssigned=schedule_to(jobId, rank)) )
+								uset_excluded.insert(rank);
+					}
+				}
+
+				return bAssigned;
+			}
+		}
+		catch(const NoJobPreferences& )
 		{
 			//Put the job into the common_queue of the WorkerManager
 			ptr_worker_man_->dispatchJob(jobId);
 			return true;
 		}
-
-		SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
-		preference_map_t::const_iterator it_pref = ptr_comm_handler_->jobManager()->preferences().find(jobId);
-
-		const we::preference_t& job_pref = it_pref->second;
-
-		// the preferences not specified
-		if( job_pref.empty() )
-		{
-			if(job_pref.is_mandatory())
-			{
-				// declare the job as failed
-				ptr_comm_handler_->workflowEngine()->failed( jobId.str(), "The list of needed nodes is empty!");
-				ptr_comm_handler_->jobManager()->deleteJob(jobId);
-				return false;
-			}
-			else
-			{
-				//Put the job into the common_queue of the WorkerManager
-				ptr_worker_man_->dispatchJob(jobId);
-				return true;
-			}
-		}
-		else // the job has preferences
-		{
-			bool bAssigned = false;
-			we::preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
-
-			const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
-			for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end() && !bAssigned; it++ )
-				if(!(bAssigned=schedule_to(jobId, *it)))
-					uset_excluded.insert(*it);
-
-			// if the assignment to one of the preferred workers
-			// fails and mandatory is set then -> declare the job failed
-			if( !bAssigned && job_pref.is_mandatory() )
-			{
-				//ptr_comm_handler_->failed(jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
-				ptr_comm_handler_->workflowEngine()->failed( jobId.str(),
-						"Couldn't match the mandatory preferences with an existing registered worker!");
-
-				ptr_comm_handler_->jobManager()->deleteJob(jobId);
-				return false;
-			}
-
-			// if the assignement on one of preferred workers
-			// fails and NOT mandatory is set then try to schedule it successively on one
-			// of the remaining nodes that are not into the uset_excluded list and least loaded
-			if( !bAssigned && job_pref.is_mandatory() ) // continue with the rest of the workers not uset_excluded
-			{
-				bAssigned = false;
-
-				// declare the job failed!!!
-				for( WorkerManager::rank_map_t::const_iterator iter = ptr_worker_man_->rank_map_.begin(); iter != ptr_worker_man_->rank_map_.end() && !bAssigned; iter++ )
-				{
-					unsigned int rank = iter->first;
-					if( uset_excluded.find(rank) != uset_excluded.end() && !(bAssigned=schedule_to(jobId, rank)) )
-							uset_excluded.insert(rank);
-				}
-			}
-
-			return bAssigned;
-		}
 	}
+	else
+	{
+		ptr_comm_handler_->jobFailed( jobId, "No worker available!");
+		return false;
+	}
+
 
 	return false;
 }

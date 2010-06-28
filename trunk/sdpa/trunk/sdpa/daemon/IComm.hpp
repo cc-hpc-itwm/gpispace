@@ -46,8 +46,10 @@ const std::string USER("user");
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid) = 0;
 
 	  /*virtual void jobFinished(std::string workerName, const job_id_t &)=0;
-	  virtual void jobFailed(std::string workerName, const job_id_t &)=0;
 	  virtual void jobCancelled(std::string workerName, const job_id_t &)=0;*/
+
+	  virtual void jobFailed(const job_id_t&, const std::string& reason) = 0;
+	  virtual const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
 
 	  // only for testing with DummyWorkflowEngine, change it
 	  virtual IWorkflowEngine* workflowEngine() const = 0;

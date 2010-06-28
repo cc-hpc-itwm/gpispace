@@ -850,3 +850,20 @@ Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFo
 		throw ex;
 	}
 }
+
+void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
+{
+	workflowEngine()->failed( jobId.str(), reason );
+	jobManager()->deleteJob(jobId);
+}
+
+const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
+{
+	try {
+		return ptr_job_man_->getJobPreferences(jobId);
+	}
+	catch (const NoJobPreferences& ex)
+	{
+		throw ex;
+	}
+}

@@ -84,6 +84,11 @@ namespace daemon {
 		virtual ~JobNotMarkedException() throw() {}
 	};
 
+	class NoJobPreferences : public JobException {
+		public:
+		NoJobPreferences( const sdpa::job_id_t& job_id) : JobException("No preferences set for this job!", job_id) {}
+		virtual ~NoJobPreferences() throw() {}
+	};
 }}
 
 #endif

@@ -157,6 +157,9 @@ namespace sdpa { namespace daemon {
 	  //boost::bind(&sdpa_daemon::gen_id, this))
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
 
+	  void jobFailed(const job_id_t&, const std::string& reason);
+	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
+
 	  virtual bool requestsAllowed();
 
 	  template <class Archive>

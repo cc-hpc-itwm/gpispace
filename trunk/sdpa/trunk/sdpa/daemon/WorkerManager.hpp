@@ -51,7 +51,6 @@ namespace sdpa { namespace daemon {
 	  void dispatchJob(const sdpa::job_id_t& jobId);
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 
-
 	  void balanceWorkers();
 
 	  //only for testing purposes!
