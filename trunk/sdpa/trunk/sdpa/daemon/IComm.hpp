@@ -48,12 +48,13 @@ const std::string USER("user");
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException) = 0;
 	  virtual const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
 
+	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) throw (NoWorkflowEngine) = 0;
+	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
+
 	  virtual void workerJobFailed(const job_id_t&, const std::string& result /*or reason*/ ) = 0;
 	  virtual void workerJobFinished(const job_id_t & id, const result_type& result ) = 0;
 	  virtual void workerJobCancelled(const job_id_t& id ) = 0;
 
-	  // only for testing with DummyWorkflowEngine, change it
-	  virtual IWorkflowEngine* workflowEngine() const = 0;
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
@@ -69,7 +70,6 @@ const std::string USER("user");
 	  virtual void activityFinished(const id_type& id, const std::string& data)  { throw std::runtime_error("not supported in this component"); }
 	  virtual void activityFailed(const id_type& id, const std::string& data)    { throw std::runtime_error("not supported in this component"); }
 	  virtual void activityCancelled(const id_type& id, const std::string& data) { throw std::runtime_error("not supported in this component"); }
-
   };
 }}
 

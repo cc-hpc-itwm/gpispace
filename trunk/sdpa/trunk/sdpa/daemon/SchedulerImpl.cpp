@@ -79,36 +79,27 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	}
 
 	try {
-
 		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-		// put the job into the running state
+
+		// Should set the workflow_id here, or send it together with the workflow description
+		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
+		//ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
+		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 		pJob->Dispatch();
-
-		if( ptr_comm_handler_->workflowEngine() )
-		{
-			// Should set the workflow_id here, or send it together with the workflow description
-			SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
-			ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Gwes not initialized or workflow not created!");
-			//send a JobFailed event
-
-			sdpa::job_result_t result;
-			JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), pJob->id(), result) );
-			ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-
-			if(!ptr_comm_handler_)
-		    {
-				stop();
-				SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
-		    }
-		}
 	}
-	catch(JobNotFoundException& ex)
+	catch(const NoWorkflowEngine& ex)
 	{
-		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+		SDPA_LOG_ERROR("No workflow engine!!!");
+		sdpa::job_result_t result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
+	catch(const JobNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+		sdpa::job_result_t result;
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 	catch (std::exception& ex)
 	{

@@ -876,7 +876,7 @@ void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& re
 
 void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
 {
-	workflowEngine()->failed( jobId.str(), result );
+	workflowEngine()->finished( jobId.str(), result );
 	jobManager()->deleteJob(jobId);
 }
 
@@ -884,4 +884,22 @@ void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 {
 	workflowEngine()->cancelled( jobId.str() );
 	jobManager()->deleteJob(jobId);
+}
+
+void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc ) throw (NoWorkflowEngine)
+{
+	if(!ptr_workflow_engine_)
+		throw NoWorkflowEngine();
+
+	ptr_workflow_engine_->submit(wf_id, desc);
+}
+
+void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
+{
+	ptr_workflow_engine_->cancel(workflowId, reason);
+}
+
+void GenericDaemon::activityCancelled(const id_type& actId, const std::string& data)
+{
+	ptr_workflow_engine_->cancelled( actId );
 }

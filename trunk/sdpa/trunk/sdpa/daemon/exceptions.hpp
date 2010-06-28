@@ -5,6 +5,15 @@
 
 namespace sdpa {
 namespace daemon {
+
+	class NoWorkflowEngine : public sdpa::SDPAException {
+	public:
+		NoWorkflowEngine()
+			: sdpa::SDPAException("No workflow engine!!!") {}
+
+		virtual ~NoWorkflowEngine() throw() {}
+	};
+
 	class JobException : public sdpa::SDPAException {
 	public:
 		JobException(const std::string &reason, const sdpa::job_id_t& job_id)

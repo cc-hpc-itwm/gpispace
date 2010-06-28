@@ -106,7 +106,7 @@ namespace sdpa { namespace daemon {
 				// inform immediately WE that the corresponding activity was cancelled
 				id_type actId = evt.job_id();
 
-				pComm->workflowEngine()->cancelled( actId );
+				pComm->activityCancelled( actId, "Activity cancelled from pending" );
 
 			}  catch(std::exception const & ex) {
                           SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
@@ -166,7 +166,7 @@ namespace sdpa { namespace daemon {
 		{
 			id_type workflowId = evt.job_id();
 			reason_type reason("No reason");
-			pComm->workflowEngine()->cancel(workflowId, reason);
+			pComm->cancelWorkflow(workflowId, reason);
 		}
     }
 
