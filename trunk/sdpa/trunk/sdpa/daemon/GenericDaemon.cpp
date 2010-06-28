@@ -867,3 +867,21 @@ const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& j
 		throw ex;
 	}
 }
+
+void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
+{
+	workflowEngine()->failed( jobId.str(), reason );
+	jobManager()->deleteJob(jobId);
+}
+
+void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
+{
+	workflowEngine()->failed( jobId.str(), result );
+	jobManager()->deleteJob(jobId);
+}
+
+void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
+{
+	workflowEngine()->cancelled( jobId.str() );
+	jobManager()->deleteJob(jobId);
+}

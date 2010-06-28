@@ -32,15 +32,14 @@ namespace sdpa {
 	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL):
 		 SchedulerImpl(pCommHandler),
 		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"ORCH"))
-	{
-
-	}
+	 {
+	 }
 
 	 virtual ~SchedulerOrch() {};
 
 	 bool post_request( bool ) { return false; }
 	 void send_life_sign() { /*do nothing*/ }
-	 void check_post_request() { /*do nothing*/}
+	 void check_post_request() { /*do nothing*/ }
 
 	 template <class Archive>
 	 void serialize(Archive& ar, const unsigned int file_version )

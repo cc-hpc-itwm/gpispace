@@ -219,7 +219,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 	{
 		if( ptr_worker_man_->numberOfWorkers()==0 )
 		{
-			ptr_comm_handler_->jobFailed( jobId, "No worker available!");
+			ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
 			return false;
 		}
 
@@ -237,7 +237,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			{
 				if(job_pref.is_mandatory())
 				{
-					ptr_comm_handler_->jobFailed( jobId, "The list of nodes needed is empty!");
+					ptr_comm_handler_->workerJobFailed( jobId, "The list of nodes needed is empty!");
 					return false;
 				}
 				else
@@ -261,7 +261,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 				// fails and mandatory is set then -> declare the job failed
 				if( !bAssigned && job_pref.is_mandatory() )
 				{
-					ptr_comm_handler_->jobFailed( jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
+					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
 					return false;
 				}
 
@@ -293,7 +293,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 	}
 	else
 	{
-		ptr_comm_handler_->jobFailed( jobId, "No worker available!");
+		ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
 		return false;
 	}
 

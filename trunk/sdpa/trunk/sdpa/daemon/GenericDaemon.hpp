@@ -123,6 +123,9 @@ namespace sdpa { namespace daemon {
 	  /*virtual void jobFinished(std::string workerName, const job_id_t &);
 	  virtual void jobFailed(std::string workerName, const job_id_t &);
 	  virtual void jobCancelled(std::string workerName, const job_id_t &);*/
+	  virtual void workerJobFailed(const job_id_t&, const std::string& result /*or reason*/) ;
+	  virtual void workerJobFinished(const job_id_t & id, const result_type& result );
+	  virtual void workerJobCancelled(const job_id_t& id);
 
 	  //virtual void configure_network();
 	  virtual void configure_network( std::string daemonUrl, std::string masterName = "", std::string masterUrl = "" );
