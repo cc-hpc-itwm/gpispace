@@ -22,6 +22,7 @@ struct exec_context
     while (act.has_enabled())
     {
       we::activity_t sub = act.extract ();
+	  sub.inject_input ();
       sub.execute (*this);
       act.inject (sub);
     }

@@ -387,19 +387,18 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
   	try
   	{
   		//LOG(INFO, "executing: " << activity());
-  		LOG (DEBUG, "received new activity: "<<pMsgExecReq->activity());
-  		LOG (DEBUG, "executing activity ... ");
+  		DLOG (TRACE, "received new activity: "<<pMsgExecReq->activity());
 
   		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
-  		// Use this in the future with real modules
+  		LOG (INFO, "executing activity ... " << act.name());
+
   		struct exec_context ctxt( loader() );
-  		//struct exec_context ctxt;
   		act.execute(ctxt);
 
   		execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));
 
-  		LOG (DEBUG, "creating a reply message ... ");
+  		DLOG (TRACE, "creating a reply message ... ");
   		reply = new ExecuteReply(exec_res);
   	}
   	catch (const std::exception &ex)
@@ -410,14 +409,14 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
   	}
   	catch (...)
   	{
-  		LOG(ERROR, "execution of activity failed: ");
+  		LOG(ERROR, "execution of activity failed!");
   		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, pMsgExecReq->activity()));
   		reply = new ExecuteReply(exec_res);
   	}
 
   	assert(reply);
   	reply->id() = pMsgExecReq->id();
-  	LOG (DEBUG, "replying with id "<<reply->id());
+  	DLOG (TRACE, "replying with id "<<reply->id());
 
   	return reply;
 }
