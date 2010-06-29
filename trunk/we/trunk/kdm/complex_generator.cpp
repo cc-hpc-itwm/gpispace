@@ -6,52 +6,45 @@
 #include <we/we.hpp>
 #include "complex_generator.hpp"
 
-// specific
-// generic
-#include "module.hpp"
-#include "context.hpp"
-
 int main (int argc, char ** argv)
 {
-  we::transition_t kdm_complex (kdm::kdm<we::activity_t>::generate());
+  po::options_description desc("options");
 
-  we::activity_t act (kdm_complex);
+  std::string cfg_file;
 
-  act.add_input
-    ( we::input_t::value_type
+  desc.add_options()
+    ("help,h", "this message")
+    ("cfg", po::value<std::string>(&cfg_file), "config file")
+    ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help"))
+    {
+      std::cerr << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
+
+  we::transition_t trans (kdm::kdm<we::activity_t>::generate());
+
+  we::activity_t act ( trans );
+
+  if (cfg_file.size())
+  {
+    act.add_input
+      ( we::input_t::value_type
       ( we::token_t ( "config_file"
-                , literal::STRING
-                , std::string ((argc > 1) ? argv[1] : "/scratch/KDM.conf")
-                )
-      , kdm_complex.input_port_by_name ("config_file")
+                    , literal::STRING
+                    , cfg_file
+                    )
+      , trans.input_port_by_name ("config_file")
       )
-    );
-
-  // dump activity for test purposes
-  {
-    std::ofstream ofs ("kdm_complex.pnet");
-    ofs << we::util::text_codec::encode (act);
+      );
   }
 
-  we::loader::loader loader;
-  loader.append_search_path
-    (std::string ((argc> 2) ? argv[2] : "/amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk/we/trunk/build/kdm/mod/"));
-  struct exec_context ctxt (loader);
-  act.execute (ctxt);
-
-  we::mgmt::type::detail::printer<we::activity_t, std::ostream>
-    printer (act, std::cout);
-
-  printer << "output := "
-          << act.output()
-          << std::endl;
-
-  std::cout << act << std::endl;
-
-  if ( act.output().empty() )
-  {
-    return EXIT_FAILURE;
-  }
+  std::cout << we::util::text_codec::encode (act);
 
   return EXIT_SUCCESS;
 }
