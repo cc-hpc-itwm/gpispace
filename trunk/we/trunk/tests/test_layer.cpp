@@ -6,6 +6,8 @@
 #include <fhglog/fhglog.hpp>
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
+#include <we/type/literal.hpp>
+#include <we/expr/parse/position.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
@@ -153,11 +155,18 @@ int main (int argc, char **argv)
     const std::string value
       ( inp->substr (inp->find('=')+1) );
 
+    literal::type tokval;
+    unsigned int k (0);
+    std::string::const_iterator begin (value.begin());
+
+    expr::parse::position pos (k, begin, value.end());
+    literal::read (tokval, pos);
+
     act.add_input (
                    we::input_t::value_type
                    ( we::token_t ( port_name
-                                 , literal::STRING
-                                 , value
+                                 , boost::apply_visitor (literal::visitor::type_name(), tokval)
+                                 , tokval
                                  )
                    , act.transition().input_port_by_name (port_name)
                    )
