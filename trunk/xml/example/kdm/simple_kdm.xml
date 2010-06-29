@@ -18,6 +18,12 @@
 			</token>
 		</place>
 
+<!-- wanted: make it local to generate_sequence -->
+		<struct name="COUNTER">
+			<field name="i" type="long"/>
+			<field name="max" type="long"/>
+		</struct>
+
 		<struct name="CONFIG">
 			<field name="OFFSETS" type="long" />
 			<field name="SUBVOLUMES_PER_OFFSET" type="long" />

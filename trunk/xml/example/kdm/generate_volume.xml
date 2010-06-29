@@ -5,11 +5,6 @@
 	<out name="out" type="VOLUME" place="out" />
 
 	<net>
-		<struct name="VOLUME">
-			<field name="id" type="LONG"/>
-			<field name="offset" type="LONG"/>
-		</struct>
-
 		<place name="amount" type="LONG" />
 		<place name="offset" type="LONG" />
 		<place name="out" type="VOLUME" />

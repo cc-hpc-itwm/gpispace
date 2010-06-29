@@ -3,10 +3,12 @@
 	<in name="amount" type="LONG" place="amount" />
 	<out name="out" type="LONG" place="out" />
 	<net>
+<!-- not here for the moment, as this is parsed twice
 		<struct name="COUNTER">
-			<field name="i" type="LONG"/>
-			<field name="max" type="LONG"/>
+			<field name="i" type="long"/>
+			<field name="max" type="long"/>
 		</struct>
+-->
 
 		<place name="amount" type="LONG" />
 		<place name="out" type="LONG" />

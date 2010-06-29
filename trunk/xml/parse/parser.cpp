@@ -2,10 +2,9 @@
 #include <rapidxml/1.13/rapidxml.hpp>
 #include <rapidxml/1.13/rapidxml_utils.hpp>
 
-#include <we/type/literal/name.hpp>
 #include <we/type/signature.hpp>
 
-#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -17,6 +16,13 @@ namespace xml
 {
   namespace parse
   {
+    // ********************************************************************* //
+
+    using std::cout;
+    using std::endl;
+
+    // ********************************************************************* //
+
     namespace util
     {
       static std::string
@@ -42,6 +48,8 @@ namespace xml
         return "\"" + str + "\"";
       }
     }
+
+    // ********************************************************************* //
 
     namespace exception
     {
@@ -93,27 +101,58 @@ namespace xml
           : std::runtime_error (pre + ": " + what)
         {}
       };
-    }
 
-    namespace state
-    {
-      struct type
+      class strange : public std::runtime_error
       {
-      private:
-        typedef boost::unordered_set<signature::desc_t> signature_set_type;
-
-        signature_set_type signature;
       public:
-        type (void)
-          : signature ()
+        strange (const std::string & what)
+          : std::runtime_error ("STRANGE! " + what)
         {}
       };
     }
 
     // ********************************************************************* //
 
-    using std::cout;
-    using std::endl;
+    namespace state
+    {
+      struct type
+      {
+      private:
+        signature::set_type _signature;
+      public:
+        type (void)
+          : _signature ()
+        {}
+
+        signature::set_type & signature (void) { return _signature; }
+
+        void resolve_signatures (void)
+        {
+          signature::visitor::resolve resolve (_signature);
+
+          for ( signature::set_type::iterator sig (_signature.begin())
+              ; sig != _signature.end()
+              ; ++sig
+              )
+            {
+              boost::apply_visitor (resolve, sig->second);
+            }
+        }
+
+        void print_signatures (void) const
+        {
+          cout << "signatures:" << endl;
+
+          for ( signature::set_type::const_iterator pos (_signature.begin())
+              ; pos != _signature.end()
+              ; ++pos
+              )
+            {
+              cout << pos->first << ": " << pos->second << endl;
+            }
+        }
+      };
+    }
 
     // ********************************************************************* //
 
@@ -131,6 +170,8 @@ namespace xml
     static void place_type (const xml_node_type *, state::type &);
     static void port_type (const xml_node_type *, state::type &);
     static void struct_field_type (const xml_node_type *, state::type &);
+    static void gen_struct_type (const xml_node_type *, state::type &, signature::desc_t &);
+    static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void struct_type (const xml_node_type *, state::type &);
     static void token_field_type (const xml_node_type *, state::type &);
     static void token_type (const xml_node_type *, state::type &);
@@ -244,6 +285,8 @@ namespace xml
       cout << "place: " << place << ", port: " << port << endl;
     }
 
+    // ********************************************************************* //
+
     static void
     function_type (const xml_node_type * node, state::type & state)
     {
@@ -290,6 +333,8 @@ namespace xml
         }
     }
 
+    // ********************************************************************* //
+
     static void
     mod_type (const xml_node_type * node, state::type &)
     {
@@ -298,6 +343,8 @@ namespace xml
 
       cout << "mod: " << mod << ", fun " << fun << endl;
     }
+
+    // ********************************************************************* //
 
     static void
     net_type (const xml_node_type * node, state::type & state)
@@ -323,7 +370,7 @@ namespace xml
             }
           else if (name == "struct")
             {
-              cout << "struct: "; struct_type (child, state);
+              struct_type (child, state);
             }
           else
             {
@@ -331,6 +378,8 @@ namespace xml
             }
         }
     }
+
+    // ********************************************************************* //
 
     static void
     place_type (const xml_node_type * node, state::type & state)
@@ -365,6 +414,8 @@ namespace xml
         }
     }
 
+    // ********************************************************************* //
+
     static void
     port_type (const xml_node_type * node, state::type &)
     {
@@ -383,22 +434,28 @@ namespace xml
       cout << endl;
     }
 
+    // ********************************************************************* //
+
     static void
-    struct_field_type (const xml_node_type * node, state::type &)
+    struct_field_type ( const xml_node_type * node
+                      , state::type &
+                      , signature::desc_t & sig
+                      )
     {
       const std::string name (required ("struct_field_type", node, "name"));
       const std::string type (required ("struct_field_type", node, "type"));
 
-      cout << "name: " << name << ", type: " << type << endl;
+      boost::apply_visitor ( signature::visitor::add_field (name, type)
+                           , sig
+                           );
     }
 
     static void
-    struct_type (const xml_node_type * node, state::type & state)
+    gen_struct_type ( const xml_node_type * node
+                    , state::type & state
+                    , signature::desc_t & sig
+                    )
     {
-      const std::string name (required ("struct_type", node, "name"));
-
-      cout << "name: " << name << endl;
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
@@ -408,18 +465,55 @@ namespace xml
 
           if (name == "field")
             {
-              cout << "field: "; struct_field_type (child, state);
+              struct_field_type (child, state, sig);
             }
           else if (name == "struct")
             {
-              cout << "struct: "; struct_type (child, state);
+              substruct_type (child, state, sig);
             }
           else
             {
-              throw exception::unexpected_element ("struct_type", name);
+              throw exception::unexpected_element ("gen_struct_type", name);
             }
         }
     }
+
+    static void
+    substruct_type ( const xml_node_type * node
+                   , state::type & state
+                   , signature::desc_t & sig
+                   )
+    {
+      const std::string name (required ("substruct_type", node, "name"));
+
+      boost::apply_visitor ( signature::visitor::create_structured_field (name)
+                           , sig
+                           );
+
+      gen_struct_type 
+        ( node
+        , state
+        , boost::apply_visitor (signature::visitor::get_field (name), sig)
+        );
+    }
+
+    static void
+    struct_type (const xml_node_type * node, state::type & state)
+    {
+      const std::string name (required ("struct_type", node, "name"));
+
+      if (state.signature().find (name) != state.signature().end())
+        {
+          throw exception::error
+            ("struct_type", "struct already defined " + util::quote(name));
+        }
+
+      state.signature()[name] = signature::structured_t();
+
+      gen_struct_type (node, state, state.signature()[name]);
+    }
+
+    // ********************************************************************* //
 
     static void
     token_field_type (const xml_node_type * node, state::type & state)
@@ -449,6 +543,8 @@ namespace xml
         }
     }
 
+    // ********************************************************************* //
+
     static void
     token_type (const xml_node_type * node, state::type & state)
     {
@@ -472,6 +568,8 @@ namespace xml
             }
         }
     }
+
+    // ********************************************************************* //
 
     static void
     transition_type (const xml_node_type * node, state::type & state)
@@ -574,6 +672,16 @@ main (void)
 
   //  std::ifstream f ("/u/r/rahn/SDPA/trunk/xml/example/kdm/simple_kdm.xml");
   //  xml::parse::parse (f);
+
+  std::cout << std::endl << "--- parsing DONE" << std::endl;
+
+  state.print_signatures();
+
+  std::cout << std::endl << "...resolved signatures" << std::endl;
+
+  state.resolve_signatures();
+
+  state.print_signatures();
 
   return EXIT_SUCCESS;
 }

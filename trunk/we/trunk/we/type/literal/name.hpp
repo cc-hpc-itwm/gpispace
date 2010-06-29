@@ -25,8 +25,7 @@ namespace literal
     set_type set;
 
   public:
-    name (void)
-      : set()
+    name (void) : set()
     {
       set.insert (CONTROL);
       set.insert (BOOL);
@@ -37,7 +36,7 @@ namespace literal
       set.insert (BITSET);
     }
 
-    bool valid (const type_name_t & x)
+    bool valid (const type_name_t & x) const
     {
       return (set.find (x) != set.end());
     }

@@ -6,10 +6,9 @@
 
 <net>
 
-<struct name="tri">
+<struct name="bi">
   <field name="a" type="pixel"/>
   <field name="b" type="pixel"/>
-  <field name="c" type="pixel"/>
 </struct>
 
 <struct name="pixel">
@@ -22,6 +21,14 @@
    </struct>
   </struct>
   <field name="color" type="long"/>
+  <field name="pyx" type="pyxel"/>
+</struct>
+
+<struct name="pyxel">
+  <struct name="point">
+   <field name="x" type="long"/>
+   <field name="y" type="long"/>
+  </struct>
 </struct>
 
 <struct name="no_fields"/>
