@@ -38,7 +38,8 @@ namespace sdpa { namespace daemon {
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
         virtual const job_desc_t & description() const = 0;
-        virtual sdpa::worker_id_t& worker() = 0;
+
+        //virtual sdpa::worker_id_t& worker() = 0;
 
         virtual bool is_marked_for_deletion() = 0;
         virtual bool mark_for_deletion() = 0;

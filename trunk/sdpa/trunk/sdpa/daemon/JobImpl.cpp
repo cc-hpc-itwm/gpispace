@@ -145,20 +145,17 @@ namespace sdpa { namespace daemon {
 		{
     		try
     		{
-				sdpa::worker_id_t worker_id = worker();//pComm->workerManager->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
+				sdpa::worker_id_t worker_id = pComm->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
-				if( !worker().empty() )
-				{
-					SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-					CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-					pComm->sendEventToSlave(pCancelEvt);
-				}
-				else
-					SDPA_LOG_WARN("The job was not assigned to any worker!");
-
-			} catch(const NoWorkerFoundException& ) {
+				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
+				pComm->sendEventToSlave(pCancelEvt);
+			}
+    		catch(const NoWorkerFoundException& )
+    		{
 				SDPA_LOG_WARN("The job was not assigned to any worker!");
-			} catch(...) {
+			} catch(...)
+			{
 				SDPA_LOG_ERROR("Unexpected exception occurred!");
 			}
 		}

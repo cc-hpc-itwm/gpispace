@@ -120,9 +120,6 @@ namespace sdpa { namespace daemon {
 	  virtual bool failed(const id_type & id, const result_type & result);
 	  virtual bool cancelled(const id_type & id);
 
-	  /*virtual void jobFinished(std::string workerName, const job_id_t &);
-	  virtual void jobFailed(std::string workerName, const job_id_t &);
-	  virtual void jobCancelled(std::string workerName, const job_id_t &);*/
 	  virtual void submitWorkflow(const id_type& id, const encoded_type& ) throw (NoWorkflowEngine);
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason);
 	  virtual void workerJobFailed(const job_id_t&, const std::string& result /*or reason*/) ;
@@ -134,8 +131,9 @@ namespace sdpa { namespace daemon {
 	  virtual void configure_network( std::string daemonUrl, std::string masterName = "", std::string masterUrl = "" );
 	  virtual void shutdown_network();
 
-	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
+	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
+	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
 
 	  std::string master()const { return master_;}

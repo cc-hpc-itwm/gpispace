@@ -74,7 +74,7 @@ void LoadBalancerTest::testLoadBalancer()
 	for(int k=0; k<NWORKERS; k++)
 	{
 		try {
-			Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
+			const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
 
 			for( int l=0; l<arrLoad[k]; l++)
 			{
@@ -95,7 +95,7 @@ void LoadBalancerTest::testLoadBalancer()
 	for(int k=0; k<NWORKERS; k++)
 	{
 		try {
-			Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
+			const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
 			cout<<"load["<<ptrCurrWorker->name()<<"] = "<<ptrCurrWorker->pending().size()<<std::endl;
 		}
 		catch(const NoWorkerFoundException& ex) {
@@ -112,7 +112,7 @@ void LoadBalancerTest::testLoadBalancer()
 	for(int k=0; k<NWORKERS; k++)
 	{
 		try {
-			Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
+			const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
 			cout<<"load["<<ptrCurrWorker->name()<<"] = "<<ptrCurrWorker->pending().size()<<std::endl;
 		}
 		catch(const NoWorkerFoundException& ex) {

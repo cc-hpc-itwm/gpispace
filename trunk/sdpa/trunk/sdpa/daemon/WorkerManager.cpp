@@ -47,13 +47,13 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) 
 /**
  * find worker
  */
-Worker::ptr_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 
 	for( worker_map_t::iterator it = worker_map_.begin(); it!= worker_map_.end(); it++ )
-		if( it->second->has_job(job_id))
-			return  it->second;
+		if( it->second->has_job(job_id) )
+			return  it->second->name();
 
 	throw NoWorkerFoundException();
 }
@@ -162,7 +162,7 @@ void WorkerManager::balanceWorkers()
 /**
  * get next worker to be served (Round-Robin scheduling)
  */
-Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
+const Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
 {
 	lock_type lock(mtx_);
 
@@ -211,7 +211,7 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 	return rank_ll;
 }
 
-sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id,  const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id,  const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	SDPA_LOG_DEBUG("Get the next job ...");
 

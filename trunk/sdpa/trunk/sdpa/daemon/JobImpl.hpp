@@ -49,7 +49,8 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
         virtual const sdpa::job_desc_t& description() const;
-        virtual sdpa::worker_id_t& worker() { return worker_id_;}
+
+        //virtual sdpa::worker_id_t& worker() { return worker_id_;}
 
         virtual bool is_marked_for_deletion();
         virtual bool mark_for_deletion();
@@ -79,7 +80,7 @@ namespace sdpa { namespace daemon {
 			os<<id_<<std::endl;
 			os<<desc_<<std::endl;
 			os<<parent_<<std::endl;
-			os<<worker_id_<<std::endl;
+			//os<<worker_id_<<std::endl;
 			return os.str();
 		}
 
@@ -89,7 +90,7 @@ namespace sdpa { namespace daemon {
 			ar & id_;
 			ar & desc_;
 			ar & parent_;
-			ar & worker_id_;
+			//ar & worker_id_;
 			ar & result;
 			ar & walltime_;
 		}
@@ -105,7 +106,7 @@ namespace sdpa { namespace daemon {
         sdpa::job_result_t result;
 
         friend class boost::serialization::access;
-        sdpa::worker_id_t worker_id_;
+        //sdpa::worker_id_t worker_id_;
         unsigned long walltime_;
     protected:
        	/*mutable*/ IComm* pComm;

@@ -24,9 +24,14 @@ bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int ra
 	return false;
 }
 
-Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+const Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	throw WorkerNotFoundException(worker_id);
+}
+
+const Worker::worker_id_t& SchedulerTestImpl::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+	throw NoWorkerFoundException();
 }
 
 void SchedulerTestImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
@@ -91,7 +96,7 @@ void SchedulerTestImpl::print()
 	ptr_worker_man_->print();
 }
 
-sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	sdpa::job_id_t jobId;
 	return jobId;

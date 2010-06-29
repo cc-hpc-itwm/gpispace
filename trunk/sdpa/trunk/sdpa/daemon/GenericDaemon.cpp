@@ -366,8 +366,18 @@ Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) t
 	try {
 		return  ptr_scheduler_->findWorker(worker_id);
 	}
-	catch(WorkerNotFoundException const &) {
-          throw;
+	catch(const WorkerNotFoundException& ex) {
+          throw ex;
+	}
+}
+
+const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+	try {
+		return  ptr_scheduler_->findWorker(job_id);
+	}
+	catch(const NoWorkerFoundException& ex) {
+		  throw ex;
 	}
 }
 

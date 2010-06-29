@@ -121,7 +121,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 
 	if(!ptr_comm_handler_)
 	{
-		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
 		stop();
 		return;
 	}
@@ -130,20 +130,17 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 
 		if( ptr_worker_man_ )
 		{
-			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
 			SDPA_LOG_DEBUG("Get the next worker ...");
-			Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+			const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
+			SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
-			pJob->worker() = pWorker->name();
 			pWorker->dispatch(jobId);
 		}
 	}
 	catch(JobNotFoundException& ex)
 	{
-		SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+		SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
 	}
 	catch(const NoWorkerFoundException&)
 	{
@@ -167,14 +164,12 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 
 	try {
 
-		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+		const Worker::worker_id_t worker_id = ptr_worker_man_->rank_map_.at(rank);
 
-		Worker::worker_id_t worker_id = ptr_worker_man_->rank_map_.at(rank);
+		const Worker::ptr_t& pWorker = findWorker( worker_id);
 
-		Worker::ptr_t& pWorker = findWorker( worker_id);
+		SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
-		SDPA_LOG_DEBUG("The job "<<pJob->id()<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-		pJob->worker() = pWorker->name();
 		pWorker->dispatch(jobId);
 
 		return true;
@@ -186,7 +181,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
 	}
 	catch(JobNotFoundException& ex)
 	{
-		SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+		SDPA_LOG_ERROR("Job not found! Could not schedule the job "<<ex.job_id().str());
 		return false;
 	}
 }
@@ -201,7 +196,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 	if(!ptr_comm_handler_)
 	{
-		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. "<<jobId.str());
+		SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
 		stop();
 		return false;
 	}
@@ -214,7 +209,6 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			return false;
 		}
 
-		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// if no preferences are explicitly set for this job
         SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
@@ -312,7 +306,7 @@ void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
 	jobs_to_be_scheduled.push(jobId);
 }
 
-Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	try {
 		return ptr_worker_man_->findWorker(worker_id);
@@ -320,6 +314,17 @@ Worker::ptr_t &SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) 
 	catch(WorkerNotFoundException)
 	{
 		throw WorkerNotFoundException(worker_id);
+	}
+}
+
+const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+	try {
+		return ptr_worker_man_->findWorker(job_id);
+	}
+	catch(const NoWorkerFoundException& ex)
+	{
+		throw ex;
 	}
 }
 
@@ -451,7 +456,7 @@ void SchedulerImpl::run()
 		}
 		catch(JobNotFoundException& ex)
 		{
-			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+			SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -476,7 +481,7 @@ void SchedulerImpl::print()
 	ptr_worker_man_->print();
 }
 
-sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	try {
 		return ptr_worker_man_->getNextJob(worker_id, last_job_id);
