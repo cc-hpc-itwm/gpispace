@@ -304,7 +304,8 @@ namespace we { namespace mgmt { namespace type {
     }
 
     template <typename Context>
-    void execute ( Context & ctxt )
+
+    typename Context::result_type execute ( Context & ctxt )
     {
       unique_lock_t lock(mutex_);
       /* context requirements
@@ -337,7 +338,7 @@ namespace we { namespace mgmt { namespace type {
       */
 
       we::mgmt::visitor::executor<this_type, Context> visitor_executor (*this, ctxt);
-      boost::apply_visitor (visitor_executor, transition().data());
+      return boost::apply_visitor (visitor_executor, transition().data());
     }
 
     bool
