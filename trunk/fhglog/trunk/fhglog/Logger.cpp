@@ -2,6 +2,7 @@
 #include    <stdexcept>
 #include    <iostream>
 #include <boost/thread.hpp>
+#include "error_handler.hpp"
 
 using namespace fhg::log;
 
@@ -106,6 +107,11 @@ void Logger::log(const LogEvent &event) const
     {
       std::clog << "could not append log event to appender " << (*it)->name() << ": unknown errror" << std::endl;
     }
+  }
+
+  if (event.severity() == LogLevel::FATAL)
+  {
+    fhg::log::error_handler();
   }
 }
 
