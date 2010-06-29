@@ -441,7 +441,7 @@ namespace we { namespace mgmt { namespace visitor {
 
   template <typename Activity, typename Context>
   class executor
-    : public boost::static_visitor<void>
+    : public boost::static_visitor<typename Context::result_type>
   {
   private:
     Activity & activity_;
@@ -449,6 +449,8 @@ namespace we { namespace mgmt { namespace visitor {
     const bool internal_;
 
   public:
+    typedef typename Context::result_type result_type;
+
     explicit
     executor (Activity & activity, Context & ctxt)
       : activity_(activity)
@@ -457,7 +459,7 @@ namespace we { namespace mgmt { namespace visitor {
     {}
 
     template <typename Place, typename Trans, typename Edge, typename Token>
-    void operator () (petri_net::net < Place
+    result_type operator () (petri_net::net < Place
                                      , Trans
                                      , Edge
                                      , Token
@@ -465,20 +467,20 @@ namespace we { namespace mgmt { namespace visitor {
     {
       if (internal_)
       {
-        ctxt_.handle_internally ( activity_, net );
+        return ctxt_.handle_internally ( activity_, net );
       }
       else
       {
-        ctxt_.handle_externally ( activity_, net );
+        return ctxt_.handle_externally ( activity_, net );
       }
     }
 
-    void operator () (const we::type::module_call_t & mod)
+    result_type operator () (const we::type::module_call_t & mod)
     {
-      ctxt_.handle_externally ( activity_, mod );
+      return ctxt_.handle_externally ( activity_, mod );
     }
 
-    void operator () (const we::type::expression_t & expr)
+    result_type operator () (const we::type::expression_t & expr)
     {
       // construct context
       typedef expr::eval::context <signature::field_name_t> context_t;
@@ -526,7 +528,7 @@ namespace we { namespace mgmt { namespace visitor {
         }
       }
 
-      ctxt_.handle_internally ( activity_, expr );
+      return ctxt_.handle_internally ( activity_, expr );
     }
   };
 }}}
