@@ -23,8 +23,8 @@ int main (int argc, char ** argv)
   std::string cfg_file;
 
   desc.add_options()
-    ("help", "this message")
-    ("cfg", po::value<std::string>(&cfg_file)->default_value("/p/herc/itwm/hpc/soft/sdpa/sdpa/share/kdm.pnet"), "config file")
+    ("help,h", "this message")
+    ("cfg", po::value<std::string>(&cfg_file), "config file")
     ;
 
   po::variables_map vm;
@@ -41,17 +41,19 @@ int main (int argc, char ** argv)
 
   we::activity_t act ( simple_trans );
 
-  act.add_input
-    ( we::input_t::value_type
+  if (cfg_file.size())
+  {
+    act.add_input
+      ( we::input_t::value_type
       ( we::token_t ( "config_file"
                     , literal::STRING
                     , cfg_file
                     )
       , simple_trans.input_port_by_name ("config_file")
       )
-    );
+      );
+  }
 
-  // dump activity for test purposes
   std::cout << we::util::text_codec::encode (act);
 
   return EXIT_SUCCESS;
