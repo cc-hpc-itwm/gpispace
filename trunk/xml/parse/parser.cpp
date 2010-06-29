@@ -1,6 +1,11 @@
 
-#include "rapidxml/1.13/rapidxml.hpp"
-#include "rapidxml/1.13/rapidxml_utils.hpp"
+#include <rapidxml/1.13/rapidxml.hpp>
+#include <rapidxml/1.13/rapidxml_utils.hpp>
+
+#include <we/type/literal/name.hpp>
+#include <we/type/signature.hpp>
+
+#include <boost/unordered_set.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -90,6 +95,21 @@ namespace xml
       };
     }
 
+    namespace state
+    {
+      struct type
+      {
+      private:
+        typedef boost::unordered_set<signature::desc_t> signature_set_type;
+
+        signature_set_type signature;
+      public:
+        type (void)
+          : signature ()
+        {}
+      };
+    }
+
     // ********************************************************************* //
 
     using std::cout;
@@ -104,19 +124,19 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void connect_type (const xml_node_type *);
-    static void function_type (const xml_node_type *);
-    static void mod_type (const xml_node_type *);
-    static void net_type (const xml_node_type *);
-    static void place_type (const xml_node_type *);
-    static void port_type (const xml_node_type *);
-    static void struct_field_type (const xml_node_type *);
-    static void struct_type (const xml_node_type *);
-    static void token_field_type (const xml_node_type *);
-    static void token_type (const xml_node_type *);
-    static void transition_type (const xml_node_type *);
+    static void connect_type (const xml_node_type *, state::type &);
+    static void function_type (const xml_node_type *, state::type &);
+    static void mod_type (const xml_node_type *, state::type &);
+    static void net_type (const xml_node_type *, state::type &);
+    static void place_type (const xml_node_type *, state::type &);
+    static void port_type (const xml_node_type *, state::type &);
+    static void struct_field_type (const xml_node_type *, state::type &);
+    static void struct_type (const xml_node_type *, state::type &);
+    static void token_field_type (const xml_node_type *, state::type &);
+    static void token_type (const xml_node_type *, state::type &);
+    static void transition_type (const xml_node_type *, state::type &);
 
-    static void parse (std::istream & f);
+    static void parse (std::istream & f, state::type &);
 
     // ********************************************************************* //
 
@@ -146,7 +166,7 @@ namespace xml
     }
 
     static std::string
-    name_element (xml_node_type * & node)
+    name_element (xml_node_type * & node, state::type & state)
     {
       skip (node, rapidxml::node_comment);
       expect (node, rapidxml::node_element);
@@ -162,13 +182,13 @@ namespace xml
 
           std::ifstream f (file.c_str());
 
-          parse (f);
+          parse (f, state);
 
           cout << "*** include END " << file << endl;
 
           node = node->next_sibling();
 
-          return name_element (node);
+          return name_element (node, state);
         }
 
       return name;
@@ -216,7 +236,7 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    connect_type (const xml_node_type * node)
+    connect_type (const xml_node_type * node, state::type &)
     {
       const std::string place (required ("connect_type", node, "place"));
       const std::string port (required ("connect_type", node, "port"));
@@ -225,7 +245,7 @@ namespace xml
     }
 
     static void
-    function_type (const xml_node_type * node)
+    function_type (const xml_node_type * node, state::type & state)
     {
       const std::string name (optional (node, "name", "[anonymous]"));
       const std::string internal (optional (node, "internal", "true"));
@@ -241,11 +261,11 @@ namespace xml
 
           if (name == "in")
             {
-              cout << "in: "; port_type (child);
+              cout << "in: "; port_type (child, state);
             }
           else if (name == "out")
             {
-              cout << "out: "; port_type (child);
+              cout << "out: "; port_type (child, state);
             }
           else if (name == "expression")
             {
@@ -253,11 +273,11 @@ namespace xml
             }
           else if (name == "module")
             {
-              cout << "module: "; mod_type (child);
+              cout << "module: "; mod_type (child, state);
             }
           else if (name == "net")
             {
-              cout << "net: " << endl; net_type (child);
+              cout << "net: " << endl; net_type (child, state);
             }
           else if (name == "condition")
             {
@@ -271,7 +291,7 @@ namespace xml
     }
 
     static void
-    mod_type (const xml_node_type * node)
+    mod_type (const xml_node_type * node, state::type &)
     {
       const std::string mod (required ("mod_type", node, "name"));
       const std::string fun (required ("mod_type", node, "function"));
@@ -280,30 +300,30 @@ namespace xml
     }
 
     static void
-    net_type (const xml_node_type * node)
+    net_type (const xml_node_type * node, state::type & state)
     {
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "defun")
             {
-              cout << "defun: "; function_type (child);
+              cout << "defun: "; function_type (child, state);
             }
           else if (name == "place")
             {
-              cout << "place: "; place_type (child);
+              cout << "place: "; place_type (child, state);
             }
           else if (name == "transition")
             {
-              cout << "transition: "; transition_type (child);
+              cout << "transition: "; transition_type (child, state);
             }
           else if (name == "struct")
             {
-              cout << "struct: "; struct_type (child);
+              cout << "struct: "; struct_type (child, state);
             }
           else
             {
@@ -313,7 +333,7 @@ namespace xml
     }
 
     static void
-    place_type (const xml_node_type * node)
+    place_type (const xml_node_type * node, state::type & state)
     {
       const std::string name (required ("place_type", node, "name"));
       const std::string type (required ("place_type", node, "type"));
@@ -332,11 +352,11 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "token")
             {
-              cout << "token: "; token_type (child);
+              cout << "token: "; token_type (child, state);
             }
           else
             {
@@ -346,7 +366,7 @@ namespace xml
     }
 
     static void
-    port_type (const xml_node_type * node)
+    port_type (const xml_node_type * node, state::type &)
     {
       const std::string name (required ("port_type", node, "name"));
       const std::string type (required ("port_type", node, "type"));
@@ -364,7 +384,7 @@ namespace xml
     }
 
     static void
-    struct_field_type (const xml_node_type * node)
+    struct_field_type (const xml_node_type * node, state::type &)
     {
       const std::string name (required ("struct_field_type", node, "name"));
       const std::string type (required ("struct_field_type", node, "type"));
@@ -373,7 +393,7 @@ namespace xml
     }
 
     static void
-    struct_type (const xml_node_type * node)
+    struct_type (const xml_node_type * node, state::type & state)
     {
       const std::string name (required ("struct_type", node, "name"));
 
@@ -384,15 +404,15 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "field")
             {
-              cout << "field: "; struct_field_type (child);
+              cout << "field: "; struct_field_type (child, state);
             }
           else if (name == "struct")
             {
-              cout << "struct: "; struct_type (child);
+              cout << "struct: "; struct_type (child, state);
             }
           else
             {
@@ -402,7 +422,7 @@ namespace xml
     }
 
     static void
-    token_field_type (const xml_node_type * node)
+    token_field_type (const xml_node_type * node, state::type & state)
     {
       const std::string name (required ("token_field_type", node, "name"));
       
@@ -413,14 +433,14 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "value")
             {
             }
           else if (name == "field")
             {
-              cout << "field: "; token_field_type (child);
+              cout << "field: "; token_field_type (child, state);
             }
           else
             {
@@ -430,25 +450,21 @@ namespace xml
     }
 
     static void
-    token_type (const xml_node_type * node)
+    token_type (const xml_node_type * node, state::type & state)
     {
-      const std::string type (required ("token_type", node, "type"));
-
-      cout << "type: " << type << endl;
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "value")
             {
             }
           else if (name == "field")
             {
-              cout << "field: "; token_field_type (child);
+              cout << "field: "; token_field_type (child, state);
             }
           else
             {
@@ -458,7 +474,7 @@ namespace xml
     }
 
     static void
-    transition_type (const xml_node_type * node)
+    transition_type (const xml_node_type * node, state::type & state)
     {
       const std::string name (required ("transition_type", node, "name"));
 
@@ -479,7 +495,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child));
+          const std::string name (name_element (child, state));
 
           if (name == "defun")
             {
@@ -489,19 +505,19 @@ namespace xml
                     ("transition_type", "use and defun given at the same time");
                 }
 
-              cout << "defun: "; function_type (child);
+              cout << "defun: "; function_type (child, state);
             }
           else if (name == "connect-in")
             {
-              cout << "connect_in: "; connect_type(child);
+              cout << "connect_in: "; connect_type(child, state);
             }
           else if (name == "connect-out")
             {
-              cout << "connect_out: "; connect_type(child);
+              cout << "connect_out: "; connect_type(child, state);
             }
           else if (name == "connect-read")        
             {
-              cout << "connect_read: "; connect_type(child);
+              cout << "connect_read: "; connect_type(child, state);
             }
           else
             {
@@ -513,7 +529,7 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    parse (std::istream & f)
+    parse (std::istream & f, state::type & state)
     {
       xml_document_type doc;
 
@@ -532,11 +548,11 @@ namespace xml
         {
           skip (node, rapidxml::node_declaration);
 
-          const std::string name (name_element (node));
+          const std::string name (name_element (node, state));
       
           if (name == "defun")
             {
-              cout << "defun: "; function_type (node);
+              cout << "defun: "; function_type (node, state);
             }
           else
             {
@@ -552,7 +568,9 @@ namespace xml
 int
 main (void)
 {
-  xml::parse::parse (std::cin);
+  xml::parse::state::type state;
+
+  xml::parse::parse (std::cin, state);
 
   //  std::ifstream f ("/u/r/rahn/SDPA/trunk/xml/example/kdm/simple_kdm.xml");
   //  xml::parse::parse (f);
