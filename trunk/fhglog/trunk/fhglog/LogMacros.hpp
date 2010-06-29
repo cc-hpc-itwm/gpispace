@@ -33,40 +33,34 @@ namespace fhg { namespace log {
     } while(0)
 #endif // if FHGLOG_ENABLED == 0
 
-#ifndef NDEBUG
-// support for log output only when:  logging activated at all and NDEBUG is not
-// defined  this can  be  useful to  introduce  extra log  output for  debugging
-// purposes but not in releases
-#define __DLOG(logger, level, msg) __LOG(logger, level, msg)
-#else
-#define __DLOG(logger, level, msg)
-#endif
-
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
-#define LOG_IF(condition, level, msg) do { if ((condition)) { LOG(level, msg); } while (0)
+#define LOG_IF(level, condition, msg) do { if ((condition)) { LOG(level, msg); } while (0)
 
-#define DLLOG(level, logger, msg) __DLOG(logger, level, msg)
-#define DMLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
-#define DLOG(level, msg) DLLOG(level, ::fhg::log::getLogger(), msg)
-#define DLOG_IF(condition, level, msg) do { if ((condition)) { DLOG(level, msg); } while (0)
+#ifndef NDEBUG
+
+#define DLLOG(level, logger, msg) __LOG(logger, level, msg)
+#define DMLOG(level, msg) MLOG(level, msg)
+#define DLOG(level, msg) LOG(level, msg)
+#define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
+
+#else
+
+#define DLLOG(level, logger, msg)
+#define DMLOG(level, msg)
+#define DLOG(level, msg)
+#define DLOG_IF(level, condition, msg)
+
+#endif
 
 // regular logging messages
-#define LOG_TRACE(logger, msg) __LOG(logger, TRACE, msg)
-#define LOG_DEBUG(logger, msg) __LOG(logger, DEBUG, msg)
-#define LOG_INFO(logger, msg)  __LOG(logger, INFO, msg)
-#define LOG_WARN(logger, msg)  __LOG(logger, WARN, msg)
-#define LOG_ERROR(logger, msg) __LOG(logger, ERROR, msg)
-#define LOG_FATAL(logger, msg) __LOG(logger, FATAL, msg)
-
-// only if NDEBUG has not been defined (i.e. in release builds)
-#define DLOG_TRACE(logger, msg) __DLOG(logger, TRACE, msg)
-#define DLOG_DEBUG(logger, msg) __DLOG(logger, DEBUG, msg)
-#define DLOG_INFO(logger, msg)  __DLOG(logger, INFO, msg)
-#define DLOG_WARN(logger, msg)  __DLOG(logger, WARN, msg)
-#define DLOG_ERROR(logger, msg) __DLOG(logger, ERROR, msg)
-#define DLOG_FATAL(logger, msg) __DLOG(logger, FATAL, msg)
+#define LOG_TRACE(logger, msg) LLOG(TRACE, logger, msg)
+#define LOG_DEBUG(logger, msg) LLOG(DEBUG, logger, msg)
+#define LOG_INFO(logger, msg)  LLOG(INFO,  logger, msg)
+#define LOG_WARN(logger, msg)  LLOG(WARN,  logger, msg)
+#define LOG_ERROR(logger, msg) LLOG(ERROR, logger, msg)
+#define LOG_FATAL(logger, msg) LLOG(FATAL, logger, msg)
 
 #endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */
 }}
