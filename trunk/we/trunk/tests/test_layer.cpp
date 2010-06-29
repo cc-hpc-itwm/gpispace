@@ -3,10 +3,12 @@
 #include <sstream>
 
 #include <stdint.h>
+#include <fhglog/fhglog.hpp>
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 
 #include <boost/program_options.hpp>
+#include <boost/thread.hpp>
 #include "test_layer.hpp"
 
 using namespace we::mgmt;
@@ -20,22 +22,31 @@ typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 
-std::vector<id_type> jobs;
+static std::vector<id_type> jobs;
+static std::set<layer_id_type> layer_jobs;
+static boost::recursive_mutex mutex;
+typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
 // observe workflow engine
 static
-void observe_submitted (const layer_t *, layer_id_type const &)
+void observe_submitted (const layer_t *, layer_id_type const & id)
 {
+  lock_t lock(mutex);
+
+  std::cerr << "submitted: " << id << std::endl;
+  layer_jobs.insert (id);
 }
+
 static
-void observe_finished (const layer_t *l, layer_id_type const & id, std::string const &s)
+void observe_finished (const layer_t *, layer_id_type const & id, std::string const &s)
 {
-  we::activity_t act (layer_t::policy::codec::decode (s));
-  if (act.transition().name() == "trans_net")
+  lock_t lock(mutex);
+
+  if (layer_jobs.find (id) != layer_jobs.end())
   {
-    std::cerr << "job finished: id := " << id << std::endl;
-    l->print_statistics(std::cerr);
-    jobs.pop_back();
+    layer_jobs.erase (id);
+    we::activity_t act (layer_t::policy::codec::decode (s));
+    std::cerr << "job finished: " << id << act.transition().name() << std::endl;
   }
 }
 static
@@ -50,14 +61,18 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
   std::cerr << "activity cancelled: id := " << id << std::endl;
   l->print_statistics(std::cerr);
 }
+
 static
-void observe_executing (const layer_t *l, layer_id_type const &)
+void observe_executing (const layer_t *l, layer_id_type const & id)
 {
+  std::cerr << "activity executing: id := " << id << std::endl;
   l->print_statistics(std::cerr);
 }
 
 int main (int argc, char **argv)
 {
+  fhg::log::Configurator::configure();
+
   po::options_description desc("options");
 
   std::string path_to_act;
@@ -67,7 +82,8 @@ int main (int argc, char **argv)
   std::size_t num_worker = 8;
 
   desc.add_options()
-    ("help", "this message")
+    ("help,h", "this message")
+    ("verbose,v", "be verbose")
     ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
     ("mod-path", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "where can modules be located")
     ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
@@ -103,7 +119,11 @@ int main (int argc, char **argv)
   mgmt_layer.sig_finished.connect  ( &observe_finished );
   mgmt_layer.sig_failed.connect    ( &observe_failed );
   mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
-  mgmt_layer.sig_executing.connect ( &observe_executing );
+
+  if (vm.count ("verbose"))
+  {
+    mgmt_layer.sig_executing.connect ( &observe_executing );
+  }
 
   we::activity_t act;
 
@@ -157,7 +177,7 @@ int main (int argc, char **argv)
     sleep (1);
   }
 #else
-  while (jobs.size() > 0)
+  while (layer_jobs.size() > 0)
   {
     std::cerr << "." << std::flush;
     sleep (1);
