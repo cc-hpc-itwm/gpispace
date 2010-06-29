@@ -139,7 +139,8 @@ namespace we { namespace mgmt { namespace type {
       : id_ (other.id_)
       , flags_ (other.flags_)
       , transition_ (other.transition_)
-      , input_ (other.input_)
+      , pending_input_ (other.pending_input_)
+      , input_(other.input_)
       , output_ (other.output_)
     { }
 
@@ -150,6 +151,7 @@ namespace we { namespace mgmt { namespace type {
         id_ = other.id_;
         flags_ = (other.flags_);
         transition_ = (other.transition_);
+        pending_input_ = (other.pending_input_);
         input_ = (other.input_);
         output_ = (other.output_);
       }
@@ -287,10 +289,15 @@ namespace we { namespace mgmt { namespace type {
     {
       unique_lock_t lock(mutex_);
       we::mgmt::visitor::injector<this_type>
-        inject_input (*this, input_);
+        inject_input (*this, pending_input_);
       boost::apply_visitor ( inject_input
                            , transition_.data()
                            );
+      std::copy ( pending_input_.begin()
+                , pending_input_.end()
+                , std::inserter (input_, input_.end())
+                );
+      pending_input_.clear();
     }
 
     void
@@ -359,7 +366,7 @@ namespace we { namespace mgmt { namespace type {
     void add_input (const typename input_t::value_type & inp)
     {
       unique_lock_t lock(mutex_);
-      input_.push_back (inp);
+      pending_input_.push_back (inp);
     }
 
     const output_t & output() const
@@ -395,6 +402,9 @@ namespace we { namespace mgmt { namespace type {
       detail::printer<activity_t> printer (*this, os);
       os << "{input, ";
       printer << input();
+      os << "}";
+      os << "{pending, ";
+      printer << pending_input_;
       os << "}";
       os << ", ";
       os << "{output, ";
@@ -433,6 +443,7 @@ namespace we { namespace mgmt { namespace type {
       ar & BOOST_SERIALIZATION_NVP(id_);
       ar & BOOST_SERIALIZATION_NVP(flags_);
       ar & BOOST_SERIALIZATION_NVP(transition_);
+      ar & BOOST_SERIALIZATION_NVP(pending_input_);
       ar & BOOST_SERIALIZATION_NVP(input_);
       ar & BOOST_SERIALIZATION_NVP(output_);
     }
@@ -444,6 +455,7 @@ namespace we { namespace mgmt { namespace type {
 
     transition_type transition_;
 
+    input_t pending_input_;
     input_t input_;
     output_t output_;
 
