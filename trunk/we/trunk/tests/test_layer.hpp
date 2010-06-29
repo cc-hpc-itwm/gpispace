@@ -28,6 +28,7 @@
 
 #include <we/we.hpp>
 #include <we/loader/loader.hpp>
+#include <we/mgmt/bits/basic_context.hpp>
 #include <kdm/module.hpp>
 
 namespace test {
@@ -57,7 +58,7 @@ namespace test {
     };
 
     template <typename Daemon, typename IdType>
-    struct context
+    struct context : public we::mgmt::detail::basic_context<>
     {
       typedef IdType id_type;
       typedef we::transition_t::net_type net_t;
@@ -136,13 +137,13 @@ namespace test {
     typedef typename layer_type::id_type id_type;
     typedef std::map<id_type, id_type> id_map_t;
     typedef job_t<id_type> job_type;
-    typedef we::mgmt::detail::queue<job_type> job_q_t;
+    typedef we::mgmt::detail::queue<job_type, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
     explicit
     sdpa_daemon(std::size_t num_worker = 1)
       : mgmt_layer_(this, boost::bind(&sdpa_daemon::gen_id, this))
-      , jobs_(1024)
+      , next_worker_(0)
     {
       start(num_worker);
     }
@@ -154,6 +155,7 @@ namespace test {
 
     void start(const std::size_t num_worker = 1)
     {
+      jobs_ = new job_q_t[num_worker];
       for (std::size_t n (0); n < num_worker; ++n)
       {
         worker_.push_back( new boost::thread( boost::bind(&this_type::worker, this, n)));
@@ -169,6 +171,8 @@ namespace test {
         delete (*it);
       }
       worker_.clear();
+      delete [] jobs_;
+      jobs_ = NULL;
     }
 
     void worker(const std::size_t rank)
@@ -176,7 +180,7 @@ namespace test {
       std::cout << "SDPA Layer worker-" << rank << " started." << std::endl;
       for (;;)
       {
-        job_type job (jobs_.get());
+        job_type job (jobs_[rank].get());
 
         we::activity_t act ( we::util::text_codec::decode<we::activity_t> (job.desc));
         detail::context<this_type, id_type> ctxt (*this, job.id);
@@ -195,11 +199,22 @@ namespace test {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       id_map_[new_id] = old_id;
     }
+    id_type get_mapping (const id_type & id)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      return id_map_.at (id);
+    }
+    void del_mapping (const id_type & id)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      id_map_.erase (id);
+    }
 
     void submit(const id_type & id, const std::string & desc)
     {
       job_type job (id, desc);
-      jobs_.put(job);
+      jobs_[next_worker_] .put(job);
+      next_worker_ = (next_worker_ + 1) % worker_.size();
     }
     bool cancel(const id_type & id, const std::string & desc)
     {
@@ -209,14 +224,14 @@ namespace test {
     }
     bool finished(const id_type & id, const std::string & desc)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
-      if (id_map_.find (id) != id_map_.end())
+      try
       {
+        id_type mapped_id (get_mapping (id));
         // inform layer
-        mgmt_layer_.finished ( id_map_[id], desc );
-        id_map_.erase (id);
+        mgmt_layer_.finished (mapped_id, desc);
+        del_mapping (id);
       }
-      else
+      catch (std::out_of_range const &)
       {
         we::activity_t act (we::util::text_codec::decode<we::activity_t> (desc));
         we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
@@ -226,31 +241,34 @@ namespace test {
     }
     bool failed(const id_type & id, const std::string & desc)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
-      if (id_map_.find (id) != id_map_.end())
+      try
       {
+        id_type mapped_id (get_mapping (id));
         // inform layer
-        mgmt_layer_.failed ( id_map_[id], desc );
-        id_map_.erase (id);
+        mgmt_layer_.failed ( mapped_id, "ACTIVITY_FAILED" );
+        del_mapping (id);
       }
-      else
+      catch (std::out_of_range const &)
       {
-        std::cout << "failed[" << id << "] = " << std::endl; return true;
+        we::activity_t act (we::util::text_codec::decode<we::activity_t> (desc));
+        we::mgmt::type::detail::printer <we::activity_t> p (act, std::cout);
+        p << "failed [" << id << "] = " << act.output() << std::endl;
       }
       return true;
     }
+
     bool cancelled(const id_type & id)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
-      if (id_map_.find (id) != id_map_.end())
+      try
       {
+        id_type mapped_id (get_mapping (id));
         // inform layer
-        mgmt_layer_.cancelled ( id_map_[id] );
-        id_map_.erase (id);
+        mgmt_layer_.cancelled ( mapped_id );
+        del_mapping (id);
       }
-      else
+      catch (std::out_of_range const &)
       {
-        std::cout << "cancelled[" << id << "]" << std::endl; return true;
+        std::cout << "cancelled [" << id << "]" << std::endl;
       }
       return true;
     }
@@ -262,8 +280,9 @@ namespace test {
     boost::recursive_mutex mutex_;
     detail::id_generator<id_type> id_;
     layer_type mgmt_layer_;
+    std::size_t next_worker_;
     id_map_t  id_map_;
-    job_q_t jobs_;
+    job_q_t *jobs_;
     worker_list_t worker_;
     we::loader::loader loader_;
   };
