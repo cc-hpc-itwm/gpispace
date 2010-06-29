@@ -406,7 +406,7 @@ namespace xml
 
           if (child_name == "token")
             {
-              cout << "token: "; token_type (child, state, child_name);
+              cout << "token: "; token_type (child, state, name);
             }
           else
             {
@@ -474,7 +474,8 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("gen_struct_type", child_name);
+              throw exception::unexpected_element
+                ("gen_struct_type", child_name);
             }
         }
     }
