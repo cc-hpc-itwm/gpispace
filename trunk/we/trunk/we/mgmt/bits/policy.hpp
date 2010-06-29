@@ -93,9 +93,11 @@ namespace we
         typedef def::validator<typename Traits::activity_type, true> validator;
         typedef execution_policy<typename Traits::activity_type> exec_policy;
 
-        static const size_t COMMAND_QUEUE_SIZE   = 16;
-        static const size_t INJECTOR_QUEUE_SIZE  = 16;
-        static const size_t EXECUTOR_QUEUE_SIZE  = 16;
+        static const size_t NUM_EXTRACTORS = 2;
+        static const size_t NUM_INJECTORS  = 2;
+
+        static const size_t COMMAND_QUEUE_SIZE   = 8;
+        static const size_t INJECTOR_QUEUE_SIZE  = 8;
         static const size_t EXTRACTOR_QUEUE_SIZE = 0;
       };
     }
