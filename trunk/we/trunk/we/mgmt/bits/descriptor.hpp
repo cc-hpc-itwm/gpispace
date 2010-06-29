@@ -2,6 +2,9 @@
 #define WE_MGMT_LAYER_DESCRIPTOR_HPP 1
 
 #include <boost/thread.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/lexical_cast.hpp>
+#include <we/util/show.hpp>
 #include <algorithm>
 
 namespace we
@@ -10,20 +13,30 @@ namespace we
   {
     namespace detail
     {
-      template <typename Id, typename Activity>
+      template <typename Activity, typename InternalId, typename ExternalId>
       class descriptor
       {
+        typedef descriptor<Activity, InternalId, ExternalId> this_type;
         typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
       public:
-        typedef Id id_type;
         typedef Activity activity_type;
-        typedef std::vector<id_type> children_t;
+        typedef InternalId id_type;
+        typedef ExternalId external_id_type;
+        typedef boost::unordered_set<id_type> children_t;
+
+        descriptor ()
+          : has_parent_(false)
+          , from_external_(false)
+          , to_external_(false)
+        { }
 
         descriptor (id_type const & a_id, activity_type const & a_activity)
           : id_(a_id)
           , activity_(a_activity)
           , has_parent_(false)
+          , from_external_(false)
+          , to_external_(false)
         { }
 
         descriptor (id_type const & a_id, activity_type const & a_activity, id_type const & a_parent)
@@ -31,6 +44,8 @@ namespace we
           , activity_(a_activity)
           , has_parent_(true)
           , parent_(a_parent)
+          , from_external_(false)
+          , to_external_(false)
         { }
 
         descriptor (const descriptor & other)
@@ -39,6 +54,10 @@ namespace we
           , has_parent_(other.has_parent_)
           , parent_(other.parent_)
           , children_(other.children_)
+          , from_external_(other.from_external_)
+          , to_external_(other.to_external_)
+          , from_external_id_(other.from_external_id_)
+          , to_external_id_(other.to_external_id_)
         { }
 
         descriptor & operator= (const descriptor & other)
@@ -53,8 +72,62 @@ namespace we
             has_parent_ = other.has_parent_;
             parent_ = other.parent_;
             children_ = other.children_;
+            from_external_ = other.from_external_;
+            to_external_ = other.to_external_;
+            from_external_id_ = other.from_external_id_;
+            to_external_id_ = other.to_external_id_;
           }
           return *this;
+        }
+
+        const std::string & name () const
+        {
+          lock_t lock(mutex_);
+          return activity_.transition().name();
+        }
+
+        bool came_from_external () const
+        {
+          lock_t lock(mutex_);
+          return from_external_;
+        }
+
+        void came_from_external_as (external_id_type const & ext_id)
+        {
+          lock_t lock(mutex_);
+          from_external_ = true;
+          from_external_id_ = ext_id;
+        }
+
+        bool sent_to_external () const
+        {
+          lock_t lock(mutex_);
+          return to_external_;
+        }
+
+        void sent_to_external_as (external_id_type const & ext_id)
+        {
+          lock_t lock(mutex_);
+          to_external_ = true;
+          to_external_id_ = ext_id;
+        }
+
+        external_id_type const & from_external_id () const
+        {
+          lock_t lock(mutex_);
+          return from_external_id_;
+        }
+
+        external_id_type const & to_external_id () const
+        {
+          lock_t lock(mutex_);
+          return to_external_id_;
+        }
+
+        bool external() const
+        {
+          lock_t lock(mutex_);
+          return came_from_external() || sent_to_external();
         }
 
         bool has_parent () const
@@ -75,11 +148,13 @@ namespace we
           return parent_;
         }
 
+        /*
         activity_type & activity()
         {
           lock_t lock(mutex_);
           return activity_;
         }
+        */
 
         activity_type const & activity() const
         {
@@ -87,20 +162,77 @@ namespace we
           return activity_;
         }
 
-        void add_child (id_type const & child)
+        void suspend ()
         {
           lock_t lock(mutex_);
-          children_.push_back (child);
+          activity_.flags().set_suspended(true);
         }
 
-        void del_child (id_type const & child)
+        void resume ()
         {
           lock_t lock(mutex_);
-          children_.erase ( std::find ( children_.begin()
-                                      , children_.end()
-                                      , child
-                                      )
+          activity_.flags().set_suspended(false);
+        }
+
+        template <typename Output>
+        void output (Output o)
+        {
+          lock_t lock(mutex_);
+          activity_.set_output (o);
+        }
+
+        void inject (this_type const & child)
+        {
+          lock_t lock(mutex_);
+          if (! is_child (child.id()))
+            throw std::runtime_error ( "Tried to inject '"
+                                     + boost::lexical_cast<std::string>(child)
+                                     + "' into '"
+                                     + boost::lexical_cast<std::string>(*this)
+                                     + "' which is not my child!"
+                                     );
+          del_child (child.id());
+          activity_.inject (child.activity());
+        }
+
+        this_type extract (id_type const & child_id)
+        {
+          lock_t lock(mutex_);
+
+          this_type child ( child_id
+                          , activity_.extract()
+                          , id()
                           );
+          add_child (child_id);
+          return child;
+        }
+
+        template <typename Fun>
+        void cancel (Fun f)
+        {
+          lock_t lock(mutex_);
+          activity_.set_cancelling (true);
+          apply_to_children (f);
+        }
+
+        template <typename C>
+        void execute (C c)
+        {
+          lock_t lock(mutex_);
+          activity_.execute (c);
+        }
+
+        void finished ()
+        {
+          lock_t lock(mutex_);
+          activity_.collect_output();
+        }
+
+        void failed ()
+        {
+          lock_t lock(mutex_);
+          activity_.collect_output();
+          activity_.set_failed (true);
         }
 
         bool has_children () const
@@ -118,10 +250,24 @@ namespace we
         // checks if a network is finished
         //     - all children have been injected
         //     - no more children can be produced
-        bool done () const
+        bool is_done () const
         {
           lock_t lock(mutex_);
           return (! activity_.has_enabled()) && (children_.size() == 0);
+        }
+
+        inline
+        bool is_alive () const
+        {
+          lock_t lock(mutex_);
+          return activity_.is_alive();
+        }
+
+        inline
+        bool enabled () const
+        {
+          lock_t lock(mutex_);
+          return activity_.has_enabled();
         }
 
         std::ostream & operator << (std::ostream &s) const
@@ -129,43 +275,39 @@ namespace we
           lock_t lock(mutex_);
 
           we::mgmt::type::detail::printer <activity_type> p (activity_, s);
-          p << "   **** activity [" << id() << "]:" << std::endl;
+          p << "descriptor [" << id() << "]:" << std::endl;
           p << "         name := " << activity_.transition().name() << std::endl;
           p << std::boolalpha;
-
-          p << "     internal := "
-            << activity_.transition().is_internal()
-            << std::endl;
-          p << "      enabled := "
-            << done()
-            << std::endl;
-          p << std::noboolalpha;
-          p << std::endl;
-
-          p << "         type := " << activity_.type_to_string () << std::endl;
-          p << "        input := " << activity_.input() << std::endl;
-          p << "       output := " << activity_.output() << std::endl;
           p << "       parent := ";
           if (has_parent())      p << parent();
           else                   p << "n/a";
           p << std::endl;
-
-          p << "     children := [";
-          for ( typename children_t::const_iterator child (children_.begin())
-              ; child != children_.end()
-              ; ++child
-              )
+          p << "     children := " << ::util::show (children_.begin(), children_.end()) << std::endl;
+          p << "     internal := "
+            << activity_.transition().is_internal()
+            << std::endl;
+          p << "      enabled := "
+            << activity_.has_enabled()
+            << std::endl;
+          p << "         done := "
+            << is_done()
+            << std::endl;
+          if (from_external_)
           {
-            if (child != children_.begin())
-            {
-              p << ", ";
-            }
-            p << *child;
+            p << "     from-ext := " << from_external_id_ << std::endl;
           }
-          p << "]";
+          if (to_external_)
+          {
+            p << "       to-ext := " << to_external_id_ << std::endl;
+          }
+          p << std::noboolalpha;
 
           p << std::endl;
-
+          p << std::endl;
+          p << "   activity information: " << std::endl;
+          p << "         type := " << activity_.type_to_string () << std::endl;
+          p << "        input := " << activity_.input() << std::endl;
+          p << "       output := " << activity_.output() << std::endl;
           return s;
         }
 
@@ -175,17 +317,40 @@ namespace we
           lock_t lock (mutex_);
           std::for_each (children_.begin(), children_.end(), f);
         }
+
       private:
+        void add_child (id_type const & child)
+        {
+          lock_t lock(mutex_);
+          children_.insert(child);
+        }
+
+        bool is_child (id_type const & child)
+        {
+          lock_t lock(mutex_);
+          return children_.find(child) != children_.end();
+        }
+
+        void del_child (id_type const & child)
+        {
+          lock_t lock(mutex_);
+          children_.erase (child);
+        }
+      private:
+        mutable boost::recursive_mutex mutex_;
         id_type id_;
         activity_type activity_;
-        const bool has_parent_;
+        bool has_parent_;
         id_type parent_;
         children_t children_;
-        mutable boost::recursive_mutex mutex_;
+        bool from_external_;
+        bool to_external_;
+        external_id_type from_external_id_;
+        external_id_type to_external_id_;
       };
 
-      template <typename I, typename A>
-      std::ostream & operator << (std::ostream & os, const descriptor<I,A> & d)
+      template <typename A, typename I, typename E>
+      std::ostream & operator << (std::ostream & os, const descriptor<A,I,E> & d)
       {
         return d.operator<< (os);
       }
