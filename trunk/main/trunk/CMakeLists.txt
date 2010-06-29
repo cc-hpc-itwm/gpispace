@@ -4,13 +4,11 @@ project(sdpa_main)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-set(V_MAJOR 1)
-set(V_MINOR 4)
-set(V_PATCH 0)
+include (./version.cmake)
 
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
-set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
+set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
 set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
