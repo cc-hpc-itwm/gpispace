@@ -77,6 +77,14 @@ namespace we {
           return container_.size();
         }
 
+        void erase (const value_type & item)
+        {
+	  boost::mutex::scoped_lock lock( mutex_ );
+          container_.erase (item);
+	  lock.unlock();
+	  not_full_.notify_one();
+        }
+
       private:
 	set(set const &);
 	set & operator=(set const &);
