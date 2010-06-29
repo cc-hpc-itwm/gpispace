@@ -2,9 +2,12 @@
 #include <fstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/program_options.hpp>
 
 #include <we/we.hpp>
 #include "complex_generator.hpp"
+
+namespace po = boost::program_options;
 
 int main (int argc, char ** argv)
 {
