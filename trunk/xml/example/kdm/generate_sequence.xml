@@ -3,10 +3,10 @@
 	<in name="amount" type="LONG" place="amount" />
 	<out name="out" type="LONG" place="out" />
 	<net>
-		<typedef name="COUNTER">
+		<struct name="COUNTER">
 			<field name="i" type="LONG"/>
 			<field name="max" type="LONG"/>
-		</typedef>
+		</struct>
 
 		<place name="amount" type="LONG" />
 		<place name="out" type="LONG" />

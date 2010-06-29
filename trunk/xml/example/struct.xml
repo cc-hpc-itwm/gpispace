@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defun name="struct">
+
+<in name="in" type="control"/>
+<out name="out" type="control"/>
+
+<net>
+
+<struct name="tri">
+  <field name="a" type="pixel"/>
+  <field name="b" type="pixel"/>
+  <field name="c" type="pixel"/>
+</struct>
+
+<struct name="pixel">
+  <struct name="point">
+   <field name="x" type="long"/>
+   <field name="y" type="long"/>
+   <struct name="jitter">
+     <field name="a" type="double"/>
+     <field name="r" type="double"/>
+   </struct>
+  </struct>
+  <field name="color" type="long"/>
+</struct>
+
+<struct name="no_fields"/>
+
+<place name="place_no_fields" type="no_fields">
+<token/>
+</place>
+
+<place name="place_pixel" type="pixel">
+<token>
+  <field name="color"><value>0xeeeeee</value></field>
+  <field name="point">
+    <field name="x"/>
+    <field name="y"/>
+    <field name="jitter">
+      <field name="a"><value>0.2</value></field>
+      <field name="r"><value>1.0</value></field>
+    </field>
+  </field>
+</token>
+</place>
+
+</net>
+</defun>

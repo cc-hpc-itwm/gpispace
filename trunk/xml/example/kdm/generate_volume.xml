@@ -5,10 +5,10 @@
 	<out name="out" type="VOLUME" place="out" />
 
 	<net>
-		<typedef name="VOLUME">
+		<struct name="VOLUME">
 			<field name="id" type="LONG"/>
 			<field name="offset" type="LONG"/>
-		</typedef>
+		</struct>
 
 		<place name="amount" type="LONG" />
 		<place name="offset" type="LONG" />

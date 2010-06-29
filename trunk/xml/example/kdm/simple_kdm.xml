@@ -3,43 +3,46 @@
 			 xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                          xmlns:xi="http://www.w3.org/2001/XInclude">
-	<in name="config_file" type="STRING" place="config_file"/>
-	<out name="done" type="CONTROL" place="done"/>
+	<in name="config_file" type="string" place="config_file"/>
+	<out name="done" type="control" place="done"/>
 	<net>
-	    <typedef name="LONG"/>
-		<typedef name="STRING"/>
-		<place name="config_file" type="STRING">
-			<token type="STRING">
+<!-- basic types, not allowed to define these here
+<struct name="long"/>
+<struct name="string"/>
+<struct name="control"/>
+-->
+
+		<place name="config_file" type="string">
+			<token>
 				<value>/tmp/test.cfg</value>
 			</token>
 		</place>
-		<typedef name="CONTROL"/>
-		
-		<typedef name="CONFIG">
-			<field name="OFFSETS" type="LONG" />
-			<field name="SUBVOLUMES_PER_OFFSET" type="LONG" />
-			<field name="BUNCHES_PER_OFFSET" type="LONG" />
-			<field name="handle_Job" type="LONG" />
-			<field name="handle_TT" type="LONG" />
-			<field name="NThreads" type="LONG" />
-		</typedef>
 
-		<typedef name="VOLUME">
-			<field name="id" type="LONG"/>
-			<field name="offset" type="LONG"/>
-		</typedef>
+		<struct name="CONFIG">
+			<field name="OFFSETS" type="long" />
+			<field name="SUBVOLUMES_PER_OFFSET" type="long" />
+			<field name="BUNCHES_PER_OFFSET" type="long" />
+			<field name="handle_Job" type="long" />
+			<field name="handle_TT" type="long" />
+			<field name="NThreads" type="long" />
+		</struct>
+
+		<struct name="VOLUME">
+			<field name="id" type="long"/>
+			<field name="offset" type="long"/>
+		</struct>
 		
-		<typedef name="BUNCH">
-			<field name="id" type="LONG"/>
+		<struct name="BUNCH">
+			<field name="id" type="long"/>
 			<field name="volume" type="VOLUME"/>
-		</typedef>
+		</struct>
 		
 		<transition name="initialize">
 			<defun>
-				<in name="config_file" type="STRING" />
+				<in name="config_file" type="string" />
 				<out name="config" type="CONFIG" />
-				<out name="wait" type="LONG" />
-				<out name="trigger" type="CONTROL" />
+				<out name="wait" type="long" />
+				<out name="trigger" type="control" />
 				<module name="kdm" function="initialize"/>
 			</defun>
 
@@ -50,13 +53,13 @@
 		</transition>
 		
         <place name="config" type="CONFIG"/>
-        <place name="wait" type="LONG"/>
-        <place name="trigger_loadTT" type="CONTROL" />
+        <place name="wait" type="long"/>
+        <place name="trigger_loadTT" type="control" />
         
 		<defun name="f_loadTT">
 			<in name="config" type="CONFIG"/>
-			<in name="trigger" type="CONTROL"/>
-			<out name="trigger" type="CONTROL"/>
+			<in name="trigger" type="control"/>
+			<out name="trigger" type="control"/>
 			
 			<module name="kdm" function="loadTT"/>
 		</defun>
@@ -66,13 +69,13 @@
 			<connect-in place="trigger_loadTT" port="trigger" />
 			<connect-out port="trigger" place="trigger_generate" />
 		</transition>
-		<place name="trigger_generate" type="CONTROL" />
+		<place name="trigger_generate" type="control" />
 
 		<transition name="duplicate_trigger_generate_offsets">
 			<defun>
-				<in name="value" type="CONTROL" />
-				<out name="one" type="CONTROL" />
-				<out name="two" type="CONTROL" />
+				<in name="value" type="control" />
+				<out name="one" type="control" />
+				<out name="two" type="control" />
 				<expression>
 					${one} := ${value};
 					${two} := ${value};
@@ -82,14 +85,14 @@
 			<connect-out port="one" place="trigger_extract_offsets" />
 			<connect-out port="two" place="trigger_extract_volumes" />
 		</transition>
-		<place name="trigger_extract_offsets" type="CONTROL" />
-		<place name="trigger_extract_volumes" type="CONTROL" />
+		<place name="trigger_extract_offsets" type="control" />
+		<place name="trigger_extract_volumes" type="control" />
 
 		<transition name="extract_offsets">
 			<defun>
 				<in name="config" type="CONFIG" />
-				<in name="trigger" type="CONTROL" />
-				<out name="offsets" type="LONG" />
+				<in name="trigger" type="control" />
+				<out name="offsets" type="long" />
 				<expression>
 					${offsets} := ${config.OFFSETS}
 				</expression>
@@ -98,13 +101,13 @@
 			<connect-in   place="trigger_extract_offsets" port="trigger" />
 			<connect-out  port="offsets" place="number_of_offsets" />			
 		</transition>
-		<place name="number_of_offsets" type="LONG" />
+		<place name="number_of_offsets" type="long" />
 		        
 		<transition name="extract_number_of_volumes">
 			<defun>
 				<in name="config" type="CONFIG" />
-				<in name="trigger" type="CONTROL" />
-				<out name="volumes" type="LONG" />
+				<in name="trigger" type="control" />
+				<out name="volumes" type="long" />
 				<expression>
 					${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
 				</expression>
@@ -113,14 +116,14 @@
 			<connect-in place="trigger_generate_volumes" port="trigger" />
 			<connect-out port="volumes" place="number_of_volumes" />			
 		</transition>
-		<place name="number_of_volumes" type="LONG" />
+		<place name="number_of_volumes" type="long" />
 
         <transition name="generate_offset">
 			<xi:include href="generate_sequence.xml" />
 			<connect-in place="number_of_offsets" port="amount" />
 			<connect-out place="offset" port="out" />
 		</transition>
-        <place name="offset" type="LONG" />
+        <place name="offset" type="long" />
 		
         <transition name="generate_volume">
 			<xi:include href="generate_volume.xml" />
@@ -137,11 +140,11 @@
 			<defun internal="false">
 				<in name="volume" type="VOLUME"  place="volume"/>
 				<in name="config" type="CONFIG"  place="config"/>
-				<out name="done"  type="CONTROL" place="done"/>
+				<out name="done"  type="control" place="done"/>
 				<net>
 					<place name="volume" type="VOLUME" />
       				<place name="config" type="CONFIG" />
-      				<place name="done" type="CONTROL" />
+      				<place name="done" type="control" />
 					
 					<transition name="wrap_process_volume">
 						<xi:include href="process_volume.xml" /> 
@@ -156,13 +159,13 @@
 			<connect-read place="config" port="config" />
 			<connect-out place="trigger_dec" port="done" />
 		</transition>
-		<place name="trigger_dec" type="CONTROL" />		
+		<place name="trigger_dec" type="control" />		
 		
 		<transition name="dec">
 			<defun name="f_dec">
-				<in	name="trigger" type="CONTROL" />
-				<in name="wait" type="LONG" />
-				<out name="wait" type="LONG" />
+				<in	name="trigger" type="control" />
+				<in name="wait" type="long" />
+				<out name="wait" type="long" />
 				<expression>
 					${wait} := ${wait} - 1;
 				</expression>
@@ -174,9 +177,9 @@
 		
 		<transition name="finalize">
 			<defun name="f_finalize" internal="false">
-				<in	name="wait" type="LONG" />
+				<in	name="wait" type="long" />
 				<in	name="config" type="CONFIG" />
-				<out name="trigger" type="CONTROL" />
+				<out name="trigger" type="control" />
 				<module name="kdm" function="finalize"/>
 				<condition> ${wait} == 0L </condition>
 			</defun>
