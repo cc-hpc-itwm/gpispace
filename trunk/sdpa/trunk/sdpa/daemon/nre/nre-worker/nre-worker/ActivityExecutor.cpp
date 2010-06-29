@@ -391,7 +391,7 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
 
   		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
-  		LOG (INFO, "executing activity ... " << act.name());
+  		LOG (INFO, "executing activity ... " << act.transition().name());
 
   		struct exec_context ctxt( loader() );
   		act.execute(ctxt);
