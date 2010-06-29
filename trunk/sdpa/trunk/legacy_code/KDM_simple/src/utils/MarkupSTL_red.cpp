@@ -903,14 +903,14 @@ string CMarkupSTL::x_TextToDoc( const char* szText, bool bAttrib ) const
 	// &apos; apostrophe or single quote
 	// &quot; double quote
 	//
-	static char* szaReplace[] = { "&lt;","&amp;","&gt;","&apos;","&quot;" };
+	static const char* szaReplace[] = { "&lt;","&amp;","&gt;","&apos;","&quot;" };
 	const char* pFind = bAttrib?"<&>\'\"":"<&>";
 	const char* pSource = szText;
 	string strResult;
 	int nLen = strlen( szText );
 	strResult.reserve( nLen + nLen / 10 );
 	char cSource = *pSource;
-	char* pFound;
+	const char* pFound;
 	while ( cSource )
 	{
 		if ( (pFound=strchr(pFind,cSource)) != NULL )

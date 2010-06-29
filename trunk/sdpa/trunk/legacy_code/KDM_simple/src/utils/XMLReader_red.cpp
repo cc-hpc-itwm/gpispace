@@ -1,4 +1,5 @@
 #include "XMLReader_red.h"
+#include <stdio.h>
 
 
 
