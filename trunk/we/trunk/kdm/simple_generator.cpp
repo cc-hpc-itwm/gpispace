@@ -7,13 +7,6 @@
 #include <we/we.hpp>
 #include "simple_generator.hpp"
 
-// specific
-//#include "kdm_simple.hpp"
-
-// generic
-//#include "module.hpp"
-//#include "context.hpp"
-
 namespace po = boost::program_options;
 
 int main (int argc, char ** argv)
