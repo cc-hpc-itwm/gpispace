@@ -279,7 +279,7 @@ namespace we { namespace mgmt { namespace visitor {
   };
 
   template <typename Net, typename Transition, typename Output>
-  void inject_output_to_net ( Net & net, Transition & trans, Output const & output)
+  void inject_output_to_net ( Net & net, Transition const & trans, Output const & output)
   {
     typedef typename Transition::port_id_t port_id_t;
 
@@ -316,9 +316,9 @@ namespace we { namespace mgmt { namespace visitor {
   {
   private:
     Activity & parent_;
-    Activity & child_;
+    Activity const & child_;
   public:
-    activity_injector (Activity & parent, Activity & child)
+    activity_injector (Activity & parent, Activity const & child)
       : parent_(parent)
       , child_(child)
     {}
@@ -330,11 +330,11 @@ namespace we { namespace mgmt { namespace visitor {
                                       , Token
                                       > & parent_net
 
-                     , petri_net::net < Place
-                                      , Trans
-                                      , Edge
-                                      , Token
-                                      > & /* child_net */
+                     , const petri_net::net < Place
+                                            , Trans
+                                            , Edge
+                                            , Token
+                                            > & /* child_net */
                      )
     {
       /*
@@ -356,7 +356,7 @@ namespace we { namespace mgmt { namespace visitor {
                                       , Token
                                       > & parent_net
 
-                     , we::type::module_call_t &
+                     , const we::type::module_call_t &
                      )
     {
       inject_output_to_net ( parent_net
@@ -372,7 +372,7 @@ namespace we { namespace mgmt { namespace visitor {
                                       , Token
                                       > & parent_net
 
-                     , we::type::expression_t &
+                     , const we::type::expression_t &
                      )
     {
       inject_output_to_net ( parent_net

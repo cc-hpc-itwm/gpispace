@@ -271,7 +271,7 @@ namespace we { namespace mgmt { namespace type {
     }
 
     void
-    inject (this_type & subact)
+    inject (this_type const & subact)
     {
       unique_lock_t lock(mutex_);
       we::mgmt::visitor::activity_injector<this_type>
@@ -427,6 +427,8 @@ namespace we { namespace mgmt { namespace type {
     template<class Archive>
     void serialize (Archive & ar, const unsigned int)
     {
+      unique_lock_t lock(mutex_);
+
       ar & BOOST_SERIALIZATION_NVP(id_);
       ar & BOOST_SERIALIZATION_NVP(flags_);
       ar & BOOST_SERIALIZATION_NVP(transition_);
