@@ -68,7 +68,7 @@ namespace xml
       {
       public:
         node_type (const rapidxml::node_type & want)
-          : std::runtime_error ("missing node: expexted node of type "
+          : std::runtime_error ("missing node: expected node of type "
                                + util::quote(util::show_node_type (want))
                                )
         {}
@@ -97,16 +97,16 @@ namespace xml
       class error : public std::runtime_error
       {
       public:
-        error (const std::string & pre, const std::string & what)
-          : std::runtime_error (pre + ": " + what)
+        error (const std::string & pre, const std::string & msg)
+          : std::runtime_error (pre + ": " + msg)
         {}
       };
 
       class strange : public std::runtime_error
       {
       public:
-        strange (const std::string & what)
-          : std::runtime_error ("STRANGE! " + what)
+        strange (const std::string & msg)
+          : std::runtime_error ("STRANGE! " + msg)
         {}
       };
     }
@@ -119,6 +119,7 @@ namespace xml
       {
       private:
         signature::set_type _signature;
+
       public:
         type (void)
           : _signature ()
@@ -174,7 +175,7 @@ namespace xml
     static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void struct_type (const xml_node_type *, state::type &);
     static void token_field_type (const xml_node_type *, state::type &);
-    static void token_type (const xml_node_type *, state::type &);
+    static void token_type (const xml_node_type *, state::type &, const std::string &);
     static void transition_type (const xml_node_type *, state::type &);
 
     static void parse (std::istream & f, state::type &);
@@ -300,35 +301,35 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (child->name());
+          const std::string child_name (child->name());
 
-          if (name == "in")
+          if (child_name == "in")
             {
               cout << "in: "; port_type (child, state);
             }
-          else if (name == "out")
+          else if (child_name == "out")
             {
               cout << "out: "; port_type (child, state);
             }
-          else if (name == "expression")
+          else if (child_name == "expression")
             {
               cout << "expression: " << child->value() << endl;
             }
-          else if (name == "module")
+          else if (child_name == "module")
             {
               cout << "module: "; mod_type (child, state);
             }
-          else if (name == "net")
+          else if (child_name == "net")
             {
               cout << "net: " << endl; net_type (child, state);
             }
-          else if (name == "condition")
+          else if (child_name == "condition")
             {
               cout << "condition: " << child->value() << endl;
             }
           else
             {
-              throw exception::unexpected_element ("function_type", name);
+              throw exception::unexpected_element ("function_type", child_name);
             }
         }
     }
@@ -354,27 +355,27 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "defun")
+          if (child_name == "defun")
             {
               cout << "defun: "; function_type (child, state);
             }
-          else if (name == "place")
+          else if (child_name == "place")
             {
               cout << "place: "; place_type (child, state);
             }
-          else if (name == "transition")
+          else if (child_name == "transition")
             {
               cout << "transition: "; transition_type (child, state);
             }
-          else if (name == "struct")
+          else if (child_name == "struct")
             {
               struct_type (child, state);
             }
           else
             {
-              throw exception::unexpected_element ("net_type", name);
+              throw exception::unexpected_element ("net_type", child_name);
             }
         }
     }
@@ -401,15 +402,15 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "token")
+          if (child_name == "token")
             {
-              cout << "token: "; token_type (child, state);
+              cout << "token: "; token_type (child, state, child_name);
             }
           else
             {
-              throw exception::unexpected_element ("place_type", name);
+              throw exception::unexpected_element ("place_type", child_name);
             }
         }
     }
@@ -461,19 +462,19 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "field")
+          if (child_name == "field")
             {
               struct_field_type (child, state, sig);
             }
-          else if (name == "struct")
+          else if (child_name == "struct")
             {
               substruct_type (child, state, sig);
             }
           else
             {
-              throw exception::unexpected_element ("gen_struct_type", name);
+              throw exception::unexpected_element ("gen_struct_type", child_name);
             }
         }
     }
@@ -527,18 +528,19 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "value")
+          if (child_name == "value")
             {
+              cout << "value: " << child->value() << endl;
             }
-          else if (name == "field")
+          else if (child_name == "field")
             {
               cout << "field: "; token_field_type (child, state);
             }
           else
             {
-              throw exception::unexpected_element ("token_field_type", name);
+              throw exception::unexpected_element ("token_field_type", child_name);
             }
         }
     }
@@ -546,25 +548,31 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    token_type (const xml_node_type * node, state::type & state)
+    token_type ( const xml_node_type * node
+               , state::type & state
+               , const std::string & place_name
+               )
     {
+      cout << "token on place " << place_name << endl;
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "value")
+          if (child_name == "value")
             {
+              cout << "value: " << child->value() << endl;
             }
-          else if (name == "field")
+          else if (child_name == "field")
             {
               cout << "field: "; token_field_type (child, state);
             }
           else
             {
-              throw exception::unexpected_element ("token_type", name);
+              throw exception::unexpected_element ("token_type", child_name);
             }
         }
     }
@@ -593,9 +601,9 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string name (name_element (child, state));
+          const std::string child_name (name_element (child, state));
 
-          if (name == "defun")
+          if (child_name == "defun")
             {
               if (got_use)
                 {
@@ -605,21 +613,21 @@ namespace xml
 
               cout << "defun: "; function_type (child, state);
             }
-          else if (name == "connect-in")
+          else if (child_name == "connect-in")
             {
               cout << "connect_in: "; connect_type(child, state);
             }
-          else if (name == "connect-out")
+          else if (child_name == "connect-out")
             {
               cout << "connect_out: "; connect_type(child, state);
             }
-          else if (name == "connect-read")        
+          else if (child_name == "connect-read")        
             {
               cout << "connect_read: "; connect_type(child, state);
             }
           else
             {
-              throw exception::unexpected_element ("transition_type", name);
+              throw exception::unexpected_element ("transition_type", child_name);
             }
         }
     }

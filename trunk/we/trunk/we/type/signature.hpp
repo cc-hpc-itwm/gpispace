@@ -201,15 +201,15 @@ namespace signature
             
             if (!resolved)
               {
-                const literal::type_name_t name
+                const literal::type_name_t child_name
                   (boost::apply_visitor (get_literal_type_name(), pos->second));
 
-                set_type::const_iterator res (sig_set.find (name));
+                set_type::const_iterator res (sig_set.find (child_name));
 
                 if (res == sig_set.end())
                   {
                     throw std::runtime_error ("signature: cannot resolve "
-                                             + pos->first + " :: " + name
+                                             + pos->first + " :: " + child_name
                                              );
                   }
 

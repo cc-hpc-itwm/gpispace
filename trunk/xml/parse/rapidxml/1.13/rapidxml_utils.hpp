@@ -37,13 +37,13 @@ namespace rapidxml
             
             // Determine stream size
             stream.seekg(0, ios::end);
-            size_t size = stream.tellg();
+            size_t ssize = stream.tellg();
             stream.seekg(0);   
             
             // Load data and add terminating 0
-            m_data.resize(size + 1);
-            stream.read(&m_data.front(), static_cast<streamsize>(size));
-            m_data[size] = 0;
+            m_data.resize(ssize + 1);
+            stream.read(&m_data.front(), static_cast<streamsize>(ssize));
+            m_data[ssize] = 0;
         }
 
         //! Loads file into the memory. Data will be automatically destroyed by the destructor
