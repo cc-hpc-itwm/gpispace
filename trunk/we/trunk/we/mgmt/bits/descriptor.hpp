@@ -185,6 +185,12 @@ namespace we
           activity_.set_output (o);
         }
 
+        void inject_input ()
+        {
+          lock_t lock(mutex_);
+          activity_.inject_input ();
+        }
+
         void inject (this_type const & child)
         {
           lock_t lock(mutex_);
