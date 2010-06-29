@@ -10,6 +10,7 @@
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/Filter.hpp>
+#include <fhglog/util.hpp>
 
 /**
   Common logging framework.
@@ -20,6 +21,7 @@
   my_logger.log(LogEvent(...));
 */
 namespace fhg { namespace log {
+
   /*
    * This class wraps around a simple Logger object.
    *
@@ -36,7 +38,7 @@ namespace fhg { namespace log {
       typedef shared_ptr<Logger> ptr_t;
 
       static const Logger::ptr_t &get();
-      static const Logger::ptr_t &get(const std::string &name);
+      static const Logger::ptr_t &get(const std::string &name, const std::string &base = "default");
 
       ~Logger() {}
 

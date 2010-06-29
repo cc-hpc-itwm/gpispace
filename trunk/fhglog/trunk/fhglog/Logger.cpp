@@ -15,7 +15,7 @@ const Logger::ptr_t &Logger::get()
   return get("default");
 }
 
-const Logger::ptr_t &Logger::get(const std::string &a_name)
+const Logger::ptr_t &Logger::get(const std::string &a_name, const std::string & base)
 {
   typedef std::map<std::string, Logger::ptr_t> logger_map_t;
   typedef boost::recursive_mutex mutex_type;
@@ -30,7 +30,7 @@ const Logger::ptr_t &Logger::get(const std::string &a_name)
   {
     if (a_name != "default")
     {
-      Logger::ptr_t newLogger(new Logger(a_name, *get("default")));
+      Logger::ptr_t newLogger(new Logger(a_name, *get(base)));
       logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
     }
     else
@@ -53,7 +53,7 @@ Logger::Logger(const std::string &a_name, const Logger &inherit_from)
 {
   for (appender_list_t::const_iterator it(inherit_from.appenders_.begin()); it != inherit_from.appenders_.end(); ++it)
   {
-    addAppender(*it);    
+    addAppender(*it);
   }
 }
 
