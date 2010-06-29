@@ -533,13 +533,11 @@ namespace we { namespace mgmt {
 
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
 
-        const std::size_t num_extractors(2);
-        active_nets_ = new active_nets_t[num_extractors];
-        start_threads (num_extractors, extractor_, boost::bind(&this_type::extractor, this, _1));
+        active_nets_ = new active_nets_t[policy::NUM_EXTRACTORS];
+        start_threads (policy::NUM_EXTRACTORS, extractor_, boost::bind(&this_type::extractor, this, _1));
 
-        const std::size_t num_injectors(2);
-        inj_q_ = new active_nets_t[num_injectors];
-        start_threads (num_injectors, injector_, boost::bind(&this_type::injector, this, _1));
+        inj_q_ = new active_nets_t[policy::NUM_INJECTORS];
+        start_threads (policy::NUM_INJECTORS, injector_, boost::bind(&this_type::injector, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
