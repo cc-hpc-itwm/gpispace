@@ -5,6 +5,8 @@
 
 struct exec_context
 {
+  typedef void result_type;
+
   typedef we::transition_t::net_type net_t;
   typedef we::transition_t::mod_type mod_t;
   typedef we::transition_t::expr_type expr_t;
