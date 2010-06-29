@@ -115,6 +115,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   long wait (we::loader::get_input<long>(input, "wait"));
   kdm_process (config, bunch, wait);
   we::loader::put_output (output, "wait", wait);
+  we::loader::put_output (output, "trigger", control());
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
