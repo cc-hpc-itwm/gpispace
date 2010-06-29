@@ -34,9 +34,8 @@ namespace we
         static const int INJECT = 1;
         static const int EXTERNAL = 2;
 
-        result_type handle_internally (activity_t & act, net_t &)
+        result_type handle_internally (activity_t &, net_t &)
         {
-          act.inject_input ();
           return EXTRACT;
         }
 

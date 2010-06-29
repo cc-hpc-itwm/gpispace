@@ -140,10 +140,6 @@ namespace we { namespace mgmt {
       typedef internal_id_type inj_cmd_t;
       typedef detail::queue<inj_cmd_t, policy::INJECTOR_QUEUE_SIZE> inj_q_t;
 
-      // executor
-      typedef internal_id_type executor_cmd_t;
-      typedef detail::queue<executor_cmd_t, policy::EXECUTOR_QUEUE_SIZE> exec_q_t;
-
       // extractor
       typedef detail::set<internal_id_type, policy::EXTRACTOR_QUEUE_SIZE> active_nets_t;
 
@@ -181,6 +177,8 @@ namespace we { namespace mgmt {
         activity_type act = policy::codec::decode(bytes);
         descriptor_type desc (generate_internal_id(), act);
         desc.came_from_external_as (id);
+        desc.inject_input ();
+
         submit (desc);
       }
 
@@ -542,11 +540,6 @@ namespace we { namespace mgmt {
         const std::size_t num_injectors(2);
         inj_q_ = new active_nets_t[num_injectors];
         start_threads (num_injectors, injector_, boost::bind(&this_type::injector, this, _1));
-
-        const std::size_t num_executors(2);
-        exec_q_ = new active_nets_t[num_executors];
-
-        start_threads (num_executors, executor_, boost::bind(&this_type::executor, this, _1));
       }
 
       template <typename ThreadList, typename ThreadFunc>
@@ -577,9 +570,6 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
         manager_.join();
-
-        DLOG(TRACE, "cleaning up executor threads...");
-        stop_threads (executor_);
 
         DLOG(TRACE, "cleaning up injector threads...");
         stop_threads (injector_);
@@ -671,7 +661,7 @@ namespace we { namespace mgmt {
       inline
       void post_execute_notification (const internal_id_type & id)
       {
-        exec_q_[id % executor_.size()].put ( id );
+        active_nets_[id % extractor_.size()].put(id);
       }
 
       inline
@@ -711,30 +701,99 @@ namespace we { namespace mgmt {
               continue;
             }
 
-            // get new activities
-            while (desc.enabled())
-            {
-              try
-              {
-                DLOG(DEBUG, "activity (" << desc.name() << ")-" << desc.id() << " has enabled transitions");
-                descriptor_type child (desc.extract (generate_internal_id()));
-                DLOG(INFO, "extracted from (" << desc.name() << ")-" << desc.id() << ": (" << child.name() << ")-" << child.id());
-                insert_activity (child);
-                post_execute_notification (child.id());
-              }
-              catch (const std::out_of_range &)
-              {
-                throw;
-                // extraction not possible (check for enabled and extract is not atomic)
-                // break;
-              }
-            }
+            // classify/execute
+            //    EXTRACT: while loop
+            //       classify/execute
+            //          EXTRACT: remember id
+            //       INJECT: inject
+            //       EXTERN: extern
+            //    INJECT:  inject to parent / notify client
+            //    EXTERN:  send to extern
+            typename policy::exec_policy exec_policy;
 
-            if (desc.is_done ())
+            sig_executing (this, desc.id());
+
+            switch (desc.execute (exec_policy))
             {
-              DLOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is done");
-              active_nets_[rank].erase (active_id);
-              post_finished_notification (active_id);
+            case policy::exec_policy::EXTRACT:
+              {
+                DLOG(TRACE, "extracting from net");
+                while (desc.enabled())
+                {
+                  descriptor_type child (desc.extract (generate_internal_id()));
+                  child.inject_input ();
+
+                  DLOG(INFO, "extractor[" << rank << "]: extracted from (" << desc.name() << ")-" << desc.id()
+                      << ": (" << child.name() << ")-" << child.id() << " with input " << ::util::show (child.activity().input().begin(), child.activity().input().end()));
+
+                  switch (child.execute (exec_policy))
+                  {
+                  case policy::exec_policy::EXTRACT:
+                    insert_activity(child);
+                    post_execute_notification (child.id());
+                    break;
+                  case policy::exec_policy::INJECT:
+                    child.finished();
+                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": "
+                        << ::util::show (child.activity().output().begin(), child.activity().output().end()));
+                    desc.inject (child);
+                    break;
+                  case policy::exec_policy::EXTERNAL:
+                    insert_activity (child);
+                    execute_externally (child.id());
+                    break;
+                  default:
+                    LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
+                    throw std::runtime_error ("invalid classification during execution of activity: " + ::util::show (child));
+                  }
+                }
+
+                DLOG(TRACE, "done extracting");
+
+                if (desc.is_done ())
+                {
+                  DLOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is done");
+                  active_nets_[rank].erase (active_id);
+                  post_finished_notification (active_id);
+                }
+              }
+              break;
+            case policy::exec_policy::INJECT:
+              desc.finished();
+
+              DLOG(INFO, "extractor[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": "
+                  << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
+
+              if (desc.has_parent ())
+              {
+                lookup (desc.parent()).inject (desc);
+                DLOG(INFO, "injected (" << desc.name() << ")-" << desc.id()
+                    << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
+                    << ": " << ::util::show(desc.activity().output().begin(), desc.activity().output().end()));
+                DLOG(TRACE, "parent := " << ::util::show(lookup (desc.parent()).activity().transition()));
+
+                post_activity_notification (desc.parent());
+              }
+              else if (desc.came_from_external())
+              {
+                DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << " external-id := " << desc.from_external_id());
+                ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
+              }
+              else
+              {
+                throw std::runtime_error ("extractor does not know how to handle this: " + ::util::show (desc));
+              }
+
+              remove_activity (desc);
+
+              break;
+            case policy::exec_policy::EXTERNAL:
+              DLOG(TRACE, "executing externally");
+              execute_externally (desc.id());
+              break;
+            default:
+              LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << desc.name() << ")-" << desc.id());
+              throw std::runtime_error ("extractor got strange classification for activity");
             }
           }
           catch (const activity_not_found<internal_id_type> & ex)
@@ -743,13 +802,6 @@ namespace we { namespace mgmt {
           }
         }
         DLOG(INFO, "extractor-" << rank << " thread stopped...");
-      }
-
-      void extract_loop ( descriptor_type & desc )
-      {
-        while ( desc.enabled () )
-        {
-        }
       }
 
       inline
@@ -804,58 +856,6 @@ namespace we { namespace mgmt {
         DLOG(INFO, "injector-" << rank << " thread stopped...");
       }
 
-      void executor(const std::size_t rank)
-      {
-        DLOG(INFO, "executor[" << rank << "] thread started...");
-        for (;;)
-        {
-          executor_cmd_t cmd = exec_q_[rank].get();
-
-          const internal_id_type act_id = cmd;
-
-          try
-          {
-            descriptor_type & desc = lookup (act_id);
-
-            sig_executing (this, act_id);
-
-            DLOG(INFO, "executor[" << rank << "] executing (" << desc.name() << ")-" << act_id);
-
-            typename policy::exec_policy exec_policy;
-            switch (int c = desc.execute (exec_policy))
-            {
-            case policy::exec_policy::EXTRACT:
-              DLOG(TRACE, "executing network internally");
-              post_activity_notification (desc.id());
-              break;
-            case policy::exec_policy::INJECT:
-              DLOG(TRACE, "injecting results");
-              post_inject_activity_results (desc.id());
-              break;
-            case policy::exec_policy::EXTERNAL:
-              DLOG(TRACE, "executing externally");
-              execute_externally (desc.id());
-              break;
-            default:
-              LOG(FATAL, "executor[" << rank << "] got strange classification for activity (" << desc.name() << ")-" << desc.id() << ": " << c);
-              throw std::runtime_error ("executor got strange classification for activity");
-            }
-
-            DLOG(INFO, "executor[" << rank << "] done");
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(WARN, "exception during execute of activity ["
-                      << act_id
-                      << "]:"
-                      << ex.what()
-               );
-            LOG(WARN, "TODO: mark parent as failed!");
-          }
-        }
-        DLOG(INFO, "executor[" << rank << "] thread stopped...");
-      }
-
       /** Member variables **/
     private:
       boost::function<external_id_type()> external_id_gen_;
@@ -867,14 +867,12 @@ namespace we { namespace mgmt {
       cmd_q_t cmd_q_;
       active_nets_t *active_nets_;
       active_nets_t *inj_q_;
-      active_nets_t *exec_q_;
 
       external_to_internal_map_t ext_to_int_;
 
       boost::thread manager_;
       thread_list_t extractor_;
       thread_list_t injector_;
-      thread_list_t executor_;
 
       external_id_type generate_external_id (void) const
       {
@@ -1085,11 +1083,6 @@ namespace we { namespace mgmt {
       template<class Archive>
       void serialize (Archive & ar, const unsigned int)
       {
-        //        ar & activities_;
-        //        ar & active_nets_;
-        // TODO: serialize queues
-        //        ar & ex_to_in_;
-        //        ar & in_to_ex_;
       }
     };
   }
