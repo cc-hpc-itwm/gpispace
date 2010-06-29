@@ -31,11 +31,12 @@
 namespace we {
   namespace mgmt {
     namespace detail {
-      template <typename T>
+
+      template <typename T, unsigned long long CAPACITY>
       class set
       {
       public:
-        typedef set<T> this_type;
+        typedef set<T, CAPACITY> this_type;
 
 	typedef boost::unordered_set<T> container_type;
 	typedef typename container_type::size_type size_type;
@@ -48,8 +49,11 @@ namespace we {
 	void put (param_type item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
+          while (! is_not_full())
+          {
+            not_full_.wait (lock);
+          }
 	  container_.insert (item);
-	  lock.unlock();
 	  not_empty_.notify_one();
 	}
 
@@ -63,12 +67,81 @@ namespace we {
 	void get (value_type & item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
-	  not_empty_.wait (lock, boost::bind(&this_type::is_not_empty, this));
+          while (! is_not_empty())
+          {
+            not_empty_.wait (lock);
+          }
           typename container_type::iterator i (container_.begin());
           item = *i;
           container_.erase (i);
-	  lock.unlock();
 	  not_full_.notify_one();
+	}
+
+        inline
+        size_type size (void) const
+        {
+	  boost::mutex::scoped_lock lock( mutex_ );
+          return container_.size();
+        }
+
+        void erase (const value_type & item)
+        {
+	  boost::mutex::scoped_lock lock( mutex_ );
+          container_.erase (item);
+	  not_full_.notify_one();
+        }
+
+      private:
+	set(set const &);
+	set & operator=(set const &);
+
+	inline bool is_not_empty() const { return container_.size() > 0; }
+	inline bool is_not_full() const { return container_.size() < CAPACITY; }
+
+	container_type container_;
+	boost::mutex mutex_;
+	boost::condition not_empty_;
+	boost::condition not_full_;
+      };
+
+      template <typename T>
+      class set<T, 0>
+      {
+      public:
+        typedef set<T, 0> this_type;
+
+	typedef boost::unordered_set<T> container_type;
+	typedef typename container_type::size_type size_type;
+	typedef typename container_type::value_type value_type;
+	typedef typename boost::call_traits<value_type>::param_type param_type;
+
+        set()
+        {}
+
+	void put (param_type item)
+	{
+	  boost::mutex::scoped_lock lock( mutex_ );
+	  container_.insert (item);
+	  not_empty_.notify_one();
+	}
+
+	value_type get ()
+	{
+	  value_type v;
+	  get(v);
+	  return v;
+	}
+
+	void get (value_type & item)
+	{
+	  boost::mutex::scoped_lock lock( mutex_ );
+          while (! is_not_empty())
+          {
+            not_empty_.wait (lock);
+          }
+          typename container_type::iterator i (container_.begin());
+          item = *i;
+          container_.erase (i);
 	}
 
         inline
@@ -81,8 +154,6 @@ namespace we {
         {
 	  boost::mutex::scoped_lock lock( mutex_ );
           container_.erase (item);
-	  lock.unlock();
-	  not_full_.notify_one();
         }
 
       private:
@@ -95,7 +166,6 @@ namespace we {
 	container_type container_;
 	boost::mutex mutex_;
 	boost::condition not_empty_;
-	boost::condition not_full_;
       };
     }
   }

@@ -2,6 +2,7 @@
 #define WE_MGMT_BITS_EXECUTION_POLICY_HPP 1
 
 #include <we/util/show.hpp>
+#include <we/mgmt/bits/basic_context.hpp>
 
 namespace we
 {
@@ -18,8 +19,10 @@ namespace we
          internal expressions will be executed directly and delegated to the injector process
        */
       template <typename Activity>
-      struct execution_policy
+      struct execution_policy : public we::mgmt::detail::basic_context<int>
       {
+        typedef typename we::mgmt::detail::basic_context<int>::result_type result_type;
+
         typedef Activity activity_t;
         typedef typename activity_t::id_t id_type;
 
@@ -27,54 +30,41 @@ namespace we
         typedef typename activity_t::transition_type::mod_type mod_t;
         typedef typename activity_t::transition_type::expr_type expr_t;
 
-        typedef boost::function <void (id_type)> extractor_cb_type;
-        typedef boost::function <void (id_type)> external_cb_type;
-        typedef boost::function <void (id_type)> injector_cb_type;
+        static const int EXTRACT = 0;
+        static const int INJECT = 1;
+        static const int EXTERNAL = 2;
 
-        execution_policy ( extractor_cb_type extractor_cb
-                         , external_cb_type external_cb
-                         , injector_cb_type injector_cb
-                         )
-          : extractor (extractor_cb)
-          , external (external_cb)
-          , injector (injector_cb)
-        { }
-
-        void handle_internally (activity_t & act, net_t &)
+        result_type handle_internally (activity_t & act, net_t &)
         {
           act.inject_input ();
-          extractor (act.id());
+          return EXTRACT;
         }
 
-        void handle_internally (activity_t &act, const mod_t & m)
+        result_type handle_internally (activity_t &act, const mod_t & m)
         {
-          handle_externally (act, m);
+          return handle_externally (act, m);
         }
 
-        void handle_internally (activity_t & act, const expr_t &)
+        result_type handle_internally (activity_t &, const expr_t &)
         {
-          injector ( act.id() );
+          return INJECT;
         }
 
-        void handle_externally (activity_t & act, net_t &)
+        result_type handle_externally (activity_t &, net_t &)
         {
-          external (act.id());
+          return EXTERNAL;
         }
 
-        void handle_externally (activity_t &act, const mod_t &)
+        result_type handle_externally (activity_t &, const mod_t &)
         {
-          external (act.id());
+          return EXTERNAL;
         }
 
-        void handle_externally (activity_t & act, const expr_t & e)
+        result_type handle_externally (activity_t & act, const expr_t & e)
         {
           // print warning?
-          handle_internally ( act, e );
+          return handle_internally ( act, e );
         }
-      private:
-        extractor_cb_type extractor;
-        external_cb_type external;
-        injector_cb_type injector;
       };
     }
   }

@@ -37,7 +37,9 @@ namespace we
           , has_parent_(false)
           , from_external_(false)
           , to_external_(false)
-        { }
+        {
+          activity_.set_id (a_id);
+        }
 
         descriptor (id_type const & a_id, activity_type const & a_activity, id_type const & a_parent)
           : id_(a_id)
@@ -46,7 +48,9 @@ namespace we
           , parent_(a_parent)
           , from_external_(false)
           , to_external_(false)
-        { }
+        {
+          activity_.set_id (a_id);
+        }
 
         descriptor (const descriptor & other)
           : id_(other.id_)
@@ -216,10 +220,10 @@ namespace we
         }
 
         template <typename C>
-        void execute (C c)
+        typename C::result_type execute (C c)
         {
           lock_t lock(mutex_);
-          activity_.execute (c);
+          return activity_.execute (c);
         }
 
         void finished ()
@@ -301,10 +305,6 @@ namespace we
             p << "       to-ext := " << to_external_id_ << std::endl;
           }
           p << std::noboolalpha;
-
-          p << std::endl;
-          p << std::endl;
-          p << "   activity information: " << std::endl;
           p << "         type := " << activity_.type_to_string () << std::endl;
           p << "        input := " << activity_.input() << std::endl;
           p << "       output := " << activity_.output() << std::endl;

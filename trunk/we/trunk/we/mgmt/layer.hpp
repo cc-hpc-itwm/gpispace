@@ -21,6 +21,8 @@
 
 #include <cassert>
 
+#include <fhglog/fhglog.hpp>
+
 #include <we/net.hpp>
 #include <we/util/warnings.hpp>
 
@@ -42,6 +44,7 @@
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
+#include <we/mgmt/bits/descriptor.hpp>
 
 namespace we { namespace mgmt {
     namespace exception
@@ -114,12 +117,9 @@ namespace we { namespace mgmt {
       typedef std::string result_type;
       typedef std::string status_type;
 
-      typedef typename boost::unordered_map<internal_id_type, activity_type> activities_t;
       typedef typename activity_type::output_t output_type;
 
     private:
-      typedef detail::set<internal_id_type> active_nets_t;
-
       typedef boost::unordered_set<internal_id_type> child_set_t;
       typedef boost::unordered_map<internal_id_type, internal_id_type> child_to_parent_map_t;
       typedef boost::unordered_map<internal_id_type, child_set_t> parent_to_children_map_t;
@@ -129,17 +129,25 @@ namespace we { namespace mgmt {
 
       typedef std::vector<boost::thread *> thread_list_t;
 
+      typedef detail::descriptor<activity_type, internal_id_type, external_id_type> descriptor_type;
+      typedef typename boost::unordered_map<internal_id_type, descriptor_type> activities_t;
+
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
-      typedef detail::queue<cmd_t> cmd_q_t;
+      typedef detail::queue<cmd_t, policy::COMMAND_QUEUE_SIZE> cmd_q_t;
 
       // injector thread
       typedef internal_id_type inj_cmd_t;
-      typedef detail::queue<inj_cmd_t> inj_q_t;
+      typedef detail::queue<inj_cmd_t, policy::INJECTOR_QUEUE_SIZE> inj_q_t;
 
+      // executor
       typedef internal_id_type executor_cmd_t;
-      typedef detail::queue<executor_cmd_t> exec_q_t;
+      typedef detail::queue<executor_cmd_t, policy::EXECUTOR_QUEUE_SIZE> exec_q_t;
 
+      // extractor
+      typedef detail::set<internal_id_type, policy::EXTRACTOR_QUEUE_SIZE> active_nets_t;
+
+      typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:
 
       /******************************
@@ -168,19 +176,12 @@ namespace we { namespace mgmt {
        */
       void submit(const external_id_type & id, const encoded_type & bytes) throw (std::exception)
       {
-        const internal_id_type internal_id ( add_external_id (id) );
-        try
-        {
-          activity_type act = policy::codec::decode(bytes);
-          act.set_id(internal_id);
-          submit (act);
-        }
-        catch (...)
-        {
-          remove_external_mapping ( id, sub_from_ext_eti_ );
-          remove_internal_mapping ( internal_id, sub_from_ext_ite_ );
-          throw;
-        }
+        DLOG(TRACE, "submit (" << id << ", ...)");
+
+        activity_type act = policy::codec::decode(bytes);
+        descriptor_type desc (generate_internal_id(), act);
+        desc.came_from_external_as (id);
+        submit (desc);
       }
 
       /**
@@ -198,9 +199,11 @@ namespace we { namespace mgmt {
        * */
       bool cancel(const external_id_type & id, const reason_type & reason) throw ()
       {
-        we::util::remove_unused_variable_warning(id);
+        DLOG(TRACE, "cancel (" << id << ", " << reason << ")");
+
         we::util::remove_unused_variable_warning(reason);
-        // TODO: traverse children with a depth first search
+
+        post_cancel_activity_notification (map_to_internal(id));
         return true;
       }
 
@@ -218,14 +221,18 @@ namespace we { namespace mgmt {
        **/
       bool finished(const external_id_type & id, const result_type & result) throw()
       {
-        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
-        remove_external_mapping (id, sub_to_ext_eti_);
-        remove_internal_mapping (internal_id, sub_to_ext_ite_);
+        internal_id_type int_id (map_to_internal (id));
+        {
+          lock_t lock(mutex_);
+          descriptor_type & desc (lookup (int_id));
+          {
+            activity_type act (policy::codec::decode (result));
+            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << ::util::show(act.output().begin(), act.output().end()));
+            desc.output (act.output());
+          }
+        }
 
-        activity_type res_act ( policy::codec::decode (result) );
-        lookup (internal_id).set_output(res_act.output());
-        inj_q_.put ( internal_id );
-
+        post_finished_notification (int_id);
         return true;
       }
 
@@ -245,14 +252,11 @@ namespace we { namespace mgmt {
                   , const result_type & result
                   ) throw()
       {
-        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
-        remove_external_mapping (id, sub_to_ext_eti_);
-        remove_internal_mapping (internal_id, sub_to_ext_ite_);
+        DLOG(TRACE, "failed (" << id << ", " << result << ")");
 
-        activity_type res_act ( policy::codec::decode (result) );
-        lookup (internal_id).set_output(res_act.output());
+        we::util::remove_unused_variable_warning(result);
 
-        post_failed_notification (internal_id);
+        post_failed_notification (map_to_internal(id));
         return true;
       }
 
@@ -271,10 +275,9 @@ namespace we { namespace mgmt {
        **/
       bool cancelled(const external_id_type & id) throw()
       {
-        internal_id_type internal_id ( map_to_internal (id, sub_to_ext_eti_));
-        remove_external_mapping (id, sub_to_ext_eti_);
-        remove_internal_mapping (internal_id, sub_to_ext_ite_);
+        DLOG(TRACE, "cancelled (" << id << ")");
 
+        post_cancelled_notification (map_to_internal(id));
         return true;
       }
 
@@ -293,7 +296,9 @@ namespace we { namespace mgmt {
        */
       bool suspend(const external_id_type & id) throw()
       {
-        post_suspend_activity_notification( map_to_internal(id, sub_from_ext_eti_) );
+        DLOG(TRACE, "suspend (" << id << ")");
+
+        post_suspend_activity_notification (map_to_internal(id));
         return true;
       }
 
@@ -312,7 +317,9 @@ namespace we { namespace mgmt {
        */
       bool resume(const external_id_type & id) throw()
       {
-        post_suspend_activity_notification( map_to_internal(id, sub_from_ext_eti_));
+        DLOG(TRACE, "resume (" << id << ")");
+
+        post_suspend_activity_notification (map_to_internal(id));
         return true;
       }
 
@@ -320,118 +327,129 @@ namespace we { namespace mgmt {
 
       status_type status(const external_id_type & id) throw (std::exception)
       {
-        std::ostringstream os;
-        print_activity_info (os, lookup(map_to_internal(id, sub_from_ext_eti_)));
-        return os.str();
+        return ::util::show (lookup (map_to_internal(id)));
       }
 
+      void print_statistics (std::ostream & s) const
+      {
+        s << "==== begin layer statistics ====" << std::endl;
+
+        lock_t lock (mutex_);
+        s << "   #activities := " << activities_.size() << std::endl;
+        s << "   ext -> int := " << ::util::show (ext_to_int_.begin(), ext_to_int_.end());
+        s << std::endl;
+        s << std::endl;
+
+        std::vector <internal_id_type> ids;
+        ids.reserve (activities_.size());
+
+        for ( typename activities_t::const_iterator desc (activities_.begin())
+            ; desc != activities_.end()
+            ; ++desc
+            )
+        {
+          ids.push_back (desc->first);
+        }
+
+        std::sort (ids.begin(), ids.end());
+
+        for ( typename std::vector<internal_id_type>::const_iterator id (ids.begin())
+            ; id != ids.end()
+            ; ++id
+            )
+        {
+          s << activities_.at(*id);
+          s << std::endl;
+        }
+
+        s << std::endl;
+        s << "==== end layer statistics ====" << std::endl;
+      }
     private:
       // handle execution layer
-      // util::signal<void (external_id_type const &, encoded_type const &)> ext_submit;
-      // util::signal<bool (external_id_type const &, reason_type const &)>  ext_cancel;
-      // util::signal<bool (external_id_type const &, result_type const &)>  ext_finished;
-      // util::signal<bool (external_id_type const &, result_type const &)>  ext_failed;
-      // util::signal<bool (external_id_type const &)>                       ext_cancelled;
-
       boost::function<void (external_id_type const &, encoded_type const &)> ext_submit;
       boost::function<bool (external_id_type const &, reason_type const &)>  ext_cancel;
       boost::function<bool (external_id_type const &, result_type const &)>  ext_finished;
       boost::function<bool (external_id_type const &, result_type const &)>  ext_failed;
       boost::function<bool (external_id_type const &)>                       ext_cancelled;
 
-      void submit (const activity_type & act)
+      void submit (const descriptor_type & desc)
       {
+        try
         {
-          try
-          {
-            policy::validator::validate (act);
+          policy::validator::validate (desc.activity());
+          insert_activity(desc);
 
-            insert_activity(act);
-
-            sig_submitted (this, act.id());
-
-            post_execute_notification (act.id());
-          }
-          catch (const std::exception & ex)
-          {
-            throw exception::validation_error( std::string("layer::submit(): invalid activity:")
-                                             + " id := " + ::util::show(act.id())
-                                             + " name := " + act.transition().name()
-                                             , act.transition().name()
-                                             );
-          }
+          sig_submitted (this, desc.id());
+          post_execute_notification (desc.id());
+        }
+        catch (const std::exception & ex)
+        {
+          throw exception::validation_error( std::string("layer::submit(): invalid activity:")
+                                           + " id := " + ::util::show(desc.id())
+                                           + " name := " + desc.name()
+                                           , desc.name()
+                                           );
         }
       }
 
-      internal_id_type add_external_id (const external_id_type & external_id)
+      void add_map_to_internal ( const external_id_type & external_id
+                               , const internal_id_type & internal_id
+                               )
       {
-        internal_id_type internal_id ( internal_id_gen_() );
-        add_external_to_internal_mapping (external_id, internal_id, sub_from_ext_eti_);
-        add_internal_to_external_mapping (internal_id, external_id, sub_from_ext_ite_);
-        return internal_id;
-      }
+        lock_t lock (mutex_);
+        typename external_to_internal_map_t::const_iterator mapping
+          (ext_to_int_.find(external_id));
 
-      void add_external_to_internal_mapping ( const external_id_type & external_id
-                                            , const internal_id_type & internal_id
-                                            , external_to_internal_map_t & ex_to_in
-                                            )
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-
-	{
-          typename external_to_internal_map_t::const_iterator mapping
-            (ex_to_in.find(external_id));
-          if (mapping != ex_to_in.end())
-          {
-            throw exception::already_there<external_id_type>
-              ( "already_there: ext_id := "
-              + ::util::show(external_id)
-              + " -> int_id := "
-              + ::util::show(mapping->second)
-              , external_id
-              );
-          }
-	}
-        ex_to_in.insert ( typename external_to_internal_map_t::value_type
-                        (external_id, internal_id)
-                        );
-      }
-
-      void add_internal_to_external_mapping ( const internal_id_type & internal_id
-                                            , const external_id_type & external_id
-                                            , internal_to_external_map_t & in_to_ex
-                                            )
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-
-        typename internal_to_external_map_t::const_iterator mapping (in_to_ex.find(internal_id));
-        if (mapping != in_to_ex.end())
+        if (mapping != ext_to_int_.end())
         {
-          throw exception::already_there<internal_id_type> ("already_there: int_id := " + ::util::show(internal_id) + " -> ext_id := " + ::util::show(mapping->second), internal_id);
+          throw exception::already_there<external_id_type>
+            ( "already_there: ext_id := "
+            + ::util::show(external_id)
+            + " -> int_id := "
+            + ::util::show(mapping->second)
+            , external_id
+            );
         }
-        in_to_ex.insert ( typename internal_to_external_map_t::value_type (internal_id, external_id) );
+
+        ext_to_int_.insert ( typename external_to_internal_map_t::value_type
+                           (external_id, internal_id)
+                           );
+        DLOG(TRACE, "added mapping " << external_id << " -> " << internal_id);
       }
 
-      void remove_external_mapping ( const external_id_type & external_id, external_to_internal_map_t & ex_to_in )
+      void del_map_to_internal ( const external_id_type & external_id
+                               , const internal_id_type & internal_id
+                               )
       {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-        ex_to_in.erase (external_id);
+        lock_t lock (mutex_);
+
+        typename external_to_internal_map_t::const_iterator mapping
+          (ext_to_int_.find(external_id));
+        if (  mapping == ext_to_int_.end()
+           || mapping->second != internal_id
+           )
+        {
+          throw exception::no_such_mapping<external_id_type>
+            ( "no_such_mapping: ext := "
+            + ::util::show(external_id)
+            + " -> int := "
+            + ::util::show(internal_id)
+            , external_id
+            );
+        }
+
+        ext_to_int_.erase (external_id);
+
+        DLOG(TRACE, "deleted mapping " << external_id << " -> " << internal_id);
       }
 
-      void remove_internal_mapping ( const internal_id_type & internal_id, internal_to_external_map_t & in_to_ex )
+      typename external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
       {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-        in_to_ex.erase (internal_id);
-      }
+        lock_t lock (mutex_);
 
-      typename external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id
-                                                                       , const external_to_internal_map_t & m
-                                                                       ) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-
-        typename external_to_internal_map_t::const_iterator mapping (m.find(external_id));
-        if (mapping != m.end())
+        typename external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
+        if (mapping != ext_to_int_.end())
         {
           return mapping->second;
         }
@@ -440,24 +458,6 @@ namespace we { namespace mgmt {
           throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + ::util::show (external_id), external_id);
         }
       }
-
-      typename internal_to_external_map_t::mapped_type map_to_external ( const internal_id_type & internal_id
-                                                                       , const internal_to_external_map_t & m
-                                                                       ) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-
-        typename internal_to_external_map_t::const_iterator mapping (m.find(internal_id));
-        if (mapping != m.end())
-        {
-          return mapping->second;
-        }
-        else
-        {
-          throw exception::no_such_mapping<internal_id_type> ("no_such_mapping: int_id := " + ::util::show (internal_id), internal_id);
-        }
-      }
-
     public:
       /**
        * Constructor calls
@@ -471,9 +471,6 @@ namespace we { namespace mgmt {
         , sig_suspended("sig_suspended")
         , sig_resumed("sig_resumed")
         , internal_id_gen_(&internal_id_traits::generate)
-        , cmd_q_(policy::max_command_queue_size())
-        , inj_q_(policy::max_injector_queue_size())
-        , exec_q_(policy::max_executor_queue_size())
       {
         start();
       }
@@ -489,9 +486,6 @@ namespace we { namespace mgmt {
         , sig_resumed("sig_resumed")
         , external_id_gen_(gen)
         , internal_id_gen_(&internal_id_traits::generate)
-        , cmd_q_(policy::max_command_queue_size())
-        , inj_q_(policy::max_injector_queue_size())
-        , exec_q_(policy::max_executor_queue_size())
       {
         connect (exec_layer);
         start();
@@ -500,13 +494,6 @@ namespace we { namespace mgmt {
       template <typename T>
       void connect ( T * t )
       {
-        // for now extract the functions from a given class
-        // ext_submit.connect (boost::bind (& T::submit, t, _1, _2));
-        // ext_cancel.connect (boost::bind (& T::cancel, t, _1, _2));
-        // ext_finished.connect (boost::bind (& T::finished, t, _1, _2));
-        // ext_failed.connect (boost::bind (& T::failed, t, _1, _2));
-        // ext_cancelled.connect (boost::bind (& T::cancelled, t, _1));
-
         ext_submit = (boost::bind (& T::submit, t, _1, _2));
         ext_cancel = (boost::bind (& T::cancel, t, _1, _2));
         ext_finished = (boost::bind (& T::finished, t, _1, _2));
@@ -517,81 +504,48 @@ namespace we { namespace mgmt {
       template <typename IdGen>
       void set_id_generator ( IdGen gen )
       {
+        lock_t gen_lock (id_gen_mutex_);
+
         external_id_gen_ = gen;
       }
 
       ~layer()
       {
+        // stop threads
         stop();
 
-        // stop threads
-        //
-        // cancel activities
-        //
-        // delete memory allocations
-        //
+        // cancel external activities
+
         // clean up all activities
-        for (typename activities_t::iterator a (activities_.begin())
-            ; a != activities_.end()
-            ; ++a
-            )
+        while (! activities_.empty())
         {
-          std::cerr << "D: removing act[" << a->first << "]" << std::endl;
+          std::cerr << "D: removing act[" << activities_.begin()->first  << "]" << std::endl;
+          activities_.erase (activities_.begin());
         }
-      }
-
-      void print_statistics (std::ostream & s) const
-      {
-        s << "==== begin layer statistics ====" << std::endl;
-        s << "   #activities := " << activities_.size() << std::endl;
-        s << "   ext -> int := [";
-        {
-          boost::unique_lock<boost::recursive_mutex> lock (id_map_mutex_);
-          for ( typename external_to_internal_map_t::const_iterator e_to_i
-              (sub_from_ext_eti_.begin())
-              ; e_to_i != sub_from_ext_eti_.end()
-              ; ++e_to_i
-              )
-          {
-            if (e_to_i != sub_from_ext_eti_.begin())
-            {
-              s << ", ";
-            }
-            s << e_to_i->first << " -> " << e_to_i->second;
-          }
-          s << "]";
-        }
-
-        s << std::endl;
-        s << std::endl;
-
-        {
-          boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
-          for ( typename activities_t::const_iterator act (activities_.begin())
-              ; act != activities_.end()
-              ; ++act
-              )
-          {
-            print_activity_info (s, act->second);
-          }
-        }
-
-        s << "==== end layer statistics ====" << std::endl;
+        ext_to_int_.clear();
       }
 
       /* internal functions */
     private:
       void start()
       {
+        LOG(DEBUG, "Workflow Management layer starting...");
+
+        lock_t lock (mutex_);
+
         manager_   = boost::thread(boost::bind(&this_type::manager, this));
 
         const std::size_t num_extractors(2);
+        active_nets_ = new active_nets_t[num_extractors];
         start_threads (num_extractors, extractor_, boost::bind(&this_type::extractor, this, _1));
 
         const std::size_t num_injectors(2);
+        inj_q_ = new active_nets_t[num_injectors];
         start_threads (num_injectors, injector_, boost::bind(&this_type::injector, this, _1));
 
         const std::size_t num_executors(2);
+        exec_q_ = new active_nets_t[num_executors];
+
         start_threads (num_executors, executor_, boost::bind(&this_type::executor, this, _1));
       }
 
@@ -618,18 +572,26 @@ namespace we { namespace mgmt {
 
       void stop()
       {
-        std::cerr << "D: cleaning up manager thread..." << std::endl;
+        LOG(DEBUG, "Workflow Management layer stopping...");
+
+        DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
         manager_.join();
 
-        std::cerr << "D: cleaning up executor threads..." << std::endl;
+        DLOG(TRACE, "cleaning up executor threads...");
         stop_threads (executor_);
 
-        std::cerr << "D: cleaning up injector threads..." << std::endl;
+        DLOG(TRACE, "cleaning up injector threads...");
         stop_threads (injector_);
 
-        std::cerr << "D: cleaning up extractor threads..." << std::endl;
+        DLOG(TRACE, "cleaning up extractor threads...");
         stop_threads (extractor_);
+
+        delete [] active_nets_;
+        active_nets_ = NULL;
+
+        delete [] inj_q_;
+        inj_q_ = NULL;
       }
 
       void manager()
@@ -645,69 +607,29 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const& ex)
           {
-            std::cerr << "W: error during manager command handling: "
-                      << ex.what()
-                      << std::endl;
+            LOG(FATAL, "error during manager command handling: " << ex.what());
             throw;
           }
         }
-        std::cerr << "D: manager thread stopped..." << std::endl;
-      }
-
-      inline
-      bool is_alive ( const activity_type & act ) const
-      {
-        return act.is_alive();
-      }
-
-      inline
-      bool is_done ( const activity_type & act ) const
-      {
-        return ( (! act.has_enabled()) && (activity_child_count (act.id()) == 0));
-      }
-
-      inline
-      size_t activity_child_count ( const internal_id_type & id ) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-
-        typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
-        if (children != parent_to_child_.end())
-        {
-          return children->second.size();
-        }
-        else
-        {
-          return 0;
-        }
-      }
-
-      inline
-      void post_execute_externally (const internal_id_type & id)
-      {
-        // copy the activity  and switch specify to handle  it internally on the
-        // next level
-        activity_t ext_act (lookup(id));
-        ext_act.transition().set_internal(true);
-
-        // create external id
-        external_id_type ext_id ( generate_external_id() );
-        add_external_to_internal_mapping ( ext_id, id, sub_to_ext_eti_ );
-        add_internal_to_external_mapping ( id, ext_id, sub_to_ext_ite_ );
-
-        ext_submit ( ext_id, policy::codec::encode (ext_act));
+        DLOG(TRACE, "D: manager thread stopped...");
       }
 
       inline
       void post_activity_notification (const internal_id_type & id)
       {
-        active_nets_.put(id);
+        active_nets_[id % extractor_.size()].put(id);
+      }
+
+      inline
+      void post_inject_activity_results (const internal_id_type & id)
+      {
+        inj_q_[id % injector_.size()].put ( id );
       }
 
       inline
       void post_finished_notification (const internal_id_type & id)
       {
-        cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_finished, this, _1)));
+        inj_q_[id % injector_.size()].put ( id );
       }
 
       inline
@@ -723,6 +645,12 @@ namespace we { namespace mgmt {
       }
 
       inline
+      void post_cancel_activity_notification (const internal_id_type & id)
+      {
+        cmd_q_.put (make_cmd(id, boost::bind(&this_type::cancel_activity, this, _1)));
+      }
+
+      inline
       void post_suspend_activity_notification (const internal_id_type & id)
       {
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
@@ -735,285 +663,213 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_execute_notification (const internal_id_type & id)
+      void post_remove_activity_notification (const internal_id_type & id)
       {
-        exec_q_.put ( id );
+        cmd_q_.put (make_cmd(id, boost::bind(&this_type::remove_activity_by_id, this, _1)));
       }
 
       inline
-      void post_inject_activity_results (const internal_id_type & id)
+      void post_execute_notification (const internal_id_type & id)
       {
-        inj_q_.put ( id );
+        exec_q_[id % executor_.size()].put ( id );
+      }
+
+      inline
+      void execute_externally (const internal_id_type & int_id)
+      {
+        descriptor_type & desc (lookup (int_id));
+
+        // create external id
+        external_id_type ext_id ( generate_external_id() );
+        desc.sent_to_external_as (ext_id);
+        add_map_to_internal (ext_id, int_id);
+
+        // copy the activity and let it be handled internally on the next level
+        activity_t ext_act (desc.activity());
+        ext_act.transition().set_internal(true);
+
+        DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
+        ext_submit ( ext_id, policy::codec::encode (ext_act));
       }
 
       void extractor(const std::size_t rank)
       {
-        std::cerr << "D: extractor[" << rank << "] thread started..." << std::endl;
+        DLOG(INFO, "extractor[" << rank << "] thread started...");
         for (;;)
         {
-          internal_id_type active_id = active_nets_.get();
+          internal_id_type active_id = active_nets_[rank].get();
 
           try
           {
-            activity_type & act = lookup(active_id);
-            boost::unique_lock<activity_type> lock(act);
-
-            if (is_done (act))
-            {
-              // std::cerr << "extractor ["
-              //           << rank
-              //           << "]: activity := "
-              //           << active_id
-              //           << " done."
-              //           << std::endl;
-              post_finished_notification (active_id);
-              continue;
-            }
+            descriptor_type & desc = lookup(active_id);
+            DLOG(TRACE, "extractor-" << rank << " puts attention to activity " << active_id);
 
             // TODO: check status flags
-            if (! is_alive (act))
+            if (! desc.is_alive ())
             {
+              LOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is on hold");
               continue;
             }
 
-            // submit new activities
-            while (act.has_enabled())
+            // get new activities
+            while (desc.enabled())
             {
               try
               {
-                activity_type sub_act = act.extract();
-                const internal_id_type sub_act_id = generate_internal_id();
-
-                sub_act.set_id (sub_act_id);
-                insert_activity (sub_act);
-
-                establish_parent_child_relationship ( active_id, sub_act_id );
-                post_execute_notification (sub_act_id);
+                DLOG(DEBUG, "activity (" << desc.name() << ")-" << desc.id() << " has enabled transitions");
+                descriptor_type child (desc.extract (generate_internal_id()));
+                DLOG(INFO, "extracted from (" << desc.name() << ")-" << desc.id() << ": (" << child.name() << ")-" << child.id());
+                insert_activity (child);
+                post_execute_notification (child.id());
               }
               catch (const std::out_of_range &)
               {
+                throw;
                 // extraction not possible (check for enabled and extract is not atomic)
-                break;
+                // break;
               }
+            }
+
+            if (desc.is_done ())
+            {
+              DLOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is done");
+              active_nets_[rank].erase (active_id);
+              post_finished_notification (active_id);
             }
           }
           catch (const activity_not_found<internal_id_type> & ex)
           {
-            std::cerr << "W: extractor: activity could not be found: " << ex.id << std::endl;
-            throw;
+            LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id);
           }
         }
-        std::cerr << "D: extractor thread stopped..." << std::endl;
+        DLOG(INFO, "extractor-" << rank << " thread stopped...");
       }
 
-      inline
-      void establish_parent_child_relationship ( const internal_id_type & parent
-                                               , const internal_id_type & child
-                                               )
+      void extract_loop ( descriptor_type & desc )
       {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-        parent_to_child_[parent].insert (child);
-        child_to_parent_[child] = parent;
-      }
-
-      inline
-      void remove_parent_child_relationship ( const internal_id_type & parent
-                                            , const internal_id_type & child
-                                            )
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-        child_to_parent_.erase (child);
-        parent_to_child_[parent].erase (child);
-      }
-
-      inline
-      internal_id_type parent_of ( const internal_id_type & id ) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-
-        if (has_parent (id))
+        while ( desc.enabled () )
         {
-          return child_to_parent_.at (id);
-        }
-        else
-        {
-          throw exception::no_such_mapping<internal_id_type>
-            ( "child id := "
-            + ::util::show(id)
-            + " does not have a parent!"
-            , id
-            );
         }
       }
 
       inline
       bool is_valid (const internal_id_type & id) const
       {
-        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
+        lock_t lock (mutex_);
         return activities_.find(id) != activities_.end();
-      }
-
-      inline
-      bool has_parent (const internal_id_type & id) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-
-        typename child_to_parent_map_t::const_iterator p
-          (child_to_parent_.find( id ));
-
-        if (p == child_to_parent_.end())
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
       }
 
       void injector(const std::size_t rank)
       {
-        std::cerr << "D: injector[" << rank << "] thread started..." << std::endl;
+        DLOG(INFO, "injector[" << rank << "] thread started...");
         for (;;)
         {
-          inj_cmd_t cmd = inj_q_.get();
+          const internal_id_type act_id = inj_q_[rank].get();
 
-          const internal_id_type act_id = cmd;
           if ( ! is_valid (act_id))
           {
+            LOG(WARN, "injecting for invalid id " << act_id);
             continue;
           }
 
-          activity_type & act = lookup( act_id );
+          descriptor_type & desc = lookup (act_id);
+          desc.finished();
 
-          if (has_parent (act_id))
+          sig_finished (this, act_id, policy::codec::encode(desc.activity()));
+
+          DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": "
+              << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
+
+          if (desc.has_parent())
           {
-            const internal_id_type par_id = parent_of (act_id);
-            activity_type & par = lookup( par_id );
-            // std::cerr << "I: injecting results of "
-            //           << "act[" << act_id << "] into "
-            //           << "act[" << par_id << "]"
-            //           << std::endl;
-            par.inject (act);
-            remove_activity (act_id);
-
-            post_activity_notification (par_id);
+            lookup (desc.parent()).inject (desc);
+            DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
+                << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
+                << ": " << ::util::show(desc.activity().output().begin(), desc.activity().output().end()));
+            DLOG(TRACE, "parent := " << ::util::show(lookup (desc.parent()).activity().transition()));
+              post_activity_notification (desc.parent());
+          }
+          else if (desc.came_from_external())
+          {
+            DLOG(INFO, "finished (" << desc.name() << ")-" << act_id << " external-id := " << desc.from_external_id());
+            ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
           }
           else
           {
-            external_id_type external_id (map_to_external(act_id, sub_from_ext_ite_));
-            ext_finished (external_id, policy::codec::encode (act));
-            remove_activity ( act_id );
+            throw std::runtime_error ("injector does not know how to handle this: " + ::util::show (desc));
           }
+
+          remove_activity (desc);
         }
-        std::cerr << "D: injector thread stopped..." << std::endl;
+        DLOG(INFO, "injector-" << rank << " thread stopped...");
       }
 
       void executor(const std::size_t rank)
       {
-        std::cerr << "D: executor[" << rank << "] thread started..." << std::endl;
+        DLOG(INFO, "executor[" << rank << "] thread started...");
         for (;;)
         {
-          executor_cmd_t cmd = exec_q_.get();
+          executor_cmd_t cmd = exec_q_[rank].get();
 
           const internal_id_type act_id = cmd;
 
-          activity_type & act = lookup (act_id);
-          // std::cerr << "I: executing id := "
-          //           << act_id
-          //           << " (" << act.transition().name()
-          //           << ")"
-          //           << std::endl;
-
           try
           {
-            typename policy::exec_policy exec_policy
-              ( boost::bind ( &this_type::post_activity_notification, this, _1 )
-              , boost::bind ( &this_type::post_execute_externally, this, _1 )
-              , boost::bind ( &this_type::post_finished_notification, this, _1 )
-              );
+            descriptor_type & desc = lookup (act_id);
 
             sig_executing (this, act_id);
 
-            act.execute (exec_policy);
+            DLOG(INFO, "executor[" << rank << "] executing (" << desc.name() << ")-" << act_id);
+
+            typename policy::exec_policy exec_policy;
+            switch (int c = desc.execute (exec_policy))
+            {
+            case policy::exec_policy::EXTRACT:
+              DLOG(TRACE, "executing network internally");
+              post_activity_notification (desc.id());
+              break;
+            case policy::exec_policy::INJECT:
+              DLOG(TRACE, "injecting results");
+              post_inject_activity_results (desc.id());
+              break;
+            case policy::exec_policy::EXTERNAL:
+              DLOG(TRACE, "executing externally");
+              execute_externally (desc.id());
+              break;
+            default:
+              LOG(FATAL, "executor[" << rank << "] got strange classification for activity (" << desc.name() << ")-" << desc.id() << ": " << c);
+              throw std::runtime_error ("executor got strange classification for activity");
+            }
+
+            DLOG(INFO, "executor[" << rank << "] done");
           }
           catch (std::exception const & ex)
           {
-            std::cerr << "W: exception during execute of activity ["
+            LOG(WARN, "exception during execute of activity ["
                       << act_id
                       << "]:"
                       << ex.what()
-                      << std::endl;
-            std::cerr << "W: TODO: mark parent as failed!" << std::endl;
+               );
+            LOG(WARN, "TODO: mark parent as failed!");
           }
         }
-        std::cerr << "D: executor thread stopped..." << std::endl;
-      }
-
-      void print_activity_info (std::ostream & s, const activity_type & act) const
-      {
-        we::mgmt::type::detail::printer <activity_type> p (act, s);
-        p << "   **** activity [" << act.id() << "]:" << std::endl;
-        p << "         name := " << act.transition().name() << std::endl;
-        p << "     internal := "
-          << std::boolalpha
-          << act.transition().is_internal()
-          << std::noboolalpha
-          << std::endl;
-        try
-        {
-          p << "  external-id := " << map_to_external (act.id(), sub_from_ext_ite_) << std::endl;
-        }
-        catch (const exception::no_such_mapping<internal_id_type> &)
-        {
-          p << "  external-id := n/a" << std::endl;
-        }
-        p << "         type := " << act.type_to_string () << std::endl;
-        p << "        input := " << act.input() << std::endl;
-        p << "       output := " << act.output() << std::endl;
-        p << "       parent := " << (has_parent (act.id()) ? ::util::show(parent_of (act.id())) : "n/a") << std::endl;
-        p << "     children := [";
-        typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(act.id()));
-        if (children != parent_to_child_.end())
-        {
-          for ( typename child_set_t::const_iterator child (children->second.begin())
-              ; child != children->second.end()
-              ; ++child
-              )
-          {
-            if (child != children->second.begin())
-            {
-              p << ", ";
-            }
-            p << *child;
-          }
-        }
-        p << "]";
-        p << std::endl;
+        DLOG(INFO, "executor[" << rank << "] thread stopped...");
       }
 
       /** Member variables **/
     private:
       boost::function<external_id_type()> external_id_gen_;
       boost::function<internal_id_type()> internal_id_gen_;
-      mutable boost::recursive_mutex activities_mutex_;
-      mutable boost::recursive_mutex id_map_mutex_;
+      mutable boost::recursive_mutex mutex_;
       mutable boost::recursive_mutex id_gen_mutex_;
       activities_t activities_;
+
       cmd_q_t cmd_q_;
-      active_nets_t active_nets_;
-      inj_q_t inj_q_;
-      exec_q_t exec_q_;
+      active_nets_t *active_nets_;
+      active_nets_t *inj_q_;
+      active_nets_t *exec_q_;
 
-      external_to_internal_map_t sub_from_ext_eti_;
-      internal_to_external_map_t sub_from_ext_ite_;
-
-      external_to_internal_map_t sub_to_ext_eti_;
-      internal_to_external_map_t sub_to_ext_ite_;
-
-      mutable boost::recursive_mutex child_parent_mutex_;
-      parent_to_children_map_t parent_to_child_;
-      child_to_parent_map_t    child_to_parent_;
+      external_to_internal_map_t ext_to_int_;
 
       boost::thread manager_;
       thread_list_t extractor_;
@@ -1043,21 +899,61 @@ namespace we { namespace mgmt {
 
         try
         {
-          activity_type & act (lookup(internal_id));
-          act.collect_output();
+          descriptor_type & desc (lookup(internal_id));
+          desc.finished();
 
-          sig_finished (this, internal_id, policy::codec::encode(act));
+          sig_finished (this, internal_id, policy::codec::encode(desc.activity()));
 
-          if (has_parent (internal_id))
+          DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << ": "
+              << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
+
+          if (desc.has_parent ())
           {
             post_inject_activity_results (internal_id);
           }
+          else if (desc.came_from_external ())
+          {
+            ext_finished ( desc.from_external_id()
+                         , policy::codec::encode (desc.activity())
+                         );
+            remove_activity (desc);
+          }
           else
           {
-            external_id_type external_id (map_to_external(internal_id, sub_from_ext_ite_));
-            ext_finished (external_id, policy::codec::encode (act));
-            remove_activity ( internal_id );
+            LOG(ERROR, "cannot do anything with this activity: " << desc);
+            remove_activity (desc);
           }
+        }
+        catch (const activity_not_found<internal_id_type> &)
+        {
+          LOG(WARN, "got finished notification for old activity: " << internal_id);
+        }
+      }
+
+      void activity_failed(const cmd_t & cmd)
+      {
+        const internal_id_type internal_id (cmd.dat);
+        try
+        {
+          descriptor_type & desc (lookup(internal_id));
+          desc.failed();
+
+          DLOG(WARN, "failed (" << desc.name() << ")-" << desc.id());
+          sig_failed (this, internal_id, policy::codec::encode(desc.activity()));
+
+          if (desc.has_parent ())
+          {
+            lookup (desc.parent()).inject (desc);
+            post_cancel_activity_notification (desc.parent());
+          }
+          else if (desc.came_from_external ())
+          {
+            ext_failed ( desc.from_external_id()
+                       , policy::codec::encode (desc.activity())
+                       );
+          }
+
+          remove_activity (desc);
         }
         catch (const activity_not_found<internal_id_type> &)
         {
@@ -1065,151 +961,121 @@ namespace we { namespace mgmt {
         }
       }
 
-      void activity_failed(const cmd_t & cmd)
-      {
-        const internal_id_type internal_id (cmd.dat);
-
-        activity_type & act (lookup(internal_id));
-        act.collect_output();
-        act.set_failed (true);
-
-        sig_failed (this, internal_id, policy::codec::encode(act));
-
-        if ( has_parent (internal_id) )
-        {
-          // TODO cancel strategy
-          //          cancel_activity ( parent_of (internal_id) );
-        }
-        else
-        {
-          external_id_type external_id ( map_to_external(internal_id, sub_from_ext_ite_));
-          ext_failed (external_id, policy::codec::encode (act));
-        }
-        remove_activity (internal_id);
-      }
-
       void activity_cancelled(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
-        activity_type & act (lookup(internal_id));
-        act.collect_output();
+        descriptor_type & desc (lookup(internal_id));
+
+        DLOG(INFO, "cancelled (" << desc.name() << ")-" << desc.id());
+        if (desc.has_parent ())
+        {
+          descriptor_type & parent (lookup (desc.parent()));
+          // TODO: should just be remove, not inject
+          parent.inject (desc);
+
+          if (! parent.has_children ())
+          {
+            post_cancelled_notification (parent.id());
+          }
+        }
+        else if (desc.came_from_external ())
+        {
+          ext_cancelled (desc.from_external_id());
+        }
 
         sig_cancelled ( this
                       , internal_id
-                      , policy::codec::encode(act)
+                      , policy::codec::encode(desc.activity())
                       );
 
-        remove_activity ( internal_id );
+        remove_activity (desc);
       }
 
-      inline
-      void assert_is_leaf (const internal_id_type &id) const
+      void cancel_activity(const cmd_t & cmd)
       {
-        boost::unique_lock<boost::recursive_mutex> lock (child_parent_mutex_);
-        if (activity_child_count (id) > 0)
+        const internal_id_type internal_id (cmd.dat);
+        descriptor_type & desc (lookup(internal_id));
+
+        desc.cancel
+            ( boost::bind ( &this_type::post_cancel_activity_notification
+                          , this
+                          , _1
+                          )
+            );
+
+        if (desc.sent_to_external())
         {
-          typename parent_to_children_map_t::const_iterator children (parent_to_child_.find(id));
-          std::cerr << "E: **** activity is not a leaf: " << std::endl;
-
-          print_activity_info (std::cerr, lookup(id));
-
-          std::cerr << "**** remaining children: " << std::endl;
-          for (typename child_set_t::const_iterator c (children->second.begin()); c != children->second.end(); ++c)
-          {
-            std::cerr << "\t" << *c << std::endl;
-            print_activity_info (std::cerr, lookup(*c));
-          }
-          std::cerr << std::endl;
-
-          throw std::runtime_error("not leaf: activity-id := " + ::util::show (id));
+          ext_cancel ( desc.to_external_id(), "NO REASON GIVEN" );
         }
       }
 
       void suspend_activity(const cmd_t & cmd)
       {
-        lookup(cmd.dat).flags().set_suspended(true);
+        lookup(cmd.dat).suspend();
         sig_suspended (this, cmd.dat);
       }
 
       void resume_activity(const cmd_t & cmd)
       {
-        lookup(cmd.dat).flags().set_suspended(false);
+        lookup(cmd.dat).resume();
         active_nets_.put (cmd.dat);
         sig_resumed (this, cmd.dat);
       }
 
-      inline void insert_activity(const activity_type & act)
+      inline void insert_activity(const descriptor_type & desc)
       {
-        boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
-        activities_.insert(std::make_pair(act.id(), act));
+        lock_t lock (mutex_);
+        DLOG(TRACE, "inserting activity " << desc.id());
+
+        activities_.insert(std::make_pair(desc.id(), desc));
+        if (desc.came_from_external())
+        {
+          add_map_to_internal (desc.from_external_id(), desc.id());
+        }
       }
 
-      inline void remove_activity(const activity_type & act)
+      inline void remove_activity_by_id(const cmd_t & cmd)
       {
-        remove_activity (act.id());
-      }
-
-      inline void remove_activity(const internal_id_type & id)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (activities_mutex_);
-        assert_is_leaf ( id );
-
         try
         {
-          internal_id_type parent ( parent_of (id) );
-          remove_parent_child_relationship ( parent, id );
+          remove_activity (lookup (cmd.dat));
         }
-        catch (const exception::no_such_mapping<internal_id_type> &)
+        catch (std::exception const &ex)
         {
-          // ignore
+          LOG(WARN, "could not remove activity-" << cmd.dat << ": " << ex.what());
         }
-
-        try
-        {
-          remove_external_mapping (map_to_external(id, sub_from_ext_ite_), sub_from_ext_eti_);
-        }
-        catch (const exception::no_such_mapping<internal_id_type> &)
-        {
-          // ignore
-        }
-        remove_internal_mapping (id, sub_from_ext_ite_);
-
-        try
-        {
-          remove_external_mapping (map_to_external(id, sub_to_ext_ite_), sub_to_ext_eti_);
-        }
-        catch (const exception::no_such_mapping<internal_id_type> &)
-        {
-          // ignore
-        }
-        remove_internal_mapping (id, sub_to_ext_ite_);
-
-        activities_.erase (id);
       }
 
-      void cancel_activity (const internal_id_type & id)
+      inline void remove_activity(const descriptor_type & desc)
       {
-        activity_type & act (lookup (id));
-        act.set_cancelling (true);
+        lock_t lock (mutex_);
+        DLOG(TRACE, "removing activity " << desc.id());
 
-        // is handled externally?
-        //    ext_cancel (map_to_external(id))
-        // else
-        //    for child in children_of(act)
-        //       cancel child
+        if (desc.has_children())
+          throw std::runtime_error("cannot remove non-leaf: " + ::util::show (desc));
+        if (desc.sent_to_external())
+        {
+          del_map_to_internal (desc.to_external_id(), desc.id());
+        }
+        if (desc.came_from_external())
+        {
+          del_map_to_internal (desc.from_external_id(), desc.id());
+        }
+
+        activities_.erase (desc.id());
       }
 
-      inline activity_type & lookup(const internal_id_type & id)
+      inline descriptor_type & lookup(const internal_id_type & id)
       {
-        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
+        lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
         if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
       }
 
-      inline const activity_type & lookup(const internal_id_type & id) const
+      inline const descriptor_type & lookup(const internal_id_type & id) const
       {
-        boost::unique_lock <boost::recursive_mutex> lock (activities_mutex_);
+        lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
         if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
@@ -1226,6 +1092,7 @@ namespace we { namespace mgmt {
         //        ar & in_to_ex_;
       }
     };
-  }}
+  }
+}
 
 #endif
