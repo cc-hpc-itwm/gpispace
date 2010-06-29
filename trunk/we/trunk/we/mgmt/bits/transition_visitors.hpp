@@ -411,11 +411,11 @@ namespace we { namespace mgmt { namespace visitor {
     typedef typename Activity::input_t input_t;
 
     Activity & activity_;
-    input_t & input_;
+    input_t const & input_;
 
   public:
     explicit
-    injector (Activity & activity, input_t & input)
+    injector (Activity & activity, input_t const & input)
       : activity_(activity)
       , input_(input)
     {}
