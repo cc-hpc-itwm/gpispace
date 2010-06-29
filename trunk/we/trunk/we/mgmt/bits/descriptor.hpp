@@ -17,7 +17,7 @@ namespace we
       class descriptor
       {
         typedef descriptor<Activity, InternalId, ExternalId> this_type;
-        typedef boost::unique_lock<boost::recursive_mutex> lock_t;
+        typedef boost::lock_guard<boost::recursive_mutex> lock_t;
 
       public:
         typedef Activity activity_type;
