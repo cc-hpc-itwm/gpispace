@@ -27,6 +27,7 @@ LogEvent::LogEvent(const severity_type &a_severity
   , tstamp_(now())
   , pid_(getpid())
   , tid_(static_cast<tid_type>(pthread_self()))
+  , module_(get_module_name_from_path(a_path))
 {
 }
 
@@ -55,6 +56,7 @@ LogEvent::LogEvent(const LogEvent &e)
   , tid_(e.tid())
   , logged_via_(e.logged_via())
   , logged_on_(e.logged_on())
+  , module_(e.module())
 {
 }
 
@@ -74,8 +76,9 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
     tstamp_ = e.tstamp();
     pid_ = e.pid();
     tid_ = e.tid();
-	logged_via_ = e.logged_via();
-	logged_on_ = e.logged_on();
+    logged_via_ = e.logged_via();
+    logged_on_ = e.logged_on();
+    module_ = e.module();
   }
   return *this;
 }
@@ -94,6 +97,7 @@ bool LogEvent::operator==(const LogEvent &e) const
     && (pid() == e.pid())
     && (tid() == e.tid())
     && (logged_via() == e.logged_via())
+    && (module() == e.module())
     )
   {
     return true;
@@ -104,9 +108,4 @@ bool LogEvent::operator==(const LogEvent &e) const
 bool LogEvent::operator<(const LogEvent &rhs) const
 {
   return tstamp() < rhs.tstamp();
-}
-
-std::string LogEvent::get_filename_from_path(const std::string &a_path) const
-{
-  return ::fhg::log::get_filename_from_path(a_path);
 }

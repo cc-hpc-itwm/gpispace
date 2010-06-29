@@ -23,6 +23,7 @@ namespace fhg { namespace log {
       static const char FMT_FUNCTION  = 'F'; // function (full signature)
       static const char FMT_LINE      = 'L'; // line of the log
       static const char FMT_MESSAGE   = 'm'; // the logmessage
+      static const char FMT_MODULE    = 'M'; // module (i.e. filename without extension)
       static const char FMT_DATE      = 'd'; // when was the event created (date string)
       static const char FMT_TIMESTAMP = 't'; // when was the event created (unix timestamp)
       static const char FMT_TID       = 'T'; // by which thread has it been created

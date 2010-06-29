@@ -15,6 +15,7 @@ namespace fhg { namespace log {
       typedef std::string function_type;
       typedef std::size_t line_type;
       typedef std::string message_type;
+      typedef std::string module_type;
       typedef unsigned long long tstamp_type;
       typedef pid_t     pid_type;
       typedef pthread_t tid_type;
@@ -52,6 +53,7 @@ namespace fhg { namespace log {
       inline const tid_type &tid() const { return tid_; }
       inline const std::string &logged_via() const { return logged_via_; }
       inline const std::string &logged_on() const { return logged_on_; }
+      inline const std::string &module() const { return module_; }
 
       inline severity_type &severity() { return severity_; }
       inline file_type &file() { return file_; }
@@ -64,6 +66,7 @@ namespace fhg { namespace log {
       inline tid_type &tid() { return tid_; }
       inline std::string &logged_via() { return logged_via_; }
       inline std::string &logged_on() { return logged_on_; }
+      inline std::string &module() { return module_; }
 
       inline void logged_via(const std::string &name) const
       {
@@ -79,8 +82,6 @@ namespace fhg { namespace log {
       }
       inline std::ostream &stream() { return message_buffer_; }
     private:
-      std::string get_filename_from_path(const std::string &path) const;
-
       severity_type severity_;
       file_type path_;
       file_type file_;
@@ -92,6 +93,7 @@ namespace fhg { namespace log {
       tid_type tid_;
       std::string logged_via_;
       std::string logged_on_;
+      std::string module_;
       std::ostringstream message_buffer_;
   };
 }}
