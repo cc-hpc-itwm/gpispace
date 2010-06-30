@@ -12,5 +12,11 @@
 #define SDPA_README      "@PROJECT_README@"
 #define SDPA_COPYING     "@PROJECT_COPYING@"
 #define SDPA_PREFIX      "@CMAKE_INSTALL_PREFIX@"
+#ifdef __TIMESTAMP__
+#  define SDPA_TIMESTAMP   __TIMESTAMP__
+#else
+#  define SDPA_TIMESTAMP __DATE__ " " __TIME__
+#endif
+
 
 #endif
