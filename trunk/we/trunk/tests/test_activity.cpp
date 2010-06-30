@@ -23,6 +23,7 @@ typedef we::mgmt::type::activity_t<transition_t> activity_t;
 
 struct exec_context
 {
+  typedef void result_type;
   typedef transition_t::net_type net_t;
   typedef transition_t::mod_type mod_t;
   typedef transition_t::expr_type expr_t;
