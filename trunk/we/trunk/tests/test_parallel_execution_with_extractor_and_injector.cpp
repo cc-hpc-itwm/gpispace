@@ -154,7 +154,7 @@ static map_t build_map (const pnet_t::input_t & input)
       ; it != input.end()
       ; ++it
       )
-    m[Function::Transition::get_pid<token_t>(*it)] 
+    m[Function::Transition::get_pid<token_t>(*it)]
       = Function::Transition::get_token<token_t>(*it);
 
   return m;
@@ -181,7 +181,7 @@ static void set_trans ( pnet_t & net
                       , const trans_t & f
                       )
 {
-  net.set_transition_function (tid, Function::Transition::Generic<token_t> 
+  net.set_transition_function (tid, Function::Transition::Generic<token_t>
                                     (boost::bind(&make_trans, pid, f, _1, _2))
                               );
 }
@@ -293,9 +293,9 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 // ************************************************************************* //
 // div log stuff
 
-typedef std::pair<const pnet_t &,const pnet_t::token_input_t> show_token_input_t;
+typedef std::pair<const pnet_t,const pnet_t::token_input_t> show_token_input_t;
 
-static std::ostream & operator << ( std::ostream & s
+inline std::ostream & operator << ( std::ostream & s
                                   , const show_token_input_t & show_token_input
                                   )
 {
@@ -309,9 +309,9 @@ static std::ostream & operator << ( std::ostream & s
            << "}";
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::activity_t> show_activity_t;
+typedef std::pair<const pnet_t,const pnet_t::activity_t> show_activity_t;
 
-static std::ostream & operator << ( std::ostream & s
+inline std::ostream & operator << ( std::ostream & s
                                   , const show_activity_t & show_activity
                                   )
 {
@@ -331,9 +331,9 @@ static std::ostream & operator << ( std::ostream & s
   return s;
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::output_t> show_output_t;
+typedef std::pair<const pnet_t,const pnet_t::output_t> show_output_t;
 
-static std::ostream & operator << ( std::ostream & s
+inline std::ostream & operator << ( std::ostream & s
                                   , const show_output_t & show_output
                                   )
 {
@@ -346,7 +346,7 @@ static std::ostream & operator << ( std::ostream & s
       ; it != output.end()
       ; ++it
       )
-    s << "{" 
+    s << "{"
       << Function::Transition::get_token<token_t>(*it)
       << " on "
       << net.get_place (Function::Transition::get_pid<token_t>(*it))
@@ -493,7 +493,7 @@ public:
   const unsigned int iThread;
   double time;
   unsigned long cnt_clock;
-  descr_t (const unsigned int & _iThread) 
+  descr_t (const unsigned int & _iThread)
     : iThread (_iThread), time (0.0), cnt_clock (0)
   {}
   void start_clock (void) { ++cnt_clock; time -= statistic::current_time(); }
@@ -634,7 +634,7 @@ static void * extractor (void * arg)
       // ^comment this to get a busy waiting extractor
     }
   while (!p->net.done());
-  
+
   ELOG (0, "DONE");
 
   ELOG (0, descr->info());
