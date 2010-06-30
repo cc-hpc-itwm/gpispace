@@ -3,15 +3,16 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -fno-implicit-templates")
+  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Wreturn-type")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wswitch-default -Wno-pragmas -Wfloat-equal -Wredundant-decls")
 
   # release flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
   # debug flags
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -Wreturn-type -fno-omit-frame-pointer")
-	#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-	#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
+#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
+#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
 
   # gprof and gcov support
