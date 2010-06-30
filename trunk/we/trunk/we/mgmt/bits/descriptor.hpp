@@ -317,6 +317,18 @@ namespace we
           return s;
         }
 
+        std::string show_input() const
+        {
+          lock_t lock (mutex_);
+          return ::util::show (activity_.input().begin(), activity_.input().end());
+        }
+
+        std::string show_output() const
+        {
+          lock_t lock (mutex_);
+          return ::util::show (activity_.output().begin(), activity_.output().end());
+        }
+
         template <typename Fun>
         void apply_to_children (Fun f) const
         {
