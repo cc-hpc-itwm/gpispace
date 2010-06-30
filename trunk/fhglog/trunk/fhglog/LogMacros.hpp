@@ -31,26 +31,26 @@ namespace fhg { namespace log {
         }\
       }\
     } while(0)
-#endif // if FHGLOG_ENABLED == 0
+#endif // if FHGLOG_ENABLED == 1
 
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
 #define LOG_IF(level, condition, msg) do { if ((condition)) { LOG(level, msg); } while (0)
 
-#ifndef NDEBUG
-
-#define DLLOG(level, logger, msg) LLOG(level, logger, msg)
-#define DMLOG(level, msg) MLOG(level, msg)
-#define DLOG(level, msg) LOG(level, msg)
-#define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
-
-#else
+#ifdef NDEBUG
 
 #define DLLOG(level, logger, msg)
 #define DMLOG(level, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
+
+#else
+
+#define DLLOG(level, logger, msg) LLOG(level, logger, msg)
+#define DMLOG(level, msg) MLOG(level, msg)
+#define DLOG(level, msg) LOG(level, msg)
+#define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
 
 #endif
 
