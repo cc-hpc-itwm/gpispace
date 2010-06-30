@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -64,6 +64,7 @@ namespace seda {
                 } else {
                     _notEmptyCond.notify_one();
                 }
+                _notFullCond.notify_one();
                 return e;
             }
 
@@ -85,18 +86,21 @@ namespace seda {
                 } else {
                     _notEmptyCond.notify_one();
                 }
+                _notFullCond.notify_one();
                 return e;
             }
 
             virtual void push(const IEvent::Ptr& e) throw(QueueFull) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
-               
-                if (size() >= _maxQueueSize) {
-                    throw QueueFull();
-                } else {
-                    _list.push_back(e);
-                    _notEmptyCond.notify_one();
+
+                while (size() >= _maxQueueSize)
+                {
+                  // throw QueueFull
+                  _notFullCond.wait (lock);
                 }
+
+                _list.push_back(e);
+                _notEmptyCond.notify_one();
             }
 
             virtual bool waitUntilEmpty() {
@@ -150,12 +154,14 @@ namespace seda {
                     _list.pop_front();
                 }
                 _emptyCond.notify_one();
+                _notFullCond.notify_all();
             }
 
             virtual void wakeUpAll() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 _notEmptyCond.notify_all();
                 _emptyCond.notify_all();
+                _notFullCond.notify_all();
             }
 
             virtual std::size_t size() const { return _list.size(); }
@@ -168,6 +174,7 @@ namespace seda {
             boost::mutex _mtx;
             boost::condition_variable _emptyCond;
             boost::condition_variable _notEmptyCond;
+            boost::condition_variable _notFullCond;
 
             std::list< IEvent::Ptr > _list;
         private:
