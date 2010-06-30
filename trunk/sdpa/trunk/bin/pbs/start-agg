@@ -39,8 +39,6 @@ echo "Running Aggregator at: $url on `hostname`"
 echo "Using Orchestrator at: $orch_url"
 
 if $debug ; then
-  export FHGLOG_level=MIN
-  export FHGLOG_to_file="/scratch/$USER/sdpa/agg.log"
   echo "running within gdb..."
   gdb -ex run --args aggregator -n aggregator -m orchestrator -p $orch_url -u $url
 else

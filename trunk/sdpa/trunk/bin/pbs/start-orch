@@ -28,8 +28,6 @@ done
 echo "Running Orchestrator at: $url on `hostname`"
 
 if $debug ; then
-  export FHGLOG_level=MIN
-  export FHGLOG_to_file="/scratch/$USER/sdpa/orch.log"
   echo "running within gdb..."
   gdb -ex run --args orchestrator -u $url -n orchestrator
 else
