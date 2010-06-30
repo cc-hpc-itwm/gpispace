@@ -1,9 +1,10 @@
 #include <we/mgmt/bits/queue.hpp>
 #include <boost/thread.hpp>
 
-typedef we::mgmt::detail::queue<int> queue_t;
+typedef we::mgmt::detail::queue<int, 10> queue_t;
 
-static void pusher (queue_t & q)
+template <typename Q>
+static void pusher (Q & q)
 {
   for (;;)
   {
@@ -14,8 +15,8 @@ static void pusher (queue_t & q)
 
 int main()
 {
-  we::mgmt::detail::queue<int> q0 (1024);
-  boost::thread thrd (boost::bind (&pusher, boost::ref(q0)));
+  queue_t q0;
+  boost::thread thrd (boost::bind (&pusher<queue_t>, boost::ref(q0)));
 
   sleep (1);
 
