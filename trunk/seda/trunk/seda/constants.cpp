@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -24,7 +24,8 @@
 
 #include <limits>
 namespace seda {
-    std::size_t SEDA_MAX_QUEUE_SIZE = std::numeric_limits<std::size_t>::max();
+    //    std::size_t SEDA_MAX_QUEUE_SIZE = std::numeric_limits<std::size_t>::max();
+    std::size_t SEDA_MAX_QUEUE_SIZE = 100;
     unsigned long SEDA_DEFAULT_TIMEOUT = 500;
     const std::string SEDA_SYSTEM_STAGE_NAME = "seda.system.stage";
 }
