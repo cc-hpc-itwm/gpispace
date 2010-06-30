@@ -15,4 +15,22 @@ typedef rapidxml::file<Ch> input_type;
 #include <parse/type/port.hpp>
 #include <parse/type/token.hpp>
 
+// forward declarations for mutuable recursive types
+namespace xml
+{
+  namespace parse
+  {
+    namespace type
+    {
+      struct function;
+      struct transition;
+      struct net;
+    }
+  }
+}
+
+#include <parse/type/function.hpp>
+#include <parse/type/transition.hpp>
+#include <parse/type/net.hpp>
+
 #endif

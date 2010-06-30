@@ -67,6 +67,12 @@
   </xsd:complexType>
 
 
+  <xsd:complexType name="connect_type">
+    <xsd:attribute name="place" type="xsd:string" use="required"/>
+    <xsd:attribute name="port" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+
   <xsd:complexType name="function_type">
     <xsd:sequence>
       <xsd:choice>
@@ -84,12 +90,6 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="optional" default="[anonymous]"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional" default="true"/>
-  </xsd:complexType>
-
-
-  <xsd:complexType name="connect_type">
-    <xsd:attribute name="place" type="xsd:string" use="required"/>
-    <xsd:attribute name="port" type="xsd:string" use="required"/>
   </xsd:complexType>
 
 
