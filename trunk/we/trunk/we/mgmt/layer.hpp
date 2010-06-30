@@ -225,7 +225,7 @@ namespace we { namespace mgmt {
           descriptor_type & desc (lookup (int_id));
           {
             activity_type act (policy::codec::decode (result));
-            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << ::util::show(act.output().begin(), act.output().end()));
+            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
             desc.output (act.output());
           }
         }
@@ -509,6 +509,8 @@ namespace we { namespace mgmt {
 
       ~layer()
       {
+        lock_t lock (mutex_);
+
         // stop threads
         stop();
 
@@ -716,7 +718,7 @@ namespace we { namespace mgmt {
                   child.inject_input ();
 
                   DLOG(INFO, "extractor[" << rank << "]: extracted from (" << desc.name() << ")-" << desc.id()
-                      << ": (" << child.name() << ")-" << child.id() << " with input " << ::util::show (child.activity().input().begin(), child.activity().input().end()));
+                      << ": (" << child.name() << ")-" << child.id() << " with input " << desc.show_input());
 
                   switch (child.execute (exec_policy))
                   {
@@ -726,8 +728,7 @@ namespace we { namespace mgmt {
                     break;
                   case policy::exec_policy::INJECT:
                     child.finished();
-                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": "
-                        << ::util::show (child.activity().output().begin(), child.activity().output().end()));
+                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": " << desc.show_output());
                     desc.inject (child);
                     break;
                   case policy::exec_policy::EXTERNAL:
@@ -753,16 +754,15 @@ namespace we { namespace mgmt {
             case policy::exec_policy::INJECT:
               desc.finished();
 
-              DLOG(INFO, "extractor[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": "
-                  << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
+              DLOG(INFO, "extractor[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
 
               if (desc.has_parent ())
               {
                 lookup (desc.parent()).inject (desc);
+
                 DLOG(INFO, "injected (" << desc.name() << ")-" << desc.id()
                     << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-                    << ": " << ::util::show(desc.activity().output().begin(), desc.activity().output().end()));
-                DLOG(TRACE, "parent := " << ::util::show(lookup (desc.parent()).activity().transition()));
+                    << ": " << desc.show_output());
 
                 post_activity_notification (desc.parent());
               }
@@ -821,17 +821,15 @@ namespace we { namespace mgmt {
 
           sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
 
-          DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": "
-              << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
+          DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
 
           if (desc.has_parent())
           {
             lookup (desc.parent()).inject (desc);
             DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
                 << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-                << ": " << ::util::show(desc.activity().output().begin(), desc.activity().output().end()));
-            DLOG(TRACE, "parent := " << ::util::show(lookup (desc.parent()).activity().transition()));
-              post_activity_notification (desc.parent());
+                << ": " << desc.show_output());
+            post_activity_notification (desc.parent());
           }
           else if (desc.came_from_external())
           {
