@@ -2,11 +2,11 @@
 #include <parse/rapidxml/1.13/rapidxml.hpp>
 #include <parse/rapidxml/1.13/rapidxml_utils.hpp>
 
-#include <parse/util/maybe.hpp>
-#include <parse/util/show_node_type.hpp>
+#include <parse/util.hpp>
 
 #include <parse/exception.hpp>
 #include <parse/types.hpp>
+#include <parse/state.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
@@ -29,57 +29,6 @@ namespace xml
 
     // ********************************************************************* //
 
-    namespace state
-    {
-      struct type
-      {
-      private:
-        signature::set_type _signature;
-
-      public:
-        type (void)
-          : _signature ()
-        {}
-
-        signature::set_type & signature (void) { return _signature; }
-
-        void resolve_signatures (void)
-        {
-          signature::visitor::resolve resolve (_signature);
-
-          for ( signature::set_type::iterator sig (_signature.begin())
-              ; sig != _signature.end()
-              ; ++sig
-              )
-            {
-              boost::apply_visitor (resolve, sig->second);
-            }
-        }
-
-        void print_signatures (void) const
-        {
-          cout << "signatures:" << endl;
-
-          for ( signature::set_type::const_iterator pos (_signature.begin())
-              ; pos != _signature.end()
-              ; ++pos
-              )
-            {
-              cout << pos->first << ": " << pos->second << endl;
-            }
-        }
-      };
-    }
-
-    // ********************************************************************* //
-
-    typedef char Ch;
-    typedef rapidxml::xml_node<Ch> xml_node_type;
-    typedef rapidxml::xml_document<Ch> xml_document_type;
-    typedef rapidxml::file<Ch> input_type;
-
-    // ********************************************************************* //
-
     static void connect_type (const xml_node_type *, state::type &);
     static void function_type (const xml_node_type *, state::type &);
     static void mod_type (const xml_node_type *, state::type &);
@@ -95,31 +44,6 @@ namespace xml
     static void parse (std::istream & f, state::type &);
 
     // ********************************************************************* //
-
-    static void
-    skip (xml_node_type * & node, const rapidxml::node_type t)
-    {
-      while (node && (node->type() == t))
-        {
-          node = node->next_sibling();
-        }
-    }
-
-    static void
-    expect (xml_node_type * & node, const rapidxml::node_type t)
-    {
-      skip (node, rapidxml::node_comment);
-
-      if (!node)
-        {
-          throw exception::node_type (t);
-        }
-
-      if (node->type() != rapidxml::node_element)
-        {
-          throw exception::node_type (t, node->type());
-        }
-    }
 
     static std::string
     name_element (xml_node_type * & node, state::type & state)
@@ -148,54 +72,6 @@ namespace xml
         }
 
       return name;
-    }
-
-    // ********************************************************************* //
-
-    static std::string
-    required ( const std::string & pre
-             , const xml_node_type * node
-             , const Ch * attr
-             )
-    {
-      if (!node->first_attribute (attr))
-        {
-          throw exception::missing_attr (pre, attr);
-        }
-
-      return node->first_attribute (attr)->value();
-    }
-
-    static std::string
-    optional ( const xml_node_type * node
-             , const Ch * attr
-             , const std::string & dflt
-             )
-    {
-      return node->first_attribute (attr) 
-        ? node->first_attribute (attr)->value() 
-        : dflt
-        ;
-    }
-
-    static bool
-    optional (const xml_node_type * node, const Ch * attr, std::string & val)
-    {
-      if (node->first_attribute (attr))
-        {
-          val = std::string (node->first_attribute (attr)->value());
-        }
-
-      return node->first_attribute (attr);
-    }
-
-    static maybe<std::string>
-    optional (const xml_node_type * node, const Ch * attr)
-    {
-      return node->first_attribute (attr) 
-        ? Just<>(std::string(node->first_attribute (attr)->value()))
-        : Nothing<std::string>()
-        ;
     }
 
     // ********************************************************************* //
@@ -621,13 +497,13 @@ main (void)
 
   std::cout << std::endl << "--- parsing DONE" << std::endl;
 
-  state.print_signatures();
+  state.print_signatures(std::cout);
 
   std::cout << std::endl << "...resolved signatures" << std::endl;
 
   state.resolve_signatures();
 
-  state.print_signatures();
+  state.print_signatures(std::cout);
 
   return EXIT_SUCCESS;
 }
