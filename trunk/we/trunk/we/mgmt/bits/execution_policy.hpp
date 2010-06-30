@@ -2,7 +2,7 @@
 #define WE_MGMT_BITS_EXECUTION_POLICY_HPP 1
 
 #include <we/util/show.hpp>
-#include <we/mgmt/bits/basic_context.hpp>
+#include <we/mgmt/context.hpp>
 
 namespace we
 {
@@ -19,9 +19,9 @@ namespace we
          internal expressions will be executed directly and delegated to the injector process
        */
       template <typename Activity>
-      struct execution_policy : public we::mgmt::detail::basic_context<int>
+      struct execution_policy : public we::mgmt::context<int>
       {
-        typedef typename we::mgmt::detail::basic_context<int>::result_type result_type;
+        typedef typename we::mgmt::context<int>::result_type result_type;
 
         typedef Activity activity_t;
         typedef typename activity_t::id_t id_type;

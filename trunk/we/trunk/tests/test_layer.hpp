@@ -28,7 +28,7 @@
 
 #include <we/we.hpp>
 #include <we/loader/loader.hpp>
-#include <we/mgmt/bits/basic_context.hpp>
+#include <we/mgmt/context.hpp>
 #include <kdm/module.hpp>
 
 namespace test {
@@ -58,7 +58,7 @@ namespace test {
     };
 
     template <typename Daemon, typename IdType>
-    struct context : public we::mgmt::detail::basic_context<>
+    struct context : public we::mgmt::context<>
     {
       typedef IdType id_type;
       typedef we::transition_t::net_type net_t;

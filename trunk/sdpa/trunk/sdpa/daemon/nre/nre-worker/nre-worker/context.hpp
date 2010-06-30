@@ -2,11 +2,10 @@
 #define SDPA_DAEMON_NRE_EXEC_CONTEXT_HPP 1
 
 #include <we/loader/loader.hpp>
+#include <we/mgmt/context.hpp>
 
-struct exec_context
+struct exec_context : public we::mgmt::context<>
 {
-  typedef void result_type;
-
   typedef we::transition_t::net_type net_t;
   typedef we::transition_t::mod_type mod_t;
   typedef we::transition_t::expr_type expr_t;
