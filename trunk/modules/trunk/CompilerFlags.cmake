@@ -3,7 +3,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Wreturn-type")
+  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Wreturn-type -Wno-system-headers")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wno-pragmas -Wredundant-decls")
   # produces a lot of warnings with (at least) boost 1.38:
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wfloat-equal")
