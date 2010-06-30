@@ -11,6 +11,8 @@
 
 #include <boost/variant.hpp>
 
+#include <iostream>
+
 namespace xml
 {
   namespace parse
@@ -37,6 +39,50 @@ namespace xml
 
         type f;
       };
+
+      std::ostream & operator << (std::ostream & s, const function & f)
+      {
+        s << "function ("
+          << "name = " << f.name
+          << ", interal = " << f.internal
+          ;
+
+        s << ", port_in = ";
+
+        for ( function::port_vec_type::const_iterator pos (f.in.begin())
+            ; pos != f.in.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        s << "port_out = ";
+
+        for ( function::port_vec_type::const_iterator pos (f.out.begin())
+            ; pos != f.out.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        s << "condition = ";
+
+        for ( function::cond_vec_type::const_iterator pos (f.cond.begin())
+            ; pos != f.cond.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        s << "fun = ";
+
+        boost::apply_visitor (visitor::show (s), f.f);
+
+        return s << ")";
+      }
     }
   }
 }

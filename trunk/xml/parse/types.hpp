@@ -25,6 +25,25 @@ namespace xml
       struct function;
       struct transition;
       struct net;
+
+      // generic show visitor
+      namespace visitor
+      {
+        class show : public boost::static_visitor<std::ostream &>
+        {
+        private:
+          std::ostream & s;
+
+        public:
+          show (std::ostream & _s) : s (_s) {}
+
+          template<typename T>
+          std::ostream & operator () (const T & x) const
+          {
+            return s << x;
+          }
+        };
+      }
     }
   }
 }

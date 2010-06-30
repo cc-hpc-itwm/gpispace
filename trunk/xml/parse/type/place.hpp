@@ -22,9 +22,9 @@ namespace xml
       struct place
       {
       public:
-        const std::string name;
-        const std::string type;
-        const maybe<petri_net::capacity_t> capacity;
+        std::string name;
+        std::string type;
+        maybe<petri_net::capacity_t> capacity;
         std::vector<token> token_vec;
 
         place ( const std::string & _name

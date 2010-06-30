@@ -15,8 +15,8 @@ namespace xml
       struct mod
       {
       public:
-        const std::string name;
-        const std::string function;
+        std::string name;
+        std::string function;
 
         mod ( const std::string & _name
             , const std::string & _function

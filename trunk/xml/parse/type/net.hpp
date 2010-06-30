@@ -9,6 +9,8 @@
 
 #include <boost/variant.hpp>
 
+#include <iostream>
+
 namespace xml
 {
   namespace parse
@@ -26,6 +28,26 @@ namespace xml
 
         element_vec_type element;
       };
+
+      std::ostream & operator << (std::ostream & s, const net & n)
+      {
+        s << "net (";
+
+        for ( net::element_vec_type::const_iterator pos (n.element.begin())
+            ; pos != n.element.end()
+            ; ++pos
+            )
+          {
+            if (pos != n.element.begin())
+              {
+                s << ", ";
+              }
+
+            boost::apply_visitor (visitor::show (s), *pos);
+          }
+
+        return s << ")";
+      }
     }
   }
 }

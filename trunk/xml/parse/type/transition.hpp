@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#include <iostream>
+
 namespace xml
 {
   namespace parse
@@ -29,6 +31,50 @@ namespace xml
 
         std::string name;
       };
+
+      std::ostream & operator << (std::ostream & s, const transition & t)
+      {
+        s << "transition ("
+          << "name = " << t.name
+          ;
+
+        s << ", connect-in = ";
+
+        for ( transition::connect_vec_type::const_iterator pos (t.in.begin())
+            ; pos != t.in.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        s << "connect-read = ";
+
+        for ( transition::connect_vec_type::const_iterator pos (t.read.begin())
+            ; pos != t.read.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        s << "connect-out = ";
+
+        for ( transition::connect_vec_type::const_iterator pos (t.out.begin())
+            ; pos != t.out.end()
+            ; ++pos
+            )
+          {
+            s << *pos << ", ";
+          }
+
+        
+        s << ", use = " << t.use
+          << ", function = " << t.f
+          ;
+
+        return s << ")";
+      }
     }
   }
 }

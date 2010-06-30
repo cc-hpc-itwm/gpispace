@@ -29,17 +29,17 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void connect_type (const xml_node_type *, state::type &);
-    static void function_type (const xml_node_type *, state::type &);
-    static void mod_type (const xml_node_type *, state::type &);
-    static void net_type (const xml_node_type *, state::type &);
-    static void place_type (const xml_node_type *, state::type &);
-    static void port_type (const xml_node_type *, state::type &);
+    static type::connect connect_type (const xml_node_type *, state::type &);
+    static type::function function_type (const xml_node_type *, state::type &);
+    static type::mod mod_type (const xml_node_type *, state::type &);
+    static type::net net_type (const xml_node_type *, state::type &);
+    static type::place place_type (const xml_node_type *, state::type &);
+    static type::port port_type (const xml_node_type *, state::type &);
     static void gen_struct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void struct_type (const xml_node_type *, state::type &);
     static type::token token_type (const xml_node_type *, state::type &);
-    static void transition_type (const xml_node_type *, state::type &);
+    static type::transition transition_type (const xml_node_type *, state::type &);
 
     static void parse (std::istream & f, state::type &);
 
@@ -76,26 +76,42 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    static type::connect
     connect_type (const xml_node_type * node, state::type &)
     {
-      const type::connect c
-        ( required ("connect_type", node, "place")
-        , required ("connect_type", node, "port")
-        );
-
-      cout << c << endl;
+      return type::connect ( required ("connect_type", node, "place")
+                           , required ("connect_type", node, "port")
+                           );
     }
 
     // ********************************************************************* //
 
-    static void
+    static bool
+    read_bool (const std::string & inp)
+    {
+      if (inp == "true")
+        {
+          return true;
+        }
+      else if (inp == "false")
+        {
+          return false;
+        }
+      else
+        {
+          throw std::runtime_error ("failed to read a bool from: " + inp);
+        }
+    }
+
+    static type::function
     function_type (const xml_node_type * node, state::type & state)
     {
-      const std::string name (optional (node, "name", "[anonymous]"));
-      const std::string internal (optional (node, "internal", "true"));
+      type::function f;
 
-      cout << "name: " << name << ", internal: " << internal << endl;
+      f.name = optional (node, "name");
+      f.internal = fmap<std::string, bool>( read_bool
+                                          , optional (node, "internal")
+                                          );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -106,53 +122,54 @@ namespace xml
 
           if (child_name == "in")
             {
-              cout << "in: "; port_type (child, state);
+              f.in.push_back (port_type (child, state));
             }
           else if (child_name == "out")
             {
-              cout << "out: "; port_type (child, state);
+              f.out.push_back (port_type (child, state));
             }
           else if (child_name == "expression")
             {
-              cout << "expression: " << child->value() << endl;
+              f.f = type::expression (child->value());
             }
           else if (child_name == "module")
             {
-              mod_type (child, state);
+              f.f = mod_type (child, state);
             }
           else if (child_name == "net")
             {
-              cout << "net: " << endl; net_type (child, state);
+              f.f = net_type (child, state);
             }
           else if (child_name == "condition")
             {
-              cout << "condition: " << child->value() << endl;
+              f.cond.push_back (std::string (child->value()));
             }
           else
             {
               throw exception::unexpected_element ("function_type", child_name);
             }
         }
+
+      return f;
     }
 
     // ********************************************************************* //
 
-    static void
+    static type::mod
     mod_type (const xml_node_type * node, state::type &)
     {
-      const type::mod m
-        ( required ("mod_type", node, "name")
-        , required ("mod_type", node, "function")
-        );
-
-      cout << m << endl;
+      return type::mod ( required ("mod_type", node, "name")
+                       , required ("mod_type", node, "function")
+                       );
     }
 
     // ********************************************************************* //
 
-    static void
+    static type::net
     net_type (const xml_node_type * node, state::type & state)
     {
+      type::net n;
+      
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
@@ -162,15 +179,15 @@ namespace xml
 
           if (child_name == "defun")
             {
-              cout << "defun: "; function_type (child, state);
+              n.element.push_back (function_type (child, state));
             }
           else if (child_name == "place")
             {
-              place_type (child, state);
+              n.element.push_back (place_type (child, state));
             }
           else if (child_name == "transition")
             {
-              cout << "transition: "; transition_type (child, state);
+              n.element.push_back (transition_type (child, state));
             }
           else if (child_name == "struct")
             {
@@ -181,11 +198,13 @@ namespace xml
               throw exception::unexpected_element ("net_type", child_name);
             }
         }
+
+      return n;
     }
 
     // ********************************************************************* //
 
-    static void
+    static type::place
     place_type (const xml_node_type * node, state::type & state)
     {
       type::place p
@@ -214,21 +233,18 @@ namespace xml
             }
         }
 
-      cout << p << endl;
+      return p;
     }
 
     // ********************************************************************* //
 
-    static void
+    static type::port
     port_type (const xml_node_type * node, state::type &)
     {
-      const type::port p
-        ( required ("port_type", node, "name")
-        , required ("port_type", node, "type")
-        , optional (node, "place")
-        );
-
-      cout << p << endl;
+      return type::port ( required ("port_type", node, "name")
+                        , required ("port_type", node, "type")
+                        , optional (node, "place")
+                        );
     }
 
     // ********************************************************************* //
@@ -393,22 +409,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    static void
+    static type::transition
     transition_type (const xml_node_type * node, state::type & state)
     {
-      const std::string name (required ("transition_type", node, "name"));
+      type::transition t;
 
-      cout << "name: " << name;
-
-      std::string use;
-      const bool got_use (optional (node, "use", use));
-
-      if (got_use)
-        {
-          cout << ", use: " << use;
-        }
-
-      cout << endl;
+      t.name = required ("transition_type", node, "name");
+      t.use = optional (node, "use");
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -419,38 +426,44 @@ namespace xml
 
           if (child_name == "defun")
             {
-              if (got_use)
+              if (t.use.isJust())
                 {
                   throw exception::error 
                     ("transition_type", "use and defun given at the same time");
                 }
 
-              cout << "defun: "; function_type (child, state);
+              t.f = Just<>(function_type (child, state));
             }
           else if (child_name == "connect-in")
             {
-              cout << "connect_in: "; connect_type(child, state);
+              t.in.push_back (connect_type(child, state));
             }
           else if (child_name == "connect-out")
             {
-              cout << "connect_out: "; connect_type(child, state);
+              t.out.push_back (connect_type(child, state));
             }
           else if (child_name == "connect-read")        
             {
-              cout << "connect_read: "; connect_type(child, state);
+              t.read.push_back (connect_type(child, state));
             }
           else
             {
               throw exception::unexpected_element ("transition_type", child_name);
             }
         }
+
+      return t;
     }
 
     // ********************************************************************* //
 
+    static int level (0);
+
     static void
     parse (std::istream & f, state::type & state)
     {
+      ++level;
+
       xml_document_type doc;
 
       input_type inp (f);
@@ -472,13 +485,15 @@ namespace xml
       
           if (name == "defun")
             {
-              cout << "defun: "; function_type (node, state);
+              cout << level << " defun: " << function_type (node, state);
             }
           else
             {
               throw exception::unexpected_element ("parse", name);
             }
         }
+
+      --level;
     }
   }
 }

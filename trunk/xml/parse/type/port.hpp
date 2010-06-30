@@ -17,9 +17,9 @@ namespace xml
       struct port
       {
       public:
-        const std::string name;
-        const std::string type;
-        const maybe<std::string> place;
+        std::string name;
+        std::string type;
+        maybe<std::string> place;
 
         port ( const std::string & _name
              , const std::string & _type

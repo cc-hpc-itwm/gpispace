@@ -15,8 +15,8 @@ namespace xml
       struct connect
       {
       public:
-        const std::string place;
-        const std::string port;
+        std::string place;
+        std::string port;
 
         connect ( const std::string & _place
                 , const std::string & _port

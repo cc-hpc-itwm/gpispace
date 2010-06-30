@@ -14,18 +14,6 @@ namespace xml
 {
   namespace parse
   {
-    static std::string
-    optional ( const xml_node_type * node
-             , const Ch * attr
-             , const std::string & dflt
-             )
-    {
-      return node->first_attribute (attr) 
-        ? node->first_attribute (attr)->value() 
-        : dflt
-        ;
-    }
-
     static bool
     optional (const xml_node_type * node, const Ch * attr, std::string & val)
     {
