@@ -16,6 +16,7 @@ namespace petri_net
   typedef uint64_t tid_t;
   typedef uint64_t eid_t;
   typedef int16_t prio_t;
+  typedef uint64_t capacity_t;
 
   namespace traits
   {

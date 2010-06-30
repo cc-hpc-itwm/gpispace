@@ -105,8 +105,6 @@ public:
 
   typedef priostore::type<tid_t> enabled_t;
 
-  typedef unsigned long capacity_t;
-
   // *********************************************************************** //
 private:
   typedef boost::unordered_map<eid_t, connection_t> connection_map_t;
