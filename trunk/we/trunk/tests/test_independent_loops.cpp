@@ -20,6 +20,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+#include <boost/version.hpp>
+#if BOOST_VERSION <= 103800
+#  define DISABLE_BINARY_TESTS
+#endif
+
 typedef unsigned int loop_t;
 typedef unsigned int id_t;
 
@@ -38,7 +43,7 @@ public:
     ar & BOOST_SERIALIZATION_NVP(dat);
   }
 
-  
+
   template<typename T> bool condition (const T &) const { return true; }
 };
 
@@ -191,6 +196,7 @@ main ()
           n.put_token (n.get_place_id (node_t (l, 0)));
     }
 
+#ifndef DISABLE_BINARY_TESTS
     {
       std::ostringstream oss;
 
@@ -211,6 +217,7 @@ main ()
         oa >> BOOST_SERIALIZATION_NVP(n);
       }
     }
+#endif
 
     {
       std::ostringstream oss;
