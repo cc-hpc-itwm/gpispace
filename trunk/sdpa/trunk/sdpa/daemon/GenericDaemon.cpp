@@ -576,7 +576,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		ptr_job_man_->findJob(e.job_id());
 		return;
 	} catch(const JobNotFoundException&){
-		SDPA_LOG_INFO("Receive new job from "<<e.from());
+          SDPA_LOG_INFO("Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 	}
 
 	JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
@@ -863,6 +863,7 @@ Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFo
 
 void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 {
+  DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
 	workflowEngine()->failed( jobId.str(), reason );
 	jobManager()->deleteJob(jobId);
 }
@@ -880,18 +881,21 @@ const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& j
 
 void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
 {
+  DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
 	workflowEngine()->failed( jobId.str(), reason );
 	jobManager()->deleteJob(jobId);
 }
 
 void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
 {
-	workflowEngine()->finished( jobId.str(), result );
-	jobManager()->deleteJob(jobId);
+  DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
+  workflowEngine()->finished( jobId.str(), result );
+  jobManager()->deleteJob(jobId);
 }
 
 void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 {
+  DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
 	workflowEngine()->cancelled( jobId.str() );
 	jobManager()->deleteJob(jobId);
 }

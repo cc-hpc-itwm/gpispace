@@ -259,8 +259,9 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFinished(pEvt);
 	}
-	catch(JobNotFoundException){
-		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+	catch(JobNotFoundException const &){
+		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
+                return;
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
@@ -273,16 +274,23 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			sendEventToMaster(pEvtJobFinished);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
-		catch(QueueFull)
+		catch(QueueFull const &)
 		{
-			SDPA_LOG_DEBUG("Failed to send to the ,aster output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+			SDPA_LOG_FATAL("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
 		}
-		catch(seda::StageNotFound)
+		catch(seda::StageNotFound const &)
 		{
-			SDPA_LOG_DEBUG("Stage not found when trying to submit JobFinishedEvent");
+			SDPA_LOG_FATAL("Stage not found when trying to submit JobFinishedEvent");
+                        throw;
+		}
+		catch(std::exception const & ex)
+		{
+                  SDPA_LOG_FATAL("Exception during stage->send: " << ex.what());
+                  throw;
 		}
 		catch(...) {
-			SDPA_LOG_DEBUG("Unexpected exception occurred!");
+                  SDPA_LOG_FATAL("Unknown exception during stage->send!");
+                  throw;
 		}
 	}
 }
@@ -302,8 +310,9 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
-	catch(JobNotFoundException){
-		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+	catch(JobNotFoundException const &){
+		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
+                return;
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
@@ -329,9 +338,14 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			SDPA_LOG_FATAL("Stage not found when trying to send JobFailedEvent");
                         throw;
 		}
+		catch(std::exception const & ex)
+		{
+                  SDPA_LOG_FATAL("Exception during stage->send: " << ex.what());
+                  throw;
+		}
 		catch(...) {
-			SDPA_LOG_FATAL("Unexpected exception occurred!");
-                        throw;
+                  SDPA_LOG_FATAL("Unknown exception during stage->send!");
+                  throw;
 		}
 	}
 }
