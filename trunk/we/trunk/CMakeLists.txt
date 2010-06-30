@@ -25,13 +25,6 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 
 option (ENABLE_TESTS "Build with test binaries" YES)
 
-# Where are the additional libraries installed? Note: provide includes
-# path here, subsequent checks will resolve everything else
-if (${CMAKE_ADDITIONAL_PATH} NOT STREQUAL "")
-  set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_ADDITIONAL_PATH}/include)
-  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_ADDITIONAL_PATH}/lib)
-  set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
-endif (${CMAKE_ADDITIONAL_PATH} NOT STREQUAL "")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
 
 # Make sure all subdirectories include correctly
@@ -43,52 +36,7 @@ message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules"
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-      add_definitions("-DNDEBUG")
-    endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
-
-    set(PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
-
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wswitch-default -Wno-pragmas -Wfloat-equal -Wenum-compare -Wmissing-declarations -Wredundant-decls")
-    add_definitions("-D_FORTIFY_SOURCE=2")
-
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
-    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wreturn-type -Wshadow")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-        if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-          message(STATUS "Additional warnings for Debug-Build activated (gcc >= 4.3 detected)")
-        endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-      elseif (${CMAKE_CXX_COMPILER_MINOR} GREATER 0)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
-    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-
-    # gprof and gcov support
-    set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} ${PROFILE_FLAGS}")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-
-  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
-    message(STATUS "compiler: ${CMAKE_CXX_COMPILER_MAJOR}.${CMAKE_CXX_COMPILER_MINOR}")
-    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
-      message(STATUS "Warning: adding __aligned__=ignored to the list of definitions")
-      add_definitions("-D__aligned__=ignored")
-    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-
+  include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # threads
