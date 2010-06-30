@@ -30,50 +30,49 @@ namespace xml
         maybe<std::string> use;
 
         std::string name;
+
+        int level;
       };
 
       std::ostream & operator << (std::ostream & s, const transition & t)
       {
-        s << "transition ("
-          << "name = " << t.name
-          ;
+        s << level (t.level)     << "transition (" << std::endl;
+        s << level (t.level + 1) << "name = " << t.name << std::endl;
 
-        s << ", connect-in = ";
+        s << level (t.level + 1) << "connect-in = " << std::endl;
 
         for ( transition::connect_vec_type::const_iterator pos (t.in.begin())
             ; pos != t.in.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level (t.level + 2) << *pos << std::endl;
           }
 
-        s << "connect-read = ";
+        s << level (t.level + 1) << "connect-read = " << std::endl;
 
         for ( transition::connect_vec_type::const_iterator pos (t.read.begin())
             ; pos != t.read.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level (t.level + 2) << *pos << std::endl;
           }
 
-        s << "connect-out = ";
+        s << level (t.level + 1) << "connect-out = " << std::endl;
 
         for ( transition::connect_vec_type::const_iterator pos (t.out.begin())
             ; pos != t.out.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level (t.level + 2) << *pos << std::endl;
           }
 
-        
-        s << ", use = " << t.use
-          << ", function = " << t.f
-          ;
+        s << level (t.level + 1) << "use = " << t.use << std::endl;
+        s << level (t.level + 1) << "function = " << t.f << std::endl;
 
-        return s << ")";
+        return s << level (t.level) << ") // transition";
       }
     }
   }

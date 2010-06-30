@@ -19,12 +19,15 @@ namespace xml
       {
       private:
         signature::set_type _signature;
+        int _level;
 
       public:
         type (void)
           : _signature ()
+          , _level (0)
         {}
 
+        int & level (void) { return _level; }
         signature::set_type & signature (void) { return _signature; }
 
         void resolve_signatures (void)

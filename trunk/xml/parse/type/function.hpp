@@ -38,50 +38,57 @@ namespace xml
         cond_vec_type cond;
 
         type f;
+
+        int level;
       };
 
       std::ostream & operator << (std::ostream & s, const function & f)
       {
-        s << "function ("
+        s << level(f.level) << "function (" << std::endl;
+
+        s << level(f.level+1)
           << "name = " << f.name
           << ", interal = " << f.internal
-          ;
+          << std::endl;
+        ;
 
-        s << ", port_in = ";
+        s << level(f.level+1) << "port_in = " << std::endl;
 
         for ( function::port_vec_type::const_iterator pos (f.in.begin())
             ; pos != f.in.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level(f.level+2) << *pos << std::endl;
           }
 
-        s << "port_out = ";
+        s << level(f.level+1) << "port_out = " << std::endl;
 
         for ( function::port_vec_type::const_iterator pos (f.out.begin())
             ; pos != f.out.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level(f.level+2) << *pos << std::endl;
           }
 
-        s << "condition = ";
+        s << level(f.level+1) << "condition = " << std::endl;
 
         for ( function::cond_vec_type::const_iterator pos (f.cond.begin())
             ; pos != f.cond.end()
             ; ++pos
             )
           {
-            s << *pos << ", ";
+            s << level(f.level+2) << *pos << std::endl;
           }
 
-        s << "fun = ";
+        s << level(f.level+1) << "fun = ";
 
         boost::apply_visitor (visitor::show (s), f.f);
 
-        return s << ")";
+        s << std::endl;
+
+        return s << level(f.level) << ") // function";
       }
     }
   }

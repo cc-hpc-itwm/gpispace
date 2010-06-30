@@ -108,6 +108,7 @@ namespace xml
     {
       type::function f;
 
+      f.level = state.level();
       f.name = optional (node, "name");
       f.internal = fmap<std::string, bool>( read_bool
                                           , optional (node, "internal")
@@ -138,7 +139,11 @@ namespace xml
             }
           else if (child_name == "net")
             {
+              ++state.level();
+
               f.f = net_type (child, state);
+
+              --state.level();
             }
           else if (child_name == "condition")
             {
@@ -169,7 +174,11 @@ namespace xml
     net_type (const xml_node_type * node, state::type & state)
     {
       type::net n;
-      
+
+      n.level = state.level();
+
+      ++state.level();
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
@@ -199,6 +208,8 @@ namespace xml
             }
         }
 
+      --state.level();
+
       return n;
     }
 
@@ -215,6 +226,8 @@ namespace xml
           , optional (node, "capacity")
           )
         );
+
+      p.level = state.level();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -414,6 +427,7 @@ namespace xml
     {
       type::transition t;
 
+      t.level = state.level();
       t.name = required ("transition_type", node, "name");
       t.use = optional (node, "use");
 
@@ -432,7 +446,11 @@ namespace xml
                     ("transition_type", "use and defun given at the same time");
                 }
 
+              ++state.level();
+
               t.f = Just<>(function_type (child, state));
+
+              --state.level();
             }
           else if (child_name == "connect-in")
             {
@@ -462,7 +480,7 @@ namespace xml
     static void
     parse (std::istream & f, state::type & state)
     {
-      ++level;
+      ++state.level();
 
       xml_document_type doc;
 
@@ -485,7 +503,12 @@ namespace xml
       
           if (name == "defun")
             {
-              cout << level << " defun: " << function_type (node, state);
+              type::function F (function_type (node, state));
+
+              if (state.level() == 1)
+                {
+                  cout << F;
+                }
             }
           else
             {
@@ -493,7 +516,7 @@ namespace xml
             }
         }
 
-      --level;
+      --state.level();
     }
   }
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <parse/type/token.hpp>
+#include <parse/types.hpp>
 
 #include <parse/util/maybe.hpp>
 
@@ -26,6 +27,7 @@ namespace xml
         std::string type;
         maybe<petri_net::capacity_t> capacity;
         std::vector<token> token_vec;
+        int level;
 
         place ( const std::string & _name
               , const std::string & _type
@@ -45,10 +47,10 @@ namespace xml
 
       std::ostream & operator << (std::ostream & s, const place & p)
       {
-        s << "place ("
-          << "name = " << p.name
-          << ", type = " << p.type
-          << ", capacity = " << p.capacity
+        s << level(p.level)  << "place (" << std::endl;
+        s << level(p.level+1) << "name = " << p.name << std::endl;
+        s << level(p.level+1) << "type = " << p.type << std::endl;
+        s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
           ;
 
         for ( std::vector<token>::const_iterator tok (p.token_vec.begin())
@@ -56,10 +58,10 @@ namespace xml
             ; ++tok
             )
           {
-            s << ", token = " << *tok;
+            s << level(p.level+1) << "token = " << *tok << std::endl;
           }
 
-        return s << ")";
+        return s << level(p.level) << ") // place";
       }
     }
   }

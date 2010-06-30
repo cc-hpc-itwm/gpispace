@@ -8,12 +8,8 @@ typedef rapidxml::xml_node<Ch> xml_node_type;
 typedef rapidxml::xml_document<Ch> xml_document_type;
 typedef rapidxml::file<Ch> input_type;
 
-#include <parse/type/connect.hpp>
-#include <parse/type/expression.hpp>
-#include <parse/type/mod.hpp>
-#include <parse/type/place.hpp>
-#include <parse/type/port.hpp>
-#include <parse/type/token.hpp>
+#include <boost/variant.hpp>
+#include <iostream>
 
 // forward declarations for mutual recursive types
 namespace xml
@@ -44,9 +40,27 @@ namespace xml
           }
         };
       }
+
+      struct level { int l; level (int _l) : l(_l) {} };
+
+      std::ostream & operator << (std::ostream & s, const level & l)
+      {
+        for (int i (0); i < l.l; ++i)
+          {
+            s << "  ";
+          }
+        return s;
+      }
     }
   }
 }
+
+#include <parse/type/connect.hpp>
+#include <parse/type/expression.hpp>
+#include <parse/type/mod.hpp>
+#include <parse/type/place.hpp>
+#include <parse/type/port.hpp>
+#include <parse/type/token.hpp>
 
 #include <parse/type/function.hpp>
 #include <parse/type/transition.hpp>

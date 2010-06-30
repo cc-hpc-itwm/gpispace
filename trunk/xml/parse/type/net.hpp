@@ -27,26 +27,24 @@ namespace xml
         typedef std::vector<element_type> element_vec_type;
 
         element_vec_type element;
+        int level;
       };
 
       std::ostream & operator << (std::ostream & s, const net & n)
       {
-        s << "net (";
+        s << "net (" << std::endl;
 
         for ( net::element_vec_type::const_iterator pos (n.element.begin())
             ; pos != n.element.end()
             ; ++pos
             )
           {
-            if (pos != n.element.begin())
-              {
-                s << ", ";
-              }
-
             boost::apply_visitor (visitor::show (s), *pos);
+
+            s << std::endl;
           }
 
-        return s << ")";
+        return s << level (n.level) << ") //net";
       }
     }
   }
