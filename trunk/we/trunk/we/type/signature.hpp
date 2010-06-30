@@ -92,13 +92,16 @@ namespace signature
     private:
       const field_name_t field;
       const literal::type_name_t type;
+      const std::string msg;
 
     public:
       add_field ( const field_name_t & _field
                 , const literal::type_name_t & _type
+                , const std::string & _msg = "signature"
                 )
         : field (_field)
         , type (_type)
+        , msg (_msg)
       {}
 
       void operator () (structured_t & map) const
@@ -109,7 +112,7 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          ("signature: try to add a field to a non-structured signature");
+          (msg + ": try to add a field to a non-structured " + msg);
       }
     };
 
@@ -117,9 +120,15 @@ namespace signature
     {
     private:
       const field_name_t field;
+      const std::string msg;
 
     public:
-      get_field (const field_name_t & _field) : field (_field) {}
+      get_field ( const field_name_t & _field
+                , const std::string & _msg = "signature"
+                ) 
+        : field (_field)
+        , msg (_msg)
+      {}
 
       desc_t & operator () (structured_t & map) const
       {
@@ -129,7 +138,7 @@ namespace signature
       desc_t & operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          ("signature: try to get a field from a non-structured signature");
+          (msg + ": try to get a field from a non-structured " + msg);
       }
     };
 
@@ -137,15 +146,21 @@ namespace signature
     {
     private:
       const field_name_t field;
+      const std::string msg;
 
     public:
-      create_structured_field (const std::string & _field) : field (_field) {}
+      create_structured_field ( const std::string & _field
+                              , const std::string & _msg = "signature"
+                              ) 
+        : field (_field)
+        , msg (_msg)
+      {}
 
       void operator () (structured_t & map) const
       {
         if (map.has_field (field))
           {
-            throw std::runtime_error ("signature: try to create field " 
+            throw std::runtime_error (msg + ": try to create field " 
                                      + field 
                                      + " which is already there"
                                      );
@@ -157,7 +172,77 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          ("signature: try to create a field in a non-strutured signature");
+          (msg + ": try to create a field in a non-strutured " + msg);
+      }
+    };
+
+    class get_or_create_structured_field 
+      : public boost::static_visitor<desc_t &>
+    {
+    private:
+      const field_name_t field;
+      const std::string msg;
+
+    public:
+      get_or_create_structured_field ( const std::string & _field
+                                     , const std::string & _msg = "signature"
+                                     ) 
+        : field (_field)
+        , msg (_msg)
+      {}
+
+      desc_t & operator () (structured_t & map) const
+      {
+        if (!map.has_field (field))
+          {
+            map[field] = structured_t();
+          }
+
+        return map[field];
+      }
+
+      desc_t & operator () (literal::type_name_t &) const
+      {
+        throw std::runtime_error
+          (msg + ": try to create a field in a non-strutured " + msg);
+      }
+    };
+
+    template<typename T>
+    class create_literal_field : public boost::static_visitor<void>
+    {
+    private:
+      const field_name_t field;
+      const T val;
+      const std::string msg;
+
+    public:
+      create_literal_field ( const std::string & _field
+                           , const T & _val
+                           , const std::string & _msg = "signature"
+                           ) 
+        : field (_field) 
+        , val (_val)
+        , msg (_msg)
+      {}
+
+      void operator () (structured_t & map) const
+      {
+        if (map.has_field (field))
+          {
+            throw std::runtime_error (msg + ": try to create field " 
+                                     + field 
+                                     + " which is already there"
+                                     );
+          }
+
+        map[field] = val;
+      }
+
+      void operator () (literal::type_name_t &) const
+      {
+        throw std::runtime_error
+          (msg + ": try to create a field in a non-strutured " + msg);
       }
     };
 
