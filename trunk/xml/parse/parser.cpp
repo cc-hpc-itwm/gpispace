@@ -1,18 +1,19 @@
 
 #include <parse/rapidxml/1.13/rapidxml.hpp>
 #include <parse/rapidxml/1.13/rapidxml_utils.hpp>
-#include <parse/maybe.hpp>
+
+#include <parse/util/maybe.hpp>
+#include <parse/util/show_node_type.hpp>
+
+#include <parse/exception.hpp>
+#include <parse/types.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 
 #include <we/util/read.hpp>
 
-#include <boost/unordered_map.hpp>
-#include <boost/bind.hpp>
-
 #include <iostream>
-#include <stdexcept>
 #include <vector>
 
 // ************************************************************************* //
@@ -25,235 +26,6 @@ namespace xml
 
     using std::cout;
     using std::endl;
-
-    // ********************************************************************* //
-
-    namespace util
-    {
-      static std::string
-      show_node_type (const int t)
-      {
-        switch (t)
-          {
-          case rapidxml::node_document: return "document";
-          case rapidxml::node_element: return "element";
-          case rapidxml::node_data: return "data";
-          case rapidxml::node_cdata: return "cdata";
-          case rapidxml::node_comment: return "comment";
-          case rapidxml::node_declaration: return "declaration";
-          case rapidxml::node_doctype: return "doctype";
-          case rapidxml::node_pi: return "pi";
-          default: throw std::runtime_error ("STRANGE: unknown node type");
-          }
-      }
-
-      static std::string
-      quote (const std::string & str)
-      {
-        return "\"" + str + "\"";
-      }
-    }
-
-    // ********************************************************************* //
-
-    namespace exception
-    {
-      class unexpected_element : public std::runtime_error
-      {
-      public:
-        unexpected_element ( const std::string & pre
-                           , const std::string & name
-                           )
-          : std::runtime_error 
-            (pre + ": unexpected element with name" + util::quote(name))
-        {}
-      };
-
-      class node_type : public std::runtime_error
-      {
-      public:
-        node_type (const rapidxml::node_type & want)
-          : std::runtime_error ("missing node: expected node of type "
-                               + util::quote(util::show_node_type (want))
-                               )
-        {}
-        node_type ( const rapidxml::node_type & want
-                  , const rapidxml::node_type & got
-                  )
-          : std::runtime_error ("wrong node type: expexted node of type "
-                               + util::quote(util::show_node_type (want))
-                               + ": got node of type "
-                               + util::quote(util::show_node_type (got))
-                               )
-        {}
-      };
-
-      class missing_attr : public std::runtime_error
-      {
-      public:
-        missing_attr ( const std::string & pre
-                     , const std::string & attr
-                     )
-          : std::runtime_error
-            (pre + ": missing attribute " + util::quote(attr))
-        {}
-      };
-
-      class error : public std::runtime_error
-      {
-      public:
-        error (const std::string & pre, const std::string & msg)
-          : std::runtime_error (pre + ": " + msg)
-        {}
-      };
-
-      class strange : public std::runtime_error
-      {
-      public:
-        strange (const std::string & msg)
-          : std::runtime_error ("STRANGE! " + msg)
-        {}
-      };
-    }
-
-    // ********************************************************************* //
-
-    namespace type
-    {
-      typedef std::string expression;
-
-      // ******************************************************************* //
-
-      // misuse the signature type to read the token as recursive
-      // string->string mapping, after the type of the place is
-      // resolved, construct the concrete token out of this
-
-      typedef signature::desc_t token;
-
-      // ******************************************************************* //
-
-      struct mod
-      {
-      public:
-        const std::string name;
-        const std::string function;
-
-        mod ( const std::string & _name
-            , const std::string & _function
-            )
-          : name (_name)
-          , function (_function)
-        {}
-      };
-
-      std::ostream & operator << (std::ostream & s, const mod & m)
-      {
-        return s << "mod ("
-                 << "mod = " << m.name 
-                 << ", function = " << m.function 
-                 << ")"
-          ;
-      }
-
-      // ******************************************************************* //
-
-      struct connect
-      {
-      public:
-        const std::string place;
-        const std::string port;
-
-        connect ( const std::string & _place
-                , const std::string & _port
-                )
-          : place (_place)
-          , port (_port)
-        {}
-      };
-
-      std::ostream & operator << (std::ostream & s, const connect & c)
-      {
-        return s << "connect ("
-                 << "place = " << c.place 
-                 << ", port = " << c.port
-                 << ")"
-          ;
-      }
-      
-      // ******************************************************************* //
-
-      struct port
-      {
-      public:
-        const std::string name;
-        const std::string type;
-        const maybe<std::string> place;
-
-        port ( const std::string & _name
-             , const std::string & _type
-             , const maybe<std::string> & _place
-             )
-          : name (_name)
-          , type (_type)
-          , place (_place)
-        {}
-      };
-
-      std::ostream & operator << (std::ostream & s, const port & p)
-      {
-        return s << "port ("
-                 << "name = " << p.name
-                 << ", type = " << p.type
-                 << ", place = " << p.place
-                 << ")"
-          ;
-      }
-      
-      // ******************************************************************* //
-
-      struct place
-      {
-      public:
-        const std::string name;
-        const std::string type;
-        const maybe<petri_net::capacity_t> capacity;
-        std::vector<token> token_vec;
-
-        place ( const std::string & _name
-              , const std::string & _type
-              , const maybe<petri_net::capacity_t> _capacity
-              )
-          : name (_name)
-          , type (_type)
-          , capacity (_capacity)
-          , token_vec ()
-        {}
-
-        void push_token (const token & t)
-        {
-          token_vec.push_back (t);
-        }
-      };
-
-      std::ostream & operator << (std::ostream & s, const place & p)
-      {
-        s << "place ("
-          << "name = " << p.name
-          << ", type = " << p.type
-          << ", capacity = " << p.capacity
-          ;
-
-        for ( std::vector<token>::const_iterator tok (p.token_vec.begin())
-            ; tok != p.token_vec.end()
-            ; ++tok
-            )
-          {
-            s << ", token = " << *tok;
-          }
-
-        return s << ")";
-      }
-    }
 
     // ********************************************************************* //
 
@@ -314,11 +86,9 @@ namespace xml
     static void net_type (const xml_node_type *, state::type &);
     static void place_type (const xml_node_type *, state::type &);
     static void port_type (const xml_node_type *, state::type &);
-    static void struct_field_type (const xml_node_type *, state::type &);
     static void gen_struct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void struct_type (const xml_node_type *, state::type &);
-    static void token_field_type (const xml_node_type *, state::type &);
     static type::token token_type (const xml_node_type *, state::type &);
     static void transition_type (const xml_node_type *, state::type &);
 
