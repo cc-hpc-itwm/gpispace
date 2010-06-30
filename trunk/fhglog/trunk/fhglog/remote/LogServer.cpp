@@ -50,51 +50,58 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
     data_[bytes_recv] = 0;
     std::string msg(data_);
 
-    DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
-
     if (msg == "QUIT deadbeef")
     {
       LOG(INFO, "got QUIT message, shutting down.");
       return;
     }
 
+    LogEvent evt;
+
     try
     {
       std::stringstream sstr(msg);
       boost::archive::text_iarchive ia(sstr);
 
-      LogEvent evt;
       ia >> evt;
-
-      {
-        // FIXME: think about a better way to introduce some kind of "trace"
-        // the following is only meaningful for a flat hierarchy of logservers
-        std::ostringstream ostr;
-        ostr << evt.logged_via() << "@" << sender_endpoint_;
-        evt.logged_via(ostr.str());
-      }
-
-      appender_->append(evt);
     }
     catch (const std::exception &ex)
     {
-      LOG(WARN, "could not parse message!" << ex.what());
+      LOG(ERROR, "could not parse message: " << ex.what());
+      DLOG(DEBUG, "message was: " << msg);
+      goto out;
     }
 
-    socket_.async_receive_from(
-        boost::asio::buffer(data_, max_length), sender_endpoint_,
-        boost::bind(&LogServer::handle_receive_from, this,
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
+    {
+      // FIXME: think about a better way to introduce some kind of "trace"
+      // the following is only meaningful for a flat hierarchy of logservers
+      std::ostringstream ostr;
+      ostr << evt.logged_via() << "@" << sender_endpoint_;
+      evt.logged_via(ostr.str());
+    }
+
+    try
+    {
+      appender_->append(evt);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "could not append log event: " << ex.what());
+      goto out;
+    }
   }
   else
   {
     LOG(ERROR, "error during receive: " << error);
-    socket_.async_receive_from(
-        boost::asio::buffer(data_, max_length), sender_endpoint_,
-        boost::bind(&LogServer::handle_receive_from, this,
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
   }
-}
 
+out:
+  socket_.async_receive_from( boost::asio::buffer(data_, max_length)
+                            , sender_endpoint_
+                            , boost::bind( &LogServer::handle_receive_from
+                                         , this
+                                         , boost::asio::placeholders::error
+                                         , boost::asio::placeholders::bytes_transferred
+                                         )
+                            );
+}
