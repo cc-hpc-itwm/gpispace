@@ -88,7 +88,7 @@
       </xsd:choice>
       <xsd:element name="condition" type="xsd:string" minOccurs="0" maxOccurs="unbounded" default="true"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="optional" default="[anonymous]"/>
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional" default="true"/>
   </xsd:complexType>
 
