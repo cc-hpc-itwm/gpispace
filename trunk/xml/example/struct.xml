@@ -6,6 +6,31 @@
 
 <net>
 
+<place name="place_string" type="string">
+<token><value>"a_string"</value></token>
+</place>
+<place name="place_long" type="long">
+<token><value>42</value></token>
+</place>
+<place name="place_double" type="double">
+<token><value>47.11e-23</value></token>
+</place>
+<place name="place_control" type="control">
+<token><value>[]</value></token>
+</place>
+<place name="place_control2" type="control">
+<token/><token/>
+</place>
+<place name="place_char" type="char">
+<token><value>'c'</value></token>
+</place>
+<place name="place_bitset" type="bitset">
+<token><value>{12}</value></token>
+</place>
+<place name="place_bool" type="bool">
+<token><value>true</value></token>
+</place>
+
 <struct name="bi">
   <field name="a" type="pixel"/>
   <field name="b" type="pixel"/>
@@ -34,19 +59,16 @@
 <struct name="no_fields"/>
 
 <place name="place_no_fields" type="no_fields">
-<token/>
+<token><value>[]</value></token>
 </place>
 
-<place name="place_pixel" type="pixel">
+<place name="place_pixel" type="pixel" capacity="2">
 <token>
   <field name="color"><value>0xeeeeee</value></field>
   <field name="point">
-    <field name="x"/>
+    <field name="x"><value>23</value></field>
     <field name="y"/>
-    <field name="jitter">
-      <field name="a"><value>0.2</value></field>
-      <field name="r"><value>1.0</value></field>
-    </field>
+    <field name="jitter"/>
   </field>
 </token>
 </place>

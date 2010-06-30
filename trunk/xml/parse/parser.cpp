@@ -1,10 +1,15 @@
 
-#include <rapidxml/1.13/rapidxml.hpp>
-#include <rapidxml/1.13/rapidxml_utils.hpp>
+#include <parse/rapidxml/1.13/rapidxml.hpp>
+#include <parse/rapidxml/1.13/rapidxml_utils.hpp>
+#include <parse/maybe.hpp>
 
 #include <we/type/signature.hpp>
+#include <we/type/id.hpp>
+
+#include <we/util/read.hpp>
 
 #include <boost/unordered_map.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -113,6 +118,145 @@ namespace xml
 
     // ********************************************************************* //
 
+    namespace type
+    {
+      typedef std::string expression;
+
+      // ******************************************************************* //
+
+      // misuse the signature type to read the token as recursive
+      // string->string mapping, after the type of the place is
+      // resolved, construct the concrete token out of this
+
+      typedef signature::desc_t token;
+
+      // ******************************************************************* //
+
+      struct mod
+      {
+      public:
+        const std::string name;
+        const std::string function;
+
+        mod ( const std::string & _name
+            , const std::string & _function
+            )
+          : name (_name)
+          , function (_function)
+        {}
+      };
+
+      std::ostream & operator << (std::ostream & s, const mod & m)
+      {
+        return s << "mod ("
+                 << "mod = " << m.name 
+                 << ", function = " << m.function 
+                 << ")"
+          ;
+      }
+
+      // ******************************************************************* //
+
+      struct connect
+      {
+      public:
+        const std::string place;
+        const std::string port;
+
+        connect ( const std::string & _place
+                , const std::string & _port
+                )
+          : place (_place)
+          , port (_port)
+        {}
+      };
+
+      std::ostream & operator << (std::ostream & s, const connect & c)
+      {
+        return s << "connect ("
+                 << "place = " << c.place 
+                 << ", port = " << c.port
+                 << ")"
+          ;
+      }
+      
+      // ******************************************************************* //
+
+      struct port
+      {
+      public:
+        const std::string name;
+        const std::string type;
+        const maybe<std::string> place;
+
+        port ( const std::string & _name
+             , const std::string & _type
+             , const maybe<std::string> & _place
+             )
+          : name (_name)
+          , type (_type)
+          , place (_place)
+        {}
+      };
+
+      std::ostream & operator << (std::ostream & s, const port & p)
+      {
+        return s << "port ("
+                 << "name = " << p.name
+                 << ", type = " << p.type
+                 << ", place = " << p.place
+                 << ")"
+          ;
+      }
+      
+      // ******************************************************************* //
+
+      struct place
+      {
+      public:
+        const std::string name;
+        const std::string type;
+        const maybe<petri_net::capacity_t> capacity;
+        std::vector<token> token_vec;
+
+        place ( const std::string & _name
+              , const std::string & _type
+              , const maybe<petri_net::capacity_t> _capacity
+              )
+          : name (_name)
+          , type (_type)
+          , capacity (_capacity)
+          , token_vec ()
+        {}
+
+        void push_token (const token & t)
+        {
+          token_vec.push_back (t);
+        }
+      };
+
+      std::ostream & operator << (std::ostream & s, const place & p)
+      {
+        s << "place ("
+          << "name = " << p.name
+          << ", type = " << p.type
+          << ", capacity = " << p.capacity
+          ;
+
+        for ( std::vector<token>::const_iterator tok (p.token_vec.begin())
+            ; tok != p.token_vec.end()
+            ; ++tok
+            )
+          {
+            s << ", token = " << *tok;
+          }
+
+        return s << ")";
+      }
+    }
+
+    // ********************************************************************* //
+
     namespace state
     {
       struct type
@@ -175,7 +319,7 @@ namespace xml
     static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void struct_type (const xml_node_type *, state::type &);
     static void token_field_type (const xml_node_type *, state::type &);
-    static void token_type (const xml_node_type *, state::type &, const std::string &);
+    static type::token token_type (const xml_node_type *, state::type &);
     static void transition_type (const xml_node_type *, state::type &);
 
     static void parse (std::istream & f, state::type &);
@@ -275,15 +419,26 @@ namespace xml
       return node->first_attribute (attr);
     }
 
+    static maybe<std::string>
+    optional (const xml_node_type * node, const Ch * attr)
+    {
+      return node->first_attribute (attr) 
+        ? Just<>(std::string(node->first_attribute (attr)->value()))
+        : Nothing<std::string>()
+        ;
+    }
+
     // ********************************************************************* //
 
     static void
     connect_type (const xml_node_type * node, state::type &)
     {
-      const std::string place (required ("connect_type", node, "place"));
-      const std::string port (required ("connect_type", node, "port"));
+      const type::connect c
+        ( required ("connect_type", node, "place")
+        , required ("connect_type", node, "port")
+        );
 
-      cout << "place: " << place << ", port: " << port << endl;
+      cout << c << endl;
     }
 
     // ********************************************************************* //
@@ -317,7 +472,7 @@ namespace xml
             }
           else if (child_name == "module")
             {
-              cout << "module: "; mod_type (child, state);
+              mod_type (child, state);
             }
           else if (child_name == "net")
             {
@@ -339,10 +494,12 @@ namespace xml
     static void
     mod_type (const xml_node_type * node, state::type &)
     {
-      const std::string mod (required ("mod_type", node, "name"));
-      const std::string fun (required ("mod_type", node, "function"));
+      const type::mod m
+        ( required ("mod_type", node, "name")
+        , required ("mod_type", node, "function")
+        );
 
-      cout << "mod: " << mod << ", fun " << fun << endl;
+      cout << m << endl;
     }
 
     // ********************************************************************* //
@@ -363,7 +520,7 @@ namespace xml
             }
           else if (child_name == "place")
             {
-              cout << "place: "; place_type (child, state);
+              place_type (child, state);
             }
           else if (child_name == "transition")
             {
@@ -385,17 +542,14 @@ namespace xml
     static void
     place_type (const xml_node_type * node, state::type & state)
     {
-      const std::string name (required ("place_type", node, "name"));
-      const std::string type (required ("place_type", node, "type"));
-
-      cout << " name: " << name << ", type: " << type << endl;
-
-      std::string capacity;
-
-      if (optional (node, "capacity", capacity))
-        {
-          cout << ", capacity: " << capacity;
-        }
+      type::place p
+        ( required ("place_type", node, "name")
+        , required ("place_type", node, "type")
+        , fmap<std::string, petri_net::capacity_t>
+          ( &::we::util::reader<petri_net::capacity_t>::read
+          , optional (node, "capacity")
+          )
+        );
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -406,13 +560,15 @@ namespace xml
 
           if (child_name == "token")
             {
-              cout << "token: "; token_type (child, state, name);
+              p.push_token (token_type (child, state));
             }
           else
             {
               throw exception::unexpected_element ("place_type", child_name);
             }
         }
+
+      cout << p << endl;
     }
 
     // ********************************************************************* //
@@ -420,19 +576,13 @@ namespace xml
     static void
     port_type (const xml_node_type * node, state::type &)
     {
-      const std::string name (required ("port_type", node, "name"));
-      const std::string type (required ("port_type", node, "type"));
+      const type::port p
+        ( required ("port_type", node, "name")
+        , required ("port_type", node, "type")
+        , optional (node, "place")
+        );
 
-      cout << name << " :: " << type;
-
-      std::string connected_to;
-
-      if (optional (node, "place", connected_to))
-        {
-          cout << ", connected to " << connected_to;
-        }
-
-      cout << endl;
+      cout << p << endl;
     }
 
     // ********************************************************************* //
@@ -518,12 +668,13 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    token_field_type (const xml_node_type * node, state::type & state)
+    token_field_type ( const xml_node_type * node
+                     , state::type & state
+                     , type::token & tok
+                     )
     {
       const std::string name (required ("token_field_type", node, "name"));
       
-      cout << "name: " << name << endl;
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
@@ -533,28 +684,42 @@ namespace xml
 
           if (child_name == "value")
             {
-              cout << "value: " << child->value() << endl;
+              boost::apply_visitor
+                ( signature::visitor::create_literal_field<std::string> 
+                  ( name
+                  , std::string (child->value())
+                  , "token"
+                  )
+                , tok
+                );
             }
           else if (child_name == "field")
             {
-              cout << "field: "; token_field_type (child, state);
+              token_field_type 
+                ( child
+                , state
+                , boost::apply_visitor 
+                  ( signature::visitor::get_or_create_structured_field ( name
+                                                                       , "token"
+                                                                       )
+                  , tok
+                  )
+                );
             }
           else
             {
-              throw exception::unexpected_element ("token_field_type", child_name);
+              throw exception::unexpected_element
+                ("token_field_type", child_name);
             }
         }
     }
 
     // ********************************************************************* //
 
-    static void
-    token_type ( const xml_node_type * node
-               , state::type & state
-               , const std::string & place_name
-               )
+    static type::token
+    token_type (const xml_node_type * node, state::type & state)
     {
-      cout << "token on place " << place_name << endl;
+      type::token tok = signature::structured_t();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -565,17 +730,19 @@ namespace xml
 
           if (child_name == "value")
             {
-              cout << "value: " << child->value() << endl;
+              return type::token (std::string (child->value()));
             }
           else if (child_name == "field")
             {
-              cout << "field: "; token_field_type (child, state);
+              token_field_type (child, state, tok);
             }
           else
             {
               throw exception::unexpected_element ("token_type", child_name);
             }
         }
+
+      return tok;
     }
 
     // ********************************************************************* //

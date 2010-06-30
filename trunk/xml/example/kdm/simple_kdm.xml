@@ -14,7 +14,7 @@
 
 		<place name="config_file" type="string">
 			<token>
-				<value>/tmp/test.cfg</value>
+				<value>"/tmp/test.cfg"</value>
 			</token>
 		</place>
 
