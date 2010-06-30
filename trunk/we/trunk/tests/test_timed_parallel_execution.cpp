@@ -103,7 +103,7 @@ static map_t build_map (const pnet_t::input_t & input)
       ; it != input.end()
       ; ++it
       )
-    m[Function::Transition::get_pid<token_t>(*it)] 
+    m[Function::Transition::get_pid<token_t>(*it)]
       = Function::Transition::get_token<token_t>(*it);
 
   return m;
@@ -130,7 +130,7 @@ static void set_trans ( pnet_t & net
                       , const trans_t & f
                       )
 {
-  net.set_transition_function (tid, Function::Transition::Generic<token_t> 
+  net.set_transition_function (tid, Function::Transition::Generic<token_t>
                                     (boost::bind(&make_trans, pid, f, _1, _2))
                               );
 }
@@ -275,7 +275,7 @@ public:
     cond_put.notify_one();
   }
 
-  T get (void) 
+  T get (void)
   {
     boost::unique_lock<boost::mutex> lock (mutex);
 
@@ -299,7 +299,7 @@ typedef deque<pnet_t::output_t> deque_output_t;
 // ************************************************************************* //
 // div log stuff
 
-typedef std::pair<const pnet_t &,const pnet_t::token_input_t> show_token_input_t;
+typedef std::pair<const pnet_t,const pnet_t::token_input_t> show_token_input_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_token_input_t & show_token_input
@@ -315,7 +315,7 @@ static std::ostream & operator << ( std::ostream & s
            << "}";
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::activity_t> show_activity_t;
+typedef std::pair<const pnet_t,const pnet_t::activity_t> show_activity_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_activity_t & show_activity
@@ -337,7 +337,7 @@ static std::ostream & operator << ( std::ostream & s
   return s;
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::output_t> show_output_t;
+typedef std::pair<const pnet_t,const pnet_t::output_t> show_output_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_output_t & show_output
@@ -352,7 +352,7 @@ static std::ostream & operator << ( std::ostream & s
       ; it != output.end()
       ; ++it
       )
-    s << "{" 
+    s << "{"
       << Function::Transition::get_token<token_t>(*it)
       << " on "
       << net.get_place (Function::Transition::get_pid<token_t>(*it))
@@ -399,7 +399,7 @@ struct param_t
   tid_set_t & tid_to_run_on_master; // Not! const, to be changed on runtime
   deque_activity_t activity;
   deque_output_t output;
-  
+
   param_t (pnet_t & _net, tid_set_t & _tid_to_run_on_master)
     : net (_net), tid_to_run_on_master (_tid_to_run_on_master) {}
 };
@@ -463,7 +463,7 @@ static void * manager (void * arg)
 
           ++inject;
         }
-      
+
       // the manager puts at most QUEUE_DEPTH_FOR_WORK_QUEUE items into the
       // work queue, it does not block here
       while (  !p->net.enabled_transitions().empty()
@@ -477,7 +477,7 @@ static void * manager (void * arg)
 
          MLOG ("EXTRACT " << show_activity_t (p->net, activity));
 
-          if (  p->tid_to_run_on_master.find (activity.tid) 
+          if (  p->tid_to_run_on_master.find (activity.tid)
              != p->tid_to_run_on_master.end()
              )
             {
@@ -506,7 +506,7 @@ static void * manager (void * arg)
       MLOG ("STATE" << ": extract " << extract << ", inject " << inject);
     }
   while (extract > inject);
-  
+
   MLOG ("DONE");
 
   return NULL;
