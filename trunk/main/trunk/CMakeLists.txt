@@ -29,22 +29,9 @@ set(CMAKE_BINARY_PATH ${CMAKE_BINARY_PATH} ${CMAKE_ADDITIONAL_PATH}/bin)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 
 ##########################################################
-set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor ")#-Werror")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -W -Wreturn-type")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-# gprof and gcov support
-set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-#set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-unused-variable")
-set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
-
 include(CheckCompiler)
 info_compiler()
+include (CompilerFlags)
 
 # cpack configuration
 #include(InstallRequiredSystemLibraries)
@@ -58,10 +45,6 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
 else (${CMAKE_BUILD_TYPE} MATCHES "Debug")
      set(CPACK_PACKAGE_NAME "sdpa")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-
-if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-     add_definitions ("-DNDEBUG")
-endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")

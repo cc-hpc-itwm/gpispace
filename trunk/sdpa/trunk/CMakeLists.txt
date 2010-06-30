@@ -26,29 +26,7 @@ set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-    add_definitions("-DNDEBUG")
-  endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
-
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -frepo -fno-implicit-templates")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-    set(CMAKE_CXX_FLAGS_DEBUG "-Werror -O0 -g -ggdb -Wreturn-type -fno-omit-frame-pointer")
-	#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-	#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-
-    # gprof and gcov support
-    set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-
-  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-
+  include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(ENABLE_TESTS "Build with test binaries" YES)

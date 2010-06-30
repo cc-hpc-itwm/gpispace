@@ -36,7 +36,7 @@ OPTION(WITH_COMM
   "Build communication library"
   1)
 
-OPTION(USE_STL_TR1 
+OPTION(USE_STL_TR1
  "Use tr1 from stl"
  0)
 
@@ -53,49 +53,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 
 include(CheckCompiler)
-
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-      add_definitions("-DNDEBUG")
-    endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
-
-    set(FHG_PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
-
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
-
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
-    if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-      if (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wreturn-type -Wshadow")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-        if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-          message(STATUS "Additional warnings for Debug-Build activated (gcc >= 4.3 detected)")
-        endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-      elseif (${CMAKE_CXX_COMPILER_MINOR} GREATER 0)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-      endif (${CMAKE_CXX_COMPILER_MINOR} GREATER 3)
-    endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 3)
-
-    # gprof and gcov support
-    set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} ${FHG_PROFILE_FLAGS}")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-
-  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
-    message(STATUS "adding __aligned__=ignored to the list of definitions")
-    add_definitions("-D__aligned__=ignored")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-
+  include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## add doxygen support
