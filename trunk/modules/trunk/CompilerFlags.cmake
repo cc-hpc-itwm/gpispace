@@ -3,7 +3,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -frepo -fno-implicit-templates")
+  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -fno-implicit-templates")
 
   # release flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O3")
