@@ -54,6 +54,11 @@ namespace sdpa { namespace client {
       return pimpl->contact();
     }
 
+    const std::string &build_timestamp() const
+    {
+      return pimpl->build_timestamp();
+    }
+
     job_id_t submitJob(const job_desc_t &desc) throw (ClientException)
     {
       return pimpl->submitJob(desc);

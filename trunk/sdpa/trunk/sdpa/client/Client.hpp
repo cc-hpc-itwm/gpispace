@@ -71,6 +71,11 @@ namespace sdpa { namespace client {
       return contact_;
     }
 
+    const std::string &build_timestamp() const
+    {
+      return timestamp_;
+    }
+
     void start(const config_t &cfg) throw(ClientException);
     void shutdown() throw(ClientException);
 
@@ -114,6 +119,7 @@ namespace sdpa { namespace client {
     std::string version_;
     std::string copyright_;
     std::string contact_;
+    std::string timestamp_;
 
     std::string name_;
     std::string output_stage_;

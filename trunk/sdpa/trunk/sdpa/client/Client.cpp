@@ -45,6 +45,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , version_(SDPA_VERSION)
   , copyright_(SDPA_COPYRIGHT)
   , contact_(SDPA_CONTACT)
+  , timestamp_(SDPA_TIMESTAMP)
   , name_(a_name)
   , output_stage_(output_stage)
   , fsm_(*this)
@@ -316,7 +317,7 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
 void Client::action_configure(const config_t &cfg)
 {
   MLOG(DEBUG, "configuring my environment");
-  
+
   if (cfg.is_set("network.timeout"))
   {
     timeout_ = cfg.get<unsigned int>("network.timeout");
