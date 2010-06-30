@@ -40,7 +40,7 @@ namespace fhg { namespace log {
 
 #ifndef NDEBUG
 
-#define DLLOG(level, logger, msg) __LOG(logger, level, msg)
+#define DLLOG(level, logger, msg) LLOG(level, logger, msg)
 #define DMLOG(level, msg) MLOG(level, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
