@@ -651,12 +651,6 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_remove_activity_notification (const internal_id_type & id)
-      {
-        cmd_q_.put (make_cmd(id, boost::bind(&this_type::remove_activity_by_id, this, _1)));
-      }
-
-      inline
       void post_execute_notification (const internal_id_type & id)
       {
         active_nets_[id % extractor_.size()].put(id);
@@ -825,7 +819,7 @@ namespace we { namespace mgmt {
           descriptor_type & desc = lookup (act_id);
           desc.finished();
 
-          sig_finished (this, act_id, policy::codec::encode(desc.activity()));
+          sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
 
           DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": "
               << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
@@ -887,43 +881,6 @@ namespace we { namespace mgmt {
       void activity_needs_attention(const cmd_t & cmd)
       {
         active_nets_.put(cmd.dat);
-      }
-
-      void activity_finished(const cmd_t & cmd)
-      {
-        const internal_id_type internal_id (cmd.dat);
-
-        try
-        {
-          descriptor_type & desc (lookup(internal_id));
-          desc.finished();
-
-          sig_finished (this, internal_id, policy::codec::encode(desc.activity()));
-
-          DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << ": "
-              << ::util::show (desc.activity().output().begin(), desc.activity().output().end()));
-
-          if (desc.has_parent ())
-          {
-            post_inject_activity_results (internal_id);
-          }
-          else if (desc.came_from_external ())
-          {
-            ext_finished ( desc.from_external_id()
-                         , policy::codec::encode (desc.activity())
-                         );
-            remove_activity (desc);
-          }
-          else
-          {
-            LOG(ERROR, "cannot do anything with this activity: " << desc);
-            remove_activity (desc);
-          }
-        }
-        catch (const activity_not_found<internal_id_type> &)
-        {
-          LOG(WARN, "got finished notification for old activity: " << internal_id);
-        }
       }
 
       void activity_failed(const cmd_t & cmd)
@@ -1027,18 +984,6 @@ namespace we { namespace mgmt {
         if (desc.came_from_external())
         {
           add_map_to_internal (desc.from_external_id(), desc.id());
-        }
-      }
-
-      inline void remove_activity_by_id(const cmd_t & cmd)
-      {
-        try
-        {
-          remove_activity (lookup (cmd.dat));
-        }
-        catch (std::exception const &ex)
-        {
-          LOG(WARN, "could not remove activity-" << cmd.dat << ": " << ex.what());
         }
       }
 
