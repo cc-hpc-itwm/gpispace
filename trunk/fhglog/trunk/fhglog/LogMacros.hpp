@@ -18,6 +18,31 @@ namespace fhg { namespace log {
 #define FHGLOG_TOSTRING_(x) #x
 #define FHGLOG_TOSTRING(x) FHGLOG_TOSTRING_(x)
 
+#define FHGLOG_UNIQUE_NAME(name, line) FHGLOG_UNIQUE_NAME_CONCAT(name, line)
+#define FHGLOG_UNIQUE_NAME_CONCAT(name, line) name ## line
+#define FHGLOG_COUNTER FHGLOG_UNIQUE_NAME(counter_, __LINE__)
+
+#define FHGLOG_DO_EVERY_N(n, thing)                                     \
+  do {                                                                  \
+    static int FHGLOG_COUNTER = 0;                                      \
+    if ((FHGLOG_COUNTER++ % n) == 0)                                    \
+    {                                                                   \
+      thing;                                                            \
+    }                                                                   \
+  } while (0)
+
+#define FHGLOG_DO_EVERY_N_IF(condition, n, thing)                       \
+  do {                                                                  \
+    if (condition)                                                      \
+    {                                                                   \
+      static int FHGLOG_COUNTER = 0;                                    \
+      if ((FHGLOG_COUNTER++ % n) == 0)                                  \
+      {                                                                 \
+        thing;                                                          \
+      }                                                                 \
+    }                                                                   \
+  } while (0)
+
 #if FHGLOG_DISABLE_LOGGING == 1
 #define __LOG(logger, level, msg)
 #else
@@ -62,6 +87,9 @@ namespace fhg { namespace log {
     }\
     while (0)
 
+#define LOG_EVERY_N(level, N, msg) FHGLOG_DO_EVERY_N(N, LOG(level, msg))
+#define LOG_EVERY_N_IF(level, N, condition, msg) FHGLOG_DO_EVERY_N_IF(condition, N, LOG(level, msg))
+
 #ifdef NDEBUG
 
 #define DLLOG(level, logger, msg)
@@ -69,6 +97,8 @@ namespace fhg { namespace log {
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, m1, m2)
+#define DLOG_EVERY_N(level, N, msg)
+#define DLOG_EVERY_N_IF(level, N, condition, msg)
 
 #else
 
@@ -77,6 +107,8 @@ namespace fhg { namespace log {
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
+#define DLOG_EVERY_N(level, N, msg) LOG_EVERY_N(level, N, msg)
+#define DLOG_EVERY_N_IF(level, N, condition, msg) LOG_EVERY_N_IF(level, N, condition, msg)
 
 #endif
 
