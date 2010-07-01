@@ -51,21 +51,3 @@ EventQueueTest::testQueueEmpty() {
     // ok
   }
 }
-
-void
-EventQueueTest::testQueueFull() {
-  // fill the queue
-  while (_queue->size() < _queue->maxQueueSize()) {
-    _queue->push(seda::IEvent::Ptr(new StringEvent("test")));
-  }
-  try
-  {
-    // push one more element to trigger the overflow
-    _queue->push(seda::IEvent::Ptr(new StringEvent("test")));
-    CPPUNIT_ASSERT_MESSAGE("QueueFull exception expected!", false);
-  }
-  catch (const QueueFull &)
-  {
-    //ok
-  }
-}

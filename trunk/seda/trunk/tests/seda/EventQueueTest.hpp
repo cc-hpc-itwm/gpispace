@@ -11,7 +11,6 @@ namespace seda {
       CPPUNIT_TEST_SUITE( seda::tests::EventQueueTest );
       CPPUNIT_TEST( testPushPop );
       CPPUNIT_TEST( testQueueEmpty );
-      CPPUNIT_TEST( testQueueFull );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -25,7 +24,6 @@ namespace seda {
       SEDA_DECLARE_LOGGER();
       void testPushPop();
       void testQueueEmpty();
-      void testQueueFull();
 
       seda::IEventQueue::Ptr _queue;
     };
