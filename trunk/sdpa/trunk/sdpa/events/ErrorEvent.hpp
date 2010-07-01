@@ -43,6 +43,7 @@ namespace sdpa { namespace events {
           SDPA_ENOJOBAVAIL,
           SDPA_EJOBNOTFOUND,
           SDPA_EWORKERNOTREG,
+          SDPA_ENODE_SHUTDOWN,
           SDPA_EBUSY,
           SDPA_EAGAIN,
           SDPA_EUNKNOWN
