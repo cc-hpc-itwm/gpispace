@@ -33,6 +33,10 @@ fi
 agg_url="$agg_host:$agg_port"
 
 fvm_pc_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
+if [ -n "$SDPA_FVM_PC_CFG" ]; then
+  fvm_pc_cfg="$SDPA_FVM_PC_CFG"
+fi
+
 while read k v; do
   case "$k" in
 	SHMSZ)
@@ -71,7 +75,7 @@ prefix="/p/herc/itwm/hpc/soft/sdpa"
 nre-pcd --rank "$rank" \
                           --load $prefix/sdpa/lib/libfvm-pc.so \
                           --load $prefix/libsinc/libsinc.so \
-						  -p $prefix/kdm \
+			  -p $prefix/kdm \
   >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
 sleep 1
 nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
