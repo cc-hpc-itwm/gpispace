@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -48,8 +48,20 @@
 #include <seda/comm/ConnectionListener.hpp>
 #include <seda/comm/Locator.hpp>
 #include <seda/comm/SedaMessage.hpp>
+#include <seda/comm/option.hpp>
 
 namespace seda { namespace comm {
+    namespace option
+    {
+      struct enable_compression : public detail::option<bool, enable_compression>
+      {
+        explicit
+        enable_compression (bool b)
+          : super(b)
+        {}
+      };
+    }
+
   class Connection {
   public:
     typedef shared_ptr<Connection> ptr_t;
@@ -65,6 +77,9 @@ namespace seda { namespace comm {
     virtual const Locator::ptr_t &locator() const = 0;
     void registerListener(ConnectionListener *);
     void removeListener(ConnectionListener *);
+
+    void set_option (option::enable_compression const &);
+    void get_option (option::enable_compression &);
   protected:
     void notifyListener(const seda::comm::SedaMessage &msg);
     bool has_listeners() const;
@@ -72,6 +87,7 @@ namespace seda { namespace comm {
     boost::recursive_mutex listener_mtx_;
     typedef std::list<ConnectionListener*> listener_list_t;
     listener_list_t listener_list_;
+    bool compression_enabled_;
   };
 }}
 

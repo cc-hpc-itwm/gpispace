@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -81,4 +81,15 @@ void Connection::notifyListener(const seda::comm::SedaMessage &msg)
 	  LOG(ERROR, "connection listener onMessage() failed with an unknown reason!");
     }
   }
+}
+
+void Connection::set_option(option::enable_compression const &compress)
+{
+  LOG_IF_ELSE(INFO, compress, "compression enabled", "compression disabled");
+  compression_enabled_ = compress;
+}
+
+void Connection::get_option(option::enable_compression & opt)
+{
+  opt.set(compression_enabled_);
 }
