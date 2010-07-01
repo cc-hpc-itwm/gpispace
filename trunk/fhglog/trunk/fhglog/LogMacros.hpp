@@ -24,7 +24,7 @@ namespace fhg { namespace log {
 
 #define FHGLOG_DO_EVERY_N(n, thing)                                     \
   do {                                                                  \
-    static int FHGLOG_COUNTER = 0;                                      \
+    static unsigned int FHGLOG_COUNTER = 0;                             \
     if ((FHGLOG_COUNTER++ % n) == 0)                                    \
     {                                                                   \
       thing;                                                            \
@@ -35,7 +35,7 @@ namespace fhg { namespace log {
   do {                                                                  \
     if (condition)                                                      \
     {                                                                   \
-      static int FHGLOG_COUNTER = 0;                                    \
+      static unsigned int FHGLOG_COUNTER = 0;                           \
       if ((FHGLOG_COUNTER++ % n) == 0)                                  \
       {                                                                 \
         thing;                                                          \
@@ -46,45 +46,45 @@ namespace fhg { namespace log {
 #if FHGLOG_DISABLE_LOGGING == 1
 #define __LOG(logger, level, msg)
 #else
-#define __LOG(logger, level, msg)\
-    do {\
-      using namespace fhg::log;\
-      if (logger.isLevelEnabled(LogLevel::level)) \
-      {\
-        FHGLOG_MKEVENT(__log_evt, level, "");\
-        if (! logger.isFiltered(__log_evt))\
-        {\
-          __log_evt.stream() << msg;\
-          logger.log(__log_evt);\
-        }\
-      }\
+#define __LOG(logger, level, msg)                                       \
+    do {                                                                \
+      using namespace fhg::log;                                         \
+      if (logger.isLevelEnabled(LogLevel::level))                       \
+      {                                                                 \
+        FHGLOG_MKEVENT(__log_evt, level, "");                           \
+        if (! logger.isFiltered(__log_evt))                             \
+        {                                                               \
+          __log_evt.stream() << msg;                                    \
+          logger.log(__log_evt);                                        \
+        }                                                               \
+      }                                                                 \
     } while(0)
 #endif // if FHGLOG_ENABLED == 1
 
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
-#define LOG_IF(level, condition, msg)\
-    do\
-    {\
-      if (condition)\
-      {\
-        LOG(level, msg);\
-      }\
-    }\
+#define LOG_IF(level, condition, msg)                                   \
+    do                                                                  \
+    {                                                                   \
+      if (condition)                                                    \
+      {                                                                 \
+        LOG(level, msg);                                                \
+      }                                                                 \
+    }                                                                   \
     while (0)
-#define LOG_IF_ELSE(level, condition, then_msg, else_msg)\
-    do\
-    {\
-      if (condition)\
-      {\
-        LOG(level, then_msg);\
-      }\
-      else\
-      {\
-        LOG(level, else_msg);\
-      }\
-    }\
+#define LOG_IF_ELSE(level, condition, then_msg, else_msg)               \
+    do                                                                  \
+    {                                                                   \
+      if (condition)                                                    \
+      {                                                                 \
+        LOG(level, then_msg);                                           \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        LOG(level, else_msg);                                           \
+      }                                                                 \
+    }                                                                   \
     while (0)
 
 #define LOG_EVERY_N(level, N, msg) FHGLOG_DO_EVERY_N(N, LOG(level, msg))
