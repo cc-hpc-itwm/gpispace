@@ -3,7 +3,7 @@
  *
  *       Filename:  test_udp.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/25/2009 04:24:41 PM
@@ -21,6 +21,7 @@
 #include <seda/StageFactory.hpp>
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
+#include <seda/LossyDaemonStrategy.hpp>
 
 #include <seda/comm/comm.hpp>
 #include <seda/comm/delivery_service.hpp>
@@ -47,8 +48,10 @@ int main(int argc, char **argv)
 
     seda::StageFactory sFactory;
     seda::Strategy::Ptr discard(new seda::DiscardStrategy("discard"));
-	seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-    seda::Stage::Ptr stage(sFactory.createStage("final", ecs));
+    seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
+    seda::LossyDaemonStrategy::Ptr lossy(new seda::LossyDaemonStrategy(ecs, 0));
+
+    seda::Stage::Ptr stage(sFactory.createStage("final", lossy));
 
 	seda::comm::ServiceThread service_thread;
 	sdpa_msg_delivery_service service(service_thread.io_service(), 500);
@@ -79,6 +82,26 @@ int main(int argc, char **argv)
 	  }
 	}
 	ecs->reset();
+
+	// test loss
+	{
+          lossy->set_probability (.5);
+
+	  std::clog << "testing loss of a single message...";
+	  sdpa::events::SubmitJobEvent::Ptr sj(new sdpa::events::SubmitJobEvent("from", "to", "job-id-1", "job-desc", "parent-job"));
+	  service.send(stage.get(), sj, sj->id(), 1, 10);
+
+	  if (ecs->wait(1, 10000))
+	  {
+		service.acknowledge(sj->id());
+		std::clog << "ok" << std::endl;
+	  }
+	  else
+	  {
+		std::clog << "failed" << std::endl;
+		++errcount;
+	  }
+	}
 
 	stage->stop();
 	service_thread.stop();
