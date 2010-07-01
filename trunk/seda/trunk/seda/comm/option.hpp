@@ -31,6 +31,11 @@ namespace seda
             return value;
           }
 
+          T get (void) const
+          {
+            return value;
+          }
+
           void set (T v)
           {
             value = v;
