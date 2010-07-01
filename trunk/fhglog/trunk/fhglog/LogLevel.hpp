@@ -27,8 +27,7 @@ namespace fhg { namespace log {
   class LogLevel {
     public:
       enum Level {
-          UNSET = 0
-        , TRACE
+          TRACE
         , DEBUG
         , INFO
         , WARN
@@ -36,12 +35,12 @@ namespace fhg { namespace log {
         , FATAL
 
         // keep the following definitions always up-to-date
-        , MIN_LEVEL = UNSET
+        , MIN_LEVEL = TRACE
         , DEF_LEVEL = INFO
         , MAX_LEVEL = FATAL
       };
 
-      LogLevel(Level level = UNSET)
+      LogLevel(Level level = DEF_LEVEL)
         : lvl_(level)
       {
         if (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL)
@@ -62,17 +61,26 @@ namespace fhg { namespace log {
         }
         return *this;
       }
+
       bool operator==(const LogLevel &other) const {
         return lvl_ == other.lvl_;
       }
       bool operator!=(const LogLevel &other) const {
         return !(*this == other);
       }
+
       bool operator<(const LogLevel &other) const {
         return lvl_ < other.lvl_;
       }
       bool operator<=(const LogLevel &other) const {
-        return lvl_ == other.lvl_ || lvl_ < other.lvl_;
+        return lvl_ <= other.lvl_;
+      }
+
+      bool operator>(const LogLevel &other) const {
+        return lvl_ > other.lvl_;
+      }
+      bool operator>=(const LogLevel &other) const {
+        return lvl_ >= other.lvl_;
       }
 
       const std::string &str() const;

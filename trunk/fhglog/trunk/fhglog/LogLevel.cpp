@@ -26,8 +26,7 @@ const std::string &LogLevel::str() const
 {
   static std::string LevelToStringMap_[] =
   {
-    "UNSET"
-    , "TRACE"
+      "TRACE"
     , "DEBUG"
     , "INFO"
     , "WARN"
@@ -49,5 +48,6 @@ LogLevel::LogLevel(const std::string &name)
   else if (name == "FATAL") lvl_ = ERROR;
   else if (name == "MIN")   lvl_ = MIN_LEVEL;
   else if (name == "MAX")   lvl_ = MAX_LEVEL;
+  else if (name == "DEF")   lvl_ = DEF_LEVEL;
   else                      lvl_ = DEF_LEVEL;
 }
