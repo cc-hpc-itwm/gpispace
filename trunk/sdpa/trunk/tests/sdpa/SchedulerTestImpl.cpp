@@ -105,3 +105,8 @@ const sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& wo
 void SchedulerTestImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
 {
 }
+
+void SchedulerTestImpl::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
+{
+	throw JobNotDeletedException(job_id);
+}

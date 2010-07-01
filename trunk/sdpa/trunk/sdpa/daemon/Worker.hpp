@@ -45,14 +45,13 @@ namespace sdpa { namespace daemon {
 
     struct scheduling_preference_t
     {
-    	scheduling_preference_t( pref_deg_t pref_deg, 	sdpa::job_id_t job_id, Worker::worker_id_t owner_worker_id):
-    			pref_deg_(pref_deg), job_id_(job_id), owner_worker_id_(owner_worker_id)
+    	scheduling_preference_t( pref_deg_t pref_deg, 	sdpa::job_id_t job_id ):
+    		pref_deg_(pref_deg), job_id_(job_id)
     	{
     	}
 
     	sdpa::job_id_t job_id_;
    		pref_deg_t pref_deg_;
-   		Worker::worker_id_t owner_worker_id_;
 
    		bool operator<(const scheduling_preference_t& pref)const{return job_id_<pref.job_id_;}
 

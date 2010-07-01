@@ -230,8 +230,9 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 	{
 		// check if the job it->job_id_ is in the pending queue of the owner_worker_id_
 		sdpa::job_id_t job_id = it->job_id_;
-		Worker::worker_id_t owner_worker_id = it->owner_worker_id_;
-		// remove the entry from jobs_preferring_this_
+		Worker::worker_id_t owner_worker_id = owner_map().at(job_id);
+
+		// delete the corresponding entry (pref_deg, job_id) from jobs_preferring_this_
 		ordp.erase(it);
 
 		const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
@@ -243,7 +244,6 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 			{
 				// remove the job from the owner's queue and become the new owner
 				ptrOwnerWorker->pending().erase(iter);
-
 				// take the job and return job_id_
 				return job_id;
 			}
@@ -287,6 +287,9 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 			try {
 				jobId = stealWork(worker_id);
 				ptrWorker->submitted().push(jobId);
+
+				// update the current owner
+				owner_map().insert(WorkerManager::owner_map_t::value_type(jobId, worker_id));
 				return jobId;
 			}
 			catch( const NoJobScheduledException& ex )
@@ -303,12 +306,30 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 	common_queue_.push(jobId);
 }
 
+void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
+{
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+		// delete job from worker's queues
+
+		SDPA_LOG_DEBUG("Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
+		ptrWorker->delete_job(job_id);
+
+		owner_map().erase(job_id);
+	}
+	catch(JobNotDeletedException const &) {
+			SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<" not found!");
+	}
+	catch(WorkerNotFoundException const &) {
+		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+	}
+}
 
 const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
 {
-	if( rank_map_.empty() )
+	if( rank_map().empty() )
 		throw NoWorkerFoundException();
 
-	return rank_map_.at(rank);
+	return rank_map().at(rank);
 }
 

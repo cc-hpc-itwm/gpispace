@@ -36,6 +36,7 @@ namespace sdpa { namespace daemon {
 	  typedef boost::unique_lock<mutex_type> lock_type;
 	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 	  typedef std::map<unsigned int, Worker::worker_id_t> rank_map_t;
+	  typedef std::map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
 
 	  WorkerManager();
 	  virtual ~WorkerManager();
@@ -50,10 +51,10 @@ namespace sdpa { namespace daemon {
 
 	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
 	  void dispatchJob(const sdpa::job_id_t& jobId);
+	  void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+
 	  size_t numberOfWorkers() { return worker_map_.size(); }
-
 	  void balanceWorkers();
-
 	  const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
 
 	  //only for testing purposes!
@@ -72,10 +73,16 @@ namespace sdpa { namespace daemon {
 			 (*it).second->print();
 	  }
 
-	  worker_map_t	worker_map_;
-	  rank_map_t 	rank_map_;
+	  const worker_map_t&  worker_map() const { return worker_map_; }
+	  const rank_map_t& rank_map() const { return rank_map_; }
+	  const owner_map_t& owner_map() const { return owner_map_; }
+	  owner_map_t& owner_map() { return owner_map_; }
 
   protected:
+	  worker_map_t	worker_map_;
+	  rank_map_t 	rank_map_;
+	  owner_map_t   owner_map_;
+
 	  SDPA_DECLARE_LOGGER();
 	  worker_map_t::iterator iter_last_worker_;
 
