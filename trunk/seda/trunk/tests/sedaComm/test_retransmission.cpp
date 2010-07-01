@@ -3,7 +3,7 @@
  *
  *       Filename:  test_udp.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/25/2009 04:24:41 PM
@@ -22,6 +22,7 @@
 #include <seda/EventCountStrategy.hpp>
 #include <seda/AccumulateStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
+#include <seda/LossyDaemonStrategy.hpp>
 
 #include <seda/comm/comm.hpp>
 #include <seda/comm/Connection.hpp>
@@ -34,9 +35,16 @@
 
 struct handler
 {
+  handler()
+    : called (false)
+  {}
+
+  bool called;
+
   void deliveryFailed(seda::comm::SedaMessage::Ptr)
   {
 	std::clog << "transmission of message failed!" << std::endl;
+        called = true;
   }
 };
 
@@ -52,7 +60,8 @@ int main(int argc, char **argv)
     seda::StageFactory sFactory;
     seda::Strategy::Ptr discard(new seda::DiscardStrategy("discard"));
 	seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-    seda::Stage::Ptr stage(sFactory.createStage("final", ecs));
+    seda::LossyDaemonStrategy::Ptr lossy(new seda::LossyDaemonStrategy(ecs, 0));
+    seda::Stage::Ptr stage(sFactory.createStage("final", lossy));
 
 	seda::comm::ServiceThread service_thread;
 	seda_msg_delivery_service service(service_thread.io_service(), 500);
@@ -86,29 +95,42 @@ int main(int argc, char **argv)
 
 	// test unsuccessful send
 	{
+          lossy->set_probability (1);
+
 	  std::clog << "testing unsuccessful send of a single message...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
 	  service.send(stage.get(), m1, m1->id(), 1, 1);
 
-	  if (ecs->wait(1, 1000))
+	  if (ecs->wait(1, 4000))
 	  {
-		std::clog << "ok (TODO: check that callback handler was called!)" << std::endl;
-	  }
-	  else
-	  {
-		std::clog << "failed" << std::endl;
-		++errcount;
+            std::clog << "failed! message delivered" << std::endl;
+            ++errcount;
+          }
+          else
+          {
+            if (h.called)
+            {
+              std::clog << "ok" << std::endl;
+              h.called = false;
+            }
+            else
+            {
+              std::clog << "failed! callback handler has not been called!" << std::endl;
+              ++errcount;
+            }
 	  }
 	}
 	ecs->reset();
 
 	// test resend sucess
 	{
+          lossy->set_probability (.5);
+
 	  std::clog << "testing successful send of a single message after retry...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
-	  service.send(stage.get(), m1, m1->id(), 1, 1);
+	  service.send(stage.get(), m1, m1->id(), 1, 10);
 
-	  if (ecs->wait(2, 3000))
+	  if (ecs->wait(2, 5000))
 	  {
 		service.acknowledge(m1->id());
 		std::clog << "ok" << std::endl;
@@ -123,6 +145,8 @@ int main(int argc, char **argv)
 
 	// test resend and cancel
 	{
+          lossy->set_probability (0);
+
 	  std::clog << "testing cancel after resend...";
 	  seda::comm::SedaMessage::Ptr m1(new seda::comm::SedaMessage("from", "to", "hello-1", 42));
 	  service.send(stage.get(), m1, m1->id(), 1, 5);
