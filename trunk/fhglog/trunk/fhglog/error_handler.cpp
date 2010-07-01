@@ -9,20 +9,20 @@ static void DefaultErrorHandler (void)
 #endif
 }
 
-fhg::log::ErrorHandler fhg::log::error_handler (&DefaultErrorHandler);
+static fhg::log::ErrorHandler fhg_error_handler (&DefaultErrorHandler);
 
 namespace fhg
 {
   namespace log
   {
-    ErrorHandler get_error_handler ()
+    void error_handler ()
     {
-      return error_handler;
+      fhg_error_handler ();
     }
 
-    void set_error_handler (ErrorHandler h)
+    void install_error_handler (ErrorHandler h)
     {
-      error_handler = h;
+      fhg_error_handler = h;
     }
   }
 }

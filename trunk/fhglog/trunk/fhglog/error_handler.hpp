@@ -8,9 +8,8 @@ namespace fhg
   namespace log
   {
     typedef void (*ErrorHandler)(void);
-    extern ErrorHandler error_handler;
-    extern void get_error_handler (ErrorHandler);
-    extern void set_error_handler (ErrorHandler);
+    extern void error_handler ();
+    extern void install_error_handler (ErrorHandler);
   }
 }
 
