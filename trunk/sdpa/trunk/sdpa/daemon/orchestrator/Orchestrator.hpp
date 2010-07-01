@@ -206,15 +206,15 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				ptr_workflow_engine_->finished(actId, output);
 
 				try {
-					Worker::ptr_t ptrWorker = findWorker(worker_id);
-					// delete job from the worker's queues
-
-					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
-					ptrWorker->delete_job(pEvt->job_id());
+					ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 				}
 				catch(WorkerNotFoundException)
 				{
 					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worke "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -281,15 +281,15 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				ptr_workflow_engine_->failed(actId, output);
 
 				try {
-					Worker::ptr_t ptrWorker = findWorker(worker_id);
-					// delete job from worker's queues
-
-					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
-					ptrWorker->delete_job(pEvt->job_id());
+					ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 				}
 				catch(const WorkerNotFoundException&)
 				{
 					SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -298,7 +298,7 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				}
 				catch(const JobNotDeletedException&)
 				{
-					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pEvt->job_id());
+					SDPA_LOG_DEBUG("The JobManager could not delete the job "<<pJob->id());
 				}
 			}
 			else
@@ -362,14 +362,15 @@ void Orchestrator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	if( pEvt->from() != sdpa::daemon::WE  ) // the message comes from GWES, forward it to the master
     	{
     		try {
-    			Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-				// in the message comes from a worker
-				ptrWorker->delete_job(pEvt->job_id());
+    			ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
     		}
     		catch(const WorkerNotFoundException&) {
     			SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
     		}
+    		catch(const JobNotDeletedException&)
+			{
+				SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worke "<<worker_id<<"'s queues ...");
+			}
 
     		// tell to GWES that the activity ob_id() was cancelled
     		id_type actId = pJob->id();

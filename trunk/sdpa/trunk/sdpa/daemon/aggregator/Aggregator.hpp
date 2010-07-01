@@ -240,16 +240,16 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				ptr_workflow_engine_->finished(actId, output);
 
 				try {
-					Worker::ptr_t ptrWorker = findWorker(worker_id);
-					// delete job from the worker's queues
-
-					SDPA_LOG_DEBUG("Delete the job "<<pEvt->job_id()<<" from the worker's queues!");
-					ptrWorker->delete_job(pEvt->job_id());
+					ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 				}
 				catch(WorkerNotFoundException)
 				{
 					SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-                                        throw;
+					throw;
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -349,14 +349,15 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				ptr_workflow_engine_->failed(actId, output);
 
 				try {
-					Worker::ptr_t ptrWorker = findWorker(worker_id);
-					// delete job from worker's queues
-
-					DLOG(TRACE, "Deleting the job " << pEvt->job_id() << " from the worker's queues!");
-					ptrWorker->delete_job(pEvt->job_id());
-
-				} catch(WorkerNotFoundException const &) {
+					ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+				}
+				catch(WorkerNotFoundException const &)
+				{
 					SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -438,15 +439,16 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	else // the message comes from an worker, forward it to workflow engine
     	{
     		try {
-    			Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-				// the message comes from a worker
-				ptrWorker->delete_job(pEvt->job_id());
-    		 }
-    		 catch(WorkerNotFoundException const &)
-    		 {
-                   SDPA_LOG_ERROR("worker " << worker_id << " could not be found!");
+				ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
     		}
+    		catch(WorkerNotFoundException const &)
+    		{
+    			SDPA_LOG_ERROR("worker " << worker_id << " could not be found!");
+    		}
+    		catch(const JobNotDeletedException&)
+			{
+				SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+			}
 
     		// tell WE that the activity was cancelled
     		id_type actId = pJob->id();
