@@ -48,7 +48,7 @@ namespace sdpa {
 
 	void schedule_round_robin(const sdpa::job_id_t &job);
 	bool schedule_with_constraints(const sdpa::job_id_t &job);
-	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank );
+	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref);
 
 	virtual void start_job(const sdpa::job_id_t &job);
 

@@ -15,6 +15,13 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <boost/multi_index/member.hpp>
+
+using namespace ::boost::multi_index;
+
 namespace sdpa { namespace daemon {
 
   /**
@@ -23,6 +30,7 @@ namespace sdpa { namespace daemon {
     On the orchestrator this represents an aggregator and on the aggregator
     all information about attached NREs is held in this class.
   */
+
   class Worker {
   public:
     typedef sdpa::shared_ptr<Worker> ptr_t;
@@ -32,6 +40,35 @@ namespace sdpa { namespace daemon {
 
     // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
+
+    typedef unsigned int pref_deg_t;
+
+    struct scheduling_preference_t
+    {
+    	scheduling_preference_t( pref_deg_t pref_deg, 	sdpa::job_id_t job_id, Worker::worker_id_t owner_worker_id):
+    			pref_deg_(pref_deg), job_id_(job_id), owner_worker_id_(owner_worker_id)
+    	{
+    	}
+
+    	sdpa::job_id_t job_id_;
+   		pref_deg_t pref_deg_;
+   		Worker::worker_id_t owner_worker_id_;
+
+   		bool operator<(const scheduling_preference_t& pref)const{return job_id_<pref.job_id_;}
+
+    };
+
+    // sorted vector with job preferences and current placement
+    typedef multi_index_container<
+		  scheduling_preference_t,
+          indexed_by<
+            // sort by less<unsigned int> on pref_deg_
+            ordered_non_unique<member<scheduling_preference_t, pref_deg_t, &scheduling_preference_t::pref_deg_> >,
+
+            // sort by less<sdpa::job_id_t> on job_id_
+            ordered_unique<member<scheduling_preference_t, sdpa::job_id_t, &scheduling_preference_t::job_id_> >
+          >
+     > jobs_preferring_worker_t;
 
     /**
       A worker has a globally unique name and a location.
@@ -129,6 +166,8 @@ namespace sdpa { namespace daemon {
       */
     JobQueue& acknowledged() { return acknowledged_; }
 
+    void add_preferences(const pref_deg_t& , const sdpa::job_id_t&, const worker_id_t&  );
+
     template <class Archive>
 	void serialize(Archive& ar, const unsigned int file_version )
 	{
@@ -143,6 +182,8 @@ namespace sdpa { namespace daemon {
 
     void print();
 
+    jobs_preferring_worker_t jobs_preferring_this_;
+
   private:
     SDPA_DECLARE_LOGGER();
 
@@ -154,6 +195,7 @@ namespace sdpa { namespace daemon {
     JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
+
   };
 }}
 

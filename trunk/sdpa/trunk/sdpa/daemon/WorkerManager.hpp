@@ -46,12 +46,15 @@ namespace sdpa { namespace daemon {
 	  void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
 	  const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
 	  unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);
+	  const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
 	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
 	  void dispatchJob(const sdpa::job_id_t& jobId);
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 
 	  void balanceWorkers();
+
+	  const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
 
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
@@ -69,8 +72,9 @@ namespace sdpa { namespace daemon {
 			 (*it).second->print();
 	  }
 
-	  worker_map_t worker_map_;
-	  rank_map_t rank_map_;
+	  worker_map_t	worker_map_;
+	  rank_map_t 	rank_map_;
+
   protected:
 	  SDPA_DECLARE_LOGGER();
 	  worker_map_t::iterator iter_last_worker_;

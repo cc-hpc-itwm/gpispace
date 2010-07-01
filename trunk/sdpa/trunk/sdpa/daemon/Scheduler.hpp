@@ -22,6 +22,7 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/serialization/access.hpp>
+#include <we/we.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -43,7 +44,7 @@ namespace daemon {
 	 virtual size_t numberOfWorkers() = 0;
 
 	 virtual void schedule(sdpa::job_id_t& jobId) = 0;
-	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank ) = 0;
+	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref ) = 0;
 
 	 virtual void start()=0;
 	 virtual void stop()=0;

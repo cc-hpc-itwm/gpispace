@@ -19,7 +19,7 @@ void SchedulerTestImpl::schedule(sdpa::job_id_t& jobId)
 	jobs_to_be_scheduled.push(jobId);
 }
 
-bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank )
+bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref )
 {
 	return false;
 }

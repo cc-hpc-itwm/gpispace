@@ -271,7 +271,8 @@ void WorkerSerializationTest::testAggregatorSerialization()
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			pScheduler->schedule_to(jobId, k);
+			const we::preference_t job_pref;
+			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
 				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -381,7 +382,8 @@ void WorkerSerializationTest::testOrchestratorSerialization()
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			pScheduler->schedule_to(jobId, k);
+			const we::preference_t job_pref;
+			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
 				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -495,7 +497,8 @@ void WorkerSerializationTest::testDaemonSerializationWithFSMs()
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			pScheduler->schedule_to(jobId, k);
+			const we::preference_t job_pref;
+			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
 				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -597,7 +600,8 @@ void WorkerSerializationTest::testDaemonSerialization()
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			pScheduler->schedule_to(jobId, k);
+			const we::preference_t job_pref;
+			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
 				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -672,7 +676,8 @@ void WorkerSerializationTest::testSchedulerSerialization()
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			pScheduler->schedule_to(jobId, k);
+			const we::preference_t job_pref;
+			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
 				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");

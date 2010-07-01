@@ -211,17 +211,65 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 	return rank_ll;
 }
 
-const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id,  const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException)
+{
+	//find a job that prefers worker_id, with the highest preference degree
+	const Worker::ptr_t& ptrWorker = findWorker(worker_id);
+
+	// take the schedule_pref with the lowest pref_deg, check if the job still exists into the corresponding worker
+	// and steal it
+	typedef nth_index<Worker::jobs_preferring_worker_t, 0>::type ordered_prefs;
+
+	ordered_prefs& ordp = get<0>(ptrWorker->jobs_preferring_this_);
+
+	ordered_prefs::iterator it = ordp.begin();
+	if( it == ordp.end() )
+		throw NoJobScheduledException(worker_id);
+
+	while( it != ordp.end() )
+	{
+		// check if the job it->job_id_ is in the pending queue of the owner_worker_id_
+		sdpa::job_id_t job_id = it->job_id_;
+		Worker::worker_id_t owner_worker_id = it->owner_worker_id_;
+		// remove the entry from jobs_preferring_this_
+		ordp.erase(it);
+
+		const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
+
+		Worker::JobQueue::lock_type lockQ( ptrOwnerWorker->pending().mutex() );
+		for ( Worker::JobQueue::iterator iter = ptrOwnerWorker->pending().begin(); iter != ptrOwnerWorker->pending().end(); iter++ )
+		{
+			if( job_id == *iter )
+			{
+				// remove the job from the owner's queue and become the new owner
+				ptrOwnerWorker->pending().erase(iter);
+
+				// take the job and return job_id_
+				return job_id;
+			}
+		}
+
+		// if not, continue with the next job
+		it = ordp.begin();
+	}
+
+	// erase the job from
+	throw NoJobScheduledException(worker_id);
+}
+
+const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	SDPA_LOG_DEBUG("Get the next job ...");
 
 	sdpa::job_id_t jobId;
-	Worker::ptr_t ptrWorker = findWorker(worker_id);
+	const Worker::ptr_t& ptrWorker = findWorker(worker_id);
 	ptrWorker->update();
 
 	// look first into the worker's queue
 	try {
 		jobId = ptrWorker->get_next_job(last_job_id);
+
+		// should delete the entry corresponding to jobId from all workers ->jobs_preferring_this_
 		return jobId;
 	}
 	catch(const NoJobScheduledException& ex)
@@ -234,8 +282,17 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 		}
 		catch(const QueueEmpty& ex)
 		{
-			// throw an exception if not possible
-			throw NoJobScheduledException(worker_id);
+			// try to steal some work from other workers
+			// if not possible, throw an exception
+			try {
+				jobId = stealWork(worker_id);
+				ptrWorker->submitted().push(jobId);
+				return jobId;
+			}
+			catch( const NoJobScheduledException& ex )
+			{
+				throw ex;
+			}
 		}
 	}
 }
@@ -246,4 +303,12 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 	common_queue_.push(jobId);
 }
 
+
+const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
+{
+	if( rank_map_.empty() )
+		throw NoWorkerFoundException();
+
+	return rank_map_.at(rank);
+}
 
