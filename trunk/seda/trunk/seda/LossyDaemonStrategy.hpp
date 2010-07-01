@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -30,9 +30,21 @@
 namespace seda {
     class LossyDaemonStrategy : public StrategyDecorator {
         public:
+            typedef shared_ptr<LossyDaemonStrategy> Ptr;
+
             explicit
             LossyDaemonStrategy(const Strategy::Ptr &s, double probability=0.1, unsigned int seed=1);
             ~LossyDaemonStrategy() {}
+
+            void set_probability (double p)
+            {
+              probability_ = p;
+            }
+
+            double get_probability (void) const
+            {
+              return probability_;
+            }
 
             void perform(const IEvent::Ptr&);
         private:
