@@ -13,7 +13,7 @@ namespace xml
   {
     namespace util
     {
-      static std::string
+      std::string
       show_node_type (const int t)
       {
         switch (t)
@@ -30,7 +30,7 @@ namespace xml
           }
       }
 
-      static std::string
+      std::string
       quote (const std::string & str)
       {
         return "\"" + str + "\"";

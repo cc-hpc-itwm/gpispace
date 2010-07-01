@@ -27,35 +27,25 @@ namespace xml
   {
     // ********************************************************************* //
 
-    using std::cout;
-    using std::endl;
-
-    // ********************************************************************* //
-
     static type::connect connect_type (const xml_node_type *, state::type &);
     static type::function function_type (const xml_node_type *, state::type &);
     static type::mod mod_type (const xml_node_type *, state::type &);
     static type::net net_type (const xml_node_type *, state::type &);
     static type::place place_type (const xml_node_type *, state::type &);
     static type::port port_type (const xml_node_type *, state::type &);
-    static void gen_struct_type (const xml_node_type *, state::type &, signature::desc_t &);
-    static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
+    static void gen_struct_type ( const xml_node_type *, state::type &
+                                , signature::desc_t &
+                                );
+    static void substruct_type ( const xml_node_type *, state::type &
+                               , signature::desc_t &
+                               );
     static type::struct_t struct_type (const xml_node_type *, state::type &);
     static type::token token_type (const xml_node_type *, state::type &);
-    static type::transition transition_type (const xml_node_type *, state::type &);
+    static type::transition transition_type ( const xml_node_type *
+                                            , state::type &
+                                            );
 
     static type::function parse (std::istream & f, state::type &);
-
-    // ********************************************************************* //
-
-    static std::string
-    name_element (xml_node_type * & node)
-    {
-      skip (node, rapidxml::node_comment);
-      expect (node, rapidxml::node_element);
-
-      return node->name();
-    }
 
     // ********************************************************************* //
 
@@ -68,23 +58,6 @@ namespace xml
     }
 
     // ********************************************************************* //
-
-    static bool
-    read_bool (const std::string & inp)
-    {
-      if (inp == "true")
-        {
-          return true;
-        }
-      else if (inp == "false")
-        {
-          return false;
-        }
-      else
-        {
-          throw std::runtime_error ("failed to read a bool from: " + inp);
-        }
-    }
 
     static type::function
     function_type (const xml_node_type * node, state::type & state)
@@ -429,7 +402,7 @@ namespace xml
                                      );
               const fs::path path (state.expand (file));
 
-              cout << "*** include START " << path << endl;
+              std::cout << "*** include START " << path << std::endl;
 
               std::ifstream f (path.string().c_str());
 
@@ -439,7 +412,7 @@ namespace xml
 
               state.level() -= 2;
 
-              cout << "*** include END " << path << endl;
+              std::cout << "*** include END " << path << std::endl;
             }
           else if (child_name == "use")
             {
@@ -514,7 +487,7 @@ namespace xml
       if (node->next_sibling())
         {
           throw exception::error
-            ("parse", "more than one function definition in one file");
+            ("parse", "more than one definition in one file");
         }
 
       return fun;
@@ -551,12 +524,10 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  //  std::cout << xml::parse::parse (std::cin, state);
+  std::cout << xml::parse::parse (std::cin, state);
   
-  std::ifstream f ("example/kdm/simple_kdm.xml");
-  std::cout << xml::parse::parse (f, state);
-
-  std::cout << std::endl << "--- parsing DONE" << std::endl;
+  // std::ifstream f ("example/kdm/simple_kdm.xml");
+  //   std::cout << xml::parse::parse (f, state);
 
   return EXIT_SUCCESS;
 }

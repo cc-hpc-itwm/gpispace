@@ -9,5 +9,7 @@
 #include <parse/util/expect.hpp>
 #include <parse/util/required.hpp>
 #include <parse/util/optional.hpp>
+#include <parse/util/name_element.hpp>
+#include <parse/util/read_bool.hpp>
 
 #endif

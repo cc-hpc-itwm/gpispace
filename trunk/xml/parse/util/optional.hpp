@@ -14,7 +14,7 @@ namespace xml
 {
   namespace parse
   {
-    static maybe<std::string>
+    maybe<std::string>
     optional (const xml_node_type * node, const Ch * attr)
     {
       return node->first_attribute (attr) 
