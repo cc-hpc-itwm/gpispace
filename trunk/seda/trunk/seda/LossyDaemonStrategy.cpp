@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -35,9 +35,9 @@ LossyDaemonStrategy::LossyDaemonStrategy(const Strategy::Ptr &s, double probabil
 
 void
 LossyDaemonStrategy::perform(const IEvent::Ptr &evt) {
-    if ( random_() <= probability_) {
+    if ( random_() < probability_) {
         SEDA_LOG_DEBUG("lossy-daemon lost event: " << evt->str());
     } else {
         StrategyDecorator::perform(evt);
-    } 
+    }
 }
