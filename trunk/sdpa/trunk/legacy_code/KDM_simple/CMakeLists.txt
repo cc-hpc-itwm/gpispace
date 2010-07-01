@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.6.2)
 
 project(KDM_SDPA)
 
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
-#set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "$ENV{CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules")
 
 include_directories(./src
 		    ./src/include

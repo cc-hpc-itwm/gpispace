@@ -22,7 +22,7 @@ set (FVM_MSQ_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/keyfile"  CACHE STRING 
 set (FVM_SHM_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/shmemkey" CACHE STRING "Default SHM file")
 
 message(STATUS "FVM config: shmsize=${FVM_SHM_SIZE} fvmsize=${FVM_FVM_SIZE}")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "$ENV{CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules")
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 #include(CheckCompiler)
