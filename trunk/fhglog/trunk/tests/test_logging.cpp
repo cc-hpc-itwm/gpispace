@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
   logger_t root(getLogger());
   logger_t logger(getLogger("test.mod"));
-  logger.setLevel(LogLevel::TRACE);
+  logger.setLevel(LogLevel::MIN_LEVEL);
   if (argc > 1)
   {
     int lvl;
@@ -106,6 +106,9 @@ int main(int argc, char **argv)
   LOG_WARN(logger, "this is a warning:" << 42);
 
   LOG_TRACE(logger, "this message should not take up time, if it is not logged: " << compute_large_output_string());
+
+  LOG_IF(INFO, true, "this message is logged with LOG_IF(INFO, true, ...)");
+  LOG_IF_ELSE(INFO, (argc > 1), "argc > 1", "argc <= 1");
 
   std::clog << "testing sizeof() of logger types...";
   if (sizeof(logger_t) != sizeof(logger_impl_t))
