@@ -450,7 +450,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		ptrWorker->update();
 		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
 	}
-	catch(WorkerNotFoundException&)
+	catch(WorkerNotFoundException const &)
 	{
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 		// the worker should register first, before posting a job request

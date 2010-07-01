@@ -499,48 +499,23 @@ void SchedulerImpl::print()
 	ptr_worker_man_->print();
 }
 
-const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
-	try {
-		return ptr_worker_man_->getNextJob(worker_id, last_job_id);
-	}
-	catch(const NoJobScheduledException& ex)
-	{
-		throw ex;
-	}
+  return ptr_worker_man_->getNextJob(worker_id, last_job_id);
 }
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
 {
+  SDPA_LOG_DEBUG("Acknowledge the job "<<job_id.str());
+  Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-	SDPA_LOG_DEBUG("Acknowledge the job "<<job_id.str());
-
-	try {
-		Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-		//put the job into the Running state: do this in acknowledge!
-		if( !ptrWorker->acknowledge(job_id) )
-			throw JobNotFoundException(job_id);
-
-	}
-	catch(WorkerNotFoundException)
-	{
-		SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
-	} catch(...) {
-		SDPA_LOG_DEBUG("Unexpected exception occurred!");
-	}
+  //put the job into the Running state: do this in acknowledge!
+  if( !ptrWorker->acknowledge(job_id) )
+    throw JobNotFoundException(job_id);
 }
 
 void SchedulerImpl::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
-	try {
-		ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
-	}
-	catch(JobNotDeletedException const &) {
-			SDPA_LOG_ERROR("Could not delete the job "<<job_id<<" not found!");
-	}
-	catch(WorkerNotFoundException const &) {
-		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
-	}
+  ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
 }
 
