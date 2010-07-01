@@ -56,7 +56,7 @@ namespace seda { namespace comm {
       struct enable_compression : public detail::option<bool, enable_compression>
       {
         explicit
-        enable_compression (bool b)
+        enable_compression (bool b = true)
           : super(b)
         {}
       };
