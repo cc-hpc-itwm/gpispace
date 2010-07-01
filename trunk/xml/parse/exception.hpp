@@ -19,7 +19,7 @@ namespace xml
                            , const std::string & name
                            )
           : std::runtime_error 
-            (pre + ": unexpected element with name" + util::quote(name))
+            (pre + ": unexpected element with name " + util::quote(name))
         {}
       };
 
