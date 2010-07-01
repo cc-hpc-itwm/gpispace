@@ -28,6 +28,7 @@ int main (int , char **)
 
   int errcount(0);
   logger_t log(getLogger());
+  log.setLevel(LogLevel::MIN_LEVEL);
 
   FileAppender::ptr_t file_app(new FileAppender("logfile"
                                               , "test_file_appender.cpp.log"));
@@ -144,7 +145,7 @@ int main (int , char **)
           std::clog << "OK!" << std::endl;
         }
       }
-      
+
       unlink("foo.log");
       unlink("bar.log");
     }

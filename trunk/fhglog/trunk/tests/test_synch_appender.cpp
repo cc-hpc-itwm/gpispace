@@ -27,6 +27,7 @@ int main (int , char **)
 
   int errcount(0);
   logger_t log(getLogger());
+  log.setLevel(LogLevel::MIN_LEVEL);
 
   std::ostringstream logstream;
   log.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream))))->setFormat(Formatter::Custom("%m"));

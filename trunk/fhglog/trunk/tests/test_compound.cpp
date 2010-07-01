@@ -27,6 +27,7 @@ int main (int , char **)
 
   int errcount(0);
   logger_t log(getLogger());
+  log.setLevel(LogLevel::MIN_LEVEL);
 
   std::ostringstream logstream;
 
