@@ -47,7 +47,7 @@ OPTION(ENABLE_TESTS
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "$ENV{CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
