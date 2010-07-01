@@ -45,7 +45,140 @@ namespace xml
                                             , state::type &
                                             );
 
-    static type::function parse (std::istream & f, state::type &);
+    static type::function parse_function (std::istream & f, state::type &);
+
+
+    typedef std::vector<type::struct_t> struct_vec_type;
+
+    static struct_vec_type structs_include ( const std::string &
+                                           , state::type &
+                                           );
+    static struct_vec_type parse_structs (std::istream &, state::type &);
+    static struct_vec_type structs_type ( const xml_node_type *
+                                        , state::type & state
+                                        );
+
+    // ********************************************************************* //
+
+    static type::function
+    function_include (const std::string & file, state::type & state)
+    {
+      namespace fs = boost::filesystem;
+
+      const fs::path path (state.expand (file));
+
+      std::cout << "*** function_include START " << path << std::endl;
+
+      std::ifstream f (path.string().c_str());
+
+      state.level() += 2;
+
+      type::function fun (parse_function (f, state));
+
+      state.level() -= 2;
+
+      std::cout << "*** function_include END " << path << std::endl;
+
+      return fun;
+    }
+
+    // ********************************************************************* //
+
+    static struct_vec_type
+    structs_type (const xml_node_type * node, state::type & state)
+    {
+      struct_vec_type v;
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child->next_sibling()
+          )
+        {
+          const std::string child_name (child->name());
+
+          if (child_name == "struct")
+            {
+              v.push_back (struct_type (child, state));
+            }
+          else if (child_name == "include-structs")
+            {
+              struct_vec_type struct_vec 
+                (structs_include (required ( "structs_type"
+                                           , child
+                                           , "href"
+                                           )
+                                 , state
+                                 )
+                );
+
+              v.insert (v.end(), struct_vec.begin(), struct_vec.end());
+            }
+          else
+            {
+              throw exception::unexpected_element ("structs_type", child_name);
+            }
+        }
+
+      return v;
+    }
+
+    static struct_vec_type
+    parse_structs (std::istream & f, state::type & state)
+    {
+      xml_document_type doc;
+
+      input_type inp (f);
+
+      doc.parse < rapidxml::parse_full
+                | rapidxml::parse_trim_whitespace
+                | rapidxml::parse_normalize_whitespace
+                > (inp.data())
+        ;
+
+      xml_node_type * node (doc.first_node());
+
+      if (!node)
+        {
+          throw exception::error ("parse_structs", "no element given at all!?");
+        }
+
+      skip (node, rapidxml::node_declaration);
+
+      const std::string name (name_element (node));
+
+      if (name != "structs")
+        {
+          throw exception::unexpected_element ("parse_structs", name);
+        }
+
+      struct_vec_type struct_vec (structs_type (node, state));
+
+      if (node->next_sibling())
+        {
+          throw exception::error
+            ("parse_structs", "more than one definition in one file");
+        }
+
+      return struct_vec;
+    }
+
+    static struct_vec_type
+    structs_include (const std::string & file, state::type & state)
+    {
+      namespace fs = boost::filesystem;
+
+      const fs::path path (state.expand (file));
+
+      std::cout << "*** structs_include START " << path << std::endl;
+
+      std::ifstream f (path.string().c_str());
+
+      struct_vec_type struct_vec (parse_structs (f, state));
+
+      std::cout << "*** structs_include END " << path << std::endl;
+
+      return struct_vec;
+    }
 
     // ********************************************************************* //
 
@@ -84,6 +217,26 @@ namespace xml
           else if (child_name == "out")
             {
               f.out.push_back (port_type (child, state));
+            }
+          else if (child_name == "struct")
+            {
+              f.structs.push_back (struct_type (child, state));
+            }
+          else if (child_name == "include-structs")
+            {
+              struct_vec_type struct_vec 
+                (structs_include (required ( "function_type"
+                                           , child
+                                           , "href"
+                                           )
+                                 , state
+                                 )
+                );
+
+              f.structs.insert ( f.structs.end()
+                               , struct_vec.begin()
+                               , struct_vec.end()
+                               );
             }
           else if (child_name == "expression")
             {
@@ -157,6 +310,49 @@ namespace xml
           else if (child_name == "struct")
             {
               n.element.push_back (struct_type (child, state));
+            }
+          else if (child_name == "include-structs")
+            {
+              struct_vec_type struct_vec 
+                (structs_include (required ("net_type", child, "href"), state));
+
+              n.element.insert ( n.element.end()
+                               , struct_vec.begin()
+                               , struct_vec.end()
+                               );
+            }
+          else if (child_name == "include")
+            {
+              const std::string file (required ("net_type", child, "href"));
+              const maybe<std::string> as (optional (child, "as"));
+
+              type::function fun (function_include (file, state));
+
+              if (as.isJust())
+                {
+                  if (fun.name.isJust())
+                    {
+                      std::cout << "INFO: "
+                                << "overwriting old function name "
+                                << *(fun.name)
+                                << " with new name "
+                                << *as
+                                << std::endl;
+                    }
+
+                  fun.name = *as;
+                }
+
+              if (fun.name.isNothing())
+                {
+                  throw exception::error
+                    ("net_type"
+                    , "try to include top level anonymous function from file" 
+                    + file
+                    );
+                }
+
+              n.element.push_back (fun);
             }
           else
             {
@@ -393,26 +589,14 @@ namespace xml
 
           if (child_name == "include")
             {
-              namespace fs = boost::filesystem;
-
               const std::string file (required ( "transition_type"
                                                , child
-                                               , "name"
+                                               , "href"
                                                )
                                      );
-              const fs::path path (state.expand (file));
 
-              std::cout << "*** include START " << path << std::endl;
 
-              std::ifstream f (path.string().c_str());
-
-              state.level() += 2;
-
-              t.f = parse (f, state);
-
-              state.level() -= 2;
-
-              std::cout << "*** include END " << path << std::endl;
+              t.f = function_include (file, state);
             }
           else if (child_name == "use")
             {
@@ -454,7 +638,7 @@ namespace xml
     // ********************************************************************* //
 
     static type::function
-    parse (std::istream & f, state::type & state)
+    parse_function (std::istream & f, state::type & state)
     {
       xml_document_type doc;
 
@@ -470,7 +654,7 @@ namespace xml
 
       if (!node)
         {
-          throw exception::error ("parse", "no element given at all!?");
+          throw exception::error ("parse_function", "no element given at all!?");
         }
 
       skip (node, rapidxml::node_declaration);
@@ -479,7 +663,7 @@ namespace xml
 
       if (name != "defun")
         {
-          throw exception::unexpected_element ("parse", name);
+          throw exception::unexpected_element ("parse_function", name);
         }
 
       type::function fun (function_type (node, state));
@@ -487,7 +671,7 @@ namespace xml
       if (node->next_sibling())
         {
           throw exception::error
-            ("parse", "more than one definition in one file");
+            ("parse_function", "more than one definition in one file");
         }
 
       return fun;
@@ -524,10 +708,10 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  std::cout << xml::parse::parse (std::cin, state);
+  std::cout << xml::parse::parse_function (std::cin, state);
   
   // std::ifstream f ("example/kdm/simple_kdm.xml");
-  //   std::cout << xml::parse::parse (f, state);
+  //   std::cout << xml::parse::parse_function (f, state);
 
   return EXIT_SUCCESS;
 }

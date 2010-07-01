@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_generate_sequence">
+<defun>
 	<in name="amount" type="LONG" place="amount" />
 	<out name="out" type="LONG" place="out" />
 	<net>

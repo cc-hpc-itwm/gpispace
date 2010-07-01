@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_generate_bunch" xmlns:xi="http://www.w3.org/2001/XInclude">
+<defun name="f_generate_bunch">
 	<in name="amount" type="LONG" place="amount" />
 	<in name="volume" type="LONG" place="volume" />
 	<out name="out"   type="BUNCH" place="out" />
@@ -10,7 +10,7 @@
 		<place name="out" type="BUNCH" />
 
 		<transition name="generate_ids">			
-			<include name="generate_sequence.xml" />
+			<include href="generate_sequence.xml" />
 			<connect-in place="amount" port="amount" />
 			<connect-out place="id" port="out" />
 		</transition>

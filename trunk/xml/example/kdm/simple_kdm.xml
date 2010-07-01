@@ -2,40 +2,20 @@
 <defun name="kdm_simple" internal="false"
 			 xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xmlns:xi="http://www.w3.org/2001/XInclude">
+>
 	<in name="config_file" type="string" place="config_file"/>
 	<out name="done" type="control" place="done"/>
-	<net>
-<!-- basic types, not allowed to define these here
-<struct name="long"/>
-<struct name="string"/>
-<struct name="control"/>
--->
 
+<include-structs href="typedef.xml"/>
+
+	<net>
 		<place name="config_file" type="string">
 			<token>
 				<value>"/tmp/test.cfg"</value>
 			</token>
 		</place>
 
-		<struct name="CONFIG">
-			<field name="OFFSETS" type="long" />
-			<field name="SUBVOLUMES_PER_OFFSET" type="long" />
-			<field name="BUNCHES_PER_OFFSET" type="long" />
-			<field name="handle_Job" type="long" />
-			<field name="handle_TT" type="long" />
-			<field name="NThreads" type="long" />
-		</struct>
 
-		<struct name="VOLUME">
-			<field name="id" type="long"/>
-			<field name="offset" type="long"/>
-		</struct>
-		
-		<struct name="BUNCH">
-			<field name="id" type="long"/>
-			<field name="volume" type="VOLUME"/>
-		</struct>
 		
 		<transition name="initialize">
 			<defun>
@@ -119,15 +99,17 @@
 		</transition>
 		<place name="number_of_volumes" type="long" />
 
+			<include href="generate_sequence.xml" as="f_gen_seq"/>
+
         <transition name="generate_offset">
-			<include name="generate_sequence.xml" />
+                        <use name="f_gen_seq"/>
 			<connect-in place="number_of_offsets" port="amount" />
 			<connect-out place="offset" port="out" />
 		</transition>
         <place name="offset" type="long" />
 		
         <transition name="generate_volume">
-			<include name="generate_volume.xml" />
+			<include href="generate_volume.xml" />
 			<connect-in place="offset" port="offset" />
 			<connect-read place="number_of_volumes" port="amount" />
 			<connect-out place="volume" port="out" />
@@ -148,7 +130,7 @@
       				<place name="done" type="control" />
 					
 					<transition name="wrap_process_volume">
-						<include name="process_volume.xml" /> 
+						<include href="process_volume.xml" /> 
 						<connect-in   place="volume" port="volume" />
 						<connect-read place="config" port="config" />
 						<connect-out  place="done"   port="done" />

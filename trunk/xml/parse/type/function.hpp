@@ -28,9 +28,12 @@ namespace xml
                                , mod
                                , boost::recursive_wrapper<net>
                                > type; 
+        typedef std::vector<struct_t> struct_vec_type;
 
         port_vec_type in;
         port_vec_type out;
+
+        struct_vec_type structs;
 
         maybe<std::string> name;
         maybe<bool> internal;
@@ -70,6 +73,20 @@ namespace xml
             )
           {
             s << level(f.level+2) << *pos << std::endl;
+          }
+
+        s << level(f.level+1) << "structs = " << std::endl;
+
+        for ( function::struct_vec_type::const_iterator pos (f.structs.begin())
+            ; pos != f.structs.end()
+            ; ++pos
+            )
+          {
+            type::struct_t deep (*pos);
+
+            deep.level += 2;
+
+            s << deep << std::endl;
           }
 
         s << level(f.level+1) << "condition = " << std::endl;

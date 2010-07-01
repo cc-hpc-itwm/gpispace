@@ -12,7 +12,14 @@
 
 
   <xsd:element name="defun" type="function_type"/>
+  <xsd:element name="structs" type="struct_list_type"/>
   
+  <xsd:complexType name="struct_list_type">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:element minOccurs="0" name="struct" type="struct_type"/>
+      <xsd:element minOccurs="0" name="include-structs" type="struct_include_type"/>
+     </xsd:choice>
+  </xsd:complexType>
 
   <xsd:complexType name="struct_field_type">
     <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -77,8 +84,10 @@
     <xsd:sequence>
       <xsd:choice>
         <xsd:sequence minOccurs="0">
-          <xsd:element maxOccurs="unbounded" minOccurs="1" name="in" type="port_type"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="in" type="port_type"/>
           <xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="port_type"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="struct" type="struct_type"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="include-structs" type="struct_include_type"/>
           <xsd:choice minOccurs="1">
             <xsd:element name="expression" type="xsd:string"/>
             <xsd:element name="module" type="mod_type"/>
@@ -92,7 +101,20 @@
     <xsd:attribute name="internal" type="xsd:boolean" use="optional" default="true"/>
   </xsd:complexType>
 
-  <xsd:complexType name="element_with_name_type">
+  <xsd:complexType name="transition_include_type">
+    <xsd:attribute name="href" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="struct_include_type">
+    <xsd:attribute name="href" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="global_include_type">
+    <xsd:attribute name="href" type="xsd:string" use="required"/>
+    <xsd:attribute name="as" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="use_type">
     <xsd:attribute name="name" type="xsd:string" use="required"/>
   </xsd:complexType>
 
@@ -100,8 +122,8 @@
     <xsd:sequence>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="defun" type="function_type"/>
-        <xsd:element name="include" type="element_with_name_type"/>
-        <xsd:element name="use" type="element_with_name_type"/>
+        <xsd:element name="include" type="transition_include_type"/>
+        <xsd:element name="use" type="use_type"/>
       </xsd:choice>
         <xsd:choice maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
@@ -116,9 +138,11 @@
   <xsd:complexType name="net_type">
     <xsd:choice maxOccurs="unbounded">
       <xsd:element name="struct" type="struct_type"/>
+      <xsd:element name="include-structs" type="struct_include_type"/>
       <xsd:element name="place" type="place_type"/>
       <xsd:element name="defun" type="function_type"/>
       <xsd:element name="transition" type="transition_type"/>
+      <xsd:element name="include" type="global_include_type"/>
     </xsd:choice>
   </xsd:complexType>
 

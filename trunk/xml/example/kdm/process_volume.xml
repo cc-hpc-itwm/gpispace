@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_process_volume" internal="false" xmlns:xi="http://www.w3.org/2001/XInclude" >
+<defun name="f_process_volume" internal="false">
 	<in name="volume" type="VOLUME"  place="volume_in"/>
 	<in name="config" type="CONFIG"  place="config_in"/>
 	<out name="done"  type="control" place="done"/>
@@ -74,7 +74,7 @@
 		<place name="bunches_per_offset" type="long"/>
 		
 		<transition name="generate_bunch">
-			<include name="generate_bunch.xml" />
+			<include href="generate_bunch.xml" />
 <!--
 			<include href="generate_bunch.xml" as="f_generate_bunch">
 				<map-in from="VOLUME" to="IN_TYPE" />
