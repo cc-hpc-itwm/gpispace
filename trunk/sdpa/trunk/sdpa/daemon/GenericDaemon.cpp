@@ -188,6 +188,11 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 
 void GenericDaemon::shutdown_network()
 {
+  {
+    if (master() != "")
+      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN)));
+  }
+
 	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
 	const std::string prefix(daemon_stage_->name()+".net");
 
@@ -266,6 +271,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
 	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
+        acknowledge (pRegAckEvt->id());
 	m_bRegistered = true;
 }
 
@@ -358,7 +364,7 @@ bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &
 
 void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
 {
-  MLOG(WARN, "delivery of message[" << e->id() << "] failed: " << e->str());
+  MLOG(FATAL, "delivery of message[" << e->id() << "] failed: " << e->str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -654,6 +660,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 	try {
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+                pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 
 		addWorker( evtRegWorker.from(), evtRegWorker.rank() );
@@ -692,8 +699,16 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		sendEventToMaster(pWorkerRegEvt);
 		break;
 	}
+	case ErrorEvent::SDPA_ENODE_SHUTDOWN:
+	{
+          MLOG(INFO, "worker " << error.from() << " went down (clean)");
+          ptr_scheduler_->delWorker(error.from());
+          break;
+	}
 	default:
+          {
 		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+          }
   }
 }
 

@@ -62,6 +62,11 @@ void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int
 	}
 }
 
+void SchedulerImpl::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+{
+  ptr_worker_man_->delWorker(workerId);
+}
+
 /*
 	Schedule a job locally, send the job to WE
 */

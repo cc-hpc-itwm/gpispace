@@ -80,6 +80,7 @@ void Logger::log(const LogEvent &event) const
   event.finish();
   event.logged_via(name());
 
+  bool logged (false);
   for (appender_list_t::const_iterator it(appenders_.begin());
        it != appenders_.end();
        ++it)
@@ -87,6 +88,7 @@ void Logger::log(const LogEvent &event) const
     try
     {
       (*it)->append(event);
+      logged = true;
     }
     catch (const std::exception &ex)
     {
@@ -100,6 +102,12 @@ void Logger::log(const LogEvent &event) const
 
   if (event.severity() == LogLevel::FATAL)
   {
+    if (! logged)
+    {
+      std::cerr << "logger " << name() << " got unhandled FATAL message: "
+                << event.file() << ":" << event.line() << " - " << event.message()
+                << std::endl;
+    }
     fhg::log::error_handler();
   }
 }

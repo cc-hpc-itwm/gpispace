@@ -48,6 +48,8 @@ namespace sdpa { namespace daemon {
 	  const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
 	  void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+	  void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+
 	  const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
 	  unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);
 	  const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
