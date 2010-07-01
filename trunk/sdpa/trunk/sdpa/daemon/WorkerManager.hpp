@@ -37,6 +37,9 @@ namespace sdpa { namespace daemon {
 	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 	  typedef std::map<unsigned int, Worker::worker_id_t> rank_map_t;
 	  typedef std::map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
+	  typedef nth_index<Worker::mi_affinity_list_t, 0>::type mi_ordered_prefs;
+	  typedef nth_index<Worker::mi_affinity_list_t, 1>::type mi_ordered_jobIds;
+
 
 	  WorkerManager();
 	  virtual ~WorkerManager();
@@ -52,6 +55,7 @@ namespace sdpa { namespace daemon {
 	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
 	  void dispatchJob(const sdpa::job_id_t& jobId);
 	  void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+	  void deleteJobFromAffinityList(const sdpa::job_id_t& job_id);
 
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 	  void balanceWorkers();

@@ -111,7 +111,6 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 	  }
 }
 
-
 void Worker::print()
 {
 	// print the values of the restored job queue

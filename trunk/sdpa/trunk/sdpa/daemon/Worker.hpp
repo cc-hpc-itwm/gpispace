@@ -67,7 +67,7 @@ namespace sdpa { namespace daemon {
             // sort by less<sdpa::job_id_t> on job_id_
             ordered_unique<member<scheduling_preference_t, sdpa::job_id_t, &scheduling_preference_t::job_id_> >
           >
-     > jobs_preferring_worker_t;
+     > mi_affinity_list_t;
 
     /**
       A worker has a globally unique name and a location.
@@ -181,7 +181,7 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    jobs_preferring_worker_t jobs_preferring_this_;
+    mi_affinity_list_t jobs_preferring_this_;
 
   private:
     SDPA_DECLARE_LOGGER();
