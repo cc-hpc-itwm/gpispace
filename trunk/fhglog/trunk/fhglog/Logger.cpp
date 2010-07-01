@@ -44,7 +44,7 @@ const Logger::ptr_t &Logger::get(const std::string &a_name, const std::string & 
 }
 
 Logger::Logger(const std::string &a_name)
-  : name_(a_name), lvl_(LogLevel(LogLevel::UNSET)), filter_(new NullFilter())
+  : name_(a_name), lvl_(LogLevel(LogLevel::DEF_LEVEL)), filter_(new NullFilter())
 {
 }
 
