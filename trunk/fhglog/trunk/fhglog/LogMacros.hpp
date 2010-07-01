@@ -39,7 +39,28 @@ namespace fhg { namespace log {
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
-#define LOG_IF(level, condition, msg) do { if ((condition)) { LOG(level, msg); } while (0)
+#define LOG_IF(level, condition, msg)\
+    do\
+    {\
+      if (condition)\
+      {\
+        LOG(level, msg);\
+      }\
+    }\
+    while (0)
+#define LOG_IF_ELSE(level, condition, then_msg, else_msg)\
+    do\
+    {\
+      if (condition)\
+      {\
+        LOG(level, then_msg);\
+      }\
+      else\
+      {\
+        LOG(level, else_msg);\
+      }\
+    }\
+    while (0)
 
 #ifdef NDEBUG
 
@@ -47,6 +68,7 @@ namespace fhg { namespace log {
 #define DMLOG(level, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
+#define DLOG_IF_ELSE(level, condition, m1, m2)
 
 #else
 
@@ -54,6 +76,7 @@ namespace fhg { namespace log {
 #define DMLOG(level, msg) MLOG(level, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
+#define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
 
 #endif
 
