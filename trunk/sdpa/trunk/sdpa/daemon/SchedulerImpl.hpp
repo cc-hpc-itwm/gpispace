@@ -56,6 +56,7 @@ namespace sdpa {
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
 
 	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+        virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 

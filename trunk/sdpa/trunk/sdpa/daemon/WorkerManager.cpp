@@ -92,6 +92,28 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 		iter_last_worker_ = worker_map_.begin();
 }
 
+void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+{
+  lock_type lock(mtx_);
+  worker_map_t::iterator w (worker_map_.find (workerId));
+
+  if (w == worker_map_.end())
+  {
+    throw WorkerNotFoundException(workerId);
+  }
+  else
+  {
+    // TODO: redistribute load, currently we just fail hard
+    LOG_IF( FATAL
+          ,  w->second->pending().size()
+          || w->second->submitted().size()
+          || w->second->acknowledged().size()
+          , "tried to remove worker " << workerId << " there are still jobs scheduled!"
+          );
+    worker_map_.erase (w);
+  }
+}
+
 // you should here delete_worker as well, for the
 // case when the workers unregisters
 

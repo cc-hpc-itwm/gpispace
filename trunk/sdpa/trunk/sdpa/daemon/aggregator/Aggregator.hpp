@@ -160,7 +160,7 @@ void Aggregator<T>::action_config_ok(const ConfigOkEvent&)
 
 	SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
-	to_master_stage()->send(pEvtWorkerReg);
+        sendEventToMaster (pEvtWorkerReg, MSG_RETRY_CNT);
 }
 
 template <typename T>
