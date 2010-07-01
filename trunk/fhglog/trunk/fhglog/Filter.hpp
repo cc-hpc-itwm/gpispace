@@ -37,7 +37,7 @@ namespace fhg { namespace log {
     {
       filter_list_.push_back(filter);
     }
-    
+
     bool operator()(const LogEvent &event) const
     {
       for (filter_list_t::const_iterator filter(filter_list_.begin()); filter != filter_list_.end(); ++filter)
@@ -61,7 +61,7 @@ namespace fhg { namespace log {
 
     bool operator()(const LogEvent &evt) const
     {
-      return (evt.severity() != LogLevel::UNSET) ? evt.severity() < level_ : false;
+      return evt.severity() < level_;
     }
   private:
     LogLevel level_;
