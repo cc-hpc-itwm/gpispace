@@ -48,8 +48,16 @@ namespace fhg { namespace log {
       void setFilter(const Filter::ptr_t &filter);
       const Filter::ptr_t &getFilter() const;
       const LogLevel &getLevel() const;
-      bool isLevelEnabled(const LogLevel &level) const;
-      bool isFiltered(const LogEvent &evt) const;
+      inline bool isLevelEnabled(const LogLevel &level) const
+      {
+        return level >= lvl_;
+      }
+
+      inline bool isFiltered(const LogEvent &evt) const
+      {
+        //        return (! hasAppender()) || (*filter_)(evt);
+        return (*filter_)(evt);
+      }
 
       void log(const LogEvent &event) const;
       void flush() const;

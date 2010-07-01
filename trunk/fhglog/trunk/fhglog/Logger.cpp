@@ -73,17 +73,6 @@ const LogLevel &Logger::getLevel() const
   return lvl_;
 }
 
-bool Logger::isLevelEnabled(const LogLevel &level) const
-{
-  // TODO: inherit the level from the parent logger if the level was not set
-  return (lvl_ != LogLevel::UNSET) ? lvl_ <= level : true;
-}
-
-bool Logger::isFiltered(const LogEvent &evt) const
-{
-  return (! hasAppender()) || (*filter_)(evt);
-}
-
 void Logger::log(const LogEvent &event) const
 {
   if (! isLevelEnabled(event.severity()))
