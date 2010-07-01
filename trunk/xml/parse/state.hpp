@@ -7,6 +7,12 @@
 
 #include <iostream>
 
+#include <list>
+
+#include <stdexcept>
+
+#include <boost/filesystem.hpp>
+
 // ************************************************************************* //
 
 namespace xml
@@ -15,45 +21,46 @@ namespace xml
   {
     namespace state
     {
+      namespace fs = boost::filesystem;
+
+      typedef std::vector<fs::path> search_path_type;
+
       struct type
       {
       private:
-        signature::set_type _signature;
         int _level;
+        search_path_type _search_path;
 
       public:
         type (void)
-          : _signature ()
-          , _level (0)
+          : _level (0)
+          , _search_path ()
         {}
 
         int & level (void) { return _level; }
-        signature::set_type & signature (void) { return _signature; }
+        search_path_type & search_path (void) { return _search_path; }
 
-        void resolve_signatures (void)
+        fs::path expand (const std::string & file)
         {
-          signature::visitor::resolve resolve (_signature);
-
-          for ( signature::set_type::iterator sig (_signature.begin())
-              ; sig != _signature.end()
-              ; ++sig
+          for ( search_path_type::const_iterator dir (_search_path.begin())
+              ; dir != _search_path.end()
+              ; ++dir
               )
             {
-              boost::apply_visitor (resolve, sig->second);
-            }
-        }
+              if (! fs::exists (*dir))
+                {
+                  continue;
+                }
 
-        void print_signatures (std::ostream & s) const
-        {
-          s << "signatures:" << std::endl;
+              fs::path path (*dir / file);
 
-          for ( signature::set_type::const_iterator pos (_signature.begin())
-              ; pos != _signature.end()
-              ; ++pos
-              )
-            {
-              s << pos->first << ": " << pos->second << std::endl;
+              if (fs::exists (path))
+                {
+                  return path;
+                }
             }
+
+          throw std::runtime_error ("could not find file: " + file);
         }
       };
     }

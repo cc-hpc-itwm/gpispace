@@ -16,6 +16,9 @@
 #include <iostream>
 #include <vector>
 
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 // ************************************************************************* //
 
 namespace xml
@@ -37,41 +40,21 @@ namespace xml
     static type::port port_type (const xml_node_type *, state::type &);
     static void gen_struct_type (const xml_node_type *, state::type &, signature::desc_t &);
     static void substruct_type (const xml_node_type *, state::type &, signature::desc_t &);
-    static void struct_type (const xml_node_type *, state::type &);
+    static type::struct_t struct_type (const xml_node_type *, state::type &);
     static type::token token_type (const xml_node_type *, state::type &);
     static type::transition transition_type (const xml_node_type *, state::type &);
 
-    static void parse (std::istream & f, state::type &);
+    static type::function parse (std::istream & f, state::type &);
 
     // ********************************************************************* //
 
     static std::string
-    name_element (xml_node_type * & node, state::type & state)
+    name_element (xml_node_type * & node)
     {
       skip (node, rapidxml::node_comment);
       expect (node, rapidxml::node_element);
 
-      const std::string name (node->name());
-
-      if (name == "xi:include")
-        {
-          std::string file ("example/kdm/");
-          file.append (node->first_attribute("href")->value());
-
-          cout << "*** include START " << file << endl;
-
-          std::ifstream f (file.c_str());
-
-          parse (f, state);
-
-          cout << "*** include END " << file << endl;
-
-          node = node->next_sibling();
-
-          return name_element (node, state);
-        }
-
-      return name;
+      return node->name();
     }
 
     // ********************************************************************* //
@@ -184,7 +167,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
           if (child_name == "defun")
             {
@@ -200,7 +183,7 @@ namespace xml
             }
           else if (child_name == "struct")
             {
-              struct_type (child, state);
+              n.element.push_back (struct_type (child, state));
             }
           else
             {
@@ -234,7 +217,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
           if (child_name == "token")
             {
@@ -287,7 +270,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
           if (child_name == "field")
             {
@@ -324,20 +307,18 @@ namespace xml
         );
     }
 
-    static void
+    static type::struct_t
     struct_type (const xml_node_type * node, state::type & state)
     {
-      const std::string name (required ("struct_type", node, "name"));
+      type::struct_t s;
 
-      if (state.signature().find (name) != state.signature().end())
-        {
-          throw exception::error
-            ("struct_type", "struct already defined " + util::quote(name));
-        }
+      s.name = required ("struct_type", node, "name");
+      s.sig = signature::structured_t();
+      s.level = state.level();
 
-      state.signature()[name] = signature::structured_t();
+      gen_struct_type (node, state, s.sig);
 
-      gen_struct_type (node, state, state.signature()[name]);
+      return s;
     }
 
     // ********************************************************************* //
@@ -355,7 +336,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
           if (child_name == "value")
             {
@@ -401,7 +382,7 @@ namespace xml
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
           if (child_name == "value")
             {
@@ -429,28 +410,50 @@ namespace xml
 
       t.level = state.level();
       t.name = required ("transition_type", node, "name");
-      t.use = optional (node, "use");
 
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child->next_sibling()
           )
         {
-          const std::string child_name (name_element (child, state));
+          const std::string child_name (name_element (child));
 
-          if (child_name == "defun")
+          if (child_name == "include")
             {
-              if (t.use.isJust())
-                {
-                  throw exception::error 
-                    ("transition_type", "use and defun given at the same time");
-                }
+              namespace fs = boost::filesystem;
 
-              ++state.level();
+              const std::string file (required ( "transition_type"
+                                               , child
+                                               , "name"
+                                               )
+                                     );
+              const fs::path path (state.expand (file));
 
-              t.f = Just<>(function_type (child, state));
+              cout << "*** include START " << path << endl;
 
-              --state.level();
+              std::ifstream f (path.string().c_str());
+
+              state.level() += 2;
+
+              t.f = parse (f, state);
+
+              state.level() -= 2;
+
+              cout << "*** include END " << path << endl;
+            }
+          else if (child_name == "use")
+            {
+              t.f = type::use ( required ("transition_type", child, "name")
+                              , state.level() + 2
+                              );
+            }
+          else if (child_name == "defun")
+            {
+              state.level() += 2;
+
+              t.f = function_type (child, state);
+
+              state.level() -= 2;
             }
           else if (child_name == "connect-in")
             {
@@ -466,7 +469,9 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("transition_type", child_name);
+              throw exception::unexpected_element ( "transition_type"
+                                                  , child_name
+                                                  );
             }
         }
 
@@ -475,13 +480,9 @@ namespace xml
 
     // ********************************************************************* //
 
-    static int level (0);
-
-    static void
+    static type::function
     parse (std::istream & f, state::type & state)
     {
-      ++state.level();
-
       xml_document_type doc;
 
       input_type inp (f);
@@ -492,56 +493,70 @@ namespace xml
                 > (inp.data())
         ;
 
-      for ( xml_node_type * node (doc.first_node())
-          ; node
-          ; node = node->next_sibling()
-          )
+      xml_node_type * node (doc.first_node());
+
+      if (!node)
         {
-          skip (node, rapidxml::node_declaration);
-
-          const std::string name (name_element (node, state));
-      
-          if (name == "defun")
-            {
-              type::function F (function_type (node, state));
-
-              if (state.level() == 1)
-                {
-                  cout << F;
-                }
-            }
-          else
-            {
-              throw exception::unexpected_element ("parse", name);
-            }
+          throw exception::error ("parse", "no element given at all!?");
         }
 
-      --state.level();
+      skip (node, rapidxml::node_declaration);
+
+      const std::string name (name_element (node));
+
+      if (name != "defun")
+        {
+          throw exception::unexpected_element ("parse", name);
+        }
+
+      type::function fun (function_type (node, state));
+
+      if (node->next_sibling())
+        {
+          throw exception::error
+            ("parse", "more than one function definition in one file");
+        }
+
+      return fun;
     }
   }
 }
 
 // ************************************************************************* //
 
+namespace po = boost::program_options;
+
 int
-main (void)
+main (int argc, char ** argv)
 {
   xml::parse::state::type state;
 
-  xml::parse::parse (std::cin, state);
+  po::options_description desc("options");
 
-  //  std::ifstream f ("/u/r/rahn/SDPA/trunk/xml/example/kdm/simple_kdm.xml");
-  //  xml::parse::parse (f);
+  desc.add_options()
+    ("help", "this message")
+    ( "search-path"
+    , po::value<xml::parse::state::search_path_type>(&state.search_path())
+    , "search path"
+    )
+    ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help"))
+    {
+      std::cout << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
+
+  //  std::cout << xml::parse::parse (std::cin, state);
+  
+  std::ifstream f ("example/kdm/simple_kdm.xml");
+  std::cout << xml::parse::parse (f, state);
 
   std::cout << std::endl << "--- parsing DONE" << std::endl;
-
-  state.print_signatures(std::cout);
-
-  std::cout << std::endl << "...resolved signatures" << std::endl;
-
-  state.resolve_signatures();
-
-  state.print_signatures(std::cout);
 
   return EXIT_SUCCESS;
 }

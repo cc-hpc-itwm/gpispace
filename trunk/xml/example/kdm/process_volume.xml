@@ -74,7 +74,7 @@
 		<place name="bunches_per_offset" type="long"/>
 		
 		<transition name="generate_bunch">
-			<xi:include href="generate_bunch.xml" />
+			<include name="generate_bunch.xml" />
 <!--
 			<include href="generate_bunch.xml" as="f_generate_bunch">
 				<map-in from="VOLUME" to="IN_TYPE" />

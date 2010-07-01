@@ -18,12 +18,6 @@
 			</token>
 		</place>
 
-<!-- wanted: make it local to generate_sequence -->
-		<struct name="COUNTER">
-			<field name="i" type="long"/>
-			<field name="max" type="long"/>
-		</struct>
-
 		<struct name="CONFIG">
 			<field name="OFFSETS" type="long" />
 			<field name="SUBVOLUMES_PER_OFFSET" type="long" />
@@ -70,7 +64,8 @@
 			<module name="kdm" function="loadTT"/>
 		</defun>
 		
-		<transition name="loadTT" use="f_loadTT">
+		<transition name="loadTT">
+                        <use name="f_loadTT"/>
 			<connect-read place="config" port="config" />
 			<connect-in place="trigger_loadTT" port="trigger" />
 			<connect-out port="trigger" place="trigger_generate" />
@@ -125,14 +120,14 @@
 		<place name="number_of_volumes" type="long" />
 
         <transition name="generate_offset">
-			<xi:include href="generate_sequence.xml" />
+			<include name="generate_sequence.xml" />
 			<connect-in place="number_of_offsets" port="amount" />
 			<connect-out place="offset" port="out" />
 		</transition>
         <place name="offset" type="long" />
 		
         <transition name="generate_volume">
-			<xi:include href="generate_volume.xml" />
+			<include name="generate_volume.xml" />
 			<connect-in place="offset" port="offset" />
 			<connect-read place="number_of_volumes" port="amount" />
 			<connect-out place="volume" port="out" />
@@ -153,7 +148,7 @@
       				<place name="done" type="control" />
 					
 					<transition name="wrap_process_volume">
-						<xi:include href="process_volume.xml" /> 
+						<include name="process_volume.xml" /> 
 						<connect-in   place="volume" port="volume" />
 						<connect-read place="config" port="config" />
 						<connect-out  place="done"   port="done" />

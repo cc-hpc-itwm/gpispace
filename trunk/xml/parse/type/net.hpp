@@ -19,7 +19,8 @@ namespace xml
     {
       struct net
       {
-        typedef boost::variant < place
+        typedef boost::variant < struct_t
+                               , place
                                , boost::recursive_wrapper<function>
                                , transition
                                > element_type;

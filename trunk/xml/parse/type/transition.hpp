@@ -11,12 +11,30 @@
 
 #include <iostream>
 
+#include <boost/variant.hpp>
+
 namespace xml
 {
   namespace parse
   {
     namespace type
     {
+      struct use
+      {
+        std::string name;
+        int level;
+
+        use (const std::string & _name, const int & _level) 
+          : name (_name) 
+          , level (_level)
+        {}
+      };
+
+      std::ostream & operator << (std::ostream & s, const use & u)
+      {
+        return s << level (u.level) << "use (" << u.name << ")";
+      }
+
       struct transition
       {
         typedef std::vector<connect> connect_vec_type;
@@ -25,9 +43,11 @@ namespace xml
         connect_vec_type out;
         connect_vec_type read;
 
-        // WORK HERE: mutal exclusion not ensured by xsd scheme
-        maybe<function> f;
-        maybe<std::string> use;
+        typedef boost::variant < function
+                               , use
+                               > f_type;
+        
+        f_type f;
 
         std::string name;
 
@@ -69,8 +89,11 @@ namespace xml
             s << level (t.level + 2) << *pos << std::endl;
           }
 
-        s << level (t.level + 1) << "use = " << t.use << std::endl;
-        s << level (t.level + 1) << "function = " << t.f << std::endl;
+        s << level (t.level + 1) << "def = " << std::endl;
+
+        boost::apply_visitor (visitor::show (s), t.f);
+
+        s << std::endl;
 
         return s << level (t.level) << ") // transition";
       }

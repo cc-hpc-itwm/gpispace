@@ -11,13 +11,13 @@ typedef rapidxml::file<Ch> input_type;
 #include <boost/variant.hpp>
 #include <iostream>
 
-// forward declarations for mutual recursive types
 namespace xml
 {
   namespace parse
   {
     namespace type
     {
+      // forward declarations for mutual recursive types
       struct function;
       struct transition;
       struct net;
@@ -61,6 +61,7 @@ namespace xml
 #include <parse/type/place.hpp>
 #include <parse/type/port.hpp>
 #include <parse/type/token.hpp>
+#include <parse/type/struct.hpp>
 
 #include <parse/type/function.hpp>
 #include <parse/type/transition.hpp>

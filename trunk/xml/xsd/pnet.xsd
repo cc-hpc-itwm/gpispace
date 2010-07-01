@@ -92,18 +92,24 @@
     <xsd:attribute name="internal" type="xsd:boolean" use="optional" default="true"/>
   </xsd:complexType>
 
+  <xsd:complexType name="element_with_name_type">
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+  </xsd:complexType>
 
   <xsd:complexType name="transition_type">
     <xsd:sequence>
-      <xsd:element name="defun" type="function_type" minOccurs="0" maxOccurs="1"/>
-      <xsd:choice maxOccurs="unbounded">
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="defun" type="function_type"/>
+        <xsd:element name="include" type="element_with_name_type"/>
+        <xsd:element name="use" type="element_with_name_type"/>
+      </xsd:choice>
+        <xsd:choice maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
       </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="required"/>
-    <xsd:attribute name="use" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
 

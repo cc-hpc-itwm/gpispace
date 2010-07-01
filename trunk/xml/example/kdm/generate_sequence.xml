@@ -3,12 +3,11 @@
 	<in name="amount" type="LONG" place="amount" />
 	<out name="out" type="LONG" place="out" />
 	<net>
-<!-- not here for the moment, as this is parsed twice
+
 		<struct name="COUNTER">
 			<field name="i" type="long"/>
 			<field name="max" type="long"/>
 		</struct>
--->
 
 		<place name="amount" type="LONG" />
 		<place name="out" type="LONG" />
@@ -23,7 +22,8 @@
 		</defun>
 
 		<place name="counter" type="COUNTER" />
-		<transition name="init" use="f_init">
+		<transition name="init">
+<use name="f_init"/>
 			<connect-in place="amount" port="N" />
 			<connect-out port="counter" place="counter" />
 		</transition>
@@ -36,7 +36,8 @@
 			<condition>${counter.i} &gt;= ${counter.max}</condition>
 		</defun>
 
-		<transition name="break" use="f_break">
+		<transition name="break">
+<use name="f_break"/>
 			<connect-in place="counter" port="state" />
 		</transition>
 
@@ -51,7 +52,8 @@
 			<condition>${counter.i} &lt; ${counter.max}</condition>
 		</defun>
 
-		<transition name="step" use="f_step">
+		<transition name="step">
+<use name="f_step"/>
 			<connect-in place="counter" port="counter" />
 			<connect-out place="counter" port="counter" />
 			<connect-out place="out" port="out" />
