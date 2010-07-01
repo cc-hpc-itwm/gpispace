@@ -22,7 +22,7 @@ set(V_PATCH 0)
 
 OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
-  0)
+  1)
 
 OPTION(WITH_FHGLOG
   "Build the project with fhglog"
