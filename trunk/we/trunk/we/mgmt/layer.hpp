@@ -217,7 +217,7 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this is activity is removed
        **/
-      bool finished(const external_id_type & id, const result_type & result) throw()
+      bool finished(const external_id_type & id, const result_type & result)
       {
         internal_id_type int_id (map_to_internal (id));
         {
@@ -248,7 +248,7 @@ namespace we { namespace mgmt {
        **/
       bool failed ( const external_id_type & id
                   , const result_type & result
-                  ) throw()
+                  )
       {
         DLOG(TRACE, "failed (" << id << ", " << result << ")");
 
@@ -271,7 +271,7 @@ namespace we { namespace mgmt {
        *	  post-conditions:
        *		  - the node belonging to this activity is removed
        **/
-      bool cancelled(const external_id_type & id) throw()
+      bool cancelled(const external_id_type & id)
       {
         DLOG(TRACE, "cancelled (" << id << ")");
 
@@ -292,7 +292,7 @@ namespace we { namespace mgmt {
        *		  - the network will not be considered in the selection of new activities
        *		  - the execution of the network is on hold
        */
-      bool suspend(const external_id_type & id) throw()
+      bool suspend(const external_id_type & id)
       {
         DLOG(TRACE, "suspend (" << id << ")");
 
@@ -313,7 +313,7 @@ namespace we { namespace mgmt {
        *		  - the network will again be considered in the selection of new activities
        *
        */
-      bool resume(const external_id_type & id) throw()
+      bool resume(const external_id_type & id)
       {
         DLOG(TRACE, "resume (" << id << ")");
 
@@ -816,32 +816,43 @@ namespace we { namespace mgmt {
             continue;
           }
 
-          descriptor_type & desc = lookup (act_id);
-          desc.finished();
-
-          sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
-
-          DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
-
-          if (desc.has_parent())
+          try
           {
-            lookup (desc.parent()).inject (desc);
-            DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
-                << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-                << ": " << desc.show_output());
-            post_activity_notification (desc.parent());
-          }
-          else if (desc.came_from_external())
-          {
-            DLOG(INFO, "finished (" << desc.name() << ")-" << act_id << " external-id := " << desc.from_external_id());
-            ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
-          }
-          else
-          {
-            throw std::runtime_error ("injector does not know how to handle this: " + ::util::show (desc));
-          }
+            descriptor_type & desc = lookup (act_id);
+            desc.finished();
 
-          remove_activity (desc);
+            sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
+
+            DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
+
+            if (desc.has_parent())
+            {
+              lookup (desc.parent()).inject (desc);
+              DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
+                  << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
+                  << ": " << desc.show_output());
+              post_activity_notification (desc.parent());
+            }
+            else if (desc.came_from_external())
+            {
+              DLOG(INFO, "finished (" << desc.name() << ")-" << act_id << " external-id := " << desc.from_external_id());
+              ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
+            }
+            else
+            {
+              throw std::runtime_error ("injector does not know how to handle this: " + ::util::show (desc));
+            }
+
+            remove_activity (desc);
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "injector-" << rank << " got exception during injecting: " << ex.what());
+          }
+          catch (...)
+          {
+            LOG(ERROR, "injector-" << rank << " got unexpected exception during injecting!");
+          }
         }
         DLOG(INFO, "injector-" << rank << " thread stopped...");
       }
