@@ -61,26 +61,26 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::function
-    function_include (const std::string & file, state::type & state)
+    template<typename T>
+    static T
+    generic_include ( T (*parse)(std::istream &, state::type &)
+                    , const std::string & file
+                    , state::type & state
+                    )
     {
-      namespace fs = boost::filesystem;
-
-      const fs::path path (state.expand (file));
-
-      std::cout << "*** function_include START " << path << std::endl;
+      const boost::filesystem::path path (state.expand (file));
 
       std::ifstream f (path.string().c_str());
 
-      state.level() += 2;
+      return parse (f, state);
+    };
 
-      type::function fun (parse_function (f, state));
+    // ********************************************************************* //
 
-      state.level() -= 2;
-
-      std::cout << "*** function_include END " << path << std::endl;
-
-      return fun;
+    static type::function
+    function_include (const std::string & file, state::type & state)
+    {
+      return generic_include<type::function> (parse_function, file, state);
     }
 
     // ********************************************************************* //
@@ -165,19 +165,7 @@ namespace xml
     static struct_vec_type
     structs_include (const std::string & file, state::type & state)
     {
-      namespace fs = boost::filesystem;
-
-      const fs::path path (state.expand (file));
-
-      std::cout << "*** structs_include START " << path << std::endl;
-
-      std::ifstream f (path.string().c_str());
-
-      struct_vec_type struct_vec (parse_structs (f, state));
-
-      std::cout << "*** structs_include END " << path << std::endl;
-
-      return struct_vec;
+      return generic_include<struct_vec_type> (parse_structs, file, state);
     }
 
     // ********************************************************************* //
@@ -586,8 +574,11 @@ namespace xml
                                                )
                                      );
 
+              state.level() += 2;;
 
               t.f = function_include (file, state);
+
+              state.level() -= 2;
             }
           else if (child_name == "use")
             {
