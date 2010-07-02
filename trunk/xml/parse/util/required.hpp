@@ -6,6 +6,7 @@
 #include <parse/rapidxml/1.13/rapidxml.hpp>
 
 #include <parse/types.hpp>
+#include <parse/error.hpp>
 
 namespace xml
 {
@@ -19,7 +20,7 @@ namespace xml
     {
       if (!node->first_attribute (attr))
         {
-          throw exception::missing_attr (pre, attr);
+          throw error::missing_attr (pre, attr);
         }
 
       return node->first_attribute (attr)->value();

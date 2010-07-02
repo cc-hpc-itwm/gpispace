@@ -4,7 +4,8 @@
 
 #include <parse/util.hpp>
 
-#include <parse/exception.hpp>
+#include <parse/error.hpp>
+#include <parse/warning.hpp>
 #include <parse/types.hpp>
 #include <parse/state.hpp>
 
@@ -115,7 +116,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("structs_type", child_name);
+              throw error::unexpected_element (child_name, "structs_type");
             }
         }
 
@@ -139,7 +140,7 @@ namespace xml
 
       if (!node)
         {
-          throw exception::error ("parse_structs", "no element given at all!?");
+          throw error::no_elements_given ("parse_structs");
         }
 
       skip (node, rapidxml::node_declaration);
@@ -148,15 +149,14 @@ namespace xml
 
       if (name != "structs")
         {
-          throw exception::unexpected_element ("parse_structs", name);
+          throw error::unexpected_element (name, "parse_structs");
         }
 
       struct_vec_type struct_vec (structs_type (node, state));
 
       if (node->next_sibling())
         {
-          throw exception::error
-            ("parse_structs", "more than one definition in one file");
+          throw error::more_than_one_definition ("parse_structs");
         }
 
       return struct_vec;
@@ -260,7 +260,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("function_type", child_name);
+              throw exception::unexpected_element (child_name, "function_type");
             }
         }
 
@@ -332,12 +332,9 @@ namespace xml
                 {
                   if (fun.name.isJust())
                     {
-                      std::cout << "INFO: "
-                                << "overwriting old function name "
-                                << *(fun.name)
-                                << " with new name "
-                                << *as
-                                << std::endl;
+                      throw warning::overwrite_function_name (*(fun.name)
+                                                             , *as
+                                                             );
                     }
 
                   fun.name = *as;
@@ -345,10 +342,10 @@ namespace xml
 
               if (fun.name.isNothing())
                 {
-                  throw exception::error
-                    ("net_type"
-                    , "try to include top level anonymous function from file" 
+                  throw error::generic
+                    ( "try to include top level anonymous function from file" 
                     + file
+                    , "net_type"
                     );
                 }
 
@@ -356,7 +353,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("net_type", child_name);
+              throw error::unexpected_element (child_name, "net_type");
             }
         }
 
@@ -394,7 +391,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("place_type", child_name);
+              throw error::unexpected_element (child_name, "place_type");
             }
         }
 
@@ -451,8 +448,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element
-                ("gen_struct_type", child_name);
+              throw error::unexpected_element (child_name, "gen_struct_type");
             }
         }
     }
@@ -533,8 +529,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element
-                ("token_field_type", child_name);
+              throw error::unexpected_element (child_name, "token_field_type");
             }
         }
     }
@@ -563,7 +558,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ("token_type", child_name);
+              throw error::unexpected_element (child_name, "token_type");
             }
         }
 
@@ -626,9 +621,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element ( "transition_type"
-                                                  , child_name
-                                                  );
+              throw error::unexpected_element (child_name, "transition_type");
             }
         }
 
@@ -654,7 +647,7 @@ namespace xml
 
       if (!node)
         {
-          throw exception::error ("parse_function", "no element given at all!?");
+          throw error::no_elements_given ("parse_function");
         }
 
       skip (node, rapidxml::node_declaration);
@@ -663,15 +656,14 @@ namespace xml
 
       if (name != "defun")
         {
-          throw exception::unexpected_element ("parse_function", name);
+          throw error::unexpected_element (name, "parse_function");
         }
 
       type::function fun (function_type (node, state));
 
       if (node->next_sibling())
         {
-          throw exception::error
-            ("parse_function", "more than one definition in one file");
+          throw error::more_than_one_definition ("parse_function");
         }
 
       return fun;
