@@ -75,12 +75,73 @@ namespace xml
       return parse (f, state);
     };
 
-    // ********************************************************************* //
-
     static type::function
     function_include (const std::string & file, state::type & state)
     {
       return generic_include<type::function> (parse_function, file, state);
+    }
+
+    static struct_vec_type
+    structs_include (const std::string & file, state::type & state)
+    {
+      return generic_include<struct_vec_type> (parse_structs, file, state);
+    }
+
+    // ********************************************************************* //
+
+    template<typename T>
+    static T
+    generic_parse ( T (*parse)(const xml_node_type *, state::type &)
+                  , std::istream & f
+                  , state::type & state
+                  , const std::string & name_wanted
+                  , const std::string & pre
+                  )
+    {
+      xml_document_type doc;
+
+      input_type inp (f);
+
+      doc.parse < rapidxml::parse_full
+                | rapidxml::parse_trim_whitespace
+                | rapidxml::parse_normalize_whitespace
+                > (inp.data())
+        ;
+
+      xml_node_type * node (doc.first_node());
+
+      if (!node)
+        {
+          throw error::no_elements_given (pre);
+        }
+
+      skip (node, rapidxml::node_declaration);
+
+      if (node->next_sibling())
+        {
+          throw error::more_than_one_definition (pre);
+        }
+
+      const std::string name (name_element (node));
+
+      if (name != name_wanted)
+        {
+          throw error::unexpected_element (name, pre);
+        }
+
+      return parse (node, state);
+    };
+
+    static type::function
+    parse_function (std::istream & f, state::type & state)
+    {
+      return generic_parse (function_type, f, state, "defun", "parse_function");
+    }
+
+    static struct_vec_type
+    parse_structs (std::istream & f, state::type & state)
+    {
+      return generic_parse (structs_type, f, state, "structs", "parse_structs");
     }
 
     // ********************************************************************* //
@@ -121,51 +182,6 @@ namespace xml
         }
 
       return v;
-    }
-
-    static struct_vec_type
-    parse_structs (std::istream & f, state::type & state)
-    {
-      xml_document_type doc;
-
-      input_type inp (f);
-
-      doc.parse < rapidxml::parse_full
-                | rapidxml::parse_trim_whitespace
-                | rapidxml::parse_normalize_whitespace
-                > (inp.data())
-        ;
-
-      xml_node_type * node (doc.first_node());
-
-      if (!node)
-        {
-          throw error::no_elements_given ("parse_structs");
-        }
-
-      skip (node, rapidxml::node_declaration);
-
-      const std::string name (name_element (node));
-
-      if (name != "structs")
-        {
-          throw error::unexpected_element (name, "parse_structs");
-        }
-
-      struct_vec_type struct_vec (structs_type (node, state));
-
-      if (node->next_sibling())
-        {
-          throw error::more_than_one_definition ("parse_structs");
-        }
-
-      return struct_vec;
-    }
-
-    static struct_vec_type
-    structs_include (const std::string & file, state::type & state)
-    {
-      return generic_include<struct_vec_type> (parse_structs, file, state);
     }
 
     // ********************************************************************* //
@@ -613,47 +629,6 @@ namespace xml
         }
 
       return t;
-    }
-
-    // ********************************************************************* //
-
-    static type::function
-    parse_function (std::istream & f, state::type & state)
-    {
-      xml_document_type doc;
-
-      input_type inp (f);
-
-      doc.parse < rapidxml::parse_full
-                | rapidxml::parse_trim_whitespace
-                | rapidxml::parse_normalize_whitespace
-                > (inp.data())
-        ;
-
-      xml_node_type * node (doc.first_node());
-
-      if (!node)
-        {
-          throw error::no_elements_given ("parse_function");
-        }
-
-      skip (node, rapidxml::node_declaration);
-
-      const std::string name (name_element (node));
-
-      if (name != "defun")
-        {
-          throw error::unexpected_element (name, "parse_function");
-        }
-
-      type::function fun (function_type (node, state));
-
-      if (node->next_sibling())
-        {
-          throw error::more_than_one_definition ("parse_function");
-        }
-
-      return fun;
     }
   }
 }
