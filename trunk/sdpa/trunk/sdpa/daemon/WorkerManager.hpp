@@ -37,9 +37,6 @@ namespace sdpa { namespace daemon {
 	  typedef std::map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
 	  typedef std::map<unsigned int, Worker::worker_id_t> rank_map_t;
 	  typedef std::map<sdpa::job_id_t, Worker::worker_id_t > owner_map_t;
-	  typedef nth_index<Worker::mi_affinity_list_t, 0>::type mi_ordered_prefs;
-	  typedef nth_index<Worker::mi_affinity_list_t, 1>::type mi_ordered_jobIds;
-
 
 	  WorkerManager();
 	  virtual ~WorkerManager();
@@ -49,7 +46,7 @@ namespace sdpa { namespace daemon {
 
 	  void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
 	  void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
-          void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
+      void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	  const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
 	  unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);

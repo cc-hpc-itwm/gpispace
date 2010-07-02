@@ -66,11 +66,11 @@ const std::string USER("user");
 	  virtual bool requestsAllowed() = 0;
 
 	  //GUI notification methods
-	  virtual void activityCreated(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityStarted(const id_type& id, const std::string& data)   { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFinished(const id_type& id, const std::string& data)  { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityFailed(const id_type& id, const std::string& data)    { throw std::runtime_error("not supported in this component"); }
-	  virtual void activityCancelled(const id_type& id, const std::string& data) { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported in this component"); }
+	  virtual void activityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported in this component"); }
   };
 }}
 

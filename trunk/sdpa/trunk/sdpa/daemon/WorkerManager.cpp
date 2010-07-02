@@ -92,28 +92,6 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 		iter_last_worker_ = worker_map_.begin();
 }
 
-void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
-{
-  lock_type lock(mtx_);
-  worker_map_t::iterator w (worker_map_.find (workerId));
-
-  if (w == worker_map_.end())
-  {
-    throw WorkerNotFoundException(workerId);
-  }
-  else
-  {
-    // TODO: redistribute load, currently we just fail hard
-    LOG_IF( FATAL
-          ,  w->second->pending().size()
-          || w->second->submitted().size()
-          || w->second->acknowledged().size()
-          , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
-          );
-    worker_map_.erase (w);
-  }
-}
-
 void WorkerManager::deleteNonResponsiveWorkers (sdpa::util::time_type const & timeout)
 {
   lock_type lock(mtx_);
@@ -261,9 +239,9 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 
 	// take the schedule_pref with the lowest pref_deg, check if the job still exists into the corresponding worker
 	// and steal it
-	mi_ordered_prefs& mi_pref = get<0>(ptrWorker->jobs_preferring_this_);
+	Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
+	Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
 
-	mi_ordered_prefs::iterator it = mi_pref.begin();
 	if( it == mi_pref.end() )
 		throw NoJobScheduledException(worker_id);
 
@@ -361,21 +339,9 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 
 		SDPA_LOG_DEBUG("Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
 		ptrWorker->delete_job(job_id);
-
-		owner_map().erase(job_id);
-
-		// do this after submission
-		// for any worker in ranks() -> should pass as parameter a ist of workers !
-		/*for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++ )
-		{
-			const Worker::ptr_t& pWorker = it->second;
-			mi_ordered_jobIds& mi_jobIds = get<1>(ptrWorker->jobs_preferring_this_);
-			// delete the entry corresponding to job_id in jobs_preferring_this_
-			mi_jobIds.erase(job_id);
-		}*/
 	}
 	catch(JobNotDeletedException const &) {
-			SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<" not found!");
+		SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<" not found!");
 	}
 	catch(WorkerNotFoundException const &) {
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
@@ -393,14 +359,38 @@ const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWor
 // for any worker in ranks() -> should pass as parameter a ist of workers !
 void WorkerManager::deleteJobFromAffinityList(const sdpa::job_id_t& job_id)
 {
+	owner_map().erase(job_id);
 	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
 	{
 		const Worker::ptr_t& ptrWorker = iter->second;
-		mi_ordered_jobIds& mi_jobIds = get<1>(ptrWorker->jobs_preferring_this_);
+		Worker::mi_ordered_jobIds& mi_jobIds = get<1>(ptrWorker->mi_affinity_list);
 
 		// delete the entry corresponding to job_id in jobs_preferring_this_
 		mi_jobIds.erase(job_id);
 	}
 }
+
+void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+{
+  lock_type lock(mtx_);
+  worker_map_t::iterator w (worker_map_.find (workerId));
+
+  if (w == worker_map_.end())
+  {
+    throw WorkerNotFoundException(workerId);
+  }
+  else
+  {
+    // TODO: redistribute load, currently we just fail hard
+    LOG_IF( FATAL
+          ,  w->second->pending().size()
+          || w->second->submitted().size()
+          || w->second->acknowledged().size()
+          , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
+          );
+    worker_map_.erase (w);
+  }
+}
+
 
 

@@ -73,6 +73,9 @@ namespace sdpa { namespace daemon {
           >
      > mi_affinity_list_t;
 
+    typedef nth_index<Worker::mi_affinity_list_t, 0>::type mi_ordered_prefs;
+    typedef nth_index<Worker::mi_affinity_list_t, 1>::type mi_ordered_jobIds;
+
     /**
       A worker has a globally unique name and a location.
 
@@ -152,6 +155,7 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& pending() { return pending_; }
+    const JobQueue& pending() const { return pending_; }
 
     /**
       Provide access to the submitted queue.
@@ -160,6 +164,7 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& submitted() { return submitted_; }
+    const JobQueue& submitted() const { return submitted_; }
 
     /**
       Provide access to the acknowledged queue.
@@ -168,6 +173,7 @@ namespace sdpa { namespace daemon {
       we might need to reschedule tasks.
       */
     JobQueue& acknowledged() { return acknowledged_; }
+    const JobQueue& acknowledged() const { return acknowledged_; }
 
     void add_preferences(const pref_deg_t& , const sdpa::job_id_t&, const worker_id_t&  );
 
@@ -185,7 +191,7 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    mi_affinity_list_t jobs_preferring_this_;
+    mi_affinity_list_t mi_affinity_list;
 
   private:
     SDPA_DECLARE_LOGGER();

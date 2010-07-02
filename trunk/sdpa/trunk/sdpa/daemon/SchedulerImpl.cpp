@@ -62,9 +62,45 @@ void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int
 	}
 }
 
-void SchedulerImpl::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+
+void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 {
-  ptr_worker_man_->delWorker(workerId);
+	while( !pQueue->empty() )
+	{
+		sdpa::job_id_t jobId = pQueue->pop_and_wait();
+		schedule_with_constraints(jobId);
+	}
+}
+
+
+void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+{
+	// first re-schedule the work:
+	// inspect all queues and re-schedule each job
+	try {
+		const Worker::ptr_t& pWorker = findWorker(worker_id);
+
+		// delete the worker from the worker map
+		ptr_worker_man_->delWorker(worker_id);
+
+		re_schedule( &pWorker->acknowledged() );
+		re_schedule( &pWorker->submitted() );
+		re_schedule( &pWorker->pending() );
+
+		 LOG_IF( FATAL
+			  ,  w->second->pending().size()
+			  || w->second->submitted().size()
+			  || w->second->acknowledged().size()
+			  , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
+			  );
+
+		pWorker.reset();
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+		throw ex;
+	}
 }
 
 void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
@@ -156,7 +192,9 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 	}
 }
 
-
+/*
+ * return true only if scheduling the job jobid on the worker with the rank 'rank' succeeded
+ */
 // test if the specified rank is valid
 bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref  )
 {
@@ -191,21 +229,19 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 				const Worker::worker_id_t& other_worker_id = ptr_worker_man_->worker(rank);
 				const Worker::ptr_t& pOtherWorker = ptr_worker_man_->findWorker(other_worker_id);
 
-				pOtherWorker->jobs_preferring_this_.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
+				pOtherWorker->mi_affinity_list.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
 			}
 
 		return true;
 	}
 	catch( const NoWorkerFoundException& ex1)
 	{
-		SDPA_LOG_WARN( "No worker with the rank= "<<rank<<" found!" );
-		ptr_comm_handler_->workerJobFailed( jobId, "Worker not found!");
+		SDPA_LOG_WARN("Couldn't schedule the job "<<jobId.str()<<". No worker with the rank= "<<rank<<" found!" );
 		return false;
 	}
 	catch(const WorkerNotFoundException& ex2)
 	{
-		SDPA_LOG_WARN( "There is no worker with the rank= "<<rank );
-		ptr_comm_handler_->workerJobFailed( jobId, "Worker not found!");
+		SDPA_LOG_WARN( "Couldn't schedule the job "<<jobId.str()<<". There is no worker with the rank= "<<rank );
 		return false;
 	}
 }
@@ -262,6 +298,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 				const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
 				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end() && !bAssigned; it++ )
+
+					// use try-catch for the case when the no worker with that rank exists
 					if(!(bAssigned=schedule_to(jobId, *it, job_pref)))
 						uset_excluded.insert(*it);
 
@@ -284,6 +322,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 					for( WorkerManager::rank_map_t::const_iterator iter = ptr_worker_man_->rank_map().begin(); iter != ptr_worker_man_->rank_map().end() && !bAssigned; iter++ )
 					{
 						unsigned int rank = iter->first;
+						// use try-catch for the case when the no worker with that rank exists
 						if( uset_excluded.find(rank) != uset_excluded.end() && !(bAssigned=schedule_to(jobId, rank, job_pref)) )
 								uset_excluded.insert(rank);
 					}
