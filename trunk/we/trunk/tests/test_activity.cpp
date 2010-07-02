@@ -27,6 +27,7 @@ struct exec_context
   typedef transition_t::net_type net_t;
   typedef transition_t::mod_type mod_t;
   typedef transition_t::expr_type expr_t;
+  typedef transition_t::cond_type cond_t;
 
   void handle_internally ( activity_t & , const net_t & )
   {
@@ -75,7 +76,7 @@ int main (int, char **)
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-      , "!bitset_is_element (${store.seen}, ${vid})"
+      , transition_t::cond_type ("!bitset_is_element (${store.seen}, ${vid})")
       , true
     );
 
