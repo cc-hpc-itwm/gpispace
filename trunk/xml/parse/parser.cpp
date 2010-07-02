@@ -342,11 +342,7 @@ namespace xml
 
               if (fun.name.isNothing())
                 {
-                  throw error::generic
-                    ( "try to include top level anonymous function from file" 
-                    + file
-                    , "net_type"
-                    );
+                  throw error::top_level_anonymous_function (file, "net_type");
                 }
 
               n.element.push_back (fun);
