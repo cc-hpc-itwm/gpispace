@@ -718,7 +718,7 @@ namespace we { namespace mgmt {
                   child.inject_input ();
 
                   DLOG(INFO, "extractor[" << rank << "]: extracted from (" << desc.name() << ")-" << desc.id()
-                      << ": (" << child.name() << ")-" << child.id() << " with input " << desc.show_input());
+                      << ": (" << child.name() << ")-" << child.id() << " with input " << child.show_input());
 
                   switch (child.execute (exec_policy))
                   {
@@ -728,7 +728,7 @@ namespace we { namespace mgmt {
                     break;
                   case policy::exec_policy::INJECT:
                     child.finished();
-                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": " << desc.show_output());
+                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
                     desc.inject (child);
                     break;
                   case policy::exec_policy::EXTERNAL:
@@ -754,7 +754,10 @@ namespace we { namespace mgmt {
             case policy::exec_policy::INJECT:
               desc.finished();
 
-              DLOG(INFO, "extractor[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
+              DLOG( INFO
+                  , "extractor[" << rank << "]: finished (" << desc.name() << ")-"
+                  << desc.id() << ": " << desc.show_output()
+                  );
 
               if (desc.has_parent ())
               {
