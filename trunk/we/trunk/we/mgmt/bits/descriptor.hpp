@@ -201,8 +201,8 @@ namespace we
                                      + boost::lexical_cast<std::string>(*this)
                                      + "' which is not my child!"
                                      );
-          del_child (child.id());
           activity_.inject (child.activity());
+          del_child (child.id());
         }
 
         this_type extract (id_type const & child_id)
