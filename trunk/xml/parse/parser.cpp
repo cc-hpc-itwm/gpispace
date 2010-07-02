@@ -336,9 +336,10 @@ namespace xml
                 {
                   if (fun.name.isJust())
                     {
-                      throw warning::overwrite_function_name (*(fun.name)
-                                                             , *as
-                                                             );
+                      state.warn (warning::overwrite_function_name (*(fun.name)
+                                                                   , *as
+                                                                   )
+                                 );
                     }
 
                   fun.name = *as;

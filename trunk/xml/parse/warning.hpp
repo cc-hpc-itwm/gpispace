@@ -20,7 +20,7 @@ namespace xml
         {}
       };
 
-      class overwrite_function_name : generic
+      class overwrite_function_name : public generic
       {
       public:
         overwrite_function_name ( const std::string & old_name

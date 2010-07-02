@@ -13,6 +13,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <parse/warning.hpp>
+
 // ************************************************************************* //
 
 namespace xml
@@ -30,15 +32,40 @@ namespace xml
       private:
         int _level;
         search_path_type _search_path;
+        bool _Werror;
+        bool _Woverwrite_function_name;
+
+        template<typename W>
+        void generic_warn (const W & w, const bool & active)
+        {
+          if (active)
+            {
+              if (_Werror)
+                {
+                  throw w;
+                }
+              else
+                {
+                  std::cerr << w.what() << std::endl;
+                }
+            }
+        };
 
       public:
         type (void)
           : _level (0)
           , _search_path ()
+          , _Werror (false)
+          , _Woverwrite_function_name (true)
         {}
 
         int & level (void) { return _level; }
         search_path_type & search_path (void) { return _search_path; }
+
+        void warn (const warning::overwrite_function_name & w)
+        {
+          generic_warn (w, _Woverwrite_function_name);
+        }
 
         fs::path expand (const std::string & file)
         {
