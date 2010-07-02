@@ -21,9 +21,8 @@ typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
 typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
 typedef we::mgmt::type::activity_t<transition_t> activity_t;
 
-struct exec_context
+struct exec_context : public we::mgmt::context<>
 {
-  typedef void result_type;
   typedef transition_t::net_type net_t;
   typedef transition_t::mod_type mod_t;
   typedef transition_t::expr_type expr_t;
@@ -156,6 +155,7 @@ int main (int, char **)
   while (act.has_enabled())
   {
     activity_t sub = act.extract ();
+    sub.inject_input ();
 
     std::cout << "***** sub-act (pre-execute):"
               << std::endl
