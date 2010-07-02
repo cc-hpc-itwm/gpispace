@@ -54,7 +54,7 @@ namespace sdpa { namespace daemon {
 	  unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);
 	  const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
-	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
+	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	  void dispatchJob(const sdpa::job_id_t& jobId);
 	  void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 	  void deleteJobFromAffinityList(const sdpa::job_id_t& job_id);

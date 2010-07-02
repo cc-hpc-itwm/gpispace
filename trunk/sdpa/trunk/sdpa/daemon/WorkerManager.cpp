@@ -277,7 +277,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 	throw NoJobScheduledException(worker_id);
 }
 
-const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
 	SDPA_LOG_DEBUG("Get the next job ...");
 
