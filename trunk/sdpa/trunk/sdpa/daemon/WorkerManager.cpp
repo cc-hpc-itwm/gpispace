@@ -108,10 +108,31 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
           ,  w->second->pending().size()
           || w->second->submitted().size()
           || w->second->acknowledged().size()
-          , "tried to remove worker " << workerId << " there are still jobs scheduled!"
+          , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
           );
     worker_map_.erase (w);
   }
+}
+
+void WorkerManager::deleteNonResponsiveWorkers (sdpa::util::time_type const & timeout)
+{
+  lock_type lock(mtx_);
+  worker_map_t::iterator w (worker_map_.begin());
+
+  std::list<worker_id_t> old_workers;
+  while (w != worker_map_.end())
+  {
+    if (sdpa::util::time_diff (w->second->tstamp (), sdpa::util::now()) > timeout)
+    {
+      LOG(WARN, "Marking old worker for removal (didn't receive messages for " << (timeout / 1000000) << "s!");
+      old_workers.push_back (w->second->name());
+    }
+    ++w;
+  }
+
+  std::for_each ( old_workers.begin(), old_workers.end()
+                , boost::bind (&WorkerManager::delWorker, this, _1)
+                );
 }
 
 // you should here delete_worker as well, for the
@@ -156,7 +177,7 @@ void WorkerManager::balanceWorkers()
 						if(delta)
 						{
 							bFinished = false;
-							for( int k=0; k<delta; k++)
+							for( size_t k=0; k<delta; k++)
 							{
 								// look for nodes who prefer the neighboring worker
 								// if there are any, move them first and then, the nodes

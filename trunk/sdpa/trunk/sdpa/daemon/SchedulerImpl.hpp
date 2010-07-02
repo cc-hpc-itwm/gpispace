@@ -57,6 +57,7 @@ namespace sdpa {
 
 	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
         virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+        virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 

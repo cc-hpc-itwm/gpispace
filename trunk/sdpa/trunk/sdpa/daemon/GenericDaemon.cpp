@@ -189,7 +189,7 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 void GenericDaemon::shutdown_network()
 {
   {
-    if (master() != "")
+    if (master() != "" && is_registered())
       sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN)));
   }
 
@@ -411,7 +411,8 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	// use for now as below, later read from config file
 	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
 	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
-	ptr_daemon_cfg_->put("life-sign interval", 60 * 1000 * 1000);
+	ptr_daemon_cfg_->put("life-sign interval", 10 * 1000 * 1000);
+	ptr_daemon_cfg_->put("node_timeout",        2 * 1000 * 1000);
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
@@ -473,14 +474,44 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 		ptr_job_man_->deleteJob(e.job_id());
 	} catch(JobNotFoundException const &){
           SDPA_LOG_ERROR("Job " << e.job_id() << " could not be found!");
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                            , e.from()
+                                                            , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                            )
+                                            )
+                           );
 	} catch(JobNotMarkedException const &){
           SDPA_LOG_WARN("Job " << e.job_id() << " not ready for deletion!");
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                            , e.from()
+                                                            , ErrorEvent::SDPA_EAGAIN
+                                                            )
+                                            )
+                           );
 	}catch(JobNotDeletedException const &){
           SDPA_LOG_ERROR("Job " << e.job_id() << " could not be deleted!");
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                            , e.from()
+                                                            , ErrorEvent::SDPA_EUNKNOWN
+                                                            )
+                                            )
+                           );
         } catch(std::exception const & ex) {
           SDPA_LOG_ERROR("unexpected exception during job-deletion: " << ex.what());
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                            , e.from()
+                                                            , ErrorEvent::SDPA_EUNKNOWN
+                                                            )
+                                            )
+                           );
           throw;
 	} catch(...) {
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                            , e.from()
+                                                            , ErrorEvent::SDPA_EUNKNOWN
+                                                            )
+                                            )
+                           );
           SDPA_LOG_ERROR("unexpected exception during job-deletion!");
           throw;
 	}
@@ -656,18 +687,27 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
+  worker_id_t worker_id (evtRegWorker.from());
+  unsigned int rank (evtRegWorker.rank());
+
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
+                const unsigned long long node_timeout (cfg()->get<unsigned long long>("node_timeout", 30 * 1000 * 1000));
+                ptr_scheduler_->deleteNonResponsiveWorkers (node_timeout);
+
+                LOG(TRACE, "Trying to registering new worker: " << worker_id << " with rank " << rank);
+
+		addWorker( worker_id, rank );
+
+		SDPA_LOG_INFO( "Registered the worker " << worker_id << " with the rank " << rank);
+
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
                 pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt, 0);
-
-		addWorker( evtRegWorker.from(), evtRegWorker.rank() );
-		SDPA_LOG_INFO( "Registered the worker "<<evtRegWorker.from()<<", with the rank "<<evtRegWorker.rank() );
 	}
 	catch(WorkerAlreadyExistException const & ex) {
-		SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
+          SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
                         "id="<<ex.worker_id()<<", rank="<<ex.rank());
 	}
 	catch(const QueueFull& ex)

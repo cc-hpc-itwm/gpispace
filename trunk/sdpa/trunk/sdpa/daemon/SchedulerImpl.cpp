@@ -67,6 +67,11 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& workerId ) throw (Work
   ptr_worker_man_->delWorker(workerId);
 }
 
+void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
+{
+  ptr_worker_man_->deleteNonResponsiveWorkers (timeout);
+}
+
 /*
 	Schedule a job locally, send the job to WE
 */
