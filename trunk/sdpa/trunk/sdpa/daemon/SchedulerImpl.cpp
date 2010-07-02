@@ -87,14 +87,12 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 		re_schedule( &pWorker->submitted() );
 		re_schedule( &pWorker->pending() );
 
-		/* LOG_IF( FATAL
-			  ,  w->second->pending().size()
-			  || w->second->submitted().size()
-			  || w->second->acknowledged().size()
-			  , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
-			  );*/
-
-		pWorker.reset();
+		LOG_IF( FATAL
+			  ,  pWorker->pending().size()
+			  || pWorker->submitted().size()
+			  || pWorker->acknowledged().size()
+			  , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
+			  );
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
