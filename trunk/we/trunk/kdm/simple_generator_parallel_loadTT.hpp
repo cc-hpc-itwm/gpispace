@@ -42,6 +42,7 @@ namespace kdm
     typedef typename transition_type::net_type net_type;
     typedef typename transition_type::mod_type mod_type;
     typedef typename transition_type::expr_type expr_type;
+    typedef typename transition_type::cond_type cond_type;
 
     typedef typename transition_type::pid_t pid_t;
     typedef typename petri_net::tid_t tid_t;
@@ -77,8 +78,6 @@ namespace kdm
           "${state.state.num}    := ${config." + source + "};"
           "${state." + name + "} := ${trigger};"
         )
-        , "true"
-        , transition_type::internal
         );
       trans_init.add_ports ()
         ("config", signature::config, we::type::PORT_IN)
@@ -95,8 +94,7 @@ namespace kdm
       transition_type trans_break
         ( "break"
         , expr_type ()
-        , "${state.state.state} >= ${state.state.num}"
-        , transition_type::internal
+        , cond_type ("${state.state.state} >= ${state.state.num}")
         );
       trans_break.add_ports ()
         ("state", sig_with_state, we::type::PORT_IN)
@@ -113,8 +111,7 @@ namespace kdm
             "${" + name + "." + name + "} := ${state." + name + "};"
             "${state.state.state}         := ${state.state.state} + 1"
            )
-        , "${state.state.state} < ${state.state.num}"
-        , transition_type::internal
+        , cond_type ("${state.state.state} < ${state.state.num}")
         );
       trans_step.add_ports ()
         ("state", sig_with_state, we::type::PORT_IN_OUT)
@@ -142,7 +139,6 @@ namespace kdm
       transition_type generate
         ( "generate_from_" + name
         , subnet
-        , "true"
         , transition_type::internal
         );
       generate.add_ports ()
@@ -163,8 +159,6 @@ namespace kdm
           ( "${one} := ${in};"
             "${two} := ${in};"
           )
-        , "true"
-        , transition_type::internal
         );
 
       dup.add_ports ()
@@ -297,8 +291,6 @@ namespace kdm
       transition_type load
         ( "load"
         , mod_type ("kdm_parallel_loadTT", "load")
-        , "true"
-        , transition_type::external
         );
 
       load.add_ports ()
@@ -325,8 +317,6 @@ namespace kdm
       transition_type process
         ( "process"
         , mod_type ("kdm_parallel_loadTT", "process")
-        , "true"
-        , transition_type::external
         );
 
       process.add_ports ()
@@ -357,8 +347,7 @@ namespace kdm
       transition_type write
         ( "write"
         , mod_type ("kdm_parallel_loadTT", "write")
-        , "${wait} == 0L"
-        , transition_type::external
+        , cond_type ("${wait} == 0L")
         );
 
       write.add_ports ()
@@ -387,7 +376,6 @@ namespace kdm
       transition_type process_volume
         ( "process_volume"
         , net
-        , "true"
         , transition_type::external
         );
 
@@ -420,7 +408,6 @@ namespace kdm
       transition_type process_volume_wrapped
         ( "process_volume_wrapped"
         , wrap
-        , "true"
         , transition_type::external
         );
 
@@ -459,8 +446,6 @@ namespace kdm
       transition_type initialize
         ( "initialize"
         , mod_type ("kdm_parallel_loadTT", "initialize")
-        , "true"
-        , transition_type::external
         );
 
       initialize.add_ports ()
@@ -538,8 +523,6 @@ namespace kdm
       transition_type loadTT
         ( "loadTT"
         , mod_type ("kdm_parallel_loadTT","loadTT")
-        , "true"
-        , transition_type::external
         );
 
       loadTT.add_ports ()
@@ -580,10 +563,10 @@ namespace kdm
 
       // ******************************************************************* //
 
-      transition_type finTT 
+      transition_type finTT
         ( "finTT"
         , expr_type ("${trigger} := []")
-        , "${wait} == 0L"
+        , cond_type ("${wait} == 0L")
         );
 
       finTT.add_ports ()
@@ -632,8 +615,6 @@ namespace kdm
       transition_type trans_untag_offset
         ( "untag_offset"
         , expr_type ( "${offset} := ${control_with_offset.id}")
-        , "true"
-        , transition_type::internal
         );
       trans_untag_offset.add_ports ()
         ("control_with_offset", control_with_offset, we::type::PORT_IN)
@@ -684,7 +665,7 @@ namespace kdm
 
       token::put (net, pid_serialize_proc);
 
-      transition_type start_process 
+      transition_type start_process
         ( "start_proc"
         , expr_type ("${out} := ${in}")
         );
@@ -781,8 +762,7 @@ namespace kdm
       transition_type finalize
         ( "finalize"
         , mod_type ("kdm_parallel_loadTT", "finalize")
-        , "${wait} == 0L"
-        , transition_type::external
+        , cond_type ("${wait} == 0L")
         );
 
       finalize.add_ports ()
@@ -807,7 +787,6 @@ namespace kdm
       transition_type trans_net
         ( "trans_net"
         , net
-        , "true"
         , transition_type::external
         );
       trans_net.add_ports ()

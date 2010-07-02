@@ -22,6 +22,7 @@ namespace we
       typedef typename transition_type::net_type net_type;
       typedef typename transition_type::mod_type mod_type;
       typedef typename transition_type::expr_type expr_type;
+      typedef typename transition_type::cond_type cond_type;
 
       typedef typename transition_type::pid_t pid_t;
       typedef typename petri_net::tid_t tid_t;
@@ -32,7 +33,7 @@ namespace we
         transition_type map_reduce
           ( "map"
           , mod_type ("map_red", "map")
-          , "true"
+          , cond_type("true")
           , transition_type::external
           );
 

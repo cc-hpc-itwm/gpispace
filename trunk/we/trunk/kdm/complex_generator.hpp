@@ -113,6 +113,7 @@ namespace kdm
     typedef typename transition_type::net_type net_type;
     typedef typename transition_type::mod_type mod_type;
     typedef typename transition_type::expr_type expr_type;
+    typedef typename transition_type::cond_type cond_type;
 
     typedef typename transition_type::pid_t pid_t;
     typedef typename petri_net::tid_t tid_t;
@@ -167,7 +168,6 @@ namespace kdm
         transition_type initialize
           ( "initialize"
           , mod_type ("kdm_complex", "initialize")
-          , "true"
           , transition_type::external
           );
         initialize.add_ports ()
@@ -217,10 +217,10 @@ namespace kdm
       // ******************************************************************* //
 
       {
-        transition_type stepTT 
+        transition_type stepTT
           ( "stepTT"
           , expr_type ("${TT} := ${state}; ${state} := ${state} + 1")
-          , "${state} < ${max}"
+          , cond_type ("${state} < ${max}")
           );
         stepTT.add_ports ()
           ("TT", literal::LONG, we::type::PORT_OUT)
@@ -244,10 +244,10 @@ namespace kdm
       // ******************************************************************* //
 
       {
-        transition_type breakTT 
+        transition_type breakTT
           ( "breakTT"
           , expr_type ("${trigger} := []")
-          , "${state} >= ${max}"
+          , cond_type ("${state} >= ${max}")
           );
 
         breakTT.add_ports ()
@@ -304,7 +304,7 @@ namespace kdm
           (pid_trigger_decTT, "trigger")
           ;
         tid_t tid_decTT (net.add_transition (decTT));
-        
+
         net.add_edge (e++, connection_t (PT, tid_decTT, pid_waitTT));
         net.add_edge (e++, connection_t (PT, tid_decTT, pid_doneTT));
         net.add_edge (e++, connection_t (PT_READ, tid_decTT, pid_trigger_decTT));
@@ -372,7 +372,7 @@ namespace kdm
             ( "${empty_store} := ${state.state};"
               "${state.state} := ${state.state} + 1"
             )
-          , "${state.state} < ${state.num}"
+          , cond_type ("${state.state} < ${state.num}")
           );
         gen_store_step.add_ports ()
           ("empty_store", literal::LONG, we::type::PORT_OUT)
@@ -396,8 +396,7 @@ namespace kdm
         transition_type gen_store_break
           ( "gen_store_break"
           , expr_type ("${trigger} := []")
-          , "${state.state} >= ${state.num}"
-          , transition_type::internal
+          , cond_type ("${state.state} >= ${state.num}")
           );
         gen_store_break.add_ports ()
           ("trigger", literal::CONTROL, we::type::PORT_OUT)
@@ -451,8 +450,10 @@ namespace kdm
               "${offsetB} := ${state.state};"
               "${state.state} := ${state.state} + 1"
             )
-          , "${state.state} < ${state.num} &"
-            "bitset_is_element (${wanted}, ${state.state})"
+          , cond_type
+            ( "${state.state} < ${state.num} &"
+              "bitset_is_element (${wanted}, ${state.state})"
+            )
           );
         gen_offset_step.add_ports ()
           ("state", signature::state, we::type::PORT_IN_OUT)
@@ -483,7 +484,7 @@ namespace kdm
         transition_type gen_offset_break
           ( "gen_offset_break"
           , expr_type ()
-          , "${state.state} >= ${state.num}"
+          , cond_type ("${state.state} >= ${state.num}")
           );
         gen_offset_break.add_ports ()
           ("state", signature::state, we::type::PORT_IN)
@@ -535,7 +536,7 @@ namespace kdm
               "${bunch.offset} := ${state.offset};"
               "${state.state.state} := ${state.state.state} + 1"
             )
-          , "${state.state.state} < ${state.state.num}"
+          , cond_type ("${state.state.state} < ${state.state.num}")
           );
         gen_bunch_step.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_IN_OUT)
@@ -560,7 +561,7 @@ namespace kdm
         transition_type gen_bunch_break
           ( "gen_bunch_break"
           , expr_type ()
-          , "${state.state.state} >= ${state.state.num}"
+          , cond_type ("${state.state.state} >= ${state.state.num}")
           );
         gen_bunch_break.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_IN)
@@ -616,7 +617,7 @@ namespace kdm
               "${volume.buffer1} := ${buffer_empty};"
               "${state.state.state} := ${state.state.state} + 1"
             )
-          , "${state.state.state} < ${state.state.num}"
+          , cond_type ("${state.state.state} < ${state.state.num}")
           );
         gen_volume_step.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_IN_OUT)
@@ -647,7 +648,7 @@ namespace kdm
         transition_type gen_volume_break
           ( "gen_volume_break"
           , expr_type ()
-          , "${state.state.state} >= ${state.state.num}"
+          , cond_type ("${state.state.state} >= ${state.state.num}")
           );
         gen_volume_break.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_IN)
@@ -692,7 +693,7 @@ namespace kdm
         transition_type reuse_store
           ( "reuse_store"
           , expr_type ("${empty_store} := ${loaded_bunch.store}")
-          , "${loaded_bunch.wait} == 0L"
+          , cond_type ("${loaded_bunch.wait} == 0L")
           );
         reuse_store.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN)
@@ -721,9 +722,11 @@ namespace kdm
               "${volume.buffer0.store} := ${loaded_bunch.store};"
               "${trigger} := []"
             )
-          , "(!${volume.buffer0.assigned}) &"
-            "(${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &"
-            "(!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
+          , cond_type
+            ( "(!${volume.buffer0.assigned}) &"
+              "(${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &"
+              "(!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
+            )
           );
         assign0.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
@@ -761,9 +764,11 @@ namespace kdm
               "${volume.buffer1.store} := ${loaded_bunch.store};"
               "${trigger} := []"
             )
-          , "(!${volume.buffer1.assigned}) &"
-            "(${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &"
-            "(!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
+          , cond_type
+            ( "(!${volume.buffer1.assigned}) &"
+              "(${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &"
+              "(!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
+            )
           );
         assign1.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
@@ -795,7 +800,7 @@ namespace kdm
         transition_type process
           ( "process"
           , mod_type ("kdm_complex", "process")
-          , "${volume.buffer0.assigned} | ${volume.buffer1.assigned}"
+          , cond_type ("${volume.buffer0.assigned} | ${volume.buffer1.assigned}")
           );
         process.add_ports ()
           ("volume", signature::volume_with_buffer, we::type::PORT_IN)
@@ -820,12 +825,15 @@ namespace kdm
       {
         transition_type reuse_store0
           ( "reuse_store0"
-          , expr_type ("${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
-         ${volume.buffer0.free} := false;\
-         ${trigger} := []"
-                      )
-          , "(${volume.buffer0.bunch} == ${loaded_bunch.bunch}) &\
-         (${volume.buffer0.free})"
+          , expr_type
+            ( "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;"
+              "${volume.buffer0.free} := false;"
+              "${trigger} := []"
+            )
+          , cond_type
+            ( "(${volume.buffer0.bunch} == ${loaded_bunch.bunch}) &"
+              "(${volume.buffer0.free})"
+            )
           );
         reuse_store0.add_ports ()
           ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
@@ -861,8 +869,8 @@ namespace kdm
          ${volume.buffer1.free} := false;\
          ${trigger} := []"
                       )
-          , "(${volume.buffer1.bunch} == ${loaded_bunch.bunch}) &\
-         (${volume.buffer1.free})"
+          , cond_type ("(${volume.buffer1.bunch} == ${loaded_bunch.bunch}) &\
+         (${volume.buffer1.free})")
           );
         reuse_store1.add_ports ()
           ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
@@ -895,7 +903,7 @@ namespace kdm
         transition_type volume_step
           ( "volume_step"
           , expr_type ("${volume} := ${volume_processed}")
-          , "${volume_processed.wait} > 0L"
+          , cond_type ("${volume_processed.wait} > 0L")
           );
         volume_step.add_ports ()
           ("trigger", literal::CONTROL, we::type::PORT_READ)
@@ -919,7 +927,7 @@ namespace kdm
         transition_type volume_break
           ( "volume_break"
           , expr_type ("${volume} := ${volume_processed.volume}")
-          , "${volume_processed.wait} == 0L"
+          , cond_type ("${volume_processed.wait} == 0L")
           );
         volume_break.add_ports ()
           ("volume_processed", signature::volume_with_buffer, we::type::PORT_IN)
@@ -969,7 +977,7 @@ namespace kdm
             ( "${wanted_offset} := "
               "bitset_insert (${wanted_offset}, ${volume_written.offset} + 1)"
             )
-          , "${volume_written.offset} + 1 < ${config.OFFSETS}"
+          , cond_type ("${volume_written.offset} + 1 < ${config.OFFSETS}")
           );
         volume_next_offset.add_ports()
           ("config", signature::config, we::type::PORT_READ)
@@ -997,7 +1005,7 @@ namespace kdm
         transition_type volume_done
           ( "volume_done"
           , expr_type ("${volume_wait} := ${volume_wait} - 1")
-          , "${volume_written.offset} + 1 >= ${config.OFFSETS}"
+          , cond_type ("${volume_written.offset} + 1 >= ${config.OFFSETS}")
           );
         volume_done.add_ports ()
           ("volume_wait", literal::LONG, we::type::PORT_IN_OUT)
@@ -1024,7 +1032,7 @@ namespace kdm
         transition_type finalize
           ( "finalize"
           , mod_type ("kdm_complex", "finalize")
-          , "${volume_wait} == 0L"
+          , cond_type ("${volume_wait} == 0L")
           );
         finalize.add_ports ()
           ("done", literal::CONTROL, we::type::PORT_OUT)
@@ -1048,7 +1056,6 @@ namespace kdm
 
       transition_type trans_net ( "kdm_complex"
                                 , net
-                                , "true"
                                 , transition_type::external
                                 );
       trans_net.add_ports ()

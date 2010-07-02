@@ -207,6 +207,21 @@ namespace we { namespace type {
       {
         static const bool value = false;
       };
+
+      template <typename T>
+      struct condition
+      {
+        explicit condition (T const & _expr)
+          : expr(_expr)
+        { }
+
+        operator T const & () const
+        {
+          return expr;
+        }
+
+        const T expr;
+      };
     }
 
     template <typename Place, typename Edge, typename Token>
@@ -220,6 +235,7 @@ namespace we { namespace type {
       typedef expression_t expr_type;
       typedef transition_t<Place, Edge, Token> this_type;
       typedef petri_net::net<Place, this_type, Edge, Token> net_type;
+      typedef detail::condition<std::string> cond_type;
       typedef boost::variant< mod_type
                             , expr_type
                             , boost::recursive_wrapper<net_type>
@@ -254,8 +270,61 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   , const std::string & _condition = "true"
-                   , bool intern = detail::is_internal<Type>::value
+                   )
+        : name_ (name)
+        , data_ (typ)
+        , internal_ (detail::is_internal<Type>::value)
+        , condition_( "true"
+                    , boost::bind
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
+        , port_id_counter_(0)
+      { }
+
+      template <typename Type>
+      transition_t ( const std::string & name
+                   , Type const & typ
+                   , cond_type const & _condition
+                   )
+        : name_ (name)
+        , data_ (typ)
+        , internal_ (detail::is_internal<Type>::value)
+        , condition_( _condition
+                    , boost::bind
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
+        , port_id_counter_(0)
+      { }
+
+      template <typename Type>
+      transition_t ( const std::string & name
+                   , Type const & typ
+                   , bool intern
+                   )
+        : name_ (name)
+        , data_ (typ)
+        , internal_ (intern)
+        , condition_( "true"
+                    , boost::bind
+                      ( &detail::translate_place_to_port_name<this_type, pid_t>
+                      , boost::ref(*this)
+                      , _1
+                      )
+                    )
+        , port_id_counter_(0)
+      { }
+
+      template <typename Type>
+      transition_t ( const std::string & name
+                   , Type const & typ
+                   , cond_type const & _condition
+                   , bool intern
                    )
         : name_ (name)
         , data_ (typ)
