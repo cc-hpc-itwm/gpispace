@@ -364,7 +364,7 @@ bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &
 
 void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
 {
-  MLOG(FATAL, "delivery of message[" << e->id() << "] failed: " << e->str());
+  MLOG(ERROR, "delivery of message[" << e->id() << "] failed: " << e->str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
