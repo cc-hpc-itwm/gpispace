@@ -711,7 +711,7 @@ namespace we { namespace mgmt {
             {
             case policy::exec_policy::EXTRACT:
               {
-                DLOG(TRACE, "extracting from net");
+                DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc.name());
                 while (desc.enabled())
                 {
                   descriptor_type child (desc.extract (generate_internal_id()));
@@ -741,7 +741,7 @@ namespace we { namespace mgmt {
                   }
                 }
 
-                DLOG(TRACE, "done extracting");
+                DLOG(TRACE, "extractor-" << rank << " done extracting");
 
                 if (desc.is_done ())
                 {
