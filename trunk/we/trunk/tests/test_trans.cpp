@@ -3,7 +3,7 @@
  *
  *       Filename:  test_trans.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  04/12/2010 12:18:50 PM
@@ -52,7 +52,7 @@ int main (int, char **)
 
   petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
 
-  transition_t trans_inner 
+  transition_t trans_inner
     ( "trans_inner"
     , transition_t::expr_type
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid}); \
@@ -60,7 +60,7 @@ int main (int, char **)
          ${pair.bid}   := ${store.bid}                         ; \
          ${pair.vid}   := ${vid}                                 "
       )
-    , "!bitset_is_element (${store.seen}, ${vid})"
+    , transition_t::cond_type ("!bitset_is_element (${store.seen}, ${vid})")
     , true
     );
 
@@ -92,7 +92,7 @@ int main (int, char **)
   net.add_edge (e++, connection_t (TP, tid, pid_store));
   net.add_edge (e++, connection_t (PT_READ, tid, pid_vid));
   net.add_edge (e++, connection_t (TP, tid, pid_pair));
-  
+
   token::put (net, pid_vid, literal::type(0L));
 
   {
