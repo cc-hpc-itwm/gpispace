@@ -27,10 +27,10 @@ int main (int argc, char ** argv)
     return EXIT_SUCCESS;
   }
 
-  we::transition_t trans (we::tests::map_reduce<we::activity_t>::generate());
-  we::activity_t act ( trans );
-
-  std::cout << we::util::text_codec::encode (act) << std::endl;
+  we::util::text_codec::encode
+    ( std::cout
+    , we::activity_t(we::tests::map_reduce<we::activity_t>::generate())
+    );
 
   return EXIT_SUCCESS;
 }
