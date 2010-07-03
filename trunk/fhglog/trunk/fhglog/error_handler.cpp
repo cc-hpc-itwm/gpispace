@@ -1,11 +1,10 @@
+#include <fhglog/fhglog-config.hpp>
 #include "error_handler.hpp"
 
 static void DefaultErrorHandler (void)
 {
-#ifndef NDEBUG
-  exit (1);
-#else
-  // ignore
+#if defined(FHGLOG_EXIT_ON_ERROR) && FHGLOG_EXIT_ON_ERROR == 1
+  exit (FHGLOG_EXIT_ON_ERROR_CODE);
 #endif
 }
 
