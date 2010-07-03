@@ -8,6 +8,7 @@
 #include <we/type/place.hpp>
 #include <we/type/token.hpp>
 #include <we/mgmt/type/activity.hpp>
+#include <we/mgmt/context.hpp>
 
 using petri_net::connection_t;
 using petri_net::PT;
