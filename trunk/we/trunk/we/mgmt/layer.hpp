@@ -225,8 +225,8 @@ namespace we { namespace mgmt {
           descriptor_type & desc (lookup (int_id));
           {
             activity_type act (policy::codec::decode (result));
-            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
             desc.output (act.output());
+            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
           }
         }
 
@@ -739,9 +739,11 @@ namespace we { namespace mgmt {
                     LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
                     throw std::runtime_error ("invalid classification during execution of activity: " + ::util::show (child));
                   }
+
+                  DLOG(TRACE, "extractor-" << rank << " executed child: " << child.id());
                 }
 
-                DLOG(TRACE, "extractor-" << rank << " done extracting");
+                DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
 
                 if (desc.is_done ())
                 {
