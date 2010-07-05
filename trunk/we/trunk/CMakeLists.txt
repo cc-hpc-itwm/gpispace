@@ -24,6 +24,8 @@ set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 option (ENABLE_TESTS "Build with test binaries" YES)
+set (WE_NUM_EXTRACTORS "4" CACHE STRING "number of extractors")
+set (WE_NUM_INJECTORS  "4" CACHE STRING "number of extractors")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "$ENV{CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules")
 
