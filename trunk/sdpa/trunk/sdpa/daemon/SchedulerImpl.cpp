@@ -311,6 +311,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 	{
 		if( ptr_worker_man_->numberOfWorkers()==0 )
 		{
+                  LOG(WARN, "No worker registered, marking job as failed: " << jobId);
+
 			ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
 			return false;
 		}
@@ -327,6 +329,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			{
 				if(job_pref.is_mandatory())
 				{
+                                  LOG(WARN, "a job requested an empty list of mandatory nodes: " << jobId);
 					ptr_comm_handler_->workerJobFailed( jobId, "The list of nodes needed is empty!");
 					return false;
 				}
@@ -344,15 +347,17 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
 				const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
 				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end() && !bAssigned; it++ )
-
+                                {
 					// use try-catch for the case when the no worker with that rank exists
 					if(!(bAssigned=schedule_to(jobId, *it, job_pref)))
 						uset_excluded.insert(*it);
+                                }
 
 				// if the assignment to one of the preferred workers
 				// fails and mandatory is set then -> declare the job failed
 				if( !bAssigned && job_pref.is_mandatory() )
 				{
+                                  LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
 					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with a registered worker!");
 					return false;
 				}
@@ -360,9 +365,9 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 				// if the assignement on one of preferred workers
 				// fails and NOT mandatory is set then try to schedule it successively on one
 				// of the remaining nodes that are not into the uset_excluded list and least loaded
-				if( !bAssigned && job_pref.is_mandatory() ) // continue with the rest of the workers not uset_excluded
+				if( !bAssigned && (! job_pref.is_mandatory()) ) // continue with the rest of the workers not uset_excluded
 				{
-					bAssigned = false;
+                                  // TODO FIXME: the following code is not thread safe (rank_map() may be modified, when a node registers)!
 
 					// declare the job failed!!!
 					for( WorkerManager::rank_map_t::const_iterator iter = ptr_worker_man_->rank_map().begin(); iter != ptr_worker_man_->rank_map().end() && !bAssigned; iter++ )
@@ -386,6 +391,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 	}
 	else
 	{
+          LOG(WARN, "could not schedule job: no worker available: " << jobId);
 		ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
 		return false;
 	}
