@@ -190,7 +190,7 @@ void GenericDaemon::shutdown_network()
 {
   {
     if (master() != "" && is_registered())
-      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN)));
+      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
   }
 
 	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
@@ -455,7 +455,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	{
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
 		// the worker should register first, before posting a job request
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 
 		sendEventToSlave(pErrorEvt);
 	} catch(...) {
@@ -477,6 +477,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
           sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                             , e.from()
                                                             , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                            , "no such job"
                                                             )
                                             )
                            );
@@ -485,14 +486,16 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
           sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                             , e.from()
                                                             , ErrorEvent::SDPA_EAGAIN
+                                                            , "not ready for deletion, try again later"
                                                             )
                                             )
                            );
-	}catch(JobNotDeletedException const &){
+	}catch(JobNotDeletedException const & ex){
           SDPA_LOG_ERROR("Job " << e.job_id() << " could not be deleted!");
           sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                             , e.from()
                                                             , ErrorEvent::SDPA_EUNKNOWN
+                                                            , ex.what()
                                                             )
                                             )
                            );
@@ -501,6 +504,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
           sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                             , e.from()
                                                             , ErrorEvent::SDPA_EUNKNOWN
+                                                            , ex.what()
                                                             )
                                             )
                            );
@@ -509,6 +513,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
           sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                             , e.from()
                                                             , ErrorEvent::SDPA_EUNKNOWN
+                                                            , "unknown"
                                                             )
                                             )
                            );
@@ -569,7 +574,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		SDPA_LOG_DEBUG("worker " << worker_id << " is not registered, asking him to do so first");
 
 		// the worker should register first, before posting a job request
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG) );
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 
 		sendEventToSlave(pErrorEvt, 0);
 	}
@@ -647,10 +652,10 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			m_nExternalJobs++;
 		}
 		//catch also workflow exceptions
-	}catch(JobNotAddedException const &) {
-		SDPA_LOG_ERROR("job " << job_id << " could not be added!");
+	}catch(JobNotAddedException const &ex) {
+          SDPA_LOG_ERROR("job " << job_id << " could not be added: " << ex.what());
 		// the worker should register first, before posting a job request
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN) );
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
 		sendEventToMaster(pErrorEvt);
 	}
 	catch(QueueFull const &)
@@ -724,7 +729,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
-  LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code());
+  LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
   switch (error.error_code())
   {
 	case ErrorEvent::SDPA_ENOERROR:

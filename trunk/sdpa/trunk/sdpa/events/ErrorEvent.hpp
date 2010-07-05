@@ -55,10 +55,11 @@ namespace sdpa { namespace events {
         , reason_("unknown reason")
       {}
 
-      ErrorEvent(const address_t &a_from
-               , const address_t &a_to
-               , const error_code_t &a_error_code
-               , const std::string& a_reason = "unknown reason")
+      ErrorEvent( const address_t &a_from
+                , const address_t &a_to
+                , const error_code_t &a_error_code
+                , const std::string& a_reason
+                )
         : MgmtEvent(a_from, a_to)
         , error_code_(a_error_code)
         , reason_(a_reason)

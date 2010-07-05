@@ -402,7 +402,7 @@ void Orchestrator<T>::handleRetrieveJobResultsEvent(const RetrieveJobResultsEven
 	catch(const JobNotFoundException&)
 	{
 		SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND) );
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
 		sendEventToMaster(pErrorEvt);
 	}
 }
