@@ -960,7 +960,7 @@ void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 	jobManager()->deleteJob(jobId);
 }
 
-void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc ) throw (NoWorkflowEngine)
+void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
 	if(!ptr_workflow_engine_)
 		throw NoWorkflowEngine();

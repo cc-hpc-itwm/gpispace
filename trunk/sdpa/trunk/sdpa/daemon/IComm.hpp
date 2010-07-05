@@ -50,7 +50,7 @@ const std::string USER("user");
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw (JobNotFoundException) = 0;
 	  virtual const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
 
-	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) throw (NoWorkflowEngine) = 0;
+	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
 
 	  virtual void workerJobFailed(const job_id_t&, const std::string& result /*or reason*/ ) = 0;
