@@ -411,8 +411,8 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	// use for now as below, later read from config file
 	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
 	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
-	ptr_daemon_cfg_->put("life-sign interval", 10 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        2 * 1000 * 1000);
+	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
+	ptr_daemon_cfg_->put("node_timeout",        6 * 1000 * 1000);
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
@@ -423,7 +423,7 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 	SDPA_LOG_INFO("configuration was ok");
 }
 
-void GenericDaemon::action_config_nok(const ConfigNokEvent &cne)
+void GenericDaemon::action_config_nok(const ConfigNokEvent &)
 {
 	SDPA_LOG_FATAL("configuration was not ok!");
 }
