@@ -68,7 +68,7 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 	while( !pQueue->empty() )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
-		SDPA_LOG_ERROR("Re-scheduling the job "<<jobId.str()<<" ... ");
+		SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
 		schedule_with_constraints(jobId);
 	}
 }
@@ -82,16 +82,15 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 
 		pWorker->set_timedout();
 
-		re_schedule( &pWorker->acknowledged() );
-		re_schedule( &pWorker->submitted() );
-		re_schedule( &pWorker->pending() );
+                // TODO we have to  think about the implications of rescheduling
+                // already submitted jobs,  in the general case, it  is not safe
+                // to reschedule them!  For  pending jobs we can reschedule them
+                // without thinking twice, for all others we simply cannot!
 
-		LOG_IF( FATAL
-			  ,  pWorker->pending().size()
-			  || pWorker->submitted().size()
-			  || pWorker->acknowledged().size()
-			  , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
-			  );
+                //		re_schedule( &pWorker->acknowledged() );
+                //		re_schedule( &pWorker->submitted() );
+
+		re_schedule( &pWorker->pending() );
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
@@ -107,6 +106,13 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 	try {
 
 		re_schedule(worker_id);
+
+		LOG_IF( FATAL
+			  ,  pWorker->pending().size()
+			  || pWorker->submitted().size()
+			  || pWorker->acknowledged().size()
+			  , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
+			  );
 
 		// delete the worker from the worker map
 		ptr_worker_man_->delWorker(worker_id);
@@ -125,7 +131,16 @@ void SchedulerImpl::detectTimedoutWorkers( sdpa::util::time_type const & timeout
 
 void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
 {
-	ptr_worker_man_->deleteNonResponsiveWorkers (timeout);
+  // mark timedout workers and reschedule  their work...
+  std::vector<Worker::worker_id_t> nonResponsive;
+  ptr_worker_man_->detectTimedoutWorkers (timeout, &nonResponsive);
+  std::for_each ( nonResponsive.begin()
+                , nonResponsive.end()
+                , boost::bind ( &SchedulerImpl::delWorker
+                              , this
+                              , _1
+                              )
+                );
 }
 
 /*

@@ -92,7 +92,7 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 		iter_last_worker_ = worker_map_.begin();
 }
 
-void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout )
+void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout, std::vector<Worker::worker_id_t> * timedout_workers )
 {
 	lock_type lock(mtx_);
 
@@ -102,6 +102,7 @@ void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout 
 		{
 			LOG(WARN, "Mark the timed-out workers (no incoming message for " << (timeout / 1000000) << "s!");
 			iter->second->set_timedout();
+                        if (timedout_workers) timedout_workers->push_back (iter->first);
 		}
 	}
 }
