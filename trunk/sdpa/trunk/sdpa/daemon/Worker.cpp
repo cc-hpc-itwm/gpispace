@@ -37,6 +37,7 @@ bool Worker::has_job( const sdpa::job_id_t& job_id )
 void Worker::update()
 {
   tstamp_ = sdpa::util::now();
+  set_timedout (false);
 }
 
 void Worker::dispatch(const sdpa::job_id_t& jobId)
