@@ -29,6 +29,7 @@ namespace we
           : has_parent_(false)
           , from_external_(false)
           , to_external_(false)
+          , failure_counter_(0)
         { }
 
         descriptor (id_type const & a_id, activity_type const & a_activity)
@@ -37,6 +38,7 @@ namespace we
           , has_parent_(false)
           , from_external_(false)
           , to_external_(false)
+          , failure_counter_(0)
         {
           activity_.set_id (a_id);
         }
@@ -48,6 +50,7 @@ namespace we
           , parent_(a_parent)
           , from_external_(false)
           , to_external_(false)
+          , failure_counter_(0)
         {
           activity_.set_id (a_id);
         }
@@ -62,6 +65,7 @@ namespace we
           , to_external_(other.to_external_)
           , from_external_id_(other.from_external_id_)
           , to_external_id_(other.to_external_id_)
+          , failure_counter_(other.failure_counter_)
         { }
 
         descriptor & operator= (const descriptor & other)
@@ -80,6 +84,7 @@ namespace we
             to_external_ = other.to_external_;
             from_external_id_ = other.from_external_id_;
             to_external_id_ = other.to_external_id_;
+            failure_counter_ = other.failure_counter_;
           }
           return *this;
         }
@@ -205,6 +210,32 @@ namespace we
           del_child (child.id());
         }
 
+        void child_failed (this_type const & child, std::string const & /*reason*/)
+        {
+          lock_t lock(mutex_);
+          if (! is_child (child.id()))
+            throw std::runtime_error ( "Tried to notify child failure '"
+                                     + boost::lexical_cast<std::string>(child)
+                                     + "' to '"
+                                     + boost::lexical_cast<std::string>(*this)
+                                     + "' which is not my child!"
+                                     );
+          del_child (child.id());
+        }
+
+        void child_cancelled (this_type const & child, std::string const & /*reason*/)
+        {
+          lock_t lock(mutex_);
+          if (! is_child (child.id()))
+            throw std::runtime_error ( "Tried to notify child cancellation '"
+                                     + boost::lexical_cast<std::string>(child)
+                                     + "' to '"
+                                     + boost::lexical_cast<std::string>(*this)
+                                     + "' which is not my child!"
+                                     );
+          del_child (child.id());
+        }
+
         this_type extract (id_type const & child_id)
         {
           lock_t lock(mutex_);
@@ -236,6 +267,7 @@ namespace we
         {
           lock_t lock(mutex_);
           activity_.collect_output();
+          activity_.set_failed (false);
         }
 
         void failed ()
@@ -243,6 +275,20 @@ namespace we
           lock_t lock(mutex_);
           activity_.collect_output();
           activity_.set_failed (true);
+          ++failure_counter_;
+        }
+
+        void cancelled ()
+        {
+          lock_t lock(mutex_);
+          activity_.collect_output();
+          activity_.set_cancelled (true);
+        }
+
+        std::size_t failure_counter () const
+        {
+          lock_t lock(mutex_);
+          return failure_counter_;
         }
 
         bool has_children () const
@@ -365,6 +411,7 @@ namespace we
         bool to_external_;
         external_id_type from_external_id_;
         external_id_type to_external_id_;
+        std::size_t failure_counter_;
       };
 
       template <typename A, typename I, typename E>
