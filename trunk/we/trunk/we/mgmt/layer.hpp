@@ -519,7 +519,7 @@ namespace we { namespace mgmt {
         // clean up all activities
         while (! activities_.empty())
         {
-          std::cerr << "D: removing act[" << activities_.begin()->first  << "]" << std::endl;
+          LOG(WARN, "removing remaining activity: " << activities_.begin()->second);
           activities_.erase (activities_.begin());
         }
         ext_to_int_.clear();
@@ -570,12 +570,15 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
         manager_.join();
+        DLOG(TRACE, "done.");
 
         DLOG(TRACE, "cleaning up injector threads...");
         stop_threads (injector_);
+        DLOG(TRACE, "done.");
 
         DLOG(TRACE, "cleaning up extractor threads...");
         stop_threads (extractor_);
+        DLOG(TRACE, "done.");
 
         delete [] active_nets_;
         active_nets_ = NULL;
@@ -717,7 +720,7 @@ namespace we { namespace mgmt {
                   descriptor_type child (desc.extract (generate_internal_id()));
                   child.inject_input ();
 
-                  DLOG(INFO, "extractor[" << rank << "]: extracted from (" << desc.name() << ")-" << desc.id()
+                  DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc.name() << ")-" << desc.id()
                       << ": (" << child.name() << ")-" << child.id() << " with input " << child.show_input());
 
                   switch (child.execute (exec_policy))
@@ -728,7 +731,7 @@ namespace we { namespace mgmt {
                     break;
                   case policy::exec_policy::INJECT:
                     child.finished();
-                    DLOG(INFO, "extractor[" << rank << "]: finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
+                    DLOG(INFO, "extractor-" << rank << ": finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
                     desc.inject (child);
                     break;
                   case policy::exec_policy::EXTERNAL:
@@ -740,15 +743,15 @@ namespace we { namespace mgmt {
                     throw std::runtime_error ("invalid classification during execution of activity: " + ::util::show (child));
                   }
 
-                  DLOG(TRACE, "extractor-" << rank << " executed child: " << child.id());
+                  DLOG(TRACE, "extractor-" << rank << " done with child: " << child.id());
                 }
 
                 DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
 
                 if (desc.is_done ())
                 {
-                  DLOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is done");
-                  active_nets_[rank].erase (active_id);
+                  DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << active_id << " is done");
+                  //                  active_nets_[rank].erase (active_id);
                   post_finished_notification (active_id);
                 }
               }
@@ -757,7 +760,7 @@ namespace we { namespace mgmt {
               desc.finished();
 
               DLOG( INFO
-                  , "extractor[" << rank << "]: finished (" << desc.name() << ")-"
+                  , "extractor-" << rank << ": finished (" << desc.name() << ")-"
                   << desc.id() << ": " << desc.show_output()
                   );
 
@@ -765,7 +768,7 @@ namespace we { namespace mgmt {
               {
                 lookup (desc.parent()).inject (desc);
 
-                DLOG(INFO, "injected (" << desc.name() << ")-" << desc.id()
+                DLOG(INFO, "extractor-" << rank << ": injected (" << desc.name() << ")-" << desc.id()
                     << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
                     << ": " << desc.show_output());
 
@@ -785,11 +788,11 @@ namespace we { namespace mgmt {
 
               break;
             case policy::exec_policy::EXTERNAL:
-              DLOG(TRACE, "executing externally");
+              DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc.id());
               execute_externally (desc.id());
               break;
             default:
-              LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << desc.name() << ")-" << desc.id());
+              LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc.name() << ")-" << desc.id());
               throw std::runtime_error ("extractor got strange classification for activity");
             }
           }
@@ -826,8 +829,6 @@ namespace we { namespace mgmt {
             descriptor_type & desc = lookup (act_id);
             desc.finished();
 
-            sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
-
             DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
 
             if (desc.has_parent())
@@ -848,6 +849,7 @@ namespace we { namespace mgmt {
               throw std::runtime_error ("injector does not know how to handle this: " + ::util::show (desc));
             }
 
+            sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
             remove_activity (desc);
           }
           catch (std::exception const & ex)
