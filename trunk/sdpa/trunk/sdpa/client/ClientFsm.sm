@@ -138,6 +138,12 @@ Configured
     {
       action_store_reply(evt)
     }
+
+  Unknown(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_store_reply(evt)
+    }
 }
 
 %%
