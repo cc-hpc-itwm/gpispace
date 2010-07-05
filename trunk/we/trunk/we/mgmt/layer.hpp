@@ -913,14 +913,22 @@ namespace we { namespace mgmt {
 
           if (desc.has_parent ())
           {
-            lookup (desc.parent()).inject (desc);
+            // FIXME: handle failure in a meaningful way:
+            //     - check failure reason
+            //         - EAGAIN reschedule (had not been submitted yet)
+            //         - ECRASH activity crashed (idempotence criteria)
+            lookup (desc.parent()).child_failed (desc, "TODO: child_failed reason");
             post_cancel_activity_notification (desc.parent());
           }
           else if (desc.came_from_external ())
           {
             ext_failed ( desc.from_external_id()
-                       , policy::codec::encode (desc.activity())
+                       , "TODO: activity failed reason"
                        );
+          }
+          else
+          {
+            throw std::runtime_error ("activity failed, but I don't know what to do with it: " + ::util::show (desc));
           }
 
           remove_activity (desc);
@@ -935,13 +943,13 @@ namespace we { namespace mgmt {
       {
         const internal_id_type internal_id (cmd.dat);
         descriptor_type & desc (lookup(internal_id));
+        desc.cancelled();
 
         DLOG(INFO, "cancelled (" << desc.name() << ")-" << desc.id());
         if (desc.has_parent ())
         {
           descriptor_type & parent (lookup (desc.parent()));
-          // TODO: should just be remove, not inject
-          parent.inject (desc);
+          parent.child_cancelled (desc, "TODO: child cancelled reason");
 
           if (! parent.has_children ())
           {
@@ -951,6 +959,10 @@ namespace we { namespace mgmt {
         else if (desc.came_from_external ())
         {
           ext_cancelled (desc.from_external_id());
+        }
+        else
+        {
+          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + ::util::show (desc));
         }
 
         sig_cancelled ( this
@@ -966,16 +978,22 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id (cmd.dat);
         descriptor_type & desc (lookup(internal_id));
 
-        desc.cancel
+        if (desc.has_children())
+        {
+          desc.cancel
             ( boost::bind ( &this_type::post_cancel_activity_notification
                           , this
                           , _1
                           )
             );
-
-        if (desc.sent_to_external())
+        }
+        else if (desc.sent_to_external())
         {
           ext_cancel ( desc.to_external_id(), "NO REASON GIVEN" );
+        }
+        else
+        {
+          post_cancelled_notification (desc.id());
         }
       }
 
