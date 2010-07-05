@@ -183,7 +183,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
-	catch (std::exception& ex)
+	catch (std::exception const & ex)
 	{
 		SDPA_LOG_DEBUG("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
