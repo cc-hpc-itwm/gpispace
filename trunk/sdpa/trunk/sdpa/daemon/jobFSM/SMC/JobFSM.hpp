@@ -36,10 +36,10 @@ namespace sdpa { namespace fsm { namespace smc {
 				    const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
 			: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.smc.JobFSM"), m_fsmContext(*this)
 			{
-				SDPA_LOG_DEBUG("Job state machine created");
+                          SDPA_LOG_DEBUG("Job state machine created: " << id());
 			}
 
-                        virtual ~JobFSM() { SDPA_LOG_DEBUG("Job state machine destroyed"); }
+          virtual ~JobFSM() { SDPA_LOG_DEBUG("Job state machine destroyed: " << id()); }
 
 			//transitions
 			void CancelJob(const sdpa::events::CancelJobEvent*);
