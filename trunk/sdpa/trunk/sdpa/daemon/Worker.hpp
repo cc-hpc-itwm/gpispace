@@ -133,6 +133,15 @@ namespace sdpa { namespace daemon {
     */
     bool has_job( const sdpa::job_id_t& job_id );
 
+
+    /**
+		 Return true if the worker is timedout, false otherwise
+     */
+    const bool timedout() const { return timedout_; }
+
+    void set_timedout(bool bValue = true ) { timedout_ = bValue; }
+
+
     /**
       Return the next pending job or throw an exception.
 
@@ -205,6 +214,7 @@ namespace sdpa { namespace daemon {
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
+    bool timedout_;
   };
 }}
 

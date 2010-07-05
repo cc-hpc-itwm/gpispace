@@ -26,6 +26,9 @@
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
+
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -56,12 +59,74 @@ void SchedulerTest::tearDown()
 	SDPA_LOG_DEBUG("tearDown");
 }
 
+void SchedulerTest::testDelWorker( )
+{
+	// first re-schedule the work:
+	// inspect all queues and re-schedule each job
+
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+
+	ostringstream oss;
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
+	ptr_scheduler_->start();
+
+	// add a number of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<"Worker"<<k;
+		ptr_scheduler_->addWorker(oss.str(), k);
+	}
+
+	// submit a number of remote jobs and schedule them
+	for(int i=0; i<NJOBS; i++)
+	{
+		JobId job_id;
+		Job::ptr_t pJob( new JobFSM( job_id, ""));
+		pJob->set_local(false);
+
+		//add later preferences to the jobs
+		ptr_scheduler_->schedule_remote(job_id);
+	}
+
+	ptr_scheduler_->getNextJob("Worker0","");
+	ptr_scheduler_->getNextJob("Worker1","");
+
+	for(int k=0; k<5; k++)
+		ptr_scheduler_->getNextJob("Worker2","");
+
+	ptr_scheduler_->getNextJob("Worker3","");
+	ptr_scheduler_->getNextJob("Worker4","");
+
+	SDPA_LOG_ERROR("Before re-scheduling ... ");
+	ptr_scheduler_->print();
+
+	// delete now the worker 2
+	oss.str("");
+	oss<<"Worker"<<2;
+	string worker_id(oss.str());
+
+
+	try
+	{
+		SDPA_LOG_ERROR("Delete the worker "<<worker_id<<" now ... ");
+		ptr_scheduler_->delWorker(worker_id);
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+		throw ex;
+	}
+
+	SDPA_LOG_ERROR("After re-scheduling ... ");
+	ptr_scheduler_->print();
+}
+
 void SchedulerTest::testSchedulerWithNoPrefs()
 {
 	 ostringstream oss;
 	 sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl());
 	 ptr_scheduler_->start();
-
 
 	 // add a number of workers
 	 for( int k=0; k<NWORKERS; k++ )
@@ -70,7 +135,6 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 		 oss<<"Worker"<<k;
 		 ptr_scheduler_->addWorker(oss.str(), k);
 	 }
-
 
 	 // submit a number of remote jobs and schedule them
 	 for(int i=0; i<NJOBS; i++)

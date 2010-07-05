@@ -50,6 +50,7 @@ namespace sdpa {
 	bool schedule_with_constraints(const sdpa::job_id_t &job);
 	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref);
 	void re_schedule(Worker::JobQueue* pQueue );
+	void re_schedule(const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 
 	virtual void start_job(const sdpa::job_id_t &job);
 
@@ -58,6 +59,8 @@ namespace sdpa {
 
 	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
     virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+
+    virtual void detectTimedoutWorkers( sdpa::util::time_type const & timeout );
     virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }

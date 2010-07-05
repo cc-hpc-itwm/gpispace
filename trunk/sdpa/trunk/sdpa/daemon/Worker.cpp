@@ -11,7 +11,9 @@ Worker::Worker(const worker_id_t name, const unsigned int rank, const location_t
     name_(name),
     rank_(rank),
     location_(location),
-    tstamp_(sdpa::util::now()) {
+    tstamp_(sdpa::util::now()),
+    timedout_(false)
+{
 
 }
 

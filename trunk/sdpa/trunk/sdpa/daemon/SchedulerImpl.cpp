@@ -68,20 +68,19 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 	while( !pQueue->empty() )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
+		SDPA_LOG_ERROR("Re-scheduling the job "<<jobId.str()<<" ... ");
 		schedule_with_constraints(jobId);
 	}
 }
 
-
-void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
 	// first re-schedule the work:
 	// inspect all queues and re-schedule each job
 	try {
 		const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-		// delete the worker from the worker map
-		ptr_worker_man_->delWorker(worker_id);
+		pWorker->set_timedout();
 
 		re_schedule( &pWorker->acknowledged() );
 		re_schedule( &pWorker->submitted() );
@@ -101,9 +100,32 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 	}
 }
 
+void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+{
+	// first re-schedule the work:
+	// inspect all queues and re-schedule each job
+	try {
+
+		re_schedule(worker_id);
+
+		// delete the worker from the worker map
+		ptr_worker_man_->delWorker(worker_id);
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+		throw ex;
+	}
+}
+
+void SchedulerImpl::detectTimedoutWorkers( sdpa::util::time_type const & timeout )
+{
+	ptr_worker_man_->detectTimedoutWorkers(timeout);
+}
+
 void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
 {
-  ptr_worker_man_->deleteNonResponsiveWorkers (timeout);
+	ptr_worker_man_->deleteNonResponsiveWorkers (timeout);
 }
 
 /*
@@ -205,10 +227,20 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 		return false;
 	}
 
+	// if the worker is marked for deletion don't schedule any job on it
+	// should have a monitoring thread that detects the timedout nodes
+	// add a boolean variable to the worker bTimedout or not
+
 	try
 	{
 		const Worker::worker_id_t worker_id = ptr_worker_man_->rank_map().at(rank);
 		const Worker::ptr_t& pWorker = findWorker( worker_id);
+
+		if( pWorker->timedout() )
+		{
+			SDPA_LOG_WARN("Couldn't schedule the job "<<jobId.str()<<" on the worker "<<worker_id<<". Timeout detected!");
+			return false;
+		}
 
 		SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
@@ -305,7 +337,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 				// fails and mandatory is set then -> declare the job failed
 				if( !bAssigned && job_pref.is_mandatory() )
 				{
-					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with an existing registered worker!");
+					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with a registered worker!");
 					return false;
 				}
 

@@ -24,6 +24,12 @@ bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int ra
 	return false;
 }
 
+void SchedulerTestImpl::re_schedule(Worker::JobQueue* pQueue )
+{
+
+}
+
+
 const Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	throw WorkerNotFoundException(worker_id);

@@ -27,7 +27,7 @@ namespace sdpa { namespace tests {
 
       suiteOfTests->addTest( SchedulerTest::suite() );
       // suiteOfTests->addTest( LoadBalancerTest::suite() );
-      suiteOfTests->addTest( TestComponents::suite() );
+      //suiteOfTests->addTest( TestComponents::suite() );
 
       return suiteOfTests;
     }

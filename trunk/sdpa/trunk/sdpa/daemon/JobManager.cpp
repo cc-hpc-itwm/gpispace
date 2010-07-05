@@ -37,7 +37,6 @@ JobManager::~JobManager(){
 
 }
 
-
 //helpers
 Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {

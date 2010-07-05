@@ -92,25 +92,34 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 		iter_last_worker_ = worker_map_.begin();
 }
 
+void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout )
+{
+	lock_type lock(mtx_);
+
+	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+	{
+		if( sdpa::util::time_diff( iter->second->tstamp (), sdpa::util::now()) > timeout )
+		{
+			LOG(WARN, "Mark the timed-out workers (no incoming message for " << (timeout / 1000000) << "s!");
+			iter->second->set_timedout();
+		}
+	}
+}
+
 void WorkerManager::deleteNonResponsiveWorkers (sdpa::util::time_type const & timeout)
 {
-  lock_type lock(mtx_);
-  worker_map_t::iterator w (worker_map_.begin());
+	detectTimedoutWorkers( timeout );
 
-  std::list<worker_id_t> old_workers;
-  while (w != worker_map_.end())
-  {
-    if (sdpa::util::time_diff (w->second->tstamp (), sdpa::util::now()) > timeout)
-    {
-      LOG(WARN, "Marking old worker for removal (didn't receive messages for " << (timeout / 1000000) << "s!");
-      old_workers.push_back (w->second->name());
-    }
-    ++w;
-  }
-
-  std::for_each ( old_workers.begin(), old_workers.end()
-                , boost::bind (&WorkerManager::delWorker, this, _1)
-                );
+	lock_type lock(mtx_);
+	worker_map_t::iterator it( worker_map_.begin() );
+	while( it != worker_map_.end() )
+		if( it->second->timedout() )
+		{
+			LOG(WARN, "The worker "<<it->second->name()<<" is timed-out. Remove it!");
+			worker_map_.erase(it++);
+		}
+		else
+			++it;
 }
 
 // you should here delete_worker as well, for the
@@ -327,7 +336,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the common queue");
+	SDPA_LOG_DEBUG("Add the job " << jobId.str() );
 	common_queue_.push(jobId);
 }
 
@@ -376,20 +385,9 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
   worker_map_t::iterator w (worker_map_.find (workerId));
 
   if (w == worker_map_.end())
-  {
-    throw WorkerNotFoundException(workerId);
-  }
-  else
-  {
-    // TODO: redistribute load, currently we just fail hard
-    LOG_IF( FATAL
-          ,  w->second->pending().size()
-          || w->second->submitted().size()
-          || w->second->acknowledged().size()
-          , "tried to remove worker " << workerId << " while there are still jobs scheduled!"
-          );
-    worker_map_.erase (w);
-  }
+      throw WorkerNotFoundException(workerId);
+
+  worker_map_.erase (w);
 }
 
 
