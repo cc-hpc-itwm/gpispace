@@ -104,16 +104,17 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 	// first re-schedule the work:
 	// inspect all queues and re-schedule each job
 	try {
-
 		re_schedule(worker_id);
 
-		LOG_IF( FATAL
-			  ,  pWorker->pending().size()
-			  || pWorker->submitted().size()
-			  || pWorker->acknowledged().size()
-			  , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
-			  );
-
+		{
+		  const Worker::ptr_t& pWorker = findWorker(worker_id);
+		  LOG_IF( FATAL
+		  	  ,  pWorker->pending().size()
+		  	  || pWorker->submitted().size()
+		  	  || pWorker->acknowledged().size()
+		  	  , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
+		  	  );
+        }
 		// delete the worker from the worker map
 		ptr_worker_man_->delWorker(worker_id);
 	}
