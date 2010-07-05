@@ -509,20 +509,21 @@ namespace we { namespace mgmt {
 
       ~layer()
       {
-        lock_t lock (mutex_);
-
         // stop threads
         stop();
 
         // cancel external activities
 
-        // clean up all activities
-        while (! activities_.empty())
         {
-          LOG(WARN, "removing remaining activity: " << activities_.begin()->second);
-          activities_.erase (activities_.begin());
+          lock_t lock (mutex_);
+          // clean up all activities
+          while (! activities_.empty())
+          {
+            LOG(WARN, "removing remaining activity: " << activities_.begin()->second);
+            activities_.erase (activities_.begin());
+          }
+          ext_to_int_.clear();
         }
-        ext_to_int_.clear();
       }
 
       /* internal functions */
