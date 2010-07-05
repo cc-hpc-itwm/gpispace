@@ -1,6 +1,7 @@
 #include "Client.hpp"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
@@ -21,6 +22,7 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 
 #include <sdpa/events/CodecStrategy.hpp>
 
@@ -102,6 +104,14 @@ void Client::perform(const seda::IEvent::Ptr &event)
   } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
     DMLOG(TRACE,"ack");
     fsm_.DeleteAck(event);
+  } else if (dynamic_cast<se::ErrorEvent*>(event.get())) {
+    DMLOG(TRACE,"err");
+    fsm_.Error(event);
+  }
+  else
+  {
+    DMLOG(TRACE,"unkown");
+    fsm_.Unknown(event);
   }
 }
 
@@ -193,6 +203,14 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
           << sj_ack->job_id());
       return sj_ack->job_id();
     }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during submit: reason := "
+                           + reply->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(reply->error_code())
+                           );
+    }
     else
     {
       MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
@@ -219,6 +237,14 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
     if (/* se::CancelJobAckEvent *ack = */ dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
     {
       DMLOG(DEBUG,"cancellation has been acknowledged");
+    }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during cancel: reason := "
+                           + reply->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(reply->error_code())
+                           );
     }
     else
     {
@@ -248,6 +274,14 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
       DMLOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
       return status->status();
     }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during query: reason := "
+                           + reply->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(reply->error_code())
+                           );
+    }
     else
     {
       MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
@@ -275,6 +309,14 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     {
       DMLOG(DEBUG,"deletion of job has been acknowledged");
     }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during delete: reason := "
+                           + reply->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(reply->error_code())
+                           );
+    }
     else
     {
       MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
@@ -301,6 +343,14 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
     if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
     {
       return res->result();
+    }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during retrieve: reason := "
+                           + reply->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(reply->error_code())
+                           );
     }
     else
     {
