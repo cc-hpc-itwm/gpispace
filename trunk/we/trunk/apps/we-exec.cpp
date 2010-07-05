@@ -48,7 +48,7 @@ void observe_finished (const layer_t *, layer_id_type const & id, std::string co
   {
     layer_jobs.erase (id);
     we::activity_t act (layer_t::policy::codec::decode (s));
-    std::cerr << "job finished: " << id << act.transition().name() << std::endl;
+    std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
   }
 }
 static
