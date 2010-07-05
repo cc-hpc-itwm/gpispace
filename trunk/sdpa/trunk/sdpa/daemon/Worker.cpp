@@ -48,6 +48,8 @@ void Worker::dispatch(const sdpa::job_id_t& jobId)
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
+  update();
+
   JobQueue::lock_type lockSub(submitted().mutex());
   JobQueue::lock_type lockAck(acknowledged().mutex());
 
@@ -106,6 +108,9 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 		  // move the job from pending to submitted
 		  sdpa::job_id_t jobId = pending().pop();
 		  submitted().push(jobId);
+
+                  update();
+
 		  return jobId;
 	  }
 	  catch(const QueueEmpty& )
