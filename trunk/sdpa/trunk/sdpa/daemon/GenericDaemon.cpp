@@ -257,7 +257,7 @@ void GenericDaemon::stop()
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-	SDPA_LOG_DEBUG("Perform: Handling event " <<typeid(*pEvent.get()).name());
+  DLOG(TRACE, "perform (" << typeid(*pEvent.get()).name() << ")");
 	if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
 	{
 		pSdpaEvt->handleBy(this);
@@ -524,7 +524,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-	SDPA_LOG_DEBUG("got job request from: " << e.from());
+  DLOG(DEBUG, "got job request from: " << e.from());
+
 	/*
 	the slave(aggregator) requests new executable jobs
 	this message is sent in regular frequencies depending on the load of the slave(aggregator)
@@ -567,11 +568,11 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const NoJobScheduledException&)
 	{
-		SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
+          DLOG (DEBUG, "No job was scheduled to be executed on the worker '"<<worker_id);
 	}
 	catch(const WorkerNotFoundException&)
 	{
-		SDPA_LOG_DEBUG("worker " << worker_id << " is not registered, asking him to do so first");
+		SDPA_LOG_INFO("worker " << worker_id << " is not registered, asking him to do so first");
 
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
