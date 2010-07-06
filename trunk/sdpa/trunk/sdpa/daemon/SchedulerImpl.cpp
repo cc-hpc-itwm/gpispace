@@ -166,8 +166,8 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		// Should set the workflow_id here, or send it together with the workflow description
 		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
 		//ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
-		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 		pJob->Dispatch();
+		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
 	catch(const NoWorkflowEngine& ex)
 	{
@@ -298,7 +298,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
  */
 bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("Called schedule_remote ...");
+	SDPA_LOG_DEBUG("Called schedule_with_contraints ...");
 
 	if(!ptr_comm_handler_)
 	{
@@ -306,6 +306,10 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 		stop();
 		return false;
 	}
+
+        // TODO  this call  is just  for  now here,  there should  be an  active
+        // component checking dropped connections.
+        deleteNonResponsiveWorkers ();
 
 	if( ptr_worker_man_ )
 	{
