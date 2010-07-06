@@ -173,10 +173,11 @@ namespace xml
     // ********************************************************************* //
 
     static type::connect
-    connect_type (const xml_node_type * node, state::type &)
+    connect_type (const xml_node_type * node, state::type & state)
     {
       return type::connect ( required ("connect_type", node, "place")
                            , required ("connect_type", node, "port")
+                           , state.file_in_progress()
                            );
     }
 
@@ -187,6 +188,7 @@ namespace xml
     {
       type::function f;
 
+      f.path = state.file_in_progress();
       f.level = state.level();
       f.name = optional (node, "name");
       f.internal = fmap<std::string, bool>( read_bool
@@ -230,7 +232,7 @@ namespace xml
             }
           else if (child_name == "expression")
             {
-              f.f = type::expression (child->value());
+              f.f = type::expression (child->value(), state.file_in_progress());
             }
           else if (child_name == "module")
             {
@@ -260,10 +262,11 @@ namespace xml
     // ********************************************************************* //
 
     static type::mod
-    mod_type (const xml_node_type * node, state::type &)
+    mod_type (const xml_node_type * node, state::type & state)
     {
       return type::mod ( required ("mod_type", node, "name")
                        , required ("mod_type", node, "function")
+                       , state.file_in_progress()
                        );
     }
 
@@ -274,6 +277,7 @@ namespace xml
     {
       type::net n;
 
+      n.path = state.file_in_progress();
       n.level = state.level();
 
       ++state.level();
@@ -361,6 +365,7 @@ namespace xml
           ( &::we::util::reader<petri_net::capacity_t>::read
           , optional (node, "capacity")
           )
+        , state.file_in_progress()
         );
 
       p.level = state.level();
@@ -388,11 +393,12 @@ namespace xml
     // ********************************************************************* //
 
     static type::port
-    port_type (const xml_node_type * node, state::type &)
+    port_type (const xml_node_type * node, state::type & state)
     {
       return type::port ( required ("port_type", node, "name")
                         , required ("port_type", node, "type")
                         , optional (node, "place")
+                        , state.file_in_progress()
                         );
     }
 
@@ -464,6 +470,7 @@ namespace xml
     {
       type::struct_t s;
 
+      s.path = state.file_in_progress();
       s.name = required ("struct_type", node, "name");
       s.sig = signature::structured_t();
       s.level = state.level();
@@ -478,7 +485,7 @@ namespace xml
     static void
     token_field_type ( const xml_node_type * node
                      , state::type & state
-                     , type::token & tok
+                     , signature::desc_t & tok
                      )
     {
       const std::string name (required ("token_field_type", node, "name"));
@@ -526,7 +533,7 @@ namespace xml
     static type::token
     token_type (const xml_node_type * node, state::type & state)
     {
-      type::token tok = signature::structured_t();
+      type::token tok (signature::structured_t(), state.file_in_progress());
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -537,11 +544,13 @@ namespace xml
 
           if (child_name == "value")
             {
-              return type::token (std::string (child->value()));
+              return type::token ( std::string (child->value())
+                                 , state.file_in_progress()
+                                 );
             }
           else if (child_name == "field")
             {
-              token_field_type (child, state, tok);
+              token_field_type (child, state, tok.content);
             }
           else
             {
@@ -559,6 +568,7 @@ namespace xml
     {
       type::transition t;
 
+      t.path = state.file_in_progress();
       t.level = state.level();
       t.name = required ("transition_type", node, "name");
 

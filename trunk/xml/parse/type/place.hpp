@@ -14,6 +14,8 @@
 
 #include <we/type/id.hpp>
 
+#include <boost/filesystem.hpp>
+
 namespace xml
 {
   namespace parse
@@ -27,16 +29,19 @@ namespace xml
         std::string type;
         maybe<petri_net::capacity_t> capacity;
         std::vector<token> token_vec;
+        boost::filesystem::path path;
         int level;
 
         place ( const std::string & _name
               , const std::string & _type
               , const maybe<petri_net::capacity_t> _capacity
+              , const boost::filesystem::path & _path
               )
           : name (_name)
           , type (_type)
           , capacity (_capacity)
           , token_vec ()
+          , path (_path)
         {}
 
         void push_token (const token & t)
@@ -51,7 +56,7 @@ namespace xml
         s << level(p.level+1) << "name = " << p.name << std::endl;
         s << level(p.level+1) << "type = " << p.type << std::endl;
         s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
-          ;
+        s << level(p.level+1) << "path = " << p.path << std::endl;
 
         for ( std::vector<token>::const_iterator tok (p.token_vec.begin())
             ; tok != p.token_vec.end()

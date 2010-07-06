@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <boost/variant.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 
@@ -42,6 +43,8 @@ namespace xml
 
         type f;
 
+        boost::filesystem::path path;
+
         int level;
       };
 
@@ -53,6 +56,7 @@ namespace xml
           << "name = " << f.name
           << ", interal = " << f.internal
           << std::endl;
+        s << level (f.level+1) << "path = " << f.path << std::endl;
         ;
 
         s << level(f.level+1) << "port_in = " << std::endl;

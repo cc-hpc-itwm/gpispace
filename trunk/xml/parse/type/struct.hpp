@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include <boost/filesystem.hpp>
+
 namespace xml
 {
   namespace parse
@@ -17,6 +19,7 @@ namespace xml
       {
         std::string name;
         signature::desc_t sig;
+        boost::filesystem::path path;
         int level;
       };
 
@@ -25,6 +28,7 @@ namespace xml
         return s << level(st.level) << "struct (" << std::endl
                  << level(st.level+1) << "name = " << st.name << std::endl
                  << level(st.level+1) << "sig = " << st.sig << std::endl
+                 << level(st.level+1) << "path = " << st.path << std::endl
                  << level(st.level) << ") // struct";
       }
     }

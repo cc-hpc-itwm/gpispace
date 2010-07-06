@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <list>
+#include <deque>
 
 #include <stdexcept>
 
@@ -95,6 +96,16 @@ namespace xml
 
         int & level (void) { return _level; }
         search_path_type & search_path (void) { return _search_path; }
+        
+        fs::path file_in_progress (void) 
+        {
+          return (_in_progress.empty()) 
+            ? fs::path("<stdin>") 
+            : _in_progress.back()
+            ;
+        }
+
+        
         bool & Werror (void) { return _Werror; }
         bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
 
@@ -108,7 +119,7 @@ namespace xml
                           , const std::string & file
                           )
         {
-          const boost::filesystem::path path (expand (file));
+          const fs::path path (expand (file));
 
           for ( in_progress_type::const_iterator pos (_in_progress.begin())
               ; pos != _in_progress.end()

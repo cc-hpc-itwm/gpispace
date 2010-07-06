@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <boost/variant.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 
@@ -28,12 +29,15 @@ namespace xml
         typedef std::vector<element_type> element_vec_type;
 
         element_vec_type element;
+
+        boost::filesystem::path path;
+
         int level;
       };
 
       std::ostream & operator << (std::ostream & s, const net & n)
       {
-        s << "net (" << std::endl;
+        s << "net (path = " << n.path << std::endl;
 
         for ( net::element_vec_type::const_iterator pos (n.element.begin())
             ; pos != n.element.end()
