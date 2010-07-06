@@ -168,7 +168,7 @@ namespace seda { namespace comm {
       data_[bytes_recv] = 0;
       std::string tmp(data_, bytes_recv);
 
-      DLOG(DEBUG, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
+      DLOG(TRACE, sender_endpoint_ << " sent me " << bytes_recv << " bytes of data: " << data_);
 
       try
       {
@@ -227,11 +227,19 @@ namespace seda { namespace comm {
 
   void UDPConnection::send(const seda::comm::SedaMessage &m)
   {
+#ifndef NDEBUG
     if (service_thread_ == NULL)
     {
       LOG(ERROR, "the connection has not been started!");
       throw std::runtime_error("Connection not started!");
     }
+    /*
+    DLOG_CHECK( service_thread_ == NULL
+              , std::runtime_error
+              , "the connection has not been started!"
+              );
+    */
+#endif
 
     const Locator::location_t &loc(locator_->lookup(m.to()));
 
@@ -239,7 +247,7 @@ namespace seda { namespace comm {
     udp::resolver::query query(udp::v4(), loc.host(), "0");
     udp::endpoint dst = *resolver.resolve(query);
     dst.port(loc.port());
-    LOG(DEBUG, "sending " << m.str() << " to " << dst);
+    DLOG(TRACE, "sending " << m.str() << " to " << dst);
 
     boost::system::error_code ignored_error;
 
@@ -248,7 +256,7 @@ namespace seda { namespace comm {
     oa << m;
 
     socket_->send_to(boost::asio::buffer(sstr.str()), dst, 0, ignored_error);
-    DLOG(DEBUG, "error = " << ignored_error);
+    DLOG(TRACE, "error = " << ignored_error);
   }
 
   template <typename T> struct recv_waiting_mgr {
