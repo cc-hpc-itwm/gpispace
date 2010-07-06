@@ -69,6 +69,13 @@ namespace xml
 
         fs::path expand (const std::string & file)
         {
+          fs::path direct (file);
+
+          if (fs::exists (direct))
+            {
+              return direct;
+            }
+
           for ( search_path_type::const_iterator dir (_search_path.begin())
               ; dir != _search_path.end()
               ; ++dir
