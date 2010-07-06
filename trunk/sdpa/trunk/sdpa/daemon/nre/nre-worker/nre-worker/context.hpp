@@ -20,8 +20,8 @@ struct exec_context : public we::mgmt::context<>
 
     while (act.has_enabled())
     {
-      we::activity_t sub = act.extract ();
-	  sub.inject_input ();
+      we::activity_t sub (act.extract ());
+      sub.inject_input ();
       sub.execute (*this);
       act.inject (sub);
     }
