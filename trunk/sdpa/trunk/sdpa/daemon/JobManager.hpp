@@ -48,13 +48,14 @@ namespace sdpa { namespace daemon {
 
 	  JobManager();
 	  virtual ~JobManager();
-	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& ) throw(JobNotFoundException) ;
-	//  virtual Job::ptr_t getJob();
+	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& ) throw (JobNotFoundException) ;
+	  // virtual Job::ptr_t getJob();
 	  virtual void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
 
+	  void addJobPreferences( const sdpa::job_id_t&, const we::preference_t& ) throw (JobNotFoundException);
 	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
 	  std::string print();

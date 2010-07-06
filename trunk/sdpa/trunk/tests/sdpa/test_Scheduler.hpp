@@ -28,7 +28,8 @@ namespace sdpa {
 			class SchedulerTest : public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::SchedulerTest );
 			  CPPUNIT_TEST( testDelWorker );
-			  //CPPUNIT_TEST( testSchedulerWithNoPrefs );
+			  CPPUNIT_TEST( testSchedulerWithNoPrefs );
+			  CPPUNIT_TEST( testSchedulerWithPrefs );
 			  CPPUNIT_TEST_SUITE_END();
 
 			public:
@@ -41,6 +42,7 @@ namespace sdpa {
 
 			  void testDelWorker();
 			  void testSchedulerWithNoPrefs();
+			  void testSchedulerWithPrefs();
 
 			private:
 			  SDPA_DECLARE_LOGGER();

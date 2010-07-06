@@ -209,7 +209,7 @@ namespace we
         }
 
       private:
-        const bool mandatory_;
+        bool mandatory_;
         rank_list_type ranks_;
         exclude_set_type excluded_ranks_;
       };

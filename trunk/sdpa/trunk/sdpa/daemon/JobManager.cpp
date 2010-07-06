@@ -155,8 +155,20 @@ const we::preference_t& JobManager::getJobPreferences(const sdpa::job_id_t& jobI
 
 	SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
 	preference_map_t::const_iterator it_pref = job_preferences_.find(jobId);
+	if( it_pref == job_preferences_.end() )
+		throw NoJobPreferences(jobId);
 
 	const we::preference_t& job_pref = it_pref->second;
+	SDPA_LOG_DEBUG("The preferences of the job "<<jobId.str()<<" are: "<<job_pref);
 
 	return job_pref;
+}
+
+void JobManager::addJobPreferences(const sdpa::job_id_t& job_id, const we::preference_t& pref) throw (JobNotFoundException)
+{
+	if( job_map_.find( job_id ) == job_map_.end() )
+			throw JobNotFoundException( job_id );
+
+	// eventually, re-write the existing preferences
+	job_preferences_[job_id] = pref;
 }

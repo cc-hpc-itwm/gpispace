@@ -73,6 +73,21 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 	}
 }
 
+void SchedulerImpl::declare_jobs_failed( Worker::JobQueue* pQueue )
+{
+	while( !pQueue->empty() )
+	{
+		sdpa::job_id_t jobId = pQueue->pop_and_wait();
+		SDPA_LOG_INFO("Declare the job "<<jobId.str()<<" failed!");
+
+		if( ptr_comm_handler_ )
+			ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!");
+		else {
+			SDPA_LOG_ERROR("Invalid communication handler!");
+		}
+	}
+}
+
 void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
 	// first re-schedule the work:
@@ -82,14 +97,23 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 
 		pWorker->set_timedout();
 
-                // TODO we have to  think about the implications of rescheduling
-                // already submitted jobs,  in the general case, it  is not safe
-                // to reschedule them!  For  pending jobs we can reschedule them
-                // without thinking twice, for all others we simply cannot!
+		// TODO we have to  think about the implications of rescheduling
+		// already submitted jobs,  in the general case, it  is not safe
+		// to reschedule them!  For  pending jobs we can reschedule them
+		// without thinking twice, for all others we simply cannot!
 
-                //		re_schedule( &pWorker->acknowledged() );
-                //		re_schedule( &pWorker->submitted() );
+		// The jobs submitted by the WE should have a property set
+		// indicating if the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
+		// re_schedule( &pWorker->acknowledged() );
+		// re_schedule( &pWorker->submitted() );
 
+		// declare the submitted jobs failed
+		declare_jobs_failed( &pWorker->submitted() );
+
+		// declare the acknowledged jobs failed
+		declare_jobs_failed( &pWorker->acknowledged() );
+
+		// re-schedule the pending jobs
 		re_schedule( &pWorker->pending() );
 	}
 	catch (const WorkerNotFoundException& ex)
@@ -307,15 +331,17 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 		return false;
 	}
 
-        // TODO  this call  is just  for  now here,  there should  be an  active
-        // component checking dropped connections.
-	deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
+    // TODO  this call  is just  for  now here,  there should  be an  active
+    // component checking dropped connections.
+
+	// fix this later
+	//deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
 
 	if( ptr_worker_man_ )
 	{
 		if( ptr_worker_man_->numberOfWorkers()==0 )
 		{
-                  LOG(WARN, "No worker registered, marking job as failed: " << jobId);
+			LOG(WARN, "No worker registered, marking job as failed: " << jobId);
 
 			ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
 			return false;
@@ -333,7 +359,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			{
 				if(job_pref.is_mandatory())
 				{
-                                  LOG(WARN, "a job requested an empty list of mandatory nodes: " << jobId);
+					LOG(WARN, "a job requested an empty list of mandatory nodes: " << jobId);
 					ptr_comm_handler_->workerJobFailed( jobId, "The list of nodes needed is empty!");
 					return false;
 				}
@@ -346,44 +372,42 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 			}
 			else // the job has preferences
 			{
-				bool bAssigned = false;
 				we::preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
 
 				const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
-				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end() && !bAssigned; it++ )
-                                {
+				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
+				{
 					// use try-catch for the case when the no worker with that rank exists
-					if(!(bAssigned=schedule_to(jobId, *it, job_pref)))
+					if( schedule_to(jobId, *it, job_pref) )
+						return true;
+					else
 						uset_excluded.insert(*it);
-                                }
+                }
 
 				// if the assignment to one of the preferred workers
 				// fails and mandatory is set then -> declare the job failed
-				if( !bAssigned && job_pref.is_mandatory() )
+				if( job_pref.is_mandatory() )
 				{
-                                  LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
+                    LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
 					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with a registered worker!");
 					return false;
 				}
-
-				// if the assignement on one of preferred workers
-				// fails and NOT mandatory is set then try to schedule it successively on one
-				// of the remaining nodes that are not into the uset_excluded list and least loaded
-				if( !bAssigned && (! job_pref.is_mandatory()) ) // continue with the rest of the workers not uset_excluded
+				else  // continue with the rest of the workers not uset_excluded
 				{
-                                  // TODO FIXME: the following code is not thread safe (rank_map() may be modified, when a node registers)!
+					std::vector<unsigned int> registered_ranks;
+					ptr_worker_man_->getListOfRegisteredRanks(registered_ranks);
 
-					// declare the job failed!!!
-					for( WorkerManager::rank_map_t::const_iterator iter = ptr_worker_man_->rank_map().begin(); iter != ptr_worker_man_->rank_map().end() && !bAssigned; iter++ )
+					for( std::vector<unsigned int>::const_iterator iter = registered_ranks.begin(); iter != registered_ranks.end(); iter++ )
 					{
-						unsigned int rank = iter->first;
-						// use try-catch for the case when the no worker with that rank exists
-						if( uset_excluded.find(rank) != uset_excluded.end() && !(bAssigned=schedule_to(jobId, rank, job_pref)) )
-								uset_excluded.insert(rank);
+						if( uset_excluded.find(*iter) == uset_excluded.end() ) // the rank *iter is not excluded
+						{
+							if( schedule_to(jobId, *iter, job_pref) )
+								return true;
+						}
 					}
 				}
 
-				return bAssigned;
+				return false;
 			}
 		}
 		catch(const NoJobPreferences& )

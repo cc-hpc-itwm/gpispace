@@ -60,6 +60,8 @@ namespace sdpa {
 	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
     virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
+    void declare_jobs_failed( Worker::JobQueue* pQueue );
+
     virtual void detectTimedoutWorkers( sdpa::util::time_type const & timeout );
     virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 

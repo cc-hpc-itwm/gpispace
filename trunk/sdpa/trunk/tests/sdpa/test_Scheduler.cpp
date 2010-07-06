@@ -63,7 +63,6 @@ void SchedulerTest::testDelWorker( )
 {
 	// first re-schedule the work:
 	// inspect all queues and re-schedule each job
-
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
 
 	ostringstream oss;
@@ -84,6 +83,8 @@ void SchedulerTest::testDelWorker( )
 		JobId job_id;
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
 		pJob->set_local(false);
+
+		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
 
 		//add later preferences to the jobs
 		ptr_scheduler_->schedule_remote(job_id);
@@ -106,7 +107,6 @@ void SchedulerTest::testDelWorker( )
 	oss<<"Worker"<<2;
 	string worker_id(oss.str());
 
-
 	try
 	{
 		SDPA_LOG_ERROR("Delete the worker "<<worker_id<<" now ... ");
@@ -120,13 +120,21 @@ void SchedulerTest::testDelWorker( )
 
 	SDPA_LOG_ERROR("After re-scheduling ... ");
 	ptr_scheduler_->print();
+
+
+	ptr_scheduler_->stop();
+
+	sleep(1);
+	SDPA_LOG_DEBUG("Worker deletion test finished!");
 }
 
 void SchedulerTest::testSchedulerWithNoPrefs()
 {
-	 ostringstream oss;
-	 sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl());
-	 ptr_scheduler_->start();
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+
+	ostringstream oss;
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
+	ptr_scheduler_->start();
 
 	 // add a number of workers
 	 for( int k=0; k<NWORKERS; k++ )
@@ -139,17 +147,18 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 	 // submit a number of remote jobs and schedule them
 	 for(int i=0; i<NJOBS; i++)
 	 {
-		JobId job_id;
-		Job::ptr_t pJob( new JobFSM( job_id, ""));
-		pJob->set_local(false);
+		 JobId job_id;
+		 Job::ptr_t pJob( new JobFSM( job_id, ""));
+		 pJob->set_local(false);
 
-		//add later preferences to the jobs
+		 ptrOrch->ptr_job_man_->addJob(job_id, pJob);
 
-		ptr_scheduler_->schedule(job_id);
+		 // add later preferences to the jobs
+		 ptr_scheduler_->schedule_remote(job_id);
 	 }
 
 	 // the workers request jobs
-	 /*int nJobsCompleted = 0;
+	 int nJobsCompleted = 0;
 	 while( nJobsCompleted<NJOBS )
 		 for( int k=0; k<NWORKERS; k++ )
 		 {
@@ -168,6 +177,134 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 			 }
 		 }
 
-	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );*/
+	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
 	 ptr_scheduler_->stop();
 }
+
+void SchedulerTest::testSchedulerWithPrefs()
+{
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+
+	ostringstream oss;
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
+	ptr_scheduler_->start();
+
+	 // add a number of workers
+	 for( int k=0; k<NWORKERS; k++ )
+	 {
+		 oss.str("");
+		 oss<<"Worker"<<k;
+		 ptr_scheduler_->addWorker(oss.str(), k);
+	 }
+
+	 // submit a number of remote jobs and schedule them
+	 for(int i=0; i<NJOBS; i++)
+	 {
+		JobId job_id;
+		Job::ptr_t pJob( new JobFSM( job_id, ""));
+		pJob->set_local(false);
+
+		// specify some preferences for this job
+		// job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
+		// mandatory
+		we::preference_t job_pref(true);
+		job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
+		job_pref.want( i%NWORKERS );
+		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
+
+		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
+		ptrOrch->ptr_job_man_->addJobPreferences(job_id, job_pref);
+
+		//add later preferences to the jobs
+		ptr_scheduler_->schedule_remote(job_id);
+	 }
+
+	 // the workers request jobs
+	 int nJobsCompleted = 0;
+	 while( nJobsCompleted<NJOBS )
+		 for( int k=0; k<NWORKERS; k++ )
+		 {
+			 oss.str("");
+			 oss<<"Worker"<<k;
+			 Worker::worker_id_t workerId(oss.str());
+
+			 try {
+				 sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
+				 SDPA_LOG_DEBUG("The worker "<<workerId<<" was served the job "<<jobId.str() );
+				 nJobsCompleted++;
+			 }
+			 catch( const NoJobScheduledException& ex )
+			 {
+				 SDPA_LOG_WARN("No job could be scheduled on the worker  "<<workerId );
+			 }
+		 }
+
+	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
+	 ptr_scheduler_->stop();
+}
+
+/*
+void SchedulerTest::testSchedulerWithPrefsAndReScheduling()
+{
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+
+	ostringstream oss;
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
+	ptr_scheduler_->start();
+
+	 // add a number of workers
+	 for( int k=0; k<NWORKERS; k++ )
+	 {
+		 oss.str("");
+		 oss<<"Worker"<<k;
+		 ptr_scheduler_->addWorker(oss.str(), k);
+	 }
+
+	 // submit a number of remote jobs and schedule them
+	 for(int i=0; i<NJOBS; i++)
+	 {
+		JobId job_id;
+		Job::ptr_t pJob( new JobFSM( job_id, ""));
+		pJob->set_local(false);
+
+		// specify some preferences for this job
+		// job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
+		// mandatory
+		we::preference_t job_pref(true);
+		job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
+		job_pref.want( i%NWORKERS );
+		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
+
+		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
+		ptrOrch->ptr_job_man_->addJobPreferences(job_id, job_pref);
+
+		//add later preferences to the jobs
+		ptr_scheduler_->schedule_remote(job_id);
+	 }
+
+	 //delete a worker here
+
+	 // the workers request jobs
+	 int nJobsCompleted = 0;
+	 while( nJobsCompleted<NJOBS )
+		 for( int k=0; k<NWORKERS; k++ )
+		 {
+			 oss.str("");
+			 oss<<"Worker"<<k;
+			 Worker::worker_id_t workerId(oss.str());
+
+			 try {
+				 sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
+				 SDPA_LOG_DEBUG("The worker "<<workerId<<" was served the job "<<jobId.str() );
+				 nJobsCompleted++;
+			 }
+			 catch( const NoJobScheduledException& ex )
+			 {
+				 SDPA_LOG_WARN("No job could be scheduled on the worker  "<<workerId );
+			 }
+		 }
+
+	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
+	 ptr_scheduler_->stop();
+}
+*/

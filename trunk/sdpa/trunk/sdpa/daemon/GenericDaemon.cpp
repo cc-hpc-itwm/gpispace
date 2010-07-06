@@ -54,15 +54,13 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
 	  m_nExternalJobs(0),
 	  delivery_service_(service_thread_.io_service(), 500)
 {
-	//master_ = "user"; // should be overriden by the derived classes to the proper value by reading a configuration file
-
-	// initialize last request time
 }
 
 GenericDaemon::GenericDaemon(	const std::string &name,
@@ -74,6 +72,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(create_scheduler()),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -105,6 +104,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(create_scheduler()),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -271,7 +271,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
 	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
-        acknowledge (pRegAckEvt->id());
+    acknowledge (pRegAckEvt->id());
 	m_bRegistered = true;
 }
 
@@ -283,12 +283,7 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 void GenericDaemon::onStageStart(const std::string & /* stageName */)
 {
 	DMLOG(TRACE, "daemon stage is being started");
-        //	MLOG(INFO, "registering myself (" << name() << ")...");
-
-	// Obsolete, pass directly the pointer to the daemon into the constructor of
-	// the Workflow Engine object!!!!!!!!!!!!!!
-	/*if(ptr_workflow_engine_)
-		ptr_workflow_engine_->registerHandler(this);*/
+    //	MLOG(INFO, "registering myself (" << name() << ")...");
 
 	DMLOG(TRACE, "starting delivery service...");
 	delivery_service_.start();
@@ -306,9 +301,6 @@ void GenericDaemon::onStageStop(const std::string & /* stageName */)
 
 	ptr_scheduler_->stop();
 
-	//Obsolete!!!!!!!
-	//if (ptr_workflow_engine_) ptr_workflow_engine_->unregisterHandler(this);
-
 	ptr_workflow_engine_ = NULL;
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
@@ -323,13 +315,25 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 		if(daemon_stage_)
 		{
 			daemon_stage_->send(pEvt);
-
-			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+			//DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+			SDPA_LOG_INFO("Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		}
+		else
+		{
+			SDPA_LOG_ERROR("Daemon stage not defined! ");
 		}
 	}
-	catch(const QueueFull&)
+	catch(const seda::QueueFull&)
 	{
 		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& ex)
+	{
+		SDPA_LOG_ERROR("Stage not found! "<<ex.what());
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
 	}
 }
 
@@ -337,11 +341,19 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 {
 	try {
 		delivery_service_.send(to_master_stage(), pEvt, pEvt->id(), timeout, retries);
-                DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
-	catch(QueueFull const &)
+	catch(const QueueFull&)
 	{
 		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
 	}
 }
 
@@ -349,11 +361,19 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, s
 {
 	try {
 		delivery_service_.send(to_slave_stage(), pEvt, pEvt->id(), timeout, retries);
-                DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 	}
-	catch(QueueFull const &)
+	catch(const QueueFull&)
 	{
 		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
 	}
 }
 
@@ -782,6 +802,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
 		job_id_t job_id(activityId);
 		job_id_t parent_id(""); // is this really needed?
 
+		// TO DO: modify the prototype of the submit function
 		//ptr_job_man_->addPreferences(job_id, pref);
 
 		// don't forget to set here the job's preferences
@@ -942,21 +963,21 @@ const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& j
 
 void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
 {
-  DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
 	workflowEngine()->failed( jobId.str(), reason );
 	jobManager()->deleteJob(jobId);
 }
 
 void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
 {
-  DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
-  workflowEngine()->finished( jobId.str(), result );
-  jobManager()->deleteJob(jobId);
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
+	workflowEngine()->finished( jobId.str(), result );
+	jobManager()->deleteJob(jobId);
 }
 
 void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 {
-  DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
 	workflowEngine()->cancelled( jobId.str() );
 	jobManager()->deleteJob(jobId);
 }

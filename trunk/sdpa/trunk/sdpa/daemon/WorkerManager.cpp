@@ -102,7 +102,7 @@ void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout,
 		{
 			LOG(WARN, "Mark the timed-out workers (no incoming message for " << (timeout / 1000000) << "s!");
 			iter->second->set_timedout();
-                        if (timedout_workers) timedout_workers->push_back (iter->first);
+				if (timedout_workers) timedout_workers->push_back (iter->first);
 		}
 	}
 }
@@ -391,5 +391,12 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
   worker_map_.erase (w);
 }
 
+
+void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
+{
+	 lock_type lock(mtx_);
+	 for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+		 v.push_back(iter->second->rank());
+}
 
 
