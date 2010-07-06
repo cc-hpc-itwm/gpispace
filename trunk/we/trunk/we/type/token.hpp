@@ -79,6 +79,13 @@ namespace token
               )
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
+
+    // the parser wants to do this
+    void NO_TYPE_CHECK_set_value (const value::type & v)
+    {
+      value = v;
+      hash = boost::apply_visitor (value::visitor::hash(), value);
+    }
       
     friend inline std::ostream & operator << (std::ostream &, const type &);
     friend bool operator == (const type &, const type &);
