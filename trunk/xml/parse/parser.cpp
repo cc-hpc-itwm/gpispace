@@ -642,6 +642,7 @@ int
 main (int argc, char ** argv)
 {
   xml::parse::state::type state;
+  std::string input;
 
   po::options_description desc("options");
 
@@ -650,6 +651,10 @@ main (int argc, char ** argv)
     ( "search-path"
     , po::value<xml::parse::state::search_path_type>(&state.search_path())
     , "search path"
+    )
+    ("input"
+    , po::value<std::string>(&input)->default_value("-")
+    , "input file name, - for stdin, default: stdin"
     )
     ;
 
@@ -663,10 +668,13 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  std::cout << xml::parse::parse_function (std::cin, state);
-  
-  // std::ifstream f ("example/kdm/simple_kdm.xml");
-  //   std::cout << xml::parse::parse_function (f, state);
+  const xml::parse::type::function f
+    ((input == "-") 
+    ? xml::parse::parse_function (std::cin, state)
+    : xml::parse::function_include (input, state)
+    );
 
+  std::cout << f << std::endl;
+  
   return EXIT_SUCCESS;
 }
