@@ -293,6 +293,10 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                   throw;
 		}
 	}
+        else
+        {
+          LOG(ERROR, "got JobFinished event from suspicious source: " << pEvt->from());
+        }
 }
 
 template <typename T, typename U>
