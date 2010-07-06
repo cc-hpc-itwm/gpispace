@@ -241,9 +241,9 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 		m_ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
 
 	sleep(1);
 	SDPA_LOG_DEBUG("testActivityRealWeAllCompAndNreWorkerSpywnedByNRE finished!");

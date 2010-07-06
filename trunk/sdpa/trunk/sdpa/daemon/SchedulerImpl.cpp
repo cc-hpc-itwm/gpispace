@@ -320,7 +320,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 /*
  * Scheduling with constraints
  */
-bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
+bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
 {
 	SDPA_LOG_DEBUG("Called schedule_with_contraints ...");
 
@@ -334,8 +334,9 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
     // TODO  this call  is just  for  now here,  there should  be an  active
     // component checking dropped connections.
 
-	// fix this later
-	//deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
+	// fix this later -> use a monitoring thread
+	if(bDelNonRespWorkers)
+		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
 
 	if( ptr_worker_man_ )
 	{

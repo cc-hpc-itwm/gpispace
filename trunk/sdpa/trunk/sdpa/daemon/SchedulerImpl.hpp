@@ -47,7 +47,7 @@ namespace sdpa {
 	virtual void schedule_remote(const sdpa::job_id_t &job);
 
 	void schedule_round_robin(const sdpa::job_id_t &job);
-	bool schedule_with_constraints(const sdpa::job_id_t &job);
+	bool schedule_with_constraints(const sdpa::job_id_t &job, bool bDelNonRespWorkers = false);
 	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref);
 	void re_schedule(Worker::JobQueue* pQueue );
 	void re_schedule(const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
