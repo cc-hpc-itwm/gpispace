@@ -391,10 +391,12 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
 
   		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
-  		LOG (INFO, "executing activity ... " << act.transition().name());
+		LOG (INFO, "executing: " << act.transition().name() << "(" << ::util::show(act.input().begin(), act.input().end()) << ")" );
 
   		struct exec_context ctxt( loader() );
   		act.execute(ctxt);
+
+                LOG (INFO, "finished: " << ::util::show (act.output().begin(), act.output().end()));
 
   		execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));
 
@@ -404,13 +406,13 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
   	catch (const std::exception &ex)
   	{
   		LOG(ERROR, "execution of activity failed: " << ex.what());
-  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, pMsgExecReq->activity()));
+		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, ex.what()));
   		reply = new ExecuteReply(exec_res);
   	}
   	catch (...)
   	{
   		LOG(ERROR, "execution of activity failed!");
-  		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, pMsgExecReq->activity()));
+		execution_result_t exec_res(std::make_pair(ACTIVITY_FAILED, "unknown exception"));
   		reply = new ExecuteReply(exec_res);
   	}
 
