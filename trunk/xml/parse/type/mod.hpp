@@ -6,8 +6,6 @@
 #include <string>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
-
 namespace xml
 {
   namespace parse
@@ -19,15 +17,12 @@ namespace xml
       public:
         std::string name;
         std::string function;
-        boost::filesystem::path path;
 
         mod ( const std::string & _name
             , const std::string & _function
-            , const boost::filesystem::path & _path
             )
           : name (_name)
           , function (_function)
-          , path (_path)
         {}
       };
 
@@ -36,7 +31,6 @@ namespace xml
         return s << "mod ("
                  << "mod = " << m.name 
                  << ", function = " << m.function 
-                 << ", path = " << m.path
                  << ")"
           ;
       }

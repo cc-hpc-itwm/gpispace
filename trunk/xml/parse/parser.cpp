@@ -173,11 +173,10 @@ namespace xml
     // ********************************************************************* //
 
     static type::connect
-    connect_type (const xml_node_type * node, state::type & state)
+    connect_type (const xml_node_type * node, state::type &)
     {
       return type::connect ( required ("connect_type", node, "place")
                            , required ("connect_type", node, "port")
-                           , state.file_in_progress()
                            );
     }
 
@@ -232,7 +231,7 @@ namespace xml
             }
           else if (child_name == "expression")
             {
-              f.f = type::expression (child->value(), state.file_in_progress());
+              f.f = type::expression (child->value());
             }
           else if (child_name == "module")
             {
@@ -262,11 +261,10 @@ namespace xml
     // ********************************************************************* //
 
     static type::mod
-    mod_type (const xml_node_type * node, state::type & state)
+    mod_type (const xml_node_type * node, state::type &)
     {
       return type::mod ( required ("mod_type", node, "name")
                        , required ("mod_type", node, "function")
-                       , state.file_in_progress()
                        );
     }
 
@@ -365,7 +363,6 @@ namespace xml
           ( &::we::util::reader<petri_net::capacity_t>::read
           , optional (node, "capacity")
           )
-        , state.file_in_progress()
         );
 
       p.level = state.level();
@@ -393,12 +390,11 @@ namespace xml
     // ********************************************************************* //
 
     static type::port
-    port_type (const xml_node_type * node, state::type & state)
+    port_type (const xml_node_type * node, state::type &)
     {
       return type::port ( required ("port_type", node, "name")
                         , required ("port_type", node, "type")
                         , optional (node, "place")
-                        , state.file_in_progress()
                         );
     }
 
@@ -485,7 +481,7 @@ namespace xml
     static void
     token_field_type ( const xml_node_type * node
                      , state::type & state
-                     , signature::desc_t & tok
+                     , type::token & tok
                      )
     {
       const std::string name (required ("token_field_type", node, "name"));
@@ -533,7 +529,7 @@ namespace xml
     static type::token
     token_type (const xml_node_type * node, state::type & state)
     {
-      type::token tok (signature::structured_t(), state.file_in_progress());
+      type::token tok = signature::structured_t();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -544,13 +540,11 @@ namespace xml
 
           if (child_name == "value")
             {
-              return type::token ( std::string (child->value())
-                                 , state.file_in_progress()
-                                 );
+              return type::token (std::string (child->value()));
             }
           else if (child_name == "field")
             {
-              token_field_type (child, state, tok.content);
+              token_field_type (child, state, tok);
             }
           else
             {

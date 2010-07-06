@@ -19,15 +19,12 @@ namespace xml
       public:
         std::string place;
         std::string port;
-        boost::filesystem::path path;
 
         connect ( const std::string & _place
                 , const std::string & _port
-                , const boost::filesystem::path & _path
                 )
           : place (_place)
           , port (_port)
-          , path (_path)
         {}
       };
 
@@ -36,7 +33,6 @@ namespace xml
         return s << "connect ("
                  << "place = " << c.place 
                  << ", port = " << c.port
-                 << ", path = " << c.path
                  << ")"
           ;
       }

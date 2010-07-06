@@ -8,8 +8,6 @@
 
 #include <parse/util/maybe.hpp>
 
-#include <boost/filesystem.hpp>
-
 namespace xml
 {
   namespace parse
@@ -22,17 +20,14 @@ namespace xml
         std::string name;
         std::string type;
         maybe<std::string> place;
-        boost::filesystem::path path;
 
         port ( const std::string & _name
              , const std::string & _type
              , const maybe<std::string> & _place
-             , const boost::filesystem::path & _path
              )
           : name (_name)
           , type (_type)
           , place (_place)
-          , path (_path)
         {}
       };
 
@@ -42,7 +37,6 @@ namespace xml
                  << "name = " << p.name
                  << ", type = " << p.type
                  << ", place = " << p.place
-                 << ", path = " << p.path
                  << ")"
           ;
       }
