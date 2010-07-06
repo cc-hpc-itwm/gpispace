@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -33,10 +33,14 @@ namespace seda {
         while (!stopped()) {
             try {
                 IEvent::Ptr e = _stage->recv(_stage->timeout());
-                _busy = true; SEDA_LOG_DEBUG("got work: " << e->str());
+                _busy = true;
 
                 try {
+                  DLOG(TRACE, "handling event in stage " << _stage->name());
+
                     _stage->strategy()->perform(e);
+
+                  DLOG(TRACE, "handled event in stage " << _stage->name());
                 } catch (const seda::EventNotSupported&) {
                     Stage::Ptr systemEventHandler(StageRegistry::instance().lookup(_stage->getErrorHandler()));
                     if (systemEventHandler.get() != _stage) {
@@ -46,7 +50,7 @@ namespace seda {
                     }
                 }
 
-                _busy = false; SEDA_LOG_DEBUG("done");
+                _busy = false;
             } catch (const seda::QueueEmpty&) {
                 // ignore
             } catch (const seda::QueueFull&) {
