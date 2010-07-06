@@ -61,30 +61,16 @@ namespace xml
 
     // ********************************************************************* //
 
-    template<typename T>
-    static T
-    generic_include ( T (*parse)(std::istream &, state::type &)
-                    , const std::string & file
-                    , state::type & state
-                    )
-    {
-      const boost::filesystem::path path (state.expand (file));
-
-      std::ifstream f (path.string().c_str());
-
-      return parse (f, state);
-    };
-
     static type::function
     function_include (const std::string & file, state::type & state)
     {
-      return generic_include<type::function> (parse_function, file, state);
+      return state.generic_include<type::function> (parse_function, file);
     }
 
     static struct_vec_type
     structs_include (const std::string & file, state::type & state)
     {
-      return generic_include<struct_vec_type> (parse_structs, file, state);
+      return state.generic_include<struct_vec_type> (parse_structs, file);
     }
 
     // ********************************************************************* //
