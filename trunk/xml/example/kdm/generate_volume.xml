@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun name="f_generate_volume">
-	<in name="amount" type="LONG" place="amount" />
-	<in name="offset" type="LONG" place="offset" />
+	<in name="amount" type="long" place="amount" />
+	<in name="offset" type="long" place="offset" />
 	<out name="out" type="VOLUME" place="out" />
 
 	<net>
-		<place name="amount" type="LONG" />
-		<place name="offset" type="LONG" />
+		<place name="amount" type="long" />
+		<place name="offset" type="long" />
 		<place name="out" type="VOLUME" />
 
 		<transition name="generate_ids">			
@@ -14,12 +14,12 @@
 			<connect-in place="amount" port="amount" />
 			<connect-out place="id" port="out" />
 		</transition>
-		<place name="id" type="LONG" />
+		<place name="id" type="long" />
 
 		<transition name="tag">
 			<defun name="f_tag">
-				<in name="id" type="LONG" />
-				<in name="offset" type="LONG" />
+				<in name="id" type="long" />
+				<in name="offset" type="long" />
 				<out name="volume" type="VOLUME" />
 				<expression>
 					${volume.id} := ${id};

@@ -3,10 +3,12 @@
 
   <xsd:annotation>
     <xsd:documentation>
-    petri nets
-      with typed ports
-      with typed places
-      with typed tokens
+    petri nets with
+      typed ports
+      typed places
+      typed tokens
+      user defined types
+      hierarchical structure
     </xsd:documentation>
   </xsd:annotation>
 

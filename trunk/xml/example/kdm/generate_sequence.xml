@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun>
-	<in name="amount" type="LONG" place="amount" />
-	<out name="out" type="LONG" place="out" />
+	<in name="amount" type="long" place="amount" />
+	<out name="out" type="long" place="out" />
 	<net>
 
 		<struct name="COUNTER">
@@ -9,11 +9,11 @@
 			<field name="max" type="long"/>
 		</struct>
 
-		<place name="amount" type="LONG" />
-		<place name="out" type="LONG" />
+		<place name="amount" type="long" />
+		<place name="out" type="long" />
 
 		<defun name="f_init">
-			<in name="N" type="LONG" />
+			<in name="N" type="long" />
 			<out name="counter" type="COUNTER" />
 			<expression>
 				${counter.i} := 0L;
@@ -44,7 +44,7 @@
 		<defun name="f_step">
 			<in name="counter" type="COUNTER" />
 			<out name="counter" type="COUNTER" />
-			<out name="out" type="LONG" />
+			<out name="out" type="long" />
 			<expression>
 				${out} := ${counter.i};
 				${counter.i} := ${counter.i} + 1;

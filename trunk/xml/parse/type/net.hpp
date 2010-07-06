@@ -10,6 +10,8 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
+#include <we/type/literal/name.hpp>
+
 #include <iostream>
 
 namespace xml
@@ -75,6 +77,37 @@ namespace xml
               )
             {
               trans->resolve (structs_resolved, state);
+            }
+
+          literal::name name;
+
+          for ( place_vec_type::iterator place (places.begin())
+              ; place != places.end()
+              ; ++place
+              )
+            {
+              const st::set_type::const_iterator sig
+                (structs_resolved.find (place->type));
+
+              if (sig == structs_resolved.end())
+                {
+                  if (name.valid (place->type))
+                    {
+                      place->sig = place->type;
+                    }
+                  else
+                    {
+                      throw error::place_type_unknown ( place->name
+                                                      , place->type
+                                                      , path
+                                                      )
+                        ;
+                    }
+                }
+              else
+                {
+                  place->sig = sig->second.sig;
+                }
             }
         }
       };

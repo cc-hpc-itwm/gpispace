@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun name="f_generate_bunch">
-	<in name="amount" type="LONG" place="amount" />
-	<in name="volume" type="LONG" place="volume" />
+	<in name="amount" type="long" place="amount" />
+	<in name="volume" type="long" place="volume" />
 	<out name="out"   type="BUNCH" place="out" />
 
 	<net>
-		<place name="amount" type="LONG" />
+		<place name="amount" type="long" />
 		<place name="volume" type="VOLUME" />
 		<place name="out" type="BUNCH" />
 
@@ -14,11 +14,11 @@
 			<connect-in place="amount" port="amount" />
 			<connect-out place="id" port="out" />
 		</transition>
-		<place name="id" type="LONG" />
+		<place name="id" type="long" />
 
 		<transition name="tag">
 			<defun name="f_tag">
-				<in name="id" type="LONG" />
+				<in name="id" type="long" />
 				<in name="value" type="VOLUME" />
 				<out name="bunch" type="BUNCH" />
 				<expression>

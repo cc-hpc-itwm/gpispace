@@ -13,6 +13,7 @@
 #include <parse/util/maybe.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/signature.hpp>
 
 namespace xml
 {
@@ -27,6 +28,7 @@ namespace xml
         std::string type;
         maybe<petri_net::capacity_t> capacity;
         std::vector<token> token_vec;
+        signature::desc_t sig;
         int level;
 
         place ( const std::string & _name
@@ -37,6 +39,8 @@ namespace xml
           , type (_type)
           , capacity (_capacity)
           , token_vec ()
+          , sig ()
+          , level ()
         {}
 
         void push_token (const token & t)
@@ -50,6 +54,7 @@ namespace xml
         s << level(p.level)  << "place (" << std::endl;
         s << level(p.level+1) << "name = " << p.name << std::endl;
         s << level(p.level+1) << "type = " << p.type << std::endl;
+        s << level(p.level+1) << "sig = " << p.sig << std::endl;
         s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
 
         for ( std::vector<token>::const_iterator tok (p.token_vec.begin())
