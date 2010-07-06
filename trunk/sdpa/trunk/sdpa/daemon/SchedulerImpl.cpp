@@ -309,7 +309,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId)
 
         // TODO  this call  is just  for  now here,  there should  be an  active
         // component checking dropped connections.
-        deleteNonResponsiveWorkers ();
+	deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
 
 	if( ptr_worker_man_ )
 	{
