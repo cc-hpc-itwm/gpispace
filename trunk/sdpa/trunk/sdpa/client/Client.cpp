@@ -206,9 +206,9 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
       throw ClientException( "error during submit: reason := "
-                           + reply->reason()
+                           + err->reason()
                            + " code := "
-                           + boost::lexical_cast<std::string>(reply->error_code())
+                           + boost::lexical_cast<std::string>(err->error_code())
                            );
     }
     else
@@ -241,9 +241,9 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
       throw ClientException( "error during cancel: reason := "
-                           + reply->reason()
+                           + err->reason()
                            + " code := "
-                           + boost::lexical_cast<std::string>(reply->error_code())
+                           + boost::lexical_cast<std::string>(err->error_code())
                            );
     }
     else
@@ -277,9 +277,9 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
       throw ClientException( "error during query: reason := "
-                           + reply->reason()
+                           + err->reason()
                            + " code := "
-                           + boost::lexical_cast<std::string>(reply->error_code())
+                           + boost::lexical_cast<std::string>(err->error_code())
                            );
     }
     else
@@ -312,9 +312,9 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
       throw ClientException( "error during delete: reason := "
-                           + reply->reason()
+                           + err->reason()
                            + " code := "
-                           + boost::lexical_cast<std::string>(reply->error_code())
+                           + boost::lexical_cast<std::string>(err->error_code())
                            );
     }
     else
@@ -347,9 +347,9 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
       throw ClientException( "error during retrieve: reason := "
-                           + reply->reason()
+                           + err->reason()
                            + " code := "
-                           + boost::lexical_cast<std::string>(reply->error_code())
+                           + boost::lexical_cast<std::string>(err->error_code())
                            );
     }
     else

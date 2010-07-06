@@ -136,13 +136,13 @@ Configured
   Error(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_store_reply(evt)
+      action_store_reply(evt);
     }
 
   Unknown(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_store_reply(evt)
+      action_store_reply(evt);
     }
 }
 
