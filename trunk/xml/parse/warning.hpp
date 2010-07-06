@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 namespace xml
 {
@@ -20,6 +21,8 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
       class overwrite_function_name : public generic
       {
       public:
@@ -29,6 +32,31 @@ namespace xml
           : generic ( "old function name " + old_name
                     + " overwritten by new name " + new_name
                     )
+        {}
+      };
+
+
+      // ******************************************************************* //
+
+      template<typename T>
+      class struct_shadowed : public generic
+      {
+      private:
+        std::string nice (const T & early, const T & late) const
+        {
+          std::ostringstream s;
+
+          s << "struct with name " << late.name
+            << " in " << late.path
+            << " shadows definition from " << early.path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        struct_shadowed (const T & early, const T & late)
+          : generic (nice (early, late))
         {}
       };
     }

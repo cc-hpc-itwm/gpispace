@@ -10,7 +10,6 @@
     </xsd:documentation>
   </xsd:annotation>
 
-
   <xsd:element name="defun" type="function_type"/>
   <xsd:element name="structs" type="struct_list_type"/>
   
@@ -18,7 +17,7 @@
     <xsd:choice maxOccurs="unbounded">
       <xsd:element minOccurs="0" name="struct" type="struct_type"/>
       <xsd:element minOccurs="0" name="include-structs" type="struct_include_type"/>
-     </xsd:choice>
+    </xsd:choice>
   </xsd:complexType>
 
   <xsd:complexType name="struct_field_type">
@@ -33,7 +32,6 @@
     </xsd:choice>
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
-
 
   <xsd:complexType name="token_field_type">
     <xsd:choice>
@@ -50,16 +48,14 @@
     </xsd:choice>
   </xsd:complexType>
 
-
   <xsd:complexType name="place_type">
     <xsd:sequence>
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="token" type="token_type"/>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="token" type="token_type"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="required"/>
     <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
   </xsd:complexType>
-
 
   <xsd:complexType name="port_type">
     <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -67,33 +63,30 @@
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
-
   <xsd:complexType name="mod_type">
     <xsd:attribute name="name" type="xsd:string" use="required"/>
     <xsd:attribute name="function" type="xsd:string" use="required"/>
   </xsd:complexType>
-
 
   <xsd:complexType name="connect_type">
     <xsd:attribute name="place" type="xsd:string" use="required"/>
     <xsd:attribute name="port" type="xsd:string" use="required"/>
   </xsd:complexType>
 
-
   <xsd:complexType name="function_type">
     <xsd:sequence>
-      <xsd:choice>
-        <xsd:sequence minOccurs="0">
-          <xsd:element maxOccurs="unbounded" minOccurs="1" name="in" type="port_type"/>
-          <xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="port_type"/>
-          <xsd:element maxOccurs="unbounded" minOccurs="0" name="struct" type="struct_type"/>
-          <xsd:element maxOccurs="unbounded" minOccurs="0" name="include-structs" type="struct_include_type"/>
-          <xsd:choice minOccurs="1">
-            <xsd:element name="expression" type="xsd:string"/>
-            <xsd:element name="module" type="mod_type"/>
-            <xsd:element name="net" type="net_type"/>
-          </xsd:choice>
-        </xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="struct" type="struct_type"/>
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="include-structs" type="struct_include_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="in" type="port_type"/>
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="port_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="1">
+        <xsd:element name="expression" type="xsd:string"/>
+        <xsd:element name="module" type="mod_type"/>
+        <xsd:element name="net" type="net_type"/>
       </xsd:choice>
       <xsd:element name="condition" type="xsd:string" minOccurs="0" maxOccurs="unbounded" default="true"/>
     </xsd:sequence>
@@ -125,7 +118,7 @@
         <xsd:element name="include" type="transition_include_type"/>
         <xsd:element name="use" type="use_type"/>
       </xsd:choice>
-        <xsd:choice maxOccurs="unbounded">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
@@ -133,7 +126,6 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="required"/>
   </xsd:complexType>
-
 
   <xsd:complexType name="net_type">
     <xsd:choice maxOccurs="unbounded">
@@ -145,5 +137,4 @@
       <xsd:element name="include" type="global_include_type"/>
     </xsd:choice>
   </xsd:complexType>
-
 </xsd:schema>

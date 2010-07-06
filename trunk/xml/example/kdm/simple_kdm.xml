@@ -1,174 +1,173 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<defun name="kdm_simple" internal="false"
-			 xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
-                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<defun name="kdm_simple"
+       internal="false"
+       xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
-	<in name="config_file" type="string" place="config_file"/>
-	<out name="done" type="control" place="done"/>
+  <include-structs href="typedef.xml"/>
 
-<include-structs href="typedef.xml"/>
+  <in name="config_file" type="string" place="config_file"/>
+  <out name="done" type="control" place="done"/>
 
-	<net>
-		<place name="config_file" type="string">
-			<token>
-				<value>"/tmp/test.cfg"</value>
-			</token>
-		</place>
+  <net>
 
+    <place name="config_file" type="string">
+      <token>
+        <value>"/tmp/test.cfg"</value>
+      </token>
+    </place>
 
-		
-		<transition name="initialize">
-			<defun>
-				<in name="config_file" type="string" />
-				<out name="config" type="CONFIG" />
-				<out name="wait" type="long" />
-				<out name="trigger" type="control" />
-				<module name="kdm" function="initialize"/>
-			</defun>
+    <transition name="initialize">
+      <defun>
+        <in name="config_file" type="string" />
+        <out name="config" type="CONFIG" />
+        <out name="wait" type="long" />
+        <out name="trigger" type="control" />
+        <module name="kdm" function="initialize"/>
+      </defun>
 
-			<connect-in place="config_file" port="config_file" />
-			<connect-out port="config" place="config" />
-			<connect-out port="trigger" place="trigger_loadTT" />
-			<connect-out port="wait" place="wait" />
-		</transition>
-		
-        <place name="config" type="CONFIG"/>
-        <place name="wait" type="long"/>
-        <place name="trigger_loadTT" type="control" />
+      <connect-in place="config_file" port="config_file" />
+      <connect-out port="config" place="config" />
+      <connect-out port="trigger" place="trigger_loadTT" />
+      <connect-out port="wait" place="wait" />
+    </transition>
+    
+    <place name="config" type="CONFIG"/>
+    <place name="wait" type="long"/>
+    <place name="trigger_loadTT" type="control" />
         
-		<defun name="f_loadTT">
-			<in name="config" type="CONFIG"/>
-			<in name="trigger" type="control"/>
-			<out name="trigger" type="control"/>
-			
-			<module name="kdm" function="loadTT"/>
-		</defun>
-		
-		<transition name="loadTT">
-                        <use name="f_loadTT"/>
-			<connect-read place="config" port="config" />
-			<connect-in place="trigger_loadTT" port="trigger" />
-			<connect-out port="trigger" place="trigger_generate" />
-		</transition>
-		<place name="trigger_generate" type="control" />
+    <defun name="f_loadTT">
+      <in name="config" type="CONFIG"/>
+      <in name="trigger" type="control"/>
+      <out name="trigger" type="control"/>
+      
+      <module name="kdm" function="loadTT"/>
+    </defun>
+    
+    <transition name="loadTT">
+      <use name="f_loadTT"/>
+      <connect-read place="config" port="config" />
+      <connect-in place="trigger_loadTT" port="trigger" />
+      <connect-out port="trigger" place="trigger_generate" />
+    </transition>
+    <place name="trigger_generate" type="control" />
 
-		<transition name="duplicate_trigger_generate_offsets">
-			<defun>
-				<in name="value" type="control" />
-				<out name="one" type="control" />
-				<out name="two" type="control" />
-				<expression>
-					${one} := ${value};
-					${two} := ${value};
-				</expression>
-			</defun>
-			<connect-in place="trigger_generate" port="value" />
-			<connect-out port="one" place="trigger_extract_offsets" />
-			<connect-out port="two" place="trigger_extract_volumes" />
-		</transition>
-		<place name="trigger_extract_offsets" type="control" />
-		<place name="trigger_extract_volumes" type="control" />
+    <transition name="duplicate_trigger_generate_offsets">
+      <defun>
+        <in name="value" type="control" />
+        <out name="one" type="control" />
+        <out name="two" type="control" />
+        <expression>
+          ${one} := ${value};
+          ${two} := ${value};
+        </expression>
+      </defun>
+      <connect-in place="trigger_generate" port="value" />
+      <connect-out port="one" place="trigger_extract_offsets" />
+      <connect-out port="two" place="trigger_extract_volumes" />
+    </transition>
+    <place name="trigger_extract_offsets" type="control" />
+    <place name="trigger_extract_volumes" type="control" />
 
-		<transition name="extract_offsets">
-			<defun>
-				<in name="config" type="CONFIG" />
-				<in name="trigger" type="control" />
-				<out name="offsets" type="long" />
-				<expression>
-					${offsets} := ${config.OFFSETS}
-				</expression>
-			</defun>
-			<connect-read place="config" port="config" />
-			<connect-in   place="trigger_extract_offsets" port="trigger" />
-			<connect-out  port="offsets" place="number_of_offsets" />			
-		</transition>
-		<place name="number_of_offsets" type="long" />
-		        
-		<transition name="extract_number_of_volumes">
-			<defun>
-				<in name="config" type="CONFIG" />
-				<in name="trigger" type="control" />
-				<out name="volumes" type="long" />
-				<expression>
-					${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
-				</expression>
-			</defun>
-			<connect-read place="config" port="config" />
-			<connect-in place="trigger_generate_volumes" port="trigger" />
-			<connect-out port="volumes" place="number_of_volumes" />			
-		</transition>
-		<place name="number_of_volumes" type="long" />
+    <transition name="extract_offsets">
+      <defun>
+        <in name="config" type="CONFIG" />
+        <in name="trigger" type="control" />
+        <out name="offsets" type="long" />
+        <expression>
+          ${offsets} := ${config.OFFSETS}
+        </expression>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="trigger_extract_offsets" port="trigger" />
+      <connect-out  port="offsets" place="number_of_offsets" />      
+    </transition>
+    <place name="number_of_offsets" type="long" />
+            
+    <transition name="extract_number_of_volumes">
+      <defun>
+        <in name="config" type="CONFIG" />
+        <in name="trigger" type="control" />
+        <out name="volumes" type="long" />
+        <expression>
+          ${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
+        </expression>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in place="trigger_generate_volumes" port="trigger" />
+      <connect-out port="volumes" place="number_of_volumes" />      
+    </transition>
+    <place name="number_of_volumes" type="long" />
 
-			<include href="generate_sequence.xml" as="f_gen_seq"/>
+    <include href="generate_sequence.xml" as="f_gen_seq"/>
 
-        <transition name="generate_offset">
-                        <use name="f_gen_seq"/>
-			<connect-in place="number_of_offsets" port="amount" />
-			<connect-out place="offset" port="out" />
-		</transition>
-        <place name="offset" type="long" />
-		
-        <transition name="generate_volume">
-			<include href="generate_volume.xml" />
-			<connect-in place="offset" port="offset" />
-			<connect-read place="number_of_volumes" port="amount" />
-			<connect-out place="volume" port="out" />
-		</transition>
-		
-		<!--  check if thia type is defined!!!! -->
-		<place name="volume" type="VOLUME" />		
+    <transition name="generate_offset">
+      <use name="f_gen_seq"/>
+      <connect-in place="number_of_offsets" port="amount" />
+      <connect-out place="offset" port="out" />
+    </transition>
+    <place name="offset" type="long" />
+    
+    <transition name="generate_volume">
+      <include href="generate_volume.xml" />
+      <connect-in place="offset" port="offset" />
+      <connect-read place="number_of_volumes" port="amount" />
+      <connect-out place="volume" port="out" />
+    </transition>
+    
+    <!--  check if this type is defined!!!! -->
+    <place name="volume" type="VOLUME" />    
 
-		<!-- wrap process volume so that it will be executed on the nre-pcd -->
-		<transition name="process_volume">
-			<defun internal="false">
-				<in name="volume" type="VOLUME"  place="volume"/>
-				<in name="config" type="CONFIG"  place="config"/>
-				<out name="done"  type="control" place="done"/>
-				<net>
-					<place name="volume" type="VOLUME" />
-      				<place name="config" type="CONFIG" />
-      				<place name="done" type="control" />
-					
-					<transition name="wrap_process_volume">
-						<include href="process_volume.xml" /> 
-						<connect-in   place="volume" port="volume" />
-						<connect-read place="config" port="config" />
-						<connect-out  place="done"   port="done" />
-					</transition>
-				</net>
-				
-			</defun>
-			<connect-in place="volume" port="volume" />
-			<connect-read place="config" port="config" />
-			<connect-out place="trigger_dec" port="done" />
-		</transition>
-		<place name="trigger_dec" type="control" />		
-		
-		<transition name="dec">
-			<defun name="f_dec">
-				<in	name="trigger" type="control" />
-				<in name="wait" type="long" />
-				<out name="wait" type="long" />
-				<expression>
-					${wait} := ${wait} - 1;
-				</expression>
-			</defun>
-			<connect-in place="trigger_dec" port="trigger" />
-			<connect-in place="wait" port="wait" />
-			<connect-out place="wait" port="wait" />
-		</transition>
-		
-		<transition name="finalize">
-			<defun name="f_finalize" internal="false">
-				<in	name="wait" type="long" />
-				<in	name="config" type="CONFIG" />
-				<out name="trigger" type="control" />
-				<module name="kdm" function="finalize"/>
-				<condition> ${wait} == 0L </condition>
-			</defun>
-			<connect-in place="wait" port="wait" />
-			<connect-in place="config" port="config" />
-			<connect-out place="done" port="trigger" />
-		</transition>
-	</net>
+    <!-- wrap process volume so that it will be executed on the nre-pcd -->
+    <transition name="process_volume">
+      <defun internal="false">
+        <in name="volume" type="VOLUME"  place="volume"/>
+        <in name="config" type="CONFIG"  place="config"/>
+        <out name="done"  type="control" place="done"/>
+        <net>
+          <place name="volume" type="VOLUME" />
+          <place name="config" type="CONFIG" />
+          <place name="done" type="control" />
+          
+          <transition name="wrap_process_volume">
+            <include href="process_volume.xml" /> 
+            <connect-in   place="volume" port="volume" />
+            <connect-read place="config" port="config" />
+            <connect-out  place="done"   port="done" />
+          </transition>
+        </net>
+      </defun>
+      <connect-in place="volume" port="volume" />
+      <connect-read place="config" port="config" />
+      <connect-out place="trigger_dec" port="done" />
+    </transition>
+    <place name="trigger_dec" type="control" />    
+    
+    <transition name="dec">
+      <defun name="f_dec">
+        <in  name="trigger" type="control" />
+        <in name="wait" type="long" />
+        <out name="wait" type="long" />
+        <expression>
+          ${wait} := ${wait} - 1;
+        </expression>
+      </defun>
+      <connect-in place="trigger_dec" port="trigger" />
+      <connect-in place="wait" port="wait" />
+      <connect-out place="wait" port="wait" />
+    </transition>
+    
+    <transition name="finalize">
+      <defun name="f_finalize" internal="false">
+        <in  name="wait" type="long" />
+        <in  name="config" type="CONFIG" />
+        <out name="trigger" type="control" />
+        <module name="kdm" function="finalize"/>
+        <condition> ${wait} == 0L </condition>
+      </defun>
+      <connect-in place="wait" port="wait" />
+      <connect-in place="config" port="config" />
+      <connect-out place="done" port="trigger" />
+    </transition>
+  </net>
 </defun>

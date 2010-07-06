@@ -38,9 +38,10 @@ namespace xml
         in_progress_type _in_progress;
         bool _Werror;
         bool _Woverwrite_function_name;
+        bool _Wshadow;
 
         template<typename W>
-        void generic_warn (const W & w, const bool & active)
+        void generic_warn (const W & w, const bool & active) const
         {
           if (active)
             {
@@ -55,7 +56,7 @@ namespace xml
             }
         };
 
-        fs::path expand (const std::string & file)
+        fs::path expand (const std::string & file) const
         {
           fs::path direct (file);
 
@@ -92,12 +93,17 @@ namespace xml
           , _in_progress ()
           , _Werror (false)
           , _Woverwrite_function_name (true)
+          , _Wshadow (true)
         {}
 
         int & level (void) { return _level; }
         search_path_type & search_path (void) { return _search_path; }
         
-        fs::path file_in_progress (void) 
+        bool & Werror (void) { return _Werror; }
+        bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
+        bool & Wshadow (void) { return _Wshadow; }
+
+        fs::path file_in_progress (void) const
         {
           return (_in_progress.empty()) 
             ? fs::path("<stdin>") 
@@ -105,13 +111,15 @@ namespace xml
             ;
         }
 
-        
-        bool & Werror (void) { return _Werror; }
-        bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
-
-        void warn (const warning::overwrite_function_name & w)
+        void warn (const warning::overwrite_function_name & w) const
         {
           generic_warn (w, _Woverwrite_function_name);
+        }
+
+        template<typename T>
+        void warn (const warning::struct_shadowed<T> & w) const
+        {
+          generic_warn (w, _Wshadow);
         }
 
         template<typename T>

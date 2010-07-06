@@ -4,10 +4,17 @@
 #define _XML_PARSE_TYPE_STRUCT_HPP
 
 #include <we/type/signature.hpp>
+#include <we/type/literal.hpp>
 
 #include <iostream>
+#include <vector>
+
+#include <parse/error.hpp>
+#include <parse/state.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/variant.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace xml
 {
@@ -31,6 +38,135 @@ namespace xml
                  << level(st.level+1) << "path = " << st.path << std::endl
                  << level(st.level) << ") // struct";
       }
+
+      typedef std::vector<struct_t> struct_vec_type;
+    }
+
+    namespace struct_t
+    {
+      typedef boost::unordered_map< signature::field_name_t
+                                  , type::struct_t
+                                  > set_type;
+
+      set_type make (const type::struct_vec_type & struct_vec)
+      {
+        set_type set;
+
+        for ( type::struct_vec_type::const_iterator pos (struct_vec.begin())
+            ; pos != struct_vec.end()
+            ; ++pos
+            )
+          {
+            const set_type::const_iterator old (set.find (pos->name));
+
+            if (old != set.end())
+              {
+                throw error::struct_redefined<type::struct_t>
+                  (old->second, *pos);
+              }
+
+            set[pos->name] = *pos;
+          }
+
+        return set;
+      }
+      
+      set_type join ( const set_type & above
+                    , const set_type & below
+                    , const state::type & state
+                    )
+      {
+        set_type set (above);
+
+        for ( set_type::const_iterator pos (below.begin())
+            ; pos != below.end()
+            ; ++pos
+            )
+          {
+            const type::struct_t & str (pos->second);
+            const set_type::const_iterator old (set.find (str.name));
+
+            if (old != set.end())
+              {
+                state.warn
+                  (warning::struct_shadowed<type::struct_t> (old->second, str));
+              }
+
+            set[str.name] = str;
+          }
+
+        return set;
+      }
+
+      class get_literal_type_name 
+        : public boost::static_visitor<literal::type_name_t>
+      {
+      public:
+        literal::type_name_t operator () (const literal::type_name_t & t) const
+        {
+          return t;
+        }
+        literal::type_name_t operator () (const signature::structured_t &) const
+        {
+          throw error::strange
+            ("try to get a literal typename from a structured type");
+        }
+      };
+
+      class resolve : public boost::static_visitor<bool>
+      {
+      private:
+        boost::filesystem::path path;
+        set_type & sig_set;
+        literal::name name;
+      
+      public:
+        resolve ( set_type & _sig_set
+                , const boost::filesystem::path & _path
+                ) 
+          : path (_path)
+          , sig_set (_sig_set)
+          , name()
+        {}
+      
+        bool operator () (literal::type_name_t & t) const
+        {
+          return name.valid (t);
+        }
+
+        bool operator () (signature::structured_t & map) const
+        {
+          for ( signature::structured_t::map_t::iterator pos (map.begin())
+              ; pos != map.end()
+              ; ++pos
+              )
+            {
+              const bool resolved (boost::apply_visitor (*this, pos->second));
+            
+              if (!resolved)
+                {
+                  const literal::type_name_t child_name
+                    (boost::apply_visitor ( get_literal_type_name()
+                                          , pos->second
+                                          )
+                    );
+
+                  set_type::const_iterator res (sig_set.find (child_name));
+
+                  if (res == sig_set.end())
+                    {
+                      throw error::cannot_resolve
+                        (pos->first, child_name, path);
+                    }
+
+                  pos->second = res->second.sig;
+
+                  boost::apply_visitor (*this, pos->second);
+                }
+            }
+          return true;
+        }
+      };
     }
   }
 }

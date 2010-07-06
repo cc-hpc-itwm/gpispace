@@ -49,15 +49,13 @@ namespace xml
     static type::function parse_function (std::istream & f, state::type &);
 
 
-    typedef std::vector<type::struct_t> struct_vec_type;
-
-    static struct_vec_type structs_include ( const std::string &
-                                           , state::type &
-                                           );
-    static struct_vec_type parse_structs (std::istream &, state::type &);
-    static struct_vec_type structs_type ( const xml_node_type *
-                                        , state::type & state
-                                        );
+    static type::struct_vec_type structs_include ( const std::string &
+                                                 , state::type &
+                                                 );
+    static type::struct_vec_type parse_structs (std::istream &, state::type &);
+    static type::struct_vec_type structs_type ( const xml_node_type *
+                                              , state::type & state
+                                              );
 
     // ********************************************************************* //
 
@@ -67,10 +65,10 @@ namespace xml
       return state.generic_include<type::function> (parse_function, file);
     }
 
-    static struct_vec_type
+    static type::struct_vec_type
     structs_include (const std::string & file, state::type & state)
     {
-      return state.generic_include<struct_vec_type> (parse_structs, file);
+      return state.generic_include<type::struct_vec_type> (parse_structs, file);
     }
 
     // ********************************************************************* //
@@ -124,7 +122,7 @@ namespace xml
       return generic_parse (function_type, f, state, "defun", "parse_function");
     }
 
-    static struct_vec_type
+    static type::struct_vec_type
     parse_structs (std::istream & f, state::type & state)
     {
       return generic_parse (structs_type, f, state, "structs", "parse_structs");
@@ -132,10 +130,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static struct_vec_type
+    static type::struct_vec_type
     structs_type (const xml_node_type * node, state::type & state)
     {
-      struct_vec_type v;
+      type::struct_vec_type v;
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -150,7 +148,7 @@ namespace xml
             }
           else if (child_name == "include-structs")
             {
-              const struct_vec_type struct_vec 
+              const type::struct_vec_type structs 
                 (structs_include (required ( "structs_type"
                                            , child
                                            , "href"
@@ -159,7 +157,7 @@ namespace xml
                                  )
                 );
 
-              v.insert (v.end(), struct_vec.begin(), struct_vec.end());
+              v.insert (v.end(), structs.begin(), structs.end());
             }
           else
             {
@@ -215,7 +213,7 @@ namespace xml
             }
           else if (child_name == "include-structs")
             {
-              const struct_vec_type struct_vec 
+              const type::struct_vec_type structs 
                 (structs_include (required ( "function_type"
                                            , child
                                            , "href"
@@ -225,8 +223,8 @@ namespace xml
                 );
 
               f.structs.insert ( f.structs.end()
-                               , struct_vec.begin()
-                               , struct_vec.end()
+                               , structs.begin()
+                               , structs.end()
                                );
             }
           else if (child_name == "expression")
@@ -289,29 +287,29 @@ namespace xml
 
           if (child_name == "defun")
             {
-              n.element.push_back (function_type (child, state));
+              n.functions.push_back (function_type (child, state));
             }
           else if (child_name == "place")
             {
-              n.element.push_back (place_type (child, state));
+              n.places.push_back (place_type (child, state));
             }
           else if (child_name == "transition")
             {
-              n.element.push_back (transition_type (child, state));
+              n.transitions.push_back (transition_type (child, state));
             }
           else if (child_name == "struct")
             {
-              n.element.push_back (struct_type (child, state));
+              n.structs.push_back (struct_type (child, state));
             }
           else if (child_name == "include-structs")
             {
-              const struct_vec_type struct_vec 
+              const type::struct_vec_type structs 
                 (structs_include (required ("net_type", child, "href"), state));
 
-              n.element.insert ( n.element.end()
-                               , struct_vec.begin()
-                               , struct_vec.end()
-                               );
+              n.structs.insert ( n.structs.end()
+                                  , structs.begin()
+                                  , structs.end()
+                                  );
             }
           else if (child_name == "include")
             {
@@ -338,7 +336,7 @@ namespace xml
                   throw error::top_level_anonymous_function (file, "net_type");
                 }
 
-              n.element.push_back (fun);
+              n.functions.push_back (fun);
             }
           else
             {
@@ -654,6 +652,10 @@ main (int argc, char ** argv)
     , po::value<bool>(&state.Woverwrite_function_name())->default_value(true)
     , "warn when overwriting a function name"
     )
+    ( "Wshadow"
+    , po::value<bool>(&state.Wshadow())->default_value(true)
+    , "warn when shadowing a struct definition"
+    )
     ;
 
   po::variables_map vm;
@@ -666,11 +668,19 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  const xml::parse::type::function f
+  std::cerr << "parsing..." << std::endl;
+
+  xml::parse::type::function f
     ((input == "-") 
     ? xml::parse::parse_function (std::cin, state)
     : xml::parse::function_include (input, state)
     );
+
+  std::cerr << "resolving signatures..." << std::endl;
+
+  f.resolve (state);
+
+  std::cerr << "done" << std::endl;
 
   std::cout << f << std::endl;
   

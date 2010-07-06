@@ -5,6 +5,9 @@
 
 #include <stdexcept>
 #include <string>
+#include <sstream>
+
+#include <boost/filesystem.hpp>
 
 namespace xml
 {
@@ -12,6 +15,8 @@ namespace xml
   {
     namespace error
     {
+      // ******************************************************************* //
+
       class generic : public std::runtime_error
       {
       public:
@@ -24,6 +29,8 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
       class unexpected_element : public generic
       {
       public:
@@ -34,6 +41,8 @@ namespace xml
             (pre + ": unexpected element with name " + util::quote(name))
         {}
       };
+
+      // ******************************************************************* //
 
       class node_type : public generic
       {
@@ -56,6 +65,8 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
      class missing_attr : public generic
       {
       public:
@@ -67,6 +78,8 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
       class no_elements_given : public generic
       {
       public:
@@ -74,6 +87,8 @@ namespace xml
           : generic ("no elements given at all!?", pre)
         {}
       };
+
+      // ******************************************************************* //
 
       class more_than_one_definition : public generic
       {
@@ -83,18 +98,22 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
       class top_level_anonymous_function : public generic
       {
       public:
         top_level_anonymous_function ( const std::string & file
                                      , const std::string & pre
                                      )
-          : generic ( "try to include top level anonymous function from file" 
+          : generic ( "try to include top level anonymous function from " 
                     + file
                     , pre
                     )
         {}
       };
+
+      // ******************************************************************* //
 
       class file_not_found : public generic
       {
@@ -106,11 +125,13 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
       template<typename IT>
       class include_loop : public generic
       {
       private:
-        std::string nice (IT pos, const IT & end)
+        std::string nice (IT pos, const IT & end) const
         {
           std::ostringstream ss;
 
@@ -132,6 +153,65 @@ namespace xml
                      )
           : generic (pre, "include loop: " + nice (pos, end))
         {}
+      };
+
+      // ******************************************************************* //
+
+      class cannot_resolve : public generic
+      {
+      private:
+        std::string nice ( const std::string & field
+                         , const std::string & type
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "cannot resolve " << field << " :: " << type
+            << ", defined in " << path;
+
+          return s.str();
+        }
+        
+      public:
+        cannot_resolve ( const std::string & field
+                       , const std::string & type
+                       , const boost::filesystem::path & path
+                       )
+          : generic (nice (field, type, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename T>
+      class struct_redefined : public generic
+      {
+      private:
+        std::string nice (const T & early, const T & late) const
+        {
+          std::ostringstream s;
+
+          s << "redefinition of struct with name " << late.name
+            << " in " << late.path
+            << ", first definition was in " << early.path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        struct_redefined (const T & early, const T & late)
+          : generic (nice (early, late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class strange : public generic
+      {
+      public:
+        strange (const std::string & msg) : generic ("STRANGE", msg) {}
       };
     }
   }
