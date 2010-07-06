@@ -25,8 +25,6 @@ namespace signature
                         , boost::recursive_wrapper<structured_t>
                         > desc_t;
 
-  typedef boost::unordered_map<field_name_t, desc_t> set_type;
-
   struct structured_t
   {
   public:
@@ -243,68 +241,6 @@ namespace signature
       {
         throw std::runtime_error
           (msg + ": try to create a field in a non-strutured " + msg);
-      }
-    };
-
-    class get_literal_type_name 
-      : public boost::static_visitor<literal::type_name_t>
-    {
-    public:
-      literal::type_name_t operator () (const literal::type_name_t & t) const
-      {
-        return t;
-      }
-      literal::type_name_t operator () (const structured_t &) const
-      {
-        throw std::runtime_error
-          ("signature: try to get a literal typename from a structured type");
-      }
-    };
-
-    class resolve : public boost::static_visitor<bool>
-    {
-    private:
-      set_type & sig_set;
-      literal::name name;
-      
-    public:
-      resolve (set_type & _sig_set) : sig_set (_sig_set), name() {}
-      
-      bool operator () (literal::type_name_t & t) const
-      {
-        return name.valid (t);
-      }
-
-      bool operator () (structured_t & map) const
-      {
-        for ( structured_t::map_t::iterator pos (map.begin())
-            ; pos != map.end()
-            ; ++pos
-            )
-          {
-            const bool resolved (boost::apply_visitor (*this, pos->second));
-            
-            if (!resolved)
-              {
-                const literal::type_name_t child_name
-                  (boost::apply_visitor (get_literal_type_name(), pos->second));
-
-                set_type::const_iterator res (sig_set.find (child_name));
-
-                if (res == sig_set.end())
-                  {
-                    throw std::runtime_error ("signature: cannot resolve "
-                                             + pos->first + " :: " + child_name
-                                             );
-                  }
-
-                pos->second = res->second;
-
-                boost::apply_visitor (*this, pos->second);
-              }
-          }
-
-        return true;
       }
     };
 
