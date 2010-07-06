@@ -6,7 +6,7 @@
 #include <parse/rapidxml/1.13/rapidxml.hpp>
 
 #include <parse/types.hpp>
-#include <parse/exception.hpp>
+#include <parse/error.hpp>
 
 #include <parse/util/skip.hpp>
 
@@ -20,12 +20,12 @@ namespace xml
 
       if (!node)
         {
-          throw exception::node_type (t);
+          throw error::node_type (t);
         }
 
       if (node->type() != rapidxml::node_element)
         {
-          throw exception::node_type (t, node->type());
+          throw error::node_type (t, node->type());
         }
     }
   }

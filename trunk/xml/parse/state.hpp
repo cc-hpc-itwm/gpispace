@@ -14,7 +14,7 @@
 #include <boost/filesystem.hpp>
 
 #include <parse/warning.hpp>
-#include <parse/exception.hpp>
+#include <parse/error.hpp>
 
 // ************************************************************************* //
 
@@ -81,19 +81,22 @@ namespace xml
                 }
             }
 
-          throw exception::file_not_found ("expand", file);
+          throw error::file_not_found ("expand", file);
         }
 
       public:
         type (void)
           : _level (0)
           , _search_path ()
+          , _in_progress ()
           , _Werror (false)
           , _Woverwrite_function_name (true)
         {}
 
         int & level (void) { return _level; }
         search_path_type & search_path (void) { return _search_path; }
+        bool & Werror (void) { return _Werror; }
+        bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
 
         void warn (const warning::overwrite_function_name & w)
         {
@@ -114,7 +117,7 @@ namespace xml
             {
               if (*pos == path)
                 {
-                  throw exception::include_loop<in_progress_type::const_iterator>
+                  throw error::include_loop<in_progress_type::const_iterator>
                     ("generic_include", pos, _in_progress.end());
                 }
             }

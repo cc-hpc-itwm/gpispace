@@ -250,7 +250,7 @@ namespace xml
             }
           else
             {
-              throw exception::unexpected_element (child_name, "function_type");
+              throw error::unexpected_element (child_name, "function_type");
             }
         }
 
@@ -638,9 +638,17 @@ main (int argc, char ** argv)
     , po::value<xml::parse::state::search_path_type>(&state.search_path())
     , "search path"
     )
-    ("input"
+    ( "input"
     , po::value<std::string>(&input)->default_value("-")
-    , "input file name, - for stdin, default: stdin"
+    , "input file name, - for stdin"
+    )
+    ( "Werror"
+    , po::value<bool>(&state.Werror())->default_value(false)
+    , "cast warnings to errors"
+    )
+    ( "Woverwrite_function_name"
+    , po::value<bool>(&state.Woverwrite_function_name())->default_value(true)
+    , "warn when overwriting a function name"
     )
     ;
 
