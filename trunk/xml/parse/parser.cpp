@@ -117,16 +117,16 @@ namespace xml
 
       skip (node, rapidxml::node_declaration);
 
-      if (node->next_sibling())
-        {
-          throw error::more_than_one_definition (pre);
-        }
-
       const std::string name (name_element (node));
 
       if (name != name_wanted)
         {
           throw error::unexpected_element (name, pre);
+        }
+
+      if (node->next_sibling())
+        {
+          throw error::more_than_one_definition (pre);
         }
 
       return parse (node, state);
@@ -164,7 +164,7 @@ namespace xml
             }
           else if (child_name == "include-structs")
             {
-              struct_vec_type struct_vec 
+              const struct_vec_type struct_vec 
                 (structs_include (required ( "structs_type"
                                            , child
                                            , "href"
@@ -228,7 +228,7 @@ namespace xml
             }
           else if (child_name == "include-structs")
             {
-              struct_vec_type struct_vec 
+              const struct_vec_type struct_vec 
                 (structs_include (required ( "function_type"
                                            , child
                                            , "href"
@@ -317,7 +317,7 @@ namespace xml
             }
           else if (child_name == "include-structs")
             {
-              struct_vec_type struct_vec 
+              const struct_vec_type struct_vec 
                 (structs_include (required ("net_type", child, "href"), state));
 
               n.element.insert ( n.element.end()
