@@ -55,6 +55,17 @@ echo "current: $cur_version"
 echo "new:     $version"
 
 echo "replacing version.cmake.in..."
-sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in
+tmp=$( sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in )
+echo "new version.cmake looks like:"
+echo $tmp
+read -t 5 -n 1 -p "Do you want to accept this? [y/N] "
+case "$REPLY" in
+  y|Y)
+	echo "$tmp" > version.cmake
+    ;;
+  *)
+    echo "aborting."
+	;;
+esac
 
 echo "tagging with $tag..."
