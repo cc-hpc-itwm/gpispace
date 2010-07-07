@@ -238,8 +238,14 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 	worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
 	unsigned int rank_ll = it->second->rank();
 
-
 	return rank_ll;
+}
+
+Worker::worker_id_t& WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)
+{
+	lock_type lock(mtx_);
+	Worker::worker_id_t owner_worker_id = owner_map().at(job_id);
+	return owner_worker_id;
 }
 
 const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException)
@@ -247,8 +253,9 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 	//find a job that prefers worker_id, with the highest preference degree
 	const Worker::ptr_t& ptrWorker = findWorker(worker_id);
 
-	// take the schedule_pref with the lowest pref_deg, check if the job still exists into the corresponding worker
-	// and steal it
+	// take the job with the lowest pref_deg (= the position into the ranks list)
+	// check if it still exists into the pending queue of the owner worker,
+	// steal it and become the new owner
 	Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
 	Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
 
@@ -259,27 +266,40 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 	{
 		// check if the job it->job_id_ is in the pending queue of the owner_worker_id_
 		sdpa::job_id_t job_id = it->job_id_;
-		Worker::worker_id_t owner_worker_id = owner_map().at(job_id);
 
-		// delete the corresponding entry (pref_deg, job_id) from jobs_preferring_this_
-		mi_pref.erase(it);
+		try {
+			Worker::worker_id_t owner_worker_id = getOwnerId(job_id);
 
-		const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
+			// delete the corresponding pair (pref_deg, job_id) from jobs_preferring_this_
+			mi_pref.erase(it);
 
-		Worker::JobQueue::lock_type lockQ( ptrOwnerWorker->pending().mutex() );
-		for ( Worker::JobQueue::iterator iter = ptrOwnerWorker->pending().begin(); iter != ptrOwnerWorker->pending().end(); iter++ )
-		{
-			if( job_id == *iter )
+			const Worker::ptr_t& ptrOwnerWorker = findWorker(owner_worker_id);
+
+			// look for the job into the owner worker's pending queue and steal the job if it is there
+			Worker::JobQueue::lock_type lockQ( ptrOwnerWorker->pending().mutex() );
+			for ( Worker::JobQueue::iterator iter = ptrOwnerWorker->pending().begin(); iter != ptrOwnerWorker->pending().end(); iter++ )
 			{
-				// remove the job from the owner's queue and become the new owner
-				ptrOwnerWorker->pending().erase(iter);
-				// take the job and return job_id_
-				return job_id;
-			}
-		}
+				if( job_id == *iter )
+				{
+					// remove the job from the owner's queue and become the new owner
+					ptrOwnerWorker->pending().erase(iter);
 
-		// if not, continue with the next job
-		it = mi_pref.begin();
+					// become owner
+					make_owner(job_id, worker_id);
+
+					// take the job and return job_id_
+					return job_id;
+				}
+			}
+
+			// if not, continue with the next preferences (sorted)
+			it = mi_pref.begin();
+		}
+		catch (JobNotAssignedException)
+		{
+			// ignore this preference
+			mi_pref.erase(it);
+		}
 	}
 
 	// erase the job from
@@ -299,7 +319,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 		jobId = ptrWorker->get_next_job(last_job_id);
 
 		// delete the job from the affinity list of the other workers
-		deleteJobFromAffinityList(jobId);
+		deleteJobFromAllAffinityLists(jobId);
 
 		return jobId;
 	}
@@ -319,11 +339,8 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				jobId = stealWork(worker_id);
 				ptrWorker->submitted().push(jobId);
 
-				// update the current owner
-				owner_map().insert(WorkerManager::owner_map_t::value_type(jobId, worker_id));
-
 				// delete the job from the affinity list of the other workers
-				deleteJobFromAffinityList(jobId);
+				deleteJobFromAllAffinityLists(jobId);
 
 				return jobId;
 			}
@@ -360,15 +377,17 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 
 const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
 {
-	if( rank_map().empty() )
+	 lock_type lock(mtx_);
+	 if( rank_map().empty() )
 		throw NoWorkerFoundException();
 
-	return rank_map().at(rank);
+	 return rank_map().at(rank);
 }
 
 // for any worker in ranks() -> should pass as parameter a ist of workers !
-void WorkerManager::deleteJobFromAffinityList(const sdpa::job_id_t& job_id)
+void WorkerManager::deleteJobFromAllAffinityLists(const sdpa::job_id_t& job_id)
 {
+	lock_type lock(mtx_);
 	owner_map().erase(job_id);
 	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
 	{
@@ -382,13 +401,13 @@ void WorkerManager::deleteJobFromAffinityList(const sdpa::job_id_t& job_id)
 
 void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
 {
-  lock_type lock(mtx_);
-  worker_map_t::iterator w (worker_map_.find (workerId));
+	lock_type lock(mtx_);
+	worker_map_t::iterator w (worker_map_.find (workerId));
 
-  if (w == worker_map_.end())
-      throw WorkerNotFoundException(workerId);
+	if (w == worker_map_.end())
+		throw WorkerNotFoundException(workerId);
 
-  worker_map_.erase (w);
+	worker_map_.erase (w);
 }
 
 
@@ -399,4 +418,9 @@ void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
 		 v.push_back(iter->second->rank());
 }
 
+void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
+{
+	 lock_type lock(mtx_);
+	 owner_map().insert(WorkerManager::owner_map_t::value_type(job_id, worker_id));
+}
 

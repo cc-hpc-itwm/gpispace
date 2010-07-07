@@ -59,7 +59,10 @@ namespace sdpa { namespace daemon {
 	  const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	  void dispatchJob(const sdpa::job_id_t& jobId);
 	  void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
-	  void deleteJobFromAffinityList(const sdpa::job_id_t& job_id);
+	  void deleteJobFromAllAffinityLists(const sdpa::job_id_t& job_id);
+
+	  Worker::worker_id_t& getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException);
+	  void make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id );
 
 	  size_t numberOfWorkers() { return worker_map_.size(); }
 	  void balanceWorkers();
