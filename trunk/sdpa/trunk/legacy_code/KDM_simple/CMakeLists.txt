@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6.2)
 project(KDM_SDPA)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
+message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
 include_directories(./src
 		    ./src/include
@@ -183,3 +184,6 @@ target_link_libraries (kdm_parallel_loadTT_mod sinc_mod)
 add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+
+install(TARGETS kdm_mod kdm_complex_mod kdm_parallel_loadTT_mod DESTINATION kdm)
+install(TARGETS sinc_mod DESTINATION libsinc)
