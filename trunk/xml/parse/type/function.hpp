@@ -107,7 +107,7 @@ namespace xml
 
         s << level(f.level+1)
           << "name = " << f.name
-          << ", interal = " << f.internal
+          << ", internal = " << f.internal
           << std::endl;
         s << level (f.level+1) << "path = " << f.path << std::endl;
         ;

@@ -679,7 +679,7 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  std::cerr << "parsing..." << std::endl;
+  std::cerr << "parsing document..." << std::endl;
 
   xml::parse::type::function f
     ((input == "-") 
@@ -687,7 +687,7 @@ main (int argc, char ** argv)
     : xml::parse::function_include (input, state)
     );
 
-  std::cerr << "resolving signatures and reading values..." << std::endl;
+  std::cerr << "resolving signatures and parsing values..." << std::endl;
 
   f.resolve (state);
 
