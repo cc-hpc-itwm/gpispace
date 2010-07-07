@@ -156,51 +156,58 @@ namespace literal
     return c;
   }
 
-  static inline bool ishexdigit (const char & c)
+  struct hex
   {
-    switch (c)
-      {
-      case '0'...'9':
-      case 'a'...'e':
-      case 'A'...'E': return true;
-      default: return false;
-      }
-  }
+    static inline bool isdig (const char & c)
+    {
+      switch (c)
+        {
+        case '0'...'9':
+        case 'a'...'e':
+        case 'A'...'E': return true;
+        default: return false;
+        }
+    }
 
-  static inline long hexval (const char & c)
+    static inline long val (const char & c)
+    {
+      switch (c)
+        {
+        case '0'...'9': return       c - '0';
+        case 'a'...'e': return 10 + (c - 'a');
+        case 'A'...'E': return 10 + (c - 'A');
+        default:
+          throw std::runtime_error ("hexval for non hexdigit");
+        }
+    }
+
+    static const long base = 16;
+  };
+
+  struct dec
   {
-    switch (c)
-      {
-      case '0'...'9': return       c - '0';
-      case 'a'...'e': return 10 + (c - 'a');
-      case 'A'...'E': return 10 + (c - 'A');
-      default:
-        throw std::runtime_error ("hexval for non hexdigit");
-      }
-  }
+    static inline bool isdig (const char & c)
+    {
+      return isdigit (c);
+    }
 
-  static inline bool isdecdigit (const char & c)
-  {
-    return isdigit (c);
-  }
+    static inline long val (const char & c)
+    {
+      return c - '0';
+    }
 
-  static inline long decval (const char & c)
-  {
-    return c - '0';
-  }
+    static const long base = 10;
+  };
 
-  static inline long generic_read_ulong ( bool (*isdig)(const char &)
-                                        , long (*val)(const char &)
-                                        , const long base
-                                        , expr::parse::position & pos
-                                        )
+  template<typename base>
+  static inline long generic_read_ulong (expr::parse::position & pos)
   {
     long l (0);
 
-    while (!pos.end() && isdig(*pos))
+    while (!pos.end() && base::isdig (*pos))
       {
-        l *= base;
-        l += val (*pos);
+        l *= base::base;
+        l += base::val (*pos);
         ++pos;
       }
     
@@ -215,22 +222,23 @@ namespace literal
       }
 
     long l (0);
+    bool zero (false);
 
     while (!pos.end() && *pos == '0')
       {
-        ++pos;
+        ++pos; zero = true;
       }
 
     if (!pos.end())
       {
-        if (*pos == 'x')
+        if (zero && (*pos == 'x' || *pos == 'X'))
           {
             ++pos;
-            l = generic_read_ulong (ishexdigit, hexval, 16, pos);
+            l = generic_read_ulong<hex>(pos);
           }
         else
           {
-            l = generic_read_ulong (isdecdigit, decval, 10, pos);
+            l = generic_read_ulong<dec>(pos);
           }
       }
 
