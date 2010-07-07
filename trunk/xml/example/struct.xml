@@ -19,7 +19,8 @@
 <token><value>[]</value></token>
 </place>
 <place name="place_control2" type="control">
-<token/><token/>
+<token><value>[]</value></token>
+<token><value>[]</value></token>
 </place>
 <place name="place_char" type="char">
 <token><value>'c'</value></token>
@@ -59,7 +60,7 @@
 <struct name="no_fields"/>
 
 <place name="place_no_fields" type="no_fields">
-<token><value>[]</value></token>
+<token/>
 </place>
 
 <place name="place_pixel" type="pixel" capacity="2">
@@ -71,6 +72,15 @@
     <field name="jitter"/>
   </field>
 </token>
+<token>
+  <field name="color"><value>0xeeeeee</value></field>
+  <field name="point">
+    <field name="z"><value>23.4</value></field>
+    <field name="y"/>
+    <field name="jitter"/>
+  </field>
+</token>
+<token/>
 </place>
 
 </net>

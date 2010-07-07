@@ -108,6 +108,8 @@ namespace xml
                 {
                   place->sig = sig->second.sig;
                 }
+
+              place->translate (path, state);
             }
         }
       };

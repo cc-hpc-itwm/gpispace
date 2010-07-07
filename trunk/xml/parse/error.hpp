@@ -236,6 +236,144 @@ namespace xml
 
       // ******************************************************************* //
 
+      class parse_incomplete : public generic
+      {
+      private:
+        std::string nice ( const std::string & place
+                         , const std::string & field
+                         , const literal::type_name_t & sig
+                         , const literal::type_name_t & val
+                         , const std::string & rest
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+          
+          s << "when try to read value for place " << place
+            << " from " << path
+            << " when reading for field " << field
+            << " a value of type " << sig
+            << " from " << val
+            << " there is the rest " << rest
+            ;
+
+          return s.str();
+        }
+
+      public:
+        parse_incomplete ( const std::string & place
+                         , const std::string & field
+                         , const literal::type_name_t & sig
+                         , const literal::type_name_t & val
+                         , const std::string & rest
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (place, field, sig, val, rest, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class parse_type_mismatch : public generic
+      {
+      private:
+        std::string nice  ( const std::string & place
+                          , const std::string & field
+                          , const literal::type_name_t & sig
+                          , const signature::structured_t & val
+                          , const boost::filesystem::path & path
+                          )
+        {
+          std::ostringstream s;
+
+          s << "type mismatch when try to read a value for place " << place
+            << " from " << path
+            << " when reading field " << field
+            << " expecting literal of type " << sig
+            << " got structured value " << val
+            ;
+
+          return s.str();
+        }
+
+        std::string nice  ( const std::string & place
+                          , const std::string & field
+                          , const signature::structured_t & sig
+                          , const literal::type_name_t & val
+                          , const boost::filesystem::path & path
+                          )
+        {
+          std::ostringstream s;
+
+          s << "type mismatch when try to read a value for place " << place
+            << " from " << path
+            << " when reading field " << field
+            << " expecting structured type " << sig
+            << " got literal value " << val
+            ;
+
+          return s.str();
+        }
+
+      public:
+        parse_type_mismatch ( const std::string & place
+                            , const std::string & field
+                            , const literal::type_name_t & sig
+                            , const signature::structured_t & val
+                            , const boost::filesystem::path & path
+                            )
+          : generic (nice (place, field, sig, val, path))
+        {}
+
+        parse_type_mismatch ( const std::string & place
+                            , const std::string & field
+                            , const signature::structured_t & sig
+                            , const literal::type_name_t & val
+                            , const boost::filesystem::path & path
+                            )
+          : generic (nice (place, field, sig, val, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class parse_lift : public generic
+      {
+      private:
+        std::string nice ( const std::string & place
+                         , const std::string & field
+                         , const boost::filesystem::path & path
+                         , const std::string & msg
+                         )
+        {
+          std::ostringstream s;
+
+          s << "when reading a value for place " << place;
+
+          if (field != "")
+            {
+              s << " for field " << field;
+            }
+
+          s << " from "<< path
+            << ": " << msg
+            ;
+
+          return s.str();
+        }
+
+      public:
+        parse_lift ( const std::string & place
+                   , const std::string & field
+                   , const boost::filesystem::path & path
+                   , const std::string & msg
+                   )
+          : generic (nice (place, field, path, msg))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class strange : public generic
       {
       public:

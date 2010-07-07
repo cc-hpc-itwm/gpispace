@@ -645,16 +645,27 @@ main (int argc, char ** argv)
     , "input file name, - for stdin"
     )
     ( "Werror"
-    , po::value<bool>(&state.Werror())->default_value(false)
+    , po::value<bool>(&state.Werror())->default_value(state.Werror())
     , "cast warnings to errors"
     )
     ( "Woverwrite_function_name"
-    , po::value<bool>(&state.Woverwrite_function_name())->default_value(true)
+    , po::value<bool>(&state.Woverwrite_function_name())
+                     ->default_value(state.Woverwrite_function_name())
     , "warn when overwriting a function name"
     )
     ( "Wshadow"
-    , po::value<bool>(&state.Wshadow())->default_value(true)
+    , po::value<bool>(&state.Wshadow())->default_value(state.Wshadow())
     , "warn when shadowing a struct definition"
+    )
+    ( "Wdefault_construction"
+    , po::value<bool>(&state.Wdefault_construction())
+                     ->default_value(state.Wdefault_construction())
+    , "warn when default construct (part of) tokens"
+    )
+    ( "Wunused_field"
+    , po::value<bool>(&state.Wunused_field())
+                     ->default_value(state.Wunused_field())
+    , "warn when given fields in tokens are unused"
     )
     ;
 
@@ -676,7 +687,7 @@ main (int argc, char ** argv)
     : xml::parse::function_include (input, state)
     );
 
-  std::cerr << "resolving signatures..." << std::endl;
+  std::cerr << "resolving signatures and reading values..." << std::endl;
 
   f.resolve (state);
 

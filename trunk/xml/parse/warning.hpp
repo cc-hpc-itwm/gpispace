@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#include <we/type/signature.hpp>
+
 namespace xml
 {
   namespace parse
@@ -57,6 +59,69 @@ namespace xml
       public:
         struct_shadowed (const T & early, const T & late)
           : generic (nice (early, late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class default_construction : public generic
+      {
+      private:
+        std::string nice ( const std::string & place
+                         , const std::string & field
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+          
+          s << "default construction takes place for place " << place
+            << " from " << path
+            ;
+
+          if (field != "")
+            {
+              s << " for field " << field;
+            }
+
+          return s.str();
+        }
+
+      public:
+        default_construction ( const std::string & place
+                             , const std::string & field
+                             , const boost::filesystem::path & path
+                             )
+          : generic (nice (place, field, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class unused_field : public generic
+      {
+      private:
+        std::string nice ( const std::string & place
+                         , const std::string & field
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+          
+          s << "for place " << place
+            << " from " << path
+            << " there is a field given with name " << field
+            << " which is not used"
+            ;
+
+          return s.str();
+        }
+
+      public:
+        unused_field ( const std::string & place
+                             , const std::string & field
+                             , const boost::filesystem::path & path
+                             )
+          : generic (nice (place, field, path))
         {}
       };
     }

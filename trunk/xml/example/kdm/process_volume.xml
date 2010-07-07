@@ -16,7 +16,7 @@
       	
       	<!--  check this!!! -->
       	<place name="trigger_load" type="control" >
-      		<token/>
+      		<token><value>[]</value></token>
       	</place>
 
 		<transition name="init_wait" >

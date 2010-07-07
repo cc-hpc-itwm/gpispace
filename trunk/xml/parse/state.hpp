@@ -39,6 +39,8 @@ namespace xml
         bool _Werror;
         bool _Woverwrite_function_name;
         bool _Wshadow;
+        bool _Wdefault_construction;
+        bool _Wunused_field;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -94,6 +96,8 @@ namespace xml
           , _Werror (false)
           , _Woverwrite_function_name (true)
           , _Wshadow (true)
+          , _Wdefault_construction (true)
+          , _Wunused_field (true)
         {}
 
         int & level (void) { return _level; }
@@ -102,6 +106,14 @@ namespace xml
         bool & Werror (void) { return _Werror; }
         bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
         bool & Wshadow (void) { return _Wshadow; }
+        bool & Wdefault_construction (void) { return _Wdefault_construction; }
+        bool & Wunused_field (void) { return _Wunused_field; }
+
+        const bool & Werror (void) const { return _Werror; }
+        const bool & Woverwrite_function_name (void) const { return _Woverwrite_function_name; }
+        const bool & Wshadow (void) const { return _Wshadow; }
+        const bool & Wdefault_construction (void) const { return _Wdefault_construction; }
+        const bool & Wunused_field (void) const { return _Wunused_field; }
 
         fs::path file_in_progress (void) const
         {
@@ -120,6 +132,16 @@ namespace xml
         void warn (const warning::struct_shadowed<T> & w) const
         {
           generic_warn (w, _Wshadow);
+        }
+
+        void warn (const warning::default_construction & w) const
+        {
+          generic_warn (w, _Wdefault_construction);
+        }
+
+        void warn (const warning::unused_field & w) const
+        {
+          generic_warn (w, _Wunused_field);
         }
 
         template<typename T>
