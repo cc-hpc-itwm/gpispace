@@ -18,9 +18,9 @@ namespace xml
     namespace type
     {
       // forward declarations for mutual recursive types
-      struct function;
-      struct transition;
-      struct net;
+      struct function_type;
+      struct transition_type;
+      struct net_type;
 
       // generic show visitor
       namespace visitor

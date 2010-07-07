@@ -19,7 +19,7 @@ namespace xml
       // string->string mapping, after the type of the place is
       // resolved, construct the concrete token out of this
 
-      typedef signature::desc_t token;
+      typedef signature::desc_t token_type;
     }
   }
 }

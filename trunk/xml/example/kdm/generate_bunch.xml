@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun name="f_generate_bunch">
 	<in name="amount" type="long" place="amount" />
-	<in name="volume" type="long" place="volume" />
+	<in name="volume" type="VOLUME" place="volume" />
 	<out name="out"   type="BUNCH" place="out" />
 
 	<net>

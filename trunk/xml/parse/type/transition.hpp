@@ -6,6 +6,7 @@
 #include <parse/types.hpp>
 
 #include <parse/util/maybe.hpp>
+#include <parse/util/unique.hpp>
 
 #include <vector>
 
@@ -20,21 +21,25 @@ namespace xml
   {
     namespace type
     {
-      struct use
+      // ******************************************************************* //
+
+      struct use_type
       {
         std::string name;
         int level;
 
-        use (const std::string & _name, const int & _level) 
+        use_type (const std::string & _name, const int & _level) 
           : name (_name) 
           , level (_level)
         {}
       };
 
-      std::ostream & operator << (std::ostream & s, const use & u)
+      std::ostream & operator << (std::ostream & s, const use_type & u)
       {
         return s << level (u.level) << "use (" << u.name << ")";
       }
+
+      // ******************************************************************* //
 
       class transition_resolve : public boost::static_visitor<void>
       {
@@ -54,7 +59,7 @@ namespace xml
           , forbidden (_forbidden)
         {}
 
-        void operator () (use &) const { return; }
+        void operator () (use_type &) const { return; }
 
         template<typename T>
         void operator () (T & x) const
@@ -62,16 +67,39 @@ namespace xml
           x.resolve (global, state, forbidden);
         }
       };
-      
-      struct transition
+
+      // ******************************************************************* //
+
+      class transition_type_check : public boost::static_visitor<void>
       {
-        typedef std::vector<connect> connect_vec_type;
+      private:
+        const state::type & state;
 
-        connect_vec_type in;
-        connect_vec_type out;
-        connect_vec_type read;
+      public:
+        transition_type_check (const state::type & _state) : state (_state) {}
 
-        typedef boost::variant <function, use> f_type;
+        void operator () (const use_type &) const { return; }
+        
+        template<typename T>
+        void operator () (const T & x) const
+        {
+          x.type_check (state);
+        }
+      };
+      
+      // ******************************************************************* //
+
+      typedef std::vector<connect_type> connect_vec_type;
+
+      struct transition_type
+      {
+      private:
+        xml::util::unique<connect_type> _in;
+        xml::util::unique<connect_type> _out;
+        xml::util::unique<connect_type> _read;
+
+      public:
+        typedef boost::variant <function_type, use_type> f_type;
         
         f_type f;
 
@@ -81,6 +109,40 @@ namespace xml
         int level;
 
         xml::parse::struct_t::set_type structs_resolved;
+
+        // ***************************************************************** //
+
+        const connect_vec_type & in (void) const { return _in.elements(); }
+        const connect_vec_type & out (void) const { return _out.elements(); }
+        const connect_vec_type & read (void) const { return _read.elements(); }
+
+        // ***************************************************************** //
+
+        void push_in (const connect_type & connect)
+        {
+          if (!_in.push (connect))
+            {
+              throw error::duplicate_connect ("in", connect.name, name, path);
+            }
+        }
+
+        void push_out (const connect_type & connect)
+        {
+          if (!_out.push (connect))
+            {
+              throw error::duplicate_connect ("out", connect.name, name, path);
+            }
+        }
+
+        void push_read (const connect_type & connect)
+        {
+          if (!_read.push (connect))
+            {
+              throw error::duplicate_connect ("read", connect.name, name, path);
+            }
+        }
+
+        // ***************************************************************** //
 
         void resolve ( const state::type & state
                      , const xml::parse::struct_t::forbidden_type & forbidden
@@ -100,9 +162,21 @@ namespace xml
                                , f
                                );
         }
+
+        // ***************************************************************** //
+
+        void type_check (const state::type & state) const
+        {
+          // local checks
+
+          // recurs
+          boost::apply_visitor (transition_type_check (state), f);
+        }
       };
 
-      std::ostream & operator << (std::ostream & s, const transition & t)
+      // ******************************************************************* //
+
+      std::ostream & operator << (std::ostream & s, const transition_type & t)
       {
         s << level (t.level)     << "transition (" << std::endl;
         s << level (t.level + 1) << "name = " << t.name << std::endl;
@@ -110,8 +184,8 @@ namespace xml
 
         s << level (t.level + 1) << "connect-in = " << std::endl;
 
-        for ( transition::connect_vec_type::const_iterator pos (t.in.begin())
-            ; pos != t.in.end()
+        for ( connect_vec_type::const_iterator pos (t.in().begin())
+            ; pos != t.in().end()
             ; ++pos
             )
           {
@@ -120,8 +194,8 @@ namespace xml
 
         s << level (t.level + 1) << "connect-read = " << std::endl;
 
-        for ( transition::connect_vec_type::const_iterator pos (t.read.begin())
-            ; pos != t.read.end()
+        for ( connect_vec_type::const_iterator pos (t.read().begin())
+            ; pos != t.read().end()
             ; ++pos
             )
           {
@@ -130,8 +204,8 @@ namespace xml
 
         s << level (t.level + 1) << "connect-out = " << std::endl;
 
-        for ( transition::connect_vec_type::const_iterator pos (t.out.begin())
-            ; pos != t.out.end()
+        for ( connect_vec_type::const_iterator pos (t.out().begin())
+            ; pos != t.out().end()
             ; ++pos
             )
           {

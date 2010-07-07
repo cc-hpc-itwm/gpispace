@@ -23,16 +23,18 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<place> place_vec_type;
-      typedef std::vector<function> function_vec_type;
-      typedef std::vector<transition> transition_vec_type;
+      typedef std::vector<place_type> place_vec_type;
+      typedef std::vector<function_type> function_vec_type;
+      typedef std::vector<transition_type> transition_vec_type;
 
-      struct net
+      // ******************************************************************* //
+
+      struct net_type
       {
       private:
-        xml::util::unique<place> _places;
-        xml::util::unique<transition> _transitions;
-        xml::util::unique<function,maybe<std::string> > _functions;
+        xml::util::unique<place_type> _places;
+        xml::util::unique<transition_type> _transitions;
+        xml::util::unique<function_type,maybe<std::string> > _functions;
 
       public:
         struct_vec_type structs;
@@ -42,6 +44,15 @@ namespace xml
         int level;
 
         xml::parse::struct_t::set_type structs_resolved;
+
+        // ***************************************************************** //
+
+        bool get_place (const std::string & name, place_type & place) const
+        {
+          return _places.by_key (name, place);
+        }
+
+        // ***************************************************************** //
 
         const place_vec_type & places (void) const
         {
@@ -58,35 +69,39 @@ namespace xml
           return _functions.elements();
         }
 
-        void push (const place & p)
-        {
-          place old;
+        // ***************************************************************** //
 
-          if (!_places.push (p, old))
+        void push (const place_type & place)
+        {
+          place_type old;
+
+          if (!_places.push (place, old))
             {
-              throw error::duplicate_place (p.name, path);
+              throw error::duplicate_place (place.name, path);
             }
         }
 
-        void push (const transition & t)
+        void push (const transition_type & t)
         {
-          transition old;
+          transition_type old;
 
           if (!_transitions.push (t, old))
             {
-              throw error::duplicate_transition<transition> (t, old);
+              throw error::duplicate_transition<transition_type> (t, old);
             }
         }
 
-        void push (const function & f)
+        void push (const function_type & f)
         {
-          function old;
+          function_type old;
 
           if (!_functions.push (f, old))
             {
-              throw error::duplicate_function<function> (f, old);
+              throw error::duplicate_function<function_type> (f, old);
             }
         }
+
+        // ***************************************************************** //
 
         void resolve ( const state::type & state
                      , const xml::parse::struct_t::forbidden_type & forbidden
@@ -170,9 +185,32 @@ namespace xml
               place->translate (path, state);
             }
         }
+
+        // ***************************************************************** //
+
+        void type_check (const state::type & state) const
+        {
+          for ( transition_vec_type::const_iterator trans (transitions().begin())
+              ; trans != transitions().end()
+              ; ++trans
+              )
+            {
+              trans->type_check (state);
+            }
+
+          for ( function_vec_type::const_iterator fun (functions().begin())
+              ; fun != functions().end()
+              ; ++fun
+              )
+            {
+              fun->type_check (state);
+            }
+        }
       };
 
-      std::ostream & operator << (std::ostream & s, const net & n)
+      // ******************************************************************* //
+
+      std::ostream & operator << (std::ostream & s, const net_type & n)
       {
         s << "net (path = " << n.path << std::endl;
 

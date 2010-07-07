@@ -124,6 +124,34 @@ namespace xml
           : generic (nice (place, field, path))
         {}
       };
+
+      // ******************************************************************* //
+
+      class port_not_connected : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & port
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << direction << "-port " << port 
+            << " not connected"
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        port_not_connected ( const std::string & direction
+                           , const std::string & port
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (direction, port, path))
+        {}
+      };
     }
   }
 }

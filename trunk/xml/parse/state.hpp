@@ -41,6 +41,7 @@ namespace xml
         bool _Wshadow;
         bool _Wdefault_construction;
         bool _Wunused_field;
+        bool _Wport_not_connected;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -98,6 +99,7 @@ namespace xml
           , _Wshadow (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
+          , _Wport_not_connected (true)
         {}
 
         int & level (void) { return _level; }
@@ -108,12 +110,14 @@ namespace xml
         bool & Wshadow (void) { return _Wshadow; }
         bool & Wdefault_construction (void) { return _Wdefault_construction; }
         bool & Wunused_field (void) { return _Wunused_field; }
+        bool & Wport_not_connected (void) { return _Wport_not_connected; }
 
         const bool & Werror (void) const { return _Werror; }
         const bool & Woverwrite_function_name (void) const { return _Woverwrite_function_name; }
         const bool & Wshadow (void) const { return _Wshadow; }
         const bool & Wdefault_construction (void) const { return _Wdefault_construction; }
         const bool & Wunused_field (void) const { return _Wunused_field; }
+        const bool & Wport_not_connected (void) const { return _Wport_not_connected; }
 
         fs::path file_in_progress (void) const
         {
@@ -142,6 +146,11 @@ namespace xml
         void warn (const warning::unused_field & w) const
         {
           generic_warn (w, _Wunused_field);
+        }
+
+        void warn (const warning::port_not_connected & w) const
+        {
+          generic_warn (w, _Wport_not_connected);
         }
 
         template<typename T>

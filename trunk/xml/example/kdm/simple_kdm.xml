@@ -17,9 +17,11 @@
       </token>
     </place>
 
+   <place name="done" type="control"/>
+
     <transition name="initialize">
       <defun>
-        <in name="config_file" type="string" />
+        <in name="config_file" type="string"/>
         <out name="config" type="CONFIG" />
         <out name="wait" type="long" />
         <out name="trigger" type="control" />

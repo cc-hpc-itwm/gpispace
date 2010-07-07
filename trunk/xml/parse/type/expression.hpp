@@ -11,7 +11,7 @@ namespace xml
   {
     namespace type
     {
-      typedef std::string expression;
+      typedef std::string expression_type;
     }
   }
 }

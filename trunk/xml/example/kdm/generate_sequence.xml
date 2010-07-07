@@ -13,7 +13,7 @@
 		<place name="out" type="long" />
 
 		<defun name="f_init">
-			<in name="N" type="long" />
+			<in name="N" type="long"/>
 			<out name="counter" type="COUNTER" />
 			<expression>
 				${counter.i} := 0L;

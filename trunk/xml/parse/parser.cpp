@@ -28,12 +28,16 @@ namespace xml
   {
     // ********************************************************************* //
 
-    static type::connect connect_type (const xml_node_type *, state::type &);
-    static type::function function_type (const xml_node_type *, state::type &);
-    static type::mod mod_type (const xml_node_type *, state::type &);
-    static type::net net_type (const xml_node_type *, state::type &);
-    static type::place place_type (const xml_node_type *, state::type &);
-    static type::port port_type (const xml_node_type *, state::type &);
+    static type::connect_type connect_type ( const xml_node_type *
+                                           , state::type &
+                                           );
+    static type::function_type function_type (const xml_node_type *
+                                             , state::type &
+                                             );
+    static type::mod_type mod_type (const xml_node_type *, state::type &);
+    static type::net_type net_type (const xml_node_type *, state::type &);
+    static type::place_type place_type (const xml_node_type *, state::type &);
+    static type::port_type port_type (const xml_node_type *, state::type &);
     static void gen_struct_type ( const xml_node_type *, state::type &
                                 , signature::desc_t &
                                 );
@@ -41,12 +45,12 @@ namespace xml
                                , signature::desc_t &
                                );
     static type::struct_t struct_type (const xml_node_type *, state::type &);
-    static type::token token_type (const xml_node_type *, state::type &);
-    static type::transition transition_type ( const xml_node_type *
-                                            , state::type &
-                                            );
+    static type::token_type token_type (const xml_node_type *, state::type &);
+    static type::transition_type transition_type ( const xml_node_type *
+                                                 , state::type &
+                                                 );
 
-    static type::function parse_function (std::istream & f, state::type &);
+    static type::function_type parse_function (std::istream & f, state::type &);
 
 
     static type::struct_vec_type structs_include ( const std::string &
@@ -59,10 +63,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::function
+    static type::function_type
     function_include (const std::string & file, state::type & state)
     {
-      return state.generic_include<type::function> (parse_function, file);
+      return state.generic_include<type::function_type> (parse_function, file);
     }
 
     static type::struct_vec_type
@@ -121,7 +125,7 @@ namespace xml
       return parse (node, state);
     };
 
-    static type::function
+    static type::function_type
     parse_function (std::istream & f, state::type & state)
     {
       return generic_parse (function_type, f, state, "defun", "parse_function");
@@ -178,20 +182,20 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::connect
+    static type::connect_type
     connect_type (const xml_node_type * node, state::type &)
     {
-      return type::connect ( required ("connect_type", node, "place")
-                           , required ("connect_type", node, "port")
-                           );
+      return type::connect_type ( required ("connect_type", node, "place")
+                                , required ("connect_type", node, "port")
+                                );
     }
 
     // ********************************************************************* //
 
-    static type::function
+    static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
-      type::function f;
+      type::function_type f;
 
       f.path = state.file_in_progress();
       f.level = state.level();
@@ -241,7 +245,7 @@ namespace xml
                 }
               else if (child_name == "expression")
                 {
-                  f.f = type::expression (child->value());
+                  f.f = type::expression_type (child->value());
                 }
               else if (child_name == "module")
                 {
@@ -271,20 +275,20 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::mod
+    static type::mod_type
     mod_type (const xml_node_type * node, state::type &)
     {
-      return type::mod ( required ("mod_type", node, "name")
-                       , required ("mod_type", node, "function")
-                       );
+      return type::mod_type ( required ("mod_type", node, "name")
+                            , required ("mod_type", node, "function")
+                            );
     }
 
     // ********************************************************************* //
 
-    static type::net
+    static type::net_type
     net_type (const xml_node_type * node, state::type & state)
     {
-      type::net n;
+      type::net_type n;
 
       n.path = state.file_in_progress();
       n.level = state.level();
@@ -334,7 +338,7 @@ namespace xml
                   const std::string file (required ("net_type", child, "href"));
                   const maybe<std::string> as (optional (child, "as"));
 
-                  type::function fun (function_include (file, state));
+                  type::function_type fun (function_include (file, state));
 
                   if (as.isJust())
                     {
@@ -372,10 +376,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::place
+    static type::place_type
     place_type (const xml_node_type * node, state::type & state)
     {
-      type::place p
+      type::place_type p
         ( required ("place_type", node, "name")
         , required ("place_type", node, "type")
         , fmap<std::string, petri_net::capacity_t>
@@ -411,13 +415,13 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::port
+    static type::port_type
     port_type (const xml_node_type * node, state::type &)
     {
-      return type::port ( required ("port_type", node, "name")
-                        , required ("port_type", node, "type")
-                        , optional (node, "place")
-                        );
+      return type::port_type ( required ("port_type", node, "name")
+                             , required ("port_type", node, "type")
+                             , optional (node, "place")
+                             );
     }
 
     // ********************************************************************* //
@@ -507,7 +511,7 @@ namespace xml
     static void
     token_field_type ( const xml_node_type * node
                      , state::type & state
-                     , type::token & tok
+                     , type::token_type & tok
                      )
     {
       const std::string name (required ("token_field_type", node, "name"));
@@ -555,10 +559,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::token
+    static type::token_type
     token_type (const xml_node_type * node, state::type & state)
     {
-      type::token tok = signature::structured_t();
+      type::token_type tok = signature::structured_t();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -571,7 +575,7 @@ namespace xml
             {
               if (child_name == "value")
                 {
-                  return type::token (std::string (child->value()));
+                  return type::token_type (std::string (child->value()));
                 }
               else if (child_name == "field")
                 {
@@ -589,10 +593,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::transition
+    static type::transition_type
     transition_type (const xml_node_type * node, state::type & state)
     {
-      type::transition t;
+      type::transition_type t;
 
       t.path = state.file_in_progress();
       t.level = state.level();
@@ -623,9 +627,12 @@ namespace xml
                 }
               else if (child_name == "use")
                 {
-                  t.f = type::use ( required ("transition_type", child, "name")
-                                  , state.level() + 2
-                                  );
+                  t.f = type::use_type ( required ( "transition_type"
+                                                  , child
+                                                  , "name"
+                                                  )
+                                       , state.level() + 2
+                                       );
                 }
               else if (child_name == "defun")
                 {
@@ -637,15 +644,15 @@ namespace xml
                 }
               else if (child_name == "connect-in")
                 {
-                  t.in.push_back (connect_type(child, state));
+                  t.push_in (connect_type(child, state));
                 }
               else if (child_name == "connect-out")
                 {
-                  t.out.push_back (connect_type(child, state));
+                  t.push_out (connect_type(child, state));
                 }
               else if (child_name == "connect-read")        
                 {
-                  t.read.push_back (connect_type(child, state));
+                  t.push_read (connect_type(child, state));
                 }
               else
                 {
@@ -719,7 +726,7 @@ main (int argc, char ** argv)
 
   std::cerr << "parsing document..." << std::endl;
 
-  xml::parse::type::function f
+  xml::parse::type::function_type f
     ((input == "-") 
     ? xml::parse::parse_function (std::cin, state)
     : xml::parse::function_include (input, state)
@@ -730,6 +737,10 @@ main (int argc, char ** argv)
   const xml::parse::struct_t::set_type empty;
 
   f.resolve (empty, state, f.forbidden_below());
+
+  std::cerr << "type checking..." << std::endl;
+
+  f.type_check (state);
 
   std::cerr << "done" << std::endl;
 

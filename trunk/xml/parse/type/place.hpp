@@ -33,6 +33,8 @@ namespace xml
   {
     namespace type
     {
+      // ******************************************************************* //
+
       class default_construct_value : public boost::static_visitor<value::type>
       {
       public:
@@ -61,6 +63,8 @@ namespace xml
           return val;
         }
       };
+
+      // ******************************************************************* //
 
       // binary visiting
       class construct_value : public boost::static_visitor<value::type>
@@ -193,25 +197,27 @@ namespace xml
         }
       };
 
-      struct place
+      // ******************************************************************* //
+
+      struct place_type
       {
       public:
         std::string name;
         std::string type;
         maybe<petri_net::capacity_t> capacity;
-        std::vector<token> tokens;
+        std::vector<token_type> tokens;
         std::vector<value::type> values;
         signature::desc_t sig;
         int level;
 
-        place () 
+        place_type () 
           : name (), type (), capacity (), tokens (), values(), sig(), level ()
         {}
 
-        place ( const std::string & _name
-              , const std::string & _type
-              , const maybe<petri_net::capacity_t> _capacity
-              )
+        place_type ( const std::string & _name
+                   , const std::string & _type
+                   , const maybe<petri_net::capacity_t> _capacity
+                   )
           : name (_name)
           , type (_type)
           , capacity (_capacity)
@@ -221,7 +227,7 @@ namespace xml
           , level ()
         {}
 
-        void push_token (const token & t)
+        void push_token (const token_type & t)
         {
           tokens.push_back (t);
         }
@@ -230,7 +236,7 @@ namespace xml
                        , const state::type & state
                        )
         {
-          for ( std::vector<token>::const_iterator tok (tokens.begin())
+          for ( std::vector<token_type>::const_iterator tok (tokens.begin())
               ; tok != tokens.end()
               ; ++tok
               )
@@ -245,7 +251,9 @@ namespace xml
         }
       };
 
-      std::ostream & operator << (std::ostream & s, const place & p)
+      // ******************************************************************* //
+
+      std::ostream & operator << (std::ostream & s, const place_type & p)
       {
         s << level(p.level)  << "place (" << std::endl;
         s << level(p.level+1) << "name = " << p.name << std::endl;
@@ -253,7 +261,7 @@ namespace xml
         s << level(p.level+1) << "sig = " << p.sig << std::endl;
         s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
 
-        for ( std::vector<token>::const_iterator tok (p.tokens.begin())
+        for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
             ; tok != p.tokens.end()
             ; ++tok
             )

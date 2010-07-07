@@ -463,6 +463,36 @@ namespace xml
 
       // ******************************************************************* //
 
+      class duplicate_connect : public generic
+      {
+      private:
+        std::string nice ( const std::string & type
+                         , const std::string & name
+                         , const std::string & trans
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate " << "connect-" << type << " " << name
+            << " for transition " << trans 
+            << " in " << path;
+
+          return s.str();
+        }
+
+      public:
+        duplicate_connect ( const std::string & type
+                          , const std::string & name
+                          , const std::string & trans
+                          , const boost::filesystem::path & path
+                          )
+          : generic (nice (type, name, trans, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       template<typename T>
       class duplicate_transition : public generic
       {
@@ -502,6 +532,128 @@ namespace xml
       public:
         duplicate_function (const T & t, const T & old)
           : generic (nice (t, old))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class port_with_unknown_type : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & port
+                         , const std::string & type
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << direction << "-port " << port 
+            << " with unknown type " << type
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        port_with_unknown_type ( const std::string & direction
+                               , const std::string & port
+                               , const std::string & type
+                               , const boost::filesystem::path & path
+                               )
+          : generic (nice (direction, port, type, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class port_connected_place_nonexistent : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & port
+                         , const std::string & place
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << direction << "-port " << port 
+            << " connected to non-existing place " << place
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        port_connected_place_nonexistent ( const std::string & direction
+                                         , const std::string & port
+                                         , const std::string & place
+                                         , const boost::filesystem::path & path
+                                         )
+          : generic (nice (direction, port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class port_not_connected : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & port
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << direction << "-port " << port 
+            << " not connected"
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        port_not_connected ( const std::string & direction
+                           , const std::string & port
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (direction, port, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename PORT, typename PLACE>
+      class port_connected_type_error : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const PORT & port
+                         , const PLACE & place
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "type error: port " << port.name
+            << " of type " << port.type
+            << " connected to place " << place.name
+            << " of type " << place.type
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        port_connected_type_error ( const std::string & direction
+                                  , const PORT & port
+                                  , const PLACE & place
+                                  , const boost::filesystem::path & path
+                                  )
+          : generic (nice (direction, port, place, path))
         {}
       };
 

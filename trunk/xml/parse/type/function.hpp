@@ -13,6 +13,8 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
+#include <we/type/literal.hpp>
+
 #include <iostream>
 
 namespace xml
@@ -21,8 +23,10 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<port> port_vec_type;
+      typedef std::vector<port_type> port_vec_type;
       typedef std::vector<std::string> cond_vec_type;
+
+      // ******************************************************************* //
 
       class function_resolve : public boost::static_visitor<void>
       {
@@ -42,8 +46,8 @@ namespace xml
           , forbidden (_forbidden)
         {}
 
-        void operator () (expression &) const { return; }
-        void operator () (mod &) const { return; }
+        void operator () (expression_type &) const { return; }
+        void operator () (mod_type &) const { return; }
 
         template<typename T>
         void operator () (T & x) const
@@ -52,16 +56,38 @@ namespace xml
         }
       };
 
-      struct function
+      // ******************************************************************* //
+
+      class function_type_check : public boost::static_visitor<void>
       {
       private:
-        xml::util::unique<port> _in;
-        xml::util::unique<port> _out;
+        const state::type & state;
 
       public:
-        typedef boost::variant < expression
-                               , mod
-                               , boost::recursive_wrapper<net>
+        function_type_check (const state::type & _state) : state (_state) {}
+
+        void operator () (const expression_type &) const { return; }
+        void operator () (const mod_type &) const { return; }
+        
+        template<typename T>
+        void operator () (const T & x) const
+        {
+          x.type_check (state);
+        }
+      };
+
+      // ******************************************************************* //
+
+      struct function_type
+      {
+      private:
+        xml::util::unique<port_type> _in;
+        xml::util::unique<port_type> _out;
+
+      public:
+        typedef boost::variant < expression_type
+                               , mod_type
+                               , boost::recursive_wrapper<net_type>
                                > type; 
 
         struct_vec_type structs;
@@ -79,12 +105,14 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
+        // ***************************************************************** //
+
         const port_vec_type & in (void) const { return _in.elements(); }
         const port_vec_type & out (void) const { return _out.elements(); }
 
-        void push_in (const port & p)
+        void push_in (const port_type & p)
         {
-          port old;
+          port_type old;
 
           if (!_in.push (p, old))
             {
@@ -92,15 +120,17 @@ namespace xml
             }
         }
 
-        void push_out (const port & p)
+        void push_out (const port_type & p)
         {
-          port old;
+          port_type old;
 
           if (!_out.push (p, old))
             {
               throw error::duplicate_port ("out", p.name, path);
             }
         }
+
+        // ***************************************************************** //
 
         xml::parse::struct_t::forbidden_type
         forbidden_below (void) const
@@ -125,6 +155,8 @@ namespace xml
 
           return forbidden;
         }
+
+        // ***************************************************************** //
 
         void resolve ( const state::type & state
                      , xml::parse::struct_t::forbidden_type & forbidden
@@ -160,9 +192,62 @@ namespace xml
           boost::apply_visitor 
             (function_resolve (structs_resolved, state, forbidden_below()), f);
         }
+
+        // ***************************************************************** //
+
+        void type_check (const state::type & state) const
+        {
+          literal::name name;
+
+          for ( port_vec_type::const_iterator port (in().begin())
+              ; port != in().end()
+              ; ++port
+              )
+            {
+              if (!name.valid (port->type))
+                {
+                  xml::parse::struct_t::set_type::const_iterator pos
+                    (structs_resolved.find (port->type));
+
+                  if (pos == structs_resolved.end())
+                    {
+                      throw error::port_with_unknown_type
+                        ("in", port->name, port->type, path);
+                    }
+                }
+
+              boost::apply_visitor 
+                (port_type_check<net_type> ("in", *port, path, state), f);
+            }
+
+          for ( port_vec_type::const_iterator port (out().begin())
+              ; port != out().end()
+              ; ++port
+              )
+            {
+              if (!name.valid (port->type))
+                {
+                  xml::parse::struct_t::set_type::const_iterator pos
+                    (structs_resolved.find (port->type));
+
+                  if (pos == structs_resolved.end())
+                    {
+                      throw error::port_with_unknown_type
+                        ("out", port->name, port->type, path);
+                    }
+                }
+
+              boost::apply_visitor 
+                (port_type_check<net_type> ("out", *port, path, state), f);
+            }
+
+          boost::apply_visitor (function_type_check (state), f);
+        }
       };
 
-      std::ostream & operator << (std::ostream & s, const function & f)
+      // ******************************************************************* //
+
+      std::ostream & operator << (std::ostream & s, const function_type & f)
       {
         s << level(f.level) << "function (" << std::endl;
 

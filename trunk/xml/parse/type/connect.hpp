@@ -14,21 +14,23 @@ namespace xml
   {
     namespace type
     {
-      struct connect
+      struct connect_type
       {
       public:
         std::string place;
         std::string port;
+        std::string name;
 
-        connect ( const std::string & _place
-                , const std::string & _port
-                )
+        connect_type ( const std::string & _place
+                     , const std::string & _port
+                     )
           : place (_place)
           , port (_port)
+          , name (_place + " <-> " + _port)
         {}
       };
 
-      std::ostream & operator << (std::ostream & s, const connect & c)
+      std::ostream & operator << (std::ostream & s, const connect_type & c)
       {
         return s << "connect ("
                  << "place = " << c.place 

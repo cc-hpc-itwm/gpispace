@@ -2,9 +2,11 @@
 <defun name="struct">
 
 <in name="in" type="control"/>
-<out name="out" type="control"/>
+<out name="out" type="control" place="out"/>
 
 <net>
+
+<place name="out" type="control"/>
 
 <place name="place_string" type="string">
 <token><value>"a_string"</value></token>

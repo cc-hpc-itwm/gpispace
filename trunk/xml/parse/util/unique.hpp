@@ -44,6 +44,35 @@ namespace xml
         return true;
       }
 
+      bool push (const T & x)
+      {
+        const typename map_type::const_iterator found (names.find (x.name));
+
+        if (found != names.end())
+          {
+            return false;
+          }
+
+        names[x.name] = pos++;
+        vec.push_back (x);
+
+        return true;
+      }
+
+      bool by_key (const Key & key, T & x) const
+      {
+        const typename map_type::const_iterator found (names.find (key));
+
+        if (found == names.end())
+          {
+            return false;
+          }
+
+        x = vec[found->second];
+
+        return true;
+      }
+
       vec_type & elements (void) { return vec; }
       const vec_type & elements (void) const { return vec; }
     };
