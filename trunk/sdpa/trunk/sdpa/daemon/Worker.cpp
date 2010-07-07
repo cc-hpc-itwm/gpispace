@@ -122,5 +122,15 @@ void Worker::print()
 
 void Worker::add_to_affinity_list(const pref_deg_t& pref_deg, const sdpa::job_id_t& jobId )
 {
+	// lock it first
 	mi_affinity_list.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
+}
+
+void Worker::delete_from_affinity_list(const sdpa::job_id_t& job_id)
+{
+	// lock it first
+	Worker::mi_ordered_jobIds& mi_jobIds = get<1>(mi_affinity_list);
+
+	// delete the entry corresponding to job_id in jobs_preferring_this_
+	mi_jobIds.erase(job_id);
 }

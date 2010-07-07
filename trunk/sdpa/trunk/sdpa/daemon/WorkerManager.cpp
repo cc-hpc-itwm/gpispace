@@ -256,6 +256,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 	// take the job with the lowest pref_deg (= the position into the ranks list)
 	// check if it still exists into the pending queue of the owner worker,
 	// steal it and become the new owner
+
 	Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
 	Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
 
@@ -392,10 +393,7 @@ void WorkerManager::deleteJobFromAllAffinityLists(const sdpa::job_id_t& job_id)
 	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
 	{
 		const Worker::ptr_t& ptrWorker = iter->second;
-		Worker::mi_ordered_jobIds& mi_jobIds = get<1>(ptrWorker->mi_affinity_list);
-
-		// delete the entry corresponding to job_id in jobs_preferring_this_
-		mi_jobIds.erase(job_id);
+		ptrWorker->delete_from_affinity_list(job_id);
 	}
 }
 

@@ -184,7 +184,10 @@ namespace sdpa { namespace daemon {
     JobQueue& acknowledged() { return acknowledged_; }
     const JobQueue& acknowledged() const { return acknowledged_; }
 
-    void add_to_affinity_list(const pref_deg_t& , const sdpa::job_id_t& );
+    // add a method get_next_prefernce and use it sched.. with constr
+    void add_to_affinity_list(const pref_deg_t&, const sdpa::job_id_t& );
+
+    void delete_from_affinity_list(const sdpa::job_id_t& );
 
     template <class Archive>
 	void serialize(Archive& ar, const unsigned int file_version )
