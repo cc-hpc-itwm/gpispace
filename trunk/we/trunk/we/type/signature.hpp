@@ -49,6 +49,19 @@ namespace signature
       return map[field_name];
     }
 
+    const desc_t & field (const field_name_t & field_name) const
+    {
+      const_iterator pos (map.find (field_name));
+
+      if (pos == map.end())
+        {
+          throw std::runtime_error
+            ("try to get non-existing field " + field_name);
+        }
+
+      return pos->second;
+    }
+
     const_iterator begin (void) const { return map.begin(); }
     const_iterator end (void) const { return map.end(); }
     iterator begin (void) { return map.begin(); }
