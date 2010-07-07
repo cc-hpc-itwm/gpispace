@@ -77,5 +77,7 @@ message(STATUS "========== Add project seda")
 add_subdirectory(seda)
 message(STATUS "========== Add project sdpa")
 add_subdirectory(sdpa)
+message(STATUS "========== Add project xml")
+add_subdirectory(xml)
 
 include(TargetDoc.cmake OPTIONAL)
