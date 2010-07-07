@@ -122,7 +122,7 @@ namespace seda { namespace comm {
 		{
 		  handler_ = h;
 		}
-		
+
 		void start()
 		{
 		  start_timer();
@@ -166,12 +166,15 @@ namespace seda { namespace comm {
 		}
 
 		const message_id_type &
-		send(stage_type *destination
-		   , message_type msg
-		   , const message_id_type &msg_id
-		   , time_type timeout
-		   , size_type retries = std::numeric_limits<size_type>::max())
+		send( stage_type *destination
+                    , message_type msg
+                    , const message_id_type &msg_id
+                    , time_type timeout
+                    , size_type retries = std::numeric_limits<size_type>::max()
+                    )
 		{
+                  assert ( destination != NULL );
+
 		  destination->send(msg);
 
 		  if (retries)
@@ -212,12 +215,18 @@ namespace seda { namespace comm {
 
 		  boost::unique_lock<boost::recursive_mutex> lock(mtx_);
 
-		  for (iterator m(pending_messages_.begin()); m != pending_messages_.end(); ++m)
-		  {
-			if (m->retry_counter)
+                  iterator m (pending_messages_.begin());
+                  while ( m != pending_messages_.end() )
+                  {
+			if (m->retry_counter > 0)
 			{
 			  if (must_be_resent(*m, now))
-				resend_message(*m, now);
+                          {
+                            resend_message(*m, now);
+                            m->retry_counter--;
+                          }
+
+                          ++m;
 			}
 			else
 			{
@@ -233,8 +242,6 @@ namespace seda { namespace comm {
 			  // remove it
 			  LOG(ERROR, "delivery of message " << m->msg_id << " failed!");
 			  m = pending_messages_.erase(m);
-
-			  if (m == pending_messages_.end()) break;
 			}
 		  }
 		}
@@ -243,7 +250,6 @@ namespace seda { namespace comm {
 		{
 		  LOG(WARN, "resending message: " << m_info.msg_id);
 		  m_info.destination->send(m_info.msg);
-		  m_info.retry_counter--;
 		  m_info.tstamp_of_last_send = tstamp;
 		}
 
