@@ -64,6 +64,7 @@ set(CPACK_RPM_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VE
 
 ##########################################################
 include(CTest)
+add_subdirectory(modules)
 message(STATUS "========== Add project fhglog")
 add_subdirectory(fhglog)
 message(STATUS "========== Add project we")
