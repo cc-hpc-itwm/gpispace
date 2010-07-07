@@ -152,13 +152,14 @@ int main (int argc, char **argv) {
   }
   else
   {
-    fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
+    fhg::log::getLogger().setLevel(fhg::log::LogLevel::WARN);
   }
   if (cfg.is_set("verbose"))
   {
     int lvl(cfg.get<int>("verbose"));
-    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
-    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
+    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
+    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
+    if (lvl > 2) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
   }
 
   try

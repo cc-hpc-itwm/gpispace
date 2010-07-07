@@ -43,7 +43,9 @@ int main (int argc, char **argv)
 	}
 
 	std::cout <<"Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl<<std::endl;
-	fhg::log::Configurator::configure();
+	
+	FHGLOG_SETUP();
+	//	fhg::log::Configurator::configure();
 
 	try {
 		sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create( orchName, orchUrl, workflow_directory );

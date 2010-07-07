@@ -113,12 +113,21 @@ namespace seda { namespace comm {
     io_service_.reset();
 
     DLOG(TRACE, "host = " << host() << " port = " << port());
-    udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host()), port());
+    boost::system::error_code ec;
+    udp::endpoint my_endpoint(boost::asio::ip::address::from_string(host(), ec), port());
+    LOG_IF(ERROR, ec, "could not parse ip address: " << ec << ": " << ec.message());
+    if (ec)
+    {
+      throw ec;
+    }
     DLOG(TRACE, "starting UDPConnection(" << name() << ") on " << my_endpoint);
 
     socket_ = new udp::socket(io_service_);
     socket_->open (my_endpoint.protocol());
-    socket_->set_option (boost::asio::socket_base::reuse_address (true));
+    socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
+    
+    LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
+    
     socket_->bind (my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
 

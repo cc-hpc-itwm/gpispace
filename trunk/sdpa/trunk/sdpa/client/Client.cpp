@@ -52,6 +52,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , output_stage_(output_stage)
   , fsm_(*this)
   , timeout_(5000U)
+  , my_location_("127.0.0.1:0")
 { }
 
 Client::~Client()
@@ -366,7 +367,7 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
 
 void Client::action_configure(const config_t &cfg)
 {
-  MLOG(DEBUG, "configuring my environment");
+  MLOG(INFO, "configuring my environment");
 
   if (cfg.is_set("network.timeout"))
   {
@@ -391,7 +392,6 @@ void Client::action_configure(const config_t &cfg)
     action_configure_network(cfg);
   }
 
-  // send event to myself
   if (orchestrator_.empty())
   {
     MLOG(ERROR, "no orchestrator specified!");
@@ -405,10 +405,11 @@ void Client::action_configure(const config_t &cfg)
 
 void Client::action_configure_network(const config_t &cfg)
 {
-  MLOG(DEBUG, "configuring network components...");
+  LOG(DEBUG, "configuring network components...");
+  
   const std::string net_stage_name(client_stage_->name()+".from-net");
   {
-    DMLOG(TRACE, "setting up decoding...");
+    LOG(TRACE, "setting up decoding...");
     seda::ForwardStrategy::Ptr to_client(new seda::ForwardStrategy(client_stage_->name()));
     sdpa::events::DecodeStrategy::ptr_t decode(new sdpa::events::DecodeStrategy(net_stage_name, to_client));
     seda::Stage::Ptr from_net(new seda::Stage(net_stage_name, decode));
@@ -431,7 +432,7 @@ void Client::action_configure_network(const config_t &cfg)
       {
         const std::string n(loc->substr(0, loc->find(':')));
         const std::string l(loc->substr(n.size()+1));
-        MLOG(TRACE, "inserting location information: " << n << " -> " << l);
+        LOG(TRACE, "inserting location information: " << n << " -> " << l);
         conn->locator()->insert(n, l);
       }
     }
@@ -440,6 +441,8 @@ void Client::action_configure_network(const config_t &cfg)
     seda::StageRegistry::instance().insert(output);
     output->start();
   }
+
+  LOG(DEBUG, "network configuration complete");
 }
 
 

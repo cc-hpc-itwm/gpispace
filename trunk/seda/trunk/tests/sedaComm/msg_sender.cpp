@@ -32,9 +32,9 @@ int main(int argc, char **argv)
   if (argc < 3)
   {
     std::cerr << "usage: " << argv[0] << " from to [payload]" << std::endl;
-    std::cerr << "\tfrom - the logical name to send messages from" << std::endl;
-    std::cerr << "\tfrom - the logical name to send messages to" << std::endl;
-    std::cerr << "\tpayload - the message body (if not specified or equals to -, stdin is taken)" << std::endl;
+    std::cerr << "     from - the logical name to send messages from" << std::endl;
+    std::cerr << "       to - the logical name to send messages to" << std::endl;
+    std::cerr << "  payload - the message body (if not specified or equals to -, stdin is taken)" << std::endl;
     std::exit(1);
   }
   const std::string from(argv[1]);
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   ConnectionParameters params("udp", "127.0.0.1:0", from);
   
   Connection::ptr_t conn(cFactory->createConnection(params));
-  conn->locator()->insert("foo", "127.0.0.1:5222");
+  conn->locator()->insert(to, "127.0.0.1:5222");
   std::cerr << "I: starting connection" << std::endl;
   conn->start();
 
