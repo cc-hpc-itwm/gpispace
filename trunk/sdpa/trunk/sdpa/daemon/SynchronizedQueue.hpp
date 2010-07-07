@@ -50,6 +50,12 @@ namespace sdpa { namespace daemon {
       QueueEmpty() : QueueException("queue is empty") {}
   };
 
+  class NotFoundItem : public QueueException
+   {
+     public:
+	  NotFoundItem(const std::string& str) : QueueException(std::string("The item ")+str+" was not found!") {}
+   };
+
   /*
    * Implementation of a synchronized queue on top of a container.
    *
@@ -140,6 +146,16 @@ namespace sdpa { namespace daemon {
       return container_.empty();
     }
 
+    inline iterator find(const value_type& item)
+    {
+    	lock_type lock(mtx_);
+    	for( iterator iter=begin(); iter!=end(); iter++ )
+    		if( *iter==item )
+    			return iter;
+
+    	return end();
+    }
+
     inline iterator erase(iterator first, iterator last)
     {
       lock_type lock(mtx_);
@@ -150,6 +166,19 @@ namespace sdpa { namespace daemon {
     {
       lock_type lock(mtx_);
       return container_.erase(pos);
+    }
+
+    inline void erase(const value_type& item) throw (NotFoundItem)
+    {
+    	lock_type lock(mtx_);
+    	for (iterator iter = begin(); iter != end(); iter++)
+    		if( item == *iter )
+    		{
+    			erase(iter);
+    			return;
+    		}
+
+    	throw NotFoundItem(item.str());
     }
 
     inline iterator begin()
