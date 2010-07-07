@@ -8,7 +8,7 @@ set(V_MINOR 1)
 set(V_PATCH 0)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 ##########################################################
 include(CheckCompiler)

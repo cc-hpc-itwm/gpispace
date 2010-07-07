@@ -27,7 +27,7 @@ option (ENABLE_TESTS "Build with test binaries" YES)
 set (WE_NUM_EXTRACTORS "4" CACHE STRING "number of extractors")
 set (WE_NUM_INJECTORS  "4" CACHE STRING "number of extractors")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "$ENV{CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
