@@ -42,7 +42,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <tests/sdpa/tests_config.hpp>
+//#include <tests/sdpa/tests_config.hpp>
 
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 
