@@ -47,6 +47,9 @@ namespace xml
       typedef boost::unordered_map< signature::field_name_t
                                   , type::struct_t
                                   > set_type;
+      typedef boost::unordered_map< signature::field_name_t
+                                  , std::string
+                                  > forbidden_type;
 
       set_type make (const type::struct_vec_type & struct_vec)
       {
@@ -73,6 +76,7 @@ namespace xml
       
       set_type join ( const set_type & above
                     , const set_type & below
+                    , const forbidden_type & forbidden
                     , const state::type & state
                     )
       {
@@ -83,16 +87,28 @@ namespace xml
             ; ++pos
             )
           {
-            const type::struct_t & str (pos->second);
-            const set_type::const_iterator old (set.find (str.name));
+            const type::struct_t & strct (pos->second);
+            const set_type::const_iterator old (set.find (strct.name));
 
             if (old != set.end())
               {
+                const forbidden_type::const_iterator pos
+                  (forbidden.find (strct.name));
+
+                if (pos != forbidden.end())
+                  {
+                    throw error::forbidden_shadowing<type::struct_t>
+                      (old->second, strct, pos->second);
+                  }
+
                 state.warn
-                  (warning::struct_shadowed<type::struct_t> (old->second, str));
+                  (warning::struct_shadowed<type::struct_t> ( old->second
+                                                            , strct
+                                                            )
+                  );
               }
 
-            set[str.name] = str;
+            set[strct.name] = strct;
           }
 
         return set;

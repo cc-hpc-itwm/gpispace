@@ -5,6 +5,8 @@
 
 #include <we/util/show.hpp>
 
+#include <boost/functional/hash.hpp>
+
 template<typename T>
 struct maybe
 {
@@ -32,6 +34,23 @@ public:
   template<typename U>
   friend std::ostream & operator << (std::ostream &, const maybe<U> &);
 };
+
+template<typename T>
+inline std::size_t hash_value (const maybe<T> & x)
+{
+  boost::hash<T> hasher;
+
+  return x.isNothing() ? 0 : (1 + hasher (*x));
+};
+
+template<typename T>
+inline bool operator == (const maybe<T> & x, const maybe<T> & y)
+{
+  return x.isNothing()
+    ? (y.isNothing() ? true : false)
+    : (y.isNothing() ? false : (*x == *y))
+    ;
+}
 
 template<typename T>
 std::ostream & operator << (std::ostream & s, const maybe<T> & m)

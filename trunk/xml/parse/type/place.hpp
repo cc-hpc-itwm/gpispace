@@ -204,6 +204,10 @@ namespace xml
         signature::desc_t sig;
         int level;
 
+        place () 
+          : name (), type (), capacity (), tokens (), values(), sig(), level ()
+        {}
+
         place ( const std::string & _name
               , const std::string & _type
               , const maybe<petri_net::capacity_t> _capacity

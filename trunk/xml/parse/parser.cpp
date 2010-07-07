@@ -103,6 +103,11 @@ namespace xml
 
       const std::string name (name_element (node));
 
+      if (!node)
+        {
+          throw error::no_elements_given (pre);
+        }
+
       if (name != name_wanted)
         {
           throw error::unexpected_element (name, pre);
@@ -137,31 +142,34 @@ namespace xml
 
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
-          const std::string child_name (child->name());
+          const std::string child_name (name_element (child));
 
-          if (child_name == "struct")
+          if (child)
             {
-              v.push_back (struct_type (child, state));
-            }
-          else if (child_name == "include-structs")
-            {
-              const type::struct_vec_type structs 
-                (structs_include (required ( "structs_type"
-                                           , child
-                                           , "href"
-                                           )
-                                 , state
-                                 )
-                );
+              if (child_name == "struct")
+                {
+                  v.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include (required ( "structs_type"
+                                               , child
+                                               , "href"
+                                               )
+                                     , state
+                                     )
+                    );
 
-              v.insert (v.end(), structs.begin(), structs.end());
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "structs_type");
+                  v.insert (v.end(), structs.begin(), structs.end());
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "structs_type");
+                }
             }
         }
 
@@ -192,64 +200,69 @@ namespace xml
                                           , optional (node, "internal")
                                           );
 
+      
+
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
-          const std::string child_name (child->name());
+          const std::string child_name (name_element (child));
 
-          if (child_name == "in")
+          if (child)
             {
-              f.in.push_back (port_type (child, state));
-            }
-          else if (child_name == "out")
-            {
-              f.out.push_back (port_type (child, state));
-            }
-          else if (child_name == "struct")
-            {
-              f.structs.push_back (struct_type (child, state));
-            }
-          else if (child_name == "include-structs")
-            {
-              const type::struct_vec_type structs 
-                (structs_include (required ( "function_type"
-                                           , child
-                                           , "href"
-                                           )
-                                 , state
-                                 )
-                );
+              if (child_name == "in")
+                {
+                  f.push_in (port_type (child, state));
+                }
+              else if (child_name == "out")
+                {
+                  f.push_out (port_type (child, state));
+                }
+              else if (child_name == "struct")
+                {
+                  f.structs.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include (required ( "function_type"
+                                               , child
+                                               , "href"
+                                               )
+                                     , state
+                                     )
+                    );
 
-              f.structs.insert ( f.structs.end()
-                               , structs.begin()
-                               , structs.end()
-                               );
-            }
-          else if (child_name == "expression")
-            {
-              f.f = type::expression (child->value());
-            }
-          else if (child_name == "module")
-            {
-              f.f = mod_type (child, state);
-            }
-          else if (child_name == "net")
-            {
-              ++state.level();
+                  f.structs.insert ( f.structs.end()
+                                   , structs.begin()
+                                   , structs.end()
+                                   );
+                }
+              else if (child_name == "expression")
+                {
+                  f.f = type::expression (child->value());
+                }
+              else if (child_name == "module")
+                {
+                  f.f = mod_type (child, state);
+                }
+              else if (child_name == "net")
+                {
+                  ++state.level();
+                  
+                  f.f = net_type (child, state);
 
-              f.f = net_type (child, state);
-
-              --state.level();
-            }
-          else if (child_name == "condition")
-            {
-              f.cond.push_back (std::string (child->value()));
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "function_type");
+                  --state.level();
+                }
+              else if (child_name == "condition")
+                {
+                  f.cond.push_back (std::string (child->value()));
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "function_type");
+                }
             }
         }
 
@@ -280,67 +293,75 @@ namespace xml
 
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "defun")
+          if (child)
             {
-              n.functions.push_back (function_type (child, state));
-            }
-          else if (child_name == "place")
-            {
-              n.places.push_back (place_type (child, state));
-            }
-          else if (child_name == "transition")
-            {
-              n.transitions.push_back (transition_type (child, state));
-            }
-          else if (child_name == "struct")
-            {
-              n.structs.push_back (struct_type (child, state));
-            }
-          else if (child_name == "include-structs")
-            {
-              const type::struct_vec_type structs 
-                (structs_include (required ("net_type", child, "href"), state));
-
-              n.structs.insert ( n.structs.end()
-                                  , structs.begin()
-                                  , structs.end()
-                                  );
-            }
-          else if (child_name == "include")
-            {
-              const std::string file (required ("net_type", child, "href"));
-              const maybe<std::string> as (optional (child, "as"));
-
-              type::function fun (function_include (file, state));
-
-              if (as.isJust())
+              if (child_name == "defun")
                 {
-                  if (fun.name.isJust())
+                  n.push (function_type (child, state));
+                }
+              else if (child_name == "place")
+                {
+                  n.push (place_type (child, state));
+                }
+              else if (child_name == "transition")
+                {
+                  n.push (transition_type (child, state));
+                }
+              else if (child_name == "struct")
+                {
+                  n.structs.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include ( required ("net_type", child, "href")
+                                     , state
+                                     )
+                    );
+
+                  n.structs.insert ( n.structs.end()
+                                   , structs.begin()
+                                   , structs.end()
+                                   );
+                }
+              else if (child_name == "include")
+                {
+                  const std::string file (required ("net_type", child, "href"));
+                  const maybe<std::string> as (optional (child, "as"));
+
+                  type::function fun (function_include (file, state));
+
+                  if (as.isJust())
                     {
-                      state.warn (warning::overwrite_function_name (*(fun.name)
-                                                                   , *as
-                                                                   )
-                                 );
+                      if (fun.name.isJust())
+                        {
+                          state.warn 
+                            (warning::overwrite_function_name (*(fun.name)
+                                                              , *as
+                                                              )
+                            );
+                        }
+
+                      fun.name = *as;
                     }
 
-                  fun.name = *as;
-                }
+                  if (fun.name.isNothing())
+                    {
+                      throw error::top_level_anonymous_function
+                        (file, "net_type");
+                    }
 
-              if (fun.name.isNothing())
+                  n.push (fun);
+                }
+              else
                 {
-                  throw error::top_level_anonymous_function (file, "net_type");
+                  throw error::unexpected_element (child_name, "net_type");
                 }
-
-              n.functions.push_back (fun);
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "net_type");
             }
         }
 
@@ -367,18 +388,21 @@ namespace xml
 
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "token")
+          if (child)
             {
-              p.push_token (token_type (child, state));
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "place_type");
+              if (child_name == "token")
+                {
+                  p.push_token (token_type (child, state));
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "place_type");
+                }
             }
         }
 
@@ -420,22 +444,26 @@ namespace xml
     {
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "field")
+          if (child)
             {
-              struct_field_type (child, state, sig);
-            }
-          else if (child_name == "struct")
-            {
-              substruct_type (child, state, sig);
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "gen_struct_type");
+              if (child_name == "field")
+                {
+                  struct_field_type (child, state, sig);
+                }
+              else if (child_name == "struct")
+                {
+                  substruct_type (child, state, sig);
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "gen_struct_type");
+                }
             }
         }
     }
@@ -486,38 +514,41 @@ namespace xml
       
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "value")
+          if (child)
             {
-              boost::apply_visitor
-                ( signature::visitor::create_literal_field<std::string> 
-                  ( name
-                  , std::string (child->value())
-                  , "token"
-                  )
-                , tok
-                );
-            }
-          else if (child_name == "field")
-            {
-              token_field_type 
-                ( child
-                , state
-                , boost::apply_visitor 
-                  ( signature::visitor::get_or_create_structured_field ( name
-                                                                       , "token"
-                                                                       )
-                  , tok
-                  )
-                );
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "token_field_type");
+              if (child_name == "value")
+                {
+                  boost::apply_visitor
+                    ( signature::visitor::create_literal_field<std::string> 
+                      ( name
+                      , std::string (child->value())
+                      , "token"
+                      )
+                    , tok
+                    );
+                }
+              else if (child_name == "field")
+                {
+                  token_field_type 
+                    ( child
+                    , state
+                    , boost::apply_visitor 
+                      ( signature::visitor::get_or_create_structured_field
+                        (name, "token")
+                      , tok
+                      )
+                    );
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "token_field_type");
+                }
             }
         }
     }
@@ -531,22 +562,25 @@ namespace xml
 
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "value")
+          if (child)
             {
-              return type::token (std::string (child->value()));
-            }
-          else if (child_name == "field")
-            {
-              token_field_type (child, state, tok);
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "token_type");
+              if (child_name == "value")
+                {
+                  return type::token (std::string (child->value()));
+                }
+              else if (child_name == "field")
+                {
+                  token_field_type (child, state, tok);
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "token_type");
+                }
             }
         }
 
@@ -566,54 +600,58 @@ namespace xml
 
       for ( xml_node_type * child (node->first_node())
           ; child
-          ; child = child->next_sibling()
+          ; child = child ? child->next_sibling() : child
           )
         {
           const std::string child_name (name_element (child));
 
-          if (child_name == "include")
+          if (child)
             {
-              const std::string file (required ( "transition_type"
-                                               , child
-                                               , "href"
-                                               )
-                                     );
+              if (child_name == "include")
+                {
+                  const std::string file (required ( "transition_type"
+                                                   , child
+                                                   , "href"
+                                                   )
+                                         );
 
-              state.level() += 2;;
+                  state.level() += 2;;
 
-              t.f = function_include (file, state);
+                  t.f = function_include (file, state);
 
-              state.level() -= 2;
-            }
-          else if (child_name == "use")
-            {
-              t.f = type::use ( required ("transition_type", child, "name")
-                              , state.level() + 2
-                              );
-            }
-          else if (child_name == "defun")
-            {
-              state.level() += 2;
+                  state.level() -= 2;
+                }
+              else if (child_name == "use")
+                {
+                  t.f = type::use ( required ("transition_type", child, "name")
+                                  , state.level() + 2
+                                  );
+                }
+              else if (child_name == "defun")
+                {
+                  state.level() += 2;
 
-              t.f = function_type (child, state);
+                  t.f = function_type (child, state);
 
-              state.level() -= 2;
-            }
-          else if (child_name == "connect-in")
-            {
-              t.in.push_back (connect_type(child, state));
-            }
-          else if (child_name == "connect-out")
-            {
-              t.out.push_back (connect_type(child, state));
-            }
-          else if (child_name == "connect-read")        
-            {
-              t.read.push_back (connect_type(child, state));
-            }
-          else
-            {
-              throw error::unexpected_element (child_name, "transition_type");
+                  state.level() -= 2;
+                }
+              else if (child_name == "connect-in")
+                {
+                  t.in.push_back (connect_type(child, state));
+                }
+              else if (child_name == "connect-out")
+                {
+                  t.out.push_back (connect_type(child, state));
+                }
+              else if (child_name == "connect-read")        
+                {
+                  t.read.push_back (connect_type(child, state));
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "transition_type");
+                }
             }
         }
 
@@ -689,7 +727,9 @@ main (int argc, char ** argv)
 
   std::cerr << "resolving signatures and parsing values..." << std::endl;
 
-  f.resolve (state);
+  const xml::parse::struct_t::set_type empty;
+
+  f.resolve (empty, state, f.forbidden_below());
 
   std::cerr << "done" << std::endl;
 

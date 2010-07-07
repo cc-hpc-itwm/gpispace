@@ -6,6 +6,7 @@
 #include <parse/rapidxml/1.13/rapidxml.hpp>
 
 #include <parse/types.hpp>
+#include <parse/error.hpp>
 #include <parse/util/skip.hpp>
 #include <parse/util/expect.hpp>
 
@@ -17,7 +18,15 @@ namespace xml
     name_element (xml_node_type * & node)
     {
       skip (node, rapidxml::node_comment);
-      expect (node, rapidxml::node_element);
+
+      try
+        {
+          expect (node, rapidxml::node_element);
+        }
+      catch (const error::missing_node &)
+        {
+          return "<missing_node>";
+        }
 
       return node->name();
     }

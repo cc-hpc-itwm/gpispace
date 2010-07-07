@@ -20,12 +20,12 @@ namespace xml
 
       if (!node)
         {
-          throw error::node_type (t);
+          throw error::missing_node (t);
         }
 
       if (node->type() != rapidxml::node_element)
         {
-          throw error::node_type (t, node->type());
+          throw error::wrong_node (t, node->type());
         }
     }
   }

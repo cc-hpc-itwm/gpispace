@@ -41,19 +41,26 @@ namespace xml
       private:
         const xml::parse::struct_t::set_type global;
         const state::type & state;
+        const xml::parse::struct_t::forbidden_type & forbidden;
 
       public:
-        transition_resolve ( const xml::parse::struct_t::set_type & _global
-                           , const state::type & _state
-                           )
+        transition_resolve 
+        ( const xml::parse::struct_t::set_type & _global
+        , const state::type & _state
+        , const xml::parse::struct_t::forbidden_type & _forbidden
+        )
           : global (_global)
           , state (_state)
+          , forbidden (_forbidden)
         {}
 
         void operator () (use &) const { return; }
 
         template<typename T>
-        void operator () (T & x) const { x.resolve (global, state); }
+        void operator () (T & x) const
+        {
+          x.resolve (global, state, forbidden);
+        }
       };
       
       struct transition
@@ -75,18 +82,23 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
-        void resolve (const state::type & state)
+        void resolve ( const state::type & state
+                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     )
         {
           const xml::parse::struct_t::set_type empty;
 
-          resolve (empty, state);
+          resolve (empty, state, forbidden);
         }
 
         void resolve ( const xml::parse::struct_t::set_type & global
                      , const state::type & state
+                     , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
-          boost::apply_visitor (transition_resolve (global, state), f);
+          boost::apply_visitor ( transition_resolve (global, state, forbidden)
+                               , f
+                               );
         }
       };
 

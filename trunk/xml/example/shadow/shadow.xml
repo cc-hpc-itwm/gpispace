@@ -6,6 +6,10 @@
 >
   <include-structs href="line.xml"/>
 
+<!--
+ <in name="produces_forbidden_shadowing" type="point"/>
+-->
+
   <net>
 
     <struct name="point">

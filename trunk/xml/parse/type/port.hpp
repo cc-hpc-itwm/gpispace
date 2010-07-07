@@ -21,6 +21,8 @@ namespace xml
         std::string type;
         maybe<std::string> place;
 
+        port () : name (), type (), place () {}
+
         port ( const std::string & _name
              , const std::string & _type
              , const maybe<std::string> & _place

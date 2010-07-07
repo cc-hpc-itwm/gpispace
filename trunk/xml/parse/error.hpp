@@ -44,23 +44,28 @@ namespace xml
 
       // ******************************************************************* //
 
-      class node_type : public generic
+      class wrong_node : public generic
       {
       public:
-        node_type (const rapidxml::node_type & want)
-          : generic ( "missing node"
-                    , "expected node of type "
-                    + util::quote(util::show_node_type (want))
-                    )
-        {}
-        node_type ( const rapidxml::node_type & want
-                  , const rapidxml::node_type & got
-                  )
+        wrong_node ( const rapidxml::node_type & want
+                   , const rapidxml::node_type & got
+                   )
           : generic ("wrong node type"
                     , "expexted node of type "
                     + util::quote(util::show_node_type (want))
                     + ": got node of type "
                     + util::quote(util::show_node_type (got))
+                    )
+        {}
+      };
+
+      class missing_node : public generic
+      {
+      public:
+        missing_node (const rapidxml::node_type & want)
+          : generic ( "missing node"
+                    , "expected node of type "
+                    + util::quote(util::show_node_type (want))
                     )
         {}
       };
@@ -369,6 +374,134 @@ namespace xml
                    , const std::string & msg
                    )
           : generic (nice (place, field, path, msg))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename T>
+      class forbidden_shadowing : public generic
+      {
+      private:
+        std::string nice ( const T & early
+                         , const T & late
+                         , const std::string & port_name
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "struct with name " << late.name
+            << " in " << late.path
+            << " shadows definition from " << early.path
+            << " but this is forbidden, since it is a type used for port "
+            << port_name
+            ;
+
+          return s.str();
+        }
+
+      public:
+        forbidden_shadowing ( const T & early
+                            , const T & late
+                            , const std::string & port_name
+                            )
+          : generic (nice (early, late, port_name))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_place : public generic
+      {
+      private:
+        std::string nice ( const std::string & place
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate place " << place << " in " << path;
+
+          return s.str();
+        }
+
+      public:
+        duplicate_place ( const std::string & place
+                        , const boost::filesystem::path & path
+                        )
+          : generic (nice (place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_port : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & port
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate " << direction << "-port " << port
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        duplicate_port ( const std::string & direction
+                       , const std::string & port
+                       , const boost::filesystem::path & path
+                       )
+          : generic (nice (direction, port, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename T>
+      class duplicate_transition : public generic
+      {
+      private:
+        std::string nice (const T & t, const T & old) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate transition " << t.name << " in " << t.path
+            << " first defintion was in " << old.path
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_transition (const T & t, const T & old)
+          : generic (nice (t, old))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename T>
+      class duplicate_function : public generic
+      {
+      private:
+        std::string nice (const T & t, const T & old) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate function " << t.name << " in " << t.path
+            << " first defintion was in " << old.path
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_function (const T & t, const T & old)
+          : generic (nice (t, old))
         {}
       };
 

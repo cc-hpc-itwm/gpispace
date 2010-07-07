@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_NET_HPP
 
 #include <parse/types.hpp>
+#include <parse/util/unique.hpp>
 
 #include <vector>
 
@@ -13,6 +14,8 @@
 #include <we/type/literal/name.hpp>
 
 #include <iostream>
+
+#include <set>
 
 namespace xml
 {
@@ -26,10 +29,13 @@ namespace xml
 
       struct net
       {
+      private:
+        xml::util::unique<place> _places;
+        xml::util::unique<transition> _transitions;
+        xml::util::unique<function,maybe<std::string> > _functions;
+
+      public:
         struct_vec_type structs;
-        function_vec_type functions;
-        place_vec_type places;
-        transition_vec_type transitions;
 
         boost::filesystem::path path;
 
@@ -37,20 +43,69 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
-        void resolve (const state::type & state)
+        const place_vec_type & places (void) const
+        {
+          return _places.elements();
+        }
+
+        const transition_vec_type & transitions (void) const
+        {
+          return _transitions.elements();
+        }
+
+        const function_vec_type & functions (void) const
+        {
+          return _functions.elements();
+        }
+
+        void push (const place & p)
+        {
+          place old;
+
+          if (!_places.push (p, old))
+            {
+              throw error::duplicate_place (p.name, path);
+            }
+        }
+
+        void push (const transition & t)
+        {
+          transition old;
+
+          if (!_transitions.push (t, old))
+            {
+              throw error::duplicate_transition<transition> (t, old);
+            }
+        }
+
+        void push (const function & f)
+        {
+          function old;
+
+          if (!_functions.push (f, old))
+            {
+              throw error::duplicate_function<function> (f, old);
+            }
+        }
+
+        void resolve ( const state::type & state
+                     , const xml::parse::struct_t::forbidden_type & forbidden
+                     )
         {
           const xml::parse::struct_t::set_type empty;
 
-          resolve (empty, state);
+          resolve (empty, state, forbidden);
         }
 
         void resolve ( const xml::parse::struct_t::set_type & global
                      , const state::type & state
+                     , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
           namespace st = xml::parse::struct_t;
 
-          structs_resolved = st::join (global, st::make (structs), state);
+          structs_resolved =
+            st::join (global, st::make (structs), forbidden, state);
 
           for ( st::set_type::iterator pos (structs_resolved.begin())
               ; pos != structs_resolved.end()
@@ -63,26 +118,29 @@ namespace xml
                 );
             }
 
-          for ( function_vec_type::iterator fun (functions.begin())
-              ; fun != functions.end()
+          st::forbidden_type empty;
+
+          for ( function_vec_type::iterator fun (_functions.elements().begin())
+              ; fun != _functions.elements().end()
               ; ++fun
               )
             {
-              fun->resolve (structs_resolved, state);
+              fun->resolve (structs_resolved, state, empty);
             }
 
-          for ( transition_vec_type::iterator trans (transitions.begin())
-              ; trans != transitions.end()
+          for ( transition_vec_type::iterator
+                  trans (_transitions.elements().begin())
+              ; trans != _transitions.elements().end()
               ; ++trans
               )
             {
-              trans->resolve (structs_resolved, state);
+              trans->resolve (structs_resolved, state, empty);
             }
 
           literal::name name;
 
-          for ( place_vec_type::iterator place (places.begin())
-              ; place != places.end()
+          for ( place_vec_type::iterator place (_places.elements().begin())
+              ; place != _places.elements().end()
               ; ++place
               )
             {
@@ -146,8 +204,8 @@ namespace xml
 
         s << level(n.level) << "functions =" << std::endl;
 
-        for ( function_vec_type::const_iterator pos (n.functions.begin())
-            ; pos != n.functions.end()
+        for ( function_vec_type::const_iterator pos (n.functions().begin())
+            ; pos != n.functions().end()
             ; ++pos
             )
           {
@@ -156,8 +214,8 @@ namespace xml
 
         s << level(n.level) << "places =" << std::endl;
 
-        for ( place_vec_type::const_iterator pos (n.places.begin())
-            ; pos != n.places.end()
+        for ( place_vec_type::const_iterator pos (n.places().begin())
+            ; pos != n.places().end()
             ; ++pos
             )
           {
@@ -166,8 +224,8 @@ namespace xml
 
         s << level(n.level) << "transitions =" << std::endl;
 
-        for ( transition_vec_type::const_iterator pos (n.transitions.begin())
-            ; pos != n.transitions.end()
+        for ( transition_vec_type::const_iterator pos (n.transitions().begin())
+            ; pos != n.transitions().end()
             ; ++pos
             )
           {
