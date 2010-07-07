@@ -112,6 +112,7 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 
 		// declare the submitted jobs failed
 		declare_jobs_failed( &pWorker->submitted() );
+
 		// declare the acknowledged jobs failed
 		declare_jobs_failed( &pWorker->acknowledged() );
 
@@ -316,6 +317,10 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 	}
 }
 
+void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
+{
+	ptr_worker_man_->dispatchJob(jobId);
+}
 
 /*
  * Scheduling with constraints
@@ -340,7 +345,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
 	if( ptr_worker_man_ )
 	{
-		if( ptr_worker_man_->numberOfWorkers()==0 )
+		if( numberOfWorkers()==0 )
 		{
 			LOG(WARN, "No worker registered, marking job as failed: " << jobId);
 
@@ -366,8 +371,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 				}
 				else
 				{
-					//Put the job into the common_queue of the WorkerManager
-					ptr_worker_man_->dispatchJob(jobId);
+					// schedule to the first worker that requests a job
+					schedule_anywhere(jobId);
 					return true;
 				}
 			}
@@ -399,13 +404,9 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 					ptr_worker_man_->getListOfRegisteredRanks(registered_ranks);
 
 					for( std::vector<unsigned int>::const_iterator iter = registered_ranks.begin(); iter != registered_ranks.end(); iter++ )
-					{
-						if( uset_excluded.find(*iter) == uset_excluded.end() ) // the rank *iter is not excluded
-						{
-							if( schedule_to(jobId, *iter, job_pref) )
+						// return immediately if rank not excluded and scheduling to rank succeeded
+						if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_pref) )
 								return true;
-						}
-					}
 				}
 
 				return false;
@@ -413,8 +414,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 		}
 		catch(const NoJobPreferences& )
 		{
-			//Put the job into the common_queue of the WorkerManager
-			ptr_worker_man_->dispatchJob(jobId);
+			// schedule to the first worker that requests a job
+			schedule_anywhere(jobId);
 			return true;
 		}
 	}
