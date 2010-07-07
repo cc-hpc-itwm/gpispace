@@ -98,6 +98,12 @@ namespace daemon {
 		NoJobPreferences( const sdpa::job_id_t& job_id) : JobException("No preferences set for this job!", job_id) {}
 		virtual ~NoJobPreferences() throw() {}
 	};
+
+	class JobNotAssignedException : public JobException {
+		public:
+		JobNotAssignedException( const sdpa::job_id_t& job_id) : JobException("Job not assigned yet to any worker!", job_id) {}
+		virtual ~JobNotAssignedException() throw() {}
+	};
 }}
 
 #endif
