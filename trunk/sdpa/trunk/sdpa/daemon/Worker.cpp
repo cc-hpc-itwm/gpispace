@@ -19,17 +19,14 @@ Worker::Worker(const worker_id_t name, const unsigned int rank, const location_t
 
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
-	for( JobQueue::iterator iter=pending_.begin(); iter!=pending_.end(); iter++ )
-		if( *iter==job_id )
-			return true;
+	if( pending_.find(job_id) != pending_.end() )
+		return true;
 
-	for( JobQueue::iterator iter=submitted_.begin(); iter!=submitted_.end(); iter++ )
-		if( *iter==job_id )
-			return true;
+	if( submitted_.find(job_id) != submitted_.end() )
+		return true;
 
-	for( JobQueue::iterator iter=acknowledged_.begin(); iter!=acknowledged_.end(); iter++ )
-		if( *iter==job_id )
-			return true;
+	if( acknowledged_.find(job_id) != acknowledged_.end() )
+		return true;
 
 	return false;
 }
@@ -50,73 +47,65 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   update();
 
-  JobQueue::lock_type lockSub(submitted().mutex());
-  JobQueue::lock_type lockAck(acknowledged().mutex());
-
-  for (JobQueue::iterator iter = submitted().begin(); iter != submitted().end(); iter++) {
-    if (job_id == *iter)
-    {
-      // remove it and put it to the acknowledged queue
-      SDPA_LOG_DEBUG("appending job(" << job_id.str() << ") to the achknowledged queue");
-      acknowledged().push(*iter);
-      submitted().erase(iter);
-      SDPA_LOG_DEBUG("acknowledged job(" << job_id.str() << ")");
-      return true;
-    }
+  try
+  {
+	  submitted().erase(job_id);
+	  acknowledged().push(job_id);
+	  SDPA_LOG_DEBUG("acknowledged job(" << job_id.str() << ")");
+	  return true;
   }
-  SDPA_LOG_DEBUG("not acknowledged job(" << job_id.str() << ")");
-  return false;
-}
-
-bool delete_(const sdpa::job_id_t &job_id, Worker::JobQueue& queue_arg )
-{
-	Worker::JobQueue::lock_type lockQ( queue_arg.mutex() );
-    for ( Worker::JobQueue::iterator iter = queue_arg.begin(); iter != queue_arg.end(); iter++ )
-    {
-		if( job_id == *iter )
-		{
-		  // remove the job
-		  queue_arg.erase(iter);
-		  return true;
-		}
-    }
-
-    return false;
+  catch (const sdpa::daemon::NotFoundItem& ex)
+  {
+	  SDPA_LOG_WARN("The job " << job_id.str() << " could not be acknowledged. It was not found into the worker's submitted queue!");
+	  return false;
+  }
 }
 
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
-
-	if( delete_(job_id, pending()))
-		SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the worker's the pending queue!");
-	else if( delete_(job_id, submitted()))
-		SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the worker's the submitted queue!");
-	else if( delete_(job_id, acknowledged()))
-		SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the worker's the acknowledged queue!");
-	else
-		SDPA_LOG_ERROR("The job " << job_id.str() << " could not be found into any of the worker's queues!");
+	try {
+		pending().erase(job_id);
+		SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the submitted queue!");
+	}
+	catch( const sdpa::daemon::NotFoundItem& ex )
+	{
+		try {
+			submitted().erase(job_id);
+			SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the submitted queue!");
+		}
+		catch( const sdpa::daemon::NotFoundItem& ex )
+		{
+			try {
+				acknowledged().erase(job_id);
+				SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the acknowledged queue!");
+			}
+			catch( const sdpa::daemon::NotFoundItem& ex )
+			{
+				SDPA_LOG_ERROR("The job " << job_id.str() << " could not be found into any of the worker's queues!");
+			}
+		}
+	}
 }
 
 sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
-	  // acknowledge a previous job
-	  if(last_job_id != sdpa::job_id_t::invalid_job_id())
-		  acknowledge(last_job_id);
+	// acknowledge a previous job
+	if(last_job_id != sdpa::job_id_t::invalid_job_id())
+		acknowledge(last_job_id);
 
-	  try {
-		  // move the job from pending to submitted
-		  sdpa::job_id_t jobId = pending().pop();
-		  submitted().push(jobId);
-
-                  update();
-
-		  return jobId;
-	  }
-	  catch(const QueueEmpty& )
-	  {
-		  throw NoJobScheduledException(name());
-	  }
+	try
+	{
+		// move the job from pending to submitted
+		sdpa::job_id_t jobId = pending().pop();
+		submitted().push(jobId);
+		update();
+		return jobId;
+	}
+	catch(const QueueEmpty& )
+	{
+		throw NoJobScheduledException(name());
+	}
 }
 
 void Worker::print()
@@ -129,4 +118,9 @@ void Worker::print()
 	submitted().print();
 	std::cout<<"Acknowledged jobs:"<<std::endl;
 	acknowledged().print();
+}
+
+void Worker::add_to_affinity_list(const pref_deg_t& pref_deg, const sdpa::job_id_t& jobId )
+{
+	mi_affinity_list.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
 }

@@ -184,7 +184,7 @@ namespace sdpa { namespace daemon {
     JobQueue& acknowledged() { return acknowledged_; }
     const JobQueue& acknowledged() const { return acknowledged_; }
 
-    void add_preferences(const pref_deg_t& , const sdpa::job_id_t&, const worker_id_t&  );
+    void add_to_affinity_list(const pref_deg_t& , const sdpa::job_id_t& );
 
     template <class Archive>
 	void serialize(Archive& ar, const unsigned int file_version )
