@@ -297,8 +297,9 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
 	DMLOG(TRACE, "daemon stage is being stopped");
-	// stop the scheduler thread
+	delivery_service_.stop();
 
+	// stop the scheduler thread
 	ptr_scheduler_->stop();
 
 	ptr_workflow_engine_ = NULL;
@@ -306,7 +307,6 @@ void GenericDaemon::onStageStop(const std::string & /* stageName */)
 	ptr_to_slave_stage_ = NULL;
 
 	service_thread_.stop();
-	delivery_service_.stop();
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
