@@ -45,7 +45,21 @@ namespace fhg { namespace log {
 
 #if FHGLOG_DISABLE_LOGGING == 1
 #define __LOG(logger, level, msg)
+#define FHGLOG_SETUP(args...)
 #else
+#define FHGLOG_SETUP(args...)                                           \
+  do                                                                    \
+  {                                                                     \
+     if (#args[0])                                                      \
+     {                                                                  \
+        fhg::log::configure();                                          \
+     }                                                                  \
+     else                                                               \
+     {                                                                  \
+        fhg::log::configure(args);                                      \
+     }                                                                  \
+  } while (0)
+    
 #define __LOG(logger, level, msg)                                       \
     do {                                                                \
       using namespace fhg::log;                                         \
