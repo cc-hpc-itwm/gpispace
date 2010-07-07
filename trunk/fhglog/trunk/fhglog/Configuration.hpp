@@ -220,6 +220,19 @@ namespace fhg { namespace log {
         (cf)();
       }
   };
+
+  template <typename Fun>
+  inline
+  void configure (Fun fun)
+  {
+    fun();
+  }
+
+  inline
+  void configure ()
+  {
+    Configurator::configure();
+  }
 }}
 
 #endif
