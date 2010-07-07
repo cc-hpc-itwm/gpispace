@@ -102,14 +102,16 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 		// to reschedule them!  For  pending jobs we can reschedule them
 		// without thinking twice, for all others we simply cannot!
 
-		// The jobs submitted by the WE should have a property set
-		// indicating if the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
+		// The jobs submitted by the WE should have set a property
+		// which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
+
+		// for each job in the queue, either re-schedule it, if is allowed
 		// re_schedule( &pWorker->acknowledged() );
 		// re_schedule( &pWorker->submitted() );
+		// or declare it failed
 
 		// declare the submitted jobs failed
 		declare_jobs_failed( &pWorker->submitted() );
-
 		// declare the acknowledged jobs failed
 		declare_jobs_failed( &pWorker->acknowledged() );
 
@@ -154,6 +156,7 @@ void SchedulerImpl::detectTimedoutWorkers( sdpa::util::time_type const & timeout
 	ptr_worker_man_->detectTimedoutWorkers(timeout);
 }
 
+// move this to the monitoring service
 void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
 {
   // mark timedout workers and reschedule  their work...
@@ -189,7 +192,6 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
 		// Should set the workflow_id here, or send it together with the workflow description
 		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
-		//ptr_comm_handler_->workflowEngine()->submit(wf_id, pJob->description());
 		pJob->Dispatch();
 		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
@@ -273,7 +275,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 
 	try
 	{
-		const Worker::worker_id_t worker_id = ptr_worker_man_->rank_map().at(rank);
+		const Worker::worker_id_t worker_id = ptr_worker_man_->worker(rank);
 		const Worker::ptr_t& pWorker = findWorker( worker_id);
 
 		if( pWorker->timedout() )
@@ -285,21 +287,19 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 		SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
 		pWorker->dispatch(jobId);
-		ptr_worker_man_->owner_map().insert(WorkerManager::owner_map_t::value_type(jobId,worker_id));
+		ptr_worker_man_->make_owner(jobId, worker_id);
 
-		// maintain a multi-index container with info about jobs preferring workers
 		const we::preference_t::rank_list_type& list_ranks = job_pref.ranks();
+
 		int k=0;
 		for( we::preference_t::rank_list_type::const_iterator it = list_ranks.begin(); it != list_ranks.end(); it++ )
 			if( ptr_worker_man_->worker(*it) != worker_id )
 			{
 				Worker::pref_deg_t pref_deg = k++;
+
 				unsigned int rank = *it;
-
-				const Worker::worker_id_t& other_worker_id = ptr_worker_man_->worker(rank);
-				const Worker::ptr_t& pOtherWorker = ptr_worker_man_->findWorker(other_worker_id);
-
-				pOtherWorker->mi_affinity_list.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
+				const Worker::ptr_t& pOtherWorker = ptr_worker_man_->findWorker( ptr_worker_man_->worker(rank) );
+				pOtherWorker->add_to_affinity_list(pref_deg, jobId);
 			}
 
 		return true;
