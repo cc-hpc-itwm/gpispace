@@ -7,6 +7,7 @@
 
 #include <fhglog/remote/LogServer.hpp>
 #include <fhglog/Appender.hpp>
+#include <fhglog/fhglog.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -161,6 +162,8 @@ class GuiAppender : public fhg::log::Appender
 
 int main(int argc, char *argv[])
 {
+  fhg::log::Configurator::configure();
+
   if (argc <= 1)
   {
       std::cerr << "usage: " << argv[0] << " port" << std::endl;
