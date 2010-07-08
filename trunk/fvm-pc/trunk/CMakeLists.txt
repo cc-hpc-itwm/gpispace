@@ -94,18 +94,8 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_path (WE_INCLUDE_DIR
-  NAMES "we/net.hpp"
-  HINTS ${WE_HOME} ENV WE_HOME
-  PATH_SUFFIXES include
-)
-
-if (WE_INCLUDE_DIR)
-  include_directories(${WE_INCLUDE_DIR})
-else (WE_INCLUDE_DIR)
-  message (FATAL_ERROR "Sorry, workflow engine's module loader required!")
-endif(WE_INCLUDE_DIR)
-message(STATUS "WE: -I${WE_INCLUDE_DIR}")
+find_package(WE REQUIRED)
+include_directories(${WE_INCLUDE_DIR})
 
 find_package (FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
