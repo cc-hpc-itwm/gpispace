@@ -7,8 +7,8 @@ ADD_LIBRARY(fvm-pc.shared SHARED ${hdrs} ${pc-srcs})
 set_target_properties(fvm-pc.shared PROPERTIES OUTPUT_NAME fvm-pc)
 
 install(FILES ${hdrs} DESTINATION include/fvm-pc)
-install(TARGETS fvm-pc DESTINATION lib)
-install(TARGETS fvm-pc.shared DESTINATION lib)
+install(TARGETS fvm-pc DESTINATION libexec)
+install(TARGETS fvm-pc.shared DESTINATION libexec)
 
 if (WITH_FAKE_PC)
   add_subdirectory(fake)
