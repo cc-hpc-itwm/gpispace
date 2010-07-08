@@ -102,7 +102,7 @@ namespace fhg { namespace log {
 #ifndef NDEBUG
           std::clog << "D: logging to console" << std::endl;
 #endif
-		  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
+		  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)))->setFormat(fmt);
         }
 
         if (to_file_.size())
