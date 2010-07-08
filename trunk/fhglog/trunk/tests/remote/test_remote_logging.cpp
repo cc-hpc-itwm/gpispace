@@ -3,7 +3,7 @@
  *
  *       Filename:  test_remote_logging.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/19/2009 02:24:52 PM
@@ -19,6 +19,24 @@
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/LogServer.hpp>
+
+boost::asio::io_service io_service;
+
+class StopAppender : public fhg::log::Appender
+{
+public:
+  StopAppender(boost::asio::io_service & s)
+    : fhg::log::Appender("stop")
+    , service_(s)
+  {}
+
+  void append(const fhg::log::LogEvent &)
+  {
+    service_.stop();
+  }
+  boost::asio::io_service & service_;
+};
 
 int main ()
 {
@@ -30,13 +48,41 @@ int main ()
   std::string server(FHGLOG_DEFAULT_LOCATION);
 
   logger_t log(getLogger());
-//  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)))->setFormat(Formatter::Full());
-  log.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
+  logger_t rem(getLogger("remote"));
+
+  log.addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)));
+  rem.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
+
+  CompoundAppender::ptr_t compound(new CompoundAppender("compound"));
+
+  std::ostringstream logstream;
+  Appender::ptr_t appender
+    (new StreamAppender( "stringstream"
+                       , logstream
+                       )
+    );
+  compound->addAppender (appender);
+  compound->addAppender (Appender::ptr_t(new StopAppender (io_service)));
+  compound->setFormat(Formatter::Custom("%m"));
+
+  fhg::log::remote::LogServer logd(compound, io_service, FHGLOG_DEFAULT_PORT);
 
   {
-    std::clog << "** testing remote logging (TODO: create server socket)...";
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, message));
-    std::clog << "OK!" << std::endl;
+    std::clog << "** testing remote logging...";
+    rem.log(FHGLOG_MKEVENT_HERE(ERROR, message));
+    io_service.run();
+    const std::string msg (logstream.str());
+    if (msg == "hello server!")
+    {
+      std::clog << "OK!" << std::endl;
+    }
+    else
+    {
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "   expected: \"hello server!\"" << std::endl;
+      std::clog << "     actual: \"" << msg << "\"" << std::endl;
+      ++errcount;
+    }
   }
 
   return errcount;
