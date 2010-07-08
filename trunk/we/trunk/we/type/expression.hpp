@@ -40,6 +40,12 @@ namespace we { namespace type {
       , ast_(expr)
     {}
 
+    // should correspond!
+    expression_t (const std::string & expr, const ast_t & ast)
+      : expr_(expr)
+      , ast_(ast)
+    {}
+
     const std::string & expression () const { return expr_; }
     const ast_t & ast () const { return ast_; }
 
