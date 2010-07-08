@@ -322,7 +322,50 @@ namespace expr
                   default: throw exception::parse::expected ("'='", pos());
                   }
               break;
-            case ':': ++pos; require("="); token = define; break;
+            case ':':
+              ++pos;
+              if (is_eof())
+                throw exception::parse::expected
+                  ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:'", pos());
+              else
+                switch (*pos)
+                  {
+                  case '=': ++pos; token = define; break;
+                  case 'e': ++pos; require ("q:"); token = eq; break;
+                  case 'n': ++pos; require ("e:"); token = ne; break;
+                  case 'l':
+                    ++pos;
+                    if (is_eof())
+                      throw exception::parse::expected ("'t:', 'e:'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 't': ++pos; require (":"); token = lt; break;
+                        case 'e': ++pos; require (":"); token = le; break;
+                        default:
+                          throw exception::parse::expected
+                            ("'t:', 'e:'", pos());
+                        }
+                    break;
+                  case 'g':
+                    ++pos;
+                    if (is_eof())
+                      throw exception::parse::expected ("'t:', 'e:'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 't': ++pos; require (":"); token = gt; break;
+                        case 'e': ++pos; require (":"); token = ge; break;
+                        default:
+                          throw exception::parse::expected
+                            ("'t:', 'e:'", pos());
+                        }
+                    break;
+                  default:
+                    throw exception::parse::expected
+                      ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:'", pos());
+                  }
+              break;
             case '+': ++pos; token = add; break;
             case '-':
               ++pos;
