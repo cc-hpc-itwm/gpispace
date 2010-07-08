@@ -130,6 +130,26 @@ namespace xml
             }
         }
 
+        std::string name (void) const
+        {
+          if (fun.name.isNothing())
+            {
+              throw error::synthesize_anonymous_function (fun.path);
+            }
+
+          return *fun.name;
+        }
+
+        we_cond_type condition (const std::string & type) const
+        {
+          const std::string cond (fun.condition());
+
+          util::we_parser_t parsed_condition
+            (util::we_parse (cond, "condition", type, name(), fun.path));
+
+          return we_cond_type (cond, parsed_condition);
+        }
+
       public:
         function_synthesize ( const state::type & _state
                             , const Fun & _fun
@@ -141,27 +161,15 @@ namespace xml
 
         we_transition_type operator () (const expression_type & e) const
         {
-          if (fun.name.isNothing())
-            {
-              throw error::synthesize_anonymous_function (fun.path);
-            }
-
-          const std::string name (*fun.name);
           const std::string expr (e.expression());
-          const std::string cond (fun.condition());
-          const bool internal 
-            ((fun.internal.isNothing()) ? true : *fun.internal);
-
           const util::we_parser_t parsed_expression 
-            (util::we_parse (expr, "expression", "function", name, fun.path));
-          const util::we_parser_t parsed_condition
-            (util::we_parse (cond, "condition", "function", name, fun.path));
+            (util::we_parse (expr, "expression", "function", name(), fun.path));
 
           we_transition_type trans
-            ( name
+            ( name()
             , we_expr_type (expr, parsed_expression)
-            , we_cond_type (cond, parsed_condition)
-            , internal
+            , condition ("function")
+            , fun.internal.get_with_default (true)
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -172,24 +180,11 @@ namespace xml
 
         we_transition_type operator () (const mod_type & mod) const
         {
-          if (fun.name.isNothing())
-            {
-              throw error::synthesize_anonymous_function (fun.path);
-            }
-
-          const std::string name (*fun.name);
-          const std::string cond (fun.condition());
-          const bool internal 
-            ((fun.internal.isNothing()) ? false : *fun.internal);
-
-          const util::we_parser_t parsed_condition
-            (util::we_parse (cond, "condition", "function", name, fun.path));
-
           we_transition_type trans
-            ( name
+            ( name()
             , we_mod_type (mod.name, mod.function)
-            , we_cond_type (cond, parsed_condition)
-            , internal
+            , condition ("function")
+            , fun.internal.get_with_default (false)
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
