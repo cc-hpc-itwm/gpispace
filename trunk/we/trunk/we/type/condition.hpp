@@ -37,7 +37,8 @@ namespace condition
   {
   private:
     std::string expression_;
-    expr::parse::parser<signature::field_name_t> parser;
+    typedef expr::parse::parser<signature::field_name_t> parser_t;
+    parser_t parser;
     mutable expr::eval::context<signature::field_name_t> context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
@@ -68,6 +69,17 @@ namespace condition
          )
       : expression_ (_expression)
       , parser (_expression)
+      , context ()
+      , translate (_translate)
+    {}
+
+    // should correspond!
+    type ( const std::string & _expression
+         , const parser_t & _parser
+         , const translate_t & _translate = &no_trans
+         )
+      : expression_ (_expression)
+      , parser (_parser)
       , context ()
       , translate (_translate)
     {}

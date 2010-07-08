@@ -125,6 +125,7 @@
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
       </xsd:choice>
+      <xsd:element name="condition" type="xsd:string" minOccurs="0" maxOccurs="unbounded" default="true"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="required"/>
   </xsd:complexType>

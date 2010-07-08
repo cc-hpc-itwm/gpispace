@@ -14,6 +14,8 @@
 
 #include <we/util/read.hpp>
 
+#include <we/we.hpp>
+
 #include <iostream>
 #include <vector>
 
@@ -245,7 +247,7 @@ namespace xml
                 }
               else if (child_name == "expression")
                 {
-                  f.f = type::expression_type (child->value());
+                  f.f = type::expression_type (parse_cdata (child));
                 }
               else if (child_name == "module")
                 {
@@ -261,7 +263,9 @@ namespace xml
                 }
               else if (child_name == "condition")
                 {
-                  f.cond.push_back (std::string (child->value()));
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  f.cond.insert (f.cond.end(), conds.begin(), conds.end());
                 }
               else
                 {
@@ -654,6 +658,12 @@ namespace xml
                 {
                   t.push_read (connect_type(child, state));
                 }
+              else if (child_name == "condition")
+                {
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  t.cond.insert (t.cond.end(), conds.begin(), conds.end());
+                }
               else
                 {
                   throw error::unexpected_element
@@ -742,9 +752,11 @@ main (int argc, char ** argv)
 
   f.type_check (state);
 
-  std::cerr << "done" << std::endl;
+  std::cerr << "creating net..." << std::endl;
 
-  std::cout << f << std::endl;
+  std::cout << f.synthesize<we::activity_t> (state) << std::endl;
+
+  std::cerr << "done" << std::endl;
   
   return EXIT_SUCCESS;
 }

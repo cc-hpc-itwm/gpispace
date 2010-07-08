@@ -41,6 +41,7 @@ namespace xml
 
       // ******************************************************************* //
 
+      template<typename Fun>
       class transition_resolve : public boost::static_visitor<void>
       {
       private:
@@ -60,16 +61,15 @@ namespace xml
         {}
 
         void operator () (use_type &) const { return; }
-
-        template<typename T>
-        void operator () (T & x) const
+        void operator () (Fun & fun) const
         {
-          x.resolve (global, state, forbidden);
+          fun.resolve (global, state, forbidden);
         }
       };
 
       // ******************************************************************* //
 
+      template<typename Fun>
       class transition_type_check : public boost::static_visitor<void>
       {
       private:
@@ -79,12 +79,7 @@ namespace xml
         transition_type_check (const state::type & _state) : state (_state) {}
 
         void operator () (const use_type &) const { return; }
-        
-        template<typename T>
-        void operator () (const T & x) const
-        {
-          x.type_check (state);
-        }
+        void operator () (const Fun & fun) const { fun.type_check (state); }
       };
       
       // ******************************************************************* //
@@ -147,6 +142,8 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
+        cond_vec_type cond;
+
         // ***************************************************************** //
 
         const connect_vec_type & in (void) const { return _in.elements(); }
@@ -195,9 +192,8 @@ namespace xml
                      , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
-          boost::apply_visitor ( transition_resolve (global, state, forbidden)
-                               , f
-                               );
+          boost::apply_visitor
+            (transition_resolve<function_type> (global, state, forbidden), f);
         }
 
         // ***************************************************************** //
@@ -206,7 +202,7 @@ namespace xml
         void type_check ( const std::string & direction
                         , const connect_type & connect
                         , const NET & net
-                        , const state::type & state
+                        , const state::type &
                         ) const
         {
           // existence of connect.place
@@ -275,7 +271,9 @@ namespace xml
             }
 
           // recurs
-          boost::apply_visitor (transition_type_check (state), f);
+          boost::apply_visitor ( transition_type_check<function_type> (state)
+                               , f
+                               );
         };
       };
 
@@ -315,6 +313,16 @@ namespace xml
             )
           {
             s << level (t.level + 2) << *pos << std::endl;
+          }
+
+        s << level(t.level+1) << "condition = " << std::endl;
+
+        for ( cond_vec_type::const_iterator pos (t.cond.begin())
+            ; pos != t.cond.end()
+            ; ++pos
+            )
+          {
+            s << level(t.level+2) << *pos << std::endl;
           }
 
         s << level (t.level + 1) << "def = " << std::endl;

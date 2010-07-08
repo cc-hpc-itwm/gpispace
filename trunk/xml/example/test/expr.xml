@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defun name="test" internal="false">
+<in name="a" type="long"/>
+<out name="b" type="long"/>
+<out name="c" type="long"/>
+<out name="d" type="long"/>
+<expression>${b} := ${a}
+<![CDATA[${c} := ${a} + 1]]>
+${d} := 2*${a}
+</expression>
+    <condition><![CDATA[${a} < 10]]>
+               <!-- huhu -->
+               ${a} &gt; 20
+               <![CDATA[${a}]]>
+    </condition>
+    <condition>${a} &gt; 20</condition>
+
+</defun>

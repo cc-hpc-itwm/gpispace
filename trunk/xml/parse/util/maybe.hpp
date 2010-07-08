@@ -21,6 +21,11 @@ public:
   bool isJust (void) const { return given; }
   bool isNothing (void) const { return !given; }
 
+  const T & get_with_default (const T & dflt) const
+  {
+    return isNothing() ? dflt : t;
+  }
+
   const T & operator * (void) const
   {
     if (isNothing())
