@@ -170,9 +170,32 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const mod_type &) const
+        we_transition_type operator () (const mod_type & mod) const
         {
-          throw std::runtime_error ("function_synthesize: mod_type: not yet implemented");
+          if (fun.name.isNothing())
+            {
+              throw error::synthesize_anonymous_function (fun.path);
+            }
+
+          const std::string name (*fun.name);
+          const std::string cond (fun.condition());
+          const bool internal 
+            ((fun.internal.isNothing()) ? false : *fun.internal);
+
+          const util::we_parser_t parsed_condition
+            (util::we_parse (cond, "condition", "function", name, fun.path));
+
+          we_transition_type trans
+            ( name
+            , we_mod_type (mod.name, mod.function)
+            , we_cond_type (cond, parsed_condition)
+            , internal
+            );
+
+          add_ports (trans, fun.in(), we::type::PORT_IN);
+          add_ports (trans, fun.out(), we::type::PORT_OUT);
+
+          return trans;
         }
 
         we_transition_type operator () (const Net &) const
