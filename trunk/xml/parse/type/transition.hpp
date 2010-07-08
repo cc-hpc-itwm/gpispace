@@ -41,6 +41,7 @@ namespace xml
 
       // ******************************************************************* //
 
+      template<typename Fun>
       class transition_resolve : public boost::static_visitor<void>
       {
       private:
@@ -60,16 +61,15 @@ namespace xml
         {}
 
         void operator () (use_type &) const { return; }
-
-        template<typename T>
-        void operator () (T & x) const
+        void operator () (Fun & fun) const
         {
-          x.resolve (global, state, forbidden);
+          fun.resolve (global, state, forbidden);
         }
       };
 
       // ******************************************************************* //
 
+      template<typename Fun>
       class transition_type_check : public boost::static_visitor<void>
       {
       private:
@@ -79,12 +79,7 @@ namespace xml
         transition_type_check (const state::type & _state) : state (_state) {}
 
         void operator () (const use_type &) const { return; }
-        
-        template<typename T>
-        void operator () (const T & x) const
-        {
-          x.type_check (state);
-        }
+        void operator () (const Fun & fun) const { fun.type_check (state); }
       };
       
       // ******************************************************************* //
@@ -197,9 +192,8 @@ namespace xml
                      , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
-          boost::apply_visitor ( transition_resolve (global, state, forbidden)
-                               , f
-                               );
+          boost::apply_visitor
+            (transition_resolve<function_type> (global, state, forbidden), f);
         }
 
         // ***************************************************************** //
@@ -277,7 +271,9 @@ namespace xml
             }
 
           // recurs
-          boost::apply_visitor (transition_type_check (state), f);
+          boost::apply_visitor ( transition_type_check<function_type> (state)
+                               , f
+                               );
         };
       };
 

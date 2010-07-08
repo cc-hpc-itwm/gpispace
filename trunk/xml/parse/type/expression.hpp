@@ -25,15 +25,16 @@ namespace xml
         expression_type (const expression_vec_type & _expressions)
           : expressions (_expressions)
         {}
+
+        std::string expression (void) const
+        {
+          return util::join (expressions.begin(), expressions.end(), "; ");
+        }
       };
 
       std::ostream & operator << (std::ostream & s, const expression_type & e)
       {
-        return 
-          s << "expression ("
-            << util::join (e.expressions.begin(), e.expressions.end(), "; ")
-            << ") // expression"
-          ;
+        return s << "expression (" << e.expression() << ") // expression";
       }
     }
   }

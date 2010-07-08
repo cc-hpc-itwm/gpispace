@@ -14,6 +14,8 @@
 
 #include <we/util/read.hpp>
 
+#include <we/we.hpp>
+
 #include <iostream>
 #include <vector>
 
@@ -750,9 +752,11 @@ main (int argc, char ** argv)
 
   f.type_check (state);
 
-  std::cerr << "done" << std::endl;
+  std::cerr << "creating net..." << std::endl;
 
-  std::cout << f << std::endl;
+  std::cout << f.synthesize<we::activity_t> (state) << std::endl;
+
+  std::cerr << "done" << std::endl;
   
   return EXIT_SUCCESS;
 }

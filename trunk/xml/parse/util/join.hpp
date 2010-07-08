@@ -13,20 +13,24 @@ namespace xml
     namespace util
     {
       template<typename IT>
-      std::string join (IT begin, IT end, const std::string & sep)
+      std::string join ( IT begin, IT end
+                       , const std::string & sep
+                       , const std::string & local_open = ""
+                       , const std::string & local_close = ""
+                       )
       {
         std::ostringstream s;
 
         if (begin != end)
           {
-            s << *begin;
+            s << local_open << *begin << local_close;
 
             ++begin;
           }
 
         while (begin != end)
           {
-            s << sep << *begin;
+            s << sep << local_open << *begin << local_close;
 
             ++begin;
           }

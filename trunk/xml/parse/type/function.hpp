@@ -7,6 +7,7 @@
 
 #include <parse/util/maybe.hpp>
 #include <parse/util/unique.hpp>
+#include <parse/util/weparse.hpp>
 
 #include <vector>
 
@@ -14,6 +15,8 @@
 #include <boost/filesystem.hpp>
 
 #include <we/type/literal.hpp>
+
+#include <we/we.hpp>
 
 #include <iostream>
 
@@ -28,6 +31,7 @@ namespace xml
 
       // ******************************************************************* //
 
+      template<typename NET>
       class function_resolve : public boost::static_visitor<void>
       {
       private:
@@ -48,16 +52,15 @@ namespace xml
 
         void operator () (expression_type &) const { return; }
         void operator () (mod_type &) const { return; }
-
-        template<typename T>
-        void operator () (T & x) const
+        void operator () (NET & net) const
         {
-          x.resolve (global, state, forbidden);
+          net.resolve (global, state, forbidden);
         }
       };
 
       // ******************************************************************* //
 
+      template<typename NET>
       class function_type_check : public boost::static_visitor<void>
       {
       private:
@@ -68,11 +71,113 @@ namespace xml
 
         void operator () (const expression_type &) const { return; }
         void operator () (const mod_type &) const { return; }
-        
-        template<typename T>
-        void operator () (const T & x) const
+        void operator () (const NET & net) const { net.type_check (state); }
+      };
+
+      // ******************************************************************* //
+
+      template<typename Activity, typename Net, typename Fun>
+      class function_synthesize 
+        : public boost::static_visitor<typename Activity::transition_type>
+      {
+      private:
+        const state::type & state;
+        const Fun & fun;
+        const literal::name literal_name;
+
+        typedef typename Activity::transition_type we_transition_type;
+
+        typedef typename we_transition_type::expr_type we_expr_type;
+        typedef typename we_transition_type::net_type we_net_type;
+        typedef typename we_transition_type::mod_type we_mod_type;
+        typedef typename we_transition_type::preparsed_cond_type we_cond_type;
+
+        void add_ports ( we_transition_type & trans
+                       , const port_vec_type & ports
+                       , const we::type::PortDirection & direction
+                       ) const
         {
-          x.type_check (state);
+          for ( port_vec_type::const_iterator port (ports.begin())
+              ; port != ports.end()
+              ; ++port
+              )
+            {
+              if (literal_name.valid (port->type))
+                {
+                  trans.add_ports () (port->name, port->type, direction);
+                }
+              else
+                {
+                  // get type
+                  xml::parse::struct_t::set_type::const_iterator type
+                    (fun.structs_resolved.find (port->type));
+
+                  if (type == fun.structs_resolved.end())
+                    {
+                      std::ostringstream s;
+                      
+                      s << "unkown port_type " << port->type
+                        << " of port " << port->name
+                        << " during synthesis of function " << *fun.name
+                        << " in " << fun.path
+                        ;
+
+                      throw error::strange (s.str());
+                    }
+
+                  trans.add_ports () (port->name, type->second.sig, direction);
+                }
+            }
+        }
+
+      public:
+        function_synthesize ( const state::type & _state
+                            , const Fun & _fun
+                            )
+          : state (_state) 
+          , fun (_fun)
+          , literal_name ()
+        {}
+
+        we_transition_type operator () (const expression_type & e) const
+        {
+          if (fun.name.isNothing())
+            {
+              throw error::synthesize_anonymous_function (fun.path);
+            }
+
+          const std::string name (*fun.name);
+          const std::string expr (e.expression());
+          const std::string cond (fun.condition());
+          const bool internal 
+            ((fun.internal.isNothing()) ? true : *fun.internal);
+
+          const util::we_parser_t parsed_expression 
+            (util::we_parse (expr, "expression", "function", name, fun.path));
+          const util::we_parser_t parsed_condition
+            (util::we_parse (cond, "condition", "function", name, fun.path));
+
+          we_transition_type trans
+            ( name
+            , we_expr_type (expr, parsed_expression)
+            , we_cond_type (cond, parsed_condition)
+            , internal
+            );
+
+          add_ports (trans, fun.in(), we::type::PORT_IN);
+          add_ports (trans, fun.out(), we::type::PORT_OUT);
+
+          return trans;
+        }
+
+        we_transition_type operator () (const mod_type &) const
+        {
+          throw std::runtime_error ("function_synthesize: mod_type: not yet implemented");
+        }
+
+        we_transition_type operator () (const Net &) const
+        {
+          throw std::runtime_error ("function_synthesize: NET: not yet implemented");
         }
       };
 
@@ -118,6 +223,13 @@ namespace xml
         bool get_port_out (const std::string & name, port_type & port) const
         {
           return _out.by_key (name, port);
+        }
+
+        // ***************************************************************** //
+
+        std::string condition (void) const
+        {
+          return util::join (cond.begin(), cond.end(), " & ", "(", ")");
         }
 
         // ***************************************************************** //
@@ -202,7 +314,12 @@ namespace xml
             }
 
           boost::apply_visitor 
-            (function_resolve (structs_resolved, state, forbidden_below()), f);
+            (function_resolve<net_type> ( structs_resolved
+                                        , state
+                                        , forbidden_below()
+                                        )
+            , f
+            );
         }
 
         // ***************************************************************** //
@@ -253,7 +370,21 @@ namespace xml
                 (port_type_check<net_type> ("out", *port, path, state), f);
             }
 
-          boost::apply_visitor (function_type_check (state), f);
+          boost::apply_visitor (function_type_check<net_type> (state), f);
+        }
+
+        // ***************************************************************** //
+
+        template<typename Activity>
+        typename Activity::transition_type
+        synthesize (state::type & state) const
+        {
+          return boost::apply_visitor
+            ( function_synthesize<Activity, net_type, function_type> ( state
+                                                                     , *this
+                                                                     )
+            , f
+            );
         }
       };
 

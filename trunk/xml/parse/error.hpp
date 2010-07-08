@@ -806,6 +806,35 @@ namespace xml
 
       // ******************************************************************* //
 
+      class synthesize_anonymous_function : public generic
+      {
+      private:
+        std::string nice (const boost::filesystem::path & path) const
+        {
+          std::ostringstream s;
+
+          s << "try to synthesize anonymous function in " << path;
+
+          return s.str();
+        }
+      public:
+        synthesize_anonymous_function (const boost::filesystem::path & path)
+          : generic (nice (path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class weparse : public generic
+      {
+      public:
+        weparse (const std::string & msg)
+          : generic (msg)
+        {}
+      };
+
+      // ******************************************************************* //
+
       class strange : public generic
       {
       public:
