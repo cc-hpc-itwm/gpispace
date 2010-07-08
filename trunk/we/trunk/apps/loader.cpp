@@ -10,7 +10,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "loader.hpp"
+#include <we/loader/loader.hpp>
 
 static bool verbose (false);
 
@@ -37,8 +37,8 @@ int main(int ac, char **av)
     ("append-search-path,pa",  po::value<std::vector<std::string> >(), "append to module search path")
     ("prepend-search-path,pp", po::value<std::vector<std::string> >(), "prepend to module search path")
     ("load,l" , po::value<std::vector<std::string> >(), "shared modules that shall be loaded")
+    ("selftest,T", "run selftest of loaded modules")
     ("verbose,v", "verbose output")
-    ("keep-going,k", "keep going, even if the FVM is not there")
     ;
 
   po::positional_options_description positional; // positional parameters used for command line parsing
@@ -127,6 +127,11 @@ int main(int ac, char **av)
 
   LOG(INFO, "module loader initialized and waiting for signals...");
   LOG(DEBUG, loader);
+
+  if (vm.count("selftest"))
+  {
+    LOG(ERROR, "running selftests");
+  }
 
   sigset_t waitset;
   int sig(0);
