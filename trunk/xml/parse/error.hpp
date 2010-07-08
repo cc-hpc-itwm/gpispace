@@ -637,7 +637,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "type error: port " << port.name
+          s << "type error: port-" << direction << " " << port.name
             << " of type " << port.type
             << " connected to place " << place.name
             << " of type " << place.type
@@ -758,7 +758,7 @@ namespace xml
           std::ostringstream s;
 
           s << "in transition " << trans << " in " << path << ": "
-            << "type error: port " << port.name
+            << "type error: port-" << direction << " " << port.name
             << " of type " << port.type
             << " connected to place " << place.name
             << " of type " << place.type

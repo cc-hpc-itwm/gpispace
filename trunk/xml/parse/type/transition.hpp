@@ -206,7 +206,7 @@ namespace xml
         void type_check ( const std::string & direction
                         , const connect_type & connect
                         , const NET & net
-                        , const state::type & state
+                        , const state::type &
                         ) const
         {
           // existence of connect.place
