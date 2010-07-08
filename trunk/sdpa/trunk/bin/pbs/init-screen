@@ -58,6 +58,16 @@ if [ $on_master -eq 1 ]; then
 	tmp=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
 	tmp=`echo $master $tmp`
 	echo $tmp > ~/.init-screen.act
+	# distcc support
+	if [ -d $HOME/.distcc ]; then
+	  rm -f $HOME/.distcc/hosts
+	  # use ssh for now
+	  distcc_hosts=
+	  for n in $tmp; do
+		distcc_hosts="@${n} $distcc_hosts"
+	  done
+	  echo "$distcc_hosts" > $HOME/.distcc/hosts
+	fi
 
 	env_file="$HOME/.init-screen.env"
 
