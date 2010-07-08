@@ -125,26 +125,21 @@ private:
   std::string name_;
 };
 
+#define CONC(a, b)
+#define CONC_(a, b) a ## b
+#define STR(x) STR_(x)
+#define STR_(x) #x
 #define FHGLOG_DECLARE_LOG(domain, name...)                     \
-  struct fhg_log_logger_ ##domain                               \
+  struct fhg_log_logger_ ## domain                              \
   {                                                             \
     static logger & get()                                       \
     {                                                           \
-      static logger log(#domain, #name[0] ? #name : #domain);   \
+      static logger log(#domain, #name);   \
       return log;                                               \
     }                                                           \
   }
 
-FHGLOG_DECLARE_LOG( , default);
-
-// struct fhg_log_logger_
-// {
-//   static logger & get()
-//   {
-//     static logger log("default", "default");
-//     return log;
-//   }
-// };
+FHGLOG_DECLARE_LOG( , );
 
 #define LOG(level, domain...)                   \
   (level > 1 ? (fhg_log_logger_ ##domain::get().log(level, __FILE__, __LINE__, __FUNCTION__)).stream() : nul_stream::get().stream())
@@ -160,8 +155,8 @@ static std::string long_compute (int time)
 int main()
 {
   FHGLOG_DECLARE_LOG(main);
-  FHGLOG_DECLARE_LOG(system_crit);
-  FHGLOG_DECLARE_LOG(system_mgmt);
+  FHGLOG_DECLARE_LOG(system_crit, crit);
+  FHGLOG_DECLARE_LOG(system_mgmt, mgmt);
 
   logger test ("test", "blah");
   test.log(0, __FILE__, __LINE__, __FUNCTION__) << "hello world";
