@@ -12,7 +12,7 @@ BOOSTLIBS      =  \
 
 INCLUDEPATH   += -I /p/hpc/soft/fhglog/1.2.0/suse11/gcc/include
 INCLUDEPATH   += -I /p/hpc/soft/boost/1.38/gcc/include/boost-1_38
-INCLUDEPATH   += -I /p/hpc/sdpa/ap/SDPA/sdpa/trunk
+INCLUDEPATH   += -I /p/hpc/sdpa/ap/git/SDPA/trunk/sdpa/trunk
 LIBS          += /p/hpc/soft/fhglog/1.2.0/suse11/gcc/lib/libfhglog.a
 LIBS          += $$BOOSTLIBS
 
