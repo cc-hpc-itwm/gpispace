@@ -140,12 +140,12 @@ namespace xml
           return *fun.name;
         }
 
-        we_cond_type condition (const std::string & type) const
+        we_cond_type condition (void) const
         {
           const std::string cond (fun.condition());
 
           util::we_parser_t parsed_condition
-            (util::we_parse (cond, "condition", type, name(), fun.path));
+            (util::we_parse (cond, "condition", "function", name(), fun.path));
 
           return we_cond_type (cond, parsed_condition);
         }
@@ -168,7 +168,7 @@ namespace xml
           we_transition_type trans
             ( name()
             , we_expr_type (expr, parsed_expression)
-            , condition ("function")
+            , condition()
             , fun.internal.get_with_default (true)
             );
 
@@ -183,7 +183,7 @@ namespace xml
           we_transition_type trans
             ( name()
             , we_mod_type (mod.name, mod.function)
-            , condition ("function")
+            , condition()
             , fun.internal.get_with_default (false)
             );
 
@@ -195,7 +195,21 @@ namespace xml
 
         we_transition_type operator () (const Net &) const
         {
-          throw std::runtime_error ("function_synthesize: NET: not yet implemented");
+          // WORK HERE: recursively construct net: add places (with
+          // tokens), add transitions
+          we_net_type we_net;
+
+          we_transition_type trans
+            ( name()
+            , we_net
+            , condition()
+            , fun.internal.get_with_default (false)
+            );
+
+          add_ports (trans, fun.in(), we::type::PORT_IN);
+          add_ports (trans, fun.out(), we::type::PORT_OUT);
+
+          return trans;
         }
       };
 
