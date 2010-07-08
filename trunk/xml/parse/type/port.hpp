@@ -81,19 +81,17 @@ namespace xml
 
               const bool found (net.get_place (*port.place, place));
 
-              if (found)
-                {
-                  if (place.type != port.type)
-                    {
-                      throw
-                        error::port_connected_type_error<port_type,place_type>
-                        (direction, port, place, path);
-                    }
-                }
-              else
+              if (!found)
                 {
                   throw error::port_connected_place_nonexistent
                     (direction, port.name, *port.place, path);
+                }
+
+              if (place.type != port.type)
+                {
+                  throw
+                    error::port_connected_type_error<port_type,place_type>
+                    (direction, port, place, path);
                 }
             }
         }

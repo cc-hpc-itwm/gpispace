@@ -85,6 +85,8 @@
 			<connect-in place="bunches_per_offset" port="amount" />
 			<connect-out place="bunch" port="out" />
 		</transition>
+
+<place name="bunch" type="BUNCH"/>
 		
 		<transition name="load">
 			<defun>

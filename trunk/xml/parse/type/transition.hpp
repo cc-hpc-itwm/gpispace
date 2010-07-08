@@ -89,6 +89,43 @@ namespace xml
       
       // ******************************************************************* //
 
+      template<typename NET, typename TRANS>
+      class transition_get_function
+        : public boost::static_visitor<function_type>
+      {
+      private:
+        const NET & net;
+        const TRANS & trans;
+
+      public:
+        transition_get_function ( const NET & _net
+                                , const TRANS & _trans
+                                )
+          : net (_net)
+          , trans (_trans)
+        {}
+
+        function_type operator () (const function_type & fun) const
+        {
+          return fun;
+        }
+
+        function_type operator () (const use_type & use) const
+        {
+          function_type fun;
+
+          if (!net.get_function (use.name, fun))
+            {
+              throw error::unknown_function
+                (use.name, trans.name, trans.path);
+            }
+
+          return fun;
+        }
+      };
+
+      // ******************************************************************* //
+
       typedef std::vector<connect_type> connect_vec_type;
 
       struct transition_type
@@ -165,13 +202,81 @@ namespace xml
 
         // ***************************************************************** //
 
-        void type_check (const state::type & state) const
+        template<typename NET>
+        void type_check ( const std::string & direction
+                        , const connect_type & connect
+                        , const NET & net
+                        , const state::type & state
+                        ) const
+        {
+          // existence of connect.place
+          place_type place;
+
+          if (!net.get_place (connect.place, place))
+            {
+              throw error::connect_to_nonexistent_place
+                (direction, name, connect.place, path);
+            }
+
+          const function_type fun 
+            ( boost::apply_visitor 
+              (transition_get_function<NET, transition_type> (net, *this), f)
+            );
+
+          // existence of connect.port
+          port_type port;
+
+          const bool port_exists 
+            ( (direction == "out") 
+            ? fun.get_port_out (connect.port, port) 
+            : fun.get_port_in (connect.port, port)
+            );
+
+          if (!port_exists)
+            {
+              throw error::connect_to_nonexistent_port
+                (direction, name, connect.port, path);
+            }
+
+          // typecheck connect.place.type vs connect.port.type
+          if (place.type != port.type)
+            {
+              throw error::connect_type_error<port_type, place_type>
+                (direction, name, port, place, path);
+            }
+        };
+
+        template<typename NET>
+        void type_check (const NET & net, const state::type & state) const
         {
           // local checks
+          for ( connect_vec_type::const_iterator connect (in().begin())
+              ; connect != in().end()
+              ; ++connect
+              )
+            {
+              type_check ("in", *connect, net, state);
+            }
+
+          for ( connect_vec_type::const_iterator connect (read().begin())
+              ; connect != read().end()
+              ; ++connect
+              )
+            {
+              type_check ("read", *connect, net, state);
+            }
+
+          for ( connect_vec_type::const_iterator connect (out().begin())
+              ; connect != out().end()
+              ; ++connect
+              )
+            {
+              type_check ("out", *connect, net, state);
+            }
 
           // recurs
           boost::apply_visitor (transition_type_check (state), f);
-        }
+        };
       };
 
       // ******************************************************************* //

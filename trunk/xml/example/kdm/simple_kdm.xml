@@ -85,6 +85,8 @@
       <connect-out  port="offsets" place="number_of_offsets" />      
     </transition>
     <place name="number_of_offsets" type="long" />
+
+<place name="trigger_generate_volumes" type="control"/>    
             
     <transition name="extract_number_of_volumes">
       <defun>

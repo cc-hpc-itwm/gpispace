@@ -250,7 +250,7 @@ namespace xml
                          , const literal::type_name_t & val
                          , const std::string & rest
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
           
@@ -287,7 +287,7 @@ namespace xml
                           , const literal::type_name_t & sig
                           , const signature::structured_t & val
                           , const boost::filesystem::path & path
-                          )
+                          ) const
         {
           std::ostringstream s;
 
@@ -349,7 +349,7 @@ namespace xml
                          , const std::string & field
                          , const boost::filesystem::path & path
                          , const std::string & msg
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -654,6 +654,127 @@ namespace xml
                                   , const boost::filesystem::path & path
                                   )
           : generic (nice (direction, port, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class connect_to_nonexistent_place : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & trans
+                         , const std::string & place
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "in transition " << trans << "in " << path << ": "
+            << "connect-" << direction << " to nonexistent place " << place
+            ;
+
+          return s.str();
+        }
+      public:
+        connect_to_nonexistent_place ( const std::string & direction
+                                     , const std::string & trans
+                                     , const std::string & place
+                                     , const boost::filesystem::path & path
+                                     )
+          : generic (nice (direction, trans, place, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class connect_to_nonexistent_port : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & trans
+                         , const std::string & port
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "in transition " << trans << " in " << path << ": " 
+            << "connect-" << direction << " to nonexistent port " << port
+            ;
+
+          return s.str();
+        }
+      public:
+        connect_to_nonexistent_port ( const std::string & direction
+                                    , const std::string & trans
+                                    , const std::string & port
+                                    , const boost::filesystem::path & path
+                                    )
+          : generic (nice (direction, trans, port, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class unknown_function : public generic
+      {
+      private:
+        std::string nice ( const std::string & fun
+                         , const std::string & trans
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "in transition " << trans << " in " << path << ": " 
+            << "unknown function " << fun
+            ;
+
+          return s.str();
+        }
+      public:
+        unknown_function ( const std::string & fun
+                         , const std::string & trans
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (fun, trans, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      template<typename PORT, typename PLACE>
+      class connect_type_error : public generic
+      {
+      private:
+        std::string nice ( const std::string & direction
+                         , const std::string & trans
+                         , const PORT & port
+                         , const PLACE & place
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "in transition " << trans << " in " << path << ": "
+            << "type error: port " << port.name
+            << " of type " << port.type
+            << " connected to place " << place.name
+            << " of type " << place.type
+            ;
+
+          return s.str();
+        }
+
+      public:
+        connect_type_error ( const std::string & direction
+                           , const std::string trans
+                           , const PORT & port
+                           , const PLACE & place
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (direction, trans, port, place, path))
         {}
       };
 

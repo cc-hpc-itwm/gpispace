@@ -52,6 +52,11 @@ namespace xml
           return _places.by_key (name, place);
         }
 
+        bool get_function (const std::string & name, function_type & fun) const
+        {
+          return _functions.by_key (maybe<std::string>(name), fun);
+        }
+
         // ***************************************************************** //
 
         const place_vec_type & places (void) const
@@ -195,7 +200,7 @@ namespace xml
               ; ++trans
               )
             {
-              trans->type_check (state);
+              trans->type_check<net_type> (*this, state);
             }
 
           for ( function_vec_type::const_iterator fun (functions().begin())

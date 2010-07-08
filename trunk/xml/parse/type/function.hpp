@@ -110,6 +110,18 @@ namespace xml
         const port_vec_type & in (void) const { return _in.elements(); }
         const port_vec_type & out (void) const { return _out.elements(); }
 
+        bool get_port_in (const std::string & name, port_type & port) const
+        {
+          return _in.by_key (name, port);
+        }
+
+        bool get_port_out (const std::string & name, port_type & port) const
+        {
+          return _out.by_key (name, port);
+        }
+
+        // ***************************************************************** //
+
         void push_in (const port_type & p)
         {
           port_type old;
