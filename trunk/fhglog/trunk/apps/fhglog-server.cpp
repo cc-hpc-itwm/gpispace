@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   // my own output goes to stderr
   fhg::log::getLogger().addAppender
     (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
-                                                            , std::cerr
+                                                            , std::clog
                                                             )
                                )
     )->setFormat(fhg::log::Formatter::Default());
