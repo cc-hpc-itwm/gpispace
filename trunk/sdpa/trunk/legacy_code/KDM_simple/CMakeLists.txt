@@ -61,7 +61,6 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0" "1.40" "1.40.0")
 set(Boost_FIND_QUIETLY false)
-set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost 1.36 REQUIRED COMPONENTS thread system filesystem serialization program_options)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
@@ -73,29 +72,35 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_path (FVM_PC_INCLUDE_DIR
-  NAMES "fvm-pc/pc.hpp"
-  HINTS ${FVM_HOME} ENV FVM_HOME
-  PATH_SUFFIXES include
-)
+find_package(FVM REQUIRED)
+include_directories(${FVM_PC_INCLUDE_DIR})
 
-if (FVM_PC_INCLUDE_DIR)
-  include_directories(${FVM_PC_INCLUDE_DIR})
-else (FVM_PC_INCLUDE_DIR)
-  message(FATAL_ERROR "KDM module requires the FVM process container header")
-endif(FVM_PC_INCLUDE_DIR)
+#find_path (FVM_PC_INCLUDE_DIR
+#  NAMES "fvm-pc/pc.hpp"
+#  HINTS ${FVM_HOME} ENV FVM_HOME
+#  PATH_SUFFIXES include
+#)
+#
+#if (FVM_PC_INCLUDE_DIR)
+#  include_directories(${FVM_PC_INCLUDE_DIR})
+#else (FVM_PC_INCLUDE_DIR)
+#  message(FATAL_ERROR "KDM module requires the FVM process container header")
+#endif(FVM_PC_INCLUDE_DIR)
 
-find_path (WE_INCLUDE_DIR
-  NAMES "we/net.hpp"
-  HINTS ${WE_HOME} ENV WE_HOME
-  PATH_SUFFIXES include
-)
+find_package(WE REQUIRED)
+include_directories(${WE_INCLUDE_DIR})
 
-if (WE_INCLUDE_DIR)
-  include_directories(${WE_INCLUDE_DIR})
-else (WE_INCLUDE_DIR)
-  message(FATAL_ERROR "KDM module requires the WE module loader header")
-endif(WE_INCLUDE_DIR)
+#find_path (WE_INCLUDE_DIR
+#  NAMES "we/net.hpp"
+#  HINTS ${WE_HOME} ENV WE_HOME
+#  PATH_SUFFIXES include
+#)
+#
+#if (WE_INCLUDE_DIR)
+#  include_directories(${WE_INCLUDE_DIR})
+#else (WE_INCLUDE_DIR)
+#  message(FATAL_ERROR "KDM module requires the WE module loader header")
+#endif(WE_INCLUDE_DIR)
 
 find_package(FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
@@ -168,22 +173,22 @@ set_target_properties(sinc_mod PROPERTIES OUTPUT_NAME sinc)
 
 add_library(kdm_mod SHARED ${KDM_MOD_SRCS})
 set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
-target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+#target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_mod sinc_mod)
 
 add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
 set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
-target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+#target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_complex_mod sinc_mod)
 
 add_library(kdm_parallel_loadTT_mod SHARED ${KDM_PARALLEL_LOADTT_MOD_SRCS})
 set_target_properties(kdm_parallel_loadTT_mod PROPERTIES OUTPUT_NAME kdm_parallel_loadTT)
-target_link_libraries (kdm_parallel_loadTT_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+#target_link_libraries (kdm_parallel_loadTT_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_parallel_loadTT_mod sinc_mod)
 
 add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
-target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
+#target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
 install(TARGETS kdm_mod kdm_complex_mod kdm_parallel_loadTT_mod DESTINATION kdm)
 install(TARGETS sinc_mod DESTINATION libsinc)
