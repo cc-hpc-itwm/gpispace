@@ -42,7 +42,7 @@ namespace fhg { namespace log { namespace remote {
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint sender_endpoint_;
 
-    enum { max_length = ((2<<16)-1) };
+    enum { max_length = ((2<<16)) };
     char data_[max_length];
   };
 }}}
