@@ -147,6 +147,8 @@ namespace xml
 
         xml::parse::struct_t::set_type structs_resolved;
 
+        cond_vec_type cond;
+
         // ***************************************************************** //
 
         const connect_vec_type & in (void) const { return _in.elements(); }
@@ -315,6 +317,16 @@ namespace xml
             )
           {
             s << level (t.level + 2) << *pos << std::endl;
+          }
+
+        s << level(t.level+1) << "condition = " << std::endl;
+
+        for ( cond_vec_type::const_iterator pos (t.cond.begin())
+            ; pos != t.cond.end()
+            ; ++pos
+            )
+          {
+            s << level(t.level+2) << *pos << std::endl;
           }
 
         s << level (t.level + 1) << "def = " << std::endl;

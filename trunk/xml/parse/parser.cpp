@@ -245,7 +245,7 @@ namespace xml
                 }
               else if (child_name == "expression")
                 {
-                  f.f = type::expression_type (child->value());
+                  f.f = type::expression_type (parse_cdata (child));
                 }
               else if (child_name == "module")
                 {
@@ -261,7 +261,9 @@ namespace xml
                 }
               else if (child_name == "condition")
                 {
-                  f.cond.push_back (std::string (child->value()));
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  f.cond.insert (f.cond.end(), conds.begin(), conds.end());
                 }
               else
                 {
@@ -653,6 +655,12 @@ namespace xml
               else if (child_name == "connect-read")        
                 {
                   t.push_read (connect_type(child, state));
+                }
+              else if (child_name == "condition")
+                {
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  t.cond.insert (t.cond.end(), conds.begin(), conds.end());
                 }
               else
                 {

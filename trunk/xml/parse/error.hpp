@@ -57,6 +57,20 @@ namespace xml
                     + util::quote(util::show_node_type (got))
                     )
         {}
+
+        wrong_node ( const rapidxml::node_type & want1
+                   , const rapidxml::node_type & want2
+                   , const rapidxml::node_type & got
+                   )
+          : generic ("wrong node type"
+                    , "expexted node of type "
+                    + util::quote(util::show_node_type (want1))
+                    + " or "
+                    + util::quote(util::show_node_type (want2))
+                    + ": got node of type "
+                    + util::quote(util::show_node_type (got))
+                    )
+        {}
       };
 
       class missing_node : public generic
@@ -66,6 +80,17 @@ namespace xml
           : generic ( "missing node"
                     , "expected node of type "
                     + util::quote(util::show_node_type (want))
+                    )
+        {}
+
+        missing_node ( const rapidxml::node_type & want1
+                     , const rapidxml::node_type & want2
+                     )
+          : generic ( "missing node"
+                    , "expected node of type "
+                    + util::quote(util::show_node_type (want1))
+                    + " or " 
+                    + util::quote(util::show_node_type (want2))
                     )
         {}
       };
@@ -758,10 +783,11 @@ namespace xml
           std::ostringstream s;
 
           s << "in transition " << trans << " in " << path << ": "
-            << "type error: port-" << direction << " " << port.name
-            << " of type " << port.type
-            << " connected to place " << place.name
+            << "type error: connect-" << direction 
+            << " place " << place.name
             << " of type " << place.type
+            << " with port " << port.name
+            << " of type " << port.type
             ;
 
           return s.str();
