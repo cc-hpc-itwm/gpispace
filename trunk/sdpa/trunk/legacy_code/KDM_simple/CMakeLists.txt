@@ -190,5 +190,5 @@ add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
-install(TARGETS kdm_mod kdm_complex_mod kdm_parallel_loadTT_mod DESTINATION kdm)
-install(TARGETS sinc_mod DESTINATION libsinc)
+install(TARGETS kdm_mod kdm_complex_mod kdm_parallel_loadTT_mod DESTINATION libexec/kdm)
+install(TARGETS sinc_mod DESTINATION libexec/libsinc)
