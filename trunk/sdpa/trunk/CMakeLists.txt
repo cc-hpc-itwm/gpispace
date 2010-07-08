@@ -36,7 +36,6 @@ OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_SMC_SC "Build the project using the state-machine compiler" YES)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
 OPTION(USE_GWES "Use GWES" NO)
-OPTION(ENABLE_LEGACY_CODE "Build legacy code modules" YES)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
@@ -201,10 +200,6 @@ if (ENABLE_TESTS)
   include(CTest)
   add_subdirectory(tests)
 endif (ENABLE_TESTS)
-if (ENABLE_LEGACY_CODE)
-   add_subdirectory(legacy_code)
-endif (ENABLE_LEGACY_CODE)
-
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
