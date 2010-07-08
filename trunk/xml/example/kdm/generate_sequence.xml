@@ -30,7 +30,7 @@
 
   <!-- just consume a token -->
   <defun name="f_break">
-    <in name="in" type="COUNTER" />
+    <in name="counter" type="COUNTER" />
     <expression>
     </expression>
     <condition>${counter.i} &gt;= ${counter.max}</condition>
@@ -38,7 +38,7 @@
 
   <transition name="break">
     <use name="f_break"/>
-    <connect-in place="counter" port="in" />
+    <connect-in place="counter" port="counter" />
   </transition>
 
   <defun name="f_step">
