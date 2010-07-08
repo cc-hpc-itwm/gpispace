@@ -23,6 +23,7 @@
 #include <we/we-config.hpp>
 #include <we/util/codec.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
+#include <we/mgmt/exception.hpp>
 
 namespace we
 {
@@ -64,11 +65,11 @@ namespace we
         struct validator
         {
           typedef T type;
-          static void validate (T const &) throw (std::exception)
+          static void validate (T const &)
           {
             if (! valid)
             {
-              throw std::runtime_error ("validator<false>:: forced validation error!");
+              throw exception::validation_error ("validator<false>:: forced validation error!");
             }
           };
 
@@ -78,7 +79,7 @@ namespace we
             {
               validate (t);
             }
-            catch (...)
+            catch (exception::validation_error const &)
             {
               return false;
             }

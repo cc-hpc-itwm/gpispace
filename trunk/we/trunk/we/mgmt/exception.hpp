@@ -21,7 +21,7 @@
 
 #include <stdexcept>
 
-namespace we { namespace mgmt {
+namespace we { namespace mgmt { namespace exception {
   template <typename Id>
   struct activity_not_found : std::runtime_error
   {
@@ -31,11 +31,49 @@ namespace we { namespace mgmt {
       : std::runtime_error(msg)
       , id(id_)
     {}
-      
+
     virtual ~activity_not_found() throw() {}
 
     const id_type id;
   };
-}}
+
+      struct validation_error : public std::runtime_error
+      {
+        validation_error (const std::string & msg)
+          : std::runtime_error (msg)
+        {}
+
+        ~validation_error () throw ()
+        {}
+      };
+
+      template <typename ExternalId>
+      struct already_there : public std::runtime_error
+      {
+        already_there (const std::string & msg, ExternalId const & ext_id)
+          : std::runtime_error (msg)
+          , id (ext_id)
+        { }
+
+        ~already_there () throw ()
+        { }
+
+        const ExternalId id;
+      };
+
+      template <typename IdType>
+      struct no_such_mapping : public std::runtime_error
+      {
+        no_such_mapping (const std::string & msg, IdType const & an_id)
+          : std::runtime_error (msg)
+          , id (an_id)
+        {}
+
+        ~no_such_mapping () throw ()
+        {}
+
+        const IdType id;
+      };
+}}}
 
 #endif

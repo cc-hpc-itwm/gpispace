@@ -47,50 +47,6 @@
 #include <we/mgmt/bits/descriptor.hpp>
 
 namespace we { namespace mgmt {
-    namespace exception
-    {
-      struct validation_error : public std::runtime_error
-      {
-        validation_error (const std::string & msg, const std::string & act_name)
-          : std::runtime_error (msg)
-          , name (act_name)
-        {}
-
-        ~validation_error () throw ()
-        {}
-
-        const std::string name;
-      };
-
-      template <typename ExternalId>
-      struct already_there : public std::runtime_error
-      {
-        already_there (const std::string & msg, ExternalId const & ext_id)
-          : std::runtime_error (msg)
-          , id (ext_id)
-        { }
-
-        ~already_there () throw ()
-        { }
-
-        const ExternalId id;
-      };
-
-      template <typename IdType>
-      struct no_such_mapping : public std::runtime_error
-      {
-        no_such_mapping (const std::string & msg, IdType const & an_id)
-          : std::runtime_error (msg)
-          , id (an_id)
-        {}
-
-        ~no_such_mapping () throw ()
-        {}
-
-        const IdType id;
-      };
-    }
-
     template < typename IdType
              , typename Activity
              , typename Traits = traits::layer_traits<Activity>
@@ -373,22 +329,11 @@ namespace we { namespace mgmt {
 
       void submit (const descriptor_type & desc)
       {
-        try
-        {
-          policy::validator::validate (desc.activity());
-          insert_activity(desc);
+        policy::validator::validate (desc.activity());
+        insert_activity(desc);
 
-          sig_submitted (this, desc.id());
-          post_execute_notification (desc.id());
-        }
-        catch (const std::exception & ex)
-        {
-          throw exception::validation_error( std::string("layer::submit(): invalid activity:")
-                                           + " id := " + ::util::show(desc.id())
-                                           + " name := " + desc.name()
-                                           , desc.name()
-                                           );
-        }
+        sig_submitted (this, desc.id());
+        post_execute_notification (desc.id());
       }
 
       void add_map_to_internal ( const external_id_type & external_id
@@ -797,7 +742,7 @@ namespace we { namespace mgmt {
               throw std::runtime_error ("extractor got strange classification for activity");
             }
           }
-          catch (const activity_not_found<internal_id_type> & ex)
+          catch (const exception::activity_not_found<internal_id_type> & ex)
           {
             LOG(WARN, "extractor-" << rank << ": activity could not be found: " << ex.id);
           }
@@ -933,7 +878,7 @@ namespace we { namespace mgmt {
 
           remove_activity (desc);
         }
-        catch (const activity_not_found<internal_id_type> &)
+        catch (const exception::activity_not_found<internal_id_type> &)
         {
           std::cerr << "W: got finished notification for old activity: " << internal_id << std::endl;
         }
@@ -1045,7 +990,7 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
+        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
       }
 
@@ -1053,7 +998,7 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
+        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
         return a->second;
       }
 
