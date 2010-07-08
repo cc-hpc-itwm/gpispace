@@ -148,7 +148,7 @@
     <place name="trigger_dec" type="control" />    
     
     <transition name="dec">
-      <defun name="f_dec">
+      <defun>
         <in  name="trigger" type="control" />
         <in name="wait" type="long" />
         <out name="wait" type="long" />
@@ -162,7 +162,7 @@
     </transition>
     
     <transition name="finalize">
-      <defun name="f_finalize" internal="false">
+      <defun internal="false">
         <in  name="wait" type="long" />
         <in  name="config" type="CONFIG" />
         <out name="trigger" type="control" />
