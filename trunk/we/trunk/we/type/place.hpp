@@ -47,11 +47,9 @@ namespace place
       , signature (_type_name)
     {}
 
-    type ( const name_t & _name
-         , const signature::structured_t & _signature
-         )
-      : name (_name)
-      , signature (_signature)
+    template<typename T>
+    type (const name_t & _name, const T & _signature)
+      : name (_name), signature (_signature)
     {}
   };
 
