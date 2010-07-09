@@ -251,6 +251,8 @@ namespace xml
         }
       };
 
+      typedef std::vector<place_type> place_vec_type;
+
       // ******************************************************************* //
 
       std::ostream & operator << (std::ostream & s, const place_type & p)

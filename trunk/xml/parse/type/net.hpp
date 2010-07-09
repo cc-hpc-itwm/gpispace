@@ -23,7 +23,6 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<place_type> place_vec_type;
       typedef std::vector<function_type> function_vec_type;
       typedef std::vector<transition_type> transition_vec_type;
 
