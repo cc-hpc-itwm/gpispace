@@ -38,6 +38,8 @@ namespace xml
                  << ")"
           ;
       }
+
+      typedef std::vector<connect_type> connect_vec_type;
     }
   }
 }

@@ -127,7 +127,7 @@
 				<out name="done"    type="control" />
 				<module name="kdm" function="write"/>
 
-				<condition>${wait} == 0;</condition>
+				<condition>${wait} == 0</condition>
 			</defun>
 			<connect-in  place="config" port="config" />
 			<connect-in  place="wait"   port="wait" />

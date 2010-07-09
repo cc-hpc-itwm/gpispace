@@ -26,6 +26,12 @@ public:
     return isNothing() ? dflt : t;
   }
 
+  void operator = (const T & x)
+  {
+    given = true;
+    t = x;
+  }
+
   const T & operator * (void) const
   {
     if (isNothing())

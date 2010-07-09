@@ -76,6 +76,39 @@ namespace xml
 
       // ******************************************************************* //
 
+      template< typename Activity
+              , typename Net
+              , typename Trans
+              , typename Fun     
+              , typename Map
+              >
+      void
+      transition_synthesize ( const Trans &
+                            , const state::type &
+                            , const Net &
+                            , typename Activity::transition_type::net_type &
+                            , const Map &
+                            , typename Activity::transition_type::edge_type &
+                            );
+
+      // ******************************************************************* //
+
+      template<typename Map>
+      typename Map::mapped_type
+      get_pid (const Map & pid_of_place, const std::string name)
+      {
+        const typename Map::const_iterator pos (pid_of_place.find (name));
+
+        if (pos == pid_of_place.end())
+          {
+            THROW_STRANGE ("missing place" << name << " in pid_of_place");
+          }
+
+        return pos->second;
+      };
+
+      // ******************************************************************* //
+
       template<typename Activity, typename Net, typename Fun>
       class function_synthesize 
         : public boost::static_visitor<typename Activity::transition_type>
@@ -88,7 +121,6 @@ namespace xml
 
         typedef typename we_transition_type::place_type we_place_type;
         typedef typename we_transition_type::edge_type we_edge_type;
-        typedef typename we_transition_type::token_type we_token_type;
 
         typedef typename we_transition_type::expr_type we_expr_type;
         typedef typename we_transition_type::net_type we_net_type;
@@ -96,7 +128,6 @@ namespace xml
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         
         typedef typename we_transition_type::pid_t pid_t;
-        typedef typename petri_net::tid_t tid_t;
 
         void add_ports ( we_transition_type & trans
                        , const port_vec_type & ports
@@ -140,18 +171,12 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  const typename Map::const_iterator pid
-                    (pid_of_place.find (*port->place));
-
-                  if (pid == pid_of_place.end())
-                    {
-                      THROW_STRANGE (  "missing place "
-                                    << *port->place
-                                    << " in pid_of_place"
-                                    );
-                    }
-
-                  trans.add_ports () (port->name, type, direction, pid->second);
+                  trans.add_ports () ( port->name
+                                     , type
+                                     , direction
+                                     , get_pid (pid_of_place, *port->place)
+                                     )
+                    ;
                 }
             }
         }
@@ -246,7 +271,22 @@ namespace xml
                 }
             }
 
-          // add transitions
+          we_edge_type e (0);
+
+          for ( typename Net::transition_vec_type::const_iterator transition
+                  (net.transitions().begin())
+              ; transition != net.transitions().end()
+              ; ++transition
+              )
+            {
+              transition_synthesize< Activity
+                                   , Net
+                                   , transition_type
+                                   , Fun
+                                   , pid_of_place_type
+                                   >
+                (*transition, state, net, we_net, pid_of_place, e); 
+            }
 
           we_transition_type trans
             ( name()
@@ -310,7 +350,10 @@ namespace xml
 
         std::string condition (void) const
         {
-          return util::join (cond.begin(), cond.end(), " & ", "(", ")");
+          return cond.empty() 
+            ? "true"
+            : util::join (cond.begin(), cond.end(), " & ", "(", ")")
+            ;
         }
 
         // ***************************************************************** //
@@ -455,15 +498,123 @@ namespace xml
 
         template<typename Activity>
         typename Activity::transition_type
-        synthesize (state::type & state) const
+        synthesize (const state::type & state) const
         {
           return boost::apply_visitor
-            ( function_synthesize<Activity, net_type, function_type> ( state
-                                                                     , *this
-                                                                     )
+            ( function_synthesize< Activity
+                                 , net_type
+                                 , function_type
+                                 > (state, *this)
             , f
             );
         }
+      };
+
+      // ******************************************************************* //
+
+      using petri_net::connection_t;
+      using petri_net::PT;
+      using petri_net::PT_READ;
+      using petri_net::TP;
+
+      template< typename Activity
+              , typename Net
+              , typename Trans
+              , typename Fun
+              , typename Map
+              >
+      void
+      transition_synthesize
+      ( const Trans & trans
+      , const state::type & state
+      , const Net & net
+      , typename Activity::transition_type::net_type & we_net
+      , const Map & pids
+      , typename Activity::transition_type::edge_type & e
+      ) 
+      {
+        typedef typename Activity::transition_type we_transition_type;
+        typedef typename petri_net::tid_t tid_t;
+
+        Fun fun
+          ( boost::apply_visitor 
+            ( transition_get_function<Net, Trans> (net, trans)
+            , trans.f
+            )
+          );
+
+        fun.name = trans.name;
+
+        we_transition_type we_trans 
+          ( boost::apply_visitor
+            ( function_synthesize<Activity, Net, Fun> (state, fun)
+            , fun.f
+            )
+          );
+
+        for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            ; connect != trans.in().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (get_pid (pids, connect->place), connect->port)
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            ; connect != trans.read().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (get_pid (pids, connect->place), connect->port)
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            ; connect != trans.out().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (connect->port, get_pid (pids, connect->place))
+              ;
+          }
+
+        const tid_t tid (we_net.add_transition (we_trans));
+
+        for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            ; connect != trans.in().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge 
+              (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            ; connect != trans.read().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge
+              (e++, connection_t (PT_READ, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            ; connect != trans.out().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge
+              (e++, connection_t (TP, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        return;
       };
 
       // ******************************************************************* //

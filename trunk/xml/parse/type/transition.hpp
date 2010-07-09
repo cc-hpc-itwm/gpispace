@@ -84,17 +84,17 @@ namespace xml
       
       // ******************************************************************* //
 
-      template<typename NET, typename TRANS>
+      template<typename Net, typename Trans>
       class transition_get_function
         : public boost::static_visitor<function_type>
       {
       private:
-        const NET & net;
-        const TRANS & trans;
+        const Net & net;
+        const Trans & trans;
 
       public:
-        transition_get_function ( const NET & _net
-                                , const TRANS & _trans
+        transition_get_function ( const Net & _net
+                                , const Trans & _trans
                                 )
           : net (_net)
           , trans (_trans)
@@ -198,10 +198,10 @@ namespace xml
 
         // ***************************************************************** //
 
-        template<typename NET>
+        template<typename Net>
         void type_check ( const std::string & direction
                         , const connect_type & connect
-                        , const NET & net
+                        , const Net & net
                         , const state::type &
                         ) const
         {
@@ -216,7 +216,7 @@ namespace xml
 
           const function_type fun 
             ( boost::apply_visitor 
-              (transition_get_function<NET, transition_type> (net, *this), f)
+              (transition_get_function<Net, transition_type> (net, *this), f)
             );
 
           // existence of connect.port
@@ -242,8 +242,8 @@ namespace xml
             }
         };
 
-        template<typename NET>
-        void type_check (const NET & net, const state::type & state) const
+        template<typename Net>
+        void type_check (const Net & net, const state::type & state) const
         {
           // local checks
           for ( connect_vec_type::const_iterator connect (in().begin())

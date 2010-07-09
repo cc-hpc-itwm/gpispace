@@ -167,7 +167,7 @@
         <in  name="config" type="CONFIG" />
         <out name="trigger" type="control" />
         <module name="kdm" function="finalize"/>
-        <condition> ${wait} == 0L </condition>
+        <condition>${wait} == 0L</condition>
       </defun>
       <connect-in place="wait" port="wait" />
       <connect-in place="config" port="config" />

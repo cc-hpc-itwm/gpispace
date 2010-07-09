@@ -23,11 +23,6 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<function_type> function_vec_type;
-      typedef std::vector<transition_type> transition_vec_type;
-
-      // ******************************************************************* //
-
       struct net_type
       {
       private:
@@ -36,6 +31,9 @@ namespace xml
         xml::util::unique<function_type,maybe<std::string> > _functions;
 
       public:
+        typedef std::vector<function_type> function_vec_type;
+        typedef std::vector<transition_type> transition_vec_type;
+
         struct_vec_type structs;
 
         boost::filesystem::path path;
@@ -242,7 +240,8 @@ namespace xml
 
         s << level(n.level) << "functions =" << std::endl;
 
-        for ( function_vec_type::const_iterator pos (n.functions().begin())
+        for ( net_type::function_vec_type::const_iterator pos
+                (n.functions().begin())
             ; pos != n.functions().end()
             ; ++pos
             )
@@ -262,7 +261,8 @@ namespace xml
 
         s << level(n.level) << "transitions =" << std::endl;
 
-        for ( transition_vec_type::const_iterator pos (n.transitions().begin())
+        for ( net_type::transition_vec_type::const_iterator pos
+                (n.transitions().begin())
             ; pos != n.transitions().end()
             ; ++pos
             )

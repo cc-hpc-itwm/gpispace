@@ -22,6 +22,9 @@ namespace xml
       struct transition_type;
       struct net_type;
 
+      template<typename Net, typename Trans>
+      class transition_get_function;
+
       // generic show visitor
       namespace visitor
       {
