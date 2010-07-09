@@ -41,6 +41,13 @@ namespace literal
       return (set.find (x) != set.end());
     }
   };
+
+  bool valid_name (const type_name_t & x)
+  {
+    static name n;
+
+    return n.valid (x);
+  }
 }
 
 #endif

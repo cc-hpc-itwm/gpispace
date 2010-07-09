@@ -83,7 +83,6 @@ namespace xml
       private:
         const state::type & state;
         const Fun & fun;
-        const literal::name literal_name;
 
         typedef typename Activity::transition_type we_transition_type;
 
@@ -138,7 +137,6 @@ namespace xml
                             )
           : state (_state) 
           , fun (_fun)
-          , literal_name ()
         {}
 
         we_transition_type operator () (const expression_type & e) const
@@ -190,7 +188,7 @@ namespace xml
               ; ++place
               )
             {
-              // get signature, add place
+              // get signature, add place, put tokens
             }
 
           we_transition_type trans
@@ -214,8 +212,6 @@ namespace xml
       private:
         xml::util::unique<port_type> _in;
         xml::util::unique<port_type> _out;
-
-        literal::name literal_name;
 
       public:
         typedef boost::variant < expression_type
@@ -356,23 +352,21 @@ namespace xml
                                        , const port_type & port
                                        ) const
         {
-          if (literal_name.valid (port.type))
+          if (literal::valid_name (port.type))
             {
               return port.type;
             }
-          else
+
+          xml::parse::struct_t::set_type::const_iterator sig
+            (structs_resolved.find (port.type));
+
+          if (sig == structs_resolved.end())
             {
-              xml::parse::struct_t::set_type::const_iterator type
-                (structs_resolved.find (port.type));
-
-              if (type == structs_resolved.end())
-                {
-                  throw error::port_with_unknown_type
-                    (dir, port.name, port.type, path);
-                }
-
-              return type->second.sig;
+              throw error::port_with_unknown_type
+                (dir, port.name, port.type, path);
             }
+
+          return sig->second.sig;
         };
 
         // ***************************************************************** //

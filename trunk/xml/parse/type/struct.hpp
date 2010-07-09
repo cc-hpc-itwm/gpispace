@@ -134,7 +134,6 @@ namespace xml
       private:
         boost::filesystem::path path;
         set_type & sig_set;
-        literal::name name;
       
       public:
         resolve ( set_type & _sig_set
@@ -142,12 +141,11 @@ namespace xml
                 ) 
           : path (_path)
           , sig_set (_sig_set)
-          , name()
         {}
       
         bool operator () (literal::type_name_t & t) const
         {
-          return name.valid (t);
+          return literal::valid_name (t);
         }
 
         bool operator () (signature::structured_t & map) const

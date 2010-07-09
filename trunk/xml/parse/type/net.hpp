@@ -107,6 +107,26 @@ namespace xml
 
         // ***************************************************************** //
 
+        signature::desc_t type_of_place (const place_type & place) const
+        {
+          if (literal::valid_name (place.type))
+            {
+              return place.type;
+            }
+
+          const xml::parse::struct_t::set_type::const_iterator sig
+            (structs_resolved.find (place.type));
+
+          if (sig == structs_resolved.end())
+            {
+              throw error::place_type_unknown (place.name, place.type, path);
+            }
+
+          return sig->second.sig;
+        }
+
+        // ***************************************************************** //
+
         void resolve ( const state::type & state
                      , const xml::parse::struct_t::forbidden_type & forbidden
                      )
@@ -156,36 +176,12 @@ namespace xml
               trans->resolve (structs_resolved, state, empty);
             }
 
-          literal::name name;
-
           for ( place_vec_type::iterator place (_places.elements().begin())
               ; place != _places.elements().end()
               ; ++place
               )
             {
-              const st::set_type::const_iterator sig
-                (structs_resolved.find (place->type));
-
-              if (sig == structs_resolved.end())
-                {
-                  if (name.valid (place->type))
-                    {
-                      place->sig = place->type;
-                    }
-                  else
-                    {
-                      throw error::place_type_unknown ( place->name
-                                                      , place->type
-                                                      , path
-                                                      )
-                        ;
-                    }
-                }
-              else
-                {
-                  place->sig = sig->second.sig;
-                }
-
+              place->sig = type_of_place (*place);
               place->translate (path, state);
             }
         }
