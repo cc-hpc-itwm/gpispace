@@ -46,9 +46,7 @@ namespace xml
 
       bool push (const T & x)
       {
-        const typename map_type::const_iterator found (names.find (x.name));
-
-        if (found != names.end())
+        if (names.find (x.name) != names.end())
           {
             return false;
           }
