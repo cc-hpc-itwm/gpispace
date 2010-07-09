@@ -31,7 +31,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename NET>
+      template<typename Net>
       class function_resolve : public boost::static_visitor<void>
       {
       private:
@@ -52,7 +52,7 @@ namespace xml
 
         void operator () (expression_type &) const { return; }
         void operator () (mod_type &) const { return; }
-        void operator () (NET & net) const
+        void operator () (Net & net) const
         {
           net.resolve (global, state, forbidden);
         }
@@ -60,7 +60,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename NET>
+      template<typename Net>
       class function_type_check : public boost::static_visitor<void>
       {
       private:
@@ -71,7 +71,7 @@ namespace xml
 
         void operator () (const expression_type &) const { return; }
         void operator () (const mod_type &) const { return; }
-        void operator () (const NET & net) const { net.type_check (state); }
+        void operator () (const Net & net) const { net.type_check (state); }
       };
 
       // ******************************************************************* //
@@ -112,6 +112,47 @@ namespace xml
                 (fun.type_of_port (direction, *port));
 
               trans.add_ports () (port->name, type, direction);
+            }
+        }
+
+        template<typename Map>
+        void add_ports ( we_transition_type & trans
+                       , const port_vec_type & ports
+                       , const we::type::PortDirection & direction
+                       , const Map & pid_of_place
+                       ) const
+        {
+          for ( port_vec_type::const_iterator port (ports.begin())
+              ; port != ports.end()
+              ; ++port
+              )
+            {
+              const signature::desc_t type
+                (fun.type_of_port (direction, *port));
+
+              if (port->place.isNothing())
+                {
+                  trans.add_ports () (port->name, type, direction);
+                }
+              else
+                {
+                  // basically safe, since type checking has verified
+                  // the existence and type safety of the place to
+                  // connect to
+
+                  const typename Map::const_iterator pid
+                    (pid_of_place.find (*port->place));
+
+                  if (pid == pid_of_place.end())
+                    {
+                      THROW_STRANGE (  "missing place "
+                                    << *port->place
+                                    << " in pid_of_place"
+                                    );
+                    }
+
+                  trans.add_ports () (port->name, type, direction, pid->second);
+                }
             }
         }
 
@@ -179,8 +220,6 @@ namespace xml
 
         we_transition_type operator () (const Net & net) const
         {
-          // WORK HERE: recursively construct net: add places (with
-          // tokens), add transitions
           we_net_type we_net;
 
           typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
@@ -192,8 +231,6 @@ namespace xml
               ; ++place
               )
             {
-              // get signature, add place, put tokens
-
               const signature::desc_t type (net.type_of_place (*place));
               const pid_t pid
                 (we_net.add_place (we_place_type (place->name, type)));
@@ -209,6 +246,8 @@ namespace xml
                 }
             }
 
+          // add transitions
+
           we_transition_type trans
             ( name()
             , we_net
@@ -216,8 +255,8 @@ namespace xml
             , fun.internal.get_with_default (false)
             );
 
-          add_ports (trans, fun.in(), we::type::PORT_IN);
-          add_ports (trans, fun.out(), we::type::PORT_OUT);
+          add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
+          add_ports (trans, fun.out(), we::type::PORT_OUT, pid_of_place);
 
           return trans;
         }

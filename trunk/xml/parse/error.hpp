@@ -840,8 +840,12 @@ namespace xml
       class strange : public generic
       {
       public:
-        strange (const std::string & msg) : generic ("STRANGE", msg) {}
+        strange (const std::string & msg) 
+          : generic ("this is STRANGE and should not happen", msg)
+        {}
       };
+
+#define THROW_STRANGE(msg) do { std::ostringstream s; s << __FILE__ << " [" << __LINE__ << "]: " << msg; throw error::strange (s.str()); } while (0)
     }
   }
 }
