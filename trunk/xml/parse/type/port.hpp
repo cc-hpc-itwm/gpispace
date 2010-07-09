@@ -79,9 +79,7 @@ namespace xml
             {
               place_type place;
 
-              const bool found (net.get_place (*port.place, place));
-
-              if (!found)
+              if (!net.get_place (*port.place, place))
                 {
                   throw error::port_connected_place_nonexistent
                     (direction, port.name, *port.place, path);
