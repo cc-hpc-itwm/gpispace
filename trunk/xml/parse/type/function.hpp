@@ -86,6 +86,10 @@ namespace xml
 
         typedef typename Activity::transition_type we_transition_type;
 
+        typedef typename we_transition_type::place_type we_place_type;
+        typedef typename we_transition_type::edge_type we_edge_type;
+        typedef typename we_transition_type::token_type we_token_type;
+
         typedef typename we_transition_type::expr_type we_expr_type;
         typedef typename we_transition_type::net_type we_net_type;
         typedef typename we_transition_type::mod_type we_mod_type;
@@ -179,9 +183,9 @@ namespace xml
           // tokens), add transitions
           we_net_type we_net;
 
-          typedef boost::unordered_map<pid_t, place_type> place_map_type;
+          typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 
-          place_map_type place_map;
+          pid_of_place_type pid_of_place;
 
           for ( place_vec_type::const_iterator place (net.places().begin())
               ; place != net.places().end()
@@ -189,6 +193,20 @@ namespace xml
               )
             {
               // get signature, add place, put tokens
+
+              const signature::desc_t type (net.type_of_place (*place));
+              const pid_t pid
+                (we_net.add_place (we_place_type (place->name, type)));
+
+              pid_of_place[place->name] = pid;
+
+              for ( value_vec_type::const_iterator val (place->values.begin())
+                  ; val != place->values.end()
+                  ; ++val
+                  )
+                {
+                  token::put (we_net, pid, *val);
+                }
             }
 
           we_transition_type trans

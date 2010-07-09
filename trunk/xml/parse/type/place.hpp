@@ -13,6 +13,7 @@
 #include <parse/error.hpp>
 
 #include <parse/util/maybe.hpp>
+#include <parse/util/weparse.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
@@ -102,9 +103,11 @@ namespace xml
             {
               literal::read (val, parse_pos);
             }
-          catch (expr::exception::parse::exception & e)
+          catch (const expr::exception::parse::exception & e)
             {
-              throw error::parse_lift (place_name, field_name, path, e.what());
+              const std::string nice (util::format_parse_error (value, e));
+
+              throw error::parse_lift (place_name, field_name, path, nice);
             }
 
           if (!parse_pos.end())
@@ -119,7 +122,7 @@ namespace xml
             {
               return literal::require_type (field_name, signature, val);
             }
-          catch (::type::error & e)
+          catch (const ::type::error & e)
             {
               throw error::parse_lift (place_name, field_name, path, e.what());
             }
@@ -199,6 +202,8 @@ namespace xml
 
       // ******************************************************************* //
 
+      typedef std::vector<value::type> value_vec_type;
+
       struct place_type
       {
       public:
@@ -206,7 +211,7 @@ namespace xml
         std::string type;
         maybe<petri_net::capacity_t> capacity;
         std::vector<token_type> tokens;
-        std::vector<value::type> values;
+        value_vec_type values;
         signature::desc_t sig;
         int level;
 
