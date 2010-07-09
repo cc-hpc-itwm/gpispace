@@ -91,6 +91,9 @@ namespace xml
         typedef typename we_transition_type::net_type we_net_type;
         typedef typename we_transition_type::mod_type we_mod_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
+        
+        typedef typename we_transition_type::pid_t pid_t;
+        typedef typename petri_net::tid_t tid_t;
 
         void add_ports ( we_transition_type & trans
                        , const port_vec_type & ports
@@ -102,31 +105,10 @@ namespace xml
               ; ++port
               )
             {
-              if (literal_name.valid (port->type))
-                {
-                  trans.add_ports () (port->name, port->type, direction);
-                }
-              else
-                {
-                  // get type
-                  xml::parse::struct_t::set_type::const_iterator type
-                    (fun.structs_resolved.find (port->type));
+              const signature::desc_t type
+                (fun.type_of_port (direction, *port));
 
-                  if (type == fun.structs_resolved.end())
-                    {
-                      std::ostringstream s;
-                      
-                      s << "unkown port_type " << port->type
-                        << " of port " << port->name
-                        << " during synthesis of function " << *fun.name
-                        << " in " << fun.path
-                        ;
-
-                      throw error::strange (s.str());
-                    }
-
-                  trans.add_ports () (port->name, type->second.sig, direction);
-                }
+              trans.add_ports () (port->name, type, direction);
             }
         }
 
@@ -193,11 +175,23 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const Net &) const
+        we_transition_type operator () (const Net & net) const
         {
           // WORK HERE: recursively construct net: add places (with
           // tokens), add transitions
           we_net_type we_net;
+
+          typedef boost::unordered_map<pid_t, place_type> place_map_type;
+
+          place_map_type place_map;
+
+          for ( place_vec_type::const_iterator place (net.places().begin())
+              ; place != net.places().end()
+              ; ++place
+              )
+            {
+              // get signature, add place
+            }
 
           we_transition_type trans
             ( name()
@@ -220,6 +214,8 @@ namespace xml
       private:
         xml::util::unique<port_type> _in;
         xml::util::unique<port_type> _out;
+
+        literal::name literal_name;
 
       public:
         typedef boost::variant < expression_type
@@ -356,27 +352,38 @@ namespace xml
 
         // ***************************************************************** //
 
+        signature::desc_t type_of_port ( const we::type::PortDirection & dir
+                                       , const port_type & port
+                                       ) const
+        {
+          if (literal_name.valid (port.type))
+            {
+              return port.type;
+            }
+          else
+            {
+              xml::parse::struct_t::set_type::const_iterator type
+                (structs_resolved.find (port.type));
+
+              if (type == structs_resolved.end())
+                {
+                  throw error::port_with_unknown_type
+                    (dir, port.name, port.type, path);
+                }
+
+              return type->second.sig;
+            }
+        };
+
+        // ***************************************************************** //
+
         void type_check (const state::type & state) const
         {
-          literal::name name;
-
           for ( port_vec_type::const_iterator port (in().begin())
               ; port != in().end()
               ; ++port
               )
             {
-              if (!name.valid (port->type))
-                {
-                  xml::parse::struct_t::set_type::const_iterator pos
-                    (structs_resolved.find (port->type));
-
-                  if (pos == structs_resolved.end())
-                    {
-                      throw error::port_with_unknown_type
-                        ("in", port->name, port->type, path);
-                    }
-                }
-
               boost::apply_visitor 
                 (port_type_check<net_type> ("in", *port, path, state), f);
             }
@@ -386,18 +393,6 @@ namespace xml
               ; ++port
               )
             {
-              if (!name.valid (port->type))
-                {
-                  xml::parse::struct_t::set_type::const_iterator pos
-                    (structs_resolved.find (port->type));
-
-                  if (pos == structs_resolved.end())
-                    {
-                      throw error::port_with_unknown_type
-                        ("out", port->name, port->type, path);
-                    }
-                }
-
               boost::apply_visitor 
                 (port_type_check<net_type> ("out", *port, path, state), f);
             }

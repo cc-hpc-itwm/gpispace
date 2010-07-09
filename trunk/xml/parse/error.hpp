@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#include <we/we.hpp>
+
 #include <boost/filesystem.hpp>
 
 namespace xml
@@ -565,7 +567,7 @@ namespace xml
       class port_with_unknown_type : public generic
       {
       private:
-        std::string nice ( const std::string & direction
+        std::string nice ( const we::type::PortDirection & direction
                          , const std::string & port
                          , const std::string & type
                          , const boost::filesystem::path & path
@@ -573,7 +575,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << direction << "-port " << port 
+          s << direction << " " << port 
             << " with unknown type " << type
             << " in " << path
             ;
@@ -581,7 +583,7 @@ namespace xml
           return s.str();
         }
       public:
-        port_with_unknown_type ( const std::string & direction
+        port_with_unknown_type ( const we::type::PortDirection & direction
                                , const std::string & port
                                , const std::string & type
                                , const boost::filesystem::path & path

@@ -36,6 +36,19 @@ namespace we
       , PORT_IN_OUT
       };
 
+    std::ostream & operator << (std::ostream & s, const PortDirection & p)
+    {
+      switch (p)
+        {
+        case PORT_IN: return s << "port-in";
+        case PORT_OUT: return s << "port-out";
+        case PORT_READ: return s << "port-read";
+        case PORT_IN_OUT: return s << "port-inout";
+        default:
+          throw std::runtime_error ("STRANGE: unknown PortDirection");
+        }
+    }
+
     namespace detail {
       namespace direction
       {
