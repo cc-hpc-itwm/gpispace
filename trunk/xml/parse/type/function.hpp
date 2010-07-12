@@ -139,7 +139,7 @@ namespace xml
               ; ++port
               )
             {
-              const signature::desc_t type
+              const signature::type type
                 (fun.type_of_port (direction, *port));
 
               trans.add_ports () (port->name, type, direction);
@@ -158,7 +158,7 @@ namespace xml
               ; ++port
               )
             {
-              const signature::desc_t type
+              const signature::type type
                 (fun.type_of_port (direction, *port));
 
               if (port->place.isNothing())
@@ -256,7 +256,7 @@ namespace xml
               ; ++place
               )
             {
-              const signature::desc_t type (net.type_of_place (*place));
+              const signature::type type (net.type_of_place (*place));
               const pid_t pid
                 (we_net.add_place (we_place_type (place->name, type)));
 
@@ -448,13 +448,13 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::desc_t type_of_port ( const we::type::PortDirection & dir
+        signature::type type_of_port ( const we::type::PortDirection & dir
                                        , const port_type & port
                                        ) const
         {
           if (literal::valid_name (port.type))
             {
-              return port.type;
+              return signature::type (port.type);
             }
 
           xml::parse::struct_t::set_type::const_iterator sig
@@ -466,7 +466,7 @@ namespace xml
                 (dir, port.name, port.type, path);
             }
 
-          return sig->second.sig;
+          return signature::type (sig->second.sig, sig->second.name);
         };
 
         // ***************************************************************** //

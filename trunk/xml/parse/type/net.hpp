@@ -105,11 +105,11 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::desc_t type_of_place (const place_type & place) const
+        signature::type type_of_place (const place_type & place) const
         {
           if (literal::valid_name (place.type))
             {
-              return place.type;
+              return signature::type (place.type);
             }
 
           const xml::parse::struct_t::set_type::const_iterator sig
@@ -120,7 +120,7 @@ namespace xml
               throw error::place_type_unknown (place.name, place.type, path);
             }
 
-          return sig->second.sig;
+          return signature::type (sig->second.sig, sig->second.name);
         }
 
         // ***************************************************************** //

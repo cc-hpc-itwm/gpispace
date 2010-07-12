@@ -29,6 +29,8 @@
 #include <we/type/signature.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
+
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/serialization/variant.hpp>
@@ -1144,17 +1146,19 @@ namespace we { namespace type {
         return s.str();
       }
 
-      template<typename Sig>
       inline std::string with_signature ( const std::string & name
-                                        , const Sig & sig
+                                        , const signature::type & sig
+                                        , const bool & nice = true
                                         )
       {
         std::ostringstream s;
 
-        s << name << endl << lines (',', ::util::show (sig));
+        s << name << endl
+          << lines (',', nice ? sig.nice() : ::util::show (sig.desc()))
+          ;
 
         return s.str();
-      };
+      }
 
       inline std::string association (void)
       {
@@ -1199,11 +1203,34 @@ namespace we { namespace type {
       // ******************************************************************* //
       // predicates about when to expand a transition
 
+      template<typename T> static bool all (const T &) { return true; };
+
       template<typename T>
-      class all
+      class generic
+      {
+      private:
+        boost::function<bool (const T &)> f;
+
+      public:
+        generic () : f (all<T>) {}
+
+        template<typename F>
+        generic (F _f) : f (_f) {}
+
+        bool operator () (const T & x) const 
+        {
+          return f (x);
+        }
+      };
+
+      template<typename Pred>
+      class options
       {
       public:
-        bool operator () (const T &) const { return true; }
+        bool nice;
+        Pred predicate;
+
+        options () : nice (true), predicate() {}
       };
 
       // ******************************************************************* //
@@ -1211,7 +1238,7 @@ namespace we { namespace type {
       template <typename P, typename E, typename T, typename Pred>
       inline std::string dot ( const transition_t<P,E,T> &
                              , id_type &
-                             , const Pred & pred
+                             , const options<Pred> & options
                              , const level_type = 1
                              );
 
@@ -1222,16 +1249,16 @@ namespace we { namespace type {
       private:
         id_type & id;
         const level_type l;
-        const Pred & pred;
+        const options<Pred> & opts;
 
       public:
         transition_visitor_dot ( id_type & _id
                                , const level_type & _l
-                               , const Pred & _pred
+                               , const options<Pred> & _opts
                                )
           : id (_id)
           , l (_l)
-          , pred (_pred)
+          , opts (_opts)
         {}
 
         // ----------------------------------------------------------------- //
@@ -1314,6 +1341,7 @@ namespace we { namespace type {
                 << node ( shape::place
                         , with_signature ( place.get_name()
                                          , place.get_signature()
+                                         , opts.nice
                                          )
                         + token.str()
                         )
@@ -1325,7 +1353,7 @@ namespace we { namespace type {
               const transition_t trans (net.get_transition (*t));
               const id_type id_trans (++id);
 
-              s << dot<P, E, T> (trans, id, pred, l + 1);
+              s << dot<P, E, T> (trans, id, opts, l + 1);
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -1379,7 +1407,7 @@ namespace we { namespace type {
       template <typename P, typename E, typename T, typename Pred>
       inline std::string dot ( const transition_t<P,E,T> & t
                              , id_type & id
-                             , const Pred & pred
+                             , const options<Pred> & opts
                              , const level_type l = 1
                              )
       {
@@ -1419,10 +1447,10 @@ namespace we { namespace type {
               ;
           }
 
-        if (pred (t))
+        if (opts.predicate (t))
           {
             s << boost::apply_visitor 
-                 (transition_visitor_dot<Pred> (id, l + 1, pred), t.data());
+                 (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
             for ( typename trans_t::const_iterator p (t.ports_begin())
                 ; p != t.ports_end()

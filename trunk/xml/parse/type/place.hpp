@@ -212,7 +212,7 @@ namespace xml
         maybe<petri_net::capacity_t> capacity;
         std::vector<token_type> tokens;
         value_vec_type values;
-        signature::desc_t sig;
+        signature::type sig;
         int level;
 
         place_type () 
@@ -248,7 +248,7 @@ namespace xml
             {
               values.push_back 
                 (boost::apply_visitor ( construct_value (name, path, "", state)
-                                      , sig
+                                      , sig.desc()
                                       , *tok
                                       )
                 );

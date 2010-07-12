@@ -73,23 +73,75 @@ namespace signature
     }
   };
 
+  namespace visitor
+  {
+    class show : public boost::static_visitor<std::ostream &>
+    {
+    private:
+      std::ostream & s;
+
+    public:
+      show (std::ostream & _s) : s(_s) {};
+
+      std::ostream & operator () (const literal::type_name_t & t) const
+      {
+        return s << util::show (t);
+      }
+
+      std::ostream & operator () (const structured_t & map) const
+      {
+        s << "[";
+
+        for ( structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          s << ((field != map.begin()) ? ", " : "")
+            << util::show (field->first)
+            << " :: "
+            << util::show (field->second)
+            ;
+
+        s << "]";
+
+        return s;
+      }
+    };
+  }
+
   class type
   {
   private:
     desc_t desc_;
+    std::string nice_;
+
+    std::string mk_nice (void)
+    {
+      std::ostringstream s;
+
+      boost::apply_visitor (visitor::show (s), desc_);
+
+      return s.str();
+    }
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(desc_);
+      ar & BOOST_SERIALIZATION_NVP(nice_);
     }
   public:
-    type () : desc_ (literal::CONTROL) {}
+    type () : desc_(literal::CONTROL), nice_ (mk_nice()) {}
+
     template <typename T>
-    type (const T & t) : desc_ (t) {}
+    type (const T & t) : desc_ (t), nice_ (mk_nice()) {}
+
+    template <typename T>
+    type (const T & t, const std::string & s) : desc_ (t), nice_ (s) {}
 
     const desc_t & desc () const { return desc_; }
+    const std::string & nice () const { return nice_; }
 
     friend std::ostream & operator << (std::ostream &, const type &);
     friend bool operator == (const type &, const type &);
@@ -256,39 +308,6 @@ namespace signature
           (msg + ": try to create a field in a non-strutured " + msg);
       }
     };
-
-    class show : public boost::static_visitor<std::ostream &>
-    {
-    private:
-      std::ostream & s;
-
-    public:
-      show (std::ostream & _s) : s(_s) {};
-
-      std::ostream & operator () (const literal::type_name_t & t) const
-      {
-        return s << util::show (t);
-      }
-
-      std::ostream & operator () (const structured_t & map) const
-      {
-        s << "[";
-
-        for ( structured_t::const_iterator field (map.begin())
-            ; field != map.end()
-            ; ++field
-            )
-          s << ((field != map.begin()) ? ", " : "")
-            << util::show (field->first)
-            << " :: "
-            << util::show (field->second)
-            ;
-
-        s << "]";
-
-        return s;
-      }
-    };
   }
 
   inline std::ostream & operator << (std::ostream & os, const type & s)
@@ -298,10 +317,8 @@ namespace signature
 
   inline std::size_t hash_value (const type & s)
   {
-    std::ostringstream oss;
-    oss << s;
     boost::hash<std::string> hasher;
-    return hasher (oss.str());
+    return hasher (s.nice());
   }
 
   inline bool operator == (const type & a, const type & b)

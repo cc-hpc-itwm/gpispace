@@ -22,6 +22,9 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+
 // ************************************************************************* //
 
 namespace xml
@@ -680,20 +683,6 @@ namespace xml
 // ************************************************************************* //
 // example of how to select certain transitions to expand in toDot only
 
-template<typename T, typename P>
-class by_name_predicate
-{
-private:
-  const P & p;
-public:
-  by_name_predicate (const P & _p) : p (_p) {}
-
-  bool operator () (const T & x) const
-  {
-    return p (x.name());
-  }
-};
-
 inline bool starts_with (const std::string & pref, const std::string & x)
 {
   std::string::const_iterator pos_pref (pref.begin());
@@ -718,18 +707,11 @@ inline bool starts_with (const std::string & pref, const std::string & x)
   return false;
 }
 
-class not_starts_with
+template<typename T>
+bool not_starts_with (const std::string & pref, const T & x)
 {
-private:
-  const std::string pref;
-public:
-  not_starts_with (const std::string & _pref) : pref (_pref) {}
-        
-  bool operator () (const std::string & s) const
-  {
-    return !starts_with (pref, s);
-  }
-};
+  return !starts_with (pref, x.name());
+}
 
 // ************************************************************************* //
 
@@ -813,10 +795,15 @@ main (int argc, char ** argv)
 
   //  std::cout << act << std::endl;
 
-  act.dot ( std::cout
-          , by_name_predicate<we::transition_t, not_starts_with>
-            (not_starts_with ("generate"))
-          );
+  typedef we::type::dot::generic<we::transition_t> pred_t;
+
+  we::type::dot::options<pred_t> options;
+
+  //  pred_t pred (boost::bind (not_starts_with<we::transition_t>, "generate", _1));
+  //  options.predicate = pred;
+  //  options.nice = false;
+
+  act.dot (std::cout, options);
 
   //std::cout << we::util::text_codec::encode (act);
 
