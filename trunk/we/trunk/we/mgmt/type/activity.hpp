@@ -414,6 +414,18 @@ namespace we { namespace mgmt { namespace type {
       os << "}";
     }
 
+    void dot (std::ostream & os) const
+    {
+      unique_lock_t lock (mutex_);
+
+      we::type::dot::id_type id (0);
+
+      os << "digraph " << transition().name() << "{" << std::endl;
+      os << "compound=true" << std::endl;
+      os << we::type::dot::dot (transition(), id);
+      os << "}" << std::endl;
+    }
+
     // **********************************
     //
     // Lockable concept implementation

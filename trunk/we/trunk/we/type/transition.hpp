@@ -531,6 +531,30 @@ namespace we { namespace type {
         }
       }
 
+      typename inner_to_outer_t::const_iterator
+      inner_to_outer_begin (void) const
+      {
+        return inner_to_outer_.begin();
+      }
+
+      typename inner_to_outer_t::const_iterator
+      inner_to_outer_end (void) const
+      {
+        return inner_to_outer_.end();
+      }
+
+      typename outer_to_inner_t::const_iterator
+      outer_to_inner_begin (void) const
+      {
+        return outer_to_inner_.begin();
+      }
+
+      typename outer_to_inner_t::const_iterator
+      outer_to_inner_end (void) const
+      {
+        return outer_to_inner_.end();
+      }
+
       detail::connection_adder<this_type, pid_t, port_id_t> add_connections()
       {
         return detail::connection_adder<this_type, pid_t, port_id_t>(*this);
@@ -867,7 +891,6 @@ namespace we { namespace type {
                                 > & net
                                 ) const
         {
-          we::util::remove_unused_variable_warning (net);
           return std::string("{net, ") + ::util::show(net) + "}";
         }
       };
@@ -952,6 +975,319 @@ namespace we { namespace type {
       }
 
       return s;
+    }
+
+    // ********************************************************************** //
+    // toDot
+
+    namespace dot {
+      typedef unsigned long id_type;
+
+      // ******************************************************************* //
+
+      inline std::string parens ( const std::string & s
+                                , const std::string open = "("
+                                , const std::string close = ")"
+                                )
+      {
+        return open + s + close;
+      }
+
+      inline std::string brackets (const std::string & s)
+      {
+        return parens (s, "[", "]");
+      }
+
+      inline std::string dquote (const std::string & s)
+      {
+        return parens (s, "\"", "\"");
+      }
+
+      // ******************************************************************* //
+
+      inline std::string lines (const char & b, const char & c)
+      {
+        return ::util::show (c) + ((c == b) ? "\\n" : "");
+      }
+
+      inline std::string lines (const char & b, const std::string & s)
+      {
+        std::string l;
+
+        for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+          {
+            l += lines (b, *pos);
+          }
+
+        return l;
+      }
+
+      // ******************************************************************* //
+
+      inline std::string quote (const char & c)
+      {
+        switch (c)
+          {
+          case '{': return "\\{";
+          case '}': return "\\}";
+          case '>': return "\\>";
+          case '<': return "\\<";
+          default: return ::util::show (c);
+          }
+      }
+
+      inline std::string quote (const std::string & s)
+      {
+        std::string q;
+
+        for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+          {
+            q += quote (*pos);
+          }
+
+        return lines (';', q);
+      }
+
+      // ******************************************************************* //
+
+      inline std::string keyval (const std::string & key, const std::string & val)
+      {
+        return key + "=" + dquote (val);
+      }
+
+      inline std::string name (const id_type & id, const std::string & _name)
+      {
+        std::ostringstream s;
+
+        s << "n" << id << "_" << _name;
+
+        return s.str();
+      }
+
+      // ******************************************************************* //
+
+      namespace shape
+      {
+        static const std::string condition = "record";
+        static const std::string port = "hexagon";
+        static const std::string expression = "none";
+        static const std::string mod = "box";
+        static const std::string place = "circle";
+      }
+
+      // ******************************************************************* //
+
+      inline std::string node ( const std::string & shape
+                              , const std::string & label
+                              )
+      {
+        std::stringstream s;
+
+        s << brackets ( keyval ("shape", shape) 
+                      + "," 
+                      + keyval ("label", label)
+                      ) << std::endl;
+
+        return s.str();
+      }
+
+      template<typename Sig>
+      inline std::string with_signature ( const std::string & name
+                                        , const Sig & sig
+                                        )
+      {
+        std::ostringstream s;
+
+        s << name << "\\n" << lines (',', ::util::show (sig));
+
+        return s.str();
+      };
+
+      inline std::string association (void)
+      {
+        return brackets ( keyval ("style", "dotted")
+                        + "," 
+                        + keyval ("dir","none")
+                        );
+      }
+
+      // ******************************************************************* //
+
+      template <typename P, typename E, typename T>
+      inline std::string dot (const transition_t<P,E,T> &, id_type &);
+
+      class transition_visitor_dot : public boost::static_visitor<std::string>
+      {
+      private:
+        id_type & id;
+
+      public:
+        transition_visitor_dot (id_type & _id) : id (_id) {}
+
+        // ----------------------------------------------------------------- //
+
+        std::string operator () (const expression_t & expr) const
+        {
+          std::ostringstream s;
+
+          s << name (id, "expression")
+            << node (shape::expression, quote (::util::show (expr)))
+            ;
+
+          return s.str();
+        }
+
+        // ----------------------------------------------------------------- //
+
+        std::string operator () (const module_call_t & mod_call) const
+        {
+          std::ostringstream s;
+
+          s << name (id, "modcall")
+            << node (shape::mod, ::util::show (mod_call))
+            ;
+
+          return s.str();
+        }
+
+        // ----------------------------------------------------------------- //
+
+        template <typename P, typename E, typename T>
+        std::string operator ()
+        (const petri_net::net<P, transition_t<P, E, T>, E, T> & net) const
+        {
+          typedef transition_t<P, E, T> transition_t;
+          typedef petri_net::net<P, transition_t, E, T> pnet_t;
+          typedef typename pnet_t::place_const_it place_const_it;
+          typedef typename pnet_t::transition_const_it transition_const_it;
+
+          std::ostringstream s;
+
+          const id_type id_net (id);
+
+          s << "subgraph cluster_net" << id_net << "{" << std::endl;
+
+          for (place_const_it p (net.places()); p.has_more(); ++p)
+            {
+              const P place (net.get_place (*p));
+
+              s << name (id_net, "place_" + ::util::show (*p))
+                << node ( shape::place
+                        , with_signature ( place.get_name()
+                                         , place.get_signature()
+                                         )
+                        )
+                ;
+
+              // WORK HERE: the tokens!
+            }
+
+          for (transition_const_it t (net.transitions()); t.has_more(); ++t)
+            {
+              const transition_t trans (net.get_transition (*t));
+              const id_type id_trans (++id);
+
+              s << dot<P, E, T> (trans, id);
+
+              for ( typename transition_t::inner_to_outer_t::const_iterator
+                      connection (trans.inner_to_outer_begin())
+                  ; connection != trans.inner_to_outer_end()
+                  ; ++connection
+                  )
+                {
+                  s << name (id_trans, "port_" + ::util::show (connection->first))
+                    << "->"
+                    << name (id_net, "place_" + ::util::show (connection->second))
+                    << std::endl
+                    ;
+                }
+
+              for ( typename transition_t::outer_to_inner_t::const_iterator
+                      connection (trans.outer_to_inner_begin())
+                  ; connection != trans.outer_to_inner_end()
+                  ; ++connection
+                  )
+                {
+                  s << name (id_net, "place_" + ::util::show (connection->first))
+                    << "->"
+                    << name (id_trans, "port_" + ::util::show (connection->second))
+                    << std::endl
+                    ;
+                }
+            }
+
+          s << "}" << std::endl;
+
+          return s.str();
+        }
+      };
+
+      // ******************************************************************* //
+
+      template <typename P, typename E, typename T>
+      inline std::string dot ( const transition_t<P,E,T> & t
+                             , id_type & id
+                             )
+      {
+        typedef transition_t<P,E,T> trans_t;
+
+        std::ostringstream s;
+
+        const id_type id_trans (id);
+
+        s << "subgraph cluster_" << id << "{" << std::endl;
+
+        s << name (id_trans, "condition")
+          << node ( shape::condition
+                  , t.name() 
+                  + "|" 
+                  + quote (::util::show (t.condition()))
+                  + "|"
+                  + (t.is_internal() ? "internal" : "external")
+                  )
+          ;
+
+        for ( typename trans_t::const_iterator p (t.ports_begin())
+            ; p != t.ports_end()
+            ; ++p
+            )
+          {
+            s << name (id_trans, "port_" + ::util::show(p->first))
+              << node ( shape::port
+                      , with_signature ( p->second.name()
+                                       , p->second.signature()
+                                       )
+                      )
+              ;
+          }
+
+        s << boost::apply_visitor ( transition_visitor_dot(id)
+                                  , t.data()
+                                  );
+
+        for ( typename trans_t::const_iterator p (t.ports_begin())
+            ; p != t.ports_end()
+            ; ++p
+            )
+          {
+            if (p->second.has_associated_place())
+              {
+                s << name (id_trans, "port_" + ::util::show (p->first))
+                  << "->"
+                  << name (id_trans
+                          , "place_" 
+                          + ::util::show (p->second.associated_place())
+                          )
+                  << association()
+                  << std::endl
+                  ;
+              }
+          }
+
+        s << "}" << std::endl;
+
+        return s.str();
+      }
     }
   }
 }

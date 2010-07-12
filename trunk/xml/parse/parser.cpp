@@ -754,7 +754,14 @@ main (int argc, char ** argv)
 
   std::cerr << "creating net..." << std::endl;
 
-  std::cout << f.synthesize<we::activity_t> (state) << std::endl;
+  we::transition_t trans (f.synthesize<we::activity_t> (state));
+  we::activity_t act (trans);
+
+  //  std::cout << act << std::endl;
+
+  act.dot (std::cout);
+
+  //std::cout << we::util::text_codec::encode (act);
 
   std::cerr << "done" << std::endl;
   

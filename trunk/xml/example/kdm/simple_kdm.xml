@@ -50,26 +50,9 @@
       <use name="f_loadTT"/>
       <connect-read place="config" port="config" />
       <connect-in place="trigger_loadTT" port="trigger" />
-      <connect-out port="trigger" place="trigger_generate" />
-    </transition>
-    <place name="trigger_generate" type="control" />
-
-    <transition name="duplicate_trigger_generate_offsets">
-      <defun>
-        <in name="value" type="control" />
-        <out name="one" type="control" />
-        <out name="two" type="control" />
-        <expression>
-          ${one} := ${value};
-          ${two} := ${value};
-        </expression>
-      </defun>
-      <connect-in place="trigger_generate" port="value" />
-      <connect-out port="one" place="trigger_extract_offsets" />
-      <connect-out port="two" place="trigger_extract_volumes" />
+      <connect-out port="trigger" place="trigger_extract_offsets" />
     </transition>
     <place name="trigger_extract_offsets" type="control" />
-    <place name="trigger_extract_volumes" type="control" />
 
     <transition name="extract_offsets">
       <defun>
@@ -86,19 +69,15 @@
     </transition>
     <place name="number_of_offsets" type="long" />
 
-<place name="trigger_generate_volumes" type="control"/>    
-            
     <transition name="extract_number_of_volumes">
       <defun>
         <in name="config" type="CONFIG" />
-        <in name="trigger" type="control" />
         <out name="volumes" type="long" />
         <expression>
           ${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
         </expression>
       </defun>
       <connect-read place="config" port="config" />
-      <connect-in place="trigger_generate_volumes" port="trigger" />
       <connect-out port="volumes" place="number_of_volumes" />      
     </transition>
     <place name="number_of_volumes" type="long" />
