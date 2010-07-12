@@ -1060,6 +1060,7 @@ namespace we { namespace type {
           case '}': return "\\}";
           case '>': return "\\>";
           case '<': return "\\<";
+          case '"': return "\\\"";
           default: return ::util::show (c);
           }
       }
@@ -1092,6 +1093,15 @@ namespace we { namespace type {
         return s.str();
       }
 
+      inline std::string bgcolor (const std::string & color)
+      {
+        std::ostringstream s;
+
+        s << keyval ("bgcolor", color) << std::endl;
+
+        return s.str();
+      }
+
       // ******************************************************************* //
 
       namespace shape
@@ -1103,18 +1113,32 @@ namespace we { namespace type {
         static const std::string place = "circle";
       }
 
+      namespace color
+      {
+        static const std::string internal = "white";
+        static const std::string external = "grey";
+        static const std::string modcal = "yellow";
+        static const std::string node = "white";
+      }
+
       // ******************************************************************* //
 
       inline std::string node ( const std::string & shape
                               , const std::string & label
                               )
       {
-        std::stringstream s;
+        std::ostringstream s;
 
         s << brackets ( keyval ("shape", shape) 
                       + ", " 
                       + keyval ("label", label)
-                      ) << std::endl;
+                      + ", "
+                      + keyval ("style", "filled")
+                      + ", "
+                      + keyval ("fillcolor", color::node)
+                      )
+          << std::endl
+          ;
 
         return s.str();
       }
@@ -1152,13 +1176,16 @@ namespace we { namespace type {
       private:
         id_type & id;
         const level_type l;
+        bool & modcall;
 
       public:
         transition_visitor_dot ( id_type & _id
                                , const level_type & _l
+                               , bool & _modcall
                                )
           : id (_id)
           , l (_l)
+          , modcall (_modcall)
         {}
 
         // ----------------------------------------------------------------- //
@@ -1179,11 +1206,17 @@ namespace we { namespace type {
 
         std::string operator () (const module_call_t & mod_call) const
         {
+          modcall = true;
+
           std::ostringstream s;
 
           level (s, l)
             << name (id, "modcall")
             << node (shape::mod, ::util::show (mod_call))
+            ;
+
+          level (s,l)
+            << bgcolor (color::modcal)
             ;
 
           return s.str();
@@ -1199,6 +1232,7 @@ namespace we { namespace type {
           typedef petri_net::net<P, transition_t, E, T> pnet_t;
           typedef typename pnet_t::place_const_it place_const_it;
           typedef typename pnet_t::transition_const_it transition_const_it;
+          typedef typename pnet_t::token_place_it token_place_it;
 
           std::ostringstream s;
 
@@ -1212,16 +1246,38 @@ namespace we { namespace type {
             {
               const P place (net.get_place (*p));
 
+              std::ostringstream token;
+              typedef boost::unordered_map<T, size_t> token_cnt_t;
+              token_cnt_t token_cnt;
+              for (token_place_it tp (net.get_token (*p)); tp.has_more(); ++tp)
+                {
+                  ++token_cnt[*tp];
+                }
+
+              for ( typename token_cnt_t::const_iterator tok (token_cnt.begin())
+                  ; tok != token_cnt.end()
+                  ; ++tok
+                  )
+                {
+                  token << endl;
+
+                  if (tok->second > 1)
+                    {
+                      token << tok->second << " x ";
+                    }
+
+                  token << quote (::util::show (tok->first));
+                }
+
               level (s, l + 1)
                 << name (id_net, "place_" + ::util::show (*p))
                 << node ( shape::place
                         , with_signature ( place.get_name()
                                          , place.get_signature()
                                          )
+                        + token.str()
                         )
                 ;
-
-              // WORK HERE: the tokens!
             }
 
           for (transition_const_it t (net.transitions()); t.has_more(); ++t)
@@ -1267,6 +1323,8 @@ namespace we { namespace type {
                     ;
                 }
             }
+
+          level (s, l + 1) << bgcolor (color::internal);
 
           level (s, l)
             << "} /* " << "cluster_net_" << id_net << " */"
@@ -1320,7 +1378,9 @@ namespace we { namespace type {
               ;
           }
 
-        s << boost::apply_visitor ( transition_visitor_dot (id, l + 1)
+        bool modcall (false);
+
+        s << boost::apply_visitor ( transition_visitor_dot (id, l + 1, modcall)
                                   , t.data()
                                   );
 
@@ -1342,6 +1402,16 @@ namespace we { namespace type {
                   << std::endl
                   ;
               }
+          }
+
+        if (!modcall)
+          {
+            level (s, l + 1) 
+              << bgcolor ( t.is_internal() 
+                         ? color::internal 
+                         : color::external
+                         )
+              ;
           }
 
         level (s, l)

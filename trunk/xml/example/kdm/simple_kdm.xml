@@ -11,12 +11,7 @@
 
   <net>
 
-    <place name="config_file" type="string">
-      <token>
-        <value>"/tmp/test.cfg"</value>
-      </token>
-    </place>
-
+   <place name="config_file" type="string"/>
    <place name="done" type="control"/>
 
     <transition name="initialize">
