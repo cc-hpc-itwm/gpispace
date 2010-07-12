@@ -420,10 +420,10 @@ namespace we { namespace mgmt { namespace type {
 
       we::type::dot::id_type id (0);
 
-      os << "digraph " << transition().name() << "{" << std::endl;
+      os << "digraph " << transition().name() << " {" << std::endl;
       os << "compound=true" << std::endl;
       os << we::type::dot::dot (transition(), id);
-      os << "}" << std::endl;
+      os << "} /* " << transition().name() << " */" << std::endl;
     }
 
     // **********************************

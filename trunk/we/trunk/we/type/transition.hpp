@@ -982,6 +982,22 @@ namespace we { namespace type {
 
     namespace dot {
       typedef unsigned long id_type;
+      typedef unsigned long level_type;
+
+      static const std::string endl = "\\n";
+      static const std::string arrow = " -> ";
+
+      // ******************************************************************* //
+
+      std::ostream & level (std::ostream & s, const level_type & level)
+      {
+        for (level_type i (0); i < level; ++i)
+          {
+            s << "  ";
+          }
+
+        return s;
+      }
 
       // ******************************************************************* //
 
@@ -995,7 +1011,7 @@ namespace we { namespace type {
 
       inline std::string brackets (const std::string & s)
       {
-        return parens (s, "[", "]");
+        return " " + parens (s, "[", "]");
       }
 
       inline std::string dquote (const std::string & s)
@@ -1005,18 +1021,30 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      inline std::string lines (const char & b, const char & c)
-      {
-        return ::util::show (c) + ((c == b) ? "\\n" : "");
-      }
-
       inline std::string lines (const char & b, const std::string & s)
       {
         std::string l;
+        bool was_b (false);
 
         for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
           {
-            l += lines (b, *pos);
+            if (*pos == b)
+              {
+                l += endl;
+
+                was_b = true;
+              }
+            else
+              {
+                if (was_b)
+                  {
+                    was_b = (*pos != ' ');
+                  }
+                else
+                  {
+                    l += *pos;
+                  }
+              }
           }
 
         return l;
@@ -1052,7 +1080,7 @@ namespace we { namespace type {
 
       inline std::string keyval (const std::string & key, const std::string & val)
       {
-        return key + "=" + dquote (val);
+        return key + " = " + dquote (val);
       }
 
       inline std::string name (const id_type & id, const std::string & _name)
@@ -1084,7 +1112,7 @@ namespace we { namespace type {
         std::stringstream s;
 
         s << brackets ( keyval ("shape", shape) 
-                      + "," 
+                      + ", " 
                       + keyval ("label", label)
                       ) << std::endl;
 
@@ -1098,7 +1126,7 @@ namespace we { namespace type {
       {
         std::ostringstream s;
 
-        s << name << "\\n" << lines (',', ::util::show (sig));
+        s << name << endl << lines (',', ::util::show (sig));
 
         return s.str();
       };
@@ -1106,7 +1134,7 @@ namespace we { namespace type {
       inline std::string association (void)
       {
         return brackets ( keyval ("style", "dotted")
-                        + "," 
+                        + ", " 
                         + keyval ("dir","none")
                         );
       }
@@ -1114,15 +1142,24 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template <typename P, typename E, typename T>
-      inline std::string dot (const transition_t<P,E,T> &, id_type &);
+      inline std::string dot ( const transition_t<P,E,T> &
+                             , id_type &
+                             , const level_type
+                             );
 
       class transition_visitor_dot : public boost::static_visitor<std::string>
       {
       private:
         id_type & id;
+        const level_type l;
 
       public:
-        transition_visitor_dot (id_type & _id) : id (_id) {}
+        transition_visitor_dot ( id_type & _id
+                               , const level_type & _l
+                               )
+          : id (_id)
+          , l (_l)
+        {}
 
         // ----------------------------------------------------------------- //
 
@@ -1130,7 +1167,8 @@ namespace we { namespace type {
         {
           std::ostringstream s;
 
-          s << name (id, "expression")
+          level (s, l)
+            << name (id, "expression")
             << node (shape::expression, quote (::util::show (expr)))
             ;
 
@@ -1143,7 +1181,8 @@ namespace we { namespace type {
         {
           std::ostringstream s;
 
-          s << name (id, "modcall")
+          level (s, l)
+            << name (id, "modcall")
             << node (shape::mod, ::util::show (mod_call))
             ;
 
@@ -1165,13 +1204,16 @@ namespace we { namespace type {
 
           const id_type id_net (id);
 
-          s << "subgraph cluster_net" << id_net << "{" << std::endl;
+          level (s, l)
+            << "subgraph cluster_net_" << id_net << " {"
+            << std::endl;
 
           for (place_const_it p (net.places()); p.has_more(); ++p)
             {
               const P place (net.get_place (*p));
 
-              s << name (id_net, "place_" + ::util::show (*p))
+              level (s, l + 1)
+                << name (id_net, "place_" + ::util::show (*p))
                 << node ( shape::place
                         , with_signature ( place.get_name()
                                          , place.get_signature()
@@ -1187,7 +1229,7 @@ namespace we { namespace type {
               const transition_t trans (net.get_transition (*t));
               const id_type id_trans (++id);
 
-              s << dot<P, E, T> (trans, id);
+              s << dot<P, E, T> (trans, id, l + 1);
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -1195,9 +1237,14 @@ namespace we { namespace type {
                   ; ++connection
                   )
                 {
-                  s << name (id_trans, "port_" + ::util::show (connection->first))
-                    << "->"
-                    << name (id_net, "place_" + ::util::show (connection->second))
+                  level (s, l + 1)
+                    << name ( id_trans
+                            , "port_" + ::util::show (connection->first)
+                            )
+                    << arrow
+                    << name ( id_net
+                            , "place_" + ::util::show (connection->second)
+                            )
                     << std::endl
                     ;
                 }
@@ -1208,15 +1255,22 @@ namespace we { namespace type {
                   ; ++connection
                   )
                 {
-                  s << name (id_net, "place_" + ::util::show (connection->first))
-                    << "->"
-                    << name (id_trans, "port_" + ::util::show (connection->second))
+                  level (s, l + 1)
+                    << name ( id_net
+                            , "place_" + ::util::show (connection->first)
+                            )
+                    << arrow
+                    << name ( id_trans
+                            , "port_" + ::util::show (connection->second)
+                            )
                     << std::endl
                     ;
                 }
             }
 
-          s << "}" << std::endl;
+          level (s, l)
+            << "} /* " << "cluster_net_" << id_net << " */"
+            << std::endl;
 
           return s.str();
         }
@@ -1227,6 +1281,7 @@ namespace we { namespace type {
       template <typename P, typename E, typename T>
       inline std::string dot ( const transition_t<P,E,T> & t
                              , id_type & id
+                             , const level_type l
                              )
       {
         typedef transition_t<P,E,T> trans_t;
@@ -1235,9 +1290,12 @@ namespace we { namespace type {
 
         const id_type id_trans (id);
 
-        s << "subgraph cluster_" << id << "{" << std::endl;
+        level (s, l)
+          << "subgraph cluster_" << id_trans << " {"
+          << std::endl;
 
-        s << name (id_trans, "condition")
+        level (s, l + 1)
+          << name (id_trans, "condition")
           << node ( shape::condition
                   , t.name() 
                   + "|" 
@@ -1252,7 +1310,8 @@ namespace we { namespace type {
             ; ++p
             )
           {
-            s << name (id_trans, "port_" + ::util::show(p->first))
+            level (s, l + 1)
+              << name (id_trans, "port_" + ::util::show(p->first))
               << node ( shape::port
                       , with_signature ( p->second.name()
                                        , p->second.signature()
@@ -1261,7 +1320,7 @@ namespace we { namespace type {
               ;
           }
 
-        s << boost::apply_visitor ( transition_visitor_dot(id)
+        s << boost::apply_visitor ( transition_visitor_dot (id, l + 1)
                                   , t.data()
                                   );
 
@@ -1272,8 +1331,9 @@ namespace we { namespace type {
           {
             if (p->second.has_associated_place())
               {
-                s << name (id_trans, "port_" + ::util::show (p->first))
-                  << "->"
+                level (s, l + 1)
+                  << name (id_trans, "port_" + ::util::show (p->first))
+                  << arrow
                   << name (id_trans
                           , "place_" 
                           + ::util::show (p->second.associated_place())
@@ -1284,9 +1344,19 @@ namespace we { namespace type {
               }
           }
 
-        s << "}" << std::endl;
+        level (s, l)
+          << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */"
+          << std::endl;
 
         return s.str();
+      }
+
+      template <typename P, typename E, typename T>
+      inline std::string dot ( const transition_t<P,E,T> & t
+                             , id_type & id
+                             )
+      {
+        return dot<P, E, T> (t, id, 1);
       }
     }
   }
