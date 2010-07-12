@@ -678,6 +678,60 @@ namespace xml
 }
 
 // ************************************************************************* //
+// example of how to select certain transitions to expand in toDot only
+
+template<typename T, typename P>
+class by_name_predicate
+{
+private:
+  const P & p;
+public:
+  by_name_predicate (const P & _p) : p (_p) {}
+
+  bool operator () (const T & x) const
+  {
+    return p (x.name());
+  }
+};
+
+inline bool starts_with (const std::string & pref, const std::string & x)
+{
+  std::string::const_iterator pos_pref (pref.begin());
+  std::string::const_iterator pos_x (x.begin());
+
+  while (pos_pref != pref.end() && pos_x != x.end())
+    {
+      if (*pos_pref != *pos_x)
+        {
+          return false;
+        }
+
+      ++pos_pref;
+      ++pos_x;
+    }
+
+  if (pos_pref == pref.end())
+    {
+      return true;
+    }
+
+  return false;
+}
+
+class not_starts_with
+{
+private:
+  const std::string pref;
+public:
+  not_starts_with (const std::string & _pref) : pref (_pref) {}
+        
+  bool operator () (const std::string & s) const
+  {
+    return !starts_with (pref, s);
+  }
+};
+
+// ************************************************************************* //
 
 namespace po = boost::program_options;
 
@@ -759,7 +813,10 @@ main (int argc, char ** argv)
 
   //  std::cout << act << std::endl;
 
-  act.dot (std::cout);
+  act.dot ( std::cout
+          , by_name_predicate<we::transition_t, not_starts_with>
+            (not_starts_with ("generate"))
+          );
 
   //std::cout << we::util::text_codec::encode (act);
 

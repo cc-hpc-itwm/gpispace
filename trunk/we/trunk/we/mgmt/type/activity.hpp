@@ -414,7 +414,8 @@ namespace we { namespace mgmt { namespace type {
       os << "}";
     }
 
-    void dot (std::ostream & os) const
+    template<typename Pred>
+    void dot (std::ostream & os, const Pred & pred) const
     {
       unique_lock_t lock (mutex_);
 
@@ -422,7 +423,7 @@ namespace we { namespace mgmt { namespace type {
 
       os << "digraph " << transition().name() << " {" << std::endl;
       os << "compound=true" << std::endl;
-      os << we::type::dot::dot (transition(), id);
+      os << we::type::dot::dot (transition(), id, pred);
       os << "} /* " << transition().name() << " */" << std::endl;
     }
 

@@ -1117,7 +1117,8 @@ namespace we { namespace type {
       {
         static const std::string internal = "white";
         static const std::string external = "grey";
-        static const std::string modcal = "yellow";
+        static const std::string modcall = "yellow";
+        static const std::string expression = "white";
         static const std::string node = "white";
       }
 
@@ -1165,27 +1166,72 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename T>
+      namespace content
+      {
+        enum kind
+          { expression
+          , modcall
+          , subnet
+          };
+
+        class visitor : public boost::static_visitor<kind>
+        {
+        public:
+          kind operator () (const expression_t &) const
+          {
+            return expression;
+          }
+
+          kind operator () (const module_call_t &) const
+          {
+            return modcall;
+          }
+
+          template <typename P, typename E, typename T>
+          kind operator ()
+          (const petri_net::net<P, transition_t<P, E, T>, E, T> &) const
+          {
+            return subnet;
+          }
+        };
+      }
+
+      // ******************************************************************* //
+      // predicates about when to expand a transition
+
+      template<typename T>
+      class all
+      {
+      public:
+        bool operator () (const T &) const { return true; }
+      };
+
+      // ******************************************************************* //
+
+      template <typename P, typename E, typename T, typename Pred>
       inline std::string dot ( const transition_t<P,E,T> &
                              , id_type &
-                             , const level_type
+                             , const Pred & pred
+                             , const level_type = 1
                              );
 
+
+      template<typename Pred>
       class transition_visitor_dot : public boost::static_visitor<std::string>
       {
       private:
         id_type & id;
         const level_type l;
-        bool & modcall;
+        const Pred & pred;
 
       public:
         transition_visitor_dot ( id_type & _id
                                , const level_type & _l
-                               , bool & _modcall
+                               , const Pred & _pred
                                )
           : id (_id)
           , l (_l)
-          , modcall (_modcall)
+          , pred (_pred)
         {}
 
         // ----------------------------------------------------------------- //
@@ -1206,17 +1252,11 @@ namespace we { namespace type {
 
         std::string operator () (const module_call_t & mod_call) const
         {
-          modcall = true;
-
           std::ostringstream s;
 
           level (s, l)
             << name (id, "modcall")
             << node (shape::mod, ::util::show (mod_call))
-            ;
-
-          level (s,l)
-            << bgcolor (color::modcal)
             ;
 
           return s.str();
@@ -1285,7 +1325,7 @@ namespace we { namespace type {
               const transition_t trans (net.get_transition (*t));
               const id_type id_trans (++id);
 
-              s << dot<P, E, T> (trans, id, l + 1);
+              s << dot<P, E, T> (trans, id, pred, l + 1);
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -1336,10 +1376,11 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename T>
+      template <typename P, typename E, typename T, typename Pred>
       inline std::string dot ( const transition_t<P,E,T> & t
                              , id_type & id
-                             , const level_type l
+                             , const Pred & pred
+                             , const level_type l = 1
                              )
       {
         typedef transition_t<P,E,T> trans_t;
@@ -1378,40 +1419,47 @@ namespace we { namespace type {
               ;
           }
 
-        bool modcall (false);
-
-        s << boost::apply_visitor ( transition_visitor_dot (id, l + 1, modcall)
-                                  , t.data()
-                                  );
-
-        for ( typename trans_t::const_iterator p (t.ports_begin())
-            ; p != t.ports_end()
-            ; ++p
-            )
+        if (pred (t))
           {
-            if (p->second.has_associated_place())
+            s << boost::apply_visitor 
+                 (transition_visitor_dot<Pred> (id, l + 1, pred), t.data());
+
+            for ( typename trans_t::const_iterator p (t.ports_begin())
+                ; p != t.ports_end()
+                ; ++p
+                )
               {
-                level (s, l + 1)
-                  << name (id_trans, "port_" + ::util::show (p->first))
-                  << arrow
-                  << name (id_trans
-                          , "place_" 
-                          + ::util::show (p->second.associated_place())
-                          )
-                  << association()
-                  << std::endl
-                  ;
+                if (p->second.has_associated_place())
+                  {
+                    level (s, l + 1)
+                      << name (id_trans, "port_" + ::util::show (p->first))
+                      << arrow
+                      << name (id_trans
+                              , "place_" 
+                              + ::util::show (p->second.associated_place())
+                              )
+                      << association()
+                      << std::endl
+                      ;
+                  }
               }
           }
 
-        if (!modcall)
+        switch (boost::apply_visitor (content::visitor (), t.data()))
           {
-            level (s, l + 1) 
-              << bgcolor ( t.is_internal() 
-                         ? color::internal 
-                         : color::external
-                         )
+          case content::modcall:
+            level (s, l + 1) << bgcolor (color::modcall);
+            break;
+          case content::expression:
+            level (s, l + 1) << bgcolor (color::expression);
+            break;
+          case content::subnet:
+            level (s, l + 1) << 
+              bgcolor (t.is_internal() ? color::internal : color::external)
               ;
+            break;
+          default: throw std::runtime_error
+              ("STRANGE: unknown type of transition content");
           }
 
         level (s, l)
@@ -1419,14 +1467,6 @@ namespace we { namespace type {
           << std::endl;
 
         return s.str();
-      }
-
-      template <typename P, typename E, typename T>
-      inline std::string dot ( const transition_t<P,E,T> & t
-                             , id_type & id
-                             )
-      {
-        return dot<P, E, T> (t, id, 1);
       }
     }
   }
