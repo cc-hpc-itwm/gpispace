@@ -268,7 +268,7 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	{
 		try {
 			// forward it up
-			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
+			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pJob->id(), pEvt->result()));
 
 			// send the event to the master
 			sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
