@@ -14,7 +14,24 @@
 
   <xsd:element name="defun" type="function_type"/>
   <xsd:element name="structs" type="struct_list_type"/>
+
+  <xsd:complexType name="property_type">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="key" type="xsd:string" use="required"/>
+        <xsd:attribute name="value" type="xsd:string" use="optional"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
   
+  <xsd:complexType name="property_map_type">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:element minOccurs="0" name="property" type="property_type"/>
+      <xsd:element minOccurs="0" name="properties" type="property_map_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="struct_list_type">
     <xsd:choice maxOccurs="unbounded">
       <xsd:element minOccurs="0" name="struct" type="struct_type"/>
@@ -51,9 +68,11 @@
   </xsd:complexType>
 
   <xsd:complexType name="place_type">
-    <xsd:sequence>
-      <xsd:element minOccurs="0" maxOccurs="unbounded" name="token" type="token_type"/>
-    </xsd:sequence>
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:element minOccurs="0" name="token" type="token_type"/>
+      <xsd:element minOccurs="0" name="properties" type="property_map_type"/>
+    </xsd:choice>
+    
     <xsd:attribute name="name" type="xsd:string" use="required"/>
     <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
