@@ -991,6 +991,7 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
+      inline
       std::ostream & level (std::ostream & s, const level_type & level)
       {
         for (level_type i (0); i < level; ++i)

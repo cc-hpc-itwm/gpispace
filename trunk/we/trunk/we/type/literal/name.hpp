@@ -42,7 +42,7 @@ namespace literal
     }
   };
 
-  bool valid_name (const type_name_t & x)
+  inline bool valid_name (const type_name_t & x)
   {
     static name n;
 

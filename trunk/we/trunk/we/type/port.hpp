@@ -36,6 +36,7 @@ namespace we
       , PORT_IN_OUT
       };
 
+    inline
     std::ostream & operator << (std::ostream & s, const PortDirection & p)
     {
       switch (p)
@@ -180,11 +181,7 @@ namespace we
     std::ostream & operator << ( std::ostream & os, const port <T, I> & p )
     {
       os << "{port, "
-         << ( p.direction() == PORT_IN ? "in" :
-              p.direction() == PORT_OUT ? "out" :
-              p.direction() == PORT_READ ? "read" :
-              "inout"
-            )
+         << p.direction()
          << ", "
          << p.name()
          << ", "
@@ -194,11 +191,11 @@ namespace we
 
       if (p.associated_place() == port<T,I>::pid_traits::invalid())
       {
-        os << "n/a";
+        os << "not associated";
       }
       else
       {
-        os << p.associated_place();
+        os << "associated with place " << p.associated_place();
       }
       os << "}";
       return os;
