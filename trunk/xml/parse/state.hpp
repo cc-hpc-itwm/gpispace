@@ -46,6 +46,7 @@ namespace xml
         bool _Wdefault_construction;
         bool _Wunused_field;
         bool _Wport_not_connected;
+        bool _Wunexpected_element;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -104,6 +105,7 @@ namespace xml
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
+          , _Wunexpected_element (true)
         {}
 
         int & level (void) { return _level; }
@@ -118,6 +120,7 @@ namespace xml
         const bool & Wdefault_construction (void) const { return _Wdefault_construction; }
         const bool & Wunused_field (void) const { return _Wunused_field; }
         const bool & Wport_not_connected (void) const { return _Wport_not_connected; }
+        const bool & Wunexpected_element (void) const { return _Wunexpected_element; }
 
         // ***************************************************************** //
 
@@ -155,6 +158,11 @@ namespace xml
         void warn (const warning::port_not_connected & w) const
         {
           generic_warn (w, _Wport_not_connected);
+        }
+
+        void warn (const warning::unexpected_element & w) const
+        {
+          generic_warn (w, _Wunexpected_element);
         }
 
         // ***************************************************************** //
@@ -220,6 +228,11 @@ namespace xml
             , po::value<bool>(&_Wunused_field)
                               ->default_value(_Wunused_field)
             , "warn when given fields in tokens are unused"
+            )
+            ( "Wunexpected_element"
+            , po::value<bool>(&_Wunexpected_element)
+                              ->default_value(_Wunexpected_element)
+            , "warn when unexpected elements occur"
             )
             ;
         }

@@ -25,6 +25,19 @@ namespace xml
 
       // ******************************************************************* //
 
+      class unexpected_element : public generic
+      {
+      public:
+        unexpected_element ( const std::string & name
+                           , const std::string & pre
+                           )
+          : generic
+            (pre + ": unexpected element with name " + util::quote(name))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class overwrite_function_name : public generic
       {
       public:

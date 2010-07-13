@@ -114,7 +114,7 @@ namespace xml
 
       if (name != name_wanted)
         {
-          throw error::unexpected_element (name, pre);
+          state.warn (warning::unexpected_element (name, pre));
         }
 
       if (node->next_sibling())
@@ -172,7 +172,8 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element (child_name, "structs_type");
+                  state.warn
+                    (warning::unexpected_element (child_name, "structs_type"));
                 }
             }
         }
@@ -267,7 +268,8 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element (child_name, "function_type");
+                  state.warn
+                    (warning::unexpected_element (child_name, "function_type"));
                 }
             }
         }
@@ -366,7 +368,8 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element (child_name, "net_type");
+                  state.warn
+                    (warning::unexpected_element (child_name, "net_type"));
                 }
             }
         }
@@ -407,7 +410,8 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element (child_name, "place_type");
+                  state.warn 
+                    (warning::unexpected_element (child_name, "place_type"));
                 }
             }
         }
@@ -467,8 +471,11 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element
-                    (child_name, "gen_struct_type");
+                  state.warn 
+                    (warning::unexpected_element ( child_name
+                                                 , "gen_struct_type"
+                                                 )
+                    );
                 }
             }
         }
@@ -552,8 +559,10 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element
-                    (child_name, "token_field_type");
+                  state.warn ( warning::unexpected_element ( child_name
+                                                           , "token_field_type"
+                                                           )
+                             );
                 }
             }
         }
@@ -585,7 +594,10 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element (child_name, "token_type");
+                  state.warn ( warning::unexpected_element ( child_name
+                                                           , "token_type"
+                                                           )
+                             );
                 }
             }
         }
@@ -664,8 +676,10 @@ namespace xml
                 }
               else
                 {
-                  throw error::unexpected_element
-                    (child_name, "transition_type");
+                  state.warn ( warning::unexpected_element ( child_name
+                                                           , "transition_type"
+                                                           )
+                             );
                 }
             }
         }

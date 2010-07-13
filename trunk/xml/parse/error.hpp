@@ -33,19 +33,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class unexpected_element : public generic
-      {
-      public:
-        unexpected_element ( const std::string & name
-                           , const std::string & pre
-                           )
-          : generic
-            (pre + ": unexpected element with name " + util::quote(name))
-        {}
-      };
-
-      // ******************************************************************* //
-
       class wrong_node : public generic
       {
       public:
