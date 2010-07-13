@@ -1299,8 +1299,10 @@ namespace we { namespace type {
           typedef transition_t<P, E, T> transition_t;
           typedef petri_net::net<P, transition_t, E, T> pnet_t;
           typedef typename pnet_t::place_const_it place_const_it;
+          typedef petri_net::adj_place_const_it adj_place_const_it;
           typedef typename pnet_t::transition_const_it transition_const_it;
           typedef typename pnet_t::token_place_it token_place_it;
+          typedef petri_net::connection_t connection_t;
 
           std::ostringstream s;
 
@@ -1351,7 +1353,7 @@ namespace we { namespace type {
 
           for (transition_const_it t (net.transitions()); t.has_more(); ++t)
             {
-              const transition_t trans (net.get_transition (*t));
+              const transition_t & trans (net.get_transition (*t));
               const id_type id_trans (++id);
 
               s << dot<P, E, T> (trans, id, opts, l + 1);
@@ -1380,6 +1382,35 @@ namespace we { namespace type {
                   ; ++connection
                   )
                 {
+                  bool found (false);
+                  bool is_read (false);
+
+                  for ( adj_place_const_it p (net.in_to_transition (*t))
+                      ; p.has_more()
+                      ; ++p
+                      )
+                    {
+                      if (*p == connection->first)
+                        {
+                          found = true;
+
+                          const connection_t net_conn (net.get_edge_info (p()));
+
+                          if (petri_net::is_pt_read (net_conn.type))
+                            {
+                              is_read = true;
+                            }
+
+                          break;
+                        }
+                    }
+
+                  if (!found)
+                    {
+                      throw std::runtime_error
+                        ("STRANGE! Connected in port but not in net!");
+                    }
+
                   level (s, l + 1)
                     << name ( id_net
                             , "place_" + ::util::show (connection->first)
@@ -1388,6 +1419,7 @@ namespace we { namespace type {
                     << name ( id_trans
                             , "port_" + ::util::show (connection->second)
                             )
+                    << (is_read ? "[style=\"dashed\"]": "")
                     << std::endl
                     ;
                 }
