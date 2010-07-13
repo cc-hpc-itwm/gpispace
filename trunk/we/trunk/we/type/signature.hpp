@@ -318,7 +318,9 @@ namespace signature
   inline std::size_t hash_value (const type & s)
   {
     boost::hash<std::string> hasher;
-    return hasher (s.nice());
+    std::ostringstream os;
+    os << s;
+    return hasher (os.str());
   }
 
   inline bool operator == (const type & a, const type & b)
