@@ -45,6 +45,11 @@ namespace petri_net
 
   enum edge_type {PT,PT_READ,TP};
 
+  static inline bool is_pt_read (const edge_type & e)
+  {
+    return e == PT_READ;
+  }
+
   static inline bool is_PT (const edge_type & et)
   {
     return (et == PT || et == PT_READ);
