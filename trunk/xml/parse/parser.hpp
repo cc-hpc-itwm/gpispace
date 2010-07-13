@@ -1,0 +1,698 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _XML_PARSE_PARSER_HPP
+#define _XML_PARSE_PARSER_HPP
+
+#include <parse/rapidxml/1.13/rapidxml.hpp>
+#include <parse/rapidxml/1.13/rapidxml_utils.hpp>
+
+#include <parse/util.hpp>
+
+#include <parse/error.hpp>
+#include <parse/warning.hpp>
+#include <parse/types.hpp>
+#include <parse/state.hpp>
+
+#include <we/type/signature.hpp>
+#include <we/type/id.hpp>
+
+#include <we/util/read.hpp>
+
+#include <we/we.hpp>
+
+// ************************************************************************* //
+
+namespace xml
+{
+  namespace parse
+  {
+    // ********************************************************************* //
+
+    static type::connect_type connect_type ( const xml_node_type *
+                                           , state::type &
+                                           );
+    static type::function_type function_type (const xml_node_type *
+                                             , state::type &
+                                             );
+    static type::mod_type mod_type (const xml_node_type *, state::type &);
+    static type::net_type net_type (const xml_node_type *, state::type &);
+    static type::place_type place_type (const xml_node_type *, state::type &);
+    static type::port_type port_type (const xml_node_type *, state::type &);
+    static void gen_struct_type ( const xml_node_type *, state::type &
+                                , signature::desc_t &
+                                );
+    static void substruct_type ( const xml_node_type *, state::type &
+                               , signature::desc_t &
+                               );
+    static type::struct_t struct_type (const xml_node_type *, state::type &);
+    static type::token_type token_type (const xml_node_type *, state::type &);
+    static type::transition_type transition_type ( const xml_node_type *
+                                                 , state::type &
+                                                 );
+
+    static type::function_type parse_function (std::istream & f, state::type &);
+
+
+    static type::struct_vec_type structs_include ( const std::string &
+                                                 , state::type &
+                                                 );
+    static type::struct_vec_type parse_structs (std::istream &, state::type &);
+    static type::struct_vec_type structs_type ( const xml_node_type *
+                                              , state::type & state
+                                              );
+
+    // ********************************************************************* //
+
+    static type::function_type
+    function_include (const std::string & file, state::type & state)
+    {
+      return state.generic_include<type::function_type> (parse_function, file);
+    }
+
+    static type::struct_vec_type
+    structs_include (const std::string & file, state::type & state)
+    {
+      return state.generic_include<type::struct_vec_type> (parse_structs, file);
+    }
+
+    // ********************************************************************* //
+
+    template<typename T>
+    static T
+    generic_parse ( T (*parse)(const xml_node_type *, state::type &)
+                  , std::istream & f
+                  , state::type & state
+                  , const std::string & name_wanted
+                  , const std::string & pre
+                  )
+    {
+      xml_document_type doc;
+
+      input_type inp (f);
+
+      doc.parse < rapidxml::parse_full
+                | rapidxml::parse_trim_whitespace
+                | rapidxml::parse_normalize_whitespace
+                > (inp.data())
+        ;
+
+      xml_node_type * node (doc.first_node());
+
+      if (!node)
+        {
+          throw error::no_elements_given (pre);
+        }
+
+      skip (node, rapidxml::node_declaration);
+
+      const std::string name (name_element (node));
+
+      if (!node)
+        {
+          throw error::no_elements_given (pre);
+        }
+
+      if (name != name_wanted)
+        {
+          throw error::unexpected_element (name, pre);
+        }
+
+      if (node->next_sibling())
+        {
+          throw error::more_than_one_definition (pre);
+        }
+
+      return parse (node, state);
+    };
+
+    static type::function_type
+    parse_function (std::istream & f, state::type & state)
+    {
+      return generic_parse (function_type, f, state, "defun", "parse_function");
+    }
+
+    static type::struct_vec_type
+    parse_structs (std::istream & f, state::type & state)
+    {
+      return generic_parse (structs_type, f, state, "structs", "parse_structs");
+    }
+
+    // ********************************************************************* //
+
+    static type::struct_vec_type
+    structs_type (const xml_node_type * node, state::type & state)
+    {
+      type::struct_vec_type v;
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "struct")
+                {
+                  v.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include (required ( "structs_type"
+                                               , child
+                                               , "href"
+                                               )
+                                     , state
+                                     )
+                    );
+
+                  v.insert (v.end(), structs.begin(), structs.end());
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "structs_type");
+                }
+            }
+        }
+
+      return v;
+    }
+
+    // ********************************************************************* //
+
+    static type::connect_type
+    connect_type (const xml_node_type * node, state::type &)
+    {
+      return type::connect_type ( required ("connect_type", node, "place")
+                                , required ("connect_type", node, "port")
+                                );
+    }
+
+    // ********************************************************************* //
+
+    static type::function_type
+    function_type (const xml_node_type * node, state::type & state)
+    {
+      type::function_type f;
+
+      f.path = state.file_in_progress();
+      f.level = state.level();
+      f.name = optional (node, "name");
+      f.internal = fmap<std::string, bool>( read_bool
+                                          , optional (node, "internal")
+                                          );
+
+      
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "in")
+                {
+                  f.push_in (port_type (child, state));
+                }
+              else if (child_name == "out")
+                {
+                  f.push_out (port_type (child, state));
+                }
+              else if (child_name == "struct")
+                {
+                  f.structs.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include (required ( "function_type"
+                                               , child
+                                               , "href"
+                                               )
+                                     , state
+                                     )
+                    );
+
+                  f.structs.insert ( f.structs.end()
+                                   , structs.begin()
+                                   , structs.end()
+                                   );
+                }
+              else if (child_name == "expression")
+                {
+                  f.f = type::expression_type (parse_cdata (child));
+                }
+              else if (child_name == "module")
+                {
+                  f.f = mod_type (child, state);
+                }
+              else if (child_name == "net")
+                {
+                  ++state.level();
+                  
+                  f.f = net_type (child, state);
+
+                  --state.level();
+                }
+              else if (child_name == "condition")
+                {
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  f.cond.insert (f.cond.end(), conds.begin(), conds.end());
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "function_type");
+                }
+            }
+        }
+
+      return f;
+    }
+
+    // ********************************************************************* //
+
+    static type::mod_type
+    mod_type (const xml_node_type * node, state::type &)
+    {
+      return type::mod_type ( required ("mod_type", node, "name")
+                            , required ("mod_type", node, "function")
+                            );
+    }
+
+    // ********************************************************************* //
+
+    static type::net_type
+    net_type (const xml_node_type * node, state::type & state)
+    {
+      type::net_type n;
+
+      n.path = state.file_in_progress();
+      n.level = state.level();
+
+      ++state.level();
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "defun")
+                {
+                  n.push (function_type (child, state));
+                }
+              else if (child_name == "place")
+                {
+                  n.push (place_type (child, state));
+                }
+              else if (child_name == "transition")
+                {
+                  n.push (transition_type (child, state));
+                }
+              else if (child_name == "struct")
+                {
+                  n.structs.push_back (struct_type (child, state));
+                }
+              else if (child_name == "include-structs")
+                {
+                  const type::struct_vec_type structs 
+                    (structs_include ( required ("net_type", child, "href")
+                                     , state
+                                     )
+                    );
+
+                  n.structs.insert ( n.structs.end()
+                                   , structs.begin()
+                                   , structs.end()
+                                   );
+                }
+              else if (child_name == "include")
+                {
+                  const std::string file (required ("net_type", child, "href"));
+                  const maybe<std::string> as (optional (child, "as"));
+
+                  type::function_type fun (function_include (file, state));
+
+                  if (as.isJust())
+                    {
+                      if (fun.name.isJust())
+                        {
+                          state.warn 
+                            (warning::overwrite_function_name (*(fun.name)
+                                                              , *as
+                                                              )
+                            );
+                        }
+
+                      fun.name = *as;
+                    }
+
+                  if (fun.name.isNothing())
+                    {
+                      throw error::top_level_anonymous_function
+                        (file, "net_type");
+                    }
+
+                  n.push (fun);
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "net_type");
+                }
+            }
+        }
+
+      --state.level();
+
+      return n;
+    }
+
+    // ********************************************************************* //
+
+    static type::place_type
+    place_type (const xml_node_type * node, state::type & state)
+    {
+      type::place_type p
+        ( required ("place_type", node, "name")
+        , required ("place_type", node, "type")
+        , fmap<std::string, petri_net::capacity_t>
+          ( &::we::util::reader<petri_net::capacity_t>::read
+          , optional (node, "capacity")
+          )
+        );
+
+      p.level = state.level();
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "token")
+                {
+                  p.push_token (token_type (child, state));
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "place_type");
+                }
+            }
+        }
+
+      return p;
+    }
+
+    // ********************************************************************* //
+
+    static type::port_type
+    port_type (const xml_node_type * node, state::type &)
+    {
+      return type::port_type ( required ("port_type", node, "name")
+                             , required ("port_type", node, "type")
+                             , optional (node, "place")
+                             );
+    }
+
+    // ********************************************************************* //
+
+    static void
+    struct_field_type ( const xml_node_type * node
+                      , state::type &
+                      , signature::desc_t & sig
+                      )
+    {
+      const std::string name (required ("struct_field_type", node, "name"));
+      const std::string type (required ("struct_field_type", node, "type"));
+
+      boost::apply_visitor ( signature::visitor::add_field (name, type)
+                           , sig
+                           );
+    }
+
+    static void
+    gen_struct_type ( const xml_node_type * node
+                    , state::type & state
+                    , signature::desc_t & sig
+                    )
+    {
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "field")
+                {
+                  struct_field_type (child, state, sig);
+                }
+              else if (child_name == "struct")
+                {
+                  substruct_type (child, state, sig);
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "gen_struct_type");
+                }
+            }
+        }
+    }
+
+    static void
+    substruct_type ( const xml_node_type * node
+                   , state::type & state
+                   , signature::desc_t & sig
+                   )
+    {
+      const std::string name (required ("substruct_type", node, "name"));
+
+      boost::apply_visitor ( signature::visitor::create_structured_field (name)
+                           , sig
+                           );
+
+      gen_struct_type 
+        ( node
+        , state
+        , boost::apply_visitor (signature::visitor::get_field (name), sig)
+        );
+    }
+
+    static type::struct_t
+    struct_type (const xml_node_type * node, state::type & state)
+    {
+      type::struct_t s;
+
+      s.path = state.file_in_progress();
+      s.name = required ("struct_type", node, "name");
+      s.sig = signature::structured_t();
+      s.level = state.level();
+
+      gen_struct_type (node, state, s.sig);
+
+      return s;
+    }
+
+    // ********************************************************************* //
+
+    static void
+    token_field_type ( const xml_node_type * node
+                     , state::type & state
+                     , type::token_type & tok
+                     )
+    {
+      const std::string name (required ("token_field_type", node, "name"));
+      
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "value")
+                {
+                  boost::apply_visitor
+                    ( signature::visitor::create_literal_field<std::string> 
+                      ( name
+                      , std::string (child->value())
+                      , "token"
+                      )
+                    , tok
+                    );
+                }
+              else if (child_name == "field")
+                {
+                  token_field_type 
+                    ( child
+                    , state
+                    , boost::apply_visitor 
+                      ( signature::visitor::get_or_create_structured_field
+                        (name, "token")
+                      , tok
+                      )
+                    );
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "token_field_type");
+                }
+            }
+        }
+    }
+
+    // ********************************************************************* //
+
+    static type::token_type
+    token_type (const xml_node_type * node, state::type & state)
+    {
+      type::token_type tok = signature::structured_t();
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "value")
+                {
+                  return type::token_type (std::string (child->value()));
+                }
+              else if (child_name == "field")
+                {
+                  token_field_type (child, state, tok);
+                }
+              else
+                {
+                  throw error::unexpected_element (child_name, "token_type");
+                }
+            }
+        }
+
+      return tok;
+    }
+
+    // ********************************************************************* //
+
+    static type::transition_type
+    transition_type (const xml_node_type * node, state::type & state)
+    {
+      type::transition_type t;
+
+      t.path = state.file_in_progress();
+      t.level = state.level();
+      t.name = required ("transition_type", node, "name");
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name (name_element (child));
+
+          if (child)
+            {
+              if (child_name == "include")
+                {
+                  const std::string file (required ( "transition_type"
+                                                   , child
+                                                   , "href"
+                                                   )
+                                         );
+
+                  state.level() += 2;;
+
+                  t.f = function_include (file, state);
+
+                  state.level() -= 2;
+                }
+              else if (child_name == "use")
+                {
+                  t.f = type::use_type ( required ( "transition_type"
+                                                  , child
+                                                  , "name"
+                                                  )
+                                       , state.level() + 2
+                                       );
+                }
+              else if (child_name == "defun")
+                {
+                  state.level() += 2;
+
+                  t.f = function_type (child, state);
+
+                  state.level() -= 2;
+                }
+              else if (child_name == "connect-in")
+                {
+                  t.push_in (connect_type(child, state));
+                }
+              else if (child_name == "connect-out")
+                {
+                  t.push_out (connect_type(child, state));
+                }
+              else if (child_name == "connect-read")        
+                {
+                  t.push_read (connect_type(child, state));
+                }
+              else if (child_name == "condition")
+                {
+                  const type::cond_vec_type conds (parse_cdata (child));
+
+                  t.cond.insert (t.cond.end(), conds.begin(), conds.end());
+                }
+              else
+                {
+                  throw error::unexpected_element
+                    (child_name, "transition_type");
+                }
+            }
+        }
+
+      return t;
+    }
+
+    // ********************************************************************* //
+
+    static we::transition_t
+    parse (state::type & state, const std::string & input)
+    {
+      type::function_type f
+        ( (input == "-") 
+        ? parse_function (std::cin, state)
+        : function_include (input, state)
+        );
+
+      const struct_t::set_type empty;
+
+      f.resolve (empty, state, f.forbidden_below());
+
+      f.type_check (state);
+
+      return f.synthesize<we::activity_t> (state);
+    }
+  }
+}
+
+#endif

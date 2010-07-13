@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include <parse/warning.hpp>
 #include <parse/error.hpp>
@@ -26,9 +27,12 @@ namespace xml
     namespace state
     {
       namespace fs = boost::filesystem;
+      namespace po = boost::program_options;
 
       typedef std::vector<fs::path> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
+
+      // ******************************************************************* //
 
       struct type
       {
@@ -103,21 +107,19 @@ namespace xml
         {}
 
         int & level (void) { return _level; }
-        search_path_type & search_path (void) { return _search_path; }
+        const search_path_type & search_path (void) const
+        {
+          return _search_path;
+        }
         
-        bool & Werror (void) { return _Werror; }
-        bool & Woverwrite_function_name (void) { return _Woverwrite_function_name; }
-        bool & Wshadow (void) { return _Wshadow; }
-        bool & Wdefault_construction (void) { return _Wdefault_construction; }
-        bool & Wunused_field (void) { return _Wunused_field; }
-        bool & Wport_not_connected (void) { return _Wport_not_connected; }
-
         const bool & Werror (void) const { return _Werror; }
         const bool & Woverwrite_function_name (void) const { return _Woverwrite_function_name; }
         const bool & Wshadow (void) const { return _Wshadow; }
         const bool & Wdefault_construction (void) const { return _Wdefault_construction; }
         const bool & Wunused_field (void) const { return _Wunused_field; }
         const bool & Wport_not_connected (void) const { return _Wport_not_connected; }
+
+        // ***************************************************************** //
 
         fs::path file_in_progress (void) const
         {
@@ -126,6 +128,8 @@ namespace xml
             : _in_progress.back()
             ;
         }
+
+        // ***************************************************************** //
 
         void warn (const warning::overwrite_function_name & w) const
         {
@@ -152,6 +156,8 @@ namespace xml
         {
           generic_warn (w, _Wport_not_connected);
         }
+
+        // ***************************************************************** //
 
         template<typename T>
         T generic_include ( T (*parse)(std::istream &, type &)
@@ -182,6 +188,41 @@ namespace xml
 
           return x;
         };
+
+        // ***************************************************************** //
+
+        void add_options (po::options_description & desc)
+        {
+          desc.add_options ()
+            ( "search-path"
+            , po::value<search_path_type>(&_search_path)
+            , "search path"
+            )
+            ( "Werror"
+            , po::value<bool>(&_Werror)->default_value(_Werror)
+            , "cast warnings to errors"
+            )
+            ( "Woverwrite_function_name"
+            , po::value<bool>(&_Woverwrite_function_name)
+                              ->default_value(_Woverwrite_function_name)
+            , "warn when overwriting a function name"
+            )
+            ( "Wshadow"
+            , po::value<bool>(&_Wshadow)->default_value(_Wshadow)
+            , "warn when shadowing a struct definition"
+            )
+            ( "Wdefault_construction"
+            , po::value<bool>(&_Wdefault_construction)
+                              ->default_value(_Wdefault_construction)
+            , "warn when default construct (part of) tokens"
+            )
+            ( "Wunused_field"
+            , po::value<bool>(&_Wunused_field)
+                              ->default_value(_Wunused_field)
+            , "warn when given fields in tokens are unused"
+            )
+            ;
+        }
       };
     }
   }
