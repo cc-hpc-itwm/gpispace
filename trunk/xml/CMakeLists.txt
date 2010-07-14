@@ -65,6 +65,13 @@ else(WE_FOUND)
   message(FATAL_ERROR "WE could not be found but is required")
 endif(WE_FOUND)
 
+include(FindMAYBE)
+if (MAYBE_FOUND)
+  include_directories(${MAYBE_INCLUDE_DIR})
+else(MAYBE_FOUND)
+  message(FATAL_ERROR "MAYBE could not be found but is required")
+endif(MAYBE_FOUND)
+
 #if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 #  include(TargetDoc OPTIONAL)
 #endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
