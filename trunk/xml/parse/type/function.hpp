@@ -545,12 +545,16 @@ namespace xml
 
         if (fun.name.isJust())
           {
-            state.warn ( warning::overwrite_function_name_trans ( *fun.name
-                                                                , fun.path
-                                                                , trans.name
-                                                                , trans.path
-                                                                )
-                       );
+            if (*fun.name != trans.name)
+              {
+                state.warn ( warning::overwrite_function_name_trans 
+                             ( *fun.name
+                             , fun.path
+                             , trans.name
+                             , trans.path
+                             )
+                           );
+              }
           }
 
         fun.name = trans.name;
