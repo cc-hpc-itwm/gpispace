@@ -27,29 +27,59 @@ namespace xml
 
       class unexpected_element : public generic
       {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & pre
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << pre
+            << ": unexpected element with name " << util::quote(name)
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
       public:
         unexpected_element ( const std::string & name
                            , const std::string & pre
+                           , const boost::filesystem::path & path
                            )
-          : generic
-            (pre + ": unexpected element with name " + util::quote(name))
+          : generic (nice (name, pre, path))
         {}
       };
 
       // ******************************************************************* //
 
-      class overwrite_function_name : public generic
+      class overwrite_function_name_as : public generic
       {
+      private:
+        std::string nice ( const std::string & old_name
+                         , const std::string & new_name
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "old function name " << old_name
+            << " overwritten by new name " << new_name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+        
       public:
-        overwrite_function_name ( const std::string & old_name
-                                , const std::string & new_name
-                                )
-          : generic ( "old function name " + old_name
-                    + " overwritten by new name " + new_name
-                    )
+        overwrite_function_name_as ( const std::string & old_name
+                                   , const std::string & new_name
+                                   , const boost::filesystem::path & path
+                                   )
+          : generic (nice (old_name, new_name, path))
         {}
       };
-
 
       // ******************************************************************* //
 
@@ -163,6 +193,38 @@ namespace xml
                            , const boost::filesystem::path & path
                            )
           : generic (nice (direction, port, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class overwrite_function_name_trans : public generic
+      {
+      private:
+        std::string nice ( const std::string & fun
+                         , const boost::filesystem::path & funpath
+                         , const std::string & trans
+                         , const boost::filesystem::path & transpath
+                         )
+        {
+          std::ostringstream s;
+
+          s << "old function name " << fun
+            << " defined in " << funpath
+            << " overwritten with transition name " << trans
+            << " in " << transpath
+            ;
+       
+          return s.str();
+        }
+      public:
+        overwrite_function_name_trans 
+        ( const std::string & fun
+        , const boost::filesystem::path & funpath
+        , const std::string & trans
+        , const boost::filesystem::path & transpath
+        )
+          : generic (nice (fun, funpath, trans, transpath))
         {}
       };
     }

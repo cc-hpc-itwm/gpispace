@@ -35,52 +35,109 @@ namespace xml
 
       class wrong_node : public generic
       {
+      private:
+        std::string nice ( const rapidxml::node_type & want
+                         , const rapidxml::node_type & got
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "expected node of type " 
+            << util::quote (util::show_node_type (want))
+            << ": got node of type "
+            << util::quote(util::show_node_type (got))
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+        std::string nice ( const rapidxml::node_type & want1
+                         , const rapidxml::node_type & want2
+                         , const rapidxml::node_type & got
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "expected node of type " 
+            << util::quote (util::show_node_type (want1))
+            << " or "
+            << util::quote (util::show_node_type (want2))
+            << ": got node of type "
+            << util::quote(util::show_node_type (got))
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
       public:
         wrong_node ( const rapidxml::node_type & want
                    , const rapidxml::node_type & got
+                   , const boost::filesystem::path & path
                    )
-          : generic ("wrong node type"
-                    , "expexted node of type "
-                    + util::quote(util::show_node_type (want))
-                    + ": got node of type "
-                    + util::quote(util::show_node_type (got))
-                    )
+          : generic ( "wrong node", nice (want, got, path))
         {}
 
         wrong_node ( const rapidxml::node_type & want1
                    , const rapidxml::node_type & want2
                    , const rapidxml::node_type & got
-                   )
-          : generic ("wrong node type"
-                    , "expexted node of type "
-                    + util::quote(util::show_node_type (want1))
-                    + " or "
-                    + util::quote(util::show_node_type (want2))
-                    + ": got node of type "
-                    + util::quote(util::show_node_type (got))
-                    )
+                   , const boost::filesystem::path & path
+                     )
+          : generic ("wrong node", nice (want1, want2, got, path))
         {}
       };
 
+      // ******************************************************************* //
+
       class missing_node : public generic
       {
+      private:
+        std::string nice ( const rapidxml::node_type & want
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "expected node of type " 
+            << util::quote (util::show_node_type (want))
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+        std::string nice ( const rapidxml::node_type & want1
+                         , const rapidxml::node_type & want2
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "expected node of type " 
+            << util::quote (util::show_node_type (want1))
+            << " or "
+            << util::quote (util::show_node_type (want2))
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
       public:
-        missing_node (const rapidxml::node_type & want)
-          : generic ( "missing node"
-                    , "expected node of type "
-                    + util::quote(util::show_node_type (want))
-                    )
+        missing_node ( const rapidxml::node_type & want
+                     , const boost::filesystem::path & path
+                     )
+          : generic ( "missing node", nice (want, path))
         {}
 
         missing_node ( const rapidxml::node_type & want1
                      , const rapidxml::node_type & want2
+                     , const boost::filesystem::path & path
                      )
-          : generic ( "missing node"
-                    , "expected node of type "
-                    + util::quote(util::show_node_type (want1))
-                    + " or " 
-                    + util::quote(util::show_node_type (want2))
-                    )
+          : generic ("missing node", nice (want1, want2, path))
         {}
       };
 
@@ -88,12 +145,29 @@ namespace xml
 
      class missing_attr : public generic
       {
+      private:
+        std::string nice ( const std::string & pre
+                         , const std::string & attr
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << pre
+            << ": missing attribute "
+            << util::quote (attr)
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
       public:
         missing_attr ( const std::string & pre
                      , const std::string & attr
+                     , const boost::filesystem::path & path
                      )
-          : generic
-            (pre + ": missing attribute " + util::quote(attr))
+          : generic (nice (pre, attr, path))
         {}
       };
 
@@ -101,9 +175,23 @@ namespace xml
 
       class no_elements_given : public generic
       {
+      private:
+        std::string nice (const boost::filesystem::path & path)
+        {
+          std::ostringstream s;
+
+          s << "no elements given at all"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+        
       public:
-        no_elements_given (const std::string & pre)
-          : generic ("no elements given at all!?", pre)
+        no_elements_given ( const std::string & pre
+                          , const boost::filesystem::path & path
+                          )
+          : generic (nice (path), pre)
         {}
       };
 
@@ -111,9 +199,23 @@ namespace xml
 
       class more_than_one_definition : public generic
       {
+      private:
+        std::string nice (const boost::filesystem::path & path)
+        {
+          std::ostringstream s;
+
+          s << "more than one definition"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+        
       public:
-        more_than_one_definition (const std::string & pre)
-          : generic ("more than one definition in one file", pre)
+        more_than_one_definition ( const std::string & pre
+                                 , const boost::filesystem::path & path
+                                 )
+          : generic (nice (path), pre)
         {}
       };
 

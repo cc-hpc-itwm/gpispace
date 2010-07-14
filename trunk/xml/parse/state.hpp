@@ -41,12 +41,13 @@ namespace xml
         search_path_type _search_path;
         in_progress_type _in_progress;
         bool _Werror;
-        bool _Woverwrite_function_name;
+        bool _Woverwrite_function_name_as;
         bool _Wshadow;
         bool _Wdefault_construction;
         bool _Wunused_field;
         bool _Wport_not_connected;
         bool _Wunexpected_element;
+        bool _Woverwrite_function_name_trans;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -100,12 +101,13 @@ namespace xml
           , _search_path ()
           , _in_progress ()
           , _Werror (false)
-          , _Woverwrite_function_name (true)
+          , _Woverwrite_function_name_as (true)
           , _Wshadow (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
           , _Wunexpected_element (true)
+          , _Woverwrite_function_name_trans (true)
         {}
 
         int & level (void) { return _level; }
@@ -113,14 +115,6 @@ namespace xml
         {
           return _search_path;
         }
-        
-        const bool & Werror (void) const { return _Werror; }
-        const bool & Woverwrite_function_name (void) const { return _Woverwrite_function_name; }
-        const bool & Wshadow (void) const { return _Wshadow; }
-        const bool & Wdefault_construction (void) const { return _Wdefault_construction; }
-        const bool & Wunused_field (void) const { return _Wunused_field; }
-        const bool & Wport_not_connected (void) const { return _Wport_not_connected; }
-        const bool & Wunexpected_element (void) const { return _Wunexpected_element; }
 
         // ***************************************************************** //
 
@@ -134,15 +128,30 @@ namespace xml
 
         // ***************************************************************** //
 
-        void warn (const warning::overwrite_function_name & w) const
-        {
-          generic_warn (w, _Woverwrite_function_name);
-        }
+#define ACCESS(x) const bool & W ## x (void) const { return _W ## x; }
+
+        ACCESS(error)
+        ACCESS(overwrite_function_name_as)
+        ACCESS(shadow)
+        ACCESS(default_construction)
+        ACCESS(unused_field)
+        ACCESS(port_not_connected)
+        ACCESS(unexpected_element)
+        ACCESS(overwrite_function_name_trans)
+
+#undef ACCESS
+
+        // ***************************************************************** //
 
         template<typename T>
         void warn (const warning::struct_shadowed<T> & w) const
         {
           generic_warn (w, _Wshadow);
+        }
+
+        void warn (const warning::overwrite_function_name_as & w) const
+        {
+          generic_warn (w, _Woverwrite_function_name_as);
         }
 
         void warn (const warning::default_construction & w) const
@@ -163,6 +172,11 @@ namespace xml
         void warn (const warning::unexpected_element & w) const
         {
           generic_warn (w, _Wunexpected_element);
+        }
+
+        void warn (const warning::overwrite_function_name_trans & w) const
+        {
+          generic_warn (w, _Woverwrite_function_name_trans);
         }
 
         // ***************************************************************** //
@@ -201,40 +215,43 @@ namespace xml
 
         void add_options (po::options_description & desc)
         {
+#define VAL(x) po::value<bool>(&_W ## x)->default_value (_W ## x)
+
           desc.add_options ()
             ( "search-path"
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
             ( "Werror"
-            , po::value<bool>(&_Werror)->default_value(_Werror)
+            , VAL(error)
             , "cast warnings to errors"
             )
-            ( "Woverwrite_function_name"
-            , po::value<bool>(&_Woverwrite_function_name)
-                              ->default_value(_Woverwrite_function_name)
-            , "warn when overwriting a function name"
+            ( "Woverwrite_function_name_as"
+            , VAL(overwrite_function_name_as)
+            , "warn when overwriting a function name by 'as'"
             )
             ( "Wshadow"
-            , po::value<bool>(&_Wshadow)->default_value(_Wshadow)
+            , VAL(shadow)
             , "warn when shadowing a struct definition"
             )
             ( "Wdefault_construction"
-            , po::value<bool>(&_Wdefault_construction)
-                              ->default_value(_Wdefault_construction)
+            , VAL(default_construction)
             , "warn when default construct (part of) tokens"
             )
             ( "Wunused_field"
-            , po::value<bool>(&_Wunused_field)
-                              ->default_value(_Wunused_field)
+            , VAL(unused_field)
             , "warn when given fields in tokens are unused"
             )
             ( "Wunexpected_element"
-            , po::value<bool>(&_Wunexpected_element)
-                              ->default_value(_Wunexpected_element)
+            , VAL(unexpected_element)
             , "warn when unexpected elements occur"
             )
+            ( "Woverwrite_function_name_trans"
+            , VAL(overwrite_function_name_trans)
+            , "warn when overwriting a function name with a transition name"
+            )
             ;
+#undef VAL
         }
       };
     }

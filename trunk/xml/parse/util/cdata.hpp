@@ -10,18 +10,22 @@
 #include <parse/util/skip.hpp>
 #include <parse/util/expect.hpp>
 
+#include <boost/filesystem.hpp>
+
 namespace xml
 {
   namespace parse
   {
     void
-    cdata (xml_node_type * & node)
+    cdata ( xml_node_type * & node
+          , const boost::filesystem::path & path
+          )
     {
       skip (node, rapidxml::node_comment);
 
       try
         {
-          expect (node, rapidxml::node_data, rapidxml::node_cdata);
+          expect (node, rapidxml::node_data, rapidxml::node_cdata, path);
         }
       catch (const error::missing_node &)
         {
@@ -32,7 +36,9 @@ namespace xml
     }
 
     std::vector<std::string>
-    parse_cdata (const xml_node_type * node)
+    parse_cdata ( const xml_node_type * node
+                , const boost::filesystem::path & path
+                )
     {
       std::vector<std::string> v;
 
@@ -41,7 +47,7 @@ namespace xml
           ; child = child ? child->next_sibling() : child
           )
         {
-          cdata (child);
+          cdata (child, path);
 
           if (child)
             {

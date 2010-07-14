@@ -10,18 +10,22 @@
 #include <parse/util/skip.hpp>
 #include <parse/util/expect.hpp>
 
+#include <boost/filesystem.hpp>
+
 namespace xml
 {
   namespace parse
   {
     std::string
-    name_element (xml_node_type * & node)
+    name_element ( xml_node_type * & node
+                 , const boost::filesystem::path & path
+                 )
     {
       skip (node, rapidxml::node_comment);
 
       try
         {
-          expect (node, rapidxml::node_element);
+          expect (node, rapidxml::node_element, path);
         }
       catch (const error::missing_node &)
         {
