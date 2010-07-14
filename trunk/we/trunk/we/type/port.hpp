@@ -23,6 +23,7 @@
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
 #include <we/type/id.hpp>
+#include <we/type/property.hpp>
 
 namespace we
 {
@@ -129,12 +130,39 @@ namespace we
         , associated_place_(pid_traits::invalid())
       {}
 
+      template <typename Signature>
+      port ( const std::string & name
+           , PortDirection direction
+           , const Signature & signature
+           , const we::type::property::type & prop
+           )
+        : name_(name)
+        , direction_(direction)
+        , signature_(signature)
+        , associated_place_(pid_traits::invalid())
+        , prop_(prop)
+      {}
+
       template <typename Signature, typename PlaceId>
       port (const std::string & name, PortDirection direction, const Signature & signature, const PlaceId place_id)
         : name_(name)
         , direction_(direction)
         , signature_(signature)
         , associated_place_(place_id)
+      {}
+
+      template <typename Signature, typename PlaceId>
+      port ( const std::string & name
+           , PortDirection direction
+           , const Signature & signature
+           , const PlaceId place_id
+           , const we::type::property::type prop
+           )
+        : name_(name)
+        , direction_(direction)
+        , signature_(signature)
+        , associated_place_(place_id)
+        , prop_(prop)
       {}
 
       template <typename Signature, typename Dir>
@@ -155,6 +183,7 @@ namespace we
       PortDirection direction() const { return direction_; }
       const sig_type & signature() const { return signature_; }
       const pid_type & associated_place() const { return associated_place_; }
+      const we::type::property::type & property() const { return prop_; }
 
       inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
@@ -165,6 +194,7 @@ namespace we
       sig_type signature_;
       //! associated to a place within a network, only reasonable for transitions with a subnet
       pid_type associated_place_;
+      we::type::property::type prop_;
 
       friend class boost::serialization::access;
       template<typename Archive>
@@ -174,6 +204,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(direction_);
         ar & BOOST_SERIALIZATION_NVP(signature_);
         ar & BOOST_SERIALIZATION_NVP(associated_place_);
+        ar & BOOST_SERIALIZATION_NVP(prop_);
       }
     };
 
