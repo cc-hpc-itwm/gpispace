@@ -37,6 +37,11 @@ namespace we
 
       namespace util
       {
+        static void level (std::ostream & s, const unsigned int l)
+        {
+          for (unsigned int i (0); i < l; ++i) { s << "  "; }
+        }
+
         path_type split (const std::string & s, const char & sep = '.')
         {
           path_type path;
@@ -157,6 +162,32 @@ namespace we
           value_type & operator () (T &) const
           {
             throw exception::not_a_val ("visitor::get_val");
+          }
+        };
+
+        template<typename T>
+        class show : public boost::static_visitor<>
+        {
+        private:
+          std::ostream & s;
+          unsigned int l;
+
+        public:
+          show ( std::ostream & _s
+               , const unsigned int _l = 0
+               ) 
+            : s (_s)
+            , l (_l)
+          {}
+
+          void operator () (const value_type & v) const
+          {
+            util::level(s, l); s << v << std::endl;
+          }
+
+          void operator () (const T & t) const
+          {
+            t.writeTo (s, l);
           }
         };
       }
@@ -338,70 +369,25 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        friend std::ostream & operator << (std::ostream &, const type &);
-      };
-
-      // ******************************************************************* //
-
-      namespace visitor
-      {
-        class show : public boost::static_visitor<>
+        void writeTo (std::ostream & s, const unsigned int l) const
         {
-        private:
-          std::ostream & s;
-          unsigned int l;
-
-          void level (void) const
-          {
-            for (unsigned int i (0); i < l; ++i)
-              {
-                s << "  ";
-              }
-          }
-
-        public:
-          show ( std::ostream & _s
-               , const unsigned int _l = 0
-               ) 
-            : s (_s)
-            , l (_l)
-          {}
-
-          void operator () (const value_type & v) const
-          {
-            level(); s << v << std::endl;
-          }
-
-          void operator () (const type & t) const
-          {
-            for ( map_type::const_iterator pos (t.get_map().begin())
-                ; pos != t.get_map().end()
-                ; ++pos
-                )
-              {
-                level(); s << pos->first << ":" << std::endl;
-
-                boost::apply_visitor (show (s, l+1), pos->second);
-              }
-          }
-        };
-      }
-
-      // ******************************************************************* //
+          for ( map_type::const_iterator pos (map.begin())
+              ; pos != map.end()
+              ; ++pos
+              )
+            {
+              util::level (s, l); s << pos->first << ":" << std::endl;
+              
+              boost::apply_visitor ( visitor::show<type> (s, l + 1)
+                                   , pos->second
+                                   );
+            }
+        }
+      };
 
       std::ostream & operator << (std::ostream & s, const type & t)
       {
-        for ( map_type::const_iterator pos (t.map.begin())
-            ; pos != t.map.end()
-            ; ++pos
-            )
-          {
-            s << pos->first << ":" << std::endl;
-
-            boost::apply_visitor (visitor::show (s, 1), pos->second);
-          }
-
-        return s;
+        t.writeTo (s, 1); return s;
       }
     }
   }

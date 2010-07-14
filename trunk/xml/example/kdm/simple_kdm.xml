@@ -13,12 +13,14 @@
 
    <place name="config_file" type="string">
      <properties name="gui">
+
        <properties name="layout">
          <properties name="position">
             <property key="x" value="0"/>
             <property key="y" value="0"/>
          </properties>
        </properties>
+
        <properties name="my_edit">
          <properties name="layout">
            <property key="color" value="yellow"/>
@@ -30,10 +32,10 @@
          </properties>
        </properties>
      </properties>
+
      <properties name="pretty">
-       <properties name="verbose">
-         <property key="type" value="full"/>
-       </properties>
+       <property key="verbose-level" value="2"/>
+
        <properties name="dot">
          <property key="shape" value="ellipse"/>
          <property key="color">#aaffee</property>

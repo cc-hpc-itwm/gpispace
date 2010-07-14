@@ -15,6 +15,7 @@
 
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
+#include <we/type/property.hpp>
 
 #include <we/util/read.hpp>
 
@@ -49,6 +50,11 @@ namespace xml
     static type::transition_type transition_type ( const xml_node_type *
                                                  , state::type &
                                                  );
+
+    static void property_map_type ( const xml_node_type *
+                                  , state::type &
+                                  , we::type::property::type &
+                                  );
 
     static type::function_type parse_function (std::istream & f, state::type &);
 
@@ -442,6 +448,10 @@ namespace xml
                 {
                   p.push_token (token_type (child, state));
                 }
+              else if (child_name == "properties")
+                {
+                  property_map_type (child, state, p.prop);
+                }
               else
                 {
                   state.warn 
@@ -467,6 +477,122 @@ namespace xml
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
         );
+    }
+
+    // ********************************************************************* //
+
+    static void
+    property_dive ( const xml_node_type * node
+                  , state::type & state
+                  , we::type::property::type & prop
+                  , we::type::property::path_type & path
+                  )
+    {
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "property")
+                {
+                  const std::string key ( required ( "propery_dive"
+                                                   , child
+                                                   , "key"
+                                                   , state.file_in_progress()
+                                                   )
+                                        );
+                  const maybe<std::string> value (optional (child, "value"));
+
+                  const std::vector<std::string> cdata
+                    (parse_cdata (child, state.file_in_progress()));
+
+                  if (cdata.size() > 1)
+                    {
+                      throw std::runtime_error ("to much values");
+                    }
+
+                  if (value.isNothing())
+                    {
+                      if (cdata.empty())
+                        {
+                          throw std::runtime_error ("no val");
+                        }
+
+                      path.push_back (key);
+
+                      prop.set (path, cdata.front());
+
+                      path.pop_back();
+                    }
+                  else
+                    {
+                      if (!cdata.empty())
+                        {
+                          throw std::runtime_error ("attr and data");
+                        }
+
+                      path.push_back (key);
+
+                      prop.set (path, *value);
+
+                      path.pop_back();
+                    }
+                }
+              else if (child_name == "properties")
+                {
+                  const std::string name ( required ( "property_dive"
+                                                    , child
+                                                    , "name"
+                                                    , state.file_in_progress()
+                                                    )
+                                         );
+
+                  path.push_back (name);
+
+                  property_dive (child, state, prop, path);
+
+                  path.pop_back ();
+                }
+              else
+                {
+                  state.warn 
+                    ( warning::unexpected_element ( child_name
+                                                  , "properry_dive"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return;
+    }
+
+    static void
+    property_map_type ( const xml_node_type * node
+                      , state::type & state
+                      , we::type::property::type & prop
+                      )
+    {
+      const std::string name ( required ( "property_map_type"
+                                        , node
+                                        , "name"
+                                        , state.file_in_progress()
+                                        )
+                             );
+
+      we::type::property::path_type path;
+
+      path.push_back (name);
+
+      property_dive (node, state, prop, path);
+
+      return;
     }
 
     // ********************************************************************* //
@@ -769,6 +895,8 @@ namespace xml
       f.resolve (empty, state, f.forbidden_below());
 
       f.type_check (state);
+
+      //      std::cerr << f << std::endl;
 
       return f.synthesize<we::activity_t> (state);
     }

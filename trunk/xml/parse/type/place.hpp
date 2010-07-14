@@ -17,6 +17,7 @@
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/property.hpp>
 
 #include <we/type/literal.hpp>
 #include <we/type/value.hpp>
@@ -214,6 +215,7 @@ namespace xml
         value_vec_type values;
         signature::type sig;
         int level;
+        we::type::property::type prop;
 
         place_type () 
           : name (), type (), capacity (), tokens (), values(), sig(), level ()
@@ -283,6 +285,10 @@ namespace xml
           {
             s << level(p.level+1) << "value = " << *val << std::endl;
           }
+
+        s << level (p.level+1) << "properties = " << std::endl;
+
+        p.prop.writeTo (s, p.level+2);
 
         return s << level(p.level) << ") // place";
       }
