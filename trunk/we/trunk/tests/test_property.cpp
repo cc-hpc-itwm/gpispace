@@ -57,6 +57,14 @@ void get_maybe_val (const std::string & path)
     ;
 }
 
+void all_get (const std::string & path)
+{
+  std::cout << "###" << std::endl;
+  get (path);
+  get_val (path);
+  get_maybe_val (path);
+}
+
 void del (const std::string & path)
 {
   std::cout << "# del " << path << std::endl;
@@ -70,12 +78,12 @@ int
 main ()
 {
   set ("A.A.A", "value_of (A.A.A)");
-  get ("A.A.A");
-  get ("A.A.B");
-  get_val ("A.A.B");
-  get_val ("A.A");
-  get ("A");
-  get ("A.A");
+  all_get ("A.A.A");
+  all_get ("A.A.B");
+  all_get ("A.A.B");
+  all_get ("A.A");
+  all_get ("A");
+  all_get ("A.A");
   set ("A.A", "value_of (A.A)");
   set ("A", "value_of (A)");
   set ("A.A.A", "value_of (A.A.A)");
@@ -87,8 +95,8 @@ main ()
   set ("B.A.A", "value_of (B.A.A)");
   del ("A.B");
   del ("A.A.A");
-  get_val ("B.A.A");
-  get_val ("B.A");
+  all_get ("B.A.A");
+  all_get ("B.A");
 
   return EXIT_SUCCESS;
 }

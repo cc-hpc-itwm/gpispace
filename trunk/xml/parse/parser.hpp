@@ -969,18 +969,10 @@ namespace xml
       maybe<we::type::property::value_type>
         dprint (f.prop.get_maybe_val ("parser.print-internal-structures"));
 
-      std::cerr << f.prop << std::endl;
-      std::cerr << dprint << std::endl;
-
-      std::cerr << f.prop.get ("parser.print-internal-structures") << std::endl;
-      std::cerr << f.prop.get_val ("parser.print-internal-structures") << std::endl;
-
-      std::cerr << std::endl;
-
-//       if (dprint.isJust() && *dprint == "on")
-//         {
-          std::cerr << f << std::endl;
-//         }
+      if (dprint.isJust() && *dprint == "on")
+         {
+           std::cerr << f << std::endl;
+         }
 
       return f.synthesize<we::activity_t> (state);
     }

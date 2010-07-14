@@ -155,13 +155,16 @@ namespace we
           }
         };
 
-        class get_val : public boost::static_visitor<value_type &>
+        class get_val : public boost::static_visitor<const value_type &>
         {
         public:
-          value_type & operator () (value_type & v) const { return v; }
+          const value_type & operator () (const value_type & v) const
+          {
+            return v;
+          }
 
           template<typename T>
-          value_type & operator () (T &) const
+          const value_type & operator () (const T & v) const
           {
             throw exception::not_a_val ("visitor::get_val");
           }
@@ -244,10 +247,9 @@ namespace we
         template<typename IT>
         const value_type & get_val (IT pos, IT end, IT zero) const
         {
-          return
-            boost::apply_visitor ( visitor::get_val()
-                                 , get (pos, end, zero)
-                                 );
+          return boost::apply_visitor ( visitor::get_val()
+                                      , get (pos, end, zero)
+                                      );
         }
 
         template<typename IT>
@@ -271,9 +273,6 @@ namespace we
 
       public:
         type () : map () {}
-
-        map_type & get_map (void) { return map; }
-        const map_type & get_map (void) const { return map; }
 
         // ----------------------------------------------------------------- //
 
