@@ -5,7 +5,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
   <properties name="parser">
-    <property key="print-internal-structures" value="on"/>
+    <property key="print-internal-structures" value="off"/>
   </properties>
 
   <include-structs href="typedef.xml"/>

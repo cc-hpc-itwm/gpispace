@@ -259,7 +259,12 @@ namespace xml
             {
               const signature::type type (net.type_of_place (*place));
               const pid_t pid
-                (we_net.add_place (we_place_type (place->name, type)));
+                ( we_net.add_place ( we_place_type ( place->name
+                                                   , type
+                                                   , place->prop
+                                                   )
+                                   )
+                );
 
               pid_of_place[place->name] = pid;
 

@@ -49,6 +49,13 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
+include(FindMAYBE)
+if (MAYBE_FOUND)
+  include_directories(${MAYBE_INCLUDE_DIR})
+else(MAYBE_FOUND)
+  message(FATAL_ERROR "MAYBE could not be found but is required")
+endif(MAYBE_FOUND)
+
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)

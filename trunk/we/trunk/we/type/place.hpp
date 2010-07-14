@@ -6,6 +6,7 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/name.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/property.hpp>
 
 #include <we/serialize/unordered_map.hpp>
 
@@ -23,6 +24,7 @@ namespace place
   private:
     name_t name;
     signature::type signature;
+    we::type::property::type prop;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -30,11 +32,13 @@ namespace place
     {
       ar & BOOST_SERIALIZATION_NVP(name);
       ar & BOOST_SERIALIZATION_NVP(signature);
+      ar & BOOST_SERIALIZATION_NVP(prop);
     }
 
   public:
     const name_t & get_name (void) const { return name; }
     const signature::type & get_signature (void) const { return signature; }
+    const we::type::property::type & get_property (void) { return prop; }
 
     type ()
     {}
@@ -50,6 +54,14 @@ namespace place
     template<typename T>
     type (const name_t & _name, const T & _signature)
       : name (_name), signature (_signature)
+    {}
+
+    template<typename T>
+    type ( const name_t & _name
+         , const T & _signature
+         , const we::type::property::type & _prop
+         )
+      : name (_name), signature (_signature), prop (_prop)
     {}
   };
 
@@ -71,18 +83,24 @@ namespace place
   }
 
   template<typename NET>
-  static const type::name_t & name ( const NET & net
-                                   , const petri_net::pid_t & pid
-                                   )
+  static const type::name_t &
+  name (const NET & net, const petri_net::pid_t & pid)
   {
     return net.get_place(pid).get_name();
   }
 
   template<typename NET>
-  static const signature::type & signature ( const NET & net
-                                           , const petri_net::pid_t & pid)
+  static const signature::type &
+  signature (const NET & net, const petri_net::pid_t & pid)
   {
     return net.get_place(pid).get_signature();
+  }
+
+  template<typename NET>
+  static const we::type::property::type &
+  property (const NET & net, const petri_net::pid_t & pid)
+  {
+    return net.get_place(pid).get_property();
   }
 }
 
