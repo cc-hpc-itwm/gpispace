@@ -559,6 +559,11 @@ namespace xml
 
         fun.name = trans.name;
 
+        fun.cond.insert ( fun.cond.end()
+                        , trans.cond.begin()
+                        , trans.cond.end()
+                        );
+
         we_transition_type we_trans 
           ( boost::apply_visitor
             ( function_synthesize<Activity, Net, Fun> (state, fun)
