@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 
 #include <we/type/literal/name.hpp>
+#include <we/type/property.hpp>
 
 #include <iostream>
 
@@ -37,6 +38,8 @@ namespace xml
         struct_vec_type structs;
 
         boost::filesystem::path path;
+
+        we::type::property::type prop;
 
         int level;
 
@@ -211,6 +214,10 @@ namespace xml
       std::ostream & operator << (std::ostream & s, const net_type & n)
       {
         s << "net (path = " << n.path << std::endl;
+
+        s << level(n.level+1) << "properties = " << std::endl;
+
+        n.prop.writeTo (s, n.level+2);
 
         s << level(n.level) << "structs =" << std::endl;
 

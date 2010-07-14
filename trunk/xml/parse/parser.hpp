@@ -199,10 +199,39 @@ namespace xml
     static type::connect_type
     connect_type (const xml_node_type * node, state::type & state)
     {
-      return type::connect_type
+      type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
+        , state.level() + 2
         );
+      
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "properties")
+                {
+                  property_map_type (child, state, connect.prop);
+                }
+              else
+                {
+                  state.warn 
+                    ( warning::unexpected_element ( child_name
+                                                  , "connect_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return connect;
     }
 
     // ********************************************************************* //
@@ -283,6 +312,10 @@ namespace xml
                     (parse_cdata (child, state.file_in_progress()));
 
                   f.cond.insert (f.cond.end(), conds.begin(), conds.end());
+                }
+              else if (child_name == "properties")
+                {
+                  property_map_type (child, state, f.prop);
                 }
               else
                 {
@@ -401,6 +434,10 @@ namespace xml
 
                   n.push (fun);
                 }
+              else if (child_name == "properties")
+                {
+                  property_map_type (child, state, n.prop);
+                }
               else
                 {
                   state.warn
@@ -472,11 +509,40 @@ namespace xml
     static type::port_type
     port_type (const xml_node_type * node, state::type & state)
     {
-      return type::port_type
+      type::port_type port
         ( required ("port_type", node, "name", state.file_in_progress())
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
+        , state.level() + 2
         );
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "properties")
+                {
+                  property_map_type (child, state, port.prop);
+                }
+              else
+                {
+                  state.warn 
+                    ( warning::unexpected_element ( child_name
+                                                  , "port_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return port;
     }
 
     // ********************************************************************* //
@@ -864,6 +930,10 @@ namespace xml
 
                   t.cond.insert (t.cond.end(), conds.begin(), conds.end());
                 }
+              else if (child_name == "properties")
+                {
+                  property_map_type (child, state, t.prop);
+                }
               else
                 {
                   state.warn
@@ -896,7 +966,21 @@ namespace xml
 
       f.type_check (state);
 
-      //      std::cerr << f << std::endl;
+      maybe<we::type::property::value_type>
+        dprint (f.prop.get_maybe_val ("parser.print-internal-structures"));
+
+      std::cerr << f.prop << std::endl;
+      std::cerr << dprint << std::endl;
+
+      std::cerr << f.prop.get ("parser.print-internal-structures") << std::endl;
+      std::cerr << f.prop.get_val ("parser.print-internal-structures") << std::endl;
+
+      std::cerr << std::endl;
+
+//       if (dprint.isJust() && *dprint == "on")
+//         {
+          std::cerr << f << std::endl;
+//         }
 
       return f.synthesize<we::activity_t> (state);
     }

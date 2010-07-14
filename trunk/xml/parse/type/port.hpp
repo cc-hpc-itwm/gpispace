@@ -13,6 +13,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
 
+#include <we/type/property.hpp>
+
 namespace xml
 {
   namespace parse
@@ -25,16 +27,20 @@ namespace xml
         std::string name;
         std::string type;
         maybe<std::string> place;
+        we::type::property::type prop;
+        int level;
 
         port_type () : name (), type (), place () {}
 
         port_type ( const std::string & _name
                   , const std::string & _type
                   , const maybe<std::string> & _place
+                  , const int & _level
                   )
           : name (_name)
           , type (_type)
           , place (_place)
+          , level (_level)
         {}
       };
 
@@ -109,12 +115,15 @@ namespace xml
 
       std::ostream & operator << (std::ostream & s, const port_type & p)
       {
-        return s << "port ("
-                 << "name = " << p.name
-                 << ", type = " << p.type
-                 << ", place = " << p.place
-                 << ")"
-          ;
+        s << level(p.level)  << "port (" << std::endl;
+        s << level(p.level+1) << "name = " << p.name << std::endl;
+        s << level(p.level+1) << "type = " << p.type << std::endl;
+        s << level(p.level+1) << "place = " << p.place << std::endl;
+        s << level(p.level+1) << "properties = " << std::endl;
+
+        p.prop.writeTo (s, p.level+2);
+
+        return s << level(p.level) << ") // port";
       }
     }
   }

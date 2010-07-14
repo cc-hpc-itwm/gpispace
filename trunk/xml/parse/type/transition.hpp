@@ -15,6 +15,8 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
+#include <we/type/property.hpp>
+
 namespace xml
 {
   namespace parse
@@ -137,6 +139,8 @@ namespace xml
 
         std::string name;
         boost::filesystem::path path;
+
+        we::type::property::type prop;
 
         int level;
 
@@ -284,6 +288,10 @@ namespace xml
         s << level (t.level)     << "transition (" << std::endl;
         s << level (t.level + 1) << "name = " << t.name << std::endl;
         s << level (t.level + 1) << "path = " << t.path << std::endl;
+
+        s << level(t.level+1) << "properties = " << std::endl;
+
+        t.prop.writeTo (s, t.level+2);
 
         s << level (t.level + 1) << "connect-in = " << std::endl;
 

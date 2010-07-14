@@ -49,6 +49,14 @@ void get_val (const std::string & path)
     }
 }
 
+void get_maybe_val (const std::string & path)
+{
+  std::cout << "# get_maybe_val " << path 
+            << " => " << p.get_maybe_val (path)
+            << std::endl
+    ;
+}
+
 void del (const std::string & path)
 {
   std::cout << "# del " << path << std::endl;

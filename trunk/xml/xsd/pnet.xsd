@@ -118,6 +118,9 @@
 
   <xsd:complexType name="function_type">
     <xsd:sequence>
+      <xsd:choice  minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+      </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="struct" type="struct_type"/>
         <xsd:element name="include-structs" type="struct_include_type"/>

@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/property.hpp>
 
 #include <we/we.hpp>
 
@@ -322,6 +323,8 @@ namespace xml
         maybe<bool> internal;
 
         cond_vec_type cond;
+
+        we::type::property::type prop;
 
         type f;
 
@@ -649,6 +652,10 @@ namespace xml
         s << level (f.level+1) << "path = " << f.path << std::endl;
         ;
 
+        s << level(f.level+1) << "properties = " << std::endl;
+
+        f.prop.writeTo (s, f.level+2);
+
         s << level(f.level+1) << "port_in = " << std::endl;
 
         for ( port_vec_type::const_iterator pos (f.in().begin())
@@ -656,7 +663,7 @@ namespace xml
             ; ++pos
             )
           {
-            s << level(f.level+2) << *pos << std::endl;
+            s << *pos << std::endl;
           }
 
         s << level(f.level+1) << "port_out = " << std::endl;
@@ -666,7 +673,7 @@ namespace xml
             ; ++pos
             )
           {
-            s << level(f.level+2) << *pos << std::endl;
+            s << *pos << std::endl;
           }
 
         s << level(f.level+1) << "structs = " << std::endl;
