@@ -58,6 +58,10 @@
    <place name="done" type="control"/>
 
     <transition name="initialize">
+      <properties name="gui">
+        <property key="color" value="later overwritten"/>
+      </properties>
+
       <defun>
         <in name="config_file" type="string"/>
         <out name="config" type="CONFIG" />
@@ -91,6 +95,10 @@
       <connect-out port="config" place="config" />
       <connect-out port="trigger" place="trigger_loadTT" />
       <connect-out port="wait" place="wait" />
+
+      <properties name="gui">
+        <property key="color" value="blue"/>
+      </properties>
     </transition>
     
     <place name="config" type="CONFIG"/>
