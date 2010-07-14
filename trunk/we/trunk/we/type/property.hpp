@@ -421,7 +421,7 @@ namespace we
         }
       };
 
-      std::ostream & operator << (std::ostream & s, const type & t)
+      inline std::ostream & operator << (std::ostream & s, const type & t)
       {
         t.writeTo (s, 1); return s;
       }
