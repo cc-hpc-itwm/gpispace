@@ -41,6 +41,7 @@ namespace xml
         search_path_type _search_path;
         in_progress_type _in_progress;
         bool _Werror;
+        bool _Wall;
         bool _Woverwrite_function_name_as;
         bool _Wshadow;
         bool _Wdefault_construction;
@@ -52,7 +53,7 @@ namespace xml
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
         {
-          if (active)
+          if (_Wall || active)
             {
               if (_Werror)
                 {
@@ -101,13 +102,14 @@ namespace xml
           , _search_path ()
           , _in_progress ()
           , _Werror (false)
+          , _Wall (false)
           , _Woverwrite_function_name_as (true)
           , _Wshadow (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
           , _Wport_not_connected (true)
           , _Wunexpected_element (true)
-          , _Woverwrite_function_name_trans (true)
+          , _Woverwrite_function_name_trans (false)
         {}
 
         int & level (void) { return _level; }
@@ -131,6 +133,7 @@ namespace xml
 #define ACCESS(x) const bool & W ## x (void) const { return _W ## x; }
 
         ACCESS(error)
+        ACCESS(all)
         ACCESS(overwrite_function_name_as)
         ACCESS(shadow)
         ACCESS(default_construction)
@@ -225,6 +228,10 @@ namespace xml
             ( "Werror"
             , VAL(error)
             , "cast warnings to errors"
+            )
+            ( "Wall"
+            , VAL(all)
+            , "turn on all warnings"
             )
             ( "Woverwrite_function_name_as"
             , VAL(overwrite_function_name_as)
