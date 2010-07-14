@@ -44,7 +44,7 @@ namespace we
           for (unsigned int i (0); i < l; ++i) { s << "  "; }
         }
 
-        path_type split (const std::string & s, const char & sep = '.')
+        static path_type split (const std::string & s, const char & sep = '.')
         {
           path_type path;
           key_type key;
