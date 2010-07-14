@@ -143,7 +143,7 @@ namespace xml
               const signature::type type
                 (fun.type_of_port (direction, *port));
               
-              trans.add_ports () (port->name, type, direction, port->prop);
+              trans.add_ports () (port->name, type, direction); // , port->prop);
             }
         }
 
@@ -164,7 +164,7 @@ namespace xml
 
               if (port->place.isNothing())
                 {
-                  trans.add_ports () (port->name, type, direction, port->prop);
+                  trans.add_ports () (port->name, type, direction); //, port->prop);
                 }
               else
                 {
@@ -176,7 +176,7 @@ namespace xml
                                      , type
                                      , direction
                                      , get_pid (pid_of_place, *port->place)
-                                     , port->prop
+                                     //                                     , port->prop
                                      )
                     ;
                 }
