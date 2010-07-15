@@ -9,7 +9,7 @@
 
 #include <boost/variant.hpp>
 
-namespace detail
+namespace maybe_detail
 {
   struct Nothing {};
 
@@ -60,7 +60,7 @@ template<typename T>
 struct maybe
 {
 private:
-  typedef boost::variant <detail::Nothing, T> maybe_type;
+  typedef boost::variant <maybe_detail::Nothing, T> maybe_type;
 
   maybe_type m;
 
@@ -70,22 +70,22 @@ public:
 
   bool isJust (void) const 
   {
-    return boost::apply_visitor (detail::isJust(), m);
+    return boost::apply_visitor (maybe_detail::isJust(), m);
   }
 
   bool isNothing (void) const 
   {
-    return boost::apply_visitor (detail::isNothing(), m);
+    return boost::apply_visitor (maybe_detail::isNothing(), m);
   }
 
   const T & operator * (void) const
   {
-    return boost::apply_visitor (detail::get<T>(), m);
+    return boost::apply_visitor (maybe_detail::get<T>(), m);
   }
 
   const T & get_with_default (const T & dflt) const
   {
-    return boost::apply_visitor (detail::get_with_default<T> (dflt), m);
+    return boost::apply_visitor (maybe_detail::get_with_default<T> (dflt), m);
   }
 
   void operator = (const T & x)
