@@ -159,15 +159,25 @@ namespace we { namespace type {
           : transition_(t)
         {}
 
-        connection_adder<Transition, from_type, to_type> & operator() (const from_type outer, const std::string & name)
+        connection_adder<Transition, from_type, to_type> & operator() 
+          ( const from_type outer
+          , const std::string & name
+          , const we::type::property::type & prop = we::type::property::type()
+          )
         {
-          transition_.connect_outer_to_inner (outer, transition_.input_port_by_name (name));
+          transition_.connect_outer_to_inner 
+            (outer, transition_.input_port_by_name (name), prop);
           return *this;
         }
 
-        connection_adder<Transition, from_type, to_type> & operator() (const std::string & name, const from_type outer)
+        connection_adder<Transition, from_type, to_type> & operator()
+          ( const std::string & name
+          , const from_type outer
+          , const we::type::property::type & prop = we::type::property::type()
+          )
         {
-          transition_.connect_inner_to_outer (transition_.output_port_by_name (name), outer);
+          transition_.connect_inner_to_outer 
+            (transition_.output_port_by_name (name), outer, prop);
           return *this;
         }
       private:
@@ -281,8 +291,14 @@ namespace we { namespace type {
       typedef petri_net::pid_t pid_t;
       typedef pid_t port_id_t;
 
-      typedef boost::unordered_map<pid_t, port_id_t> outer_to_inner_t;
-      typedef boost::unordered_map<port_id_t, pid_t> inner_to_outer_t;
+      typedef std::pair< port_id_t
+                       , we::type::property::type
+                       > port_id_with_prop_t;
+      typedef std::pair< pid_t
+                       , we::type::property::type
+                       > pid_with_prop_t;
+      typedef boost::unordered_map<pid_t, port_id_with_prop_t> outer_to_inner_t;
+      typedef boost::unordered_map<port_id_t, pid_with_prop_t> inner_to_outer_t;
 
       typedef signature::type signature_type;
       typedef port<signature_type> port_t;
@@ -493,7 +509,10 @@ namespace we { namespace type {
       ~transition_t () { }
 
       template <typename Outer, typename Inner>
-      void connect_outer_to_inner(const Outer outer, const Inner inner)
+      void connect_outer_to_inner ( const Outer outer
+                                  , const Inner inner
+                                  , const we::type::property::type & prop
+                                  )
       {
         if (outer_to_inner_.find (outer) != outer_to_inner_.end())
         {
@@ -501,12 +520,16 @@ namespace we { namespace type {
         }
         else
         {
-          outer_to_inner_.insert (outer_to_inner_t::value_type (outer, inner));
+          outer_to_inner_.insert 
+            (outer_to_inner_t::value_type (outer, std::make_pair(inner, prop)));
         }
       }
 
       template <typename Inner, typename Outer>
-      void connect_inner_to_outer(const Inner inner, const Outer outer)
+      void connect_inner_to_outer ( const Inner inner
+                                  , const Outer outer
+                                  , const we::type::property::type & prop
+                                  )
       {
         if (inner_to_outer_.find (inner) != inner_to_outer_.end())
         {
@@ -514,12 +537,14 @@ namespace we { namespace type {
         }
         else
         {
-          inner_to_outer_.insert (inner_to_outer_t::value_type (inner, outer));
+          inner_to_outer_.insert 
+            (inner_to_outer_t::value_type (inner, std::make_pair(outer, prop)));
         }
       }
 
       template <typename Outer>
-      typename outer_to_inner_t::mapped_type outer_to_inner (Outer outer) const
+      typename outer_to_inner_t::mapped_type
+      gen_outer_to_inner (Outer outer) const
       {
         try
         {
@@ -530,8 +555,21 @@ namespace we { namespace type {
         }
       }
 
+      template <typename Outer>
+      port_id_t outer_to_inner (Outer outer) const
+      {
+        return gen_outer_to_inner (outer).first;
+      }
+
+      template <typename Outer>
+      const we::type::property::type & outer_to_inner_prop (Outer outer) const
+      {
+        return gen_outer_to_inner (outer).second;
+      }
+
       template <typename Inner>
-      typename inner_to_outer_t::mapped_type inner_to_outer (Inner inner) const
+      typename inner_to_outer_t::mapped_type
+      gen_inner_to_outer (Inner inner) const
       {
         try
         {
@@ -540,6 +578,18 @@ namespace we { namespace type {
         {
           throw exception::not_connected<Inner> ("trans: " + name() + ": port not connected: " + ::util::show(inner), inner);
         }
+      }
+
+      template <typename Inner>
+      pid_t inner_to_outer (Inner inner) const
+      {
+        return gen_inner_to_outer (inner).first;
+      }
+
+      template <typename Inner>
+      const we::type::property::type & inner_to_outer_prop (Inner inner) const
+      {
+        return gen_inner_to_outer (inner).second;
       }
 
       typename inner_to_outer_t::const_iterator

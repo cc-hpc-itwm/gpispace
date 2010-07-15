@@ -586,7 +586,7 @@ namespace xml
             )
           {
             we_trans.add_connections ()
-              (get_pid (pids, connect->place), connect->port)
+              (get_pid (pids, connect->place), connect->port, connect->prop)
               ;
           }
 
@@ -596,7 +596,7 @@ namespace xml
             )
           {
             we_trans.add_connections ()
-              (get_pid (pids, connect->place), connect->port)
+              (get_pid (pids, connect->place), connect->port, connect->prop)
               ;
           }
 
@@ -606,7 +606,7 @@ namespace xml
             )
           {
             we_trans.add_connections ()
-              (connect->port, get_pid (pids, connect->place))
+              (connect->port, get_pid (pids, connect->place), connect->prop)
               ;
           }
 
