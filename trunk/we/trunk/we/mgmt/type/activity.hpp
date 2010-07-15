@@ -421,7 +421,7 @@ namespace we { namespace mgmt { namespace type {
 
       we::type::dot::id_type id (0);
 
-      we::type::dot::color::init (transition().prop());
+      we::type::dot::init (transition().prop());
 
       os << "digraph " << transition().name() << " {" << std::endl;
       os << "compound=true" << std::endl;

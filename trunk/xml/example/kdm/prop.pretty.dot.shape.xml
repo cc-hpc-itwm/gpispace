@@ -1,0 +1,10 @@
+<props>
+  <properties name="shape">
+    <property key="condition" value="record"/>
+    <property key="port-in" value="hexagon"/>
+    <property key="port-out" value="hexagon"/>
+    <property key="expression" value="none"/>
+    <property key="modcall" value="box"/>
+    <property key="place" value="ellipse"/>
+  </properties>
+</props>

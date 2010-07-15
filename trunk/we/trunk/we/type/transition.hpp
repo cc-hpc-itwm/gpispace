@@ -1187,7 +1187,9 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      inline std::string keyval (const std::string & key, const std::string & val)
+      inline std::string keyval ( const std::string & key
+                                , const std::string & val
+                                )
       {
         return key + " = " + dquote (val);
       }
@@ -1214,11 +1216,24 @@ namespace we { namespace type {
 
       namespace shape
       {
-        static const std::string condition = "record";
-        static const std::string port = "hexagon";
-        static const std::string expression = "none";
-        static const std::string mod = "box";
-        static const std::string place = "circle";
+        static std::string condition;
+        static std::string port_in;
+        static std::string port_out;
+        static std::string expression;
+        static std::string modcall;
+        static std::string place;
+
+        inline void init (const we::type::property::type & prop)
+        {
+          const std::string prefix ("pretty.dot.shape");
+
+          condition = prop.get_with_default (prefix + ".condition", "record");
+          port_in = prop.get_with_default (prefix + ".port-in", "hexagon");
+          port_out = prop.get_with_default (prefix + ".port-out", "hexagon");
+          expression = prop.get_with_default (prefix + ".expression", "none");
+          modcall = prop.get_with_default (prefix + ".modcall", "box");
+          place = prop.get_with_default (prefix + ".place", "circle");
+        }
       }
 
       namespace color
@@ -1239,6 +1254,29 @@ namespace we { namespace type {
           expression = prop.get_with_default (prefix + ".expression", "white");
           node = prop.get_with_default (prefix + ".node", "white");
         }
+      }
+
+      namespace style
+      {
+        static std::string association;
+        static std::string read_connection;
+
+        inline void init (const we::type::property::type & prop)
+        {
+          const std::string prefix ("pretty.dot.style");
+
+          association = 
+            prop.get_with_default (prefix + ".association", "dotted");
+          read_connection =
+            prop.get_with_default (prefix + ".read-connection", "dashed");
+        }
+      }
+
+      inline void init (const we::type::property::type & prop)
+      {
+        shape::init (prop);
+        color::init (prop);
+        style::init (prop);
       }
 
       // ******************************************************************* //
@@ -1279,9 +1317,9 @@ namespace we { namespace type {
 
       inline std::string association (void)
       {
-        return brackets ( keyval ("style", "dotted")
+        return brackets ( keyval ("style", style::association)
                         + ", " 
-                        + keyval ("dir","none")
+                        + keyval ("dir", "none")
                         );
       }
 
@@ -1400,7 +1438,7 @@ namespace we { namespace type {
 
           level (s, l)
             << name (id, "modcall")
-            << node (shape::mod, ::util::show (mod_call))
+            << node (shape::modcall, ::util::show (mod_call))
             ;
 
           return s.str();
@@ -1535,7 +1573,10 @@ namespace we { namespace type {
                     << name ( id_trans
                             , "port_" + ::util::show (connection->second.first)
                             )
-                    << (is_read ? "[style=\"dashed\"]": "")
+                    << ( is_read 
+                       ? brackets (keyval ("style", style::read_connection))
+                       : ""
+                       )
                     << std::endl
                     ;
                 }
@@ -1588,7 +1629,7 @@ namespace we { namespace type {
           {
             level (s, l + 1)
               << name (id_trans, "port_" + ::util::show(p->first))
-              << node ( shape::port
+              << node ( p->second.is_input() ? shape::port_in : shape::port_out
                       , with_signature ( p->second.name()
                                        , p->second.signature()
                                        )
