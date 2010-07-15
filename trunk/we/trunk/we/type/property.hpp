@@ -277,8 +277,10 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        void set (IT pos, IT end, const value_type & val)
+        bool set (IT pos, IT end, const value_type & val)
         {
+          bool overwritten (false);
+
           if (pos == end)
             {
               throw exception::empty_path ("set");
@@ -286,6 +288,11 @@ namespace we
 
           if (std::distance (pos, end) == 1)
             {
+              if (map.find (*pos) != map.end())
+                {
+                  overwritten = true;
+                }
+
               map[*pos] = val;
             }
           else
@@ -295,20 +302,22 @@ namespace we
                                             )
                      );
 
-              t.set (pos + 1, end, val);
+              overwritten |= t.set (pos + 1, end, val);
               
               map[*pos] = t;
             }
+
+          return overwritten;
         }
 
-        void set (const path_type & path, const value_type & val)
+        bool set (const path_type & path, const value_type & val)
         {
-          set (path.begin(), path.end(), val);
+          return set (path.begin(), path.end(), val);
         }
 
-        void set (const std::string & path, const value_type & val)
+        bool set (const std::string & path, const value_type & val)
         {
-          set (util::split (path), val);
+          return set (util::split (path), val);
         }
 
         // ----------------------------------------------------------------- //

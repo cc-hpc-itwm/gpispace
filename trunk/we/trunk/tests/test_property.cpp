@@ -12,9 +12,12 @@ void set (const std::string & path, const std::string & val)
 {
   std::cout << "# set " << path << std::endl;
 
-  p.set (path, val);
+  const bool overwritten (p.set (path, val));
 
-  std::cout << p << std::endl;
+  std::cout << p
+            << "overwritten " << (overwritten ? "true" : "false")
+            << std::endl
+    ;
 }
 
 void get (const std::string & path)
@@ -91,6 +94,7 @@ main ()
   set ("A.A.C", "value_of (A.A.C)");
   set ("A.B.A", "value_of (A.B.A)");
   set ("A.B.B", "value_of (A.B.B)");
+  set ("A.C.A", "value_of (A.C.A)");
   set ("A.C.A", "value_of (A.C.A)");
   set ("B.A.A", "value_of (B.A.A)");
   del ("A.B");
