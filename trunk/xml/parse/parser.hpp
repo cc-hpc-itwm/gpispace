@@ -639,8 +639,6 @@ namespace xml
                 }
             }
         }
-
-      return;
     }
 
     static void
@@ -649,20 +647,21 @@ namespace xml
                       , we::type::property::type & prop
                       )
     {
-      const std::string name ( required ( "property_map_type"
-                                        , node
-                                        , "name"
-                                        , state.file_in_progress()
-                                        )
-                             );
+      if (!state.ignore_properties())
+        {
+          const std::string name ( required ( "property_map_type"
+                                            , node
+                                            , "name"
+                                            , state.file_in_progress()
+                                            )
+                                 );
 
-      we::type::property::path_type path;
+          we::type::property::path_type path;
 
-      path.push_back (name);
-
-      property_dive (node, state, prop, path);
-
-      return;
+          path.push_back (name);
+          
+          property_dive (node, state, prop, path);
+        }
     }
 
     // ********************************************************************* //

@@ -40,6 +40,7 @@ namespace xml
         int _level;
         search_path_type _search_path;
         in_progress_type _in_progress;
+        bool _ignore_properties;
         bool _Werror;
         bool _Wall;
         bool _Woverwrite_function_name_as;
@@ -102,6 +103,7 @@ namespace xml
           : _level (0)
           , _search_path ()
           , _in_progress ()
+          , _ignore_properties (false)
           , _Werror (false)
           , _Wall (false)
           , _Woverwrite_function_name_as (true)
@@ -132,18 +134,20 @@ namespace xml
 
         // ***************************************************************** //
 
-#define ACCESS(x) const bool & W ## x (void) const { return _W ## x; }
+#define ACCESS(x) const bool & x (void) const { return _ ## x; }
 
-        ACCESS(error)
-        ACCESS(all)
-        ACCESS(overwrite_function_name_as)
-        ACCESS(shadow)
-        ACCESS(default_construction)
-        ACCESS(unused_field)
-        ACCESS(port_not_connected)
-        ACCESS(unexpected_element)
-        ACCESS(overwrite_function_name_trans)
-        ACCESS(property_overwritten)
+        ACCESS(ignore_properties)
+
+        ACCESS(Werror)
+        ACCESS(Wall)
+        ACCESS(Woverwrite_function_name_as)
+        ACCESS(Wshadow)
+        ACCESS(Wdefault_construction)
+        ACCESS(Wunused_field)
+        ACCESS(Wport_not_connected)
+        ACCESS(Wunexpected_element)
+        ACCESS(Woverwrite_function_name_trans)
+        ACCESS(Wproperty_overwritten)
 
 #undef ACCESS
 
@@ -226,47 +230,51 @@ namespace xml
 
         void add_options (po::options_description & desc)
         {
-#define VAL(x) po::value<bool>(&_W ## x)->default_value (_W ## x)
+#define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
 
           desc.add_options ()
             ( "search-path"
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
+            ( "ignore-properties"
+            , VAL(ignore_properties)
+            , "when set to true, no properties are parsed"
+            )
             ( "Werror"
-            , VAL(error)
+            , VAL(Werror)
             , "cast warnings to errors"
             )
             ( "Wall"
-            , VAL(all)
+            , VAL(Wall)
             , "turn on all warnings"
             )
             ( "Woverwrite_function_name_as"
-            , VAL(overwrite_function_name_as)
+            , VAL(Woverwrite_function_name_as)
             , "warn when overwriting a function name by 'as'"
             )
             ( "Wshadow"
-            , VAL(shadow)
+            , VAL(Wshadow)
             , "warn when shadowing a struct definition"
             )
             ( "Wdefault_construction"
-            , VAL(default_construction)
+            , VAL(Wdefault_construction)
             , "warn when default construct (part of) tokens"
             )
             ( "Wunused_field"
-            , VAL(unused_field)
+            , VAL(Wunused_field)
             , "warn when given fields in tokens are unused"
             )
             ( "Wunexpected_element"
-            , VAL(unexpected_element)
+            , VAL(Wunexpected_element)
             , "warn when unexpected elements occur"
             )
             ( "Woverwrite_function_name_trans"
-            , VAL(overwrite_function_name_trans)
+            , VAL(Woverwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
             )
             ( "Wproperty_overwritten"
-            , VAL(property_overwritten)
+            , VAL(Wproperty_overwritten)
             , "warn when overwriting a property"
             )
             ;
