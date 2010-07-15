@@ -13,5 +13,6 @@
 #include <xml/parse/util/name_element.hpp>
 #include <xml/parse/util/cdata.hpp>
 #include <xml/parse/util/read_bool.hpp>
+#include <xml/parse/util/property.hpp>
 
 #endif

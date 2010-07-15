@@ -548,35 +548,6 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    property_set ( const state::type & state
-                 , we::type::property::type & prop
-                 , const we::type::property::path_type & path
-                 , const we::type::property::value_type & value
-                 )
-    {
-      const maybe<we::type::property::value_type>
-        old (prop.get_maybe_val (path));
-
-      const bool overwritten (prop.set (path, value));
-
-      if (overwritten)
-        {
-          if (old.isNothing())
-            {
-              THROW_STRANGE
-                ("property_set: old.isNothing() and overwritten == true");
-            }
-
-          state.warn ( warning::property_overwritten ( path
-                                                     , *old
-                                                     , value
-                                                     , state.file_in_progress()
-                                                     )
-                     );
-        }
-    }
-
-    static void
     property_dive ( const xml_node_type * node
                   , state::type & state
                   , we::type::property::type & prop
@@ -624,7 +595,7 @@ namespace xml
                             ("no value given", path, state.file_in_progress());
                         }
 
-                      property_set (state, prop, path, cdata.front());
+                      util::property::set (state, prop, path, cdata.front());
                     }
                   else
                     {
@@ -637,7 +608,7 @@ namespace xml
                             );
                         }
 
-                      property_set (state, prop, path, *value);
+                      util::property::set (state, prop, path, *value);
                     }
 
                   path.pop_back();
