@@ -8,6 +8,9 @@
 #include <sstream>
 
 #include <we/type/signature.hpp>
+#include <we/type/property.hpp>
+
+#include <parse/util/join.hpp>
 
 namespace xml
 {
@@ -225,6 +228,37 @@ namespace xml
         , const boost::filesystem::path & transpath
         )
           : generic (nice (fun, funpath, trans, transpath))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class property_overwritten : public generic
+      {
+      private:
+        std::string nice ( const we::type::property::path_type & key
+                         , const we::type::property::value_type & old_val
+                         , const we::type::property::value_type & new_val
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "property " << util::join (key, ".")
+            << " value " << old_val
+            << " overwritten by value " << new_val
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        property_overwritten ( const we::type::property::path_type & key
+                             , const we::type::property::value_type & old_val
+                             , const we::type::property::value_type & new_val
+                             , const boost::filesystem::path & path
+                             )
+          : generic (nice (key, old_val, new_val, path))
         {}
       };
     }

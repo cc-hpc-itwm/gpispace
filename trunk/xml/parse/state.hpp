@@ -49,6 +49,7 @@ namespace xml
         bool _Wport_not_connected;
         bool _Wunexpected_element;
         bool _Woverwrite_function_name_trans;
+        bool _Wproperty_overwritten;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -110,6 +111,7 @@ namespace xml
           , _Wport_not_connected (true)
           , _Wunexpected_element (true)
           , _Woverwrite_function_name_trans (false)
+          , _Wproperty_overwritten (true)
         {}
 
         int & level (void) { return _level; }
@@ -141,6 +143,7 @@ namespace xml
         ACCESS(port_not_connected)
         ACCESS(unexpected_element)
         ACCESS(overwrite_function_name_trans)
+        ACCESS(property_overwritten)
 
 #undef ACCESS
 
@@ -180,6 +183,11 @@ namespace xml
         void warn (const warning::overwrite_function_name_trans & w) const
         {
           generic_warn (w, _Woverwrite_function_name_trans);
+        }
+
+        void warn (const warning::property_overwritten & w) const
+        {
+          generic_warn (w, _Wproperty_overwritten);
         }
 
         // ***************************************************************** //
@@ -256,6 +264,10 @@ namespace xml
             ( "Woverwrite_function_name_trans"
             , VAL(overwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
+            )
+            ( "Wproperty_overwritten"
+            , VAL(property_overwritten)
+            , "warn when overwriting a property"
             )
             ;
 #undef VAL

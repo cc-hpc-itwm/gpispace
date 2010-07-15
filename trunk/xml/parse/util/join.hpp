@@ -37,6 +37,16 @@ namespace xml
 
         return s.str();
       };
+
+      template<typename V>
+      std::string join ( const V & v
+                       , const std::string & sep
+                       , const std::string & local_open = ""
+                       , const std::string & local_close = ""
+                       )
+      {
+        return join (v.begin(), v.end(), sep, local_open, local_close);
+      }
     }
   }
 }
