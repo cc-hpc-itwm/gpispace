@@ -1221,11 +1221,22 @@ namespace we { namespace type {
 
       namespace color
       {
-        static const std::string internal = "white";
-        static const std::string external = "grey";
-        static const std::string modcall = "yellow";
-        static const std::string expression = "white";
-        static const std::string node = "white";
+        static std::string internal;
+        static std::string external;
+        static std::string modcall;
+        static std::string expression;
+        static std::string node;
+
+        void init (const we::type::property::type & prop)
+        {
+          const std::string prefix ("pretty.dot.color");
+
+          internal = prop.get_with_default (prefix + ".internal", "white");
+          external = prop.get_with_default (prefix + ".external", "grey");
+          modcall = prop.get_with_default (prefix + ".modcall", "yellow");
+          expression = prop.get_with_default (prefix + ".expression", "white");
+          node = prop.get_with_default (prefix + ".node", ".white");
+        }
       }
 
       // ******************************************************************* //
@@ -1473,7 +1484,7 @@ namespace we { namespace type {
                             )
                     << arrow
                     << name ( id_net
-                            , "place_" + ::util::show (connection->second)
+                            , "place_" + ::util::show (connection->second.first)
                             )
                     << std::endl
                     ;
@@ -1520,7 +1531,7 @@ namespace we { namespace type {
                             )
                     << arrow
                     << name ( id_trans
-                            , "port_" + ::util::show (connection->second)
+                            , "port_" + ::util::show (connection->second.first)
                             )
                     << (is_read ? "[style=\"dashed\"]": "")
                     << std::endl
@@ -1548,6 +1559,8 @@ namespace we { namespace type {
                              )
       {
         typedef transition_t<P,E,T> trans_t;
+
+        color::init (t.prop);
 
         std::ostringstream s;
 

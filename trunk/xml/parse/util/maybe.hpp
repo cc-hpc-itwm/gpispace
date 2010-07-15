@@ -7,39 +7,90 @@
 
 #include <boost/functional/hash.hpp>
 
+#include <boost/variant.hpp>
+
+namespace detail
+{
+  struct Nothing {};
+
+  class isJust : public boost::static_visitor<bool>
+  {
+  public:
+    bool operator () (const Nothing &) const { return false; }
+
+    template<typename T>
+    bool operator () (const T &) const { return true; }
+  };
+
+  class isNothing : public boost::static_visitor<bool>
+  {
+  public:
+    bool operator () (const Nothing &) const { return true; }
+
+    template<typename T>
+    bool operator () (const T &) const { return false; }
+  };
+
+  template<typename T>
+  class get_with_default : public boost::static_visitor<const T &>
+  {
+  private:
+    const T & dflt;
+
+  public:
+    get_with_default (const T & _dflt) : dflt (_dflt) {}
+
+    const T & operator () (const Nothing &) const { return dflt; }
+    const T & operator () (const T & x) const { return x; }
+  };
+
+  template<typename T>
+  class get : public boost::static_visitor<const T &>
+  {
+  public:
+    const T & operator () (const Nothing &) const 
+    {
+      throw std::runtime_error ("maybe: Nothing");
+    }
+    const T & operator () (const T & x) const { return x; }
+  };
+}
+
 template<typename T>
 struct maybe
 {
 private:
-  T t;
-  bool given;
+  typedef boost::variant <detail::Nothing, T> maybe_type;
+
+  maybe_type m;
 
 public:
-  maybe () : t(), given(false) {}
-  maybe (const T & _t) : t (_t), given (true) {}
+  maybe () : m () {}
+  maybe (const T & t) : m (t) {}
 
-  bool isJust (void) const { return given; }
-  bool isNothing (void) const { return !given; }
-
-  const T & get_with_default (const T & dflt) const
+  bool isJust (void) const 
   {
-    return isNothing() ? dflt : t;
+    return boost::apply_visitor (detail::isJust(), m);
   }
 
-  void operator = (const T & x)
+  bool isNothing (void) const 
   {
-    given = true;
-    t = x;
+    return boost::apply_visitor (detail::isNothing(), m);
   }
 
   const T & operator * (void) const
   {
-    if (isNothing())
-      {
-        throw std::runtime_error ("maybe: Nothing");
-      }
+    return boost::apply_visitor (detail::get<T>(), m);
+  }
 
-    return t;
+  const T & get_with_default (const T & dflt) const
+  {
+    return boost::apply_visitor (detail::get_with_default<T> (dflt), m);
+  }
+
+  void operator = (const T & x)
+  {
+    m = x;
   }
 
   template<typename U>
@@ -66,7 +117,7 @@ inline bool operator == (const maybe<T> & x, const maybe<T> & y)
 template<typename T>
 std::ostream & operator << (std::ostream & s, const maybe<T> & m)
 {
-  return s << (m.isNothing() ? "Nothing" : ("Just " + ::util::show(m.t)));
+  return s << (m.isNothing() ? "Nothing" : ("Just " + ::util::show(*m)));
 };
 
 template<typename T>

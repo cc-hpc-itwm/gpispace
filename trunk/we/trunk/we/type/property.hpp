@@ -254,19 +254,20 @@ namespace we
         }
 
         template<typename IT>
-        const maybe<value_type> get_maybe_val (IT pos, IT end, IT zero) const
+        const maybe<const value_type &>
+        get_maybe_val (IT pos, IT end, IT zero) const
         {
           try
             {
-              return maybe<value_type> (get_val (pos, end, zero));
+              return maybe<const value_type &> (get_val (pos, end, zero));
             }
           catch (const exception::missing_binding &)
             {
-              return maybe<value_type>();
+              return maybe<const value_type &>();
             }
           catch (const exception::not_a_val &)
             {
-              return maybe<value_type>();
+              return maybe<const value_type &>();
             }
         }
 
@@ -366,19 +367,45 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        const maybe<value_type> get_maybe_val (IT pos, IT end) const
+        const maybe<const value_type &>
+        get_maybe_val (IT pos, IT end) const
         {
           return get_maybe_val (pos, end, pos);
         }
 
-        const maybe<value_type> get_maybe_val (const path_type & path) const
+        const maybe<const value_type &>
+        get_maybe_val (const path_type & path) const
         {
           return get_maybe_val (path.begin(), path.end());
         }
 
-        const maybe<value_type> get_maybe_val (const std::string & path) const
+        const maybe<const value_type &>
+        get_maybe_val (const std::string & path) const
         {
           return get_maybe_val (util::split (path));
+        }
+
+        // ----------------------------------------------------------------- //
+
+        template<typename IT>
+        const value_type &
+        get_with_default (IT pos, IT end, const value_type & dflt) const
+        {
+          return get_maybe_val (pos, end, pos).get_with_default (dflt);
+        }
+
+        const value_type &
+        get_with_default (const path_type & path, const value_type & dflt) const
+        {
+          return get_with_default (path.begin(), path.end(), dflt);
+        }
+
+        const value_type &
+        get_with_default ( const std::string & path
+                         , const value_type & dflt
+                         ) const
+        {
+          return get_with_default (util::split (path), dflt);
         }
 
         // ----------------------------------------------------------------- //

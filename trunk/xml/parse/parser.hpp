@@ -1144,7 +1144,7 @@ namespace xml
 
       f.type_check (state);
 
-      maybe<we::type::property::value_type>
+      maybe<const we::type::property::value_type &>
         dprint (f.prop.get_maybe_val ("parser.print-internal-structures"));
 
       if (dprint.isJust() && *dprint == "on")

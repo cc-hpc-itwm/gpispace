@@ -63,12 +63,21 @@ void get_maybe_val (const std::string & path)
     ;
 }
 
+void get_with_default (const std::string & path, const std::string & dflt)
+{
+  std::cout << "# get_with_default " << path 
+            << " => " << p.get_with_default (path, dflt)
+            << std::endl
+    ;
+}
+
 void all_get (const std::string & path)
 {
   std::cout << "###" << std::endl;
   get (path);
   get_val (path);
   get_maybe_val (path);
+  get_with_default (path, "<default>");
 }
 
 void del (const std::string & path)
