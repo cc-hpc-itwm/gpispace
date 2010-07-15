@@ -283,6 +283,134 @@ namespace xml
 
       // ******************************************************************* //
 
+      using petri_net::connection_t;
+      using petri_net::PT;
+      using petri_net::PT_READ;
+      using petri_net::TP;
+
+      template< typename Activity
+              , typename Net
+              , typename Trans
+              , typename Fun
+              , typename Map
+              >
+      void
+      transition_synthesize
+      ( const Trans & trans
+      , const state::type & state
+      , const Net & net
+      , typename Activity::transition_type::net_type & we_net
+      , const Map & pids
+      , typename Activity::transition_type::edge_type & e
+      ) 
+      {
+        typedef typename Activity::transition_type we_transition_type;
+        typedef typename petri_net::tid_t tid_t;
+
+        Fun fun
+          ( boost::apply_visitor 
+            ( transition_get_function<Net, Trans> (net, trans)
+            , trans.f
+            )
+          );
+
+        if (fun.name.isJust())
+          {
+            if (*fun.name != trans.name)
+              {
+                state.warn ( warning::overwrite_function_name_trans 
+                             ( *fun.name
+                             , fun.path
+                             , trans.name
+                             , trans.path
+                             )
+                           );
+              }
+          }
+
+        fun.name = trans.name;
+
+        fun.cond.insert ( fun.cond.end()
+                        , trans.cond.begin()
+                        , trans.cond.end()
+                        );
+
+        // WORK HERE: add prop from trans to fun
+
+        we_transition_type we_trans 
+          ( boost::apply_visitor
+            ( function_synthesize<Activity, Net, Fun> (state, fun)
+            , fun.f
+            )
+          );
+
+        for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            ; connect != trans.in().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (get_pid (pids, connect->place), connect->port, connect->prop)
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            ; connect != trans.read().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (get_pid (pids, connect->place), connect->port, connect->prop)
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            ; connect != trans.out().end()
+            ; ++connect
+            )
+          {
+            we_trans.add_connections ()
+              (connect->port, get_pid (pids, connect->place), connect->prop)
+              ;
+          }
+
+        const tid_t tid (we_net.add_transition (we_trans));
+
+        for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            ; connect != trans.in().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge 
+              (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            ; connect != trans.read().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge
+              (e++, connection_t (PT_READ, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            ; connect != trans.out().end()
+            ; ++connect
+            )
+          {
+            we_net.add_edge
+              (e++, connection_t (TP, tid, get_pid (pids, connect->place)))
+              ;
+          }
+
+        return;
+      };
+
+      // ******************************************************************* //
+
       std::ostream & operator << (std::ostream & s, const transition_type & t)
       {
         s << level (t.level)     << "transition (" << std::endl;
