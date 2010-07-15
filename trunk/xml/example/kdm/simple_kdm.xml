@@ -161,7 +161,7 @@
     <transition name="generate_volume">
       <include href="generate_volume.xml" />
       <connect-in place="offset" port="offset" />
-      <connect-read place="number_of_volumes" port="amount" />
+      <connect-in place="number_of_volumes" port="amount" />
       <connect-out place="volume" port="out" />
     </transition>
     
