@@ -2,6 +2,8 @@
 
 #include <we/type/property.hpp>
 
+#include <xml/parse/util/join.hpp>
+
 #include <iostream>
 
 namespace prop = we::type::property;
@@ -101,6 +103,24 @@ main ()
   del ("A.A.A");
   all_get ("B.A.A");
   all_get ("B.A");
+  set ("A.A.B.A", "value_of (A.A.B.A)");
+
+  std::cout << "# visit all leafs:" << std::endl;
+
+  prop::traverse::stack_type stack (prop::traverse::dfs (p));
+
+  while (!stack.empty())
+    {
+      const prop::traverse::pair_type elem (stack.top());
+      const prop::path_type path (elem.first);
+      const prop::value_type value (elem.second);
+
+      std::cout << xml::parse::util::join (path, ".") << " => " << value
+                << std::endl
+        ;
+
+      stack.pop();
+    }
 
   return EXIT_SUCCESS;
 }

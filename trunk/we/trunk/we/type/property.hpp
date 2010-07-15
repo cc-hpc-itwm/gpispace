@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <stack>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
@@ -274,6 +275,8 @@ namespace we
       public:
         type () : map () {}
 
+        const map_type & get_map (void) const { return map; }
+
         // ----------------------------------------------------------------- //
 
         template<typename IT>
@@ -433,6 +436,70 @@ namespace we
       inline std::ostream & operator << (std::ostream & s, const type & t)
       {
         t.writeTo (s, 1); return s;
+      }
+
+      // ******************************************************************* //
+
+      namespace traverse
+      {
+        typedef std::pair<path_type, value_type> pair_type;
+        typedef std::stack<pair_type> stack_type;
+
+        namespace visitor
+        {
+          class dfs : public boost::static_visitor<void>
+          {
+          private:
+            stack_type & stack;
+            path_type & path;
+
+          public:
+            dfs (stack_type & _stack, path_type & _path) 
+              : stack (_stack)
+              , path (_path)
+            {}
+
+            void operator () (const value_type & v) const
+            {
+              stack.push (std::make_pair (path, v));
+            }
+
+            void operator () (const type & t) const
+            {
+              for ( map_type::const_iterator pos (t.get_map().begin())
+                  ; pos != t.get_map().end()
+                  ; ++pos
+                  )
+                {
+                  path.push_back (pos->first);
+                
+                  boost::apply_visitor (*this, pos->second);
+
+                  path.pop_back ();
+                }
+            }
+          };
+        }
+
+        inline stack_type dfs (const type & t)
+        {
+          stack_type stack;
+          path_type path;
+
+          for ( map_type::const_iterator pos (t.get_map().begin())
+              ; pos != t.get_map().end()
+              ; ++pos
+              )
+            {
+              path.push_back (pos->first);
+                  
+              boost::apply_visitor (visitor::dfs (stack, path), pos->second);
+
+              path.pop_back ();
+            }
+
+          return stack;
+        }
       }
     }
   }
