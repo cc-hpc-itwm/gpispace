@@ -27,6 +27,7 @@
 #include <we/type/expression.hpp>
 #include <we/type/condition.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/property.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -109,29 +110,37 @@ namespace we { namespace type {
         {}
 
         template <typename SignatureType, typename Direction>
-        port_adder<Transition> & operator() ( const std::string & name
-                                            , SignatureType const & signature
-                                            , Direction direction
-                                            )
+        port_adder<Transition> &
+        operator()
+          ( const std::string & name
+          , SignatureType const & signature
+          , Direction direction
+          , const we::type::property::type & prop = we::type::property::type()
+          )
         {
           transition_.add_port ( name
                                , signature
                                , direction
+                               , prop
                                );
           return *this;
         }
 
         template <typename SignatureType, typename Direction, typename PlaceId>
-        port_adder<Transition> & operator() ( const std::string & name
-                                            , SignatureType const & signature
-                                            , Direction direction
-                                            , const PlaceId associated_place
-                                            )
+        port_adder<Transition> &
+        operator ()
+          ( const std::string & name
+          , SignatureType const & signature
+          , Direction direction
+          , const PlaceId associated_place
+          , const we::type::property::type & prop = we::type::property::type()
+          )
         {
           transition_.add_port ( name
                                , signature
                                , direction
                                , associated_place
+                               , prop
                                );
           return *this;
         }
@@ -571,16 +580,17 @@ namespace we { namespace type {
       void add_port ( const std::string & port_name
                     , SignatureType const & signature
                     , Direction direction
+                    , const we::type::property::type & prop
                     )
       {
         if (direction == PORT_IN)
-          this->add_input_port (port_name, signature);
+          this->add_input_port (port_name, signature, prop);
         if (direction == PORT_OUT)
-          this->add_output_port (port_name, signature);
+          this->add_output_port (port_name, signature, prop);
         if (direction == PORT_READ)
-          this->add_read_port (port_name, signature);
+          this->add_read_port (port_name, signature, prop);
         else
-          this->add_input_output_port (port_name, signature);
+          this->add_input_output_port (port_name, signature, prop);
       }
 
       template <typename SignatureType, typename Direction, typename PlaceId>
@@ -588,32 +598,40 @@ namespace we { namespace type {
                     , SignatureType const & signature
                     , const Direction direction
                     , const PlaceId associated_place
+                    , const we::type::property::type & prop
                     )
       {
         if (direction == PORT_IN)
           this->add_input_port ( name
                                , signature
                                , associated_place
+                               , prop
                                );
         if (direction == PORT_OUT)
           this->add_output_port ( name
                                 , signature
                                 , associated_place
+                                , prop
                                 );
         if (direction == PORT_READ)
           this->add_read_port ( name
                               , signature
                               , associated_place
+                              , prop
                               );
         else
           this->add_input_output_port ( name
                                       , signature
                                       , associated_place
+                                      , prop
                                       );
       }
 
       template <typename SignatureType>
-      pid_t add_input_port (const std::string & port_name, const SignatureType & signature)
+      pid_t add_input_port ( const std::string & port_name
+                           , const SignatureType & signature
+                           , const we::type::property::type & prop
+                           )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -622,7 +640,7 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_IN, signature);
+        port_t port (port_name, PORT_IN, signature, prop);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -630,16 +648,21 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
-      pid_t add_input_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
+      pid_t add_input_port ( const std::string & port_name
+                           , const SignatureType & signature
+                           , const PlaceId associated_place
+                           , const we::type::property::type & prop
+                           )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
           if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
+            throw exception::port_already_defined
+              ("trans: " + name() + ": input port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_IN, signature, associated_place);
+        port_t port (port_name, PORT_IN, signature, associated_place, prop);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -647,24 +670,10 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType>
-      pid_t add_read_port (const std::string & port_name, const SignatureType & signature)
-      {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_input()) && p->second.name() == port_name)
-          {
-            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
-          }
-        }
-        port_t port (port_name, PORT_READ, signature);
-        pid_t port_id = port_id_counter_++;
-
-        ports_.insert (std::make_pair (port_id, port));
-        return port_id;
-      }
-
-      template <typename SignatureType, typename PlaceId>
-      pid_t add_read_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
+      pid_t add_read_port ( const std::string & port_name
+                          , const SignatureType & signature
+                          , const we::type::property::type & prop
+                          )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -673,24 +682,7 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
           }
         }
-        port_t port (port_name, PORT_READ, signature, associated_place);
-        pid_t port_id = port_id_counter_++;
-
-        ports_.insert (std::make_pair (port_id, port));
-        return port_id;
-      }
-
-      template <typename SignatureType>
-      pid_t add_output_port (const std::string & port_name, const SignatureType & signature)
-      {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_output()) && p->second.name() == port_name)
-          {
-            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
-          }
-        }
-        port_t port (port_name, PORT_OUT, signature);
+        port_t port (port_name, PORT_READ, signature, prop);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -698,7 +690,31 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType, typename PlaceId>
-      pid_t add_output_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
+      pid_t add_read_port ( const std::string & port_name
+                          , const SignatureType & signature
+                          , const PlaceId associated_place
+                          , const we::type::property::type & prop
+                          )
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.is_input()) && p->second.name() == port_name)
+          {
+            throw exception::port_already_defined("trans: " + name() + ": read port " + port_name + " already defined: ", port_name);
+          }
+        }
+        port_t port (port_name, PORT_READ, signature, associated_place, prop);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType>
+      pid_t add_output_port ( const std::string & port_name
+                            , const SignatureType & signature
+                            , const we::type::property::type & prop
+                            )
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -707,7 +723,28 @@ namespace we { namespace type {
             throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
           }
         }
-        port_t port (port_name, PORT_OUT, signature, associated_place);
+        port_t port (port_name, PORT_OUT, signature, prop);
+        pid_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+        return port_id;
+      }
+
+      template <typename SignatureType, typename PlaceId>
+      pid_t add_output_port ( const std::string & port_name
+                            , const SignatureType & signature
+                            , const PlaceId associated_place
+                            , const we::type::property::type & prop
+                            )
+      {
+        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        {
+          if ((p->second.is_output()) && p->second.name() == port_name)
+          {
+            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
+          }
+        }
+        port_t port (port_name, PORT_OUT, signature, associated_place, prop);
         pid_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
@@ -715,7 +752,10 @@ namespace we { namespace type {
       }
 
       template <typename SignatureType>
-      void add_input_output_port (const std::string & port_name, const SignatureType & signature)
+      void add_input_output_port ( const std::string & port_name
+                                 , const SignatureType & signature
+                                 , const we::type::property::type & prop
+                                 )
       {
         try
         {
@@ -729,14 +769,18 @@ namespace we { namespace type {
           }
           catch (const exception::port_undefined &)
           {
-            add_input_port (port_name, signature);
-            add_output_port (port_name, signature);
+            add_input_port (port_name, signature, prop);
+            add_output_port (port_name, signature, prop);
           }
         }
       }
 
       template <typename SignatureType, typename PlaceId>
-      void add_input_output_port (const std::string & port_name, const SignatureType & signature, const PlaceId associated_place)
+      void add_input_output_port ( const std::string & port_name
+                                 , const SignatureType & signature
+                                 , const PlaceId associated_place
+                                 , const we::type::property::type & prop
+                                 )
       {
         try
         {
@@ -750,8 +794,8 @@ namespace we { namespace type {
           }
           catch (const exception::port_undefined &)
           {
-            add_input_port (port_name, signature, associated_place);
-            add_output_port (port_name, signature, associated_place);
+            add_input_port (port_name, signature, associated_place, prop);
+            add_output_port (port_name, signature, associated_place, prop);
           }
         }
       }
