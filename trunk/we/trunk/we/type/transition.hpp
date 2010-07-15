@@ -903,6 +903,8 @@ namespace we { namespace type {
         return ports_.end();
       }
 
+      const we::type::property::type & prop (void) const { return prop_; }
+
     private:
       std::string name_;
       data_type data_;
@@ -1227,7 +1229,7 @@ namespace we { namespace type {
         static std::string expression;
         static std::string node;
 
-        void init (const we::type::property::type & prop)
+        inline void init (const we::type::property::type & prop)
         {
           const std::string prefix ("pretty.dot.color");
 
@@ -1235,7 +1237,7 @@ namespace we { namespace type {
           external = prop.get_with_default (prefix + ".external", "grey");
           modcall = prop.get_with_default (prefix + ".modcall", "yellow");
           expression = prop.get_with_default (prefix + ".expression", "white");
-          node = prop.get_with_default (prefix + ".node", ".white");
+          node = prop.get_with_default (prefix + ".node", "white");
         }
       }
 
@@ -1560,7 +1562,7 @@ namespace we { namespace type {
       {
         typedef transition_t<P,E,T> trans_t;
 
-        color::init (t.prop);
+        color::init (t.prop());
 
         std::ostringstream s;
 
