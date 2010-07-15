@@ -3,8 +3,8 @@
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
 
-#include <parse/types.hpp>
-#include <parse/util/unique.hpp>
+#include <xml/parse/types.hpp>
+#include <xml/parse/util/unique.hpp>
 
 #include <vector>
 

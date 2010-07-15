@@ -7,13 +7,13 @@
 #include <string>
 #include <vector>
 
-#include <parse/type/token.hpp>
-#include <parse/types.hpp>
-#include <parse/state.hpp>
-#include <parse/error.hpp>
+#include <xml/parse/type/token.hpp>
+#include <xml/parse/types.hpp>
+#include <xml/parse/state.hpp>
+#include <xml/parse/error.hpp>
 
-#include <parse/util/maybe.hpp>
-#include <parse/util/weparse.hpp>
+#include <xml/parse/util/maybe.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>

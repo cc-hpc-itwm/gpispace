@@ -6,9 +6,9 @@
 #include <string>
 #include <iostream>
 
-#include <parse/util/maybe.hpp>
-#include <parse/error.hpp>
-#include <parse/state.hpp>
+#include <xml/parse/util/maybe.hpp>
+#include <xml/parse/error.hpp>
+#include <xml/parse/state.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>

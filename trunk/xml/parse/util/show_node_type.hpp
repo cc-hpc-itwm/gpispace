@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_UTIL_SHOW_NODE_TYPE_HPP
 #define _XML_PARSE_UTIL_SHOW_NODE_TYPE_HPP
 
-#include <parse/rapidxml/1.13/rapidxml.hpp>
+#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
 #include <string>
 

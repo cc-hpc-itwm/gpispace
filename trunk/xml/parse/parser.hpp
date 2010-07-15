@@ -3,15 +3,15 @@
 #ifndef _XML_PARSE_PARSER_HPP
 #define _XML_PARSE_PARSER_HPP
 
-#include <parse/rapidxml/1.13/rapidxml.hpp>
-#include <parse/rapidxml/1.13/rapidxml_utils.hpp>
+#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
+#include <xml/parse/rapidxml/1.13/rapidxml_utils.hpp>
 
-#include <parse/util.hpp>
+#include <xml/parse/util.hpp>
 
-#include <parse/error.hpp>
-#include <parse/warning.hpp>
-#include <parse/types.hpp>
-#include <parse/state.hpp>
+#include <xml/parse/error.hpp>
+#include <xml/parse/warning.hpp>
+#include <xml/parse/types.hpp>
+#include <xml/parse/state.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>

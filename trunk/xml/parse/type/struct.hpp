@@ -9,8 +9,8 @@
 #include <iostream>
 #include <vector>
 
-#include <parse/error.hpp>
-#include <parse/state.hpp>
+#include <xml/parse/error.hpp>
+#include <xml/parse/state.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>

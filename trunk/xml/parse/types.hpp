@@ -58,16 +58,16 @@ namespace xml
   }
 }
 
-#include <parse/type/connect.hpp>
-#include <parse/type/expression.hpp>
-#include <parse/type/mod.hpp>
-#include <parse/type/place.hpp>
-#include <parse/type/port.hpp>
-#include <parse/type/token.hpp>
-#include <parse/type/struct.hpp>
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/token.hpp>
+#include <xml/parse/type/struct.hpp>
 
-#include <parse/type/function.hpp>
-#include <parse/type/transition.hpp>
-#include <parse/type/net.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/net.hpp>
 
 #endif

@@ -3,10 +3,10 @@
 #ifndef _XML_PARSE_UTIL_REQUIRED_HPP
 #define _XML_PARSE_UTIL_REQUIRED_HPP
 
-#include <parse/rapidxml/1.13/rapidxml.hpp>
+#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
-#include <parse/types.hpp>
-#include <parse/error.hpp>
+#include <xml/parse/types.hpp>
+#include <xml/parse/error.hpp>
 
 #include <boost/filesystem.hpp>
 

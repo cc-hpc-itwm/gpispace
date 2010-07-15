@@ -3,10 +3,10 @@
 #ifndef _XML_PARSE_TYPE_TRANSITION_HPP
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
-#include <parse/types.hpp>
+#include <xml/parse/types.hpp>
 
-#include <parse/util/maybe.hpp>
-#include <parse/util/unique.hpp>
+#include <xml/parse/util/maybe.hpp>
+#include <xml/parse/util/unique.hpp>
 
 #include <vector>
 

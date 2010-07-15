@@ -10,7 +10,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 
-#include <parse/util/join.hpp>
+#include <xml/parse/util/join.hpp>
 
 namespace xml
 {

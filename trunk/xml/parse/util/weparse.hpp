@@ -6,7 +6,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/util/read.hpp>
 
-#include <parse/error.hpp>
+#include <xml/parse/error.hpp>
 
 #include <string>
 #include <sstream>

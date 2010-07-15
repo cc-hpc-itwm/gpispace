@@ -9,7 +9,7 @@
 
 #include <we/we.hpp>
 
-#include <parse/util/join.hpp>
+#include <xml/parse/util/join.hpp>
 
 #include <boost/filesystem.hpp>
 

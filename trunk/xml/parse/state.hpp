@@ -15,8 +15,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <parse/warning.hpp>
-#include <parse/error.hpp>
+#include <xml/parse/warning.hpp>
+#include <xml/parse/error.hpp>
 
 // ************************************************************************* //
 

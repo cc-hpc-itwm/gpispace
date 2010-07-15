@@ -3,11 +3,11 @@
 #ifndef _XML_PARSE_TYPE_FUNCTION_HPP
 #define _XML_PARSE_TYPE_FUNCTION_HPP
 
-#include <parse/types.hpp>
+#include <xml/parse/types.hpp>
 
-#include <parse/util/maybe.hpp>
-#include <parse/util/unique.hpp>
-#include <parse/util/weparse.hpp>
+#include <xml/parse/util/maybe.hpp>
+#include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <vector>
 
