@@ -51,21 +51,20 @@ namespace xml
                                                  , state::type &
                                                  );
 
-    static void property_map_type ( const xml_node_type *
-                                  , state::type &
-                                  , we::type::property::type &
-                                  );
+    static int property_map_type ( we::type::property::type &
+                                 , const xml_node_type *
+                                 , state::type &
+                                 );
+    static we::type::property::type
+    property_map_list_type (const xml_node_type *, state::type &);
 
-    static type::function_type parse_function (std::istream & f, state::type &);
-
-
-    static type::struct_vec_type structs_include ( const std::string &
-                                                 , state::type &
-                                                 );
-    static type::struct_vec_type parse_structs (std::istream &, state::type &);
     static type::struct_vec_type structs_type ( const xml_node_type *
                                               , state::type & state
                                               );
+
+    static type::function_type parse_function (std::istream &, state::type &);
+    static type::struct_vec_type parse_structs (std::istream &, state::type &);
+    static we::type::property::type parse_props (std::istream &, state::type &);
 
     // ********************************************************************* //
 
@@ -79,6 +78,13 @@ namespace xml
     structs_include (const std::string & file, state::type & state)
     {
       return state.generic_include<type::struct_vec_type> (parse_structs, file);
+    }
+
+    static we::type::property::type
+    properties_include (const std::string & file, state::type & state)
+    {
+      return
+        state.generic_include<we::type::property::type> (parse_props, file);
     }
 
     // ********************************************************************* //
@@ -144,6 +150,17 @@ namespace xml
       return generic_parse (structs_type, f, state, "structs", "parse_structs");
     }
 
+    static we::type::property::type
+    parse_props (std::istream & f, state::type & state)
+    {
+      return generic_parse ( property_map_list_type
+                           , f
+                           , state
+                           , "props"
+                           , "parse_props"
+                           );
+    }
+
     // ********************************************************************* //
 
     static type::struct_vec_type
@@ -196,6 +213,56 @@ namespace xml
 
     // ********************************************************************* //
 
+    static we::type::property::type
+    property_map_list_type (const xml_node_type * node, state::type & state)
+    {
+      we::type::property::type prop;
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "properties")
+                {
+                  property_map_type (prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "property_map_list_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, prop, deeper);
+                }
+              else
+                {
+                  state.warn
+                    ( warning::unexpected_element ( child_name
+                                                  , "structs_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return prop;
+    }
+
+    // ********************************************************************* //
+
     static type::connect_type
     connect_type (const xml_node_type * node, state::type & state)
     {
@@ -217,7 +284,21 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type (child, state, connect.prop);
+                  property_map_type (connect.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "connect_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, connect.prop, deeper);
                 }
               else
                 {
@@ -315,7 +396,21 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (child, state, f.prop);
+                  property_map_type (f.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "function_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, f.prop, deeper);
                 }
               else
                 {
@@ -436,7 +531,21 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (child, state, n.prop);
+                  property_map_type (n.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "net_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, n.prop, deeper);
                 }
               else
                 {
@@ -487,7 +596,21 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (child, state, p.prop);
+                  property_map_type (p.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "place_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, p.prop, deeper);
                 }
               else
                 {
@@ -528,7 +651,21 @@ namespace xml
             {
               if (child_name == "properties")
                 {
-                  property_map_type (child, state, port.prop);
+                  property_map_type (port.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "port_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, port.prop, deeper);
                 }
               else
                 {
@@ -551,7 +688,6 @@ namespace xml
     property_dive ( const xml_node_type * node
                   , state::type & state
                   , we::type::property::type & prop
-                  , we::type::property::path_type & path
                   )
     {
       for ( xml_node_type * child (node->first_node())
@@ -576,13 +712,13 @@ namespace xml
                   const std::vector<std::string> cdata
                     (parse_cdata (child, state.file_in_progress()));
 
-                  path.push_back (key);
+                  state.prop_path().push_back (key);
 
                   if (cdata.size() > 1)
                     {
                       throw error::property_generic 
                         ( "more than one value given"
-                        , path
+                        , state.prop_path()
                         , state.file_in_progress()
                         );
                     }
@@ -592,10 +728,17 @@ namespace xml
                       if (cdata.empty())
                         {
                           throw error::property_generic
-                            ("no value given", path, state.file_in_progress());
+                            ( "no value given"
+                            , state.prop_path()
+                            , state.file_in_progress()
+                            );
                         }
 
-                      util::property::set (state, prop, path, cdata.front());
+                      util::property::set ( state
+                                          , prop
+                                          , state.prop_path()
+                                          , cdata.front()
+                                          );
                     }
                   else
                     {
@@ -603,15 +746,19 @@ namespace xml
                         {
                           throw error::property_generic
                             ( "attribute and content given at the same time"
-                            , path
+                            , state.prop_path()
                             , state.file_in_progress()
                             );
                         }
 
-                      util::property::set (state, prop, path, *value);
+                      util::property::set ( state
+                                          , prop
+                                          , state.prop_path()
+                                          , *value
+                                          );
                     }
 
-                  path.pop_back();
+                  state.prop_path().pop_back();
                 }
               else if (child_name == "properties")
                 {
@@ -622,17 +769,31 @@ namespace xml
                                                     )
                                          );
 
-                  path.push_back (name);
+                  state.prop_path().push_back (name);
 
-                  property_dive (child, state, prop, path);
+                  property_dive (child, state, prop);
 
-                  path.pop_back ();
+                  state.prop_path().pop_back ();
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "property_dive"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, prop, deeper);
                 }
               else
                 {
                   state.warn 
                     ( warning::unexpected_element ( child_name
-                                                  , "properry_dive"
+                                                  , "property_dive"
                                                   , state.file_in_progress()
                                                   )
                     );
@@ -641,10 +802,10 @@ namespace xml
         }
     }
 
-    static void
-    property_map_type ( const xml_node_type * node
+    static int
+    property_map_type ( we::type::property::type & prop
+                      , const xml_node_type * node
                       , state::type & state
-                      , we::type::property::type & prop
                       )
     {
       if (!state.ignore_properties())
@@ -656,12 +817,12 @@ namespace xml
                                             )
                                  );
 
-          we::type::property::path_type path;
-
-          path.push_back (name);
+          state.prop_path().push_back (name);
           
-          property_dive (node, state, prop, path);
+          property_dive (node, state, prop);
         }
+
+      return 0;
     }
 
     // ********************************************************************* //
@@ -935,7 +1096,21 @@ namespace xml
                 }
               else if (child_name == "properties")
                 {
-                  property_map_type (child, state, t.prop);
+                  property_map_type (t.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper 
+                    ( properties_include ( required ( "transition_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, t.prop, deeper);
                 }
               else
                 {

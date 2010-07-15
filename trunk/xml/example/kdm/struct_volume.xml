@@ -1,10 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<structs xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
->
-<struct name="VOLUME">
- <field name="id" type="long"/>
- <field name="offset" type="long"/>
-</struct>
-
+<structs>
+  <struct name="VOLUME">
+    <field name="id" type="long"/>
+    <field name="offset" type="long"/>
+  </struct>
 </structs>

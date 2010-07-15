@@ -4,6 +4,7 @@
 #define _XML_PARSE_STATE_HPP
 
 #include <we/type/signature.hpp>
+#include <we/type/property.hpp>
 
 #include <iostream>
 
@@ -40,6 +41,7 @@ namespace xml
         int _level;
         search_path_type _search_path;
         in_progress_type _in_progress;
+        we::type::property::path_type _prop_path;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
@@ -120,6 +122,13 @@ namespace xml
         const search_path_type & search_path (void) const
         {
           return _search_path;
+        }
+
+        // ***************************************************************** //
+
+        we::type::property::path_type & prop_path (void)
+        {
+          return _prop_path;
         }
 
         // ***************************************************************** //

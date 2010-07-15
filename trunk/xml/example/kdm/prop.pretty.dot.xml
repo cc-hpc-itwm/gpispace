@@ -1,0 +1,7 @@
+<props>
+  <properties name="pretty">
+    <properties name="dot">
+      <include-properties href="prop.pretty.dot.color.xml"/>
+    </properties>
+  </properties>
+</props>

@@ -1,0 +1,9 @@
+<props>
+      <properties name="color">
+        <property key="modcall" value="yellow"/>
+        <property key="internal" value="white"/>
+        <property key="external" value="grey"/>
+        <property key="expression" value="white"/>
+        <property key="node" value="white"/>
+      </properties>
+</props>
