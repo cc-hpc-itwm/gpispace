@@ -820,6 +820,8 @@ namespace xml
           state.prop_path().push_back (name);
           
           property_dive (node, state, prop);
+
+          state.prop_path().pop_back ();
         }
 
       return 0;
