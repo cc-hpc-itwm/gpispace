@@ -1562,8 +1562,6 @@ namespace we { namespace type {
       {
         typedef transition_t<P,E,T> trans_t;
 
-        color::init (t.prop());
-
         std::ostringstream s;
 
         const id_type id_trans (id);
