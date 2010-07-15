@@ -52,14 +52,9 @@ namespace place
     {}
 
     template<typename T>
-    type (const name_t & _name, const T & _signature)
-      : name (_name), signature (_signature)
-    {}
-
-    template<typename T>
     type ( const name_t & _name
          , const T & _signature
-         , const we::type::property::type & _prop
+         , const we::type::property::type & _prop = we::type::property::type ()
          )
       : name (_name), signature (_signature), prop (_prop)
     {}
