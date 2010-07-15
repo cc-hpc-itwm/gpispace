@@ -9,6 +9,8 @@
 
 #include <we/we.hpp>
 
+#include <parse/util/join.hpp>
+
 #include <boost/filesystem.hpp>
 
 namespace xml
@@ -911,6 +913,33 @@ namespace xml
       public:
         synthesize_anonymous_function (const boost::filesystem::path & path)
           : generic (nice (path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class property_generic : public generic
+      {
+      private:
+        std::string nice ( const std::string & msg
+                         , const we::type::property::path_type & key
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << msg << " for property " << util::join (key, ".")
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        property_generic ( const std::string & msg
+                         , const we::type::property::path_type & key
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (msg, key, path))
         {}
       };
 

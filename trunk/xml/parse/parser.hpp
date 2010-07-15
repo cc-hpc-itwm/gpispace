@@ -602,41 +602,45 @@ namespace xml
                                                    )
                                         );
                   const maybe<std::string> value (optional (child, "value"));
-
                   const std::vector<std::string> cdata
                     (parse_cdata (child, state.file_in_progress()));
 
+                  path.push_back (key);
+
                   if (cdata.size() > 1)
                     {
-                      throw std::runtime_error ("to much values");
+                      throw error::property_generic 
+                        ( "more than one value given"
+                        , path
+                        , state.file_in_progress()
+                        );
                     }
 
                   if (value.isNothing())
                     {
                       if (cdata.empty())
                         {
-                          throw std::runtime_error ("no val");
+                          throw error::property_generic
+                            ("no value given", path, state.file_in_progress());
                         }
 
-                      path.push_back (key);
-
                       property_set (state, prop, path, cdata.front());
-
-                      path.pop_back();
                     }
                   else
                     {
                       if (!cdata.empty())
                         {
-                          throw std::runtime_error ("attr and data");
+                          throw error::property_generic
+                            ( "attribute and content given at the same time"
+                            , path
+                            , state.file_in_progress()
+                            );
                         }
 
-                      path.push_back (key);
-
                       property_set (state, prop, path, *value);
-
-                      path.pop_back();
                     }
+
+                  path.pop_back();
                 }
               else if (child_name == "properties")
                 {
