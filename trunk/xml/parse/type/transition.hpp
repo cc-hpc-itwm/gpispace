@@ -7,6 +7,7 @@
 
 #include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/util/property.hpp>
 
 #include <vector>
 
@@ -335,7 +336,7 @@ namespace xml
                         , trans.cond.end()
                         );
 
-        // WORK HERE: add prop from trans to fun
+        util::property::join (state, fun.prop, trans.prop);
 
         we_transition_type we_trans 
           ( boost::apply_visitor

@@ -8,6 +8,7 @@
 #include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/weparse.hpp>
+#include <xml/parse/util/property.hpp>
 
 #include <vector>
 
@@ -116,7 +117,7 @@ namespace xml
       {
       private:
         const state::type & state;
-        const Fun & fun;
+        Fun & fun;
 
         typedef typename Activity::transition_type we_transition_type;
 
@@ -204,9 +205,7 @@ namespace xml
         }
 
       public:
-        function_synthesize ( const state::type & _state
-                            , const Fun & _fun
-                            )
+        function_synthesize (const state::type & _state, Fun & _fun)
           : state (_state) 
           , fun (_fun)
         {}
@@ -222,6 +221,7 @@ namespace xml
             , we_expr_type (expr, parsed_expression)
             , condition()
             , fun.internal.get_with_default (true)
+            , fun.prop
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -237,6 +237,7 @@ namespace xml
             , we_mod_type (mod.name, mod.function)
             , condition()
             , fun.internal.get_with_default (false)
+            , fun.prop
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN);
@@ -295,13 +296,14 @@ namespace xml
                 (*transition, state, net, we_net, pid_of_place, e); 
             }
 
-          // WORK HERE: add prop from net to fun
+          util::property::join (state, fun.prop, net.prop);
 
           we_transition_type trans
             ( name()
             , we_net
             , condition()
             , fun.internal.get_with_default (false)
+            , fun.prop
             );
 
           add_ports (trans, fun.in(), we::type::PORT_IN, pid_of_place);
@@ -509,7 +511,7 @@ namespace xml
 
         template<typename Activity>
         typename Activity::transition_type
-        synthesize (const state::type & state) const
+        synthesize (const state::type & state)
         {
           return boost::apply_visitor
             ( function_synthesize< Activity

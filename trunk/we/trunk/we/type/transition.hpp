@@ -416,6 +416,8 @@ namespace we { namespace type {
                    , Type const & typ
                    , preparsed_cond_type const & _condition
                    , bool intern
+                   , const we::type::property::type & prop
+                   = we::type::property::type()
                    )
         : name_ (name)
         , data_ (typ)
@@ -429,6 +431,7 @@ namespace we { namespace type {
                       )
                     )
         , port_id_counter_(0)
+        , prop_(prop)
       { }
 
       transition_t (const this_type &other)
@@ -446,6 +449,7 @@ namespace we { namespace type {
         , inner_to_outer_(other.inner_to_outer_)
         , ports_(other.ports_)
         , port_id_counter_(other.port_id_counter_)
+        , prop_ (other.prop_)
       { }
 
       template <typename Choices>
@@ -502,6 +506,7 @@ namespace we { namespace type {
               , _1
               )
             );
+          prop_ = other.prop_;
         }
         return *this;
       }
@@ -909,6 +914,8 @@ namespace we { namespace type {
       port_map_t ports_;
       pid_t port_id_counter_;
 
+      we::type::property::type prop_;
+
     private:
       template <typename P, typename E, typename T>
       friend std::ostream & operator<< ( std::ostream &
@@ -927,6 +934,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
+        ar & BOOST_SERIALIZATION_NVP(prop_);
       }
 
       template <typename Archive>
@@ -948,6 +956,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
+        ar & BOOST_SERIALIZATION_NVP(prop_);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
