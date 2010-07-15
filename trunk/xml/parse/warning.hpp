@@ -237,7 +237,7 @@ namespace xml
       {
       private:
         std::string nice ( const we::type::property::path_type & key
-                         , const we::type::property::value_type & old_val
+                         , const we::type::property::mapped_type & old_val
                          , const we::type::property::value_type & new_val
                          , const boost::filesystem::path & path
                          )
@@ -254,7 +254,7 @@ namespace xml
         }
       public:
         property_overwritten ( const we::type::property::path_type & key
-                             , const we::type::property::value_type & old_val
+                             , const we::type::property::mapped_type & old_val
                              , const we::type::property::value_type & new_val
                              , const boost::filesystem::path & path
                              )

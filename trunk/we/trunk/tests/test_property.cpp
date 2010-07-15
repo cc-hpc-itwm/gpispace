@@ -3,6 +3,7 @@
 #include <we/type/property.hpp>
 
 #include <xml/parse/util/join.hpp>
+#include <xml/parse/util/maybe.hpp>
 
 #include <iostream>
 
@@ -14,10 +15,10 @@ void set (const std::string & path, const std::string & val)
 {
   std::cout << "# set " << path << std::endl;
 
-  const bool overwritten (p.set (path, val));
+  const maybe<prop::mapped_type> old (p.set (path, val));
 
   std::cout << p
-            << "overwritten " << (overwritten ? "true" : "false")
+            << "overwritten " << (old.isJust() ? "true" : "false")
             << std::endl
     ;
 }

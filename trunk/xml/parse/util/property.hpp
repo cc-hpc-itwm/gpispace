@@ -19,25 +19,18 @@ namespace xml
     {
       namespace property
       {
+        namespace property = we::type::property;
+
         inline void set ( const state::type & state
-                        , we::type::property::type & prop
-                        , const we::type::property::path_type & path
-                        , const we::type::property::value_type & value
+                        , property::type & prop
+                        , const property::path_type & path
+                        , const property::value_type & value
                         )
         {
-          const maybe<we::type::property::value_type>
-            old (prop.get_maybe_val (path));
+          const maybe<property::mapped_type> old (prop.set (path, value));
 
-          const bool overwritten (prop.set (path, value));
-
-          if (overwritten)
+          if (old.isJust())
             {
-              if (old.isNothing())
-                {
-                  THROW_STRANGE
-                    ("property_set: old.isNothing() and overwritten == true");
-                }
-
               state.warn 
                 ( warning::property_overwritten ( path
                                                 , *old
@@ -45,6 +38,24 @@ namespace xml
                                                 , state.file_in_progress()
                                                 )
                 );
+            }
+        }
+
+        inline void join ( const state::type & state
+                         , property::type & x
+                         , const property::type & y
+                         )
+        {
+          property::traverse::stack_type stack (property::traverse::dfs (y));
+
+          while (!stack.empty())
+            {
+              const property::traverse::pair_type & elem (stack.top());
+
+              ::xml::parse::util::property::set
+                  (state, x, elem.first, elem.second);
+
+              stack.pop();
             }
         }
       }

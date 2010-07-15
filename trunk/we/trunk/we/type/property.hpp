@@ -280,9 +280,9 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        bool set (IT pos, IT end, const value_type & val)
+        maybe<mapped_type> set (IT pos, IT end, const value_type & val)
         {
-          bool overwritten (false);
+          maybe<mapped_type> old_value;
 
           if (pos == end)
             {
@@ -291,9 +291,11 @@ namespace we
 
           if (std::distance (pos, end) == 1)
             {
-              if (map.find (*pos) != map.end())
+              map_type::const_iterator old_pos (map.find (*pos));
+
+              if (old_pos != map.end())
                 {
-                  overwritten = true;
+                  old_value = old_pos->second;
                 }
 
               map[*pos] = val;
@@ -305,20 +307,22 @@ namespace we
                                             )
                      );
 
-              overwritten |= t.set (pos + 1, end, val);
+              old_value = t.set (pos + 1, end, val);
               
               map[*pos] = t;
             }
 
-          return overwritten;
+          return old_value;
         }
 
-        bool set (const path_type & path, const value_type & val)
+        maybe<mapped_type>
+        set (const path_type & path, const value_type & val)
         {
           return set (path.begin(), path.end(), val);
         }
 
-        bool set (const std::string & path, const value_type & val)
+        maybe<mapped_type>
+        set (const std::string & path, const value_type & val)
         {
           return set (util::split (path), val);
         }
