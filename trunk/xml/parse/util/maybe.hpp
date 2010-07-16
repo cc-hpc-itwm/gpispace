@@ -8,6 +8,7 @@
 #include <boost/functional/hash.hpp>
 
 #include <boost/variant.hpp>
+#include <boost/call_traits.hpp>
 
 namespace maybe_detail
 {
@@ -61,12 +62,13 @@ struct maybe
 {
 private:
   typedef boost::variant <maybe_detail::Nothing, T> maybe_type;
+  typedef typename boost::call_traits<T>::const_reference const_reference;
 
   maybe_type m;
 
 public:
   maybe () : m () {}
-  maybe (const T & t) : m (t) {}
+  maybe (const_reference t) : m (t) {}
 
   bool isJust (void) const 
   {
@@ -78,17 +80,17 @@ public:
     return boost::apply_visitor (maybe_detail::isNothing(), m);
   }
 
-  const T & operator * (void) const
+  const_reference operator * (void) const
   {
     return boost::apply_visitor (maybe_detail::get<T>(), m);
   }
 
-  const T & get_with_default (const T & dflt) const
+  const_reference get_with_default (const_reference dflt) const
   {
     return boost::apply_visitor (maybe_detail::get_with_default<T> (dflt), m);
   }
 
-  void operator = (const T & x)
+  void operator = (const_reference x)
   {
     m = x;
   }
