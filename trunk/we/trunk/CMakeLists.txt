@@ -95,7 +95,6 @@ include(CTest)
 # Reflect the package structure
 add_subdirectory(we)
 add_subdirectory(apps)
-add_subdirectory(kdm)
 if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif (ENABLE_TESTS)
