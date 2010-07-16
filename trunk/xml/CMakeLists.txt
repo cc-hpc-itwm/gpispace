@@ -88,7 +88,7 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 # CTest
 include(CTest)
 
-add_subdirectory(parse)
+add_subdirectory(xml)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
