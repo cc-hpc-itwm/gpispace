@@ -25,7 +25,7 @@
 
 #include <we/we.hpp>
 
-#include "module.hpp"
+#include <we/loader/module.hpp>
 #include "context.hpp"
 
 using boost::asio::ip::udp;
