@@ -2,6 +2,7 @@
 #define SDPA_DAEMON_NRE_EXEC_CONTEXT_HPP 1
 
 #include <we/loader/loader.hpp>
+#include <we/loader/module.hpp>
 #include <we/mgmt/context.hpp>
 
 struct exec_context : public we::mgmt::context<>

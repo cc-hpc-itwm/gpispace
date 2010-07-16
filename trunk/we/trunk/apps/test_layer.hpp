@@ -29,7 +29,8 @@
 #include <we/we.hpp>
 #include <we/loader/loader.hpp>
 #include <we/mgmt/context.hpp>
-#include <kdm/module.hpp>
+
+#include <we/loader/module.hpp>
 
 namespace test {
   namespace detail
