@@ -81,7 +81,7 @@ add_subdirectory(sdpa)
 message(STATUS "========== Add project xml")
 add_subdirectory(xml)
 
-if (ENABLE_APPLICATON)
+if (ENABLE_APPLICATION)
   message(STATUS "========== Add application")
   add_subdirectory(application)
 endif (ENABLE_APPLICATION)
