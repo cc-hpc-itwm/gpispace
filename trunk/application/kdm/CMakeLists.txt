@@ -73,34 +73,13 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(FVM REQUIRED)
-include_directories(${FVM_PC_INCLUDE_DIR})
-
-#find_path (FVM_PC_INCLUDE_DIR
-#  NAMES "fvm-pc/pc.hpp"
-#  HINTS ${FVM_HOME} ENV FVM_HOME
-#  PATH_SUFFIXES include
-#)
-#
-#if (FVM_PC_INCLUDE_DIR)
-#  include_directories(${FVM_PC_INCLUDE_DIR})
-#else (FVM_PC_INCLUDE_DIR)
-#  message(FATAL_ERROR "KDM module requires the FVM process container header")
-#endif(FVM_PC_INCLUDE_DIR)
+include_directories(${FVM_INCLUDE_DIR})
 
 find_package(WE REQUIRED)
 include_directories(${WE_INCLUDE_DIR})
 
-#find_path (WE_INCLUDE_DIR
-#  NAMES "we/net.hpp"
-#  HINTS ${WE_HOME} ENV WE_HOME
-#  PATH_SUFFIXES include
-#)
-#
-#if (WE_INCLUDE_DIR)
-#  include_directories(${WE_INCLUDE_DIR})
-#else (WE_INCLUDE_DIR)
-#  message(FATAL_ERROR "KDM module requires the WE module loader header")
-#endif(WE_INCLUDE_DIR)
+find_package(MAYBE REQUIRED)
+include_directories(${MAYBE_INCLUDE_DIR})
 
 find_package(FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
