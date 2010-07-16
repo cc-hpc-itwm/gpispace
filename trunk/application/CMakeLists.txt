@@ -1,1 +1,1 @@
-add_subdirectory(KDM_simple)
+add_subdirectory(kdm)
