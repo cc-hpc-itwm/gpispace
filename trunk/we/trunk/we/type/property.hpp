@@ -165,7 +165,7 @@ namespace we
           }
 
           template<typename T>
-          const value_type & operator () (const T & v) const
+          const value_type & operator () (const T &) const
           {
             throw exception::not_a_val ("visitor::get_val");
           }
