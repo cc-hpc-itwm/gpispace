@@ -16,6 +16,7 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 
 OPTION(ENABLE_TESTS "Build with tests" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(ENABLE_APPLICATION "Build with application" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -79,5 +80,10 @@ message(STATUS "========== Add project sdpa")
 add_subdirectory(sdpa)
 message(STATUS "========== Add project xml")
 add_subdirectory(xml)
+
+if (ENABLE_APPLICATON)
+  message(STATUS "========== Add application")
+  add_subdirectory(application)
+endif (ENABLE_APPLICATION)
 
 include(TargetDoc.cmake OPTIONAL)
