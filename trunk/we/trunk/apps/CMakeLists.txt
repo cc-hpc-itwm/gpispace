@@ -13,3 +13,7 @@ target_link_libraries(loader ${Boost_LIBRARIES})
 target_link_libraries(loader dl)
 target_link_libraries(loader pthread)
 install (TARGETS loader DESTINATION bin)
+
+add_executable(pnet2dot pnet2dot.cpp)
+target_link_libraries(pnet2dot ${Boost_LIBRARIES})
+install (TARGETS pnet2dot DESTINATION bin)
