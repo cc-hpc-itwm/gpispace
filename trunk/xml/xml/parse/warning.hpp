@@ -261,6 +261,35 @@ namespace xml
           : generic (nice (key, old_val, new_val, path))
         {}
       };
+
+      // ******************************************************************* //
+
+      class type_map_duplicate : public generic
+      {
+      private:
+        std::string nice ( const std::string & from
+                         , const std::string & to
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "type map duplicate, type " << from
+            << " mapped to type " << to
+            << " twice"
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        type_map_duplicate ( const std::string & from
+                           , const std::string & to
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (from, to, path))
+        {}
+      };
     }
   }
 }

@@ -52,6 +52,9 @@ namespace xml
     static type::transition_type transition_type ( const xml_node_type *
                                                  , state::type &
                                                  );
+    static type::specialize_type specialize_type ( const xml_node_type *
+                                                 , state::type &
+                                                 );
 
     static int property_map_type ( we::type::property::type &
                                  , const xml_node_type *
@@ -465,6 +468,10 @@ namespace xml
               if (child_name == "defun")
                 {
                   n.push (function_type (child, state));
+                }
+              else if (child_name == "specialize")
+                {
+                  n.push (specialize_type (child, state), state);
                 }
               else if (child_name == "place")
                 {
@@ -1022,6 +1029,86 @@ namespace xml
         }
 
       return tok;
+    }
+
+    // ********************************************************************* //
+
+    static void
+    set_type_map ( const xml_node_type * node
+                 , const state::type & state
+                 , type::type_map_type & map
+                 )
+    {
+      const std::string from 
+        (required ("set_type_map", node, "from", state.file_in_progress()));
+      const std::string to
+        (required ("set_type_map", node, "to", state.file_in_progress()));
+
+      type::type_map_type::const_iterator old (map.find (from));
+
+      if (old != map.end())
+        {
+          if (old->second != to)
+            {
+              throw error::type_map_mismatch 
+                (from, old->second, to, state.file_in_progress());
+            }
+          else
+            {
+              state.warn ( warning::type_map_duplicate 
+                           ( from
+                           , to
+                           , state.file_in_progress()
+                           )
+                         );
+              }
+          }
+
+      map[from] = to;
+    }
+
+    static type::specialize_type
+    specialize_type (const xml_node_type * node, state::type & state)
+    {
+      type::specialize_type s;
+
+      s.name =
+        required ("specialize_type", node, "name", state.file_in_progress());
+      s.use =
+        required ("specialize_type", node, "use", state.file_in_progress());
+      s.level = state.level();
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "type-map-in")
+                {
+                  set_type_map (child, state, s.type_map_in);
+                }
+              else if (child_name == "type-map-out")
+                {
+                  set_type_map (child, state, s.type_map_out);
+                }
+              else
+                {
+                  state.warn
+                    ( warning::unexpected_element ( child_name
+                                                  , "specialize_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return s;
     }
 
     // ********************************************************************* //

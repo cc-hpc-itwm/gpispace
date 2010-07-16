@@ -1,0 +1,55 @@
+<defun name="template">
+<net>
+
+  <defun name="make_pair">
+
+    <struct name="PAIR">
+      <field name="first" type="T"/>
+      <field name="second" type="U"/>
+    </struct>
+
+    <in name="first" type="T" place="first"/>
+    <in name="second" type="U" place="second"/>
+    <out name="pair" type="PAIR" place="pair"/>
+
+    <net>
+      <place name="first" type="T"/>
+      <place name="second" type="U"/>
+      <place name="pair" type="PAIR"/>
+
+      <transition name="make_pair">
+        <defun>
+          <in name="first" type="T"/>
+          <in name="second" type="U"/>
+          <out name="pair" type="PAIR"/>
+          <expression>
+            ${pair.first} := ${first};
+            ${pair.second} := ${second}
+          </expression>
+        </defun>
+
+        <connect-in port="first" place="T"/>
+        <connect-in port="second" place="U"/>
+        <connect-out port="pair" place="PAIR"/>
+      </transition>
+    </net>
+  </defun>
+
+  <place name="x" type="long"/>
+  <place name="y" type="double"/>
+  <place name="p" type="pair_long_double"/>
+
+  <specialize name="make_pair_long_double" use="make_pair">
+    <type-map-in from="long" to="T"/>
+    <type-map-in from="double" to="U"/>
+    <type-map-out from="PAIR" to="pair_long_double"/>
+  </specialize>
+
+  <transition name="make_pair">
+    <use name="make_pair_long_double"/>
+    <connect-in port="first" place="x"/>
+    <connect-in port="second" place="y"/>
+    <connect-out port="pair" place="p"/>
+  </transition>
+</net>
+</defun>

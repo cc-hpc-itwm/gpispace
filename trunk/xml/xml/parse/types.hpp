@@ -65,6 +65,8 @@ namespace xml
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/use.hpp>
+#include <xml/parse/type/specialize.hpp>
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/transition.hpp>

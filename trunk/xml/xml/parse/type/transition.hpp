@@ -25,26 +25,6 @@ namespace xml
   {
     namespace type
     {
-      // ******************************************************************* //
-
-      struct use_type
-      {
-        std::string name;
-        int level;
-
-        use_type (const std::string & _name, const int & _level) 
-          : name (_name) 
-          , level (_level)
-        {}
-      };
-
-      std::ostream & operator << (std::ostream & s, const use_type & u)
-      {
-        return s << level (u.level) << "use (" << u.name << ")";
-      }
-
-      // ******************************************************************* //
-
       template<typename Fun>
       class transition_resolve : public boost::static_visitor<void>
       {

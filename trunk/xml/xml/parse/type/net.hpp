@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_NET_HPP
 
 #include <xml/parse/types.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/util/unique.hpp>
 
 #include <vector>
@@ -30,10 +31,12 @@ namespace xml
         xml::util::unique<place_type> _places;
         xml::util::unique<transition_type> _transitions;
         xml::util::unique<function_type,maybe<std::string> > _functions;
+        xml::util::unique<specialize_type> _specializes;
 
       public:
         typedef std::vector<function_type> function_vec_type;
         typedef std::vector<transition_type> transition_vec_type;
+        typedef std::vector<specialize_type> specialize_vec_type;
 
         struct_vec_type structs;
 
@@ -73,6 +76,11 @@ namespace xml
         {
           return _functions.elements();
         }
+        
+        const specialize_vec_type & specializes (void) const
+        {
+          return _specializes.elements();
+        }
 
         // ***************************************************************** //
 
@@ -103,6 +111,16 @@ namespace xml
           if (!_functions.push (f, old))
             {
               throw error::duplicate_function<function_type> (f, old);
+            }
+        }
+
+        void push (const specialize_type & s, const state::type & state)
+        {
+          if (!_specializes.push (s))
+            {
+              throw error::duplicate_specialize ( s.name
+                                                , state.file_in_progress()
+                                                );
             }
         }
 
@@ -243,6 +261,17 @@ namespace xml
             deep.level = n.level + 1;
 
             s << deep << std::endl;
+          }
+
+        s << level(n.level) << "specializes =" << std::endl;
+
+        for ( net_type::specialize_vec_type::const_iterator pos
+                (n.specializes().begin())
+            ; pos != n.specializes().end()
+            ; ++pos
+            )
+          {
+            s << *pos << std::endl;
           }
 
         s << level(n.level) << "functions =" << std::endl;

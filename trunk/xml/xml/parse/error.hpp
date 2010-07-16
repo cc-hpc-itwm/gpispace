@@ -609,6 +609,31 @@ namespace xml
         {}
       };
 
+
+      // ******************************************************************* //
+
+      class duplicate_specialize : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate specialize " << name << " in " << path;
+
+          return s.str();
+        }
+
+      public:
+        duplicate_specialize ( const std::string & name
+                             , const boost::filesystem::path & path
+                             )
+          : generic (nice (name, path))
+        {}
+      };
+
       // ******************************************************************* //
 
       template<typename T>
@@ -940,6 +965,37 @@ namespace xml
                          , const boost::filesystem::path & path
                          )
           : generic (nice (msg, key, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class type_map_mismatch : public generic
+      {
+      private:
+        std::string nice ( const std::string & from
+                         , const std::string & to_old
+                         , const std::string & to_new
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "type map mismatch, type " << from
+            << " mapped to type " << to_new
+            << " and earlier to type " << to_old
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        type_map_mismatch ( const std::string & from
+                          , const std::string & to_old
+                          , const std::string & to_new
+                          , const boost::filesystem::path & path
+                          )
+          : generic (nice (from, to_old, to_new, path))
         {}
       };
 
