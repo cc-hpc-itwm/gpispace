@@ -21,6 +21,8 @@
 
 #include <we/we.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 // ************************************************************************* //
 
 namespace xml
@@ -1033,6 +1035,10 @@ namespace xml
       t.level = state.level();
       t.name =
         required ("transition_type", node, "name", state.file_in_progress());
+      t.priority = fmap<std::string, petri_net::prio_t>
+        ( boost::lexical_cast<petri_net::prio_t>
+        , optional (node, "priority")
+        );
 
       for ( xml_node_type * child (node->first_node())
           ; child

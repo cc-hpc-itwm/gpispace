@@ -28,6 +28,7 @@
 #include <we/type/condition.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
+#include <we/type/id.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -1301,16 +1302,22 @@ namespace we { namespace type {
         return s.str();
       }
 
+      template<typename Opts>
       inline std::string with_signature ( const std::string & name
                                         , const signature::type & sig
-                                        , const bool & nice = true
+                                        , const Opts & opts
                                         )
       {
         std::ostringstream s;
 
-        s << name << endl
-          << lines (',', nice ? sig.nice() : ::util::show (sig.desc()))
-          ;
+        s << name;
+
+        if (opts.show_signature)
+          {
+            s << endl
+              << lines (',', opts.nice ? sig.nice() : ::util::show (sig.desc()))
+              ;
+          }
 
         return s.str();
       }
@@ -1384,19 +1391,34 @@ namespace we { namespace type {
       public:
         bool nice;
         Pred predicate;
+        bool show_token;
+        bool show_capacity;
+        bool show_signature;
+        bool show_priority;
+        bool show_intext;
 
-        options () : nice (true), predicate() {}
+        options ()
+          : nice (true)
+          , predicate() 
+          , show_token (true)
+          , show_capacity (true)
+          , show_signature (true)
+          , show_priority (true)
+          , show_intext (false)
+        {}
       };
 
       // ******************************************************************* //
 
       template <typename P, typename E, typename T, typename Pred>
-      inline std::string dot ( const transition_t<P,E,T> &
-                             , id_type &
-                             , const options<Pred> & options
-                             , const level_type = 1
-                             );
-
+      inline std::string dot
+      ( const transition_t<P,E,T> &
+      , id_type &
+      , const options<Pred> &
+      , const level_type = 1
+      , const petri_net::prio_t &
+      = petri_net::traits::id_traits<petri_net::prio_t>::invalid()
+      );
 
       template<typename Pred>
       class transition_visitor_dot : public boost::static_visitor<std::string>
@@ -1471,26 +1493,48 @@ namespace we { namespace type {
               const P place (net.get_place (*p));
 
               std::ostringstream token;
-              typedef boost::unordered_map<T, size_t> token_cnt_t;
-              token_cnt_t token_cnt;
-              for (token_place_it tp (net.get_token (*p)); tp.has_more(); ++tp)
-                {
-                  ++token_cnt[*tp];
-                }
 
-              for ( typename token_cnt_t::const_iterator tok (token_cnt.begin())
-                  ; tok != token_cnt.end()
-                  ; ++tok
-                  )
+              if (opts.show_token)
                 {
-                  token << endl;
-
-                  if (tok->second > 1)
+                  typedef boost::unordered_map<T, size_t> token_cnt_t;
+                  token_cnt_t token_cnt;
+                  for ( token_place_it tp (net.get_token (*p))
+                      ; tp.has_more()
+                      ; ++tp
+                      )
                     {
-                      token << tok->second << " x ";
+                      ++token_cnt[*tp];
                     }
 
-                  token << quote (::util::show (tok->first));
+                  for ( typename token_cnt_t::const_iterator 
+                          tok (token_cnt.begin())
+                      ; tok != token_cnt.end()
+                      ; ++tok
+                      )
+                    {
+                      token << endl;
+
+                      if (tok->second > 1)
+                        {
+                          token << tok->second << " x ";
+                        }
+
+                      token << quote (::util::show (tok->first));
+                    }
+                }
+
+              std::ostringstream capacity;
+
+              if (opts.show_capacity)
+                {
+                  try
+                    {
+                      capacity << endl << "capacity: " << net.get_capacity (*p);
+                    }
+                  catch (const petri_net::exception::capacity_unbounded &)
+                    {
+                      // do nothing, there is no capacity given
+                    }
                 }
 
               level (s, l + 1)
@@ -1498,9 +1542,10 @@ namespace we { namespace type {
                 << node ( shape::place
                         , with_signature ( place.get_name()
                                          , place.get_signature()
-                                         , opts.nice
+                                         , opts
                                          )
                         + token.str()
+                        + capacity.str()
                         )
                 ;
             }
@@ -1509,8 +1554,9 @@ namespace we { namespace type {
             {
               const transition_t & trans (net.get_transition (*t));
               const id_type id_trans (++id);
+              const petri_net::prio_t prio (net.get_transition_priority (*t));
 
-              s << dot<P, E, T> (trans, id, opts, l + 1);
+              s << dot<P, E, T> (trans, id, opts, l + 1, prio);
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -1595,11 +1641,14 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template <typename P, typename E, typename T, typename Pred>
-      inline std::string dot ( const transition_t<P,E,T> & t
-                             , id_type & id
-                             , const options<Pred> & opts
-                             , const level_type l = 1
-                             )
+      inline std::string dot 
+      ( const transition_t<P,E,T> & t
+      , id_type & id
+      , const options<Pred> & opts
+      , const level_type l = 1
+      , const petri_net::prio_t & prio
+      = petri_net::traits::id_traits<petri_net::prio_t>::invalid()
+      )
       {
         typedef transition_t<P,E,T> trans_t;
 
@@ -1611,14 +1660,40 @@ namespace we { namespace type {
           << "subgraph cluster_" << id_trans << " {"
           << std::endl;
 
+        std::ostringstream priority;
+
+        if (opts.show_priority)
+          {
+            if (prio != petri_net::traits::id_traits<petri_net::prio_t>::invalid())
+              {
+                if (prio > 0)
+                  {
+                    priority << "| priority: " << prio;
+                  }
+              }
+          }
+
+        std::ostringstream intext;
+
+        if (opts.show_intext)
+          {
+            intext << "|" << (t.is_internal() ? "internal" : "external");
+          }
+
+        std::ostringstream cond;
+
+        if (::util::show (t.condition()) != "true")
+          {
+            cond << "|" << quote (::util::show (t.condition()));
+          }
+
         level (s, l + 1)
           << name (id_trans, "condition")
           << node ( shape::condition
                   , t.name() 
-                  + "|" 
-                  + quote (::util::show (t.condition()))
-                  + "|"
-                  + (t.is_internal() ? "internal" : "external")
+                  + cond.str()
+                  + intext.str()
+                  + priority.str()
                   )
           ;
 
@@ -1632,6 +1707,7 @@ namespace we { namespace type {
               << node ( p->second.is_input() ? shape::port_in : shape::port_out
                       , with_signature ( p->second.name()
                                        , p->second.signature()
+                                       , opts
                                        )
                       )
               ;

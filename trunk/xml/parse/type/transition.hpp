@@ -17,6 +17,7 @@
 #include <boost/filesystem.hpp>
 
 #include <we/type/property.hpp>
+#include <we/type/id.hpp>
 
 namespace xml
 {
@@ -148,6 +149,8 @@ namespace xml
         xml::parse::struct_t::set_type structs_resolved;
 
         cond_vec_type cond;
+
+        maybe<petri_net::prio_t> priority;
 
         // ***************************************************************** //
 
@@ -376,6 +379,11 @@ namespace xml
           }
 
         const tid_t tid (we_net.add_transition (we_trans));
+
+        if (trans.priority.isJust())
+          {
+            we_net.set_transition_priority (tid, *trans.priority);
+          }
 
         for ( connect_vec_type::const_iterator connect (trans.in().begin())
             ; connect != trans.in().end()

@@ -41,6 +41,14 @@ namespace petri_net
       explicit no_such (const std::string & msg) : std::runtime_error (msg) {}
       ~no_such () throw () {}
     };
+
+    class capacity_unbounded : public std::runtime_error
+    {
+    public:
+      explicit capacity_unbounded (const std::string & msg) 
+        : std::runtime_error ("capacity unbounded: " + msg)
+      {}
+    };
   }
 
   enum edge_type {PT,PT_READ,TP};
@@ -427,15 +435,13 @@ private:
                            , const eid_t & eid
                            )
   {
-    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
-
-    if (cap == capacity_map.end() || num_token (pid) < cap->second)
+    if (capacity_exceeded (pid))
       {
-        output_descr[pid] = eid;
+        output_descr.erase (pid);
       }
     else
       {
-        output_descr.erase (pid);
+        output_descr[pid] = eid;
       }
   }
 
@@ -493,6 +499,18 @@ public:
     , in_enabled ()
     , out_enabled ()
   {};
+
+  bool capacity_exceeded (const pid_t & pid) const
+  {
+    const capacity_map_t::const_iterator cap (capacity_map.find (pid));
+
+    if (cap != capacity_map.end() && num_token (pid) >= cap->second)
+      {
+        return true;
+      }
+
+    return false;
+  }
 
   // numbers of elements
   size_type get_num_places (void) const { return places().size(); }
@@ -563,6 +581,18 @@ public:
     capacity_map.erase (pid);
 
     recalculate_out_enabled_by_place (pid);
+  }
+
+  capacity_t get_capacity (const pid_t & pid) const
+  {
+    capacity_map_t::const_iterator pos (capacity_map.find (pid));
+
+    if (pos == capacity_map.end())
+      {
+        throw exception::capacity_unbounded ("place " + util::show (pid));
+      }
+
+    return pos->second;
   }
 
   void set_transition_function (const tid_t & tid, const trans_t & f)

@@ -115,6 +115,11 @@ namespace token
            , const value::type & v = control()
            )
   {
+    if (net.capacity_exceeded (pid))
+      {
+        throw std::runtime_error ("token::put: capacity exceeded");
+      }
+    
     return net.put_token ( pid
                          , type ( place::name<NET> (net, pid)
                                 , place::signature<NET> (net, pid)
