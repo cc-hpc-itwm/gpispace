@@ -46,6 +46,7 @@ namespace xml
         bool _Werror;
         bool _Wall;
         bool _Woverwrite_function_name_as;
+        bool _Woverwrite_template_name_as;
         bool _Wshadow;
         bool _Wdefault_construction;
         bool _Wunused_field;
@@ -110,6 +111,7 @@ namespace xml
           , _Werror (false)
           , _Wall (false)
           , _Woverwrite_function_name_as (true)
+          , _Woverwrite_template_name_as (true)
           , _Wshadow (true)
           , _Wdefault_construction (true)
           , _Wunused_field (true)
@@ -152,6 +154,7 @@ namespace xml
         ACCESS(Werror)
         ACCESS(Wall)
         ACCESS(Woverwrite_function_name_as)
+        ACCESS(Woverwrite_template_name_as)
         ACCESS(Wshadow)
         ACCESS(Wdefault_construction)
         ACCESS(Wunused_field)
@@ -174,6 +177,11 @@ namespace xml
         void warn (const warning::overwrite_function_name_as & w) const
         {
           generic_warn (w, _Woverwrite_function_name_as);
+        }
+
+        void warn (const warning::overwrite_template_name_as & w) const
+        {
+          generic_warn (w, _Woverwrite_template_name_as);
         }
 
         void warn (const warning::default_construction & w) const
@@ -269,6 +277,10 @@ namespace xml
             ( "Woverwrite_function_name_as"
             , VAL(Woverwrite_function_name_as)
             , "warn when overwriting a function name by 'as'"
+            )
+            ( "Woverwrite_template_name_as"
+            , VAL(Woverwrite_template_name_as)
+            , "warn when overwriting a template name by 'as'"
             )
             ( "Wshadow"
             , VAL(Wshadow)

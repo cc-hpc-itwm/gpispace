@@ -86,6 +86,35 @@ namespace xml
 
       // ******************************************************************* //
 
+      class overwrite_template_name_as : public generic
+      {
+      private:
+        std::string nice ( const std::string & old_name
+                         , const std::string & new_name
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "old template name " << old_name
+            << " overwritten by new name " << new_name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+        
+      public:
+        overwrite_template_name_as ( const std::string & old_name
+                                   , const std::string & new_name
+                                   , const boost::filesystem::path & path
+                                   )
+          : generic (nice (old_name, new_name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       template<typename T>
       class struct_shadowed : public generic
       {
