@@ -241,7 +241,7 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
 	return rank_ll;
 }
 
-Worker::worker_id_t& WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)
+Worker::worker_id_t WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)
 {
 	lock_type lock(mtx_);
 	Worker::worker_id_t owner_worker_id = owner_map().at(job_id);
