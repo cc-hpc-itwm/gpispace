@@ -41,7 +41,7 @@ namespace xml
         std::string nice ( const rapidxml::node_type & want
                          , const rapidxml::node_type & got
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -59,7 +59,7 @@ namespace xml
                          , const rapidxml::node_type & want2
                          , const rapidxml::node_type & got
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -99,7 +99,7 @@ namespace xml
       private:
         std::string nice ( const rapidxml::node_type & want
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -114,7 +114,7 @@ namespace xml
         std::string nice ( const rapidxml::node_type & want1
                          , const rapidxml::node_type & want2
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -151,7 +151,7 @@ namespace xml
         std::string nice ( const std::string & pre
                          , const std::string & attr
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -178,7 +178,7 @@ namespace xml
       class no_elements_given : public generic
       {
       private:
-        std::string nice (const boost::filesystem::path & path)
+        std::string nice (const boost::filesystem::path & path) const
         {
           std::ostringstream s;
 
@@ -202,7 +202,7 @@ namespace xml
       class more_than_one_definition : public generic
       {
       private:
-        std::string nice (const boost::filesystem::path & path)
+        std::string nice (const boost::filesystem::path & path) const
         {
           std::ostringstream s;
 
@@ -230,6 +230,21 @@ namespace xml
                                      , const std::string & pre
                                      )
           : generic ( "try to include top level anonymous function from " 
+                    + file
+                    , pre
+                    )
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class top_level_anonymous_template : public generic
+      {
+      public:
+        top_level_anonymous_template ( const std::string & file
+                                     , const std::string & pre
+                                     )
+          : generic ( "try to include top level anonymous template from " 
                     + file
                     , pre
                     )
@@ -424,7 +439,7 @@ namespace xml
                           , const signature::structured_t & sig
                           , const literal::type_name_t & val
                           , const boost::filesystem::path & path
-                          )
+                          ) const
         {
           std::ostringstream s;
 
@@ -645,7 +660,7 @@ namespace xml
           std::ostringstream s;
 
           s << "duplicate transition " << t.name << " in " << t.path
-            << " first defintion was in " << old.path
+            << " first definition was in " << old.path
             ;
 
           return s.str();
@@ -667,7 +682,7 @@ namespace xml
           std::ostringstream s;
 
           s << "duplicate function " << t.name << " in " << t.path
-            << " first defintion was in " << old.path
+            << " first definition was in " << old.path
             ;
 
           return s.str();
@@ -689,7 +704,7 @@ namespace xml
           std::ostringstream s;
 
           s << "duplicate template " << t.name << " in " << t.path
-            << " first defintion was in " << old.path
+            << " first definition was in " << old.path
             ;
 
           return s.str();
@@ -996,7 +1011,7 @@ namespace xml
         std::string nice ( const std::string & msg
                          , const we::type::property::path_type & key
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -1024,7 +1039,7 @@ namespace xml
                          , const std::string & to_old
                          , const std::string & to_new
                          , const boost::filesystem::path & path
-                         )
+                         ) const
         {
           std::ostringstream s;
 
@@ -1043,6 +1058,34 @@ namespace xml
                           , const boost::filesystem::path & path
                           )
           : generic (nice (from, to_old, to_new, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class missing_type_out : public generic
+      {
+      private:
+        std::string nice ( const std::string & type
+                         , const std::string & spec
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "missing type-out " << type
+            << " in specialization " << spec
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        missing_type_out ( const std::string & type
+                         , const std::string & spec
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (type, spec, path))
         {}
       };
 
