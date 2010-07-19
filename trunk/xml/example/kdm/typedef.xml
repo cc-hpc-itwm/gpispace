@@ -11,6 +11,7 @@
 			<field name="BUNCHES_PER_OFFSET" type="long" />
 			<field name="handle_Job" type="long" />
 			<field name="handle_TT" type="long" />
+			<field name="scratch_Job" type="long" />
 			<field name="NThreads" type="long" />
 		</struct>
 </structs>
