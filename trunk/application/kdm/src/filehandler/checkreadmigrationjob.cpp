@@ -52,11 +52,11 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
 
   char LoggingDir[199];
   if (!ReadXML(Reader, "common/Parameters/LoggingDirectory", LoggingDir, false))
-     sprintf( LoggingDir, "");
+     sprintf( LoggingDir, "%s", "");
 
   if (!ReadXML(Reader, "Migration/Parameters/jobname_M", Job.JobName, false))
   {
-      sprintf(Job.JobName, "");
+    sprintf( Job.JobName, "%s", "");
   }
 
   if (strlen(LoggingDir) > 0)
@@ -67,7 +67,7 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
 	  sprintf(Job.LogFile, "%s/GRT.log", LoggingDir);
   }
   else
-      sprintf(Job.LogFile, "");
+      sprintf(Job.LogFile, "%s", "");
 
   if (!ReadXML(Reader, "Migration/Parameters/LoggingLevel", Job.LogLevel, false))
       Job.LogLevel = 1;
@@ -343,10 +343,7 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
 
       if ((strlen(FrequencyString) > 0))
       {
-	  char* delimiter = new char[199];
-          delimiter[0] = 0;
-
-	  sprintf(delimiter, ",");
+	const char delimiter[] = ",";
 
 	  errno = 0;
 	  Job.frequ1 = strtod(strsep(&FrequencyString, delimiter), NULL);
@@ -367,7 +364,6 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
 	      //
 	  }
 
-	  delete[] delimiter;
 	  //std::cout << Job.frequ1 << " " << Job.frequ2 << " " << Job.frequ3 << " " << Job.frequ4 << std::endl;
       }
   }
@@ -583,7 +579,7 @@ int CheckReadMigrationJob::ReadTTTConfigFileXML(char* ConfigFileName, MigrationJ
        return(-1);
      }
 
-   ConfigFileName;
+   //   ConfigFileName;
    //
    //
 
