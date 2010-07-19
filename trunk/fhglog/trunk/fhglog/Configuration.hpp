@@ -12,6 +12,10 @@
 namespace fhg { namespace log {
   class DefaultConfiguration {
     public:
+    static const std::string & STDOUT() { static std::string s("stdout"); return s; }
+    static const std::string & STDERR() { static std::string s("stderr"); return s; }
+    static const std::string & STDLOG() { static std::string s("stdlog"); return s; }
+
       DefaultConfiguration()
         : level_(LogLevel::DEF_LEVEL)
         , to_console_("")
@@ -51,7 +55,7 @@ namespace fhg { namespace log {
        * This configuration takes the following environment variables into account (case sensitive):
        *  FHGLOG_level                      // log everything with at least this level, defaults to TRACE
        *  FHGLOG_format=log-format          // defaults to the default format in Formatter
-       *  FHGLOG_to_console={stdout,stderr} // log to stdout or stderr
+       *  FHGLOG_to_console={stdout,stderr,stdlog} // log to stdout, stderr, clog
        *  FHGLOG_to_file=path to logfile    // log to specified file
        *  FHGLOG_to_server=ip:port          // log to the specified server
        */
@@ -95,15 +99,33 @@ namespace fhg { namespace log {
           else                               fmt = Formatter::Custom(fmt_string_);
         }
 
-		CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
+	CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
 
-        if (to_console_.size())
-        {
+	if (STDERR() == to_console_)
+	{
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
 #ifndef NDEBUG
-          std::clog << "D: logging to console" << std::endl;
+	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
 #endif
-		  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)))->setFormat(fmt);
-        }
+	}
+	else if (STDOUT() == to_console_)
+	{
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cout)))->setFormat(fmt);
+#ifndef NDEBUG
+	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
+#endif
+	}
+	else if (STDLOG() == to_console_)
+	{
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)))->setFormat(fmt);
+#ifndef NDEBUG
+	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
+#endif
+	}
+	else
+	{
+	  std::clog << "E: invalid value for configuration value to_console: " << to_console_ << std::endl;
+	}
 
         if (to_file_.size())
         {
