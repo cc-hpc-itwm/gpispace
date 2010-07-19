@@ -68,6 +68,7 @@ namespace xml
                                               );
 
     static type::function_type parse_function (std::istream &, state::type &);
+    static type::function_type parse_template (std::istream &, state::type &);
     static type::struct_vec_type parse_structs (std::istream &, state::type &);
     static we::type::property::type parse_props (std::istream &, state::type &);
 
@@ -77,6 +78,12 @@ namespace xml
     function_include (const std::string & file, state::type & state)
     {
       return state.generic_include<type::function_type> (parse_function, file);
+    }
+
+    static type::function_type
+    template_include (const std::string & file, state::type & state)
+    {
+      return state.generic_include<type::function_type> (parse_template, file);
     }
 
     static type::struct_vec_type
@@ -147,6 +154,13 @@ namespace xml
     parse_function (std::istream & f, state::type & state)
     {
       return generic_parse (function_type, f, state, "defun", "parse_function");
+    }
+
+    static type::function_type
+    parse_template (std::istream & f, state::type & state)
+    {
+      return
+        generic_parse (function_type, f, state, "template", "parse_template");
     }
 
     static type::struct_vec_type
@@ -334,8 +348,6 @@ namespace xml
                                           , optional (node, "internal")
                                           );
 
-      
-
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -506,7 +518,7 @@ namespace xml
                                    , structs.end()
                                    );
                 }
-              else if (child_name == "include")
+              else if (child_name == "include-function")
                 {
                   const std::string file ( required ( "net_type"
                                                     , child
@@ -520,7 +532,7 @@ namespace xml
 
                   if (as.isJust())
                     {
-                      if (fun.name.isJust())
+                      if (fun.name.isJust() && *fun.name != *as)
                         {
                           state.warn 
                             ( warning::overwrite_function_name_as
@@ -541,6 +553,42 @@ namespace xml
                     }
 
                   n.push_function (fun);
+                }
+              else if (child_name == "include-template")
+                {
+                  const std::string file ( required ( "net_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         );
+                  const maybe<std::string> as (optional (child, "as"));
+
+                  type::function_type tmpl (template_include (file, state));
+
+                  if (as.isJust())
+                    {
+                      if (tmpl.name.isJust() && *tmpl.name != *as)
+                        {
+                          state.warn 
+                            ( warning::overwrite_template_name_as
+                              ( *tmpl.name
+                              , *as
+                              , state.file_in_progress()
+                              )
+                            );
+                        }
+
+                      tmpl.name = *as;
+                    }
+
+                  if (tmpl.name.isNothing())
+                    {
+                      throw error::top_level_anonymous_template
+                        (file, "net_type");
+                    }
+
+                  n.push_template (tmpl);
                 }
               else if (child_name == "properties")
                 {
@@ -1248,7 +1296,7 @@ namespace xml
 
       const type::type_map_type type_map_empty;
 
-      f.specialize (type_map_empty, state);
+      f.specialize (type_map_empty, type_map_empty, state);
 
       std::cerr << f << std::endl;
 
