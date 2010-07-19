@@ -90,7 +90,7 @@ namespace we
               {
                 s << *pos << ".";
               }
-            
+
             s << *pos;
 
             return s.str();
@@ -137,20 +137,20 @@ namespace we
         class mk_type : public boost::static_visitor<T>
         {
         public:
-          T operator () (T & t) const { return t; }
+          T operator () (T const & t) const { return t; }
 
           template<typename V>
-          T operator () (V &) const { return T(); }
+          T operator () (V) const { return T(); }
         };
 
         template<typename T>
         class get_map : public boost::static_visitor<T>
         {
         public:
-          T operator () (T & t) const { return t; }
+          T operator () (T t) const { return t; }
 
           template<typename V>
-          T operator () (V &) const
+          T operator () (V) const
           {
             throw exception::not_a_map ("visitor::get_map");
           }
@@ -181,7 +181,7 @@ namespace we
         public:
           show ( std::ostream & _s
                , const unsigned int _l = 0
-               ) 
+               )
             : s (_s)
             , l (_l)
           {}
@@ -235,12 +235,12 @@ namespace we
             }
           else
             {
-              const type & t 
+              const type & t
                 ( boost::apply_visitor ( visitor::get_map<const type &>()
                                        , map_pos->second
                                        )
                 );
-              
+
               return t.get (pos + 1, end, zero);
             }
         }
@@ -309,7 +309,7 @@ namespace we
                      );
 
               old_value = t.set (pos + 1, end, val);
-              
+
               map[*pos] = t;
             }
 
@@ -430,7 +430,7 @@ namespace we
                                                   , map[*pos]
                                                   )
                            );
-              
+
                   t.del (pos + 1, end);
                 }
             }
@@ -456,7 +456,7 @@ namespace we
               )
             {
               util::level (s, l); s << pos->first << ":" << std::endl;
-              
+
               boost::apply_visitor ( visitor::show<type> (s, l + 1)
                                    , pos->second
                                    );
@@ -485,7 +485,7 @@ namespace we
             path_type & path;
 
           public:
-            dfs (stack_type & _stack, path_type & _path) 
+            dfs (stack_type & _stack, path_type & _path)
               : stack (_stack)
               , path (_path)
             {}
@@ -503,7 +503,7 @@ namespace we
                   )
                 {
                   path.push_back (pos->first);
-                
+
                   boost::apply_visitor (*this, pos->second);
 
                   path.pop_back ();
@@ -523,7 +523,7 @@ namespace we
               )
             {
               path.push_back (pos->first);
-                  
+
               boost::apply_visitor (visitor::dfs (stack, path), pos->second);
 
               path.pop_back ();

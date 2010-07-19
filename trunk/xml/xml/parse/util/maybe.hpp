@@ -33,23 +33,23 @@ namespace maybe_detail
   };
 
   template<typename T>
-  class get_with_default : public boost::static_visitor<const T &>
+  class get_with_default : public boost::static_visitor<T>
   {
   private:
-    const T & dflt;
+    T dflt;
 
   public:
-    get_with_default (const T & _dflt) : dflt (_dflt) {}
+    get_with_default (T _dflt) : dflt (_dflt) {}
 
-    const T & operator () (const Nothing &) const { return dflt; }
-    const T & operator () (const T & x) const { return x; }
+    T operator () (const Nothing &) const { return dflt; }
+    T operator () (T x) const { return x; }
   };
 
   template<typename T>
   class get : public boost::static_visitor<const T &>
   {
   public:
-    const T & operator () (const Nothing &) const 
+    const T & operator () (const Nothing &) const
     {
       throw std::runtime_error ("maybe: Nothing");
     }
@@ -70,12 +70,12 @@ public:
   maybe () : m () {}
   maybe (const_reference t) : m (t) {}
 
-  bool isJust (void) const 
+  bool isJust (void) const
   {
     return boost::apply_visitor (maybe_detail::isJust(), m);
   }
 
-  bool isNothing (void) const 
+  bool isNothing (void) const
   {
     return boost::apply_visitor (maybe_detail::isNothing(), m);
   }
