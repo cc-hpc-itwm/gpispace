@@ -224,6 +224,7 @@
       <xsd:element name="include-structs" type="struct_include_type"/>
       <xsd:element name="place" type="place_type"/>
       <xsd:element name="defun" type="function_type"/>
+      <xsd:element name="template" type="function_type"/>
       <xsd:element name="specialize" type="template_use_type"/>
       <xsd:element name="transition" type="transition_type"/>
       <xsd:element name="include" type="global_include_type"/>

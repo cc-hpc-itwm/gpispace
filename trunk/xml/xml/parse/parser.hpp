@@ -274,7 +274,7 @@ namespace xml
       type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
-        , state.level() + 2
+        , state.level()
         );
       
       for ( xml_node_type * child (node->first_node())
@@ -467,19 +467,23 @@ namespace xml
             {
               if (child_name == "defun")
                 {
-                  n.push (function_type (child, state));
+                  n.push_function (function_type (child, state));
+                }
+              else if (child_name == "template")
+                {
+                  n.push_template (function_type (child, state));
                 }
               else if (child_name == "specialize")
                 {
-                  n.push (specialize_type (child, state), state);
+                  n.push_specialize (specialize_type (child, state), state);
                 }
               else if (child_name == "place")
                 {
-                  n.push (place_type (child, state));
+                  n.push_place (place_type (child, state));
                 }
               else if (child_name == "transition")
                 {
-                  n.push (transition_type (child, state));
+                  n.push_transition (transition_type (child, state));
                 }
               else if (child_name == "struct")
                 {
@@ -536,7 +540,7 @@ namespace xml
                         (file, "net_type");
                     }
 
-                  n.push (fun);
+                  n.push_function (fun);
                 }
               else if (child_name == "properties")
                 {
@@ -1037,6 +1041,7 @@ namespace xml
     set_type_map ( const xml_node_type * node
                  , const state::type & state
                  , type::type_map_type & map
+                 , const bool & rev_order
                  )
     {
       const std::string from 
@@ -1064,7 +1069,14 @@ namespace xml
               }
           }
 
-      map[from] = to;
+      if (rev_order)
+        {
+          map[to] = from;
+        }
+      else
+        {
+          map[from] = to;
+        }
     }
 
     static type::specialize_type
@@ -1090,11 +1102,12 @@ namespace xml
             {
               if (child_name == "type-map-in")
                 {
-                  set_type_map (child, state, s.type_map_in);
+                  set_type_map (child, state, s.type_map_in, true);
                 }
               else if (child_name == "type-map-out")
                 {
-                  set_type_map (child, state, s.type_map_out);
+                  set_type_map (child, state, s.type_map_in, false);
+                  set_type_map (child, state, s.type_map_out, false);
                 }
               else
                 {
@@ -1233,9 +1246,15 @@ namespace xml
         : function_include (input, state)
         );
 
-      const struct_t::set_type empty;
+      const type::type_map_type type_map_empty;
 
-      f.resolve (empty, state, f.forbidden_below());
+      f.specialize (type_map_empty, state);
+
+      std::cerr << f << std::endl;
+
+      const struct_t::set_type global_structs_empty;
+
+      f.resolve (global_structs_empty, state, f.forbidden_below());
 
       f.type_check (state);
 

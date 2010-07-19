@@ -42,6 +42,8 @@ namespace xml
       typedef std::vector<struct_t> struct_vec_type;
     }
 
+    // ********************************************************************* //
+
     namespace struct_t
     {
       typedef boost::unordered_map< signature::field_name_t
@@ -50,6 +52,8 @@ namespace xml
       typedef boost::unordered_map< signature::field_name_t
                                   , std::string
                                   > forbidden_type;
+
+      // ******************************************************************* //
 
       set_type make (const type::struct_vec_type & struct_vec)
       {
@@ -74,6 +78,8 @@ namespace xml
         return set;
       }
       
+      // ******************************************************************* //
+
       set_type join ( const set_type & above
                     , const set_type & below
                     , const forbidden_type & forbidden
@@ -114,6 +120,8 @@ namespace xml
         return set;
       }
 
+      // ******************************************************************* //
+
       class get_literal_type_name 
         : public boost::static_visitor<literal::type_name_t>
       {
@@ -128,6 +136,8 @@ namespace xml
             ("try to get a literal typename from a structured type");
         }
       };
+
+      // ******************************************************************* //
 
       class resolve : public boost::static_visitor<bool>
       {
@@ -179,6 +189,49 @@ namespace xml
                 }
             }
           return true;
+        }
+      };
+
+      // ******************************************************************* //
+
+      class specialize : public boost::static_visitor<signature::desc_t>
+      {
+      private:
+        const type::type_map_type & map_in;
+        const state::type & state;
+
+      public:
+        specialize ( const type::type_map_type & _map_in
+                   , const state::type & _state
+                   )
+          : map_in (_map_in)
+          , state (_state)
+        {}
+      
+        signature::desc_t operator () (literal::type_name_t & t) const
+        {
+          const type::type_map_type::const_iterator mapped (map_in.find (t));
+
+          return (mapped != map_in.end()) ? mapped->second : t;
+        }
+
+        signature::desc_t operator () (signature::structured_t & map) const
+        {
+          for ( signature::structured_t::map_t::iterator pos (map.begin())
+              ; pos != map.end()
+              ; ++pos
+              )
+            {
+              const type::type_map_type::const_iterator mapped
+                (map_in.find (pos->first));
+
+              pos->second = (mapped != map_in.end())
+                ? mapped->second
+                : boost::apply_visitor (*this, pos->second)
+                ;
+            }
+
+          return map;
         }
       };
     }

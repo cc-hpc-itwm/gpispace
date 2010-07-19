@@ -680,6 +680,28 @@ namespace xml
 
       // ******************************************************************* //
 
+      template<typename T>
+      class duplicate_template : public generic
+      {
+      private:
+        std::string nice (const T & t, const T & old) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate template " << t.name << " in " << t.path
+            << " first defintion was in " << old.path
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_template (const T & t, const T & old)
+          : generic (nice (t, old))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class port_with_unknown_type : public generic
       {
       private:
@@ -882,6 +904,31 @@ namespace xml
                          , const boost::filesystem::path & path
                          )
           : generic (nice (fun, trans, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class unknown_template : public generic
+      {
+      private:
+        std::string nice ( const std::string & templ
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "unknown template " << templ
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        unknown_template ( const std::string & templ
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (templ, path))
         {}
       };
 

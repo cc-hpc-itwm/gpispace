@@ -15,10 +15,6 @@ namespace xml
   {
     namespace type
     {
-      // ******************************************************************* //
-      
-      typedef boost::unordered_map<std::string, std::string> type_map_type;
-
       struct specialize_type
       {
         std::string name;

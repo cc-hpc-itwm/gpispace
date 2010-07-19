@@ -68,6 +68,30 @@ namespace xml
       
       // ******************************************************************* //
 
+      template<typename Fun>
+      class transition_specialize : public boost::static_visitor<void>
+      {
+      private:
+        const type::type_map_type & map_in;
+        const state::type & state;
+
+      public:
+        transition_specialize ( const type::type_map_type & _map_in
+                              , const state::type & _state
+                              )
+          : map_in (_map_in)
+          , state (_state)
+        {}
+
+        void operator () (use_type &) const { return; }
+        void operator () (Fun & fun) const
+        {
+          fun.specialize (map_in, state);
+        }
+      };
+      
+      // ******************************************************************* //
+
       template<typename Net, typename Trans>
       class transition_get_function
         : public boost::static_visitor<function_type>
@@ -182,6 +206,16 @@ namespace xml
         {
           boost::apply_visitor
             (transition_resolve<function_type> (global, state, forbidden), f);
+        }
+
+        // ***************************************************************** //
+
+        void specialize ( const type::type_map_type & map_in
+                        , const state::type & state
+                        )
+        {
+          boost::apply_visitor
+            (transition_specialize<function_type> (map_in, state), f);
         }
 
         // ***************************************************************** //
@@ -417,7 +451,7 @@ namespace xml
             ; ++pos
             )
           {
-            s << level (t.level + 2) << *pos << std::endl;
+            s << *pos << std::endl;
           }
 
         s << level (t.level + 1) << "connect-read = " << std::endl;
@@ -427,7 +461,7 @@ namespace xml
             ; ++pos
             )
           {
-            s << level (t.level + 2) << *pos << std::endl;
+            s << *pos << std::endl;
           }
 
         s << level (t.level + 1) << "connect-out = " << std::endl;
@@ -437,7 +471,7 @@ namespace xml
             ; ++pos
             )
           {
-            s << level (t.level + 2) << *pos << std::endl;
+            s << *pos << std::endl;
           }
 
         s << level(t.level+1) << "condition = " << std::endl;

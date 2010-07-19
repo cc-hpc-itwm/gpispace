@@ -256,6 +256,19 @@ namespace xml
                 );
            }
         }
+
+        void specialize ( const type::type_map_type & map_in
+                        , const state::type &
+                        )
+        {
+          const type::type_map_type::const_iterator
+            mapped (map_in.find (type));
+
+          if (mapped != map_in.end())
+            {
+              type = mapped->second;
+            }
+        }
       };
 
       typedef std::vector<place_type> place_vec_type;

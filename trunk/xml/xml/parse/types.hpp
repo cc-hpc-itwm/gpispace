@@ -8,8 +8,10 @@ typedef rapidxml::xml_node<Ch> xml_node_type;
 typedef rapidxml::xml_document<Ch> xml_document_type;
 typedef rapidxml::file<Ch> input_type;
 
-#include <boost/variant.hpp>
 #include <iostream>
+
+#include <boost/variant.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace xml
 {
@@ -17,6 +19,8 @@ namespace xml
   {
     namespace type
     {
+      typedef boost::unordered_map<std::string, std::string> type_map_type;
+
       // forward declarations for mutual recursive types
       struct function_type;
       struct transition_type;

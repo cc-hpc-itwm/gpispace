@@ -1,7 +1,7 @@
 <defun name="template">
 <net>
 
-  <defun name="make_pair">
+  <template name="make_pair">
 
     <struct name="PAIR">
       <field name="first" type="T"/>
@@ -28,16 +28,18 @@
           </expression>
         </defun>
 
-        <connect-in port="first" place="T"/>
-        <connect-in port="second" place="U"/>
-        <connect-out port="pair" place="PAIR"/>
+        <connect-in port="first" place="first"/>
+        <connect-in port="second" place="second"/>
+        <connect-out port="pair" place="pair"/>
       </transition>
     </net>
-  </defun>
+  </template>
 
   <place name="x" type="long"/>
   <place name="y" type="double"/>
-  <place name="p" type="pair_long_double"/>
+  <place name="z" type="long"/>
+  <place name="pLD" type="pair_long_double"/>
+  <place name="pLL" type="pair_long_long"/>
 
   <specialize name="make_pair_long_double" use="make_pair">
     <type-map-in from="long" to="T"/>
@@ -45,11 +47,24 @@
     <type-map-out from="PAIR" to="pair_long_double"/>
   </specialize>
 
-  <transition name="make_pair">
+  <transition name="make_pair_long_double">
     <use name="make_pair_long_double"/>
     <connect-in port="first" place="x"/>
     <connect-in port="second" place="y"/>
-    <connect-out port="pair" place="p"/>
+    <connect-out port="pair" place="pLD"/>
+  </transition>
+
+  <specialize name="make_pair_long_long" use="make_pair">
+    <type-map-in from="long" to="T"/>
+    <type-map-in from="long" to="U"/>
+    <type-map-out from="PAIR" to="pair_long_long"/>
+  </specialize>
+
+  <transition name="make_pair_long_long">
+    <use name="make_pair_long_long"/>
+    <connect-in port="first" place="x"/>
+    <connect-in port="second" place="z"/>
+    <connect-out port="pair" place="pLL"/>
   </transition>
 </net>
 </defun>
