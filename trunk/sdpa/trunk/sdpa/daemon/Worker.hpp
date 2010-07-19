@@ -126,7 +126,7 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    const unsigned int rank() const { return rank_; }
+    unsigned int rank() const { return rank_; }
 
     /**
          Checks if the worker has job
@@ -137,7 +137,7 @@ namespace sdpa { namespace daemon {
     /**
 		 Return true if the worker is timedout, false otherwise
      */
-    const bool timedout() const { return timedout_; }
+    bool timedout() const { return timedout_; }
 
     void set_timedout(bool bValue = true ) { timedout_ = bValue; }
 
