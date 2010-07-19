@@ -1296,7 +1296,7 @@ namespace xml
 
       const type::type_map_type type_map_empty;
 
-      f.specialize (type_map_empty, type_map_empty, state);
+      f.specialize (type_map_empty, state);
 
       std::cerr << f << std::endl;
 
