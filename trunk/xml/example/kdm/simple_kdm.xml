@@ -87,7 +87,7 @@
     </transition>
     <place name="number_of_volumes" type="long" />
 
-    <include href="generate_sequence.xml" as="f_gen_seq"/>
+    <include-function href="generate_sequence.xml" as="f_gen_seq"/>
 
     <transition name="generate_offset">
       <use name="f_gen_seq"/>

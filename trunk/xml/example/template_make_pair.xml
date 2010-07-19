@@ -1,0 +1,57 @@
+<template name="make_pair">
+
+  <struct name="PAIR">
+    <field name="first" type="T"/>
+    <field name="second" type="U"/>
+  </struct>
+
+  <in name="first" type="T" place="first"/>
+  <in name="second" type="U" place="second"/>
+  <out name="pair" type="PAIR" place="pair"/>
+
+  <net>
+    <place name="first" type="T"/>
+    <place name="first_copy" type="T"/>
+    <place name="second" type="U"/>
+    <place name="second_copy" type="U"/>
+    <place name="pair" type="PAIR"/>
+
+    <transition name="copy">
+      <defun>
+        <in name="in" type="T"/>
+        <out name="out" type="T"/>
+        <expression>${out} := ${in}</expression>
+      </defun>
+      <connect-in port="in" place="first"/>
+      <connect-out port="out" place="first_copy"/>
+    </transition>
+
+      <defun name="fcopy">
+        <in name="in" type="U"/>
+        <out name="out" type="U"/>
+        <expression>${out} := ${in}</expression>
+      </defun>
+
+    <transition name="copy2">
+      <use name="fcopy"/>
+      <connect-in port="in" place="second"/>
+      <connect-out port="out" place="second_copy"/>
+    </transition>
+
+    <transition name="make_pair">
+      <defun>
+        <in name="first" type="T"/>
+        <in name="second" type="U"/>
+        <out name="pair" type="PAIR"/>
+        <expression>
+          ${pair.first} := ${first};
+          ${pair.second} := ${second}
+        </expression>
+      </defun>
+
+      <connect-in port="first" place="first_copy"/>
+      <connect-in port="second" place="second_copy"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+  </net>
+</template>

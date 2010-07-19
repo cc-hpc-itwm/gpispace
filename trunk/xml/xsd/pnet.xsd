@@ -13,8 +13,9 @@
   </xsd:annotation>
 
   <xsd:element name="defun" type="function_type"/>
-  <xsd:element name="structs" type="struct_list_type"/>
   <xsd:element name="props" type="property_map_list_type"/>
+  <xsd:element name="structs" type="struct_list_type"/>
+  <xsd:element name="template" type="function_type"/>
 
   <xsd:complexType name="transition_include_type">
     <xsd:attribute name="href" type="xsd:string" use="required"/>
@@ -24,7 +25,7 @@
     <xsd:attribute name="href" type="xsd:string" use="required"/>
   </xsd:complexType>
 
-  <xsd:complexType name="global_include_type">
+  <xsd:complexType name="function_include_type">
     <xsd:attribute name="href" type="xsd:string" use="required"/>
     <xsd:attribute name="as" type="xsd:string" use="optional"/>
   </xsd:complexType>
@@ -220,16 +221,17 @@
 
   <xsd:complexType name="net_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="struct" type="struct_type"/>
-      <xsd:element name="include-structs" type="struct_include_type"/>
-      <xsd:element name="place" type="place_type"/>
       <xsd:element name="defun" type="function_type"/>
-      <xsd:element name="template" type="function_type"/>
-      <xsd:element name="specialize" type="template_use_type"/>
-      <xsd:element name="transition" type="transition_type"/>
-      <xsd:element name="include" type="global_include_type"/>
-      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-function" type="function_include_type"/>
       <xsd:element name="include-properties" type="properties_include_type"/>
+      <xsd:element name="include-structs" type="struct_include_type"/>
+      <xsd:element name="include-template" type="function_include_type"/>
+      <xsd:element name="place" type="place_type"/>
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="specialize" type="template_use_type"/>
+      <xsd:element name="struct" type="struct_type"/>
+      <xsd:element name="template" type="function_type"/>
+      <xsd:element name="transition" type="transition_type"/>
     </xsd:choice>
   </xsd:complexType>
 </xsd:schema>
