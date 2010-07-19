@@ -46,14 +46,14 @@ namespace maybe_detail
   };
 
   template<typename T>
-  class get : public boost::static_visitor<const T &>
+  class get : public boost::static_visitor<T>
   {
   public:
-    const T & operator () (const Nothing &) const
+    T operator () (const Nothing &) const
     {
       throw std::runtime_error ("maybe: Nothing");
     }
-    const T & operator () (const T & x) const { return x; }
+    T  operator () (T x) const { return x; }
   };
 }
 
@@ -82,12 +82,12 @@ public:
 
   const_reference operator * (void) const
   {
-    return boost::apply_visitor (maybe_detail::get<T>(), m);
+    return boost::apply_visitor (maybe_detail::get<const_reference>(), m);
   }
 
   const_reference get_with_default (const_reference dflt) const
   {
-    return boost::apply_visitor (maybe_detail::get_with_default<T> (dflt), m);
+    return boost::apply_visitor (maybe_detail::get_with_default<const_reference> (dflt), m);
   }
 
   void operator = (const_reference x)
