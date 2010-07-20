@@ -1,0 +1,70 @@
+<template name="tagged_sequence">
+  <in name="tag" type="T" place="tag"/>
+  <in name="amount" type="long" place="N"/>
+  <out name="pair" type="PAIR" place="pair"/>
+ 
+  <net>
+    <struct name="PAIR">
+      <field name="tag" type="T"/>
+      <field name="id" type="T"/>
+    </struct>
+
+    <place name="tag" type="T"/>
+    <place name="N" type="long"/>
+    <place name="Ngen" type="long"/>
+    <place name="Ntag" type="long"/>
+    <place name="id" type="long"/>
+    <place name="pair" type="PAIR"/>
+
+    <include-template href="dup.xml"/>
+
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="dup">
+       <use name="dup_long"/>
+       <connect-in port="in" place="N"/>
+       <connect-out port="one" place="Ngen"/>
+       <connect-out port="two" place="Ntag"/>
+    </transition>
+
+    <transition name="sequence">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="Ngen"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+
+    <transition name="tag">
+      <defun>
+        <in name="id" type="long"/>
+        <in name="tag" type="T"/>
+        <in name="k" type="long"/>
+        <out name="k" type="long"/>
+        <out name="pair" type="PAIR"/>
+        <expression>
+          ${pair.tag} := ${tag};
+          ${pair.id} := ${id};
+          ${k} := ${k} - 1
+        </expression>
+        <condition>${k} :gt: 0</condition>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-read port="tag" place="tag"/>
+      <connect-in port="k" place="Ntag"/>
+      <connect-out port="k" place="Ntag"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="k" type="long"/>
+        <in name="tag" type="T"/>
+        <expression></expression>
+        <condition>${k} :eq: 0</condition>
+      </defun>
+      <connect-in port="k" place="Ntag"/>
+      <connect-in port="tag" place="tag"/>
+    </transition>
+  </net>
+</template>

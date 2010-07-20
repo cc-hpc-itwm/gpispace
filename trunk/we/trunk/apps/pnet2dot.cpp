@@ -122,35 +122,35 @@ main (int argc, char ** argv)
     , po::value<std::string>(&output)->default_value("-")
     , "output file name, - for stdout"
     )
-    ( "nice"
-    , po::value<bool>(&options.nice)->default_value(options.nice)
-    , "nice signatures"
+    ( "full-signatures"
+    , po::value<bool>(&options.full)->default_value(options.full)
+    , "whether or not to show full signatures"
     )
-    ( "show_token"
+    ( "show-token"
     , po::value<bool>(&options.show_token)->default_value(options.show_token)
     , "whether or not show the tokens on a place"
     )
-    ( "show_capacity"
+    ( "show-capacity"
     , po::value<bool>(&options.show_capacity)->default_value(options.show_capacity)
     , "whether or not show the place capacities"
     )
-    ( "show_signature"
+    ( "show-signature"
     , po::value<bool>(&options.show_signature)->default_value(options.show_signature)
     , "whether or not show the place and port signatures"
     )
-    ( "show_priority"
+    ( "show-priority"
     , po::value<bool>(&options.show_priority)->default_value(options.show_priority)
     , "whether or not show the transition priority"
     )
-    ( "show_intext"
+    ( "show-intext"
     , po::value<bool>(&options.show_intext)->default_value(options.show_intext)
     , "whether or not show the transition internal/external falg"
     )
-    ( "not_starts_with"
+    ( "not-starts-with"
     , po::value<vec_type>(&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
     )
-    ( "not_ends_with"
+    ( "not-ends-with"
     , po::value<vec_type>(&not_ends_with)
     , "do not expand transitions that end with a certain suffix"
     )

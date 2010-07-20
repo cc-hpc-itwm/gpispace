@@ -1211,7 +1211,7 @@ namespace xml
 
           if (child)
             {
-              if (child_name == "include")
+              if (child_name == "include-function")
                 {
                   const std::string file ( required ( "transition_type"
                                                     , child

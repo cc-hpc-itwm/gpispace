@@ -1315,7 +1315,7 @@ namespace we { namespace type {
         if (opts.show_signature)
           {
             s << endl
-              << lines (',', opts.nice ? sig.nice() : ::util::show (sig.desc()))
+              << lines (',', opts.full ? ::util::show (sig.desc()) : sig.nice())
               ;
           }
 
@@ -1389,7 +1389,7 @@ namespace we { namespace type {
       class options
       {
       public:
-        bool nice;
+        bool full;
         Pred predicate;
         bool show_token;
         bool show_capacity;
@@ -1398,7 +1398,7 @@ namespace we { namespace type {
         bool show_intext;
 
         options ()
-          : nice (true)
+          : full (false)
           , predicate() 
           , show_token (true)
           , show_capacity (true)

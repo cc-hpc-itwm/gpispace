@@ -97,7 +97,7 @@
     <place name="offset" type="long" />
     
     <transition name="generate_volume">
-      <include href="generate_volume.xml" />
+      <include-function href="generate_volume.xml" />
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />
       <connect-out place="volume" port="out" />
@@ -118,7 +118,7 @@
           <place name="done" type="control" />
           
           <transition name="wrap_process_volume">
-            <include href="process_volume.xml" /> 
+            <include-function href="process_volume.xml" /> 
             <connect-in   place="volume" port="volume" />
             <connect-read place="config" port="config" />
             <connect-out  place="done"   port="done" />

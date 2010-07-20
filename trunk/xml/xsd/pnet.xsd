@@ -200,7 +200,7 @@
       </xsd:choice>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="defun" type="function_type"/>
-        <xsd:element name="include" type="transition_include_type"/>
+        <xsd:element name="include-function" type="transition_include_type"/>
         <xsd:element name="use" type="use_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">

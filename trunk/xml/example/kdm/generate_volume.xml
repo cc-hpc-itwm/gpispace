@@ -10,7 +10,7 @@
 		<place name="out" type="VOLUME" />
 
 		<transition name="generate_ids">			
-			<include href="generate_sequence.xml" />
+			<include-function href="generate_sequence.xml" />
 			<connect-in place="amount" port="amount" />
 			<connect-out place="id" port="out" />
 		</transition>

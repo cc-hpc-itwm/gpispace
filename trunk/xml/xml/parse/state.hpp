@@ -282,11 +282,11 @@ namespace xml
             , VAL(Wall)
             , "turn on all warnings"
             )
-            ( "Woverwrite_function_name_as"
+            ( "Woverwrite-function-name-as"
             , VAL(Woverwrite_function_name_as)
             , "warn when overwriting a function name by 'as'"
             )
-            ( "Woverwrite_template_name_as"
+            ( "Woverwrite-template-name-as"
             , VAL(Woverwrite_template_name_as)
             , "warn when overwriting a template name by 'as'"
             )
@@ -294,31 +294,31 @@ namespace xml
             , VAL(Wshadow)
             , "warn when shadowing a struct definition"
             )
-            ( "Wdefault_construction"
+            ( "Wdefault-construction"
             , VAL(Wdefault_construction)
             , "warn when default construct (part of) tokens"
             )
-            ( "Wunused_field"
+            ( "Wunused-field"
             , VAL(Wunused_field)
             , "warn when given fields in tokens are unused"
             )
-            ( "Wunexpected_element"
+            ( "Wunexpected-element"
             , VAL(Wunexpected_element)
             , "warn when unexpected elements occur"
             )
-            ( "Woverwrite_function_name_trans"
+            ( "Woverwrite-function-name-trans"
             , VAL(Woverwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
             )
-            ( "Wproperty_overwritten"
+            ( "Wproperty-overwritten"
             , VAL(Wproperty_overwritten)
             , "warn when overwriting a property"
             )
-            ( "Wtype_map_duplicate"
+            ( "Wtype-map-duplicate"
             , VAL(Wtype_map_duplicate)
             , "warn about duplicate type maps"
             )
-            ( "Wtype_get_duplicate"
+            ( "Wtype-get-duplicate"
             , VAL(Wtype_get_duplicate)
             , "warn about duplicate type gets"
             )

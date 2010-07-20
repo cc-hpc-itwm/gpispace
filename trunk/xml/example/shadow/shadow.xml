@@ -19,7 +19,7 @@
     </struct>
 
     <transition name="trans">
-      <include href="trans.xml"/>
+      <include-function href="trans.xml"/>
     </transition>
   </net>
 </defun>

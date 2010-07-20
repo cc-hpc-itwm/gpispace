@@ -1,11 +1,11 @@
-<template name="tag2">
+<template>
   <in name="tag" type="T" place="tag"/>
   <in name="first" type="U" place="first"/>
   <in name="second" type="V" place="second"/>
   <out name="pair_pair" type="PAIR_PAIR" place="pp"/>
 
   <net>
-    <include-template href="template_make_pair.xml" as="make_pair"/>
+    <include-template href="make_pair.xml" as="make_pair"/>
 
     <place name="tag" type="T"/>
     <place name="first" type="U"/>
