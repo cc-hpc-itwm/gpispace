@@ -80,11 +80,11 @@ namespace xml
       
       // ******************************************************************* //
 
-      set_type join ( const set_type & above
-                    , const set_type & below
-                    , const forbidden_type & forbidden
-                    , const state::type & state
-                    )
+      inline set_type join ( const set_type & above
+                           , const set_type & below
+                           , const forbidden_type & forbidden
+                           , const state::type & state
+                           )
       {
         set_type set (above);
 
@@ -142,11 +142,11 @@ namespace xml
       class resolve : public boost::static_visitor<bool>
       {
       private:
-        boost::filesystem::path path;
-        set_type & sig_set;
+        const boost::filesystem::path path;
+        const set_type & sig_set;
       
       public:
-        resolve ( set_type & _sig_set
+        resolve ( const set_type & _sig_set
                 , const boost::filesystem::path & _path
                 ) 
           : path (_path)
