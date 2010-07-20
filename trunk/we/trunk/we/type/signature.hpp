@@ -15,6 +15,8 @@
 #include <string>
 #include <ostream>
 
+#include <map>
+
 namespace signature
 {
   typedef std::string field_name_t;
@@ -28,9 +30,8 @@ namespace signature
   struct structured_t
   {
   public:
-    typedef boost::unordered_map< field_name_t
-                                , desc_t
-                                > map_t;
+    // ordered map for equality!
+    typedef std::map<field_name_t, desc_t> map_t;
     typedef map_t::const_iterator const_iterator;
     typedef map_t::iterator iterator;
 
