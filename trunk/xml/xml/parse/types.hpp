@@ -12,6 +12,7 @@ typedef rapidxml::file<Ch> input_type;
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace xml
 {
@@ -20,6 +21,7 @@ namespace xml
     namespace type
     {
       typedef boost::unordered_map<std::string, std::string> type_map_type;
+      typedef boost::unordered_set<std::string> type_get_type;
 
       // forward declarations for mutual recursive types
       struct function_type;

@@ -72,22 +72,22 @@ namespace xml
       class transition_specialize : public boost::static_visitor<void>
       {
       private:
-        const type::type_map_type & map_in;
+        const type::type_map_type & map;
+        const type::type_get_type & get;
         const state::type & state;
 
       public:
-        transition_specialize ( const type::type_map_type & _map_in
+        transition_specialize ( const type::type_map_type & _map
+                              , const type::type_get_type & _get
                               , const state::type & _state
                               )
-          : map_in (_map_in)
+          : map (_map)
+          , get (_get)
           , state (_state)
         {}
 
         void operator () (use_type &) const { return; }
-        void operator () (Fun & fun) const
-        {
-          fun.specialize (map_in, state);
-        }
+        void operator () (Fun & fun) const { fun.specialize (map, get, state); }
       };
       
       // ******************************************************************* //
@@ -150,7 +150,7 @@ namespace xml
 
         int level;
 
-        xml::parse::struct_t::set_type structs_resolved;
+        struct_vec_type structs;
 
         cond_vec_type cond;
 
@@ -210,12 +210,13 @@ namespace xml
 
         // ***************************************************************** //
 
-        void specialize ( const type::type_map_type & map_in
+        void specialize ( const type::type_map_type & map
+                        , const type::type_get_type & get
                         , const state::type & state
                         )
         {
           boost::apply_visitor
-            (transition_specialize<function_type> (map_in, state), f);
+            (transition_specialize<function_type> (map, get, state), f);
         }
 
         // ***************************************************************** //

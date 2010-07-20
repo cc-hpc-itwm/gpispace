@@ -296,15 +296,15 @@ namespace xml
       class type_map_duplicate : public generic
       {
       private:
-        std::string nice ( const std::string & from
-                         , const std::string & to
+        std::string nice ( const std::string & replace
+                         , const std::string & with
                          , const boost::filesystem::path & path
                          )
         {
           std::ostringstream s;
 
-          s << "type map duplicate, type " << from
-            << " mapped to type " << to
+          s << "type map duplicate, type " << replace
+            << " mapped to type " << with
             << " twice"
             << " in " << path
             ;
@@ -312,11 +312,36 @@ namespace xml
           return s.str();
         }
       public:
-        type_map_duplicate ( const std::string & from
-                           , const std::string & to
+        type_map_duplicate ( const std::string & replace
+                           , const std::string & with
                            , const boost::filesystem::path & path
                            )
-          : generic (nice (from, to, path))
+          : generic (nice (replace, with, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class type_get_duplicate : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "type get duplicate, type " << name
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        type_get_duplicate ( const std::string & name
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (name, path))
         {}
       };
     }

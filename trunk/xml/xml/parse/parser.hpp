@@ -1089,42 +1089,56 @@ namespace xml
     set_type_map ( const xml_node_type * node
                  , const state::type & state
                  , type::type_map_type & map
-                 , const bool & rev_order
                  )
     {
-      const std::string from 
-        (required ("set_type_map", node, "from", state.file_in_progress()));
-      const std::string to
-        (required ("set_type_map", node, "to", state.file_in_progress()));
+      const std::string replace 
+        (required ("set_type_map", node, "replace", state.file_in_progress()));
+      const std::string with
+        (required ("set_type_map", node, "with", state.file_in_progress()));
 
-      type::type_map_type::const_iterator old (map.find (from));
+      type::type_map_type::const_iterator old (map.find (replace));
 
       if (old != map.end())
         {
-          if (old->second != to)
+          if (old->second != with)
             {
               throw error::type_map_mismatch 
-                (from, old->second, to, state.file_in_progress());
+                (replace, old->second, with, state.file_in_progress());
             }
           else
             {
               state.warn ( warning::type_map_duplicate 
-                           ( from
-                           , to
+                           ( replace
+                           , with
                            , state.file_in_progress()
                            )
                          );
               }
           }
 
-      if (rev_order)
+      map[replace] = with;
+    }
+
+    static void
+    set_type_get ( const xml_node_type * node
+                 , const state::type & state
+                 , type::type_get_type & set
+                 )
+    {
+      const std::string name
+        (required ("set_type_get", node, "name", state.file_in_progress()));
+
+      type::type_get_type::const_iterator old (set.find (name));
+
+      if (old != set.end())
         {
-          map[to] = from;
+          state.warn ( warning::type_get_duplicate ( name
+                                                   , state.file_in_progress()
+                                                   )
+                     );
         }
-      else
-        {
-          map[from] = to;
-        }
+
+      set.insert (name);
     }
 
     static type::specialize_type
@@ -1148,14 +1162,13 @@ namespace xml
 
           if (child)
             {
-              if (child_name == "type-map-in")
+              if (child_name == "type-map")
                 {
-                  set_type_map (child, state, s.type_map_in, true);
+                  set_type_map (child, state, s.type_map);
                 }
-              else if (child_name == "type-map-out")
+              else if (child_name == "type-get")
                 {
-                  set_type_map (child, state, s.type_map_in, false);
-                  set_type_map (child, state, s.type_map_out, false);
+                  set_type_get (child, state, s.type_get);
                 }
               else
                 {
@@ -1295,10 +1308,9 @@ namespace xml
         );
 
       const type::type_map_type type_map_empty;
+      const type::type_get_type type_get_empty;
 
-      f.specialize (type_map_empty, state);
-
-      std::cerr << f << std::endl;
+      f.specialize (type_map_empty, type_get_empty, state);
 
       const struct_t::set_type global_structs_empty;
 

@@ -1,72 +1,19 @@
 <defun name="template">
 <net>
-  <include-template href="template_make_pair.xml" as="make_pair"/>
-
   <place name="x" type="long"/>
   <place name="y" type="double"/>
   <place name="z" type="string"/>
-  <place name="pLD" type="pair_long_double"/>
-  <place name="pLS" type="pair_long_string"/>
+  <place name="ppLDLS2" type="pp2"/>
 
-  <specialize name="make_pair_long_double" use="make_pair">
-    <type-map-in from="long" to="T"/>
-    <type-map-in from="double" to="U"/>
-    <type-map-out from="PAIR" to="pair_long_double"/>
-  </specialize>
-
-  <transition name="make_pair_long_double">
-    <use name="make_pair_long_double"/>
-    <connect-in port="first" place="x"/>
-    <connect-in port="second" place="y"/>
-    <connect-out port="pair" place="pLD"/>
-  </transition>
-
-  <specialize name="make_pair_long_string" use="make_pair">
-    <type-map-in from="long" to="T"/>
-    <type-map-in from="string" to="U"/>
-    <type-map-out from="PAIR" to="pair_long_string"/>
-  </specialize>
-
-  <transition name="make_pair_long_string">
-    <use name="make_pair_long_string"/>
-    <connect-in port="first" place="x"/>
-    <connect-in port="second" place="z"/>
-    <connect-out port="pair" place="pLS"/>
-  </transition>
-
-  <struct name="pair_pair">
-    <field name="first" type="pair_long_double"/>
-    <field name="second" type="pair_long_string"/>
-  </struct>
-
-  <place name="ppLDLS" type="pair_pair"/>
-
-  <transition name="make_pair_pair">
-    <defun>
-      <in name="first" type="pair_long_double"/>
-      <in name="second" type="pair_long_string"/>
-      <out name="pair_pair" type="pair_pair"/>
-      <expression>
-        ${pair_pair.first} := ${first};
-        ${pair_pair.second} := ${second};
-      </expression>
-    </defun>
-    <connect-in port="first" place="pLD"/>
-    <connect-in port="second" place="pLS"/>
-    <connect-out port="pair_pair" place="ppLDLS"/>
-  </transition>
-
-<!--
   <include-template href="template_pair_pair.xml" as="pair_pair"/>
 
   <specialize name="make_pair_pair" use="pair_pair">
-    <type-map-in from="long" to="T"/>
-    <type-map-in from="double" to="U"/>
-    <type-map-in from="string" to="V"/>
-    <type-map-out from="PAIR_PAIR" to="pp2"/>
+    <type-map replace="T" with="long"/>
+    <type-map replace="U" with="double"/>
+    <type-map replace="V" with="string"/>
+    <type-map replace="PAIR_PAIR" with="pp2"/>
+    <type-get name="pp2"/>
   </specialize>
-
-  <place name="ppLDLS2" type="pp2"/>
 
   <transition name="make_pair_pair2">
     <use name="make_pair_pair"/>
@@ -75,6 +22,5 @@
     <connect-in port="second" place="z"/>
     <connect-out port="pair_pair" place="ppLDLS2"/>
   </transition>
--->
 </net>
 </defun>

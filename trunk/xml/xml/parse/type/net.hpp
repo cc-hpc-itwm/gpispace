@@ -170,7 +170,27 @@ namespace xml
 
         // ***************************************************************** //
 
-        void specialize ( const type::type_map_type & map_in
+        void type_map_apply ( const type::type_map_type & outer_map
+                            , type::type_map_type & inner_map
+                            )
+        {
+          for ( type_map_type::iterator inner (inner_map.begin())
+              ; inner != inner_map.end()
+              ; ++inner
+              )
+            {
+              const type::type_map_type::const_iterator
+                outer (outer_map.find (inner->second));
+
+              if (outer != outer_map.end())
+                {
+                  inner->second = outer->second;
+                }
+            }
+        }
+
+        void specialize ( const type::type_map_type & map
+                        , const type::type_get_type & get
                         , const state::type & state
                         )
         {
@@ -187,48 +207,34 @@ namespace xml
                   throw error::unknown_template (specialize->use, path);
                 }
 
-              tmpl.specialize (specialize->type_map_in, state);
-
               tmpl.name = specialize->name;
 
+              type_map_apply (map, specialize->type_map);
+
+              tmpl.specialize ( specialize->type_map
+                              , specialize->type_get
+                              , state
+                              );
+
+              split_structs ( tmpl.structs
+                            , structs
+                            , specialize->type_get
+                            , state
+                            );
+
               push_function (tmpl);
-
-              // O(n^2)!! Needs faster lookup on struct_vec_type
-              for (type_map_type::const_iterator
-                     type_out (specialize->type_map_out.begin())
-                  ; type_out != specialize->type_map_out.end()
-                  ; ++type_out
-                  )
-                {
-                  for ( struct_vec_type::iterator strct (tmpl.structs.begin())
-                      ; strct != tmpl.structs.end()
-                      ; ++strct
-                      )
-                    {
-                      if (strct->name == type_out->first)
-                        {
-                          strct->name = type_out->second;
-
-                          structs.push_back (*strct);
-                        }
-                    }
-                }
             }
+
+          _specializes.clear();
 
           for ( function_vec_type::iterator fun (_functions.elements().begin())
               ; fun != _functions.elements().end()
               ; ++fun
               )
             {
-              fun->specialize (map_in, state);
-            }
+              fun->specialize (map, get, state);
 
-          for ( template_vec_type::iterator tmpl (_templates.elements().begin())
-              ; tmpl != _templates.elements().end()
-              ; ++tmpl
-              )
-            {
-              tmpl->specialize (map_in, state);
+              split_structs (fun->structs, structs, get, state);
             }
 
           for ( transition_vec_type::iterator
@@ -237,7 +243,9 @@ namespace xml
               ; ++trans
               )
             {
-              trans->specialize (map_in, state);
+              trans->specialize (map, get, state);
+
+              split_structs (trans->structs, structs, get, state);
             }
 
           for ( place_vec_type::iterator place (_places.elements().begin())
@@ -245,19 +253,10 @@ namespace xml
               ; ++place
               )
             {
-              place->specialize (map_in, state);
+              place->specialize (map, state);
             }
 
-          for ( struct_vec_type::iterator strct (structs.begin())
-              ; strct != structs.end()
-              ; ++strct
-              )
-            {
-              boost::apply_visitor 
-                ( xml::parse::struct_t::specialize (map_in, state)
-                , strct->sig
-                );
-            }
+          specialize_structs (map, structs, state);
         }
 
         // ***************************************************************** //
@@ -353,7 +352,7 @@ namespace xml
 
         n.prop.writeTo (s, n.level+2);
 
-        s << level(n.level) << "structs =" << std::endl;
+        s << level(n.level+1) << "structs =" << std::endl;
 
         for ( struct_vec_type::const_iterator pos (n.structs.begin())
             ; pos != n.structs.end()
@@ -363,7 +362,7 @@ namespace xml
             s << *pos << std::endl;
           }
 
-        s << level (n.level) << "resolved structs = " << std::endl;
+        s << level (n.level+1) << "resolved structs = " << std::endl;
 
         namespace st = xml::parse::struct_t;
 
@@ -379,7 +378,7 @@ namespace xml
             s << deep << std::endl;
           }
 
-        s << level(n.level) << "specializes =" << std::endl;
+        s << level(n.level+1) << "specializes =" << std::endl;
 
         for ( net_type::specialize_vec_type::const_iterator pos
                 (n.specializes().begin())
@@ -390,7 +389,7 @@ namespace xml
             s << *pos << std::endl;
           }
 
-        s << level(n.level) << "templates =" << std::endl;
+        s << level(n.level+1) << "templates =" << std::endl;
 
         for ( net_type::template_vec_type::const_iterator pos
                 (n.templates().begin())
@@ -401,7 +400,7 @@ namespace xml
             s << *pos << std::endl;
           }
 
-        s << level(n.level) << "functions =" << std::endl;
+        s << level(n.level+1) << "functions =" << std::endl;
 
         for ( net_type::function_vec_type::const_iterator pos
                 (n.functions().begin())
@@ -412,7 +411,7 @@ namespace xml
             s << *pos << std::endl;
           }
 
-        s << level(n.level) << "places =" << std::endl;
+        s << level(n.level+1) << "places =" << std::endl;
 
         for ( place_vec_type::const_iterator pos (n.places().begin())
             ; pos != n.places().end()
@@ -422,7 +421,7 @@ namespace xml
             s << *pos << std::endl;
           }
 
-        s << level(n.level) << "transitions =" << std::endl;
+        s << level(n.level+1) << "transitions =" << std::endl;
 
         for ( net_type::transition_vec_type::const_iterator pos
                 (n.transitions().begin())

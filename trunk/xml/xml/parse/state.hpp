@@ -55,6 +55,7 @@ namespace xml
         bool _Woverwrite_function_name_trans;
         bool _Wproperty_overwritten;
         bool _Wtype_map_duplicate;
+        bool _Wtype_get_duplicate;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -120,6 +121,7 @@ namespace xml
           , _Woverwrite_function_name_trans (false)
           , _Wproperty_overwritten (true)
           , _Wtype_map_duplicate(true)
+          , _Wtype_get_duplicate(true)
         {}
 
         int & level (void) { return _level; }
@@ -163,6 +165,7 @@ namespace xml
         ACCESS(Woverwrite_function_name_trans)
         ACCESS(Wproperty_overwritten)
         ACCESS(Wtype_map_duplicate)
+        ACCESS(Wtype_get_duplicate)
 
 #undef ACCESS
 
@@ -217,6 +220,11 @@ namespace xml
         void warn (const warning::type_map_duplicate & w) const
         {
           generic_warn (w, _Wtype_map_duplicate);
+        }
+
+        void warn (const warning::type_get_duplicate & w) const
+        {
+          generic_warn (w, _Wtype_get_duplicate);
         }
 
         // ***************************************************************** //
@@ -309,6 +317,10 @@ namespace xml
             ( "Wtype_map_duplicate"
             , VAL(Wtype_map_duplicate)
             , "warn about duplicate type maps"
+            )
+            ( "Wtype_get_duplicate"
+            , VAL(Wtype_get_duplicate)
+            , "warn about duplicate type gets"
             )
             ;
 #undef VAL

@@ -15,9 +15,10 @@
     <place name="pp" type="PAIR_PAIR"/>
 
     <specialize name="make_p1" use="make_pair">
-      <type-map-in from="T" to="T"/>
-      <type-map-in from="U" to="U"/>
-      <type-map-out from="PAIR" to="PAIR1"/>
+      <type-map replace="T" with="T"/>
+      <type-map replace="U" with="U"/>
+      <type-map replace="PAIR" with="PAIR1"/>
+      <type-get name="PAIR1"/>
     </specialize>
 
     <transition name="make_p1">
@@ -28,9 +29,10 @@
     </transition>
 
     <specialize name="make_p2" use="make_pair">
-      <type-map-in from="T" to="T"/>
-      <type-map-in from="V" to="U"/>
-      <type-map-out from="PAIR" to="PAIR2"/>
+      <type-map replace="T" with="T"/>
+      <type-map replace="U" with="V"/>
+      <type-map replace="PAIR" with="PAIR2"/>
+      <type-get name="PAIR2"/>
     </specialize>
 
     <transition name="make_p2">
@@ -41,9 +43,10 @@
     </transition>
 
     <specialize name="make_pp" use="make_pair">
-      <type-map-in from="PAIR1" to="T"/>
-      <type-map-in from="PAIR2" to="U"/>
-      <type-map-out from="PAIR" to="PAIR_PAIR"/>
+      <type-map replace="T" with="PAIR1"/>
+      <type-map replace="U" with="PAIR2"/>
+      <type-map replace="PAIR" with="PAIR_PAIR"/>
+      <type-get name="PAIR_PAIR"/>
     </specialize>
 
     <transition name="make_pp">

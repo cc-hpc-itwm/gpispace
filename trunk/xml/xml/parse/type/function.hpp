@@ -62,26 +62,34 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename Net>
+      template<typename Net, typename Fun>
       class function_specialize : public boost::static_visitor<void>
       {
       private:
-        const type::type_map_type & map_in;
+        const type::type_map_type & map;
+        const type::type_get_type & get;
         const state::type & state;
+        Fun & fun;
 
       public:
-        function_specialize ( const type::type_map_type & _map_in
+        function_specialize ( const type::type_map_type & _map
+                            , const type::type_get_type & _get
                             , const state::type & _state
+                            , Fun & _fun
                             )
-          : map_in (_map_in)
+          : map (_map)
+          , get (_get)
           , state (_state)
+          , fun (_fun)
         {}
 
         void operator () (expression_type &) const { return; }
         void operator () (mod_type &) const { return; }
         void operator () (Net & net) const
         {
-          net.specialize (map_in, state);
+          net.specialize (map, get, state);
+
+          split_structs (net.structs, fun.structs, get, state);
         }
       };
 
@@ -554,7 +562,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        void specialize ( const type_map_type & map_in
+        void specialize ( const type_map_type & map
+                        , const type_get_type & get
                         , const state::type & state
                         )
         {
@@ -563,7 +572,7 @@ namespace xml
               ; ++port
               )
             {
-              port->specialize (map_in,  state);
+              port->specialize (map,  state);
             }
 
           for ( std::vector<port_type>::iterator port (_out.elements().begin())
@@ -571,23 +580,19 @@ namespace xml
               ; ++port
               )
             {
-              port->specialize (map_in, state);
+              port->specialize (map, state);
             }
 
-          for ( struct_vec_type::iterator strct (structs.begin())
-              ; strct != structs.end()
-              ; ++strct
-              )
-            {
-              strct->sig = boost::apply_visitor 
-                ( xml::parse::struct_t::specialize (map_in, state)
-                , strct->sig
-                );
-            }
+          specialize_structs (map, structs, state);
 
-          boost::apply_visitor ( function_specialize<net_type> (map_in, state)
-                               , f
-                               );
+          boost::apply_visitor 
+            ( function_specialize<net_type, function_type> ( map
+                                                           , get
+                                                           , state
+                                                           , *this
+                                                           )
+            , f
+            );
         }
       };
 

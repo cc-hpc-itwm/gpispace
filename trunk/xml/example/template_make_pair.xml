@@ -11,32 +11,8 @@
 
   <net>
     <place name="first" type="T"/>
-    <place name="first_copy" type="T"/>
     <place name="second" type="U"/>
-    <place name="second_copy" type="U"/>
     <place name="pair" type="PAIR"/>
-
-    <transition name="copy">
-      <defun>
-        <in name="in" type="T"/>
-        <out name="out" type="T"/>
-        <expression>${out} := ${in}</expression>
-      </defun>
-      <connect-in port="in" place="first"/>
-      <connect-out port="out" place="first_copy"/>
-    </transition>
-
-      <defun name="fcopy">
-        <in name="in" type="U"/>
-        <out name="out" type="U"/>
-        <expression>${out} := ${in}</expression>
-      </defun>
-
-    <transition name="copy2">
-      <use name="fcopy"/>
-      <connect-in port="in" place="second"/>
-      <connect-out port="out" place="second_copy"/>
-    </transition>
 
     <transition name="make_pair">
       <defun>
@@ -49,8 +25,8 @@
         </expression>
       </defun>
 
-      <connect-in port="first" place="first_copy"/>
-      <connect-in port="second" place="second_copy"/>
+      <connect-in port="first" place="first"/>
+      <connect-in port="second" place="second"/>
       <connect-out port="pair" place="pair"/>
     </transition>
   </net>

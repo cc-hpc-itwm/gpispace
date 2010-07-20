@@ -100,14 +100,18 @@
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">
-    <xsd:attribute name="from" type="xsd:string" use="required"/>
-    <xsd:attribute name="to" type="xsd:string" use="required"/>
+    <xsd:attribute name="replace" type="xsd:string" use="required"/>
+    <xsd:attribute name="with" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="type_get_type">
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="template_use_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="type-map-in" type="type_map_type"/>
-      <xsd:element name="type-map-out" type="type_map_type"/>
+      <xsd:element name="type-map" type="type_map_type"/>
+      <xsd:element name="type-get" type="type_get_type"/>
     </xsd:choice>
     <xsd:attribute name="name" type="xsd:string" use="required"/>
     <xsd:attribute name="use" type="xsd:string" use="required"/>
