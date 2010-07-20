@@ -191,9 +191,13 @@ namespace xml
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
+                        , const xml::parse::struct_t::set_type & known_structs
+                        , const xml::parse::struct_t::forbidden_type & forbidden
                         , const state::type & state
                         )
         {
+          namespace st = xml::parse::struct_t;
+
           for ( specialize_vec_type::iterator
                   specialize (_specializes.elements().begin())
               ; specialize != _specializes.elements().end()
@@ -211,12 +215,17 @@ namespace xml
 
               type_map_apply (map, specialize->type_map);
 
-              tmpl.specialize ( specialize->type_map
-                              , specialize->type_get
-                              , state
-                              );
+              tmpl.specialize 
+                ( specialize->type_map
+                , specialize->type_get
+                , st::join (known_structs, st::make (structs), forbidden, state)
+                , st::forbidden_type()
+                , state
+                );
 
-              split_structs ( tmpl.structs
+              split_structs ( known_structs
+                            , forbidden
+                            , tmpl.structs
                             , structs
                             , specialize->type_get
                             , state
@@ -232,9 +241,21 @@ namespace xml
               ; ++fun
               )
             {
-              fun->specialize (map, get, state);
+              fun->specialize 
+                ( map
+                , get
+                , st::join (known_structs, st::make (structs), forbidden, state)
+                , st::forbidden_type()
+                , state
+                );
 
-              split_structs (fun->structs, structs, get, state);
+              split_structs ( known_structs
+                            , forbidden
+                            , fun->structs
+                            , structs
+                            , get
+                            , state
+                            );
             }
 
           for ( transition_vec_type::iterator
@@ -243,9 +264,21 @@ namespace xml
               ; ++trans
               )
             {
-              trans->specialize (map, get, state);
+              trans->specialize 
+                ( map
+                , get
+                , st::join (known_structs, st::make (structs), forbidden, state)
+                , st::forbidden_type()
+                , state
+                );
 
-              split_structs (trans->structs, structs, get, state);
+              split_structs ( known_structs
+                            , forbidden
+                            , trans->structs
+                            , structs
+                            , get
+                            , state
+                            );
             }
 
           for ( place_vec_type::iterator place (_places.elements().begin())
@@ -265,9 +298,7 @@ namespace xml
                      , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
-          const xml::parse::struct_t::set_type empty;
-
-          resolve (empty, state, forbidden);
+          resolve (xml::parse::struct_t::set_type(), state, forbidden);
         }
 
         void resolve ( const xml::parse::struct_t::set_type & global
@@ -291,14 +322,12 @@ namespace xml
                 );
             }
 
-          st::forbidden_type empty;
-
           for ( function_vec_type::iterator fun (_functions.elements().begin())
               ; fun != _functions.elements().end()
               ; ++fun
               )
             {
-              fun->resolve (structs_resolved, state, empty);
+              fun->resolve (structs_resolved, state, st::forbidden_type());
             }
 
           for ( transition_vec_type::iterator
@@ -307,7 +336,7 @@ namespace xml
               ; ++trans
               )
             {
-              trans->resolve (structs_resolved, state, empty);
+              trans->resolve (structs_resolved, state, st::forbidden_type());
             }
 
           for ( place_vec_type::iterator place (_places.elements().begin())

@@ -1,34 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_generate_bunch">
-	<in name="amount" type="long" place="amount" />
-	<in name="volume" type="VOLUME" place="volume" />
-	<out name="out"   type="BUNCH" place="out" />
+<defun>
+  <in name="amount" type="long" place="amount"/>
+  <in name="volume" type="VOLUME" place="volume"/>
+  <out name="out" type="BUNCH" place="out"/>
 
-	<net>
-		<place name="amount" type="long" />
-		<place name="volume" type="VOLUME" />
-		<place name="out" type="BUNCH" />
+  <net>
+    <place name="amount" type="long"/>
+    <place name="volume" type="VOLUME"/>
+    <place name="out" type="BUNCH"/>
+    <place name="pair" type="pair_long_VOLUME"/>
 
-		<transition name="generate_ids">			
-			<include-function href="generate_sequence.xml" />
-			<connect-in place="amount" port="amount" />
-			<connect-out place="id" port="out" />
-		</transition>
-		<place name="id" type="long" />
+    <include-template href="tagged_sequence.xml"/>
 
-		<transition name="tag">
-			<defun name="f_tag">
-				<in name="id" type="long" />
-				<in name="value" type="VOLUME" />
-				<out name="bunch" type="BUNCH" />
-				<expression>
-					${bunch.id} := ${id};
-					${bunch.volume} := ${value};
-				</expression>
-			</defun>
-			<connect-read place="volume" port="value" />
-			<connect-in   place="id"     port="id" />
-			<connect-out  port="bunch"  place="out" />
-		</transition>
-	</net>
+    <specialize name="f_tag_seq" use="tagged_sequence">
+      <type-map replace="T" with="VOLUME"/>
+      <type-map replace="PAIR" with="pair_long_VOLUME"/>
+      <type-get name="pair_long_VOLUME"/>
+    </specialize>
+
+    <transition name="tag_seq">
+      <use name="f_tag_seq"/>
+      <connect-in port="tag" place="volume"/>
+      <connect-in port="amount" place="amount"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="translate">
+      <defun>
+        <in name="pair" type="pair_long_VOLUME"/>
+        <out name="bunch" type="BUNCH"/>
+        <expression>
+          ${bunch.id} := ${pair.id};
+          ${bunch.volume} := ${pair.tag};
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair"/>
+      <connect-out port="bunch" place="out"/>      
+    </transition>
+</net>
 </defun>

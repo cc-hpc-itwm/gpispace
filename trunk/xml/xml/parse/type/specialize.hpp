@@ -25,7 +25,9 @@ namespace xml
       };
 
       inline void
-      split_structs ( struct_vec_type & child_structs
+      split_structs ( const xml::parse::struct_t::set_type & global
+                    , const xml::parse::struct_t::forbidden_type & forbidden
+                    , struct_vec_type & child_structs
                     , struct_vec_type & parent_structs
                     , const type_get_type & type_get
                     , const state::type & state
@@ -33,12 +35,17 @@ namespace xml
       {
         namespace st = xml::parse::struct_t;
 
-        const st::set_type known_structs ( st::join ( st::make (parent_structs)
-                                                    , st::make (child_structs)
-                                                    , st::forbidden_type()
-                                                    , state
-                                                    )
-                                         );
+        const st::set_type known_structs 
+          ( st::join ( global
+                     , st::join ( st::make (parent_structs)
+                                , st::make (child_structs)
+                                , forbidden
+                                , state
+                                )
+                     , forbidden
+                     , state
+                     )
+          );
 
         struct_vec_type structs (child_structs);
 

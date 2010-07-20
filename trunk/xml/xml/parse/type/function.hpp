@@ -68,17 +68,24 @@ namespace xml
       private:
         const type::type_map_type & map;
         const type::type_get_type & get;
+        const xml::parse::struct_t::set_type & known_structs;
+        const xml::parse::struct_t::forbidden_type & forbidden;
         const state::type & state;
         Fun & fun;
 
       public:
-        function_specialize ( const type::type_map_type & _map
-                            , const type::type_get_type & _get
-                            , const state::type & _state
-                            , Fun & _fun
-                            )
+        function_specialize 
+        ( const type::type_map_type & _map
+        , const type::type_get_type & _get
+        , const xml::parse::struct_t::set_type & _known_structs
+        , const xml::parse::struct_t::forbidden_type & _forbidden
+        , const state::type & _state
+        , Fun & _fun
+        )
           : map (_map)
           , get (_get)
+          , known_structs (_known_structs)
+          , forbidden (_forbidden)
           , state (_state)
           , fun (_fun)
         {}
@@ -87,9 +94,15 @@ namespace xml
         void operator () (mod_type &) const { return; }
         void operator () (Net & net) const
         {
-          net.specialize (map, get, state);
+          net.specialize (map, get, known_structs, forbidden, state);
 
-          split_structs (net.structs, fun.structs, get, state);
+          split_structs ( known_structs
+                        , forbidden
+                        , net.structs
+                        , fun.structs
+                        , get
+                        , state
+                        );
         }
       };
 
@@ -458,7 +471,7 @@ namespace xml
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , xml::parse::struct_t::forbidden_type & forbidden
+                     , const xml::parse::struct_t::forbidden_type & forbidden
                      )
         {
           const xml::parse::struct_t::set_type empty;
@@ -562,8 +575,24 @@ namespace xml
 
         // ***************************************************************** //
 
+        void specialize (const state::type & state)
+        {
+          const type_map_type type_map_empty;
+          const type_get_type type_get_empty;
+          const xml::parse::struct_t::set_type known_empty;
+          
+          specialize ( type_map_empty
+                     , type_get_empty
+                     , known_empty
+                     , forbidden_below()
+                     , state
+                     );
+        }
+
         void specialize ( const type_map_type & map
                         , const type_get_type & get
+                        , const xml::parse::struct_t::set_type & known_structs
+                        , const xml::parse::struct_t::forbidden_type & forbidden
                         , const state::type & state
                         )
         {
@@ -585,12 +614,17 @@ namespace xml
 
           specialize_structs (map, structs, state);
 
+          namespace st = xml::parse::struct_t;
+
           boost::apply_visitor 
-            ( function_specialize<net_type, function_type> ( map
-                                                           , get
-                                                           , state
-                                                           , *this
-                                                           )
+            ( function_specialize<net_type, function_type> 
+              ( map
+              , get
+              , st::join (known_structs, st::make (structs), forbidden, state)
+              , forbidden_below()
+              , state
+              , *this
+              )
             , f
             );
         }

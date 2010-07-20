@@ -1,34 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_generate_volume">
-	<in name="amount" type="long" place="amount" />
-	<in name="offset" type="long" place="offset" />
-	<out name="out" type="VOLUME" place="out" />
+<defun>
+  <in name="amount" type="long" place="amount"/>
+  <in name="offset" type="long" place="offset"/>
+  <out name="out" type="VOLUME" place="out"/>
 
-	<net>
-		<place name="amount" type="long" />
-		<place name="offset" type="long" />
-		<place name="out" type="VOLUME" />
+  <net>
+    <place name="amount" type="long"/>
+    <place name="offset" type="long"/>
+    <place name="out" type="VOLUME"/>
+    <place name="pair" type="pair_long_long"/>
 
-		<transition name="generate_ids">			
-			<include-function href="generate_sequence.xml" />
-			<connect-in place="amount" port="amount" />
-			<connect-out place="id" port="out" />
-		</transition>
-		<place name="id" type="long" />
+    <include-template href="tagged_sequence.xml"/>
 
-		<transition name="tag">
-			<defun name="f_tag">
-				<in name="id" type="long" />
-				<in name="offset" type="long" />
-				<out name="volume" type="VOLUME" />
-				<expression>
-					${volume.id} := ${id};
-					${volume.offset} := ${offset};
-				</expression>
-			</defun>
-			<connect-read place="offset" port="offset" />
-			<connect-in   place="id"     port="id" />
-			<connect-out  port="volume"  place="out" />
-		</transition>
-	</net>
+    <specialize name="f_tag_seq" use="tagged_sequence">
+      <type-map replace="T" with="long"/>
+      <type-map replace="PAIR" with="pair_long_long"/>
+      <type-get name="pair_long_long"/>
+    </specialize>
+
+    <transition name="tag_seq">
+      <use name="f_tag_seq"/>
+      <connect-in port="tag" place="offset"/>
+      <connect-in port="amount" place="amount"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="translate">
+      <defun>
+        <in name="pair" type="pair_long_long"/>
+        <out name="volume" type="VOLUME"/>
+        <expression>
+          ${volume.id} := ${pair.id};
+          ${volume.offset} := ${pair.tag};
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair"/>
+      <connect-out port="volume" place="out"/>      
+    </transition>
+</net>
 </defun>

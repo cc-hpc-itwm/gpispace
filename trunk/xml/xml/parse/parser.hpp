@@ -1306,16 +1306,9 @@ namespace xml
         ? parse_function (std::cin, state)
         : function_include (input, state)
         );
-
-      const type::type_map_type type_map_empty;
-      const type::type_get_type type_get_empty;
-
-      f.specialize (type_map_empty, type_get_empty, state);
-
-      const struct_t::set_type global_structs_empty;
-
-      f.resolve (global_structs_empty, state, f.forbidden_below());
-
+      
+      f.specialize (state);
+      f.resolve (state, f.forbidden_below());
       f.type_check (state);
 
       maybe<const we::type::property::value_type &>

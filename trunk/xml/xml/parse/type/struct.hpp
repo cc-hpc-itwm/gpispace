@@ -30,7 +30,17 @@ namespace xml
         int level;
       };
 
-      std::ostream & operator << (std::ostream & s, const struct_t & st)
+      inline bool operator == (const struct_t & a, const struct_t & b)
+      {
+        return (a.name == b.name) && (a.sig == b.sig);
+      }
+
+      inline bool operator != (const struct_t & a, const struct_t & b)
+      {
+        return !(a == b);
+      }
+
+      inline std::ostream & operator << (std::ostream & s, const struct_t & st)
       {
         return s << level(st.level) << "struct (" << std::endl
                  << level(st.level+1) << "name = " << st.name << std::endl
@@ -107,11 +117,14 @@ namespace xml
                       (old->second, strct, pos->second);
                   }
 
-                state.warn
-                  (warning::struct_shadowed<type::struct_t> ( old->second
-                                                            , strct
-                                                            )
-                  );
+                if (strct != old->second)
+                  {
+                    state.warn
+                      (warning::struct_shadowed<type::struct_t> ( old->second
+                                                                , strct
+                                                                )
+                      );
+                  }
               }
 
             set[strct.name] = strct;
