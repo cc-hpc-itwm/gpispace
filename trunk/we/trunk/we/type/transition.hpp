@@ -1229,8 +1229,8 @@ namespace we { namespace type {
           const std::string prefix ("pretty.dot.shape");
 
           condition = prop.get_with_default (prefix + ".condition", "record");
-          port_in = prop.get_with_default (prefix + ".port-in", "hexagon");
-          port_out = prop.get_with_default (prefix + ".port-out", "hexagon");
+          port_in = prop.get_with_default (prefix + ".port-in", "house");
+          port_out = prop.get_with_default (prefix + ".port-out", "invhouse");
           expression = prop.get_with_default (prefix + ".expression", "none");
           modcall = prop.get_with_default (prefix + ".modcall", "box");
           place = prop.get_with_default (prefix + ".place", "circle");
