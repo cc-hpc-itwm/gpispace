@@ -1,0 +1,95 @@
+<defun name="agg_stress">
+  <in name="N" type="long" place="N"/>
+  <out name="out" type="control" place="out"/>
+
+  <net>
+    <place name="N" type="long"/>
+    <place name="Nstep" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="state" type="long"/>
+
+    <place name="pending" type="long" capacity="1"/>
+
+    <place name="done" type="control"/>
+    <place name="out" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="N" type="long"/>
+        <out name="Nstep" type="long"/>
+        <out name="wait" type="long"/>
+        <out name="state" type="long"/>
+        <expression>
+          ${state} := 0;
+          ${Nstep} := ${N};
+          ${wait} := ${N};
+        </expression>
+      </defun>
+      <connect-in port="N" place="N"/>
+      <connect-out port="Nstep" place="Nstep"/>
+      <connect-out port="wait" place="wait"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun name="f_step">
+        <in name="max" type="long" />
+        <in name="i" type="long" />
+
+        <out name="i" type="long" />
+        <out name="out" type="long" />
+        <expression>
+          ${out} := ${i};
+          ${i} := ${i} + 1;
+        </expression>
+        <condition>${i} :lt: ${max}</condition>
+      </defun>
+      <connect-read place="Nstep" port="max" />
+      <connect-in place="state" port="i" />
+      <connect-out place="state" port="i" />
+      <connect-out place="pending" port="out" />
+    </transition>
+
+    <transition name="run">
+      <defun>
+        <in name="i" type="long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <connect-in port="i" place="pending"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <transition name="dec">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${wait} - 1
+        </expression>
+        <condition>${wait} :gt: 0</condition>
+      </defun>
+      <connect-in port="trigger" place="done"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+    
+    <transition name="done">
+      <defun>
+        <in name="wait" type="long"/>
+        <in name="N" type="long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+        <condition>${wait} :eq: 0</condition>
+      </defun>
+      <connect-in port="wait" place="wait"/>
+      <connect-in port="N" place="Nstep"/>
+      <connect-out port="done" place="out"/>
+    </transition>
+  </net>
+</defun>
