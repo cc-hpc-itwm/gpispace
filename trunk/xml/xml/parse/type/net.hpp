@@ -231,6 +231,8 @@ namespace xml
                             , state
                             );
 
+              tmpl.was_template = true;
+
               push_function (tmpl);
             }
 

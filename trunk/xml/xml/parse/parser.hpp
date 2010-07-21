@@ -347,6 +347,7 @@ namespace xml
       f.internal = fmap<std::string, bool>( read_bool
                                           , optional (node, "internal")
                                           );
+      f.was_template = false;
 
       for ( xml_node_type * child (node->first_node())
           ; child
