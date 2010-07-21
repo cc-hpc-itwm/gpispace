@@ -258,14 +258,25 @@ namespace seda { namespace comm {
     dst.port(loc.port());
     DLOG(TRACE, "sending " << m.str() << " to " << dst);
 
-    boost::system::error_code ignored_error;
-
     std::stringstream sstr;
     boost::archive::text_oarchive oa(sstr);
     oa << m;
 
-    socket_->send_to(boost::asio::buffer(sstr.str()), dst, 0, ignored_error);
-    DLOG(TRACE, "error = " << ignored_error);
+    boost::system::error_code ec;
+    std::size_t bytes_sent
+      (socket_->send_to( boost::asio::buffer(sstr.str())
+		       , dst
+		       , 0
+		       , ec
+		       )
+      );
+
+    LOG_IF(WARN, bytes_sent != sstr.str().size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size());
+    if (ec.value() != boost::system::errc::success)
+    {
+      LOG(FATAL, "could not deliver message: " << ec << ": " << ec.message());
+      throw boost::system::system_error (ec); // may not be reached depending on the FATAL behaviour
+    }
   }
 
   template <typename T> struct recv_waiting_mgr {
