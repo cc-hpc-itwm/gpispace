@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include <stdexcept>
+#include <unistd.h>
 
 static unsigned long call_cnt = 0;
 
@@ -37,7 +38,7 @@ static void alloc ( void *
 
   memcpy (fvmGetShmemPtr(), &magic, sizeof(magic));
 
-  fvmPutGlobalData (handle, 0, sizeof(unsigned long), 0, scratch);
+  waitComm(fvmPutGlobalData (handle, 0, sizeof(unsigned long), 0, scratch));
 
   value::structured_t config;
 
@@ -63,7 +64,7 @@ static void run ( void *
 
   unsigned long magic;
 
-  fvmGetGlobalData (handle, 0, sizeof(unsigned long), 0, scratch);
+  waitComm(fvmGetGlobalData (handle, 0, sizeof(unsigned long), 0, scratch));
 
   memcpy (&magic, fvmGetShmemPtr(), sizeof(unsigned long));
 
@@ -76,6 +77,8 @@ static void run ( void *
       throw std::runtime_error ("BUMMER: " + s.str());
     }
 
+  usleep ( 50 * 1000 );
+
   we::loader::put_output (output, "done", control());
 }
 
@@ -84,7 +87,7 @@ static void free ( void *
                   , we::loader::output_t & output
                   )
 {
-  MLOG (INFO, "call_cnt = " << call_cnt);
+  MLOG (INFO, "free: call_cnt = " << call_cnt);
 
   const value::type & config (input.value ("config"));
 
