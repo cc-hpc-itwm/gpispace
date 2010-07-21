@@ -242,6 +242,13 @@ namespace sdpa { namespace nre { namespace worker {
 
 		try {
 			socket_ = new udp::socket(io_service_, udp::endpoint(udp::v4(), my_reply_port_));
+
+			boost::system::error_code ec;
+			socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
+			LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
+
+			socket_->set_option (boost::asio::socket_base::send_buffer_size (max_length), ec);
+			LOG_IF(WARN, ec, "could not set send-buffer-size to " << max_length << ": " << ec << ": " << ec.message());
 		}
 		catch (const std::exception &ex) {
 			LOG(FATAL, "could not create my sending socket: " << ex.what());
@@ -612,7 +619,7 @@ namespace sdpa { namespace nre { namespace worker {
     bool started_;
     bool timeout_timer_active_;
 
-    enum { max_length = ((2<<16) - 1) };
+    enum { max_length = (2<<23) };
     char data_[max_length];
 
     bool bLaunchNrePcd_;
