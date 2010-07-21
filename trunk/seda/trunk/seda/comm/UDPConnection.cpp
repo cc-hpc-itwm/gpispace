@@ -124,10 +124,10 @@ namespace seda { namespace comm {
 
     socket_ = new udp::socket(io_service_);
     socket_->open (my_endpoint.protocol());
-    
+
     socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
     LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
-    
+
     socket_->set_option (boost::asio::socket_base::send_buffer_size (max_length), ec);
     LOG_IF(WARN, ec, "could not set send-buffer-size to " << max_length << ": " << ec << ": " << ec.message());
 
@@ -265,21 +265,40 @@ namespace seda { namespace comm {
     boost::archive::text_oarchive oa(sstr);
     oa << m;
 
-    boost::system::error_code ec;
-    std::size_t bytes_sent
-      (socket_->send_to( boost::asio::buffer(sstr.str())
+    const std::string msg_to_send (sstr.str());
+
+    DLOG(TRACE, "going to send " << msg_to_send.size() << " bytes of data: " << msg_to_send);
+//    socket_->async_send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
+//			  , dst
+//			  , boost::bind( &UDPConnection::handle_send_to
+//				       , this
+//				       , boost::asio::placeholders::error
+//				       , boost::asio::placeholders::bytes_transferred
+//				       )
+//			  );
+
+     boost::system::error_code ec;
+     std::size_t bytes_sent
+       (socket_->send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
 		       , dst
 		       , 0
 		       , ec
 		       )
-      );
+       );
 
-    LOG_IF(ERROR, bytes_sent != sstr.str().size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size() << " max: " << max_length);
-    if (ec.value() != boost::system::errc::success)
-    {
-      LOG(ERROR, "could not deliver message: " << ec << ": " << ec.message());
-      throw boost::system::system_error (ec); // may not be reached depending on the FATAL behaviour
-    }
+     LOG_IF(ERROR, bytes_sent != msg_to_send.size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size() << " max: " << max_length);
+     if (ec.value() != boost::system::errc::success)
+     {
+       LOG(ERROR, "could not deliver message: " << ec << ": " << ec.message());
+       throw boost::system::system_error (ec); // may not be reached depending on the FATAL behaviour
+     }
+  }
+
+  void UDPConnection::handle_send_to(const boost::system::error_code &error
+				    , size_t
+				    )
+  {
+    LOG_IF(ERROR, error, "not all data could be sent: " << error << ": " << error.message());
   }
 
   template <typename T> struct recv_waiting_mgr {

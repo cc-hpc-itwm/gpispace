@@ -74,10 +74,11 @@ namespace seda { namespace comm {
     void send(const seda::comm::SedaMessage &m);
     bool recv(seda::comm::SedaMessage &m, const bool block = true) throw(boost::thread_interrupted);
 
-    void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
-
     void operator()();
   private:
+    void handle_receive_from(const boost::system::error_code &error, size_t bytes_recv);
+    void handle_send_to(const boost::system::error_code &error, size_t bytes_recv);
+
     Locator::ptr_t locator_;
     std::string logical_name_;
     Locator::location_t::host_t host_;
