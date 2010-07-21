@@ -53,13 +53,18 @@ set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
 ## check for fhglog
 find_package(FhgLog REQUIRED)
-message(STATUS "FhgLog: -I${FhgLog_INCLUDE_DIRS} -L${FhgLog_LIBRARY_DIRS} -l${FhgLog_LIBRARIES}")
-include_directories(${FhgLog_INCLUDE_DIRS})
+include_directories(${FhgLog_INCLUDE_DIR})
+
+## check for SDPA headers
+find_package(SDPA REQUIRED)
+include_directories(${SDPA_INCLUDE_DIR})
+
+## check for qt
+find_package(Qt4 REQUIRED)
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
@@ -89,8 +94,6 @@ add_subdirectory(gui)
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
 set(CPACK_PACKAGE_VENDOR ${PROJECT_VENDOR})
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
