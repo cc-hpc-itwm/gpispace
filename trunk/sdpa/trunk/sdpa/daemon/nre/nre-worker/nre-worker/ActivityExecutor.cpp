@@ -38,7 +38,7 @@ void sig_handler(int sig)
 }
 
 namespace sdpa { namespace nre { namespace worker {
-  enum { max_length = ((2<<16) - 1) };
+  enum { max_length = (2<<23) };
 
   void
   ActivityExecutor::start()
@@ -69,6 +69,13 @@ namespace sdpa { namespace nre { namespace worker {
 
     socket_ = new udp::socket(io_service_, my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
+
+    boost::system::error_code ec;
+    socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
+    LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
+
+    socket_->set_option (boost::asio::socket_base::send_buffer_size (max_length), ec);
+    LOG_IF(WARN, ec, "could not set send-buffer-size to " << max_length << ": " << ec << ": " << ec.message());
 
     socket_->async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
           boost::bind(&ActivityExecutor::handle_receive_from, this,
