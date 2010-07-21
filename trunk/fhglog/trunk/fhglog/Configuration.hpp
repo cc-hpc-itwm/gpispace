@@ -122,9 +122,10 @@ namespace fhg { namespace log {
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
-	else
+	else if (to_console_.size() > 0)
 	{
-	  std::clog << "E: invalid value for configuration value to_console: " << to_console_ << std::endl;
+	  std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
 	}
 
         if (to_file_.size())
