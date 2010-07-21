@@ -35,6 +35,11 @@ LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
   , socket_(io_service, udp::endpoint(udp::v4(), port))
 {
   LOG(INFO, "log server listening on " << udp::endpoint(udp::v4(), port));
+  boost::system::error_code ec;
+
+  socket_.set_option (boost::asio::socket_base::reuse_address (true), ec);
+  LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
+
   socket_.async_receive_from(boost::asio::buffer(data_, max_length), sender_endpoint_,
       boost::bind(&LogServer::handle_receive_from, this,
         boost::asio::placeholders::error,
