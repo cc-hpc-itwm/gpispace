@@ -6,7 +6,7 @@
   <net>
     <struct name="PAIR">
       <field name="tag" type="T"/>
-      <field name="id" type="T"/>
+      <field name="id" type="long"/>
     </struct>
 
     <place name="tag" type="T"/>

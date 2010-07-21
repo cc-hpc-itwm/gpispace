@@ -44,7 +44,7 @@
         ${out} := ${counter.i};
         ${counter.i} := ${counter.i} + 1;
       </expression>
-      <condition>${counter.i} :lt: ${counter.max}</condition>
+      <condition>${counter.i} :le: ${counter.max}</condition>
     </defun>
     <connect-in place="counter" port="counter" />
     <connect-out place="counter" port="counter" />
