@@ -111,14 +111,14 @@ headnode="$PBS_O_HOST"
 if [ $start_fhglog -eq 1 ]; then
 	killall fhglog-server
 	echo "starting log-server on master node"
-	ssh -X -t "$headnode" screen -D -RR -X "screen -t log ssh -X -t $master" # fhglog-server short"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t log ssh -Y -t $master" # fhglog-server"
 fi
 
 if [ $start_fvm -eq 1 ]; then
 	echo "starting fvm-server on master node"
-	ssh -X -t "$headnode" screen -D -RR -X "screen -t fvm ssh -X -t $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
-	ssh -X -t "$headnode" screen -D -RR -X "screen -t orch ssh -X -t $master"
-	ssh -X -t "$headnode" screen -D -RR -X "screen -t agg ssh -X -t $master"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t fvm ssh -Y -t $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t orch ssh -Y -t $master"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t agg ssh -Y -t $master"
 fi
 
 
@@ -154,10 +154,10 @@ for n in $nodes; do
 	fi
 	echo -n " $n"
 	if [ x"$n" == x"$master" ]; then
-		ssh -X -t "$headnode" screen -D -RR -X "screen -t $title ssh -X -t $n"
-		ssh -X -t "$headnode" screen -D -RR -X "screen -t $n ssh -X -t $n" &
+		ssh -Y -t "$headnode" screen -D -RR -X "screen -t $title ssh -Y -t $n"
+		ssh -Y -t "$headnode" screen -D -RR -X "screen -t $n ssh -Y -t $n" &
 	else
-		ssh -X -t "$headnode" screen -D -RR -X "screen -t $title ssh -X -t $n" &
+		ssh -Y -t "$headnode" screen -D -RR -X "screen -t $title ssh -Y -t $n" &
 	fi
 done
 wait
@@ -165,5 +165,5 @@ echo
 
 if [ $switch_to_master -eq 1 ]; then
 	echo "switching to master-node screen"
-	ssh -X -t "$headnode" screen -X select master
+	ssh -Y -t "$headnode" screen -X select master
 fi
