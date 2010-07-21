@@ -17,6 +17,7 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 OPTION(ENABLE_TESTS "Build with tests" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
+OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -80,6 +81,12 @@ message(STATUS "========== Add project seda")
 add_subdirectory(seda)
 message(STATUS "========== Add project sdpa")
 add_subdirectory(sdpa)
+
+## optional components
+if (ENABLE_MONITOR_GUI)
+  message(STATUS "========== Add project monitor")
+  add_subdirectory(monitor)
+endif (ENABLE_MONITOR_GUI)
 
 if (ENABLE_APPLICATION)
   message(STATUS "========== Add application")
