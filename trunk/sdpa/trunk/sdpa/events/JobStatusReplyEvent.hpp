@@ -57,7 +57,7 @@ namespace sdpa { namespace events {
 
       virtual void handleBy(EventHandler *handler)
       {
-    	  //handler->handleJobStatusReplyEvent(this);
+	handler->handleJobStatusReplyEvent(this);
       }
     private:
       status_t status_;

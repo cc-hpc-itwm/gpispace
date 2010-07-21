@@ -57,7 +57,7 @@ namespace sdpa { namespace events {
 
       virtual void handleBy(EventHandler *handler)
       {
-    	  //handler->handleJobResultsReplyEvent(this);
+	  handler->handleJobResultsReplyEvent(this);
       }
 
       const job_result_t &result() const { return result_; }

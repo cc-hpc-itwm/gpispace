@@ -341,7 +341,7 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 {
 	try {
 		delivery_service_.send(to_master_stage(), pEvt, pEvt->id(), timeout, retries);
-		DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		DLOG(TRACE, "Sent " << pEvt->str() << " to " << pEvt->to() << ": message-id: " << pEvt->id());
 	}
 	catch(const QueueFull&)
 	{
@@ -456,7 +456,8 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-	LOG(TRACE, "action_lifesign");
+  DLOG(TRACE, "action_lifesign");
+
     /*
     o timestamp, load, other probably useful information
     o last_job_id the id of the last received job identification
@@ -469,14 +470,13 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	try {
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update();
-		SDPA_LOG_DEBUG("Received LS from the worker "<<worker_id<<" Updated the time-stamp");
+		SDPA_LOG_INFO("Received LS from the worker " << worker_id);
 	}
 	catch(WorkerNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+		SDPA_LOG_ERROR("got LS from unknown worker: " << worker_id);
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-
 		sendEventToSlave(pErrorEvt);
 	} catch(...) {
 		SDPA_LOG_ERROR("Unexpected exception occurred!");
@@ -995,7 +995,7 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 	ptr_workflow_engine_->cancel(workflowId, reason);
 }
 
-void GenericDaemon::activityCancelled(const id_type& actId, const std::string& data)
+void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
 {
 	ptr_workflow_engine_->cancelled( actId );
 }
