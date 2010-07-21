@@ -8,7 +8,7 @@
 #include <QCursor>
 #include <QCustomEvent>
 #include <QDesktopWidget>
-#include <QDialog> 
+#include <QDialog>
 #include <QDir>
 #include <QEvent>
 #include <QFile>

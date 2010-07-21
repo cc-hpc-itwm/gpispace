@@ -9,7 +9,7 @@
 
 //all includes
 #include <emmintrin.h>
-#include <fcntl.h>	
+#include <fcntl.h>
 #include <iostream>
 #include <math.h>
 #include <memory.h>
@@ -45,7 +45,7 @@ extern "C" {
 #ifdef WIN32
 
 #include <io.h>
-#include <process.h>  
+#include <process.h>
 #include <windows.h>
 
 #else
