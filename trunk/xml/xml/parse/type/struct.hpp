@@ -133,6 +133,14 @@ namespace xml
         return set;
       }
 
+      inline set_type join ( const set_type & above
+                           , const set_type & below
+                           , const state::type & state
+                           )
+      {
+        return join (above, below, forbidden_type(), state);
+      }
+
       // ******************************************************************* //
 
       class get_literal_type_name 

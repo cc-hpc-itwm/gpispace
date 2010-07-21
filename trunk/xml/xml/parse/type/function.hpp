@@ -69,7 +69,6 @@ namespace xml
         const type::type_map_type & map;
         const type::type_get_type & get;
         const xml::parse::struct_t::set_type & known_structs;
-        const xml::parse::struct_t::forbidden_type & forbidden;
         const state::type & state;
         Fun & fun;
 
@@ -78,14 +77,12 @@ namespace xml
         ( const type::type_map_type & _map
         , const type::type_get_type & _get
         , const xml::parse::struct_t::set_type & _known_structs
-        , const xml::parse::struct_t::forbidden_type & _forbidden
         , const state::type & _state
         , Fun & _fun
         )
           : map (_map)
           , get (_get)
           , known_structs (_known_structs)
-          , forbidden (_forbidden)
           , state (_state)
           , fun (_fun)
         {}
@@ -94,10 +91,9 @@ namespace xml
         void operator () (mod_type &) const { return; }
         void operator () (Net & net) const
         {
-          net.specialize (map, get, known_structs, forbidden, state);
+          net.specialize (map, get, known_structs, state);
 
           split_structs ( known_structs
-                        , forbidden
                         , net.structs
                         , fun.structs
                         , get
@@ -320,14 +316,6 @@ namespace xml
                 }
 
               pid_of_place[place->name] = pid;
-
-              for ( value_vec_type::const_iterator val (place->values.begin())
-                  ; val != place->values.end()
-                  ; ++val
-                  )
-                {
-                  token::put (we_net, pid, *val);
-                }
             }
 
           we_edge_type e (0);
@@ -348,6 +336,20 @@ namespace xml
             }
 
           util::property::join (state, fun.prop, net.prop);
+
+          for ( place_vec_type::const_iterator place (net.places().begin())
+              ; place != net.places().end()
+              ; ++place
+              )
+            {
+              for ( value_vec_type::const_iterator val (place->values.begin())
+                  ; val != place->values.end()
+                  ; ++val
+                  )
+                {
+                  token::put (we_net, pid_of_place.at(place->name), *val);
+                }
+            }
 
           we_transition_type trans
             ( name()
@@ -591,7 +593,6 @@ namespace xml
           specialize ( type_map_empty
                      , type_get_empty
                      , known_empty
-                     , forbidden_below()
                      , state
                      );
         }
@@ -599,7 +600,6 @@ namespace xml
         void specialize ( const type_map_type & map
                         , const type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const xml::parse::struct_t::forbidden_type & forbidden
                         , const state::type & state
                         )
         {
@@ -632,8 +632,7 @@ namespace xml
             ( function_specialize<net_type, function_type> 
               ( map
               , get
-              , st::join (known_structs, st::make (structs), forbidden, state)
-              , forbidden_below()
+              , st::join (known_structs, st::make (structs), state)
               , state
               , *this
               )

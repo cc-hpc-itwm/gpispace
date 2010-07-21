@@ -75,7 +75,6 @@ namespace xml
         const type::type_map_type & map;
         const type::type_get_type & get;
         const xml::parse::struct_t::set_type & known_structs;
-        const xml::parse::struct_t::forbidden_type & forbidden;
         const state::type & state;
 
       public:
@@ -83,20 +82,18 @@ namespace xml
         ( const type::type_map_type & _map
         , const type::type_get_type & _get
         , const xml::parse::struct_t::set_type & _known_structs
-        , const xml::parse::struct_t::forbidden_type & _forbidden
         , const state::type & _state
         )
           : map (_map)
           , get (_get)
           , known_structs (_known_structs)
-          , forbidden (_forbidden)
           , state (_state)
         {}
 
         void operator () (use_type &) const { return; }
         void operator () (Fun & fun) const 
         {
-          fun.specialize (map, get, known_structs, forbidden, state);
+          fun.specialize (map, get, known_structs, state);
         }
       };
       
@@ -223,7 +220,6 @@ namespace xml
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const xml::parse::struct_t::forbidden_type & forbidden
                         , const state::type & state
                         )
         {
@@ -231,7 +227,6 @@ namespace xml
             ( transition_specialize<function_type> ( map
                                                    , get
                                                    , known_structs
-                                                   , forbidden
                                                    , state
                                                    )
             , f

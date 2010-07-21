@@ -192,7 +192,6 @@ namespace xml
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
                         , const xml::parse::struct_t::set_type & known_structs
-                        , const xml::parse::struct_t::forbidden_type & forbidden
                         , const state::type & state
                         )
         {
@@ -218,13 +217,11 @@ namespace xml
               tmpl.specialize 
                 ( specialize->type_map
                 , specialize->type_get
-                , st::join (known_structs, st::make (structs), forbidden, state)
-                , st::forbidden_type()
+                , st::join (known_structs, st::make (structs), state)
                 , state
                 );
 
               split_structs ( known_structs
-                            , forbidden
                             , tmpl.structs
                             , structs
                             , specialize->type_get
@@ -246,13 +243,11 @@ namespace xml
               fun->specialize 
                 ( map
                 , get
-                , st::join (known_structs, st::make (structs), forbidden, state)
-                , st::forbidden_type()
+                , st::join (known_structs, st::make (structs), state)
                 , state
                 );
 
               split_structs ( known_structs
-                            , forbidden
                             , fun->structs
                             , structs
                             , get
@@ -269,13 +264,11 @@ namespace xml
               trans->specialize 
                 ( map
                 , get
-                , st::join (known_structs, st::make (structs), forbidden, state)
-                , st::forbidden_type()
+                , st::join (known_structs, st::make (structs), state)
                 , state
                 );
 
               split_structs ( known_structs
-                            , forbidden
                             , trans->structs
                             , structs
                             , get
