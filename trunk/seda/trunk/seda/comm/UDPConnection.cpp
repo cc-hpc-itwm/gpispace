@@ -124,10 +124,13 @@ namespace seda { namespace comm {
 
     socket_ = new udp::socket(io_service_);
     socket_->open (my_endpoint.protocol());
-    socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
     
+    socket_->set_option (boost::asio::socket_base::reuse_address (true), ec);
     LOG_IF(WARN, ec, "could not set resuse address option: " << ec << ": " << ec.message());
     
+    socket_->set_option (boost::asio::socket_base::send_buffer_size (max_length), ec);
+    LOG_IF(WARN, ec, "could not set send-buffer-size to " << max_length << ": " << ec << ": " << ec.message());
+
     socket_->bind (my_endpoint);
     udp::endpoint real_endpoint = socket_->local_endpoint();
 
@@ -271,7 +274,7 @@ namespace seda { namespace comm {
 		       )
       );
 
-    LOG_IF(WARN, bytes_sent != sstr.str().size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size());
+    LOG_IF(ERROR, bytes_sent != sstr.str().size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size() << " max: " << max_length);
     if (ec.value() != boost::system::errc::success)
     {
       LOG(ERROR, "could not deliver message: " << ec << ": " << ec.message());
