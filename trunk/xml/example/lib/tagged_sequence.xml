@@ -1,14 +1,14 @@
 <template name="tagged_sequence">
+  <struct name="PAIR">
+    <field name="tag" type="T"/>
+    <field name="id" type="long"/>
+  </struct>
+
   <in name="tag" type="T" place="tag"/>
   <in name="amount" type="long" place="N"/>
   <out name="pair" type="PAIR" place="pair"/>
- 
-  <net>
-    <struct name="PAIR">
-      <field name="tag" type="T"/>
-      <field name="id" type="long"/>
-    </struct>
 
+  <net>
     <place name="tag" type="T"/>
     <place name="N" type="long"/>
     <place name="Ngen" type="long"/>

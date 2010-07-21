@@ -1,26 +1,48 @@
 <defun name="use_tagged_sequence">
-<net>
-  <place name="N" type="long">
-    <token><value>10</value></token>
-  </place>
-  <place name="tag" type="string">
-    <token><value>"tag"</value></token>
-  </place>
-  <place name="pair" type="pair_string_long"/>
+  <in name="N" type="long" place="N"/>
+  <in name="tag" type="string" place="tag"/>
+  <struct name="p">
+   <field name="i" type="long"/>
+   <field name="t" type="string"/>
+  </struct>
+  <out name="p" type="p" place="p"/>
 
-  <include-template href="tagged_sequence.xml"/>
+  <net>
+    <place name="N" type="long">
+      <token><value>10</value></token>
+    </place>
+    <place name="tag" type="string">
+      <token><value>"tag"</value></token>
+    </place>
+    <place name="pair" type="pair_string_long"/>
+    <place name="p" type="p"/>
+
+    <include-template href="tagged_sequence.xml"/>
   
-  <specialize name="f_use_tag" use="tagged_sequence">
-    <type-map replace="T" with="string"/>
-    <type-map replace="PAIR" with="pair_string_long"/>
-    <type-get name="pair_string_long"/>
-  </specialize>
+    <specialize name="f_use_tag" use="tagged_sequence">
+      <type-map replace="T" with="string"/>
+      <type-map replace="PAIR" with="pair_string_long"/>
+      <type-get name="pair_string_long"/>
+    </specialize>
 
-  <transition name="use_tag">
-    <use name="f_use_tag"/>
-    <connect-in port="tag" place="tag"/>
-    <connect-in port="amount" place="N"/>
-    <connect-out port="pair" place="pair"/>
-  </transition>
-</net>
+    <transition name="use_tag">
+      <use name="f_use_tag"/>
+      <connect-in port="tag" place="tag"/>
+      <connect-in port="amount" place="N"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="translate">
+      <defun>
+        <in name="pair" type="pair_string_long"/>
+        <out name="p" type="p"/>
+        <expression>
+          ${p.i} := ${pair.id};
+          ${p.t} := ${pair.tag};
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair"/>
+      <connect-out port="p" place="p"/>
+    </transition>
+  </net>
 </defun>
