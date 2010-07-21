@@ -105,21 +105,21 @@ namespace fhg { namespace log {
 	{
 	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
 #ifndef NDEBUG
-	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
+	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDOUT() == to_console_)
 	{
 	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cout)))->setFormat(fmt);
 #ifndef NDEBUG
-	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
+	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDLOG() == to_console_)
 	{
 	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)))->setFormat(fmt);
 #ifndef NDEBUG
-	  std::clog << "D: logging to console: " << to_conole_ << std::endl;
+	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else
