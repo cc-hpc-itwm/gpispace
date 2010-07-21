@@ -36,3 +36,8 @@ set(test_srcs test_persister.cpp)
 add_executable(test_persister ${test_srcs})
 add_test(test_persister ${CMAKE_CURRENT_BINARY_DIR}/test_persister)
 target_link_libraries(test_persister seda seda-comm)
+
+set(test_srcs test_message_size.cpp)
+add_executable(test_message_size ${test_srcs})
+add_test(test_message_size ${CMAKE_CURRENT_BINARY_DIR}/test_message_size)
+target_link_libraries(test_message_size seda seda-comm)
