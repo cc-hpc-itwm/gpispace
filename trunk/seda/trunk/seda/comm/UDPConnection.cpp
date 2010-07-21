@@ -274,7 +274,7 @@ namespace seda { namespace comm {
     LOG_IF(WARN, bytes_sent != sstr.str().size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size());
     if (ec.value() != boost::system::errc::success)
     {
-      LOG(FATAL, "could not deliver message: " << ec << ": " << ec.message());
+      LOG(ERROR, "could not deliver message: " << ec << ": " << ec.message());
       throw boost::system::system_error (ec); // may not be reached depending on the FATAL behaviour
     }
   }
