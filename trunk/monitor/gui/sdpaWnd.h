@@ -31,7 +31,7 @@ class SdpaWnd : public QWidget
  Q_OBJECT
   public:
     SdpaWnd(QWidget *parent = 0);
-    ~SdpaWnd(){};
+    virtual ~SdpaWnd(){};
 
   public slots:
     void resetSlot();
