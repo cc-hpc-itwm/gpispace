@@ -177,7 +177,8 @@ int main (int argc, char **argv) {
                 << "                 "
                 << " " << api->copyright()
                 << std::endl
-                << " " << api->build_timestamp()
+                << "                       "
+                << api->build_timestamp()
                 << std::endl;
       std::cout << "       "
                 << api->contact()
