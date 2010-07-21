@@ -15,6 +15,11 @@
 
 #include <string>
 
+#include <list>
+
+#include <deque>
+#include <boost/serialization/deque.hpp>
+
 namespace Function { namespace Condition
 {
   typedef petri_net::pid_t pid_t;
@@ -25,7 +30,9 @@ namespace Function { namespace Condition
   {
   public:
     typedef std::pair<token_type,eid_t> token_via_edge_t;
-    typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
+    // typedef std::vector<token_via_edge_t> vec_token_via_edge_t;
+    //    typedef std::list<token_via_edge_t> vec_token_via_edge_t;
+    typedef std::deque<token_via_edge_t> vec_token_via_edge_t;
     typedef boost::unordered_map<pid_t,vec_token_via_edge_t> pid_in_map_t;
 
     typedef cross::cross<pid_in_map_t> choices_t;
